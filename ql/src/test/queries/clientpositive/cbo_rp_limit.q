@@ -1,3 +1,6 @@
+--! qt:dataset:cbo_t3
+--! qt:dataset:cbo_t2
+--! qt:dataset:cbo_t1
 set hive.mapred.mode=nonstrict;
 set hive.cbo.enable=true;
 set hive.exec.check.crossproducts=false;
@@ -6,8 +9,10 @@ set hive.stats.fetch.column.stats=true;
 set hive.auto.convert.join=false;
 
 -- 7. Test Select + TS + Join + Fil + GB + GB Having + Limit
-select key, (c_int+1)+2 as x, sum(c_int) from cbo_t1 group by c_float, cbo_t1.c_int, key order by x limit 1;
-select x, y, count(*) from (select key, (c_int+c_float+1+2) as x, sum(c_int) as y from cbo_t1 group by c_float, cbo_t1.c_int, key) R group by y, x order by x,y limit 1;
+select key, (c_int+1)+2 as x, sum(c_int) from cbo_t1 group by c_float, cbo_t1.c_int, key order by x,key limit 1;
+-- annoying spaces in the key
+select distinct "<"||key||">", (c_int+c_float+1+2) as x, sum(c_int) as y from cbo_t1 group by c_float, cbo_t1.c_int, key limit 2;
+select x, y, count(*) from (select key, (c_int+c_float+1+2) as x, sum(c_int) as y from cbo_t1 group by c_float, cbo_t1.c_int, key) R group by y, x order by x,y limit 5;
 select key from(select key from (select key from cbo_t1 limit 5)cbo_t2  limit 5)cbo_t3  limit 5;
 select key, c_int from(select key, c_int from (select key, c_int from cbo_t1 order by c_int limit 5)cbo_t1  order by c_int limit 5)cbo_t2  order by c_int limit 5;
 

@@ -10,7 +10,7 @@ import shutil
 import tarfile
 import zipfile
 
-from templates import metainfo, appConfig, resources, runner
+from templates import yarnfile, runner
 
 class LlapResource(object):
 	def __init__(self, config):
@@ -40,8 +40,7 @@ class LlapResource(object):
 		if (not config.get("hive.llap.daemon.queue.name","")):
 			self.queueString = ""
 		else:
-			self.queueString = "--queue "
-			self.queueString += config["hive.llap.daemon.queue.name"]
+			self.queueString = config["hive.llap.daemon.queue.name"]
 
 		if (not config.get("private.hive.llap.servicedriver.cluster.name")):
 			self.clusterName="llap0"
@@ -58,13 +57,13 @@ def zipdir(path, zip, prefix="."):
 			dst = src.replace(path, prefix)
 			zip.write(src, dst)
 
-def slider_appconfig_global_property(arg):
+def service_appconfig_global_property(arg):
 	kv = arg.split("=")
 	if len(kv) != 2:
 		raise argparse.ArgumentTypeError("Value must be split into two parts separated by =")
 	return tuple(kv)
 
-def construct_slider_site_global_string(kvs):
+def construct_service_site_global_string(kvs):
 	if not kvs:
 		return ""
 	kvs = map(lambda a : a[0], kvs)
@@ -74,9 +73,9 @@ def construct_slider_site_global_string(kvs):
 def main(args):
 	version = os.getenv("HIVE_VERSION")
 	if not version:
-		version = strftime("%d%b%Y", gmtime()) 
+		version = strftime("%d%b%Y", gmtime())
 	home = os.getenv("HIVE_HOME")
-	output = "llap-slider-%(version)s" % ({"version": version})
+	output = "llap-yarn-%(version)s" % ({"version": version})
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--instances", type=int, default=1)
 	parser.add_argument("--output", default=output)
@@ -85,15 +84,17 @@ def main(args):
 	parser.add_argument("--name", default="llap0")
 	parser.add_argument("--loglevel", default="INFO")
 	parser.add_argument("--logger", default="query-routing")
-	parser.add_argument("--chaosmonkey", type=int, default=0)
-	parser.add_argument("--slider-am-container-mb", type=int, default=1024)
-	parser.add_argument("--slider-appconfig-global", nargs='*', type=slider_appconfig_global_property, action='append')
-	parser.add_argument("--slider-keytab-dir", default="")
-	parser.add_argument("--slider-keytab", default="")
-	parser.add_argument("--slider-principal", default="")
-	parser.add_argument("--slider-default-keytab", dest='slider_default_keytab', action='store_true')
-	parser.add_argument("--slider-placement", type=int, default=4)
-	parser.set_defaults(slider_default_keytab=False)
+	parser.add_argument("--service-am-container-mb", type=int, default=1024)
+	parser.add_argument("--service-appconfig-global", nargs='*', type=service_appconfig_global_property, action='append')
+	parser.add_argument("--service-keytab-dir", default="")
+	parser.add_argument("--service-keytab", default="")
+	parser.add_argument("--service-principal", default="")
+	parser.add_argument("--service-default-keytab", dest='service_default_keytab', action='store_true')
+	parser.add_argument("--service-placement", type=int, default=4)
+	parser.add_argument("--health-percent", type=int, default=80)
+	parser.add_argument("--health-time-window-secs", type=int, default=300)
+	parser.add_argument("--health-init-delay-secs", type=int, default=400)
+	parser.set_defaults(service_default_keytab=False)
 	parser.add_argument("--startImmediately", dest='start_immediately', action='store_true')
 	parser.add_argument("--javaChild", dest='java_child', action='store_true')
 	parser.set_defaults(start_immediately=False)
@@ -111,23 +112,31 @@ def main(args):
 
 	input = args.input
 	output = args.output
-	slider_am_jvm_heapsize = max(args.slider_am_container_mb * 0.8, args.slider_am_container_mb - 1024)
-	slider_keytab_dir = args.slider_keytab_dir
-	slider_keytab = args.slider_keytab
-	slider_principal = args.slider_principal
+	service_am_jvm_heapsize = max(args.service_am_container_mb * 0.8, args.service_am_container_mb - 1024)
+	service_keytab_dir = args.service_keytab_dir
+	service_keytab = args.service_keytab
+	service_principal = args.service_principal
+
+	config = json_parse(open(join(input, "config.json")).read())
 	# set the defaults only if the defaults are enabled
-	if args.slider_default_keytab:
-		if not slider_keytab_dir:
-			slider_keytab_dir = ".slider/keytabs/llap"
-		if not slider_keytab:
-			slider_keytab = "llap.keytab"
-		if not slider_principal:
-			slider_principal = "llap@EXAMPLE.COM"
+	if args.service_default_keytab:
+		if not service_keytab_dir:
+			service_keytab_dir = config["hive.llap.hdfs.package.dir"] + "/keytabs/llap"
+		if not service_keytab:
+			service_keytab = "llap.keytab"
+		if not service_principal:
+			service_principal = "llap@EXAMPLE.COM"
+	service_keytab_path = service_keytab_dir
+	if service_keytab_path:
+		if service_keytab:
+			service_keytab_path += "/" + service_keytab
+	else:
+		service_keytab_path = service_keytab
+
 	if not input:
 		print "Cannot find input files"
 		sys.exit(1)
 		return
-	config = json_parse(open(join(input, "config.json")).read())
 	java_home = config["java.home"]
 	max_direct_memory = config["max_direct_memory"]
 
@@ -137,8 +146,6 @@ def main(args):
 	if long(max_direct_memory) > 0:
 		daemon_args = " -XX:MaxDirectMemorySize=%s %s" % (max_direct_memory, daemon_args)
 	daemon_args = " -Dhttp.maxConnections=%s %s" % ((max(args.instances, resource.executors) + 1), daemon_args)
-	# 5% container failure every monkey_interval seconds
-	monkey_percentage = 5 # 5%
 	vars = {
 		"home" : home,
 		"version" : version,
@@ -153,68 +160,46 @@ def main(args):
 		"daemon_loglevel" : args.loglevel,
 		"daemon_logger" : args.logger,
 		"queue.string" : resource.queueString,
-		"monkey_interval" : args.chaosmonkey,
-		"monkey_percentage" : monkey_percentage,
-		"monkey_enabled" : args.chaosmonkey > 0,
-		"slider.am.container.mb" : args.slider_am_container_mb,
-		"slider_appconfig_global_append": construct_slider_site_global_string(args.slider_appconfig_global),
-		"slider_am_jvm_heapsize" : slider_am_jvm_heapsize,
-		"slider_keytab_dir" : slider_keytab_dir,
-		"slider_keytab" : slider_keytab,
-		"slider_principal" : slider_principal,
-		"placement" : args.slider_placement
+		"service.am.container.mb" : args.service_am_container_mb,
+		"service_appconfig_global_append": construct_service_site_global_string(args.service_appconfig_global),
+		"service_am_jvm_heapsize" : service_am_jvm_heapsize,
+		"service_keytab_path" : service_keytab_path,
+		"service_principal" : service_principal,
+		"placement" : args.service_placement,
+		"health_percent": args.health_percent,
+		"health_time_window": args.health_time_window_secs,
+		"health_init_delay": args.health_init_delay_secs,
+		"hdfs_package_dir": config["hive.llap.hdfs.package.dir"]
 	}
-	
+
 	if not exists(output):
 		os.makedirs(output)
-	
+
 	src = join(home, "scripts", "llap", "bin")
 	dst = join(input, "bin")
 	if exists(dst):
 		shutil.rmtree(dst)
 	shutil.copytree(src, dst)
 
-	# Make the zip package
-	tmp = join(output, "tmp")
-	pkg = join(tmp, "package")
-
-	src = join(home, "scripts", "llap", "slider")
-	dst = join(pkg, "scripts")
-	if exists(dst):
-		shutil.rmtree(dst)
-	shutil.copytree(src, dst)
-
-	with open(join(tmp, "metainfo.xml"),"w") as f:
-		f.write(metainfo % vars)
-
-	os.mkdir(join(pkg, "files"))
+	# Make the llap tarball
 	print "%s Prepared the files" % (strftime("%H:%M:%S", gmtime()))
 
-	tarball = tarfile.open(join(pkg, "files", "llap-%s.tar.gz" %  version), "w:gz")
+	tarball = tarfile.open(join(output, "llap-%s.tar.gz" %  version), "w:gz")
 	# recursive add + -C chdir inside
 	tarball.add(input, "")
 	tarball.close()
 
-	zipped = zipfile.ZipFile(join(output, "llap-%s.zip" % version), "w")
-	zipdir(tmp, zipped)
-	zipped.close()
 	print "%s Packaged the files" % (strftime("%H:%M:%S", gmtime()))
 
-	# cleanup after making zip pkg
-	shutil.rmtree(tmp)
-
-	with open(join(output, "appConfig.json"), "w") as f:
-		f.write(appConfig % vars)
-	
-	with open(join(output, "resources.json"), "w") as f:
-		f.write(resources % vars)
+	with open(join(output, "Yarnfile"), "w") as f:
+		f.write(yarnfile % vars)
 
 	with open(join(output, "run.sh"), "w") as f:
 		f.write(runner % vars)
 	os.chmod(join(output, "run.sh"), 0700)
 
 	if not args.java_child:
-		print "%s Prepared %s/run.sh for running LLAP on Slider" % (strftime("%H:%M:%S", gmtime()), output)
+		print "%s Prepared %s/run.sh for running LLAP on YARN" % (strftime("%H:%M:%S", gmtime()), output)
 
 if __name__ == "__main__":
 	main(sys.argv[1:])

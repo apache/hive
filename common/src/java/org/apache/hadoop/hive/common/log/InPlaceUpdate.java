@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.common.log;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import jline.TerminalFactory;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.fusesource.jansi.Ansi;
 
@@ -198,8 +198,7 @@ public class InPlaceUpdate {
       inPlaceUpdates = HiveConf.getBoolVar(conf, HiveConf.ConfVars.SPARK_EXEC_INPLACE_PROGRESS);
     }
 
-    // we need at least 80 chars wide terminal to display in-place updates properly
-    return inPlaceUpdates && isUnixTerminal() && TerminalFactory.get().getWidth() >= MIN_TERMINAL_WIDTH;
+    return inPlaceUpdates && isUnixTerminal();
   }
 
   private static boolean isUnixTerminal() {

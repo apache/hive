@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,23 +22,28 @@ import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Random;
 
-import org.apache.hadoop.hive.common.type.RandomTypeUtil;
+import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.common.type.HiveChar;
+import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.serde2.RandomTypeUtil;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.util.batchgen.VectorBatchGenerator.GenerateType;
 import org.apache.hadoop.hive.ql.exec.vector.util.batchgen.VectorBatchGenerator.GenerateType.GenerateCategory;
-import org.apache.hadoop.io.BooleanWritable;
-import org.apache.hadoop.io.Text;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 
 public class VectorColumnGroupGenerator {
 
   private GenerateType[] generateTypes;
   private int[] columnNums;
   private Object[] arrays;
+  private boolean[][] isNullArrays;
 
   public VectorColumnGroupGenerator(int columnNum, GenerateType generateType) {
     columnNums = new int[] {columnNum};
@@ -61,6 +66,7 @@ public class VectorColumnGroupGenerator {
 
   private void allocateArrays(int size) {
     arrays = new Object[generateTypes.length];
+    isNullArrays = new boolean[generateTypes.length][];
     for (int i = 0; i < generateTypes.length; i++) {
       GenerateType generateType = generateTypes[i];
       GenerateCategory category = generateType.getCategory();
@@ -90,24 +96,34 @@ public class VectorColumnGroupGenerator {
       case STRING:
         array = new String[size];
         break;
+      case BINARY:
+        array = new byte[size][];
+        break;
+      case DATE:
+        array = new Date[size];
+        break;
       case TIMESTAMP:
         array = new Timestamp[size];
         break;
-
-      // UNDONE
-      case DATE:
-      case BINARY:
-      case DECIMAL:
-      case VARCHAR:
       case CHAR:
+        array = new HiveChar[size];
+        break;
+      case VARCHAR:
+        array = new HiveVarchar[size];
+        break;
+      case DECIMAL:
+        array = new HiveDecimalWritable[size];
+        break;
 
       case LIST:
       case MAP:
       case STRUCT:
       case UNION:
       default:
+        throw new RuntimeException("Unexpected generate category " + category);
       }
       arrays[i] = array;
+      isNullArrays[i] = new boolean[size];
     }
   }
 
@@ -141,16 +157,24 @@ public class VectorColumnGroupGenerator {
       case STRING:
         Arrays.fill(((String[]) array), null);
         break;
+      case BINARY:
+        Arrays.fill(((byte[][]) array), null);
+        break;
+      case DATE:
+        Arrays.fill(((Date[]) array), null);
+        break;
       case TIMESTAMP:
         Arrays.fill(((Timestamp[]) array), null);
         break;
-
-      // UNDONE
-      case DATE:
-      case BINARY:
-      case DECIMAL:
-      case VARCHAR:
       case CHAR:
+        Arrays.fill(((HiveChar[]) array), null);
+        break;
+      case VARCHAR:
+        Arrays.fill(((HiveVarchar[]) array), null);
+        break;
+      case DECIMAL:
+        Arrays.fill(((HiveDecimalWritable[]) array), null);
+        break;
 
       case LIST:
       case MAP:
@@ -170,6 +194,11 @@ public class VectorColumnGroupGenerator {
   private void generateRowColumnValue(int rowIndex, int columnIndex, Random random) {
     GenerateType generateType = generateTypes[columnIndex];
     GenerateCategory category = generateType.getCategory();
+    boolean allowNulls = generateType.getAllowNulls();
+    if (allowNulls && random.nextInt(100) < 5) {
+      isNullArrays[columnIndex][rowIndex] = true;
+      return;
+    }
     Object array = arrays[columnIndex];
     switch (category) {
     case BOOLEAN:
@@ -230,21 +259,52 @@ public class VectorColumnGroupGenerator {
       }
       break;
 
+    case BINARY:
+      {
+        byte[] value = RandomTypeUtil.getRandBinary(random, 10);
+        ((byte[][]) array)[rowIndex] = value;
+      }
+      break;
+
+    case DATE:
+      {
+        Date value = RandomTypeUtil.getRandDate(random);
+        ((Date[]) array)[rowIndex] = value;
+      }
+      break;
+
     case TIMESTAMP:
       {
-        Timestamp value = RandomTypeUtil.getRandTimestamp(random);
+        Timestamp value = RandomTypeUtil.getRandTimestamp(random).toSqlTimestamp();
         ((Timestamp[]) array)[rowIndex] = value;
       }
       break;
 
-    // UNDONE
-    case DATE:
-      // UNDONE: Needed to longTest?
-
-    case BINARY:
-    case DECIMAL:
-    case VARCHAR:
     case CHAR:
+      {
+        // UNDONE: Use CharTypeInfo.maxLength
+        HiveChar value =
+            new HiveChar(RandomTypeUtil.getRandString(random), 10);
+        ((HiveChar[]) array)[rowIndex] = value;
+      }
+      break;
+
+    case VARCHAR:
+      {
+        // UNDONE: Use VarcharTypeInfo.maxLength
+        HiveVarchar value =
+            new HiveVarchar(RandomTypeUtil.getRandString(random), 10);
+        ((HiveVarchar[]) array)[rowIndex] = value;
+      }
+      break;
+
+    case DECIMAL:
+      {
+        HiveDecimalWritable value =
+            new HiveDecimalWritable(RandomTypeUtil.getRandHiveDecimal(random));
+        ((HiveDecimalWritable[]) array)[rowIndex] = value;
+      }
+      break;
 
     case LIST:
     case MAP:
@@ -263,7 +323,15 @@ public class VectorColumnGroupGenerator {
   private void fillDownRowColumnValue(int rowIndex, int columnIndex, int seriesCount, Random random) {
     GenerateType generateType = generateTypes[columnIndex];
     GenerateCategory category = generateType.getCategory();
+    boolean allowNulls = generateType.getAllowNulls();
     Object array = arrays[columnIndex];
+    boolean[] isNull = isNullArrays[columnIndex];
+    if (allowNulls && isNull[rowIndex]) {
+      for (int i = 1; i < seriesCount; i++) {
+        isNull[rowIndex + i] = true;
+      }
+      return;
+    }
     switch (category) {
     case BOOLEAN:
       {
@@ -337,6 +405,24 @@ public class VectorColumnGroupGenerator {
         }
       }
       break;
+    case BINARY:
+      {
+        byte[][] byteArrayArray = ((byte[][]) array);
+        byte[] value = byteArrayArray[rowIndex];
+        for (int i = 1; i < seriesCount; i++) {
+          byteArrayArray[rowIndex + i] = value;
+        }
+      }
+      break;
+    case DATE:
+      {
+        Date[] dateArray = ((Date[]) array);
+        Date value = dateArray[rowIndex];
+        for (int i = 1; i < seriesCount; i++) {
+          dateArray[rowIndex + i] = value;
+        }
+      }
+      break;
     case TIMESTAMP:
       {
         Timestamp[] timestampArray = ((Timestamp[]) array);
@@ -346,14 +432,33 @@ public class VectorColumnGroupGenerator {
         }
       }
       break;
-
-    // UNDONE
-    case DATE:
-
-    case BINARY:
-    case DECIMAL:
-    case VARCHAR:
     case CHAR:
+      {
+        HiveChar[] hiveCharArray = ((HiveChar[]) array);
+        HiveChar value = hiveCharArray[rowIndex];
+        for (int i = 1; i < seriesCount; i++) {
+          hiveCharArray[rowIndex + i] = value;
+        }
+      }
+      break;
+    case VARCHAR:
+      {
+        HiveVarchar[] hiveVarcharArray = ((HiveVarchar[]) array);
+        HiveVarchar value = hiveVarcharArray[rowIndex];
+        for (int i = 1; i < seriesCount; i++) {
+          hiveVarcharArray[rowIndex + i] = value;
+        }
+      }
+      break;
+    case DECIMAL:
+      {
+        HiveDecimalWritable[] hiveDecimalWritableArray = ((HiveDecimalWritable[]) array);
+        HiveDecimalWritable value = hiveDecimalWritableArray[rowIndex];
+        for (int i = 1; i < seriesCount; i++) {
+          hiveDecimalWritableArray[rowIndex + i] = value;
+        }
+      }
+      break;
 
     case LIST:
     case MAP:
@@ -389,6 +494,16 @@ public class VectorColumnGroupGenerator {
 
     GenerateType generateType = generateTypes[logicalColumnIndex];
     GenerateCategory category = generateType.getCategory();
+    boolean allowNulls = generateType.getAllowNulls();
+    boolean[] isNull = isNullArrays[logicalColumnIndex];
+    if (allowNulls) {
+      for (int i = 0; i < size; i++) {
+        if (isNull[i]) {
+          colVector.isNull[i] = true;
+          colVector.noNulls = false;
+        }
+      }
+    }
     Object array = arrays[logicalColumnIndex];
     switch (category) {
     case BOOLEAN:
@@ -396,7 +511,11 @@ public class VectorColumnGroupGenerator {
         boolean[] booleanArray = ((boolean[]) array);
         long[] vector = ((LongColumnVector) colVector).vector;
         for (int i = 0; i < size; i++) {
-          vector[i] = (booleanArray[i] ? 1 : 0);
+          if (isNull[i]) {
+            vector[i] = 0;
+          } else {
+            vector[i] = (booleanArray[i] ? 1 : 0);
+          }
         }
       }
       break;
@@ -405,7 +524,11 @@ public class VectorColumnGroupGenerator {
         byte[] byteArray = ((byte[]) array);
         long[] vector = ((LongColumnVector) colVector).vector;
         for (int i = 0; i < size; i++) {
-          vector[i] = byteArray[i];
+          if (isNull[i]) {
+            vector[i] = 0;
+          } else {
+            vector[i] = byteArray[i];
+          }
         }
       }
       break;
@@ -414,7 +537,11 @@ public class VectorColumnGroupGenerator {
         short[] shortArray = ((short[]) array);
         long[] vector = ((LongColumnVector) colVector).vector;
         for (int i = 0; i < size; i++) {
-          vector[i] = shortArray[i];
+          if (isNull[i]) {
+            vector[i] = 0;
+          } else {
+            vector[i] = shortArray[i];
+          }
         }
       }
       break;
@@ -423,7 +550,11 @@ public class VectorColumnGroupGenerator {
         int[] intArray = ((int[]) array);
         long[] vector = ((LongColumnVector) colVector).vector;
         for (int i = 0; i < size; i++) {
-          vector[i] = intArray[i];
+          if (isNull[i]) {
+            vector[i] = 0;
+          } else {
+            vector[i] = intArray[i];
+          }
         }
       }
       break;
@@ -432,7 +563,11 @@ public class VectorColumnGroupGenerator {
         long[] longArray = ((long[]) array);
         long[] vector = ((LongColumnVector) colVector).vector;
         for (int i = 0; i < size; i++) {
-          vector[i] = longArray[i];
+          if (isNull[i]) {
+            vector[i] = 0;
+          } else {
+            vector[i] = longArray[i];
+          }
         }
       }
       break;
@@ -441,7 +576,11 @@ public class VectorColumnGroupGenerator {
         float[] floatArray = ((float[]) array);
         double[] vector = ((DoubleColumnVector) colVector).vector;
         for (int i = 0; i < size; i++) {
-          vector[i] = floatArray[i];
+          if (isNull[i]) {
+            vector[i] = 0;
+          } else {
+            vector[i] = floatArray[i];
+          }
         }
       }
       break;
@@ -450,7 +589,11 @@ public class VectorColumnGroupGenerator {
         double[] doubleArray = ((double[]) array);
         double[] vector = ((DoubleColumnVector) colVector).vector;
         for (int i = 0; i < size; i++) {
-          vector[i] = doubleArray[i];
+          if (isNull[i]) {
+            vector[i] = 0;
+          } else {
+            vector[i] = doubleArray[i];
+          }
         }
       }
       break;
@@ -459,8 +602,35 @@ public class VectorColumnGroupGenerator {
         String[] stringArray = ((String[]) array);
         BytesColumnVector bytesColVec = ((BytesColumnVector) colVector);
         for (int i = 0; i < size; i++) {
-          byte[] bytes = stringArray[i].getBytes();
-          bytesColVec.setVal(i, bytes);
+          if (!isNull[i]) {
+            byte[] bytes = stringArray[i].getBytes();
+            bytesColVec.setVal(i, bytes);
+          }
+        }
+      }
+      break;
+    case BINARY:
+      {
+        byte[][] byteArrayArray = ((byte[][]) array);
+        BytesColumnVector bytesColVec = ((BytesColumnVector) colVector);
+        for (int i = 0; i < size; i++) {
+          if (!isNull[i]) {
+            byte[] bytes = byteArrayArray[i];
+            bytesColVec.setVal(i, bytes);
+          }
+        }
+      }
+      break;
+    case DATE:
+      {
+        Date[] dateArray = ((Date[]) array);
+        LongColumnVector longColVec = ((LongColumnVector) colVector);
+        for (int i = 0; i < size; i++) {
+          if (!isNull[i]) {
+            Date date = dateArray[i];
+            longColVec.vector[i] =
+                DateWritableV2.dateToDays(date);
+          }
         }
       }
       break;
@@ -469,26 +639,58 @@ public class VectorColumnGroupGenerator {
         Timestamp[] timestampArray = ((Timestamp[]) array);
         TimestampColumnVector timestampColVec = ((TimestampColumnVector) colVector);
         for (int i = 0; i < size; i++) {
-          Timestamp timestamp = timestampArray[i];
-          timestampColVec.set(i, timestamp);
+          if (!isNull[i]) {
+            Timestamp timestamp = timestampArray[i];
+            timestampColVec.set(i, timestamp);
+          }
+        }
+      }
+      break;
+    case CHAR:
+      {
+        HiveChar[] hiveCharArray = ((HiveChar[]) array);
+        BytesColumnVector bytesColVec = ((BytesColumnVector) colVector);
+        for (int i = 0; i < size; i++) {
+          if (!isNull[i]) {
+            byte[] bytes = hiveCharArray[i].getValue().getBytes();
+            bytesColVec.setVal(i, bytes);
+          }
+        }
+      }
+      break;
+    case VARCHAR:
+      {
+        HiveVarchar[] hiveCharArray = ((HiveVarchar[]) array);
+        BytesColumnVector bytesColVec = ((BytesColumnVector) colVector);
+        for (int i = 0; i < size; i++) {
+          if (!isNull[i]) {
+            byte[] bytes = hiveCharArray[i].getValue().getBytes();
+            bytesColVec.setVal(i, bytes);
+          }
+        }
+      }
+      break;
+    case DECIMAL:
+      {
+        HiveDecimalWritable[] hiveDecimalWritableArray = ((HiveDecimalWritable[]) array);
+        DecimalColumnVector decimalColVec = ((DecimalColumnVector) colVector);
+        for (int i = 0; i < size; i++) {
+          if (!isNull[i]) {
+            HiveDecimalWritable decWritable = hiveDecimalWritableArray[i];
+            decimalColVec.set(i, decWritable);
+          }
         }
       }
       break;
 
     // UNDONE
 
-    case DATE:
-
-    case BINARY:
-    case DECIMAL:
-    case VARCHAR:
-    case CHAR:
-
     case LIST:
     case MAP:
     case STRUCT:
     case UNION:
     default:
+      throw new RuntimeException("Unepected generate category " + category);
     }
   }
 }

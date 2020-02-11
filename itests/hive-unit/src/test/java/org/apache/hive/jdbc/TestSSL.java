@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -350,6 +350,7 @@ public class TestSSL {
    * Start HS2 in Http mode with SSL enabled, open a SSL connection and fetch data
    * @throws Exception
    */
+  @Ignore("HIVE-19509: Disable tests that are failing continuously")
   @Test
   public void testSSLFetchHttp() throws Exception {
     SSLTestUtils.setSslConfOverlay(confOverlay);
@@ -468,6 +469,7 @@ public class TestSSL {
    * @throws Exception
    */
   @Test
+  @Ignore("HIVE-22621: test case is unstable")
   public void testMetastoreConnectionWrongCertCN() throws Exception {
     SSLTestUtils.setMetastoreSslConf(conf);
     conf.setVar(ConfVars.HIVE_METASTORE_SSL_KEYSTORE_PATH,

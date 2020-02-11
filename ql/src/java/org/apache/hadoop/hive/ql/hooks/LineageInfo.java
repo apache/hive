@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -26,11 +26,13 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.collections.SetUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.StringInternUtils;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.ql.stats.StatsUtils;
 
 /**
  * This class contains the lineage information that is passed
@@ -120,8 +122,9 @@ public class LineageInfo implements Serializable {
     @Override
     public String toString() {
       return isPartition() ?
-          part.getDbName() + "." + part.getTableName() + "@" + part.getValues() :
-          tab.getDbName() + "." + tab.getTableName();
+        StatsUtils.getFullyQualifiedTableName(part.getDbName(), part.getTableName()) + "@"
+            + part.getValues()
+        : Warehouse.getQualifiedName(tab);
     }
   }
 
@@ -331,7 +334,7 @@ public class LineageInfo implements Serializable {
 
     @Override
     public String toString() {
-      return table.getDbName() + "." + table.getTableName() + "(" + alias + ")";
+      return Warehouse.getQualifiedName(table) + "(" + alias + ")";
     }
 
     @Override
@@ -430,7 +433,7 @@ public class LineageInfo implements Serializable {
   /**
    * This class tracks the predicate information for an operator.
    */
-  public static class Predicate {
+  public static class Predicate implements Serializable {
 
     /**
      * Expression string for the predicate.

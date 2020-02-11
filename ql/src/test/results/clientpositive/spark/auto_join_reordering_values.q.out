@@ -70,6 +70,9 @@ JOIN `orderpayment_small` `order_city` ON `order_city`.`cityid` = `orderpayment`
 JOIN `user_small` `user` ON `user`.`userid` = `orderpayment`.`userid`
 limit 5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orderpayment_small
+PREHOOK: Input: default@user_small
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended SELECT
      `dim_pay_date`.`date`
     , `deal`.`dealid`
@@ -80,6 +83,26 @@ JOIN `orderpayment_small` `order_city` ON `order_city`.`cityid` = `orderpayment`
 JOIN `user_small` `user` ON `user`.`userid` = `orderpayment`.`userid`
 limit 5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orderpayment_small
+POSTHOOK: Input: default@user_small
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `t4`.`date`, `t6`.`dealid`
+FROM (SELECT `userid`
+FROM `default`.`user_small`
+WHERE `userid` IS NOT NULL) AS `t0`
+INNER JOIN ((SELECT `dealid`, `date`, `cityid`, `userid`
+FROM `default`.`orderpayment_small`
+WHERE `date` IS NOT NULL AND `dealid` IS NOT NULL AND `cityid` IS NOT NULL AND `userid` IS NOT NULL) AS `t2`
+INNER JOIN (SELECT `date`
+FROM `default`.`orderpayment_small`
+WHERE `date` IS NOT NULL) AS `t4` ON `t2`.`date` = `t4`.`date`
+INNER JOIN (SELECT `dealid`
+FROM `default`.`orderpayment_small`
+WHERE `dealid` IS NOT NULL) AS `t6` ON `t2`.`dealid` = `t6`.`dealid`
+INNER JOIN (SELECT `cityid`
+FROM `default`.`orderpayment_small`
+WHERE `cityid` IS NOT NULL) AS `t8` ON `t2`.`cityid` = `t8`.`cityid`) ON `t0`.`userid` = `t2`.`userid`
+LIMIT 5
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -98,6 +121,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: orderpayment
+                  filterExpr: (date is not null and dealid is not null and cityid is not null and userid is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -110,13 +134,14 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col1 (type: string)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col1 (type: string)
                         Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
                         tag: 0
                         value expressions: _col0 (type: int), _col2 (type: int), _col3 (type: int)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -128,6 +153,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns dealid,date,time,cityid,userid
                     columns.comments 
@@ -149,6 +175,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns dealid,date,time,cityid,userid
                       columns.comments 
@@ -172,6 +199,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: dim_pay_date
+                  filterExpr: date is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -184,12 +212,13 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
                         tag: 1
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -201,6 +230,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns dealid,date,time,cityid,userid
                     columns.comments 
@@ -222,6 +252,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns dealid,date,time,cityid,userid
                       columns.comments 
@@ -245,6 +276,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: deal
+                  filterExpr: dealid is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -257,12 +289,13 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
                         tag: 1
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -274,6 +307,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns dealid,date,time,cityid,userid
                     columns.comments 
@@ -295,6 +329,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns dealid,date,time,cityid,userid
                       columns.comments 
@@ -318,6 +353,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: order_city
+                  filterExpr: cityid is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -330,12 +366,13 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
                         tag: 1
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -347,6 +384,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns dealid,date,time,cityid,userid
                     columns.comments 
@@ -368,6 +406,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns dealid,date,time,cityid,userid
                       columns.comments 
@@ -391,6 +430,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: user
+                  filterExpr: userid is not null (type: boolean)
                   Statistics: Num rows: 100 Data size: 288 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -403,12 +443,13 @@ STAGE PLANS:
                       Statistics: Num rows: 100 Data size: 288 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 100 Data size: 288 Basic stats: COMPLETE Column stats: NONE
                         tag: 1
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -420,6 +461,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns userid
                     columns.comments 
@@ -441,6 +483,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns userid
                       columns.comments 
@@ -473,7 +516,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 39 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 1 Data size: 39 Basic stats: COMPLETE Column stats: NONE
@@ -493,7 +536,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col2 (type: int)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col2 (type: int)
                   Statistics: Num rows: 1 Data size: 42 Basic stats: COMPLETE Column stats: NONE
@@ -513,7 +556,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 46 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col3 (type: int)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col3 (type: int)
                   Statistics: Num rows: 1 Data size: 46 Basic stats: COMPLETE Column stats: NONE

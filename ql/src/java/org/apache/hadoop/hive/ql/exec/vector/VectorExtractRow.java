@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,14 +19,16 @@
 package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector.StandardUnion;
 import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
@@ -36,7 +38,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -44,7 +45,6 @@ import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
@@ -65,6 +65,7 @@ import org.apache.hadoop.io.Writable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 
 /**
@@ -89,6 +90,9 @@ public class VectorExtractRow {
   TypeInfo[] typeInfos;
   ObjectInspector[] objectInspectors;
 
+  private static final byte[] EMPTY_BYTES = new byte[0];
+  private static final String EMPTY_STRING = "";
+
   /*
    * Allocate the various arrays.
    */
@@ -112,7 +116,6 @@ public class VectorExtractRow {
    */
   public void init(StructObjectInspector structObjectInspector, List<Integer> projectedColumns)
       throws HiveException {
-
     List<? extends StructField> fields = structObjectInspector.getAllStructFieldRefs();
     final int count = fields.size();
     allocateArrays(count);
@@ -125,7 +128,6 @@ public class VectorExtractRow {
       ObjectInspector fieldInspector = field.getFieldObjectInspector();
       TypeInfo typeInfo =
           TypeInfoUtils.getTypeInfoFromTypeString(fieldInspector.getTypeName());
-
       initEntry(i, projectionColumnNum, typeInfo);
     }
   }
@@ -148,7 +150,8 @@ public class VectorExtractRow {
    * Initialize using data type names.
    * No projection -- the column range 0 .. types.size()-1
    */
-  public void init(List<String> typeNames) throws HiveException {
+  @VisibleForTesting
+  void init(List<String> typeNames) throws HiveException {
 
     final int count = typeNames.size();
     allocateArrays(count);
@@ -180,15 +183,22 @@ public class VectorExtractRow {
    * @param logicalColumnIndex
    * @return
    */
-  private Object extractRowColumn(VectorizedRowBatch batch, int batchIndex, int logicalColumnIndex) {
+  private Object extractRowColumn(VectorizedRowBatch batch, int batchIndex,
+      int logicalColumnIndex) {
 
     final int projectionColumnNum = projectionColumnNums[logicalColumnIndex];
     final ColumnVector colVector = batch.cols[projectionColumnNum];
-    return extractRowColumn(
-        colVector, typeInfos[logicalColumnIndex], objectInspectors[logicalColumnIndex], batchIndex);
+    final TypeInfo typeInfo = typeInfos[logicalColumnIndex];
+    // try {
+      return extractRowColumn(
+          colVector, typeInfo, objectInspectors[logicalColumnIndex], batchIndex);
+    // } catch (Exception e){
+    //   throw new RuntimeException("Error evaluating column number " + projectionColumnNum +
+    //       ", typeInfo " + typeInfo.toString() + ", batchIndex " + batchIndex);
+    // }
   }
 
-  Object extractRowColumn(
+  public Object extractRowColumn(
       ColumnVector colVector, TypeInfo typeInfo, ObjectInspector objectInspector, int batchIndex) {
 
     if (colVector == null) {
@@ -234,11 +244,14 @@ public class VectorExtractRow {
               ((LongColumnVector) colVector).vector[adjustedIndex]);
           return primitiveWritable;
         case TIMESTAMP:
-          ((TimestampWritable) primitiveWritable).set(
-              ((TimestampColumnVector) colVector).asScratchTimestamp(adjustedIndex));
+          // From java.sql.Timestamp used by vectorization to serializable org.apache.hadoop.hive.common.type.Timestamp
+          java.sql.Timestamp ts =
+              ((TimestampColumnVector) colVector).asScratchTimestamp(adjustedIndex);
+          Timestamp serializableTS = Timestamp.ofEpochMilli(ts.getTime(), ts.getNanos());
+          ((TimestampWritableV2) primitiveWritable).set(serializableTS);
           return primitiveWritable;
         case DATE:
-          ((DateWritable) primitiveWritable).set(
+          ((DateWritableV2) primitiveWritable).set(
               (int) ((LongColumnVector) colVector).vector[adjustedIndex]);
           return primitiveWritable;
         case FLOAT:
@@ -257,18 +270,15 @@ public class VectorExtractRow {
             final int start = bytesColVector.start[adjustedIndex];
             final int length = bytesColVector.length[adjustedIndex];
 
-            if (bytesColVector.isRepeating) {
-              if (!bytesColVector.isNull[0] && bytes == null) {
-                nullBytesReadError(primitiveCategory, batchIndex);
-              }
-            } else {
-              if ((bytesColVector.noNulls || !bytesColVector.isNull[batchIndex]) && bytes == null) {
-                nullBytesReadError(primitiveCategory, batchIndex);
-              }
-            }
-
             BytesWritable bytesWritable = (BytesWritable) primitiveWritable;
-            bytesWritable.set(bytes, start, length);
+            if (bytes == null || length == 0) {
+              if (length > 0) {
+                nullBytesReadError(primitiveCategory, batchIndex);
+              }
+              bytesWritable.set(EMPTY_BYTES, 0, 0);
+            } else {
+              bytesWritable.set(bytes, start, length);
+            }
             return primitiveWritable;
           }
         case STRING:
@@ -279,18 +289,16 @@ public class VectorExtractRow {
             final int start = bytesColVector.start[adjustedIndex];
             final int length = bytesColVector.length[adjustedIndex];
 
-            if (bytesColVector.isRepeating) {
-              if (!bytesColVector.isNull[0] && bytes == null) {
+            if (bytes == null || length == 0) {
+              if (length > 0) {
                 nullBytesReadError(primitiveCategory, batchIndex);
               }
+              ((Text) primitiveWritable).set(EMPTY_BYTES, 0, 0);
             } else {
-              if ((bytesColVector.noNulls || !bytesColVector.isNull[batchIndex]) && bytes == null) {
-                nullBytesReadError(primitiveCategory, batchIndex);
-              }
-            }
 
-            // Use org.apache.hadoop.io.Text as our helper to go from byte[] to String.
-            ((Text) primitiveWritable).set(bytes, start, length);
+              // Use org.apache.hadoop.io.Text as our helper to go from byte[] to String.
+              ((Text) primitiveWritable).set(bytes, start, length);
+            }
             return primitiveWritable;
           }
         case VARCHAR:
@@ -301,21 +309,23 @@ public class VectorExtractRow {
             final int start = bytesColVector.start[adjustedIndex];
             final int length = bytesColVector.length[adjustedIndex];
 
-            if (bytesColVector.isRepeating) {
-              if (!bytesColVector.isNull[0] && bytes == null) {
+            final HiveVarcharWritable hiveVarcharWritable = (HiveVarcharWritable) primitiveWritable;
+            if (bytes == null || length == 0) {
+              if (length > 0) {
                 nullBytesReadError(primitiveCategory, batchIndex);
               }
+              hiveVarcharWritable.set(EMPTY_STRING, -1);
             } else {
-              if ((bytesColVector.noNulls || !bytesColVector.isNull[batchIndex]) && bytes == null) {
-                nullBytesReadError(primitiveCategory, batchIndex);
+              final int adjustedLength =
+                  StringExpr.truncate(
+                      bytes, start, length, ((VarcharTypeInfo) primitiveTypeInfo).getLength());
+              if (adjustedLength == 0) {
+                hiveVarcharWritable.set(EMPTY_STRING, -1);
+              } else {
+                hiveVarcharWritable.set(
+                    new String(bytes, start, adjustedLength, Charsets.UTF_8), -1);
               }
             }
-
-            final int adjustedLength = StringExpr.truncate(bytes, start, length,
-                ((VarcharTypeInfo) primitiveTypeInfo).getLength());
-
-            final HiveVarcharWritable hiveVarcharWritable = (HiveVarcharWritable) primitiveWritable;
-            hiveVarcharWritable.set(new String(bytes, start, adjustedLength, Charsets.UTF_8), -1);
             return primitiveWritable;
           }
         case CHAR:
@@ -326,28 +336,36 @@ public class VectorExtractRow {
             final int start = bytesColVector.start[adjustedIndex];
             final int length = bytesColVector.length[adjustedIndex];
 
-            if (bytesColVector.isRepeating) {
-              if (!bytesColVector.isNull[0] && bytes == null) {
+            final HiveCharWritable hiveCharWritable = (HiveCharWritable) primitiveWritable;
+            final int maxLength = ((CharTypeInfo) primitiveTypeInfo).getLength();
+            if (bytes == null || length == 0) {
+              if (length > 0) {
                 nullBytesReadError(primitiveCategory, batchIndex);
               }
+              hiveCharWritable.set(EMPTY_STRING, maxLength);
             } else {
-              if ((bytesColVector.noNulls || !bytesColVector.isNull[batchIndex]) && bytes == null) {
-                nullBytesReadError(primitiveCategory, batchIndex);
+              final int adjustedLength = StringExpr.rightTrimAndTruncate(bytes, start, length,
+                  ((CharTypeInfo) primitiveTypeInfo).getLength());
+
+              if (adjustedLength == 0) {
+                hiveCharWritable.set(EMPTY_STRING, maxLength);
+              } else {
+                hiveCharWritable.set(
+                    new String(bytes, start, adjustedLength, Charsets.UTF_8), maxLength);
               }
             }
-
-            final int adjustedLength = StringExpr.rightTrimAndTruncate(bytes, start, length,
-                ((CharTypeInfo) primitiveTypeInfo).getLength());
-
-            final HiveCharWritable hiveCharWritable = (HiveCharWritable) primitiveWritable;
-            hiveCharWritable.set(new String(bytes, start, adjustedLength, Charsets.UTF_8),
-                ((CharTypeInfo) primitiveTypeInfo).getLength());
             return primitiveWritable;
           }
         case DECIMAL:
-          // The HiveDecimalWritable set method will quickly copy the deserialized decimal writable fields.
-          ((HiveDecimalWritable) primitiveWritable).set(
-              ((DecimalColumnVector) colVector).vector[adjustedIndex]);
+          if (colVector instanceof Decimal64ColumnVector) {
+            Decimal64ColumnVector dec32ColVector = (Decimal64ColumnVector) colVector;
+            ((HiveDecimalWritable) primitiveWritable).deserialize64(
+                dec32ColVector.vector[adjustedIndex], dec32ColVector.scale);
+          } else {
+            // The HiveDecimalWritable set method will quickly copy the deserialized decimal writable fields.
+            ((HiveDecimalWritable) primitiveWritable).set(
+                ((DecimalColumnVector) colVector).vector[adjustedIndex]);
+          }
           return primitiveWritable;
         case INTERVAL_YEAR_MONTH:
           ((HiveIntervalYearMonthWritable) primitiveWritable).set(
@@ -389,7 +407,7 @@ public class VectorExtractRow {
         final int offset = (int) mapColumnVector.offsets[adjustedIndex];
         final int size = (int) mapColumnVector.lengths[adjustedIndex];
 
-        final Map map = new HashMap();
+        final Map<Object, Object> map = new LinkedHashMap<Object, Object>();
         for (int i = 0; i < size; i++) {
           final Object key = extractRowColumn(
               mapColumnVector.keys,

@@ -18,12 +18,12 @@ export SERVICE_LIST="${SERVICE_LIST}${THISSERVICE} "
 
 metatool () {
   HIVE_OPTS=''
-  CLASS=org.apache.hadoop.hive.metastore.tools.HiveMetaTool
+  CLASS=org.apache.hadoop.hive.metastore.tools.metatool.HiveMetaTool
   execHiveCmd $CLASS "$@"
 }
 
 metatool_help () {
   HIVE_OPTS=''
-  CLASS=org.apache.hadoop.hive.metastore.tools.HiveMetaTool
+  CLASS=org.apache.hadoop.hive.metastore.tools.metatool.HiveMetaTool
   execHiveCmd $CLASS "--help"
 }

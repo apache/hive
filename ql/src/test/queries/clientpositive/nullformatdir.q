@@ -1,13 +1,13 @@
 -- base table with null data
-DROP TABLE IF EXISTS base_tab;
-CREATE TABLE base_tab(a STRING, b STRING, c STRING, d STRING) STORED AS TEXTFILE;
-LOAD DATA LOCAL INPATH '../../data/files/null.txt' INTO TABLE base_tab;
-DESCRIBE EXTENDED base_tab;
+DROP TABLE IF EXISTS base_tab_n1;
+CREATE TABLE base_tab_n1(a STRING, b STRING, c STRING, d STRING) STORED AS TEXTFILE;
+LOAD DATA LOCAL INPATH '../../data/files/null.txt' INTO TABLE base_tab_n1;
+DESCRIBE EXTENDED base_tab_n1;
 
 dfs ${system:test.dfs.mkdir} ${system:test.tmp.dir}/hive_test/nullformat/tmp;
 dfs -rmr ${system:test.tmp.dir}/hive_test/nullformat/*;
 INSERT OVERWRITE LOCAL DIRECTORY '${system:test.tmp.dir}/hive_test/nullformat'
-   ROW FORMAT DELIMITED NULL DEFINED AS 'fooNull' SELECT a,b FROM base_tab;
+   ROW FORMAT DELIMITED NULL DEFINED AS 'fooNull' SELECT a,b FROM base_tab_n1;
 dfs -cat ${system:test.tmp.dir}/hive_test/nullformat/000000_0;
 
 -- load the exported data back into a table with same null format and verify null values
@@ -18,4 +18,4 @@ SELECT * FROM null_tab2;
 
 
 dfs -rmr ${system:test.tmp.dir}/hive_test/nullformat;
-DROP TABLE base_tab;
+DROP TABLE base_tab_n1;

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,29 +18,18 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import java.util.ArrayList;
-
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
-import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.VoidObjectInspector;
-import org.apache.logging.log4j.core.layout.StringBuilderEncoder;
 
 /**
- * GenericUDFArray.
- *
+ * Function intended to fail. It is used in query parts which should not return anything, and thus mark the problem.
  */
 @Description(name = "cardinality_violation",
   value = "_FUNC_(n0, n1...) - raises Cardinality Violation")
 public class GenericUDFCardinalityViolation extends GenericUDF {
-  private transient Converter[] converters;
-  private transient ArrayList<Object> ret = new ArrayList<Object>();
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
@@ -50,8 +39,10 @@ public class GenericUDFCardinalityViolation extends GenericUDF {
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
     StringBuilder nonUniqueKey = new StringBuilder();
-    for(DeferredObject t : arguments) {
-      if(nonUniqueKey.length() > 0) {nonUniqueKey.append(','); }
+    for (DeferredObject t : arguments) {
+      if (nonUniqueKey.length() > 0) {
+        nonUniqueKey.append(',');
+      }
       nonUniqueKey.append(t.get());
     }
     throw new RuntimeException("Cardinality Violation in Merge statement: " + nonUniqueKey);

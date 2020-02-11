@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.io.StatsProvidingRecordWriter;
 import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetTableUtils;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Writable;
@@ -32,21 +33,26 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
+import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.io.ParquetHiveRecord;
 import org.apache.hadoop.util.Progressable;
-
+import org.apache.parquet.hadoop.ParquetFileReader;
 import org.apache.parquet.hadoop.ParquetOutputFormat;
+import org.apache.parquet.hadoop.metadata.BlockMetaData;
 import org.apache.parquet.hadoop.metadata.CompressionCodecName;
 import org.apache.parquet.hadoop.util.ContextUtil;
+import org.apache.parquet.hadoop.util.HadoopInputFile;
 
 public class ParquetRecordWriterWrapper implements RecordWriter<NullWritable, ParquetHiveRecord>,
-  org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter {
+        StatsProvidingRecordWriter, org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter {
 
   public static final Logger LOG = LoggerFactory.getLogger(ParquetRecordWriterWrapper.class);
 
   private final org.apache.hadoop.mapreduce.RecordWriter<NullWritable, ParquetHiveRecord> realWriter;
   private final TaskAttemptContext taskContext;
-
+  private final JobConf jobConf;
+  private final Path file;
+  private SerDeStats stats;
   public ParquetRecordWriterWrapper(
       final OutputFormat<Void, ParquetHiveRecord> realOutputFormat,
       final JobConf jobConf,
@@ -66,8 +72,12 @@ public class ParquetRecordWriterWrapper implements RecordWriter<NullWritable, Pa
 
       LOG.info("creating real writer to write at " + name);
 
+      this.jobConf = jobConf;
+      this.file = new Path(name);
+
       realWriter =
-              ((ParquetOutputFormat) realOutputFormat).getRecordWriter(taskContext, new Path(name));
+              ((ParquetOutputFormat) realOutputFormat).getRecordWriter(taskContext, this.file);
+
 
       LOG.info("real writer: " + realWriter);
     } catch (final InterruptedException e) {
@@ -128,6 +138,21 @@ public class ParquetRecordWriterWrapper implements RecordWriter<NullWritable, Pa
     } catch (final InterruptedException e) {
       throw new IOException(e);
     }
+
+    // Collect file stats
+    try {
+      ParquetFileReader reader = ParquetFileReader.open(HadoopInputFile.fromPath(this.file, this.jobConf));
+      long totalSize = 0;
+      for (BlockMetaData block : reader.getFooter().getBlocks()) {
+        totalSize += block.getTotalByteSize();
+      }
+
+      stats = new SerDeStats();
+      stats.setRowCount(reader.getRecordCount());
+      stats.setRawDataSize(totalSize);
+    } catch(IOException e) {
+      // Ignore
+    }
   }
 
   @Override
@@ -147,6 +172,11 @@ public class ParquetRecordWriterWrapper implements RecordWriter<NullWritable, Pa
   @Override
   public void write(final Writable w) throws IOException {
     write(null, (ParquetHiveRecord) w);
+  }
+
+  @Override
+  public SerDeStats getStats() {
+    return stats;
   }
 
 }

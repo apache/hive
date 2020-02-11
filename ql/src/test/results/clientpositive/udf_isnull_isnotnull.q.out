@@ -29,6 +29,8 @@ SELECT NULL IS NULL,
 FROM src
 WHERE true IS NOT NULL LIMIT 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT NULL IS NULL,
        1 IS NOT NULL, 
@@ -36,6 +38,8 @@ SELECT NULL IS NULL,
 FROM src
 WHERE true IS NOT NULL LIMIT 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -81,6 +85,8 @@ SELECT src_thrift.lint IS NOT NULL,
 WHERE  src_thrift.lint IS NOT NULL 
        AND NOT (src_thrift.mstringstring IS NULL) LIMIT 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_thrift
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 FROM src_thrift
 SELECT src_thrift.lint IS NOT NULL, 
@@ -89,6 +95,8 @@ SELECT src_thrift.lint IS NOT NULL,
 WHERE  src_thrift.lint IS NOT NULL 
        AND NOT (src_thrift.mstringstring IS NULL) LIMIT 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_thrift
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -99,17 +107,18 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src_thrift
-          Statistics: Num rows: 11 Data size: 3070 Basic stats: COMPLETE Column stats: NONE
+          filterExpr: (lint is not null and mstringstring is not null) (type: boolean)
+          Statistics: Num rows: 11 Data size: 39600 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             predicate: (lint is not null and mstringstring is not null) (type: boolean)
-            Statistics: Num rows: 11 Data size: 3070 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 11 Data size: 39600 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: lint is not null (type: boolean), lintstring is not null (type: boolean), mstringstring is not null (type: boolean)
               outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 11 Data size: 3070 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 11 Data size: 39600 Basic stats: COMPLETE Column stats: NONE
               Limit
                 Number of rows: 1
-                Statistics: Num rows: 1 Data size: 279 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 3600 Basic stats: COMPLETE Column stats: NONE
                 ListSink
 
 PREHOOK: query: FROM src_thrift

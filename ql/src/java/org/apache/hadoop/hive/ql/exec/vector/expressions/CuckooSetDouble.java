@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,7 +23,7 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
  * A high-performance set implementation used to support fast set membership testing,
  * using Cuckoo hashing. This is used to support fast tests of the form
  *
- *       column IN ( <list-of-values )
+ *       column IN ( list-of-values )
  *
  * For double, we simply layer over the implementation for long. Double.doubleToRawLongBits
  * is used to convert a 64-bit double to a 64-bit long with bit-for-bit fidelity.

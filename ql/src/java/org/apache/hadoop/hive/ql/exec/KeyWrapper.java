@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -27,4 +27,5 @@ public abstract class KeyWrapper {
   public abstract KeyWrapper copyKey();
   public abstract void copyKey(KeyWrapper oldWrapper);
   public abstract Object[] getKeyArray();
+  public abstract boolean isCopy();
 }

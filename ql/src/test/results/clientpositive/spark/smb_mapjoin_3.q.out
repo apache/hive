@@ -1,57 +1,63 @@
-PREHOOK: query: create table smb_bucket_1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE
+PREHOOK: query: create table smb_bucket_1_n0(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@smb_bucket_1
-POSTHOOK: query: create table smb_bucket_1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE
+PREHOOK: Output: default@smb_bucket_1_n0
+POSTHOOK: query: create table smb_bucket_1_n0(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@smb_bucket_1
-PREHOOK: query: create table smb_bucket_2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE
+POSTHOOK: Output: default@smb_bucket_1_n0
+PREHOOK: query: create table smb_bucket_2_n0(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@smb_bucket_2
-POSTHOOK: query: create table smb_bucket_2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE
+PREHOOK: Output: default@smb_bucket_2_n0
+POSTHOOK: query: create table smb_bucket_2_n0(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@smb_bucket_2
-PREHOOK: query: create table smb_bucket_3(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE
+POSTHOOK: Output: default@smb_bucket_2_n0
+PREHOOK: query: create table smb_bucket_3_n0(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@smb_bucket_3
-POSTHOOK: query: create table smb_bucket_3(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE
+PREHOOK: Output: default@smb_bucket_3_n0
+POSTHOOK: query: create table smb_bucket_3_n0(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@smb_bucket_3
-PREHOOK: query: load data local inpath '../../data/files/smbbucket_1.rc' overwrite into table smb_bucket_1
+POSTHOOK: Output: default@smb_bucket_3_n0
+PREHOOK: query: load data local inpath '../../data/files/smb_rc1/000000_0' overwrite into table smb_bucket_1_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@smb_bucket_1
-POSTHOOK: query: load data local inpath '../../data/files/smbbucket_1.rc' overwrite into table smb_bucket_1
+PREHOOK: Output: default@smb_bucket_1_n0
+POSTHOOK: query: load data local inpath '../../data/files/smb_rc1/000000_0' overwrite into table smb_bucket_1_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@smb_bucket_1
-PREHOOK: query: load data local inpath '../../data/files/smbbucket_2.rc' overwrite into table smb_bucket_2
+POSTHOOK: Output: default@smb_bucket_1_n0
+PREHOOK: query: load data local inpath '../../data/files/smb_rc2/000000_0' overwrite into table smb_bucket_2_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@smb_bucket_2
-POSTHOOK: query: load data local inpath '../../data/files/smbbucket_2.rc' overwrite into table smb_bucket_2
+PREHOOK: Output: default@smb_bucket_2_n0
+POSTHOOK: query: load data local inpath '../../data/files/smb_rc2/000000_0' overwrite into table smb_bucket_2_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@smb_bucket_2
-PREHOOK: query: load data local inpath '../../data/files/smbbucket_3.rc' overwrite into table smb_bucket_3
+POSTHOOK: Output: default@smb_bucket_2_n0
+PREHOOK: query: load data local inpath '../../data/files/smb_rc3/000000_0' overwrite into table smb_bucket_3_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@smb_bucket_3
-POSTHOOK: query: load data local inpath '../../data/files/smbbucket_3.rc' overwrite into table smb_bucket_3
+PREHOOK: Output: default@smb_bucket_3_n0
+POSTHOOK: query: load data local inpath '../../data/files/smb_rc3/000000_0' overwrite into table smb_bucket_3_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@smb_bucket_3
+POSTHOOK: Output: default@smb_bucket_3_n0
 PREHOOK: query: explain
-select /*+mapjoin(a)*/ * from smb_bucket_2 a join smb_bucket_3 b on a.key = b.key
+select /*+mapjoin(a)*/ * from smb_bucket_2_n0 a join smb_bucket_3_n0 b on a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_bucket_2_n0
+PREHOOK: Input: default@smb_bucket_3_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
-select /*+mapjoin(a)*/ * from smb_bucket_2 a join smb_bucket_3 b on a.key = b.key
+select /*+mapjoin(a)*/ * from smb_bucket_2_n0 a join smb_bucket_3_n0 b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_bucket_2_n0
+POSTHOOK: Input: default@smb_bucket_3_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -65,10 +71,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 2 Data size: 222 Basic stats: COMPLETE Column stats: NONE
+                  filterExpr: key is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 2220 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 2 Data size: 222 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 2220 Basic stats: COMPLETE Column stats: NONE
                     Sorted Merge Bucket Map Join Operator
                       condition map:
                            Inner Join 0 to 1
@@ -76,14 +83,14 @@ STAGE PLANS:
                         0 key (type: int)
                         1 key (type: int)
                       outputColumnNames: _col0, _col1, _col5, _col6
-                      Statistics: Num rows: 2 Data size: 244 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 2266 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: string)
                         outputColumnNames: _col0, _col1, _col2, _col3
-                        Statistics: Num rows: 2 Data size: 244 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 2266 Basic stats: COMPLETE Column stats: NONE
                         File Output Operator
                           compressed: false
-                          Statistics: Num rows: 2 Data size: 244 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 2266 Basic stats: COMPLETE Column stats: NONE
                           table:
                               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -95,24 +102,30 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket_2 a join smb_bucket_3 b on a.key = b.key
+PREHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket_2_n0 a join smb_bucket_3_n0 b on a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_bucket_2
-PREHOOK: Input: default@smb_bucket_3
+PREHOOK: Input: default@smb_bucket_2_n0
+PREHOOK: Input: default@smb_bucket_3_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket_2 a join smb_bucket_3 b on a.key = b.key
+POSTHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket_2_n0 a join smb_bucket_3_n0 b on a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_bucket_2
-POSTHOOK: Input: default@smb_bucket_3
+POSTHOOK: Input: default@smb_bucket_2_n0
+POSTHOOK: Input: default@smb_bucket_3_n0
 #### A masked pattern was here ####
 20	val_20	20	val_20
 23	val_23	23	val_23
 PREHOOK: query: explain
-select /*+mapjoin(a)*/ * from smb_bucket_2 a left outer join smb_bucket_3 b on a.key = b.key
+select /*+mapjoin(a)*/ * from smb_bucket_2_n0 a left outer join smb_bucket_3_n0 b on a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_bucket_2_n0
+PREHOOK: Input: default@smb_bucket_3_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
-select /*+mapjoin(a)*/ * from smb_bucket_2 a left outer join smb_bucket_3 b on a.key = b.key
+select /*+mapjoin(a)*/ * from smb_bucket_2_n0 a left outer join smb_bucket_3_n0 b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_bucket_2_n0
+POSTHOOK: Input: default@smb_bucket_3_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -126,7 +139,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 2 Data size: 222 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 2220 Basic stats: COMPLETE Column stats: NONE
                   Sorted Merge Bucket Map Join Operator
                     condition map:
                          Left Outer Join 0 to 1
@@ -134,14 +147,14 @@ STAGE PLANS:
                       0 key (type: int)
                       1 key (type: int)
                     outputColumnNames: _col0, _col1, _col5, _col6
-                    Statistics: Num rows: 2 Data size: 244 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 2266 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: string)
                       outputColumnNames: _col0, _col1, _col2, _col3
-                      Statistics: Num rows: 2 Data size: 244 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 2266 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 2 Data size: 244 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 2266 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -153,26 +166,32 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket_2 a left outer join smb_bucket_3 b on a.key = b.key
+PREHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket_2_n0 a left outer join smb_bucket_3_n0 b on a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_bucket_2
-PREHOOK: Input: default@smb_bucket_3
+PREHOOK: Input: default@smb_bucket_2_n0
+PREHOOK: Input: default@smb_bucket_3_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket_2 a left outer join smb_bucket_3 b on a.key = b.key
+POSTHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket_2_n0 a left outer join smb_bucket_3_n0 b on a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_bucket_2
-POSTHOOK: Input: default@smb_bucket_3
+POSTHOOK: Input: default@smb_bucket_2_n0
+POSTHOOK: Input: default@smb_bucket_3_n0
 #### A masked pattern was here ####
 20	val_20	20	val_20
 23	val_23	23	val_23
 25	val_25	NULL	NULL
 30	val_30	NULL	NULL
 PREHOOK: query: explain
-select /*+mapjoin(a)*/ * from smb_bucket_2 a right outer join smb_bucket_3 b on a.key = b.key
+select /*+mapjoin(a)*/ * from smb_bucket_2_n0 a right outer join smb_bucket_3_n0 b on a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_bucket_2_n0
+PREHOOK: Input: default@smb_bucket_3_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
-select /*+mapjoin(a)*/ * from smb_bucket_2 a right outer join smb_bucket_3 b on a.key = b.key
+select /*+mapjoin(a)*/ * from smb_bucket_2_n0 a right outer join smb_bucket_3_n0 b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_bucket_2_n0
+POSTHOOK: Input: default@smb_bucket_3_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -186,7 +205,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 2 Data size: 222 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 2220 Basic stats: COMPLETE Column stats: NONE
                   Sorted Merge Bucket Map Join Operator
                     condition map:
                          Right Outer Join 0 to 1
@@ -194,14 +213,14 @@ STAGE PLANS:
                       0 key (type: int)
                       1 key (type: int)
                     outputColumnNames: _col0, _col1, _col5, _col6
-                    Statistics: Num rows: 2 Data size: 244 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 2266 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: string)
                       outputColumnNames: _col0, _col1, _col2, _col3
-                      Statistics: Num rows: 2 Data size: 244 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 2266 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 2 Data size: 244 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 2266 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -213,15 +232,15 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket_2 a right outer join smb_bucket_3 b on a.key = b.key
+PREHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket_2_n0 a right outer join smb_bucket_3_n0 b on a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_bucket_2
-PREHOOK: Input: default@smb_bucket_3
+PREHOOK: Input: default@smb_bucket_2_n0
+PREHOOK: Input: default@smb_bucket_3_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket_2 a right outer join smb_bucket_3 b on a.key = b.key
+POSTHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket_2_n0 a right outer join smb_bucket_3_n0 b on a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_bucket_2
-POSTHOOK: Input: default@smb_bucket_3
+POSTHOOK: Input: default@smb_bucket_2_n0
+POSTHOOK: Input: default@smb_bucket_3_n0
 #### A masked pattern was here ####
 20	val_20	20	val_20
 23	val_23	23	val_23
@@ -230,11 +249,17 @@ NULL	NULL	17	val_17
 NULL	NULL	19	val_19
 NULL	NULL	4	val_4
 PREHOOK: query: explain
-select /*+mapjoin(a)*/ * from smb_bucket_2 a full outer join smb_bucket_3 b on a.key = b.key
+select /*+mapjoin(a)*/ * from smb_bucket_2_n0 a full outer join smb_bucket_3_n0 b on a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_bucket_2_n0
+PREHOOK: Input: default@smb_bucket_3_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
-select /*+mapjoin(a)*/ * from smb_bucket_2 a full outer join smb_bucket_3 b on a.key = b.key
+select /*+mapjoin(a)*/ * from smb_bucket_2_n0 a full outer join smb_bucket_3_n0 b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_bucket_2_n0
+POSTHOOK: Input: default@smb_bucket_3_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -248,22 +273,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 2 Data size: 222 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 2220 Basic stats: COMPLETE Column stats: NONE
                   Sorted Merge Bucket Map Join Operator
                     condition map:
-                         Outer Join 0 to 1
+                         Full Outer Join 0 to 1
                     keys:
                       0 key (type: int)
                       1 key (type: int)
                     outputColumnNames: _col0, _col1, _col5, _col6
-                    Statistics: Num rows: 2 Data size: 244 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 2266 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: string)
                       outputColumnNames: _col0, _col1, _col2, _col3
-                      Statistics: Num rows: 2 Data size: 244 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 2266 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 2 Data size: 244 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 2266 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -275,15 +300,15 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket_2 a full outer join smb_bucket_3 b on a.key = b.key
+PREHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket_2_n0 a full outer join smb_bucket_3_n0 b on a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_bucket_2
-PREHOOK: Input: default@smb_bucket_3
+PREHOOK: Input: default@smb_bucket_2_n0
+PREHOOK: Input: default@smb_bucket_3_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket_2 a full outer join smb_bucket_3 b on a.key = b.key
+POSTHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket_2_n0 a full outer join smb_bucket_3_n0 b on a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_bucket_2
-POSTHOOK: Input: default@smb_bucket_3
+POSTHOOK: Input: default@smb_bucket_2_n0
+POSTHOOK: Input: default@smb_bucket_3_n0
 #### A masked pattern was here ####
 20	val_20	20	val_20
 23	val_23	23	val_23
@@ -294,11 +319,17 @@ NULL	NULL	17	val_17
 NULL	NULL	19	val_19
 NULL	NULL	4	val_4
 PREHOOK: query: explain
-select /*+mapjoin(b)*/ * from smb_bucket_2 a join smb_bucket_3 b on a.key = b.key
+select /*+mapjoin(b)*/ * from smb_bucket_2_n0 a join smb_bucket_3_n0 b on a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_bucket_2_n0
+PREHOOK: Input: default@smb_bucket_3_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
-select /*+mapjoin(b)*/ * from smb_bucket_2 a join smb_bucket_3 b on a.key = b.key
+select /*+mapjoin(b)*/ * from smb_bucket_2_n0 a join smb_bucket_3_n0 b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_bucket_2_n0
+POSTHOOK: Input: default@smb_bucket_3_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -312,10 +343,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
+                  filterExpr: key is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
                     Sorted Merge Bucket Map Join Operator
                       condition map:
                            Inner Join 0 to 1
@@ -323,14 +355,14 @@ STAGE PLANS:
                         0 key (type: int)
                         1 key (type: int)
                       outputColumnNames: _col0, _col1, _col5, _col6
-                      Statistics: Num rows: 2 Data size: 244 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 2266 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: string)
                         outputColumnNames: _col0, _col1, _col2, _col3
-                        Statistics: Num rows: 2 Data size: 244 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 2266 Basic stats: COMPLETE Column stats: NONE
                         File Output Operator
                           compressed: false
-                          Statistics: Num rows: 2 Data size: 244 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 2266 Basic stats: COMPLETE Column stats: NONE
                           table:
                               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -342,24 +374,30 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket_2 a join smb_bucket_3 b on a.key = b.key
+PREHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket_2_n0 a join smb_bucket_3_n0 b on a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_bucket_2
-PREHOOK: Input: default@smb_bucket_3
+PREHOOK: Input: default@smb_bucket_2_n0
+PREHOOK: Input: default@smb_bucket_3_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket_2 a join smb_bucket_3 b on a.key = b.key
+POSTHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket_2_n0 a join smb_bucket_3_n0 b on a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_bucket_2
-POSTHOOK: Input: default@smb_bucket_3
+POSTHOOK: Input: default@smb_bucket_2_n0
+POSTHOOK: Input: default@smb_bucket_3_n0
 #### A masked pattern was here ####
 20	val_20	20	val_20
 23	val_23	23	val_23
 PREHOOK: query: explain
-select /*+mapjoin(b)*/ * from smb_bucket_2 a left outer join smb_bucket_3 b on a.key = b.key
+select /*+mapjoin(b)*/ * from smb_bucket_2_n0 a left outer join smb_bucket_3_n0 b on a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_bucket_2_n0
+PREHOOK: Input: default@smb_bucket_3_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
-select /*+mapjoin(b)*/ * from smb_bucket_2 a left outer join smb_bucket_3 b on a.key = b.key
+select /*+mapjoin(b)*/ * from smb_bucket_2_n0 a left outer join smb_bucket_3_n0 b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_bucket_2_n0
+POSTHOOK: Input: default@smb_bucket_3_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -373,7 +411,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
                   Sorted Merge Bucket Map Join Operator
                     condition map:
                          Left Outer Join 0 to 1
@@ -381,14 +419,14 @@ STAGE PLANS:
                       0 key (type: int)
                       1 key (type: int)
                     outputColumnNames: _col0, _col1, _col5, _col6
-                    Statistics: Num rows: 2 Data size: 244 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 2266 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: string)
                       outputColumnNames: _col0, _col1, _col2, _col3
-                      Statistics: Num rows: 2 Data size: 244 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 2266 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 2 Data size: 244 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 2266 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -400,26 +438,32 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket_2 a left outer join smb_bucket_3 b on a.key = b.key
+PREHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket_2_n0 a left outer join smb_bucket_3_n0 b on a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_bucket_2
-PREHOOK: Input: default@smb_bucket_3
+PREHOOK: Input: default@smb_bucket_2_n0
+PREHOOK: Input: default@smb_bucket_3_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket_2 a left outer join smb_bucket_3 b on a.key = b.key
+POSTHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket_2_n0 a left outer join smb_bucket_3_n0 b on a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_bucket_2
-POSTHOOK: Input: default@smb_bucket_3
+POSTHOOK: Input: default@smb_bucket_2_n0
+POSTHOOK: Input: default@smb_bucket_3_n0
 #### A masked pattern was here ####
 20	val_20	20	val_20
 23	val_23	23	val_23
 25	val_25	NULL	NULL
 30	val_30	NULL	NULL
 PREHOOK: query: explain
-select /*+mapjoin(b)*/ * from smb_bucket_2 a right outer join smb_bucket_3 b on a.key = b.key
+select /*+mapjoin(b)*/ * from smb_bucket_2_n0 a right outer join smb_bucket_3_n0 b on a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_bucket_2_n0
+PREHOOK: Input: default@smb_bucket_3_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
-select /*+mapjoin(b)*/ * from smb_bucket_2 a right outer join smb_bucket_3 b on a.key = b.key
+select /*+mapjoin(b)*/ * from smb_bucket_2_n0 a right outer join smb_bucket_3_n0 b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_bucket_2_n0
+POSTHOOK: Input: default@smb_bucket_3_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -433,7 +477,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
                   Sorted Merge Bucket Map Join Operator
                     condition map:
                          Right Outer Join 0 to 1
@@ -441,14 +485,14 @@ STAGE PLANS:
                       0 key (type: int)
                       1 key (type: int)
                     outputColumnNames: _col0, _col1, _col5, _col6
-                    Statistics: Num rows: 2 Data size: 244 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 2266 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: string)
                       outputColumnNames: _col0, _col1, _col2, _col3
-                      Statistics: Num rows: 2 Data size: 244 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 2266 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 2 Data size: 244 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 2266 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -460,15 +504,15 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket_2 a right outer join smb_bucket_3 b on a.key = b.key
+PREHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket_2_n0 a right outer join smb_bucket_3_n0 b on a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_bucket_2
-PREHOOK: Input: default@smb_bucket_3
+PREHOOK: Input: default@smb_bucket_2_n0
+PREHOOK: Input: default@smb_bucket_3_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket_2 a right outer join smb_bucket_3 b on a.key = b.key
+POSTHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket_2_n0 a right outer join smb_bucket_3_n0 b on a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_bucket_2
-POSTHOOK: Input: default@smb_bucket_3
+POSTHOOK: Input: default@smb_bucket_2_n0
+POSTHOOK: Input: default@smb_bucket_3_n0
 #### A masked pattern was here ####
 20	val_20	20	val_20
 23	val_23	23	val_23
@@ -477,11 +521,17 @@ NULL	NULL	17	val_17
 NULL	NULL	19	val_19
 NULL	NULL	4	val_4
 PREHOOK: query: explain
-select /*+mapjoin(b)*/ * from smb_bucket_2 a full outer join smb_bucket_3 b on a.key = b.key
+select /*+mapjoin(b)*/ * from smb_bucket_2_n0 a full outer join smb_bucket_3_n0 b on a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_bucket_2_n0
+PREHOOK: Input: default@smb_bucket_3_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
-select /*+mapjoin(b)*/ * from smb_bucket_2 a full outer join smb_bucket_3 b on a.key = b.key
+select /*+mapjoin(b)*/ * from smb_bucket_2_n0 a full outer join smb_bucket_3_n0 b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_bucket_2_n0
+POSTHOOK: Input: default@smb_bucket_3_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -495,22 +545,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
                   Sorted Merge Bucket Map Join Operator
                     condition map:
-                         Outer Join 0 to 1
+                         Full Outer Join 0 to 1
                     keys:
                       0 key (type: int)
                       1 key (type: int)
                     outputColumnNames: _col0, _col1, _col5, _col6
-                    Statistics: Num rows: 2 Data size: 244 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 2266 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: string)
                       outputColumnNames: _col0, _col1, _col2, _col3
-                      Statistics: Num rows: 2 Data size: 244 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 2266 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 2 Data size: 244 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 2266 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -522,15 +572,15 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket_2 a full outer join smb_bucket_3 b on a.key = b.key
+PREHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket_2_n0 a full outer join smb_bucket_3_n0 b on a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_bucket_2
-PREHOOK: Input: default@smb_bucket_3
+PREHOOK: Input: default@smb_bucket_2_n0
+PREHOOK: Input: default@smb_bucket_3_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket_2 a full outer join smb_bucket_3 b on a.key = b.key
+POSTHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket_2_n0 a full outer join smb_bucket_3_n0 b on a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_bucket_2
-POSTHOOK: Input: default@smb_bucket_3
+POSTHOOK: Input: default@smb_bucket_2_n0
+POSTHOOK: Input: default@smb_bucket_3_n0
 #### A masked pattern was here ####
 20	val_20	20	val_20
 23	val_23	23	val_23

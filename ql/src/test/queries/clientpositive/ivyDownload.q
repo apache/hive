@@ -1,3 +1,4 @@
+--! qt:dataset:src
 dfs -cp ${system:hive.root}/contrib/target/hive-contrib-${system:hive.version}.jar ${system:test.tmp.dir}/udfexampleadd-1.0.jar;
 
 ADD JAR ivy://:udfexampleadd:1.0;

@@ -1,3 +1,4 @@
+--! qt:dataset:alltypesorc
 set hive.mapred.mode=nonstrict;
 SET hive.vectorized.execution.enabled=true;
 
@@ -9,7 +10,6 @@ SET hive.optimize.index.filter=true;
 
 set hive.auto.convert.join=true;
 set hive.exec.dynamic.partition=true;
-set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.exec.max.dynamic.partitions.pernode=255;
 
 DROP TABLE orc_llap_part;
@@ -47,20 +47,23 @@ SELECT csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring1, cstring1, 
 INSERT OVERWRITE TABLE orc_llap_dim_part PARTITION (ctinyint)
 SELECT null, null, sum(cbigint) as cbigint, null, null, null, null, null, null, null, ctinyint FROM alltypesorc WHERE ctinyint > 10 AND ctinyint < 21 GROUP BY ctinyint;
 
-drop table llap_temp_table;
+drop table llap_temp_table_n0;
 
 set hive.cbo.enable=false;
 SET hive.llap.io.enabled=true;
 SET hive.vectorized.execution.enabled=true;
 
-explain
+explain vectorization detail
 SELECT oft.ctinyint, oft.cint, oft.cchar1, oft.cvchar1 FROM orc_llap_part oft
   INNER JOIN orc_llap_dim_part od ON oft.ctinyint = od.ctinyint;
-create table llap_temp_table as
+create table llap_temp_table_n0 as
 SELECT oft.ctinyint, oft.cint, oft.cchar1, oft.cvchar1 FROM orc_llap_part oft
   INNER JOIN orc_llap_dim_part od ON oft.ctinyint = od.ctinyint;
-select sum(hash(*)) from llap_temp_table;
-drop table llap_temp_table;
+
+explain vectorization detail
+select sum(hash(*)) from llap_temp_table_n0;
+select sum(hash(*)) from llap_temp_table_n0;
+drop table llap_temp_table_n0;
 
 
 DROP TABLE orc_llap_part;

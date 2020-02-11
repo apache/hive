@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -49,7 +49,17 @@ public class ReplCopyWork extends CopyWork {
   // If set to false, it'll behave as a traditional CopyTask.
   protected boolean readSrcAsFilesList = false;
 
+  private boolean deleteDestIfExist = false;
+
+  private boolean isAutoPurge = false;
+
+  private boolean needRecycle = false;
+
   private String distCpDoAsUser = null;
+
+  private boolean copyToMigratedTxnTable;
+
+  private boolean checkDuplicateCopy = false;
 
   public ReplCopyWork(final Path srcPath, final Path destPath, boolean errorOnSrcEmpty) {
     super(srcPath, destPath, errorOnSrcEmpty);
@@ -69,5 +79,45 @@ public class ReplCopyWork extends CopyWork {
 
   public String distCpDoAsUser() {
     return distCpDoAsUser;
+  }
+
+  public boolean getDeleteDestIfExist() {
+    return deleteDestIfExist;
+  }
+
+  public void setDeleteDestIfExist(boolean deleteDestIfExist) {
+    this.deleteDestIfExist = deleteDestIfExist;
+  }
+
+  public boolean getNeedRecycle() {
+    return needRecycle;
+  }
+
+  public void setNeedRecycle(boolean needRecycle) {
+    this.needRecycle = needRecycle;
+  }
+
+  public boolean getIsAutoPurge() {
+    return isAutoPurge;
+  }
+
+  public void setAutoPurge(boolean isAutoPurge) {
+    this.isAutoPurge = isAutoPurge;
+  }
+
+  public boolean isCopyToMigratedTxnTable() {
+    return copyToMigratedTxnTable;
+  }
+
+  public void setCopyToMigratedTxnTable(boolean copyToMigratedTxnTable) {
+    this.copyToMigratedTxnTable = copyToMigratedTxnTable;
+  }
+
+  public boolean isNeedCheckDuplicateCopy() {
+    return checkDuplicateCopy;
+  }
+
+  public void setCheckDuplicateCopy(boolean flag) {
+    checkDuplicateCopy = flag;
   }
 }

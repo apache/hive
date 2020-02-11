@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -27,6 +27,8 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.PTFPartition;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedUDAFs;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.*;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ptf.PTFExpressionDef;
@@ -54,6 +56,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.util.StringUtils;
 
@@ -117,12 +120,17 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
     return eval;
   }
 
+  @VectorizedUDAFs({
+    VectorUDAFAvgLong.class, VectorUDAFAvgLongComplete.class,
+    VectorUDAFAvgDouble.class, VectorUDAFAvgDoubleComplete.class,
+    VectorUDAFAvgTimestamp.class, VectorUDAFAvgTimestampComplete.class,
+    VectorUDAFAvgPartial2.class, VectorUDAFAvgFinal.class})
   public static class GenericUDAFAverageEvaluatorDouble extends AbstractGenericUDAFAverageEvaluator<Double> {
 
     @Override
     public void doReset(AverageAggregationBuffer<Double> aggregation) throws HiveException {
       aggregation.count = 0;
-      aggregation.sum = new Double(0);
+      aggregation.sum = Double.valueOf(0);
       aggregation.uniqueObjects = new HashSet<ObjectInspectorObject>();
     }
 
@@ -217,7 +225,7 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
             throws HiveException {
           AverageAggregationBuffer<Double> myagg = (AverageAggregationBuffer<Double>) ss.wrappedBuf;
           return myagg.count == 0 ? null : new Object[] {
-              new Double(myagg.sum), myagg.count };
+              myagg.sum, myagg.count};
         }
 
       };
@@ -228,16 +236,41 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
         WindowFrameDef winFrame,
         PTFPartition partition,
         List<PTFExpressionDef> parameters,
-        ObjectInspector outputOI) {
+        ObjectInspector outputOI,
+        boolean nullsLast) {
       try {
-        return new BasePartitionEvaluator.AvgPartitionDoubleEvaluator(this, winFrame, partition, parameters, inputOI, outputOI);
+        return new BasePartitionEvaluator.AvgPartitionDoubleEvaluator(this, winFrame, partition,
+            parameters, inputOI, outputOI, nullsLast);
       } catch(HiveException e) {
-        return super.createPartitionEvaluator(winFrame, partition, parameters, outputOI);
+        return super.createPartitionEvaluator(winFrame, partition, parameters, outputOI, nullsLast);
       }
     }
   }
 
+  @VectorizedUDAFs({
+    VectorUDAFAvgDecimal.class, VectorUDAFAvgDecimalComplete.class,
+    VectorUDAFAvgDecimal64ToDecimal.class, VectorUDAFAvgDecimal64ToDecimalComplete.class,
+    VectorUDAFAvgDecimalPartial2.class, VectorUDAFAvgDecimalFinal.class})
   public static class GenericUDAFAverageEvaluatorDecimal extends AbstractGenericUDAFAverageEvaluator<HiveDecimal> {
+
+    private int resultPrecision = -1;
+    private int resultScale = -1;
+
+    @Override
+    public ObjectInspector init(Mode m, ObjectInspector[] parameters)
+        throws HiveException {
+
+      // Intercept result ObjectInspector so we can extract the DECIMAL precision and scale.
+      ObjectInspector resultOI = super.init(m, parameters);
+      if (m == Mode.COMPLETE || m == Mode.FINAL) {
+        DecimalTypeInfo decimalTypeInfo =
+            (DecimalTypeInfo)
+                TypeInfoUtils.getTypeInfoFromObjectInspector(resultOI);
+        resultPrecision = decimalTypeInfo.getPrecision();
+        resultScale = decimalTypeInfo.getScale();
+      }
+      return resultOI;
+    }
 
     @Override
     public void doReset(AverageAggregationBuffer<HiveDecimal> aggregation) throws HiveException {
@@ -325,6 +358,7 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
       } else {
         HiveDecimalWritable result = new HiveDecimalWritable(HiveDecimal.ZERO);
         result.set(aggregation.sum.divide(HiveDecimal.create(aggregation.count)));
+        result.mutateEnforcePrecisionScale(resultPrecision, resultScale);
         return result;
       }
     }
@@ -382,11 +416,13 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
         WindowFrameDef winFrame,
         PTFPartition partition,
         List<PTFExpressionDef> parameters,
-        ObjectInspector outputOI) {
+        ObjectInspector outputOI,
+        boolean nullsLast) {
       try {
-        return new BasePartitionEvaluator.AvgPartitionHiveDecimalEvaluator(this, winFrame, partition, parameters, inputOI, outputOI);
+        return new BasePartitionEvaluator.AvgPartitionHiveDecimalEvaluator(this, winFrame,
+            partition, parameters, inputOI, outputOI, nullsLast);
       } catch(HiveException e) {
-        return super.createPartitionEvaluator(winFrame, partition, parameters, outputOI);
+        return super.createPartitionEvaluator(winFrame, partition, parameters, outputOI, nullsLast);
       }
     }
   }

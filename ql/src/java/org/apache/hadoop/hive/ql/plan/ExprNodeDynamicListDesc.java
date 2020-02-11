@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -31,15 +31,27 @@ public class ExprNodeDynamicListDesc extends ExprNodeDesc {
 
   Operator<? extends OperatorDesc> source;
   int keyIndex;
+  // Target name, if key is not set
+  ExprNodeDesc target;
 
   public ExprNodeDynamicListDesc() {
   }
 
+  // keyIndex is not used
   public ExprNodeDynamicListDesc(TypeInfo typeInfo, Operator<? extends OperatorDesc> source,
-      int keyIndex) {
+      int keyIndex, ExprNodeDesc target) {
     super(typeInfo);
     this.source = source;
     this.keyIndex = keyIndex;
+    this.target = target;
+  }
+
+  public ExprNodeDynamicListDesc(TypeInfo typeInfo, Operator<? extends OperatorDesc> source,
+                                 int keyIndex) {
+    super(typeInfo);
+    this.source = source;
+    this.keyIndex = keyIndex;
+    this.target = null;
   }
 
   public void setSource(Operator<? extends OperatorDesc> source) {
@@ -58,9 +70,13 @@ public class ExprNodeDynamicListDesc extends ExprNodeDesc {
     return this.keyIndex;
   }
 
+  public ExprNodeDesc getTarget() {
+    return target;
+  }
+
   @Override
   public ExprNodeDesc clone() {
-    return new ExprNodeDynamicListDesc(typeInfo, source, keyIndex);
+    return new ExprNodeDynamicListDesc(typeInfo, source, keyIndex, target);
   }
 
   @Override

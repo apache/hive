@@ -1,3 +1,4 @@
+--! qt:dataset:src
 ADD JAR ${system:maven.local.repository}/org/apache/hive/hive-it-custom-udfs/udf-classloader-udf1/${system:hive.version}/udf-classloader-udf1-${system:hive.version}.jar;
 ADD JAR ${system:maven.local.repository}/org/apache/hive/hive-it-custom-udfs/udf-classloader-util/${system:hive.version}/udf-classloader-util-${system:hive.version}.jar;
 ADD JAR ${system:maven.local.repository}/org/apache/hive/hive-it-custom-udfs/udf-classloader-udf2/${system:hive.version}/udf-classloader-udf2-${system:hive.version}.jar;

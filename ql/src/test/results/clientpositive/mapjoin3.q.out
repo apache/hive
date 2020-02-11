@@ -42,19 +42,23 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_2
 PREHOOK: query: INSERT INTO test_1 VALUES (1, '20'), (2, '30'), (3, '40')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test_1
 POSTHOOK: query: INSERT INTO test_1 VALUES (1, '20'), (2, '30'), (3, '40')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test_1
-POSTHOOK: Lineage: test_1.age EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: test_1.member EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: test_1.age SCRIPT []
+POSTHOOK: Lineage: test_1.member SCRIPT []
 PREHOOK: query: INSERT INTO test_2 VALUES (1), (2), (3)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test_2
 POSTHOOK: query: INSERT INTO test_2 VALUES (1), (2), (3)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test_2
-POSTHOOK: Lineage: test_2.member EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: test_2.member SCRIPT []
 PREHOOK: query: EXPLAIN
 SELECT 
 t2.member 
@@ -72,6 +76,9 @@ test_1
 ) t1 
 ON t2.member = t1.member
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_1
+PREHOOK: Input: default@test_2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT 
 t2.member 
@@ -89,6 +96,9 @@ test_1
 ) t1 
 ON t2.member = t1.member
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_1
+POSTHOOK: Input: default@test_2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-3 depends on stages: Stage-4
@@ -105,26 +115,30 @@ STAGE PLANS:
         $hdt$_1:test_1 
           TableScan
             alias: test_1
-            Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: member (type: bigint), age (type: varchar(100)), age (type: varchar(100))
-              outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-              HashTable Sink Operator
-                keys:
-                  0 _col0 (type: bigint)
-                  1 _col0 (type: bigint)
+            filterExpr: member is not null (type: boolean)
+            Statistics: Num rows: 3 Data size: 282 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: member is not null (type: boolean)
+              Statistics: Num rows: 3 Data size: 282 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: member (type: bigint), age (type: varchar(100)), age (type: varchar(100))
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 3 Data size: 540 Basic stats: COMPLETE Column stats: COMPLETE
+                HashTable Sink Operator
+                  keys:
+                    0 _col0 (type: bigint)
+                    1 _col0 (type: bigint)
 
   Stage: Stage-3
     Map Reduce
       Map Operator Tree:
           TableScan
             alias: t2
-            Statistics: Num rows: 3 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: member (type: bigint)
               outputColumnNames: _col0
-              Statistics: Num rows: 3 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
               Map Join Operator
                 condition map:
                      Left Outer Join 0 to 1
@@ -132,18 +146,19 @@ STAGE PLANS:
                   0 _col0 (type: bigint)
                   1 _col0 (type: bigint)
                 outputColumnNames: _col0, _col2, _col3
-                Statistics: Num rows: 3 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 540 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: bigint), _col2 (type: varchar(100)), _col3 (type: varchar(100))
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 3 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3 Data size: 540 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 3 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3 Data size: 540 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
 

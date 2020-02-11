@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,17 +19,17 @@
 package org.apache.hadoop.hive.ql.io.orc;
 
 import java.io.IOException;
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.Decimal64ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ListColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
@@ -61,8 +62,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectIn
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 
-import com.google.common.annotations.VisibleForTesting;
-import org.apache.orc.PhysicalWriter;
+import org.apache.orc.TypeDescription;
 
 /**
  * An ORC file writer. The file is divided into stripes, which is the natural
@@ -93,7 +93,15 @@ public class WriterImpl extends org.apache.orc.impl.WriterImpl implements Writer
              OrcFile.WriterOptions opts) throws IOException {
     super(fs, path, opts);
     this.inspector = opts.getInspector();
-    this.internalBatch = opts.getSchema().createRowBatch(opts.getBatchSize());
+    boolean useDecimal64ColumnVectors = opts.getConfiguration() != null &&
+      HiveConf.getVar(opts.getConfiguration(), HiveConf.ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED)
+        .equalsIgnoreCase("decimal_64");
+    if (useDecimal64ColumnVectors) {
+      this.internalBatch = opts.getSchema().createRowBatch(TypeDescription.RowBatchVersion.USE_DECIMAL64,
+        opts.getBatchSize());
+    } else {
+      this.internalBatch = opts.getSchema().createRowBatch(opts.getBatchSize());
+    }
     this.fields = initializeFieldsFromOi(inspector);
   }
 
@@ -195,9 +203,9 @@ public class WriterImpl extends org.apache.orc.impl.WriterImpl implements Writer
             }
             case TIMESTAMP: {
               TimestampColumnVector vector = (TimestampColumnVector) column;
-              Timestamp ts = ((TimestampObjectInspector) inspector)
-                  .getPrimitiveJavaObject(obj);
-              vector.set(rowId, ts);
+              vector.setIsUTC(true);
+              vector.set(rowId, ((TimestampObjectInspector) inspector)
+                  .getPrimitiveJavaObject(obj).toSqlTimestamp());
               break;
             }
             case DATE: {
@@ -207,9 +215,15 @@ public class WriterImpl extends org.apache.orc.impl.WriterImpl implements Writer
               break;
             }
             case DECIMAL: {
-              DecimalColumnVector vector = (DecimalColumnVector) column;
-              vector.set(rowId, ((HiveDecimalObjectInspector) inspector)
+              if (column instanceof Decimal64ColumnVector) {
+                Decimal64ColumnVector vector = (Decimal64ColumnVector) column;
+                vector.set(rowId, ((HiveDecimalObjectInspector) inspector)
                   .getPrimitiveWritableObject(obj));
+              } else {
+                DecimalColumnVector vector = (DecimalColumnVector) column;
+                vector.set(rowId, ((HiveDecimalObjectInspector) inspector)
+                  .getPrimitiveWritableObject(obj));
+              }
               break;
             }
           }

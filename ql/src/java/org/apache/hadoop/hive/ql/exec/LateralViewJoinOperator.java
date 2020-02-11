@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -64,7 +64,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
  *
  * The output of select in the left branch and output of the UDTF in the right
  * branch are then sent to the lateral view join (LVJ). In most cases, the UDTF
- * will generate > 1 row for every row received from the TS, while the left
+ * will generate &gt; 1 row for every row received from the TS, while the left
  * select operator will generate only one. For each row output from the TS, the
  * LVJ outputs all possible rows that can be created by joining the row from the
  * left select and one of the rows output from the UDTF.
@@ -95,8 +95,8 @@ public class LateralViewJoinOperator extends Operator<LateralViewJoinDesc> {
   protected void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
 
-    ArrayList<ObjectInspector> ois = new ArrayList<ObjectInspector>();
-    ArrayList<String> fieldNames = conf.getOutputInternalColNames();
+    List<ObjectInspector> ois = new ArrayList<ObjectInspector>();
+    List<String> fieldNames = conf.getOutputInternalColNames();
 
     // The output of the lateral view join will be the columns from the select
     // parent, followed by the column from the UDTF parent
@@ -118,10 +118,10 @@ public class LateralViewJoinOperator extends Operator<LateralViewJoinDesc> {
   }
 
   // acc is short for accumulator. It's used to build the row before forwarding
-  ArrayList<Object> acc = new ArrayList<Object>();
+  List<Object> acc = new ArrayList<Object>();
   // selectObjs hold the row from the select op, until receiving a row from
   // the udtf op
-  ArrayList<Object> selectObjs = new ArrayList<Object>();
+  List<Object> selectObjs = new ArrayList<Object>();
 
   /**
    * An important assumption for processOp() is that for a given row from the

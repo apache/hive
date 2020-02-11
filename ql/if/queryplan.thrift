@@ -61,6 +61,7 @@ enum OperatorType {
   RCFILEMERGE,
   MERGEJOIN,
   SPARKPRUNINGSINK,
+  TOPNKEY,
 }
 
 struct Operator {
@@ -102,7 +103,10 @@ enum StageType {
   COLUMNSTATS,
   REPL_DUMP,
   REPL_BOOTSTRAP_LOAD,
-  REPL_STATE_LOG
+  REPL_STATE_LOG,
+  REPL_TXN,
+  REPL_INCREMENTAL_LOAD,
+  SCHEDULED_QUERY_MAINT,
 }
 
 struct Stage {

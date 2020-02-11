@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,8 +21,8 @@ import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
-import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.DriverFactory;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -36,14 +36,11 @@ public class TestMetaStoreMetrics {
 
 
   private static HiveConf hiveConf;
-  private static Driver driver;
+  private static IDriver driver;
 
   @BeforeClass
   public static void before() throws Exception {
-    int port = MetaStoreUtils.findFreePort();
-
     hiveConf = new HiveConf(TestMetaStoreMetrics.class);
-    hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
     hiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
     hiveConf.setBoolVar(HiveConf.ConfVars.METASTORE_METRICS, true);
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
@@ -52,11 +49,11 @@ public class TestMetaStoreMetrics {
             "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
 
     //Increments one HMS connection
-    MetaStoreUtils.startMetaStore(port, HadoopThriftAuthBridge.getBridge(), hiveConf);
+    MetaStoreTestUtils.startMetaStoreWithRetry(hiveConf);
 
     //Increments one HMS connection (Hive.get())
     SessionState.start(new CliSessionState(hiveConf));
-    driver = new Driver(hiveConf);
+    driver = DriverFactory.newDriver(hiveConf);
   }
 
 
@@ -65,7 +62,7 @@ public class TestMetaStoreMetrics {
     driver.run("show databases");
 
     //one call by init, one called here.
-    Assert.assertEquals(2, Metrics.getRegistry().getTimers().get("api_get_all_databases").getCount());
+    Assert.assertEquals(2, Metrics.getRegistry().getTimers().get("api_get_databases").getCount());
   }
 
   @Test
@@ -135,27 +132,28 @@ public class TestMetaStoreMetrics {
   @Test
   public void testConnections() throws Exception {
 
+    Thread.sleep(2000);  // TODO Evil!  Need to figure out a way to remove this sleep.
     //initial state is one connection
-    int initialCount =
-        (Integer)Metrics.getRegistry().getGauges().get(MetricsConstants.OPEN_CONNECTIONS).getValue();
+    long initialCount =
+        Metrics.getRegistry().getCounters().get(MetricsConstants.OPEN_CONNECTIONS).getCount();
 
     //create two connections
     HiveMetaStoreClient msc = new HiveMetaStoreClient(hiveConf);
     HiveMetaStoreClient msc2 = new HiveMetaStoreClient(hiveConf);
 
     Assert.assertEquals(initialCount + 2,
-        Metrics.getRegistry().getGauges().get(MetricsConstants.OPEN_CONNECTIONS).getValue());
+        Metrics.getRegistry().getCounters().get(MetricsConstants.OPEN_CONNECTIONS).getCount());
 
     //close one connection, verify still two left
     msc.close();
-    Thread.sleep(500);  // TODO Evil!  Need to figure out a way to remove this sleep.
+    Thread.sleep(2000);  // TODO Evil!  Need to figure out a way to remove this sleep.
     Assert.assertEquals(initialCount + 1,
-        Metrics.getRegistry().getGauges().get(MetricsConstants.OPEN_CONNECTIONS).getValue());
+        Metrics.getRegistry().getCounters().get(MetricsConstants.OPEN_CONNECTIONS).getCount());
 
     //close one connection, verify still one left
     msc2.close();
-    Thread.sleep(500);  // TODO Evil!  Need to figure out a way to remove this sleep.
+    Thread.sleep(2000);  // TODO Evil!  Need to figure out a way to remove this sleep.
     Assert.assertEquals(initialCount,
-        Metrics.getRegistry().getGauges().get(MetricsConstants.OPEN_CONNECTIONS).getValue());
+        Metrics.getRegistry().getCounters().get(MetricsConstants.OPEN_CONNECTIONS).getCount());
   }
 }

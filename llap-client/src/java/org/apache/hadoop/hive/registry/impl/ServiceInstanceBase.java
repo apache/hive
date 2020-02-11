@@ -15,6 +15,8 @@ package org.apache.hadoop.hive.registry.impl;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Objects;
+
 import org.apache.hadoop.hive.registry.ServiceInstance;
 import org.apache.hadoop.registry.client.binding.RegistryTypeUtils;
 import org.apache.hadoop.registry.client.types.AddressTypes;
@@ -25,26 +27,27 @@ import org.slf4j.LoggerFactory;
 
 public class ServiceInstanceBase implements ServiceInstance {
   private static final Logger LOG = LoggerFactory.getLogger(ServiceInstanceBase.class);
+  private String host;
+  private int rpcPort;
+  private String workerIdentity;
+  private Map<String, String> properties;
 
-  protected final ServiceRecord srv;
-  protected final String host;
-  protected final int rpcPort;
+  // empty c'tor to make jackson happy
+  public ServiceInstanceBase() {
+
+  }
 
   public ServiceInstanceBase(ServiceRecord srv, String rpcName) throws IOException {
-    this.srv = srv;
-
     if (LOG.isTraceEnabled()) {
       LOG.trace("Working with ServiceRecord: {}", srv);
     }
-
     final Endpoint rpc = srv.getInternalEndpoint(rpcName);
-
-    this.host =
-        RegistryTypeUtils.getAddressField(rpc.addresses.get(0),
-            AddressTypes.ADDRESS_HOSTNAME_FIELD);
-    this.rpcPort =
-        Integer.parseInt(RegistryTypeUtils.getAddressField(rpc.addresses.get(0),
-            AddressTypes.ADDRESS_PORT_FIELD));
+    this.host = RegistryTypeUtils.getAddressField(rpc.addresses.get(0),
+        AddressTypes.ADDRESS_HOSTNAME_FIELD);
+    this.rpcPort = Integer.parseInt(RegistryTypeUtils.getAddressField(rpc.addresses.get(0),
+        AddressTypes.ADDRESS_PORT_FIELD));
+    this.workerIdentity = srv.get(ZkRegistryBase.UNIQUE_IDENTIFIER);
+    this.properties = srv.attributes();
   }
 
   @Override
@@ -57,17 +60,19 @@ public class ServiceInstanceBase implements ServiceInstance {
     }
 
     ServiceInstanceBase other = (ServiceInstanceBase) o;
-    return this.getWorkerIdentity().equals(other.getWorkerIdentity());
+    return Objects.equals(getWorkerIdentity(), other.getWorkerIdentity())
+      && Objects.equals(host, other.host)
+      && Objects.equals(rpcPort, other.rpcPort);
   }
 
   @Override
   public int hashCode() {
-    return getWorkerIdentity().hashCode();
+    return getWorkerIdentity().hashCode() + (31 * host.hashCode()) + (31 * rpcPort);
   }
 
   @Override
   public String getWorkerIdentity() {
-    return srv.get(ZkRegistryBase.UNIQUE_IDENTIFIER);
+    return workerIdentity;
   }
 
   @Override
@@ -82,12 +87,28 @@ public class ServiceInstanceBase implements ServiceInstance {
 
   @Override
   public Map<String, String> getProperties() {
-    return srv.attributes();
+    return properties;
+  }
+
+  public void setHost(final String host) {
+    this.host = host;
+  }
+
+  public void setRpcPort(final int rpcPort) {
+    this.rpcPort = rpcPort;
+  }
+
+  public void setWorkerIdentity(final String workerIdentity) {
+    this.workerIdentity = workerIdentity;
+  }
+
+  public void setProperties(final Map<String, String> properties) {
+    this.properties = properties;
   }
 
   @Override
   public String toString() {
     return "DynamicServiceInstance [id=" + getWorkerIdentity() + ", host="
-        + host + ":" + rpcPort + "]";
+      + host + ":" + rpcPort + "]";
   }
 }

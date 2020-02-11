@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -20,24 +20,29 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
 
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.TruncDateFromDate;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.TruncDateFromString;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.TruncDateFromTimestamp;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.TruncDecimal;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.TruncDecimalNoScale;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.TruncFloat;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.TruncFloatNoScale;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
@@ -65,8 +70,7 @@ import org.apache.hadoop.io.Text;
     + "to the unit specified by the format model fmt. If you omit fmt, then date is truncated to "
     + "the nearest day. It currently only supports 'MONTH'/'MON'/'MM', 'QUARTER'/'Q' and 'YEAR'/'YYYY'/'YY' as format."
     + "If input is a number group returns N truncated to D decimal places. If D is omitted, then N is truncated to 0 places."
-    + "D can be negative to truncate (make zero) D digits left of the decimal point."
-    , extended = "date is a string in the format 'yyyy-MM-dd HH:mm:ss' or 'yyyy-MM-dd'."
+    + "D can be negative to truncate (make zero) D digits left of the decimal point.", extended = "date is a string in the format 'yyyy-MM-dd HH:mm:ss' or 'yyyy-MM-dd'."
         + " The time part of date is ignored.\n" + "Example:\n "
         + " > SELECT _FUNC_('2009-02-12', 'MM');\n" + "OK\n" + " '2009-02-01'" + "\n"
         + " > SELECT _FUNC_('2017-03-15', 'Q');\n" + "OK\n" + " '2017-01-01'" + "\n"
@@ -75,9 +79,10 @@ import org.apache.hadoop.io.Text;
         + " > SELECT _FUNC_(1234567891.1234567891,-4);\n" + "OK\n" + " 1234560000"
         + " > SELECT _FUNC_(1234567891.1234567891,0);\n" + "OK\n" + " 1234567891" + "\n"
         + " > SELECT _FUNC_(1234567891.1234567891);\n" + "OK\n" + " 1234567891")
+@VectorizedExpressions({ TruncDateFromTimestamp.class, TruncDateFromString.class,
+    TruncDateFromDate.class, TruncFloat.class, TruncFloatNoScale.class, TruncDecimal.class, TruncDecimalNoScale.class})
 public class GenericUDFTrunc extends GenericUDF {
 
-  private transient SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
   private transient TimestampConverter timestampConverter;
   private transient Converter textConverter1;
   private transient Converter textConverter2;
@@ -88,7 +93,7 @@ public class GenericUDFTrunc extends GenericUDF {
   private transient Converter longConverter;
   private transient PrimitiveCategory inputType1;
   private transient PrimitiveCategory inputType2;
-  private final Calendar calendar = Calendar.getInstance();
+  private final Date date = new Date();
   private final Text output = new Text();
   private transient String fmtInput;
   private transient PrimitiveObjectInspector inputOI;
@@ -128,7 +133,7 @@ public class GenericUDFTrunc extends GenericUDF {
       } else {
         throw new UDFArgumentException(
             "Only primitive type arguments are accepted, when arguments length is one, got "
-                + arguments[1].getTypeName());
+                + arguments[0].getTypeName());
       }
     }
     throw new UDFArgumentException("TRUNC requires one or two argument, got " + arguments.length);
@@ -259,7 +264,7 @@ public class GenericUDFTrunc extends GenericUDF {
         && PrimitiveObjectInspectorUtils
             .getPrimitiveGrouping(inputType2) != PrimitiveGrouping.VOID_GROUP) {
       throw new UDFArgumentTypeException(1,
-          "trunk() only takes STRING/CHAR/VARCHAR types as second argument, got " + inputType2);
+          "trunc() only takes STRING/CHAR/VARCHAR types as second argument, got " + inputType2);
     }
 
     inputType2 = PrimitiveCategory.STRING;
@@ -297,36 +302,35 @@ public class GenericUDFTrunc extends GenericUDF {
       fmtInput = textConverter2.convert(arguments[1].get()).toString();
     }
 
-    Date date;
+    Date d;
     switch (inputType1) {
     case STRING:
       String dateString = textConverter1.convert(arguments[0].get()).toString();
       try {
-        date = formatter.parse(dateString.toString());
-      } catch (ParseException e) {
+        d = Date.valueOf(dateString.toString());
+      } catch (IllegalArgumentException e) {
         return null;
       }
       break;
     case TIMESTAMP:
       Timestamp ts =
-          ((TimestampWritable) timestampConverter.convert(arguments[0].get())).getTimestamp();
-      date = ts;
+          ((TimestampWritableV2) timestampConverter.convert(arguments[0].get())).getTimestamp();
+      d = Date.ofEpochMilli(ts.toEpochMilli());
       break;
     case DATE:
-      DateWritable dw = (DateWritable) dateWritableConverter.convert(arguments[0].get());
-      date = dw.get();
+      DateWritableV2 dw = (DateWritableV2) dateWritableConverter.convert(arguments[0].get());
+      d = dw.get();
       break;
     default:
       throw new UDFArgumentTypeException(0,
           "TRUNC() only takes STRING/TIMESTAMP/DATEWRITABLE types, got " + inputType1);
     }
 
-    if (evalDate(date) == null) {
+    if (evalDate(d) == null) {
       return null;
     }
 
-    Date newDate = calendar.getTime();
-    output.set(formatter.format(newDate));
+    output.set(date.toString());
     return output;
   }
 
@@ -427,22 +431,22 @@ public class GenericUDFTrunc extends GenericUDF {
     return getStandardDisplayString("trunc", children);
   }
 
-  private Calendar evalDate(Date d) throws UDFArgumentException {
-    calendar.setTime(d);
+  private Date evalDate(Date d) throws UDFArgumentException {
+    date.setTimeInDays(d.toEpochDay());
     if ("MONTH".equals(fmtInput) || "MON".equals(fmtInput) || "MM".equals(fmtInput)) {
-      calendar.set(Calendar.DAY_OF_MONTH, 1);
-      return calendar;
+      date.setDayOfMonth(1);
+      return date;
     } else if ("QUARTER".equals(fmtInput) || "Q".equals(fmtInput)) {
-      int month = calendar.get(Calendar.MONTH);
+      int month = date.getMonth() - 1;
       int quarter = month / 3;
-      int monthToSet = quarter * 3;
-      calendar.set(Calendar.MONTH, monthToSet);
-      calendar.set(Calendar.DAY_OF_MONTH, 1);
-      return calendar;
+      int monthToSet = quarter * 3 + 1;
+      date.setMonth(monthToSet);
+      date.setDayOfMonth(1);
+      return date;
     } else if ("YEAR".equals(fmtInput) || "YYYY".equals(fmtInput) || "YY".equals(fmtInput)) {
-      calendar.set(Calendar.MONTH, 0);
-      calendar.set(Calendar.DAY_OF_MONTH, 1);
-      return calendar;
+      date.setMonth(1);
+      date.setDayOfMonth(1);
+      return date;
     } else {
       return null;
     }
@@ -485,5 +489,5 @@ public class GenericUDFTrunc extends GenericUDF {
     }
     return output;
   }
-  
+
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -38,6 +38,6 @@ public interface ConditionalResolver {
    *          opaque context
    * @return position of the task
    */
-  List<Task<? extends Serializable>> getTasks(HiveConf conf, Object ctx);
+  List<Task<?>> getTasks(HiveConf conf, Object ctx);
 
 }

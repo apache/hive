@@ -1,28 +1,28 @@
-PREHOOK: query: CREATE TABLE test_src(key int, value string) stored as RCFILE
+PREHOOK: query: CREATE TABLE test_src_n3(key int, value string) stored as RCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_src
-POSTHOOK: query: CREATE TABLE test_src(key int, value string) stored as RCFILE
+PREHOOK: Output: default@test_src_n3
+POSTHOOK: query: CREATE TABLE test_src_n3(key int, value string) stored as RCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_src
-PREHOOK: query: INSERT OVERWRITE table test_src SELECT * FROM src
+POSTHOOK: Output: default@test_src_n3
+PREHOOK: query: INSERT OVERWRITE table test_src_n3 SELECT * FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@test_src
-POSTHOOK: query: INSERT OVERWRITE table test_src SELECT * FROM src
+PREHOOK: Output: default@test_src_n3
+POSTHOOK: query: INSERT OVERWRITE table test_src_n3 SELECT * FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@test_src
-POSTHOOK: Lineage: test_src.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: SELECT key, value FROM test_src order by key
+POSTHOOK: Output: default@test_src_n3
+POSTHOOK: Lineage: test_src_n3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_src_n3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT key, value FROM test_src_n3 order by key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_src
+PREHOOK: Input: default@test_src_n3
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key, value FROM test_src order by key
+POSTHOOK: query: SELECT key, value FROM test_src_n3 order by key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_src
+POSTHOOK: Input: default@test_src_n3
 #### A masked pattern was here ####
 0	val_0
 0	val_0

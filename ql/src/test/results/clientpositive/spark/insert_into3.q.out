@@ -25,9 +25,15 @@ POSTHOOK: Output: default@insert_into3b
 PREHOOK: query: EXPLAIN FROM src INSERT INTO TABLE insert_into3a SELECT * ORDER BY key, value LIMIT 50
                  INSERT INTO TABLE insert_into3b SELECT * ORDER BY key, value LIMIT 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@insert_into3a
+PREHOOK: Output: default@insert_into3b
 POSTHOOK: query: EXPLAIN FROM src INSERT INTO TABLE insert_into3a SELECT * ORDER BY key, value LIMIT 50
                  INSERT INTO TABLE insert_into3b SELECT * ORDER BY key, value LIMIT 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@insert_into3a
+POSTHOOK: Output: default@insert_into3b
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2
@@ -54,9 +60,11 @@ STAGE PLANS:
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string), _col1 (type: string)
+                      null sort order: zz
                       sort order: ++
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       TopN Hash Memory Usage: 0.1
+            Execution mode: vectorized
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -68,10 +76,13 @@ STAGE PLANS:
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string), _col1 (type: string)
+                      null sort order: zz
                       sort order: ++
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       TopN Hash Memory Usage: 0.1
+            Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
@@ -93,6 +104,7 @@ STAGE PLANS:
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: default.insert_into3a
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
@@ -125,7 +137,8 @@ STAGE PLANS:
               name: default.insert_into3a
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -138,7 +151,8 @@ STAGE PLANS:
               name: default.insert_into3b
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: FROM src INSERT INTO TABLE insert_into3a SELECT * ORDER BY key, value LIMIT 50
          INSERT INTO TABLE insert_into3b SELECT * ORDER BY key, value LIMIT 100
@@ -185,9 +199,15 @@ POSTHOOK: Input: default@insert_into3b
 PREHOOK: query: EXPLAIN FROM src INSERT OVERWRITE TABLE insert_into3a SELECT * LIMIT 10
                  INSERT INTO TABLE insert_into3b SELECT * LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@insert_into3a
+PREHOOK: Output: default@insert_into3b
 POSTHOOK: query: EXPLAIN FROM src INSERT OVERWRITE TABLE insert_into3a SELECT * LIMIT 10
                  INSERT INTO TABLE insert_into3b SELECT * LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@insert_into3a
+POSTHOOK: Output: default@insert_into3b
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2
@@ -216,11 +236,14 @@ STAGE PLANS:
                       Number of rows: 10
                       Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
                         TopN Hash Memory Usage: 0.1
                         value expressions: _col0 (type: string), _col1 (type: string)
+            Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: string)
@@ -242,6 +265,7 @@ STAGE PLANS:
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: default.insert_into3a
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: string)
@@ -274,7 +298,8 @@ STAGE PLANS:
               name: default.insert_into3a
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -287,7 +312,8 @@ STAGE PLANS:
               name: default.insert_into3b
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: FROM src INSERT OVERWRITE TABLE insert_into3a SELECT * LIMIT 10
          INSERT INTO TABLE insert_into3b SELECT * LIMIT 10

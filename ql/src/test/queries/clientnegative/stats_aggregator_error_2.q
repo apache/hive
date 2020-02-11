@@ -1,3 +1,4 @@
+--! qt:dataset:src
 -- In this test, the stats aggregator does not exists.
 -- If stats need not be reliable, the statement succeeds. However, if stats are supposed
 -- to be reliable (by setting hive.stats.reliable to true), the insert statement fails

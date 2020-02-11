@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -228,9 +228,9 @@ public class TestUpdateDeleteSemanticAnalyzer {
     conf
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
-    conf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
     conf.setVar(HiveConf.ConfVars.HIVEMAPREDMODE, "nonstrict");
     conf.setVar(HiveConf.ConfVars.HIVE_TXN_MANAGER, "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_IN_TEST, true);
   }
 
   public void cleanupTables() throws HiveException {
@@ -262,6 +262,7 @@ public class TestUpdateDeleteSemanticAnalyzer {
 
     BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(queryState, tree);
     SessionState.get().initTxnMgr(conf);
+    SessionState.get().getTxnMgr().openTxn(ctx, conf.getUser());
     db = sem.getDb();
 
     // I have to create the tables here (rather than in setup()) because I need the Hive
@@ -298,11 +299,11 @@ public class TestUpdateDeleteSemanticAnalyzer {
     ExplainConfiguration config = new ExplainConfiguration();
     config.setExtended(true);
     ExplainWork work = new ExplainWork(tmp, sem.getParseContext(), sem.getRootTasks(),
-        sem.getFetchTask(), sem, config, null);
+        sem.getFetchTask(), null, sem, config, null, plan.getOptimizedQueryString(), plan.getOptimizedCBOPlan());
     ExplainTask task = new ExplainTask();
     task.setWork(work);
     task.initialize(queryState, plan, null, null);
-    task.execute(null);
+    task.execute();
     FSDataInputStream in = fs.open(tmp);
     StringBuilder builder = new StringBuilder();
     final int bufSz = 4096;

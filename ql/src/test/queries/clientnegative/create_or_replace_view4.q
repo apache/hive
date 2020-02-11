@@ -1,3 +1,4 @@
+--! qt:dataset:srcpart
 -- View must have at least one non-partition column.
 
 drop view v;

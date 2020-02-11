@@ -8,14 +8,16 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp_table_move
 PREHOOK: query: INSERT INTO tmp_table_move values ('u1','name1','2017-04-10',10000), ('u2','name2','2017-04-10',10001), ('u3','name3','2017-04-10',10002), ('u4','name4','2017-04-12',10001), ('u5','name5','2017-04-12',10002)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tmp_table_move
 POSTHOOK: query: INSERT INTO tmp_table_move values ('u1','name1','2017-04-10',10000), ('u2','name2','2017-04-10',10001), ('u3','name3','2017-04-10',10002), ('u4','name4','2017-04-12',10001), ('u5','name5','2017-04-12',10002)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tmp_table_move
-POSTHOOK: Lineage: tmp_table_move.dt SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: tmp_table_move.id SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: tmp_table_move.name SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: tmp_table_move.pid EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: tmp_table_move.dt SCRIPT []
+POSTHOOK: Lineage: tmp_table_move.id SCRIPT []
+POSTHOOK: Lineage: tmp_table_move.name SCRIPT []
+POSTHOOK: Lineage: tmp_table_move.pid SCRIPT []
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
 PREHOOK: Input: ### test.blobstore.path ###/s3_table_move

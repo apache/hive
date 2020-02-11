@@ -2,19 +2,19 @@ set hive.mapred.mode=nonstrict;
 set hive.optimize.skewjoin.compiletime = true;
 set hive.auto.convert.join=true;
 
-CREATE TABLE T1(key STRING, val STRING)
+CREATE TABLE T1_n152(key STRING, val STRING)
 SKEWED BY (key) ON ((2)) STORED AS TEXTFILE;
 
-LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1;
+LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_n152;
 
-CREATE TABLE T2(key STRING, val STRING) STORED AS TEXTFILE;
+CREATE TABLE T2_n89(key STRING, val STRING) STORED AS TEXTFILE;
 
-LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2;
+LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2_n89;
 
-CREATE TABLE T3(key STRING, val STRING)
+CREATE TABLE T3_n36(key STRING, val STRING)
 SKEWED BY (val) ON ((12)) STORED AS TEXTFILE;
 
-LOAD DATA LOCAL INPATH '../../data/files/T3.txt' INTO TABLE T3;
+LOAD DATA LOCAL INPATH '../../data/files/T3.txt' INTO TABLE T3_n36;
 
 -- copy from skewjoinopt14
 -- test compile time skew join and auto map join
@@ -29,12 +29,12 @@ LOAD DATA LOCAL INPATH '../../data/files/T3.txt' INTO TABLE T3;
 EXPLAIN
 select *
 from 
-T1 a join T2 b on a.key = b.key 
-join T3 c on a.val = c.val;
+T1_n152 a join T2_n89 b on a.key = b.key 
+join T3_n36 c on a.val = c.val;
 
 select *
 from 
-T1 a join T2 b on a.key = b.key 
-join T3 c on a.val = c.val
+T1_n152 a join T2_n89 b on a.key = b.key 
+join T3_n36 c on a.val = c.val
 order by a.key, b.key, a.val, b.val;
 

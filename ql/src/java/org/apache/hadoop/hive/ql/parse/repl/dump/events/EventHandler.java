@@ -18,12 +18,13 @@
 package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
-
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
+import java.util.Set;
 
 public interface EventHandler {
   void handle(Context withinContext) throws Exception;
@@ -35,18 +36,40 @@ public interface EventHandler {
   DumpType dumpType();
 
   class Context {
-    final Path eventRoot, cmRoot;
+    Path eventRoot;
+    final Path  cmRoot;
     final Hive db;
     final HiveConf hiveConf;
     final ReplicationSpec replicationSpec;
+    final ReplScope replScope;
+    final ReplScope oldReplScope;
+    private Set<String> tablesForBootstrap;
 
-    public Context(Path eventRoot, Path cmRoot, Hive db, HiveConf hiveConf,
-        ReplicationSpec replicationSpec) {
+    public Context(Path eventRoot, Path cmRoot, Hive db, HiveConf hiveConf, ReplicationSpec replicationSpec,
+                   ReplScope replScope, ReplScope oldReplScope, Set<String> tablesForBootstrap) {
       this.eventRoot = eventRoot;
       this.cmRoot = cmRoot;
       this.db = db;
       this.hiveConf = hiveConf;
       this.replicationSpec = replicationSpec;
+      this.replScope = replScope;
+      this.oldReplScope = oldReplScope;
+      this.tablesForBootstrap = tablesForBootstrap;
+    }
+
+    public Context(Context other) {
+      this.eventRoot = other.eventRoot;
+      this.cmRoot = other.cmRoot;
+      this.db = other.db;
+      this.hiveConf = other.hiveConf;
+      this.replicationSpec = other.replicationSpec;
+      this.replScope = other.replScope;
+      this.oldReplScope = other.oldReplScope;
+      this.tablesForBootstrap = other.tablesForBootstrap;
+    }
+
+    void setEventRoot(Path eventRoot) {
+      this.eventRoot = eventRoot;
     }
 
     DumpMetaData createDmd(EventHandler eventHandler) {
@@ -57,6 +80,20 @@ public interface EventHandler {
           eventHandler.toEventId(),
           cmRoot, hiveConf
       );
+    }
+
+    Set<String> getTablesForBootstrap() {
+      return tablesForBootstrap;
+    }
+
+    void addToListOfTablesForBootstrap(String tableName) {
+      assert tableName != null;
+      tablesForBootstrap.add(tableName.toLowerCase());
+    }
+
+    boolean removeFromListOfTablesForBootstrap(String tableName) {
+      assert tableName != null;
+      return tablesForBootstrap.remove(tableName.toLowerCase());
     }
   }
 }

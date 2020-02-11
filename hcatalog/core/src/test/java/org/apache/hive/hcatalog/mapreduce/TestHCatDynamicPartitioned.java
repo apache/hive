@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -131,11 +131,7 @@ public class TestHCatDynamicPartitioned extends HCatMapReduceTest {
     // read from hive to test
 
     String query = "select * from " + tableName;
-    int retCode = driver.run(query).getResponseCode();
-
-    if (retCode != 0) {
-      throw new Exception("Error " + retCode + " running query " + query);
-    }
+    driver.run(query);
 
     ArrayList<String> res = new ArrayList<String>();
     driver.getResults(res);
@@ -169,38 +165,26 @@ public class TestHCatDynamicPartitioned extends HCatMapReduceTest {
     }
 
     query = "show partitions " + tableName;
-    retCode = driver.run(query).getResponseCode();
-    if (retCode != 0) {
-      throw new Exception("Error " + retCode + " running query " + query);
-    }
+    driver.run(query);
     res = new ArrayList<String>();
     driver.getResults(res);
     assertEquals(NUM_PARTITIONS, res.size());
 
     query = "select * from " + tableName;
-    retCode = driver.run(query).getResponseCode();
-    if (retCode != 0) {
-      throw new Exception("Error " + retCode + " running query " + query);
-    }
+    driver.run(query);
     res = new ArrayList<String>();
     driver.getResults(res);
     assertEquals(NUM_RECORDS, res.size());
 
     query = "select count(*) from " + tableName;
-    retCode = driver.run(query).getResponseCode();
-    if (retCode != 0) {
-      throw new Exception("Error " + retCode + " running query " + query);
-    }
+    driver.run(query);
     res = new ArrayList<String>();
     driver.getResults(res);
     assertEquals(1, res.size());
     assertEquals("20", res.get(0));
 
     query = "select count(*) from " + tableName + " where p1=1";
-    retCode = driver.run(query).getResponseCode();
-    if (retCode != 0) {
-      throw new Exception("Error " + retCode + " running query " + query);
-    }
+    driver.run(query);
     res = new ArrayList<String>();
     driver.getResults(res);
     assertEquals(1, res.size());

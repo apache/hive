@@ -1,39 +1,39 @@
-PREHOOK: query: create table texternal(key string, val string) partitioned by (insertdate string)
+PREHOOK: query: create table texternal_n0(key string, val string) partitioned by (insertdate string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@texternal
-POSTHOOK: query: create table texternal(key string, val string) partitioned by (insertdate string)
+PREHOOK: Output: default@texternal_n0
+POSTHOOK: query: create table texternal_n0(key string, val string) partitioned by (insertdate string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@texternal
+POSTHOOK: Output: default@texternal_n0
 #### A masked pattern was here ####
 PREHOOK: type: ALTERTABLE_ADDPARTS
 #### A masked pattern was here ####
-PREHOOK: Output: default@texternal
+PREHOOK: Output: default@texternal_n0
 #### A masked pattern was here ####
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 #### A masked pattern was here ####
-POSTHOOK: Output: default@texternal
-POSTHOOK: Output: default@texternal@insertdate=2008-01-01
-PREHOOK: query: from src insert overwrite table texternal partition (insertdate='2008-01-01') select *
+POSTHOOK: Output: default@texternal_n0
+POSTHOOK: Output: default@texternal_n0@insertdate=2008-01-01
+PREHOOK: query: from src insert overwrite table texternal_n0 partition (insertdate='2008-01-01') select *
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@texternal@insertdate=2008-01-01
-POSTHOOK: query: from src insert overwrite table texternal partition (insertdate='2008-01-01') select *
+PREHOOK: Output: default@texternal_n0@insertdate=2008-01-01
+POSTHOOK: query: from src insert overwrite table texternal_n0 partition (insertdate='2008-01-01') select *
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@texternal@insertdate=2008-01-01
-POSTHOOK: Lineage: texternal PARTITION(insertdate=2008-01-01).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: texternal PARTITION(insertdate=2008-01-01).val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from texternal where insertdate='2008-01-01'
+POSTHOOK: Output: default@texternal_n0@insertdate=2008-01-01
+POSTHOOK: Lineage: texternal_n0 PARTITION(insertdate=2008-01-01).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: texternal_n0 PARTITION(insertdate=2008-01-01).val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from texternal_n0 where insertdate='2008-01-01'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@texternal
-PREHOOK: Input: default@texternal@insertdate=2008-01-01
+PREHOOK: Input: default@texternal_n0
+PREHOOK: Input: default@texternal_n0@insertdate=2008-01-01
 #### A masked pattern was here ####
-POSTHOOK: query: select * from texternal where insertdate='2008-01-01'
+POSTHOOK: query: select * from texternal_n0 where insertdate='2008-01-01'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@texternal
-POSTHOOK: Input: default@texternal@insertdate=2008-01-01
+POSTHOOK: Input: default@texternal_n0
+POSTHOOK: Input: default@texternal_n0@insertdate=2008-01-01
 #### A masked pattern was here ####
 238	val_238	2008-01-01
 86	val_86	2008-01-01

@@ -1,11 +1,11 @@
-PREHOOK: query: CREATE TABLE dest_g2(key STRING, c1 INT, c2 STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE dest_g2_n0(key STRING, c1 INT, c2 STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest_g2
-POSTHOOK: query: CREATE TABLE dest_g2(key STRING, c1 INT, c2 STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@dest_g2_n0
+POSTHOOK: query: CREATE TABLE dest_g2_n0(key STRING, c1 INT, c2 STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest_g2
+POSTHOOK: Output: default@dest_g2_n0
 PREHOOK: query: CREATE TEMPORARY TABLE src_temp AS SELECT * FROM src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
@@ -17,25 +17,25 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_temp
 PREHOOK: query: FROM src_temp
-INSERT OVERWRITE TABLE dest_g2 SELECT substr(src_temp.key,1,1), count(DISTINCT substr(src_temp.value,5)), concat(substr(src_temp.key,1,1),sum(substr(src_temp.value,5))) GROUP BY substr(src_temp.key,1,1)
+INSERT OVERWRITE TABLE dest_g2_n0 SELECT substr(src_temp.key,1,1), count(DISTINCT substr(src_temp.value,5)), concat(substr(src_temp.key,1,1),sum(substr(src_temp.value,5))) GROUP BY substr(src_temp.key,1,1)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_temp
-PREHOOK: Output: default@dest_g2
+PREHOOK: Output: default@dest_g2_n0
 POSTHOOK: query: FROM src_temp
-INSERT OVERWRITE TABLE dest_g2 SELECT substr(src_temp.key,1,1), count(DISTINCT substr(src_temp.value,5)), concat(substr(src_temp.key,1,1),sum(substr(src_temp.value,5))) GROUP BY substr(src_temp.key,1,1)
+INSERT OVERWRITE TABLE dest_g2_n0 SELECT substr(src_temp.key,1,1), count(DISTINCT substr(src_temp.value,5)), concat(substr(src_temp.key,1,1),sum(substr(src_temp.value,5))) GROUP BY substr(src_temp.key,1,1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_temp
-POSTHOOK: Output: default@dest_g2
-POSTHOOK: Lineage: dest_g2.c1 EXPRESSION [(src_temp)src_temp.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest_g2.c2 EXPRESSION [(src_temp)src_temp.FieldSchema(name:key, type:string, comment:null), (src_temp)src_temp.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest_g2.key EXPRESSION [(src_temp)src_temp.FieldSchema(name:key, type:string, comment:null), ]
-PREHOOK: query: SELECT dest_g2.* FROM dest_g2
+POSTHOOK: Output: default@dest_g2_n0
+POSTHOOK: Lineage: dest_g2_n0.c1 EXPRESSION [(src_temp)src_temp.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: dest_g2_n0.c2 EXPRESSION [(src_temp)src_temp.FieldSchema(name:key, type:string, comment:null), (src_temp)src_temp.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: dest_g2_n0.key EXPRESSION [(src_temp)src_temp.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: SELECT dest_g2_n0.* FROM dest_g2_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest_g2
+PREHOOK: Input: default@dest_g2_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT dest_g2.* FROM dest_g2
+POSTHOOK: query: SELECT dest_g2_n0.* FROM dest_g2_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest_g2
+POSTHOOK: Input: default@dest_g2_n0
 #### A masked pattern was here ####
 0	1	00.0
 1	71	116414.0
@@ -47,14 +47,14 @@ POSTHOOK: Input: default@dest_g2
 7	6	7735.0
 8	8	8762.0
 9	7	91047.0
-PREHOOK: query: DROP TABLE dest_g2
+PREHOOK: query: DROP TABLE dest_g2_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@dest_g2
-PREHOOK: Output: default@dest_g2
-POSTHOOK: query: DROP TABLE dest_g2
+PREHOOK: Input: default@dest_g2_n0
+PREHOOK: Output: default@dest_g2_n0
+POSTHOOK: query: DROP TABLE dest_g2_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@dest_g2
-POSTHOOK: Output: default@dest_g2
+POSTHOOK: Input: default@dest_g2_n0
+POSTHOOK: Output: default@dest_g2_n0
 PREHOOK: query: DROP TABLE src_temp
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src_temp

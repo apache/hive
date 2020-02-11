@@ -30,13 +30,15 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.regex.Pattern;
 
 import org.apache.commons.collections4.ListUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -49,21 +51,22 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.VertexOrB
 import org.apache.hadoop.hive.llap.ext.LlapTaskUmbilicalExternalClient;
 import org.apache.hadoop.hive.llap.ext.LlapTaskUmbilicalExternalClient.LlapTaskUmbilicalExternalResponder;
 import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
-import org.apache.hadoop.hive.llap.registry.LlapServiceInstanceSet;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.llap.security.LlapTokenIdentifier;
 import org.apache.hadoop.hive.llap.tez.Converters;
+import org.apache.hadoop.hive.ql.io.arrow.ArrowWrapperWritable;
+import org.apache.hadoop.hive.registry.ServiceInstanceSet;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.DataInputBuffer;
 import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
-import org.apache.hadoop.mapred.InputSplitWithLocationInfo;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
+import org.apache.arrow.memory.BufferAllocator;
 import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
 import org.apache.hadoop.security.Credentials;
@@ -96,12 +99,16 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
   private static final Logger LOG = LoggerFactory.getLogger(LlapBaseInputFormat.class);
 
   private static String driverName = "org.apache.hive.jdbc.HiveDriver";
-  private static final Map<String, Connection> connectionMap = new ConcurrentHashMap<String, Connection>();
+  private static final Object lock = new Object();
+  private static final Map<String, List<Connection>> connectionMap = new HashMap<String, List<Connection>>();
 
   private String url;  // "jdbc:hive2://localhost:10000/default"
   private String user; // "hive",
   private String pwd;  // ""
   private String query;
+  private boolean useArrow;
+  private long arrowAllocatorLimit;
+  private BufferAllocator allocator;
   private final Random rand = new Random();
 
   public static final String URL_KEY = "llap.if.hs2.connection";
@@ -110,8 +117,11 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
   public static final String PWD_KEY = "llap.if.pwd";
   public static final String HANDLE_ID = "llap.if.handleid";
   public static final String DB_KEY = "llap.if.database";
+  public static final String USE_NEW_SPLIT_FORMAT = "llap.if.use.new.split.format";
+  public static final String SESSION_QUERIES_FOR_GET_NUM_SPLITS = "llap.session.queries.for.get.num.splits";
+  public static final Pattern SET_QUERY_PATTERN = Pattern.compile("^\\s*set\\s+.*=.+$", Pattern.CASE_INSENSITIVE);
 
-  public final String SPLIT_QUERY = "select get_splits(\"%s\",%d)";
+  public static final String SPLIT_QUERY = "select get_llap_splits(\"%s\",%d)";
   public static final LlapServiceInstance[] serviceInstanceArray = new LlapServiceInstance[0];
 
   public LlapBaseInputFormat(String url, String user, String pwd, String query) {
@@ -121,7 +131,20 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
     this.query = query;
   }
 
-  public LlapBaseInputFormat() {}
+  //Exposed only for testing, clients should use LlapBaseInputFormat(boolean, BufferAllocator instead)
+  public LlapBaseInputFormat(boolean useArrow, long arrowAllocatorLimit) {
+    this.useArrow = useArrow;
+    this.arrowAllocatorLimit = arrowAllocatorLimit;
+  }
+
+  public LlapBaseInputFormat(boolean useArrow, BufferAllocator allocator) {
+    this.useArrow = useArrow;
+    this.allocator = allocator;
+  }
+
+  public LlapBaseInputFormat() {
+    this.useArrow = false;
+  }
 
 
   @SuppressWarnings("unchecked")
@@ -157,18 +180,22 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
           submitWorkInfo.getToken(), umbilicalResponder, llapToken);
 
     int attemptNum = 0;
-    // Use task attempt number from conf if provided
+    final int taskNum;
+    // Use task attempt number, task number from conf if provided
     TaskAttemptID taskAttemptId = TaskAttemptID.forName(job.get(MRJobConfig.TASK_ATTEMPT_ID));
     if (taskAttemptId != null) {
       attemptNum = taskAttemptId.getId();
+      taskNum = taskAttemptId.getTaskID().getId();
       if (LOG.isDebugEnabled()) {
-        LOG.debug("Setting attempt number to " + attemptNum + " from task attempt ID in conf: " +
-            job.get(MRJobConfig.TASK_ATTEMPT_ID));
+        LOG.debug("Setting attempt number to: {}, task number to: {} from given taskAttemptId: {} in conf",
+            attemptNum, taskNum, taskAttemptId);
       }
+    } else {
+      taskNum = llapSplit.getSplitNum();
     }
 
     SubmitWorkRequestProto request = constructSubmitWorkRequestProto(
-        submitWorkInfo, llapSplit.getSplitNum(), attemptNum, llapClient.getAddress(),
+        submitWorkInfo, taskNum, attemptNum, llapClient.getAddress(),
         submitWorkInfo.getToken(), llapSplit.getFragmentBytes(),
         llapSplit.getFragmentBytesSignature(), job);
     llapClient.submitWork(request, host, llapSubmitPort);
@@ -193,8 +220,25 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
     LOG.info("Registered id: " + fragmentId);
 
     @SuppressWarnings("rawtypes")
-    LlapBaseRecordReader recordReader = new LlapBaseRecordReader(socket.getInputStream(),
-        llapSplit.getSchema(), Text.class, job, llapClient, (java.io.Closeable)socket);
+    LlapBaseRecordReader recordReader;
+    if(useArrow) {
+      if(allocator != null) {
+        //Client provided their own allocator
+        recordReader = new LlapArrowBatchRecordReader(
+            socket.getInputStream(), llapSplit.getSchema(),
+            ArrowWrapperWritable.class, job, llapClient, socket,
+            allocator);
+      } else {
+        //Client did not provide their own allocator, use constructor for global allocator
+        recordReader = new LlapArrowBatchRecordReader(
+            socket.getInputStream(), llapSplit.getSchema(),
+            ArrowWrapperWritable.class, job, llapClient, socket,
+            arrowAllocatorLimit);
+      }
+    } else {
+      recordReader = new LlapBaseRecordReader(socket.getInputStream(),
+          llapSplit.getSchema(), BytesWritable.class, job, llapClient, (java.io.Closeable)socket);
+    }
     umbilicalResponder.setRecordReader(recordReader);
     return recordReader;
   }
@@ -222,10 +266,6 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
       handleId = UUID.randomUUID().toString();
       LOG.info("Handle ID not specified - generated handle ID {}", handleId);
     }
-    // Check if the handle has already been used in the registry
-    if (connectionMap.containsKey(handleId)) {
-      throw new IllegalStateException("Handle ID " + handleId + " has already been used. This must be unique.");
-    }
 
     try {
       Class.forName(driverName);
@@ -244,13 +284,57 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
         if (database != null && !database.isEmpty()) {
           stmt.execute("USE " + database);
         }
+        String sessionQueries = job.get(SESSION_QUERIES_FOR_GET_NUM_SPLITS);
+        if (sessionQueries != null && !sessionQueries.trim().isEmpty()) {
+          String[] queries = sessionQueries.trim().split(",");
+          for (String q : queries) {
+            //allow only set queries
+            if (SET_QUERY_PATTERN.matcher(q).matches()) {
+              LOG.debug("Executing session query: {}", q);
+              stmt.execute(q);
+            } else {
+              LOG.warn("Only SET queries are allowed, not executing this query: {}", q);
+            }
+          }
+        }
+
+        // In case of USE_NEW_SPLIT_FORMAT=true, following format is used
+        //       type                  split
+        // schema-split             LlapInputSplit -- contains only schema
+        // plan-split               LlapInputSplit -- contains only planBytes[]
+        // 0                        LlapInputSplit -- actual split 1
+        // 1                        LlapInputSplit -- actual split 2
+        // ...                         ...
+        boolean useNewSplitFormat = job.getBoolean(USE_NEW_SPLIT_FORMAT, false);
+
         ResultSet res = stmt.executeQuery(sql);
+        int count = 0;
+        LlapInputSplit schemaSplit = null;
+        LlapInputSplit planSplit = null;
         while (res.next()) {
           // deserialize split
-          DataInput in = new DataInputStream(res.getBinaryStream(1));
-          InputSplitWithLocationInfo is = new LlapInputSplit();
+          DataInput in = new DataInputStream(res.getBinaryStream(2));
+          LlapInputSplit is = new LlapInputSplit();
           is.readFields(in);
-          ins.add(is);
+          if (useNewSplitFormat) {
+            ins.add(is);
+          } else {
+            // to keep the old format, populate schema and planBytes[] in actual splits
+            if (count == 0) {
+              schemaSplit = is;
+              if (numSplits == 0) {
+                ins.add(schemaSplit);
+              }
+            } else if (count == 1) {
+              planSplit = is;
+            } else {
+              is.setSchema(schemaSplit.getSchema());
+              assert planSplit != null;
+              is.setPlanBytes(planSplit.getPlanBytes());
+              ins.add(is);
+            }
+            count++;
+          }
         }
         res.close();
       } catch (Exception e) {
@@ -261,18 +345,22 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
 
       // Keep connection open to hang on to associated resources (temp tables, locks).
       // Save to connectionMap so it can be closed at user's convenience.
-      Connection putResult = connectionMap.putIfAbsent(handleId, conn);
-      // Hopefully no one has used the same handle ID during the time that we executed the statement.
-      if (putResult != null) {
-        String msg = "Handle ID " + handleId + " has already been used. This must be unique.";
-        LOG.error(msg);
-        conn.close();
-        throw new IllegalStateException(msg);
-      }
+      addConnection(handleId, conn);
     } catch (Exception e) {
       throw new IOException(e);
     }
     return ins.toArray(new InputSplit[ins.size()]);
+  }
+
+  private void addConnection(String handleId, Connection connection) {
+    synchronized (lock) {
+      List<Connection> handleConnections = connectionMap.get(handleId);
+      if (handleConnections == null) {
+        handleConnections = new ArrayList<Connection>();
+        connectionMap.put(handleId, handleConnections);
+      }
+      handleConnections.add(connection);
+    }
   }
 
   /**
@@ -282,16 +370,25 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
    * @throws IOException
    */
   public static void close(String handleId) throws IOException {
-    Connection conn = connectionMap.remove(handleId);
-    if (conn != null) {
-      try {
-        LOG.debug("Closing connection for handle ID {}", handleId);
-        conn.close();
-      } catch (Exception err) {
-        throw new IOException(err);
+    List<Connection> handleConnections;
+    synchronized (lock) {
+      handleConnections = connectionMap.remove(handleId);
+    }
+    closeConnections(handleId, handleConnections);
+  }
+
+  private static void closeConnections(String handleId, List<Connection> handleConnections) {
+    if (handleConnections != null) {
+      LOG.debug("Closing {} connections for handle ID {}", handleConnections.size(), handleId);
+      for (Connection conn : handleConnections) {
+        try {
+          conn.close();
+        } catch (Exception err) {
+          LOG.error("Error while closing connection for " + handleId, err);
+        }
       }
     } else {
-      LOG.info("No connection found for handle ID {}", handleId);
+      LOG.debug("No connection found for handle ID {}", handleId);
     }
   }
 
@@ -300,11 +397,13 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
    */
   public static void closeAll() {
     LOG.debug("Closing all handles");
-    for (String handleId : connectionMap.keySet()) {
-      try {
-        close(handleId);
-      } catch (Exception err) {
-        LOG.error("Error closing handle ID " + handleId, err);
+    synchronized (lock) {
+      Iterator<Map.Entry<String, List<Connection>>> itr = connectionMap.entrySet().iterator();
+      Map.Entry<String, List<Connection>> connHandle = null;
+      while (itr.hasNext()) {
+        connHandle = itr.next();
+        closeConnections(connHandle.getKey(), connHandle.getValue());
+        itr.remove();
       }
     }
   }
@@ -321,11 +420,17 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
 
   private LlapServiceInstance getServiceInstance(JobConf job, LlapInputSplit llapSplit) throws IOException {
     LlapRegistryService registryService = LlapRegistryService.getClient(job);
-    String host = llapSplit.getLocations()[0];
+    LlapServiceInstance serviceInstance = null;
+    String[] hosts = llapSplit.getLocations();
+    if (hosts != null && hosts.length > 0) {
+      String host = llapSplit.getLocations()[0];
+      serviceInstance = getServiceInstanceForHost(registryService, host);
+      if (serviceInstance == null) {
+        LOG.info("No service instances found for " + host + " in registry.");
+      }
+    }
 
-    LlapServiceInstance serviceInstance = getServiceInstanceForHost(registryService, host);
     if (serviceInstance == null) {
-      LOG.info("No service instances found for " + host + " in registry.");
       serviceInstance = getServiceInstanceRandom(registryService);
       if (serviceInstance == null) {
         throw new IOException("No service instances found in registry");
@@ -337,7 +442,7 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
 
   private LlapServiceInstance getServiceInstanceForHost(LlapRegistryService registryService, String host) throws IOException {
     InetAddress address = InetAddress.getByName(host);
-    LlapServiceInstanceSet instanceSet = registryService.getInstances();
+    ServiceInstanceSet<LlapServiceInstance> instanceSet = registryService.getInstances();
     LlapServiceInstance serviceInstance = null;
 
     // The name used in the service registry may not match the host name we're using.
@@ -369,13 +474,13 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
 
 
   private LlapServiceInstance getServiceInstanceRandom(LlapRegistryService registryService) throws IOException {
-    LlapServiceInstanceSet instanceSet = registryService.getInstances();
+    ServiceInstanceSet<LlapServiceInstance> instanceSet = registryService.getInstances();
     LlapServiceInstance serviceInstance = null;
 
     LOG.info("Finding random live service instance");
     Collection<LlapServiceInstance> allInstances = instanceSet.getAll();
     if (allInstances.size() > 0) {
-      int randIdx = rand.nextInt() % allInstances.size();
+      int randIdx = rand.nextInt(allInstances.size());;
       serviceInstance = allInstances.toArray(serviceInstanceArray)[randIdx];
     }
     return serviceInstance;
@@ -468,7 +573,7 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
     public void submissionFailed(String fragmentId, Throwable throwable) {
       try {
         sendOrQueueEvent(ReaderEvent.errorEvent(
-            "Received submission failed event for fragment ID " + fragmentId));
+            "Received submission failed event for fragment ID " + fragmentId + ": " + throwable.toString()));
       } catch (Exception err) {
         LOG.error("Error during heartbeat responder:", err);
       }

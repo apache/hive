@@ -11,15 +11,15 @@ insert into table decimal_tbl_1_orc values(55555);
 select * from decimal_tbl_1_orc;
 
 -- EXPLAIN
--- SELECT `dec`, round(null), round(null, 0), round(125, null), 
+-- SELECT `dec`, round(null), round(null, 0), round(125, null),
 -- round(1.0/0.0, 0), round(power(-1.0,0.5), 0)
 -- FROM decimal_tbl_1_orc ORDER BY `dec`;
 
--- SELECT `dec`, round(null), round(null, 0), round(125, null), 
+-- SELECT `dec`, round(null), round(null, 0), round(125, null),
 -- round(1.0/0.0, 0), round(power(-1.0,0.5), 0)
 -- FROM decimal_tbl_1_orc ORDER BY `dec`;
 
-EXPLAIN VECTORIZATION EXPRESSION
+EXPLAIN VECTORIZATION DETAIL
 SELECT
   round(`dec`) as d, round(`dec`, 0), round(`dec`, 1), round(`dec`, 2), round(`dec`, 3),
   round(`dec`, -1), round(`dec`, -2), round(`dec`, -3), round(`dec`, -4),
@@ -39,7 +39,7 @@ insert into table decimal_tbl_2_orc values(125.315, -125.315);
 
 select * from decimal_tbl_2_orc;
 
-EXPLAIN VECTORIZATION EXPRESSION
+EXPLAIN VECTORIZATION DETAIL
 SELECT
   round(pos) as p, round(pos, 0),
   round(pos, 1), round(pos, 2), round(pos, 3), round(pos, 4),
@@ -65,7 +65,7 @@ insert into table decimal_tbl_3_orc values(3.141592653589793);
 
 select * from decimal_tbl_3_orc;
 
-EXPLAIN VECTORIZATION EXPRESSION
+EXPLAIN VECTORIZATION DETAIL
 SELECT
   round(`dec`, -15) as d, round(`dec`, -16),
   round(`dec`, -13), round(`dec`, -14),
@@ -113,7 +113,7 @@ insert into table decimal_tbl_4_orc values(1809242.3151111344, -1809242.31511113
 
 select * from decimal_tbl_4_orc;
 
-EXPLAIN VECTORIZATION EXPRESSION
+EXPLAIN VECTORIZATION DETAIL
 SELECT round(pos, 9) as p, round(neg, 9), round(1809242.3151111344BD, 9), round(-1809242.3151111344BD, 9)
 FROM decimal_tbl_4_orc ORDER BY p;
 

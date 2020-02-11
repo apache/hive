@@ -1,0 +1,76 @@
+PREHOOK: query: explain cbo
+select   
+    sum(ws_net_paid) as total_sum
+   ,i_category
+   ,i_class
+   ,grouping(i_category)+grouping(i_class) as lochierarchy
+   ,rank() over (
+ 	partition by grouping(i_category)+grouping(i_class),
+ 	case when grouping(i_class) = 0 then i_category end 
+ 	order by sum(ws_net_paid) desc) as rank_within_parent
+ from
+    web_sales
+   ,date_dim       d1
+   ,item
+ where
+    d1.d_month_seq between 1212 and 1212+11
+ and d1.d_date_sk = ws_sold_date_sk
+ and i_item_sk  = ws_item_sk
+ group by rollup(i_category,i_class)
+ order by
+   lochierarchy desc,
+   case when lochierarchy = 0 then i_category end,
+   rank_within_parent
+ limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@item
+PREHOOK: Input: default@web_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo
+select   
+    sum(ws_net_paid) as total_sum
+   ,i_category
+   ,i_class
+   ,grouping(i_category)+grouping(i_class) as lochierarchy
+   ,rank() over (
+ 	partition by grouping(i_category)+grouping(i_class),
+ 	case when grouping(i_class) = 0 then i_category end 
+ 	order by sum(ws_net_paid) desc) as rank_within_parent
+ from
+    web_sales
+   ,date_dim       d1
+   ,item
+ where
+    d1.d_month_seq between 1212 and 1212+11
+ and d1.d_date_sk = ws_sold_date_sk
+ and i_item_sk  = ws_item_sk
+ group by rollup(i_category,i_class)
+ order by
+   lochierarchy desc,
+   case when lochierarchy = 0 then i_category end,
+   rank_within_parent
+ limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@web_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveProject(total_sum=[$0], i_category=[$1], i_class=[$2], lochierarchy=[$3], rank_within_parent=[$4])
+  HiveSortLimit(sort0=[$3], sort1=[$5], sort2=[$4], dir0=[DESC-nulls-last], dir1=[ASC], dir2=[ASC], fetch=[100])
+    HiveProject(total_sum=[$2], i_category=[$0], i_class=[$1], lochierarchy=[+(grouping($3, 1), grouping($3, 0))], rank_within_parent=[rank() OVER (PARTITION BY +(grouping($3, 1), grouping($3, 0)), CASE(=(grouping($3, 0), 0), $0, null) ORDER BY $2 DESC NULLS LAST ROWS BETWEEN 2147483647 FOLLOWING AND 2147483647 PRECEDING)], (tok_function when (= (tok_table_or_col lochierarchy) 0) (tok_table_or_col i_category))=[CASE(=(+(grouping($3, 1), grouping($3, 0)), 0), $0, null)])
+      HiveProject($f0=[$0], $f1=[$1], $f2=[$2], GROUPING__ID=[$3])
+        HiveAggregate(group=[{0, 1}], groups=[[{0, 1}, {0}, {}]], agg#0=[sum($2)], GROUPING__ID=[GROUPING__ID()])
+          HiveProject($f0=[$2], $f1=[$1], $f2=[$5])
+            HiveJoin(condition=[=($0, $4)], joinType=[inner], algorithm=[none], cost=[not available])
+              HiveProject(i_item_sk=[$0], i_class=[$10], i_category=[$12])
+                HiveTableScan(table=[[default, item]], table:alias=[item])
+              HiveJoin(condition=[=($3, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                HiveProject(ws_sold_date_sk=[$0], ws_item_sk=[$3], ws_net_paid=[$29])
+                  HiveFilter(condition=[IS NOT NULL($0)])
+                    HiveTableScan(table=[[default, web_sales]], table:alias=[web_sales])
+                HiveProject(d_date_sk=[$0])
+                  HiveFilter(condition=[BETWEEN(false, $3, 1212, 1223)])
+                    HiveTableScan(table=[[default, date_dim]], table:alias=[d1])
+

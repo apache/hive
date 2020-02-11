@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,16 +18,18 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastDecimalToDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.CastStringToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.CastLongToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastTimestampToDouble;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.lazy.LazyUtils;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.FloatWritable;
@@ -40,7 +42,24 @@ import org.apache.hadoop.io.Text;
  *
  */
 @VectorizedExpressions({CastTimestampToDouble.class, CastLongToDouble.class,
-    CastDecimalToDouble.class})
+    CastDecimalToDouble.class, CastStringToDouble.class})
+@Description(
+        name = "double",
+        value = "_FUNC_(x) - converts it's parameter to _FUNC_",
+        extended =
+                "- x is NULL -> NULL\n" +
+                "- byte, short, integer, long, float, double, decimal, timestamp:\n" +
+                "  x fits into the type _FUNC_ -> x\n" +
+                "  undefined otherwise\n" +
+                "- boolean:\n" +
+                "  true  -> 1.0\n" +
+                "  false -> 0.0\n" +
+                "- string:\n" +
+                "  x is a valid _FUNC_ -> x\n" +
+                "  NULL otherwise\n" +
+                "Example:\n "
+                + "  > SELECT _FUNC_(true);\n"
+                + "  1")
 public class UDFToDouble extends UDF {
   private final DoubleWritable doubleWritable = new DoubleWritable();
 
@@ -179,7 +198,7 @@ public class UDFToDouble extends UDF {
     }
   }
 
-  public DoubleWritable evaluate(TimestampWritable i) {
+  public DoubleWritable evaluate(TimestampWritableV2 i) {
     if (i == null) {
       return null;
     } else {

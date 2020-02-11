@@ -42,17 +42,19 @@ import org.slf4j.LoggerFactory;
  * Orchestrates the application of an ordered sequence of mutation events to a given ACID table. Events must be grouped
  * by partition, then bucket and ordered by origTxnId, then rowId. Ordering is enforced by the {@link SequenceValidator}
  * and grouping is by the {@link GroupingValidator}. An acid delta file is created for each combination partition, and
- * bucket id (a single transaction id is implied). Once a delta file has been closed it cannot be reopened. Therefore
+ * bucket id (a single write id is implied). Once a delta file has been closed it cannot be reopened. Therefore
  * care is needed as to group the data correctly otherwise failures will occur if a delta belonging to group has been
  * previously closed. The {@link MutatorCoordinator} will seamlessly handle transitions between groups, creating and
  * closing {@link Mutator Mutators} as needed to write to the appropriate partition and bucket. New partitions will be
  * created in the meta store if {@link AcidTable#createPartitions()} is set.
- * <p/>
+ * <p>
  * {@link #insert(List, Object) Insert} events must be artificially assigned appropriate bucket ids in the preceding
- * grouping phase so that they are grouped correctly. Note that any transaction id or row id assigned to the
+ * grouping phase so that they are grouped correctly. Note that any write id or row id assigned to the
  * {@link RecordIdentifier RecordIdentifier} of such events will be ignored by both the coordinator and the underlying
  * {@link RecordUpdater}.
+ * @deprecated as of Hive 3.0.0
  */
+@Deprecated
 public class MutatorCoordinator implements Closeable, Flushable {
 
   private static final Logger LOG = LoggerFactory.getLogger(MutatorCoordinator.class);
@@ -98,11 +100,11 @@ public class MutatorCoordinator implements Closeable, Flushable {
   }
 
   /**
-   * We expect records grouped by (partitionValues,bucketId) and ordered by (origTxnId,rowId).
+   * We expect records grouped by (partitionValues,bucketId) and ordered by (origWriteId,rowId).
    * 
    * @throws BucketIdException The bucket ID in the {@link RecordIdentifier} of the record does not match that computed
    *           using the values in the record's bucketed columns.
-   * @throws RecordSequenceException The record was submitted that was not in the correct ascending (origTxnId, rowId)
+   * @throws RecordSequenceException The record was submitted that was not in the correct ascending (origWriteId, rowId)
    *           sequence.
    * @throws GroupRevisitedException If an event was submitted for a (partition, bucketId) combination that has already
    *           been closed.
@@ -120,11 +122,11 @@ public class MutatorCoordinator implements Closeable, Flushable {
   }
 
   /**
-   * We expect records grouped by (partitionValues,bucketId) and ordered by (origTxnId,rowId).
+   * We expect records grouped by (partitionValues,bucketId) and ordered by (origWriteId,rowId).
    * 
    * @throws BucketIdException The bucket ID in the {@link RecordIdentifier} of the record does not match that computed
    *           using the values in the record's bucketed columns.
-   * @throws RecordSequenceException The record was submitted that was not in the correct ascending (origTxnId, rowId)
+   * @throws RecordSequenceException The record was submitted that was not in the correct ascending (origWriteId, rowId)
    *           sequence.
    * @throws GroupRevisitedException If an event was submitted for a (partition, bucketId) combination that has already
    *           been closed.
@@ -142,11 +144,11 @@ public class MutatorCoordinator implements Closeable, Flushable {
   }
 
   /**
-   * We expect records grouped by (partitionValues,bucketId) and ordered by (origTxnId,rowId).
+   * We expect records grouped by (partitionValues,bucketId) and ordered by (origWriteId,rowId).
    * 
    * @throws BucketIdException The bucket ID in the {@link RecordIdentifier} of the record does not match that computed
    *           using the values in the record's bucketed columns.
-   * @throws RecordSequenceException The record was submitted that was not in the correct ascending (origTxnId, rowId)
+   * @throws RecordSequenceException The record was submitted that was not in the correct ascending (origWriteId, rowId)
    *           sequence.
    * @throws GroupRevisitedException If an event was submitted for a (partition, bucketId) combination that has already
    *           been closed.
@@ -229,9 +231,9 @@ public class MutatorCoordinator implements Closeable, Flushable {
     sequenceValidator.reset();
     if (deleteDeltaIfExists) {
       // TODO: Should this be the concern of the mutator?
-      deleteDeltaIfExists(newPartitionPath, table.getTransactionId(), newBucketId);
+      deleteDeltaIfExists(newPartitionPath, table.getWriteId(), newBucketId);
     }
-    mutator = mutatorFactory.newMutator(outputFormat, table.getTransactionId(), newPartitionPath, newBucketId);
+    mutator = mutatorFactory.newMutator(outputFormat, table.getWriteId(), newPartitionPath, newBucketId);
     bucketId = newBucketId;
     partitionValues = newPartitionValues;
     partitionPath = newPartitionPath;
@@ -282,12 +284,12 @@ public class MutatorCoordinator implements Closeable, Flushable {
   }
 
   /* A delta may be present from a previous failed task attempt. */
-  private void deleteDeltaIfExists(Path partitionPath, long transactionId, int bucketId) throws IOException {
+  private void deleteDeltaIfExists(Path partitionPath, long writeId, int bucketId) throws IOException {
     Path deltaPath = AcidUtils.createFilename(partitionPath,
         new AcidOutputFormat.Options(configuration)
             .bucket(bucketId)
-            .minimumTransactionId(transactionId)
-            .maximumTransactionId(transactionId));
+            .minimumWriteId(writeId)
+            .maximumWriteId(writeId));
     FileSystem fileSystem = deltaPath.getFileSystem(configuration);
     if (fileSystem.exists(deltaPath)) {
       LOG.info("Deleting existing delta path: {}", deltaPath);

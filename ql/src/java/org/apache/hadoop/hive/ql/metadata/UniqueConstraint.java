@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -107,5 +107,9 @@ public class UniqueConstraint implements Serializable {
     }
     sb.append("]");
     return sb.toString();
+  }
+
+  public static boolean isUniqueConstraintNotEmpty(UniqueConstraint info) {
+    return info != null && !info.getUniqueConstraints().isEmpty();
   }
 }

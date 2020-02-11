@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -26,8 +26,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import junit.framework.TestCase;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -35,7 +33,9 @@ import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.io.IOContextMap;
 import org.apache.hadoop.hive.ql.optimizer.ConvertJoinMapJoin;
-import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
+import org.apache.hadoop.hive.ql.optimizer.physical.LlapClusterStateForCompile;
+import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
+import org.apache.hadoop.hive.ql.parse.type.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.plan.CollectDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
@@ -63,19 +63,26 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.junit.Assert;
+import org.mockito.Mockito;
+import static org.mockito.Mockito.when;
+
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
  * TestOperators.
  *
  */
-public class TestOperators extends TestCase {
+public class TestOperators {
 
   // this is our row to test expressions on
   protected InspectableObject[] r;
 
-  @Override
-  protected void setUp() {
+  @Before
+  public void setUp() {
     r = new InspectableObject[5];
     ArrayList<String> names = new ArrayList<String>(3);
     names.add("col0");
@@ -105,7 +112,7 @@ public class TestOperators extends TestCase {
     }
   }
 
-  private void testTaskIds(String [] taskIds, String expectedAttemptId, String expectedTaskId) {
+  private void testTaskIds(String[] taskIds, String expectedAttemptId, String expectedTaskId) {
     Configuration conf = new JobConf(TestOperators.class);
     for (String one: taskIds) {
       conf.set("mapred.task.id", one);
@@ -113,8 +120,8 @@ public class TestOperators extends TestCase {
       assertEquals(expectedAttemptId, attemptId);
       assertEquals(Utilities.getTaskIdFromFilename(attemptId), expectedTaskId);
       assertEquals(Utilities.getTaskIdFromFilename(attemptId + ".gz"), expectedTaskId);
-      assertEquals(Utilities.getTaskIdFromFilename
-                   (Utilities.toTempPath(new Path(attemptId + ".gz")).toString()), expectedTaskId);
+      assertEquals(Utilities.getTaskIdFromFilename(
+                   Utilities.toTempPath(new Path(attemptId + ".gz")).toString()), expectedTaskId);
     }
   }
 
@@ -123,26 +130,27 @@ public class TestOperators extends TestCase {
    * file naming libraries
    * The old test was deactivated as part of hive-405
    */
+  @Test
   public void testFileSinkOperator() throws Throwable {
 
     try {
-      testTaskIds (new String [] {
+      testTaskIds(new String[] {
           "attempt_200707121733_0003_m_000005_0",
           "attempt_local_0001_m_000005_0",
           "task_200709221812_0001_m_000005_0",
           "task_local_0001_m_000005_0"
-        }, "000005_0", "000005");
+          }, "000005_0", "000005");
 
-      testTaskIds (new String [] {
+      testTaskIds(new String[] {
           "job_local_0001_map_000005",
           "job_local_0001_reduce_000005",
-        }, "000005", "000005");
+          }, "000005", "000005");
 
-      testTaskIds (new String [] {"1234567"},
+      testTaskIds(new String[] {"1234567"},
                    "1234567", "1234567");
 
-      assertEquals(Utilities.getTaskIdFromFilename
-                   ("/mnt/dev005/task_local_0001_m_000005_0"),
+      assertEquals(Utilities.getTaskIdFromFilename(
+                   "/mnt/dev005/task_local_0001_m_000005_0"),
                    "000005");
 
       System.out.println("FileSink Operator ok");
@@ -157,6 +165,7 @@ public class TestOperators extends TestCase {
    *  variables. But environment variables have some system limitations and we have to check
    *  job configuration properties firstly. This test checks that staff.
    */
+  @Test
   public void testScriptOperatorEnvVarsProcessing() throws Throwable {
     try {
       ScriptOperator scriptOperator = new ScriptOperator(new CompilationOpContext());
@@ -170,7 +179,7 @@ public class TestOperators extends TestCase {
       assertEquals("value", scriptOperator.safeEnvVarValue("value", "name", true));
 
       //Environment Variables long values
-      char [] array = new char[20*1024+1];
+      char[] array = new char[20*1024+1];
       Arrays.fill(array, 'a');
       String hugeEnvVar = new String(array);
       assertEquals(20*1024+1, hugeEnvVar.length());
@@ -197,6 +206,7 @@ public class TestOperators extends TestCase {
     }
   }
 
+  @Test
   public void testScriptOperatorBlacklistedEnvVarsProcessing() {
     ScriptOperator scriptOperator = new ScriptOperator(new CompilationOpContext());
 
@@ -212,6 +222,7 @@ public class TestOperators extends TestCase {
     Assert.assertTrue(env.containsKey("barfoo"));
   }
 
+  @Test
   public void testScriptOperator() throws Throwable {
     try {
       System.out.println("Testing Script Operator");
@@ -222,7 +233,7 @@ public class TestOperators extends TestCase {
       ExprNodeDesc expr1 = new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, "col0", "",
           false);
       ExprNodeDesc expr2 = new ExprNodeConstantDesc("1");
-      ExprNodeDesc exprDesc2 = TypeCheckProcFactory.DefaultExprProcessor
+      ExprNodeDesc exprDesc2 = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
           .getFuncExprNodeDesc("concat", expr1, expr2);
 
       // select operator to project these two columns
@@ -286,6 +297,7 @@ public class TestOperators extends TestCase {
     }
   }
 
+  @Test
   public void testMapOperator() throws Throwable {
     try {
       System.out.println("Testing Map Operator");
@@ -296,10 +308,10 @@ public class TestOperators extends TestCase {
           new Path("hdfs:///testDir/testFile"));
 
       // initialize pathToAliases
-      ArrayList<String> aliases = new ArrayList<String>();
+      List<String> aliases = new ArrayList<String>();
       aliases.add("a");
       aliases.add("b");
-      LinkedHashMap<Path, ArrayList<String>> pathToAliases = new LinkedHashMap<>();
+      Map<Path, List<String>> pathToAliases = new LinkedHashMap<>();
       pathToAliases.put(new Path("hdfs:///testDir"), aliases);
 
       // initialize pathToTableInfo
@@ -307,7 +319,7 @@ public class TestOperators extends TestCase {
       TableDesc td = Utilities.defaultTd;
       PartitionDesc pd = new PartitionDesc(td, null);
       LinkedHashMap<Path, org.apache.hadoop.hive.ql.plan.PartitionDesc> pathToPartitionInfo =
-        new LinkedHashMap<>();
+          new LinkedHashMap<>();
       pathToPartitionInfo.put(new Path("hdfs:///testDir"), pd);
 
       // initialize aliasToWork
@@ -320,7 +332,7 @@ public class TestOperators extends TestCase {
           .get(ctx, CollectDesc.class);
       cdop2.setConf(cd);
       LinkedHashMap<String, Operator<? extends OperatorDesc>> aliasToWork =
-        new LinkedHashMap<String, Operator<? extends OperatorDesc>>();
+          new LinkedHashMap<String, Operator<? extends OperatorDesc>>();
       aliasToWork.put("a", cdop1);
       aliasToWork.put("b", cdop2);
 
@@ -391,6 +403,7 @@ public class TestOperators extends TestCase {
       // ensure that both of the partitions are in the complete list.
       String[] dirs = job.get("hive.complete.dir.list").split("\t");
       assertEquals(2, dirs.length);
+      Arrays.sort(dirs);
       assertEquals(true, dirs[0].endsWith("/state=CA"));
       assertEquals(true, dirs[1].endsWith("/state=OR"));
       return super.getSplits(job, splits);
@@ -412,29 +425,21 @@ public class TestOperators extends TestCase {
         "inputformat 'org.apache.hadoop.hive.ql.exec.TestOperators$CustomInFmt' " +
         "outputformat 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat' " +
         "tblproperties ('myprop1'='val1', 'myprop2' = 'val2')";
-    Driver driver = new Driver();
-    driver.init();
+    Driver driver = new Driver(conf);
     CommandProcessorResponse response = driver.run(cmd);
-    assertEquals(0, response.getResponseCode());
     List<Object> result = new ArrayList<Object>();
 
     cmd = "load data local inpath '../data/files/employee.dat' " +
         "overwrite into table fetchOp partition (state='CA')";
-    driver.init();
     response = driver.run(cmd);
-    assertEquals(0, response.getResponseCode());
 
     cmd = "load data local inpath '../data/files/employee2.dat' " +
         "overwrite into table fetchOp partition (state='OR')";
-    driver.init();
     response = driver.run(cmd);
-    assertEquals(0, response.getResponseCode());
 
     cmd = "select * from fetchOp";
-    driver.init();
     driver.setMaxRows(500);
     response = driver.run(cmd);
-    assertEquals(0, response.getResponseCode());
     driver.getResults(result);
     assertEquals(20, result.size());
     driver.close();
@@ -445,19 +450,31 @@ public class TestOperators extends TestCase {
     ConvertJoinMapJoin convertJoinMapJoin = new ConvertJoinMapJoin();
     long defaultNoConditionalTaskSize = 1024L * 1024L * 1024L;
     HiveConf hiveConf = new HiveConf();
+    hiveConf.setLongVar(HiveConf.ConfVars.HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD, defaultNoConditionalTaskSize);
 
+    LlapClusterStateForCompile llapInfo = null;
+    if ("llap".equalsIgnoreCase(hiveConf.getVar(HiveConf.ConfVars.HIVE_EXECUTION_MODE))) {
+      llapInfo = LlapClusterStateForCompile.getClusterInfo(hiveConf);
+      llapInfo.initClusterInfo();
+    }
     // execution mode not set, null is returned
-    assertEquals(defaultNoConditionalTaskSize, convertJoinMapJoin.getMemoryMonitorInfo(defaultNoConditionalTaskSize,
-      hiveConf).getAdjustedNoConditionalTaskSize());
+    assertEquals(defaultNoConditionalTaskSize,
+        convertJoinMapJoin.getMemoryMonitorInfo(hiveConf, llapInfo).getAdjustedNoConditionalTaskSize());
     hiveConf.set(HiveConf.ConfVars.HIVE_EXECUTION_MODE.varname, "llap");
+
+    if ("llap".equalsIgnoreCase(hiveConf.getVar(HiveConf.ConfVars.HIVE_EXECUTION_MODE))) {
+      llapInfo = LlapClusterStateForCompile.getClusterInfo(hiveConf);
+      llapInfo.initClusterInfo();
+    }
 
     // default executors is 4, max slots is 3. so 3 * 20% of noconditional task size will be oversubscribed
     hiveConf.set(HiveConf.ConfVars.LLAP_MAPJOIN_MEMORY_OVERSUBSCRIBE_FACTOR.varname, "0.2");
+    hiveConf.set(HiveConf.ConfVars.LLAP_MEMORY_OVERSUBSCRIPTION_MAX_EXECUTORS_PER_QUERY.varname, "3");
     double fraction = hiveConf.getFloatVar(HiveConf.ConfVars.LLAP_MAPJOIN_MEMORY_OVERSUBSCRIBE_FACTOR);
     int maxSlots = 3;
     long expectedSize = (long) (defaultNoConditionalTaskSize + (defaultNoConditionalTaskSize * fraction * maxSlots));
     assertEquals(expectedSize,
-      convertJoinMapJoin.getMemoryMonitorInfo(defaultNoConditionalTaskSize, hiveConf)
+        convertJoinMapJoin.getMemoryMonitorInfo(hiveConf, llapInfo)
         .getAdjustedNoConditionalTaskSize());
 
     // num executors is less than max executors per query (which is not expected case), default executors will be
@@ -466,18 +483,46 @@ public class TestOperators extends TestCase {
     hiveConf.set(HiveConf.ConfVars.LLAP_MEMORY_OVERSUBSCRIPTION_MAX_EXECUTORS_PER_QUERY.varname, "5");
     expectedSize = (long) (defaultNoConditionalTaskSize + (defaultNoConditionalTaskSize * fraction * chosenSlots));
     assertEquals(expectedSize,
-      convertJoinMapJoin.getMemoryMonitorInfo(defaultNoConditionalTaskSize, hiveConf)
+        convertJoinMapJoin.getMemoryMonitorInfo(hiveConf, llapInfo)
         .getAdjustedNoConditionalTaskSize());
 
     // disable memory checking
     hiveConf.set(HiveConf.ConfVars.LLAP_MAPJOIN_MEMORY_MONITOR_CHECK_INTERVAL.varname, "0");
     assertFalse(
-      convertJoinMapJoin.getMemoryMonitorInfo(defaultNoConditionalTaskSize, hiveConf).doMemoryMonitoring());
+        convertJoinMapJoin.getMemoryMonitorInfo(hiveConf, llapInfo).doMemoryMonitoring());
 
     // invalid inflation factor
     hiveConf.set(HiveConf.ConfVars.LLAP_MAPJOIN_MEMORY_MONITOR_CHECK_INTERVAL.varname, "10000");
     hiveConf.set(HiveConf.ConfVars.HIVE_HASH_TABLE_INFLATION_FACTOR.varname, "0.0f");
     assertFalse(
-      convertJoinMapJoin.getMemoryMonitorInfo(defaultNoConditionalTaskSize, hiveConf).doMemoryMonitoring());
+        convertJoinMapJoin.getMemoryMonitorInfo(hiveConf, llapInfo).doMemoryMonitoring());
+  }
+
+  @Test
+  public void testLlapMemoryOversubscriptionMaxExecutorsPerQueryCalculation() {
+    ConvertJoinMapJoin convertJoinMapJoin = new ConvertJoinMapJoin();
+    HiveConf hiveConf = new HiveConf();
+
+    LlapClusterStateForCompile llapInfo = Mockito.mock(LlapClusterStateForCompile.class);
+
+    when(llapInfo.getNumExecutorsPerNode()).thenReturn(1);
+    assertEquals(1,
+        convertJoinMapJoin.getMemoryMonitorInfo(hiveConf, llapInfo).getMaxExecutorsOverSubscribeMemory());
+    assertEquals(3,
+        convertJoinMapJoin.getMemoryMonitorInfo(hiveConf, null).getMaxExecutorsOverSubscribeMemory());
+
+    when(llapInfo.getNumExecutorsPerNode()).thenReturn(6);
+    assertEquals(2,
+        convertJoinMapJoin.getMemoryMonitorInfo(hiveConf, llapInfo).getMaxExecutorsOverSubscribeMemory());
+
+    when(llapInfo.getNumExecutorsPerNode()).thenReturn(30);
+    assertEquals(8,
+        convertJoinMapJoin.getMemoryMonitorInfo(hiveConf, llapInfo).getMaxExecutorsOverSubscribeMemory());
+
+    hiveConf.set(HiveConf.ConfVars.LLAP_MEMORY_OVERSUBSCRIPTION_MAX_EXECUTORS_PER_QUERY.varname, "5");
+    assertEquals(5,
+        convertJoinMapJoin.getMemoryMonitorInfo(hiveConf, llapInfo).getMaxExecutorsOverSubscribeMemory());
+    assertEquals(5,
+        convertJoinMapJoin.getMemoryMonitorInfo(hiveConf, null).getMaxExecutorsOverSubscribeMemory());
   }
 }

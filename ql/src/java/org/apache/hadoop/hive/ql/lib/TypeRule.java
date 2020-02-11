@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -25,7 +25,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Rule that matches a particular type of node.
  */
-public class TypeRule implements Rule {
+public class TypeRule implements SemanticRule {
 
   private Class<?> nodeClass;
 

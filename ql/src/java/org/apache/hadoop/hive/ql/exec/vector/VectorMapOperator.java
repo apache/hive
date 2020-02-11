@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -28,11 +28,9 @@ import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.AbstractMapOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -46,7 +44,6 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.VectorPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.VectorPartitionDesc.VectorMapOperatorReadType;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
-import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
@@ -92,7 +89,7 @@ public class VectorMapOperator extends AbstractMapOperator {
   /*
    * Overall information on this vectorized Map operation.
    */
-  private transient HashMap<String, VectorPartitionContext> fileToPartitionContextMap;
+  private transient HashMap<Path, VectorPartitionContext> fileToPartitionContextMap;
 
   private transient Operator<? extends OperatorDesc> oneRootOperator;
 
@@ -281,6 +278,7 @@ public class VectorMapOperator extends AbstractMapOperator {
           LazySimpleDeserializeRead lazySimpleDeserializeRead =
               new LazySimpleDeserializeRead(
                   minimalDataTypeInfos,
+                  batchContext.getRowdataTypePhysicalVariations(),
                   /* useExternalBuffer */ true,
                   simpleSerdeParams);
 
@@ -512,18 +510,8 @@ public class VectorMapOperator extends AbstractMapOperator {
     partitionColumnCount = batchContext.getPartitionColumnCount();
     partitionValues = new Object[partitionColumnCount];
     virtualColumnCount = batchContext.getVirtualColumnCount();
-    rowIdentifierColumnNum = -1;
-    if (virtualColumnCount > 0) {
-      final int firstVirtualColumnNum = dataColumnCount + partitionColumnCount;
-      VirtualColumn[] neededVirtualColumns = batchContext.getNeededVirtualColumns();
-      hasRowIdentifier = (neededVirtualColumns[0] == VirtualColumn.ROWID);
-      if (hasRowIdentifier) {
-        rowIdentifierColumnNum = firstVirtualColumnNum;
-      }
-    } else {
-      hasRowIdentifier = false;
-    }
-    
+    rowIdentifierColumnNum = batchContext.findVirtualColumnNum(VirtualColumn.ROWID);
+    hasRowIdentifier = (rowIdentifierColumnNum != -1);
 
     dataColumnNums = batchContext.getDataColumnNums();
     Preconditions.checkState(dataColumnNums != null);
@@ -564,13 +552,13 @@ public class VectorMapOperator extends AbstractMapOperator {
      * The Vectorizer class enforces that there is only one TableScanOperator, so
      * we don't need the more complicated multiple root operator mapping that MapOperator has.
      */
-    fileToPartitionContextMap = new HashMap<String, VectorPartitionContext>();
+    fileToPartitionContextMap = new HashMap<>();
 
     // Temporary map so we only create one partition context entry.
     HashMap<PartitionDesc, VectorPartitionContext> partitionContextMap =
         new HashMap<PartitionDesc, VectorPartitionContext>();
 
-    for (Map.Entry<Path, ArrayList<String>> entry : conf.getPathToAliases().entrySet()) {
+    for (Map.Entry<Path, List<String>> entry : conf.getPathToAliases().entrySet()) {
       Path path = entry.getKey();
       PartitionDesc partDesc = conf.getPathToPartitionInfo().get(path);
 
@@ -582,7 +570,7 @@ public class VectorMapOperator extends AbstractMapOperator {
         vectorPartitionContext = partitionContextMap.get(partDesc);
       }
 
-      fileToPartitionContextMap.put(path.toString(), vectorPartitionContext);
+      fileToPartitionContextMap.put(path, vectorPartitionContext);
     }
 
     // Create list of one.
@@ -602,7 +590,7 @@ public class VectorMapOperator extends AbstractMapOperator {
 
   public void initializeContexts() throws HiveException {
     Path fpath = getExecContext().getCurrentInputPath();
-    String nominalPath = getNominalPath(fpath);
+    Path nominalPath = getNominalPath(fpath);
     setupPartitionContextVars(nominalPath);
   }
 
@@ -611,7 +599,7 @@ public class VectorMapOperator extends AbstractMapOperator {
   public void cleanUpInputFileChangedOp() throws HiveException {
     super.cleanUpInputFileChangedOp();
     Path fpath = getExecContext().getCurrentInputPath();
-    String nominalPath = getNominalPath(fpath);
+    Path nominalPath = getNominalPath(fpath);
 
     setupPartitionContextVars(nominalPath);
 
@@ -629,9 +617,28 @@ public class VectorMapOperator extends AbstractMapOperator {
   }
 
   /*
+   * Flush a partially full deserializerBatch.
+   * @return Return true if the operator tree is not done yet.
+   */
+  private boolean flushDeserializerBatch() throws HiveException {
+    if (deserializerBatch.size > 0) {
+
+      batchCounter++;
+      oneRootOperator.process(deserializerBatch, 0);
+      deserializerBatch.reset();
+      if (oneRootOperator.getDone()) {
+        setDone(true);
+        return false;
+      }
+
+    }
+    return true;
+  }
+
+  /*
    * Setup the context for reading from the next partition file.
    */
-  private void setupPartitionContextVars(String nominalPath) throws HiveException {
+  private void setupPartitionContextVars(Path nominalPath) throws HiveException {
 
     currentVectorPartContext = fileToPartitionContextMap.get(nominalPath);
     if (currentVectorPartContext == null) {
@@ -681,20 +688,14 @@ public class VectorMapOperator extends AbstractMapOperator {
           currentReadType == VectorMapOperatorReadType.VECTOR_DESERIALIZE ||
           currentReadType == VectorMapOperatorReadType.ROW_DESERIALIZE);
 
-      if (deserializerBatch.size > 0) {
+      /*
+       * Clear out any rows in the batch from previous partition since we are going to change
+       * the repeating partition column values.
+       */
+      if (!flushDeserializerBatch()) {
 
-        /*
-         * Clear out any rows in the batch from previous partition since we are going to change
-         * the repeating partition column values.
-         */
-        batchCounter++;
-        oneRootOperator.process(deserializerBatch, 0);
-        deserializerBatch.reset();
-        if (oneRootOperator.getDone()) {
-          setDone(true);
-          return;
-        }
-
+        // Operator tree is now done.
+        return;
       }
 
       /*
@@ -782,6 +783,37 @@ public class VectorMapOperator extends AbstractMapOperator {
     return null;
   }
 
+  /*
+   * Deliver a vector batch to the operator tree.
+   *
+   * The Vectorized Input File Format reader has already set the partition column
+   * values, reset and filled in the batch, etc.
+   *
+   * We pass the VectorizedRowBatch through here.
+   *
+   * @return Return true if the operator tree is not done yet.
+   */
+  private boolean deliverVectorizedRowBatch(Writable value) throws HiveException {
+
+    batchCounter++;
+    if (value != null) {
+      VectorizedRowBatch batch = (VectorizedRowBatch) value;
+      numRows += batch.size;
+      if (hasRowIdentifier) {
+        final int idx = batchContext.findVirtualColumnNum(VirtualColumn.ROWID);
+        if (idx < 0) {
+          setRowIdentiferToNull(batch);
+        }
+      }
+    }
+    oneRootOperator.process(value, 0);
+    if (oneRootOperator.getDone()) {
+      setDone(true);
+      return false;
+    }
+    return true;
+  }
+
   @Override
   public void process(Writable value) throws HiveException {
 
@@ -807,31 +839,33 @@ public class VectorMapOperator extends AbstractMapOperator {
       try {
         if (currentReadType == VectorMapOperatorReadType.VECTORIZED_INPUT_FILE_FORMAT) {
 
-          /*
-           * The Vectorized Input File Format reader has already set the partition column
-           * values, reset and filled in the batch, etc.
-           *
-           * We pass the VectorizedRowBatch through here.
-           */
-          batchCounter++;
-          if (value != null) {
-            VectorizedRowBatch batch = (VectorizedRowBatch) value;
-            numRows += batch.size;
-            if (hasRowIdentifier) {
+          if (!deliverVectorizedRowBatch(value)) {
 
-              // UNDONE: Pass ROW__ID STRUCT column through IO Context to get filled in by ACID reader
-              // UNDONE: Or, perhaps tell it to do it before calling us, ...
-              // UNDONE: For now, set column to NULL.
-
-              setRowIdentiferToNull(batch);
-            }
-          }
-          oneRootOperator.process(value, 0);
-          if (oneRootOperator.getDone()) {
-            setDone(true);
+            // Operator tree is now done.
             return;
           }
 
+        } else if (value instanceof VectorizedRowBatch) {
+
+          /*
+           * This case can happen with LLAP.  If it is able to deserialize and cache data from the
+           * input format, it will deliver that cached data to us as VRBs.
+           */
+
+          /*
+           * Clear out any rows we may have processed in row-mode for the current partition..
+           */
+          if (!flushDeserializerBatch()) {
+
+            // Operator tree is now done.
+            return;
+          }
+
+          if (!deliverVectorizedRowBatch(value)) {
+
+            // Operator tree is now done.
+            return;
+          }
         } else {
 
           /*
@@ -907,8 +941,15 @@ public class VectorMapOperator extends AbstractMapOperator {
 
               // Convert input row to standard objects.
               List<Object> standardObjects = new ArrayList<Object>();
-              ObjectInspectorUtils.copyToStandardObject(standardObjects, deserialized,
-                  currentPartRawRowObjectInspector, ObjectInspectorCopyOption.WRITABLE);
+              try {
+                ObjectInspectorUtils.copyToStandardObject(
+                    standardObjects,
+                    deserialized,
+                    currentPartRawRowObjectInspector,
+                    ObjectInspectorCopyOption.WRITABLE);
+              } catch (Exception e) {
+                throw new HiveException("copyToStandardObject failed: " + e);
+              }
               if (standardObjects.size() < currentDataColumnCount) {
                 throw new HiveException("Input File Format returned row with too few columns");
               }

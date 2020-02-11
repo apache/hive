@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -82,10 +82,6 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements Serial
       lastAlias = alias;
       alias = (byte) tag;
 
-      if (!alias.equals(lastAlias)) {
-        nextSz = joinEmitInterval;
-      }
-
       List<Object> nr = getFilteredValue(alias, row);
 
       if (handleSkewJoin) {
@@ -93,7 +89,7 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements Serial
       }
 
       // number of rows for the key in the given table
-      long sz = storage[alias].rowCount();
+      final long sz = storage[alias].rowCount();
       StructObjectInspector soi = (StructObjectInspector) inputObjInspectors[tag];
       StructField sf = soi.getStructFieldRef(Utilities.ReduceField.KEY
           .toString());
@@ -112,14 +108,16 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements Serial
           checkAndGenObject();
           storage[alias].clearRows();
         }
-      } else {
-        if (LOG.isInfoEnabled() && (sz == nextSz)) {
-          // Print a message if we reached at least 1000 rows for a join operand
-          // We won't print a message for the last join operand since the size
-          // will never goes to joinEmitInterval.
-          LOG.info("table " + alias + " has " + sz + " rows for join key " + keyObject);
-          nextSz = getNextSize(nextSz);
-        }
+      }
+
+      // The input is sorted by alias, so when an alias change is detected,
+      // reset the counter for the next join key in the stream
+      if (!alias.equals(lastAlias)) {
+        nextSz = getNextSize(0L);
+      }
+      if (sz == nextSz) {
+        LOG.info("Table {} has {} rows for join key {}", alias, sz, keyObject);
+        nextSz = getNextSize(nextSz);
       }
 
       // Add the value to the vector
@@ -132,7 +130,6 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements Serial
       }
       storage[alias].addRow(nr);
     } catch (Exception e) {
-      e.printStackTrace();
       throw new HiveException(e);
     }
   }
@@ -231,12 +228,12 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements Serial
         // Step1: rename tmp output folder to intermediate path. After this
         // point, updates from speculative tasks still writing to tmpPath
         // will not appear in finalPath.
-        log.info("Moving tmp dir: " + tmpPath + " to: " + intermediatePath);
+        Utilities.FILE_OP_LOGGER.info("Moving tmp dir: " + tmpPath + " to: " + intermediatePath + "(spec " + specPath + ")");
         Utilities.rename(fs, tmpPath, intermediatePath);
         // Step2: remove any tmp file or double-committed output files
-        Utilities.removeTempOrDuplicateFiles(fs, intermediatePath);
+        Utilities.removeTempOrDuplicateFiles(fs, intermediatePath, false);
         // Step3: move to the file destination
-        log.info("Moving tmp dir: " + intermediatePath + " to: " + specPath);
+        Utilities.FILE_OP_LOGGER.info("Moving tmp dir: " + intermediatePath + " to: " + specPath);
         Utilities.renameOrMoveFiles(fs, intermediatePath, specPath);
       }
     } else {

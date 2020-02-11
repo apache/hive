@@ -20,10 +20,10 @@ package org.apache.hive.spark.client;
 import java.io.IOException;
 import java.util.Map;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.spark.client.rpc.RpcServer;
-import org.apache.spark.SparkException;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
@@ -33,9 +33,6 @@ import com.google.common.base.Throwables;
  */
 @InterfaceAudience.Private
 public final class SparkClientFactory {
-
-  /** Used to run the driver in-process, mostly for testing. */
-  static final String CONF_KEY_IN_PROCESS = "spark.client.do_not_use.run_driver_in_process";
 
   /** Used by client and driver to share a client ID for establishing an RPC session. */
   static final String CONF_CLIENT_ID = "spark.client.authentication.client_id";
@@ -51,12 +48,12 @@ public final class SparkClientFactory {
    *
    * @param conf Map containing configuration parameters for the client library.
    */
-  public static void initialize(Map<String, String> conf) throws IOException {
+  public static void initialize(Map<String, String> conf, HiveConf hiveConf) throws IOException {
     if (server == null) {
       synchronized (serverLock) {
         if (server == null) {
           try {
-            server = new RpcServer(conf);
+            server = new RpcServer(conf, hiveConf);
           } catch (InterruptedException ie) {
             throw Throwables.propagate(ie);
           }
@@ -83,10 +80,24 @@ public final class SparkClientFactory {
    * @param sparkConf Configuration for the remote Spark application, contains spark.* properties.
    * @param hiveConf Configuration for Hive, contains hive.* properties.
    */
-  public static SparkClient createClient(Map<String, String> sparkConf, HiveConf hiveConf)
-      throws IOException, SparkException {
-    Preconditions.checkState(server != null, "initialize() not called.");
-    return new SparkClientImpl(server, sparkConf, hiveConf);
+  public static SparkClient createClient(Map<String, String> sparkConf, HiveConf hiveConf,
+                                         String sessionId) throws IOException {
+    Preconditions.checkState(server != null,
+            "Invalid state: Hive on Spark RPC Server has not been initialized");
+    switch (hiveConf.getVar(HiveConf.ConfVars.SPARK_CLIENT_TYPE)) {
+    case HiveConf.HIVE_SPARK_SUBMIT_CLIENT:
+      return new SparkSubmitSparkClient(server, sparkConf, hiveConf, sessionId);
+    case HiveConf.HIVE_SPARK_LAUNCHER_CLIENT:
+      return new SparkLauncherSparkClient(server, sparkConf, hiveConf, sessionId);
+    default:
+      throw new IllegalArgumentException("Unknown Hive on Spark launcher type " + hiveConf.getVar(
+              HiveConf.ConfVars.SPARK_CLIENT_TYPE) + " valid options are " +
+              HiveConf.HIVE_SPARK_SUBMIT_CLIENT + " or " + HiveConf.HIVE_SPARK_LAUNCHER_CLIENT);
+    }
   }
 
+  @VisibleForTesting
+  public static int getServerPort() {
+    return server.getPort();
+  }
 }

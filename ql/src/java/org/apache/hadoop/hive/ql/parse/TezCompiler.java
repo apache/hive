@@ -1,4 +1,4 @@
-/**
+/*
  *  Licensed to the Apache Software Foundation (ASF) under one
  *  or more contributor license agreements.  See the NOTICE file
  *  distributed with this work for additional information
@@ -17,20 +17,29 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
-import java.io.Serializable;
+import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Sets;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.Stack;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
@@ -41,6 +50,7 @@ import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.DummyStoreOperator;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
@@ -50,21 +60,24 @@ import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.exec.TerminalOperator;
 import org.apache.hadoop.hive.ql.exec.TezDummyStoreOperator;
+import org.apache.hadoop.hive.ql.exec.TopNKeyOperator;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.lib.CompositeProcessor;
+import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
-import org.apache.hadoop.hive.ql.lib.Dispatcher;
+import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
 import org.apache.hadoop.hive.ql.lib.ForwardWalker;
-import org.apache.hadoop.hive.ql.lib.GraphWalker;
+import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.PreOrderOnceWalker;
-import org.apache.hadoop.hive.ql.lib.Rule;
+import org.apache.hadoop.hive.ql.lib.SemanticRule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -73,14 +86,21 @@ import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcCtx.ConstantProp
 import org.apache.hadoop.hive.ql.optimizer.ConvertJoinMapJoin;
 import org.apache.hadoop.hive.ql.optimizer.DynamicPartitionPruningOptimization;
 import org.apache.hadoop.hive.ql.optimizer.MergeJoinProc;
+import org.apache.hadoop.hive.ql.optimizer.NonBlockingOpDeDupProc;
 import org.apache.hadoop.hive.ql.optimizer.ReduceSinkMapJoinProc;
 import org.apache.hadoop.hive.ql.optimizer.RemoveDynamicPruningBySize;
+import org.apache.hadoop.hive.ql.optimizer.SetHashGroupByMinReduction;
 import org.apache.hadoop.hive.ql.optimizer.SetReducerParallelism;
 import org.apache.hadoop.hive.ql.optimizer.SharedWorkOptimizer;
+import org.apache.hadoop.hive.ql.optimizer.SortedDynPartitionOptimizer;
+import org.apache.hadoop.hive.ql.optimizer.topnkey.TopNKeyProcessor;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
+import org.apache.hadoop.hive.ql.optimizer.correlation.ReduceSinkDeDuplication;
+import org.apache.hadoop.hive.ql.optimizer.topnkey.TopNKeyPushdownProcessor;
 import org.apache.hadoop.hive.ql.optimizer.correlation.ReduceSinkJoinDeDuplication;
 import org.apache.hadoop.hive.ql.optimizer.metainfo.annotation.AnnotateWithOpTraits;
 import org.apache.hadoop.hive.ql.optimizer.physical.AnnotateRunTimeStatsOptimizer;
-import org.apache.hadoop.hive.ql.optimizer.physical.CrossProductCheck;
+import org.apache.hadoop.hive.ql.optimizer.physical.CrossProductHandler;
 import org.apache.hadoop.hive.ql.optimizer.physical.LlapClusterStateForCompile;
 import org.apache.hadoop.hive.ql.optimizer.physical.LlapDecider;
 import org.apache.hadoop.hive.ql.optimizer.physical.LlapPreVectorizationPass;
@@ -91,22 +111,31 @@ import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalContext;
 import org.apache.hadoop.hive.ql.optimizer.physical.SerializeFilter;
 import org.apache.hadoop.hive.ql.optimizer.physical.StageIDsRearranger;
 import org.apache.hadoop.hive.ql.optimizer.physical.Vectorizer;
+import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
 import org.apache.hadoop.hive.ql.optimizer.stats.annotation.AnnotateWithStatistics;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
+import org.apache.hadoop.hive.ql.plan.AppMasterEventDesc;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.DynamicPruningEventDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicValueDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.TezWork;
+import org.apache.hadoop.hive.ql.plan.mapper.AuxOpTreeSignature;
+import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
+import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.EquivGroup;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.apache.hadoop.hive.ql.stats.OperatorStats;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFBloomFilter.GenericUDAFBloomFilterEvaluator;
 import org.slf4j.Logger;
@@ -141,14 +170,43 @@ public class TezCompiler extends TaskCompiler {
     OptimizeTezProcContext procCtx = new OptimizeTezProcContext(conf, pCtx, inputs, outputs);
 
     perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
+    runTopNKeyOptimization(procCtx);
+    perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Run top n key optimization");
+
+    perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
     // setup dynamic partition pruning where possible
     runDynamicPartitionPruning(procCtx, inputs, outputs);
     perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Setup dynamic partition pruning");
+
+    // need to run this; to get consistent filterop conditions(for operator tree matching)
+    if (procCtx.conf.getBoolVar(ConfVars.HIVEOPTCONSTANTPROPAGATION)) {
+      new ConstantPropagate(ConstantPropagateOption.SHORTCUT).transform(procCtx.parseContext);
+    }
 
     perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
     // setup stats in the operator plan
     runStatsAnnotation(procCtx);
     perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Setup stats in the operator plan");
+
+    // run Sorted dynamic partition optimization
+    if(HiveConf.getBoolVar(procCtx.conf, HiveConf.ConfVars.DYNAMICPARTITIONING) &&
+        HiveConf.getVar(procCtx.conf, HiveConf.ConfVars.DYNAMICPARTITIONINGMODE).equals("nonstrict") &&
+        !HiveConf.getBoolVar(procCtx.conf, HiveConf.ConfVars.HIVEOPTLISTBUCKETING)) {
+      perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
+      new SortedDynPartitionOptimizer().transform(procCtx.parseContext);
+      perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Sorted dynamic partition optimization");
+    }
+
+    if(HiveConf.getBoolVar(procCtx.conf, HiveConf.ConfVars.HIVEOPTREDUCEDEDUPLICATION)) {
+      perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
+      // Dynamic sort partition adds an extra RS therefore need to de-dup
+      new ReduceSinkDeDuplication().transform(procCtx.parseContext);
+      // there is an issue with dedup logic wherein SELECT is created with wrong columns
+      // NonBlockingOpDeDupProc fixes that
+      // (kind of hackish, the issue in de-dup should be fixed but it needs more investigation)
+      new NonBlockingOpDeDupProc().transform(procCtx.parseContext);
+      perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Reduce Sink de-duplication");
+    }
 
     perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
     // run the optimizations that use stats for optimization
@@ -161,44 +219,7 @@ public class TezCompiler extends TaskCompiler {
     }
     perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Run reduce sink after join algorithm selection");
 
-    perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
-    runRemoveDynamicPruningOptimization(procCtx, inputs, outputs);
-    perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Run remove dynamic pruning by size");
-
-    perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
-    markSemiJoinForDPP(procCtx);
-    perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Mark certain semijoin edges important based ");
-
-    // Removing semijoin optimization when it may not be beneficial
-    perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
-    removeSemijoinOptimizationByBenefit(procCtx);
-    perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Remove Semijoins based on cost benefits");
-
-    perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
-    // Remove any parallel edge between semijoin and mapjoin.
-    removeSemijoinsParallelToMapJoin(procCtx);
-    perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Run the optimizations that use stats for optimization");
-
-    perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
-    // Remove semijoin optimization if it creates a cycle with mapside joins
-    removeSemiJoinCyclesDueToMapsideJoins(procCtx);
-    perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Remove semijoin optimizations if it creates a cycle with mapside join");
-
-    perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
-    // Remove semijoin optimization if SMB join is created.
-    removeSemijoinOptimizationFromSMBJoins(procCtx);
-    perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Remove semijoin optimizations if needed");
-
-    perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
-    // Remove bloomfilter if no stats generated
-    removeSemiJoinIfNoStats(procCtx);
-    perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Remove bloom filter optimizations if needed");
-
-    perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
-    // after the stats phase we might have some cyclic dependencies that we need
-    // to take care of.
-    runCycleAnalysisForPartitionPruning(procCtx, inputs, outputs);
-    perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Run cycle analysis for partition pruning");
+    semijoinRemovalBasedTransformations(procCtx, inputs, outputs);
 
     perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
     if(procCtx.conf.getBoolVar(ConfVars.HIVE_SHARED_WORK_OPTIMIZATION)) {
@@ -214,15 +235,26 @@ public class TezCompiler extends TaskCompiler {
       new ConstantPropagate(ConstantPropagateOption.SHORTCUT).transform(procCtx.parseContext);
     }
 
+    perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
+    AuxOpTreeSignature.linkAuxSignatures(procCtx.parseContext);
+    markOperatorsWithUnstableRuntimeStats(procCtx);
+    perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "markOperatorsWithUnstableRuntimeStats");
+
+    // ATTENTION : DO NOT, I REPEAT, DO NOT WRITE ANYTHING AFTER updateBucketingVersionForUpgrade()
+    // ANYTHING WHICH NEEDS TO BE ADDED MUST BE ADDED ABOVE
+    // This call updates the bucketing version of final ReduceSinkOp based on
+    // the bucketing version of FileSinkOp. This operation must happen at the
+    // end to ensure there is no further rewrite of plan which may end up
+    // removing/updating the ReduceSinkOp as was the case with SortedDynPartitionOptimizer
+    // Update bucketing version of ReduceSinkOp if needed
+    updateBucketingVersionForUpgrade(procCtx);
+
   }
 
   private void runCycleAnalysisForPartitionPruning(OptimizeTezProcContext procCtx,
       Set<ReadEntity> inputs, Set<WriteEntity> outputs) throws SemanticException {
-
-    if (!procCtx.conf.getBoolVar(ConfVars.TEZ_DYNAMIC_PARTITION_PRUNING)) {
-      return;
-    }
-
+    // Semijoins may have created task level cycles, examine those
+    connectTerminalOps(procCtx.parseContext);
     boolean cycleFree = false;
     while (!cycleFree) {
       cycleFree = true;
@@ -266,7 +298,9 @@ public class TezCompiler extends TaskCompiler {
 
         SemiJoinBranchInfo sjInfo =
                 context.parseContext.getRsToSemiJoinBranchInfo().get(o);
-        if (sjInfo == null ) continue;
+        if (sjInfo == null ) {
+          continue;
+        }
         if (sjInfo.getIsHint()) {
           // Skipping because of hint. Mark this info,
           hasHint = true;
@@ -336,7 +370,6 @@ public class TezCompiler extends TaskCompiler {
           + ((DynamicPruningEventDesc) victim.getConf()).getTableScan().toString()
           + ". Needed to break cyclic dependency");
     }
-    return;
   }
 
   // Tarjan's algo
@@ -370,20 +403,25 @@ public class TezCompiler extends TaskCompiler {
 
     List<Operator<?>> children;
     if (o instanceof AppMasterEventOperator) {
-      children = new ArrayList<Operator<?>>();
-      children.addAll(o.getChildOperators());
+      children = new ArrayList<>((o.getChildOperators()));
       TableScanOperator ts = ((DynamicPruningEventDesc) o.getConf()).getTableScan();
       LOG.debug("Adding special edge: " + o.getName() + " --> " + ts.toString());
       children.add(ts);
-    } else if (o instanceof ReduceSinkOperator){
-      // semijoin case
-      children = new ArrayList<Operator<?>>();
-      children.addAll(o.getChildOperators());
-      SemiJoinBranchInfo sjInfo = parseContext.getRsToSemiJoinBranchInfo().get(o);
-      if (sjInfo != null ) {
-        TableScanOperator ts = sjInfo.getTsOp();
-        LOG.debug("Adding special edge: " + o.getName() + " --> " + ts.toString());
-        children.add(ts);
+    } else if (o instanceof TerminalOperator) {
+      children = new ArrayList<>((o.getChildOperators()));
+      for (ReduceSinkOperator rs : parseContext.getTerminalOpToRSMap().get((TerminalOperator<?>)o)) {
+        // add an edge
+        LOG.debug("Adding special edge: From terminal op to semijoin edge "  + o.getName() + " --> " + rs.toString());
+        children.add(rs);
+      }
+      if (o instanceof ReduceSinkOperator) {
+        // semijoin case
+        SemiJoinBranchInfo sjInfo = parseContext.getRsToSemiJoinBranchInfo().get(o);
+        if (sjInfo != null) {
+          TableScanOperator ts = sjInfo.getTsOp();
+          LOG.debug("Adding special edge: " + o.getName() + " --> " + ts.toString());
+          children.add(ts);
+        }
       }
     } else {
       children = o.getChildOperators();
@@ -423,21 +461,91 @@ public class TezCompiler extends TaskCompiler {
 
     // create a walker which walks the tree in a DFS manner while maintaining
     // the operator stack.
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
     opRules.put(new RuleRegExp("Set parallelism - ReduceSink",
         ReduceSinkOperator.getOperatorName() + "%"),
         new SetReducerParallelism());
-
     opRules.put(new RuleRegExp("Convert Join to Map-join",
         JoinOperator.getOperatorName() + "%"), new ConvertJoinMapJoin());
+    if (procCtx.conf.getBoolVar(ConfVars.HIVEMAPAGGRHASHMINREDUCTIONSTATSADJUST)) {
+      opRules.put(new RuleRegExp("Set min reduction - GBy (Hash)",
+          GroupByOperator.getOperatorName() + "%"),
+          new SetHashGroupByMinReduction());
+    }
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
-    Dispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
+    SemanticDispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
     List<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(procCtx.parseContext.getTopOps().values());
-    GraphWalker ogw = new ForwardWalker(disp);
+    SemanticGraphWalker ogw = new ForwardWalker(disp);
     ogw.startWalking(topNodes, null);
+  }
+
+  private void semijoinRemovalBasedTransformations(OptimizeTezProcContext procCtx,
+                                                   Set<ReadEntity> inputs, Set<WriteEntity> outputs) throws SemanticException {
+    PerfLogger perfLogger = SessionState.getPerfLogger();
+
+    final boolean dynamicPartitionPruningEnabled =
+        procCtx.conf.getBoolVar(ConfVars.TEZ_DYNAMIC_PARTITION_PRUNING);
+    final boolean semiJoinReductionEnabled = dynamicPartitionPruningEnabled &&
+        procCtx.conf.getBoolVar(ConfVars.TEZ_DYNAMIC_SEMIJOIN_REDUCTION) &&
+            procCtx.parseContext.getRsToSemiJoinBranchInfo().size() != 0;
+    final boolean extendedReductionEnabled = dynamicPartitionPruningEnabled &&
+        procCtx.conf.getBoolVar(ConfVars.TEZ_DYNAMIC_PARTITION_PRUNING_EXTENDED);
+
+    perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
+    if (dynamicPartitionPruningEnabled) {
+      runRemoveDynamicPruningOptimization(procCtx, inputs, outputs);
+    }
+    perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Run remove dynamic pruning by size");
+
+    if (semiJoinReductionEnabled) {
+      perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
+      markSemiJoinForDPP(procCtx);
+      perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Mark certain semijoin edges important based ");
+
+      // Remove any semi join edges from Union Op
+      perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
+      removeSemiJoinEdgesForUnion(procCtx);
+      perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER,
+                            "Remove any semi join edge between Union and RS");
+
+      // Remove any parallel edge between semijoin and mapjoin.
+      perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
+      removeSemijoinsParallelToMapJoin(procCtx);
+      perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Remove any parallel edge between semijoin and mapjoin");
+
+      // Remove semijoin optimization if SMB join is created.
+      perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
+      removeSemijoinOptimizationFromSMBJoins(procCtx);
+      perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Remove semijoin optimizations if needed");
+
+      // Remove bloomfilter if no stats generated
+      perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
+      removeSemiJoinIfNoStats(procCtx);
+      perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Remove bloom filter optimizations if needed");
+
+      // Removing semijoin optimization when it may not be beneficial
+      perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
+      removeSemijoinOptimizationByBenefit(procCtx);
+      perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Remove Semijoins based on cost benefits");
+    }
+
+    // after the stats phase we might have some cyclic dependencies that we need
+    // to take care of.
+    perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
+    if (dynamicPartitionPruningEnabled) {
+      runCycleAnalysisForPartitionPruning(procCtx, inputs, outputs);
+    }
+    perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Run cycle analysis for partition pruning");
+
+    // remove redundant dpp and semijoins
+    perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
+    if (extendedReductionEnabled) {
+      removeRedundantSemijoinAndDpp(procCtx);
+    }
+    perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Remove redundant semijoin reduction");
   }
 
   private void runRemoveDynamicPruningOptimization(OptimizeTezProcContext procCtx,
@@ -449,7 +557,7 @@ public class TezCompiler extends TaskCompiler {
 
     // create a walker which walks the tree in a DFS manner while maintaining
     // the operator stack.
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
     opRules.put(
         new RuleRegExp("Remove dynamic pruning by size",
         AppMasterEventOperator.getOperatorName() + "%"),
@@ -457,10 +565,10 @@ public class TezCompiler extends TaskCompiler {
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
-    Dispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
+    SemanticDispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
     List<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(procCtx.parseContext.getTopOps().values());
-    GraphWalker ogw = new ForwardWalker(disp);
+    SemanticGraphWalker ogw = new ForwardWalker(disp);
     ogw.startWalking(topNodes, null);
   }
 
@@ -475,22 +583,22 @@ public class TezCompiler extends TaskCompiler {
     Deque<Operator<?>> deque = new LinkedList<Operator<?>>();
     deque.addAll(procCtx.parseContext.getTopOps().values());
 
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
     opRules.put(
         new RuleRegExp(new String("Dynamic Partition Pruning"), FilterOperator.getOperatorName()
             + "%"), new DynamicPartitionPruningOptimization());
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
-    Dispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
+    SemanticDispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
     List<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(procCtx.parseContext.getTopOps().values());
-    GraphWalker ogw = new ForwardWalker(disp);
+    SemanticGraphWalker ogw = new ForwardWalker(disp);
     ogw.startWalking(topNodes, null);
   }
 
   @Override
-  protected void generateTaskTree(List<Task<? extends Serializable>> rootTasks, ParseContext pCtx,
+  protected void generateTaskTree(List<Task<?>> rootTasks, ParseContext pCtx,
       List<Task<MoveWork>> mvTask, Set<ReadEntity> inputs, Set<WriteEntity> outputs)
       throws SemanticException {
 
@@ -506,7 +614,7 @@ public class TezCompiler extends TaskCompiler {
     // create a walker which walks the tree in a DFS manner while maintaining
     // the operator stack.
     // The dispatcher generates the plan from the operator tree
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
     opRules.put(new RuleRegExp("Split Work - ReduceSink",
         ReduceSinkOperator.getOperatorName() + "%"),
         genTezWork);
@@ -539,10 +647,10 @@ public class TezCompiler extends TaskCompiler {
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
-    Dispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
+    SemanticDispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
     List<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(pCtx.getTopOps().values());
-    GraphWalker ogw = new GenTezWorkWalker(disp, procCtx);
+    SemanticGraphWalker ogw = new GenTezWorkWalker(disp, procCtx);
     ogw.startWalking(topNodes, null);
 
     // we need to specify the reserved memory for each work that contains Map Join
@@ -583,14 +691,14 @@ public class TezCompiler extends TaskCompiler {
   }
 
   @Override
-  protected void setInputFormat(Task<? extends Serializable> task) {
+  protected void setInputFormat(Task<?> task) {
     if (task instanceof TezTask) {
       TezWork work = ((TezTask)task).getWork();
       List<BaseWork> all = work.getAllWork();
       for (BaseWork w: all) {
         if (w instanceof MapWork) {
           MapWork mapWork = (MapWork) w;
-          HashMap<String, Operator<? extends OperatorDesc>> opMap = mapWork.getAliasToWork();
+          Map<String, Operator<? extends OperatorDesc>> opMap = mapWork.getAliasToWork();
           if (!opMap.isEmpty()) {
             for (Operator<? extends OperatorDesc> op : opMap.values()) {
               setInputFormat(mapWork, op);
@@ -599,15 +707,15 @@ public class TezCompiler extends TaskCompiler {
         }
       }
     } else if (task instanceof ConditionalTask) {
-      List<Task<? extends Serializable>> listTasks
+      List<Task<?>> listTasks
         = ((ConditionalTask) task).getListTasks();
-      for (Task<? extends Serializable> tsk : listTasks) {
+      for (Task<?> tsk : listTasks) {
         setInputFormat(tsk);
       }
     }
 
     if (task.getChildTasks() != null) {
-      for (Task<? extends Serializable> childTask : task.getChildTasks()) {
+      for (Task<?> childTask : task.getChildTasks()) {
         setInputFormat(childTask);
       }
     }
@@ -630,7 +738,7 @@ public class TezCompiler extends TaskCompiler {
   }
 
   @Override
-  protected void decideExecMode(List<Task<? extends Serializable>> rootTasks, Context ctx,
+  protected void decideExecMode(List<Task<?>> rootTasks, Context ctx,
       GlobalLimitCtx globalLimitCtx)
       throws SemanticException {
     // currently all Tez work is on the cluster
@@ -638,7 +746,7 @@ public class TezCompiler extends TaskCompiler {
   }
 
   @Override
-  protected void optimizeTaskPlan(List<Task<? extends Serializable>> rootTasks, ParseContext pCtx,
+  protected void optimizeTaskPlan(List<Task<?>> rootTasks, ParseContext pCtx,
       Context ctx) throws SemanticException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
@@ -658,7 +766,7 @@ public class TezCompiler extends TaskCompiler {
     }
 
     if (conf.getBoolVar(HiveConf.ConfVars.HIVE_CHECK_CROSS_PRODUCT)) {
-      physicalCtx = new CrossProductCheck().resolve(physicalCtx);
+      physicalCtx = new CrossProductHandler().resolve(physicalCtx);
     } else {
       LOG.debug("Skipping cross product analysis");
     }
@@ -669,8 +777,7 @@ public class TezCompiler extends TaskCompiler {
       LOG.debug("Skipping llap pre-vectorization pass");
     }
 
-    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED)
-        && ctx.getExplainAnalyze() == null) {
+    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED)) {
       physicalCtx = new Vectorizer().resolve(physicalCtx);
     } else {
       LOG.debug("Skipping vectorization");
@@ -712,7 +819,7 @@ public class TezCompiler extends TaskCompiler {
     HashMap<CommonMergeJoinOperator, TableScanOperator> JoinOpToTsOpMap = new HashMap<CommonMergeJoinOperator, TableScanOperator>();
   }
 
-  private static class SMBJoinOpProc implements NodeProcessor {
+  private static class SMBJoinOpProc implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -726,12 +833,7 @@ public class TezCompiler extends TaskCompiler {
 
   private static void removeSemijoinOptimizationFromSMBJoins(
           OptimizeTezProcContext procCtx) throws SemanticException {
-    if (!procCtx.conf.getBoolVar(ConfVars.TEZ_DYNAMIC_SEMIJOIN_REDUCTION) ||
-            procCtx.parseContext.getRsToSemiJoinBranchInfo().size() == 0) {
-      return;
-    }
-
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
     opRules.put(
             new RuleRegExp("R1", TableScanOperator.getOperatorName() + "%" +
                     ".*" + TezDummyStoreOperator.getOperatorName() + "%" +
@@ -740,10 +842,10 @@ public class TezCompiler extends TaskCompiler {
 
     SMBJoinOpProcContext ctx = new SMBJoinOpProcContext();
     // The dispatcher finds SMB and if there is semijoin optimization before it, removes it.
-    Dispatcher disp = new DefaultRuleDispatcher(null, opRules, ctx);
+    SemanticDispatcher disp = new DefaultRuleDispatcher(null, opRules, ctx);
     List<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(procCtx.parseContext.getTopOps().values());
-    GraphWalker ogw = new PreOrderOnceWalker(disp);
+    SemanticGraphWalker ogw = new PreOrderOnceWalker(disp);
     ogw.startWalking(topNodes, null);
 
     List<TableScanOperator> tsOps = new ArrayList<>();
@@ -793,206 +895,412 @@ public class TezCompiler extends TaskCompiler {
     }
   }
 
-  private static class SemiJoinCycleRemovalDueTOMapsideJoinContext implements NodeProcessorCtx {
-    HashMap<Operator<?>,Operator<?>> childParentMap = new HashMap<Operator<?>,Operator<?>>();
-  }
+  private static class TerminalOpsInfo {
+    public Set<TerminalOperator<?>> terminalOps;
 
-  private static class SemiJoinCycleRemovalDueToMapsideJoins implements NodeProcessor {
-
-    @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
-                          Object... nodeOutputs) throws SemanticException {
-
-      SemiJoinCycleRemovalDueTOMapsideJoinContext ctx =
-              (SemiJoinCycleRemovalDueTOMapsideJoinContext) procCtx;
-      ctx.childParentMap.put((Operator<?>)stack.get(stack.size() - 2), (Operator<?>) nd);
-      return null;
+    TerminalOpsInfo(Set<TerminalOperator<?>> terminalOps) {
+      this.terminalOps = terminalOps;
     }
   }
 
-  private static void removeSemiJoinCyclesDueToMapsideJoins(
-          OptimizeTezProcContext procCtx) throws SemanticException {
-    if (!procCtx.conf.getBoolVar(ConfVars.TEZ_DYNAMIC_SEMIJOIN_REDUCTION) ||
-            procCtx.parseContext.getRsToSemiJoinBranchInfo().size() == 0) {
-      return;
-    }
+  private void connectTerminalOps(ParseContext pCtx) {
+    // The map which contains the virtual edges from non-semijoin terminal ops to semjoin RSs.
+    Multimap<TerminalOperator<?>, ReduceSinkOperator> terminalOpToRSMap = ArrayListMultimap.create();
 
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
-    opRules.put(
-            new RuleRegExp("R1", MapJoinOperator.getOperatorName() + "%" +
-                    MapJoinOperator.getOperatorName() + "%"),
-            new SemiJoinCycleRemovalDueToMapsideJoins());
-    opRules.put(
-            new RuleRegExp("R2", MapJoinOperator.getOperatorName() + "%" +
-                    CommonMergeJoinOperator.getOperatorName() + "%"),
-            new SemiJoinCycleRemovalDueToMapsideJoins());
-    opRules.put(
-            new RuleRegExp("R3", CommonMergeJoinOperator.getOperatorName() + "%" +
-                    MapJoinOperator.getOperatorName() + "%"),
-            new SemiJoinCycleRemovalDueToMapsideJoins());
-    opRules.put(
-            new RuleRegExp("R4", CommonMergeJoinOperator.getOperatorName() + "%" +
-                    CommonMergeJoinOperator.getOperatorName() + "%"),
-            new SemiJoinCycleRemovalDueToMapsideJoins());
+    // Map of semijoin RS to work ops to ensure no work is examined more than once.
+    Map<ReduceSinkOperator, TerminalOpsInfo> rsToTerminalOpsInfo = new HashMap<>();
 
-    SemiJoinCycleRemovalDueTOMapsideJoinContext ctx =
-            new SemiJoinCycleRemovalDueTOMapsideJoinContext();
-    Dispatcher disp = new DefaultRuleDispatcher(null, opRules, ctx);
-    List<Node> topNodes = new ArrayList<Node>();
-    topNodes.addAll(procCtx.parseContext.getTopOps().values());
-    GraphWalker ogw = new PreOrderOnceWalker(disp);
-    ogw.startWalking(topNodes, null);
-
-    // process the list
-    ParseContext pCtx = procCtx.parseContext;
-    for (Operator<?> parentJoin : ctx.childParentMap.keySet()) {
-      Operator<?> childJoin = ctx.childParentMap.get(parentJoin);
-
-      if (parentJoin.getChildOperators().size() == 1) {
-        continue;
+    // Get all the terminal ops
+    for (ReduceSinkOperator rs : pCtx.getRsToSemiJoinBranchInfo().keySet()) {
+      TerminalOpsInfo terminalOpsInfo = rsToTerminalOpsInfo.get(rs);
+      if (terminalOpsInfo != null) {
+        continue; // done with this one
       }
 
-      for (Operator<?> child : parentJoin.getChildOperators()) {
-        if (!(child instanceof SelectOperator)) {
-          continue;
-        }
+      Set<ReduceSinkOperator> workRSOps = new HashSet<>();
+      Set<TerminalOperator<?>> workTerminalOps = new HashSet<>();
+      // Get the SEL Op in the semijoin-branch, SEL->GBY1->RS1->GBY2->RS2
+      Operator<?> selOp = rs.getParentOperators().get(0)
+              .getParentOperators().get(0)
+              .getParentOperators().get(0)
+              .getParentOperators().get(0);
+      OperatorUtils.findWorkOperatorsAndSemiJoinEdges(selOp,
+              pCtx.getRsToSemiJoinBranchInfo(), workRSOps, workTerminalOps);
 
-        while(child.getChildOperators().size() > 0) {
-          child = child.getChildOperators().get(0);
-        }
+      TerminalOpsInfo candidate = new TerminalOpsInfo(workTerminalOps);
 
-        if (!(child instanceof ReduceSinkOperator)) {
-          continue;
-        }
-
-        ReduceSinkOperator rs = ((ReduceSinkOperator) child);
-        SemiJoinBranchInfo sjInfo = pCtx.getRsToSemiJoinBranchInfo().get(rs);
-        if (sjInfo == null) continue;
-
-        TableScanOperator ts = sjInfo.getTsOp();
-        // This is a semijoin branch. Find if this is creating a potential
-        // cycle with childJoin.
-        for (Operator<?> parent : childJoin.getParentOperators()) {
-          if (parent == parentJoin) {
-            continue;
-          }
-
-          assert parent instanceof ReduceSinkOperator;
-          while (parent.getParentOperators().size() > 0) {
-            parent = parent.getParentOperators().get(0);
-          }
-
-          if (parent == ts) {
-            // We have a cycle!
-            if (sjInfo.getIsHint()) {
-              throw new SemanticException("Removing hinted semijoin as it is creating cycles with mapside joins " + rs + " : " + ts);
-            }
-            if (LOG.isDebugEnabled()) {
-              LOG.debug("Semijoin cycle due to mapjoin. Removing semijoin "
-                  + OperatorUtils.getOpNamePretty(rs) + " - " + OperatorUtils.getOpNamePretty(ts));
-            }
-            GenTezUtils.removeBranch(rs);
-            GenTezUtils.removeSemiJoinOperator(pCtx, rs, ts);
-          }
+      // A work may contain multiple semijoin edges, traverse rsOps and add for each
+      for (ReduceSinkOperator rsFound : workRSOps) {
+        rsToTerminalOpsInfo.put(rsFound, candidate);
+        for (TerminalOperator<?> terminalOp : candidate.terminalOps) {
+          terminalOpToRSMap.put(terminalOp, rsFound);
         }
       }
     }
-  }
 
-  private static class SemiJoinRemovalIfNoStatsProc implements NodeProcessor {
-
-    @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
-                          Object... nodeOutputs) throws SemanticException {
-      assert nd instanceof ReduceSinkOperator;
-      ReduceSinkOperator rs = (ReduceSinkOperator) nd;
-      ParseContext pCtx = ((OptimizeTezProcContext) procCtx).parseContext;
-      SemiJoinBranchInfo sjInfo = pCtx.getRsToSemiJoinBranchInfo().get(rs);
-      if (sjInfo == null) {
-        // nothing to do here.
-        return null;
-      }
-
-      // This is a semijoin branch. The stack should look like,
-      // <Parent Ops>-SEL-GB1-RS1-GB2-RS2
-      GroupByOperator gbOp = (GroupByOperator) (stack.get(stack.size() - 2));
-      GroupByDesc gbDesc = gbOp.getConf();
-      ArrayList<AggregationDesc> aggregationDescs = gbDesc.getAggregators();
-      for (AggregationDesc agg : aggregationDescs) {
-        if (!"bloom_filter".equals(agg.getGenericUDAFName())) {
-          continue;
-        }
-
-        GenericUDAFBloomFilterEvaluator udafBloomFilterEvaluator =
-                (GenericUDAFBloomFilterEvaluator) agg.getGenericUDAFEvaluator();
-        if (udafBloomFilterEvaluator.hasHintEntries())
-          return null; // Created using hint, skip it
-
-        long expectedEntries = udafBloomFilterEvaluator.getExpectedEntries();
-        if (expectedEntries == -1 || expectedEntries >
-                pCtx.getConf().getLongVar(ConfVars.TEZ_MAX_BLOOM_FILTER_ENTRIES)) {
-          if (sjInfo.getIsHint()) {
-            throw new SemanticException("Removing hinted semijoin due to lack to stats" +
-            " or exceeding max bloom filter entries");
-          }
-          // Remove the semijoin optimization branch along with ALL the mappings
-          // The parent GB2 has all the branches. Collect them and remove them.
-          for (Node node : gbOp.getChildren()) {
-            ReduceSinkOperator rsFinal = (ReduceSinkOperator) node;
-            TableScanOperator ts = pCtx.getRsToSemiJoinBranchInfo().
-                    get(rsFinal).getTsOp();
-            if (LOG.isDebugEnabled()) {
-              LOG.debug("expectedEntries=" + expectedEntries + ". "
-                      + "Either stats unavailable or expectedEntries exceeded max allowable bloomfilter size. "
-                      + "Removing semijoin "
-                      + OperatorUtils.getOpNamePretty(rs) + " - " + OperatorUtils.getOpNamePretty(ts));
-            }
-            GenTezUtils.removeBranch(rsFinal);
-            GenTezUtils.removeSemiJoinOperator(pCtx, rsFinal, ts);
-          }
-          return null;
-        }
-      }
-
-      // At this point, hinted semijoin case has been handled already
-      // Check if big table is big enough that runtime filtering is
-      // worth it.
-      TableScanOperator ts = sjInfo.getTsOp();
-      if (ts.getStatistics() != null) {
-        long numRows = ts.getStatistics().getNumRows();
-        if (numRows < pCtx.getConf().getLongVar(ConfVars.TEZ_BIGTABLE_MIN_SIZE_SEMIJOIN_REDUCTION)) {
-          if (sjInfo.getShouldRemove()) {
-            if (LOG.isDebugEnabled()) {
-              LOG.debug("Insufficient rows (" + numRows + ") to justify semijoin optimization. Removing semijoin "
-                      + OperatorUtils.getOpNamePretty(rs) + " - " + OperatorUtils.getOpNamePretty(ts));
-            }
-            GenTezUtils.removeBranch(rs);
-            GenTezUtils.removeSemiJoinOperator(pCtx, rs, ts);
-          }
-        }
-      }
-      return null;
-    }
+    pCtx.setTerminalOpToRSMap(terminalOpToRSMap);
   }
 
   private void removeSemiJoinIfNoStats(OptimizeTezProcContext procCtx)
           throws SemanticException {
-    if(!procCtx.conf.getBoolVar(ConfVars.TEZ_DYNAMIC_SEMIJOIN_REDUCTION)) {
-      // Not needed without semi-join reduction
-      return;
-    }
-
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
     opRules.put(
             new RuleRegExp("R1", GroupByOperator.getOperatorName() + "%" +
                     ReduceSinkOperator.getOperatorName() + "%" +
                     GroupByOperator.getOperatorName() + "%" +
                     ReduceSinkOperator.getOperatorName() + "%"),
-            new SemiJoinRemovalIfNoStatsProc());
-    Dispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
+            new SemiJoinRemovalProc(true, false));
+    SemiJoinRemovalContext ctx =
+        new SemiJoinRemovalContext(procCtx.parseContext);
+    SemanticDispatcher disp = new DefaultRuleDispatcher(null, opRules, ctx);
     List<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(procCtx.parseContext.getTopOps().values());
-    GraphWalker ogw = new PreOrderOnceWalker(disp);
+    SemanticGraphWalker ogw = new PreOrderOnceWalker(disp);
+    ogw.startWalking(topNodes, null);
+  }
+
+  private static class CollectAll implements SemanticNodeProcessor {
+    private PlanMapper planMapper;
+
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
+        throws SemanticException {
+      ParseContext pCtx = ((OptimizeTezProcContext) procCtx).parseContext;
+      planMapper = pCtx.getContext().getPlanMapper();
+      FilterOperator fop = (FilterOperator) nd;
+      OpTreeSignature sig = planMapper.getSignatureOf(fop);
+      List<EquivGroup> ar = getGroups(planMapper, HiveFilter.class);
+
+
+      return nd;
+    }
+
+    private List<EquivGroup> getGroups(PlanMapper planMapper2, Class<HiveFilter> class1) {
+      Iterator<EquivGroup> it = planMapper.iterateGroups();
+      List<EquivGroup> ret = new ArrayList<PlanMapper.EquivGroup>();
+      while (it.hasNext()) {
+        EquivGroup g = it.next();
+        if (g.getAll(class1).size() > 0) {
+          ret.add(g);
+        }
+      }
+      return ret;
+    }
+  }
+
+  private static class MarkRuntimeStatsAsIncorrect implements SemanticNodeProcessor {
+
+    private PlanMapper planMapper;
+
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
+        throws SemanticException {
+      ParseContext pCtx = ((OptimizeTezProcContext) procCtx).parseContext;
+      planMapper = pCtx.getContext().getPlanMapper();
+      if (nd instanceof ReduceSinkOperator) {
+        ReduceSinkOperator rs = (ReduceSinkOperator) nd;
+        SemiJoinBranchInfo sjInfo = pCtx.getRsToSemiJoinBranchInfo().get(rs);
+        if (sjInfo == null) {
+          return null;
+        }
+        walkSubtree(sjInfo.getTsOp());
+      }
+      if (nd instanceof AppMasterEventOperator) {
+        AppMasterEventOperator ame = (AppMasterEventOperator) nd;
+        AppMasterEventDesc c = ame.getConf();
+        if (c instanceof DynamicPruningEventDesc) {
+          DynamicPruningEventDesc dped = (DynamicPruningEventDesc) c;
+          mark(dped.getTableScan());
+        }
+      }
+      if (nd instanceof TableScanOperator) {
+        // If the tablescan operator is making use of filtering capabilities of readers then
+        // we will not see the actual incoming rowcount which was processed - so we may not use it for relNodes
+        TableScanOperator ts = (TableScanOperator) nd;
+        if (ts.getConf().getPredicateString() != null) {
+          planMapper.link(ts, new OperatorStats.MayNotUseForRelNodes());
+        }
+      }
+      return null;
+    }
+
+    private void walkSubtree(Operator<?> root) {
+      Deque<Operator<?>> deque = new LinkedList<>();
+      deque.add(root);
+      while (!deque.isEmpty()) {
+        Operator<?> op = deque.pollLast();
+        mark(op);
+        if (op instanceof ReduceSinkOperator) {
+          // Done with this branch
+        } else {
+          deque.addAll(op.getChildOperators());
+        }
+      }
+    }
+
+    private void mark(Operator<?> op) {
+      planMapper.link(op, new OperatorStats.IncorrectRuntimeStatsMarker());
+    }
+
+  }
+
+  private void markOperatorsWithUnstableRuntimeStats(OptimizeTezProcContext procCtx) throws SemanticException {
+    Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
+    opRules.put(
+        new RuleRegExp("R1",
+            ReduceSinkOperator.getOperatorName() + "%"),
+        new MarkRuntimeStatsAsIncorrect());
+    opRules.put(
+        new RuleRegExp("R2",
+            AppMasterEventOperator.getOperatorName() + "%"),
+        new MarkRuntimeStatsAsIncorrect());
+    opRules.put(
+        new RuleRegExp("R3",
+            TableScanOperator.getOperatorName() + "%"),
+        new MarkRuntimeStatsAsIncorrect());
+    SemanticDispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
+    List<Node> topNodes = new ArrayList<Node>();
+    topNodes.addAll(procCtx.parseContext.getTopOps().values());
+    SemanticGraphWalker ogw = new PreOrderOnceWalker(disp);
+    ogw.startWalking(topNodes, null);
+  }
+
+  private class SemiJoinRemovalProc implements SemanticNodeProcessor {
+
+    private final boolean removeBasedOnStats;
+    private final boolean removeRedundant;
+
+    private SemiJoinRemovalProc (boolean removeBasedOnStats, boolean removeRedundant) {
+      this.removeBasedOnStats = removeBasedOnStats;
+      this.removeRedundant = removeRedundant;
+    }
+
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+                          Object... nodeOutputs) throws SemanticException {
+      ReduceSinkOperator rs = (ReduceSinkOperator) nd;
+      SemiJoinRemovalContext rCtx = (SemiJoinRemovalContext) procCtx;
+      ParseContext pCtx = rCtx.parseContext;
+      SemiJoinBranchInfo sjInfo = pCtx.getRsToSemiJoinBranchInfo().get(rs);
+      if (sjInfo == null) {
+        // nothing to do here.
+        return null;
+      }
+      TableScanOperator targetTSOp = sjInfo.getTsOp();
+      ExprNodeDesc targetColExpr = pCtx.getRsToRuntimeValuesInfoMap().get(rs).getTsColExpr();
+
+      // This is a semijoin branch. The stack should look like,
+      // <Parent Ops>-SEL-GB1-RS1-GB2-RS2
+      GroupByOperator gbOp = (GroupByOperator) stack.get(stack.size() - 2);
+      GroupByDesc gbDesc = gbOp.getConf();
+      List<AggregationDesc> aggregationDescs = gbDesc.getAggregators();
+      for (AggregationDesc agg : aggregationDescs) {
+        if (!isBloomFilterAgg(agg)) {
+          continue;
+        }
+
+        GenericUDAFBloomFilterEvaluator udafBloomFilterEvaluator =
+            (GenericUDAFBloomFilterEvaluator) agg.getGenericUDAFEvaluator();
+        if (udafBloomFilterEvaluator.hasHintEntries()) {
+          return null; // Created using hint, skip it
+        }
+
+        if (removeBasedOnStats) {
+          long expectedEntries = udafBloomFilterEvaluator.getExpectedEntries();
+          if (expectedEntries == -1 || expectedEntries >
+              pCtx.getConf().getLongVar(ConfVars.TEZ_MAX_BLOOM_FILTER_ENTRIES)) {
+            if (sjInfo.getIsHint() && expectedEntries == -1) {
+              throw new SemanticException("Removing hinted semijoin due to lack to stats" +
+                  " or exceeding max bloom filter entries");
+            } else if(sjInfo.getIsHint()) {
+              // do not remove if hint is provided
+              continue;
+            }
+            // Remove the semijoin optimization branch along with ALL the mappings
+            // The parent GB2 has all the branches. Collect them and remove them.
+            for (Node node : gbOp.getChildren()) {
+              ReduceSinkOperator rsFinal = (ReduceSinkOperator) node;
+              TableScanOperator ts = pCtx.getRsToSemiJoinBranchInfo().
+                  get(rsFinal).getTsOp();
+              if (LOG.isDebugEnabled()) {
+                LOG.debug("expectedEntries=" + expectedEntries + ". "
+                    + "Either stats unavailable or expectedEntries exceeded max allowable bloomfilter size. "
+                    + "Removing semijoin "
+                    + OperatorUtils.getOpNamePretty(rs) + " - " + OperatorUtils.getOpNamePretty(ts));
+              }
+              GenTezUtils.removeBranch(rsFinal);
+              GenTezUtils.removeSemiJoinOperator(pCtx, rsFinal, ts);
+            }
+            return null;
+          }
+        }
+      }
+
+      if (removeBasedOnStats) {
+        // At this point, hinted semijoin case has been handled already
+        // Check if big table is big enough that runtime filtering is
+        // worth it.
+        TableScanOperator ts = sjInfo.getTsOp();
+        if (ts.getStatistics() != null) {
+          long numRows = ts.getStatistics().getNumRows();
+          if (numRows < pCtx.getConf().getLongVar(ConfVars.TEZ_BIGTABLE_MIN_SIZE_SEMIJOIN_REDUCTION)) {
+            if (sjInfo.getShouldRemove()) {
+              if (LOG.isDebugEnabled()) {
+                LOG.debug("Insufficient rows (" + numRows + ") to justify semijoin optimization. Removing semijoin "
+                    + OperatorUtils.getOpNamePretty(rs) + " - " + OperatorUtils.getOpNamePretty(ts));
+              }
+              GenTezUtils.removeBranch(rs);
+              GenTezUtils.removeSemiJoinOperator(pCtx, rs, ts);
+            }
+          }
+        }
+      }
+
+      if (removeRedundant) {
+        // Look for RS ops above the current semijoin branch
+        Set<ReduceSinkOperator> rsOps = OperatorUtils.findOperators(
+            ((Operator<?>) stack.get(stack.size() - 5)).getParentOperators().get(0),
+            ReduceSinkOperator.class);
+        for (Operator<?> otherRSOp : rsOps) {
+          SemiJoinBranchInfo otherSjInfo = pCtx.getRsToSemiJoinBranchInfo().get(otherRSOp);
+          // First conjunct prevents SJ RS from removing itself
+          if (otherRSOp != rs && otherSjInfo != null && otherSjInfo.getTsOp() == targetTSOp) {
+            if (rCtx.opsToRemove.containsKey(otherRSOp)) {
+              // We found siblings, since we are removing the other operator, no need to remove this one
+              continue;
+            }
+            ExprNodeDesc otherColExpr = pCtx.getRsToRuntimeValuesInfoMap().get(otherRSOp).getTsColExpr();
+            if (!otherColExpr.isSame(targetColExpr)) {
+              // Filter should be on the same column, otherwise we do not proceed
+              continue;
+            }
+            rCtx.opsToRemove.put(rs, targetTSOp);
+            break;
+          }
+        }
+      }
+
+      return null;
+    }
+  }
+
+  private static boolean isBloomFilterAgg(AggregationDesc agg) {
+    return "bloom_filter".equals(agg.getGenericUDAFName());
+  }
+
+  private static class DynamicPruningRemovalRedundantProc implements SemanticNodeProcessor {
+
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+                          Object... nodeOutputs) throws SemanticException {
+      AppMasterEventOperator event = (AppMasterEventOperator) nd;
+      if (!(event.getConf() instanceof DynamicPruningEventDesc)) {
+        return null;
+      }
+
+      SemiJoinRemovalContext rCtx = (SemiJoinRemovalContext) procCtx;
+
+      DynamicPruningEventDesc desc = (DynamicPruningEventDesc) event.getConf();
+      TableScanOperator targetTSOp = desc.getTableScan();
+      String targetColumnName = desc.getTargetColumnName();
+
+      // Look for event ops above the current event op branch
+      Operator<?> op = event.getParentOperators().get(0);
+      while (op.getChildOperators().size() < 2) {
+        op = op.getParentOperators().get(0);
+      }
+      Set<AppMasterEventOperator> eventOps = OperatorUtils.findOperators(
+          op, AppMasterEventOperator.class);
+      for (AppMasterEventOperator otherEvent : eventOps) {
+        if (!(otherEvent.getConf() instanceof DynamicPruningEventDesc)) {
+          continue;
+        }
+        DynamicPruningEventDesc otherDesc = (DynamicPruningEventDesc) otherEvent.getConf();
+        if (otherEvent != event && otherDesc.getTableScan() == targetTSOp &&
+            otherDesc.getTargetColumnName().equals(targetColumnName)) {
+          if (rCtx.opsToRemove.containsKey(otherEvent)) {
+            // We found siblings, since we are removing the other operator, no need to remove this one
+            continue;
+          }
+          rCtx.opsToRemove.put(event, targetTSOp);
+          break;
+        }
+      }
+
+      return null;
+    }
+  }
+
+  private void removeRedundantSemijoinAndDpp(OptimizeTezProcContext procCtx)
+      throws SemanticException {
+    Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<>();
+    opRules.put(
+        new RuleRegExp("R1", GroupByOperator.getOperatorName() + "%" +
+            ReduceSinkOperator.getOperatorName() + "%" +
+            GroupByOperator.getOperatorName() + "%" +
+            ReduceSinkOperator.getOperatorName() + "%"),
+        new SemiJoinRemovalProc(false, true));
+    opRules.put(
+        new RuleRegExp("R2",
+            AppMasterEventOperator.getOperatorName() + "%"),
+        new DynamicPruningRemovalRedundantProc());
+
+    // Gather
+    SemiJoinRemovalContext ctx =
+        new SemiJoinRemovalContext(procCtx.parseContext);
+    SemanticDispatcher disp = new DefaultRuleDispatcher(null, opRules, ctx);
+    List<Node> topNodes = new ArrayList<Node>();
+    topNodes.addAll(procCtx.parseContext.getTopOps().values());
+    SemanticGraphWalker ogw = new PreOrderOnceWalker(disp);
+    ogw.startWalking(topNodes, null);
+
+    // Remove
+    for (Map.Entry<Operator<?>, TableScanOperator> p : ctx.opsToRemove.entrySet()) {
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Removing redundant " + OperatorUtils.getOpNamePretty(p.getKey()) + " - " + OperatorUtils.getOpNamePretty(p.getValue()));
+      }
+      GenTezUtils.removeBranch(p.getKey());
+      if (p.getKey() instanceof AppMasterEventOperator) {
+        GenTezUtils.removeSemiJoinOperator(procCtx.parseContext, (AppMasterEventOperator) p.getKey(), p.getValue());
+      } else if (p.getKey() instanceof ReduceSinkOperator) {
+        GenTezUtils.removeSemiJoinOperator(procCtx.parseContext, (ReduceSinkOperator) p.getKey(), p.getValue());
+      } else {
+        throw new SemanticException("Unexpected error - type for branch could not be recognized");
+      }
+    }
+  }
+
+  private class SemiJoinRemovalContext implements NodeProcessorCtx {
+    private final ParseContext parseContext;
+    private final Map<Operator<?>, TableScanOperator> opsToRemove;
+
+    private SemiJoinRemovalContext(final ParseContext parseContext) {
+      this.parseContext = parseContext;
+      this.opsToRemove = new HashMap<>();
+    }
+  }
+
+  private static void runTopNKeyOptimization(OptimizeTezProcContext procCtx)
+      throws SemanticException {
+    if (!procCtx.conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_TOPNKEY)) {
+      return;
+    }
+
+    Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
+    opRules.put(
+        new RuleRegExp("Top n key optimization", ReduceSinkOperator.getOperatorName() + "%"),
+        new TopNKeyProcessor(HiveConf.getIntVar(procCtx.conf, HiveConf.ConfVars.HIVE_MAX_TOPN_ALLOWED)));
+    opRules.put(
+            new RuleRegExp("Top n key pushdown", TopNKeyOperator.getOperatorName() + "%"),
+            new TopNKeyPushdownProcessor());
+
+
+    // The dispatcher fires the processor corresponding to the closest matching
+    // rule and passes the context along
+    SemanticDispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
+    List<Node> topNodes = new ArrayList<Node>();
+    topNodes.addAll(procCtx.parseContext.getTopOps().values());
+    SemanticGraphWalker ogw = new DefaultGraphWalker(disp);
     ogw.startWalking(topNodes, null);
   }
 
@@ -1053,7 +1361,9 @@ public class TezCompiler extends TaskCompiler {
 
           ReduceSinkOperator rs = (ReduceSinkOperator) child;
           SemiJoinBranchInfo sjInfo = parseContext.getRsToSemiJoinBranchInfo().get(rs);
-          if (sjInfo == null) continue;
+          if (sjInfo == null) {
+            continue;
+          }
 
           TableScanOperator ts = sjInfo.getTsOp();
           if (ts != bigTableTS) {
@@ -1076,15 +1386,64 @@ public class TezCompiler extends TaskCompiler {
   }
 
   /*
+   * Given an operator this method removes all semi join edges downstream (children) until it hits RS
+   */
+  private void removeSemiJoinEdges(Operator<?> op, OptimizeTezProcContext procCtx,
+                                   Map<ReduceSinkOperator, TableScanOperator> sjToRemove) throws SemanticException {
+    if(op instanceof ReduceSinkOperator && op.getNumChild() == 0) {
+      Map<ReduceSinkOperator, SemiJoinBranchInfo> sjMap = procCtx.parseContext.getRsToSemiJoinBranchInfo();
+      if(sjMap.get(op) != null) {
+        sjToRemove.put((ReduceSinkOperator)op, sjMap.get(op).getTsOp());
+      }
+    }
+
+    for(Operator<?> child:op.getChildOperators()) {
+      removeSemiJoinEdges(child, procCtx, sjToRemove);
+    }
+  }
+
+  private void removeSemiJoinEdgesForUnion(OptimizeTezProcContext procCtx) throws SemanticException{
+    // Get all the TS ops.
+    List<Operator<?>> topOps = new ArrayList<>();
+    topOps.addAll(procCtx.parseContext.getTopOps().values());
+    Set<Operator<?>> unionOps = new HashSet<>();
+
+    Map<ReduceSinkOperator, TableScanOperator> sjToRemove = new HashMap<>();
+    for (Operator<?> parent : topOps) {
+      Deque<Operator<?>> deque = new LinkedList<>();
+      deque.add(parent);
+      while (!deque.isEmpty()) {
+        Operator<?> op = deque.pollLast();
+        if (op instanceof UnionOperator && !unionOps.contains(op)) {
+          unionOps.add(op);
+          removeSemiJoinEdges(op, procCtx, sjToRemove);
+        }
+        deque.addAll(op.getChildOperators());
+      }
+    }
+    // remove sj
+    if (sjToRemove.size() > 0) {
+      for (Map.Entry<ReduceSinkOperator, TableScanOperator> entry : sjToRemove.entrySet()) {
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Semijoin optimization with Union operator. Removing semijoin "
+                        + OperatorUtils.getOpNamePretty(entry.getKey()) + " - "
+                        + OperatorUtils.getOpNamePretty(sjToRemove.get(entry.getKey())));
+        }
+        GenTezUtils.removeBranch(entry.getKey());
+        GenTezUtils.removeSemiJoinOperator(procCtx.parseContext, entry.getKey(), entry.getValue());
+      }
+    }
+  }
+
+  /*
    *  The algorithm looks at all the mapjoins in the operator pipeline until
    *  it hits RS Op and for each mapjoin examines if it has paralllel semijoin
    *  edge or dynamic partition pruning.
    */
   private void removeSemijoinsParallelToMapJoin(OptimizeTezProcContext procCtx)
           throws SemanticException {
-    if(!procCtx.conf.getBoolVar(ConfVars.TEZ_DYNAMIC_SEMIJOIN_REDUCTION) ||
-            !procCtx.conf.getBoolVar(ConfVars.HIVECONVERTJOIN) ||
-            procCtx.conf.getBoolVar(ConfVars.TEZ_DYNAMIC_SEMIJOIN_REDUCTION_FOR_MAPJOIN)) {
+    if(!procCtx.conf.getBoolVar(ConfVars.HIVECONVERTJOIN) ||
+        procCtx.conf.getBoolVar(ConfVars.TEZ_DYNAMIC_SEMIJOIN_REDUCTION_FOR_MAPJOIN)) {
       // Not needed without semi-join reduction or mapjoins or when semijoins
       // are enabled for parallel mapjoins.
       return;
@@ -1138,8 +1497,7 @@ public class TezCompiler extends TaskCompiler {
   }
 
   private static double getBloomFilterCost(
-      SelectOperator sel,
-      FilterOperator fil) {
+      SelectOperator sel) {
     double cost = -1;
     Statistics selStats = sel.getStatistics();
     if (selStats != null) {
@@ -1205,10 +1563,9 @@ public class TezCompiler extends TaskCompiler {
 
   private static double getBloomFilterBenefit(
       SelectOperator sel, ExprNodeDesc selExpr,
-      FilterOperator fil, ExprNodeDesc tsExpr) {
+      Statistics filStats, ExprNodeDesc tsExpr) {
     double benefit = -1;
     Statistics selStats = sel.getStatistics();
-    Statistics filStats = fil.getStatistics();
     if (selStats == null || filStats == null) {
       LOG.debug("No stats available to compute BloomFilter benefit");
       return benefit;
@@ -1271,12 +1628,11 @@ public class TezCompiler extends TaskCompiler {
 
   private static double computeBloomFilterNetBenefit(
       SelectOperator sel, ExprNodeDesc selExpr,
-      FilterOperator fil, ExprNodeDesc tsExpr) {
+      Statistics filStats, ExprNodeDesc tsExpr) {
     double netBenefit = -1;
-    double benefit = getBloomFilterBenefit(sel, selExpr, fil, tsExpr);
-    Statistics filStats = fil.getStatistics();
+    double benefit = getBloomFilterBenefit(sel, selExpr, filStats, tsExpr);
     if (benefit > 0 && filStats != null) {
-      double cost = getBloomFilterCost(sel, fil);
+      double cost = getBloomFilterCost(sel);
       if (cost > 0) {
         long filDataSize = filStats.getNumRows();
         netBenefit = (benefit - cost) / filDataSize;
@@ -1290,54 +1646,196 @@ public class TezCompiler extends TaskCompiler {
     return netBenefit;
   }
 
+  /**
+   * Sort semijoin filters depending on the benefit (computed depending on selectivity and cost)
+   * that they provide. We create three blocks: first all normal predicates, second between clauses
+   * for the min/max dynamic values, and finally the in bloom filter predicates. The intuition is
+   * that evaluating the between clause will be cheaper than evaluating the bloom filter predicates.
+   * Hence, after this method runs, normal predicates come first (possibly sorted by Calcite),
+   * then we will have sorted between clauses, and finally sorted in bloom filter clauses.
+   */
+  private static void sortSemijoinFilters(OptimizeTezProcContext procCtx,
+      ListMultimap<FilterOperator, SemijoinOperatorInfo> globalReductionFactorMap) throws SemanticException {
+    for (Entry<FilterOperator, Collection<SemijoinOperatorInfo>> e : globalReductionFactorMap.asMap().entrySet()) {
+      FilterOperator filterOp = e.getKey();
+      Collection<SemijoinOperatorInfo> semijoinInfos = e.getValue();
+
+      ExprNodeDesc pred = filterOp.getConf().getPredicate();
+      if (FunctionRegistry.isOpAnd(pred)) {
+        LinkedHashSet<ExprNodeDesc> allPreds = new LinkedHashSet<>(pred.getChildren());
+        List<ExprNodeDesc> betweenPreds = new ArrayList<>();
+        List<ExprNodeDesc> inBloomFilterPreds = new ArrayList<>();
+        // We check whether we can find semijoin predicates
+        for (SemijoinOperatorInfo roi : semijoinInfos) {
+          for (ExprNodeDesc expr : pred.getChildren()) {
+            if (FunctionRegistry.isOpBetween(expr) &&
+                expr.getChildren().get(2) instanceof ExprNodeDynamicValueDesc) {
+              // BETWEEN in SJ
+              String dynamicValueIdFromExpr = ((ExprNodeDynamicValueDesc) expr.getChildren().get(2))
+                  .getDynamicValue().getId();
+              List<String> dynamicValueIdsFromMap = procCtx.parseContext.getRsToRuntimeValuesInfoMap()
+                  .get(roi.rsOperator).getDynamicValueIDs();
+              for (String dynamicValueIdFromMap : dynamicValueIdsFromMap) {
+                if (dynamicValueIdFromExpr.equals(dynamicValueIdFromMap)) {
+                  betweenPreds.add(expr);
+                  allPreds.remove(expr);
+                  break;
+                }
+              }
+            } else if (FunctionRegistry.isOpInBloomFilter(expr) &&
+                expr.getChildren().get(1) instanceof ExprNodeDynamicValueDesc) {
+              // IN_BLOOM_FILTER in SJ
+              String dynamicValueIdFromExpr = ((ExprNodeDynamicValueDesc) expr.getChildren().get(1))
+                  .getDynamicValue().getId();
+              List<String> dynamicValueIdsFromMap = procCtx.parseContext.getRsToRuntimeValuesInfoMap()
+                  .get(roi.rsOperator).getDynamicValueIDs();
+              for (String dynamicValueIdFromMap : dynamicValueIdsFromMap) {
+                if (dynamicValueIdFromExpr.equals(dynamicValueIdFromMap)) {
+                  inBloomFilterPreds.add(expr);
+                  allPreds.remove(expr);
+                  break;
+                }
+              }
+            }
+          }
+        }
+
+        List<ExprNodeDesc> newAndArgs = new ArrayList<>(allPreds); // First rest of predicates
+        newAndArgs.addAll(betweenPreds);  // Then sorted between predicates
+        newAndArgs.addAll(inBloomFilterPreds); // Finally, sorted in bloom predicates
+
+        ExprNodeDesc andExpr = ExprNodeGenericFuncDesc.newInstance(
+            FunctionRegistry.getFunctionInfo("and").getGenericUDF(), newAndArgs);
+        filterOp.getConf().setPredicate(andExpr);
+      }
+    }
+  }
+
   private void removeSemijoinOptimizationByBenefit(OptimizeTezProcContext procCtx)
       throws SemanticException {
-    if(!procCtx.conf.getBoolVar(ConfVars.TEZ_DYNAMIC_SEMIJOIN_REDUCTION)) {
-      // Not needed without semi-join reduction
+    Map<ReduceSinkOperator, SemiJoinBranchInfo> map = procCtx.parseContext.getRsToSemiJoinBranchInfo();
+    if (map.isEmpty()) {
+      // Nothing to do
       return;
     }
 
-    List<ReduceSinkOperator> semijoinRsToRemove = new ArrayList<ReduceSinkOperator>();
-    Map<ReduceSinkOperator, SemiJoinBranchInfo> map = procCtx.parseContext.getRsToSemiJoinBranchInfo();
+    // Scale down stats for tables with DPP
+    Map<FilterOperator, Statistics> adjustedStatsMap = new HashMap<>();
+    List<ReduceSinkOperator> semijoinRsToRemove = new ArrayList<>();
     double semijoinReductionThreshold = procCtx.conf.getFloatVar(
         HiveConf.ConfVars.TEZ_DYNAMIC_SEMIJOIN_REDUCTION_THRESHOLD);
-    for (ReduceSinkOperator rs : map.keySet()) {
-      SemiJoinBranchInfo sjInfo = map.get(rs);
-      if (sjInfo.getIsHint() || !sjInfo.getShouldRemove()) {
-        // Semijoin created using hint or marked useful, skip it
-        continue;
-      }
-      // rs is semijoin optimization branch, which should look like <Parent>-SEL-GB1-RS1-GB2-RS2
-      // Get to the SelectOperator ancestor
-      SelectOperator sel = null;
-      for (Operator<?> currOp = rs; currOp.getParentOperators().size() > 0; currOp = currOp.getParentOperators().get(0)) {
-        if (currOp instanceof SelectOperator) {
-          sel = (SelectOperator) currOp;
-          break;
+    // Using SortedSet to make iteration order deterministic
+    final Comparator<ReduceSinkOperator> rsOpComp =
+        (ReduceSinkOperator o1, ReduceSinkOperator o2) -> (o1.toString().compareTo(o2.toString()));
+    SortedSet<ReduceSinkOperator> semiJoinRsOps = new TreeSet<>(rsOpComp);
+    semiJoinRsOps.addAll(map.keySet());
+    ListMultimap<FilterOperator, SemijoinOperatorInfo> globalReductionFactorMap = ArrayListMultimap.create();
+    while (!semiJoinRsOps.isEmpty()) {
+      // We will gather the SJs to keep in the plan in the following map
+      Map<FilterOperator, SemijoinOperatorInfo> reductionFactorMap = new HashMap<>();
+      SortedSet<ReduceSinkOperator> semiJoinRsOpsNewIter = new TreeSet<>(rsOpComp);
+      for (ReduceSinkOperator rs : semiJoinRsOps) {
+        SemiJoinBranchInfo sjInfo = map.get(rs);
+        if (sjInfo.getIsHint() || !sjInfo.getShouldRemove()) {
+          // Semijoin created using hint or marked useful, skip it
+          continue;
+        }
+        // rs is semijoin optimization branch, which should look like <Parent>-SEL-GB1-RS1-GB2-RS2
+        // Get to the SelectOperator ancestor
+        SelectOperator sel = null;
+        for (Operator<?> currOp = rs; currOp.getParentOperators().size() > 0; currOp = currOp.getParentOperators().get(0)) {
+          if (currOp instanceof SelectOperator) {
+            sel = (SelectOperator) currOp;
+            break;
+          }
+        }
+        if (sel == null) {
+          throw new SemanticException("Unexpected error - could not find SEL ancestor from semijoin branch of " + rs);
+        }
+
+        // Check the ndv/rows from the SEL vs the destination tablescan the semijoin opt is going to.
+        TableScanOperator ts = sjInfo.getTsOp();
+        RuntimeValuesInfo rti = procCtx.parseContext.getRsToRuntimeValuesInfoMap().get(rs);
+        ExprNodeDesc tsExpr = rti.getTsColExpr();
+        // In the SEL operator of the semijoin branch, there should be only one column in the operator
+        ExprNodeDesc selExpr = sel.getConf().getColList().get(0);
+
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Computing BloomFilter cost/benefit for " + OperatorUtils.getOpNamePretty(rs)
+              + " - " + OperatorUtils.getOpNamePretty(ts) + " (" + tsExpr + ")");
+        }
+
+        FilterOperator filterOperator = (FilterOperator) ts.getChildOperators().get(0);
+        Statistics filterStats = adjustedStatsMap.get(filterOperator);
+        if (filterStats == null && filterOperator.getStatistics() != null) {
+          filterStats = filterOperator.getStatistics().clone();
+          adjustedStatsMap.put(filterOperator, filterStats);
+        }
+        double reductionFactor = computeBloomFilterNetBenefit(
+            sel, selExpr, filterStats, tsExpr);
+        if (reductionFactor < semijoinReductionThreshold) {
+          // This semijoin optimization should be removed. Do it after we're done iterating
+          semijoinRsToRemove.add(rs);
+        } else {
+          // This semijoin qualifies, add it to the result set
+          if (filterStats != null) {
+            // tsExpr might actually be a ExprNodeFieldDesc and we need to extract the column expression
+            if (tsExpr instanceof ExprNodeFieldDesc) {
+              LOG.info("Unwrapped column expression from ExprNodeFieldDesc");
+              tsExpr = ((ExprNodeFieldDesc)tsExpr).getDesc();
+            }
+
+            String colName = ExprNodeDescUtils.getColumnExpr(tsExpr).getColumn();
+            // We check whether there was already another SJ over this TS that was selected
+            // in previous iteration
+            SemijoinOperatorInfo prevResult = reductionFactorMap.get(filterOperator);
+            if (prevResult != null) {
+              if (prevResult.reductionFactor < reductionFactor) {
+                // We should pick up new SJ as its reduction factor is greater than the previous one
+                // that we found. We add the previous RS where SJ was originating to RS ops for new
+                // iteration
+                reductionFactorMap.put(filterOperator, new SemijoinOperatorInfo(rs, filterOperator,
+                    filterStats, colName, reductionFactor));
+                semiJoinRsOpsNewIter.add(prevResult.rsOperator);
+                if (LOG.isDebugEnabled()) {
+                  LOG.debug("Adding " + OperatorUtils.getOpNamePretty(prevResult.rsOperator)
+                      + " for re-iteration");
+                }
+              } else {
+                // We should pick up old SJ. We just need to add new RS where SJ was originating
+                // to RS ops for new iteration
+                semiJoinRsOpsNewIter.add(rs);
+                if (LOG.isDebugEnabled()) {
+                  LOG.debug("Adding " + OperatorUtils.getOpNamePretty(rs) + " for re-iteration");
+                }
+              }
+            } else {
+              // Another SJ did not exist for this TS, hence just add it to SJs to keep
+              reductionFactorMap.put(filterOperator, new SemijoinOperatorInfo(rs, filterOperator,
+                  filterStats, colName, reductionFactor));
+            }
+          }
         }
       }
-      if (sel == null) {
-        throw new SemanticException("Unexpected error - could not find SEL ancestor from semijoin branch of " + rs);
+
+      for (SemijoinOperatorInfo roi : reductionFactorMap.values()) {
+        // This semijoin will be kept
+        // We are going to adjust the filter statistics
+        long newNumRows = (long) (1.0 - roi.reductionFactor) * roi.filterStats.getNumRows();
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Old stats for {}: {}", roi.filterOperator, roi.filterStats);
+          LOG.debug("Number of rows reduction: {}/{}", newNumRows, roi.filterStats.getNumRows());
+        }
+        StatsUtils.updateStats(roi.filterStats, newNumRows,
+            true, roi.filterOperator, Sets.newHashSet(roi.colName));
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("New stats for {}: {}", roi.filterOperator, roi.filterStats);
+        }
+        adjustedStatsMap.put(roi.filterOperator, roi.filterStats);
+        globalReductionFactorMap.put(roi.filterOperator, roi);
       }
 
-      // Check the ndv/rows from the SEL vs the destination tablescan the semijoin opt is going to.
-      TableScanOperator ts = sjInfo.getTsOp();
-      RuntimeValuesInfo rti = procCtx.parseContext.getRsToRuntimeValuesInfoMap().get(rs);
-      ExprNodeDesc tsExpr = rti.getTsColExpr();
-      // In the SEL operator of the semijoin branch, there should be only one column in the operator
-      ExprNodeDesc selExpr = sel.getConf().getColList().get(0);
-
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Computing BloomFilter cost/benefit for " + OperatorUtils.getOpNamePretty(rs)
-            + " - " + OperatorUtils.getOpNamePretty(ts) + " (" + tsExpr + ")");
-      }
-
-      double reductionFactor = computeBloomFilterNetBenefit(sel, selExpr,
-              (FilterOperator)ts.getChildOperators().get(0), tsExpr);
-      if (reductionFactor < semijoinReductionThreshold) {
-        // This semijoin optimization should be removed. Do it after we're done iterating
-        semijoinRsToRemove.add(rs);
-      }
+      semiJoinRsOps = semiJoinRsOpsNewIter;
     }
 
     for (ReduceSinkOperator rs : semijoinRsToRemove) {
@@ -1349,27 +1847,41 @@ public class TezCompiler extends TaskCompiler {
       GenTezUtils.removeBranch(rs);
       GenTezUtils.removeSemiJoinOperator(procCtx.parseContext, rs, ts);
     }
+
+    if (!globalReductionFactorMap.isEmpty()) {
+      sortSemijoinFilters(procCtx, globalReductionFactorMap);
+    }
+  }
+
+  /**
+   * Internal class to encapsulate information needed to evaluate stats
+   * about a SJ that will be kept in the tree.
+   */
+  private class SemijoinOperatorInfo {
+    final ReduceSinkOperator rsOperator;
+    final FilterOperator filterOperator;
+    final String colName;
+    final Statistics filterStats;
+    final double reductionFactor;
+
+    private SemijoinOperatorInfo(ReduceSinkOperator rsOperator, FilterOperator filterOperator,
+          Statistics filterStats, String colName, double reductionFactor) {
+      this.rsOperator = rsOperator;
+      this.filterOperator = filterOperator;
+      this.colName = colName;
+      this.filterStats = filterStats;
+      this.reductionFactor = reductionFactor;
+    }
   }
 
   private void markSemiJoinForDPP(OptimizeTezProcContext procCtx)
           throws SemanticException {
-    if(!procCtx.conf.getBoolVar(ConfVars.TEZ_DYNAMIC_SEMIJOIN_REDUCTION)) {
-      // Not needed without semi-join reduction
-      return;
-    }
-
     // Stores the Tablescan operators processed to avoid redoing them.
-    Map<TableScanOperator, TableScanOperator> tsOps = new HashMap<>();
     Map<ReduceSinkOperator, SemiJoinBranchInfo> map = procCtx.parseContext.getRsToSemiJoinBranchInfo();
 
     for (ReduceSinkOperator rs : map.keySet()) {
       SemiJoinBranchInfo sjInfo = map.get(rs);
       TableScanOperator ts = sjInfo.getTsOp();
-      TableScanOperator tsInMap = tsOps.putIfAbsent(ts, ts);
-      if (tsInMap != null) {
-        // Already processed, skip
-        continue;
-      }
 
       if (sjInfo.getIsHint() || !sjInfo.getShouldRemove()) {
         continue;
@@ -1385,25 +1897,28 @@ public class TezCompiler extends TaskCompiler {
                 ((AppMasterEventOperator) op).getConf() instanceof DynamicPruningEventDesc) {
           // DPP. Now look up nDVs on both sides to see the selectivity.
           // <Parent Ops>-SEL-GB1-RS1-GB2-RS2
-          SelectOperator selOp = null;
+          SelectOperator selOp = (SelectOperator)
+                  (rs.getParentOperators().get(0)
+                          .getParentOperators().get(0)
+                          .getParentOperators().get(0)
+                          .getParentOperators().get(0));
+
           try {
-            selOp = (SelectOperator)
-                    (rs.getParentOperators().get(0)
-                            .getParentOperators().get(0)
-                            .getParentOperators().get(0)
-                            .getParentOperators().get(0));
-          } catch (NullPointerException e) {
-            LOG.warn("markSemiJoinForDPP : Null pointer exception caught while accessing semijoin operators");
-            assert false;
-            return;
-          }
-          try {
-            // If stats are not available, just assume its a useful edge
+            // Get nDVs on Semijoin edge side
             Statistics stats = selOp.getStatistics();
-            ExprNodeColumnDesc colExpr = ExprNodeDescUtils.getColumnExpr(
+            if (stats == null) {
+              // No stats found on semijoin edge, do nothing
+              break;
+            }
+            String selCol = ExprNodeDescUtils.extractColName(
                     selOp.getConf().getColList().get(0));
-            long nDVs = stats.getColumnStatisticsFromColName(
-                    colExpr.getColumn()).getCountDistint();
+            ColStatistics colStatisticsSJ = stats
+                    .getColumnStatisticsFromColName(selCol);
+            if (colStatisticsSJ == null) {
+              // No column stats found for semijoin edge
+              break;
+            }
+            long nDVs = colStatisticsSJ.getCountDistint();
             if (nDVs > 0) {
               // Lookup nDVs on TS side.
               RuntimeValuesInfo rti = procCtx.parseContext
@@ -1411,23 +1926,70 @@ public class TezCompiler extends TaskCompiler {
               ExprNodeDesc tsExpr = rti.getTsColExpr();
               FilterOperator fil = (FilterOperator) (ts.getChildOperators().get(0));
               Statistics filStats = fil.getStatistics();
-              ExprNodeColumnDesc tsColExpr = ExprNodeDescUtils.getColumnExpr(tsExpr);
-              long nDVsOfTS = filStats.getColumnStatisticsFromColName(
-                      tsColExpr.getColumn()).getCountDistint();
-              if (nDVsOfTS >= nDVs) {
+              if (filStats == null) {
+                // No stats found on target, do nothing
+                break;
+              }
+              String colName = ExprNodeDescUtils.extractColName(tsExpr);
+              ColStatistics colStatisticsTarget = filStats
+                      .getColumnStatisticsFromColName(colName);
+              if (colStatisticsTarget == null) {
+                // No column stats found on target
+                break;
+              }
+              long nDVsOfTS = colStatisticsTarget.getCountDistint();
+              double nDVsOfTSFactored = nDVsOfTS * procCtx.conf.getFloatVar(
+                      ConfVars.TEZ_DYNAMIC_SEMIJOIN_REDUCTION_FOR_DPP_FACTOR);
+              if ((long)nDVsOfTSFactored > nDVs) {
+                if (LOG.isDebugEnabled()) {
+                  LOG.debug("nDVs = " + nDVs + ", nDVsOfTS = " + nDVsOfTS + " and nDVsOfTSFactored = " + nDVsOfTSFactored
+                  + "Adding semijoin branch from ReduceSink " + rs + " to TS " + sjInfo.getTsOp());
+                }
                 sjInfo.setShouldRemove(false);
               }
             }
           } catch (NullPointerException e) {
-            sjInfo.setShouldRemove(false);
+            // Do nothing
+            if (LOG.isDebugEnabled()) {
+              LOG.debug("Caught NPE in markSemiJoinForDPP from ReduceSink " + rs + " to TS " + sjInfo.getTsOp());
+            }
           }
           break;
         }
-        if (op instanceof ReduceSinkOperator) {
+        if (op instanceof TerminalOperator) {
           // Done with this branch
           continue;
         }
         deque.addAll(op.getChildOperators());
+      }
+    }
+  }
+
+  private void updateBucketingVersionForUpgrade(OptimizeTezProcContext procCtx) {
+    // Fetch all the FileSinkOperators.
+    Set<FileSinkOperator> fsOpsAll = new HashSet<>();
+    for (TableScanOperator ts : procCtx.parseContext.getTopOps().values()) {
+      Set<FileSinkOperator> fsOps = OperatorUtils.findOperators(
+          ts, FileSinkOperator.class);
+      fsOpsAll.addAll(fsOps);
+    }
+
+
+    for (FileSinkOperator fsOp : fsOpsAll) {
+      // Look for direct parent ReduceSinkOp
+      // If there are more than 1 parent, bail out.
+      Operator<?> parent = fsOp;
+      List<Operator<?>> parentOps = parent.getParentOperators();
+      while (parentOps != null && parentOps.size() == 1) {
+        parent = parentOps.get(0);
+        if (!(parent instanceof ReduceSinkOperator)) {
+          parentOps = parent.getParentOperators();
+          continue;
+        }
+
+        // Found the target RSOp
+        parent.setBucketingVersion(fsOp.getConf().getTableInfo().getBucketingVersion());
+        break;
       }
     }
   }

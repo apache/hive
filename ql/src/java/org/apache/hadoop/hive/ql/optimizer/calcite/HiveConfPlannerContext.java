@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,18 +17,22 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite;
 
-import org.apache.calcite.rel.RelNode;
-
-import java.util.Set;
-
 public class HiveConfPlannerContext{
 
   private boolean isCorrelatedColumns;
+  private boolean heuristicMaterializationStrategy;
 
 
-  public HiveConfPlannerContext(boolean isCorrelatedColumns) {
+  public HiveConfPlannerContext(boolean isCorrelatedColumns, boolean heuristicMaterializationStrategy) {
     this.isCorrelatedColumns = isCorrelatedColumns;
+    this.heuristicMaterializationStrategy = heuristicMaterializationStrategy;
   }
 
-  public boolean getIsCorrelatedColumns() { return isCorrelatedColumns;}
+  public boolean getIsCorrelatedColumns() {
+    return isCorrelatedColumns;
+  }
+
+  public boolean isHeuristicMaterializationStrategy() {
+    return heuristicMaterializationStrategy;
+  }
 }

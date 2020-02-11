@@ -1,3 +1,4 @@
+--! qt:dataset:src
 SELECT reflect("java.lang.StringClassThatDoesNotExist", "valueOf", 1),
        reflect("java.lang.String", "methodThatDoesNotExist"),
        reflect("java.lang.Math", "max", "overloadthatdoesnotexist", 3),

@@ -1,77 +1,77 @@
-PREHOOK: query: create table src_autho_test as select * from src
+PREHOOK: query: create table src_autho_test_n5 as select * from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src_autho_test
-POSTHOOK: query: create table src_autho_test as select * from src
+PREHOOK: Output: default@src_autho_test_n5
+POSTHOOK: query: create table src_autho_test_n5 as select * from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src_autho_test
-POSTHOOK: Lineage: src_autho_test.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_autho_test.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: grant drop on table src_autho_test to user hive_test_user
+POSTHOOK: Output: default@src_autho_test_n5
+POSTHOOK: Lineage: src_autho_test_n5.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_autho_test_n5.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: grant drop on table src_autho_test_n5 to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE
-PREHOOK: Output: default@src_autho_test
-POSTHOOK: query: grant drop on table src_autho_test to user hive_test_user
+PREHOOK: Output: default@src_autho_test_n5
+POSTHOOK: query: grant drop on table src_autho_test_n5 to user hive_test_user
 POSTHOOK: type: GRANT_PRIVILEGE
-POSTHOOK: Output: default@src_autho_test
-PREHOOK: query: grant select on table src_autho_test to user hive_test_user
+POSTHOOK: Output: default@src_autho_test_n5
+PREHOOK: query: grant select on table src_autho_test_n5 to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE
-PREHOOK: Output: default@src_autho_test
-POSTHOOK: query: grant select on table src_autho_test to user hive_test_user
+PREHOOK: Output: default@src_autho_test_n5
+POSTHOOK: query: grant select on table src_autho_test_n5 to user hive_test_user
 POSTHOOK: type: GRANT_PRIVILEGE
-POSTHOOK: Output: default@src_autho_test
-PREHOOK: query: show grant user hive_test_user on table src_autho_test
+POSTHOOK: Output: default@src_autho_test_n5
+PREHOOK: query: show grant user hive_test_user on table src_autho_test_n5
 PREHOOK: type: SHOW_GRANT
-POSTHOOK: query: show grant user hive_test_user on table src_autho_test
+POSTHOOK: query: show grant user hive_test_user on table src_autho_test_n5
 POSTHOOK: type: SHOW_GRANT
-default	src_autho_test			hive_test_user	USER	DROP	false	-1	hive_test_user
-default	src_autho_test			hive_test_user	USER	SELECT	false	-1	hive_test_user
-PREHOOK: query: revoke select on table src_autho_test from user hive_test_user
+default	src_autho_test_n5			hive_test_user	USER	DROP	false	-1	hive_test_user
+default	src_autho_test_n5			hive_test_user	USER	SELECT	false	-1	hive_test_user
+PREHOOK: query: revoke select on table src_autho_test_n5 from user hive_test_user
 PREHOOK: type: REVOKE_PRIVILEGE
-PREHOOK: Output: default@src_autho_test
-POSTHOOK: query: revoke select on table src_autho_test from user hive_test_user
+PREHOOK: Output: default@src_autho_test_n5
+POSTHOOK: query: revoke select on table src_autho_test_n5 from user hive_test_user
 POSTHOOK: type: REVOKE_PRIVILEGE
-POSTHOOK: Output: default@src_autho_test
-PREHOOK: query: revoke drop on table src_autho_test from user hive_test_user
+POSTHOOK: Output: default@src_autho_test_n5
+PREHOOK: query: revoke drop on table src_autho_test_n5 from user hive_test_user
 PREHOOK: type: REVOKE_PRIVILEGE
-PREHOOK: Output: default@src_autho_test
-POSTHOOK: query: revoke drop on table src_autho_test from user hive_test_user
+PREHOOK: Output: default@src_autho_test_n5
+POSTHOOK: query: revoke drop on table src_autho_test_n5 from user hive_test_user
 POSTHOOK: type: REVOKE_PRIVILEGE
-POSTHOOK: Output: default@src_autho_test
-PREHOOK: query: grant drop,select on table src_autho_test to user hive_test_user
+POSTHOOK: Output: default@src_autho_test_n5
+PREHOOK: query: grant drop,select on table src_autho_test_n5 to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE
-PREHOOK: Output: default@src_autho_test
-POSTHOOK: query: grant drop,select on table src_autho_test to user hive_test_user
+PREHOOK: Output: default@src_autho_test_n5
+POSTHOOK: query: grant drop,select on table src_autho_test_n5 to user hive_test_user
 POSTHOOK: type: GRANT_PRIVILEGE
-POSTHOOK: Output: default@src_autho_test
-PREHOOK: query: show grant user hive_test_user on table src_autho_test
+POSTHOOK: Output: default@src_autho_test_n5
+PREHOOK: query: show grant user hive_test_user on table src_autho_test_n5
 PREHOOK: type: SHOW_GRANT
-POSTHOOK: query: show grant user hive_test_user on table src_autho_test
+POSTHOOK: query: show grant user hive_test_user on table src_autho_test_n5
 POSTHOOK: type: SHOW_GRANT
-default	src_autho_test			hive_test_user	USER	DROP	false	-1	hive_test_user
-default	src_autho_test			hive_test_user	USER	SELECT	false	-1	hive_test_user
-PREHOOK: query: revoke drop,select on table src_autho_test from user hive_test_user
+default	src_autho_test_n5			hive_test_user	USER	DROP	false	-1	hive_test_user
+default	src_autho_test_n5			hive_test_user	USER	SELECT	false	-1	hive_test_user
+PREHOOK: query: revoke drop,select on table src_autho_test_n5 from user hive_test_user
 PREHOOK: type: REVOKE_PRIVILEGE
-PREHOOK: Output: default@src_autho_test
-POSTHOOK: query: revoke drop,select on table src_autho_test from user hive_test_user
+PREHOOK: Output: default@src_autho_test_n5
+POSTHOOK: query: revoke drop,select on table src_autho_test_n5 from user hive_test_user
 POSTHOOK: type: REVOKE_PRIVILEGE
-POSTHOOK: Output: default@src_autho_test
-PREHOOK: query: grant drop,select(key), select(value) on table src_autho_test to user hive_test_user
+POSTHOOK: Output: default@src_autho_test_n5
+PREHOOK: query: grant drop,select(key), select(value) on table src_autho_test_n5 to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE
-PREHOOK: Output: default@src_autho_test
-POSTHOOK: query: grant drop,select(key), select(value) on table src_autho_test to user hive_test_user
+PREHOOK: Output: default@src_autho_test_n5
+POSTHOOK: query: grant drop,select(key), select(value) on table src_autho_test_n5 to user hive_test_user
 POSTHOOK: type: GRANT_PRIVILEGE
-POSTHOOK: Output: default@src_autho_test
-PREHOOK: query: show grant user hive_test_user on table src_autho_test
+POSTHOOK: Output: default@src_autho_test_n5
+PREHOOK: query: show grant user hive_test_user on table src_autho_test_n5
 PREHOOK: type: SHOW_GRANT
-POSTHOOK: query: show grant user hive_test_user on table src_autho_test
+POSTHOOK: query: show grant user hive_test_user on table src_autho_test_n5
 POSTHOOK: type: SHOW_GRANT
-default	src_autho_test			hive_test_user	USER	DROP	false	-1	hive_test_user
-PREHOOK: query: revoke drop,select(key), select(value) on table src_autho_test from user hive_test_user
+default	src_autho_test_n5			hive_test_user	USER	DROP	false	-1	hive_test_user
+PREHOOK: query: revoke drop,select(key), select(value) on table src_autho_test_n5 from user hive_test_user
 PREHOOK: type: REVOKE_PRIVILEGE
-PREHOOK: Output: default@src_autho_test
-POSTHOOK: query: revoke drop,select(key), select(value) on table src_autho_test from user hive_test_user
+PREHOOK: Output: default@src_autho_test_n5
+POSTHOOK: query: revoke drop,select(key), select(value) on table src_autho_test_n5 from user hive_test_user
 POSTHOOK: type: REVOKE_PRIVILEGE
-POSTHOOK: Output: default@src_autho_test
+POSTHOOK: Output: default@src_autho_test_n5

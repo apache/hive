@@ -17,6 +17,8 @@ package org.apache.hadoop.hive.llap.daemon.impl;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.PrivilegedAction;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.google.common.io.ByteArrayDataOutput;
@@ -25,6 +27,10 @@ import com.google.protobuf.BlockingService;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.RpcController;
 import com.google.protobuf.ServiceException;
+
+import org.apache.hadoop.hive.llap.io.api.LlapIo;
+import org.apache.hadoop.hive.llap.io.api.LlapProxy;
+import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.classification.InterfaceAudience;
@@ -62,6 +68,7 @@ public class LlapProtocolServerImpl extends AbstractService
     implements LlapProtocolBlockingPB, LlapManagementProtocolPB {
 
   private static final Logger LOG = LoggerFactory.getLogger(LlapProtocolServerImpl.class);
+
   private enum TokenRequiresSigning {
     TRUE, FALSE, EXCEPT_OWNER
   }
@@ -75,11 +82,13 @@ public class LlapProtocolServerImpl extends AbstractService
   private String clusterUser = null;
   private boolean isRestrictedToClusterUser = false;
   private final DaemonId daemonId;
+  private final LlapDaemonExecutorMetrics executorMetrics;
   private TokenRequiresSigning isSigningRequiredConfig = TokenRequiresSigning.TRUE;
 
   public LlapProtocolServerImpl(SecretManager secretManager, int numHandlers,
       ContainerRunner containerRunner, AtomicReference<InetSocketAddress> srvAddress,
-      AtomicReference<InetSocketAddress> mngAddress, int srvPort, int mngPort, DaemonId daemonId) {
+      AtomicReference<InetSocketAddress> mngAddress, int srvPort, int mngPort, DaemonId daemonId,
+      LlapDaemonExecutorMetrics executorMetrics) {
     super("LlapDaemonProtocolServerImpl");
     this.numHandlers = numHandlers;
     this.containerRunner = containerRunner;
@@ -89,8 +98,21 @@ public class LlapProtocolServerImpl extends AbstractService
     this.mngAddress = mngAddress;
     this.mngPort = mngPort;
     this.daemonId = daemonId;
+    this.executorMetrics = executorMetrics;
     LOG.info("Creating: " + LlapProtocolServerImpl.class.getSimpleName() +
         " with port configured to: " + srvPort);
+  }
+
+  @Override
+  public LlapDaemonProtocolProtos.RegisterDagResponseProto registerDag(
+      RpcController controller,
+      LlapDaemonProtocolProtos.RegisterDagRequestProto request)
+      throws ServiceException {
+    try {
+      return containerRunner.registerDag(request);
+    } catch (IOException e) {
+      throw new ServiceException(e);
+    }
   }
 
   @Override
@@ -256,7 +278,7 @@ public class LlapProtocolServerImpl extends AbstractService
     if (isRestrictedToClusterUser && !clusterUser.equals(callingUser.getShortUserName())) {
       throw new ServiceException("Management protocol ACL is too permissive. The access has been"
           + " automatically restricted to " + clusterUser + "; " + callingUser.getShortUserName()
-          + " is denied acccess. Please set " + ConfVars.LLAP_VALIDATE_ACLS.varname + " to false,"
+          + " is denied access. Please set " + ConfVars.LLAP_VALIDATE_ACLS.varname + " to false,"
           + " or adjust " + ConfVars.LLAP_MANAGEMENT_ACL.varname + " and "
           + ConfVars.LLAP_MANAGEMENT_ACL_DENY.varname + " to a more restrictive ACL.");
     }
@@ -270,6 +292,45 @@ public class LlapProtocolServerImpl extends AbstractService
     ByteString bs = ByteString.copyFrom(out.toByteArray());
     GetTokenResponseProto response = GetTokenResponseProto.newBuilder().setToken(bs).build();
     return response;
+  }
+
+  @Override
+  public LlapDaemonProtocolProtos.PurgeCacheResponseProto purgeCache(final RpcController controller,
+    final LlapDaemonProtocolProtos.PurgeCacheRequestProto request) throws ServiceException {
+    LlapDaemonProtocolProtos.PurgeCacheResponseProto.Builder responseProtoBuilder = LlapDaemonProtocolProtos
+      .PurgeCacheResponseProto.newBuilder();
+    LlapIo<?> llapIo = LlapProxy.getIo();
+    if (llapIo != null) {
+      responseProtoBuilder.setPurgedMemoryBytes(llapIo.purge());
+    } else {
+      responseProtoBuilder.setPurgedMemoryBytes(0);
+    }
+    return responseProtoBuilder.build();
+  }
+
+  @Override
+  public LlapDaemonProtocolProtos.GetDaemonMetricsResponseProto getDaemonMetrics(final RpcController controller,
+      final LlapDaemonProtocolProtos.GetDaemonMetricsRequestProto request) throws ServiceException {
+    LlapDaemonProtocolProtos.GetDaemonMetricsResponseProto.Builder responseProtoBuilder =
+        LlapDaemonProtocolProtos.GetDaemonMetricsResponseProto.newBuilder();
+    if (executorMetrics != null) {
+      Map<String, Long> data = new HashMap<>();
+      DumpingMetricsCollector dmc = new DumpingMetricsCollector(data);
+      executorMetrics.getMetrics(dmc, true);
+      data.forEach((key, value) -> responseProtoBuilder.addMetrics(
+          LlapDaemonProtocolProtos.MapEntry.newBuilder().setKey(key).setValue(value).build()));
+    }
+    return responseProtoBuilder.build();
+  }
+
+  @Override
+  public LlapDaemonProtocolProtos.SetCapacityResponseProto setCapacity(final RpcController controller,
+      final LlapDaemonProtocolProtos.SetCapacityRequestProto request) throws ServiceException {
+    try {
+      return containerRunner.setCapacity(request);
+    } catch (IOException e) {
+      throw new ServiceException(e);
+    }
   }
 
   private boolean determineIfSigningIsRequired(UserGroupInformation callingUser) {

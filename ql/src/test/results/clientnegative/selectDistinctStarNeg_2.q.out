@@ -1,1 +1,0 @@
-FAILED: SemanticException 3:36 SELECT DISTINCT and GROUP BY can not be in the same query. Error encountered near token 'key'

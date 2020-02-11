@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -79,8 +79,7 @@ public class MapOperator extends AbstractMapOperator {
   protected transient long logEveryNRows = 0;
 
   // input path --> {operator --> context}
-  private final Map<String, Map<Operator<?>, MapOpCtx>> opCtxMap =
-      new HashMap<String, Map<Operator<?>, MapOpCtx>>();
+  private final Map<Path, Map<Operator<?>, MapOpCtx>> opCtxMap = new HashMap<>();
   // child operator --> object inspector (converted OI if it's needed)
   private final Map<Operator<?>, StructObjectInspector> childrenOpToOI =
       new HashMap<Operator<?>, StructObjectInspector>();
@@ -89,6 +88,11 @@ public class MapOperator extends AbstractMapOperator {
   protected transient MapOpCtx[] currentCtxs;
 
   protected static class MapOpCtx {
+
+    @Override
+    public String toString() {
+      return "[alias=" + alias + ", op=" + op + "]";
+    }
 
     final String alias;
     final Operator<?> op;
@@ -339,7 +343,7 @@ public class MapOperator extends AbstractMapOperator {
   private Map<String, Configuration> cloneConfsForNestedColPruning(Configuration hconf) {
     Map<String, Configuration> tableNameToConf = new HashMap<>();
 
-    for (Map.Entry<Path, ArrayList<String>> e : conf.getPathToAliases().entrySet()) {
+    for (Map.Entry<Path, List<String>> e : conf.getPathToAliases().entrySet()) {
       List<String> aliases = e.getValue();
       if (aliases == null || aliases.isEmpty()) {
         continue;
@@ -422,7 +426,7 @@ public class MapOperator extends AbstractMapOperator {
     Map<String, Configuration> tableNameToConf = cloneConfsForNestedColPruning(hconf);
     Map<TableDesc, StructObjectInspector> convertedOI = getConvertedOI(tableNameToConf);
 
-    for (Map.Entry<Path, ArrayList<String>> entry : conf.getPathToAliases().entrySet()) {
+    for (Map.Entry<Path, List<String>> entry : conf.getPathToAliases().entrySet()) {
       Path onefile = entry.getKey();
       List<String> aliases = entry.getValue();
       PartitionDesc partDesc = conf.getPathToPartitionInfo().get(onefile);
@@ -435,10 +439,8 @@ public class MapOperator extends AbstractMapOperator {
           LOG.debug("Adding alias " + alias + " to work list for file "
               + onefile);
         }
-        Map<Operator<?>, MapOpCtx> contexts = opCtxMap.get(onefile.toString());
-        if (contexts == null) {
-          opCtxMap.put(onefile.toString(), contexts = new LinkedHashMap<Operator<?>, MapOpCtx>());
-        }
+        Map<Operator<?>, MapOpCtx> contexts = opCtxMap.computeIfAbsent(onefile,
+                k -> new LinkedHashMap<>());
         if (contexts.containsKey(op)) {
           continue;
         }
@@ -510,7 +512,7 @@ public class MapOperator extends AbstractMapOperator {
   public void cleanUpInputFileChangedOp() throws HiveException {
     super.cleanUpInputFileChangedOp();
     Path fpath = getExecContext().getCurrentInputPath();
-    String nominalPath = getNominalPath(fpath);
+    Path nominalPath = getNominalPath(fpath);
     Map<Operator<?>, MapOpCtx> contexts = opCtxMap.get(nominalPath);
     if (LOG.isInfoEnabled()) {
       StringBuilder builder = new StringBuilder();
@@ -560,9 +562,15 @@ public class MapOperator extends AbstractMapOperator {
         }
         if (row == null) {
           deserialize_error_count.set(deserialize_error_count.get() + 1);
-          throw new HiveException("Hive Runtime Error while processing writable " + message, e);
+          LOG.trace("Hive Runtime Error while processing writable " + message);
+          throw new HiveException("Hive Runtime Error while processing writable", e);
         }
-        throw new HiveException("Hive Runtime Error while processing row " + message, e);
+
+        // Log the contents of the row that caused exception so that it's available for debugging. But
+        // when exposed through an error message it can leak sensitive information, even to the
+        // client application.
+        LOG.trace("Hive Runtime Error while processing row " + message);
+        throw new HiveException("Hive Runtime Error while processing row", e);
       }
     }
     rowsForwarded(childrenDone, 1);
@@ -672,6 +680,12 @@ public class MapOperator extends AbstractMapOperator {
   }
 
   @Override
+  public void closeOp(boolean abort) throws HiveException {
+    super.closeOp(abort);
+    LOG.info("{}: Total records read - {}. abort - {}", this, numRows, abort);
+  }
+
+  @Override
   public void process(Object row, int tag) throws HiveException {
     throw new HiveException("Hive 2 Internal error: should not be called!");
   }
@@ -692,7 +706,7 @@ public class MapOperator extends AbstractMapOperator {
 
   public void initializeContexts() {
     Path fpath = getExecContext().getCurrentInputPath();
-    String nominalPath = getNominalPath(fpath);
+    Path nominalPath = getNominalPath(fpath);
     Map<Operator<?>, MapOpCtx> contexts = opCtxMap.get(nominalPath);
     currentCtxs = contexts.values().toArray(new MapOpCtx[contexts.size()]);
   }

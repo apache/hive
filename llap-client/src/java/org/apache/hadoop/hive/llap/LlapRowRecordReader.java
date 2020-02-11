@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
@@ -70,20 +69,20 @@ public class LlapRowRecordReader implements RecordReader<NullWritable, Row> {
   private static final Logger LOG = LoggerFactory.getLogger(LlapRowRecordReader.class);
 
   protected final Configuration conf;
-  protected final RecordReader<NullWritable, BytesWritable> reader;
+  protected final RecordReader reader;
   protected final Schema schema;
   protected final AbstractSerDe serde;
-  protected final BytesWritable data;
+  protected final Writable data;
 
   public LlapRowRecordReader(Configuration conf, Schema schema,
-      RecordReader<NullWritable, BytesWritable> reader) throws IOException {
+      RecordReader<NullWritable, ? extends Writable> reader) throws IOException {
     this.conf = conf;
     this.schema = schema;
     this.reader = reader;
-    this.data = new BytesWritable();
+    this.data = reader.createValue();
 
     try {
-      serde = initSerDe(conf);
+      this.serde = initSerDe(conf);
     } catch (SerDeException err) {
       throw new IOException(err);
     }
@@ -118,7 +117,7 @@ public class LlapRowRecordReader implements RecordReader<NullWritable, Row> {
   public boolean next(NullWritable key, Row value) throws IOException {
     Preconditions.checkArgument(value != null);
 
-    boolean hasNext = reader.next(key,  data);
+    boolean hasNext = reader.next(key, data);
     if (hasNext) {
       // Deserialize data to column values, and populate the row record
       Object rowObj;
@@ -216,19 +215,23 @@ public class LlapRowRecordReader implements RecordReader<NullWritable, Row> {
     return convertedVal;
   }
 
-  static void setRowFromStruct(Row row, Object structVal, StructObjectInspector soi) {
+  protected static void setRowFromStruct(Row row, Object structVal, StructObjectInspector soi) {
     Schema structSchema = row.getSchema();
     // Add struct field data to the Row
-    List<FieldDesc> fieldDescs = structSchema.getColumns();
-    for (int idx = 0; idx < fieldDescs.size(); ++idx) {
-      FieldDesc fieldDesc = fieldDescs.get(idx);
-      StructField structField = soi.getStructFieldRef(fieldDesc.getName());
+    List<? extends StructField> structFields = soi.getAllStructFieldRefs();
+    for (int idx = 0; idx < structFields.size(); ++idx) {
+      StructField structField = structFields.get(idx);
 
       Object convertedFieldValue = convertValue(
           soi.getStructFieldData(structVal, structField),
           structField.getFieldObjectInspector());
       row.setValue(idx, convertedFieldValue);
     }
+  }
+
+  //Factory method for serDe
+  protected AbstractSerDe createSerDe() throws SerDeException {
+    return new LazyBinarySerDe();
   }
 
   protected AbstractSerDe initSerDe(Configuration conf) throws SerDeException {
@@ -250,9 +253,9 @@ public class LlapRowRecordReader implements RecordReader<NullWritable, Row> {
     props.put(serdeConstants.LIST_COLUMNS, columns);
     props.put(serdeConstants.LIST_COLUMN_TYPES, types);
     props.put(serdeConstants.ESCAPE_CHAR, "\\");
-    AbstractSerDe serde = new LazyBinarySerDe();
-    serde.initialize(conf, props);
+    AbstractSerDe createdSerDe = createSerDe();
+    createdSerDe.initialize(conf, props);
 
-    return serde;
+    return createdSerDe;
   }
 }

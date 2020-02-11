@@ -20,7 +20,7 @@ import org.apache.hadoop.security.token.TokenInfo;
 import org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos;
 import org.apache.tez.runtime.common.security.JobTokenSelector;
 
-@ProtocolInfo(protocolName = "org.apache.hadoop.hive.llap.protocol.LlapPluginProtocolBlockingPB", protocolVersion = 1)
+@ProtocolInfo(protocolName = "org.apache.hadoop.hive.llap.protocol.LlapPluginProtocolPB", protocolVersion = 1)
 @TokenInfo(JobTokenSelector.class)
 @InterfaceAudience.Private
 public interface LlapPluginProtocolPB extends LlapPluginProtocolProtos.LlapPluginProtocol.BlockingInterface {

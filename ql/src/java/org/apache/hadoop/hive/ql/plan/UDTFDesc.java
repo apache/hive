@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,14 +19,16 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
-import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 import java.util.Objects;
 
+import org.apache.hadoop.hive.ql.optimizer.signature.Signature;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 
 /**
- * All member variables should have a setters and getters of the form get<member
- * name> and set<member name> or else they won't be recreated properly at run
+ * All member variables should have a setters and getters of the form get&lt;member
+ * name&gt; and set&lt;member name&gt; or else they won't be recreated properly at run
  * time.
  *
  */
@@ -54,6 +56,7 @@ public class UDTFDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "function name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Signature
   public String getUDTFName() {
     return genericUDTF.toString();
   }
@@ -67,6 +70,7 @@ public class UDTFDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "outer lateral view")
+  @Signature
   public String isOuterLateralView() {
     return outerLV ? "true" : null;
   }
@@ -80,4 +84,5 @@ public class UDTFDesc extends AbstractOperatorDesc {
     }
     return false;
   }
+
 }

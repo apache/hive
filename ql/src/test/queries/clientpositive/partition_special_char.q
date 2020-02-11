@@ -1,3 +1,4 @@
+--! qt:dataset:src
 create table sc as select * 
 from (select '2011-01-11', '2011-01-11+14:18:26' from src tablesample (1 rows)
       union all 
@@ -8,7 +9,6 @@ from (select '2011-01-11', '2011-01-11+14:18:26' from src tablesample (1 rows)
 create table sc_part (key string) partitioned by (ts string) stored as rcfile;
 
 set hive.exec.dynamic.partition=true;
-set hive.exec.dynamic.partition.mode=nonstrict;
 
 insert overwrite table sc_part partition(ts) select * from sc;
 show partitions sc_part;

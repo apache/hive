@@ -49,7 +49,7 @@ public class TestMutatorImpl {
   private static final int RECORD_ID_COLUMN = 2;
   private static final int BUCKET_ID = 0;
   private static final Path PATH = new Path("X");
-  private static final long TRANSACTION_ID = 1L;
+  private static final long WRITE_ID = 1L;
 
   @Mock
   private AcidOutputFormat<?, ?> mockOutputFormat;
@@ -67,7 +67,7 @@ public class TestMutatorImpl {
   @Before
   public void injectMocks() throws IOException {
     when(mockOutputFormat.getRecordUpdater(eq(PATH), any(Options.class))).thenReturn(mockRecordUpdater);
-    mutator = new MutatorImpl(configuration, RECORD_ID_COLUMN, mockObjectInspector, mockOutputFormat, TRANSACTION_ID,
+    mutator = new MutatorImpl(configuration, RECORD_ID_COLUMN, mockObjectInspector, mockOutputFormat, WRITE_ID,
         PATH, BUCKET_ID);
   }
 
@@ -79,26 +79,26 @@ public class TestMutatorImpl {
     assertThat(options.getConfiguration(), is((Configuration) configuration));
     assertThat(options.getInspector(), is(mockObjectInspector));
     assertThat(options.getRecordIdColumn(), is(RECORD_ID_COLUMN));
-    assertThat(options.getMinimumTransactionId(), is(TRANSACTION_ID));
-    assertThat(options.getMaximumTransactionId(), is(TRANSACTION_ID));
+    assertThat(options.getMinimumWriteId(), is(WRITE_ID));
+    assertThat(options.getMaximumWriteId(), is(WRITE_ID));
   }
 
   @Test
   public void testInsertDelegates() throws IOException {
     mutator.insert(RECORD);
-    verify(mockRecordUpdater).insert(TRANSACTION_ID, RECORD);
+    verify(mockRecordUpdater).insert(WRITE_ID, RECORD);
   }
 
   @Test
   public void testUpdateDelegates() throws IOException {
     mutator.update(RECORD);
-    verify(mockRecordUpdater).update(TRANSACTION_ID, RECORD);
+    verify(mockRecordUpdater).update(WRITE_ID, RECORD);
   }
 
   @Test
   public void testDeleteDelegates() throws IOException {
     mutator.delete(RECORD);
-    verify(mockRecordUpdater).delete(TRANSACTION_ID, RECORD);
+    verify(mockRecordUpdater).delete(WRITE_ID, RECORD);
   }
 
   @Test

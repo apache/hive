@@ -1,4 +1,4 @@
-/**
+/*
  *  Licensed to the Apache Software Foundation (ASF) under one
  *  or more contributor license agreements.  See the NOTICE file
  *  distributed with this work for additional information
@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.exec.spark;
 
 import org.apache.hadoop.hive.ql.io.HiveKey;
+import org.apache.hadoop.hive.ql.plan.BaseWork;
+import org.apache.hadoop.hive.ql.plan.SparkEdgeProperty;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.storage.StorageLevel;
@@ -28,17 +30,23 @@ public class ShuffleTran implements SparkTran<HiveKey, BytesWritable, HiveKey, B
   private final int numOfPartitions;
   private final boolean toCache;
   private final SparkPlan sparkPlan;
-  private String name = "Shuffle";
+  private final String name;
+  private final SparkEdgeProperty edge;
+  private final BaseWork baseWork;
 
   public ShuffleTran(SparkPlan sparkPlan, SparkShuffler sf, int n) {
-    this(sparkPlan, sf, n, false);
+    this(sparkPlan, sf, n, false, "Shuffle", null, null);
   }
 
-  public ShuffleTran(SparkPlan sparkPlan, SparkShuffler sf, int n, boolean toCache) {
+  public ShuffleTran(SparkPlan sparkPlan, SparkShuffler sf, int n, boolean toCache, String name,
+                     SparkEdgeProperty edge, BaseWork baseWork) {
     shuffler = sf;
     numOfPartitions = n;
     this.toCache = toCache;
     this.sparkPlan = sparkPlan;
+    this.name = name;
+    this.edge = edge;
+    this.baseWork = baseWork;
   }
 
   @Override
@@ -48,7 +56,8 @@ public class ShuffleTran implements SparkTran<HiveKey, BytesWritable, HiveKey, B
       sparkPlan.addCachedRDDId(result.id());
       result = result.persist(StorageLevel.MEMORY_AND_DISK());
     }
-    return result;
+    return result.setName(this.name + " (" + edge.getShuffleType() + ", " + numOfPartitions +
+            (toCache ? ", cached)" : ")"));
   }
 
   public int getNoOfPartitions() {
@@ -62,12 +71,12 @@ public class ShuffleTran implements SparkTran<HiveKey, BytesWritable, HiveKey, B
 
   @Override
   public Boolean isCacheEnable() {
-    return new Boolean(toCache);
+    return Boolean.valueOf(toCache);
   }
 
   @Override
-  public void setName(String name) {
-    this.name = name;
+  public BaseWork getBaseWork() {
+    return baseWork;
   }
 
   public SparkShuffler getShuffler() {

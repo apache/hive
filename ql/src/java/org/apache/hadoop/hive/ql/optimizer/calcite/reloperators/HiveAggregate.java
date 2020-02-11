@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -34,8 +34,8 @@ import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.ImmutableBitSet;
-import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelShuttle;
+import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 
 import com.google.common.collect.Sets;
 
@@ -45,18 +45,17 @@ public class HiveAggregate extends Aggregate implements HiveRelNode {
 
 
   public HiveAggregate(RelOptCluster cluster, RelTraitSet traitSet, RelNode child,
-      boolean indicator, ImmutableBitSet groupSet, List<ImmutableBitSet> groupSets,
+      ImmutableBitSet groupSet, List<ImmutableBitSet> groupSets,
       List<AggregateCall> aggCalls) {
-    super(cluster, TraitsUtil.getDefaultTraitSet(cluster), child, indicator, groupSet,
-            groupSets, aggCalls);
+    super(cluster, TraitsUtil.getDefaultTraitSet(cluster), child, false,
+            groupSet, groupSets, aggCalls);
   }
 
   @Override
   public Aggregate copy(RelTraitSet traitSet, RelNode input,
-          boolean indicator, ImmutableBitSet groupSet,
+          ImmutableBitSet groupSet,
           List<ImmutableBitSet> groupSets, List<AggregateCall> aggCalls) {
-      return new HiveAggregate(getCluster(), traitSet, input, indicator, groupSet,
-              groupSets, aggCalls);
+    return new HiveAggregate(getCluster(), traitSet, input, groupSet, groupSets, aggCalls);
   }
 
   @Override
@@ -71,7 +70,7 @@ public class HiveAggregate extends Aggregate implements HiveRelNode {
 
   public boolean isBucketedInput() {
     final RelMetadataQuery mq = this.getInput().getCluster().getMetadataQuery();
-    return mq.distribution(this.getInput()).getKeys().
+    return mq.distribution(this).getKeys().
             containsAll(groupSet.asList());
   }
 

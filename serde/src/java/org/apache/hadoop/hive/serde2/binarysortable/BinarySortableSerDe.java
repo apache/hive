@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,7 +23,7 @@ import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -43,7 +43,7 @@ import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -52,7 +52,7 @@ import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -180,45 +180,10 @@ public class BinarySortableSerDe extends AbstractSerDe {
       row.add(null);
     }
 
-    // Get the sort order
-    String columnSortOrder = tbl
-        .getProperty(serdeConstants.SERIALIZATION_SORT_ORDER);
     columnSortOrderIsDesc = new boolean[columnNames.size()];
-    for (int i = 0; i < columnSortOrderIsDesc.length; i++) {
-      columnSortOrderIsDesc[i] = (columnSortOrder != null && columnSortOrder
-          .charAt(i) == '-');
-    }
-
-    // Null first/last
-    String columnNullOrder = tbl
-        .getProperty(serdeConstants.SERIALIZATION_NULL_SORT_ORDER);
     columnNullMarker = new byte[columnNames.size()];
     columnNotNullMarker = new byte[columnNames.size()];
-    for (int i = 0; i < columnSortOrderIsDesc.length; i++) {
-      if (columnSortOrderIsDesc[i]) {
-        // Descending
-        if (columnNullOrder != null && columnNullOrder.charAt(i) == 'a') {
-          // Null first
-          columnNullMarker[i] = ONE;
-          columnNotNullMarker[i] = ZERO;
-        } else {
-          // Null last (default for descending order)
-          columnNullMarker[i] = ZERO;
-          columnNotNullMarker[i] = ONE;
-        }
-      } else {
-        // Ascending
-        if (columnNullOrder != null && columnNullOrder.charAt(i) == 'z') {
-          // Null last
-          columnNullMarker[i] = ONE;
-          columnNotNullMarker[i] = ZERO;
-        } else {
-          // Null first (default for ascending order)
-          columnNullMarker[i] = ZERO;
-          columnNotNullMarker[i] = ONE;
-        }
-      }
-    }
+    BinarySortableUtils.fillOrderArrays(tbl, columnSortOrderIsDesc, columnNullMarker, columnNotNullMarker);
   }
 
   @Override
@@ -407,16 +372,16 @@ public class BinarySortableSerDe extends AbstractSerDe {
       }
 
       case DATE: {
-        DateWritable d = reuse == null ? new DateWritable()
-            : (DateWritable) reuse;
+        DateWritableV2 d = reuse == null ? new DateWritableV2()
+            : (DateWritableV2) reuse;
         d.set(deserializeInt(buffer, invert));
         return d;
       }
 
       case TIMESTAMP:
-        TimestampWritable t = (reuse == null ? new TimestampWritable() :
-            (TimestampWritable) reuse);
-        byte[] bytes = new byte[TimestampWritable.BINARY_SORTABLE_LENGTH];
+        TimestampWritableV2 t = (reuse == null ? new TimestampWritableV2() :
+            (TimestampWritableV2) reuse);
+        byte[] bytes = new byte[TimestampWritableV2.BINARY_SORTABLE_LENGTH];
 
         for (int i = 0; i < bytes.length; i++) {
           bytes[i] = buffer.read(invert);
@@ -550,10 +515,10 @@ public class BinarySortableSerDe extends AbstractSerDe {
 
       // Create the map if needed
       Map<Object, Object> r;
-      if (reuse == null) {
-        r = new HashMap<Object, Object>();
+      if (reuse == null || reuse.getClass() != LinkedHashMap.class) {
+        r = new LinkedHashMap<Object, Object>();
       } else {
-        r = (HashMap<Object, Object>) reuse;
+        r = (Map<Object, Object>) reuse;
         r.clear();
       }
 
@@ -797,7 +762,7 @@ public class BinarySortableSerDe extends AbstractSerDe {
       }
       case TIMESTAMP: {
         TimestampObjectInspector toi = (TimestampObjectInspector) poi;
-        TimestampWritable t = toi.getPrimitiveWritableObject(o);
+        TimestampWritableV2 t = toi.getPrimitiveWritableObject(o);
         serializeTimestampWritable(buffer, t, invert);
         return;
       }
@@ -970,7 +935,7 @@ public class BinarySortableSerDe extends AbstractSerDe {
     writeByte(buffer, (byte) v, invert);
   }
 
-  public static void serializeTimestampWritable(ByteStream.Output buffer, TimestampWritable t, boolean invert) {
+  public static void serializeTimestampWritable(ByteStream.Output buffer, TimestampWritableV2 t, boolean invert) {
     byte[] data = t.getBinarySortable();
     for (int i = 0; i < data.length; i++) {
       writeByte(buffer, data[i], invert);

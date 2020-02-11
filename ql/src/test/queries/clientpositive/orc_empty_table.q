@@ -1,3 +1,5 @@
+set hive.vectorized.execution.enabled=false;
+
 CREATE TABLE test_orc_empty_table_with_struct (struct_field STRUCT<int_field: INT>) STORED AS ORC;
 SELECT count(*) FROM test_orc_empty_table_with_struct;
 

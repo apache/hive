@@ -1,0 +1,137 @@
+PREHOOK: query: CREATE TABLE p1(i int) partitioned by (p string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@p1
+POSTHOOK: query: CREATE TABLE p1(i int) partitioned by (p string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@p1
+PREHOOK: query: insert into p1 partition(p='a') values (1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@p1@p=a
+POSTHOOK: query: insert into p1 partition(p='a') values (1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@p1@p=a
+POSTHOOK: Lineage: p1 PARTITION(p=a).i SCRIPT []
+PREHOOK: query: insert into p1 partition(p='A') values (2),(3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@p1@p=A
+POSTHOOK: query: insert into p1 partition(p='A') values (2),(3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@p1@p=A
+POSTHOOK: Lineage: p1 PARTITION(p=A).i SCRIPT []
+PREHOOK: query: describe formatted p1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@p1
+POSTHOOK: query: describe formatted p1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@p1
+# col_name            	data_type           	comment             
+i                   	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p                   	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	numFiles            	2                   
+	numPartitions       	2                   
+	numRows             	3                   
+	rawDataSize         	3                   
+	totalSize           	6                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: describe formatted p1 partition(p='a')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@p1
+POSTHOOK: query: describe formatted p1 partition(p='a')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@p1
+# col_name            	data_type           	comment             
+i                   	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p                   	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[a]                 	 
+Database:           	default             	 
+Table:              	p1                  	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"i\":\"true\"}}
+	numFiles            	1                   
+	numRows             	1                   
+	rawDataSize         	1                   
+	totalSize           	2                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: describe formatted p1 partition(p='A')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@p1
+POSTHOOK: query: describe formatted p1 partition(p='A')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@p1
+# col_name            	data_type           	comment             
+i                   	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p                   	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[A]                 	 
+Database:           	default             	 
+Table:              	p1                  	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"i\":\"true\"}}
+	numFiles            	1                   
+	numRows             	2                   
+	rawDataSize         	2                   
+	totalSize           	4                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,11 +18,10 @@
 
 package org.apache.hive.hcatalog.streaming;
 
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
-
 public class QueryFailedException extends StreamingException {
   String query;
-  public QueryFailedException(String query, CommandNeedRetryException e) {
+
+  public QueryFailedException(String query, Exception e) {
     super("Query failed: " + query + ". Due to :" + e.getMessage(), e);
     this.query = query;
   }

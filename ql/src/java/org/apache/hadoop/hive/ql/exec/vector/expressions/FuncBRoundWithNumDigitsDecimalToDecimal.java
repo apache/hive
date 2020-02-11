@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -24,8 +24,8 @@ import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 public class FuncBRoundWithNumDigitsDecimalToDecimal extends FuncRoundWithNumDigitsDecimalToDecimal {
   private static final long serialVersionUID = 1865384957262L;
 
-  public FuncBRoundWithNumDigitsDecimalToDecimal(int colNum, int scalarValue, int outputColumn) {
-    super(colNum, scalarValue, outputColumn);
+  public FuncBRoundWithNumDigitsDecimalToDecimal(int colNum, int scalarValue, int outputColumnNum) {
+    super(colNum, scalarValue, outputColumnNum);
   }
 
   public FuncBRoundWithNumDigitsDecimalToDecimal() {

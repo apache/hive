@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -132,5 +132,9 @@ public class ForeignKeyInfo implements Serializable {
     }
     sb.append("]");
     return sb.toString();
+  }
+
+  public static boolean isForeignKeyInfoNotEmpty(ForeignKeyInfo info) {
+    return info != null && !info.getForeignKeys().isEmpty();
   }
 }

@@ -1,1 +1,1 @@
-FAILED: ParseException line 1:72 extraneous input 'a' expecting EOF near '<EOF>'
+FAILED: ParseException line 2:72 extraneous input 'a' expecting EOF near '<EOF>'

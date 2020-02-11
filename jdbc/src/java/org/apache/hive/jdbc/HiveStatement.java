@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,7 +18,8 @@
 
 package org.apache.hive.jdbc;
 
-import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hive.jdbc.logs.InPlaceUpdateStream;
 import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.RowSetFactory;
@@ -34,6 +35,7 @@ import org.apache.hive.service.rpc.thrift.TFetchResultsReq;
 import org.apache.hive.service.rpc.thrift.TFetchResultsResp;
 import org.apache.hive.service.rpc.thrift.TGetOperationStatusReq;
 import org.apache.hive.service.rpc.thrift.TGetOperationStatusResp;
+import org.apache.hive.service.rpc.thrift.TGetQueryIdReq;
 import org.apache.hive.service.rpc.thrift.TOperationHandle;
 import org.apache.hive.service.rpc.thrift.TSessionHandle;
 import org.apache.thrift.TException;
@@ -47,6 +49,7 @@ import java.sql.SQLFeatureNotSupportedException;
 import java.sql.SQLTimeoutException;
 import java.sql.SQLWarning;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -266,7 +269,7 @@ public class HiveStatement implements java.sql.Statement {
     if (!status.isHasResultSet() && !stmtHandle.isHasResultSet()) {
       return false;
     }
-    resultSet =  new HiveQueryResultSet.Builder(this).setClient(client).setSessionHandle(sessHandle)
+    resultSet = new HiveQueryResultSet.Builder(this).setClient(client)
         .setStmtHandle(stmtHandle).setMaxRows(maxRows).setFetchSize(fetchSize)
         .setScrollable(isScrollableResultset)
         .build();
@@ -295,9 +298,10 @@ public class HiveStatement implements java.sql.Statement {
       return false;
     }
     resultSet =
-        new HiveQueryResultSet.Builder(this).setClient(client).setSessionHandle(sessHandle)
-            .setStmtHandle(stmtHandle).setMaxRows(maxRows).setFetchSize(fetchSize)
-            .setScrollable(isScrollableResultset).build();
+        new HiveQueryResultSet.Builder(this).setClient(client)
+            .setStmtHandle(stmtHandle).setMaxRows(maxRows)
+            .setFetchSize(fetchSize).setScrollable(isScrollableResultset)
+            .build();
     return true;
   }
 
@@ -366,14 +370,16 @@ public class HiveStatement implements java.sql.Statement {
     TGetOperationStatusResp statusResp = null;
 
     // Poll on the operation status, till the operation is complete
-    while (!isOperationComplete) {
+    do {
       try {
         /**
          * For an async SQLOperation, GetOperationStatus will use the long polling approach It will
          * essentially return after the HIVE_SERVER2_LONG_POLLING_TIMEOUT (a server config) expires
          */
         statusResp = client.GetOperationStatus(statusReq);
-        inPlaceUpdateStream.update(statusResp.getProgressUpdateResponse());
+        if(!isOperationComplete) {
+          inPlaceUpdateStream.update(statusResp.getProgressUpdateResponse());
+        }
         Utils.verifySuccessWithInfo(statusResp.getStatus());
         if (statusResp.isSetOperationState()) {
           switch (statusResp.getOperationState()) {
@@ -384,7 +390,12 @@ public class HiveStatement implements java.sql.Statement {
             break;
           case CANCELED_STATE:
             // 01000 -> warning
-            throw new SQLException("Query was cancelled", "01000");
+            String errMsg = statusResp.getErrorMessage();
+            if (errMsg != null && !errMsg.isEmpty()) {
+              throw new SQLException("Query was cancelled. " + errMsg, "01000");
+            } else {
+              throw new SQLException("Query was cancelled", "01000");
+            }
           case TIMEDOUT_STATE:
             throw new SQLTimeoutException("Query timed out after " + queryTimeout + " seconds");
           case ERROR_STATE:
@@ -406,7 +417,7 @@ public class HiveStatement implements java.sql.Statement {
         isLogBeingGenerated = false;
         throw new SQLException(e.toString(), "08S01", e);
       }
-    }
+    } while (!isOperationComplete);
 
     /*
       we set progress bar to be completed when hive query execution has completed
@@ -501,7 +512,8 @@ public class HiveStatement implements java.sql.Statement {
   @Override
   public int executeUpdate(String sql) throws SQLException {
     execute(sql);
-    return 0;
+    return getUpdateCount();
+    //return getLargeUpdateCount(); - not currently implemented... wrong type
   }
 
   /*
@@ -700,8 +712,16 @@ public class HiveStatement implements java.sql.Statement {
      * client might end up using executeAsync and then call this to check if the query run is
      * finished.
      */
-    waitForOperationToComplete();
-    return -1;
+    long numModifiedRows = -1;
+    TGetOperationStatusResp resp = waitForOperationToComplete();
+    if (resp != null) {
+      numModifiedRows = resp.getNumModifiedRows();
+    }
+    if (numModifiedRows == -1 || numModifiedRows > Integer.MAX_VALUE) {
+      LOG.warn("Number of rows is greater than Integer.MAX_VALUE");
+      return -1;
+    }
+    return (int) numModifiedRows;
   }
 
   /*
@@ -972,9 +992,7 @@ public class HiveStatement implements java.sql.Statement {
     if (stmtHandle != null) {
       // Set on the server side.
       // @see org.apache.hive.service.cli.operation.SQLOperation#prepare
-      String guid64 =
-          Base64.encodeBase64URLSafeString(stmtHandle.getOperationId().getGuid()).trim();
-      return guid64;
+      return Base64.getUrlEncoder().encodeToString(stmtHandle.getOperationId().getGuid()).trim();
     }
     return null;
   }
@@ -985,5 +1003,31 @@ public class HiveStatement implements java.sql.Statement {
    */
   public void setInPlaceUpdateStream(InPlaceUpdateStream stream) {
     this.inPlaceUpdateStream = stream;
+  }
+
+  /**
+   * Returns the Query ID if it is running.
+   * This method is a public API for usage outside of Hive, although it is not part of the
+   * interface java.sql.Statement.
+   * @return Valid query ID if it is running else returns NULL.
+   * @throws SQLException If any internal failures.
+   */
+  @LimitedPrivate(value={"Hive and closely related projects."})
+  public String getQueryId() throws SQLException {
+    // Storing it in temp variable as this method is not thread-safe and concurrent thread can
+    // close this handle and set it to null after checking for null.
+    TOperationHandle stmtHandleTmp = stmtHandle;
+    if (stmtHandleTmp == null) {
+      // If query is not running or already closed.
+      return null;
+    }
+    try {
+      String queryId = client.GetQueryId(new TGetQueryIdReq(stmtHandleTmp)).getQueryId();
+
+      // queryId can be empty string if query was already closed. Need to return null in such case.
+      return StringUtils.isBlank(queryId) ? null : queryId;
+    } catch (TException e) {
+      throw new SQLException(e);
+    }
   }
 }

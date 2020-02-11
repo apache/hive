@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,6 +22,9 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
+import org.apache.hadoop.hive.ql.plan.Explain;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 /**
  * Privilege defines a privilege in Hive. Each privilege has a name and scope associated with it.
  * This class contains all of the predefined privileges in Hive.
@@ -44,6 +47,7 @@ public class Privilege {
 
   }
 
+  @Explain(skipHeader = true, explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public PrivilegeType getPriv() {
     return priv;
   }
@@ -100,9 +104,6 @@ public class Privilege {
 
   public static Privilege DROP = new Privilege(PrivilegeType.DROP,
       PrivilegeScope.ALLSCOPE_EXCEPT_COLUMN);
-
-  public static Privilege INDEX = new Privilege(PrivilegeType.INDEX,
-      PrivilegeScope.ALLSCOPE);
 
   public static Privilege LOCK = new Privilege(PrivilegeType.LOCK,
       PrivilegeScope.ALLSCOPE_EXCEPT_COLUMN);

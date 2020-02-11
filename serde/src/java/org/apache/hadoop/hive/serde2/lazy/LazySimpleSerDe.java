@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -86,14 +86,23 @@ public class LazySimpleSerDe extends AbstractEncodingAwareSerDe {
 
   @Override
   public String toString() {
-    return getClass().toString()
-        + "["
-        + Arrays.asList(serdeParams.getSeparators())
-        + ":"
-        + ((StructTypeInfo) serdeParams.getRowTypeInfo()).getAllStructFieldNames()
-        + ":"
-        + ((StructTypeInfo) serdeParams.getRowTypeInfo())
-            .getAllStructFieldTypeInfos() + "]";
+    StringBuilder sb = new StringBuilder(128);
+    sb.append(getClass() + " [serdeParams=" + serdeParams + ", cachedObjectInspector=" + cachedObjectInspector
+        + ", serializedSize=" + serializedSize + ", stats=" + stats + ", lastOperationSerialize="
+        + lastOperationSerialize + ", lastOperationDeserialize=" + lastOperationDeserialize);
+
+    if (serdeParams != null) {
+      sb.append(' ').append(Arrays.toString(serdeParams.getSeparators()));
+      if (serdeParams.getRowTypeInfo() != null) {
+        sb.append(" : ");
+        sb.append(((StructTypeInfo) serdeParams.getRowTypeInfo()).getAllStructFieldNames());
+        sb.append(" : ");
+        sb.append(((StructTypeInfo) serdeParams.getRowTypeInfo()).getAllStructFieldTypeInfos());
+      }
+    }
+
+    sb.append(']');
+    return sb.toString();
   }
 
   public LazySimpleSerDe() throws SerDeException {
@@ -362,7 +371,7 @@ public class LazySimpleSerDe extends AbstractEncodingAwareSerDe {
       if (ois == null) {
         out.write(nullSequence.getBytes(), 0, nullSequence.getLength());
       } else {
-        LazyUtils.writePrimitiveUTF8(out, new Byte(uoi.getTag(obj)),
+        LazyUtils.writePrimitiveUTF8(out, Byte.valueOf(uoi.getTag(obj)),
             PrimitiveObjectInspectorFactory.javaByteObjectInspector,
             escaped, escapeChar, needsEscape);
         out.write(separator);

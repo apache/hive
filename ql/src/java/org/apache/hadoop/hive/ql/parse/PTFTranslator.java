@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -55,6 +55,7 @@ import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowFrameSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowFunctionSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowType;
+import org.apache.hadoop.hive.ql.parse.type.TypeCheckCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.PTFDesc;
@@ -613,6 +614,7 @@ public class PTFTranslator {
     case SHORT:
     case DECIMAL:
     case TIMESTAMP:
+    case TIMESTAMPLOCALTZ:
     case DATE:
     case STRING:
     case VARCHAR:
@@ -840,9 +842,9 @@ public class PTFTranslator {
    */
   public static StructObjectInspector getStandardStructOI(RowResolver rr) {
     StructObjectInspector oi;
-    ArrayList<ColumnInfo> colLists = rr.getColumnInfos();
-    ArrayList<String> structFieldNames = new ArrayList<String>();
-    ArrayList<ObjectInspector> structFieldObjectInspectors = new ArrayList<ObjectInspector>();
+    List<ColumnInfo> colLists = rr.getColumnInfos();
+    List<String> structFieldNames = new ArrayList<String>();
+    List<ObjectInspector> structFieldObjectInspectors = new ArrayList<ObjectInspector>();
     for (ColumnInfo columnInfo : colLists) {
       String colName = columnInfo.getInternalName();
       ObjectInspector colOI = columnInfo.getObjectInspector();

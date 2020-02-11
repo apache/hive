@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -119,8 +119,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
    */
 
   public int executeUpdate() throws SQLException {
-    super.executeUpdate(updateSql(sql, parameters));
-    return 0;
+    return super.executeUpdate(updateSql(sql, parameters));
   }
 
   /**
@@ -276,7 +275,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
 
   public void setBinaryStream(int parameterIndex, InputStream x) throws SQLException {
     String str = new Scanner(x, "UTF-8").useDelimiter("\\A").next();
-    this.parameters.put(parameterIndex, str);
+    setString(parameterIndex, str);
   }
 
   /*
@@ -696,6 +695,27 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
     this.parameters.put(parameterIndex,""+x);
   }
 
+  private String replaceBackSlashSingleQuote(String x) {
+    // scrutinize escape pair, specifically, replace \' to '
+    StringBuffer newX = new StringBuffer();
+    for (int i = 0; i < x.length(); i++) {
+      char c = x.charAt(i);
+      if (c == '\\' && i < x.length()-1) {
+        char c1 = x.charAt(i+1);
+        if (c1 == '\'') {
+          newX.append(c1);
+        } else {
+          newX.append(c);
+          newX.append(c1);
+        }
+        i++;
+      } else {
+        newX.append(c);
+      }
+    }
+    return newX.toString();
+  }
+
   /*
    * (non-Javadoc)
    *
@@ -703,8 +723,9 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
    */
 
   public void setString(int parameterIndex, String x) throws SQLException {
-     x=x.replace("'", "\\'");
-     this.parameters.put(parameterIndex,"'"+x+"'");
+    x = replaceBackSlashSingleQuote(x);
+    x=x.replace("'", "\\'");
+    this.parameters.put(parameterIndex, "'"+x+"'");
   }
 
   /*

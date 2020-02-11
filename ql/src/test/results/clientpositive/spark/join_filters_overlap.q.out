@@ -1,19 +1,32 @@
-PREHOOK: query: create table a as SELECT 100 as key, a.value as value FROM src LATERAL VIEW explode(array(40, 50, 60)) a as value limit 3
+PREHOOK: query: create table a_n4 as SELECT 100 as key, a_n4.value as value FROM src LATERAL VIEW explode(array(40, 50, 60)) a_n4 as value limit 3
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@a
-POSTHOOK: query: create table a as SELECT 100 as key, a.value as value FROM src LATERAL VIEW explode(array(40, 50, 60)) a as value limit 3
+PREHOOK: Output: default@a_n4
+POSTHOOK: query: create table a_n4 as SELECT 100 as key, a_n4.value as value FROM src LATERAL VIEW explode(array(40, 50, 60)) a_n4 as value limit 3
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@a
-POSTHOOK: Lineage: a.key SIMPLE []
-POSTHOOK: Lineage: a.value SCRIPT []
-PREHOOK: query: explain extended select * from a left outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (a.key=c.key AND a.value=60 AND c.value=60)
+POSTHOOK: Output: default@a_n4
+POSTHOOK: Lineage: a_n4.key SIMPLE []
+POSTHOOK: Lineage: a_n4.value SCRIPT []
+PREHOOK: query: explain extended select * from a_n4 left outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50) left outer join a_n4 c on (a_n4.key=c.key AND a_n4.value=60 AND c.value=60)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended select * from a left outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (a.key=c.key AND a.value=60 AND c.value=60)
+PREHOOK: Input: default@a_n4
+#### A masked pattern was here ####
+POSTHOOK: query: explain extended select * from a_n4 left outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50) left outer join a_n4 c on (a_n4.key=c.key AND a_n4.value=60 AND c.value=60)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n4
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `t`.`key`, `t`.`value`, `t1`.`key` AS `key1`, `t1`.`value` AS `value1`, `t3`.`key` AS `key2`, `t3`.`value` AS `value2`
+FROM (SELECT `key`, `value`, `value` = 60 AS `=`, `value` = 50 AS `=3`
+FROM `default`.`a_n4`) AS `t`
+LEFT JOIN (SELECT `key`, CAST(50 AS INTEGER) AS `value`
+FROM `default`.`a_n4`
+WHERE `value` = 50 AND `key` IS NOT NULL) AS `t1` ON `t`.`key` = `t1`.`key` AND `t`.`=3`
+LEFT JOIN (SELECT `key`, CAST(60 AS INTEGER) AS `value`
+FROM `default`.`a_n4`
+WHERE `value` = 60 AND `key` IS NOT NULL) AS `t3` ON `t`.`key` = `t3`.`key` AND `t`.`=`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -28,43 +41,45 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: a
+                  alias: a_n4
                   Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Select Operator
-                    expressions: key (type: int), value (type: int)
-                    outputColumnNames: _col0, _col1
+                    expressions: key (type: int), value (type: int), (value = 60) (type: boolean), (value = 50) (type: boolean)
+                    outputColumnNames: _col0, _col1, _col2, _col3
                     Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
-                      null sort order: a
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: _col0 (type: int)
                       Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                       tag: 0
-                      value expressions: _col1 (type: int)
+                      value expressions: _col1 (type: int), _col2 (type: boolean), _col3 (type: boolean)
                       auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: a
+                  base file name: a_n4
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:int
 #### A masked pattern was here ####
-                    name default.a
+                    name default.a_n4
                     numFiles 1
                     numRows 3
                     rawDataSize 18
-                    serialization.ddl struct a { i32 key, i32 value}
+                    serialization.ddl struct a_n4 { i32 key, i32 value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 21
@@ -76,34 +91,36 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:int
 #### A masked pattern was here ####
-                      name default.a
+                      name default.a_n4
                       numFiles 1
                       numRows 3
                       rawDataSize 18
-                      serialization.ddl struct a { i32 key, i32 value}
+                      serialization.ddl struct a_n4 { i32 key, i32 value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       totalSize 21
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.a
-                  name: default.a
+                    name: default.a_n4
+                  name: default.a_n4
             Truncated Path -> Alias:
-              /a [$hdt$_0:a]
+              /a_n4 [$hdt$_0:a_n4]
         Map 3 
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: ((value = 50) and key is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (value = 50) (type: boolean)
+                    predicate: ((value = 50) and key is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int), 50 (type: int)
@@ -111,34 +128,36 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                         tag: 1
                         value expressions: _col1 (type: int)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: a
+                  base file name: a_n4
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:int
 #### A masked pattern was here ####
-                    name default.a
+                    name default.a_n4
                     numFiles 1
                     numRows 3
                     rawDataSize 18
-                    serialization.ddl struct a { i32 key, i32 value}
+                    serialization.ddl struct a_n4 { i32 key, i32 value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 21
@@ -150,34 +169,36 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:int
 #### A masked pattern was here ####
-                      name default.a
+                      name default.a_n4
                       numFiles 1
                       numRows 3
                       rawDataSize 18
-                      serialization.ddl struct a { i32 key, i32 value}
+                      serialization.ddl struct a_n4 { i32 key, i32 value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       totalSize 21
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.a
-                  name: default.a
+                    name: default.a_n4
+                  name: default.a_n4
             Truncated Path -> Alias:
-              /a [$hdt$_1:b]
+              /a_n4 [$hdt$_1:b]
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: c
+                  filterExpr: ((value = 60) and key is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (value = 60) (type: boolean)
+                    predicate: ((value = 60) and key is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int), 60 (type: int)
@@ -185,34 +206,36 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                         tag: 2
                         value expressions: _col1 (type: int)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: a
+                  base file name: a_n4
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:int
 #### A masked pattern was here ####
-                    name default.a
+                    name default.a_n4
                     numFiles 1
                     numRows 3
                     rawDataSize 18
-                    serialization.ddl struct a { i32 key, i32 value}
+                    serialization.ddl struct a_n4 { i32 key, i32 value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 21
@@ -224,25 +247,26 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:int
 #### A masked pattern was here ####
-                      name default.a
+                      name default.a_n4
                       numFiles 1
                       numRows 3
                       rawDataSize 18
-                      serialization.ddl struct a { i32 key, i32 value}
+                      serialization.ddl struct a_n4 { i32 key, i32 value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       totalSize 21
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.a
-                  name: default.a
+                    name: default.a_n4
+                  name: default.a_n4
             Truncated Path -> Alias:
-              /a [$hdt$_2:c]
+              /a_n4 [$hdt$_2:c]
         Reducer 2 
             Needs Tagging: true
             Reduce Operator Tree:
@@ -253,37 +277,41 @@ STAGE PLANS:
                 filter mappings:
                   0 [1, 1, 2, 1]
                 filter predicates:
-                  0 {(VALUE._col0 = 50)} {(VALUE._col0 = 60)}
+                  0 {VALUE._col2} {VALUE._col1}
                   1 
                   2 
                 keys:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
                   2 _col0 (type: int)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                outputColumnNames: _col0, _col1, _col4, _col5, _col6, _col7
                 Statistics: Num rows: 6 Data size: 39 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-#### A masked pattern was here ####
-                  NumFilesPerFileSink: 1
+                Select Operator
+                  expressions: _col0 (type: int), _col1 (type: int), _col4 (type: int), _col5 (type: int), _col6 (type: int), _col7 (type: int)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                   Statistics: Num rows: 6 Data size: 39 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
 #### A masked pattern was here ####
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      properties:
-                        columns _col0,_col1,_col2,_col3,_col4,_col5
-                        columns.types int:int:int:int:int:int
-                        escape.delim \
-                        hive.serialization.extend.additional.nesting.levels true
-                        serialization.escape.crlf true
-                        serialization.format 1
-                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  TotalFiles: 1
-                  GatherStats: false
-                  MultiFileSpray: false
+                    NumFilesPerFileSink: 1
+                    Statistics: Num rows: 6 Data size: 39 Basic stats: COMPLETE Column stats: NONE
+#### A masked pattern was here ####
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        properties:
+                          columns _col0,_col1,_col2,_col3,_col4,_col5
+                          columns.types int:int:int:int:int:int
+                          escape.delim \
+                          hive.serialization.extend.additional.nesting.levels true
+                          serialization.escape.crlf true
+                          serialization.format 1
+                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    TotalFiles: 1
+                    GatherStats: false
+                    MultiFileSpray: false
 
   Stage: Stage-0
     Fetch Operator
@@ -291,32 +319,45 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from a left outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (a.key=c.key AND a.value=60 AND c.value=60)
+PREHOOK: query: select * from a_n4 left outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50) left outer join a_n4 c on (a_n4.key=c.key AND a_n4.value=60 AND c.value=60)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@a
+PREHOOK: Input: default@a_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select * from a left outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (a.key=c.key AND a.value=60 AND c.value=60)
+POSTHOOK: query: select * from a_n4 left outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50) left outer join a_n4 c on (a_n4.key=c.key AND a_n4.value=60 AND c.value=60)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@a
+POSTHOOK: Input: default@a_n4
 #### A masked pattern was here ####
 100	40	NULL	NULL	NULL	NULL
 100	50	100	50	NULL	NULL
 100	60	NULL	NULL	100	60
-PREHOOK: query: select /*+ MAPJOIN(b,c)*/ * from a left outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (a.key=c.key AND a.value=60 AND c.value=60)
+PREHOOK: query: select /*+ MAPJOIN(b,c)*/ * from a_n4 left outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50) left outer join a_n4 c on (a_n4.key=c.key AND a_n4.value=60 AND c.value=60)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@a
+PREHOOK: Input: default@a_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select /*+ MAPJOIN(b,c)*/ * from a left outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (a.key=c.key AND a.value=60 AND c.value=60)
+POSTHOOK: query: select /*+ MAPJOIN(b,c)*/ * from a_n4 left outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50) left outer join a_n4 c on (a_n4.key=c.key AND a_n4.value=60 AND c.value=60)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@a
+POSTHOOK: Input: default@a_n4
 #### A masked pattern was here ####
 100	40	NULL	NULL	NULL	NULL
 100	50	100	50	NULL	NULL
 100	60	NULL	NULL	100	60
-PREHOOK: query: explain extended select * from a right outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (b.key=c.key AND b.value=60 AND c.value=60)
+PREHOOK: query: explain extended select * from a_n4 right outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50) left outer join a_n4 c on (b.key=c.key AND b.value=60 AND c.value=60)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended select * from a right outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (b.key=c.key AND b.value=60 AND c.value=60)
+PREHOOK: Input: default@a_n4
+#### A masked pattern was here ####
+POSTHOOK: query: explain extended select * from a_n4 right outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50) left outer join a_n4 c on (b.key=c.key AND b.value=60 AND c.value=60)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n4
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, `t1`.`key` AS `key1`, `t1`.`value` AS `value1`, `t3`.`key` AS `key2`, `t3`.`value` AS `value2`
+FROM (SELECT `key`, CAST(50 AS INTEGER) AS `value`
+FROM `default`.`a_n4`
+WHERE `value` = 50 AND `key` IS NOT NULL) AS `t0`
+RIGHT JOIN (SELECT `key`, `value`, `value` = 60 AS `=`, `value` = 50 AS `=3`
+FROM `default`.`a_n4`) AS `t1` ON `t0`.`key` = `t1`.`key` AND `t1`.`=3`
+LEFT JOIN (SELECT `key`, CAST(60 AS INTEGER) AS `value`
+FROM `default`.`a_n4`
+WHERE `value` = 60 AND `key` IS NOT NULL) AS `t3` ON `t1`.`key` = `t3`.`key` AND `t1`.`=`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -331,12 +372,13 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: a
+                  alias: a_n4
+                  filterExpr: ((value = 50) and key is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (value = 50) (type: boolean)
+                    predicate: ((value = 50) and key is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int), 50 (type: int)
@@ -344,34 +386,36 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                         tag: 0
                         value expressions: _col1 (type: int)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: a
+                  base file name: a_n4
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:int
 #### A masked pattern was here ####
-                    name default.a
+                    name default.a_n4
                     numFiles 1
                     numRows 3
                     rawDataSize 18
-                    serialization.ddl struct a { i32 key, i32 value}
+                    serialization.ddl struct a_n4 { i32 key, i32 value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 21
@@ -383,25 +427,26 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:int
 #### A masked pattern was here ####
-                      name default.a
+                      name default.a_n4
                       numFiles 1
                       numRows 3
                       rawDataSize 18
-                      serialization.ddl struct a { i32 key, i32 value}
+                      serialization.ddl struct a_n4 { i32 key, i32 value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       totalSize 21
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.a
-                  name: default.a
+                    name: default.a_n4
+                  name: default.a_n4
             Truncated Path -> Alias:
-              /a [$hdt$_0:a]
+              /a_n4 [$hdt$_0:a_n4]
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -409,39 +454,41 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Select Operator
-                    expressions: key (type: int), value (type: int)
-                    outputColumnNames: _col0, _col1
+                    expressions: key (type: int), value (type: int), (value = 60) (type: boolean), (value = 50) (type: boolean)
+                    outputColumnNames: _col0, _col1, _col2, _col3
                     Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
-                      null sort order: a
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: _col0 (type: int)
                       Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                       tag: 1
-                      value expressions: _col1 (type: int)
+                      value expressions: _col1 (type: int), _col2 (type: boolean), _col3 (type: boolean)
                       auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: a
+                  base file name: a_n4
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:int
 #### A masked pattern was here ####
-                    name default.a
+                    name default.a_n4
                     numFiles 1
                     numRows 3
                     rawDataSize 18
-                    serialization.ddl struct a { i32 key, i32 value}
+                    serialization.ddl struct a_n4 { i32 key, i32 value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 21
@@ -453,34 +500,36 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:int
 #### A masked pattern was here ####
-                      name default.a
+                      name default.a_n4
                       numFiles 1
                       numRows 3
                       rawDataSize 18
-                      serialization.ddl struct a { i32 key, i32 value}
+                      serialization.ddl struct a_n4 { i32 key, i32 value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       totalSize 21
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.a
-                  name: default.a
+                    name: default.a_n4
+                  name: default.a_n4
             Truncated Path -> Alias:
-              /a [$hdt$_1:b]
+              /a_n4 [$hdt$_1:b]
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: c
+                  filterExpr: ((value = 60) and key is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (value = 60) (type: boolean)
+                    predicate: ((value = 60) and key is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int), 60 (type: int)
@@ -488,34 +537,36 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                         tag: 2
                         value expressions: _col1 (type: int)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: a
+                  base file name: a_n4
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:int
 #### A masked pattern was here ####
-                    name default.a
+                    name default.a_n4
                     numFiles 1
                     numRows 3
                     rawDataSize 18
-                    serialization.ddl struct a { i32 key, i32 value}
+                    serialization.ddl struct a_n4 { i32 key, i32 value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 21
@@ -527,25 +578,26 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:int
 #### A masked pattern was here ####
-                      name default.a
+                      name default.a_n4
                       numFiles 1
                       numRows 3
                       rawDataSize 18
-                      serialization.ddl struct a { i32 key, i32 value}
+                      serialization.ddl struct a_n4 { i32 key, i32 value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       totalSize 21
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.a
-                  name: default.a
+                    name: default.a_n4
+                  name: default.a_n4
             Truncated Path -> Alias:
-              /a [$hdt$_2:c]
+              /a_n4 [$hdt$_2:c]
         Reducer 2 
             Needs Tagging: true
             Reduce Operator Tree:
@@ -557,36 +609,40 @@ STAGE PLANS:
                   1 [0, 1, 2, 1]
                 filter predicates:
                   0 
-                  1 {(VALUE._col0 = 50)} {(VALUE._col0 = 60)}
+                  1 {VALUE._col2} {VALUE._col1}
                   2 
                 keys:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
                   2 _col0 (type: int)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                outputColumnNames: _col0, _col1, _col2, _col3, _col6, _col7
                 Statistics: Num rows: 6 Data size: 39 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-#### A masked pattern was here ####
-                  NumFilesPerFileSink: 1
+                Select Operator
+                  expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col6 (type: int), _col7 (type: int)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                   Statistics: Num rows: 6 Data size: 39 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
 #### A masked pattern was here ####
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      properties:
-                        columns _col0,_col1,_col2,_col3,_col4,_col5
-                        columns.types int:int:int:int:int:int
-                        escape.delim \
-                        hive.serialization.extend.additional.nesting.levels true
-                        serialization.escape.crlf true
-                        serialization.format 1
-                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  TotalFiles: 1
-                  GatherStats: false
-                  MultiFileSpray: false
+                    NumFilesPerFileSink: 1
+                    Statistics: Num rows: 6 Data size: 39 Basic stats: COMPLETE Column stats: NONE
+#### A masked pattern was here ####
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        properties:
+                          columns _col0,_col1,_col2,_col3,_col4,_col5
+                          columns.types int:int:int:int:int:int
+                          escape.delim \
+                          hive.serialization.extend.additional.nesting.levels true
+                          serialization.escape.crlf true
+                          serialization.format 1
+                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    TotalFiles: 1
+                    GatherStats: false
+                    MultiFileSpray: false
 
   Stage: Stage-0
     Fetch Operator
@@ -594,32 +650,45 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from a right outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (b.key=c.key AND b.value=60 AND c.value=60)
+PREHOOK: query: select * from a_n4 right outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50) left outer join a_n4 c on (b.key=c.key AND b.value=60 AND c.value=60)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@a
+PREHOOK: Input: default@a_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select * from a right outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (b.key=c.key AND b.value=60 AND c.value=60)
+POSTHOOK: query: select * from a_n4 right outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50) left outer join a_n4 c on (b.key=c.key AND b.value=60 AND c.value=60)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@a
+POSTHOOK: Input: default@a_n4
 #### A masked pattern was here ####
 100	50	100	50	NULL	NULL
 NULL	NULL	100	40	NULL	NULL
 NULL	NULL	100	60	100	60
-PREHOOK: query: select /*+ MAPJOIN(a,c)*/ * from a right outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (b.key=c.key AND b.value=60 AND c.value=60)
+PREHOOK: query: select /*+ MAPJOIN(a_n4,c)*/ * from a_n4 right outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50) left outer join a_n4 c on (b.key=c.key AND b.value=60 AND c.value=60)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@a
+PREHOOK: Input: default@a_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select /*+ MAPJOIN(a,c)*/ * from a right outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (b.key=c.key AND b.value=60 AND c.value=60)
+POSTHOOK: query: select /*+ MAPJOIN(a_n4,c)*/ * from a_n4 right outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50) left outer join a_n4 c on (b.key=c.key AND b.value=60 AND c.value=60)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@a
+POSTHOOK: Input: default@a_n4
 #### A masked pattern was here ####
 100	50	100	50	NULL	NULL
 NULL	NULL	100	40	NULL	NULL
 NULL	NULL	100	60	100	60
-PREHOOK: query: explain extended select * from a right outer join a b on (a.key=b.key AND a.value=50 AND b.value=50 AND b.value>10) left outer join a c on (b.key=c.key AND b.value=60 AND b.value>20 AND c.value=60)
+PREHOOK: query: explain extended select * from a_n4 right outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50 AND b.value>10) left outer join a_n4 c on (b.key=c.key AND b.value=60 AND b.value>20 AND c.value=60)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended select * from a right outer join a b on (a.key=b.key AND a.value=50 AND b.value=50 AND b.value>10) left outer join a c on (b.key=c.key AND b.value=60 AND b.value>20 AND c.value=60)
+PREHOOK: Input: default@a_n4
+#### A masked pattern was here ####
+POSTHOOK: query: explain extended select * from a_n4 right outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50 AND b.value>10) left outer join a_n4 c on (b.key=c.key AND b.value=60 AND b.value>20 AND c.value=60)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n4
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, `t1`.`key` AS `key1`, `t1`.`value` AS `value1`, `t3`.`key` AS `key2`, `t3`.`value` AS `value2`
+FROM (SELECT `key`, CAST(50 AS INTEGER) AS `value`
+FROM `default`.`a_n4`
+WHERE `value` = 50 AND `key` IS NOT NULL) AS `t0`
+RIGHT JOIN (SELECT `key`, `value`, `value` = 60 AS `=`, `value` = 50 AS `=3`
+FROM `default`.`a_n4`) AS `t1` ON `t0`.`key` = `t1`.`key` AND `t1`.`=3`
+LEFT JOIN (SELECT `key`, CAST(60 AS INTEGER) AS `value`
+FROM `default`.`a_n4`
+WHERE `value` = 60 AND `key` IS NOT NULL) AS `t3` ON `t1`.`key` = `t3`.`key` AND `t1`.`=`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -634,12 +703,13 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: a
+                  alias: a_n4
+                  filterExpr: ((value = 50) and key is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (value = 50) (type: boolean)
+                    predicate: ((value = 50) and key is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int), 50 (type: int)
@@ -647,34 +717,36 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                         tag: 0
                         value expressions: _col1 (type: int)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: a
+                  base file name: a_n4
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:int
 #### A masked pattern was here ####
-                    name default.a
+                    name default.a_n4
                     numFiles 1
                     numRows 3
                     rawDataSize 18
-                    serialization.ddl struct a { i32 key, i32 value}
+                    serialization.ddl struct a_n4 { i32 key, i32 value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 21
@@ -686,25 +758,26 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:int
 #### A masked pattern was here ####
-                      name default.a
+                      name default.a_n4
                       numFiles 1
                       numRows 3
                       rawDataSize 18
-                      serialization.ddl struct a { i32 key, i32 value}
+                      serialization.ddl struct a_n4 { i32 key, i32 value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       totalSize 21
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.a
-                  name: default.a
+                    name: default.a_n4
+                  name: default.a_n4
             Truncated Path -> Alias:
-              /a [$hdt$_0:a]
+              /a_n4 [$hdt$_0:a_n4]
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -712,39 +785,41 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Select Operator
-                    expressions: key (type: int), value (type: int)
-                    outputColumnNames: _col0, _col1
+                    expressions: key (type: int), value (type: int), (value = 60) (type: boolean), (value = 50) (type: boolean)
+                    outputColumnNames: _col0, _col1, _col2, _col3
                     Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
-                      null sort order: a
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: _col0 (type: int)
                       Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                       tag: 1
-                      value expressions: _col1 (type: int)
+                      value expressions: _col1 (type: int), _col2 (type: boolean), _col3 (type: boolean)
                       auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: a
+                  base file name: a_n4
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:int
 #### A masked pattern was here ####
-                    name default.a
+                    name default.a_n4
                     numFiles 1
                     numRows 3
                     rawDataSize 18
-                    serialization.ddl struct a { i32 key, i32 value}
+                    serialization.ddl struct a_n4 { i32 key, i32 value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 21
@@ -756,34 +831,36 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:int
 #### A masked pattern was here ####
-                      name default.a
+                      name default.a_n4
                       numFiles 1
                       numRows 3
                       rawDataSize 18
-                      serialization.ddl struct a { i32 key, i32 value}
+                      serialization.ddl struct a_n4 { i32 key, i32 value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       totalSize 21
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.a
-                  name: default.a
+                    name: default.a_n4
+                  name: default.a_n4
             Truncated Path -> Alias:
-              /a [$hdt$_1:b]
+              /a_n4 [$hdt$_1:b]
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: c
+                  filterExpr: ((value = 60) and key is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (value = 60) (type: boolean)
+                    predicate: ((value = 60) and key is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int), 60 (type: int)
@@ -791,34 +868,36 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                         tag: 2
                         value expressions: _col1 (type: int)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: a
+                  base file name: a_n4
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:int
 #### A masked pattern was here ####
-                    name default.a
+                    name default.a_n4
                     numFiles 1
                     numRows 3
                     rawDataSize 18
-                    serialization.ddl struct a { i32 key, i32 value}
+                    serialization.ddl struct a_n4 { i32 key, i32 value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 21
@@ -830,25 +909,26 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:int
 #### A masked pattern was here ####
-                      name default.a
+                      name default.a_n4
                       numFiles 1
                       numRows 3
                       rawDataSize 18
-                      serialization.ddl struct a { i32 key, i32 value}
+                      serialization.ddl struct a_n4 { i32 key, i32 value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       totalSize 21
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.a
-                  name: default.a
+                    name: default.a_n4
+                  name: default.a_n4
             Truncated Path -> Alias:
-              /a [$hdt$_2:c]
+              /a_n4 [$hdt$_2:c]
         Reducer 2 
             Needs Tagging: true
             Reduce Operator Tree:
@@ -860,36 +940,40 @@ STAGE PLANS:
                   1 [0, 1, 2, 1]
                 filter predicates:
                   0 
-                  1 {(VALUE._col0 = 50)} {(VALUE._col0 = 60)}
+                  1 {VALUE._col2} {VALUE._col1}
                   2 
                 keys:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
                   2 _col0 (type: int)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                outputColumnNames: _col0, _col1, _col2, _col3, _col6, _col7
                 Statistics: Num rows: 6 Data size: 39 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-#### A masked pattern was here ####
-                  NumFilesPerFileSink: 1
+                Select Operator
+                  expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col6 (type: int), _col7 (type: int)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                   Statistics: Num rows: 6 Data size: 39 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
 #### A masked pattern was here ####
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      properties:
-                        columns _col0,_col1,_col2,_col3,_col4,_col5
-                        columns.types int:int:int:int:int:int
-                        escape.delim \
-                        hive.serialization.extend.additional.nesting.levels true
-                        serialization.escape.crlf true
-                        serialization.format 1
-                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  TotalFiles: 1
-                  GatherStats: false
-                  MultiFileSpray: false
+                    NumFilesPerFileSink: 1
+                    Statistics: Num rows: 6 Data size: 39 Basic stats: COMPLETE Column stats: NONE
+#### A masked pattern was here ####
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        properties:
+                          columns _col0,_col1,_col2,_col3,_col4,_col5
+                          columns.types int:int:int:int:int:int
+                          escape.delim \
+                          hive.serialization.extend.additional.nesting.levels true
+                          serialization.escape.crlf true
+                          serialization.format 1
+                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    TotalFiles: 1
+                    GatherStats: false
+                    MultiFileSpray: false
 
   Stage: Stage-0
     Fetch Operator
@@ -897,32 +981,47 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from a right outer join a b on (a.key=b.key AND a.value=50 AND b.value=50 AND b.value>10) left outer join a c on (b.key=c.key AND b.value=60 AND b.value>20 AND c.value=60)
+PREHOOK: query: select * from a_n4 right outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50 AND b.value>10) left outer join a_n4 c on (b.key=c.key AND b.value=60 AND b.value>20 AND c.value=60)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@a
+PREHOOK: Input: default@a_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select * from a right outer join a b on (a.key=b.key AND a.value=50 AND b.value=50 AND b.value>10) left outer join a c on (b.key=c.key AND b.value=60 AND b.value>20 AND c.value=60)
+POSTHOOK: query: select * from a_n4 right outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50 AND b.value>10) left outer join a_n4 c on (b.key=c.key AND b.value=60 AND b.value>20 AND c.value=60)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@a
+POSTHOOK: Input: default@a_n4
 #### A masked pattern was here ####
 100	50	100	50	NULL	NULL
 NULL	NULL	100	40	NULL	NULL
 NULL	NULL	100	60	100	60
-PREHOOK: query: select /*+ MAPJOIN(a,c)*/ * from a right outer join a b on (a.key=b.key AND a.value=50 AND b.value=50 AND b.value>10) left outer join a c on (b.key=c.key AND b.value=60 AND b.value>20 AND c.value=60)
+PREHOOK: query: select /*+ MAPJOIN(a_n4,c)*/ * from a_n4 right outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50 AND b.value>10) left outer join a_n4 c on (b.key=c.key AND b.value=60 AND b.value>20 AND c.value=60)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@a
+PREHOOK: Input: default@a_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select /*+ MAPJOIN(a,c)*/ * from a right outer join a b on (a.key=b.key AND a.value=50 AND b.value=50 AND b.value>10) left outer join a c on (b.key=c.key AND b.value=60 AND b.value>20 AND c.value=60)
+POSTHOOK: query: select /*+ MAPJOIN(a_n4,c)*/ * from a_n4 right outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50 AND b.value>10) left outer join a_n4 c on (b.key=c.key AND b.value=60 AND b.value>20 AND c.value=60)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@a
+POSTHOOK: Input: default@a_n4
 #### A masked pattern was here ####
 100	50	100	50	NULL	NULL
 NULL	NULL	100	40	NULL	NULL
 NULL	NULL	100	60	100	60
-PREHOOK: query: explain extended select * from a full outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (b.key=c.key AND b.value=60 AND c.value=60) left outer join a d on (a.key=d.key AND a.value=40 AND d.value=40)
+PREHOOK: query: explain extended select * from a_n4 full outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50) left outer join a_n4 c on (b.key=c.key AND b.value=60 AND c.value=60) left outer join a_n4 d on (a_n4.key=d.key AND a_n4.value=40 AND d.value=40)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended select * from a full outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (b.key=c.key AND b.value=60 AND c.value=60) left outer join a d on (a.key=d.key AND a.value=40 AND d.value=40)
+PREHOOK: Input: default@a_n4
+#### A masked pattern was here ####
+POSTHOOK: query: explain extended select * from a_n4 full outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50) left outer join a_n4 c on (b.key=c.key AND b.value=60 AND c.value=60) left outer join a_n4 d on (a_n4.key=d.key AND a_n4.value=40 AND d.value=40)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n4
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `t`.`key`, `t`.`value`, `t0`.`key` AS `key1`, `t0`.`value` AS `value1`, `t2`.`key` AS `key2`, `t2`.`value` AS `value2`, `t4`.`key` AS `key3`, `t4`.`value` AS `value3`
+FROM (SELECT `key`, `value`, `value` = 40 AS `=`, `value` = 50 AS `=3`
+FROM `default`.`a_n4`) AS `t`
+FULL JOIN (SELECT `key`, `value`, `value` = 60 AS `=`, `value` = 50 AS `=3`
+FROM `default`.`a_n4`) AS `t0` ON `t`.`key` = `t0`.`key` AND `t`.`=3` AND `t0`.`=3`
+LEFT JOIN (SELECT `key`, CAST(60 AS INTEGER) AS `value`
+FROM `default`.`a_n4`
+WHERE `value` = 60 AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key` AND `t0`.`=`
+LEFT JOIN (SELECT `key`, CAST(40 AS INTEGER) AS `value`
+FROM `default`.`a_n4`
+WHERE `value` = 40 AND `key` IS NOT NULL) AS `t4` ON `t`.`key` = `t4`.`key` AND `t`.`=`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -937,43 +1036,45 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: a
+                  alias: a_n4
                   Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Select Operator
-                    expressions: key (type: int), value (type: int)
-                    outputColumnNames: _col0, _col1
+                    expressions: key (type: int), value (type: int), (value = 40) (type: boolean), (value = 50) (type: boolean)
+                    outputColumnNames: _col0, _col1, _col2, _col3
                     Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
-                      null sort order: a
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: _col0 (type: int)
                       Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                       tag: 0
-                      value expressions: _col1 (type: int)
+                      value expressions: _col1 (type: int), _col2 (type: boolean), _col3 (type: boolean)
                       auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: a
+                  base file name: a_n4
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:int
 #### A masked pattern was here ####
-                    name default.a
+                    name default.a_n4
                     numFiles 1
                     numRows 3
                     rawDataSize 18
-                    serialization.ddl struct a { i32 key, i32 value}
+                    serialization.ddl struct a_n4 { i32 key, i32 value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 21
@@ -985,25 +1086,26 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:int
 #### A masked pattern was here ####
-                      name default.a
+                      name default.a_n4
                       numFiles 1
                       numRows 3
                       rawDataSize 18
-                      serialization.ddl struct a { i32 key, i32 value}
+                      serialization.ddl struct a_n4 { i32 key, i32 value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       totalSize 21
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.a
-                  name: default.a
+                    name: default.a_n4
+                  name: default.a_n4
             Truncated Path -> Alias:
-              /a [$hdt$_0:a]
+              /a_n4 [$hdt$_0:a_n4]
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -1011,39 +1113,41 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Select Operator
-                    expressions: key (type: int), value (type: int)
-                    outputColumnNames: _col0, _col1
+                    expressions: key (type: int), value (type: int), (value = 60) (type: boolean), (value = 50) (type: boolean)
+                    outputColumnNames: _col0, _col1, _col2, _col3
                     Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
-                      null sort order: a
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: _col0 (type: int)
                       Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                       tag: 1
-                      value expressions: _col1 (type: int)
+                      value expressions: _col1 (type: int), _col2 (type: boolean), _col3 (type: boolean)
                       auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: a
+                  base file name: a_n4
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:int
 #### A masked pattern was here ####
-                    name default.a
+                    name default.a_n4
                     numFiles 1
                     numRows 3
                     rawDataSize 18
-                    serialization.ddl struct a { i32 key, i32 value}
+                    serialization.ddl struct a_n4 { i32 key, i32 value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 21
@@ -1055,34 +1159,36 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:int
 #### A masked pattern was here ####
-                      name default.a
+                      name default.a_n4
                       numFiles 1
                       numRows 3
                       rawDataSize 18
-                      serialization.ddl struct a { i32 key, i32 value}
+                      serialization.ddl struct a_n4 { i32 key, i32 value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       totalSize 21
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.a
-                  name: default.a
+                    name: default.a_n4
+                  name: default.a_n4
             Truncated Path -> Alias:
-              /a [$hdt$_1:b]
+              /a_n4 [$hdt$_1:b]
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: c
+                  filterExpr: ((value = 60) and key is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (value = 60) (type: boolean)
+                    predicate: ((value = 60) and key is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int), 60 (type: int)
@@ -1090,34 +1196,36 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                         tag: 2
                         value expressions: _col1 (type: int)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: a
+                  base file name: a_n4
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:int
 #### A masked pattern was here ####
-                    name default.a
+                    name default.a_n4
                     numFiles 1
                     numRows 3
                     rawDataSize 18
-                    serialization.ddl struct a { i32 key, i32 value}
+                    serialization.ddl struct a_n4 { i32 key, i32 value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 21
@@ -1129,34 +1237,36 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:int
 #### A masked pattern was here ####
-                      name default.a
+                      name default.a_n4
                       numFiles 1
                       numRows 3
                       rawDataSize 18
-                      serialization.ddl struct a { i32 key, i32 value}
+                      serialization.ddl struct a_n4 { i32 key, i32 value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       totalSize 21
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.a
-                  name: default.a
+                    name: default.a_n4
+                  name: default.a_n4
             Truncated Path -> Alias:
-              /a [$hdt$_2:c]
+              /a_n4 [$hdt$_2:c]
         Map 5 
             Map Operator Tree:
                 TableScan
                   alias: d
+                  filterExpr: ((value = 40) and key is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (value = 40) (type: boolean)
+                    predicate: ((value = 40) and key is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int), 40 (type: int)
@@ -1164,34 +1274,36 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                         tag: 3
                         value expressions: _col1 (type: int)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: a
+                  base file name: a_n4
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:int
 #### A masked pattern was here ####
-                    name default.a
+                    name default.a_n4
                     numFiles 1
                     numRows 3
                     rawDataSize 18
-                    serialization.ddl struct a { i32 key, i32 value}
+                    serialization.ddl struct a_n4 { i32 key, i32 value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 21
@@ -1203,39 +1315,40 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:int
 #### A masked pattern was here ####
-                      name default.a
+                      name default.a_n4
                       numFiles 1
                       numRows 3
                       rawDataSize 18
-                      serialization.ddl struct a { i32 key, i32 value}
+                      serialization.ddl struct a_n4 { i32 key, i32 value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       totalSize 21
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.a
-                  name: default.a
+                    name: default.a_n4
+                  name: default.a_n4
             Truncated Path -> Alias:
-              /a [$hdt$_3:d]
+              /a_n4 [$hdt$_3:d]
         Reducer 2 
             Needs Tagging: true
             Reduce Operator Tree:
               Join Operator
                 condition map:
-                     Outer Join 0 to 1
+                     Full Outer Join 0 to 1
                      Left Outer Join 1 to 2
                      Left Outer Join 0 to 3
                 filter mappings:
                   0 [1, 1, 3, 1]
                   1 [0, 1, 2, 1]
                 filter predicates:
-                  0 {(VALUE._col0 = 50)} {(VALUE._col0 = 40)}
-                  1 {(VALUE._col0 = 50)} {(VALUE._col0 = 60)}
+                  0 {VALUE._col2} {VALUE._col1}
+                  1 {VALUE._col2} {VALUE._col1}
                   2 
                   3 
                 keys:
@@ -1243,30 +1356,34 @@ STAGE PLANS:
                   1 _col0 (type: int)
                   2 _col0 (type: int)
                   3 _col0 (type: int)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
+                outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9, _col10, _col11
                 Statistics: Num rows: 9 Data size: 59 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-#### A masked pattern was here ####
-                  NumFilesPerFileSink: 1
+                Select Operator
+                  expressions: _col0 (type: int), _col1 (type: int), _col4 (type: int), _col5 (type: int), _col8 (type: int), _col9 (type: int), _col10 (type: int), _col11 (type: int)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
                   Statistics: Num rows: 9 Data size: 59 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
 #### A masked pattern was here ####
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      properties:
-                        columns _col0,_col1,_col2,_col3,_col4,_col5,_col6,_col7
-                        columns.types int:int:int:int:int:int:int:int
-                        escape.delim \
-                        hive.serialization.extend.additional.nesting.levels true
-                        serialization.escape.crlf true
-                        serialization.format 1
-                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  TotalFiles: 1
-                  GatherStats: false
-                  MultiFileSpray: false
+                    NumFilesPerFileSink: 1
+                    Statistics: Num rows: 9 Data size: 59 Basic stats: COMPLETE Column stats: NONE
+#### A masked pattern was here ####
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        properties:
+                          columns _col0,_col1,_col2,_col3,_col4,_col5,_col6,_col7
+                          columns.types int:int:int:int:int:int:int:int
+                          escape.delim \
+                          hive.serialization.extend.additional.nesting.levels true
+                          serialization.escape.crlf true
+                          serialization.format 1
+                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    TotalFiles: 1
+                    GatherStats: false
+                    MultiFileSpray: false
 
   Stage: Stage-0
     Fetch Operator
@@ -1274,23 +1391,39 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from a full outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (b.key=c.key AND b.value=60 AND c.value=60) left outer join a d on (a.key=d.key AND a.value=40 AND d.value=40)
+PREHOOK: query: select * from a_n4 full outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50) left outer join a_n4 c on (b.key=c.key AND b.value=60 AND c.value=60) left outer join a_n4 d on (a_n4.key=d.key AND a_n4.value=40 AND d.value=40)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@a
+PREHOOK: Input: default@a_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select * from a full outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (b.key=c.key AND b.value=60 AND c.value=60) left outer join a d on (a.key=d.key AND a.value=40 AND d.value=40)
+POSTHOOK: query: select * from a_n4 full outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50) left outer join a_n4 c on (b.key=c.key AND b.value=60 AND c.value=60) left outer join a_n4 d on (a_n4.key=d.key AND a_n4.value=40 AND d.value=40)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@a
+POSTHOOK: Input: default@a_n4
 #### A masked pattern was here ####
 100	40	NULL	NULL	NULL	NULL	100	40
 100	50	100	50	NULL	NULL	NULL	NULL
 100	60	NULL	NULL	NULL	NULL	NULL	NULL
 NULL	NULL	100	40	NULL	NULL	NULL	NULL
 NULL	NULL	100	60	100	60	NULL	NULL
-PREHOOK: query: explain extended select * from a left outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (a.key=c.key AND a.value=60 AND c.value=60) left outer join a d on (a.key=d.key AND a.value=40 AND d.value=40)
+PREHOOK: query: explain extended select * from a_n4 left outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50) left outer join a_n4 c on (a_n4.key=c.key AND a_n4.value=60 AND c.value=60) left outer join a_n4 d on (a_n4.key=d.key AND a_n4.value=40 AND d.value=40)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended select * from a left outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (a.key=c.key AND a.value=60 AND c.value=60) left outer join a d on (a.key=d.key AND a.value=40 AND d.value=40)
+PREHOOK: Input: default@a_n4
+#### A masked pattern was here ####
+POSTHOOK: query: explain extended select * from a_n4 left outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50) left outer join a_n4 c on (a_n4.key=c.key AND a_n4.value=60 AND c.value=60) left outer join a_n4 d on (a_n4.key=d.key AND a_n4.value=40 AND d.value=40)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n4
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `t`.`key`, `t`.`value`, `t1`.`key` AS `key1`, `t1`.`value` AS `value1`, `t3`.`key` AS `key2`, `t3`.`value` AS `value2`, `t5`.`key` AS `key3`, `t5`.`value` AS `value3`
+FROM (SELECT `key`, `value`, `value` = 40 AS `=`, `value` = 60 AS `=3`, `value` = 50 AS `=4`
+FROM `default`.`a_n4`) AS `t`
+LEFT JOIN (SELECT `key`, CAST(50 AS INTEGER) AS `value`
+FROM `default`.`a_n4`
+WHERE `value` = 50 AND `key` IS NOT NULL) AS `t1` ON `t`.`key` = `t1`.`key` AND `t`.`=4`
+LEFT JOIN (SELECT `key`, CAST(60 AS INTEGER) AS `value`
+FROM `default`.`a_n4`
+WHERE `value` = 60 AND `key` IS NOT NULL) AS `t3` ON `t`.`key` = `t3`.`key` AND `t`.`=3`
+LEFT JOIN (SELECT `key`, CAST(40 AS INTEGER) AS `value`
+FROM `default`.`a_n4`
+WHERE `value` = 40 AND `key` IS NOT NULL) AS `t5` ON `t`.`key` = `t5`.`key` AND `t`.`=`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1305,43 +1438,45 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: a
+                  alias: a_n4
                   Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Select Operator
-                    expressions: key (type: int), value (type: int)
-                    outputColumnNames: _col0, _col1
+                    expressions: key (type: int), value (type: int), (value = 40) (type: boolean), (value = 60) (type: boolean), (value = 50) (type: boolean)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4
                     Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
-                      null sort order: a
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: _col0 (type: int)
                       Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                       tag: 0
-                      value expressions: _col1 (type: int)
+                      value expressions: _col1 (type: int), _col2 (type: boolean), _col3 (type: boolean), _col4 (type: boolean)
                       auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: a
+                  base file name: a_n4
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:int
 #### A masked pattern was here ####
-                    name default.a
+                    name default.a_n4
                     numFiles 1
                     numRows 3
                     rawDataSize 18
-                    serialization.ddl struct a { i32 key, i32 value}
+                    serialization.ddl struct a_n4 { i32 key, i32 value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 21
@@ -1353,34 +1488,36 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:int
 #### A masked pattern was here ####
-                      name default.a
+                      name default.a_n4
                       numFiles 1
                       numRows 3
                       rawDataSize 18
-                      serialization.ddl struct a { i32 key, i32 value}
+                      serialization.ddl struct a_n4 { i32 key, i32 value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       totalSize 21
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.a
-                  name: default.a
+                    name: default.a_n4
+                  name: default.a_n4
             Truncated Path -> Alias:
-              /a [$hdt$_0:a]
+              /a_n4 [$hdt$_0:a_n4]
         Map 3 
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: ((value = 50) and key is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (value = 50) (type: boolean)
+                    predicate: ((value = 50) and key is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int), 50 (type: int)
@@ -1388,34 +1525,36 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                         tag: 1
                         value expressions: _col1 (type: int)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: a
+                  base file name: a_n4
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:int
 #### A masked pattern was here ####
-                    name default.a
+                    name default.a_n4
                     numFiles 1
                     numRows 3
                     rawDataSize 18
-                    serialization.ddl struct a { i32 key, i32 value}
+                    serialization.ddl struct a_n4 { i32 key, i32 value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 21
@@ -1427,34 +1566,36 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:int
 #### A masked pattern was here ####
-                      name default.a
+                      name default.a_n4
                       numFiles 1
                       numRows 3
                       rawDataSize 18
-                      serialization.ddl struct a { i32 key, i32 value}
+                      serialization.ddl struct a_n4 { i32 key, i32 value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       totalSize 21
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.a
-                  name: default.a
+                    name: default.a_n4
+                  name: default.a_n4
             Truncated Path -> Alias:
-              /a [$hdt$_1:b]
+              /a_n4 [$hdt$_1:b]
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: c
+                  filterExpr: ((value = 60) and key is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (value = 60) (type: boolean)
+                    predicate: ((value = 60) and key is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int), 60 (type: int)
@@ -1462,34 +1603,36 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                         tag: 2
                         value expressions: _col1 (type: int)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: a
+                  base file name: a_n4
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:int
 #### A masked pattern was here ####
-                    name default.a
+                    name default.a_n4
                     numFiles 1
                     numRows 3
                     rawDataSize 18
-                    serialization.ddl struct a { i32 key, i32 value}
+                    serialization.ddl struct a_n4 { i32 key, i32 value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 21
@@ -1501,34 +1644,36 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:int
 #### A masked pattern was here ####
-                      name default.a
+                      name default.a_n4
                       numFiles 1
                       numRows 3
                       rawDataSize 18
-                      serialization.ddl struct a { i32 key, i32 value}
+                      serialization.ddl struct a_n4 { i32 key, i32 value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       totalSize 21
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.a
-                  name: default.a
+                    name: default.a_n4
+                  name: default.a_n4
             Truncated Path -> Alias:
-              /a [$hdt$_2:c]
+              /a_n4 [$hdt$_2:c]
         Map 5 
             Map Operator Tree:
                 TableScan
                   alias: d
+                  filterExpr: ((value = 40) and key is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (value = 40) (type: boolean)
+                    predicate: ((value = 40) and key is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int), 40 (type: int)
@@ -1536,34 +1681,36 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                         tag: 3
                         value expressions: _col1 (type: int)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: a
+                  base file name: a_n4
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:int
 #### A masked pattern was here ####
-                    name default.a
+                    name default.a_n4
                     numFiles 1
                     numRows 3
                     rawDataSize 18
-                    serialization.ddl struct a { i32 key, i32 value}
+                    serialization.ddl struct a_n4 { i32 key, i32 value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 21
@@ -1575,25 +1722,26 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:int
 #### A masked pattern was here ####
-                      name default.a
+                      name default.a_n4
                       numFiles 1
                       numRows 3
                       rawDataSize 18
-                      serialization.ddl struct a { i32 key, i32 value}
+                      serialization.ddl struct a_n4 { i32 key, i32 value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       totalSize 21
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.a
-                  name: default.a
+                    name: default.a_n4
+                  name: default.a_n4
             Truncated Path -> Alias:
-              /a [$hdt$_3:d]
+              /a_n4 [$hdt$_3:d]
         Reducer 2 
             Needs Tagging: true
             Reduce Operator Tree:
@@ -1605,7 +1753,7 @@ STAGE PLANS:
                 filter mappings:
                   0 [1, 1, 2, 1, 3, 1]
                 filter predicates:
-                  0 {(VALUE._col0 = 50)} {(VALUE._col0 = 60)} {(VALUE._col0 = 40)}
+                  0 {VALUE._col3} {VALUE._col2} {VALUE._col1}
                   1 
                   2 
                   3 
@@ -1614,30 +1762,34 @@ STAGE PLANS:
                   1 _col0 (type: int)
                   2 _col0 (type: int)
                   3 _col0 (type: int)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
+                outputColumnNames: _col0, _col1, _col5, _col6, _col7, _col8, _col9, _col10
                 Statistics: Num rows: 9 Data size: 59 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-#### A masked pattern was here ####
-                  NumFilesPerFileSink: 1
+                Select Operator
+                  expressions: _col0 (type: int), _col1 (type: int), _col5 (type: int), _col6 (type: int), _col7 (type: int), _col8 (type: int), _col9 (type: int), _col10 (type: int)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
                   Statistics: Num rows: 9 Data size: 59 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
 #### A masked pattern was here ####
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      properties:
-                        columns _col0,_col1,_col2,_col3,_col4,_col5,_col6,_col7
-                        columns.types int:int:int:int:int:int:int:int
-                        escape.delim \
-                        hive.serialization.extend.additional.nesting.levels true
-                        serialization.escape.crlf true
-                        serialization.format 1
-                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  TotalFiles: 1
-                  GatherStats: false
-                  MultiFileSpray: false
+                    NumFilesPerFileSink: 1
+                    Statistics: Num rows: 9 Data size: 59 Basic stats: COMPLETE Column stats: NONE
+#### A masked pattern was here ####
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        properties:
+                          columns _col0,_col1,_col2,_col3,_col4,_col5,_col6,_col7
+                          columns.types int:int:int:int:int:int:int:int
+                          escape.delim \
+                          hive.serialization.extend.additional.nesting.levels true
+                          serialization.escape.crlf true
+                          serialization.format 1
+                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    TotalFiles: 1
+                    GatherStats: false
+                    MultiFileSpray: false
 
   Stage: Stage-0
     Fetch Operator
@@ -1645,24 +1797,24 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from a left outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (a.key=c.key AND a.value=60 AND c.value=60) left outer join a d on (a.key=d.key AND a.value=40 AND d.value=40)
+PREHOOK: query: select * from a_n4 left outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50) left outer join a_n4 c on (a_n4.key=c.key AND a_n4.value=60 AND c.value=60) left outer join a_n4 d on (a_n4.key=d.key AND a_n4.value=40 AND d.value=40)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@a
+PREHOOK: Input: default@a_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select * from a left outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (a.key=c.key AND a.value=60 AND c.value=60) left outer join a d on (a.key=d.key AND a.value=40 AND d.value=40)
+POSTHOOK: query: select * from a_n4 left outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50) left outer join a_n4 c on (a_n4.key=c.key AND a_n4.value=60 AND c.value=60) left outer join a_n4 d on (a_n4.key=d.key AND a_n4.value=40 AND d.value=40)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@a
+POSTHOOK: Input: default@a_n4
 #### A masked pattern was here ####
 100	40	NULL	NULL	NULL	NULL	100	40
 100	50	100	50	NULL	NULL	NULL	NULL
 100	60	NULL	NULL	100	60	NULL	NULL
-PREHOOK: query: select /*+ MAPJOIN(b,c, d)*/ * from a left outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (a.key=c.key AND a.value=60 AND c.value=60) left outer join a d on (a.key=d.key AND a.value=40 AND d.value=40)
+PREHOOK: query: select /*+ MAPJOIN(b,c, d)*/ * from a_n4 left outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50) left outer join a_n4 c on (a_n4.key=c.key AND a_n4.value=60 AND c.value=60) left outer join a_n4 d on (a_n4.key=d.key AND a_n4.value=40 AND d.value=40)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@a
+PREHOOK: Input: default@a_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select /*+ MAPJOIN(b,c, d)*/ * from a left outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (a.key=c.key AND a.value=60 AND c.value=60) left outer join a d on (a.key=d.key AND a.value=40 AND d.value=40)
+POSTHOOK: query: select /*+ MAPJOIN(b,c, d)*/ * from a_n4 left outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50) left outer join a_n4 c on (a_n4.key=c.key AND a_n4.value=60 AND c.value=60) left outer join a_n4 d on (a_n4.key=d.key AND a_n4.value=40 AND d.value=40)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@a
+POSTHOOK: Input: default@a_n4
 #### A masked pattern was here ####
 100	40	NULL	NULL	NULL	NULL	100	40
 100	50	100	50	NULL	NULL	NULL	NULL

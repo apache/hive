@@ -22,4 +22,4 @@ POSTHOOK: query: create table source(s1 int, s2 int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:x314n
 POSTHOOK: Output: x314n@source
-FAILED: SemanticException 0:0 Expected 2 columns for insclause-0/x314n@source; select produces 1 columns. Error encountered near token 'values__tmp__table__1.tmp_values_col1'
+FAILED: SemanticException 0:0 Expected 2 columns for insclause-0/x314n@source; select produces 1 columns. Error encountered near token 'col1'

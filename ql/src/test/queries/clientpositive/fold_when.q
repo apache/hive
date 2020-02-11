@@ -1,3 +1,4 @@
+--! qt:dataset:src
 explain
 select key from src where ((case when (key = '238') then null     end) = 1);
 explain

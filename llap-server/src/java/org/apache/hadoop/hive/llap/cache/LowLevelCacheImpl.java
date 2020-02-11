@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,9 +17,8 @@
  */
 package org.apache.hadoop.hive.llap.cache;
 
-import org.apache.orc.impl.RecordReaderUtils;
-
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -28,20 +27,22 @@ import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.hadoop.hive.common.io.Allocator;
-import org.apache.hadoop.hive.common.io.DiskRange;
-import org.apache.hadoop.hive.common.io.DiskRangeList;
+import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.common.io.DataCache.BooleanRef;
 import org.apache.hadoop.hive.common.io.DataCache.DiskRangeListFactory;
+import org.apache.hadoop.hive.common.io.DiskRange;
+import org.apache.hadoop.hive.common.io.DiskRangeList;
 import org.apache.hadoop.hive.common.io.DiskRangeList.MutateHelper;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 import org.apache.hive.common.util.Ref;
+import org.apache.orc.impl.RecordReaderUtils;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 
-public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, LlapOomDebugDump {
+public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, LlapIoDebugDump {
   private static final int DEFAULT_CLEANUP_INTERVAL = 600;
   private final Allocator allocator;
   private final AtomicInteger newEvictions = new AtomicInteger(0);
@@ -288,7 +289,7 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
 
   @Override
   public long[] putFileData(Object fileKey, DiskRange[] ranges, MemoryBuffer[] buffers,
-      long baseOffset, Priority priority, LowLevelCacheCounters qfCounters) {
+      long baseOffset, Priority priority, LowLevelCacheCounters qfCounters, CacheTag tag) {
     long[] result = null;
     assert buffers.length == ranges.length;
     FileCache<ConcurrentSkipListMap<Long, LlapDataBuffer>> subCache =
@@ -304,6 +305,7 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
         long offset = ranges[i].getOffset() + baseOffset;
         assert buffer.declaredCachedLength == LlapDataBuffer.UNKNOWN_CACHED_LENGTH;
         buffer.declaredCachedLength = ranges[i].getLength();
+        buffer.setTag(tag);
         while (true) { // Overwhelmingly executes once, or maybe twice (replacing stale value).
           LlapDataBuffer oldVal = subCache.getCache().putIfAbsent(offset, buffer);
           if (oldVal == null) {
@@ -447,41 +449,21 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
   }
 
   @Override
-  public String debugDumpForOom() {
-    StringBuilder sb = new StringBuilder("File cache state ");
-    for (Map.Entry<Object, FileCache<ConcurrentSkipListMap<Long, LlapDataBuffer>>> e :
-      cache.entrySet()) {
-      if (!e.getValue().incRef()) continue;
-      try {
-        sb.append("\n  file " + e.getKey());
-        for (Map.Entry<Long, LlapDataBuffer> e2 : e.getValue().getCache().entrySet()) {
-          if (e2.getValue().incRef() < 0) continue;
-          try {
-            sb.append("\n    [").append(e2.getKey()).append(", ")
-              .append(e2.getKey() + e2.getValue().declaredCachedLength)
-              .append(") => ").append(e2.getValue().toString())
-              .append(" alloc ").append(e2.getValue().byteBuffer.position());
-          } finally {
-            e2.getValue().decRef();
-          }
-        }
-      } finally {
-        e.getValue().decRef();
-      }
-    }
-    return sb.toString();
-  }
-
-  @Override
   public void debugDumpShort(StringBuilder sb) {
     sb.append("\nORC cache state ");
     int allLocked = 0, allUnlocked = 0, allEvicted = 0, allMoving = 0;
+    long totalUsedSpace = 0;
     for (Map.Entry<Object, FileCache<ConcurrentSkipListMap<Long, LlapDataBuffer>>> e :
       cache.entrySet()) {
       if (!e.getValue().incRef()) continue;
       try {
         int fileLocked = 0, fileUnlocked = 0, fileEvicted = 0, fileMoving = 0;
+        long fileMemoryUsage = 0;
         if (e.getValue().getCache().isEmpty()) continue;
+        List<LlapDataBuffer> lockedBufs = null;
+        if (LlapIoImpl.LOCKING_LOGGER.isTraceEnabled()) {
+          lockedBufs = new ArrayList<>();
+        }
         for (Map.Entry<Long, LlapDataBuffer> e2 : e.getValue().getCache().entrySet()) {
           int newRc = e2.getValue().tryIncRef();
           if (newRc < 0) {
@@ -495,10 +477,14 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
           try {
             if (newRc > 1) { // We hold one refcount.
               ++fileLocked;
+              if (lockedBufs != null) {
+                lockedBufs.add(e2.getValue());
+              }
             } else {
               ++fileUnlocked;
             }
           } finally {
+            fileMemoryUsage += e2.getValue().allocSize;
             e2.getValue().decRef();
           }
         }
@@ -506,13 +492,38 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
         allUnlocked += fileUnlocked;
         allEvicted += fileEvicted;
         allMoving += fileMoving;
-        sb.append("\n  file " + e.getKey() + ": " + fileLocked + " locked, " + fileUnlocked
-            + " unlocked, " + fileEvicted + " evicted, " + fileMoving + " being moved");
+        totalUsedSpace += fileMemoryUsage;
+
+        sb.append("\n  file "
+            + e.getKey()
+            + ": "
+            + fileLocked
+            + " locked, "
+            + fileUnlocked
+            + " unlocked, "
+            + fileEvicted
+            + " evicted, "
+            + fileMoving
+            + " being moved,"
+            + fileMemoryUsage
+            + " total used byte");
+        if (fileLocked > 0 && LlapIoImpl.LOCKING_LOGGER.isTraceEnabled()) {
+          LlapIoImpl.LOCKING_LOGGER.trace("locked-buffers: {}", lockedBufs);
+        }
       } finally {
         e.getValue().decRef();
       }
     }
-    sb.append("\nORC cache summary: " + allLocked + " locked, " + allUnlocked + " unlocked, "
-        + allEvicted + " evicted, " + allMoving + " being moved");
+    sb.append("\nORC cache summary: "
+        + allLocked
+        + " locked, "
+        + allUnlocked
+        + " unlocked, "
+        + allEvicted
+        + " evicted, "
+        + allMoving
+        + " being moved,"
+        + totalUsedSpace
+        + "total used space");
   }
 }

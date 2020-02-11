@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -24,7 +24,10 @@ import java.io.FileReader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
+import org.apache.hadoop.hive.ql.QTestMiniClusters.MiniClusterType;
+
+import org.junit.Test;
+import static org.junit.Assert.fail;
 
 /**
  * Suite for testing location. e.g. if "alter table alter partition
@@ -86,11 +89,20 @@ public class TestLocationQueries extends BaseTestQueries {
       return QTestProcessExecResult.create(failedCount, fileNames.toString());
     }
 
-    public CheckResults(String outDir, String logDir, MiniClusterType miniMr,
-        String hadoopVer, String locationSubdir)
+    public CheckResults(String outDir, String logDir, MiniClusterType miniMr, String locationSubdir)
       throws Exception
     {
-      super(outDir, logDir, miniMr, null, hadoopVer, "", "", false);
+      super(
+          QTestArguments.QTestArgumentsBuilder.instance()
+            .withOutDir(outDir)
+            .withLogDir(logDir)
+            .withClusterType(miniMr)
+            .withConfDir(null)
+            .withInitScript("")
+            .withCleanupScript("")
+            .withLlapIo(false)
+            .build());
+
       this.locationSubdir = locationSubdir;
     }
   }
@@ -100,6 +112,7 @@ public class TestLocationQueries extends BaseTestQueries {
    * the path should end in "parta" and not "dt=a" (the default).
    *
    */
+  @Test
   public void testAlterTablePartitionLocation_alter5() throws Exception {
     String[] testNames = new String[] {"alter5.q"};
 
@@ -108,12 +121,14 @@ public class TestLocationQueries extends BaseTestQueries {
     QTestUtil[] qt = new QTestUtil[qfiles.length];
 
     for (int i = 0; i < qfiles.length; i++) {
-      qt[i] = new CheckResults(resDir, logDir, MiniClusterType.none, "0.20", "parta");
-      qt[i].addFile(qfiles[i]);
+      qt[i] = new CheckResults(resDir, logDir, MiniClusterType.NONE, "parta");
+      qt[i].postInit();
+      qt[i].newSession();
+      qt[i].addFile(qfiles[i], false);
       qt[i].clearTestSideEffects();
     }
 
-    boolean success = QTestUtil.queryListRunnerSingleThreaded(qfiles, qt);
+    boolean success = QTestRunnerUtils.queryListRunnerSingleThreaded(qfiles, qt);
     if (!success) {
       fail("One or more queries failed");
     }

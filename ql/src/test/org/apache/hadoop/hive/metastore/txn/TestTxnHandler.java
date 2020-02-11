@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,7 +20,10 @@ package org.apache.hadoop.hive.metastore.txn;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
+import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
 import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
+import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
+import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsResponse;
 import org.apache.hadoop.hive.metastore.api.CheckLockRequest;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
@@ -54,6 +57,7 @@ import org.apache.hadoop.hive.metastore.api.TxnInfo;
 import org.apache.hadoop.hive.metastore.api.TxnOpenException;
 import org.apache.hadoop.hive.metastore.api.TxnState;
 import org.apache.hadoop.hive.metastore.api.UnlockRequest;
+import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -71,10 +75,13 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import java.util.stream.LongStream;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
@@ -149,7 +156,15 @@ public class TestTxnHandler {
     txnHandler.abortTxn(new AbortTxnRequest(1));
     List<String> parts = new ArrayList<String>();
     parts.add("p=1");
-    AddDynamicPartitions adp = new AddDynamicPartitions(3, "default", "T", parts);
+
+    AllocateTableWriteIdsRequest rqst = new AllocateTableWriteIdsRequest("default", "T");
+    rqst.setTxnIds(Collections.singletonList(3L));
+    AllocateTableWriteIdsResponse writeIds = txnHandler.allocateTableWriteIds(rqst);
+    long writeId = writeIds.getTxnToWriteIds().get(0).getWriteId();
+    assertEquals(3, writeIds.getTxnToWriteIds().get(0).getTxnId());
+    assertEquals(1, writeId);
+
+    AddDynamicPartitions adp = new AddDynamicPartitions(3, writeId, "default", "T", parts);
     adp.setOperationType(DataOperationType.INSERT);
     txnHandler.addDynamicPartitions(adp);
     GetOpenTxnsInfoResponse txnsInfo = txnHandler.getOpenTxnsInfo();
@@ -195,7 +210,7 @@ public class TestTxnHandler {
       Assert.assertEquals("Transaction " + JavaUtils.txnIdToString(3) + " is already committed.", ex.getMessage());
     }
     Assert.assertTrue(gotException);
-    
+
     gotException = false;
     try {
       txnHandler.abortTxn(new AbortTxnRequest(4));
@@ -205,6 +220,19 @@ public class TestTxnHandler {
       Assert.assertEquals("No such transaction " + JavaUtils.txnIdToString(4), ex.getMessage());
     }
     Assert.assertTrue(gotException);
+  }
+
+  @Test
+  public void testAbortTxns() throws Exception {
+    OpenTxnsResponse openedTxns = txnHandler.openTxns(new OpenTxnRequest(3, "me", "localhost"));
+    List<Long> txnList = openedTxns.getTxn_ids();
+    txnHandler.abortTxns(new AbortTxnsRequest(txnList));
+
+    GetOpenTxnsInfoResponse txnsInfo = txnHandler.getOpenTxnsInfo();
+    assertEquals(3, txnsInfo.getOpen_txns().size());
+    txnsInfo.getOpen_txns().forEach(txn ->
+      assertEquals(TxnState.ABORTED, txn.getState())
+    );
   }
 
   @Test
@@ -1154,8 +1182,37 @@ public class TestTxnHandler {
     } finally {
       txnHandler.setTimeout(timeout);
     }
+  }
 
-
+  @Test
+  public void testReplTimeouts() throws Exception {
+    long timeout = txnHandler.setTimeout(1);
+    try {
+      OpenTxnRequest request = new OpenTxnRequest(3, "me", "localhost");
+      OpenTxnsResponse response = txnHandler.openTxns(request);
+      request.setReplPolicy("default.*");
+      request.setReplSrcTxnIds(response.getTxn_ids());
+      OpenTxnsResponse responseRepl = txnHandler.openTxns(request);
+      Thread.sleep(10);
+      txnHandler.performTimeOuts();
+      GetOpenTxnsInfoResponse rsp = txnHandler.getOpenTxnsInfo();
+      int numAborted = 0;
+      int numOpen = 0;
+      for (TxnInfo txnInfo : rsp.getOpen_txns()) {
+        if (TxnState.ABORTED == txnInfo.getState()) {
+          assertTrue(response.getTxn_ids().contains(txnInfo.getId()));
+          numAborted++;
+        }
+        if (TxnState.OPEN == txnInfo.getState()) {
+          assertTrue(responseRepl.getTxn_ids().contains(txnInfo.getId()));
+          numOpen++;
+        }
+      }
+      assertEquals(3, numAborted);
+      assertEquals(3, numOpen);
+    } finally {
+      txnHandler.setTimeout(timeout);
+    }
   }
 
   @Test
@@ -1331,12 +1388,12 @@ public class TestTxnHandler {
       Connection conn = tHndlr.getDbConn(Connection.TRANSACTION_SERIALIZABLE);
       Statement stmt = conn.createStatement();
       long now = tHndlr.getDbTime(conn);
-      stmt.executeUpdate("insert into TXNS (txn_id, txn_state, txn_started, txn_last_heartbeat, " +
+      stmt.executeUpdate("INSERT INTO \"TXNS\" (\"TXN_ID\", \"TXN_STATE\", \"TXN_STARTED\", \"TXN_LAST_HEARTBEAT\", " +
           "txn_user, txn_host) values (1, 'o', " + now + ", " + now + ", 'shagy', " +
           "'scooby.com')");
-      stmt.executeUpdate("insert into HIVE_LOCKS (hl_lock_ext_id, hl_lock_int_id, hl_txnid, " +
-          "hl_db, hl_table, hl_partition, hl_lock_state, hl_lock_type, hl_last_heartbeat, " +
-          "hl_user, hl_host) values (1, 1, 1, 'mydb', 'mytable', 'mypartition', '" +
+      stmt.executeUpdate("INSERT INTO \"HIVE_LOCKS\" (\"HL_LOCK_EXT_ID\", \"HL_LOCK_INT_ID\", \"HL_TXNID\", " +
+          "\"HL_DB\", \"HL_TABLE\", \"HL_PARTITION\", \"HL_LOCK_STATE\", \"HL_LOCK_TYPE\", \"HL_LAST_HEARTBEAT\", " +
+          "\"HL_USER\", \"HL_HOST\") VALUES (1, 1, 1, 'MYDB', 'MYTABLE', 'MYPARTITION', '" +
           tHndlr.LOCK_WAITING + "', '" + tHndlr.LOCK_EXCLUSIVE + "', " + now + ", 'fred', " +
           "'scooby.com')");
       conn.commit();
@@ -1439,7 +1496,7 @@ public class TestTxnHandler {
    *      conf.setVar(HiveConf.ConfVars.METASTOREPWD, "hive");
    *      conf.setVar(HiveConf.ConfVars.METASTORE_CONNECTION_DRIVER, "com.mysql.jdbc.Driver");
    * 3. Remove TxnDbUtil.prepDb(); in TxnHandler.checkQFileTestHack()
-   *      
+   *
    */
   @Ignore("multiple threads wedge Derby")
   @Test
@@ -1448,7 +1505,7 @@ public class TestTxnHandler {
     final AtomicInteger stepTracker = new AtomicInteger(0);
     /**
      * counter = 0;
-     * Thread1 counter=1, lock, wait 3s, check counter(should be 2), counter=3, unlock 
+     * Thread1 counter=1, lock, wait 3s, check counter(should be 2), counter=3, unlock
      * Thread2 counter=2, lock (and block), inc counter, should be 4
      */
     Thread t1 = new Thread("MutexTest1") {
@@ -1531,25 +1588,140 @@ public class TestTxnHandler {
     Assert.assertTrue("regex should be retryable", result);
   }
 
+  private List<Long> replOpenTxnForTest(long startId, int numTxn, String replPolicy)
+          throws Exception {
+    conf.setIntVar(HiveConf.ConfVars.HIVE_TXN_MAX_OPEN_BATCH, numTxn);
+    long lastId = startId + numTxn - 1;
+    OpenTxnRequest rqst = new OpenTxnRequest(numTxn, "me", "localhost");
+    rqst.setReplPolicy(replPolicy);
+    rqst.setReplSrcTxnIds(LongStream.rangeClosed(startId, lastId)
+            .boxed().collect(Collectors.toList()));
+
+    OpenTxnsResponse openedTxns = txnHandler.openTxns(rqst);
+    List<Long> txnList = openedTxns.getTxn_ids();
+    assertEquals(txnList.size(), numTxn);
+    int numTxnPresentNow = TxnDbUtil.countQueryAgent(conf, "SELECT COUNT(*) FROM \"TXNS\" WHERE \"TXN_ID\" >= " +
+            txnList.get(0) + " and \"TXN_ID\" <= " + txnList.get(numTxn - 1));
+    assertEquals(numTxn, numTxnPresentNow);
+
+    checkReplTxnForTest(startId, lastId, replPolicy, txnList);
+    return txnList;
+  }
+
+  private void replAbortTxnForTest(List<Long> txnList, String replPolicy)
+          throws Exception {
+    for (Long txnId : txnList) {
+      AbortTxnRequest rqst = new AbortTxnRequest(txnId);
+      rqst.setReplPolicy(replPolicy);
+      txnHandler.abortTxn(rqst);
+    }
+    checkReplTxnForTest(txnList.get(0), txnList.get(txnList.size() - 1), replPolicy, new ArrayList<>());
+  }
+
+  private void checkReplTxnForTest(Long startTxnId, Long endTxnId, String replPolicy, List<Long> targetTxnId)
+          throws Exception {
+    String[] output = TxnDbUtil.queryToString(conf, "SELECT \"RTM_TARGET_TXN_ID\" FROM \"REPL_TXN_MAP\" WHERE " +
+            " \"RTM_SRC_TXN_ID\" >=  " + startTxnId + "AND \"RTM_SRC_TXN_ID\" <=  " + endTxnId +
+            " AND \"RTM_REPL_POLICY\" = \'" + replPolicy + "\'").split("\n");
+    assertEquals(output.length - 1, targetTxnId.size());
+    for (int idx = 1; idx < output.length; idx++) {
+      long txnId = Long.parseLong(output[idx].trim());
+      assertEquals(txnId, targetTxnId.get(idx-1).longValue());
+    }
+  }
+
+  @Test
+  public void testReplOpenTxn() throws Exception {
+    int numTxn = 50000;
+    String[] output = TxnDbUtil.queryToString(conf, "SELECT \"NTXN_NEXT\" FROM \"NEXT_TXN_ID\"").split("\n");
+    long startTxnId = Long.parseLong(output[1].trim());
+    List<Long> txnList = replOpenTxnForTest(startTxnId, numTxn, "default.*");
+    assert(txnList.size() == numTxn);
+    txnHandler.abortTxns(new AbortTxnsRequest(txnList));
+  }
+
+  @Test
+  public void testReplAllocWriteId() throws Exception {
+    int numTxn = 2;
+    String[] output = TxnDbUtil.queryToString(conf, "SELECT \"NTXN_NEXT\" FROM \"NEXT_TXN_ID\"").split("\n");
+    long startTxnId = Long.parseLong(output[1].trim());
+    List<Long> srcTxnIdList = LongStream.rangeClosed(startTxnId, numTxn+startTxnId-1)
+            .boxed().collect(Collectors.toList());
+    List<Long> targetTxnList = replOpenTxnForTest(startTxnId, numTxn, "destdb.*");
+    assert(targetTxnList.size() == numTxn);
+
+    List<TxnToWriteId> srcTxnToWriteId;
+    List<TxnToWriteId> targetTxnToWriteId;
+    srcTxnToWriteId = new ArrayList<>();
+
+    for (int idx = 0; idx < numTxn; idx++) {
+      srcTxnToWriteId.add(new TxnToWriteId(startTxnId+idx, idx+1));
+    }
+    AllocateTableWriteIdsRequest allocMsg = new AllocateTableWriteIdsRequest("destdb", "tbl1");
+    allocMsg.setReplPolicy("destdb.*");
+    allocMsg.setSrcTxnToWriteIdList(srcTxnToWriteId);
+    targetTxnToWriteId = txnHandler.allocateTableWriteIds(allocMsg).getTxnToWriteIds();
+    for (int idx = 0; idx < targetTxnList.size(); idx++) {
+      assertEquals(targetTxnToWriteId.get(idx).getWriteId(), srcTxnToWriteId.get(idx).getWriteId());
+      assertEquals(Long.valueOf(targetTxnToWriteId.get(idx).getTxnId()), targetTxnList.get(idx));
+    }
+
+    // idempotent case for destdb db
+    targetTxnToWriteId = txnHandler.allocateTableWriteIds(allocMsg).getTxnToWriteIds();
+    for (int idx = 0; idx < targetTxnList.size(); idx++) {
+      assertEquals(targetTxnToWriteId.get(idx).getWriteId(), srcTxnToWriteId.get(idx).getWriteId());
+      assertEquals(Long.valueOf(targetTxnToWriteId.get(idx).getTxnId()), targetTxnList.get(idx));
+    }
+
+    //invalid case
+    boolean failed = false;
+    srcTxnToWriteId = new ArrayList<>();
+    srcTxnToWriteId.add(new TxnToWriteId(startTxnId, 2*numTxn+1));
+    allocMsg = new AllocateTableWriteIdsRequest("destdb", "tbl2");
+    allocMsg.setReplPolicy("destdb.*");
+    allocMsg.setSrcTxnToWriteIdList(srcTxnToWriteId);
+
+    // This is an idempotent case when repl flow forcefully allocate write id if it doesn't match
+    // the next write id.
+    try {
+      txnHandler.allocateTableWriteIds(allocMsg).getTxnToWriteIds();
+    } catch (IllegalStateException e) {
+      failed = true;
+    }
+    assertFalse(failed);
+
+    replAbortTxnForTest(srcTxnIdList, "destdb.*");
+
+    // Test for aborted transactions. Idempotent case where allocate write id when txn is already
+    // aborted should do nothing.
+    failed = false;
+    try {
+      txnHandler.allocateTableWriteIds(allocMsg).getTxnToWriteIds();
+    } catch (RuntimeException e) {
+      failed = true;
+    }
+    assertFalse(failed);
+  }
+
   private void updateTxns(Connection conn) throws SQLException {
     Statement stmt = conn.createStatement();
-    stmt.executeUpdate("update TXNS set txn_last_heartbeat = txn_last_heartbeat + 1");
+    stmt.executeUpdate("UPDATE \"TXNS\" SET \"TXN_LAST_HEARTBEAT\" = \"TXN_LAST_HEARTBEAT\" + 1");
   }
 
   private void updateLocks(Connection conn) throws SQLException {
     Statement stmt = conn.createStatement();
-    stmt.executeUpdate("update HIVE_LOCKS set hl_last_heartbeat = hl_last_heartbeat + 1");
+    stmt.executeUpdate("UPDATE \"HIVE_LOCKS\" SET \"HL_LAST_HEARTBEAT\" = \"HL_LAST_HEARTBEAT\" + 1");
   }
 
   @Before
   public void setUp() throws Exception {
-    TxnDbUtil.prepDb();
+    TxnDbUtil.prepDb(conf);
     txnHandler = TxnUtils.getTxnStore(conf);
   }
 
   @After
   public void tearDown() throws Exception {
-    TxnDbUtil.cleanDb();
+    TxnDbUtil.cleanDb(conf);
   }
 
   private long openTxn() throws MetaException {

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,12 +13,12 @@
  */
 package org.apache.hadoop.hive.ql.io.parquet.write;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTimeUtils;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.ParquetHiveRecord;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
@@ -44,11 +44,13 @@ import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.parquet.io.api.Binary;
 import org.apache.parquet.io.api.RecordConsumer;
 import org.apache.parquet.schema.GroupType;
-import org.apache.parquet.schema.OriginalType;
+import org.apache.parquet.schema.LogicalTypeAnnotation;
+import org.apache.parquet.schema.LogicalTypeAnnotation.ListLogicalTypeAnnotation;
+import org.apache.parquet.schema.LogicalTypeAnnotation.MapLogicalTypeAnnotation;
 import org.apache.parquet.schema.Type;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 
@@ -141,12 +143,12 @@ public class DataWritableWriter {
       }
     } else {
       GroupType groupType = type.asGroupType();
-      OriginalType originalType = type.getOriginalType();
+      LogicalTypeAnnotation logicalType = type.getLogicalTypeAnnotation();
 
-      if (originalType != null && originalType.equals(OriginalType.LIST)) {
+      if (logicalType != null && logicalType instanceof ListLogicalTypeAnnotation) {
         checkInspectorCategory(inspector, ObjectInspector.Category.LIST);
         return new ListDataWriter((ListObjectInspector)inspector, groupType);
-      } else if (originalType != null && originalType.equals(OriginalType.MAP)) {
+      } else if (logicalType != null && logicalType instanceof MapLogicalTypeAnnotation) {
         checkInspectorCategory(inspector, ObjectInspector.Category.MAP);
         return new MapDataWriter((MapObjectInspector)inspector, groupType);
       } else {
@@ -550,7 +552,7 @@ public class DataWritableWriter {
     @Override
     public void write(Object value) {
       Date vDate = inspector.getPrimitiveJavaObject(value);
-      recordConsumer.addInteger(DateWritable.dateToDays(vDate));
+      recordConsumer.addInteger(DateWritableV2.dateToDays(vDate));
     }
   }
 }

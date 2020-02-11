@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -42,7 +42,7 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.optimizer.BucketMapjoinProc;
 import org.apache.hadoop.hive.ql.optimizer.MapJoinProcessor;
@@ -63,7 +63,7 @@ import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe;
  * converted (e.g.: full outer joins cannot be handled as map joins) as well
  * as memory restrictions (one side of the join has to fit into memory).
  */
-public class SparkMapJoinOptimizer implements NodeProcessor {
+public class SparkMapJoinOptimizer implements SemanticNodeProcessor {
 
   private static final Logger LOG = LoggerFactory.getLogger(SparkMapJoinOptimizer.class.getName());
 
@@ -120,7 +120,8 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
     }
 
     // we can set the traits for this join operator
-    OpTraits opTraits = new OpTraits(bucketColNames, numBuckets, null, joinOp.getOpTraits().getNumReduceSinks());
+    OpTraits opTraits = new OpTraits(bucketColNames, numBuckets, null,
+            joinOp.getOpTraits().getNumReduceSinks(), joinOp.getOpTraits().getBucketingVersion());
     mapJoinOp.setOpTraits(opTraits);
     mapJoinOp.setStatistics(joinOp.getStatistics());
     setNumberOfBucketsOnChildren(mapJoinOp);
@@ -214,8 +215,7 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
             LOG.debug("Found a big table branch with parent operator {} and position {}", parentOp, pos);
             bigTablePosition = pos;
             bigTableFound = true;
-            bigInputStat = new Statistics();
-            bigInputStat.setDataSize(Long.MAX_VALUE);
+            bigInputStat = new Statistics(0, Long.MAX_VALUE, 0);
           } else {
             // Either we've found multiple big table branches, or the current branch cannot
             // be a big table branch. Disable mapjoin for these cases.
@@ -236,13 +236,16 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
         continue;
       }
 
-      Statistics currInputStat;
+      Statistics currInputStat = null;
       if (useTsStats) {
-        currInputStat = new Statistics();
         // Find all root TSs and add up all data sizes
         // Not adding other stats (e.g., # of rows, col stats) since only data size is used here
         for (TableScanOperator root : OperatorUtils.findOperatorsUpstream(parentOp, TableScanOperator.class)) {
-          currInputStat.addToDataSize(root.getStatistics().getDataSize());
+          if (currInputStat == null) {
+              currInputStat = root.getStatistics().clone();
+          } else {
+            currInputStat.addBasicStats(root.getStatistics());
+          }
         }
       } else {
          currInputStat = parentOp.getStatistics();
@@ -455,6 +458,9 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
         MapJoinProcessor.convertJoinOpMapJoinOp(context.getConf(), joinOp,
             joinOp.getConf().isLeftInputJoin(), joinOp.getConf().getBaseSrc(),
             joinOp.getConf().getMapAliases(), bigTablePosition, true);
+    if (mapJoinOp == null) {
+      return null;
+    }
 
     Operator<? extends OperatorDesc> parentBigTableOp =
         mapJoinOp.getParentOperators().get(bigTablePosition);
@@ -475,7 +481,7 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
             OperatorUtils.removeBranch(partitionPruningSinkOp);
             // at this point we've found the fork in the op pipeline that has the pruning as a child plan.
             LOG.info("Disabling dynamic pruning for: "
-                    + (partitionPruningSinkOp.getConf()).getTableScan().getName()
+                    + (partitionPruningSinkOp.getConf()).getTableScanNames()
                     + ". Need to be removed together with reduce sink");
         }
       }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.conf.HiveVariableSource;
 import org.apache.hadoop.hive.conf.VariableSubstitution;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
@@ -42,8 +42,8 @@ import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
  */
 public class DfsProcessor implements CommandProcessor {
 
-  public static final Logger LOG = LoggerFactory.getLogger(DfsProcessor.class.getName());
-  public static final LogHelper console = new LogHelper(LOG);
+  private static final Logger LOG = LoggerFactory.getLogger(DfsProcessor.class.getName());
+  private static final LogHelper console = new LogHelper(LOG);
   public static final String DFS_RESULT_HEADER = "DFS Output";
 
   private final FsShell dfs;
@@ -60,11 +60,7 @@ public class DfsProcessor implements CommandProcessor {
   }
 
   @Override
-  public void init() {
-  }
-
-  @Override
-  public CommandProcessorResponse run(String command) {
+  public CommandProcessorResponse run(String command) throws CommandProcessorException {
 
 
     try {
@@ -91,22 +87,23 @@ public class DfsProcessor implements CommandProcessor {
       }
 
       int ret = dfs.run(tokens);
+      System.setOut(oldOut);
       if (ret != 0) {
         console.printError("Command " + command + " failed with exit code = " + ret);
+        throw new CommandProcessorException(ret);
       }
-
-      System.setOut(oldOut);
-      return new CommandProcessorResponse(ret, null, null, dfsSchema);
-
+      return new CommandProcessorResponse(dfsSchema, null);
+    } catch (CommandProcessorException e) {
+      throw e;
     } catch (Exception e) {
       console.printError("Exception raised from DFSShell.run "
           + e.getLocalizedMessage(), org.apache.hadoop.util.StringUtils
           .stringifyException(e));
-      return new CommandProcessorResponse(1);
+      throw new CommandProcessorException(1);
     }
   }
 
-  private String[] splitCmd(String command) throws CommandNeedRetryException {
+  private String[] splitCmd(String command) throws HiveException {
 
     ArrayList<String> paras = new ArrayList<String>();
     int cmdLng = command.length();
@@ -118,7 +115,7 @@ public class DfsProcessor implements CommandProcessor {
 
       switch(x) {
         case ' ':
-          if ((int) y == 0) {
+          if (y == 0) {
             String str = command.substring(start, i).trim();
             if (!str.equals("")) {
               paras.add(str);
@@ -127,7 +124,7 @@ public class DfsProcessor implements CommandProcessor {
           }
           break;
         case '"':
-          if ((int) y == 0) {
+          if (y == 0) {
             y = x;
             start = i + 1;
           } else if ('"' == y) {
@@ -137,7 +134,7 @@ public class DfsProcessor implements CommandProcessor {
           }
           break;
         case '\'':
-          if ((int) y == 0) {
+          if (y == 0) {
             y = x;
             start = i + 1;
           } else if ('\'' == y) {
@@ -154,12 +151,16 @@ public class DfsProcessor implements CommandProcessor {
       }
     }
 
-    if ((int) y != 0) {
-      console.printError("Syntax error on hadoop options: dfs " + command);
-      throw new CommandNeedRetryException();
+    if (y != 0) {
+      String message = "Syntax error on hadoop options: dfs " + command;
+      console.printError(message);
+      throw new HiveException(message);
     }
 
     return paras.toArray(new String[paras.size()]);
   }
 
+  @Override
+  public void close() throws Exception {
+  }
 }

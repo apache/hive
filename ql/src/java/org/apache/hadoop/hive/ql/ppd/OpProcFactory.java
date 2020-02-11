@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -41,7 +41,7 @@ import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
@@ -139,8 +139,10 @@ public final class OpProcFactory {
   }
 
   private static void removeOperator(Operator<? extends OperatorDesc> operator) {
-    List<Operator<? extends OperatorDesc>> children = operator.getChildOperators();
-    List<Operator<? extends OperatorDesc>> parents = operator.getParentOperators();
+    // since removeParent/removeChild updates the childOperators and parentOperators list in place
+    // we need to make a copy of list to iterator over them
+    List<Operator<? extends OperatorDesc>> children = new ArrayList<>(operator.getChildOperators());
+    List<Operator<? extends OperatorDesc>> parents = new ArrayList<>(operator.getParentOperators());
     for (Operator<? extends OperatorDesc> parent : parents) {
       parent.getChildOperators().addAll(children);
       parent.removeChild(operator);
@@ -154,7 +156,7 @@ public final class OpProcFactory {
   /**
    * Processor for Script Operator Prevents any predicates being pushed.
    */
-  public static class ScriptPPD extends DefaultPPD implements NodeProcessor {
+  public static class ScriptPPD extends DefaultPPD implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -215,6 +217,7 @@ public final class OpProcFactory {
       }
 
       WindowTableFunctionDef wTFn = (WindowTableFunctionDef) conf.getFuncDef();
+
       List<Integer> rFnIdxs = rankingFunctions(wTFn);
 
       if ( rFnIdxs.size() == 0 ) {
@@ -323,7 +326,6 @@ public final class OpProcFactory {
      * reference rows past the Current Row.
      */
     private boolean canPushLimitToReduceSink(WindowTableFunctionDef wTFn) {
-
       for(WindowFunctionDef wFnDef : wTFn.getWindowFunctions() ) {
         if ( (wFnDef.getWFnEval() instanceof GenericUDAFRankEvaluator) ||
             (wFnDef.getWFnEval() instanceof GenericUDAFDenseRankEvaluator )  ||
@@ -362,7 +364,7 @@ public final class OpProcFactory {
     }
   }
 
-  public static class UDTFPPD extends DefaultPPD implements NodeProcessor {
+  public static class UDTFPPD extends DefaultPPD implements SemanticNodeProcessor {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
@@ -380,7 +382,7 @@ public final class OpProcFactory {
 
   }
 
-  public static class LateralViewForwardPPD extends DefaultPPD implements NodeProcessor {
+  public static class LateralViewForwardPPD extends DefaultPPD implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -407,7 +409,7 @@ public final class OpProcFactory {
    * Combines predicates of its child into a single expression and adds a filter
    * op as new child.
    */
-  public static class TableScanPPD extends DefaultPPD implements NodeProcessor {
+  public static class TableScanPPD extends DefaultPPD implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -435,7 +437,7 @@ public final class OpProcFactory {
    * Determines the push down predicates in its where expression and then
    * combines it with the push down predicates that are passed from its children.
    */
-  public static class FilterPPD extends DefaultPPD implements NodeProcessor {
+  public static class FilterPPD extends DefaultPPD implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -494,7 +496,7 @@ public final class OpProcFactory {
     }
   }
 
-  public static class SimpleFilterPPD extends FilterPPD implements NodeProcessor {
+  public static class SimpleFilterPPD extends FilterPPD implements SemanticNodeProcessor {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
@@ -530,7 +532,7 @@ public final class OpProcFactory {
    * Determines predicates for which alias can be pushed to it's parents. See
    * the comments for getQualifiedAliases function.
    */
-  public static class JoinerPPD extends DefaultPPD implements NodeProcessor {
+  public static class JoinerPPD extends DefaultPPD implements SemanticNodeProcessor {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
@@ -650,7 +652,8 @@ public final class OpProcFactory {
     }
   }
 
-  public static class ReduceSinkPPD extends DefaultPPD implements NodeProcessor {
+  public static class ReduceSinkPPD extends DefaultPPD implements SemanticNodeProcessor {
+    @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
                           Object... nodeOutputs) throws SemanticException {
       super.process(nd, stack, procCtx, nodeOutputs);
@@ -733,7 +736,7 @@ public final class OpProcFactory {
   /**
    * Default processor which just merges its children.
    */
-  public static class DefaultPPD implements NodeProcessor {
+  public static class DefaultPPD implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -788,7 +791,9 @@ public final class OpProcFactory {
      * @param ewi
      */
     protected void logExpr(Node nd, ExprWalkerInfo ewi) {
-      if (!LOG.isDebugEnabled()) return;
+      if (!LOG.isDebugEnabled()) {
+        return;
+      }
       for (Entry<String, List<ExprNodeDesc>> e : ewi.getFinalCandidates().entrySet()) {
         StringBuilder sb = new StringBuilder("Pushdown predicates of ").append(nd.getName())
             .append(" for alias ").append(e.getKey()).append(": ");
@@ -1040,51 +1045,51 @@ public final class OpProcFactory {
     return decomposed.residualPredicate;
   }
 
-  public static NodeProcessor getFilterProc() {
+  public static SemanticNodeProcessor getFilterProc() {
     return new FilterPPD();
   }
 
-  public static NodeProcessor getFilterSyntheticJoinPredicateProc() {
+  public static SemanticNodeProcessor getFilterSyntheticJoinPredicateProc() {
     return new SimpleFilterPPD();
   }
 
-  public static NodeProcessor getJoinProc() {
+  public static SemanticNodeProcessor getJoinProc() {
     return new JoinPPD();
   }
 
-  public static NodeProcessor getTSProc() {
+  public static SemanticNodeProcessor getTSProc() {
     return new TableScanPPD();
   }
 
-  public static NodeProcessor getDefaultProc() {
+  public static SemanticNodeProcessor getDefaultProc() {
     return new DefaultPPD();
   }
 
-  public static NodeProcessor getPTFProc() {
+  public static SemanticNodeProcessor getPTFProc() {
     return new PTFPPD();
   }
 
-  public static NodeProcessor getSCRProc() {
+  public static SemanticNodeProcessor getSCRProc() {
     return new ScriptPPD();
   }
 
-  public static NodeProcessor getLIMProc() {
+  public static SemanticNodeProcessor getLIMProc() {
     return new ScriptPPD();
   }
 
-  public static NodeProcessor getLVFProc() {
+  public static SemanticNodeProcessor getLVFProc() {
     return new LateralViewForwardPPD();
   }
 
-  public static NodeProcessor getUDTFProc() {
+  public static SemanticNodeProcessor getUDTFProc() {
     return new UDTFPPD();
   }
 
-  public static NodeProcessor getLVJProc() {
+  public static SemanticNodeProcessor getLVJProc() {
     return new JoinerPPD();
   }
 
-  public static NodeProcessor getRSProc() {
+  public static SemanticNodeProcessor getRSProc() {
     return new ReduceSinkPPD();
   }
 

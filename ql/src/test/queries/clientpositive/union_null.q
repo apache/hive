@@ -1,4 +1,7 @@
--- SORT_BEFORE_DIFF
+--! qt:dataset:src1
+--! qt:dataset:src
+
+-- SORT_QUERY_RESULTS
 
 -- HIVE-2901
 select x from (select * from (select value as x from src order by x limit 5)a union all select * from (select cast(NULL as string) as x from src limit 5)b )a;

@@ -27,11 +27,12 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.UgiFactory;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.DaemonId;
 import org.apache.hadoop.hive.llap.LlapNodeId;
+import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.llap.NotTezEventHelper;
+import org.apache.hadoop.hive.llap.counters.WmFragmentCounters;
 import org.apache.hadoop.hive.llap.daemon.ContainerRunner;
 import org.apache.hadoop.hive.llap.daemon.FragmentCompletionHandler;
 import org.apache.hadoop.hive.llap.daemon.HistoryLogger;
@@ -52,23 +53,25 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceSta
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmissionStateProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkResponseProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.RegisterDagRequestProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.RegisterDagResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.TerminateFragmentRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.TerminateFragmentResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.UpdateFragmentRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.UpdateFragmentResponseProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SetCapacityRequestProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SetCapacityResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.VertexOrBinary;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
 import org.apache.hadoop.hive.llap.security.LlapSignerImpl;
 import org.apache.hadoop.hive.llap.tez.Converters;
 import org.apache.hadoop.hive.llap.tezplugins.LlapTezUtils;
-import org.apache.hadoop.io.DataInputBuffer;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.service.CompositeService;
 import org.apache.hadoop.yarn.api.ApplicationConstants;
 import org.apache.hadoop.yarn.util.AuxiliaryServiceHelper;
-import org.apache.log4j.MDC;
 import org.apache.log4j.NDC;
 import org.apache.tez.common.security.JobTokenIdentifier;
 import org.apache.tez.common.security.TokenCache;
@@ -81,6 +84,7 @@ import org.apache.tez.runtime.api.impl.ExecutionContextImpl;
 import org.apache.tez.runtime.api.impl.TezEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import com.google.common.base.Preconditions;
 import com.google.protobuf.ByteString;
@@ -114,11 +118,11 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
   private final UgiFactory fsUgiFactory;
   private final SocketFactory socketFactory;
 
-  public ContainerRunnerImpl(Configuration conf, int numExecutors, int waitQueueSize,
-      boolean enablePreemption, String[] localDirsBase, AtomicReference<Integer> localShufflePort,
+  public ContainerRunnerImpl(Configuration conf, int numExecutors, AtomicReference<Integer> localShufflePort,
       AtomicReference<InetSocketAddress> localAddress,
       long totalMemoryAvailableBytes, LlapDaemonExecutorMetrics metrics,
-      AMReporter amReporter, ClassLoader classLoader, DaemonId daemonId, UgiFactory fsUgiFactory,
+      AMReporter amReporter, QueryTracker queryTracker, Scheduler<TaskRunnerCallable> executorService,
+      DaemonId daemonId, UgiFactory fsUgiFactory,
       SocketFactory socketFactory) {
     super("ContainerRunnerImpl");
     Preconditions.checkState(numExecutors > 0,
@@ -133,15 +137,9 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
 
     this.clusterId = daemonId.getClusterString();
     this.daemonId = daemonId;
-    this.queryTracker = new QueryTracker(conf, localDirsBase, clusterId);
-    addIfService(queryTracker);
-    String waitQueueSchedulerClassName = HiveConf.getVar(
-        conf, ConfVars.LLAP_DAEMON_WAIT_QUEUE_COMPARATOR_CLASS_NAME);
-    this.executorService = new TaskExecutorService(numExecutors, waitQueueSize,
-        waitQueueSchedulerClassName, enablePreemption, classLoader, metrics, null);
+    this.queryTracker = queryTracker;
+    this.executorService = executorService;
     completionListener = (SchedulerFragmentCompletingListener) executorService;
-
-    addIfService(executorService);
 
     // Distribute the available memory between the tasks.
     this.memoryPerExecutor = (long)(totalMemoryAvailableBytes / (float) numExecutors);
@@ -182,6 +180,26 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
   }
 
   @Override
+  public RegisterDagResponseProto registerDag(RegisterDagRequestProto request)
+      throws IOException {
+    QueryIdentifierProto identifier = request.getQueryIdentifier();
+    Credentials credentials;
+    if (request.hasCredentialsBinary()) {
+      credentials = LlapUtil.credentialsFromByteArray(
+          request.getCredentialsBinary().toByteArray());
+    } else {
+      credentials = new Credentials();
+    }
+    queryTracker.registerDag(identifier.getApplicationIdString(),
+        identifier.getDagIndex(), request.getUser(), credentials);
+    if (LOG.isInfoEnabled()) {
+      LOG.info("Application with  id={}, dagId={} registered",
+          identifier.getApplicationIdString(), identifier.getDagIndex());
+    }
+    return RegisterDagResponseProto.newBuilder().build();
+  }
+
+  @Override
   public SubmitWorkResponseProto submitWork(SubmitWorkRequestProto request) throws IOException {
     LlapTokenInfo tokenInfo = null;
     try {
@@ -212,17 +230,17 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
     // This is the start of container-annotated logging.
     final String dagId = attemptId.getTaskID().getVertexID().getDAGId().toString();
     final String queryId = vertex.getHiveQueryId();
-    final String fragId = LlapTezUtils.stripAttemptPrefix(fragmentIdString);
+    final String fragmentId = LlapTezUtils.stripAttemptPrefix(fragmentIdString);
     MDC.put("dagId", dagId);
     MDC.put("queryId", queryId);
-    MDC.put("fragmentId", fragId);
+    MDC.put("fragmentId", fragmentId);
     // TODO: Ideally we want tez to use CallableWithMdc that retains the MDC for threads created in
     // thread pool. For now, we will push both dagId and queryId into NDC and the custom thread
     // pool that we use for task execution and llap io (StatsRecordingThreadPool) will pop them
     // using reflection and update the MDC.
     NDC.push(dagId);
     NDC.push(queryId);
-    NDC.push(fragId);
+    NDC.push(fragmentId);
     Scheduler.SubmissionState submissionState;
     SubmitWorkResponseProto.Builder responseBuilder = SubmitWorkResponseProto.newBuilder();
     try {
@@ -237,11 +255,8 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
       QueryIdentifier queryIdentifier = new QueryIdentifier(
           qIdProto.getApplicationIdString(), dagIdentifier);
 
-      Credentials credentials = new Credentials();
-      DataInputBuffer dib = new DataInputBuffer();
-      byte[] tokenBytes = request.getCredentialsBinary().toByteArray();
-      dib.reset(tokenBytes, tokenBytes.length);
-      credentials.readTokenStorageStream(dib);
+      Credentials credentials = LlapUtil.credentialsFromByteArray(
+          request.getCredentialsBinary().toByteArray());
 
       Token<JobTokenIdentifier> jobToken = TokenCache.getSessionToken(credentials);
 
@@ -263,11 +278,20 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
       Configuration callableConf = new Configuration(getConfig());
       UserGroupInformation fsTaskUgi = fsUgiFactory == null ? null : fsUgiFactory.createUgi();
       boolean isGuaranteed = request.hasIsGuaranteed() && request.getIsGuaranteed();
+
+      // enable the printing of (per daemon) LLAP task queue/run times via LLAP_TASK_TIME_SUMMARY
+      ConfVars tezSummary = ConfVars.TEZ_EXEC_SUMMARY;
+      ConfVars llapTasks = ConfVars.LLAP_TASK_TIME_SUMMARY;
+      boolean addTaskTimes = callableConf.getBoolean(tezSummary.varname, tezSummary.defaultBoolVal)
+                             && callableConf.getBoolean(llapTasks.varname, llapTasks.defaultBoolVal);
+
+      // TODO: ideally we'd register TezCounters here, but it seems impossible before registerTask.
+      WmFragmentCounters wmCounters = new WmFragmentCounters(addTaskTimes);
       TaskRunnerCallable callable = new TaskRunnerCallable(request, fragmentInfo, callableConf,
           new ExecutionContextImpl(localAddress.get().getHostName()), env,
           credentials, memoryPerExecutor, amReporter, confParams, metrics, killedTaskHandler,
           this, tezHadoopShim, attemptId, vertex, initialEvent, fsTaskUgi,
-          completionListener, socketFactory, isGuaranteed);
+          completionListener, socketFactory, isGuaranteed, wmCounters);
       submissionState = executorService.schedule(callable);
 
       if (LOG.isInfoEnabled()) {
@@ -438,6 +462,13 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
     }
     return UpdateFragmentResponseProto.newBuilder()
         .setResult(result).setIsGuaranteed(isGuaranteed).build();
+  }
+
+  @Override
+  public SetCapacityResponseProto setCapacity(
+      SetCapacityRequestProto request) {
+    executorService.setCapacity(request.getExecutorNum(), request.getQueueSize());
+    return SetCapacityResponseProto.newBuilder().build();
   }
 
   private String stringifySourceStateUpdateRequest(SourceStateUpdatedRequestProto request) {

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,48 +21,54 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import com.google.common.base.Strings;
+import org.apache.hadoop.hive.ql.QFileVersionHandler;
+import org.apache.hadoop.hive.ql.QTestArguments;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil;
-import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
+import org.apache.hadoop.hive.ql.QTestMiniClusters.MiniClusterType;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+
+import com.google.common.base.Strings;
+
 public class CoreCompareCliDriver extends CliAdapter{
 
   private static QTestUtil qt;
+  private QFileVersionHandler qvh = new QFileVersionHandler();
+
   public CoreCompareCliDriver(AbstractCliConfig testCliConfig) {
     super(testCliConfig);
   }
 
-
   @Override
   @BeforeClass
   public void beforeClass() {
-
     MiniClusterType miniMR = cliConfig.getClusterType();
     String hiveConfDir = cliConfig.getHiveConfDir();
     String initScript = cliConfig.getInitScript();
     String cleanupScript = cliConfig.getCleanupScript();
+
     try {
-      String hadoopVer = cliConfig.getHadoopVersion();
-      qt = new QTestUtil(cliConfig.getResultsDir(), cliConfig.getLogDir(), miniMR,
-      hiveConfDir, hadoopVer, initScript, cleanupScript, false);
-
-      // do a one time initialization
-      qt.cleanUp();
-      qt.createSources();
-
+      qt = new QTestUtil(
+          QTestArguments.QTestArgumentsBuilder.instance()
+            .withOutDir(cliConfig.getResultsDir())
+            .withLogDir(cliConfig.getLogDir())
+            .withClusterType(miniMR)
+            .withConfDir(hiveConfDir)
+            .withInitScript(initScript)
+            .withCleanupScript(cleanupScript)
+            .withLlapIo(false)
+            .build());
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
       System.err.flush();
-      fail("Unexpected exception in static initialization");
+      throw new RuntimeException("Unexpected exception in static initialization", e);
     }
   }
 
@@ -71,6 +77,7 @@ public class CoreCompareCliDriver extends CliAdapter{
   public void setUp() {
     try {
       qt.clearTestSideEffects();
+
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
@@ -84,6 +91,7 @@ public class CoreCompareCliDriver extends CliAdapter{
   public void tearDown() {
     try {
       qt.clearPostTestEffects();
+
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
@@ -94,7 +102,7 @@ public class CoreCompareCliDriver extends CliAdapter{
 
   @Override
   @AfterClass
-  public void shutdown() throws Exception {
+  public void shutdown() {
     try {
       qt.shutdown();
     } catch (Exception e) {
@@ -105,20 +113,20 @@ public class CoreCompareCliDriver extends CliAdapter{
     }
   }
 
-  private Map<String, List<String>> versionFiles = new HashMap<>();
-
-  static String debugHint = "\nSee ./ql/target/tmp/log/hive.log or ./itests/qtest/target/tmp/log/hive.log, "
-     + "or check ./ql/target/surefire-reports or ./itests/qtest/target/surefire-reports/ for specific test cases logs.";
+  @Override
+  protected QTestUtil getQt() {
+    return qt;
+  }
 
   @Override
-  public void runTest(String tname, String fname, String fpath) throws Exception {
+  public void runTest(String tname, String fname, String fpath) {
     final String queryDirectory = cliConfig.getQueryDirectory();
 
     long startTime = System.currentTimeMillis();
     try {
       System.err.println("Begin query: " + fname);
       // TODO: versions could also be picked at build time.
-      List<String> versionFiles = QTestUtil.getVersionFiles(queryDirectory, tname);
+      List<String> versionFiles = qvh.getVersionFiles(queryDirectory, tname);
       if (versionFiles.size() < 2) {
         fail("Cannot run " + tname + " with only " + versionFiles.size() + " versions");
       }
@@ -128,32 +136,29 @@ public class CoreCompareCliDriver extends CliAdapter{
         qt.addFile(new File(queryDirectory, versionFile), true);
       }
 
-      if (qt.shouldBeSkipped(fname)) {
-        return;
-      }
+      qt.cliInit(new File(fpath));
 
-      int ecode = 0;
       List<String> outputs = new ArrayList<>(versionFiles.size());
       for (String versionFile : versionFiles) {
         // 1 for "_" after tname; 3 for ".qv" at the end. Version is in between.
         String versionStr = versionFile.substring(tname.length() + 1, versionFile.length() - 3);
-        outputs.add(qt.cliInit(tname + "." + versionStr, false));
+        outputs.add(qt.cliInit(new File(queryDirectory, versionFile)));
         // TODO: will this work?
-        ecode = qt.executeClient(versionFile, fname);
-        if (ecode != 0) {
-          qt.failed(ecode, fname, debugHint);
+        try {
+          qt.executeClient(versionFile, fname);
+        } catch (CommandProcessorException e) {
+          qt.failedQuery(e.getCause(), e.getResponseCode(), fname, QTestUtil.DEBUG_HINT);
         }
       }
 
       QTestProcessExecResult result = qt.checkCompareCliDriverResults(fname, outputs);
       if (result.getReturnCode() != 0) {
-        String message = Strings.isNullOrEmpty(result.getCapturedOutput()) ?
-            debugHint : "\r\n" + result.getCapturedOutput();
+        String message = Strings.isNullOrEmpty(result.getCapturedOutput()) ? QTestUtil.DEBUG_HINT
+          : "\r\n" + result.getCapturedOutput();
         qt.failedDiff(result.getReturnCode(), fname, message);
       }
-    }
-    catch (Exception e) {
-      qt.failed(e, fname, debugHint);
+    } catch (Exception e) {
+      qt.failedWithException(e, fname, QTestUtil.DEBUG_HINT);
     }
 
     long elapsedTime = System.currentTimeMillis() - startTime;

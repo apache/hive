@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,8 +18,9 @@
 package org.apache.hadoop.hive.ql.index;
 
 import java.util.Arrays;
+
 import org.apache.hadoop.hive.ql.io.HiveInputFormat.HiveInputSplit;
-import org.apache.hadoop.hive.ql.index.SplitFilter.HiveInputSplitComparator;
+import org.apache.hadoop.hive.ql.io.HiveInputFormat.HiveInputSplitComparator;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;

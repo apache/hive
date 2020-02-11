@@ -16,9 +16,15 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@n
 POSTHOOK: Lineage: n.key EXPRESSION []
 PREHOOK: query: explain analyze table n compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@n
+PREHOOK: Output: default@n
+#### A masked pattern was here ####
 POSTHOOK: query: explain analyze table n compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@n
+POSTHOOK: Output: default@n
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0
@@ -29,48 +35,53 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: n
-            Statistics: Num rows: 500 Data size: 1000 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: key (type: int)
               outputColumnNames: key
-              Statistics: Num rows: 500 Data size: 1000 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
                 aggregations: compute_stats(key, 'hll')
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
+                  null sort order: 
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-1
-    Column Stats Work
+    Stats Work
+      Basic Stats Work:
       Column Stats Desc:
           Columns: key
           Column Types: int
           Table: default.n
 
 PREHOOK: query: analyze table n compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@n
+PREHOOK: Output: default@n
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table n compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@n
+POSTHOOK: Output: default@n
 #### A masked pattern was here ####
 PREHOOK: query: desc formatted n key
 PREHOOK: type: DESCTABLE
@@ -78,10 +89,19 @@ PREHOOK: Input: default@n
 POSTHOOK: query: desc formatted n key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@n
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
-	 	 	 	 	 	 	 	 	 	 	 
-key                 	int                 	0                   	0                   	500                 	1                   	                    	                    	                    	                    	HL                  	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	key                 
+data_type           	int                 
+min                 	0                   
+max                 	0                   
+num_nulls           	500                 
+distinct_count      	1                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}
 PREHOOK: query: create table i(key int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -100,9 +120,15 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@i
 POSTHOOK: Lineage: i.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: explain analyze table i compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@i
+PREHOOK: Output: default@i
+#### A masked pattern was here ####
 POSTHOOK: query: explain analyze table i compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@i
+POSTHOOK: Output: default@i
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0
@@ -113,48 +139,53 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: i
-            Statistics: Num rows: 500 Data size: 1406 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: key (type: int)
               outputColumnNames: key
-              Statistics: Num rows: 500 Data size: 1406 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
                 aggregations: compute_stats(key, 'hll')
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
+                  null sort order: 
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-1
-    Column Stats Work
+    Stats Work
+      Basic Stats Work:
       Column Stats Desc:
           Columns: key
           Column Types: int
           Table: default.i
 
 PREHOOK: query: analyze table i compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@i
+PREHOOK: Output: default@i
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table i compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@i
+POSTHOOK: Output: default@i
 #### A masked pattern was here ####
 PREHOOK: query: desc formatted i key
 PREHOOK: type: DESCTABLE
@@ -162,10 +193,19 @@ PREHOOK: Input: default@i
 POSTHOOK: query: desc formatted i key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@i
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
-	 	 	 	 	 	 	 	 	 	 	 
-key                 	int                 	0                   	498                 	0                   	309                 	                    	                    	                    	                    	HL                  	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	key                 
+data_type           	int                 
+min                 	0                   
+max                 	498                 
+num_nulls           	0                   
+distinct_count      	303                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}
 PREHOOK: query: drop table i
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@i
@@ -192,12 +232,14 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@i
 POSTHOOK: Lineage: i.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: analyze table i compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@i
+PREHOOK: Output: default@i
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table i compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@i
+POSTHOOK: Output: default@i
 #### A masked pattern was here ####
 PREHOOK: query: desc formatted i key
 PREHOOK: type: DESCTABLE
@@ -205,10 +247,19 @@ PREHOOK: Input: default@i
 POSTHOOK: query: desc formatted i key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@i
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
-	 	 	 	 	 	 	 	 	 	 	 
-key                 	double              	0.0                 	498.0               	0                   	309                 	                    	                    	                    	                    	HL                  	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	key                 
+data_type           	double              
+min                 	0.0                 
+max                 	498.0               
+num_nulls           	0                   
+distinct_count      	316                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}
 PREHOOK: query: drop table i
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@i
@@ -235,12 +286,14 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@i
 POSTHOOK: Lineage: i.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: analyze table i compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@i
+PREHOOK: Output: default@i
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table i compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@i
+POSTHOOK: Output: default@i
 #### A masked pattern was here ####
 PREHOOK: query: desc formatted i key
 PREHOOK: type: DESCTABLE
@@ -248,10 +301,19 @@ PREHOOK: Input: default@i
 POSTHOOK: query: desc formatted i key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@i
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
-	 	 	 	 	 	 	 	 	 	 	 
-key                 	decimal(10,0)       	0                   	498                 	0                   	309                 	                    	                    	                    	                    	HL                  	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	key                 
+data_type           	decimal(10,0)       
+min                 	0                   
+max                 	498                 
+num_nulls           	0                   
+distinct_count      	316                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}
 PREHOOK: query: drop table i
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@i
@@ -270,46 +332,58 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@i
 PREHOOK: query: insert into i values ('2012-08-17')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@i
 POSTHOOK: query: insert into i values ('2012-08-17')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@i
-POSTHOOK: Lineage: i.key EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: i.key SCRIPT []
 PREHOOK: query: insert into i values ('2012-08-17')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@i
 POSTHOOK: query: insert into i values ('2012-08-17')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@i
-POSTHOOK: Lineage: i.key EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: i.key SCRIPT []
 PREHOOK: query: insert into i values ('2013-08-17')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@i
 POSTHOOK: query: insert into i values ('2013-08-17')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@i
-POSTHOOK: Lineage: i.key EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: i.key SCRIPT []
 PREHOOK: query: insert into i values ('2012-03-17')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@i
 POSTHOOK: query: insert into i values ('2012-03-17')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@i
-POSTHOOK: Lineage: i.key EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: i.key SCRIPT []
 PREHOOK: query: insert into i values ('2012-05-17')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@i
 POSTHOOK: query: insert into i values ('2012-05-17')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@i
-POSTHOOK: Lineage: i.key EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: i.key SCRIPT []
 PREHOOK: query: analyze table i compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@i
+PREHOOK: Output: default@i
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table i compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@i
+POSTHOOK: Output: default@i
 #### A masked pattern was here ####
 PREHOOK: query: desc formatted i key
 PREHOOK: type: DESCTABLE
@@ -317,7 +391,16 @@ PREHOOK: Input: default@i
 POSTHOOK: query: desc formatted i key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@i
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
-	 	 	 	 	 	 	 	 	 	 	 
-key                 	date                	2012-03-17          	2013-08-17          	0                   	4                   	                    	                    	                    	                    	HL                  	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	key                 
+data_type           	date                
+min                 	2012-03-17          
+max                 	2013-08-17          
+num_nulls           	0                   
+distinct_count      	4                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}

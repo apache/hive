@@ -1,9 +1,9 @@
-create table t (a int);
+create table t_n34 (a int);
 
-insert into t values (1),(1),(2);
+insert into t_n34 values (1),(1),(2);
 
-explain select count(*) from t group by ();
+explain select count(*) from t_n34 group by ();
 
-select count(*) from t group by ();
+select count(*) from t_n34 group by ();
 
 

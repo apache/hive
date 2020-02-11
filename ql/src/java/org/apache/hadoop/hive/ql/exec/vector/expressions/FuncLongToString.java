@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,10 +18,16 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import java.sql.Timestamp;
+import java.util.Arrays;
+
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.util.DateTimeMath;
 
 /**
  * Superclass to support vectorized functions that take a long
@@ -31,83 +37,118 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 public abstract class FuncLongToString extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
-  private int inputCol;
-  private int outputCol;
-  protected transient byte[] bytes;
+  private final int inputColumn;
 
-  FuncLongToString(int inputCol, int outputCol) {
-    this.inputCol = inputCol;
-    this.outputCol = outputCol;
-    bytes = new byte[64];    // staging area for results, to avoid new() calls
+  // Transient members initialized by transientInit method.
+  protected byte[] bytes;
+
+  FuncLongToString(int inputColumn, int outputColumnNum) {
+    super(outputColumnNum);
+    this.inputColumn = inputColumn;
   }
 
   FuncLongToString() {
-    bytes = new byte[64];
+    super();
+
+    // Dummy final assignments.
+    inputColumn = -1;
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void transientInit(Configuration conf) throws HiveException {
+    super.transientInit(conf);
+
+    bytes = new byte[64];    // staging area for results, to avoid new() calls
+  }
+
+  @Override
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
 
     if (childExpressions != null) {
       super.evaluateChildren(batch);
     }
 
-    LongColumnVector inputColVector = (LongColumnVector) batch.cols[inputCol];
+    LongColumnVector inputColVector = (LongColumnVector) batch.cols[inputColumn];
     int[] sel = batch.selected;
     int n = batch.size;
     long[] vector = inputColVector.vector;
-    BytesColumnVector outV = (BytesColumnVector) batch.cols[outputCol];
-    outV.initBuffer();
+    BytesColumnVector outputColVector = (BytesColumnVector) batch.cols[outputColumnNum];
+    outputColVector.initBuffer();
+
+    boolean[] inputIsNull = inputColVector.isNull;
+    boolean[] outputIsNull = outputColVector.isNull;
 
     if (n == 0) {
       //Nothing to do
       return;
     }
 
-    if (inputColVector.noNulls) {
-      outV.noNulls = true;
-      if (inputColVector.isRepeating) {
-        outV.isRepeating = true;
-        prepareResult(0, vector, outV);
-      } else if (batch.selectedInUse) {
-        for(int j=0; j != n; j++) {
-          int i = sel[j];
-          prepareResult(i, vector, outV);
-        }
-        outV.isRepeating = false;
+    // We do not need to do a column reset since we are carefully changing the output.
+    outputColVector.isRepeating = false;
+
+    if (inputColVector.isRepeating) {
+      if (inputColVector.noNulls || !inputIsNull[0]) {
+        // Set isNull before call in case it changes it mind.
+        outputIsNull[0] = false;
+        prepareResult(0, vector, outputColVector);
       } else {
-        for(int i = 0; i != n; i++) {
-          prepareResult(i, vector, outV);
-        }
-        outV.isRepeating = false;
+        outputIsNull[0] = true;
+        outputColVector.noNulls = false;
       }
-    } else {
-      // Handle case with nulls. Don't do function if the value is null, to save time,
-      // because calling the function can be expensive.
-      outV.noNulls = false;
-      if (inputColVector.isRepeating) {
-        outV.isRepeating = true;
-        outV.isNull[0] = inputColVector.isNull[0];
-        if (!inputColVector.isNull[0]) {
-          prepareResult(0, vector, outV);
+      outputColVector.isRepeating = true;
+      return;
+    }
+
+    if (inputColVector.noNulls) {
+      if (batch.selectedInUse) {
+
+        // CONSIDER: For large n, fill n or all of isNull array and use the tighter ELSE loop.
+
+        if (!outputColVector.noNulls) {
+          for(int j = 0; j != n; j++) {
+           final int i = sel[j];
+           // Set isNull before call in case it changes it mind.
+           outputIsNull[i] = false;
+           prepareResult(i, vector, outputColVector);
+         }
+        } else {
+          for(int j = 0; j != n; j++) {
+            final int i = sel[j];
+            prepareResult(i, vector, outputColVector);
+          }
         }
-      } else if (batch.selectedInUse) {
+      } else {
+        if (!outputColVector.noNulls) {
+
+          // Assume it is almost always a performance win to fill all of isNull so we can
+          // safely reset noNulls.
+          Arrays.fill(outputIsNull, false);
+          outputColVector.noNulls = true;
+        }
+        for(int i = 0; i != n; i++) {
+          prepareResult(i, vector, outputColVector);
+        }
+      }
+    } else /* there are nulls in the inputColVector */ {
+
+      // Carefully handle NULLs...
+      outputColVector.noNulls = false;
+
+      if (batch.selectedInUse) {
         for(int j=0; j != n; j++) {
           int i = sel[j];
+          outputColVector.isNull[i] = inputColVector.isNull[i];
           if (!inputColVector.isNull[i]) {
-            prepareResult(i, vector, outV);
+            prepareResult(i, vector, outputColVector);
           }
-          outV.isNull[i] = inputColVector.isNull[i];
         }
-        outV.isRepeating = false;
       } else {
         for(int i = 0; i != n; i++) {
+          outputColVector.isNull[i] = inputColVector.isNull[i];
           if (!inputColVector.isNull[i]) {
-            prepareResult(i, vector, outV);
+            prepareResult(i, vector, outputColVector);
           }
-          outV.isNull[i] = inputColVector.isNull[i];
         }
-        outV.isRepeating = false;
       }
     }
   }
@@ -115,37 +156,11 @@ public abstract class FuncLongToString extends VectorExpression {
   /* Evaluate result for position i (using bytes[] to avoid storage allocation costs)
    * and set position i of the output vector to the result.
    */
-  abstract void prepareResult(int i, long[] vector, BytesColumnVector outV);
-
-  @Override
-  public int getOutputColumn() {
-    return outputCol;
-  }
-
-  public int getOutputCol() {
-    return outputCol;
-  }
-
-  public void setOutputCol(int outputCol) {
-    this.outputCol = outputCol;
-  }
-
-  public int getInputCol() {
-    return inputCol;
-  }
-
-  public void setInputCol(int inputCol) {
-    this.inputCol = inputCol;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "String";
-  }
+  abstract void prepareResult(int i, long[] vector, BytesColumnVector outputColVector);
 
   @Override
   public String vectorExpressionParameters() {
-    return "col " + inputCol;
+    return getColumnParamString(0, inputColumn);
   }
 
   @Override

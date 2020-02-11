@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -36,7 +36,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -99,14 +98,7 @@ public class MetadataJson {
   }
 
   private ReplicationSpec readReplicationSpec() {
-    com.google.common.base.Function<String, String> keyFetcher =
-        new com.google.common.base.Function<String, String>() {
-          @Override
-          public String apply(@Nullable String s) {
-            return jsonEntry(s);
-          }
-        };
-    return new ReplicationSpec(keyFetcher);
+    return new ReplicationSpec(this::jsonEntry);
   }
 
   private void checkCompatibility() throws SemanticException, JSONException {

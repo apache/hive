@@ -1,0 +1,106 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+###################################################################################################
+#                                                                                                 #
+#  Used for the internalizing of String instance field assignments in the Thrift generated files  #
+#  FieldSchema.java, Partition.java, SerDeInfo.java, and StorageDescriptor.java.                  #
+#                                                                                                 #
+#  Look in hive/standalone-metastore/metastore-common/pom.xml for the thriftif profile.           #
+#  Usage: thriftif profile automatically refers to this file.                                     #
+#                                                                                                 #
+###################################################################################################
+
+# Fix constructors and setters of String instance fields
+
+org.apache.hadoop.hive.metastore.utils.StringUtils.intern(name);
+this\.name\ \=\ name;=this.name\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(name);
+this\.serializationLib\ \=\ serializationLib;=this.serializationLib\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(serializationLib);
+this\.type\ \=\ type;=this.type\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(type);
+this\.comment\ \=\ comment;=this.comment\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(comment);
+this\.location\ \=\ location;=this.location\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(location);
+this\.inputFormat\ \=\ inputFormat;=this.inputFormat\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(inputFormat);
+this\.outputFormat\ \=\ outputFormat;=this.outputFormat\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(outputFormat);
+this\.dbName\ \=\ dbName;=this.dbName\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(dbName);
+this\.tableName\ \=\ tableName;=this.tableName\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(tableName);
+this\.catName\ \=\ catName;=this\.catName\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(catName);
+this\.serializerClass\ \=\ serializerClass;=this\.serializerClass\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(serializerClass);
+this\.deserializerClass\ \=\ deserializerClass;=this\.deserializerClass\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(deserializerClass);
+this\.colName\ \=\ colName;=this\.colName\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(colName);
+this\.colType\ \=\ colType;=this\.colType\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(colType);
+
+# Fix constructors and setters of List<String> instance fields
+
+this\.bucketCols\ \=\ bucketCols;=this.bucketCols\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(bucketCols);
+
+# Fix constructors and setters of Map<String, String> instance fields
+
+this\.parameters\ \=\ parameters;=this.parameters\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(parameters);
+
+# Fix copy constructors
+
+this\.name\ \=\ other\.name;=this.name\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(other.name);
+this\.serializationLib\ \=\ other\.serializationLib;=this.serializationLib\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(other.serializationLib);
+this\.type\ \=\ other\.type;=this.type\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(other.type);
+this\.comment\ \=\ other\.comment;=this.comment\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(other.comment);
+this\.location\ \=\ other\.location;=this.location\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(other.location);
+this\.inputFormat\ \=\ other\.inputFormat;=this.inputFormat\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(other.inputFormat);
+this\.outputFormat\ \=\ other\.outputFormat;=this.outputFormat\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(other.outputFormat);
+this\.dbName\ \=\ other\.dbName;=this.dbName\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(other.dbName);
+this\.tableName\ \=\ other\.tableName;=this.tableName\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(other.tableName);
+this\.catName\ \=\ other\.catName;=this\.catName\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(other.catName);
+this\.serializerClass\ \=\ other\.serializerClass;=this\.serializerClass\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(other.serializerClass);
+this\.deserializerClass\ \=\ other\.deserializerClass;=this\.deserializerClass\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(other.deserializerClass);
+this\.colName\ \=\ other\.colName;=this\.colName\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(other.colName);
+this\.colType\ \=\ other\.colType;=this\.colType\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(other.colType);
+
+__this__parameters_copy_key\ \=\ other_element_key;=__this__parameters_copy_key\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(other_element_key);
+__this__parameters_copy_value\ \=\ other_element_value;=__this__parameters_copy_value\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(other_element_value);
+__this_values\.add(other_element);=__this_values.add(org.apache.hadoop.hive.metastore.utils.StringUtils.intern(other_element));
+
+# Fix methods in Partition.java that call Map.put(String key, String value)
+
+this\.parameters\.put\(key,\ val\);=this.parameters.put(org.apache.hadoop.hive.metastore.utils.StringUtils.intern(key),\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(val));
+
+# Fix the deserialization methods in Partitions.java: intern parameters after it's deserialized
+
+struct\.setParametersIsSet\(true\);=struct.parameters\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(struct.parameters);\ struct.setParametersIsSet(true);
+
+# Fix the StandardScheme read method which deserializes the fields into the thrift objects
+
+# PartitionStandardScheme - parameters are already interned above
+struct\.dbName\ \=\ iprot\.readString\(\);=struct\.dbName\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(iprot\.readString\(\));
+struct\.tableName\ \=\ iprot\.readString\(\);=struct\.tableName\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(iprot\.readString\(\));
+struct\.catName\ \=\ iprot\.readString\(\);=struct\.catName\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(iprot\.readString\(\));
+
+# StorageDescriptorStandardScheme - parameters are already interned above
+struct\.location\ \=\ iprot\.readString\(\);=struct\.location\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(iprot\.readString\(\));
+struct\.inputFormat\ \=\ iprot\.readString\(\);=struct\.inputFormat\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(iprot\.readString\(\));
+struct\.outputFormat\ \=\ iprot\.readString\(\);=struct\.outputFormat\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(iprot\.readString\(\));
+struct\.setBucketColsIsSet\(true\);=struct\.bucketCols\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(struct.bucketCols);\ struct.setBucketColsIsSet(true);
+
+# SerDeInfoStandardScheme - parameters are already interned above
+struct\.name\ \=\ iprot\.readString\(\);=struct\.name\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(iprot\.readString\(\));
+struct\.serializationLib\ \=\ iprot\.readString\(\);=struct\.serializationLib\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(iprot\.readString\(\));
+struct\.serializerClass\ \=\ iprot\.readString\(\);=struct\.serializerClass\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(iprot\.readString\(\));
+struct\.deserializerClass\ \=\ iprot\.readString\(\);=struct\.deserializerClass\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(iprot\.readString\(\));
+
+# FieldSchemaStandardScheme - name field gets automatically handled above
+struct\.type\ \=\ iprot\.readString\(\);=struct\.type\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(iprot\.readString\(\));
+struct\.comment\ \=\ iprot\.readString\(\);=struct\.comment\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(iprot\.readString\(\));
+
+# ColumnStatisticsObjStandardScheme
+struct\.colName\ \=\ iprot\.readString\(\);=struct\.colName\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(iprot\.readString\(\));
+struct\.colType\ \=\ iprot\.readString\(\);=struct\.colType\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(iprot\.readString\(\));

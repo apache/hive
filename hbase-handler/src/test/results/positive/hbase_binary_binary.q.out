@@ -2,33 +2,39 @@ PREHOOK: query: drop table if exists testhbaseb
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table if exists testhbaseb
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE testhbaseb (key int, val binary)
+PREHOOK: query: CREATE EXTERNAL TABLE testhbaseb (key int, val binary)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES (
 "hbase.columns.mapping" = ":key,cf:val#b"
 )
+TBLPROPERTIES ("external.table.purge" = "true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@testhbaseb
-POSTHOOK: query: CREATE TABLE testhbaseb (key int, val binary)
+POSTHOOK: query: CREATE EXTERNAL TABLE testhbaseb (key int, val binary)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES (
 "hbase.columns.mapping" = ":key,cf:val#b"
 )
+TBLPROPERTIES ("external.table.purge" = "true")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testhbaseb
 PREHOOK: query: insert into table testhbaseb values(1, 'hello')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@testhbaseb
 POSTHOOK: query: insert into table testhbaseb values(1, 'hello')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@testhbaseb
 PREHOOK: query: insert into table testhbaseb values(2, 'hi')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@testhbaseb
 POSTHOOK: query: insert into table testhbaseb values(2, 'hi')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@testhbaseb
 PREHOOK: query: select * from testhbaseb
 PREHOOK: type: QUERY

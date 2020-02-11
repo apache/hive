@@ -1,43 +1,49 @@
-PREHOOK: query: drop table if exists tb1
+PREHOOK: query: drop table if exists tb1_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table if exists tb1
+POSTHOOK: query: drop table if exists tb1_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table tb1 (id int)
+PREHOOK: query: create table tb1_n0 (id int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tb1
-POSTHOOK: query: create table tb1 (id int)
+PREHOOK: Output: default@tb1_n0
+POSTHOOK: query: create table tb1_n0 (id int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tb1
-PREHOOK: query: drop table if exists tb2
+POSTHOOK: Output: default@tb1_n0
+PREHOOK: query: drop table if exists tb2_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table if exists tb2
+POSTHOOK: query: drop table if exists tb2_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table tb2 (id smallint)
+PREHOOK: query: create table tb2_n0 (id smallint)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tb2
-POSTHOOK: query: create table tb2 (id smallint)
+PREHOOK: Output: default@tb2_n0
+POSTHOOK: query: create table tb2_n0 (id smallint)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tb2
+POSTHOOK: Output: default@tb2_n0
 PREHOOK: query: explain
-select a.id from tb1 a
+select a.id from tb1_n0 a
 left outer join
-(select id from tb2
+(select id from tb2_n0
 union all
-select 2 as id from tb2 limit 1) b
+select 2 as id from tb2_n0 limit 1) b
 on a.id=b.id
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tb1_n0
+PREHOOK: Input: default@tb2_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
-select a.id from tb1 a
+select a.id from tb1_n0 a
 left outer join
-(select id from tb2
+(select id from tb2_n0
 union all
-select 2 as id from tb2 limit 1) b
+select 2 as id from tb2_n0 limit 1) b
 on a.id=b.id
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tb1_n0
+POSTHOOK: Input: default@tb2_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -61,13 +67,15 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: _col0 (type: int)
                       Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Execution mode: vectorized
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: tb2
+                  alias: tb2_n0
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Select Operator
                     expressions: UDFToInteger(id) (type: int)
@@ -77,14 +85,16 @@ STAGE PLANS:
                       Number of rows: 1
                       Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                         TopN Hash Memory Usage: 0.1
                         value expressions: _col0 (type: int)
+            Execution mode: vectorized
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: tb2
+                  alias: tb2_n0
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Select Operator
                     expressions: 2 (type: int)
@@ -94,10 +104,12 @@ STAGE PLANS:
                       Number of rows: 1
                       Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                         TopN Hash Memory Usage: 0.1
                         value expressions: _col0 (type: int)
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -116,6 +128,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 4 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: int)
@@ -124,11 +137,15 @@ STAGE PLANS:
                 Limit
                   Number of rows: 1
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: int)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: int)
+                  Filter Operator
+                    predicate: _col0 is not null (type: boolean)
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: int)
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
 
   Stage: Stage-0
     Fetch Operator

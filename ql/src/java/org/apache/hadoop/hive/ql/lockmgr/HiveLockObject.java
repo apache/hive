@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,11 +20,10 @@ package org.apache.hadoop.hive.ql.lockmgr;
 
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -64,7 +63,7 @@ public class HiveLockObject {
       this.lockTime = StringInternUtils.internIfNotNull(removeDelimiter(lockTime));
       this.lockMode = removeDelimiter(lockMode);
       this.queryStr = StringInternUtils.internIfNotNull(
-          queryStr == null ? null : StringUtils.substring(removeDelimiter(queryStr.trim()), 0,
+          queryStr == null ? null : StringUtils.abbreviate(removeDelimiter(queryStr.trim()),
               conf.getIntVar(HiveConf.ConfVars.HIVE_LOCK_QUERY_STRING_MAX_LENGTH)));
     }
 
@@ -198,12 +197,12 @@ public class HiveLockObject {
   }
 
   public HiveLockObject(Table tbl, HiveLockObjectData lockData) {
-    this(new String[] {tbl.getDbName(), MetaStoreUtils.encodeTableName(tbl.getTableName())}, lockData);
+    this(new String[] {tbl.getDbName(), org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.encodeTableName(tbl.getTableName())}, lockData);
   }
 
   public HiveLockObject(Partition par, HiveLockObjectData lockData) {
     this(new String[] {par.getTable().getDbName(),
-        MetaStoreUtils.encodeTableName(par.getTable().getTableName()), par.getName()}, lockData);
+                       org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.encodeTableName(par.getTable().getTableName()), par.getName()}, lockData);
   }
 
   public HiveLockObject(DummyPartition par, HiveLockObjectData lockData) {

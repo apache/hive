@@ -1,19 +1,19 @@
-PREHOOK: query: create table src_multi1 like src
+PREHOOK: query: create table src_multi1_n2 like src
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src_multi1
-POSTHOOK: query: create table src_multi1 like src
+PREHOOK: Output: default@src_multi1_n2
+POSTHOOK: query: create table src_multi1_n2 like src
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src_multi1
-PREHOOK: query: create table src_multi2 like src
+POSTHOOK: Output: default@src_multi1_n2
+PREHOOK: query: create table src_multi2_n3 like src
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src_multi2
-POSTHOOK: query: create table src_multi2 like src
+PREHOOK: Output: default@src_multi2_n3
+POSTHOOK: query: create table src_multi2_n3 like src
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src_multi2
+POSTHOOK: Output: default@src_multi2_n3
 PREHOOK: query: create table src_multi3 like src
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -24,16 +24,24 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_multi3
 PREHOOK: query: explain
 from src
-insert overwrite table src_multi1 select key, count(1) group by key order by key
-insert overwrite table src_multi2 select value, count(1) group by value order by value
+insert overwrite table src_multi1_n2 select key, count(1) group by key order by key
+insert overwrite table src_multi2_n3 select value, count(1) group by value order by value
 insert overwrite table src_multi3 select * where key < 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@src_multi1_n2
+PREHOOK: Output: default@src_multi2_n3
+PREHOOK: Output: default@src_multi3
 POSTHOOK: query: explain
 from src
-insert overwrite table src_multi1 select key, count(1) group by key order by key
-insert overwrite table src_multi2 select value, count(1) group by value order by value
+insert overwrite table src_multi1_n2 select key, count(1) group by key order by key
+insert overwrite table src_multi2_n3 select value, count(1) group by value order by value
 insert overwrite table src_multi3 select * where key < 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@src_multi1_n2
+POSTHOOK: Output: default@src_multi2_n3
+POSTHOOK: Output: default@src_multi3
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-0 depends on stages: Stage-3
@@ -65,11 +73,13 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: count(1)
                       keys: key (type: string)
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -89,6 +99,7 @@ STAGE PLANS:
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.src_multi3
+            Execution mode: vectorized
         Map 7 
             Map Operator Tree:
                 TableScan
@@ -101,16 +112,20 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: count(1)
                       keys: value (type: string)
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: bigint)
+            Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -120,13 +135,15 @@ STAGE PLANS:
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
+                  null sort order: z
                   sort order: +
                   Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: bigint)
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: string), UDFToString(VALUE._col0) (type: string)
+                expressions: KEY.reducesinkkey0 (type: string), CAST( VALUE._col0 AS STRING) (type: string)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
@@ -136,8 +153,9 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.src_multi1
+                      name: default.src_multi1_n2
         Reducer 4 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -147,13 +165,15 @@ STAGE PLANS:
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
+                  null sort order: z
                   sort order: +
                   Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: bigint)
         Reducer 5 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: string), UDFToString(VALUE._col0) (type: string)
+                expressions: KEY.reducesinkkey0 (type: string), CAST( VALUE._col0 AS STRING) (type: string)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
@@ -163,7 +183,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.src_multi2
+                      name: default.src_multi2_n3
 
   Stage: Stage-0
     Move Operator
@@ -173,10 +193,11 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.src_multi1
+              name: default.src_multi1_n2
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -186,10 +207,11 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.src_multi2
+              name: default.src_multi2_n3
 
   Stage: Stage-5
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-2
     Move Operator
@@ -202,39 +224,40 @@ STAGE PLANS:
               name: default.src_multi3
 
   Stage: Stage-6
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: from src
-insert overwrite table src_multi1 select key, count(1) group by key order by key
-insert overwrite table src_multi2 select value, count(1) group by value order by value
+insert overwrite table src_multi1_n2 select key, count(1) group by key order by key
+insert overwrite table src_multi2_n3 select value, count(1) group by value order by value
 insert overwrite table src_multi3 select * where key < 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@src_multi1
-PREHOOK: Output: default@src_multi2
+PREHOOK: Output: default@src_multi1_n2
+PREHOOK: Output: default@src_multi2_n3
 PREHOOK: Output: default@src_multi3
 POSTHOOK: query: from src
-insert overwrite table src_multi1 select key, count(1) group by key order by key
-insert overwrite table src_multi2 select value, count(1) group by value order by value
+insert overwrite table src_multi1_n2 select key, count(1) group by key order by key
+insert overwrite table src_multi2_n3 select value, count(1) group by value order by value
 insert overwrite table src_multi3 select * where key < 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@src_multi1
-POSTHOOK: Output: default@src_multi2
+POSTHOOK: Output: default@src_multi1_n2
+POSTHOOK: Output: default@src_multi2_n3
 POSTHOOK: Output: default@src_multi3
-POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi1.value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: src_multi2.key SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: src_multi1_n2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi1_n2.value EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: src_multi2_n3.key SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi2_n3.value EXPRESSION [(src)src.null, ]
 POSTHOOK: Lineage: src_multi3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from src_multi1
+PREHOOK: query: select * from src_multi1_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_multi1
+PREHOOK: Input: default@src_multi1_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_multi1
+POSTHOOK: query: select * from src_multi1_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_multi1
+POSTHOOK: Input: default@src_multi1_n2
 #### A masked pattern was here ####
 0	3
 10	1
@@ -545,13 +568,13 @@ POSTHOOK: Input: default@src_multi1
 96	1
 97	2
 98	2
-PREHOOK: query: select * from src_multi2
+PREHOOK: query: select * from src_multi2_n3
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_multi2
+PREHOOK: Input: default@src_multi2_n3
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_multi2
+POSTHOOK: query: select * from src_multi2_n3
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_multi2
+POSTHOOK: Input: default@src_multi2_n3
 #### A masked pattern was here ####
 val_0	3
 val_10	1

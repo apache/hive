@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -119,18 +119,18 @@ public class ListBucketingPruner extends Transform {
    *
    * Complete dynamic-multi-dimension collection
    *
-   * (0,0) (1,a) * -> T
-   * (0,1) (1,b) -> T
-   * (0,2) (1,c) *-> F
-   * (0,3) (1,other)-> F
-   * (1,0) (2,a)-> F
-   * (1,1) (2,b) * -> T
-   * (1,2) (2,c)-> F
-   * (1,3) (2,other)-> F
-   * (2,0) (other,a) -> T
-   * (2,1) (other,b) -> T
-   * (2,2) (other,c) -> T
-   * (2,3) (other,other) -> T
+   * (0,0) (1,a) * -&gt; T
+   * (0,1) (1,b) -&gt; T
+   * (0,2) (1,c) *-&gt; F
+   * (0,3) (1,other)-&gt; F
+   * (1,0) (2,a)-&gt; F
+   * (1,1) (2,b) * -&gt; T
+   * (1,2) (2,c)-&gt; F
+   * (1,3) (2,other)-&gt; F
+   * (2,0) (other,a) -&gt; T
+   * (2,1) (other,b) -&gt; T
+   * (2,2) (other,c) -&gt; T
+   * (2,3) (other,other) -&gt; T
    * * is skewed value entry
    *
    * Expression Tree : ((c1=1) and (c2=a)) or ( (c1=3) or (c2=b))
@@ -171,7 +171,7 @@ public class ListBucketingPruner extends Transform {
    *
    * <pre>
    *     child_nd instanceof ExprNodeConstantDesc
-   *               && ((ExprNodeConstantDesc) child_nd).getValue() == null)
+   *               &amp;&amp; ((ExprNodeConstantDesc) child_nd).getValue() == null)
    * </pre>
    *
    * </blockquote>
@@ -410,7 +410,7 @@ public class ListBucketingPruner extends Transform {
    * 2. all other cases, select the directory
    * Use case #2:
    * Multiple dimension collection represents skewed elements so that walk through tree one by one.
-   * Cell is a List<String> representing the value mapping from index path and skewed value.
+   * Cell is a List&lt;String&gt; representing the value mapping from index path and skewed value.
    * skewed column: C1, C2, C3
    * skewed value: (1,a,x), (2,b,x), (1,c,x), (2,a,y)
    * Other: represent value for the column which is not part of skewed value.
@@ -428,8 +428,8 @@ public class ListBucketingPruner extends Transform {
    * ==============
    * please see another example in {@link ListBucketingPruner#prune}
    * We will use a HasMap to represent the Dynamic-Multiple-Dimension collection:
-   * 1. Key is List<Integer> representing the index path to the cell
-   * 2. value represents the cell (Boolean for use case #1, List<String> for case #2)
+   * 1. Key is List&lt;Integer&gt; representing the index path to the cell
+   * 2. value represents the cell (Boolean for use case #1, List&lt;String&gt; for case #2)
    * For example:
    * 1. skewed column (list): C1, C2, C3
    * 2. skewed value (list of list): (1,a,x), (2,b,x), (1,c,x), (2,a,y)
@@ -446,7 +446,7 @@ public class ListBucketingPruner extends Transform {
    *
    * We use the index,starting at 0. to construct hashmap representing dynamic-multi-dimension
    * collection:
-   * key (what skewed value key represents) -> value (Boolean for use case #1, List<String> for case
+   * key (what skewed value key represents) -&gt; value (Boolean for use case #1, List&lt;String&gt; for case
    * #2).
    * (0,0,0) (1,a,x)
    * (0,0,1) (1,a,y)
@@ -572,18 +572,18 @@ public class ListBucketingPruner extends Transform {
      * Index: (0,1,2) (0,1,2,3)
      *
      * Complete dynamic-multi-dimension collection
-     * (0,0) (1,a) * -> T
-     * (0,1) (1,b) -> T
-     * (0,2) (1,c) *-> F
-     * (0,3) (1,other)-> F
-     * (1,0) (2,a)-> F
-     * (1,1) (2,b) * -> T
-     * (1,2) (2,c)-> F
-     * (1,3) (2,other)-> F
-     * (2,0) (other,a) -> T
-     * (2,1) (other,b) -> T
-     * (2,2) (other,c) -> T
-     * (2,3) (other,other) -> T
+     * (0,0) (1,a) * -&gt; T
+     * (0,1) (1,b) -&gt; T
+     * (0,2) (1,c) *-&gt; F
+     * (0,3) (1,other)-&gt; F
+     * (1,0) (2,a)-&gt; F
+     * (1,1) (2,b) * -&gt; T
+     * (1,2) (2,c)-&gt; F
+     * (1,3) (2,other)-&gt; F
+     * (2,0) (other,a) -&gt; T
+     * (2,1) (other,b) -&gt; T
+     * (2,2) (other,c) -&gt; T
+     * (2,3) (other,other) -&gt; T
      * * is skewed value entry
      *
      * @param uniqSkewedElements

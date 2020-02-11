@@ -126,8 +126,12 @@ POSTHOOK: Lineage: varchar_join1_str_orc.c1 SIMPLE [(varchar_join1_str)varchar_j
 POSTHOOK: Lineage: varchar_join1_str_orc.c2 SIMPLE [(varchar_join1_str)varchar_join1_str.FieldSchema(name:c2, type:string, comment:null), ]
 PREHOOK: query: explain vectorization select * from varchar_join1_vc1_orc a join varchar_join1_vc1_orc b on (a.c2 = b.c2) order by a.c1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@varchar_join1_vc1_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization select * from varchar_join1_vc1_orc a join varchar_join1_vc1_orc b on (a.c2 = b.c2) order by a.c1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@varchar_join1_vc1_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -148,14 +152,15 @@ STAGE PLANS:
         $hdt$_0:a 
           TableScan
             alias: a
-            Statistics: Num rows: 3 Data size: 273 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: c2 is not null (type: boolean)
+            Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: c2 is not null (type: boolean)
-              Statistics: Num rows: 3 Data size: 273 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: c1 (type: int), c2 (type: varchar(10))
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 3 Data size: 273 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                 HashTable Sink Operator
                   keys:
                     0 _col1 (type: varchar(10))
@@ -166,14 +171,15 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
-            Statistics: Num rows: 3 Data size: 273 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: c2 is not null (type: boolean)
+            Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: c2 is not null (type: boolean)
-              Statistics: Num rows: 3 Data size: 273 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: c1 (type: int), c2 (type: varchar(10))
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 3 Data size: 273 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -181,17 +187,19 @@ STAGE PLANS:
                     0 _col1 (type: varchar(10))
                     1 _col1 (type: varchar(10))
                   outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics: Num rows: 3 Data size: 300 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int)
+                    null sort order: z
                     sort order: +
-                    Statistics: Num rows: 3 Data size: 300 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: varchar(10)), _col2 (type: int), _col3 (type: varchar(10))
       Execution mode: vectorized
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -206,10 +214,10 @@ STAGE PLANS:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: varchar(10)), VALUE._col1 (type: int), VALUE._col2 (type: varchar(10))
           outputColumnNames: _col0, _col1, _col2, _col3
-          Statistics: Num rows: 3 Data size: 300 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 3 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 3 Data size: 300 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -234,8 +242,14 @@ POSTHOOK: Input: default@varchar_join1_vc1_orc
 3	 abc	3	 abc
 PREHOOK: query: explain vectorization select * from varchar_join1_vc1_orc a join varchar_join1_vc2_orc b on (a.c2 = b.c2) order by a.c1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@varchar_join1_vc1_orc
+PREHOOK: Input: default@varchar_join1_vc2_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization select * from varchar_join1_vc1_orc a join varchar_join1_vc2_orc b on (a.c2 = b.c2) order by a.c1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@varchar_join1_vc1_orc
+POSTHOOK: Input: default@varchar_join1_vc2_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -256,14 +270,15 @@ STAGE PLANS:
         $hdt$_0:a 
           TableScan
             alias: a
-            Statistics: Num rows: 3 Data size: 273 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: c2 is not null (type: boolean)
+            Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: c2 is not null (type: boolean)
-              Statistics: Num rows: 3 Data size: 273 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: c1 (type: int), c2 (type: varchar(10))
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 3 Data size: 273 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                 HashTable Sink Operator
                   keys:
                     0 _col1 (type: varchar(20))
@@ -274,14 +289,15 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
-            Statistics: Num rows: 3 Data size: 273 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: c2 is not null (type: boolean)
+            Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: c2 is not null (type: boolean)
-              Statistics: Num rows: 3 Data size: 273 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: c1 (type: int), c2 (type: varchar(20))
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 3 Data size: 273 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -289,17 +305,19 @@ STAGE PLANS:
                     0 _col1 (type: varchar(20))
                     1 _col1 (type: varchar(20))
                   outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics: Num rows: 3 Data size: 300 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int)
+                    null sort order: z
                     sort order: +
-                    Statistics: Num rows: 3 Data size: 300 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: varchar(10)), _col2 (type: int), _col3 (type: varchar(20))
       Execution mode: vectorized
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -314,10 +332,10 @@ STAGE PLANS:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: varchar(10)), VALUE._col1 (type: int), VALUE._col2 (type: varchar(20))
           outputColumnNames: _col0, _col1, _col2, _col3
-          Statistics: Num rows: 3 Data size: 300 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 3 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 3 Data size: 300 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -344,8 +362,14 @@ POSTHOOK: Input: default@varchar_join1_vc2_orc
 3	 abc	3	 abc
 PREHOOK: query: explain vectorization select * from varchar_join1_vc1_orc a join varchar_join1_str_orc b on (a.c2 = b.c2) order by a.c1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@varchar_join1_str_orc
+PREHOOK: Input: default@varchar_join1_vc1_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization select * from varchar_join1_vc1_orc a join varchar_join1_str_orc b on (a.c2 = b.c2) order by a.c1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@varchar_join1_str_orc
+POSTHOOK: Input: default@varchar_join1_vc1_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -366,17 +390,18 @@ STAGE PLANS:
         $hdt$_1:b 
           TableScan
             alias: b
-            Statistics: Num rows: 3 Data size: 273 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: c2 is not null (type: boolean)
+            Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: c2 is not null (type: boolean)
-              Statistics: Num rows: 3 Data size: 273 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: c1 (type: int), c2 (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 3 Data size: 273 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                 HashTable Sink Operator
                   keys:
-                    0 UDFToString(_col1) (type: string)
+                    0 _col2 (type: string)
                     1 _col1 (type: string)
 
   Stage: Stage-2
@@ -384,32 +409,39 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            Statistics: Num rows: 3 Data size: 273 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: CAST( c2 AS STRING) is not null (type: boolean)
+            Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: c2 is not null (type: boolean)
-              Statistics: Num rows: 3 Data size: 273 Basic stats: COMPLETE Column stats: NONE
+              predicate: CAST( c2 AS STRING) is not null (type: boolean)
+              Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                expressions: c1 (type: int), c2 (type: varchar(10))
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 3 Data size: 273 Basic stats: COMPLETE Column stats: NONE
+                expressions: c1 (type: int), c2 (type: varchar(10)), CAST( c2 AS STRING) (type: string)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 3 Data size: 828 Basic stats: COMPLETE Column stats: COMPLETE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
                   keys:
-                    0 UDFToString(_col1) (type: string)
+                    0 _col2 (type: string)
                     1 _col1 (type: string)
-                  outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics: Num rows: 3 Data size: 300 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: int)
-                    sort order: +
-                    Statistics: Num rows: 3 Data size: 300 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col1 (type: varchar(10)), _col2 (type: int), _col3 (type: string)
+                  outputColumnNames: _col0, _col1, _col3, _col4
+                  Statistics: Num rows: 3 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col0 (type: int), _col1 (type: varchar(10)), _col3 (type: int), _col4 (type: string)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 3 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int)
+                      null sort order: z
+                      sort order: +
+                      Statistics: Num rows: 3 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col1 (type: varchar(10)), _col2 (type: int), _col3 (type: string)
       Execution mode: vectorized
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -424,10 +456,10 @@ STAGE PLANS:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: varchar(10)), VALUE._col1 (type: int), VALUE._col2 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3
-          Statistics: Num rows: 3 Data size: 300 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 3 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 3 Data size: 300 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

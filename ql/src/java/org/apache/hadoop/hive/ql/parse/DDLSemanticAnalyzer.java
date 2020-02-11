@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,151 +18,12 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-
-import org.antlr.runtime.tree.CommonTree;
-import org.antlr.runtime.tree.Tree;
-import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.JavaUtils;
-import org.apache.hadoop.hive.common.StatsSetupConst;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
-import org.apache.hadoop.hive.metastore.TableType;
-import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.Index;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
-import org.apache.hadoop.hive.metastore.api.Order;
-import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
-import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
-import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
-import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
-import org.apache.hadoop.hive.metastore.api.SkewedInfo;
-import org.apache.hadoop.hive.ql.Driver;
-import org.apache.hadoop.hive.ql.ErrorMsg;
-import org.apache.hadoop.hive.ql.QueryState;
-import org.apache.hadoop.hive.ql.exec.ArchiveUtils;
-import org.apache.hadoop.hive.ql.exec.ColumnStatsUpdateTask;
-import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
-import org.apache.hadoop.hive.ql.exec.Task;
-import org.apache.hadoop.hive.ql.exec.TaskFactory;
-import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.hooks.ReadEntity;
-import org.apache.hadoop.hive.ql.hooks.WriteEntity;
-import org.apache.hadoop.hive.ql.hooks.WriteEntity.WriteType;
-import org.apache.hadoop.hive.ql.index.HiveIndex;
-import org.apache.hadoop.hive.ql.index.HiveIndex.IndexType;
-import org.apache.hadoop.hive.ql.index.HiveIndexHandler;
-import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
-import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
-import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
-import org.apache.hadoop.hive.ql.lockmgr.LockException;
-import org.apache.hadoop.hive.ql.lockmgr.TxnManagerFactory;
-import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.HiveUtils;
-import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
-import org.apache.hadoop.hive.ql.metadata.Partition;
-import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.parse.authorization.AuthorizationParseUtils;
-import org.apache.hadoop.hive.ql.parse.authorization.HiveAuthorizationTaskFactory;
-import org.apache.hadoop.hive.ql.parse.authorization.HiveAuthorizationTaskFactoryImpl;
-import org.apache.hadoop.hive.ql.plan.AbortTxnsDesc;
-import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
-import org.apache.hadoop.hive.ql.plan.AddPartitionDesc.OnePartitionDesc;
-import org.apache.hadoop.hive.ql.plan.AlterDatabaseDesc;
-import org.apache.hadoop.hive.ql.plan.AlterIndexDesc;
-import org.apache.hadoop.hive.ql.plan.AlterIndexDesc.AlterIndexTypes;
-import org.apache.hadoop.hive.ql.plan.AlterTableAlterPartDesc;
-import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
-import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
-import org.apache.hadoop.hive.ql.plan.AlterTableExchangePartition;
-import org.apache.hadoop.hive.ql.plan.AlterTableSimpleDesc;
-import org.apache.hadoop.hive.ql.plan.CacheMetadataDesc;
-import org.apache.hadoop.hive.ql.plan.ColumnStatsDesc;
-import org.apache.hadoop.hive.ql.plan.ColumnStatsUpdateWork;
-import org.apache.hadoop.hive.ql.plan.CreateDatabaseDesc;
-import org.apache.hadoop.hive.ql.plan.CreateIndexDesc;
-import org.apache.hadoop.hive.ql.plan.DDLWork;
-import org.apache.hadoop.hive.ql.plan.DescDatabaseDesc;
-import org.apache.hadoop.hive.ql.plan.DescFunctionDesc;
-import org.apache.hadoop.hive.ql.plan.DescTableDesc;
-import org.apache.hadoop.hive.ql.plan.DropDatabaseDesc;
-import org.apache.hadoop.hive.ql.plan.DropIndexDesc;
-import org.apache.hadoop.hive.ql.plan.DropTableDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.plan.HiveOperation;
-import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
-import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
-import org.apache.hadoop.hive.ql.plan.LockDatabaseDesc;
-import org.apache.hadoop.hive.ql.plan.LockTableDesc;
-import org.apache.hadoop.hive.ql.plan.MoveWork;
-import org.apache.hadoop.hive.ql.plan.MsckDesc;
-import org.apache.hadoop.hive.ql.plan.PlanUtils;
-import org.apache.hadoop.hive.ql.plan.PrincipalDesc;
-import org.apache.hadoop.hive.ql.plan.RenamePartitionDesc;
-import org.apache.hadoop.hive.ql.plan.RoleDDLDesc;
-import org.apache.hadoop.hive.ql.plan.ShowColumnsDesc;
-import org.apache.hadoop.hive.ql.plan.ShowCompactionsDesc;
-import org.apache.hadoop.hive.ql.plan.ShowConfDesc;
-import org.apache.hadoop.hive.ql.plan.ShowCreateDatabaseDesc;
-import org.apache.hadoop.hive.ql.plan.ShowCreateTableDesc;
-import org.apache.hadoop.hive.ql.plan.ShowDatabasesDesc;
-import org.apache.hadoop.hive.ql.plan.ShowFunctionsDesc;
-import org.apache.hadoop.hive.ql.plan.ShowGrantDesc;
-import org.apache.hadoop.hive.ql.plan.ShowIndexesDesc;
-import org.apache.hadoop.hive.ql.plan.ShowLocksDesc;
-import org.apache.hadoop.hive.ql.plan.ShowPartitionsDesc;
-import org.apache.hadoop.hive.ql.plan.ShowTableStatusDesc;
-import org.apache.hadoop.hive.ql.plan.ShowTablesDesc;
-import org.apache.hadoop.hive.ql.plan.ShowTblPropertiesDesc;
-import org.apache.hadoop.hive.ql.plan.ShowTxnsDesc;
-import org.apache.hadoop.hive.ql.plan.StatsWork;
-import org.apache.hadoop.hive.ql.plan.SwitchDatabaseDesc;
-import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.ql.plan.TruncateTableDesc;
-import org.apache.hadoop.hive.ql.plan.UnlockDatabaseDesc;
-import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
-import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
-import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
-import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TimestampLocalTZTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
-import org.apache.hadoop.mapred.InputFormat;
-import org.apache.hadoop.util.StringUtils;
-
 import java.io.FileNotFoundException;
-import java.io.Serializable;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -170,8 +31,105 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_DATABASELOCATION;
-import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_DATABASEPROPERTIES;
+import org.antlr.runtime.tree.CommonTree;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
+import org.apache.hadoop.hive.ql.ddl.DDLWork;
+import org.apache.hadoop.hive.ql.ddl.privilege.PrincipalDesc;
+import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
+import org.apache.hadoop.hive.ql.ddl.table.info.DescTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.info.ShowTablePropertiesDesc;
+import org.apache.hadoop.hive.ql.ddl.table.info.ShowTableStatusDesc;
+import org.apache.hadoop.hive.ql.ddl.table.info.ShowTablesDesc;
+import org.apache.hadoop.hive.ql.ddl.table.lock.LockTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.lock.ShowLocksDesc;
+import org.apache.hadoop.hive.ql.ddl.table.lock.UnlockTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.misc.AlterTableRenameDesc;
+import org.apache.hadoop.hive.ql.ddl.table.misc.AlterTableSetOwnerDesc;
+import org.apache.hadoop.hive.ql.ddl.table.misc.AlterTableSetPropertiesDesc;
+import org.apache.hadoop.hive.ql.ddl.table.misc.AlterTableTouchDesc;
+import org.apache.hadoop.hive.ql.ddl.table.misc.AlterTableUnsetPropertiesDesc;
+import org.apache.hadoop.hive.ql.ddl.table.misc.TruncateTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
+import org.apache.hadoop.hive.ql.ddl.table.storage.AlterTableArchiveDesc;
+import org.apache.hadoop.hive.ql.ddl.table.storage.AlterTableClusteredByDesc;
+import org.apache.hadoop.hive.ql.ddl.table.storage.AlterTableCompactDesc;
+import org.apache.hadoop.hive.ql.ddl.table.storage.AlterTableIntoBucketsDesc;
+import org.apache.hadoop.hive.ql.ddl.table.storage.AlterTableNotClusteredDesc;
+import org.apache.hadoop.hive.ql.ddl.table.storage.AlterTableNotSkewedDesc;
+import org.apache.hadoop.hive.ql.ddl.table.storage.AlterTableNotSortedDesc;
+import org.apache.hadoop.hive.ql.ddl.table.storage.AlterTableConcatenateDesc;
+import org.apache.hadoop.hive.ql.ddl.table.storage.AlterTableSetFileFormatDesc;
+import org.apache.hadoop.hive.ql.ddl.table.storage.AlterTableSetLocationDesc;
+import org.apache.hadoop.hive.ql.ddl.table.storage.AlterTableSetSerdeDesc;
+import org.apache.hadoop.hive.ql.ddl.table.storage.AlterTableSetSerdePropsDesc;
+import org.apache.hadoop.hive.ql.ddl.table.storage.AlterTableSetSkewedLocationDesc;
+import org.apache.hadoop.hive.ql.ddl.table.storage.AlterTableSkewedByDesc;
+import org.apache.hadoop.hive.ql.ddl.table.storage.AlterTableUnarchiveDesc;
+import org.apache.hadoop.hive.ql.exec.ArchiveUtils;
+import org.apache.hadoop.hive.ql.exec.ColumnStatsUpdateTask;
+import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity.WriteType;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
+import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
+import org.apache.hadoop.hive.ql.lib.Node;
+import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
+import org.apache.hadoop.hive.ql.lockmgr.LockException;
+import org.apache.hadoop.hive.ql.lockmgr.TxnManagerFactory;
+import org.apache.hadoop.hive.ql.metadata.DefaultConstraint;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
+import org.apache.hadoop.hive.ql.metadata.NotNullConstraint;
+import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.authorization.AuthorizationParseUtils;
+import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
+import org.apache.hadoop.hive.ql.parse.type.TypeCheckCtx;
+import org.apache.hadoop.hive.ql.parse.type.TypeCheckProcFactory;
+import org.apache.hadoop.hive.ql.plan.BasicStatsWork;
+import org.apache.hadoop.hive.ql.plan.ColumnStatsUpdateWork;
+import org.apache.hadoop.hive.ql.plan.HiveOperation;
+import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
+import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
+import org.apache.hadoop.hive.ql.plan.MoveWork;
+import org.apache.hadoop.hive.ql.plan.PlanUtils;
+import org.apache.hadoop.hive.ql.plan.StatsWork;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.plan.ValidationUtility;
+import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TimestampLocalTZTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
+import org.apache.hadoop.mapred.InputFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * DDLSemanticAnalyzer.
@@ -181,8 +139,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   private static final Logger LOG = LoggerFactory.getLogger(DDLSemanticAnalyzer.class);
   private static final Map<Integer, String> TokenToTypeName = new HashMap<Integer, String>();
 
-  private final Set<String> reservedPartitionValues;
-  private final HiveAuthorizationTaskFactory hiveAuthorizationTaskFactory;
+  // Equivalent to acidSinks, but for DDL operations that change data.
+  private DDLDescWithWriteId ddlDescWithWriteId;
 
   static {
     TokenToTypeName.put(HiveParser.TOK_BOOLEAN, serdeConstants.BOOLEAN_TYPE_NAME);
@@ -224,14 +182,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       typeName = varcharTypeInfo.getQualifiedName();
       break;
     case HiveParser.TOK_TIMESTAMPLOCALTZ:
-      HiveConf conf;
-      try {
-        conf = Hive.get().getConf();
-      } catch (HiveException e) {
-        throw new SemanticException(e);
-      }
-      TimestampLocalTZTypeInfo timestampLocalTZTypeInfo = TypeInfoFactory.getTimestampTZTypeInfo(
-          conf.getLocalTimeZone());
+      TimestampLocalTZTypeInfo timestampLocalTZTypeInfo =
+          TypeInfoFactory.getTimestampTZTypeInfo(null);
       typeName = timestampLocalTZTypeInfo.getQualifiedName();
       break;
     case HiveParser.TOK_DECIMAL:
@@ -250,15 +202,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   public DDLSemanticAnalyzer(QueryState queryState, Hive db) throws SemanticException {
     super(queryState, db);
-    reservedPartitionValues = new HashSet<String>();
-    // Partition can't have this name
-    reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.DEFAULTPARTITIONNAME));
-    reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.DEFAULT_ZOOKEEPER_PARTITION_NAME));
-    // Partition value can't end in this suffix
-    reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.METASTORE_INT_ORIGINAL));
-    reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.METASTORE_INT_ARCHIVED));
-    reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.METASTORE_INT_EXTRACTED));
-    hiveAuthorizationTaskFactory = createAuthorizationTaskFactory(conf, db);
   }
 
   @Override
@@ -268,9 +211,11 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     switch (ast.getType()) {
     case HiveParser.TOK_ALTERTABLE: {
       ast = (ASTNode) input.getChild(1);
-      String[] qualified = getQualifiedTableName((ASTNode) input.getChild(0));
-      String tableName = getDotName(qualified);
-      HashMap<String, String> partSpec = null;
+      final TableName tName =
+          getQualifiedTableName((ASTNode) input.getChild(0), MetaStoreUtils.getDefaultCatalog(conf));
+      // TODO CAT - for now always use the default catalog.  Eventually will want to see if
+      // the user specified a catalog
+      Map<String, String> partSpec = null;
       ASTNode partSpecNode = (ASTNode)input.getChild(2);
       if (partSpecNode != null) {
         //  We can use alter table partition rename to convert/normalize the legacy partition
@@ -279,96 +224,69 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         if (ast.getType() == HiveParser.TOK_ALTERTABLE_RENAMEPART) {
           partSpec = getPartSpec(partSpecNode);
         } else {
-          partSpec = getValidatedPartSpec(getTable(tableName), partSpecNode, conf, false);
+          partSpec = getValidatedPartSpec(getTable(tName), partSpecNode, conf, false);
         }
       }
 
       if (ast.getType() == HiveParser.TOK_ALTERTABLE_RENAME) {
-        analyzeAlterTableRename(qualified, ast, false);
+        analyzeAlterTableRename(tName, ast, false);
       } else if (ast.getType() == HiveParser.TOK_ALTERTABLE_TOUCH) {
-        analyzeAlterTableTouch(qualified, ast);
+        analyzeAlterTableTouch(tName, ast);
       } else if (ast.getType() == HiveParser.TOK_ALTERTABLE_ARCHIVE) {
-        analyzeAlterTableArchive(qualified, ast, false);
+        analyzeAlterTableArchive(tName, ast, false);
       } else if (ast.getType() == HiveParser.TOK_ALTERTABLE_UNARCHIVE) {
-        analyzeAlterTableArchive(qualified, ast, true);
-      } else if (ast.getType() == HiveParser.TOK_ALTERTABLE_ADDCOLS) {
-        analyzeAlterTableModifyCols(qualified, ast, partSpec, AlterTableTypes.ADDCOLS);
-      } else if (ast.getType() == HiveParser.TOK_ALTERTABLE_REPLACECOLS) {
-        analyzeAlterTableModifyCols(qualified, ast, partSpec, AlterTableTypes.REPLACECOLS);
-      } else if (ast.getType() == HiveParser.TOK_ALTERTABLE_RENAMECOL) {
-        analyzeAlterTableRenameCol(qualified, ast, partSpec);
-      } else if (ast.getType() == HiveParser.TOK_ALTERTABLE_ADDPARTS) {
-        analyzeAlterTableAddParts(qualified, ast, false);
-      } else if (ast.getType() == HiveParser.TOK_ALTERTABLE_DROPPARTS) {
-        analyzeAlterTableDropParts(qualified, ast, false);
-      } else if (ast.getType() == HiveParser.TOK_ALTERTABLE_PARTCOLTYPE) {
-        analyzeAlterTablePartColType(qualified, ast);
+        analyzeAlterTableArchive(tName, ast, true);
       } else if (ast.getType() == HiveParser.TOK_ALTERTABLE_PROPERTIES) {
-        analyzeAlterTableProps(qualified, null, ast, false, false);
+        analyzeAlterTableProps(tName, null, ast, false, false);
       } else if (ast.getType() == HiveParser.TOK_ALTERTABLE_DROPPROPERTIES) {
-        analyzeAlterTableProps(qualified, null, ast, false, true);
-      } else if (ast.getType() == HiveParser.TOK_ALTERTABLE_UPDATESTATS) {
-        analyzeAlterTableProps(qualified, partSpec, ast, false, false);
+        analyzeAlterTableProps(tName, null, ast, false, true);
+      } else if (ast.getType() == HiveParser.TOK_ALTERTABLE_UPDATESTATS ||
+          ast.getType() == HiveParser.TOK_ALTERPARTITION_UPDATESTATS) {
+        analyzeAlterTableProps(tName, partSpec, ast, false, false);
       } else if (ast.getType() == HiveParser.TOK_ALTERTABLE_SKEWED) {
-        analyzeAltertableSkewedby(qualified, ast);
-      } else if (ast.getType() == HiveParser.TOK_ALTERTABLE_EXCHANGEPARTITION) {
-        analyzeExchangePartition(qualified, ast);
-      } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_FILEFORMAT) {
-        analyzeAlterTableFileFormat(ast, tableName, partSpec);
-      } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_LOCATION) {
-        analyzeAlterTableLocation(ast, tableName, partSpec);
-      } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_MERGEFILES) {
-        analyzeAlterTablePartMergeFiles(ast, tableName, partSpec);
-      } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_SERIALIZER) {
-        analyzeAlterTableSerde(ast, tableName, partSpec);
-      } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_SERDEPROPERTIES) {
-        analyzeAlterTableSerdeProps(ast, tableName, partSpec);
-      } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_RENAMEPART) {
-        analyzeAlterTableRenamePart(ast, tableName, partSpec);
+        analyzeAlterTableSkewedby(tName, ast);
+      } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_FILEFORMAT ||
+          ast.getToken().getType() == HiveParser.TOK_ALTERPARTITION_FILEFORMAT) {
+        analyzeAlterTableFileFormat(ast, tName, partSpec);
+      } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_LOCATION ||
+          ast.getToken().getType() == HiveParser.TOK_ALTERPARTITION_LOCATION) {
+        analyzeAlterTableLocation(ast, tName, partSpec);
+      } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_MERGEFILES ||
+          ast.getToken().getType() == HiveParser.TOK_ALTERPARTITION_MERGEFILES) {
+        analyzeAlterTablePartMergeFiles(ast, tName, partSpec);
+      } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_SERIALIZER ||
+          ast.getToken().getType() == HiveParser.TOK_ALTERPARTITION_SERIALIZER) {
+        analyzeAlterTableSerde(ast, tName, partSpec);
+      } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_SERDEPROPERTIES ||
+          ast.getToken().getType() == HiveParser.TOK_ALTERPARTITION_SERDEPROPERTIES) {
+        analyzeAlterTableSerdeProps(ast, tName, partSpec);
       } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_SKEWED_LOCATION) {
-        analyzeAlterTableSkewedLocation(ast, tableName, partSpec);
-      } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_BUCKETS) {
-        analyzeAlterTableBucketNum(ast, tableName, partSpec);
+        analyzeAlterTableSkewedLocation(ast, tName, partSpec);
+      } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_BUCKETS ||
+          ast.getToken().getType() == HiveParser.TOK_ALTERPARTITION_BUCKETS) {
+        analyzeAlterTableBucketNum(ast, tName, partSpec);
       } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_CLUSTER_SORT) {
-        analyzeAlterTableClusterSort(ast, tableName, partSpec);
+        analyzeAlterTableClusterSort(ast, tName, partSpec);
       } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_COMPACT) {
-        analyzeAlterTableCompact(ast, tableName, partSpec);
-      } else if(ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_UPDATECOLSTATS){
-        analyzeAlterTableUpdateStats(ast, tableName, partSpec);
-      } else if(ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_DROPCONSTRAINT) {
-        analyzeAlterTableDropConstraint(ast, tableName);
-      } else if(ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_ADDCONSTRAINT) {
-          analyzeAlterTableAddConstraint(ast, tableName);
+        analyzeAlterTableCompact(ast, tName, partSpec);
+      } else if(ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_UPDATECOLSTATS ||
+          ast.getToken().getType() == HiveParser.TOK_ALTERPARTITION_UPDATECOLSTATS){
+        analyzeAlterTableUpdateStats(ast, tName, partSpec);
+      } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_OWNER) {
+        analyzeAlterTableOwner(ast, tName);
       }
       break;
     }
-    case HiveParser.TOK_DROPTABLE:
-      analyzeDropTable(ast, null);
-      break;
     case HiveParser.TOK_TRUNCATETABLE:
       analyzeTruncateTable(ast);
-      break;
-    case HiveParser.TOK_CREATEINDEX:
-      analyzeCreateIndex(ast);
-      break;
-    case HiveParser.TOK_DROPINDEX:
-      analyzeDropIndex(ast);
       break;
     case HiveParser.TOK_DESCTABLE:
       ctx.setResFile(ctx.getLocalTmpPath());
       analyzeDescribeTable(ast);
       break;
-    case HiveParser.TOK_SHOWDATABASES:
-      ctx.setResFile(ctx.getLocalTmpPath());
-      analyzeShowDatabases(ast);
-      break;
     case HiveParser.TOK_SHOWTABLES:
       ctx.setResFile(ctx.getLocalTmpPath());
       analyzeShowTables(ast);
-      break;
-    case HiveParser.TOK_SHOWCOLUMNS:
-      ctx.setResFile(ctx.getLocalTmpPath());
-      analyzeShowColumns(ast);
       break;
     case HiveParser.TOK_SHOW_TABLESTATUS:
       ctx.setResFile(ctx.getLocalTmpPath());
@@ -378,10 +296,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       ctx.setResFile(ctx.getLocalTmpPath());
       analyzeShowTableProperties(ast);
       break;
-    case HiveParser.TOK_SHOWFUNCTIONS:
-      ctx.setResFile(ctx.getLocalTmpPath());
-      analyzeShowFunctions(ast);
-      break;
     case HiveParser.TOK_SHOWLOCKS:
       ctx.setResFile(ctx.getLocalTmpPath());
       analyzeShowLocks(ast);
@@ -390,151 +304,32 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       ctx.setResFile(ctx.getLocalTmpPath());
       analyzeShowDbLocks(ast);
       break;
-    case HiveParser.TOK_SHOW_COMPACTIONS:
-      ctx.setResFile(ctx.getLocalTmpPath());
-      analyzeShowCompactions(ast);
-      break;
-    case HiveParser.TOK_SHOW_TRANSACTIONS:
-      ctx.setResFile(ctx.getLocalTmpPath());
-      analyzeShowTxns(ast);
-      break;
-    case HiveParser.TOK_ABORT_TRANSACTIONS:
-      analyzeAbortTxns(ast);
-      break;
-    case HiveParser.TOK_SHOWCONF:
-      ctx.setResFile(ctx.getLocalTmpPath());
-      analyzeShowConf(ast);
-      break;
     case HiveParser.TOK_SHOWVIEWS:
       ctx.setResFile(ctx.getLocalTmpPath());
       analyzeShowViews(ast);
       break;
-    case HiveParser.TOK_DESCFUNCTION:
+    case HiveParser.TOK_SHOWMATERIALIZEDVIEWS:
       ctx.setResFile(ctx.getLocalTmpPath());
-      analyzeDescFunction(ast);
-      break;
-    case HiveParser.TOK_DESCDATABASE:
-      ctx.setResFile(ctx.getLocalTmpPath());
-      analyzeDescDatabase(ast);
-      break;
-    case HiveParser.TOK_MSCK:
-      ctx.setResFile(ctx.getLocalTmpPath());
-      analyzeMetastoreCheck(ast);
-      break;
-    case HiveParser.TOK_DROPVIEW:
-      analyzeDropTable(ast, TableType.VIRTUAL_VIEW);
-      break;
-    case HiveParser.TOK_DROP_MATERIALIZED_VIEW:
-      analyzeDropTable(ast, TableType.MATERIALIZED_VIEW);
+      analyzeShowMaterializedViews(ast);
       break;
     case HiveParser.TOK_ALTERVIEW: {
-      String[] qualified = getQualifiedTableName((ASTNode) ast.getChild(0));
+      final TableName tName = getQualifiedTableName((ASTNode) ast.getChild(0));
       ast = (ASTNode) ast.getChild(1);
       if (ast.getType() == HiveParser.TOK_ALTERVIEW_PROPERTIES) {
-        analyzeAlterTableProps(qualified, null, ast, true, false);
+        analyzeAlterTableProps(tName, null, ast, true, false);
       } else if (ast.getType() == HiveParser.TOK_ALTERVIEW_DROPPROPERTIES) {
-        analyzeAlterTableProps(qualified, null, ast, true, true);
-      } else if (ast.getType() == HiveParser.TOK_ALTERVIEW_ADDPARTS) {
-        analyzeAlterTableAddParts(qualified, ast, true);
-      } else if (ast.getType() == HiveParser.TOK_ALTERVIEW_DROPPARTS) {
-        analyzeAlterTableDropParts(qualified, ast, true);
+        analyzeAlterTableProps(tName, null, ast, true, true);
       } else if (ast.getType() == HiveParser.TOK_ALTERVIEW_RENAME) {
-        analyzeAlterTableRename(qualified, ast, true);
+        analyzeAlterTableRename(tName, ast, true);
       }
       break;
     }
-    case HiveParser.TOK_ALTERINDEX_REBUILD:
-      analyzeAlterIndexRebuild(ast);
-      break;
-    case HiveParser.TOK_ALTERINDEX_PROPERTIES:
-      analyzeAlterIndexProps(ast);
-      break;
-    case HiveParser.TOK_SHOWPARTITIONS:
-      ctx.setResFile(ctx.getLocalTmpPath());
-      analyzeShowPartitions(ast);
-      break;
-    case HiveParser.TOK_SHOW_CREATEDATABASE:
-      ctx.setResFile(ctx.getLocalTmpPath());
-      analyzeShowCreateDatabase(ast);
-      break;
-    case HiveParser.TOK_SHOW_CREATETABLE:
-      ctx.setResFile(ctx.getLocalTmpPath());
-      analyzeShowCreateTable(ast);
-      break;
-    case HiveParser.TOK_SHOWINDEXES:
-      ctx.setResFile(ctx.getLocalTmpPath());
-      analyzeShowIndexes(ast);
-      break;
     case HiveParser.TOK_LOCKTABLE:
       analyzeLockTable(ast);
       break;
     case HiveParser.TOK_UNLOCKTABLE:
       analyzeUnlockTable(ast);
       break;
-    case HiveParser.TOK_LOCKDB:
-      analyzeLockDatabase(ast);
-      break;
-    case HiveParser.TOK_UNLOCKDB:
-      analyzeUnlockDatabase(ast);
-      break;
-    case HiveParser.TOK_CREATEDATABASE:
-      analyzeCreateDatabase(ast);
-      break;
-    case HiveParser.TOK_DROPDATABASE:
-      analyzeDropDatabase(ast);
-      break;
-    case HiveParser.TOK_SWITCHDATABASE:
-      analyzeSwitchDatabase(ast);
-      break;
-    case HiveParser.TOK_ALTERDATABASE_PROPERTIES:
-      analyzeAlterDatabaseProperties(ast);
-      break;
-    case HiveParser.TOK_ALTERDATABASE_OWNER:
-      analyzeAlterDatabaseOwner(ast);
-      break;
-    case HiveParser.TOK_ALTERDATABASE_LOCATION:
-      analyzeAlterDatabaseLocation(ast);
-      break;
-    case HiveParser.TOK_CREATEROLE:
-      analyzeCreateRole(ast);
-      break;
-    case HiveParser.TOK_DROPROLE:
-      analyzeDropRole(ast);
-      break;
-    case HiveParser.TOK_SHOW_ROLE_GRANT:
-      ctx.setResFile(ctx.getLocalTmpPath());
-      analyzeShowRoleGrant(ast);
-      break;
-    case HiveParser.TOK_SHOW_ROLE_PRINCIPALS:
-      ctx.setResFile(ctx.getLocalTmpPath());
-      analyzeShowRolePrincipals(ast);
-      break;
-    case HiveParser.TOK_SHOW_ROLES:
-      ctx.setResFile(ctx.getLocalTmpPath());
-      analyzeShowRoles(ast);
-      break;
-    case HiveParser.TOK_GRANT_ROLE:
-      analyzeGrantRevokeRole(true, ast);
-      break;
-    case HiveParser.TOK_REVOKE_ROLE:
-      analyzeGrantRevokeRole(false, ast);
-      break;
-    case HiveParser.TOK_GRANT:
-      analyzeGrant(ast);
-      break;
-    case HiveParser.TOK_SHOW_GRANT:
-      ctx.setResFile(ctx.getLocalTmpPath());
-      analyzeShowGrant(ast);
-      break;
-    case HiveParser.TOK_REVOKE:
-      analyzeRevoke(ast);
-      break;
-   case HiveParser.TOK_SHOW_SET_ROLE:
-     analyzeSetShowRole(ast);
-     break;
-   case HiveParser.TOK_CACHE_METADATA:
-     analyzeCacheMetadata(ast);
-     break;
    default:
       throw new SemanticException("Unsupported command: " + ast);
     }
@@ -543,25 +338,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private void analyzeCacheMetadata(ASTNode ast) throws SemanticException {
-    Table tbl = AnalyzeCommandUtils.getTable(ast, this);
-    Map<String,String> partSpec = null;
-    CacheMetadataDesc desc;
-    // In 2 cases out of 3, we could pass the path and type directly to metastore...
-    if (AnalyzeCommandUtils.isPartitionLevelStats(ast)) {
-      partSpec = AnalyzeCommandUtils.getPartKeyValuePairsFromAST(tbl, ast, conf);
-      Partition part = getPartition(tbl, partSpec, true);
-      desc = new CacheMetadataDesc(tbl.getDbName(), tbl.getTableName(), part.getName());
-      inputs.add(new ReadEntity(part));
-    } else {
-      // Should we get all partitions for a partitioned table?
-      desc = new CacheMetadataDesc(tbl.getDbName(), tbl.getTableName(), tbl.isPartitioned());
-      inputs.add(new ReadEntity(tbl));
-    }
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc), conf));
-  }
-
-  private void analyzeAlterTableUpdateStats(ASTNode ast, String tblName, Map<String, String> partSpec)
+  private void analyzeAlterTableUpdateStats(ASTNode ast, TableName tblName, Map<String, String> partSpec)
       throws SemanticException {
     String colName = getUnescapedName((ASTNode) ast.getChild(0));
     Map<String, String> mapProp = getProps((ASTNode) (ast.getChild(1)).getChild(0));
@@ -586,360 +363,55 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    if (colType == null)
+    if (colType == null) {
       throw new SemanticException("column type not found");
+    }
 
-    ColumnStatsDesc cStatsDesc = new ColumnStatsDesc(tbl.getDbName() + "." + tbl.getTableName(),
-        Arrays.asList(colName), Arrays.asList(colType), partSpec == null);
+    ColumnStatsUpdateWork columnStatsUpdateWork =
+        new ColumnStatsUpdateWork(partName, mapProp, tbl.getDbName(), tbl.getTableName(), colName, colType);
     ColumnStatsUpdateTask cStatsUpdateTask = (ColumnStatsUpdateTask) TaskFactory
-        .get(new ColumnStatsUpdateWork(cStatsDesc, partName, mapProp), conf);
+        .get(columnStatsUpdateWork);
+    // TODO: doesn't look like this path is actually ever exercised. Maybe this needs to be removed.
+    addInputsOutputsAlterTable(tblName, partSpec, null, AlterTableType.UPDATESTATS, false);
+    if (AcidUtils.isTransactionalTable(tbl)) {
+      setAcidDdlDesc(columnStatsUpdateWork);
+    }
     rootTasks.add(cStatsUpdateTask);
-  }
-
-  private void analyzeSetShowRole(ASTNode ast) throws SemanticException {
-    switch (ast.getChildCount()) {
-      case 0:
-        ctx.setResFile(ctx.getLocalTmpPath());
-        rootTasks.add(hiveAuthorizationTaskFactory.createShowCurrentRoleTask(
-        getInputs(), getOutputs(), ctx.getResFile()));
-        setFetchTask(createFetchTask(RoleDDLDesc.getRoleNameSchema()));
-        break;
-      case 1:
-        rootTasks.add(hiveAuthorizationTaskFactory.createSetRoleTask(
-        BaseSemanticAnalyzer.unescapeIdentifier(ast.getChild(0).getText()),
-        getInputs(), getOutputs()));
-        break;
-      default:
-        throw new SemanticException("Internal error. ASTNode expected to have 0 or 1 child. "
-        + ast.dump());
-    }
-  }
-
-  private void analyzeGrantRevokeRole(boolean grant, ASTNode ast) throws SemanticException {
-    Task<? extends Serializable> task;
-    if(grant) {
-      task = hiveAuthorizationTaskFactory.createGrantRoleTask(ast, getInputs(), getOutputs());
-    } else {
-      task = hiveAuthorizationTaskFactory.createRevokeRoleTask(ast, getInputs(), getOutputs());
-    }
-    if(task != null) {
-      rootTasks.add(task);
-    }
-  }
-
-  private void analyzeShowGrant(ASTNode ast) throws SemanticException {
-    Task<? extends Serializable> task = hiveAuthorizationTaskFactory.
-        createShowGrantTask(ast, ctx.getResFile(), getInputs(), getOutputs());
-    if(task != null) {
-      rootTasks.add(task);
-      setFetchTask(createFetchTask(ShowGrantDesc.getSchema()));
-    }
-  }
-
-  private void analyzeGrant(ASTNode ast) throws SemanticException {
-    Task<? extends Serializable> task = hiveAuthorizationTaskFactory.
-        createGrantTask(ast, getInputs(), getOutputs());
-    if(task != null) {
-      rootTasks.add(task);
-    }
-  }
-
-  private void analyzeRevoke(ASTNode ast) throws SemanticException {
-    Task<? extends Serializable> task = hiveAuthorizationTaskFactory.
-        createRevokeTask(ast, getInputs(), getOutputs());
-    if(task != null) {
-      rootTasks.add(task);
-    }
-  }
-
-  private void analyzeCreateRole(ASTNode ast) throws SemanticException {
-    Task<? extends Serializable> task = hiveAuthorizationTaskFactory.
-        createCreateRoleTask(ast, getInputs(), getOutputs());
-    if(task != null) {
-      rootTasks.add(task);
-    }
-  }
-
-  private void analyzeDropRole(ASTNode ast) throws SemanticException {
-    Task<? extends Serializable> task = hiveAuthorizationTaskFactory.
-        createDropRoleTask(ast, getInputs(), getOutputs());
-    if(task != null) {
-      rootTasks.add(task);
-    }
-  }
-
-  private void analyzeShowRoleGrant(ASTNode ast) throws SemanticException {
-    Task<? extends Serializable> task = hiveAuthorizationTaskFactory.
-        createShowRoleGrantTask(ast, ctx.getResFile(), getInputs(), getOutputs());
-    if(task != null) {
-      rootTasks.add(task);
-      setFetchTask(createFetchTask(RoleDDLDesc.getRoleShowGrantSchema()));
-    }
-  }
-
-  private void analyzeShowRolePrincipals(ASTNode ast) throws SemanticException {
-    Task<DDLWork> roleDDLTask = (Task<DDLWork>) hiveAuthorizationTaskFactory
-        .createShowRolePrincipalsTask(ast, ctx.getResFile(), getInputs(), getOutputs());
-
-    if (roleDDLTask != null) {
-      rootTasks.add(roleDDLTask);
-      setFetchTask(createFetchTask(RoleDDLDesc.getShowRolePrincipalsSchema()));
-    }
-  }
-
-  private void analyzeShowRoles(ASTNode ast) throws SemanticException {
-    Task<DDLWork> roleDDLTask = (Task<DDLWork>) hiveAuthorizationTaskFactory
-        .createShowRolesTask(ast, ctx.getResFile(), getInputs(), getOutputs());
-
-    if (roleDDLTask != null) {
-      rootTasks.add(roleDDLTask);
-      setFetchTask(createFetchTask(RoleDDLDesc.getRoleNameSchema()));
-    }
-  }
-
-  private void analyzeAlterDatabaseProperties(ASTNode ast) throws SemanticException {
-
-    String dbName = unescapeIdentifier(ast.getChild(0).getText());
-    Map<String, String> dbProps = null;
-
-    for (int i = 1; i < ast.getChildCount(); i++) {
-      ASTNode childNode = (ASTNode) ast.getChild(i);
-      switch (childNode.getToken().getType()) {
-      case HiveParser.TOK_DATABASEPROPERTIES:
-        dbProps = DDLSemanticAnalyzer.getProps((ASTNode) childNode.getChild(0));
-        break;
-      default:
-        throw new SemanticException("Unrecognized token in CREATE DATABASE statement");
-      }
-    }
-    AlterDatabaseDesc alterDesc = new AlterDatabaseDesc(dbName, dbProps, null);
-    addAlterDbDesc(alterDesc);
-  }
-
-  private void addAlterDbDesc(AlterDatabaseDesc alterDesc) throws SemanticException {
-    Database database = getDatabase(alterDesc.getDatabaseName());
-    outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_NO_LOCK));
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterDesc), conf));
-  }
-
-  private void analyzeAlterDatabaseOwner(ASTNode ast) throws SemanticException {
-    String dbName = getUnescapedName((ASTNode) ast.getChild(0));
-    PrincipalDesc principalDesc = AuthorizationParseUtils.getPrincipalDesc((ASTNode) ast
-        .getChild(1));
-
-    // The syntax should not allow these fields to be null, but lets verify
-    String nullCmdMsg = "can't be null in alter database set owner command";
-    if(principalDesc.getName() == null){
-      throw new SemanticException("Owner name " + nullCmdMsg);
-    }
-    if(principalDesc.getType() == null){
-      throw new SemanticException("Owner type " + nullCmdMsg);
-    }
-
-    AlterDatabaseDesc alterDesc = new AlterDatabaseDesc(dbName, principalDesc);
-    addAlterDbDesc(alterDesc);
-  }
-
-  private void analyzeAlterDatabaseLocation(ASTNode ast) throws SemanticException {
-    String dbName = getUnescapedName((ASTNode) ast.getChild(0));
-    String newLocation = unescapeSQLString(ast.getChild(1).getText());
-    addLocationToOutputs(newLocation);
-    AlterDatabaseDesc alterDesc = new AlterDatabaseDesc(dbName, newLocation);
-    addAlterDbDesc(alterDesc);
-  }
-
-  private void analyzeExchangePartition(String[] qualified, ASTNode ast) throws SemanticException {
-    Table destTable = getTable(qualified);
-    Table sourceTable = getTable(getUnescapedName((ASTNode)ast.getChild(1)));
-
-    // Get the partition specs
-    Map<String, String> partSpecs = getValidatedPartSpec(sourceTable, (ASTNode)ast.getChild(0), conf, false);
-    validatePartitionValues(partSpecs);
-    boolean sameColumns = MetaStoreUtils.compareFieldColumns(
-        destTable.getAllCols(), sourceTable.getAllCols());
-    boolean samePartitions = MetaStoreUtils.compareFieldColumns(
-        destTable.getPartitionKeys(), sourceTable.getPartitionKeys());
-    if (!sameColumns || !samePartitions) {
-      throw new SemanticException(ErrorMsg.TABLES_INCOMPATIBLE_SCHEMAS.getMsg());
-    }
-    // check if source partition exists
-    getPartitions(sourceTable, partSpecs, true);
-
-    // Verify that the partitions specified are continuous
-    // If a subpartition value is specified without specifying a partition's value
-    // then we throw an exception
-    int counter = isPartitionValueContinuous(sourceTable.getPartitionKeys(), partSpecs);
-    if (counter < 0) {
-      throw new SemanticException(
-          ErrorMsg.PARTITION_VALUE_NOT_CONTINUOUS.getMsg(partSpecs.toString()));
-    }
-    List<Partition> destPartitions = null;
-    try {
-      destPartitions = getPartitions(destTable, partSpecs, true);
-    } catch (SemanticException ex) {
-      // We should expect a semantic exception being throw as this partition
-      // should not be present.
-    }
-    if (destPartitions != null) {
-      // If any destination partition is present then throw a Semantic Exception.
-      throw new SemanticException(ErrorMsg.PARTITION_EXISTS.getMsg(destPartitions.toString()));
-    }
-    AlterTableExchangePartition alterTableExchangePartition =
-      new AlterTableExchangePartition(sourceTable, destTable, partSpecs);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-      alterTableExchangePartition), conf));
-
-    inputs.add(new ReadEntity(sourceTable));
-    outputs.add(new WriteEntity(destTable, WriteType.DDL_SHARED));
-  }
-
-  /**
-   * @param partitionKeys the list of partition keys of the table
-   * @param partSpecs the partition specs given by the user
-   * @return >=0 if no subpartition value is specified without a partition's
-   *         value being specified else it returns -1
-   */
-  private int isPartitionValueContinuous(List<FieldSchema> partitionKeys,
-      Map<String, String> partSpecs) {
-    int counter = 0;
-    for (FieldSchema partitionKey : partitionKeys) {
-      if (partSpecs.containsKey(partitionKey.getName())) {
-        counter++;
-        continue;
-      }
-      return partSpecs.size() == counter ? counter : -1;
-    }
-    return counter;
-  }
-
-  private void analyzeCreateDatabase(ASTNode ast) throws SemanticException {
-    String dbName = unescapeIdentifier(ast.getChild(0).getText());
-    boolean ifNotExists = false;
-    String dbComment = null;
-    String dbLocation = null;
-    Map<String, String> dbProps = null;
-
-    for (int i = 1; i < ast.getChildCount(); i++) {
-      ASTNode childNode = (ASTNode) ast.getChild(i);
-      switch (childNode.getToken().getType()) {
-      case HiveParser.TOK_IFNOTEXISTS:
-        ifNotExists = true;
-        break;
-      case HiveParser.TOK_DATABASECOMMENT:
-        dbComment = unescapeSQLString(childNode.getChild(0).getText());
-        break;
-      case TOK_DATABASEPROPERTIES:
-        dbProps = DDLSemanticAnalyzer.getProps((ASTNode) childNode.getChild(0));
-        break;
-      case TOK_DATABASELOCATION:
-        dbLocation = unescapeSQLString(childNode.getChild(0).getText());
-        addLocationToOutputs(dbLocation);
-        break;
-      default:
-        throw new SemanticException("Unrecognized token in CREATE DATABASE statement");
-      }
-    }
-
-    CreateDatabaseDesc createDatabaseDesc =
-        new CreateDatabaseDesc(dbName, dbComment, dbLocation, ifNotExists);
-    if (dbProps != null) {
-      createDatabaseDesc.setDatabaseProperties(dbProps);
-    }
-    Database database = new Database(dbName, dbComment, dbLocation, dbProps);
-    outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_NO_LOCK));
-
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        createDatabaseDesc), conf));
-  }
-
-  private void analyzeDropDatabase(ASTNode ast) throws SemanticException {
-    String dbName = unescapeIdentifier(ast.getChild(0).getText());
-    boolean ifExists = false;
-    boolean ifCascade = false;
-
-    if (null != ast.getFirstChildWithType(HiveParser.TOK_IFEXISTS)) {
-      ifExists = true;
-    }
-
-    if (null != ast.getFirstChildWithType(HiveParser.TOK_CASCADE)) {
-      ifCascade = true;
-    }
-
-    Database database = getDatabase(dbName, !ifExists);
-    if (database == null) {
-      return;
-    }
-
-    // if cascade=true, then we need to authorize the drop table action as well
-    if (ifCascade) {
-      // add the tables as well to outputs
-      List<String> tableNames;
-      // get names of all tables under this dbName
-      try {
-        tableNames = db.getAllTables(dbName);
-      } catch (HiveException e) {
-        throw new SemanticException(e);
-      }
-      // add tables to outputs
-      if (tableNames != null) {
-        for (String tableName : tableNames) {
-          Table table = getTable(dbName, tableName, true);
-          // We want no lock here, as the database lock will cover the tables,
-          // and putting a lock will actually cause us to deadlock on ourselves.
-          outputs.add(new WriteEntity(table, WriteEntity.WriteType.DDL_NO_LOCK));
-        }
-      }
-    }
-    inputs.add(new ReadEntity(database));
-    outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_EXCLUSIVE));
-
-    DropDatabaseDesc dropDatabaseDesc = new DropDatabaseDesc(dbName, ifExists, ifCascade);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), dropDatabaseDesc), conf));
-  }
-
-  private void analyzeSwitchDatabase(ASTNode ast) throws SemanticException {
-    String dbName = unescapeIdentifier(ast.getChild(0).getText());
-    Database database = getDatabase(dbName, true);
-    ReadEntity dbReadEntity = new ReadEntity(database);
-    dbReadEntity.noLockNeeded();
-    inputs.add(dbReadEntity);
-    SwitchDatabaseDesc switchDatabaseDesc = new SwitchDatabaseDesc(dbName);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        switchDatabaseDesc), conf));
-  }
-
-
-
-  private void analyzeDropTable(ASTNode ast, TableType expectedType)
-      throws SemanticException {
-    String tableName = getUnescapedName((ASTNode) ast.getChild(0));
-    boolean ifExists = (ast.getFirstChildWithType(HiveParser.TOK_IFEXISTS) != null);
-    // we want to signal an error if the table/view doesn't exist and we're
-    // configured not to fail silently
-    boolean throwException =
-        !ifExists && !HiveConf.getBoolVar(conf, ConfVars.DROPIGNORESNONEXISTENT);
-
-    ReplicationSpec replicationSpec = new ReplicationSpec(ast);
-
-    Table tab = getTable(tableName, throwException);
-    if (tab != null) {
-      inputs.add(new ReadEntity(tab));
-      outputs.add(new WriteEntity(tab, WriteEntity.WriteType.DDL_EXCLUSIVE));
-    }
-
-    boolean ifPurge = (ast.getFirstChildWithType(HiveParser.KW_PURGE) != null);
-    DropTableDesc dropTblDesc = new DropTableDesc(tableName, expectedType, ifExists, ifPurge, replicationSpec);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        dropTblDesc), conf));
   }
 
   private void analyzeTruncateTable(ASTNode ast) throws SemanticException {
     ASTNode root = (ASTNode) ast.getChild(0); // TOK_TABLE_PARTITION
-    String tableName = getUnescapedName((ASTNode) root.getChild(0));
+    final String tableName = getUnescapedName((ASTNode) root.getChild(0));
 
     Table table = getTable(tableName, true);
-    if (table.getTableType() != TableType.MANAGED_TABLE) {
-      throw new SemanticException(ErrorMsg.TRUNCATE_FOR_NON_MANAGED_TABLE.format(tableName));
+    final TableName tName = HiveTableName.of(table);
+    checkTruncateEligibility(ast, root, tableName, table);
+
+    Map<String, String> partSpec = getPartSpec((ASTNode) root.getChild(1));
+    addTruncateTableOutputs(root, table, partSpec);
+
+    Task<?> truncateTask = null;
+
+    // Is this a truncate column command
+    ASTNode colNamesNode = (ASTNode) ast.getFirstChildWithType(HiveParser.TOK_TABCOLNAME);
+    if (colNamesNode == null) {
+      truncateTask = getTruncateTaskWithoutColumnNames(tName, partSpec, table);
+    } else {
+      truncateTask = getTruncateTaskWithColumnNames(root, tName, table, partSpec, colNamesNode);
+    }
+
+    rootTasks.add(truncateTask);
+  }
+
+  private void checkTruncateEligibility(ASTNode ast, ASTNode root, String tableName, Table table)
+      throws SemanticException {
+    boolean isForce = ast.getFirstChildWithType(HiveParser.TOK_FORCE) != null;
+    if (!isForce) {
+      if (table.getTableType() != TableType.MANAGED_TABLE &&
+          (table.getParameters().getOrDefault(MetaStoreUtils.EXTERNAL_TABLE_PURGE, "FALSE"))
+              .equalsIgnoreCase("FALSE")) {
+        throw new SemanticException(ErrorMsg.TRUNCATE_FOR_NON_MANAGED_TABLE.format(tableName));
+      }
     }
     if (table.isNonNative()) {
       throw new SemanticException(ErrorMsg.TRUNCATE_FOR_NON_NATIVE_TABLE.format(tableName)); //TODO
@@ -947,170 +419,178 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     if (!table.isPartitioned() && root.getChildCount() > 1) {
       throw new SemanticException(ErrorMsg.PARTSPEC_FOR_NON_PARTITIONED_TABLE.format(tableName));
     }
-    Map<String, String> partSpec = getPartSpec((ASTNode) root.getChild(1));
+  }
+
+  private void addTruncateTableOutputs(ASTNode root, Table table, Map<String, String> partSpec)
+      throws SemanticException {
     if (partSpec == null) {
       if (!table.isPartitioned()) {
         outputs.add(new WriteEntity(table, WriteEntity.WriteType.DDL_EXCLUSIVE));
       } else {
-        for (Partition partition : getPartitions(table, null, false)) {
+        for (Partition partition : PartitionUtils.getPartitions(db, table, null, false)) {
           outputs.add(new WriteEntity(partition, WriteEntity.WriteType.DDL_EXCLUSIVE));
         }
       }
     } else {
       if (isFullSpec(table, partSpec)) {
         validatePartSpec(table, partSpec, (ASTNode) root.getChild(1), conf, true);
-        Partition partition = getPartition(table, partSpec, true);
+        Partition partition = PartitionUtils.getPartition(db, table, partSpec, true);
         outputs.add(new WriteEntity(partition, WriteEntity.WriteType.DDL_EXCLUSIVE));
       } else {
         validatePartSpec(table, partSpec, (ASTNode) root.getChild(1), conf, false);
-        for (Partition partition : getPartitions(table, partSpec, false)) {
+        for (Partition partition : PartitionUtils.getPartitions(db, table, partSpec, false)) {
           outputs.add(new WriteEntity(partition, WriteEntity.WriteType.DDL_EXCLUSIVE));
         }
       }
     }
+  }
 
-    TruncateTableDesc truncateTblDesc = new TruncateTableDesc(tableName, partSpec, null);
-
-    DDLWork ddlWork = new DDLWork(getInputs(), getOutputs(), truncateTblDesc);
-    Task<? extends Serializable> truncateTask = TaskFactory.get(ddlWork, conf);
-
-    // Is this a truncate column command
-    List<String> columnNames = null;
-    if (ast.getChildCount() == 2) {
-      try {
-        columnNames = getColumnNames((ASTNode)ast.getChild(1));
-
-        // Throw an error if the table is indexed
-        List<Index> indexes = db.getIndexes(table.getDbName(), tableName, (short)1);
-        if (indexes != null && indexes.size() > 0) {
-          throw new SemanticException(ErrorMsg.TRUNCATE_COLUMN_INDEXED_TABLE.getMsg());
-        }
-
-        List<String> bucketCols = null;
-        Class<? extends InputFormat> inputFormatClass = null;
-        boolean isArchived = false;
-        Path newTblPartLoc = null;
-        Path oldTblPartLoc = null;
-        List<FieldSchema> cols = null;
-        ListBucketingCtx lbCtx = null;
-        boolean isListBucketed = false;
-        List<String> listBucketColNames = null;
-
-        if (table.isPartitioned()) {
-          Partition part = db.getPartition(table, partSpec, false);
-
-          Path tabPath = table.getPath();
-          Path partPath = part.getDataLocation();
-
-          // if the table is in a different dfs than the partition,
-          // replace the partition's dfs with the table's dfs.
-          newTblPartLoc = new Path(tabPath.toUri().getScheme(), tabPath.toUri()
-              .getAuthority(), partPath.toUri().getPath());
-
-          oldTblPartLoc = partPath;
-
-          cols = part.getCols();
-          bucketCols = part.getBucketCols();
-          inputFormatClass = part.getInputFormatClass();
-          isArchived = ArchiveUtils.isArchived(part);
-          lbCtx = constructListBucketingCtx(part.getSkewedColNames(), part.getSkewedColValues(),
-              part.getSkewedColValueLocationMaps(), part.isStoredAsSubDirectories(), conf);
-          isListBucketed = part.isStoredAsSubDirectories();
-          listBucketColNames = part.getSkewedColNames();
-        } else {
-          // input and output are the same
-          oldTblPartLoc = table.getPath();
-          newTblPartLoc = table.getPath();
-          cols  = table.getCols();
-          bucketCols = table.getBucketCols();
-          inputFormatClass = table.getInputFormatClass();
-          lbCtx = constructListBucketingCtx(table.getSkewedColNames(), table.getSkewedColValues(),
-              table.getSkewedColValueLocationMaps(), table.isStoredAsSubDirectories(), conf);
-          isListBucketed = table.isStoredAsSubDirectories();
-          listBucketColNames = table.getSkewedColNames();
-        }
-
-        // throw a HiveException for non-rcfile.
-        if (!inputFormatClass.equals(RCFileInputFormat.class)) {
-          throw new SemanticException(ErrorMsg.TRUNCATE_COLUMN_NOT_RC.getMsg());
-        }
-
-        // throw a HiveException if the table/partition is archived
-        if (isArchived) {
-          throw new SemanticException(ErrorMsg.TRUNCATE_COLUMN_ARCHIVED.getMsg());
-        }
-
-        Set<Integer> columnIndexes = new HashSet<Integer>();
-        for (String columnName : columnNames) {
-          boolean found = false;
-          for (int columnIndex = 0; columnIndex < cols.size(); columnIndex++) {
-            if (columnName.equalsIgnoreCase(cols.get(columnIndex).getName())) {
-              columnIndexes.add(columnIndex);
-              found = true;
-              break;
-            }
-          }
-          // Throw an exception if the user is trying to truncate a column which doesn't exist
-          if (!found) {
-            throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(columnName));
-          }
-          // Throw an exception if the table/partition is bucketed on one of the columns
-          for (String bucketCol : bucketCols) {
-            if (bucketCol.equalsIgnoreCase(columnName)) {
-              throw new SemanticException(ErrorMsg.TRUNCATE_BUCKETED_COLUMN.getMsg(columnName));
-            }
-          }
-          if (isListBucketed) {
-            for (String listBucketCol : listBucketColNames) {
-              if (listBucketCol.equalsIgnoreCase(columnName)) {
-                throw new SemanticException(
-                    ErrorMsg.TRUNCATE_LIST_BUCKETED_COLUMN.getMsg(columnName));
-              }
-            }
-          }
-        }
-
-        truncateTblDesc.setColumnIndexes(new ArrayList<Integer>(columnIndexes));
-        truncateTblDesc.setInputDir(oldTblPartLoc);
-        truncateTblDesc.setLbCtx(lbCtx);
-
-        addInputsOutputsAlterTable(tableName, partSpec, AlterTableTypes.TRUNCATE);
-
-        ddlWork.setNeedLock(true);
-        TableDesc tblDesc = Utilities.getTableDesc(table);
-        // Write the output to temporary directory and move it to the final location at the end
-        // so the operation is atomic.
-        Path queryTmpdir = ctx.getExternalTmpPath(newTblPartLoc);
-        truncateTblDesc.setOutputDir(queryTmpdir);
-        LoadTableDesc ltd = new LoadTableDesc(queryTmpdir, tblDesc,
-            partSpec == null ? new HashMap<String, String>() : partSpec);
-        ltd.setLbCtx(lbCtx);
-        Task<MoveWork> moveTsk = TaskFactory.get(new MoveWork(null, null, ltd, null, false),
-            conf);
-        truncateTask.addDependentTask(moveTsk);
-
-        // Recalculate the HDFS stats if auto gather stats is set
-        if (conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
-          StatsWork statDesc;
-          if (oldTblPartLoc.equals(newTblPartLoc)) {
-            // If we're merging to the same location, we can avoid some metastore calls
-            TableSpec tablepart = new TableSpec(this.db, conf, root);
-            statDesc = new StatsWork(tablepart);
-          } else {
-            statDesc = new StatsWork(ltd);
-          }
-          statDesc.setNoStatsAggregator(true);
-          statDesc.setClearAggregatorStats(true);
-          statDesc.setStatsReliable(conf.getBoolVar(HiveConf.ConfVars.HIVE_STATS_RELIABLE));
-          Task<? extends Serializable> statTask = TaskFactory.get(statDesc, conf);
-          moveTsk.addDependentTask(statTask);
-        }
-      } catch (HiveException e) {
-        throw new SemanticException(e);
-      }
+  private Task<?> getTruncateTaskWithoutColumnNames(TableName tableName, Map<String, String> partSpec, Table table) {
+    TruncateTableDesc truncateTblDesc = new TruncateTableDesc(tableName, partSpec, null, table);
+    if (truncateTblDesc.mayNeedWriteId()) {
+      setAcidDdlDesc(truncateTblDesc);
     }
 
-    rootTasks.add(truncateTask);
+    DDLWork ddlWork = new DDLWork(getInputs(), getOutputs(), truncateTblDesc);
+    return TaskFactory.get(ddlWork);
+  }
+
+  private Task<?> getTruncateTaskWithColumnNames(ASTNode root, TableName tName, Table table,
+      Map<String, String> partSpec, ASTNode colNamesNode) throws SemanticException {
+    try {
+      List<String> columnNames = getColumnNames(colNamesNode);
+
+      // It would be possible to support this, but this is such a pointless command.
+      if (AcidUtils.isInsertOnlyTable(table.getParameters())) {
+        throw new SemanticException("Truncating MM table columns not presently supported");
+      }
+
+      List<String> bucketCols = null;
+      Class<? extends InputFormat> inputFormatClass = null;
+      boolean isArchived = false;
+      Path newTblPartLoc = null;
+      Path oldTblPartLoc = null;
+      List<FieldSchema> cols = null;
+      ListBucketingCtx lbCtx = null;
+      boolean isListBucketed = false;
+      List<String> listBucketColNames = null;
+
+      if (table.isPartitioned()) {
+        Partition part = db.getPartition(table, partSpec, false);
+
+        Path tabPath = table.getPath();
+        Path partPath = part.getDataLocation();
+
+        // if the table is in a different dfs than the partition,
+        // replace the partition's dfs with the table's dfs.
+        newTblPartLoc = new Path(tabPath.toUri().getScheme(), tabPath.toUri()
+            .getAuthority(), partPath.toUri().getPath());
+
+        oldTblPartLoc = partPath;
+
+        cols = part.getCols();
+        bucketCols = part.getBucketCols();
+        inputFormatClass = part.getInputFormatClass();
+        isArchived = ArchiveUtils.isArchived(part);
+        lbCtx = constructListBucketingCtx(part.getSkewedColNames(), part.getSkewedColValues(),
+            part.getSkewedColValueLocationMaps(), part.isStoredAsSubDirectories());
+        isListBucketed = part.isStoredAsSubDirectories();
+        listBucketColNames = part.getSkewedColNames();
+      } else {
+        // input and output are the same
+        oldTblPartLoc = table.getPath();
+        newTblPartLoc = table.getPath();
+        cols  = table.getCols();
+        bucketCols = table.getBucketCols();
+        inputFormatClass = table.getInputFormatClass();
+        lbCtx = constructListBucketingCtx(table.getSkewedColNames(), table.getSkewedColValues(),
+            table.getSkewedColValueLocationMaps(), table.isStoredAsSubDirectories());
+        isListBucketed = table.isStoredAsSubDirectories();
+        listBucketColNames = table.getSkewedColNames();
+      }
+
+      // throw a HiveException for non-rcfile.
+      if (!inputFormatClass.equals(RCFileInputFormat.class)) {
+        throw new SemanticException(ErrorMsg.TRUNCATE_COLUMN_NOT_RC.getMsg());
+      }
+
+      // throw a HiveException if the table/partition is archived
+      if (isArchived) {
+        throw new SemanticException(ErrorMsg.TRUNCATE_COLUMN_ARCHIVED.getMsg());
+      }
+
+      Set<Integer> columnIndexes = new HashSet<Integer>();
+      for (String columnName : columnNames) {
+        boolean found = false;
+        for (int columnIndex = 0; columnIndex < cols.size(); columnIndex++) {
+          if (columnName.equalsIgnoreCase(cols.get(columnIndex).getName())) {
+            columnIndexes.add(columnIndex);
+            found = true;
+            break;
+          }
+        }
+        // Throw an exception if the user is trying to truncate a column which doesn't exist
+        if (!found) {
+          throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(columnName));
+        }
+        // Throw an exception if the table/partition is bucketed on one of the columns
+        for (String bucketCol : bucketCols) {
+          if (bucketCol.equalsIgnoreCase(columnName)) {
+            throw new SemanticException(ErrorMsg.TRUNCATE_BUCKETED_COLUMN.getMsg(columnName));
+          }
+        }
+        if (isListBucketed) {
+          for (String listBucketCol : listBucketColNames) {
+            if (listBucketCol.equalsIgnoreCase(columnName)) {
+              throw new SemanticException(
+                  ErrorMsg.TRUNCATE_LIST_BUCKETED_COLUMN.getMsg(columnName));
+            }
+          }
+        }
+      }
+
+      Path queryTmpdir = ctx.getExternalTmpPath(newTblPartLoc);
+      TruncateTableDesc truncateTblDesc = new TruncateTableDesc(tName, partSpec, null, table,
+          new ArrayList<Integer>(columnIndexes), oldTblPartLoc, queryTmpdir, lbCtx);
+      if (truncateTblDesc.mayNeedWriteId()) {
+        setAcidDdlDesc(truncateTblDesc);
+      }
+
+      DDLWork ddlWork = new DDLWork(getInputs(), getOutputs(), truncateTblDesc);
+      Task<?> truncateTask = TaskFactory.get(ddlWork);
+
+      addInputsOutputsAlterTable(tName, partSpec, null, AlterTableType.TRUNCATE, false);
+      ddlWork.setNeedLock(true);
+      TableDesc tblDesc = Utilities.getTableDesc(table);
+      // Write the output to temporary directory and move it to the final location at the end
+      // so the operation is atomic.
+      LoadTableDesc ltd = new LoadTableDesc(queryTmpdir, tblDesc, partSpec == null ? new HashMap<>() : partSpec);
+      ltd.setLbCtx(lbCtx);
+      Task<MoveWork> moveTsk = TaskFactory.get(new MoveWork(null, null, ltd, null, false));
+      truncateTask.addDependentTask(moveTsk);
+
+      // Recalculate the HDFS stats if auto gather stats is set
+      if (conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+        BasicStatsWork basicStatsWork;
+        if (oldTblPartLoc.equals(newTblPartLoc)) {
+          // If we're merging to the same location, we can avoid some metastore calls
+          TableSpec tablepart = new TableSpec(this.db, conf, root);
+          basicStatsWork = new BasicStatsWork(tablepart);
+        } else {
+          basicStatsWork = new BasicStatsWork(ltd);
+        }
+        basicStatsWork.setNoStatsAggregator(true);
+        basicStatsWork.setClearAggregatorStats(true);
+        StatsWork columnStatsWork = new StatsWork(table, basicStatsWork, conf);
+
+        Task<?> statTask = TaskFactory.get(columnStatsWork);
+        moveTsk.addDependentTask(statTask);
+      }
+
+      return truncateTask;
+    } catch (HiveException e) {
+      throw new SemanticException(e);
+    }
   }
 
   public static boolean isFullSpec(Table table, Map<String, String> partSpec) {
@@ -1122,238 +602,11 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     return true;
   }
 
-  private void analyzeCreateIndex(ASTNode ast) throws SemanticException {
-    String indexName = unescapeIdentifier(ast.getChild(0).getText());
-    String typeName = unescapeSQLString(ast.getChild(1).getText());
-    String[] qTabName = getQualifiedTableName((ASTNode) ast.getChild(2));
-    List<String> indexedCols = getColumnNames((ASTNode) ast.getChild(3));
-
-    IndexType indexType = HiveIndex.getIndexType(typeName);
-    if (indexType != null) {
-      typeName = indexType.getHandlerClsName();
-    } else {
-      try {
-        JavaUtils.loadClass(typeName);
-      } catch (Exception e) {
-        throw new SemanticException("class name provided for index handler not found.", e);
-      }
-    }
-
-    String indexTableName = null;
-    boolean deferredRebuild = false;
-    String location = null;
-    Map<String, String> tblProps = null;
-    Map<String, String> idxProps = null;
-    String indexComment = null;
-
-    RowFormatParams rowFormatParams = new RowFormatParams();
-    StorageFormat storageFormat = new StorageFormat(conf);
-
-    for (int idx = 4; idx < ast.getChildCount(); idx++) {
-      ASTNode child = (ASTNode) ast.getChild(idx);
-      if (storageFormat.fillStorageFormat(child)) {
-        continue;
-      }
-      switch (child.getToken().getType()) {
-      case HiveParser.TOK_TABLEROWFORMAT:
-        rowFormatParams.analyzeRowFormat(child);
-        break;
-      case HiveParser.TOK_CREATEINDEX_INDEXTBLNAME:
-        ASTNode ch = (ASTNode) child.getChild(0);
-        indexTableName = getUnescapedName(ch);
-        break;
-      case HiveParser.TOK_DEFERRED_REBUILDINDEX:
-        deferredRebuild = true;
-        break;
-      case HiveParser.TOK_TABLELOCATION:
-        location = unescapeSQLString(child.getChild(0).getText());
-        addLocationToOutputs(location);
-        break;
-      case HiveParser.TOK_TABLEPROPERTIES:
-        tblProps = DDLSemanticAnalyzer.getProps((ASTNode) child.getChild(0));
-        break;
-      case HiveParser.TOK_INDEXPROPERTIES:
-        idxProps = DDLSemanticAnalyzer.getProps((ASTNode) child.getChild(0));
-        break;
-      case HiveParser.TOK_TABLESERIALIZER:
-        child = (ASTNode) child.getChild(0);
-        storageFormat.setSerde(unescapeSQLString(child.getChild(0).getText()));
-        if (child.getChildCount() == 2) {
-          readProps((ASTNode) (child.getChild(1).getChild(0)),
-              storageFormat.getSerdeProps());
-        }
-        break;
-      case HiveParser.TOK_INDEXCOMMENT:
-        child = (ASTNode) child.getChild(0);
-        indexComment = unescapeSQLString(child.getText());
-      }
-    }
-
-    storageFormat.fillDefaultStorageFormat(false, false);
-    if (indexTableName == null) {
-      indexTableName = MetaStoreUtils.getIndexTableName(qTabName[0], qTabName[1], indexName);
-      indexTableName = qTabName[0] + "." + indexTableName; // on same database with base table
-    } else {
-      indexTableName = getDotName(Utilities.getDbTableName(indexTableName));
-    }
-    inputs.add(new ReadEntity(getTable(qTabName)));
-
-    CreateIndexDesc crtIndexDesc = new CreateIndexDesc(getDotName(qTabName), indexName,
-        indexedCols, indexTableName, deferredRebuild, storageFormat.getInputFormat(),
-        storageFormat.getOutputFormat(),
-        storageFormat.getStorageHandler(), typeName, location, idxProps, tblProps,
-        storageFormat.getSerde(), storageFormat.getSerdeProps(), rowFormatParams.collItemDelim,
-        rowFormatParams.fieldDelim, rowFormatParams.fieldEscape,
-        rowFormatParams.lineDelim, rowFormatParams.mapKeyDelim, indexComment);
-    Task<?> createIndex =
-        TaskFactory.get(new DDLWork(getInputs(), getOutputs(), crtIndexDesc), conf);
-    rootTasks.add(createIndex);
-  }
-
-  private void analyzeDropIndex(ASTNode ast) throws SemanticException {
-    String indexName = unescapeIdentifier(ast.getChild(0).getText());
-    String tableName = getUnescapedName((ASTNode) ast.getChild(1));
-    boolean ifExists = (ast.getFirstChildWithType(HiveParser.TOK_IFEXISTS) != null);
-    // we want to signal an error if the index doesn't exist and we're
-    // configured not to ignore this
-    boolean throwException =
-        !ifExists && !HiveConf.getBoolVar(conf, ConfVars.DROPIGNORESNONEXISTENT);
-    Table tbl = getTable(tableName, false);
-    if (throwException && tbl == null) {
-      throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tableName));
-    }
-    try {
-      Index idx = db.getIndex(tableName, indexName);
-    } catch (HiveException e) {
-      if (!(e.getCause() instanceof NoSuchObjectException)) {
-        throw new SemanticException(ErrorMsg.CANNOT_DROP_INDEX.getMsg("dropping index"), e);
-      }
-      if (throwException) {
-        throw new SemanticException(ErrorMsg.INVALID_INDEX.getMsg(indexName));
-      }
-    }
-    if (tbl != null) {
-      inputs.add(new ReadEntity(tbl));
-    }
-
-    DropIndexDesc dropIdxDesc = new DropIndexDesc(indexName, tableName, throwException);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        dropIdxDesc), conf));
-  }
-
-  private void analyzeAlterIndexRebuild(ASTNode ast) throws SemanticException {
-    String[] qualified = getQualifiedTableName((ASTNode) ast.getChild(0));
-    String indexName = unescapeIdentifier(ast.getChild(1).getText());
-    HashMap<String, String> partSpec = null;
-    Tree part = ast.getChild(2);
-    if (part != null) {
-      partSpec = getValidatedPartSpec(getTable(qualified), (ASTNode)part, conf, false);
-    }
-    List<Task<?>> indexBuilder = getIndexBuilderMapRed(qualified, indexName, partSpec);
-    rootTasks.addAll(indexBuilder);
-
-    // Handle updating index timestamps
-    AlterIndexDesc alterIdxDesc = new AlterIndexDesc(AlterIndexTypes.UPDATETIMESTAMP);
-    alterIdxDesc.setIndexName(indexName);
-    alterIdxDesc.setBaseTableName(getDotName(qualified));
-    alterIdxDesc.setSpec(partSpec);
-
-    Task<?> tsTask = TaskFactory.get(new DDLWork(alterIdxDesc), conf);
-    for (Task<?> t : indexBuilder) {
-      t.addDependentTask(tsTask);
-    }
-  }
-
-  private void analyzeAlterIndexProps(ASTNode ast)
-      throws SemanticException {
-
-    String[] qualified = getQualifiedTableName((ASTNode) ast.getChild(0));
-    String indexName = unescapeIdentifier(ast.getChild(1).getText());
-    HashMap<String, String> mapProp = getProps((ASTNode) (ast.getChild(2))
-        .getChild(0));
-
-    AlterIndexDesc alterIdxDesc = new AlterIndexDesc(AlterIndexTypes.ADDPROPS);
-    alterIdxDesc.setProps(mapProp);
-    alterIdxDesc.setIndexName(indexName);
-    alterIdxDesc.setBaseTableName(getDotName(qualified));
-
-    rootTasks.add(TaskFactory.get(new DDLWork(alterIdxDesc), conf));
-  }
-
-  private List<Task<?>> getIndexBuilderMapRed(String[] names, String indexName,
-      HashMap<String, String> partSpec) throws SemanticException {
-    try {
-      Index index = db.getIndex(names[0], names[1], indexName);
-      Table indexTbl = null;
-      String indexTableName = index.getIndexTableName();
-      if (indexTableName != null) {
-        indexTbl = getTable(Utilities.getDbTableName(index.getDbName(), indexTableName));
-      }
-      Table baseTbl = getTable(new String[] {index.getDbName(), index.getOrigTableName()});
-
-      String handlerCls = index.getIndexHandlerClass();
-      HiveIndexHandler handler = HiveUtils.getIndexHandler(conf, handlerCls);
-
-      List<Partition> indexTblPartitions = null;
-      List<Partition> baseTblPartitions = null;
-      if (indexTbl != null) {
-        indexTblPartitions = new ArrayList<Partition>();
-        baseTblPartitions = preparePartitions(baseTbl, partSpec,
-            indexTbl, db, indexTblPartitions);
-      }
-
-      List<Task<?>> ret = handler.generateIndexBuildTaskList(baseTbl,
-          index, indexTblPartitions, baseTblPartitions, indexTbl, getInputs(), getOutputs());
-      return ret;
-    } catch (Exception e) {
-      throw new SemanticException(e);
-    }
-  }
-
-  private List<Partition> preparePartitions(
-      org.apache.hadoop.hive.ql.metadata.Table baseTbl,
-      HashMap<String, String> partSpec,
-      org.apache.hadoop.hive.ql.metadata.Table indexTbl, Hive db,
-      List<Partition> indexTblPartitions)
-      throws HiveException, MetaException {
-    List<Partition> baseTblPartitions = new ArrayList<Partition>();
-    if (partSpec != null) {
-      // if partspec is specified, then only producing index for that
-      // partition
-      Partition part = db.getPartition(baseTbl, partSpec, false);
-      if (part == null) {
-        throw new HiveException("Partition "
-            + Warehouse.makePartName(partSpec, false)
-            + " does not exist in table "
-            + baseTbl.getTableName());
-      }
-      baseTblPartitions.add(part);
-      Partition indexPart = db.getPartition(indexTbl, partSpec, false);
-      if (indexPart == null) {
-        indexPart = db.createPartition(indexTbl, partSpec);
-      }
-      indexTblPartitions.add(indexPart);
-    } else if (baseTbl.isPartitioned()) {
-      // if no partition is specified, create indexes for all partitions one
-      // by one.
-      baseTblPartitions = db.getPartitions(baseTbl);
-      for (Partition basePart : baseTblPartitions) {
-        HashMap<String, String> pSpec = basePart.getSpec();
-        Partition indexPart = db.getPartition(indexTbl, pSpec, false);
-        if (indexPart == null) {
-          indexPart = db.createPartition(indexTbl, pSpec);
-        }
-        indexTblPartitions.add(indexPart);
-      }
-    }
-    return baseTblPartitions;
-  }
-
-  private void validateAlterTableType(Table tbl, AlterTableTypes op) throws SemanticException {
+  private void validateAlterTableType(Table tbl, AlterTableType op) throws SemanticException {
     validateAlterTableType(tbl, op, false);
   }
 
-  private void validateAlterTableType(Table tbl, AlterTableTypes op, boolean expectView)
+  private void validateAlterTableType(Table tbl, AlterTableType op, boolean expectView)
       throws SemanticException {
     if (tbl.isView()) {
       if (!expectView) {
@@ -1377,17 +630,40 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         throw new SemanticException(ErrorMsg.ALTER_COMMAND_FOR_TABLES.getMsg());
       }
     }
-    if (tbl.isNonNative() && !AlterTableTypes.nonNativeTableAllowedTypes.contains(op)) {
-      throw new SemanticException(ErrorMsg.ALTER_TABLE_NON_NATIVE.getMsg(tbl.getTableName()));
+    if (tbl.isNonNative() && !AlterTableType.NON_NATIVE_TABLE_ALLOWED.contains(op)) {
+      throw new SemanticException(ErrorMsg.ALTER_TABLE_NON_NATIVE.format(
+          AlterTableType.NON_NATIVE_TABLE_ALLOWED.toString(), tbl.getTableName()));
     }
   }
 
-  private void analyzeAlterTableProps(String[] qualified, HashMap<String, String> partSpec,
-      ASTNode ast, boolean expectView, boolean isUnset) throws SemanticException {
+  private boolean hasConstraintsEnabled(final String tblName) throws SemanticException{
 
-    String tableName = getDotName(qualified);
-    HashMap<String, String> mapProp = getProps((ASTNode) (ast.getChild(0))
-        .getChild(0));
+    NotNullConstraint nnc = null;
+    DefaultConstraint dc = null;
+    try {
+      // retrieve enabled NOT NULL constraint from metastore
+      nnc = Hive.get().getEnabledNotNullConstraints(
+          db.getDatabaseCurrent().getName(), tblName);
+      dc = Hive.get().getEnabledDefaultConstraints(
+          db.getDatabaseCurrent().getName(), tblName);
+    } catch (Exception e) {
+      if (e instanceof SemanticException) {
+        throw (SemanticException) e;
+      } else {
+        throw (new RuntimeException(e));
+      }
+    }
+    if((nnc != null  && !nnc.getNotNullConstraints().isEmpty())
+        || (dc != null && !dc.getDefaultConstraints().isEmpty())) {
+      return true;
+    }
+    return false;
+  }
+
+  private void analyzeAlterTableProps(TableName tableName, Map<String, String> partSpec, ASTNode ast,
+      boolean expectView, boolean isUnset) throws SemanticException {
+
+    Map<String, String> mapProp = getProps((ASTNode) (ast.getChild(0)).getChild(0));
     EnvironmentContext environmentContext = null;
     // we need to check if the properties are valid, especially for stats.
     // they might be changed via alter table .. update statistics or
@@ -1406,7 +682,17 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           throw new SemanticException("AlterTable " + entry.getKey() + " failed with value "
               + entry.getValue());
         }
-      } else {
+      }
+      // if table is being modified to be external we need to make sure existing table
+      // doesn't have enabled constraint since constraints are disallowed with such tables
+      else if (entry.getKey().equals("external") && entry.getValue().equals("true")) {
+        if (hasConstraintsEnabled(tableName.getTable())) {
+          throw new SemanticException(
+              ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("Table: " + tableName.getDbTable() + " has constraints enabled."
+                  + "Please remove those constraints to change this property."));
+        }
+      }
+      else {
         if (queryState.getCommandType()
             .equals(HiveOperation.ALTERTABLE_UPDATETABLESTATS.getOperationName())
             || queryState.getCommandType()
@@ -1422,93 +708,114 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED, StatsSetupConst.USER);
       }
     }
-    AlterTableDesc alterTblDesc = null;
-    if (isUnset == true) {
-      alterTblDesc = new AlterTableDesc(AlterTableTypes.DROPPROPS, partSpec, expectView);
-      if (ast.getChild(1) != null) {
-        alterTblDesc.setDropIfExists(true);
+    boolean isToTxn = AcidUtils.isTablePropertyTransactional(mapProp)
+        || mapProp.containsKey(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
+    boolean isExplicitStatsUpdate = changeStatsSucceeded && AcidUtils.isTransactionalTable(getTable(tableName, true));
+    AbstractAlterTableDesc alterTblDesc = null;
+    DDLWork ddlWork = null;
+
+    if (isUnset) {
+      boolean dropIfExists = ast.getChild(1) != null;
+      // validate Unset Non Existed Table Properties
+      if (!dropIfExists) {
+        Table tab = getTable(tableName, true);
+        Map<String, String> tableParams = tab.getTTable().getParameters();
+        for (String currKey : mapProp.keySet()) {
+          if (!tableParams.containsKey(currKey)) {
+            String errorMsg = "The following property " + currKey + " does not exist in " + tab.getTableName();
+            throw new SemanticException(
+              ErrorMsg.ALTER_TBL_UNSET_NON_EXIST_PROPERTY.getMsg(errorMsg));
+          }
+        }
       }
+
+      alterTblDesc = new AlterTableUnsetPropertiesDesc(tableName, partSpec, null, expectView, mapProp,
+          isExplicitStatsUpdate, environmentContext);
+      addInputsOutputsAlterTable(tableName, partSpec, alterTblDesc, alterTblDesc.getType(), isToTxn);
+      ddlWork = new DDLWork(getInputs(), getOutputs(), alterTblDesc);
     } else {
-      alterTblDesc = new AlterTableDesc(AlterTableTypes.ADDPROPS, partSpec, expectView);
+      addPropertyReadEntry(mapProp, inputs);
+      boolean isAcidConversion = isToTxn && AcidUtils.isFullAcidTable(mapProp)
+          && !AcidUtils.isFullAcidTable(getTable(tableName, true));
+      alterTblDesc = new AlterTableSetPropertiesDesc(tableName, partSpec, null, expectView, mapProp,
+          isExplicitStatsUpdate, isAcidConversion, environmentContext);
+      addInputsOutputsAlterTable(tableName, partSpec, alterTblDesc, alterTblDesc.getType(), isToTxn);
+      ddlWork = new DDLWork(getInputs(), getOutputs(), alterTblDesc);
     }
-    alterTblDesc.setProps(mapProp);
-    alterTblDesc.setEnvironmentContext(environmentContext);
-    alterTblDesc.setOldName(tableName);
+    if (isToTxn) {
+      ddlWork.setNeedLock(true); // Hmm... why don't many other operations here need locks?
+    }
+    if (isToTxn || isExplicitStatsUpdate) {
+      setAcidDdlDesc(alterTblDesc);
+    }
 
-    addInputsOutputsAlterTable(tableName, partSpec, alterTblDesc);
-
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        alterTblDesc), conf));
+    rootTasks.add(TaskFactory.get(ddlWork));
   }
 
-  private void analyzeAlterTableSerdeProps(ASTNode ast, String tableName,
-      HashMap<String, String> partSpec)
-      throws SemanticException {
-    HashMap<String, String> mapProp = getProps((ASTNode) (ast.getChild(0))
-        .getChild(0));
-    AlterTableDesc alterTblDesc = new AlterTableDesc(
-        AlterTableTypes.ADDSERDEPROPS);
-    alterTblDesc.setProps(mapProp);
-    alterTblDesc.setOldName(tableName);
-    alterTblDesc.setPartSpec(partSpec);
-
-    addInputsOutputsAlterTable(tableName, partSpec, alterTblDesc);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        alterTblDesc), conf));
+  private void setAcidDdlDesc(DDLDescWithWriteId descWithWriteId) {
+    if(this.ddlDescWithWriteId != null) {
+      throw new IllegalStateException("ddlDescWithWriteId is already set: " + this.ddlDescWithWriteId);
+    }
+    this.ddlDescWithWriteId = descWithWriteId;
   }
 
-  private void analyzeAlterTableSerde(ASTNode ast, String tableName,
-      HashMap<String, String> partSpec)
-      throws SemanticException {
+  @Override
+  public DDLDescWithWriteId getAcidDdlDesc() {
+    return ddlDescWithWriteId;
+  }
 
+  private void analyzeAlterTableSerdeProps(ASTNode ast, TableName tableName, Map<String, String> partSpec)
+      throws SemanticException {
+    Map<String, String> mapProp = getProps((ASTNode) (ast.getChild(0)).getChild(0));
+    AlterTableSetSerdePropsDesc alterTblDesc = new AlterTableSetSerdePropsDesc(tableName, partSpec, mapProp);
+
+    addInputsOutputsAlterTable(tableName, partSpec, alterTblDesc, AlterTableType.SET_SERDE_PROPS, false);
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTblDesc)));
+  }
+
+  private void analyzeAlterTableSerde(ASTNode ast, TableName tableName, Map<String, String> partSpec)
+      throws SemanticException {
     String serdeName = unescapeSQLString(ast.getChild(0).getText());
-    AlterTableDesc alterTblDesc = new AlterTableDesc(AlterTableTypes.ADDSERDE);
-    if (ast.getChildCount() > 1) {
-      HashMap<String, String> mapProp = getProps((ASTNode) (ast.getChild(1))
-          .getChild(0));
-      alterTblDesc.setProps(mapProp);
-    }
-    alterTblDesc.setOldName(tableName);
-    alterTblDesc.setSerdeName(serdeName);
-    alterTblDesc.setPartSpec(partSpec);
+    Map<String, String> props = (ast.getChildCount() > 1) ? getProps((ASTNode) (ast.getChild(1)).getChild(0)) : null;
+    AlterTableSetSerdeDesc alterTblDesc = new AlterTableSetSerdeDesc(tableName, partSpec, props, serdeName);
 
-    addInputsOutputsAlterTable(tableName, partSpec, alterTblDesc);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        alterTblDesc), conf));
+    addInputsOutputsAlterTable(tableName, partSpec, alterTblDesc, AlterTableType.SET_SERDE, false);
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTblDesc)));
   }
 
-  private void analyzeAlterTableFileFormat(ASTNode ast, String tableName,
-      HashMap<String, String> partSpec)
+  private void analyzeAlterTableFileFormat(ASTNode ast, TableName tableName, Map<String, String> partSpec)
       throws SemanticException {
-
     StorageFormat format = new StorageFormat(conf);
     ASTNode child = (ASTNode) ast.getChild(0);
-
     if (!format.fillStorageFormat(child)) {
       throw new AssertionError("Unknown token " + child.getText());
     }
 
-    AlterTableDesc alterTblDesc = new AlterTableDesc(tableName, format.getInputFormat(),
-        format.getOutputFormat(), format.getSerde(), format.getStorageHandler(), partSpec);
+    AlterTableSetFileFormatDesc alterTblDesc = new AlterTableSetFileFormatDesc(tableName, partSpec,
+        format.getInputFormat(), format.getOutputFormat(), format.getSerde());
 
-    addInputsOutputsAlterTable(tableName, partSpec, alterTblDesc);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        alterTblDesc), conf));
+    addInputsOutputsAlterTable(tableName, partSpec, alterTblDesc, AlterTableType.SET_FILE_FORMAT, false);
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTblDesc)));
   }
 
-  private void addInputsOutputsAlterTable(String tableName, Map<String, String> partSpec,
-      AlterTableTypes op) throws SemanticException {
-    addInputsOutputsAlterTable(tableName, partSpec, null, op);
+  // For the time while all the alter table operations are getting migrated there is a duplication of this method here
+  private WriteType determineAlterTableWriteType(Table tab, AbstractAlterTableDesc desc, AlterTableType op) {
+    boolean convertingToAcid = false;
+    if (desc != null && desc.getProps() != null &&
+        Boolean.parseBoolean(desc.getProps().get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL))) {
+      convertingToAcid = true;
+    }
+    if(!AcidUtils.isTransactionalTable(tab) && convertingToAcid) {
+      //non-acid to transactional conversion (property itself) must be mutexed to prevent concurrent writes.
+      // See HIVE-16688 for use cases.
+      return WriteType.DDL_EXCLUSIVE;
+    }
+    return WriteEntity.determineAlterTableWriteType(op);
   }
 
-  private void addInputsOutputsAlterTable(String tableName, Map<String, String> partSpec,
-     AlterTableDesc desc) throws SemanticException {
-    addInputsOutputsAlterTable(tableName, partSpec, desc, desc.getOp());
-  }
-
-  private void addInputsOutputsAlterTable(String tableName, Map<String, String> partSpec,
-      AlterTableDesc desc, AlterTableTypes op) throws SemanticException {
-    boolean isCascade = desc != null && desc.getIsCascade();
+  private void addInputsOutputsAlterTable(TableName tableName, Map<String, String> partSpec,
+      AbstractAlterTableDesc desc, AlterTableType op, boolean doForceExclusive) throws SemanticException {
+    boolean isCascade = desc != null && desc.isCascade();
     boolean alterPartitions = partSpec != null && !partSpec.isEmpty();
     //cascade only occurs at table level then cascade to partition level
     if (isCascade && alterPartitions) {
@@ -1524,14 +831,16 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     // Determine the lock type to acquire
-    WriteEntity.WriteType writeType = WriteEntity.determineAlterTableWriteType(op);
+    WriteEntity.WriteType writeType = doForceExclusive
+        ? WriteType.DDL_EXCLUSIVE : determineAlterTableWriteType(tab, desc, op);
 
     if (!alterPartitions) {
       inputs.add(new ReadEntity(tab));
-      outputs.add(new WriteEntity(tab, writeType));
+      WriteEntity alterTableOutput = new WriteEntity(tab, writeType);
+      outputs.add(alterTableOutput);
       //do not need the lock for partitions since they are covered by the table lock
       if (isCascade) {
-        for (Partition part : getPartitions(tab, partSpec, false)) {
+        for (Partition part : PartitionUtils.getPartitions(db, tab, partSpec, false)) {
           outputs.add(new WriteEntity(part, WriteEntity.WriteType.DDL_NO_LOCK));
         }
       }
@@ -1545,217 +854,212 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
       if (isFullSpec(tab, partSpec)) {
         // Fully specified partition spec
-        Partition part = getPartition(tab, partSpec, true);
+        Partition part = PartitionUtils.getPartition(db, tab, partSpec, true);
         outputs.add(new WriteEntity(part, writeType));
       } else {
         // Partial partition spec supplied. Make sure this is allowed.
-        if (!AlterTableDesc.doesAlterTableTypeSupportPartialPartitionSpec(op)) {
+        if (!AlterTableType.SUPPORT_PARTIAL_PARTITION_SPEC.contains(op)) {
           throw new SemanticException(
               ErrorMsg.ALTER_TABLE_TYPE_PARTIAL_PARTITION_SPEC_NO_SUPPORTED, op.getName());
         } else if (!conf.getBoolVar(HiveConf.ConfVars.DYNAMICPARTITIONING)) {
           throw new SemanticException(ErrorMsg.DYNAMIC_PARTITION_DISABLED);
         }
 
-        for (Partition part : getPartitions(tab, partSpec, true)) {
+        for (Partition part : PartitionUtils.getPartitions(db, tab, partSpec, true)) {
           outputs.add(new WriteEntity(part, writeType));
         }
       }
     }
 
     if (desc != null) {
-      validateAlterTableType(tab, op, desc.getExpectView());
-
-      // validate Unset Non Existed Table Properties
-      if (op == AlterTableDesc.AlterTableTypes.DROPPROPS && !desc.getIsDropIfExists()) {
-        Map<String, String> tableParams = tab.getTTable().getParameters();
-        for (String currKey : desc.getProps().keySet()) {
-          if (!tableParams.containsKey(currKey)) {
-            String errorMsg =
-                "The following property " + currKey +
-                " does not exist in " + tab.getTableName();
-            throw new SemanticException(
-              ErrorMsg.ALTER_TBL_UNSET_NON_EXIST_PROPERTY.getMsg(errorMsg));
-          }
-        }
-      }
+      validateAlterTableType(tab, op, desc.expectView());
     }
   }
 
-  private void analyzeAlterTableLocation(ASTNode ast, String tableName,
-      HashMap<String, String> partSpec) throws SemanticException {
+  private void analyzeAlterTableOwner(ASTNode ast, TableName tableName) throws SemanticException {
+    PrincipalDesc ownerPrincipal = AuthorizationParseUtils.getPrincipalDesc((ASTNode) ast.getChild(0));
+
+    if (ownerPrincipal.getType() == null) {
+      throw new SemanticException("Owner type can't be null in alter table set owner command");
+    }
+
+    if (ownerPrincipal.getName() == null) {
+      throw new SemanticException("Owner name can't be null in alter table set owner command");
+    }
+
+    AlterTableSetOwnerDesc alterTblDesc  = new AlterTableSetOwnerDesc(tableName, ownerPrincipal);
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTblDesc), conf));
+  }
+
+  private void analyzeAlterTableLocation(ASTNode ast, TableName tableName, Map<String, String> partSpec)
+      throws SemanticException {
 
     String newLocation = unescapeSQLString(ast.getChild(0).getText());
     try {
-      // To make sure host/port pair is valid, the status of the location
-      // does not matter
+      // To make sure host/port pair is valid, the status of the location does not matter
       FileSystem.get(new URI(newLocation), conf).getFileStatus(new Path(newLocation));
     } catch (FileNotFoundException e) {
-      // Only check host/port pair is valid, wheter the file exist or not does not matter
+      // Only check host/port pair is valid, whether the file exist or not does not matter
     } catch (Exception e) {
       throw new SemanticException("Cannot connect to namenode, please check if host/port pair for " + newLocation + " is valid", e);
     }
+
     addLocationToOutputs(newLocation);
-    AlterTableDesc alterTblDesc = new AlterTableDesc(tableName, newLocation, partSpec);
+    AlterTableSetLocationDesc alterTblDesc = new AlterTableSetLocationDesc(tableName, partSpec, newLocation);
+    Table tbl = getTable(tableName);
+    if (AcidUtils.isTransactionalTable(tbl)) {
+      setAcidDdlDesc(alterTblDesc);
+    }
 
-    addInputsOutputsAlterTable(tableName, partSpec, alterTblDesc);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        alterTblDesc), conf));
-
+    addInputsOutputsAlterTable(tableName, partSpec, alterTblDesc, AlterTableType.ALTERLOCATION, false);
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTblDesc)));
   }
 
-  private void analyzeAlterTablePartMergeFiles(ASTNode ast,
-      String tableName, HashMap<String, String> partSpec)
+  private void analyzeAlterTablePartMergeFiles(ASTNode ast, TableName tableName, Map<String, String> partSpec)
       throws SemanticException {
-    AlterTablePartMergeFilesDesc mergeDesc = new AlterTablePartMergeFilesDesc(
-        tableName, partSpec);
 
-    List<Path> inputDir = new ArrayList<Path>();
     Path oldTblPartLoc = null;
     Path newTblPartLoc = null;
     Table tblObj = null;
     ListBucketingCtx lbCtx = null;
 
-    try {
-      tblObj = getTable(tableName);
-
-      List<String> bucketCols = null;
-      Class<? extends InputFormat> inputFormatClass = null;
-      boolean isArchived = false;
-      boolean checkIndex = HiveConf.getBoolVar(conf,
-          HiveConf.ConfVars.HIVE_CONCATENATE_CHECK_INDEX);
-      if (checkIndex) {
-        List<Index> indexes = db.getIndexes(tblObj.getDbName(), tblObj.getTableName(),
-            Short.MAX_VALUE);
-        if (indexes != null && indexes.size() > 0) {
-          throw new SemanticException("can not do merge because source table "
-              + tableName + " is indexed.");
-        }
+    tblObj = getTable(tableName);
+    if(AcidUtils.isTransactionalTable(tblObj)) {
+      LinkedHashMap<String, String> newPartSpec = null;
+      if (partSpec != null) {
+        newPartSpec = new LinkedHashMap<>(partSpec);
       }
 
-      if (tblObj.isPartitioned()) {
-        if (partSpec == null) {
+      boolean isBlocking = !HiveConf.getBoolVar(conf,
+          ConfVars.TRANSACTIONAL_CONCATENATE_NOBLOCK, false);
+      AlterTableCompactDesc desc = new AlterTableCompactDesc(tableName, newPartSpec, "MAJOR", isBlocking, null);
+
+      rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
+      return;
+    }
+
+    List<String> bucketCols = null;
+    Class<? extends InputFormat> inputFormatClass = null;
+    boolean isArchived = false;
+    if (tblObj.isPartitioned()) {
+      if (partSpec == null) {
+        throw new SemanticException("source table " + tableName
+            + " is partitioned but no partition desc found.");
+      } else {
+        Partition part = PartitionUtils.getPartition(db, tblObj, partSpec, false);
+        if (part == null) {
           throw new SemanticException("source table " + tableName
-              + " is partitioned but no partition desc found.");
-        } else {
-          Partition part = getPartition(tblObj, partSpec, false);
-          if (part == null) {
-            throw new SemanticException("source table " + tableName
-                + " is partitioned but partition not found.");
-          }
-          bucketCols = part.getBucketCols();
+              + " is partitioned but partition not found.");
+        }
+        bucketCols = part.getBucketCols();
+        try {
           inputFormatClass = part.getInputFormatClass();
-          isArchived = ArchiveUtils.isArchived(part);
+        } catch (HiveException e) {
+          throw new SemanticException(e);
+        }
+        isArchived = ArchiveUtils.isArchived(part);
 
-          Path tabPath = tblObj.getPath();
-          Path partPath = part.getDataLocation();
+        Path tabPath = tblObj.getPath();
+        Path partPath = part.getDataLocation();
 
-          // if the table is in a different dfs than the partition,
-          // replace the partition's dfs with the table's dfs.
-          newTblPartLoc = new Path(tabPath.toUri().getScheme(), tabPath.toUri()
-              .getAuthority(), partPath.toUri().getPath());
+        // if the table is in a different dfs than the partition,
+        // replace the partition's dfs with the table's dfs.
+        newTblPartLoc = new Path(tabPath.toUri().getScheme(), tabPath.toUri()
+            .getAuthority(), partPath.toUri().getPath());
 
-          oldTblPartLoc = partPath;
+        oldTblPartLoc = partPath;
 
-          lbCtx = constructListBucketingCtx(part.getSkewedColNames(), part.getSkewedColValues(),
-              part.getSkewedColValueLocationMaps(), part.isStoredAsSubDirectories(), conf);
+        lbCtx = constructListBucketingCtx(part.getSkewedColNames(), part.getSkewedColValues(),
+            part.getSkewedColValueLocationMaps(), part.isStoredAsSubDirectories());
+      }
+    } else {
+      inputFormatClass = tblObj.getInputFormatClass();
+      bucketCols = tblObj.getBucketCols();
+
+      // input and output are the same
+      oldTblPartLoc = tblObj.getPath();
+      newTblPartLoc = tblObj.getPath();
+
+      lbCtx = constructListBucketingCtx(tblObj.getSkewedColNames(), tblObj.getSkewedColValues(),
+          tblObj.getSkewedColValueLocationMaps(), tblObj.isStoredAsSubDirectories());
+    }
+
+    // throw a HiveException for other than rcfile and orcfile.
+    if (!(inputFormatClass.equals(RCFileInputFormat.class) || inputFormatClass.equals(OrcInputFormat.class))) {
+      throw new SemanticException(ErrorMsg.CONCATENATE_UNSUPPORTED_FILE_FORMAT.getMsg());
+    }
+
+    // throw a HiveException if the table/partition is bucketized
+    if (bucketCols != null && bucketCols.size() > 0) {
+      throw new SemanticException(ErrorMsg.CONCATENATE_UNSUPPORTED_TABLE_BUCKETED.getMsg());
+    }
+
+    // throw a HiveException if the table/partition is archived
+    if (isArchived) {
+      throw new SemanticException(ErrorMsg.CONCATENATE_UNSUPPORTED_PARTITION_ARCHIVED.getMsg());
+    }
+
+    // non-native and non-managed tables are not supported as MoveTask requires filenames to be in specific format,
+    // violating which can cause data loss
+    if (tblObj.isNonNative()) {
+      throw new SemanticException(ErrorMsg.CONCATENATE_UNSUPPORTED_TABLE_NON_NATIVE.getMsg());
+    }
+
+    if (tblObj.getTableType() != TableType.MANAGED_TABLE) {
+      throw new SemanticException(ErrorMsg.CONCATENATE_UNSUPPORTED_TABLE_NOT_MANAGED.getMsg());
+    }
+
+    addInputsOutputsAlterTable(tableName, partSpec, null, AlterTableType.MERGEFILES, false);
+    TableDesc tblDesc = Utilities.getTableDesc(tblObj);
+    Path queryTmpdir = ctx.getExternalTmpPath(newTblPartLoc);
+    AlterTableConcatenateDesc mergeDesc = new AlterTableConcatenateDesc(tableName, partSpec, lbCtx, oldTblPartLoc,
+        queryTmpdir, inputFormatClass, Utilities.getTableDesc(tblObj));
+    DDLWork ddlWork = new DDLWork(getInputs(), getOutputs(), mergeDesc);
+    ddlWork.setNeedLock(true);
+    Task<?> mergeTask = TaskFactory.get(ddlWork);
+    // No need to handle MM tables - unsupported path.
+    LoadTableDesc ltd = new LoadTableDesc(queryTmpdir, tblDesc,
+        partSpec == null ? new HashMap<>() : partSpec);
+    ltd.setLbCtx(lbCtx);
+    ltd.setInheritTableSpecs(true);
+    Task<MoveWork> moveTsk =
+        TaskFactory.get(new MoveWork(null, null, ltd, null, false));
+    mergeTask.addDependentTask(moveTsk);
+
+    if (conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+      BasicStatsWork basicStatsWork;
+      if (oldTblPartLoc.equals(newTblPartLoc)) {
+        // If we're merging to the same location, we can avoid some metastore calls
+        try{
+          TableSpec tableSpec = new TableSpec(db, tableName, partSpec);
+          basicStatsWork = new BasicStatsWork(tableSpec);
+        } catch (HiveException e){
+          throw new SemanticException(e);
         }
       } else {
-        inputFormatClass = tblObj.getInputFormatClass();
-        bucketCols = tblObj.getBucketCols();
-
-        // input and output are the same
-        oldTblPartLoc = tblObj.getPath();
-        newTblPartLoc = tblObj.getPath();
-
-        lbCtx = constructListBucketingCtx(tblObj.getSkewedColNames(), tblObj.getSkewedColValues(),
-            tblObj.getSkewedColValueLocationMaps(), tblObj.isStoredAsSubDirectories(), conf);
+        basicStatsWork = new BasicStatsWork(ltd);
       }
+      basicStatsWork.setNoStatsAggregator(true);
+      basicStatsWork.setClearAggregatorStats(true);
+      StatsWork columnStatsWork = new StatsWork(tblObj, basicStatsWork, conf);
 
-      // throw a HiveException for other than rcfile and orcfile.
-      if (!((inputFormatClass.equals(RCFileInputFormat.class) ||
-          (inputFormatClass.equals(OrcInputFormat.class))))) {
-        throw new SemanticException(ErrorMsg.CONCATENATE_UNSUPPORTED_FILE_FORMAT.getMsg());
-      }
-      mergeDesc.setInputFormatClass(inputFormatClass);
-
-      // throw a HiveException if the table/partition is bucketized
-      if (bucketCols != null && bucketCols.size() > 0) {
-        throw new SemanticException(ErrorMsg.CONCATENATE_UNSUPPORTED_TABLE_BUCKETED.getMsg());
-      }
-
-      // throw a HiveException if the table/partition is archived
-      if (isArchived) {
-        throw new SemanticException(ErrorMsg.CONCATENATE_UNSUPPORTED_PARTITION_ARCHIVED.getMsg());
-      }
-
-      // non-native and non-managed tables are not supported as MoveTask requires filenames to be in specific format,
-      // violating which can cause data loss
-      if (tblObj.isNonNative()) {
-        throw new SemanticException(ErrorMsg.CONCATENATE_UNSUPPORTED_TABLE_NON_NATIVE.getMsg());
-      }
-
-      if (tblObj.getTableType() != TableType.MANAGED_TABLE) {
-        throw new SemanticException(ErrorMsg.CONCATENATE_UNSUPPORTED_TABLE_NOT_MANAGED.getMsg());
-      }
-
-      // transactional tables are compacted and no longer needs to be bucketed, so not safe for merge/concatenation
-      boolean isAcid = AcidUtils.isAcidTable(tblObj);
-      if (isAcid) {
-        throw new SemanticException(ErrorMsg.CONCATENATE_UNSUPPORTED_TABLE_TRANSACTIONAL.getMsg());
-      }
-      inputDir.add(oldTblPartLoc);
-
-      mergeDesc.setInputDir(inputDir);
-
-      mergeDesc.setLbCtx(lbCtx);
-
-      addInputsOutputsAlterTable(tableName, partSpec, AlterTableTypes.MERGEFILES);
-      DDLWork ddlWork = new DDLWork(getInputs(), getOutputs(), mergeDesc);
-      ddlWork.setNeedLock(true);
-      Task<? extends Serializable> mergeTask = TaskFactory.get(ddlWork, conf);
-      TableDesc tblDesc = Utilities.getTableDesc(tblObj);
-      Path queryTmpdir = ctx.getExternalTmpPath(newTblPartLoc);
-      mergeDesc.setOutputDir(queryTmpdir);
-      LoadTableDesc ltd = new LoadTableDesc(queryTmpdir, tblDesc,
-          partSpec == null ? new HashMap<>() : partSpec);
-      ltd.setLbCtx(lbCtx);
-      Task<MoveWork> moveTsk = TaskFactory.get(new MoveWork(null, null, ltd, null, false),
-          conf);
-      mergeTask.addDependentTask(moveTsk);
-
-      if (conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
-        StatsWork statDesc;
-        if (oldTblPartLoc.equals(newTblPartLoc)) {
-          // If we're merging to the same location, we can avoid some metastore calls
-          TableSpec tableSpec = new TableSpec(db, tableName, partSpec);
-          statDesc = new StatsWork(tableSpec);
-        } else {
-          statDesc = new StatsWork(ltd);
-        }
-        statDesc.setNoStatsAggregator(true);
-        statDesc.setClearAggregatorStats(true);
-        statDesc.setStatsReliable(conf.getBoolVar(HiveConf.ConfVars.HIVE_STATS_RELIABLE));
-        Task<? extends Serializable> statTask = TaskFactory.get(statDesc, conf);
-        moveTsk.addDependentTask(statTask);
-      }
-
-      rootTasks.add(mergeTask);
-    } catch (Exception e) {
-      throw new SemanticException(e);
+      Task<?> statTask = TaskFactory.get(columnStatsWork);
+      moveTsk.addDependentTask(statTask);
     }
+
+    rootTasks.add(mergeTask);
   }
 
-  private void analyzeAlterTableClusterSort(ASTNode ast, String tableName,
-      HashMap<String, String> partSpec) throws SemanticException {
+  private void analyzeAlterTableClusterSort(ASTNode ast, TableName tableName, Map<String, String> partSpec)
+      throws SemanticException {
 
-    AlterTableDesc alterTblDesc;
+    AbstractAlterTableDesc alterTblDesc;
     switch (ast.getChild(0).getType()) {
     case HiveParser.TOK_NOT_CLUSTERED:
-      alterTblDesc = new AlterTableDesc(tableName, -1, new ArrayList<String>(),
-          new ArrayList<Order>(), partSpec);
+      alterTblDesc = new AlterTableNotClusteredDesc(tableName, partSpec);
       break;
     case HiveParser.TOK_NOT_SORTED:
-      alterTblDesc = new AlterTableDesc(tableName, true, partSpec);
+      alterTblDesc = new AlterTableNotSortedDesc(tableName, partSpec);
       break;
     case HiveParser.TOK_ALTERTABLE_BUCKETS:
       ASTNode buckets = (ASTNode) ast.getChild(0);
@@ -1772,18 +1076,17 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         throw new SemanticException(ErrorMsg.INVALID_BUCKET_NUMBER.getMsg());
       }
 
-      alterTblDesc = new AlterTableDesc(tableName, numBuckets,
-          bucketCols, sortCols, partSpec);
+      alterTblDesc = new AlterTableClusteredByDesc(tableName, partSpec, numBuckets, bucketCols, sortCols);
       break;
     default:
       throw new SemanticException("Invalid operation " + ast.getChild(0).getType());
     }
-    addInputsOutputsAlterTable(tableName, partSpec, alterTblDesc);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTblDesc), conf));
+    addInputsOutputsAlterTable(tableName, partSpec, alterTblDesc, alterTblDesc.getType(), false);
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTblDesc)));
   }
 
-  private void analyzeAlterTableCompact(ASTNode ast, String tableName,
-      HashMap<String, String> partSpec) throws SemanticException {
+  private void analyzeAlterTableCompact(ASTNode ast, TableName tableName,
+      Map<String, String> partSpec) throws SemanticException {
 
     String type = unescapeSQLString(ast.getChild(0).getText()).toLowerCase();
 
@@ -1792,75 +1095,27 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     LinkedHashMap<String, String> newPartSpec = null;
-    if (partSpec != null) newPartSpec = new LinkedHashMap<String, String>(partSpec);
+    if (partSpec != null) {
+      newPartSpec = new LinkedHashMap<String, String>(partSpec);
+    }
 
-    HashMap<String, String> mapProp = null;
+    Map<String, String> mapProp = null;
     boolean isBlocking = false;
 
     for(int i = 0; i < ast.getChildCount(); i++) {
       switch(ast.getChild(i).getType()) {
-        case HiveParser.TOK_TABLEPROPERTIES:
-          mapProp = getProps((ASTNode) (ast.getChild(i)).getChild(0));
-          break;
-        case HiveParser.TOK_BLOCKING:
-          isBlocking = true;
-          break;
-      }
-    }
-    AlterTableSimpleDesc desc = new AlterTableSimpleDesc(
-      tableName, newPartSpec, type, isBlocking);
-    desc.setProps(mapProp);
-
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc), conf));
-  }
-
-  private void analyzeAlterTableDropConstraint(ASTNode ast, String tableName)
-    throws SemanticException {
-    String dropConstraintName = unescapeIdentifier(ast.getChild(0).getText());
-    AlterTableDesc alterTblDesc = new AlterTableDesc(tableName, dropConstraintName, (ReplicationSpec)null);
-
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        alterTblDesc), conf));
-  }
-
-  private void analyzeAlterTableAddConstraint(ASTNode ast, String tableName)
-    throws SemanticException {
-    ASTNode parent = (ASTNode) ast.getParent();
-    String[] qualifiedTabName = getQualifiedTableName((ASTNode) parent.getChild(0));
-    ASTNode child = (ASTNode) ast.getChild(0);
-    List<SQLPrimaryKey> primaryKeys = new ArrayList<>();
-    List<SQLForeignKey> foreignKeys = new ArrayList<>();
-    List<SQLUniqueConstraint> uniqueConstraints = new ArrayList<>();
-
-    switch (child.getToken().getType()) {
-      case HiveParser.TOK_UNIQUE:
-        BaseSemanticAnalyzer.processUniqueConstraints(qualifiedTabName[0], qualifiedTabName[1],
-                child, uniqueConstraints);        
+      case HiveParser.TOK_TABLEPROPERTIES:
+        mapProp = getProps((ASTNode) (ast.getChild(i)).getChild(0));
         break;
-      case HiveParser.TOK_PRIMARY_KEY:
-        BaseSemanticAnalyzer.processPrimaryKeys(qualifiedTabName[0], qualifiedTabName[1],
-                child, primaryKeys);
-        break;
-      case HiveParser.TOK_FOREIGN_KEY:
-        BaseSemanticAnalyzer.processForeignKeys(qualifiedTabName[0], qualifiedTabName[1],
-                child, foreignKeys);
+      case HiveParser.TOK_BLOCKING:
+        isBlocking = true;
         break;
       default:
-        throw new SemanticException(ErrorMsg.NOT_RECOGNIZED_CONSTRAINT.getMsg(
-                child.getToken().getText()));
+        break;
+      }
     }
-    AlterTableDesc alterTblDesc = new AlterTableDesc(tableName, primaryKeys, foreignKeys,
-            uniqueConstraints, null);
-
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        alterTblDesc), conf));
-  }
-
-  static HashMap<String, String> getProps(ASTNode prop) {
-    // Must be deterministic order map for consistent q-test output across Java versions
-    HashMap<String, String> mapProp = new LinkedHashMap<String, String>();
-    readProps(prop, mapProp);
-    return mapProp;
+    AlterTableCompactDesc desc = new AlterTableCompactDesc(tableName, newPartSpec, type, isBlocking, mapProp);
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
   }
 
   /**
@@ -1898,16 +1153,12 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     // return column name if exists, column could be DOT separated.
     // example: lintString.$elem$.myint
     // return table name for column name if no column has been specified.
-    static public String getColPath(
-      Hive db,
-      ASTNode node,
-      String dbName,
-      String tableName,
-      Map<String, String> partSpec) throws SemanticException {
+    static public String getColPath(Hive db, ASTNode node, TableName tableName, Map<String, String> partSpec)
+        throws SemanticException {
 
       // if this ast has only one child, then no column name specified.
       if (node.getChildCount() == 1) {
-        return tableName;
+        return null;
       }
 
       ASTNode columnNode = null;
@@ -1921,19 +1172,14 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       if (columnNode != null) {
-        if (dbName == null) {
-          return tableName + "." + QualifiedNameUtil.getFullyQualifiedName(columnNode);
-        } else {
-          return tableName.substring(dbName.length() + 1, tableName.length()) + "." +
-              QualifiedNameUtil.getFullyQualifiedName(columnNode);
-        }
+        return String.join(".", tableName.getNotEmptyDbTable(), QualifiedNameUtil.getFullyQualifiedName(columnNode));
       } else {
-        return tableName;
+        return null;
       }
     }
 
     // get partition metadata
-    static public Map<String, String> getPartitionSpec(Hive db, ASTNode ast, String tableName)
+    static Map<String, String> getPartitionSpec(Hive db, ASTNode ast, TableName tableName)
       throws SemanticException {
       ASTNode partNode = null;
       // if this ast has only one child, then no partition spec specified.
@@ -1955,16 +1201,16 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       if (partNode != null) {
         Table tab = null;
         try {
-          tab = db.getTable(tableName);
+          tab = db.getTable(tableName.getNotEmptyDbTable());
         }
         catch (InvalidTableException e) {
-          throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tableName), e);
+          throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tableName.getNotEmptyDbTable()), e);
         }
         catch (HiveException e) {
           throw new SemanticException(e.getMessage(), e);
         }
 
-        HashMap<String, String> partSpec = null;
+        Map<String, String> partSpec = null;
         try {
           partSpec = getValidatedPartSpec(tab, partNode, db.getConf(), false);
         } catch (SemanticException e) {
@@ -2015,11 +1261,11 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private void validateTable(String tableName, Map<String, String> partSpec)
+  private void validateTable(TableName tableName, Map<String, String> partSpec)
       throws SemanticException {
     Table tab = getTable(tableName);
     if (partSpec != null) {
-      getPartition(tab, partSpec, true);
+      PartitionUtils.getPartition(db, tab, partSpec, true);
     }
   }
 
@@ -2040,8 +1286,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   private void analyzeDescribeTable(ASTNode ast) throws SemanticException {
     ASTNode tableTypeExpr = (ASTNode) ast.getChild(0);
 
-    String dbName    = null;
-    String tableName = null;
+    final TableName tableName;
     String colPath   = null;
     Map<String, String> partSpec = null;
 
@@ -2052,10 +1297,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     if (((ASTNode) tableTypeExpr.getChild(0)).getType() == HiveParser.TOK_TABNAME) {
       tableNode = (ASTNode) tableTypeExpr.getChild(0);
       if (tableNode.getChildCount() == 1) {
-        tableName = ((ASTNode) tableNode.getChild(0)).getText();
+        tableName = HiveTableName.of(((ASTNode) tableNode.getChild(0)).getText());
       } else {
-        dbName    = ((ASTNode) tableNode.getChild(0)).getText();
-        tableName = dbName + "." + ((ASTNode) tableNode.getChild(1)).getText();
+        tableName = TableName.fromString(((ASTNode) tableNode.getChild(1)).getText(),
+            SessionState.get().getCurrentCatalog(), ((ASTNode) tableNode.getChild(0)).getText());
       }
     } else {
       throw new SemanticException(((ASTNode) tableTypeExpr.getChild(0)).getText() + " is not an expected token type");
@@ -2065,211 +1310,76 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     partSpec = QualifiedNameUtil.getPartitionSpec(db, tableTypeExpr, tableName);
 
     // process the third child node,if exists, to get partition spec(s)
-    colPath  = QualifiedNameUtil.getColPath(db, tableTypeExpr, dbName, tableName, partSpec);
+    colPath  = QualifiedNameUtil.getColPath(db, tableTypeExpr, tableName, partSpec);
 
     // if database is not the one currently using
     // validate database
-    if (dbName != null) {
-      validateDatabase(dbName);
+    if (tableName.getDb() != null) {
+      validateDatabase(tableName.getDb());
     }
     if (partSpec != null) {
       validateTable(tableName, partSpec);
     }
 
-    DescTableDesc descTblDesc = new DescTableDesc(
-      ctx.getResFile(), tableName, partSpec, colPath);
-
     boolean showColStats = false;
+    boolean isFormatted = false;
+    boolean isExt = false;
     if (ast.getChildCount() == 2) {
       int descOptions = ast.getChild(1).getType();
-      descTblDesc.setFormatted(descOptions == HiveParser.KW_FORMATTED);
-      descTblDesc.setExt(descOptions == HiveParser.KW_EXTENDED);
-      descTblDesc.setPretty(descOptions == HiveParser.KW_PRETTY);
+      isFormatted = descOptions == HiveParser.KW_FORMATTED;
+      isExt = descOptions == HiveParser.KW_EXTENDED;
       // in case of "DESCRIBE FORMATTED tablename column_name" statement, colPath
       // will contain tablename.column_name. If column_name is not specified
       // colPath will be equal to tableName. This is how we can differentiate
       // if we are describing a table or column
-      if (!colPath.equalsIgnoreCase(tableName) && descTblDesc.isFormatted()) {
+      if (colPath != null && isFormatted) {
         showColStats = true;
       }
     }
 
     inputs.add(new ReadEntity(getTable(tableName)));
-    Task ddlTask = TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        descTblDesc), conf);
+
+    DescTableDesc descTblDesc = new DescTableDesc(ctx.getResFile(), tableName, partSpec, colPath, isExt, isFormatted);
+    Task<?> ddlTask = TaskFactory.get(new DDLWork(getInputs(), getOutputs(), descTblDesc));
     rootTasks.add(ddlTask);
-    String schema = DescTableDesc.getSchema(showColStats);
+    String schema = showColStats ? DescTableDesc.COLUMN_STATISTICS_SCHEMA : DescTableDesc.SCHEMA;
     setFetchTask(createFetchTask(schema));
     LOG.info("analyzeDescribeTable done");
-  }
-
-  /**
-   * Describe database.
-   *
-   * @param ast
-   * @throws SemanticException
-   */
-  private void analyzeDescDatabase(ASTNode ast) throws SemanticException {
-
-    boolean isExtended;
-    String dbName;
-
-    if (ast.getChildCount() == 1) {
-      dbName = stripQuotes(ast.getChild(0).getText());
-      isExtended = false;
-    } else if (ast.getChildCount() == 2) {
-      dbName = stripQuotes(ast.getChild(0).getText());
-      isExtended = true;
-    } else {
-      throw new SemanticException("Unexpected Tokens at DESCRIBE DATABASE");
-    }
-
-    DescDatabaseDesc descDbDesc = new DescDatabaseDesc(ctx.getResFile(),
-        dbName, isExtended);
-    inputs.add(new ReadEntity(getDatabase(dbName)));
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), descDbDesc), conf));
-    setFetchTask(createFetchTask(descDbDesc.getSchema()));
-  }
-
-  public static HashMap<String, String> getPartSpec(ASTNode partspec)
-      throws SemanticException {
-    if (partspec == null) {
-      return null;
-    }
-    HashMap<String, String> partSpec = new LinkedHashMap<String, String>();
-    for (int i = 0; i < partspec.getChildCount(); ++i) {
-      ASTNode partspec_val = (ASTNode) partspec.getChild(i);
-      String key = partspec_val.getChild(0).getText();
-      String val = null;
-      if (partspec_val.getChildCount() > 1) {
-        val = stripQuotes(partspec_val.getChild(1).getText());
-      }
-      partSpec.put(key.toLowerCase(), val);
-    }
-    return partSpec;
-  }
-
-  public static HashMap<String, String> getValidatedPartSpec(Table table, ASTNode astNode,
-      HiveConf conf, boolean shouldBeFull) throws SemanticException {
-    HashMap<String, String> partSpec = getPartSpec(astNode);
-    if (partSpec != null && !partSpec.isEmpty()) {
-      validatePartSpec(table, partSpec, astNode, conf, shouldBeFull);
-    }
-    return partSpec;
-  }
-
-  private void analyzeShowPartitions(ASTNode ast) throws SemanticException {
-    ShowPartitionsDesc showPartsDesc;
-    String tableName = getUnescapedName((ASTNode) ast.getChild(0));
-    List<Map<String, String>> partSpecs = getPartitionSpecs(getTable(tableName), ast);
-    // We only can have a single partition spec
-    assert (partSpecs.size() <= 1);
-    Map<String, String> partSpec = null;
-    if (partSpecs.size() > 0) {
-      partSpec = partSpecs.get(0);
-    }
-
-    validateTable(tableName, null);
-
-    showPartsDesc = new ShowPartitionsDesc(tableName, ctx.getResFile(), partSpec);
-    inputs.add(new ReadEntity(getTable(tableName)));
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        showPartsDesc), conf));
-    setFetchTask(createFetchTask(showPartsDesc.getSchema()));
-  }
-
-  private void analyzeShowCreateDatabase(ASTNode ast) throws SemanticException {
-    String dbName = getUnescapedName((ASTNode)ast.getChild(0));
-    ShowCreateDatabaseDesc showCreateDbDesc =
-        new ShowCreateDatabaseDesc(dbName, ctx.getResFile().toString());
-
-    Database database = getDatabase(dbName);
-    inputs.add(new ReadEntity(database));
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        showCreateDbDesc), conf));
-    setFetchTask(createFetchTask(showCreateDbDesc.getSchema()));
-  }
-
-  private void analyzeShowCreateTable(ASTNode ast) throws SemanticException {
-    ShowCreateTableDesc showCreateTblDesc;
-    String tableName = getUnescapedName((ASTNode)ast.getChild(0));
-    showCreateTblDesc = new ShowCreateTableDesc(tableName, ctx.getResFile().toString());
-
-    Table tab = getTable(tableName);
-    if (tab.getTableType() == org.apache.hadoop.hive.metastore.TableType.INDEX_TABLE) {
-      throw new SemanticException(ErrorMsg.SHOW_CREATETABLE_INDEX.getMsg(tableName
-          + " has table type INDEX_TABLE"));
-    }
-    inputs.add(new ReadEntity(tab));
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        showCreateTblDesc), conf));
-    setFetchTask(createFetchTask(showCreateTblDesc.getSchema()));
-  }
-
-  private void analyzeShowDatabases(ASTNode ast) throws SemanticException {
-    ShowDatabasesDesc showDatabasesDesc;
-    if (ast.getChildCount() == 1) {
-      String databasePattern = unescapeSQLString(ast.getChild(0).getText());
-      showDatabasesDesc = new ShowDatabasesDesc(ctx.getResFile(), databasePattern);
-    } else {
-      showDatabasesDesc = new ShowDatabasesDesc(ctx.getResFile());
-    }
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), showDatabasesDesc), conf));
-    setFetchTask(createFetchTask(showDatabasesDesc.getSchema()));
   }
 
   private void analyzeShowTables(ASTNode ast) throws SemanticException {
     ShowTablesDesc showTblsDesc;
     String dbName = SessionState.get().getCurrentDatabase();
     String tableNames = null;
+    TableType tableTypeFilter = null;
+    boolean isExtended = false;
 
-    if (ast.getChildCount() > 3) {
+    if (ast.getChildCount() > 4) {
       throw new SemanticException(ErrorMsg.INVALID_AST_TREE.getMsg(ast.toStringTree()));
     }
 
-    switch (ast.getChildCount()) {
-    case 1: // Uses a pattern
-      tableNames = unescapeSQLString(ast.getChild(0).getText());
-      showTblsDesc = new ShowTablesDesc(ctx.getResFile(), dbName, tableNames);
-      break;
-    case 2: // Specifies a DB
-      assert (ast.getChild(0).getType() == HiveParser.TOK_FROM);
-      dbName = unescapeIdentifier(ast.getChild(1).getText());
-      validateDatabase(dbName);
-      showTblsDesc = new ShowTablesDesc(ctx.getResFile(), dbName);
-      break;
-    case 3: // Uses a pattern and specifies a DB
-      assert (ast.getChild(0).getType() == HiveParser.TOK_FROM);
-      dbName = unescapeIdentifier(ast.getChild(1).getText());
-      tableNames = unescapeSQLString(ast.getChild(2).getText());
-      validateDatabase(dbName);
-      showTblsDesc = new ShowTablesDesc(ctx.getResFile(), dbName, tableNames);
-      break;
-    default: // No pattern or DB
-      showTblsDesc = new ShowTablesDesc(ctx.getResFile(), dbName);
-      break;
-    }
-    inputs.add(new ReadEntity(getDatabase(dbName)));
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        showTblsDesc), conf));
-    setFetchTask(createFetchTask(showTblsDesc.getSchema()));
-  }
-
-  private void analyzeShowColumns(ASTNode ast) throws SemanticException {
-    String tableName = getUnescapedName((ASTNode) ast.getChild(0));
-    if (ast.getChildCount() > 1) {
-      if (tableName.contains(".")) {
-        throw new SemanticException("Duplicates declaration for database name");
+    for (int i = 0; i < ast.getChildCount(); i++) {
+      ASTNode child = (ASTNode) ast.getChild(i);
+      if (child.getType() == HiveParser.TOK_FROM) { // Specifies a DB
+        dbName = unescapeIdentifier(ast.getChild(++i).getText());
+        validateDatabase(dbName);
+      } else if (child.getType() == HiveParser.TOK_TABLE_TYPE) { // Filter on table type
+        String tableType = unescapeIdentifier(child.getChild(0).getText());
+        if (!tableType.equalsIgnoreCase("table_type")) {
+          throw new SemanticException("SHOW TABLES statement only allows equality filter on table_type value");
+        }
+        tableTypeFilter = TableType.valueOf(unescapeSQLString(child.getChild(1).getText()));
+      } else if (child.getType() == HiveParser.KW_EXTENDED) { // Include table type
+        isExtended = true;
+      } else { // Uses a pattern
+        tableNames = unescapeSQLString(child.getText());
       }
-      tableName = getUnescapedName((ASTNode) ast.getChild(1)) + "." + tableName;
     }
-    Table tab = getTable(tableName);
-    inputs.add(new ReadEntity(tab));
 
-    ShowColumnsDesc showColumnsDesc = new ShowColumnsDesc(ctx.getResFile(), tableName);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        showColumnsDesc), conf));
-    setFetchTask(createFetchTask(showColumnsDesc.getSchema()));
+    showTblsDesc = new ShowTablesDesc(ctx.getResFile(), dbName, tableNames, tableTypeFilter, isExtended);
+    inputs.add(new ReadEntity(getDatabase(dbName)));
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), showTblsDesc)));
+    setFetchTask(createFetchTask(showTblsDesc.getSchema()));
   }
 
   private void analyzeShowTableStatus(ASTNode ast) throws SemanticException {
@@ -2277,7 +1387,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     String tableNames = getUnescapedName((ASTNode) ast.getChild(0));
     String dbName = SessionState.get().getCurrentDatabase();
     int children = ast.getChildCount();
-    HashMap<String, String> partSpec = null;
+    Map<String, String> partSpec = null;
     if (children >= 2) {
       if (children > 3) {
         throw new SemanticException(ErrorMsg.INVALID_AST_TREE.getMsg());
@@ -2296,73 +1406,27 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     if (partSpec != null) {
-      validateTable(tableNames, partSpec);
+      validateTable(HiveTableName.ofNullableWithNoDefault(tableNames), partSpec);
     }
 
-    showTblStatusDesc = new ShowTableStatusDesc(ctx.getResFile().toString(), dbName,
-        tableNames, partSpec);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        showTblStatusDesc), conf));
-    setFetchTask(createFetchTask(showTblStatusDesc.getSchema()));
+    showTblStatusDesc = new ShowTableStatusDesc(ctx.getResFile().toString(), dbName, tableNames, partSpec);
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), showTblStatusDesc)));
+    setFetchTask(createFetchTask(ShowTableStatusDesc.SCHEMA));
   }
 
   private void analyzeShowTableProperties(ASTNode ast) throws SemanticException {
-    ShowTblPropertiesDesc showTblPropertiesDesc;
-    String[] qualified = getQualifiedTableName((ASTNode) ast.getChild(0));
+    ShowTablePropertiesDesc showTblPropertiesDesc;
+    TableName qualified = getQualifiedTableName((ASTNode) ast.getChild(0));
     String propertyName = null;
     if (ast.getChildCount() > 1) {
       propertyName = unescapeSQLString(ast.getChild(1).getText());
     }
 
-    String tableNames = getDotName(qualified);
-    validateTable(tableNames, null);
+    validateTable(qualified, null);
 
-    showTblPropertiesDesc = new ShowTblPropertiesDesc(ctx.getResFile().toString(), tableNames,
-        propertyName);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        showTblPropertiesDesc), conf));
-    setFetchTask(createFetchTask(showTblPropertiesDesc.getSchema()));
-  }
-
-  private void analyzeShowIndexes(ASTNode ast) throws SemanticException {
-    ShowIndexesDesc showIndexesDesc;
-    String tableName = getUnescapedName((ASTNode) ast.getChild(0));
-    showIndexesDesc = new ShowIndexesDesc(tableName, ctx.getResFile());
-
-    if (ast.getChildCount() == 2) {
-      int descOptions = ast.getChild(1).getType();
-      showIndexesDesc.setFormatted(descOptions == HiveParser.KW_FORMATTED);
-    }
-
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        showIndexesDesc), conf));
-    setFetchTask(createFetchTask(showIndexesDesc.getSchema()));
-  }
-
-  /**
-   * Add the task according to the parsed command tree. This is used for the CLI
-   * command "SHOW FUNCTIONS;".
-   *
-   * @param ast
-   *          The parsed command tree.
-   * @throws SemanticException
-   *           Parsin failed
-   */
-  private void analyzeShowFunctions(ASTNode ast) throws SemanticException {
-    ShowFunctionsDesc showFuncsDesc;
-    if (ast.getChildCount() == 1) {
-      String funcNames = stripQuotes(ast.getChild(0).getText());
-      showFuncsDesc = new ShowFunctionsDesc(ctx.getResFile(), funcNames);
-    } else if (ast.getChildCount() == 2) {
-      assert (ast.getChild(0).getType() == HiveParser.KW_LIKE);
-      String funcNames = stripQuotes(ast.getChild(1).getText());
-      showFuncsDesc = new ShowFunctionsDesc(ctx.getResFile(), funcNames, true);
-    } else {
-      showFuncsDesc = new ShowFunctionsDesc(ctx.getResFile());
-    }
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        showFuncsDesc), conf));
-    setFetchTask(createFetchTask(showFuncsDesc.getSchema()));
+    showTblPropertiesDesc = new ShowTablePropertiesDesc(ctx.getResFile().toString(), qualified, propertyName);
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), showTblPropertiesDesc)));
+    setFetchTask(createFetchTask(ShowTablePropertiesDesc.SCHEMA));
   }
 
   /**
@@ -2376,7 +1440,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
    */
   private void analyzeShowLocks(ASTNode ast) throws SemanticException {
     String tableName = null;
-    HashMap<String, String> partSpec = null;
+    Map<String, String> partSpec = null;
     boolean isExtended = false;
 
     if (ast.getChildCount() >= 1) {
@@ -2407,8 +1471,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     ShowLocksDesc showLocksDesc = new ShowLocksDesc(ctx.getResFile(), tableName,
         partSpec, isExtended, txnManager.useNewShowLocksFormat());
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        showLocksDesc), conf));
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), showLocksDesc)));
     setFetchTask(createFetchTask(showLocksDesc.getSchema()));
 
     // Need to initialize the lock manager
@@ -2437,20 +1500,11 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     ShowLocksDesc showLocksDesc = new ShowLocksDesc(ctx.getResFile(), dbName,
                                                     isExtended, txnManager.useNewShowLocksFormat());
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        showLocksDesc), conf));
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), showLocksDesc)));
     setFetchTask(createFetchTask(showLocksDesc.getSchema()));
 
     // Need to initialize the lock manager
     ctx.setNeedLockMgr(true);
-  }
-
-  private void analyzeShowConf(ASTNode ast) throws SemanticException {
-    String confName = stripQuotes(ast.getChild(0).getText());
-    ShowConfDesc showConfDesc = new ShowConfDesc(ctx.getResFile(), confName);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        showConfDesc), conf));
-    setFetchTask(createFetchTask(showConfDesc.getSchema()));
   }
 
   private void analyzeShowViews(ASTNode ast) throws SemanticException {
@@ -2471,8 +1525,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       assert (ast.getChild(0).getType() == HiveParser.TOK_FROM);
       dbName = unescapeIdentifier(ast.getChild(1).getText());
       validateDatabase(dbName);
-      showViewsDesc = new ShowTablesDesc(ctx.getResFile(), dbName);
-      showViewsDesc.setType(TableType.VIRTUAL_VIEW);
+      showViewsDesc = new ShowTablesDesc(ctx.getResFile(), dbName, TableType.VIRTUAL_VIEW);
       break;
     case 3: // Uses a pattern and specifies a DB
       assert (ast.getChild(0).getType() == HiveParser.TOK_FROM);
@@ -2482,14 +1535,50 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       showViewsDesc = new ShowTablesDesc(ctx.getResFile(), dbName, viewNames, TableType.VIRTUAL_VIEW);
       break;
     default: // No pattern or DB
-      showViewsDesc = new ShowTablesDesc(ctx.getResFile(), dbName);
-      showViewsDesc.setType(TableType.VIRTUAL_VIEW);
+      showViewsDesc = new ShowTablesDesc(ctx.getResFile(), dbName, TableType.VIRTUAL_VIEW);
       break;
     }
 
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        showViewsDesc), conf));
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), showViewsDesc)));
     setFetchTask(createFetchTask(showViewsDesc.getSchema()));
+  }
+
+  private void analyzeShowMaterializedViews(ASTNode ast) throws SemanticException {
+    ShowTablesDesc showMaterializedViewsDesc;
+    String dbName = SessionState.get().getCurrentDatabase();
+    String materializedViewNames = null;
+
+    if (ast.getChildCount() > 3) {
+      throw new SemanticException(ErrorMsg.GENERIC_ERROR.getMsg());
+    }
+
+    switch (ast.getChildCount()) {
+    case 1: // Uses a pattern
+      materializedViewNames = unescapeSQLString(ast.getChild(0).getText());
+      showMaterializedViewsDesc = new ShowTablesDesc(
+          ctx.getResFile(), dbName, materializedViewNames, TableType.MATERIALIZED_VIEW);
+      break;
+    case 2: // Specifies a DB
+      assert (ast.getChild(0).getType() == HiveParser.TOK_FROM);
+      dbName = unescapeIdentifier(ast.getChild(1).getText());
+      validateDatabase(dbName);
+      showMaterializedViewsDesc = new ShowTablesDesc(ctx.getResFile(), dbName, TableType.MATERIALIZED_VIEW);
+      break;
+    case 3: // Uses a pattern and specifies a DB
+      assert (ast.getChild(0).getType() == HiveParser.TOK_FROM);
+      dbName = unescapeIdentifier(ast.getChild(1).getText());
+      materializedViewNames = unescapeSQLString(ast.getChild(2).getText());
+      validateDatabase(dbName);
+      showMaterializedViewsDesc = new ShowTablesDesc(
+          ctx.getResFile(), dbName, materializedViewNames, TableType.MATERIALIZED_VIEW);
+      break;
+    default: // No pattern or DB
+      showMaterializedViewsDesc = new ShowTablesDesc(ctx.getResFile(), dbName, TableType.MATERIALIZED_VIEW);
+      break;
+    }
+
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), showMaterializedViewsDesc)));
+    setFetchTask(createFetchTask(showMaterializedViewsDesc.getSchema()));
   }
 
   /**
@@ -2515,53 +1604,14 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     LockTableDesc lockTblDesc = new LockTableDesc(tableName, mode, partSpec,
-        HiveConf.getVar(conf, ConfVars.HIVEQUERYID));
-    lockTblDesc.setQueryStr(this.ctx.getCmd());
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        lockTblDesc), conf));
+        HiveConf.getVar(conf, ConfVars.HIVEQUERYID), ctx.getCmd());
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), lockTblDesc)));
 
     // Need to initialize the lock manager
     ctx.setNeedLockMgr(true);
   }
 
   /**
-   * Add a task to execute "SHOW COMPACTIONS"
-   * @param ast The parsed command tree.
-   * @throws SemanticException Parsing failed.
-   */
-  private void analyzeShowCompactions(ASTNode ast) throws SemanticException {
-    ShowCompactionsDesc desc = new ShowCompactionsDesc(ctx.getResFile());
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc), conf));
-    setFetchTask(createFetchTask(desc.getSchema()));
-  }
-
-  /**
-   * Add a task to execute "SHOW COMPACTIONS"
-   * @param ast The parsed command tree.
-   * @throws SemanticException Parsing failed.
-   */
-  private void analyzeShowTxns(ASTNode ast) throws SemanticException {
-    ShowTxnsDesc desc = new ShowTxnsDesc(ctx.getResFile());
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc), conf));
-    setFetchTask(createFetchTask(desc.getSchema()));
-  }
-
-  /**
-   * Add a task to execute "ABORT TRANSACTIONS"
-   * @param ast The parsed command tree
-   * @throws SemanticException Parsing failed
-   */
-  private void analyzeAbortTxns(ASTNode ast) throws SemanticException {
-    List<Long> txnids = new ArrayList<Long>();
-    int numChildren = ast.getChildCount();
-    for (int i = 0; i < numChildren; i++) {
-      txnids.add(Long.parseLong(ast.getChild(i).getText()));
-    }
-    AbortTxnsDesc desc = new AbortTxnsDesc(txnids);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc), conf));
-  }
-
-   /**
    * Add the task according to the parsed command tree. This is used for the CLI
    * command "UNLOCK TABLE ..;".
    *
@@ -2583,466 +1633,38 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     UnlockTableDesc unlockTblDesc = new UnlockTableDesc(tableName, partSpec);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        unlockTblDesc), conf));
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), unlockTblDesc)));
 
     // Need to initialize the lock manager
     ctx.setNeedLockMgr(true);
   }
 
-  private void analyzeLockDatabase(ASTNode ast) throws SemanticException {
-    String dbName = unescapeIdentifier(ast.getChild(0).getText());
-    String mode  = unescapeIdentifier(ast.getChild(1).getText().toUpperCase());
-
-    inputs.add(new ReadEntity(getDatabase(dbName)));
-    // Lock database operation is to acquire the lock explicitly, the operation
-    // itself doesn't need to be locked. Set the WriteEntity as WriteType:
-    // DDL_NO_LOCK here, otherwise it will conflict with Hive's transaction.
-    outputs.add(new WriteEntity(getDatabase(dbName), WriteType.DDL_NO_LOCK));
-
-    LockDatabaseDesc lockDatabaseDesc = new LockDatabaseDesc(dbName, mode,
-                        HiveConf.getVar(conf, ConfVars.HIVEQUERYID));
-    lockDatabaseDesc.setQueryStr(ctx.getCmd());
-    DDLWork work = new DDLWork(getInputs(), getOutputs(), lockDatabaseDesc);
-    rootTasks.add(TaskFactory.get(work, conf));
-    ctx.setNeedLockMgr(true);
-  }
-
-  private void analyzeUnlockDatabase(ASTNode ast) throws SemanticException {
-    String dbName = unescapeIdentifier(ast.getChild(0).getText());
-
-    inputs.add(new ReadEntity(getDatabase(dbName)));
-    // Unlock database operation is to release the lock explicitly, the
-    // operation itself don't need to be locked. Set the WriteEntity as
-    // WriteType: DDL_NO_LOCK here, otherwise it will conflict with
-    // Hive's transaction.
-    outputs.add(new WriteEntity(getDatabase(dbName), WriteType.DDL_NO_LOCK));
-
-    UnlockDatabaseDesc unlockDatabaseDesc = new UnlockDatabaseDesc(dbName);
-    DDLWork work = new DDLWork(getInputs(), getOutputs(), unlockDatabaseDesc);
-    rootTasks.add(TaskFactory.get(work, conf));
-    // Need to initialize the lock manager
-    ctx.setNeedLockMgr(true);
-  }
-
-  /**
-   * Add the task according to the parsed command tree. This is used for the CLI
-   * command "DESCRIBE FUNCTION;".
-   *
-   * @param ast
-   *          The parsed command tree.
-   * @throws SemanticException
-   *           Parsing failed
-   */
-  private void analyzeDescFunction(ASTNode ast) throws SemanticException {
-    String funcName;
-    boolean isExtended;
-
-    if (ast.getChildCount() == 1) {
-      funcName = stripQuotes(ast.getChild(0).getText());
-      isExtended = false;
-    } else if (ast.getChildCount() == 2) {
-      funcName = stripQuotes(ast.getChild(0).getText());
-      isExtended = true;
-    } else {
-      throw new SemanticException("Unexpected Tokens at DESCRIBE FUNCTION");
-    }
-
-    DescFunctionDesc descFuncDesc = new DescFunctionDesc(ctx.getResFile(),
-        funcName, isExtended);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        descFuncDesc), conf));
-    setFetchTask(createFetchTask(descFuncDesc.getSchema()));
-  }
-
-
-  private void analyzeAlterTableRename(String[] source, ASTNode ast, boolean expectView)
+  private void analyzeAlterTableRename(TableName source, ASTNode ast, boolean expectView)
       throws SemanticException {
-    String[] target = getQualifiedTableName((ASTNode) ast.getChild(0));
+    final TableName target = getQualifiedTableName((ASTNode) ast.getChild(0));
 
-    String sourceName = getDotName(source);
-    String targetName = getDotName(target);
-
-    AlterTableDesc alterTblDesc = new AlterTableDesc(sourceName, targetName, expectView, null);
-    addInputsOutputsAlterTable(sourceName, null, alterTblDesc);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        alterTblDesc), conf));
+    AlterTableRenameDesc alterTblDesc = new AlterTableRenameDesc(source, null, expectView, target.getDbTable());
+    Table table = getTable(source.getDbTable(), true);
+    if (AcidUtils.isTransactionalTable(table)) {
+      setAcidDdlDesc(alterTblDesc);
+    }
+    addInputsOutputsAlterTable(source, null, alterTblDesc, alterTblDesc.getType(), false);
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTblDesc)));
   }
 
-  private void analyzeAlterTableRenameCol(String[] qualified, ASTNode ast,
-      HashMap<String, String> partSpec) throws SemanticException {
-    String newComment = null;
-    boolean first = false;
-    String flagCol = null;
-    boolean isCascade = false;
-    //col_old_name col_new_name column_type [COMMENT col_comment] [FIRST|AFTER column_name] [CASCADE|RESTRICT]
-    String oldColName = ast.getChild(0).getText();
-    String newColName = ast.getChild(1).getText();
-    String newType = getTypeStringFromAST((ASTNode) ast.getChild(2));
-    ASTNode constraintChild = null;
-    int childCount = ast.getChildCount();
-    for (int i = 3; i < childCount; i++) {
-      ASTNode child = (ASTNode)ast.getChild(i);
-      switch (child.getToken().getType()) {
-        case HiveParser.StringLiteral:
-          newComment = unescapeSQLString(child.getText());
-          break;
-        case HiveParser.TOK_ALTERTABLE_CHANGECOL_AFTER_POSITION:
-          flagCol = unescapeIdentifier(child.getChild(0).getText());
-          break;
-        case HiveParser.KW_FIRST:
-          first = true;
-          break;
-        case HiveParser.TOK_CASCADE:
-          isCascade = true;
-          break;
-        case HiveParser.TOK_RESTRICT:
-          break;
-        default:
-          constraintChild = (ASTNode) child;
-      }
-    }
-    List<SQLPrimaryKey> primaryKeys = null;
-    List<SQLForeignKey> foreignKeys = null;
-    List<SQLUniqueConstraint> uniqueConstraints = null;
-    List<SQLNotNullConstraint> notNullConstraints = null;
-    if (constraintChild != null) {
-      // Process column constraint
-      switch (constraintChild.getToken().getType()) {
-        case HiveParser.TOK_NOT_NULL:
-          notNullConstraints = new ArrayList<>();
-          processNotNullConstraints(qualified[0], qualified[1], constraintChild,
-                  ImmutableList.of(newColName), notNullConstraints);
-          break;
-        case HiveParser.TOK_UNIQUE:
-          uniqueConstraints = new ArrayList<>();
-          processUniqueConstraints(qualified[0], qualified[1], constraintChild,
-                  ImmutableList.of(newColName), uniqueConstraints);
-          break;
-        case HiveParser.TOK_PRIMARY_KEY:
-          primaryKeys = new ArrayList<>();
-          processPrimaryKeys(qualified[0], qualified[1], constraintChild,
-                  ImmutableList.of(newColName), primaryKeys);
-          break;
-        case HiveParser.TOK_FOREIGN_KEY:
-          foreignKeys = new ArrayList<>();
-          processForeignKeys(qualified[0], qualified[1], constraintChild,
-                  foreignKeys);
-          break;
-        default:
-          throw new SemanticException(ErrorMsg.NOT_RECOGNIZED_CONSTRAINT.getMsg(
-              constraintChild.getToken().getText()));
-      }
-    }
-
-    /* Validate the operation of renaming a column name. */
-    Table tab = getTable(qualified);
-
-    SkewedInfo skewInfo = tab.getTTable().getSd().getSkewedInfo();
-    if ((null != skewInfo)
-        && (null != skewInfo.getSkewedColNames())
-        && skewInfo.getSkewedColNames().contains(oldColName)) {
-      throw new SemanticException(oldColName
-          + ErrorMsg.ALTER_TABLE_NOT_ALLOWED_RENAME_SKEWED_COLUMN.getMsg());
-    }
-
-    String tblName = getDotName(qualified);
-    AlterTableDesc alterTblDesc;
-    if (primaryKeys == null && foreignKeys == null
-            && uniqueConstraints == null && notNullConstraints == null) {
-      alterTblDesc = new AlterTableDesc(tblName, partSpec,
-          unescapeIdentifier(oldColName), unescapeIdentifier(newColName),
-          newType, newComment, first, flagCol, isCascade);
-    } else {
-      alterTblDesc = new AlterTableDesc(tblName, partSpec,
-          unescapeIdentifier(oldColName), unescapeIdentifier(newColName),
-          newType, newComment, first, flagCol, isCascade,
-          primaryKeys, foreignKeys, uniqueConstraints, notNullConstraints);
-    }
-    addInputsOutputsAlterTable(tblName, partSpec, alterTblDesc);
-
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        alterTblDesc), conf));
-  }
-
-  private void analyzeAlterTableRenamePart(ASTNode ast, String tblName,
-      HashMap<String, String> oldPartSpec) throws SemanticException {
+  private void analyzeAlterTableBucketNum(ASTNode ast, TableName tblName, Map<String, String> partSpec)
+      throws SemanticException {
     Table tab = getTable(tblName, true);
-    validateAlterTableType(tab, AlterTableTypes.RENAMEPARTITION);
-    Map<String, String> newPartSpec =
-        getValidatedPartSpec(tab, (ASTNode)ast.getChild(0), conf, false);
-    if (newPartSpec == null) {
-      throw new SemanticException("RENAME PARTITION Missing Destination" + ast);
-    }
-    ReadEntity re = new ReadEntity(tab);
-    re.noLockNeeded();
-    inputs.add(re);
-
-    List<Map<String, String>> partSpecs = new ArrayList<Map<String, String>>();
-    partSpecs.add(oldPartSpec);
-    partSpecs.add(newPartSpec);
-    addTablePartsOutputs(tab, partSpecs, WriteEntity.WriteType.DDL_EXCLUSIVE);
-    RenamePartitionDesc renamePartitionDesc = new RenamePartitionDesc(tblName, oldPartSpec, newPartSpec, null);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        renamePartitionDesc), conf));
-  }
-
-  private void analyzeAlterTableBucketNum(ASTNode ast, String tblName,
-      HashMap<String, String> partSpec) throws SemanticException {
-    Table tab = getTable(tblName, true);
-    if (tab.getBucketCols() == null || tab.getBucketCols().isEmpty()) {
+    if (CollectionUtils.isEmpty(tab.getBucketCols())) {
       throw new SemanticException(ErrorMsg.ALTER_BUCKETNUM_NONBUCKETIZED_TBL.getMsg());
     }
-    validateAlterTableType(tab, AlterTableTypes.ALTERBUCKETNUM);
+    validateAlterTableType(tab, AlterTableType.INTO_BUCKETS);
     inputs.add(new ReadEntity(tab));
 
-    int bucketNum = Integer.parseInt(ast.getChild(0).getText());
-    AlterTableDesc alterBucketNum = new AlterTableDesc(tblName, partSpec, bucketNum);
+    int numberOfBuckets = Integer.parseInt(ast.getChild(0).getText());
+    AlterTableIntoBucketsDesc alterBucketNum = new AlterTableIntoBucketsDesc(tblName, partSpec, numberOfBuckets);
 
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        alterBucketNum), conf));
-  }
-
-  private void analyzeAlterTableModifyCols(String[] qualified, ASTNode ast,
-      HashMap<String, String> partSpec, AlterTableTypes alterType) throws SemanticException {
-
-    String tblName = getDotName(qualified);
-    List<FieldSchema> newCols = getColumns((ASTNode) ast.getChild(0));
-    boolean isCascade = false;
-    if (null != ast.getFirstChildWithType(HiveParser.TOK_CASCADE)) {
-      isCascade = true;
-    }
-
-    AlterTableDesc alterTblDesc = new AlterTableDesc(tblName, partSpec, newCols,
-        alterType, isCascade);
-
-    addInputsOutputsAlterTable(tblName, partSpec, alterTblDesc);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        alterTblDesc), conf));
-  }
-
-  private void analyzeAlterTableDropParts(String[] qualified, ASTNode ast, boolean expectView)
-      throws SemanticException {
-
-    boolean ifExists = (ast.getFirstChildWithType(HiveParser.TOK_IFEXISTS) != null)
-        || HiveConf.getBoolVar(conf, ConfVars.DROPIGNORESNONEXISTENT);
-    // If the drop has to fail on non-existent partitions, we cannot batch expressions.
-    // That is because we actually have to check each separate expression for existence.
-    // We could do a small optimization for the case where expr has all columns and all
-    // operators are equality, if we assume those would always match one partition (which
-    // may not be true with legacy, non-normalized column values). This is probably a
-    // popular case but that's kinda hacky. Let's not do it for now.
-    boolean canGroupExprs = ifExists;
-
-    boolean mustPurge = (ast.getFirstChildWithType(HiveParser.KW_PURGE) != null);
-    ReplicationSpec replicationSpec = new ReplicationSpec(ast);
-
-    Table tab = null;
-    try {
-      tab = getTable(qualified);
-    } catch (SemanticException se){
-      if (replicationSpec.isInReplicationScope() &&
-            (
-                (se.getCause() instanceof InvalidTableException)
-                ||  (se.getMessage().contains(ErrorMsg.INVALID_TABLE.getMsg()))
-            )){
-        // If we're inside a replication scope, then the table not existing is not an error.
-        // We just return in that case, no drop needed.
-        return;
-        // TODO : the contains message check is fragile, we should refactor SemanticException to be
-        // queriable for error code, and not simply have a message
-        // NOTE : IF_EXISTS might also want to invoke this, but there's a good possibility
-        // that IF_EXISTS is stricter about table existence, and applies only to the ptn.
-        // Therefore, ignoring IF_EXISTS here.
-      } else {
-        throw se;
-      }
-    }
-    Map<Integer, List<ExprNodeGenericFuncDesc>> partSpecs =
-        getFullPartitionSpecs(ast, tab, canGroupExprs);
-    if (partSpecs.isEmpty()) return; // nothing to do
-
-    validateAlterTableType(tab, AlterTableTypes.DROPPARTITION, expectView);
-    ReadEntity re = new ReadEntity(tab);
-    re.noLockNeeded();
-    inputs.add(re);
-
-    addTableDropPartsOutputs(tab, partSpecs.values(), !ifExists);
-
-    DropTableDesc dropTblDesc =
-        new DropTableDesc(getDotName(qualified), partSpecs, expectView ? TableType.VIRTUAL_VIEW : null,
-                mustPurge, replicationSpec);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), dropTblDesc), conf));
-  }
-
-  private void analyzeAlterTablePartColType(String[] qualified, ASTNode ast)
-      throws SemanticException {
-
-
-    // check if table exists.
-    Table tab = getTable(qualified);
-    inputs.add(new ReadEntity(tab));
-
-    // validate the DDL is a valid operation on the table.
-    validateAlterTableType(tab, AlterTableTypes.ALTERPARTITION, false);
-
-    // Alter table ... partition column ( column newtype) only takes one column at a time.
-    // It must have a column name followed with type.
-    ASTNode colAst = (ASTNode) ast.getChild(0);
-
-    FieldSchema newCol = new FieldSchema();
-
-    // get column name
-    String name = colAst.getChild(0).getText().toLowerCase();
-    newCol.setName(unescapeIdentifier(name));
-
-    // get column type
-    ASTNode typeChild = (ASTNode) (colAst.getChild(1));
-    newCol.setType(getTypeStringFromAST(typeChild));
-
-    if (colAst.getChildCount() == 3) {
-      newCol.setComment(unescapeSQLString(colAst.getChild(2).getText()));
-    }
-
-    // check if column is defined or not
-    boolean fFoundColumn = false;
-    for( FieldSchema col : tab.getTTable().getPartitionKeys()) {
-      if (col.getName().compareTo(newCol.getName()) == 0) {
-        fFoundColumn = true;
-      }
-    }
-
-    // raise error if we could not find the column
-    if (!fFoundColumn) {
-      throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(newCol.getName()));
-    }
-
-    AlterTableAlterPartDesc alterTblAlterPartDesc =
-            new AlterTableAlterPartDesc(getDotName(qualified), newCol);
-
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-            alterTblAlterPartDesc), conf));
-  }
-
-    /**
-   * Add one or more partitions to a table. Useful when the data has been copied
-   * to the right location by some other process.
-   *
-   * @param ast
-   *          The parsed command tree.
-   *
-   * @param expectView
-   *          True for ALTER VIEW, false for ALTER TABLE.
-   *
-   * @throws SemanticException
-   *           Parsing failed
-   */
-  private void analyzeAlterTableAddParts(String[] qualified, CommonTree ast, boolean expectView)
-      throws SemanticException {
-
-    // ^(TOK_ALTERTABLE_ADDPARTS identifier ifNotExists? alterStatementSuffixAddPartitionsElement+)
-    boolean ifNotExists = ast.getChild(0).getType() == HiveParser.TOK_IFNOTEXISTS;
-
-    Table tab = getTable(qualified);
-    boolean isView = tab.isView();
-    validateAlterTableType(tab, AlterTableTypes.ADDPARTITION, expectView);
-    outputs.add(new WriteEntity(tab, WriteEntity.WriteType.DDL_SHARED));
-
-    int numCh = ast.getChildCount();
-    int start = ifNotExists ? 1 : 0;
-
-    String currentLocation = null;
-    Map<String, String> currentPart = null;
-    // Parser has done some verification, so the order of tokens doesn't need to be verified here.
-    AddPartitionDesc addPartitionDesc =
-        new AddPartitionDesc(tab.getDbName(), tab.getTableName(), ifNotExists);
-    for (int num = start; num < numCh; num++) {
-      ASTNode child = (ASTNode) ast.getChild(num);
-      switch (child.getToken().getType()) {
-      case HiveParser.TOK_PARTSPEC:
-        if (currentPart != null) {
-          addPartitionDesc.addPartition(currentPart, currentLocation);
-          currentLocation = null;
-        }
-        currentPart = getValidatedPartSpec(tab, child, conf, true);
-        validatePartitionValues(currentPart); // validate reserved values
-        break;
-      case HiveParser.TOK_PARTITIONLOCATION:
-        // if location specified, set in partition
-        if (isView) {
-          throw new SemanticException("LOCATION clause illegal for view partition");
-        }
-        currentLocation = unescapeSQLString(child.getChild(0).getText());
-        inputs.add(toReadEntity(currentLocation));
-        break;
-      default:
-        throw new SemanticException("Unknown child: " + child);
-      }
-    }
-
-    // add the last one
-    if (currentPart != null) {
-      addPartitionDesc.addPartition(currentPart, currentLocation);
-    }
-
-    if (this.conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
-      for (int index = 0; index < addPartitionDesc.getPartitionCount(); index++) {
-        OnePartitionDesc desc = addPartitionDesc.getPartition(index);
-        if (desc.getLocation() == null) {
-          if (desc.getPartParams() == null) {
-            desc.setPartParams(new HashMap<String, String>());
-          }
-          StatsSetupConst.setStatsStateForCreateTable(desc.getPartParams(),
-              MetaStoreUtils.getColumnNames(tab.getCols()), StatsSetupConst.TRUE);
-        }
-      }
-    }
-
-    if (addPartitionDesc.getPartitionCount() == 0) {
-      // nothing to do
-      return;
-    }
-
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), addPartitionDesc), conf));
-
-    if (isView) {
-      // Compile internal query to capture underlying table partition dependencies
-      StringBuilder cmd = new StringBuilder();
-      cmd.append("SELECT * FROM ");
-      cmd.append(HiveUtils.unparseIdentifier(getDotName(qualified)));
-      cmd.append(" WHERE ");
-      boolean firstOr = true;
-      for (int i = 0; i < addPartitionDesc.getPartitionCount(); ++i) {
-        AddPartitionDesc.OnePartitionDesc partitionDesc = addPartitionDesc.getPartition(i);
-        if (firstOr) {
-          firstOr = false;
-        } else {
-          cmd.append(" OR ");
-        }
-        boolean firstAnd = true;
-        cmd.append("(");
-        for (Map.Entry<String, String> entry : partitionDesc.getPartSpec().entrySet()) {
-          if (firstAnd) {
-            firstAnd = false;
-          } else {
-            cmd.append(" AND ");
-          }
-          cmd.append(HiveUtils.unparseIdentifier(entry.getKey(), conf));
-          cmd.append(" = '");
-          cmd.append(HiveUtils.escapeString(entry.getValue()));
-          cmd.append("'");
-        }
-        cmd.append(")");
-      }
-      SessionState ss = SessionState.get();
-      String uName = (ss == null? null: ss.getUserName());
-      Driver driver = new Driver(conf, uName);
-      int rc = driver.compile(cmd.toString(), false);
-      if (rc != 0) {
-        throw new SemanticException(ErrorMsg.NO_VALID_PARTN.getMsg());
-      }
-      inputs.addAll(driver.getPlan().getInputs());
-    }
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterBucketNum)));
   }
 
   /**
@@ -3055,48 +1677,40 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
    * @throws SemanticException
    *           Parsing failed
    */
-  private void analyzeAlterTableTouch(String[] qualified, CommonTree ast)
-      throws SemanticException {
+  private void analyzeAlterTableTouch(TableName tName, CommonTree ast) throws SemanticException {
 
-    Table tab = getTable(qualified);
-    validateAlterTableType(tab, AlterTableTypes.TOUCH);
+    Table tab = getTable(tName);
+    validateAlterTableType(tab, AlterTableType.TOUCH);
     inputs.add(new ReadEntity(tab));
 
     // partition name to value
     List<Map<String, String>> partSpecs = getPartitionSpecs(tab, ast);
 
-    if (partSpecs.size() == 0) {
-      AlterTableSimpleDesc touchDesc = new AlterTableSimpleDesc(
-          getDotName(qualified), null,
-          AlterTableDesc.AlterTableTypes.TOUCH);
+    if (partSpecs.isEmpty()) {
+      AlterTableTouchDesc touchDesc = new AlterTableTouchDesc(tName.getDbTable(), null);
       outputs.add(new WriteEntity(tab, WriteEntity.WriteType.DDL_NO_LOCK));
-      rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-          touchDesc), conf));
+      rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), touchDesc)));
     } else {
-      addTablePartsOutputs(tab, partSpecs, WriteEntity.WriteType.DDL_NO_LOCK);
+      PartitionUtils.addTablePartsOutputs(db, outputs, tab, partSpecs, false, WriteEntity.WriteType.DDL_NO_LOCK);
       for (Map<String, String> partSpec : partSpecs) {
-        AlterTableSimpleDesc touchDesc = new AlterTableSimpleDesc(
-            getDotName(qualified), partSpec,
-            AlterTableDesc.AlterTableTypes.TOUCH);
-        rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-            touchDesc), conf));
+        AlterTableTouchDesc touchDesc = new AlterTableTouchDesc(tName.getDbTable(), partSpec);
+        rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), touchDesc)));
       }
     }
   }
 
-  private void analyzeAlterTableArchive(String[] qualified, CommonTree ast, boolean isUnArchive)
-      throws SemanticException {
+  private void analyzeAlterTableArchive(TableName tName, CommonTree ast, boolean isUnArchive) throws SemanticException {
 
     if (!conf.getBoolVar(HiveConf.ConfVars.HIVEARCHIVEENABLED)) {
       throw new SemanticException(ErrorMsg.ARCHIVE_METHODS_DISABLED.getMsg());
 
     }
-    Table tab = getTable(qualified);
+    Table tab = getTable(tName);
     // partition name to value
     List<Map<String, String>> partSpecs = getPartitionSpecs(tab, ast);
 
-    addTablePartsOutputs(tab, partSpecs, true, WriteEntity.WriteType.DDL_NO_LOCK);
-    validateAlterTableType(tab, AlterTableTypes.ARCHIVE);
+    PartitionUtils.addTablePartsOutputs(db, outputs, tab, partSpecs, true, WriteEntity.WriteType.DDL_NO_LOCK);
+    validateAlterTableType(tab, AlterTableType.ARCHIVE);
     inputs.add(new ReadEntity(tab));
 
     if (partSpecs.size() > 1) {
@@ -3114,309 +1728,13 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     } catch (HiveException e) {
       throw new SemanticException(e.getMessage(), e);
     }
-    AlterTableSimpleDesc archiveDesc = new AlterTableSimpleDesc(
-        getDotName(qualified), partSpec,
-        (isUnArchive ? AlterTableTypes.UNARCHIVE : AlterTableTypes.ARCHIVE));
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        archiveDesc), conf));
-
-  }
-
-  /**
-   * Verify that the information in the metastore matches up with the data on
-   * the fs.
-   *
-   * @param ast
-   *          Query tree.
-   * @throws SemanticException
-   */
-  private void analyzeMetastoreCheck(CommonTree ast) throws SemanticException {
-    String tableName = null;
-    boolean repair = false;
-    if (ast.getChildCount() > 0) {
-      repair = ast.getChild(0).getType() == HiveParser.KW_REPAIR;
-      if (!repair) {
-        tableName = getUnescapedName((ASTNode) ast.getChild(0));
-      } else if (ast.getChildCount() > 1) {
-        tableName = getUnescapedName((ASTNode) ast.getChild(1));
-      }
+    DDLDesc archiveDesc = null;
+    if (isUnArchive) {
+      archiveDesc = new AlterTableUnarchiveDesc(tName.getDbTable(), partSpec);
+    } else {
+      archiveDesc = new AlterTableArchiveDesc(tName.getDbTable(), partSpec);
     }
-    Table tab = getTable(tableName);
-    List<Map<String, String>> specs = getPartitionSpecs(tab, ast);
-    outputs.add(new WriteEntity(tab, WriteEntity.WriteType.DDL_SHARED));
-    MsckDesc checkDesc = new MsckDesc(tableName, specs, ctx.getResFile(),
-        repair);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        checkDesc), conf));
-  }
-
-  /**
-   * Get the partition specs from the tree.
-   *
-   * @param ast
-   *          Tree to extract partitions from.
-   * @return A list of partition name to value mappings.
-   * @throws SemanticException
-   */
-  private List<Map<String, String>> getPartitionSpecs(Table tbl, CommonTree ast)
-      throws SemanticException {
-    List<Map<String, String>> partSpecs = new ArrayList<Map<String, String>>();
-    int childIndex = 0;
-    // get partition metadata if partition specified
-    for (childIndex = 0; childIndex < ast.getChildCount(); childIndex++) {
-      ASTNode partSpecNode = (ASTNode)ast.getChild(childIndex);
-      // sanity check
-      if (partSpecNode.getType() == HiveParser.TOK_PARTSPEC) {
-        Map<String,String> partSpec = getValidatedPartSpec(tbl, partSpecNode, conf, false);
-        partSpecs.add(partSpec);
-      }
-    }
-    return partSpecs;
-  }
-
-  /**
-   * Get the partition specs from the tree. This stores the full specification
-   * with the comparator operator into the output list.
-   *
-   * @param ast Tree to extract partitions from.
-   * @param tab Table.
-   * @return    Map of partitions by prefix length. Most of the time prefix length will
-   *            be the same for all partition specs, so we can just OR the expressions.
-   */
-  private Map<Integer, List<ExprNodeGenericFuncDesc>> getFullPartitionSpecs(
-      CommonTree ast, Table tab, boolean canGroupExprs) throws SemanticException {
-    String defaultPartitionName = HiveConf.getVar(conf, HiveConf.ConfVars.DEFAULTPARTITIONNAME);
-    Map<String, String> colTypes = new HashMap<String, String>();
-    for (FieldSchema fs : tab.getPartitionKeys()) {
-      colTypes.put(fs.getName().toLowerCase(), fs.getType());
-    }
-
-    Map<Integer, List<ExprNodeGenericFuncDesc>> result =
-        new HashMap<Integer, List<ExprNodeGenericFuncDesc>>();
-    for (int childIndex = 0; childIndex < ast.getChildCount(); childIndex++) {
-      Tree partSpecTree = ast.getChild(childIndex);
-      if (partSpecTree.getType() != HiveParser.TOK_PARTSPEC) continue;
-      ExprNodeGenericFuncDesc expr = null;
-      HashSet<String> names = new HashSet<String>(partSpecTree.getChildCount());
-      for (int i = 0; i < partSpecTree.getChildCount(); ++i) {
-        CommonTree partSpecSingleKey = (CommonTree) partSpecTree.getChild(i);
-        assert (partSpecSingleKey.getType() == HiveParser.TOK_PARTVAL);
-        String key = stripIdentifierQuotes(partSpecSingleKey.getChild(0).getText()).toLowerCase();
-        String operator = partSpecSingleKey.getChild(1).getText();
-        ASTNode partValNode = (ASTNode)partSpecSingleKey.getChild(2);
-        TypeCheckCtx typeCheckCtx = new TypeCheckCtx(null);
-        ExprNodeConstantDesc valExpr = (ExprNodeConstantDesc)TypeCheckProcFactory
-            .genExprNode(partValNode, typeCheckCtx).get(partValNode);
-        Object val = valExpr.getValue();
-
-        boolean isDefaultPartitionName =  val.equals(defaultPartitionName);
-
-        String type = colTypes.get(key);
-        PrimitiveTypeInfo pti = TypeInfoFactory.getPrimitiveTypeInfo(type);
-        if (type == null) {
-          throw new SemanticException("Column " + key + " not found");
-        }
-        // Create the corresponding hive expression to filter on partition columns.
-        if (!isDefaultPartitionName) {
-          if (!valExpr.getTypeString().equals(type)) {
-            Converter converter = ObjectInspectorConverters.getConverter(
-              TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(valExpr.getTypeInfo()),
-              TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(pti));
-            val = converter.convert(valExpr.getValue());
-          }
-        }
-
-        ExprNodeColumnDesc column = new ExprNodeColumnDesc(pti, key, null, true);
-        ExprNodeGenericFuncDesc op;
-        if (!isDefaultPartitionName) {
-          op = makeBinaryPredicate(operator, column, new ExprNodeConstantDesc(pti, val));
-        } else {
-          GenericUDF originalOp = FunctionRegistry.getFunctionInfo(operator).getGenericUDF();
-          String fnName;
-          if (FunctionRegistry.isEq(originalOp)) {
-            fnName = "isnull";
-          } else if (FunctionRegistry.isNeq(originalOp)) {
-            fnName = "isnotnull";
-          } else {
-            throw new SemanticException("Cannot use " + operator
-                + " in a default partition spec; only '=' and '!=' are allowed.");
-          }
-          op = makeUnaryPredicate(fnName, column);
-        }
-        // If it's multi-expr filter (e.g. a='5', b='2012-01-02'), AND with previous exprs.
-        expr = (expr == null) ? op : makeBinaryPredicate("and", expr, op);
-        names.add(key);
-      }
-      if (expr == null) continue;
-      // We got the expr for one full partition spec. Determine the prefix length.
-      int prefixLength = calculatePartPrefix(tab, names);
-      List<ExprNodeGenericFuncDesc> orExpr = result.get(prefixLength);
-      // We have to tell apart partitions resulting from spec with different prefix lengths.
-      // So, if we already have smth for the same prefix length, we can OR the two.
-      // If we don't, create a new separate filter. In most cases there will only be one.
-      if (orExpr == null) {
-        result.put(prefixLength, Lists.newArrayList(expr));
-      } else if (canGroupExprs) {
-        orExpr.set(0, makeBinaryPredicate("or", expr, orExpr.get(0)));
-      } else {
-        orExpr.add(expr);
-      }
-    }
-    return result;
-  }
-
-  public static ExprNodeGenericFuncDesc makeBinaryPredicate(
-      String fn, ExprNodeDesc left, ExprNodeDesc right) throws SemanticException {
-      return new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo,
-          FunctionRegistry.getFunctionInfo(fn).getGenericUDF(), Lists.newArrayList(left, right));
-  }
-  public static ExprNodeGenericFuncDesc makeUnaryPredicate(
-      String fn, ExprNodeDesc arg) throws SemanticException {
-      return new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo,
-          FunctionRegistry.getFunctionInfo(fn).getGenericUDF(), Lists.newArrayList(arg));
-  }
-  /**
-   * Calculates the partition prefix length based on the drop spec.
-   * This is used to avoid deleting archived partitions with lower level.
-   * For example, if, for A and B key cols, drop spec is A=5, B=6, we shouldn't drop
-   * archived A=5/, because it can contain B-s other than 6.
-   * @param tbl Table
-   * @param partSpecKeys Keys present in drop partition spec.
-   */
-  private int calculatePartPrefix(Table tbl, HashSet<String> partSpecKeys) {
-    int partPrefixToDrop = 0;
-    for (FieldSchema fs : tbl.getPartCols()) {
-      if (!partSpecKeys.contains(fs.getName())) break;
-      ++partPrefixToDrop;
-    }
-    return partPrefixToDrop;
-  }
-
-  /**
-   * Certain partition values are are used by hive. e.g. the default partition
-   * in dynamic partitioning and the intermediate partition values used in the
-   * archiving process. Naturally, prohibit the user from creating partitions
-   * with these reserved values. The check that this function is more
-   * restrictive than the actual limitation, but it's simpler. Should be okay
-   * since the reserved names are fairly long and uncommon.
-   */
-  private void validatePartitionValues(Map<String, String> partSpec)
-      throws SemanticException {
-
-    for (Entry<String, String> e : partSpec.entrySet()) {
-      for (String s : reservedPartitionValues) {
-        String value = e.getValue();
-        if (value != null && value.contains(s)) {
-          throw new SemanticException(ErrorMsg.RESERVED_PART_VAL.getMsg(
-              "(User value: " + e.getValue() + " Reserved substring: " + s + ")"));
-        }
-      }
-    }
-  }
-
-  /**
-   * Add the table partitions to be modified in the output, so that it is available for the
-   * pre-execution hook. If the partition does not exist, no error is thrown.
-   */
-  private void addTablePartsOutputs(Table table, List<Map<String, String>> partSpecs,
-                                    WriteEntity.WriteType writeType)
-      throws SemanticException {
-    addTablePartsOutputs(table, partSpecs, false, false, null, writeType);
-  }
-
-  /**
-   * Add the table partitions to be modified in the output, so that it is available for the
-   * pre-execution hook. If the partition does not exist, no error is thrown.
-   */
-  private void addTablePartsOutputs(Table table, List<Map<String, String>> partSpecs,
-      boolean allowMany, WriteEntity.WriteType writeType)
-      throws SemanticException {
-    addTablePartsOutputs(table, partSpecs, false, allowMany, null, writeType);
-  }
-
-  /**
-   * Add the table partitions to be modified in the output, so that it is available for the
-   * pre-execution hook. If the partition does not exist, throw an error if
-   * throwIfNonExistent is true, otherwise ignore it.
-   */
-  private void addTablePartsOutputs(Table table, List<Map<String, String>> partSpecs,
-      boolean throwIfNonExistent, boolean allowMany, ASTNode ast, WriteEntity.WriteType writeType)
-      throws SemanticException {
-
-    Iterator<Map<String, String>> i;
-    int index;
-    for (i = partSpecs.iterator(), index = 1; i.hasNext(); ++index) {
-      Map<String, String> partSpec = i.next();
-      List<Partition> parts = null;
-      if (allowMany) {
-        try {
-          parts = db.getPartitions(table, partSpec);
-        } catch (HiveException e) {
-          LOG.error("Got HiveException during obtaining list of partitions"
-              + StringUtils.stringifyException(e));
-          throw new SemanticException(e.getMessage(), e);
-        }
-      } else {
-        parts = new ArrayList<Partition>();
-        try {
-          Partition p = db.getPartition(table, partSpec, false);
-          if (p != null) {
-            parts.add(p);
-          }
-        } catch (HiveException e) {
-          LOG.debug("Wrong specification" + StringUtils.stringifyException(e));
-          throw new SemanticException(e.getMessage(), e);
-        }
-      }
-      if (parts.isEmpty()) {
-        if (throwIfNonExistent) {
-          throw new SemanticException(ErrorMsg.INVALID_PARTITION.getMsg(ast.getChild(index)));
-        }
-      }
-      for (Partition p : parts) {
-        // Don't request any locks here, as the table has already been locked.
-        outputs.add(new WriteEntity(p, writeType));
-      }
-    }
-  }
-
-  /**
-   * Add the table partitions to be modified in the output, so that it is available for the
-   * pre-execution hook. If the partition does not exist, throw an error if
-   * throwIfNonExistent is true, otherwise ignore it.
-   */
-  private void addTableDropPartsOutputs(Table tab,
-                                        Collection<List<ExprNodeGenericFuncDesc>> partSpecs,
-                                        boolean throwIfNonExistent) throws SemanticException {
-    for (List<ExprNodeGenericFuncDesc> specs : partSpecs) {
-      for (ExprNodeGenericFuncDesc partSpec : specs) {
-        List<Partition> parts = new ArrayList<Partition>();
-        boolean hasUnknown = false;
-        try {
-          hasUnknown = db.getPartitionsByExpr(tab, partSpec, conf, parts);
-        } catch (Exception e) {
-          throw new SemanticException(
-              ErrorMsg.INVALID_PARTITION.getMsg(partSpec.getExprString()), e);
-        }
-        if (hasUnknown) {
-          throw new SemanticException(
-              "Unexpected unknown partitions for " + partSpec.getExprString());
-        }
-
-        // TODO: ifExists could be moved to metastore. In fact it already supports that. Check it
-        //       for now since we get parts for output anyway, so we can get the error message
-        //       earlier... If we get rid of output, we can get rid of this.
-        if (parts.isEmpty()) {
-          if (throwIfNonExistent) {
-            throw new SemanticException(
-                ErrorMsg.INVALID_PARTITION.getMsg(partSpec.getExprString()));
-          }
-        }
-        for (Partition p : parts) {
-          outputs.add(new WriteEntity(p, WriteEntity.WriteType.DDL_EXCLUSIVE));
-        }
-      }
-    }
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), archiveDesc)));
   }
 
   /**
@@ -3426,35 +1744,31 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
    *          node
    * @throws SemanticException
    */
-  private void analyzeAltertableSkewedby(String[] qualified, ASTNode ast) throws SemanticException {
+  private void analyzeAlterTableSkewedby(TableName tName, ASTNode ast) throws SemanticException {
     /**
      * Throw an error if the user tries to use the DDL with
      * hive.internal.ddl.list.bucketing.enable set to false.
      */
-    HiveConf hiveConf = SessionState.get().getConf();
+    SessionState.get().getConf();
 
-    Table tab = getTable(qualified);
+    Table tab = getTable(tName);
 
     inputs.add(new ReadEntity(tab));
     outputs.add(new WriteEntity(tab, WriteEntity.WriteType.DDL_EXCLUSIVE));
 
-    validateAlterTableType(tab, AlterTableTypes.ADDSKEWEDBY);
+    validateAlterTableType(tab, AlterTableType.SKEWED_BY);
 
-    String tableName = getDotName(qualified);
     if (ast.getChildCount() == 0) {
       /* Convert a skewed table to non-skewed table. */
-      AlterTableDesc alterTblDesc = new AlterTableDesc(tableName, true,
-          new ArrayList<String>(), new ArrayList<List<String>>());
-      alterTblDesc.setStoredAsSubDirectories(false);
-      rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-          alterTblDesc), conf));
+      AlterTableNotSkewedDesc alterTblDesc = new AlterTableNotSkewedDesc(tName);
+      rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTblDesc)));
     } else {
       switch (((ASTNode) ast.getChild(0)).getToken().getType()) {
       case HiveParser.TOK_TABLESKEWED:
-        handleAlterTableSkewedBy(ast, tableName, tab);
+        handleAlterTableSkewedBy(ast, tName, tab);
         break;
       case HiveParser.TOK_STOREDASDIRS:
-        handleAlterTableDisableStoredAsDirs(tableName, tab);
+        handleAlterTableDisableStoredAsDirs(tName, tab);
         break;
       default:
         assert false;
@@ -3469,19 +1783,16 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
    * @param tab
    * @throws SemanticException
    */
-  private void handleAlterTableDisableStoredAsDirs(String tableName, Table tab)
+  private void handleAlterTableDisableStoredAsDirs(TableName tableName, Table tab)
       throws SemanticException {
-  List<String> skewedColNames = tab.getSkewedColNames();
+    List<String> skewedColNames = tab.getSkewedColNames();
     List<List<String>> skewedColValues = tab.getSkewedColValues();
-    if ((skewedColNames == null) || (skewedColNames.size() == 0) || (skewedColValues == null)
-        || (skewedColValues.size() == 0)) {
-      throw new SemanticException(ErrorMsg.ALTER_TBL_STOREDASDIR_NOT_SKEWED.getMsg(tableName));
+    if (CollectionUtils.isEmpty(skewedColNames) || CollectionUtils.isEmpty(skewedColValues)) {
+      throw new SemanticException(ErrorMsg.ALTER_TBL_STOREDASDIR_NOT_SKEWED.getMsg(tableName.getNotEmptyDbTable()));
     }
-    AlterTableDesc alterTblDesc = new AlterTableDesc(tableName, false,
-        skewedColNames, skewedColValues);
-    alterTblDesc.setStoredAsSubDirectories(false);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        alterTblDesc), conf));
+
+    AlterTableSkewedByDesc alterTblDesc = new AlterTableSkewedByDesc(tableName, skewedColNames, skewedColValues, false);
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTblDesc)));
   }
 
   /**
@@ -3491,8 +1802,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
    * @param tab
    * @throws SemanticException
    */
-  private void handleAlterTableSkewedBy(ASTNode ast, String tableName, Table tab)
-      throws SemanticException {
+  private void handleAlterTableSkewedBy(ASTNode ast, TableName tableName, Table tab) throws SemanticException {
     List<String> skewedColNames = new ArrayList<String>();
     List<List<String>> skewedValues = new ArrayList<List<String>>();
     /* skewed column names. */
@@ -3503,63 +1813,16 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     // stored as directories
     boolean storedAsDirs = analyzeStoredAdDirs(skewedNode);
 
-
-    AlterTableDesc alterTblDesc = new AlterTableDesc(tableName, false,
-        skewedColNames, skewedValues);
-    alterTblDesc.setStoredAsSubDirectories(storedAsDirs);
-    /**
-     * Validate information about skewed table
-     */
-    alterTblDesc.setTable(tab);
-    alterTblDesc.validate();
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        alterTblDesc), conf));
-  }
-
-  /**
-   * Analyze skewed column names
-   *
-   * @param skewedColNames
-   * @param child
-   * @return
-   * @throws SemanticException
-   */
-  private List<String> analyzeAlterTableSkewedColNames(List<String> skewedColNames,
-      ASTNode child) throws SemanticException {
-    Tree nNode = child.getChild(0);
-    if (nNode == null) {
-      throw new SemanticException(ErrorMsg.SKEWED_TABLE_NO_COLUMN_NAME.getMsg());
-    } else {
-      ASTNode nAstNode = (ASTNode) nNode;
-      if (nAstNode.getToken().getType() != HiveParser.TOK_TABCOLNAME) {
-        throw new SemanticException(ErrorMsg.SKEWED_TABLE_NO_COLUMN_NAME.getMsg());
-      } else {
-        skewedColNames = getColumnNames(nAstNode);
-      }
+    if (tab != null) {
+      /* Validate skewed information. */
+      ValidationUtility.validateSkewedInformation(
+          ParseUtils.validateColumnNameUniqueness(tab.getCols()), skewedColNames, skewedValues);
     }
-    return skewedColNames;
-  }
 
-  /**
-   * Given a ASTNode, return list of values.
-   *
-   * use case:
-   * create table xyz list bucketed (col1) with skew (1,2,5)
-   * AST Node is for (1,2,5)
-   *
-   * @param ast
-   * @return
-   */
-  private List<String> getColumnValues(ASTNode ast) {
-    List<String> colList = new ArrayList<String>();
-    int numCh = ast.getChildCount();
-    for (int i = 0; i < numCh; i++) {
-      ASTNode child = (ASTNode) ast.getChild(i);
-      colList.add(stripQuotes(child.getText()).toLowerCase());
-    }
-    return colList;
+    AlterTableSkewedByDesc alterTblDesc = new AlterTableSkewedByDesc(tableName, skewedColNames, skewedValues,
+        storedAsDirs);
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTblDesc)));
   }
-
 
   /**
    * Analyze alter table's skewed location
@@ -3569,13 +1832,13 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
    * @param partSpec
    * @throws SemanticException
    */
-  private void analyzeAlterTableSkewedLocation(ASTNode ast, String tableName,
-      HashMap<String, String> partSpec) throws SemanticException {
+  private void analyzeAlterTableSkewedLocation(ASTNode ast, TableName tableName,
+      Map<String, String> partSpec) throws SemanticException {
     /**
      * Throw an error if the user tries to use the DDL with
      * hive.internal.ddl.list.bucketing.enable set to false.
      */
-    HiveConf hiveConf = SessionState.get().getConf();
+    SessionState.get().getConf();
     /**
      * Retrieve mappings from parser
      */
@@ -3628,10 +1891,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
     }
-    AlterTableDesc alterTblDesc = new AlterTableDesc(tableName, locations, partSpec);
-    addInputsOutputsAlterTable(tableName, partSpec, alterTblDesc);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        alterTblDesc), conf));
+    AlterTableSetSkewedLocationDesc alterTblDesc = new AlterTableSetSkewedLocationDesc(tableName, partSpec, locations);
+    addInputsOutputsAlterTable(tableName, partSpec, alterTblDesc, AlterTableType.SET_SKEWED_LOCATION, false);
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTblDesc)));
   }
 
   private void addLocationToOutputs(String newLocation) throws SemanticException {
@@ -3674,30 +1936,4 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException(e);
     }
   }
-
-  private HiveAuthorizationTaskFactory createAuthorizationTaskFactory(HiveConf conf, Hive db) {
-    Class<? extends HiveAuthorizationTaskFactory> authProviderClass = conf.
-        getClass(HiveConf.ConfVars.HIVE_AUTHORIZATION_TASK_FACTORY.varname,
-            HiveAuthorizationTaskFactoryImpl.class,
-            HiveAuthorizationTaskFactory.class);
-    String msg = "Unable to create instance of " + authProviderClass.getName() + ": ";
-    try {
-      Constructor<? extends HiveAuthorizationTaskFactory> constructor =
-          authProviderClass.getConstructor(HiveConf.class, Hive.class);
-      return constructor.newInstance(conf, db);
-    } catch (NoSuchMethodException e) {
-      throw new IllegalStateException(msg + e.getMessage(), e);
-    } catch (SecurityException e) {
-      throw new IllegalStateException(msg + e.getMessage(), e);
-    } catch (InstantiationException e) {
-      throw new IllegalStateException(msg + e.getMessage(), e);
-    } catch (IllegalAccessException e) {
-      throw new IllegalStateException(msg + e.getMessage(), e);
-    } catch (IllegalArgumentException e) {
-      throw new IllegalStateException(msg + e.getMessage(), e);
-    } catch (InvocationTargetException e) {
-      throw new IllegalStateException(msg + e.getMessage(), e);
-    }
-  }
-
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -109,5 +109,13 @@ public class TestKeyWrapperFactory {
     ListKeyWrapper w4 = factory.new ListKeyWrapper(false);
     assertFalse(w3.equals(w4));
     assertFalse(w4.equals(w3));
+  }
+
+  @Test
+  public void testUnsetHashCode() {
+    KeyWrapper w1 = factory.getKeyWrapper();
+    KeyWrapper w2 = w1.copyKey();
+    w1.setHashKey();
+    assertTrue(w1.equals(w2));
   }
 }

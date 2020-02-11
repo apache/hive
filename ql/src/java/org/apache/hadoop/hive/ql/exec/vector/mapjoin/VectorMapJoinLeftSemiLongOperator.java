@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashTableResult;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
-
+import org.apache.hadoop.hive.ql.plan.VectorDesc;
 // Single-Column Long hash table import.
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinLongHashSet;
 
@@ -91,9 +91,9 @@ public class VectorMapJoinLeftSemiLongOperator extends VectorMapJoinLeftSemiGene
     super(ctx);
   }
 
-  public VectorMapJoinLeftSemiLongOperator(CompilationOpContext ctx,
-      VectorizationContext vContext, OperatorDesc conf) throws HiveException {
-    super(ctx, vContext, conf);
+  public VectorMapJoinLeftSemiLongOperator(CompilationOpContext ctx, OperatorDesc conf,
+      VectorizationContext vContext, VectorDesc vectorDesc) throws HiveException {
+    super(ctx, conf, vContext, vectorDesc);
   }
 
   //---------------------------------------------------------------------------
@@ -101,45 +101,36 @@ public class VectorMapJoinLeftSemiLongOperator extends VectorMapJoinLeftSemiGene
   //
 
   @Override
-  public void process(Object row, int tag) throws HiveException {
+  protected void commonSetup() throws HiveException {
+    super.commonSetup();
+
+    /*
+     * Initialize Single-Column Long members for this specialized class.
+     */
+
+    singleJoinColumn = bigTableKeyColumnMap[0];
+  }
+
+  @Override
+  public void hashTableSetup() throws HiveException {
+    super.hashTableSetup();
+
+    /*
+     * Get our Single-Column Long hash set information for this specialized class.
+     */
+
+    hashSet = (VectorMapJoinLongHashSet) vectorMapJoinHashTable;
+    useMinMax = hashSet.useMinMax();
+    if (useMinMax) {
+      min = hashSet.min();
+      max = hashSet.max();
+    }
+  }
+
+  @Override
+  public void processBatch(VectorizedRowBatch batch) throws HiveException {
 
     try {
-      VectorizedRowBatch batch = (VectorizedRowBatch) row;
-
-      alias = (byte) tag;
-
-      if (needCommonSetup) {
-        // Our one time process method initialization.
-        commonSetup(batch);
-
-        /*
-         * Initialize Single-Column Long members for this specialized class.
-         */
-
-        singleJoinColumn = bigTableKeyColumnMap[0];
-
-        needCommonSetup = false;
-      }
-
-      if (needHashTableSetup) {
-        // Setup our hash table specialization.  It will be the first time the process
-        // method is called, or after a Hybrid Grace reload.
-
-        /*
-         * Get our Single-Column Long hash set information for this specialized class.
-         */
-
-        hashSet = (VectorMapJoinLongHashSet) vectorMapJoinHashTable;
-        useMinMax = hashSet.useMinMax();
-        if (useMinMax) {
-          min = hashSet.min();
-          max = hashSet.max();
-        }
-
-        needHashTableSetup = false;
-      }
-
-      batchCounter++;
 
       // Do the per-batch setup for an left semi join.
 
@@ -152,11 +143,7 @@ public class VectorMapJoinLeftSemiLongOperator extends VectorMapJoinLeftSemiGene
       }
 
       final int inputLogicalSize = batch.size;
-
       if (inputLogicalSize == 0) {
-        if (LOG.isDebugEnabled()) {
-          LOG.debug(CLASS_NAME + " batch #" + batchCounter + " empty");
-        }
         return;
       }
 

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,10 +18,18 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 // this function is for internal use only
 public class GenericUDFOPNotEqualNS extends GenericUDFOPNotEqual {
+
+  @Description(name = "IS DISTINCT FROM", value = "a _FUNC_ b - Returns same result with NOTEQUALNS (IS DISTINCT " +
+          "FROM) operator for non-null operands, but returns FALSE if both are NULL, TRUE if one of the them is NULL")
+  public GenericUDFOPNotEqualNS(){
+    this.opName = "NOTEQUALNS";
+    this.opDisplayName = "IS DISTINCT FROM";
+  }
 
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
@@ -40,6 +48,6 @@ public class GenericUDFOPNotEqualNS extends GenericUDFOPNotEqual {
 
   @Override
   public GenericUDF negative() {
-      return new GenericUDFOPEqualNS();
+    return new GenericUDFOPEqualNS();
   }
 }

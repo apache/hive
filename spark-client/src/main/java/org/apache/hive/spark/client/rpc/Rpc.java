@@ -19,6 +19,7 @@ package org.apache.hive.spark.client.rpc;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -116,7 +117,7 @@ public class Rpc implements Closeable {
     final Runnable timeoutTask = new Runnable() {
       @Override
       public void run() {
-        promise.setFailure(new TimeoutException("Timed out waiting for RPC server connection."));
+        promise.setFailure(new TimeoutException("Timed out waiting to connect to HiveServer2."));
       }
     };
     final ScheduledFuture<?> timeoutFuture = eloop.schedule(timeoutTask,
@@ -272,7 +273,8 @@ public class Rpc implements Closeable {
    */
   public <T> Future<T> call(final Object msg, Class<T> retType) {
     Preconditions.checkArgument(msg != null);
-    Preconditions.checkState(channel.isActive(), "RPC channel is closed.");
+    Preconditions.checkState(channel.isActive(), "Unable to send message " + msg +
+            " because the Remote Spark Driver - HiveServer2 connection has been closed.");
     try {
       final long id = rpcId.getAndIncrement();
       final Promise<T> promise = createPromise();
@@ -280,7 +282,8 @@ public class Rpc implements Closeable {
           @Override
           public void operationComplete(ChannelFuture cf) {
             if (!cf.isSuccess() && !promise.isDone()) {
-              LOG.warn("Failed to send RPC, closing connection.", cf.cause());
+              LOG.warn("Failed to send message '" + msg + "', closing Remote Spark Driver - " +
+                      "HiveServer2 connection.", cf.cause());
               promise.setFailure(cf.cause());
               dispatcher.discardRpc(id);
               close();
@@ -314,6 +317,14 @@ public class Rpc implements Closeable {
     return channel;
   }
 
+  /**
+   * Returns the "hostname:port" that the RPC is connected to
+   */
+  public String getRemoteAddress() {
+    InetSocketAddress remoteAddress = ((InetSocketAddress) this.channel.remoteAddress());
+    return remoteAddress.getHostName() + ":" + remoteAddress.getPort();
+  }
+
   void setDispatcher(RpcDispatcher dispatcher) {
     Preconditions.checkNotNull(dispatcher);
     Preconditions.checkState(this.dispatcher == null);
@@ -336,7 +347,7 @@ public class Rpc implements Closeable {
           try {
             l.rpcClosed(this);
           } catch (Exception e) {
-            LOG.warn("Error caught in Rpc.Listener invocation.", e);
+            LOG.warn("Error caught while running '" + l + "' listener", e);
           }
         }
       }
@@ -493,12 +504,10 @@ public class Rpc implements Closeable {
         client.evaluateChallenge(new byte[0]) : new byte[0];
       c.writeAndFlush(new SaslMessage(clientId, hello)).addListener(future -> {
         if (!future.isSuccess()) {
-          LOG.error("Failed to send hello to server", future.cause());
+          LOG.error("Failed to send test message to HiveServer2", future.cause());
           onError(future.cause());
         }
       });
     }
-
   }
-
 }

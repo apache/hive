@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,7 +16,7 @@ package org.apache.hadoop.hive.ql.io.parquet.serde;
 import java.util.HashMap;
 import java.util.Map;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.hive.ql.io.parquet.serde.primitive.ParquetPrimitiveInspectorFactory;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
@@ -24,13 +24,19 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Writable;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertEquals;
+import org.junit.Before;
 import org.junit.Test;
 
-public class TestDeepParquetHiveMapInspector extends TestCase {
+/**
+ * DeepParquetHiveMapInspector Test.
+ */
+public class TestDeepParquetHiveMapInspector {
 
   private DeepParquetHiveMapInspector inspector;
 
-  @Override
+  @Before
   public void setUp() {
     inspector = new DeepParquetHiveMapInspector(ParquetPrimitiveInspectorFactory.parquetShortInspector,
             PrimitiveObjectInspectorFactory.javaIntObjectInspector);

@@ -29,8 +29,14 @@ POSTHOOK: Input: default@non_string_part
 ctinyint=__HIVE_DEFAULT_PARTITION__
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT cint, ctinyint FROM non_string_part WHERE cint > 0 ORDER BY cint LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@non_string_part
+PREHOOK: Input: default@non_string_part@ctinyint=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT cint, ctinyint FROM non_string_part WHERE cint > 0 ORDER BY cint LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@non_string_part
+POSTHOOK: Input: default@non_string_part@ctinyint=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -51,40 +57,52 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: non_string_part
-                  Statistics: Num rows: 3073 Data size: 363126 Basic stats: COMPLETE Column stats: PARTIAL
+                  filterExpr: (cint > 0) (type: boolean)
+                  Statistics: Num rows: 3073 Data size: 24584 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterLongColGreaterLongScalar(col 0, val 0) -> boolean
+                        predicateExpression: FilterLongColGreaterLongScalar(col 0:int, val 0)
                     predicate: (cint > 0) (type: boolean)
-                    Statistics: Num rows: 3073 Data size: 23976 Basic stats: COMPLETE Column stats: PARTIAL
-                    Select Operator
-                      expressions: cint (type: int), ctinyint (type: tinyint)
-                      outputColumnNames: _col0, _col1
-                      Select Vectorization:
-                          className: VectorSelectOperator
+                    Statistics: Num rows: 1537 Data size: 12296 Basic stats: COMPLETE Column stats: COMPLETE
+                    Top N Key Operator
+                      sort order: +
+                      keys: cint (type: int)
+                      null sort order: z
+                      Statistics: Num rows: 1537 Data size: 12296 Basic stats: COMPLETE Column stats: COMPLETE
+                      top n: 10
+                      Top N Key Vectorization:
+                          className: VectorTopNKeyOperator
+                          keyExpressions: col 0:int
                           native: true
-                          projectedOutputColumns: [0, 4]
-                      Statistics: Num rows: 3073 Data size: 23976 Basic stats: COMPLETE Column stats: PARTIAL
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        sort order: +
-                        Reduce Sink Vectorization:
-                            className: VectorReduceSinkObjectHashOperator
+                      Select Operator
+                        expressions: cint (type: int), ctinyint (type: tinyint)
+                        outputColumnNames: _col0, _col1
+                        Select Vectorization:
+                            className: VectorSelectOperator
                             native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        Statistics: Num rows: 3073 Data size: 23976 Basic stats: COMPLETE Column stats: PARTIAL
-                        TopN Hash Memory Usage: 0.1
-                        value expressions: _col1 (type: tinyint)
+                            projectedOutputColumnNums: [0, 4]
+                        Statistics: Num rows: 1537 Data size: 12296 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: int)
+                          null sort order: z
+                          sort order: +
+                          Reduce Sink Vectorization:
+                              className: VectorReduceSinkObjectHashOperator
+                              native: true
+                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          Statistics: Num rows: 1537 Data size: 12296 Basic stats: COMPLETE Column stats: COMPLETE
+                          TopN Hash Memory Usage: 0.1
+                          value expressions: _col1 (type: tinyint)
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -94,7 +112,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -105,20 +122,20 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [0, 1]
-                Statistics: Num rows: 3073 Data size: 23976 Basic stats: COMPLETE Column stats: PARTIAL
+                    projectedOutputColumnNums: [0, 1]
+                Statistics: Num rows: 1537 Data size: 12296 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
                   Number of rows: 10
                   Limit Vectorization:
                       className: VectorLimitOperator
                       native: true
-                  Statistics: Num rows: 10 Data size: 80 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 10 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
                     File Sink Vectorization:
                         className: VectorFileSinkOperator
                         native: false
-                    Statistics: Num rows: 10 Data size: 80 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 10 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -134,12 +151,12 @@ PREHOOK: query: SELECT cint, ctinyint FROM non_string_part WHERE cint > 0 ORDER 
 PREHOOK: type: QUERY
 PREHOOK: Input: default@non_string_part
 PREHOOK: Input: default@non_string_part@ctinyint=__HIVE_DEFAULT_PARTITION__
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT cint, ctinyint FROM non_string_part WHERE cint > 0 ORDER BY cint LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@non_string_part
 POSTHOOK: Input: default@non_string_part@ctinyint=__HIVE_DEFAULT_PARTITION__
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 762	NULL
 762	NULL
 6981	NULL
@@ -152,8 +169,14 @@ POSTHOOK: Input: default@non_string_part@ctinyint=__HIVE_DEFAULT_PARTITION__
 1286921	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT cint, cstring1 FROM non_string_part WHERE cint > 0 ORDER BY cint, cstring1 LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@non_string_part
+PREHOOK: Input: default@non_string_part@ctinyint=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT cint, cstring1 FROM non_string_part WHERE cint > 0 ORDER BY cint, cstring1 LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@non_string_part
+POSTHOOK: Input: default@non_string_part@ctinyint=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -174,39 +197,51 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: non_string_part
-                  Statistics: Num rows: 3073 Data size: 888298 Basic stats: COMPLETE Column stats: NONE
+                  filterExpr: (cint > 0) (type: boolean)
+                  Statistics: Num rows: 3073 Data size: 313446 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterLongColGreaterLongScalar(col 0, val 0) -> boolean
+                        predicateExpression: FilterLongColGreaterLongScalar(col 0:int, val 0)
                     predicate: (cint > 0) (type: boolean)
-                    Statistics: Num rows: 3073 Data size: 888298 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: cint (type: int), cstring1 (type: string)
-                      outputColumnNames: _col0, _col1
-                      Select Vectorization:
-                          className: VectorSelectOperator
+                    Statistics: Num rows: 1537 Data size: 156774 Basic stats: COMPLETE Column stats: COMPLETE
+                    Top N Key Operator
+                      sort order: ++
+                      keys: cint (type: int), cstring1 (type: string)
+                      null sort order: zz
+                      Statistics: Num rows: 1537 Data size: 156774 Basic stats: COMPLETE Column stats: COMPLETE
+                      top n: 10
+                      Top N Key Vectorization:
+                          className: VectorTopNKeyOperator
+                          keyExpressions: col 0:int, col 1:string
                           native: true
-                          projectedOutputColumns: [0, 1]
-                      Statistics: Num rows: 3073 Data size: 888298 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int), _col1 (type: string)
-                        sort order: ++
-                        Reduce Sink Vectorization:
-                            className: VectorReduceSinkObjectHashOperator
+                      Select Operator
+                        expressions: cint (type: int), cstring1 (type: string)
+                        outputColumnNames: _col0, _col1
+                        Select Vectorization:
+                            className: VectorSelectOperator
                             native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        Statistics: Num rows: 3073 Data size: 888298 Basic stats: COMPLETE Column stats: NONE
-                        TopN Hash Memory Usage: 0.1
+                            projectedOutputColumnNums: [0, 1]
+                        Statistics: Num rows: 1537 Data size: 156774 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: int), _col1 (type: string)
+                          null sort order: zz
+                          sort order: ++
+                          Reduce Sink Vectorization:
+                              className: VectorReduceSinkObjectHashOperator
+                              native: true
+                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          Statistics: Num rows: 1537 Data size: 156774 Basic stats: COMPLETE Column stats: COMPLETE
+                          TopN Hash Memory Usage: 0.1
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -216,7 +251,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -227,20 +261,20 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [0, 1]
-                Statistics: Num rows: 3073 Data size: 888298 Basic stats: COMPLETE Column stats: NONE
+                    projectedOutputColumnNums: [0, 1]
+                Statistics: Num rows: 1537 Data size: 156774 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
                   Number of rows: 10
                   Limit Vectorization:
                       className: VectorLimitOperator
                       native: true
-                  Statistics: Num rows: 10 Data size: 2890 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 10 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
                     File Sink Vectorization:
                         className: VectorFileSinkOperator
                         native: false
-                    Statistics: Num rows: 10 Data size: 2890 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 10 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -256,12 +290,12 @@ PREHOOK: query: SELECT cint, cstring1 FROM non_string_part WHERE cint > 0 ORDER 
 PREHOOK: type: QUERY
 PREHOOK: Input: default@non_string_part
 PREHOOK: Input: default@non_string_part@ctinyint=__HIVE_DEFAULT_PARTITION__
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT cint, cstring1 FROM non_string_part WHERE cint > 0 ORDER BY cint, cstring1 LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@non_string_part
 POSTHOOK: Input: default@non_string_part@ctinyint=__HIVE_DEFAULT_PARTITION__
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 762	3WsVeqb28VWEEOLI8ail
 762	40ks5556SV
 6981	1FNNhmiFLGw425NA13g

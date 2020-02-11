@@ -1,29 +1,33 @@
-PREHOOK: query: CREATE TABLE T1(key INT, value INT) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE T1_n64(key INT, value INT) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1
-POSTHOOK: query: CREATE TABLE T1(key INT, value INT) STORED AS TEXTFILE
+PREHOOK: Output: default@T1_n64
+POSTHOOK: query: CREATE TABLE T1_n64(key INT, value INT) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/groupby_groupingid.txt' INTO TABLE T1
+POSTHOOK: Output: default@T1_n64
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/groupby_groupingid.txt' INTO TABLE T1_n64
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/groupby_groupingid.txt' INTO TABLE T1
+PREHOOK: Output: default@t1_n64
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/groupby_groupingid.txt' INTO TABLE T1_n64
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t1
+POSTHOOK: Output: default@t1_n64
 PREHOOK: query: explain
 select key, value, `grouping__id`, grouping(key), grouping(value)
-from T1
+from T1_n64
 group by rollup(key, value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, value, `grouping__id`, grouping(key), grouping(value)
-from T1
+from T1_n64
 group by rollup(key, value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -33,35 +37,37 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
-            Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+            alias: t1_n64
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: _col0 (type: int), _col1 (type: int), 0 (type: int)
+                keys: _col0 (type: int), _col1 (type: int), 0L (type: bigint)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int)
+                  key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
+                  null sort order: zzz
                   sort order: +++
-                  Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: int)
-                  Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
+                  Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
+                  Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
-          keys: KEY._col0 (type: int), KEY._col1 (type: int), KEY._col2 (type: int)
+          keys: KEY._col0 (type: int), KEY._col1 (type: int), KEY._col2 (type: bigint)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 4 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), grouping(_col2, 1) (type: int), grouping(_col2, 0) (type: int)
+            expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), grouping(_col2, 1L) (type: bigint), grouping(_col2, 0L) (type: bigint)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4
-            Statistics: Num rows: 4 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 4 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -74,16 +80,16 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select key, value, `grouping__id`, grouping(key), grouping(value)
-from T1
+from T1_n64
 group by rollup(key, value)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n64
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value, `grouping__id`, grouping(key), grouping(value)
-from T1
+from T1_n64
 group by rollup(key, value)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n64
 #### A masked pattern was here ####
 1	1	0	0	0
 1	NULL	0	0	0
@@ -98,14 +104,18 @@ POSTHOOK: Input: default@t1
 NULL	NULL	3	1	1
 PREHOOK: query: explain
 select key, value, `grouping__id`, grouping(key), grouping(value)
-from T1
+from T1_n64
 group by cube(key, value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, value, `grouping__id`, grouping(key), grouping(value)
-from T1
+from T1_n64
 group by cube(key, value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -115,35 +125,37 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
-            Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+            alias: t1_n64
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: _col0 (type: int), _col1 (type: int), 0 (type: int)
+                keys: _col0 (type: int), _col1 (type: int), 0L (type: bigint)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 12 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int)
+                  key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
+                  null sort order: zzz
                   sort order: +++
-                  Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: int)
-                  Statistics: Num rows: 12 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                  Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
+                  Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
-          keys: KEY._col0 (type: int), KEY._col1 (type: int), KEY._col2 (type: int)
+          keys: KEY._col0 (type: int), KEY._col1 (type: int), KEY._col2 (type: bigint)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 6 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), grouping(_col2, 1) (type: int), grouping(_col2, 0) (type: int)
+            expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), grouping(_col2, 1L) (type: bigint), grouping(_col2, 0L) (type: bigint)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4
-            Statistics: Num rows: 6 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 6 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -156,16 +168,16 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select key, value, `grouping__id`, grouping(key), grouping(value)
-from T1
+from T1_n64
 group by cube(key, value)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n64
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value, `grouping__id`, grouping(key), grouping(value)
-from T1
+from T1_n64
 group by cube(key, value)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n64
 #### A masked pattern was here ####
 1	1	0	0	0
 1	NULL	0	0	0
@@ -185,16 +197,20 @@ NULL	NULL	2	1	0
 NULL	NULL	3	1	1
 PREHOOK: query: explain
 select key, value
-from T1
+from T1_n64
 group by cube(key, value)
 having grouping(key) = 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, value
-from T1
+from T1_n64
 group by cube(key, value)
 having grouping(key) = 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -204,38 +220,40 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
-            Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+            alias: t1_n64
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: _col0 (type: int), _col1 (type: int), 0 (type: int)
+                keys: _col0 (type: int), _col1 (type: int), 0L (type: bigint)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 12 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int)
+                  key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
+                  null sort order: zzz
                   sort order: +++
-                  Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: int)
-                  Statistics: Num rows: 12 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                  Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
+                  Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
-          keys: KEY._col0 (type: int), KEY._col1 (type: int), KEY._col2 (type: int)
+          keys: KEY._col0 (type: int), KEY._col1 (type: int), KEY._col2 (type: bigint)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 6 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
-            predicate: (grouping(_col2, 1) = 1) (type: boolean)
-            Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+            predicate: (grouping(_col2, 1L) = 1L) (type: boolean)
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col0 (type: int), _col1 (type: int)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -248,18 +266,18 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select key, value
-from T1
+from T1_n64
 group by cube(key, value)
 having grouping(key) = 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n64
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value
-from T1
+from T1_n64
 group by cube(key, value)
 having grouping(key) = 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n64
 #### A masked pattern was here ####
 NULL	1
 NULL	2
@@ -269,18 +287,22 @@ NULL	NULL
 NULL	NULL
 PREHOOK: query: explain
 select key, value, grouping(key)+grouping(value) as x
-from T1
+from T1_n64
 group by cube(key, value)
 having grouping(key) = 1 OR grouping(value) = 1
 order by x desc, case when x = 1 then key end
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, value, grouping(key)+grouping(value) as x
-from T1
+from T1_n64
 group by cube(key, value)
 having grouping(key) = 1 OR grouping(value) = 1
 order by x desc, case when x = 1 then key end
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -291,35 +313,37 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
-            Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+            alias: t1_n64
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: _col0 (type: int), _col1 (type: int), 0 (type: int)
+                keys: _col0 (type: int), _col1 (type: int), 0L (type: bigint)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 12 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int)
+                  key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
+                  null sort order: zzz
                   sort order: +++
-                  Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: int)
-                  Statistics: Num rows: 12 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                  Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
+                  Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
-          keys: KEY._col0 (type: int), KEY._col1 (type: int), KEY._col2 (type: int)
+          keys: KEY._col0 (type: int), KEY._col1 (type: int), KEY._col2 (type: bigint)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 6 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
-            predicate: ((grouping(_col2, 1) = 1) or (grouping(_col2, 0) = 1)) (type: boolean)
-            Statistics: Num rows: 6 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+            predicate: ((grouping(_col2, 1L) = 1L) or (grouping(_col2, 0L) = 1L)) (type: boolean)
+            Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: _col0 (type: int), _col1 (type: int), (grouping(_col2, 1) + grouping(_col2, 0)) (type: int), CASE WHEN (((grouping(_col2, 1) + grouping(_col2, 0)) = 1)) THEN (_col0) ELSE (null) END (type: int)
+              expressions: _col0 (type: int), _col1 (type: int), (grouping(_col2, 1L) + grouping(_col2, 0L)) (type: bigint), CASE WHEN (((grouping(_col2, 1L) + grouping(_col2, 0L)) = 1L)) THEN (_col0) ELSE (null) END (type: int)
               outputColumnNames: _col0, _col1, _col2, _col3
-              Statistics: Num rows: 6 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
                 table:
@@ -332,18 +356,19 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             Reduce Output Operator
-              key expressions: _col2 (type: int), _col3 (type: int)
+              key expressions: _col2 (type: bigint), _col3 (type: int)
+              null sort order: zz
               sort order: -+
-              Statistics: Num rows: 6 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: int), _col1 (type: int)
       Reduce Operator Tree:
         Select Operator
-          expressions: VALUE._col0 (type: int), VALUE._col1 (type: int), KEY.reducesinkkey0 (type: int)
+          expressions: VALUE._col0 (type: int), VALUE._col1 (type: int), KEY.reducesinkkey0 (type: bigint)
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 6 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 6 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -356,20 +381,20 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select key, value, grouping(key)+grouping(value) as x
-from T1
+from T1_n64
 group by cube(key, value)
 having grouping(key) = 1 OR grouping(value) = 1
 order by x desc, case when x = 1 then key end
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n64
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value, grouping(key)+grouping(value) as x
-from T1
+from T1_n64
 group by cube(key, value)
 having grouping(key) = 1 OR grouping(value) = 1
 order by x desc, case when x = 1 then key end
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n64
 #### A masked pattern was here ####
 1	NULL	1
 2	NULL	1
@@ -383,14 +408,18 @@ NULL	NULL	1
 NULL	NULL	2
 PREHOOK: query: explain
 select key, value, `grouping__id`, grouping(key), grouping(value)
-from T1
+from T1_n64
 group by rollup(key, value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, value, `grouping__id`, grouping(key), grouping(value)
-from T1
+from T1_n64
 group by rollup(key, value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -400,35 +429,37 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
-            Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+            alias: t1_n64
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int)
               outputColumnNames: key, value
-              Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: key (type: int), value (type: int), 0 (type: int)
+                keys: key (type: int), value (type: int), 0L (type: bigint)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int)
+                  key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
+                  null sort order: zzz
                   sort order: +++
-                  Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: int)
-                  Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
+                  Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
+                  Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
-          keys: KEY._col0 (type: int), KEY._col1 (type: int), KEY._col2 (type: int)
+          keys: KEY._col0 (type: int), KEY._col1 (type: int), KEY._col2 (type: bigint)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 4 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), grouping(_col2, 1) (type: int), grouping(_col2, 0) (type: int)
+            expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), grouping(_col2, 1L) (type: bigint), grouping(_col2, 0L) (type: bigint)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4
-            Statistics: Num rows: 4 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 4 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -441,16 +472,16 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select key, value, `grouping__id`, grouping(key), grouping(value)
-from T1
+from T1_n64
 group by rollup(key, value)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n64
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value, `grouping__id`, grouping(key), grouping(value)
-from T1
+from T1_n64
 group by rollup(key, value)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n64
 #### A masked pattern was here ####
 1	1	0	0	0
 1	NULL	0	0	0
@@ -465,14 +496,18 @@ POSTHOOK: Input: default@t1
 NULL	NULL	3	1	1
 PREHOOK: query: explain
 select key, value, `grouping__id`, grouping(key), grouping(value)
-from T1
+from T1_n64
 group by cube(key, value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, value, `grouping__id`, grouping(key), grouping(value)
-from T1
+from T1_n64
 group by cube(key, value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -482,35 +517,37 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
-            Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+            alias: t1_n64
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int)
               outputColumnNames: key, value
-              Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: key (type: int), value (type: int), 0 (type: int)
+                keys: key (type: int), value (type: int), 0L (type: bigint)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 12 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int)
+                  key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
+                  null sort order: zzz
                   sort order: +++
-                  Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: int)
-                  Statistics: Num rows: 12 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                  Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
+                  Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
-          keys: KEY._col0 (type: int), KEY._col1 (type: int), KEY._col2 (type: int)
+          keys: KEY._col0 (type: int), KEY._col1 (type: int), KEY._col2 (type: bigint)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 6 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), grouping(_col2, 1) (type: int), grouping(_col2, 0) (type: int)
+            expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), grouping(_col2, 1L) (type: bigint), grouping(_col2, 0L) (type: bigint)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4
-            Statistics: Num rows: 6 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 6 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -523,16 +560,16 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select key, value, `grouping__id`, grouping(key), grouping(value)
-from T1
+from T1_n64
 group by cube(key, value)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n64
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value, `grouping__id`, grouping(key), grouping(value)
-from T1
+from T1_n64
 group by cube(key, value)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n64
 #### A masked pattern was here ####
 1	1	0	0	0
 1	NULL	0	0	0
@@ -552,16 +589,20 @@ NULL	NULL	2	1	0
 NULL	NULL	3	1	1
 PREHOOK: query: explain
 select key, value
-from T1
+from T1_n64
 group by cube(key, value)
 having grouping(key) = 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, value
-from T1
+from T1_n64
 group by cube(key, value)
 having grouping(key) = 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -571,35 +612,37 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
-            Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+            alias: t1_n64
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int)
               outputColumnNames: key, value
-              Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: key (type: int), value (type: int), 0 (type: int)
+                keys: key (type: int), value (type: int), 0L (type: bigint)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 12 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: (grouping(_col2, 1) = 1) (type: boolean)
-                  Statistics: Num rows: 6 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+                  predicate: (grouping(_col2, 1L) = 1) (type: boolean)
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int)
+                    key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
+                    null sort order: zzz
                     sort order: +++
-                    Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: int)
-                    Statistics: Num rows: 6 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+                    Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
+                    Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
-          keys: KEY._col0 (type: int), KEY._col1 (type: int), KEY._col2 (type: int)
+          keys: KEY._col0 (type: int), KEY._col1 (type: int), KEY._col2 (type: bigint)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
           pruneGroupingSetId: true
           File Output Operator
             compressed: false
-            Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -612,18 +655,18 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select key, value
-from T1
+from T1_n64
 group by cube(key, value)
 having grouping(key) = 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n64
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value
-from T1
+from T1_n64
 group by cube(key, value)
 having grouping(key) = 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n64
 #### A masked pattern was here ####
 NULL	1
 NULL	2
@@ -633,18 +676,22 @@ NULL	NULL
 NULL	NULL
 PREHOOK: query: explain
 select key, value, grouping(key)+grouping(value) as x
-from T1
+from T1_n64
 group by cube(key, value)
 having grouping(key) = 1 OR grouping(value) = 1
 order by x desc, case when x = 1 then key end
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, value, grouping(key)+grouping(value) as x
-from T1
+from T1_n64
 group by cube(key, value)
 having grouping(key) = 1 OR grouping(value) = 1
 order by x desc, case when x = 1 then key end
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -655,35 +702,37 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
-            Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+            alias: t1_n64
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int)
               outputColumnNames: key, value
-              Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: key (type: int), value (type: int), 0 (type: int)
+                keys: key (type: int), value (type: int), 0L (type: bigint)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 12 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: ((grouping(_col2, 1) = 1) or (grouping(_col2, 0) = 1)) (type: boolean)
-                  Statistics: Num rows: 12 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                  predicate: ((grouping(_col2, 1L) = 1) or (grouping(_col2, 0L) = 1)) (type: boolean)
+                  Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int)
+                    key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
+                    null sort order: zzz
                     sort order: +++
-                    Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: int)
-                    Statistics: Num rows: 12 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                    Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
+                    Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
-          keys: KEY._col0 (type: int), KEY._col1 (type: int), KEY._col2 (type: int)
+          keys: KEY._col0 (type: int), KEY._col1 (type: int), KEY._col2 (type: bigint)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 6 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: int), _col1 (type: int), (grouping(_col2, 1) + grouping(_col2, 0)) (type: int)
+            expressions: _col0 (type: int), _col1 (type: int), (grouping(_col2, 1L) + grouping(_col2, 0L)) (type: bigint)
             outputColumnNames: _col0, _col1, _col2
-            Statistics: Num rows: 6 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
               table:
@@ -696,18 +745,19 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             Reduce Output Operator
-              key expressions: _col2 (type: int), CASE WHEN ((_col2 = 1)) THEN (_col0) END (type: int)
+              key expressions: _col2 (type: bigint), CASE WHEN ((_col2 = 1L)) THEN (_col0) END (type: int)
+              null sort order: zz
               sort order: -+
-              Statistics: Num rows: 6 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: int), _col1 (type: int)
       Reduce Operator Tree:
         Select Operator
-          expressions: VALUE._col0 (type: int), VALUE._col1 (type: int), KEY.reducesinkkey0 (type: int)
+          expressions: VALUE._col0 (type: int), VALUE._col1 (type: int), KEY.reducesinkkey0 (type: bigint)
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 6 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 6 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -720,20 +770,20 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select key, value, grouping(key)+grouping(value) as x
-from T1
+from T1_n64
 group by cube(key, value)
 having grouping(key) = 1 OR grouping(value) = 1
 order by x desc, case when x = 1 then key end
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n64
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value, grouping(key)+grouping(value) as x
-from T1
+from T1_n64
 group by cube(key, value)
 having grouping(key) = 1 OR grouping(value) = 1
 order by x desc, case when x = 1 then key end
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n64
 #### A masked pattern was here ####
 1	NULL	1
 2	NULL	1
@@ -747,14 +797,18 @@ NULL	NULL	1
 NULL	NULL	2
 PREHOOK: query: explain
 select key, value, grouping(key), grouping(value)
-from T1
+from T1_n64
 group by key, value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, value, grouping(key), grouping(value)
-from T1
+from T1_n64
 group by key, value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -764,35 +818,37 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
-            Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+            alias: t1_n64
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int)
               outputColumnNames: key, value
-              Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 keys: key (type: int), value (type: int)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int), _col1 (type: int)
+                  null sort order: zz
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                  Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: int), KEY._col1 (type: int)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: int), _col1 (type: int), 0 (type: int), 0 (type: int)
+            expressions: _col0 (type: int), _col1 (type: int), 0L (type: bigint), 0L (type: bigint)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -805,16 +861,16 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select key, value, grouping(key), grouping(value)
-from T1
+from T1_n64
 group by key, value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n64
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value, grouping(key), grouping(value)
-from T1
+from T1_n64
 group by key, value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n64
 #### A masked pattern was here ####
 1	1	0	0
 1	NULL	0	0
@@ -824,14 +880,18 @@ POSTHOOK: Input: default@t1
 4	5	0	0
 PREHOOK: query: explain
 select key, value, grouping(value)
-from T1
+from T1_n64
 group by key, value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, value, grouping(value)
-from T1
+from T1_n64
 group by key, value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -841,35 +901,37 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
-            Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+            alias: t1_n64
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int)
               outputColumnNames: key, value
-              Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 keys: key (type: int), value (type: int)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int), _col1 (type: int)
+                  null sort order: zz
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                  Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: int), KEY._col1 (type: int)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: int), _col1 (type: int), 0 (type: int)
+            expressions: _col0 (type: int), _col1 (type: int), 0L (type: bigint)
             outputColumnNames: _col0, _col1, _col2
-            Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -882,16 +944,16 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select key, value, grouping(value)
-from T1
+from T1_n64
 group by key, value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n64
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value, grouping(value)
-from T1
+from T1_n64
 group by key, value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n64
 #### A masked pattern was here ####
 1	1	0
 1	NULL	0
@@ -901,16 +963,20 @@ POSTHOOK: Input: default@t1
 4	5	0
 PREHOOK: query: explain
 select key, value
-from T1
+from T1_n64
 group by key, value
 having grouping(key) = 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, value
-from T1
+from T1_n64
 group by key, value
 having grouping(key) = 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -920,31 +986,33 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
-            Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+            alias: t1_n64
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int)
               outputColumnNames: key, value
-              Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 keys: key (type: int), value (type: int)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int), _col1 (type: int)
+                  null sort order: zz
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                  Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: int), KEY._col1 (type: int)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -957,18 +1025,18 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select key, value
-from T1
+from T1_n64
 group by key, value
 having grouping(key) = 0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n64
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value
-from T1
+from T1_n64
 group by key, value
 having grouping(key) = 0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n64
 #### A masked pattern was here ####
 1	1
 1	NULL
@@ -978,14 +1046,18 @@ POSTHOOK: Input: default@t1
 4	5
 PREHOOK: query: explain
 select key, value, `grouping__id`, grouping(key, value)
-from T1
+from T1_n64
 group by cube(key, value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, value, `grouping__id`, grouping(key, value)
-from T1
+from T1_n64
 group by cube(key, value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -995,35 +1067,37 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
-            Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+            alias: t1_n64
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int)
               outputColumnNames: key, value
-              Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: key (type: int), value (type: int), 0 (type: int)
+                keys: key (type: int), value (type: int), 0L (type: bigint)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 12 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int)
+                  key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
+                  null sort order: zzz
                   sort order: +++
-                  Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: int)
-                  Statistics: Num rows: 12 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                  Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
+                  Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
-          keys: KEY._col0 (type: int), KEY._col1 (type: int), KEY._col2 (type: int)
+          keys: KEY._col0 (type: int), KEY._col1 (type: int), KEY._col2 (type: bigint)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 6 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), grouping(_col2, 1, 0) (type: int)
+            expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), grouping(_col2, 1L, 0L) (type: bigint)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 6 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 6 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1036,16 +1110,16 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select key, value, `grouping__id`, grouping(key, value)
-from T1
+from T1_n64
 group by cube(key, value)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n64
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value, `grouping__id`, grouping(key, value)
-from T1
+from T1_n64
 group by cube(key, value)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n64
 #### A masked pattern was here ####
 1	1	0	0
 1	NULL	0	0
@@ -1065,14 +1139,18 @@ NULL	NULL	2	2
 NULL	NULL	3	3
 PREHOOK: query: explain
 select key, value, `grouping__id`, grouping(value, key)
-from T1
+from T1_n64
 group by cube(key, value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, value, `grouping__id`, grouping(value, key)
-from T1
+from T1_n64
 group by cube(key, value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1082,35 +1160,37 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
-            Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+            alias: t1_n64
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int)
               outputColumnNames: key, value
-              Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: key (type: int), value (type: int), 0 (type: int)
+                keys: key (type: int), value (type: int), 0L (type: bigint)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 12 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int)
+                  key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
+                  null sort order: zzz
                   sort order: +++
-                  Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: int)
-                  Statistics: Num rows: 12 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                  Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
+                  Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
-          keys: KEY._col0 (type: int), KEY._col1 (type: int), KEY._col2 (type: int)
+          keys: KEY._col0 (type: int), KEY._col1 (type: int), KEY._col2 (type: bigint)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 6 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), grouping(_col2, 0, 1) (type: int)
+            expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), grouping(_col2, 0L, 1L) (type: bigint)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 6 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 6 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1123,16 +1203,16 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select key, value, `grouping__id`, grouping(value, key)
-from T1
+from T1_n64
 group by cube(key, value)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n64
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value, `grouping__id`, grouping(value, key)
-from T1
+from T1_n64
 group by cube(key, value)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n64
 #### A masked pattern was here ####
 1	1	0	0
 1	NULL	0	0
@@ -1152,14 +1232,18 @@ NULL	NULL	2	1
 NULL	NULL	3	3
 PREHOOK: query: explain
 select key, value, `grouping__id`, grouping(key, value)
-from T1
+from T1_n64
 group by rollup(key, value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, value, `grouping__id`, grouping(key, value)
-from T1
+from T1_n64
 group by rollup(key, value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1169,35 +1253,37 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
-            Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+            alias: t1_n64
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int)
               outputColumnNames: key, value
-              Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: key (type: int), value (type: int), 0 (type: int)
+                keys: key (type: int), value (type: int), 0L (type: bigint)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int)
+                  key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
+                  null sort order: zzz
                   sort order: +++
-                  Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: int)
-                  Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
+                  Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
+                  Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
-          keys: KEY._col0 (type: int), KEY._col1 (type: int), KEY._col2 (type: int)
+          keys: KEY._col0 (type: int), KEY._col1 (type: int), KEY._col2 (type: bigint)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 4 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), grouping(_col2, 1, 0) (type: int)
+            expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), grouping(_col2, 1L, 0L) (type: bigint)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 4 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 4 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1210,16 +1296,16 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select key, value, `grouping__id`, grouping(key, value)
-from T1
+from T1_n64
 group by rollup(key, value)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n64
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value, `grouping__id`, grouping(key, value)
-from T1
+from T1_n64
 group by rollup(key, value)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n64
 #### A masked pattern was here ####
 1	1	0	0
 1	NULL	0	0
@@ -1234,14 +1320,18 @@ POSTHOOK: Input: default@t1
 NULL	NULL	3	3
 PREHOOK: query: explain
 select key, value, `grouping__id`, grouping(value, key)
-from T1
+from T1_n64
 group by rollup(key, value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, value, `grouping__id`, grouping(value, key)
-from T1
+from T1_n64
 group by rollup(key, value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1251,35 +1341,37 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
-            Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+            alias: t1_n64
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int)
               outputColumnNames: key, value
-              Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: key (type: int), value (type: int), 0 (type: int)
+                keys: key (type: int), value (type: int), 0L (type: bigint)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int)
+                  key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
+                  null sort order: zzz
                   sort order: +++
-                  Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: int)
-                  Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
+                  Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
+                  Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
-          keys: KEY._col0 (type: int), KEY._col1 (type: int), KEY._col2 (type: int)
+          keys: KEY._col0 (type: int), KEY._col1 (type: int), KEY._col2 (type: bigint)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 4 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), grouping(_col2, 0, 1) (type: int)
+            expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), grouping(_col2, 0L, 1L) (type: bigint)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 4 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 4 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1292,16 +1384,16 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select key, value, `grouping__id`, grouping(value, key)
-from T1
+from T1_n64
 group by rollup(key, value)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n64
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value, `grouping__id`, grouping(value, key)
-from T1
+from T1_n64
 group by rollup(key, value)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n64
 #### A masked pattern was here ####
 1	1	0	0
 1	NULL	0	0

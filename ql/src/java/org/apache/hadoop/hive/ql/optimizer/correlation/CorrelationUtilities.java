@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -97,7 +97,7 @@ public final class CorrelationUtilities {
    * @param throwException if throw a exception when the input operator has multiple parents
    * @return the single parent or null when the input operator has multiple parents and
    *         throwException is false;
-   * @throws HiveException
+   * @throws SemanticException
    */
   protected static Operator<?> getSingleParent(Operator<?> operator,
       boolean throwException) throws SemanticException {
@@ -127,7 +127,7 @@ public final class CorrelationUtilities {
    * @param throwException if throw a exception when the input operator has multiple children
    * @return the single child or null when the input operator has multiple children and
    *         throwException is false;
-   * @throws HiveException
+   * @throws SemanticException
    */
   protected static Operator<?> getSingleChild(Operator<?> operator,
       boolean throwException) throws SemanticException {
@@ -387,7 +387,7 @@ public final class CorrelationUtilities {
     SelectDesc select = new SelectDesc(childRS.getConf().getValueCols(), childRS.getConf().getOutputValueColumnNames());
 
     Operator<?> parent = getSingleParent(childRS);
-    parent.getChildOperators().clear();
+    parent.removeChild(childRS);
 
     SelectOperator sel = (SelectOperator) OperatorFactory.getAndMakeChild(
             select, new RowSchema(inputRS.getSignature()), parent);
@@ -477,8 +477,7 @@ public final class CorrelationUtilities {
    * @param newOperator the operator will be inserted between child and parent
    * @param child
    * @param parent
-   * @param context
-   * @throws HiveException
+   * @throws SemanticException
    */
   protected static void insertOperatorBetween(
       Operator<?> newOperator, Operator<?> parent, Operator<?> child)

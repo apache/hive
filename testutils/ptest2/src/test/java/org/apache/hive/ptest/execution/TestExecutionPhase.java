@@ -150,6 +150,33 @@ public class TestExecutionPhase extends AbstractTestPhase {
     Assert.assertEquals(Sets.newHashSet("SomeTest." + QFILENAME + " (batchId=1)"), failedTests);
   }
 
+  @Test
+  public void testPerfMetrics() throws Throwable {
+    //when test is successful
+    setupUnitTest();
+    copyTestOutput("SomeTest-success.xml", succeededLogDir, testBatch.getName());
+    Phase phase = getPhase();
+    phase.execute();
+    Assert.assertNotNull("Perf metrics should have been initialized", phase.getPerfMetrics());
+    Assert.assertNotNull(ExecutionPhase.TOTAL_RSYNC_TIME + " should have been initialized",
+        phase.getPerfMetrics().get(ExecutionPhase.TOTAL_RSYNC_TIME));
+    Assert.assertTrue("Total Rsync Elapsed time should have been greater than 0",
+        phase.getPerfMetrics().get(ExecutionPhase.TOTAL_RSYNC_TIME) > 0);
+
+    //when test fails
+    setupUnitTest();
+    sshCommandExecutor.putFailure("bash " + LOCAL_DIR + "/" + HOST + "-" + USER +
+        "-0/scratch/hiveptest-" + testBatch.getBatchId() + "_" + DRIVER + ".sh", 1);
+    copyTestOutput("SomeTest-failure.xml", failedLogDir, testBatch.getName());
+    phase = getPhase();
+    phase.execute();
+    Assert.assertNotNull("Perf metrics should have been initialized", phase.getPerfMetrics());
+    Assert.assertNotNull(ExecutionPhase.TOTAL_RSYNC_TIME + " should have been initialized",
+        phase.getPerfMetrics().get(ExecutionPhase.TOTAL_RSYNC_TIME));
+    Assert.assertTrue("Total Rsync Elapsed time should have been greater than 0",
+        phase.getPerfMetrics().get(ExecutionPhase.TOTAL_RSYNC_TIME) > 0);
+  }
+
   @Test(timeout = 20000)
   public void testTimedOutUnitTest() throws Throwable {
     setupUnitTest(3);

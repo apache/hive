@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authentication.client.PseudoAuthenticator;
 import org.apache.hadoop.security.authentication.server.PseudoAuthenticationHandler;
+import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.util.GenericOptionsParser;
 import org.eclipse.jetty.rewrite.handler.RedirectPatternRule;
 import org.eclipse.jetty.rewrite.handler.RewriteHandler;
@@ -53,7 +54,15 @@ import org.eclipse.jetty.xml.XmlConfiguration;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import javax.servlet.DispatcherType;
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * The main executable that starts up and runs the Server.
@@ -168,7 +177,8 @@ public class Main {
 
     //Authenticate using keytab
     if (UserGroupInformation.isSecurityEnabled()) {
-      UserGroupInformation.loginUserFromKeytab(conf.kerberosPrincipal(),
+      String serverPrincipal = SecurityUtil.getServerPrincipal(conf.kerberosPrincipal(), "0.0.0.0");
+      UserGroupInformation.loginUserFromKeytab(serverPrincipal,
         conf.kerberosKeytab());
     }
 
@@ -213,6 +223,8 @@ public class Main {
       LOG.warn("XSRF filter disabled");
     }
 
+    root.addFilter(makeFrameOptionFilter(), "/" + SERVLET_PATH + "/*", dispatches);
+
     // Connect Jersey
     ServletHolder h = new ServletHolder(new ServletContainer(makeJerseyConfig()));
     root.addServlet(h, "/" + SERVLET_PATH + "/*");
@@ -242,7 +254,7 @@ public class Main {
 
   // Configure the AuthFilter with the Kerberos params iff security
   // is enabled.
-  public FilterHolder makeAuthFilter() {
+  public FilterHolder makeAuthFilter() throws IOException {
     FilterHolder authFilter = new FilterHolder(AuthFilter.class);
     UserNameHandler.allowAnonymous(authFilter);
     if (UserGroupInformation.isSecurityEnabled()) {
@@ -250,13 +262,47 @@ public class Main {
       authFilter.setInitParameter("dfs.web.authentication.signature.secret",
         conf.kerberosSecret());
       //https://svn.apache.org/repos/asf/hadoop/common/branches/branch-1.2/src/packages/templates/conf/hdfs-site.xml
+      String serverPrincipal = SecurityUtil.getServerPrincipal(conf.kerberosPrincipal(), "0.0.0.0");
       authFilter.setInitParameter("dfs.web.authentication.kerberos.principal",
-        conf.kerberosPrincipal());
+        serverPrincipal);
       //http://https://svn.apache.org/repos/asf/hadoop/common/branches/branch-1.2/src/packages/templates/conf/hdfs-site.xml
       authFilter.setInitParameter("dfs.web.authentication.kerberos.keytab",
         conf.kerberosKeytab());
     }
     return authFilter;
+  }
+
+  public FilterHolder makeFrameOptionFilter() {
+    FilterHolder frameOptionFilter = new FilterHolder(XFrameOptionsFilter.class);
+    frameOptionFilter.setInitParameter(AppConfig.FRAME_OPTIONS_FILETER, conf.get(AppConfig.FRAME_OPTIONS_FILETER));
+    return frameOptionFilter;
+  }
+
+  public static class XFrameOptionsFilter implements Filter {
+    private final static String defaultMode = "DENY";
+
+    private String mode = null;
+
+    @Override
+    public void init(FilterConfig filterConfig) throws ServletException {
+      mode = filterConfig.getInitParameter(AppConfig.FRAME_OPTIONS_FILETER);
+      if (mode == null) {
+        mode = defaultMode;
+      }
+    }
+
+    @Override
+    public void doFilter(final ServletRequest request, final ServletResponse response, final FilterChain chain)
+        throws IOException, ServletException {
+      final HttpServletResponse res = (HttpServletResponse) response;
+      res.setHeader("X-FRAME-OPTIONS", mode);
+      chain.doFilter(request, response);
+    }
+
+    @Override
+    public void destroy() {
+      // do nothing
+    }
   }
 
   public PackagesResourceConfig makeJerseyConfig() {

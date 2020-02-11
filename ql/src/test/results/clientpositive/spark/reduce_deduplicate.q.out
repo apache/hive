@@ -10,10 +10,14 @@ PREHOOK: query: explain extended
 insert overwrite table bucket5_1
 select * from src cluster by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@bucket5_1
 POSTHOOK: query: explain extended
 insert overwrite table bucket5_1
 select * from src cluster by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@bucket5_1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -45,10 +49,11 @@ STAGE PLANS:
                       tag: -1
                       value expressions: _col1 (type: string)
                       auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### [src]
             Path -> Partition:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### 
                 Partition
                   base file name: src
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -56,11 +61,13 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 'default','default'
                     columns.types string:string
 #### A masked pattern was here ####
+                    location hdfs://### HDFS PATH ###
                     name default.src
                     numFiles 1
                     numRows 500
@@ -77,11 +84,13 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
                       columns.types string:string
 #### A masked pattern was here ####
+                      location hdfs://### HDFS PATH ###
                       name default.src
                       numFiles 1
                       numRows 500
@@ -97,6 +106,7 @@ STAGE PLANS:
             Truncated Path -> Alias:
               /src [src]
         Reducer 2 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
@@ -106,10 +116,10 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   GlobalTableId: 1
-#### A masked pattern was here ####
+                  directory: hdfs://### HDFS PATH ###
                   NumFilesPerFileSink: 2
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-#### A masked pattern was here ####
+                  Stats Publishing Key Prefix: hdfs://### HDFS PATH ###
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -117,11 +127,13 @@ STAGE PLANS:
                         COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                         bucket_count 2
                         bucket_field_name key
+                        bucketing_version 2
                         column.name.delimiter ,
                         columns key,value
                         columns.comments 
                         columns.types string:string
 #### A masked pattern was here ####
+                        location hdfs://### HDFS PATH ###
                         name default.bucket5_1
                         numFiles 0
                         numRows 0
@@ -141,7 +153,7 @@ STAGE PLANS:
     Move Operator
       tables:
           replace: true
-#### A masked pattern was here ####
+          source: hdfs://### HDFS PATH ###
           table:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -149,11 +161,13 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                 bucket_count 2
                 bucket_field_name key
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
+                location hdfs://### HDFS PATH ###
                 name default.bucket5_1
                 numFiles 0
                 numRows 0
@@ -167,8 +181,9 @@ STAGE PLANS:
               name: default.bucket5_1
 
   Stage: Stage-2
-    Stats-Aggr Operator
-#### A masked pattern was here ####
+    Stats Work
+      Basic Stats Work:
+          Stats Aggregation Key Prefix: hdfs://### HDFS PATH ###
 
 PREHOOK: query: insert overwrite table bucket5_1
 select * from src cluster by key
@@ -185,20 +200,20 @@ POSTHOOK: Lineage: bucket5_1.value SIMPLE [(src)src.FieldSchema(name:value, type
 PREHOOK: query: select sum(hash(key)),sum(hash(value)) from bucket5_1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucket5_1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select sum(hash(key)),sum(hash(value)) from bucket5_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucket5_1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 21025334	36210398070
 PREHOOK: query: select sum(hash(key)),sum(hash(value)) from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select sum(hash(key)),sum(hash(value)) from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 21025334	36210398070
 PREHOOK: query: create table complex_tbl_1(aid string, bid string, t int, ctime string, etime bigint, l string, et string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
@@ -232,6 +247,8 @@ select s2.* from
 )s
 )s2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@complex_tbl_2
+PREHOOK: Output: default@complex_tbl_1@ds=2010-03-29
 POSTHOOK: query: explain extended
 insert overwrite table complex_tbl_1 partition (ds='2010-03-29')
 select s2.* from
@@ -248,6 +265,8 @@ select s2.* from
 )s
 )s2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@complex_tbl_2
+POSTHOOK: Output: default@complex_tbl_1@ds=2010-03-29
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -264,6 +283,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: complex_tbl_2
+                  filterExpr: (ds = '2010-03-29') (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -319,21 +339,23 @@ STAGE PLANS:
                   File Output Operator
                     compressed: false
                     GlobalTableId: 1
-#### A masked pattern was here ####
+                    directory: hdfs://### HDFS PATH ###
                     NumFilesPerFileSink: 1
                     Static Partition Specification: ds=2010-03-29/
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-#### A masked pattern was here ####
+                    Stats Publishing Key Prefix: hdfs://### HDFS PATH ###
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         properties:
                           bucket_count -1
+                          bucketing_version 2
                           column.name.delimiter ,
                           columns aid,bid,t,ctime,etime,l,et
                           columns.comments 
                           columns.types string:string:int:string:bigint:string:string
 #### A masked pattern was here ####
+                          location hdfs://### HDFS PATH ###
                           name default.complex_tbl_1
                           partition_columns ds
                           partition_columns.types string
@@ -353,17 +375,19 @@ STAGE PLANS:
           partition:
             ds 2010-03-29
           replace: true
-#### A masked pattern was here ####
+          source: hdfs://### HDFS PATH ###
           table:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns aid,bid,t,ctime,etime,l,et
                 columns.comments 
                 columns.types string:string:int:string:bigint:string:string
 #### A masked pattern was here ####
+                location hdfs://### HDFS PATH ###
                 name default.complex_tbl_1
                 partition_columns ds
                 partition_columns.types string
@@ -375,6 +399,7 @@ STAGE PLANS:
               name: default.complex_tbl_1
 
   Stage: Stage-2
-    Stats-Aggr Operator
-#### A masked pattern was here ####
+    Stats Work
+      Basic Stats Work:
+          Stats Aggregation Key Prefix: hdfs://### HDFS PATH ###
 

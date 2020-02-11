@@ -1,23 +1,22 @@
-PREHOOK: query: drop table p
+PREHOOK: query: drop table p_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table p
+POSTHOOK: query: drop table p_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE p(insert_num int, c1 tinyint, c2 smallint)
+PREHOOK: query: CREATE TABLE p_n0(insert_num int, c1 tinyint, c2 smallint)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@p
-POSTHOOK: query: CREATE TABLE p(insert_num int, c1 tinyint, c2 smallint)
+PREHOOK: Output: default@p_n0
+POSTHOOK: query: CREATE TABLE p_n0(insert_num int, c1 tinyint, c2 smallint)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@p
-PREHOOK: query: desc formatted p
+POSTHOOK: Output: default@p_n0
+PREHOOK: query: desc formatted p_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@p
-POSTHOOK: query: desc formatted p
+PREHOOK: Input: default@p_n0
+POSTHOOK: query: desc formatted p_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@p
+POSTHOOK: Input: default@p_n0
 # col_name            	data_type           	comment             
-	 	 
 insert_num          	int                 	                    
 c1                  	tinyint             	                    
 c2                  	smallint            	                    
@@ -30,6 +29,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c1\":\"true\",\"c2\":\"true\",\"insert_num\":\"true\"}}
+	bucketing_version   	2                   
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
@@ -46,23 +46,24 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: insert into p values (1,22,333)
+PREHOOK: query: insert into p_n0 values (1,22,333)
 PREHOOK: type: QUERY
-PREHOOK: Output: default@p
-POSTHOOK: query: insert into p values (1,22,333)
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@p_n0
+POSTHOOK: query: insert into p_n0 values (1,22,333)
 POSTHOOK: type: QUERY
-POSTHOOK: Output: default@p
-POSTHOOK: Lineage: p.c1 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: p.c2 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: p.insert_num EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-PREHOOK: query: desc formatted p
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@p_n0
+POSTHOOK: Lineage: p_n0.c1 SCRIPT []
+POSTHOOK: Lineage: p_n0.c2 SCRIPT []
+POSTHOOK: Lineage: p_n0.insert_num SCRIPT []
+PREHOOK: query: desc formatted p_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@p
-POSTHOOK: query: desc formatted p
+PREHOOK: Input: default@p_n0
+POSTHOOK: query: desc formatted p_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@p
+POSTHOOK: Input: default@p_n0
 # col_name            	data_type           	comment             
-	 	 
 insert_num          	int                 	                    
 c1                  	tinyint             	                    
 c2                  	smallint            	                    
@@ -74,7 +75,8 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c1\":\"true\",\"c2\":\"true\",\"insert_num\":\"true\"}}
+	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	1                   
 	rawDataSize         	8                   
@@ -91,22 +93,21 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: alter table p replace columns (insert_num int, c1 STRING, c2 STRING)
+PREHOOK: query: alter table p_n0 replace columns (insert_num int, c1 STRING, c2 STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
-PREHOOK: Input: default@p
-PREHOOK: Output: default@p
-POSTHOOK: query: alter table p replace columns (insert_num int, c1 STRING, c2 STRING)
+PREHOOK: Input: default@p_n0
+PREHOOK: Output: default@p_n0
+POSTHOOK: query: alter table p_n0 replace columns (insert_num int, c1 STRING, c2 STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
-POSTHOOK: Input: default@p
-POSTHOOK: Output: default@p
-PREHOOK: query: desc formatted p
+POSTHOOK: Input: default@p_n0
+POSTHOOK: Output: default@p_n0
+PREHOOK: query: desc formatted p_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@p
-POSTHOOK: query: desc formatted p
+PREHOOK: Input: default@p_n0
+POSTHOOK: query: desc formatted p_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@p
+POSTHOOK: Input: default@p_n0
 # col_name            	data_type           	comment             
-	 	 
 insert_num          	int                 	                    
 c1                  	string              	                    
 c2                  	string              	                    
@@ -118,7 +119,8 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"insert_num\":\"true\"}}
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	numFiles            	1                   
 	numRows             	1                   
@@ -136,23 +138,41 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: desc formatted p c1
+PREHOOK: query: desc formatted p_n0 c1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@p
-POSTHOOK: query: desc formatted p c1
+PREHOOK: Input: default@p_n0
+POSTHOOK: query: desc formatted p_n0 c1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@p
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
-	 	 	 	 	 	 	 	 	 	 	 
-c1                  	string              	                    	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}	 	 	 	 	 	 	 	 	 	 
-PREHOOK: query: desc formatted p c2
+POSTHOOK: Input: default@p_n0
+col_name            	c1                  
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"insert_num\":\"true\"}}
+PREHOOK: query: desc formatted p_n0 c2
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@p
-POSTHOOK: query: desc formatted p c2
+PREHOOK: Input: default@p_n0
+POSTHOOK: query: desc formatted p_n0 c2
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@p
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
-	 	 	 	 	 	 	 	 	 	 	 
-c2                  	string              	                    	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}	 	 	 	 	 	 	 	 	 	 
+POSTHOOK: Input: default@p_n0
+col_name            	c2                  
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"insert_num\":\"true\"}}

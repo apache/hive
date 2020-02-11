@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,22 +17,22 @@
  */
 package org.apache.hadoop.hive.serde2.objectinspector;
 
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector.StandardUnion;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -47,12 +47,18 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import org.junit.Test;
 
 /**
  * TestStandardObjectInspectors.
  *
  */
-public class TestStandardObjectInspectors extends TestCase {
+public class TestStandardObjectInspectors {
 
   void doTestStandardPrimitiveObjectInspector(Class<?> writableClass,
       Class<?> javaClass) throws Throwable {
@@ -82,6 +88,7 @@ public class TestStandardObjectInspectors extends TestCase {
     }
   }
 
+  @Test
   public void testStandardPrimitiveObjectInspector() throws Throwable {
     try {
       doTestStandardPrimitiveObjectInspector(NullWritable.class, Void.class);
@@ -95,7 +102,7 @@ public class TestStandardObjectInspectors extends TestCase {
       doTestStandardPrimitiveObjectInspector(DoubleWritable.class, Double.class);
       doTestStandardPrimitiveObjectInspector(Text.class, String.class);
       doTestStandardPrimitiveObjectInspector(BytesWritable.class, byte[].class);
-      doTestStandardPrimitiveObjectInspector(TimestampWritable.class, Timestamp.class);
+      doTestStandardPrimitiveObjectInspector(TimestampWritableV2.class, Timestamp.class);
     } catch (Throwable e) {
       e.printStackTrace();
       throw e;
@@ -136,6 +143,7 @@ public class TestStandardObjectInspectors extends TestCase {
     }
   }
 
+  @Test
   public void testJavaPrimitiveObjectInspector() throws Throwable {
     try {
       doTestJavaPrimitiveObjectInspector(NullWritable.class, Void.class, null);
@@ -163,6 +171,7 @@ public class TestStandardObjectInspectors extends TestCase {
     }
   }
 
+  @Test
   public void testStandardListObjectInspector() throws Throwable {
     try {
       StandardListObjectInspector loi1 = ObjectInspectorFactory
@@ -218,6 +227,7 @@ public class TestStandardObjectInspectors extends TestCase {
 
   }
 
+  @Test
   public void testStandardMapObjectInspector() throws Throwable {
     try {
       StandardMapObjectInspector moi1 = ObjectInspectorFactory
@@ -279,6 +289,7 @@ public class TestStandardObjectInspectors extends TestCase {
   }
 
   @SuppressWarnings("unchecked")
+  @Test
   public void testStandardStructObjectInspector() throws Throwable {
     try {
       // Test StandardObjectInspector both with field comments and without
@@ -383,6 +394,7 @@ public class TestStandardObjectInspectors extends TestCase {
   }
 
   @SuppressWarnings("unchecked")
+  @Test
   public void testStandardUnionObjectInspector() throws Throwable {
     try {
       ArrayList<ObjectInspector> objectInspectors = new ArrayList<ObjectInspector>();

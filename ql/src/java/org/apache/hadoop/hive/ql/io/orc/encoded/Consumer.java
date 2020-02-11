@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,9 +22,9 @@ package org.apache.hadoop.hive.ql.io.orc.encoded;
  */
 public interface Consumer<T> {
   /** Some data has been produced. */
-  public void consumeData(T data);
-  /** No more data will be produced; done */
-  public void setDone();
-  /** No more data will be produced; error during production */
-  public void setError(Throwable t);
+  public void consumeData(T data) throws InterruptedException;
+  /** No more data will be produced; done. */
+  public void setDone() throws InterruptedException;
+  /** No more data will be produced; error during production. */
+  public void setError(Throwable t) throws InterruptedException;
 }

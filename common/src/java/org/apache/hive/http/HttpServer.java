@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,29 +21,50 @@ package org.apache.hive.http;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
 import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 
 import com.google.common.base.Preconditions;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.math3.util.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeys;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.http.HtmlQuoting;
 import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authentication.server.AuthenticationFilter;
 import org.apache.hadoop.security.authorize.AccessControlList;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.security.http.CrossOriginFilter;
+import org.apache.hive.http.security.PamAuthenticator;
+import org.apache.hive.http.security.PamConstraint;
+import org.apache.hive.http.security.PamConstraintMapping;
+import org.apache.hive.http.security.PamLoginService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.Logger;
@@ -53,7 +74,11 @@ import org.apache.logging.log4j.core.appender.FileManager;
 import org.apache.logging.log4j.core.appender.OutputStreamManager;
 import org.eclipse.jetty.rewrite.handler.RewriteHandler;
 import org.eclipse.jetty.rewrite.handler.RewriteRegexRule;
+import org.eclipse.jetty.security.ConstraintMapping;
+import org.eclipse.jetty.security.ConstraintSecurityHandler;
+import org.eclipse.jetty.security.LoginService;
 import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.LowResourceMonitor;
@@ -67,6 +92,7 @@ import org.eclipse.jetty.servlet.FilterMapping;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.security.Constraint;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.jetty.webapp.WebAppContext;
@@ -85,6 +111,23 @@ public class HttpServer {
 
   public static final String CONF_CONTEXT_ATTRIBUTE = "hive.conf";
   public static final String ADMINS_ACL = "admins.acl";
+  private XFrameOption xFrameOption;
+  private boolean xFrameOptionIsEnabled;
+  private boolean isSSLEnabled;
+  public static final String HTTP_HEADER_PREFIX = "hadoop.http.header.";
+  private static final String X_FRAME_OPTIONS = "X-FRAME-OPTIONS";
+  static final String X_XSS_PROTECTION  =
+          "X-XSS-Protection:1; mode=block";
+  static final String X_CONTENT_TYPE_OPTIONS =
+          "X-Content-Type-Options:nosniff";
+  static final String STRICT_TRANSPORT_SECURITY =
+          "Strict-Transport-Security:max-age=31536000; includeSubDomains";
+  private static final String HTTP_HEADER_REGEX =
+          "hadoop\\.http\\.header\\.([a-zA-Z\\-_]+)";
+  private static final Pattern PATTERN_HTTP_HEADER_REGEX =
+          Pattern.compile(HTTP_HEADER_REGEX);
+
+
 
   private final String name;
   private String appDir;
@@ -96,7 +139,9 @@ public class HttpServer {
    */
   private HttpServer(final Builder b) throws IOException {
     this.name = b.name;
-
+    this.xFrameOptionIsEnabled = b.xFrameEnabled;
+    this.isSSLEnabled = b.useSSL;
+    this.xFrameOption = b.xFrameOption;
     createWebServer(b);
   }
 
@@ -113,9 +158,18 @@ public class HttpServer {
     private String spnegoKeytab;
     private boolean useSPNEGO;
     private boolean useSSL;
+    private boolean usePAM;
+    private boolean enableCORS;
+    private String allowedOrigins;
+    private String allowedMethods;
+    private String allowedHeaders;
+    private PamAuthenticator pamAuthenticator;
     private String contextRootRewriteTarget = "/index.html";
+    private boolean xFrameEnabled;
+    private XFrameOption xFrameOption = XFrameOption.SAMEORIGIN;
     private final List<Pair<String, Class<? extends HttpServlet>>> servlets =
         new LinkedList<Pair<String, Class<? extends HttpServlet>>>();
+    private boolean disableDirListing = false;
 
     public Builder(String name) {
       Preconditions.checkArgument(name != null && !name.isEmpty(), "Name must be specified");
@@ -171,8 +225,38 @@ public class HttpServer {
       return this;
     }
 
+    public Builder setUsePAM(boolean usePAM) {
+      this.usePAM = usePAM;
+      return this;
+    }
+
+    public Builder setPAMAuthenticator(PamAuthenticator pamAuthenticator){
+      this.pamAuthenticator = pamAuthenticator;
+      return this;
+    }
+
     public Builder setUseSPNEGO(boolean useSPNEGO) {
       this.useSPNEGO = useSPNEGO;
+      return this;
+    }
+
+    public Builder setEnableCORS(boolean enableCORS) {
+      this.enableCORS = enableCORS;
+      return this;
+    }
+
+    public Builder setAllowedOrigins(String allowedOrigins) {
+      this.allowedOrigins = allowedOrigins;
+      return this;
+    }
+
+    public Builder setAllowedMethods(String allowedMethods) {
+      this.allowedMethods = allowedMethods;
+      return this;
+    }
+
+    public Builder setAllowedHeaders(String allowedHeaders) {
+      this.allowedHeaders = allowedHeaders;
       return this;
     }
 
@@ -199,6 +283,31 @@ public class HttpServer {
     public Builder addServlet(String endpoint, Class<? extends HttpServlet> servlet) {
       servlets.add(new Pair<String, Class<? extends HttpServlet>>(endpoint, servlet));
       return this;
+    }
+    /**
+     * Adds the ability to control X_FRAME_OPTIONS on HttpServer2.
+     * @param xFrameEnabled - True enables X_FRAME_OPTIONS false disables it.
+     * @return Builder.
+     */
+    public Builder configureXFrame(boolean xFrameEnabled) {
+      this.xFrameEnabled = xFrameEnabled;
+      return this;
+    }
+
+    /**
+     * Sets a valid X-Frame-option that can be used by HttpServer2.
+     * @param option - String DENY, SAMEORIGIN or ALLOW-FROM are the only valid
+     *               options. Any other value will throw IllegalArgument
+     *               Exception.
+     * @return  Builder.
+     */
+    public Builder setXFrameOption(String option) {
+      this.xFrameOption = XFrameOption.getEnum(option);
+      return this;
+    }
+
+    public void setDisableDirListing(boolean disableDirListing) {
+      this.disableDirListing = disableDirListing;
     }
   }
 
@@ -234,8 +343,8 @@ public class HttpServer {
    */
   @InterfaceAudience.LimitedPrivate("hive")
   public static boolean isInstrumentationAccessAllowed(
-    ServletContext servletContext, HttpServletRequest request,
-    HttpServletResponse response) throws IOException {
+          ServletContext servletContext, HttpServletRequest request,
+          HttpServletResponse response) throws IOException {
     Configuration conf =
       (Configuration) servletContext.getAttribute(CONF_CONTEXT_ATTRIBUTE);
 
@@ -250,12 +359,50 @@ public class HttpServer {
   }
 
   /**
+   * Same as {@link HttpServer#isInstrumentationAccessAllowed(ServletContext, HttpServletRequest, HttpServletResponse)}
+   * except that it returns true only if <code>hadoop.security.instrumentation.requires.admin</code> is set to true.
+   */
+  @InterfaceAudience.LimitedPrivate("hive")
+  public static boolean isInstrumentationAccessAllowedStrict(
+    ServletContext servletContext, HttpServletRequest request,
+    HttpServletResponse response) throws IOException {
+    Configuration conf =
+      (Configuration) servletContext.getAttribute(CONF_CONTEXT_ATTRIBUTE);
+
+    boolean access;
+    boolean adminAccess = conf.getBoolean(
+      CommonConfigurationKeys.HADOOP_SECURITY_INSTRUMENTATION_REQUIRES_ADMIN, false);
+    if (adminAccess) {
+      access = hasAdministratorAccess(servletContext, request, response);
+    } else {
+      return false;
+    }
+    return access;
+  }
+
+  /**
+   * Check if the remote user has access to an object (e.g. query history) that belongs to a user
+   *
+   * @param ctx the context containing the admin ACL.
+   * @param request the HTTP request.
+   * @param remoteUser the user that sent out the request.
+   * @param user the user of the object being checked against.
+   * @return true if the remote user is the same as the user or has the admin access
+   * @throws IOException
+   */
+  public static boolean hasAccess(String remoteUser, String user,
+      ServletContext ctx, HttpServletRequest request) throws IOException {
+    return StringUtils.equalsIgnoreCase(remoteUser, user) ||
+        HttpServer.hasAdministratorAccess(ctx, request, null);
+  }
+
+  /**
    * Does the user sending the HttpServletRequest have the administrator ACLs? If
    * it isn't the case, response will be modified to send an error to the user.
    *
    * @param servletContext
    * @param request
-   * @param response used to send the error response if user does not have admin access.
+   * @param response used to send the error response if user does not have admin access (no error if null)
    * @return true if admin-authorized, false otherwise
    * @throws IOException
    */
@@ -269,19 +416,22 @@ public class HttpServer {
         CommonConfigurationKeys.HADOOP_SECURITY_AUTHORIZATION, false)) {
       return true;
     }
-
     String remoteUser = request.getRemoteUser();
     if (remoteUser == null) {
-      response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
-                         "Unauthenticated users are not " +
-                         "authorized to access this page.");
+      if (response != null) {
+        response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
+                           "Unauthenticated users are not " +
+                           "authorized to access this page.");
+      }
       return false;
     }
 
     if (servletContext.getAttribute(ADMINS_ACL) != null &&
         !userHasAdministratorAccess(servletContext, remoteUser)) {
-      response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "User "
-          + remoteUser + " is unauthorized to access this page.");
+      if (response != null) {
+        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "User "
+            + remoteUser + " is unauthorized to access this page.");
+      }
       return false;
     }
 
@@ -312,6 +462,7 @@ public class HttpServer {
   WebAppContext createWebAppContext(Builder b) {
     WebAppContext ctx = new WebAppContext();
     setContextAttributes(ctx.getServletContext(), b.contextAttrs);
+    ctx.getServletContext().getSessionCookieConfig().setHttpOnly(true);
     ctx.setDisplayName(b.name);
     ctx.setContextPath("/");
     ctx.setWar(appDir + "/" + b.name);
@@ -321,7 +472,7 @@ public class HttpServer {
   /**
    * Secure the web server with kerberos (AuthenticationFilter).
    */
-  void setupSpnegoFilter(Builder b) throws IOException {
+  void setupSpnegoFilter(Builder b, ServletContextHandler ctx) throws IOException {
     Map<String, String> params = new HashMap<String, String>();
     params.put("kerberos.principal",
       SecurityUtil.getServerPrincipal(b.spnegoPrincipal, b.host));
@@ -330,10 +481,26 @@ public class HttpServer {
     FilterHolder holder = new FilterHolder();
     holder.setClassName(AuthenticationFilter.class.getName());
     holder.setInitParameters(params);
-
-    ServletHandler handler = webAppContext.getServletHandler();
+    ServletHandler handler = ctx.getServletHandler();
     handler.addFilterWithMapping(
       holder, "/*", FilterMapping.ALL);
+  }
+
+  /**
+   * Setup cross-origin requests (CORS) filter.
+   * @param b - builder
+   */
+  private void setupCORSFilter(Builder b) {
+    FilterHolder holder = new FilterHolder();
+    holder.setClassName(CrossOriginFilter.class.getName());
+    Map<String, String> params = new HashMap<>();
+    params.put(CrossOriginFilter.ALLOWED_ORIGINS, b.allowedOrigins);
+    params.put(CrossOriginFilter.ALLOWED_METHODS, b.allowedMethods);
+    params.put(CrossOriginFilter.ALLOWED_HEADERS, b.allowedHeaders);
+    holder.setInitParameters(params);
+
+    ServletHandler handler = webAppContext.getServletHandler();
+    handler.addFilterWithMapping(holder, "/*", FilterMapping.ALL);
   }
 
   /**
@@ -368,6 +535,22 @@ public class HttpServer {
   }
 
   /**
+   * Secure the web server with PAM.
+   */
+  void setupPam(Builder b, Handler handler) {
+    LoginService loginService = new PamLoginService();
+    webServer.addBean(loginService);
+    ConstraintSecurityHandler security = new ConstraintSecurityHandler();
+    Constraint constraint = new PamConstraint();
+    ConstraintMapping mapping = new PamConstraintMapping(constraint);
+    security.setConstraintMappings(Collections.singletonList(mapping));
+    security.setAuthenticator(b.pamAuthenticator);
+    security.setLoginService(loginService);
+    security.setHandler(handler);
+    webServer.setHandler(security);
+  }
+
+  /**
    * Set servlet context attributes that can be used in jsp.
    */
   void setContextAttributes(Context ctx, Map<String, Object> contextAttrs) {
@@ -391,13 +574,26 @@ public class HttpServer {
 
     if (b.useSPNEGO) {
       // Secure the web server with kerberos
-      setupSpnegoFilter(b);
+      setupSpnegoFilter(b, webAppContext);
+    }
+
+    if (b.enableCORS) {
+      setupCORSFilter(b);
+    }
+
+    Map<String, String> xFrameParams = setHeaders();
+    if (b.xFrameEnabled) {
+      setupXframeFilter(b,xFrameParams);
+    }
+
+    if (b.disableDirListing) {
+      disableDirectoryListingOnServlet(webAppContext);
     }
 
     initializeWebServer(b, threadPool.getMaxThreads());
   }
 
-  private void initializeWebServer(final Builder b, int queueSize) {
+  private void initializeWebServer(final Builder b, int queueSize) throws IOException {
     // Set handling for low resource conditions.
     final LowResourceMonitor low = new LowResourceMonitor(webServer);
     low.setLowResourcesIdleTimeout(10000);
@@ -423,10 +619,32 @@ public class HttpServer {
     contexts.addHandler(rwHandler);
     webServer.setHandler(contexts);
 
+
+    if (b.usePAM) {
+      setupPam(b, contexts);
+    }
+
+
     addServlet("jmx", "/jmx", JMXJsonServlet.class);
     addServlet("conf", "/conf", ConfServlet.class);
     addServlet("stacks", "/stacks", StackServlet.class);
     addServlet("conflog", "/conflog", Log4j2ConfiguratorServlet.class);
+    final String asyncProfilerHome = ProfileServlet.getAsyncProfilerHome();
+    if (asyncProfilerHome != null && !asyncProfilerHome.trim().isEmpty()) {
+      addServlet("prof", "/prof", ProfileServlet.class);
+      Path tmpDir = Paths.get(ProfileServlet.OUTPUT_DIR);
+      if (Files.notExists(tmpDir)) {
+        Files.createDirectories(tmpDir);
+      }
+      ServletContextHandler genCtx =
+        new ServletContextHandler(contexts, "/prof-output");
+      setContextAttributes(genCtx.getServletContext(), b.contextAttrs);
+      genCtx.addServlet(ProfileOutputServlet.class, "/*");
+      genCtx.setResourceBase(tmpDir.toAbsolutePath().toString());
+      genCtx.setDisplayName("prof-output");
+    } else {
+      LOG.info("ASYNC_PROFILER_HOME env or -Dasync.profiler.home not specified. Disabling /prof endpoint..");
+    }
 
     for (Pair<String, Class<? extends HttpServlet>> p : b.servlets) {
       addServlet(p.getFirst(), "/" + p.getFirst(), p.getSecond());
@@ -437,16 +655,55 @@ public class HttpServer {
     staticCtx.setResourceBase(appDir + "/static");
     staticCtx.addServlet(DefaultServlet.class, "/*");
     staticCtx.setDisplayName("static");
+    disableDirectoryListingOnServlet(staticCtx);
 
     String logDir = getLogDir(b.conf);
     if (logDir != null) {
       ServletContextHandler logCtx =
         new ServletContextHandler(contexts, "/logs");
       setContextAttributes(logCtx.getServletContext(), b.contextAttrs);
+      if(b.useSPNEGO) {
+        setupSpnegoFilter(b,logCtx);
+      }
       logCtx.addServlet(AdminAuthorizedServlet.class, "/*");
       logCtx.setResourceBase(logDir);
       logCtx.setDisplayName("logs");
     }
+  }
+
+  private Map<String, String> setHeaders() {
+    Map<String, String> xFrameParams = new HashMap<>();
+    xFrameParams.putAll(getDefaultHeaders());
+    if(this.xFrameOptionIsEnabled) {
+      xFrameParams.put(HTTP_HEADER_PREFIX+X_FRAME_OPTIONS,
+              this.xFrameOption.toString());
+    }
+    return xFrameParams;
+  }
+
+  private Map<String, String> getDefaultHeaders() {
+    Map<String, String> headers = new HashMap<>();
+    String[] splitVal = X_CONTENT_TYPE_OPTIONS.split(":");
+    headers.put(HTTP_HEADER_PREFIX + splitVal[0],
+            splitVal[1]);
+    splitVal = X_XSS_PROTECTION.split(":");
+    headers.put(HTTP_HEADER_PREFIX + splitVal[0],
+            splitVal[1]);
+    if(this.isSSLEnabled){
+      splitVal = STRICT_TRANSPORT_SECURITY.split(":");
+      headers.put(HTTP_HEADER_PREFIX + splitVal[0],splitVal[1]);
+    }
+    return headers;
+  }
+
+  private void setupXframeFilter(Builder b, Map<String, String> params) {
+    FilterHolder holder = new FilterHolder();
+    holder.setClassName(QuotingInputFilter.class.getName());
+    holder.setInitParameters(params);
+
+    ServletHandler handler = webAppContext.getServletHandler();
+    handler.addFilterWithMapping(holder, "/*", FilterMapping.ALL);
+
   }
 
   String getLogDir(Configuration conf) {
@@ -501,4 +758,206 @@ public class HttpServer {
     }
     webAppContext.addServlet(holder, pathSpec);
   }
+
+
+  private static void disableDirectoryListingOnServlet(ServletContextHandler contextHandler) {
+    contextHandler.setInitParameter("org.eclipse.jetty.servlet.Default.dirAllowed", "false");
+  }
+
+  /**
+   * The X-FRAME-OPTIONS header in HTTP response to mitigate clickjacking
+   * attack.
+   */
+  public enum XFrameOption {
+    DENY("DENY"), SAMEORIGIN("SAMEORIGIN"), ALLOWFROM("ALLOW-FROM");
+
+    XFrameOption(String name) {
+      this.name = name;
+    }
+
+    private final String name;
+
+    @Override
+    public String toString() {
+      return this.name;
+    }
+
+    /**
+     * We cannot use valueOf since the AllowFrom enum differs from its value
+     * Allow-From. This is a helper method that does exactly what valueof does,
+     * but allows us to handle the AllowFrom issue gracefully.
+     *
+     * @param value - String must be DENY, SAMEORIGIN or ALLOW-FROM.
+     * @return XFrameOption or throws IllegalException.
+     */
+    private static XFrameOption getEnum(String value) {
+      Preconditions.checkState(value != null && !value.isEmpty());
+      for (XFrameOption xoption : values()) {
+        if (value.equals(xoption.toString())) {
+          return xoption;
+        }
+      }
+      throw new IllegalArgumentException("Unexpected value in xFrameOption.");
+    }
+  }
+  /**
+   * A Servlet input filter that quotes all HTML active characters in the
+   * parameter names and values. The goal is to quote the characters to make
+   * all of the servlets resistant to cross-site scripting attacks. It also
+   * sets X-FRAME-OPTIONS in the header to mitigate clickjacking attacks.
+   */
+  public static class QuotingInputFilter implements Filter {
+
+    private FilterConfig config;
+    private Map<String, String> headerMap;
+
+    public static class RequestQuoter extends HttpServletRequestWrapper {
+      private final HttpServletRequest rawRequest;
+
+      public RequestQuoter(HttpServletRequest rawRequest) {
+        super(rawRequest);
+        this.rawRequest = rawRequest;
+      }
+
+      /**
+       * Return the set of parameter names, quoting each name.
+       */
+      @SuppressWarnings("unchecked")
+      @Override
+      public Enumeration<String> getParameterNames() {
+        return new Enumeration<String>() {
+          private Enumeration<String> rawIterator =
+                  rawRequest.getParameterNames();
+          @Override
+          public boolean hasMoreElements() {
+            return rawIterator.hasMoreElements();
+          }
+
+          @Override
+          public String nextElement() {
+            return HtmlQuoting.quoteHtmlChars(rawIterator.nextElement());
+          }
+        };
+      }
+
+      /**
+       * Unquote the name and quote the value.
+       */
+      @Override
+      public String getParameter(String name) {
+        return HtmlQuoting.quoteHtmlChars(rawRequest.getParameter
+                (HtmlQuoting.unquoteHtmlChars(name)));
+      }
+
+      @Override
+      public String[] getParameterValues(String name) {
+        String unquoteName = HtmlQuoting.unquoteHtmlChars(name);
+        String[] unquoteValue = rawRequest.getParameterValues(unquoteName);
+        if (unquoteValue == null) {
+          return null;
+        }
+        String[] result = new String[unquoteValue.length];
+        for(int i=0; i < result.length; ++i) {
+          result[i] = HtmlQuoting.quoteHtmlChars(unquoteValue[i]);
+        }
+        return result;
+      }
+
+      @SuppressWarnings("unchecked")
+      @Override
+      public Map<String, String[]> getParameterMap() {
+        Map<String, String[]> result = new HashMap<>();
+        Map<String, String[]> raw = rawRequest.getParameterMap();
+        for (Map.Entry<String,String[]> item: raw.entrySet()) {
+          String[] rawValue = item.getValue();
+          String[] cookedValue = new String[rawValue.length];
+          for(int i=0; i< rawValue.length; ++i) {
+            cookedValue[i] = HtmlQuoting.quoteHtmlChars(rawValue[i]);
+          }
+          result.put(HtmlQuoting.quoteHtmlChars(item.getKey()), cookedValue);
+        }
+        return result;
+      }
+
+      /**
+       * Quote the url so that users specifying the HOST HTTP header
+       * can't inject attacks.
+       */
+      @Override
+      public StringBuffer getRequestURL(){
+        String url = rawRequest.getRequestURL().toString();
+        return new StringBuffer(HtmlQuoting.quoteHtmlChars(url));
+      }
+
+      /**
+       * Quote the server name so that users specifying the HOST HTTP header
+       * can't inject attacks.
+       */
+      @Override
+      public String getServerName() {
+        return HtmlQuoting.quoteHtmlChars(rawRequest.getServerName());
+      }
+    }
+
+    @Override
+    public void init(FilterConfig config) throws ServletException {
+      this.config = config;
+      initHttpHeaderMap();
+    }
+
+    @Override
+    public void destroy() {
+    }
+
+    @Override
+    public void doFilter(ServletRequest request,
+                         ServletResponse response,
+                         FilterChain chain
+    ) throws IOException, ServletException {
+      HttpServletRequestWrapper quoted =
+              new RequestQuoter((HttpServletRequest) request);
+      HttpServletResponse httpResponse = (HttpServletResponse) response;
+
+      String mime = inferMimeType(request);
+      if (mime == null) {
+        httpResponse.setContentType("text/plain; charset=utf-8");
+      } else if (mime.startsWith("text/html")) {
+        // HTML with unspecified encoding, we want to
+        // force HTML with utf-8 encoding
+        // This is to avoid the following security issue:
+        // http://openmya.hacker.jp/hasegawa/security/utf7cs.html
+        httpResponse.setContentType("text/html; charset=utf-8");
+      } else if (mime.startsWith("application/xml")) {
+        httpResponse.setContentType("text/xml; charset=utf-8");
+      }
+      headerMap.forEach((k, v) -> httpResponse.addHeader(k, v));
+      chain.doFilter(quoted, httpResponse);
+    }
+
+    /**
+     * Infer the mime type for the response based on the extension of the request
+     * URI. Returns null if unknown.
+     */
+    private String inferMimeType(ServletRequest request) {
+      String path = ((HttpServletRequest)request).getRequestURI();
+      ServletContextHandler.Context sContext =
+              (ServletContextHandler.Context)config.getServletContext();
+      String mime = sContext.getMimeType(path);
+      return (mime == null) ? null : mime;
+    }
+
+    private void initHttpHeaderMap() {
+      Enumeration<String> params = this.config.getInitParameterNames();
+      headerMap = new HashMap<>();
+      while (params.hasMoreElements()) {
+        String key = params.nextElement();
+        Matcher m = PATTERN_HTTP_HEADER_REGEX.matcher(key);
+        if (m.matches()) {
+          String headerKey = m.group(1);
+          headerMap.put(headerKey, config.getInitParameter(key));
+        }
+      }
+    }
+  }
+
 }

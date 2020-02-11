@@ -42,14 +42,9 @@ value               	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 value               	string              	                    
 	 	 
 #### A masked pattern was here ####
-FROM src	 	 
-WHERE key=86, viewExpandedText:SELECT `src`.`key`, `src`.`value`	 	 
-FROM `default`.`src`	 	 
-WHERE `src`.`key`=86, tableType:VIRTUAL_VIEW, rewriteEnabled:false)		 
 PREHOOK: query: DESCRIBE FORMATTED vp1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@vp1
@@ -57,12 +52,10 @@ POSTHOOK: query: DESCRIBE FORMATTED vp1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@vp1
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 value               	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -72,6 +65,7 @@ Retention:          	0
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
 	numFiles            	0                   
 	numPartitions       	0                   
 	numRows             	0                   
@@ -89,13 +83,12 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	SELECT key, value   	 
+Original Query:     	SELECT key, value   	 
 	                    	FROM src            
 	                    	WHERE key=86        
-View Expanded Text: 	SELECT `src`.`key`, `src`.`value`	 
+Expanded Query:     	SELECT `src`.`key`, `src`.`value`	 
 	                    	FROM `default`.`src`
 	                    	WHERE `src`.`key`=86
-View Rewrite Enabled:	No                  	 
 PREHOOK: query: SELECT * FROM vp1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -256,14 +249,12 @@ POSTHOOK: query: DESCRIBE FORMATTED vp2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@vp2
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 ds                  	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 hr                  	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -273,6 +264,7 @@ Retention:          	0
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
 	numFiles            	0                   
 	numPartitions       	0                   
 	numRows             	0                   
@@ -290,9 +282,8 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	SELECT * FROM srcpart WHERE key < 10	 
-View Expanded Text: 	SELECT `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` FROM `default`.`srcpart` WHERE `srcpart`.`key` < 10	 
-View Rewrite Enabled:	No                  	 
+Original Query:     	SELECT * FROM srcpart WHERE key < 10	 
+Expanded Query:     	SELECT `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` FROM `default`.`srcpart` WHERE `srcpart`.`key` < 10	 
 PREHOOK: query: ALTER VIEW vp2 ADD PARTITION (hr='11') PARTITION (hr='12')
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Input: default@srcpart
@@ -375,12 +366,10 @@ POSTHOOK: query: DESCRIBE FORMATTED vp3
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@vp3
 # col_name            	data_type           	comment             
-	 	 
 k                   	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 v                   	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -390,6 +379,7 @@ Retention:          	0
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
 	numFiles            	0                   
 	numPartitions       	0                   
 	numRows             	0                   
@@ -407,13 +397,12 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	SELECT key, value   	 
+Original Query:     	SELECT key, value   	 
 	                    	FROM src            
 	                    	WHERE key=86        
-View Expanded Text: 	SELECT `key` AS `k`, `value` AS `v` FROM (SELECT `src`.`key`, `src`.`value`	 
+Expanded Query:     	SELECT `key` AS `k`, `value` AS `v` FROM (SELECT `src`.`key`, `src`.`value`	 
 	                    	FROM `default`.`src`
-	                    	WHERE `src`.`key`=86) `default.vp3`
-View Rewrite Enabled:	No                  	 
+	                    	WHERE `src`.`key`=86) `vp3`
 PREHOOK: query: ALTER VIEW vp3
 ADD PARTITION (v='val_86')
 PREHOOK: type: ALTERTABLE_ADDPARTS
@@ -451,3 +440,48 @@ POSTHOOK: query: DROP VIEW vp3
 POSTHOOK: type: DROPVIEW
 POSTHOOK: Input: default@vp3
 POSTHOOK: Output: default@vp3
+PREHOOK: query: CREATE TABLE table1_n12 (id int) PARTITIONED BY (year int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table1_n12
+POSTHOOK: query: CREATE TABLE table1_n12 (id int) PARTITIONED BY (year int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table1_n12
+PREHOOK: query: CREATE VIEW view1_n0 partitioned on (year) as select id, year from table1_n12
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@table1_n12
+PREHOOK: Output: database:default
+PREHOOK: Output: default@view1_n0
+POSTHOOK: query: CREATE VIEW view1_n0 partitioned on (year) as select id, year from table1_n12
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@table1_n12
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@view1_n0
+POSTHOOK: Lineage: view1_n0.id SIMPLE [(table1_n12)table1_n12.FieldSchema(name:id, type:int, comment:null), ]
+PREHOOK: query: select year from view1_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table1_n12
+PREHOOK: Input: default@view1_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select year from view1_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1_n12
+POSTHOOK: Input: default@view1_n0
+#### A masked pattern was here ####
+PREHOOK: query: Drop view view1_n0
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@view1_n0
+PREHOOK: Output: default@view1_n0
+POSTHOOK: query: Drop view view1_n0
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@view1_n0
+POSTHOOK: Output: default@view1_n0
+PREHOOK: query: drop table table1_n12
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@table1_n12
+PREHOOK: Output: default@table1_n12
+POSTHOOK: query: drop table table1_n12
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@table1_n12
+POSTHOOK: Output: default@table1_n12

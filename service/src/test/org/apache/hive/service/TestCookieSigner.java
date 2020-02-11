@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,7 +20,7 @@ package org.apache.hive.service;
 
 import java.util.Random;
 
-import junit.framework.TestCase;
+
 
 import org.junit.After;
 import org.junit.Before;
@@ -30,7 +30,7 @@ import org.junit.Test;
  * CLIServiceTest.
  *
  */
-public class TestCookieSigner extends TestCase {
+public class TestCookieSigner {
 
   protected static CookieSigner cs;
   private static final Random RAN = new Random();

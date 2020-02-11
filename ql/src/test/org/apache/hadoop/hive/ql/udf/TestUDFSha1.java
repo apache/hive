@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,14 +17,20 @@
  */
 package org.apache.hadoop.hive.ql.udf;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
-public class TestUDFSha1 extends TestCase {
+/**
+ * TestUDFSha1.
+ */
+public class TestUDFSha1 {
 
+  @Test
   public void testSha1Str() throws HiveException {
     UDFSha1 udf = new UDFSha1();
 
@@ -34,6 +40,7 @@ public class TestUDFSha1 extends TestCase {
     runAndVerifyStr(null, null, udf);
   }
 
+  @Test
   public void testSha1Bin() throws HiveException {
     UDFSha1 udf = new UDFSha1();
 

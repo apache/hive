@@ -19,11 +19,15 @@ package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.messaging.InsertMessage;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
+import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
 import java.io.BufferedWriter;
@@ -33,28 +37,48 @@ import java.util.Collections;
 import java.util.List;
 
 
-class InsertHandler extends AbstractEventHandler {
+class InsertHandler extends AbstractEventHandler<InsertMessage> {
 
   InsertHandler(NotificationEvent event) {
     super(event);
   }
 
   @Override
+  InsertMessage eventMessage(String stringRepresentation) {
+    return deserializer.getInsertMessage(stringRepresentation);
+  }
+
+  @Override
   public void handle(Context withinContext) throws Exception {
-    InsertMessage insertMsg = deserializer.getInsertMessage(event.getMessage());
-    org.apache.hadoop.hive.ql.metadata.Table qlMdTable = tableObject(insertMsg);
+    if (withinContext.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY)) {
+      return;
+    }
+    org.apache.hadoop.hive.ql.metadata.Table qlMdTable = tableObject(eventMessage);
+    if (TableType.EXTERNAL_TABLE.equals(qlMdTable.getTableType())) {
+      withinContext.replicationSpec.setNoop(true);
+    }
+
+    if (!Utils.shouldReplicate(withinContext.replicationSpec, qlMdTable, true,
+            withinContext.getTablesForBootstrap(), withinContext.oldReplScope, withinContext.hiveConf)) {
+      return;
+    }
+
+    // In case of ACID tables, insert event should not have fired.
+    assert(!AcidUtils.isTransactionalTable(qlMdTable));
+
     List<Partition> qlPtns = null;
-    if (qlMdTable.isPartitioned() && (null != insertMsg.getPtnObj())) {
-      qlPtns = Collections.singletonList(partitionObject(qlMdTable, insertMsg));
+    if (qlMdTable.isPartitioned() && (null != eventMessage.getPtnObj())) {
+      qlPtns = Collections.singletonList(partitionObject(qlMdTable, eventMessage));
     }
     Path metaDataPath = new Path(withinContext.eventRoot, EximUtil.METADATA_NAME);
 
     // Mark the replace type based on INSERT-INTO or INSERT_OVERWRITE operation
-    withinContext.replicationSpec.setIsReplace(insertMsg.isReplace());
+    withinContext.replicationSpec.setIsReplace(eventMessage.isReplace());
     EximUtil.createExportDump(metaDataPath.getFileSystem(withinContext.hiveConf), metaDataPath,
         qlMdTable, qlPtns,
-        withinContext.replicationSpec);
-    Iterable<String> files = insertMsg.getFiles();
+        withinContext.replicationSpec,
+        withinContext.hiveConf);
+    Iterable<String> files = eventMessage.getFiles();
 
     if (files != null) {
       Path dataPath;
@@ -78,9 +102,9 @@ class InsertHandler extends AbstractEventHandler {
       }
     }
 
-    LOG.info("Processing#{} INSERT message : {}", fromEventId(), event.getMessage());
+    LOG.info("Processing#{} INSERT message : {}", fromEventId(), eventMessageAsJSON);
     DumpMetaData dmd = withinContext.createDmd(this);
-    dmd.setPayload(event.getMessage());
+    dmd.setPayload(eventMessageAsJSON);
     dmd.write();
   }
 

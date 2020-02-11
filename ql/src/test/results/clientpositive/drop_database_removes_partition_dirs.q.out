@@ -10,45 +10,45 @@ PREHOOK: Input: database:test_database
 POSTHOOK: query: USE test_database
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:test_database
-PREHOOK: query: CREATE TABLE test_table (key STRING, value STRING)
+PREHOOK: query: CREATE TABLE test_table_n12 (key STRING, value STRING)
 PARTITIONED BY (part STRING)
 STORED AS RCFILE
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 PREHOOK: Output: database:test_database
-PREHOOK: Output: test_database@test_table
-POSTHOOK: query: CREATE TABLE test_table (key STRING, value STRING)
+PREHOOK: Output: test_database@test_table_n12
+POSTHOOK: query: CREATE TABLE test_table_n12 (key STRING, value STRING)
 PARTITIONED BY (part STRING)
 STORED AS RCFILE
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 POSTHOOK: Output: database:test_database
-POSTHOOK: Output: test_database@test_table
-PREHOOK: query: ALTER TABLE test_table ADD PARTITION (part = '1')
+POSTHOOK: Output: test_database@test_table_n12
+PREHOOK: query: ALTER TABLE test_table_n12 ADD PARTITION (part = '1')
 #### A masked pattern was here ####
 PREHOOK: type: ALTERTABLE_ADDPARTS
 #### A masked pattern was here ####
-PREHOOK: Output: test_database@test_table
-POSTHOOK: query: ALTER TABLE test_table ADD PARTITION (part = '1')
+PREHOOK: Output: test_database@test_table_n12
+POSTHOOK: query: ALTER TABLE test_table_n12 ADD PARTITION (part = '1')
 #### A masked pattern was here ####
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 #### A masked pattern was here ####
-POSTHOOK: Output: test_database@test_table
-POSTHOOK: Output: test_database@test_table@part=1
-PREHOOK: query: INSERT OVERWRITE TABLE test_table PARTITION (part = '1')
+POSTHOOK: Output: test_database@test_table_n12
+POSTHOOK: Output: test_database@test_table_n12@part=1
+PREHOOK: query: INSERT OVERWRITE TABLE test_table_n12 PARTITION (part = '1')
 SELECT * FROM default.src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: test_database@test_table@part=1
-POSTHOOK: query: INSERT OVERWRITE TABLE test_table PARTITION (part = '1')
+PREHOOK: Output: test_database@test_table_n12@part=1
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table_n12 PARTITION (part = '1')
 SELECT * FROM default.src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: test_database@test_table@part=1
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: test_database@test_table_n12@part=1
+POSTHOOK: Lineage: test_table_n12 PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table_n12 PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 Found 1 items
 #### A masked pattern was here ####
 PREHOOK: query: USE default
@@ -61,10 +61,10 @@ PREHOOK: query: DROP DATABASE test_database CASCADE
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:test_database
 PREHOOK: Output: database:test_database
-PREHOOK: Output: test_database@test_table
+PREHOOK: Output: test_database@test_table_n12
 POSTHOOK: query: DROP DATABASE test_database CASCADE
 POSTHOOK: type: DROPDATABASE
 POSTHOOK: Input: database:test_database
 POSTHOOK: Output: database:test_database
-POSTHOOK: Output: test_database@test_table
+POSTHOOK: Output: test_database@test_table_n12
 #### A masked pattern was here ####

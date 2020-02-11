@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -28,28 +28,42 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
- * This is a generated class to evaluate a <OperatorSymbol> comparison on a vector of timestamp
+ * This is a generated class to evaluate a comparison on a vector of timestamp
  * values.
  */
 public class <ClassName> extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private int colNum;
-  private <HiveOperandType> value;
+  private final <HiveOperandType> value;
+  private final int colNum;
 
   public <ClassName>(<HiveOperandType> value, int colNum) {
-    this.colNum = colNum;
+    super();
     this.value = value;
+    this.colNum = colNum;
   }
 
   public <ClassName>() {
+    super();
+
+    // Dummy final assignments.
+    value = null;
+    colNum = -1;
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
+
+    // return immediately if batch is empty
+    final int n = batch.size;
+    if (n == 0) {
+      return;
+    }
+
     if (childExpressions != null) {
       super.evaluateChildren(batch);
     }
@@ -57,18 +71,10 @@ public class <ClassName> extends VectorExpression {
     <InputColumnVectorType> inputColVector2 = (<InputColumnVectorType>) batch.cols[colNum];
 
     int[] sel = batch.selected;
-    boolean[] nullPos = inputColVector2.isNull;
-    int n = batch.size;
-
-    // return immediately if batch is empty
-    if (n == 0) {
-      return;
-    }
+    boolean[] inputIsNull = inputColVector2.isNull;
 
     if (inputColVector2.noNulls) {
       if (inputColVector2.isRepeating) {
-
-        // All must be selected otherwise size would be zero. Repeating property will not change.
         if (!(inputColVector2.compareTo(value, 0) <OperatorSymbol> 0)) {
 
           // Entire batch is filtered out.
@@ -97,9 +103,7 @@ public class <ClassName> extends VectorExpression {
       }
     } else {
       if (inputColVector2.isRepeating) {
-
-        // All must be selected otherwise size would be zero. Repeating property will not change.
-        if (!nullPos[0]) {
+        if (!inputIsNull[0]) {
           if (!(inputColVector2.compareTo(value, 0) <OperatorSymbol> 0)) {
 
             // Entire batch is filtered out.
@@ -112,7 +116,7 @@ public class <ClassName> extends VectorExpression {
         int newSize = 0;
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          if (!nullPos[i]) {
+          if (!inputIsNull[i]) {
            if (inputColVector2.compareTo(value, i) <OperatorSymbol> 0) {
              sel[newSize++] = i;
            }
@@ -124,7 +128,7 @@ public class <ClassName> extends VectorExpression {
       } else {
         int newSize = 0;
         for(int i = 0; i != n; i++) {
-          if (!nullPos[i]) {
+          if (!inputIsNull[i]) {
             if (inputColVector2.compareTo(value, i) <OperatorSymbol> 0) {
               sel[newSize++] = i;
             }
@@ -139,18 +143,8 @@ public class <ClassName> extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return -1;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "boolean";
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "val " + value.toString() + ", col " + + colNum;
+    return "val " + TimestampUtils.timestampScalarTypeToString(value) + ", " + getColumnParamString(1, colNum);
   }
 
   @Override

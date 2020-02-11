@@ -1,0 +1,181 @@
+PREHOOK: query: DROP TABLE IF EXISTS source
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS source
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE source (a STRING, b STRING, c DOUBLE)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ' '
+COLLECTION ITEMS TERMINATED BY '\t'
+LINES TERMINATED BY '\n'
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: ### test.blobstore.path ###/buckets/source
+PREHOOK: Output: database:default
+PREHOOK: Output: default@source
+POSTHOOK: query: CREATE TABLE source (a STRING, b STRING, c DOUBLE)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ' '
+COLLECTION ITEMS TERMINATED BY '\t'
+LINES TERMINATED BY '\n'
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: ### test.blobstore.path ###/buckets/source
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@source
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/3col_data.txt' INTO TABLE source
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@source
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/3col_data.txt' INTO TABLE source
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@source
+PREHOOK: query: DROP TABLE IF EXISTS buckets
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS buckets
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE buckets (a STRING, value DOUBLE)
+PARTITIONED BY (b STRING)
+CLUSTERED BY (a) INTO 2 BUCKETS
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: ### test.blobstore.path ###/buckets/buckets
+PREHOOK: Output: database:default
+PREHOOK: Output: default@buckets
+POSTHOOK: query: CREATE TABLE buckets (a STRING, value DOUBLE)
+PARTITIONED BY (b STRING)
+CLUSTERED BY (a) INTO 2 BUCKETS
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: ### test.blobstore.path ###/buckets/buckets
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@buckets
+PREHOOK: query: INSERT OVERWRITE TABLE buckets
+PARTITION (b)
+SELECT a, c, b FROM source
+PREHOOK: type: QUERY
+PREHOOK: Input: default@source
+PREHOOK: Output: default@buckets
+POSTHOOK: query: INSERT OVERWRITE TABLE buckets
+PARTITION (b)
+SELECT a, c, b FROM source
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@source
+POSTHOOK: Output: default@buckets@b=abc
+POSTHOOK: Output: default@buckets@b=ajss
+POSTHOOK: Output: default@buckets@b=data
+POSTHOOK: Output: default@buckets@b=def
+POSTHOOK: Output: default@buckets@b=djns
+POSTHOOK: Output: default@buckets@b=ne
+POSTHOOK: Output: default@buckets@b=random
+POSTHOOK: Lineage: buckets PARTITION(b=abc).a SIMPLE [(source)source.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: buckets PARTITION(b=abc).value SIMPLE [(source)source.FieldSchema(name:c, type:double, comment:null), ]
+POSTHOOK: Lineage: buckets PARTITION(b=ajss).a SIMPLE [(source)source.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: buckets PARTITION(b=ajss).value SIMPLE [(source)source.FieldSchema(name:c, type:double, comment:null), ]
+POSTHOOK: Lineage: buckets PARTITION(b=data).a SIMPLE [(source)source.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: buckets PARTITION(b=data).value SIMPLE [(source)source.FieldSchema(name:c, type:double, comment:null), ]
+POSTHOOK: Lineage: buckets PARTITION(b=def).a SIMPLE [(source)source.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: buckets PARTITION(b=def).value SIMPLE [(source)source.FieldSchema(name:c, type:double, comment:null), ]
+POSTHOOK: Lineage: buckets PARTITION(b=djns).a SIMPLE [(source)source.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: buckets PARTITION(b=djns).value SIMPLE [(source)source.FieldSchema(name:c, type:double, comment:null), ]
+POSTHOOK: Lineage: buckets PARTITION(b=ne).a SIMPLE [(source)source.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: buckets PARTITION(b=ne).value SIMPLE [(source)source.FieldSchema(name:c, type:double, comment:null), ]
+POSTHOOK: Lineage: buckets PARTITION(b=random).a SIMPLE [(source)source.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: buckets PARTITION(b=random).value SIMPLE [(source)source.FieldSchema(name:c, type:double, comment:null), ]
+PREHOOK: query: SELECT * FROM buckets
+PREHOOK: type: QUERY
+PREHOOK: Input: default@buckets
+PREHOOK: Input: default@buckets@b=abc
+PREHOOK: Input: default@buckets@b=ajss
+PREHOOK: Input: default@buckets@b=data
+PREHOOK: Input: default@buckets@b=def
+PREHOOK: Input: default@buckets@b=djns
+PREHOOK: Input: default@buckets@b=ne
+PREHOOK: Input: default@buckets@b=random
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM buckets
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@buckets
+POSTHOOK: Input: default@buckets@b=abc
+POSTHOOK: Input: default@buckets@b=ajss
+POSTHOOK: Input: default@buckets@b=data
+POSTHOOK: Input: default@buckets@b=def
+POSTHOOK: Input: default@buckets@b=djns
+POSTHOOK: Input: default@buckets@b=ne
+POSTHOOK: Input: default@buckets@b=random
+#### A masked pattern was here ####
+1	10.5	abc
+3	90.23232	ajss
+6	3.002	data
+2	11.5	def
+4	89.02002	djns
+7	71.9084	ne
+5	2.99	random
+PREHOOK: query: INSERT INTO TABLE buckets
+PARTITION (b)
+SELECT a, c, b FROM source
+PREHOOK: type: QUERY
+PREHOOK: Input: default@source
+PREHOOK: Output: default@buckets
+POSTHOOK: query: INSERT INTO TABLE buckets
+PARTITION (b)
+SELECT a, c, b FROM source
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@source
+POSTHOOK: Output: default@buckets@b=abc
+POSTHOOK: Output: default@buckets@b=ajss
+POSTHOOK: Output: default@buckets@b=data
+POSTHOOK: Output: default@buckets@b=def
+POSTHOOK: Output: default@buckets@b=djns
+POSTHOOK: Output: default@buckets@b=ne
+POSTHOOK: Output: default@buckets@b=random
+POSTHOOK: Lineage: buckets PARTITION(b=abc).a SIMPLE [(source)source.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: buckets PARTITION(b=abc).value SIMPLE [(source)source.FieldSchema(name:c, type:double, comment:null), ]
+POSTHOOK: Lineage: buckets PARTITION(b=ajss).a SIMPLE [(source)source.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: buckets PARTITION(b=ajss).value SIMPLE [(source)source.FieldSchema(name:c, type:double, comment:null), ]
+POSTHOOK: Lineage: buckets PARTITION(b=data).a SIMPLE [(source)source.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: buckets PARTITION(b=data).value SIMPLE [(source)source.FieldSchema(name:c, type:double, comment:null), ]
+POSTHOOK: Lineage: buckets PARTITION(b=def).a SIMPLE [(source)source.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: buckets PARTITION(b=def).value SIMPLE [(source)source.FieldSchema(name:c, type:double, comment:null), ]
+POSTHOOK: Lineage: buckets PARTITION(b=djns).a SIMPLE [(source)source.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: buckets PARTITION(b=djns).value SIMPLE [(source)source.FieldSchema(name:c, type:double, comment:null), ]
+POSTHOOK: Lineage: buckets PARTITION(b=ne).a SIMPLE [(source)source.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: buckets PARTITION(b=ne).value SIMPLE [(source)source.FieldSchema(name:c, type:double, comment:null), ]
+POSTHOOK: Lineage: buckets PARTITION(b=random).a SIMPLE [(source)source.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: buckets PARTITION(b=random).value SIMPLE [(source)source.FieldSchema(name:c, type:double, comment:null), ]
+PREHOOK: query: SELECT * FROM buckets
+PREHOOK: type: QUERY
+PREHOOK: Input: default@buckets
+PREHOOK: Input: default@buckets@b=abc
+PREHOOK: Input: default@buckets@b=ajss
+PREHOOK: Input: default@buckets@b=data
+PREHOOK: Input: default@buckets@b=def
+PREHOOK: Input: default@buckets@b=djns
+PREHOOK: Input: default@buckets@b=ne
+PREHOOK: Input: default@buckets@b=random
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM buckets
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@buckets
+POSTHOOK: Input: default@buckets@b=abc
+POSTHOOK: Input: default@buckets@b=ajss
+POSTHOOK: Input: default@buckets@b=data
+POSTHOOK: Input: default@buckets@b=def
+POSTHOOK: Input: default@buckets@b=djns
+POSTHOOK: Input: default@buckets@b=ne
+POSTHOOK: Input: default@buckets@b=random
+#### A masked pattern was here ####
+1	10.5	abc
+1	10.5	abc
+3	90.23232	ajss
+3	90.23232	ajss
+6	3.002	data
+6	3.002	data
+2	11.5	def
+2	11.5	def
+4	89.02002	djns
+4	89.02002	djns
+7	71.9084	ne
+7	71.9084	ne
+5	2.99	random
+5	2.99	random

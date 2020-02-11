@@ -3,7 +3,7 @@ set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
 set hive.fetch.task.conversion=none;
 
-create table date_dim
+create table date_dim_n0
 (
     d_date_sk                 int,
     d_date_id                 string,
@@ -36,7 +36,7 @@ create table date_dim
 )
 stored as orc;
 
-create table store_sales
+create table store_sales_n2
 (
     ss_sold_date_sk           int,
     ss_sold_time_sk           int,
@@ -68,7 +68,7 @@ partitioned by
 stored as orc
 tblproperties ("orc.stripe.size"="33554432", "orc.compress.size"="16384");
 
-create table store
+create table store_n2
 (
     s_store_sk                int,
     s_store_id                string,
@@ -107,12 +107,12 @@ stored as orc;
 
 explain vectorization select
         s_state, count(1)
- from store_sales,
- store,
- date_dim
- where store_sales.ss_sold_date_sk = date_dim.d_date_sk and
-       store_sales.ss_store_sk = store.s_store_sk and
-       store.s_state in ('KS','AL', 'MN', 'AL', 'SC', 'VT')
+ from store_sales_n2,
+ store_n2,
+ date_dim_n0
+ where store_sales_n2.ss_sold_date_sk = date_dim_n0.d_date_sk and
+       store_sales_n2.ss_store_sk = store_n2.s_store_sk and
+       store_n2.s_state in ('KS','AL', 'MN', 'AL', 'SC', 'VT')
  group by s_state
  order by s_state
  limit 100;

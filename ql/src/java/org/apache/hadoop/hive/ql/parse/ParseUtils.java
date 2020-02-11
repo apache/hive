@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,15 +18,11 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import org.apache.hadoop.hive.ql.Context;
+import com.google.common.base.Preconditions;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import org.antlr.runtime.tree.CommonTree;
-import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTBuilder;
-import org.apache.hadoop.hive.ql.parse.CalcitePlanner.ASTSearcher;
-
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -35,14 +31,21 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 import java.util.Stack;
-
+import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
+import org.apache.calcite.rel.RelNode;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.PTFUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.Node;
+import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTBuilder;
+import org.apache.hadoop.hive.ql.parse.CalcitePlanner.ASTSearcher;
+import org.apache.hadoop.hive.ql.parse.type.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
@@ -50,8 +53,8 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
-
-import com.google.common.base.Preconditions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -67,14 +70,14 @@ public final class ParseUtils {
 
   /** Parses the Hive query. */
   public static ASTNode parse(String command, Context ctx) throws ParseException {
-    return parse(command, ctx, true);
+    return parse(command, ctx, null);
   }
 
   /** Parses the Hive query. */
   public static ASTNode parse(
-      String command, Context ctx, boolean setTokenRewriteStream) throws ParseException {
+      String command, Context ctx, String viewFullyQualifiedName) throws ParseException {
     ParseDriver pd = new ParseDriver();
-    ASTNode tree = pd.parse(command, ctx, setTokenRewriteStream);
+    ASTNode tree = pd.parse(command, ctx, viewFullyQualifiedName);
     tree = findRootNonNullToken(tree);
     handleSetColRefs(tree);
     return tree;
@@ -142,24 +145,6 @@ public final class ParseUtils {
       colNames.add(colName);
     }
     return colNames;
-  }
-
-  /**
-   * @param column  column expression to convert
-   * @param tableFieldTypeInfo TypeInfo to convert to
-   * @return Expression converting column to the type specified by tableFieldTypeInfo
-   */
-  public static ExprNodeDesc createConversionCast(ExprNodeDesc column, PrimitiveTypeInfo tableFieldTypeInfo)
-      throws SemanticException {
-    // Get base type, since type string may be parameterized
-    String baseType = TypeInfoUtils.getBaseName(tableFieldTypeInfo.getTypeName());
-
-    // If the type cast UDF is for a parameterized type, then it should implement
-    // the SettableUDF interface so that we can pass in the params.
-    // Not sure if this is the cleanest solution, but there does need to be a way
-    // to provide the type params to the type cast.
-    return TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDescWithUdfData(baseType,
-        tableFieldTypeInfo, column);
   }
 
   public static VarcharTypeInfo getVarcharTypeInfo(ASTNode node)
@@ -524,4 +509,47 @@ public final class ParseUtils {
       newChildren.add(selExpr.node());
       return true;
     }
+
+    public static String getKeywords(Set<String> excludes) {
+      StringBuilder sb = new StringBuilder();
+      for (Field f : HiveLexer.class.getDeclaredFields()) {
+        if (!Modifier.isStatic(f.getModifiers())) continue;
+        String name = f.getName();
+        if (!name.startsWith("KW_")) continue;
+        name = name.substring(3);
+        if (excludes != null && excludes.contains(name)) continue;
+        if (sb.length() > 0) {
+          sb.append(",");
+        }
+        sb.append(name);
+      }
+      return sb.toString();
+    }
+
+  public static RelNode parseQuery(HiveConf conf, String viewQuery)
+      throws SemanticException, IOException, ParseException {
+    final Context ctx = new Context(conf);
+    ctx.setIsLoadingMaterializedView(true);
+    final ASTNode ast = parse(viewQuery, ctx);
+    final CalcitePlanner analyzer = getAnalyzer(conf, ctx);
+    return analyzer.genLogicalPlan(ast);
+  }
+
+  public static List<FieldSchema> parseQueryAndGetSchema(HiveConf conf, String viewQuery)
+      throws SemanticException, IOException, ParseException {
+    final Context ctx = new Context(conf);
+    ctx.setIsLoadingMaterializedView(true);
+    final ASTNode ast = parse(viewQuery, ctx);
+    final CalcitePlanner analyzer = getAnalyzer(conf, ctx);
+    analyzer.analyze(ast, ctx);
+    return analyzer.getResultSchema();
+  }
+
+  private static CalcitePlanner getAnalyzer(HiveConf conf, Context ctx) throws SemanticException {
+    final QueryState qs = new QueryState.Builder().withHiveConf(conf).build();
+    final CalcitePlanner analyzer = new CalcitePlanner(qs);
+    analyzer.initCtx(ctx);
+    analyzer.init(false);
+    return analyzer;
+  }
 }

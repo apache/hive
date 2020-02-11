@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,6 +23,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.metadata.AuthorizationException;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -33,7 +34,6 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.AbstractSemanticAnalyzerHook;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.Privilege;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -55,7 +55,7 @@ public class HCatSemanticAnalyzerBase extends AbstractSemanticAnalyzerHook {
 
   @Override
   public void postAnalyze(HiveSemanticAnalyzerHookContext context,
-              List<Task<? extends Serializable>> rootTasks) throws SemanticException {
+              List<Task<?>> rootTasks) throws SemanticException {
     super.postAnalyze(context, rootTasks);
 
     //Authorize the operation.
@@ -86,7 +86,7 @@ public class HCatSemanticAnalyzerBase extends AbstractSemanticAnalyzerHook {
   * @see https://issues.apache.org/jira/browse/HCATALOG-245
   */
   protected void authorizeDDL(HiveSemanticAnalyzerHookContext context,
-                List<Task<? extends Serializable>> rootTasks) throws SemanticException {
+                List<Task<?>> rootTasks) throws SemanticException {
 
     if (!HCatAuthUtil.isAuthorizationEnabled(context.getConf())) {
       return;
@@ -96,7 +96,7 @@ public class HCatSemanticAnalyzerBase extends AbstractSemanticAnalyzerHook {
     try {
       hive = context.getHive();
 
-      for (Task<? extends Serializable> task : rootTasks) {
+      for (Task<?> task : rootTasks) {
         if (task.getWork() instanceof DDLWork) {
           DDLWork work = (DDLWork) task.getWork();
           if (work != null) {
@@ -114,9 +114,7 @@ public class HCatSemanticAnalyzerBase extends AbstractSemanticAnalyzerHook {
   }
 
   /**
-   * Authorized the given DDLWork. Does nothing by default. Override this
-   * and delegate to the relevant method in HiveAuthorizationProvider obtained by
-   * getAuthProvider().
+   * Authorized the given DDLWork. It is only for the interim time while DDLTask and DDLWork are being refactored.
    */
   protected void authorizeDDLWork(HiveSemanticAnalyzerHookContext context,
                   Hive hive, DDLWork work) throws HiveException {

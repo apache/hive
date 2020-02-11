@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -83,4 +83,7 @@ public class NotNullConstraint implements Serializable {
     return sb.toString();
   }
 
+  public static boolean isNotNullConstraintNotEmpty(NotNullConstraint info) {
+    return info != null && !info.getNotNullConstraints().isEmpty();
+  }
 }

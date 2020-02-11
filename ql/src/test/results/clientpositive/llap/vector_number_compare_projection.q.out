@@ -1,4 +1,4 @@
-PREHOOK: query: create table vectortab2k(
+PREHOOK: query: create table vectortab2k_n6(
             t tinyint,
             si smallint,
             i int,
@@ -16,8 +16,8 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@vectortab2k
-POSTHOOK: query: create table vectortab2k(
+PREHOOK: Output: default@vectortab2k_n6
+POSTHOOK: query: create table vectortab2k_n6(
             t tinyint,
             si smallint,
             i int,
@@ -35,46 +35,48 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@vectortab2k
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/vectortab2k' OVERWRITE INTO TABLE vectortab2k
+POSTHOOK: Output: default@vectortab2k_n6
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/vectortab2k' OVERWRITE INTO TABLE vectortab2k_n6
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@vectortab2k
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/vectortab2k' OVERWRITE INTO TABLE vectortab2k
+PREHOOK: Output: default@vectortab2k_n6
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/vectortab2k' OVERWRITE INTO TABLE vectortab2k_n6
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@vectortab2k
-PREHOOK: query: CREATE TABLE scratch AS SELECT t, si, i, b, f, d, dc FROM vectortab2k
+POSTHOOK: Output: default@vectortab2k_n6
+PREHOOK: query: CREATE TABLE scratch AS SELECT t, si, i, b, f, d, dc FROM vectortab2k_n6
 PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: default@vectortab2k
+PREHOOK: Input: default@vectortab2k_n6
 PREHOOK: Output: database:default
 PREHOOK: Output: default@scratch
-POSTHOOK: query: CREATE TABLE scratch AS SELECT t, si, i, b, f, d, dc FROM vectortab2k
+POSTHOOK: query: CREATE TABLE scratch AS SELECT t, si, i, b, f, d, dc FROM vectortab2k_n6
 POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: default@vectortab2k
+POSTHOOK: Input: default@vectortab2k_n6
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@scratch
-POSTHOOK: Lineage: scratch.b SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: scratch.d SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: scratch.dc SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:dc, type:decimal(38,18), comment:null), ]
-POSTHOOK: Lineage: scratch.f SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: scratch.i SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: scratch.si SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: scratch.t SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: scratch.b SIMPLE [(vectortab2k_n6)vectortab2k_n6.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: scratch.d SIMPLE [(vectortab2k_n6)vectortab2k_n6.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: scratch.dc SIMPLE [(vectortab2k_n6)vectortab2k_n6.FieldSchema(name:dc, type:decimal(38,18), comment:null), ]
+POSTHOOK: Lineage: scratch.f SIMPLE [(vectortab2k_n6)vectortab2k_n6.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: scratch.i SIMPLE [(vectortab2k_n6)vectortab2k_n6.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: scratch.si SIMPLE [(vectortab2k_n6)vectortab2k_n6.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: scratch.t SIMPLE [(vectortab2k_n6)vectortab2k_n6.FieldSchema(name:t, type:tinyint, comment:null), ]
 t	si	i	b	f	d	dc
 PREHOOK: query: INSERT INTO TABLE scratch VALUES (NULL, NULL, NULL, NULL, NULL, NULL, NULL)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@scratch
 POSTHOOK: query: INSERT INTO TABLE scratch VALUES (NULL, NULL, NULL, NULL, NULL, NULL, NULL)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@scratch
-POSTHOOK: Lineage: scratch.b EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: scratch.d EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
-POSTHOOK: Lineage: scratch.dc EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col7, type:string, comment:), ]
-POSTHOOK: Lineage: scratch.f EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
-POSTHOOK: Lineage: scratch.i EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: scratch.si EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: scratch.t EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: scratch.b EXPRESSION []
+POSTHOOK: Lineage: scratch.d EXPRESSION []
+POSTHOOK: Lineage: scratch.dc EXPRESSION []
+POSTHOOK: Lineage: scratch.f EXPRESSION []
+POSTHOOK: Lineage: scratch.i EXPRESSION []
+POSTHOOK: Lineage: scratch.si EXPRESSION []
+POSTHOOK: Lineage: scratch.t EXPRESSION []
 _col0	_col1	_col2	_col3	_col4	_col5	_col6
 PREHOOK: query: CREATE TABLE vectortab2k_orc STORED AS ORC AS SELECT * FROM scratch
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -99,11 +101,15 @@ SELECT sum(hash(*)) FROM
     (SELECT t, si, i, (t < 0) as compare1, (si <= 0) as compare2, (i = 0) as compare3 from vectortab2k_orc
         order by t, si, i) as q
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vectortab2k_orc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT sum(hash(*)) FROM
     (SELECT t, si, i, (t < 0) as compare1, (si <= 0) as compare2, (i = 0) as compare3 from vectortab2k_orc
         order by t, si, i) as q
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectortab2k_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -125,46 +131,47 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: vectortab2k_orc
-                  Statistics: Num rows: 2001 Data size: 22824 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2001 Data size: 22784 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6]
                   Select Operator
-                    expressions: hash(t,si,i,(t < 0),(si <= 0),(i = 0)) (type: int)
+                    expressions: hash(t,si,i,(t < 0Y),(si <= 0S),(i = 0)) (type: int)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [10]
-                        selectExpressions: VectorUDFAdaptor(hash(t,si,i,(t < 0),(si <= 0),(i = 0)))(children: LongColLessLongScalar(col 0, val 0) -> 7:long, LongColLessEqualLongScalar(col 1, val 0) -> 8:long, LongColEqualLongScalar(col 2, val 0) -> 9:long) -> 10:int
-                    Statistics: Num rows: 2001 Data size: 22824 Basic stats: COMPLETE Column stats: NONE
+                        projectedOutputColumnNums: [11]
+                        selectExpressions: VectorUDFAdaptor(hash(t,si,i,(t < 0Y),(si <= 0S),(i = 0)))(children: LongColLessLongScalar(col 0:tinyint, val 0) -> 8:boolean, LongColLessEqualLongScalar(col 1:smallint, val 0) -> 9:boolean, LongColEqualLongScalar(col 2:int, val 0) -> 10:boolean) -> 11:int
+                    Statistics: Num rows: 2001 Data size: 22784 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: sum(_col0)
                       Group By Vectorization:
-                          aggregators: VectorUDAFSumLong(col 10) -> bigint
+                          aggregators: VectorUDAFSumLong(col 11:int) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          vectorOutput: true
                           native: false
                           vectorProcessingMode: HASH
-                          projectedOutputColumns: [0]
+                          projectedOutputColumnNums: [0]
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkEmptyKeyOperator
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: true
@@ -174,7 +181,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -182,22 +188,21 @@ STAGE PLANS:
               Group By Operator
                 aggregations: sum(VALUE._col0)
                 Group By Vectorization:
-                    aggregators: VectorUDAFSumLong(col 0) -> bigint
+                    aggregators: VectorUDAFSumLong(col 0:bigint) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    vectorOutput: true
                     native: false
                     vectorProcessingMode: GLOBAL
-                    projectedOutputColumns: [0]
+                    projectedOutputColumnNums: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -228,11 +233,15 @@ SELECT sum(hash(*)) FROM
     (SELECT t, si, i, b, (t > 0) as compare1, (si >= 0) as compare2, (i != 0) as compare3, (b > 0) as compare4 from vectortab2k_orc
         order by t, si, i, b) as q
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vectortab2k_orc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT sum(hash(*)) FROM
     (SELECT t, si, i, b, (t > 0) as compare1, (si >= 0) as compare2, (i != 0) as compare3, (b > 0) as compare4 from vectortab2k_orc
         order by t, si, i, b) as q
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectortab2k_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -254,46 +263,47 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: vectortab2k_orc
-                  Statistics: Num rows: 2001 Data size: 38040 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2001 Data size: 38128 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6]
                   Select Operator
-                    expressions: hash(t,si,i,b,(t > 0),(si >= 0),(i <> 0),(b > 0)) (type: int)
+                    expressions: hash(t,si,i,b,(t > 0Y),(si >= 0S),(i <> 0),(b > 0L)) (type: int)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [11]
-                        selectExpressions: VectorUDFAdaptor(hash(t,si,i,b,(t > 0),(si >= 0),(i <> 0),(b > 0)))(children: LongColGreaterLongScalar(col 0, val 0) -> 7:long, LongColGreaterEqualLongScalar(col 1, val 0) -> 8:long, LongColNotEqualLongScalar(col 2, val 0) -> 9:long, LongColGreaterLongScalar(col 3, val 0) -> 10:long) -> 11:int
-                    Statistics: Num rows: 2001 Data size: 38040 Basic stats: COMPLETE Column stats: NONE
+                        projectedOutputColumnNums: [12]
+                        selectExpressions: VectorUDFAdaptor(hash(t,si,i,b,(t > 0Y),(si >= 0S),(i <> 0),(b > 0L)))(children: LongColGreaterLongScalar(col 0:tinyint, val 0) -> 8:boolean, LongColGreaterEqualLongScalar(col 1:smallint, val 0) -> 9:boolean, LongColNotEqualLongScalar(col 2:int, val 0) -> 10:boolean, LongColGreaterLongScalar(col 3:bigint, val 0) -> 11:boolean) -> 12:int
+                    Statistics: Num rows: 2001 Data size: 38128 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: sum(_col0)
                       Group By Vectorization:
-                          aggregators: VectorUDAFSumLong(col 11) -> bigint
+                          aggregators: VectorUDAFSumLong(col 12:int) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          vectorOutput: true
                           native: false
                           vectorProcessingMode: HASH
-                          projectedOutputColumns: [0]
+                          projectedOutputColumnNums: [0]
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkEmptyKeyOperator
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        Statistics: Num rows: 1 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: true
@@ -303,7 +313,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -311,22 +320,21 @@ STAGE PLANS:
               Group By Operator
                 aggregations: sum(VALUE._col0)
                 Group By Vectorization:
-                    aggregators: VectorUDAFSumLong(col 0) -> bigint
+                    aggregators: VectorUDAFSumLong(col 0:bigint) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    vectorOutput: true
                     native: false
                     vectorProcessingMode: GLOBAL
-                    projectedOutputColumns: [0]
+                    projectedOutputColumnNums: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 1 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -445,27 +453,27 @@ POSTHOOK: Input: default@vectortab2k_orc
 _c0
 14121946175
 PREHOOK: query: CREATE TABLE scratch_repeat AS SELECT t, si, i, b, bo, 20 as t_repeat,
-     9000 as si_repeat, 9233320 as i_repeat, -823823999339992 as b_repeat, false as bo_repeat_false, true as bo_repeat_true FROM vectortab2k
+     9000 as si_repeat, 9233320 as i_repeat, -823823999339992 as b_repeat, false as bo_repeat_false, true as bo_repeat_true FROM vectortab2k_n6
 PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: default@vectortab2k
+PREHOOK: Input: default@vectortab2k_n6
 PREHOOK: Output: database:default
 PREHOOK: Output: default@scratch_repeat
 POSTHOOK: query: CREATE TABLE scratch_repeat AS SELECT t, si, i, b, bo, 20 as t_repeat,
-     9000 as si_repeat, 9233320 as i_repeat, -823823999339992 as b_repeat, false as bo_repeat_false, true as bo_repeat_true FROM vectortab2k
+     9000 as si_repeat, 9233320 as i_repeat, -823823999339992 as b_repeat, false as bo_repeat_false, true as bo_repeat_true FROM vectortab2k_n6
 POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: default@vectortab2k
+POSTHOOK: Input: default@vectortab2k_n6
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@scratch_repeat
-POSTHOOK: Lineage: scratch_repeat.b SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: scratch_repeat.b SIMPLE [(vectortab2k_n6)vectortab2k_n6.FieldSchema(name:b, type:bigint, comment:null), ]
 POSTHOOK: Lineage: scratch_repeat.b_repeat SIMPLE []
-POSTHOOK: Lineage: scratch_repeat.bo SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: scratch_repeat.bo SIMPLE [(vectortab2k_n6)vectortab2k_n6.FieldSchema(name:bo, type:boolean, comment:null), ]
 POSTHOOK: Lineage: scratch_repeat.bo_repeat_false SIMPLE []
 POSTHOOK: Lineage: scratch_repeat.bo_repeat_true SIMPLE []
-POSTHOOK: Lineage: scratch_repeat.i SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: scratch_repeat.i SIMPLE [(vectortab2k_n6)vectortab2k_n6.FieldSchema(name:i, type:int, comment:null), ]
 POSTHOOK: Lineage: scratch_repeat.i_repeat SIMPLE []
-POSTHOOK: Lineage: scratch_repeat.si SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: scratch_repeat.si SIMPLE [(vectortab2k_n6)vectortab2k_n6.FieldSchema(name:si, type:smallint, comment:null), ]
 POSTHOOK: Lineage: scratch_repeat.si_repeat SIMPLE []
-POSTHOOK: Lineage: scratch_repeat.t SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: scratch_repeat.t SIMPLE [(vectortab2k_n6)vectortab2k_n6.FieldSchema(name:t, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: scratch_repeat.t_repeat SIMPLE []
 t	si	i	b	bo	t_repeat	si_repeat	i_repeat	b_repeat	bo_repeat_false	bo_repeat_true
 PREHOOK: query: CREATE TABLE vectortab2k_orc_repeat STORED AS ORC AS SELECT * FROM scratch_repeat
@@ -611,26 +619,26 @@ POSTHOOK: Input: default@vectortab2k_orc_repeat
 _c0
 235353516948
 PREHOOK: query: CREATE TABLE scratch_null AS SELECT t, si, i, b, bo,
-     cast(null as tinyint) as t_null, cast(null as smallint) as si_null, cast(null as int) as i_null, cast(null as bigint) as b_null, cast(null as boolean) as bo_null FROM vectortab2k
+     cast(null as tinyint) as t_null, cast(null as smallint) as si_null, cast(null as int) as i_null, cast(null as bigint) as b_null, cast(null as boolean) as bo_null FROM vectortab2k_n6
 PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: default@vectortab2k
+PREHOOK: Input: default@vectortab2k_n6
 PREHOOK: Output: database:default
 PREHOOK: Output: default@scratch_null
 POSTHOOK: query: CREATE TABLE scratch_null AS SELECT t, si, i, b, bo,
-     cast(null as tinyint) as t_null, cast(null as smallint) as si_null, cast(null as int) as i_null, cast(null as bigint) as b_null, cast(null as boolean) as bo_null FROM vectortab2k
+     cast(null as tinyint) as t_null, cast(null as smallint) as si_null, cast(null as int) as i_null, cast(null as bigint) as b_null, cast(null as boolean) as bo_null FROM vectortab2k_n6
 POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: default@vectortab2k
+POSTHOOK: Input: default@vectortab2k_n6
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@scratch_null
-POSTHOOK: Lineage: scratch_null.b SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: scratch_null.b SIMPLE [(vectortab2k_n6)vectortab2k_n6.FieldSchema(name:b, type:bigint, comment:null), ]
 POSTHOOK: Lineage: scratch_null.b_null SIMPLE []
-POSTHOOK: Lineage: scratch_null.bo SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: scratch_null.bo SIMPLE [(vectortab2k_n6)vectortab2k_n6.FieldSchema(name:bo, type:boolean, comment:null), ]
 POSTHOOK: Lineage: scratch_null.bo_null SIMPLE []
-POSTHOOK: Lineage: scratch_null.i SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: scratch_null.i SIMPLE [(vectortab2k_n6)vectortab2k_n6.FieldSchema(name:i, type:int, comment:null), ]
 POSTHOOK: Lineage: scratch_null.i_null SIMPLE []
-POSTHOOK: Lineage: scratch_null.si SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: scratch_null.si SIMPLE [(vectortab2k_n6)vectortab2k_n6.FieldSchema(name:si, type:smallint, comment:null), ]
 POSTHOOK: Lineage: scratch_null.si_null SIMPLE []
-POSTHOOK: Lineage: scratch_null.t SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: scratch_null.t SIMPLE [(vectortab2k_n6)vectortab2k_n6.FieldSchema(name:t, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: scratch_null.t_null SIMPLE []
 t	si	i	b	bo	t_null	si_null	i_null	b_null	bo_null
 PREHOOK: query: CREATE TABLE vectortab2k_orc_null STORED AS ORC AS SELECT * FROM scratch_null

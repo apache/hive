@@ -1,4 +1,10 @@
+--! qt:dataset:srcpart
+--! qt:dataset:src1
+--! qt:dataset:src
 set hive.cbo.enable=false;
+
+-- SORT_QUERY_RESULTS
+
 CREATE TABLE dest_j1(key STRING, value STRING, val2 STRING) STORED AS TEXTFILE;
 
 -- Mapjoin followed by Mapjoin is not supported.

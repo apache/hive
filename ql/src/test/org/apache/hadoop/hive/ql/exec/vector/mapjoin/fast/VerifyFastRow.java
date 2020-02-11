@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,25 +19,25 @@ package org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import junit.framework.TestCase;
 
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.serde2.fast.DeserializeRead;
 import org.apache.hadoop.hive.serde2.fast.SerializeWrite;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -45,7 +45,7 @@ import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
@@ -63,7 +63,6 @@ import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.Writable;
 
 /**
  * (Copy of VerifyFast from serde).
@@ -245,7 +244,7 @@ public class VerifyFastRow {
         case DATE:
           {
             Date value = deserializeRead.currentDateWritable.get();
-            Date expected = ((DateWritable) object).get();
+            Date expected = ((DateWritableV2) object).get();
             if (!value.equals(expected)) {
               TestCase.fail("Date field mismatch (expected " + expected.toString() + " found " + value.toString() + ")");
             }
@@ -254,7 +253,7 @@ public class VerifyFastRow {
         case TIMESTAMP:
           {
             Timestamp value = deserializeRead.currentTimestampWritable.getTimestamp();
-            Timestamp expected = ((TimestampWritable) object).getTimestamp();
+            Timestamp expected = ((TimestampWritableV2) object).getTimestamp();
             if (!value.equals(expected)) {
               TestCase.fail("Timestamp field mismatch (expected " + expected.toString() + " found " + value.toString() + ")");
             }
@@ -395,13 +394,13 @@ public class VerifyFastRow {
           break;
         case DATE:
           {
-            Date value = ((DateWritable) object).get();
+            Date value = ((DateWritableV2) object).get();
             serializeWrite.writeDate(value);
           }
           break;
         case TIMESTAMP:
           {
-            Timestamp value = ((TimestampWritable) object).getTimestamp();
+            Timestamp value = ((TimestampWritableV2) object).getTimestamp();
             serializeWrite.writeTimestamp(value);
           }
           break;
@@ -457,7 +456,7 @@ public class VerifyFastRow {
         MapTypeInfo mapTypeInfo = (MapTypeInfo) typeInfo;
         TypeInfo keyTypeInfo = mapTypeInfo.getMapKeyTypeInfo();
         TypeInfo valueTypeInfo = mapTypeInfo.getMapValueTypeInfo();
-        HashMap<Object, Object> hashMap = (HashMap<Object, Object>) object;
+        Map<Object, Object> hashMap = (Map<Object, Object>) object;
         serializeWrite.beginMap(hashMap);
         boolean isFirst = true;
         for (Map.Entry<Object, Object> entry : hashMap.entrySet()) {
@@ -572,9 +571,9 @@ public class VerifyFastRow {
     case DECIMAL:
       return new HiveDecimalWritable(deserializeRead.currentHiveDecimalWritable);
     case DATE:
-      return new DateWritable(deserializeRead.currentDateWritable);
+      return new DateWritableV2(deserializeRead.currentDateWritable);
     case TIMESTAMP:
-      return new TimestampWritable(deserializeRead.currentTimestampWritable);
+      return new TimestampWritableV2(deserializeRead.currentTimestampWritable);
     case INTERVAL_YEAR_MONTH:
       return new HiveIntervalYearMonthWritable(deserializeRead.currentHiveIntervalYearMonthWritable);
     case INTERVAL_DAY_TIME:
@@ -599,8 +598,6 @@ public class VerifyFastRow {
     }
     return getComplexField(deserializeRead, typeInfo);
   }
-
-  static int fake = 0;
 
   private static Object getComplexField(DeserializeRead deserializeRead,
                                         TypeInfo typeInfo) throws IOException {
@@ -630,7 +627,7 @@ public class VerifyFastRow {
         MapTypeInfo mapTypeInfo = (MapTypeInfo) typeInfo;
         TypeInfo keyTypeInfo = mapTypeInfo.getMapKeyTypeInfo();
         TypeInfo valueTypeInfo = mapTypeInfo.getMapValueTypeInfo();
-        HashMap<Object, Object> hashMap = new HashMap<Object, Object>();
+        Map<Object, Object> hashMap = new LinkedHashMap<Object, Object>();
         Object keyObj;
         Object valueObj;
         boolean isNull;

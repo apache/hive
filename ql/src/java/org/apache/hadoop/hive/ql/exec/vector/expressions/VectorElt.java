@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,25 +23,35 @@ import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
+/*
+ * ELT(index, string, ....) returns the string column/expression value at the specified
+ * index expression.
+ *
+ * The first argument expression indicates the index of the string to be retrieved from
+ * remaining arguments.  We return NULL when the index number is less than 1 or
+ * index number is greater than the number of the string arguments.
+ */
 public class VectorElt extends VectorExpression {
-
   private static final long serialVersionUID = 1L;
-  private int [] inputColumns;
-  private int outputColumn;
 
-  public VectorElt(int [] inputColumns, int outputColumn) {
-    this();
+  private final int[] inputColumns;
+
+  public VectorElt(int [] inputColumns, int outputColumnNum) {
+    super(outputColumnNum);
     this.inputColumns = inputColumns;
-    this.outputColumn = outputColumn;
   }
 
   public VectorElt() {
     super();
+
+    // Dummy final assignments.
+    inputColumns = null;
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
 
     if (childExpressions != null) {
       super.evaluateChildren(batch);
@@ -49,85 +59,167 @@ public class VectorElt extends VectorExpression {
 
     int[] sel = batch.selected;
     int n = batch.size;
-    BytesColumnVector outputVector = (BytesColumnVector) batch.cols[outputColumn];
+    BytesColumnVector outputVector = (BytesColumnVector) batch.cols[outputColumnNum];
     if (n <= 0) {
       return;
     }
 
     outputVector.init();
 
-    outputVector.noNulls = false;
     outputVector.isRepeating = false;
 
+    final int limit = inputColumns.length;
     LongColumnVector inputIndexVector = (LongColumnVector) batch.cols[inputColumns[0]];
+    boolean[] inputIndexIsNull = inputIndexVector.isNull;
     long[] indexVector = inputIndexVector.vector;
     if (inputIndexVector.isRepeating) {
-      int index = (int)indexVector[0];
-      if (index > 0 && index < inputColumns.length) {
-        BytesColumnVector cv = (BytesColumnVector) batch.cols[inputColumns[index]];
-        if (cv.isRepeating) {
-          outputVector.setElement(0, 0, cv);
-          outputVector.isRepeating = true;
-        } else if (batch.selectedInUse) {
-          for (int j = 0; j != n; j++) {
-            int i = sel[j];
-            outputVector.setVal(i, cv.vector[0], cv.start[0], cv.length[0]);
+      if (inputIndexVector.noNulls || !inputIndexIsNull[0]) {
+        int repeatedIndex = (int) indexVector[0];
+        if (repeatedIndex > 0 && repeatedIndex < limit) {
+          BytesColumnVector cv = (BytesColumnVector) batch.cols[inputColumns[repeatedIndex]];
+          if (cv.isRepeating) {
+            outputVector.isNull[0] = false;
+            outputVector.setElement(0, 0, cv);
+            outputVector.isRepeating = true;
+          } else if (cv.noNulls) {
+            if (batch.selectedInUse) {
+              for (int j = 0; j != n; j++) {
+                int i = sel[j];
+                outputVector.isNull[i] = false;
+                outputVector.setVal(i, cv.vector[i], cv.start[i], cv.length[i]);
+              }
+            } else {
+              for (int i = 0; i != n; i++) {
+                outputVector.isNull[i] = false;
+                outputVector.setVal(i, cv.vector[i], cv.start[i], cv.length[i]);
+              }
+            }
+          } else {
+            if (batch.selectedInUse) {
+              for (int j = 0; j != n; j++) {
+                int i = sel[j];
+                if (!cv.isNull[i]) {
+                  outputVector.isNull[i] = false;
+                  outputVector.setVal(i, cv.vector[i], cv.start[i], cv.length[i]);
+                } else {
+                  outputVector.isNull[i] = true;
+                  outputVector.noNulls = false;
+                }
+              }
+            } else {
+              for (int i = 0; i != n; i++) {
+                if (!cv.isNull[i]) {
+                  outputVector.isNull[i] = false;
+                  outputVector.setVal(i, cv.vector[i], cv.start[i], cv.length[i]);
+                } else {
+                  outputVector.isNull[i] = true;
+                  outputVector.noNulls = false;
+                }
+              }
+            }
           }
         } else {
-          for (int i = 0; i != n; i++) {
-            outputVector.setVal(i, cv.vector[0], cv.start[0], cv.length[0]);
-          }
+          outputVector.isNull[0] = true;
+          outputVector.noNulls = false;
+          outputVector.isRepeating = true;
         }
       } else {
         outputVector.isNull[0] = true;
+        outputVector.noNulls = false;
         outputVector.isRepeating = true;
       }
-    } else if (batch.selectedInUse) {
-      for (int j = 0; j != n; j++) {
-        int i = sel[j];
-        int index = (int)indexVector[i];
-        if (index > 0 && index < inputColumns.length) {
-          BytesColumnVector cv = (BytesColumnVector) batch.cols[inputColumns[index]];
-          int cvi = cv.isRepeating ? 0 : i;
-          outputVector.setVal(i, cv.vector[cvi], cv.start[cvi], cv.length[cvi]);
-        } else {
-          outputVector.isNull[i] = true;
+      return;
+    }
+
+    if (inputIndexVector.noNulls) {
+      if (batch.selectedInUse) {
+        for (int j = 0; j != n; j++) {
+          int i = sel[j];
+          int index = (int) indexVector[i];
+          if (index > 0 && index < limit) {
+            BytesColumnVector cv = (BytesColumnVector) batch.cols[inputColumns[index]];
+            int adjusted = cv.isRepeating ? 0 : i;
+            if (!cv.isNull[adjusted]) {
+              outputVector.isNull[i] = false;
+              outputVector.setVal(i, cv.vector[adjusted], cv.start[adjusted], cv.length[adjusted]);
+            } else {
+              outputVector.isNull[i] = true;
+              outputVector.noNulls = false;
+            }
+          } else {
+            outputVector.isNull[i] = true;
+            outputVector.noNulls = false;
+          }
+        }
+      } else {
+        for (int i = 0; i != n; i++) {
+          int index = (int) indexVector[i];
+          if (index > 0 && index < limit) {
+            BytesColumnVector cv = (BytesColumnVector) batch.cols[inputColumns[index]];
+            int adjusted = cv.isRepeating ? 0 : i;
+            if (!cv.isNull[adjusted]) {
+              outputVector.isNull[i] = false;
+              outputVector.setVal(i, cv.vector[adjusted], cv.start[adjusted], cv.length[adjusted]);
+            } else {
+              outputVector.isNull[i] = true;
+              outputVector.noNulls = false;
+            }
+          } else {
+            outputVector.isNull[i] = true;
+            outputVector.noNulls = false;
+          }
         }
       }
     } else {
-      for (int i = 0; i != n; i++) {
-        int index = (int)indexVector[i];
-        if (index > 0 && index < inputColumns.length) {
-          BytesColumnVector cv = (BytesColumnVector) batch.cols[inputColumns[index]];
-          int cvi = cv.isRepeating ? 0 : i;
-          outputVector.setVal(i, cv.vector[cvi], cv.start[cvi], cv.length[cvi]);
-        } else {
-          outputVector.isNull[i] = true;
+      if (batch.selectedInUse) {
+        for (int j = 0; j != n; j++) {
+          int i = sel[j];
+          if (!inputIndexVector.isNull[i]) {
+            int index = (int) indexVector[i];
+            if (index > 0 && index < limit) {
+              BytesColumnVector cv = (BytesColumnVector) batch.cols[inputColumns[index]];
+              int adjusted = cv.isRepeating ? 0 : i;
+              if (cv.noNulls || !cv.isNull[adjusted]) {
+                outputVector.isNull[i] = false;
+                outputVector.setVal(i, cv.vector[adjusted], cv.start[adjusted], cv.length[adjusted]);
+              } else {
+                outputVector.isNull[i] = true;
+                outputVector.noNulls = false;
+              }
+            } else {
+              outputVector.isNull[i] = true;
+              outputVector.noNulls = false;
+            }
+          } else {
+            outputVector.isNull[i] = true;
+            outputVector.noNulls = false;
+          }
+        }
+      } else {
+        for (int i = 0; i != n; i++) {
+          if (!inputIndexVector.isNull[i]) {
+            int index = (int) indexVector[i];
+            if (index > 0 && index < limit) {
+              BytesColumnVector cv = (BytesColumnVector) batch.cols[inputColumns[index]];
+              int adjusted = cv.isRepeating ? 0 : i;
+              if (cv.noNulls || !cv.isNull[adjusted]) {
+                outputVector.isNull[i] = false;
+                outputVector.setVal(i, cv.vector[adjusted], cv.start[adjusted], cv.length[adjusted]);
+              } else {
+                outputVector.isNull[i] = true;
+                outputVector.noNulls = false;
+              }
+            } else {
+              outputVector.isNull[i] = true;
+              outputVector.noNulls = false;
+            }
+          } else {
+            outputVector.isNull[i] = true;
+            outputVector.noNulls = false;
+          }
         }
       }
     }
-  }
-
-  @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return outputType;
-  }
-
-  public int [] getInputColumns() {
-    return inputColumns;
-  }
-
-  public void setInputColumns(int [] inputColumns) {
-    this.inputColumns = inputColumns;
-  }
-
-  public void setOutputColumn(int outputColumn) {
-    this.outputColumn = outputColumn;
   }
 
   @Override

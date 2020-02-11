@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,6 +20,7 @@ package org.apache.hive.hcatalog.api;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.security.Policy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -35,11 +36,13 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.messaging.json.JSONMessageEncoder;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
@@ -49,7 +52,10 @@ import org.apache.hadoop.hive.ql.io.orc.OrcSerde;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.mapred.TextInputFormat;
+import org.apache.hadoop.security.authorize.ProxyUsers;
+import org.apache.hive.hcatalog.DerbyPolicy;
 import org.apache.hive.hcatalog.api.repl.Command;
 import org.apache.hive.hcatalog.api.repl.ReplicationTask;
 import org.apache.hive.hcatalog.api.repl.ReplicationUtils;
@@ -76,7 +82,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertArrayEquals;
 
-import org.apache.hadoop.util.Shell;
 
 import javax.annotation.Nullable;
 
@@ -109,11 +114,20 @@ public class TestHCatClient {
       return;
     }
 
-    System.setProperty(HiveConf.ConfVars.METASTORE_EVENT_LISTENERS.varname,
+    // Set proxy user privilege and initialize the global state of ProxyUsers
+    Configuration conf = new Configuration();
+    conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
+    ProxyUsers.refreshSuperUserGroupsConfiguration(conf);
+
+    System.setProperty(HiveConf.ConfVars.METASTORE_TRANSACTIONAL_EVENT_LISTENERS.varname,
         DbNotificationListener.class.getName()); // turn on db notification listener on metastore
-    msPort = MetaStoreUtils.startMetaStore();
+    System.setProperty(MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY.getHiveName(),
+            JSONMessageEncoder.class.getName());
+    msPort = MetaStoreTestUtils.startMetaStoreWithRetry();
     securityManager = System.getSecurityManager();
     System.setSecurityManager(new NoExitSecurityManager());
+    Policy.setPolicy(new DerbyPolicy());
+
     hcatConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:"
       + msPort);
     hcatConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
@@ -167,7 +181,8 @@ public class TestHCatClient {
     if (useExternalMS) {
       assertTrue(testDb.getLocation().matches(".*" + "/" + db + ".db"));
     } else {
-      String expectedDir = warehouseDir.replaceFirst("pfile:///", "pfile:/");
+      String expectedDir = warehouseDir.replaceFirst("pfile:///", "pfile:/")
+          + "/" + msPort;
       assertEquals(expectedDir + "/" + db + ".db", testDb.getLocation());
     }
     ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
@@ -285,6 +300,8 @@ public class TestHCatClient {
     assertNotNull(inner);
     assertNotNull(outer);
     for ( Map.Entry<String,String> e : inner.entrySet()){
+      // If it is bucketing version, skip it
+      if (e.getKey().equals("bucketing_version")) continue;
       assertTrue(outer.containsKey(e.getKey()));
       assertEquals(outer.get(e.getKey()), e.getValue());
     }
@@ -798,7 +815,7 @@ public class TestHCatClient {
       HiveConf conf = new HiveConf();
       conf.set("javax.jdo.option.ConnectionURL", hcatConf.get("javax.jdo.option.ConnectionURL")
         .replace("metastore", "target_metastore"));
-      replicationTargetHCatPort = MetaStoreUtils.startMetaStore(conf);
+      replicationTargetHCatPort = MetaStoreTestUtils.startMetaStoreWithRetry(conf);
       replicationTargetHCatConf = new HiveConf(hcatConf);
       replicationTargetHCatConf.setVar(HiveConf.ConfVars.METASTOREURIS,
                                        "thrift://localhost:" + replicationTargetHCatPort);

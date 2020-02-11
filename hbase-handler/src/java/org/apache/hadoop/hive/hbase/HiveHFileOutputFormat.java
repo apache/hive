@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -27,7 +27,7 @@ import java.util.Properties;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -35,13 +35,14 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.Cell;
-import org.apache.hadoop.hbase.CellComparator;
+import org.apache.hadoop.hbase.CellComparatorImpl;
 import org.apache.hadoop.hbase.KeyValue;
 import org.apache.hadoop.hbase.KeyValueUtil;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
-import org.apache.hadoop.hbase.mapreduce.HFileOutputFormat;
+import org.apache.hadoop.hbase.mapreduce.HFileOutputFormat2;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -60,15 +61,16 @@ import org.apache.hadoop.util.Progressable;
  * for loading a table with a single column family.
  */
 public class HiveHFileOutputFormat extends
-    HFileOutputFormat implements
-    HiveOutputFormat<ImmutableBytesWritable, KeyValue> {
+    HFileOutputFormat2 implements
+    HiveOutputFormat<ImmutableBytesWritable, Cell> {
 
   public static final String HFILE_FAMILY_PATH = "hfile.family.path";
-
+  public static final String OUTPUT_TABLE_NAME_CONF_KEY =
+                      "hbase.mapreduce.hfileoutputformat.table.name";
   static final Logger LOG = LoggerFactory.getLogger(HiveHFileOutputFormat.class.getName());
 
   private
-  org.apache.hadoop.mapreduce.RecordWriter<ImmutableBytesWritable, KeyValue>
+  org.apache.hadoop.mapreduce.RecordWriter<ImmutableBytesWritable, Cell>
   getFileWriter(org.apache.hadoop.mapreduce.TaskAttemptContext tac)
   throws IOException {
     try {
@@ -95,6 +97,16 @@ public class HiveHFileOutputFormat extends
     Properties tableProperties,
     final Progressable progressable) throws IOException {
 
+    String hbaseTableName = jc.get(HBaseSerDe.HBASE_TABLE_NAME);
+    if (hbaseTableName == null) {
+      hbaseTableName = tableProperties.getProperty(hive_metastoreConstants.META_TABLE_NAME);
+      hbaseTableName = hbaseTableName.toLowerCase();
+      if (hbaseTableName.startsWith(HBaseStorageHandler.DEFAULT_PREFIX)) {
+        hbaseTableName = hbaseTableName.substring(HBaseStorageHandler.DEFAULT_PREFIX.length());
+      }
+    }
+    jc.set(OUTPUT_TABLE_NAME_CONF_KEY, hbaseTableName);
+
     // Read configuration for the target path, first from jobconf, then from table properties
     String hfilePath = getFamilyPath(jc, tableProperties);
     if (hfilePath == null) {
@@ -118,7 +130,7 @@ public class HiveHFileOutputFormat extends
     final Path outputdir = FileOutputFormat.getOutputPath(tac);
     final Path taskAttemptOutputdir = new FileOutputCommitter(outputdir, tac).getWorkPath();
     final org.apache.hadoop.mapreduce.RecordWriter<
-      ImmutableBytesWritable, KeyValue> fileWriter = getFileWriter(tac);
+      ImmutableBytesWritable, Cell> fileWriter = getFileWriter(tac);
 
     // Individual columns are going to be pivoted to HBase cells,
     // and for each row, they need to be written out in order
@@ -176,10 +188,6 @@ public class HiveHFileOutputFormat extends
                 columnFamilyPath,
                 regionFile.getPath().getName()));
           }
-          // Hive actually wants a file as task output (not a directory), so
-          // replace the empty directory with an empty file to keep it happy.
-          fs.delete(taskAttemptOutputdir, true);
-          fs.createNewFile(taskAttemptOutputdir);
         } catch (InterruptedException ex) {
           throw new IOException(ex);
         }
@@ -228,7 +236,7 @@ public class HiveHFileOutputFormat extends
         ImmutableBytesWritable row = new ImmutableBytesWritable(put.getPut().getRow());
         SortedMap<byte[], List<Cell>> cells = put.getPut().getFamilyCellMap();
         for (Map.Entry<byte[], List<Cell>> entry : cells.entrySet()) {
-          Collections.sort(entry.getValue(), new CellComparator());
+          Collections.sort(entry.getValue(), new CellComparatorImpl());
           for (Cell c : entry.getValue()) {
             try {
               fileWriter.write(row, KeyValueUtil.copyToNewKeyValue(c));
@@ -262,7 +270,7 @@ public class HiveHFileOutputFormat extends
   }
 
   @Override
-  public org.apache.hadoop.mapred.RecordWriter<ImmutableBytesWritable, KeyValue> getRecordWriter(
+  public org.apache.hadoop.mapred.RecordWriter<ImmutableBytesWritable, Cell> getRecordWriter(
       FileSystem ignored, JobConf job, String name, Progressable progress) throws IOException {
     throw new NotImplementedException("This will not be invoked");
   }

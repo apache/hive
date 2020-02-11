@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -42,6 +42,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.shims.HadoopShims;
 
+import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -239,16 +240,28 @@ public class TestFileUtils {
     FileSystem fs = copySrc.getFileSystem(conf);
 
     String doAsUser = conf.getVar(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER);
+    UserGroupInformation proxyUser = UserGroupInformation.createProxyUser(
+            doAsUser, UserGroupInformation.getLoginUser());
 
     HadoopShims shims = mock(HadoopShims.class);
-    when(shims.runDistCpAs(Collections.singletonList(copySrc), copyDst, conf, doAsUser)).thenReturn(true);
+    when(shims.runDistCpAs(Collections.singletonList(copySrc), copyDst, conf, proxyUser)).thenReturn(true);
     when(shims.runDistCp(Collections.singletonList(copySrc), copyDst, conf)).thenReturn(false);
 
     // doAs when asked
-    Assert.assertTrue(FileUtils.distCp(fs, Collections.singletonList(copySrc), copyDst, true, doAsUser, conf, shims));
-    verify(shims).runDistCpAs(Collections.singletonList(copySrc), copyDst, conf, doAsUser);
+    Assert.assertTrue(FileUtils.distCp(fs, Collections.singletonList(copySrc), copyDst, false, proxyUser, conf, shims));
+    verify(shims).runDistCpAs(Collections.singletonList(copySrc), copyDst, conf, proxyUser);
     // don't doAs when not asked
     Assert.assertFalse(FileUtils.distCp(fs, Collections.singletonList(copySrc), copyDst, true, null, conf, shims));
     verify(shims).runDistCp(Collections.singletonList(copySrc), copyDst, conf);
+
+    // When distcp is done with doAs, the delete should also be done as doAs. But in current code its broken. This
+    // should be fixed. For now check is added to avoid wrong usage. So if doAs is set, delete source should be false.
+    try {
+      FileUtils.distCp(fs, Collections.singletonList(copySrc), copyDst, true, proxyUser, conf, shims);
+      Assert.assertTrue("Should throw IOException as doAs is called with delete source set to true".equals(""));
+    } catch (IOException e) {
+      Assert.assertTrue(e.getMessage().
+              equalsIgnoreCase("Distcp is called with doAsUser and delete source set as true"));
+    }
   }
 }

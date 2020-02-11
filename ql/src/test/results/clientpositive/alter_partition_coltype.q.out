@@ -29,7 +29,6 @@ ts                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 dt                  	string              	                    
 ts                  	string              	                    
 PREHOOK: query: select count(*) from alter_coltype where dt = '100'
@@ -69,8 +68,15 @@ POSTHOOK: Input: default@alter_coltype
 50
 PREHOOK: query: explain extended select count(*) from alter_coltype where dt = '100'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_coltype
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select count(*) from alter_coltype where dt = '100'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_coltype
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
+FROM `default`.`alter_coltype`
+WHERE `dt` = 100
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -116,8 +122,15 @@ POSTHOOK: Input: default@alter_coltype
 25
 PREHOOK: query: explain extended select count(*) from alter_coltype where ts = '6.30'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_coltype
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select count(*) from alter_coltype where ts = '6.30'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_coltype
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
+FROM `default`.`alter_coltype`
+WHERE `ts` = 6.3
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -139,8 +152,15 @@ POSTHOOK: Input: default@alter_coltype
 25
 PREHOOK: query: explain extended select count(*) from alter_coltype where ts = 3.0 and dt=100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_coltype
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select count(*) from alter_coltype where ts = 3.0 and dt=100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_coltype
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
+FROM `default`.`alter_coltype`
+WHERE `ts` = 3.0 AND `dt` = 100
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -215,8 +235,19 @@ POSTHOOK: Input: default@alter_coltype@dt=100/ts=6.30
 		100	6.3
 PREHOOK: query: explain extended select key, value, dt, ts from alter_coltype where dt is not null
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_coltype
+PREHOOK: Input: default@alter_coltype@dt=100/ts=3.0
+PREHOOK: Input: default@alter_coltype@dt=100/ts=6.30
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select key, value, dt, ts from alter_coltype where dt is not null
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_coltype
+POSTHOOK: Input: default@alter_coltype@dt=100/ts=3.0
+POSTHOOK: Input: default@alter_coltype@dt=100/ts=6.30
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `key`, `value`, `dt`, `ts`
+FROM `default`.`alter_coltype`
+WHERE `dt` IS NOT NULL
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -232,7 +263,7 @@ STAGE PLANS:
               dt 100
               ts 3.0
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
               column.name.delimiter ,
               columns key,value
@@ -256,6 +287,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -278,7 +310,7 @@ STAGE PLANS:
               dt 100
               ts 6.30
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
               column.name.delimiter ,
               columns key,value
@@ -302,6 +334,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -320,12 +353,13 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: alter_coltype
-          Statistics: Num rows: 50 Data size: 382 Basic stats: COMPLETE Column stats: NONE
+          filterExpr: dt is not null (type: boolean)
+          Statistics: Num rows: 50 Data size: 18350 Basic stats: COMPLETE Column stats: COMPLETE
           GatherStats: false
           Select Operator
             expressions: key (type: string), value (type: string), dt (type: string), ts (type: double)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 50 Data size: 382 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 50 Data size: 18350 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: select count(*) from alter_coltype where ts = 3.0
@@ -359,7 +393,6 @@ ts                  	double
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 dt                  	string              	                    
 ts                  	double              	                    
 PREHOOK: query: desc alter_coltype partition (dt='100', ts='6.30')
@@ -375,7 +408,6 @@ ts                  	double
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 dt                  	string              	                    
 ts                  	double              	                    
 PREHOOK: query: desc alter_coltype partition (dt='100', ts=3.0)
@@ -391,7 +423,6 @@ ts                  	double
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 dt                  	string              	                    
 ts                  	double              	                    
 PREHOOK: query: drop table alter_coltype
@@ -452,8 +483,17 @@ POSTHOOK: Input: pt@alterdynamic_part_table
 POSTHOOK: Output: pt@alterdynamic_part_table
 PREHOOK: query: explain extended select intcol from pt.alterdynamic_part_table where partcol1='1' and partcol2='1'
 PREHOOK: type: QUERY
+PREHOOK: Input: pt@alterdynamic_part_table
+PREHOOK: Input: pt@alterdynamic_part_table@partcol1=1/partcol2=1
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select intcol from pt.alterdynamic_part_table where partcol1='1' and partcol2='1'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: pt@alterdynamic_part_table
+POSTHOOK: Input: pt@alterdynamic_part_table@partcol1=1/partcol2=1
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `intcol`
+FROM `pt`.`alterdynamic_part_table`
+WHERE `partcol1` = 1 AND `partcol2` = '1'
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -469,7 +509,7 @@ STAGE PLANS:
               partcol1 1
               partcol2 1
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"intcol":"true"}}
               bucket_count -1
               column.name.delimiter ,
               columns intcol
@@ -493,6 +533,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns intcol
                 columns.comments 
@@ -511,18 +552,28 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: alterdynamic_part_table
-          Statistics: Num rows: 2 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+          filterExpr: ((partcol1 = 1) and (partcol2 = '1')) (type: boolean)
+          Statistics: Num rows: 2 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
           GatherStats: false
           Select Operator
             expressions: intcol (type: string)
             outputColumnNames: _col0
-            Statistics: Num rows: 2 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: explain extended select intcol from pt.alterdynamic_part_table where (partcol1='2' and partcol2='1')or (partcol1='1' and partcol2='__HIVE_DEFAULT_PARTITION__')
 PREHOOK: type: QUERY
+PREHOOK: Input: pt@alterdynamic_part_table
+PREHOOK: Input: pt@alterdynamic_part_table@partcol1=2/partcol2=1
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select intcol from pt.alterdynamic_part_table where (partcol1='2' and partcol2='1')or (partcol1='1' and partcol2='__HIVE_DEFAULT_PARTITION__')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: pt@alterdynamic_part_table
+POSTHOOK: Input: pt@alterdynamic_part_table@partcol1=2/partcol2=1
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `intcol`
+FROM `pt`.`alterdynamic_part_table`
+WHERE ROW(`partcol1`, `partcol2`) IN (ROW(2, '1'), ROW(1, '__HIVE_DEFAULT_PARTITION__'))
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -538,7 +589,7 @@ STAGE PLANS:
               partcol1 2
               partcol2 1
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"intcol":"true"}}
               bucket_count -1
               column.name.delimiter ,
               columns intcol
@@ -562,6 +613,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns intcol
                 columns.comments 
@@ -580,12 +632,13 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: alterdynamic_part_table
-          Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
+          filterExpr: (struct(partcol1,partcol2)) IN (const struct(2,'1'), const struct(1,'__HIVE_DEFAULT_PARTITION__')) (type: boolean)
+          Statistics: Num rows: 1 Data size: 85 Basic stats: COMPLETE Column stats: COMPLETE
           GatherStats: false
           Select Operator
             expressions: intcol (type: string)
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 85 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: select intcol from pt.alterdynamic_part_table where (partcol1='2' and partcol2='1')or (partcol1='1' and partcol2='__HIVE_DEFAULT_PARTITION__')

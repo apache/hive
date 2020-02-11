@@ -1,1 +1,1 @@
-FAILED: ParseException line 1:16 cannot recognize input near '(' 'SELECT' 'src' in table name
+FAILED: ParseException line 2:16 cannot recognize input near '(' 'SELECT' 'src' in table name

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -24,7 +24,7 @@ import java.util.Random;
  * A high-performance set implementation used to support fast set membership testing,
  * using Cuckoo hashing. This is used to support fast tests of the form
  *
- *       column IN ( <list-of-values )
+ *       column IN ( list-of-values )
  *
  * For details on the algorithm, see R. Pagh and F. F. Rodler, "Cuckoo Hashing,"
  * Elsevier Science preprint, Dec. 2003. http://www.itu.dk/people/pagh/papers/cuckoo-jour.pdf.

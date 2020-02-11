@@ -158,29 +158,38 @@ VAL_86
 PREHOOK: query: EXPLAIN
 CREATE VIEW view0(valoo) AS SELECT upper(value) FROM src WHERE key=86
 PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@view0
 POSTHOOK: query: EXPLAIN
 CREATE VIEW view0(valoo) AS SELECT upper(value) FROM src WHERE key=86
 POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@view0
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
 
 STAGE PLANS:
   Stage: Stage-1
-      Create View Operator:
-        Create View
-          or replace: false
-          columns: valoo string
-          expanded text: SELECT `_c0` AS `valoo` FROM (SELECT upper(`src`.`value`) FROM `default`.`src` WHERE `src`.`key`=86) `default.view0`
-          name: default.view0
-          original text: SELECT upper(value) FROM src WHERE key=86
-          rewrite enabled: false
+    Create View
+      columns: valoo string
+      expanded text: SELECT `_c0` AS `valoo` FROM (SELECT upper(`src`.`value`) FROM `default`.`src` WHERE `src`.`key`=86) `view0`
+      name: default.view0
+      original text: SELECT upper(value) FROM src WHERE key=86
 
 PREHOOK: query: EXPLAIN
 SELECT * from view2 where key=18
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@view2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * from view2 where key=18
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@view2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -191,23 +200,25 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: (UDFToDouble(key) = 18.0D) (type: boolean)
             properties:
               insideView TRUE
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (UDFToDouble(key) = 18.0) (type: boolean)
-              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              predicate: (UDFToDouble(key) = 18.0D) (type: boolean)
+              Statistics: Num rows: 250 Data size: 44500 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 250 Data size: 44500 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 250 Data size: 44500 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -221,6 +232,13 @@ PREHOOK: Input: database:default
 POSTHOOK: query: SHOW TABLES 'view.*'
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
+view1
+view2
+view3
+PREHOOK: query: SHOW VIEWS 'view.*'
+PREHOOK: type: SHOWVIEWS
+POSTHOOK: query: SHOW VIEWS 'view.*'
+POSTHOOK: type: SHOWVIEWS
 view1
 view2
 view3
@@ -247,7 +265,6 @@ POSTHOOK: query: DESCRIBE FORMATTED view1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@view1
 # col_name            	data_type           	comment             
-	 	 
 value               	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -256,6 +273,7 @@ Database:           	default
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -268,9 +286,8 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	SELECT value FROM src WHERE key=86	 
-View Expanded Text: 	SELECT `src`.`value` FROM `default`.`src` WHERE `src`.`key`=86	 
-View Rewrite Enabled:	No                  	 
+Original Query:     	SELECT value FROM src WHERE key=86	 
+Expanded Query:     	SELECT `src`.`value` FROM `default`.`src` WHERE `src`.`key`=86	 
 PREHOOK: query: DESCRIBE view2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@view2
@@ -296,7 +313,6 @@ POSTHOOK: query: DESCRIBE FORMATTED view2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@view2
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -306,6 +322,7 @@ Database:           	default
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -318,9 +335,8 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	SELECT * FROM src   	 
-View Expanded Text: 	SELECT `src`.`key`, `src`.`value` FROM `default`.`src`	 
-View Rewrite Enabled:	No                  	 
+Original Query:     	SELECT * FROM src   	 
+Expanded Query:     	SELECT `src`.`key`, `src`.`value` FROM `default`.`src`	 
 PREHOOK: query: DESCRIBE view3
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@view3
@@ -344,7 +360,6 @@ POSTHOOK: query: DESCRIBE FORMATTED view3
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@view3
 # col_name            	data_type           	comment             
-	 	 
 valoo               	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -353,6 +368,7 @@ Database:           	default
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 	fear                	factor              
 #### A masked pattern was here ####
 	 	 
@@ -366,9 +382,8 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	SELECT upper(value) FROM src WHERE key=86	 
-View Expanded Text: 	SELECT `_c0` AS `valoo` FROM (SELECT upper(`src`.`value`) FROM `default`.`src` WHERE `src`.`key`=86) `default.view3`	 
-View Rewrite Enabled:	No                  	 
+Original Query:     	SELECT upper(value) FROM src WHERE key=86	 
+Expanded Query:     	SELECT `_c0` AS `valoo` FROM (SELECT upper(`src`.`value`) FROM `default`.`src` WHERE `src`.`key`=86) `view3`	 
 PREHOOK: query: ALTER VIEW view3 SET TBLPROPERTIES ("biggest" = "loser")
 PREHOOK: type: ALTERVIEW_PROPERTIES
 PREHOOK: Input: default@view3
@@ -393,7 +408,6 @@ POSTHOOK: query: DESCRIBE FORMATTED view3
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@view3
 # col_name            	data_type           	comment             
-	 	 
 valoo               	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -403,6 +417,7 @@ Retention:          	0
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
 	biggest             	loser               
+	bucketing_version   	2                   
 	fear                	factor              
 #### A masked pattern was here ####
 	 	 
@@ -416,23 +431,22 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	SELECT upper(value) FROM src WHERE key=86	 
-View Expanded Text: 	SELECT `_c0` AS `valoo` FROM (SELECT upper(`src`.`value`) FROM `default`.`src` WHERE `src`.`key`=86) `default.view3`	 
-View Rewrite Enabled:	No                  	 
-PREHOOK: query: CREATE TABLE table1 (key int)
+Original Query:     	SELECT upper(value) FROM src WHERE key=86	 
+Expanded Query:     	SELECT `_c0` AS `valoo` FROM (SELECT upper(`src`.`value`) FROM `default`.`src` WHERE `src`.`key`=86) `view3`	 
+PREHOOK: query: CREATE TABLE table1_n4 (key int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@table1
-POSTHOOK: query: CREATE TABLE table1 (key int)
+PREHOOK: Output: default@table1_n4
+POSTHOOK: query: CREATE TABLE table1_n4 (key int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@table1
-PREHOOK: query: DESCRIBE EXTENDED table1
+POSTHOOK: Output: default@table1_n4
+PREHOOK: query: DESCRIBE EXTENDED table1_n4
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table1
-POSTHOOK: query: DESCRIBE EXTENDED table1
+PREHOOK: Input: default@table1_n4
+POSTHOOK: query: DESCRIBE EXTENDED table1_n4
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1_n4
 key                 	int                 	                    
 	 	 
 #### A masked pattern was here ####
@@ -446,52 +460,52 @@ key                 	string              	default
 value               	string              	default             
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: DESCRIBE EXTENDED table1
+PREHOOK: query: DESCRIBE EXTENDED table1_n4
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table1
-POSTHOOK: query: DESCRIBE EXTENDED table1
+PREHOOK: Input: default@table1_n4
+POSTHOOK: query: DESCRIBE EXTENDED table1_n4
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1_n4
 key                 	int                 	                    
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: INSERT OVERWRITE TABLE table1 SELECT key FROM src WHERE key = 86
+PREHOOK: query: INSERT OVERWRITE TABLE table1_n4 SELECT key FROM src WHERE key = 86
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@table1
-POSTHOOK: query: INSERT OVERWRITE TABLE table1 SELECT key FROM src WHERE key = 86
+PREHOOK: Output: default@table1_n4
+POSTHOOK: query: INSERT OVERWRITE TABLE table1_n4 SELECT key FROM src WHERE key = 86
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@table1
-POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: SELECT * FROM table1
+POSTHOOK: Output: default@table1_n4
+POSTHOOK: Lineage: table1_n4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: SELECT * FROM table1_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table1
+PREHOOK: Input: default@table1_n4
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM table1
+POSTHOOK: query: SELECT * FROM table1_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1_n4
 #### A masked pattern was here ####
 86
-PREHOOK: query: CREATE VIEW view4 AS SELECT * FROM table1
+PREHOOK: query: CREATE VIEW view4 AS SELECT * FROM table1_n4
 PREHOOK: type: CREATEVIEW
-PREHOOK: Input: default@table1
+PREHOOK: Input: default@table1_n4
 PREHOOK: Output: database:default
 PREHOOK: Output: default@view4
-POSTHOOK: query: CREATE VIEW view4 AS SELECT * FROM table1
+POSTHOOK: query: CREATE VIEW view4 AS SELECT * FROM table1_n4
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1_n4
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view4
-POSTHOOK: Lineage: view4.key SIMPLE [(table1)table1.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: view4.key SIMPLE [(table1_n4)table1_n4.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: SELECT * FROM view4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table1
+PREHOOK: Input: default@table1_n4
 PREHOOK: Input: default@view4
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM view4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1_n4
 POSTHOOK: Input: default@view4
 #### A masked pattern was here ####
 86
@@ -502,40 +516,40 @@ POSTHOOK: query: DESCRIBE view4
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@view4
 key                 	int                 	                    
-PREHOOK: query: ALTER TABLE table1 ADD COLUMNS (value STRING)
+PREHOOK: query: ALTER TABLE table1_n4 ADD COLUMNS (value STRING)
 PREHOOK: type: ALTERTABLE_ADDCOLS
-PREHOOK: Input: default@table1
-PREHOOK: Output: default@table1
-POSTHOOK: query: ALTER TABLE table1 ADD COLUMNS (value STRING)
+PREHOOK: Input: default@table1_n4
+PREHOOK: Output: default@table1_n4
+POSTHOOK: query: ALTER TABLE table1_n4 ADD COLUMNS (value STRING)
 POSTHOOK: type: ALTERTABLE_ADDCOLS
-POSTHOOK: Input: default@table1
-POSTHOOK: Output: default@table1
-PREHOOK: query: SELECT * FROM table1
+POSTHOOK: Input: default@table1_n4
+POSTHOOK: Output: default@table1_n4
+PREHOOK: query: SELECT * FROM table1_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table1
+PREHOOK: Input: default@table1_n4
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM table1
+POSTHOOK: query: SELECT * FROM table1_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1_n4
 #### A masked pattern was here ####
 86	NULL
 PREHOOK: query: SELECT * FROM view4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table1
+PREHOOK: Input: default@table1_n4
 PREHOOK: Input: default@view4
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM view4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1_n4
 POSTHOOK: Input: default@view4
 #### A masked pattern was here ####
 86
-PREHOOK: query: DESCRIBE table1
+PREHOOK: query: DESCRIBE table1_n4
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table1
-POSTHOOK: query: DESCRIBE table1
+PREHOOK: Input: default@table1_n4
+POSTHOOK: query: DESCRIBE table1_n4
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1_n4
 key                 	int                 	                    
 value               	string              	                    
 PREHOOK: query: DESCRIBE view4
@@ -548,29 +562,29 @@ key                 	int
 PREHOOK: query: CREATE VIEW view5 AS SELECT v1.key as key1, v2.key as key2
 FROM view4 v1 join view4 v2
 PREHOOK: type: CREATEVIEW
-PREHOOK: Input: default@table1
+PREHOOK: Input: default@table1_n4
 PREHOOK: Input: default@view4
 PREHOOK: Output: database:default
 PREHOOK: Output: default@view5
 POSTHOOK: query: CREATE VIEW view5 AS SELECT v1.key as key1, v2.key as key2
 FROM view4 v1 join view4 v2
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1_n4
 POSTHOOK: Input: default@view4
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view5
-POSTHOOK: Lineage: view5.key1 SIMPLE [(table1)table1.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: view5.key2 SIMPLE [(table1)table1.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: view5.key1 SIMPLE [(table1_n4)table1_n4.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: view5.key2 SIMPLE [(table1_n4)table1_n4.FieldSchema(name:key, type:int, comment:null), ]
 Warning: Shuffle Join JOIN[6][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: SELECT * FROM view5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table1
+PREHOOK: Input: default@table1_n4
 PREHOOK: Input: default@view4
 PREHOOK: Input: default@view5
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM view5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1_n4
 POSTHOOK: Input: default@view4
 POSTHOOK: Input: default@view5
 #### A masked pattern was here ####
@@ -708,16 +722,16 @@ POSTHOOK: type: CREATEFUNCTION
 POSTHOOK: Output: test_translate
 PREHOOK: query: CREATE VIEW view8(c) AS
 SELECT test_translate('abc', 'a', 'b')
-FROM table1
+FROM table1_n4
 PREHOOK: type: CREATEVIEW
-PREHOOK: Input: default@table1
+PREHOOK: Input: default@table1_n4
 PREHOOK: Output: database:default
 PREHOOK: Output: default@view8
 POSTHOOK: query: CREATE VIEW view8(c) AS
 SELECT test_translate('abc', 'a', 'b')
-FROM table1
+FROM table1_n4
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1_n4
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view8
 POSTHOOK: Lineage: view8.c SIMPLE []
@@ -730,8 +744,6 @@ POSTHOOK: Input: default@view8
 c                   	string              	                    
 	 	 
 #### A masked pattern was here ####
-FROM table1, viewExpandedText:SELECT `_c0` AS `c` FROM (SELECT `test_translate`('abc', 'a', 'b')	 	 
-FROM `default`.`table1`) `default.view8`, tableType:VIRTUAL_VIEW, rewriteEnabled:false)		 
 PREHOOK: query: DESCRIBE FORMATTED view8
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@view8
@@ -739,7 +751,6 @@ POSTHOOK: query: DESCRIBE FORMATTED view8
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@view8
 # col_name            	data_type           	comment             
-	 	 
 c                   	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -748,6 +759,7 @@ Database:           	default
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -760,19 +772,18 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	SELECT test_translate('abc', 'a', 'b')	 
-	                    	FROM table1         
-View Expanded Text: 	SELECT `_c0` AS `c` FROM (SELECT `test_translate`('abc', 'a', 'b')	 
-	                    	FROM `default`.`table1`) `default.view8`
-View Rewrite Enabled:	No                  	 
+Original Query:     	SELECT test_translate('abc', 'a', 'b')	 
+	                    	FROM table1_n4      
+Expanded Query:     	SELECT `_c0` AS `c` FROM (SELECT `test_translate`('abc', 'a', 'b')	 
+	                    	FROM `default`.`table1_n4`) `view8`
 PREHOOK: query: SELECT * FROM view8
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table1
+PREHOOK: Input: default@table1_n4
 PREHOOK: Input: default@view8
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM view8
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1_n4
 POSTHOOK: Input: default@view8
 #### A masked pattern was here ####
 bbc
@@ -808,8 +819,6 @@ POSTHOOK: Input: default@view9
 m                   	int                 	                    
 	 	 
 #### A masked pattern was here ####
-FROM src, viewExpandedText:SELECT `_c0` AS `m` FROM (SELECT `test_max`(length(`src`.`value`))	 	 
-FROM `default`.`src`) `default.view9`, tableType:VIRTUAL_VIEW, rewriteEnabled:false)		 
 PREHOOK: query: DESCRIBE FORMATTED view9
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@view9
@@ -817,7 +826,6 @@ POSTHOOK: query: DESCRIBE FORMATTED view9
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@view9
 # col_name            	data_type           	comment             
-	 	 
 m                   	int                 	                    
 	 	 
 # Detailed Table Information	 	 
@@ -826,6 +834,7 @@ Database:           	default
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -838,11 +847,10 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	SELECT test_max(length(value))	 
+Original Query:     	SELECT test_max(length(value))	 
 	                    	FROM src            
-View Expanded Text: 	SELECT `_c0` AS `m` FROM (SELECT `test_max`(length(`src`.`value`))	 
-	                    	FROM `default`.`src`) `default.view9`
-View Rewrite Enabled:	No                  	 
+Expanded Query:     	SELECT `_c0` AS `m` FROM (SELECT `test_max`(length(`src`.`value`))	 
+	                    	FROM `default`.`src`) `view9`
 PREHOOK: query: SELECT * FROM view9
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -886,8 +894,6 @@ POSTHOOK: Input: default@view9
 m                   	int                 	                    
 	 	 
 #### A masked pattern was here ####
-FROM src, viewExpandedText:SELECT `_c0` AS `m` FROM (SELECT `test_max`(length(`src`.`value`))	 	 
-FROM `default`.`src`) `default.view9`, tableType:VIRTUAL_VIEW, rewriteEnabled:false)		 
 PREHOOK: query: DESCRIBE FORMATTED view9
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@view9
@@ -895,7 +901,6 @@ POSTHOOK: query: DESCRIBE FORMATTED view9
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@view9
 # col_name            	data_type           	comment             
-	 	 
 m                   	int                 	                    
 	 	 
 # Detailed Table Information	 	 
@@ -904,6 +909,7 @@ Database:           	default
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -916,11 +922,10 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	SELECT test_max(length(value))	 
+Original Query:     	SELECT test_max(length(value))	 
 	                    	FROM src            
-View Expanded Text: 	SELECT `_c0` AS `m` FROM (SELECT `test_max`(length(`src`.`value`))	 
-	                    	FROM `default`.`src`) `default.view9`
-View Rewrite Enabled:	No                  	 
+Expanded Query:     	SELECT `_c0` AS `m` FROM (SELECT `test_max`(length(`src`.`value`))	 
+	                    	FROM `default`.`src`) `view9`
 PREHOOK: query: SELECT * FROM view9
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -963,7 +968,6 @@ POSTHOOK: query: DESCRIBE FORMATTED view10
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@view10
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -973,6 +977,7 @@ Database:           	default
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -985,9 +990,8 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	SELECT slurp.* FROM (SELECT * FROM src WHERE key=86) slurp	 
-View Expanded Text: 	SELECT `slurp`.`key`, `slurp`.`value` FROM (SELECT `src`.`key`, `src`.`value` FROM `default`.`src` WHERE `src`.`key`=86) `slurp`	 
-View Rewrite Enabled:	No                  	 
+Original Query:     	SELECT slurp.* FROM (SELECT * FROM src WHERE key=86) slurp	 
+Expanded Query:     	SELECT `slurp`.`key`, `slurp`.`value` FROM (SELECT `src`.`key`, `src`.`value` FROM `default`.`src` WHERE `src`.`key`=86) `slurp`	 
 PREHOOK: query: SELECT * FROM view10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -1009,16 +1013,16 @@ POSTHOOK: type: CREATEFUNCTION
 POSTHOOK: Output: test_explode
 PREHOOK: query: CREATE VIEW view11 AS
 SELECT test_explode(array(1,2,3)) AS (boom)
-FROM table1
+FROM table1_n4
 PREHOOK: type: CREATEVIEW
-PREHOOK: Input: default@table1
+PREHOOK: Input: default@table1_n4
 PREHOOK: Output: database:default
 PREHOOK: Output: default@view11
 POSTHOOK: query: CREATE VIEW view11 AS
 SELECT test_explode(array(1,2,3)) AS (boom)
-FROM table1
+FROM table1_n4
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1_n4
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view11
 POSTHOOK: Lineage: view11.boom SCRIPT []
@@ -1031,8 +1035,6 @@ POSTHOOK: Input: default@view11
 boom                	int                 	                    
 	 	 
 #### A masked pattern was here ####
-FROM table1, viewExpandedText:SELECT `test_explode`(array(1,2,3)) AS (`boom`)	 	 
-FROM `default`.`table1`, tableType:VIRTUAL_VIEW, rewriteEnabled:false)		 
 PREHOOK: query: DESCRIBE FORMATTED view11
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@view11
@@ -1040,7 +1042,6 @@ POSTHOOK: query: DESCRIBE FORMATTED view11
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@view11
 # col_name            	data_type           	comment             
-	 	 
 boom                	int                 	                    
 	 	 
 # Detailed Table Information	 	 
@@ -1049,6 +1050,7 @@ Database:           	default
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1061,19 +1063,18 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	SELECT test_explode(array(1,2,3)) AS (boom)	 
-	                    	FROM table1         
-View Expanded Text: 	SELECT `test_explode`(array(1,2,3)) AS (`boom`)	 
-	                    	FROM `default`.`table1`
-View Rewrite Enabled:	No                  	 
+Original Query:     	SELECT test_explode(array(1,2,3)) AS (boom)	 
+	                    	FROM table1_n4      
+Expanded Query:     	SELECT `test_explode`(array(1,2,3)) AS (`boom`)	 
+	                    	FROM `default`.`table1_n4`
 PREHOOK: query: SELECT * FROM view11
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table1
+PREHOOK: Input: default@table1_n4
 PREHOOK: Input: default@view11
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM view11
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1_n4
 POSTHOOK: Input: default@view11
 #### A masked pattern was here ####
 1
@@ -1112,7 +1113,6 @@ POSTHOOK: query: DESCRIBE FORMATTED view12
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@view12
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 mycol               	int                 	                    
@@ -1123,6 +1123,7 @@ Database:           	default
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1135,9 +1136,8 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol	 
-View Expanded Text: 	SELECT `src`.`key`, `src`.`value`, `mytable`.`mycol` FROM `default`.`src` LATERAL VIEW explode(array(1,2,3)) `myTable` AS `myCol`	 
-View Rewrite Enabled:	No                  	 
+Original Query:     	SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol	 
+Expanded Query:     	SELECT `src`.`key`, `src`.`value`, `mytable`.`mycol` FROM `default`.`src` LATERAL VIEW explode(array(1,2,3)) `myTable` AS `myCol`	 
 PREHOOK: query: SELECT * FROM view12
 ORDER BY key ASC, myCol ASC LIMIT 1
 PREHOOK: type: QUERY
@@ -1188,8 +1188,6 @@ POSTHOOK: Input: default@view13
 key                 	int                 	                    
 	 	 
 #### A masked pattern was here ####
-FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 ON key) s, viewExpandedText:SELECT `s`.`key`	 	 
-FROM `default`.`srcbucket` TABLESAMPLE (BUCKET 1 OUT OF 5 ON `key`) `s`, tableType:VIRTUAL_VIEW, rewriteEnabled:false)		 
 PREHOOK: query: DESCRIBE FORMATTED view13
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@view13
@@ -1197,7 +1195,6 @@ POSTHOOK: query: DESCRIBE FORMATTED view13
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@view13
 # col_name            	data_type           	comment             
-	 	 
 key                 	int                 	                    
 	 	 
 # Detailed Table Information	 	 
@@ -1206,6 +1203,7 @@ Database:           	default
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1218,11 +1216,10 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	SELECT s.key        	 
+Original Query:     	SELECT s.key        	 
 	                    	FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 ON key) s
-View Expanded Text: 	SELECT `s`.`key`    	 
+Expanded Query:     	SELECT `s`.`key`    	 
 	                    	FROM `default`.`srcbucket` TABLESAMPLE (BUCKET 1 OUT OF 5 ON `key`) `s`
-View Rewrite Enabled:	No                  	 
 PREHOOK: query: SELECT * FROM view13
 ORDER BY key LIMIT 12
 PREHOOK: type: QUERY
@@ -1235,18 +1232,18 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket
 POSTHOOK: Input: default@view13
 #### A masked pattern was here ####
-0
-0
-0
-0
-0
-5
-5
-5
-5
-10
-10
-15
+1
+8
+8
+16
+16
+18
+18
+21
+21
+21
+21
+24
 PREHOOK: query: CREATE VIEW view14 AS
 SELECT unionsrc1.key as k1, unionsrc1.value as v1,
        unionsrc2.key as k2, unionsrc2.value as v2
@@ -1293,24 +1290,6 @@ k2                  	string
 v2                  	string              	                    
 	 	 
 #### A masked pattern was here ####
-       unionsrc2.key as k2, unionsrc2.value as v2	 	 
-FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1	 	 
-                         UNION  ALL	 	 
-      select s2.key as key, s2.value as value from src s2 where s2.key < 10) unionsrc1	 	 
-JOIN	 	 
-     (select 'tst1' as key, cast(count(1) as string) as value from src s3	 	 
-                         UNION  ALL	 	 
-      select s4.key as key, s4.value as value from src s4 where s4.key < 10) unionsrc2	 	 
-ON (unionsrc1.key = unionsrc2.key), viewExpandedText:SELECT `unionsrc1`.`key` as `k1`, `unionsrc1`.`value` as `v1`,	 	 
-       `unionsrc2`.`key` as `k2`, `unionsrc2`.`value` as `v2`	 	 
-FROM (select 'tst1' as `key`, cast(count(1) as string) as `value` from `default`.`src` `s1`	 	 
-                         UNION  ALL	 	 
-      select `s2`.`key` as `key`, `s2`.`value` as `value` from `default`.`src` `s2` where `s2`.`key` < 10) `unionsrc1`	 	 
-JOIN	 	 
-     (select 'tst1' as `key`, cast(count(1) as string) as `value` from `default`.`src` `s3`	 	 
-                         UNION  ALL	 	 
-      select `s4`.`key` as `key`, `s4`.`value` as `value` from `default`.`src` `s4` where `s4`.`key` < 10) `unionsrc2`	 	 
-ON (`unionsrc1`.`key` = `unionsrc2`.`key`), tableType:VIRTUAL_VIEW, rewriteEnabled:false)		 
 PREHOOK: query: DESCRIBE FORMATTED view14
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@view14
@@ -1318,7 +1297,6 @@ POSTHOOK: query: DESCRIBE FORMATTED view14
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@view14
 # col_name            	data_type           	comment             
-	 	 
 k1                  	string              	                    
 v1                  	string              	                    
 k2                  	string              	                    
@@ -1330,6 +1308,7 @@ Database:           	default
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1342,7 +1321,7 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	SELECT unionsrc1.key as k1, unionsrc1.value as v1,	 
+Original Query:     	SELECT unionsrc1.key as k1, unionsrc1.value as v1,	 
 	                    	       unionsrc2.key as k2, unionsrc2.value as v2
 	                    	FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
 	                    	                         UNION  ALL
@@ -1352,7 +1331,7 @@ View Original Text: 	SELECT unionsrc1.key as k1, unionsrc1.value as v1,
 	                    	                         UNION  ALL
 	                    	      select s4.key as key, s4.value as value from src s4 where s4.key < 10) unionsrc2
 	                    	ON (unionsrc1.key = unionsrc2.key)
-View Expanded Text: 	SELECT `unionsrc1`.`key` as `k1`, `unionsrc1`.`value` as `v1`,	 
+Expanded Query:     	SELECT `unionsrc1`.`key` as `k1`, `unionsrc1`.`value` as `v1`,	 
 	                    	       `unionsrc2`.`key` as `k2`, `unionsrc2`.`value` as `v2`
 	                    	FROM (select 'tst1' as `key`, cast(count(1) as string) as `value` from `default`.`src` `s1`
 	                    	                         UNION  ALL
@@ -1362,7 +1341,6 @@ View Expanded Text: 	SELECT `unionsrc1`.`key` as `k1`, `unionsrc1`.`value` as `v
 	                    	                         UNION  ALL
 	                    	      select `s4`.`key` as `key`, `s4`.`value` as `value` from `default`.`src` `s4` where `s4`.`key` < 10) `unionsrc2`
 	                    	ON (`unionsrc1`.`key` = `unionsrc2`.`key`)
-View Rewrite Enabled:	No                  	 
 PREHOOK: query: SELECT * FROM view14
 ORDER BY k1
 PREHOOK: type: QUERY
@@ -1426,10 +1404,6 @@ key                 	string
 value_count         	bigint              	                    
 	 	 
 #### A masked pattern was here ####
-FROM src	 	 
-GROUP BY key, viewExpandedText:SELECT `src`.`key`,COUNT(`src`.`value`) AS `value_count`	 	 
-FROM `default`.`src`	 	 
-GROUP BY `src`.`key`, tableType:VIRTUAL_VIEW, rewriteEnabled:false)		 
 PREHOOK: query: DESCRIBE FORMATTED view15
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@view15
@@ -1437,7 +1411,6 @@ POSTHOOK: query: DESCRIBE FORMATTED view15
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@view15
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value_count         	bigint              	                    
 	 	 
@@ -1447,6 +1420,7 @@ Database:           	default
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1459,13 +1433,12 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	SELECT key,COUNT(value) AS value_count	 
+Original Query:     	SELECT key,COUNT(value) AS value_count	 
 	                    	FROM src            
 	                    	GROUP BY key        
-View Expanded Text: 	SELECT `src`.`key`,COUNT(`src`.`value`) AS `value_count`	 
+Expanded Query:     	SELECT `src`.`key`,COUNT(`src`.`value`) AS `value_count`	 
 	                    	FROM `default`.`src`
 	                    	GROUP BY `src`.`key`
-View Rewrite Enabled:	No                  	 
 PREHOOK: query: SELECT * FROM view15
 ORDER BY value_count DESC, key
 LIMIT 10
@@ -1514,8 +1487,6 @@ POSTHOOK: Input: default@view16
 value               	string              	                    
 	 	 
 #### A masked pattern was here ####
-FROM src, viewExpandedText:SELECT DISTINCT `src`.`value`	 	 
-FROM `default`.`src`, tableType:VIRTUAL_VIEW, rewriteEnabled:false)		 
 PREHOOK: query: DESCRIBE FORMATTED view16
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@view16
@@ -1523,7 +1494,6 @@ POSTHOOK: query: DESCRIBE FORMATTED view16
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@view16
 # col_name            	data_type           	comment             
-	 	 
 value               	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -1532,6 +1502,7 @@ Database:           	default
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1544,11 +1515,10 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	SELECT DISTINCT value	 
+Original Query:     	SELECT DISTINCT value	 
 	                    	FROM src            
-View Expanded Text: 	SELECT DISTINCT `src`.`value`	 
+Expanded Query:     	SELECT DISTINCT `src`.`value`	 
 	                    	FROM `default`.`src`
-View Rewrite Enabled:	No                  	 
 PREHOOK: query: SELECT * FROM view16
 ORDER BY value
 LIMIT 10
@@ -1588,22 +1558,100 @@ POSTHOOK: query: DESCRIBE view16
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@view16
 value               	string              	                    
-PREHOOK: query: DROP VIEW IF EXISTS table1
+PREHOOK: query: DROP VIEW IF EXISTS table1_n4
 PREHOOK: type: DROPVIEW
-PREHOOK: Input: default@table1
-PREHOOK: Output: default@table1
-POSTHOOK: query: DROP VIEW IF EXISTS table1
+PREHOOK: Input: default@table1_n4
+PREHOOK: Output: default@table1_n4
+POSTHOOK: query: DROP VIEW IF EXISTS table1_n4
 POSTHOOK: type: DROPVIEW
-POSTHOOK: Input: default@table1
-POSTHOOK: Output: default@table1
-PREHOOK: query: DESCRIBE table1
+POSTHOOK: Input: default@table1_n4
+POSTHOOK: Output: default@table1_n4
+PREHOOK: query: DESCRIBE table1_n4
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table1
-POSTHOOK: query: DESCRIBE table1
+PREHOOK: Input: default@table1_n4
+POSTHOOK: query: DESCRIBE table1_n4
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1_n4
 key                 	int                 	                    
 value               	string              	                    
+PREHOOK: query: create view view17 as select 1 as v
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@view17
+POSTHOOK: query: create view view17 as select 1 as v
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@view17
+POSTHOOK: Lineage: view17.v SIMPLE []
+PREHOOK: query: select * from view17
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Input: default@view17
+#### A masked pattern was here ####
+POSTHOOK: query: select * from view17
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Input: default@view17
+#### A masked pattern was here ####
+1
+PREHOOK: query: create view view18 as select v+1 from (select 1 as v) t
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@view18
+POSTHOOK: query: create view view18 as select v+1 from (select 1 as v) t
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@view18
+POSTHOOK: Lineage: view18._c0 SIMPLE []
+PREHOOK: query: select * from view18
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Input: default@view18
+#### A masked pattern was here ####
+POSTHOOK: query: select * from view18
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Input: default@view18
+#### A masked pattern was here ####
+2
+PREHOOK: query: create view if not exists view18 as select "should be ignored"
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@view18
+POSTHOOK: query: create view if not exists view18 as select "should be ignored"
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@view18
+PREHOOK: query: show create table view18
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@view18
+POSTHOOK: query: show create table view18
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@view18
+CREATE VIEW `view18` AS select `t`.`v`+1 from (select 1 as `v`) `t`
+PREHOOK: query: create or replace view view18 as select "should replace"
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@view18
+POSTHOOK: query: create or replace view view18 as select "should replace"
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@view18
+PREHOOK: query: show create table view18
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@view18
+POSTHOOK: query: show create table view18
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@view18
+CREATE VIEW `view18` AS select "should replace"
 PREHOOK: query: DROP VIEW view1
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: default@view1
@@ -1732,6 +1780,22 @@ POSTHOOK: query: DROP VIEW view16
 POSTHOOK: type: DROPVIEW
 POSTHOOK: Input: default@view16
 POSTHOOK: Output: default@view16
+PREHOOK: query: DROP VIEW view17
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@view17
+PREHOOK: Output: default@view17
+POSTHOOK: query: DROP VIEW view17
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@view17
+POSTHOOK: Output: default@view17
+PREHOOK: query: DROP VIEW view18
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@view18
+PREHOOK: Output: default@view18
+POSTHOOK: query: DROP VIEW view18
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@view18
+POSTHOOK: Output: default@view18
 PREHOOK: query: DROP TEMPORARY FUNCTION test_translate
 PREHOOK: type: DROPFUNCTION
 PREHOOK: Output: test_translate

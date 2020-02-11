@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,11 +17,13 @@
  */
 package org.apache.hadoop.hive.ql.io;
 
+import org.apache.hadoop.conf.Configuration;
+
 /**
  * Split that is aware that it could be executed in LLAP. Allows LlapInputFormat to do
  * a last-minute check to see of LLAP IO pipeline should be used for this particular split.
  * By default, there is no such check - whatever is sent in is attempted with LLAP IO.
  */
 public interface LlapAwareSplit {
-  boolean canUseLlapIo();
+  boolean canUseLlapIo(Configuration conf);
 }

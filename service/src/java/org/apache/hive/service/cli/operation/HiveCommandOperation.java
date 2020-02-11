@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -24,18 +24,17 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.CharEncoding;
+import org.apache.hadoop.hive.common.io.SessionStream;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
-import org.apache.hadoop.hive.ql.session.OperationLog;
-import org.apache.hadoop.hive.ql.session.OperationLog.LoggingLevel;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.service.ServiceUtils;
 import org.apache.hive.service.cli.FetchOrientation;
@@ -52,7 +51,6 @@ import org.apache.hive.service.cli.session.HiveSession;
 public class HiveCommandOperation extends ExecuteStatementOperation {
   private final CommandProcessor commandProcessor;
   private TableSchema resultSchema = null;
-  private boolean closeSessionStreams = true; // Only close file based streams, not System.out and System.err.
 
   /**
    * For processors other than Hive queries (Driver), they output to session.out (a temp file)
@@ -73,21 +71,24 @@ public class HiveCommandOperation extends ExecuteStatementOperation {
           + " and error output to file " + sessionState.getTmpErrOutputFile().toString());
       sessionState.in = null; // hive server's session input stream is not used
       // open a per-session file in auto-flush mode for writing temp results and tmp error output
-      sessionState.out =
-          new PrintStream(new FileOutputStream(sessionState.getTmpOutputFile()), true, CharEncoding.UTF_8);
-      sessionState.err =
-          new PrintStream(new FileOutputStream(sessionState.getTmpErrOutputFile()), true,CharEncoding.UTF_8);
+      sessionState.out = new SessionStream(
+          new FileOutputStream(sessionState.getTmpOutputFile()), true,
+          StandardCharsets.UTF_8.name());
+      sessionState.err = new SessionStream(
+          new FileOutputStream(sessionState.getTmpErrOutputFile()), true,
+          StandardCharsets.UTF_8.name());
     } catch (IOException e) {
       LOG.error("Error in creating temp output file ", e);
 
       // Close file streams to avoid resource leaking
       ServiceUtils.cleanup(LOG, parentSession.getSessionState().out, parentSession.getSessionState().err);
-      closeSessionStreams = false;
 
       try {
         sessionState.in = null;
-        sessionState.out = new PrintStream(System.out, true, CharEncoding.UTF_8);
-        sessionState.err = new PrintStream(System.err, true, CharEncoding.UTF_8);
+        sessionState.out =
+            new SessionStream(System.out, true, StandardCharsets.UTF_8.name());
+        sessionState.err =
+            new SessionStream(System.err, true, StandardCharsets.UTF_8.name());
       } catch (UnsupportedEncodingException ee) {
         LOG.error("Error creating PrintStream", e);
         ee.printStackTrace();
@@ -99,9 +100,7 @@ public class HiveCommandOperation extends ExecuteStatementOperation {
 
 
   private void tearDownSessionIO() {
-    if (closeSessionStreams) {
-      ServiceUtils.cleanup(LOG, parentSession.getSessionState().out, parentSession.getSessionState().err);
-    }
+    ServiceUtils.cleanup(LOG, parentSession.getSessionState().out, parentSession.getSessionState().err);
   }
 
   @Override
@@ -113,10 +112,6 @@ public class HiveCommandOperation extends ExecuteStatementOperation {
       String commandArgs = command.substring(tokens[0].length()).trim();
 
       CommandProcessorResponse response = commandProcessor.run(commandArgs);
-      int returnCode = response.getResponseCode();
-      if (returnCode != 0) {
-        throw toSQLException("Error while processing statement", response);
-      }
       Schema schema = response.getSchema();
       if (schema != null) {
         setHasResultSet(true);
@@ -125,14 +120,12 @@ public class HiveCommandOperation extends ExecuteStatementOperation {
         setHasResultSet(false);
         resultSchema = new TableSchema();
       }
-      if (response.getConsoleMessages() != null) {
-        for (String consoleMsg : response.getConsoleMessages()) {
-          LOG.info(consoleMsg);
-        }
+      if (response.getMessage() != null) {
+        LOG.info(response.getMessage());
       }
-    } catch (HiveSQLException e) {
+    } catch (CommandProcessorException e) {
       setState(OperationState.ERROR);
-      throw e;
+      throw toSQLException("Error while processing statement", e);
     } catch (Exception e) {
       setState(OperationState.ERROR);
       throw new HiveSQLException("Error running query: " + e.toString(), e);
@@ -148,7 +141,7 @@ public class HiveCommandOperation extends ExecuteStatementOperation {
     setState(OperationState.CLOSED);
     tearDownSessionIO();
     cleanTmpFile();
-    cleanupOperationLog();
+    cleanupOperationLog(0);
   }
 
   /* (non-Javadoc)
@@ -171,8 +164,16 @@ public class HiveCommandOperation extends ExecuteStatementOperation {
     List<String> rows = readResults((int) maxRows);
     RowSet rowSet = RowSetFactory.create(resultSchema, getProtocolVersion(), false);
 
-    for (String row : rows) {
-      rowSet.addRow(new String[] { row });
+    // cannot do delimited split for some commands like "dfs -cat" that prints the contents of file which may have
+    // different delimiter. so we will split only when the resultSchema has more than 1 column
+    if (resultSchema != null && resultSchema.getSize() > 1) {
+      for (String row : rows) {
+        rowSet.addRow(row.split("\\t"));
+      }
+    } else {
+      for (String row : rows) {
+        rowSet.addRow(new String[]{row});
+      }
     }
     return rowSet;
   }

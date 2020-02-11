@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,8 +22,8 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.NullUtil;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
  * Compute IF(expr1, expr2, expr3) for 3 input column expressions.
@@ -35,23 +35,35 @@ public class <ClassName> extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private int arg1Column, arg3Column;
-  private <OperandType2> arg2Scalar;
-  private int outputColumn;
+  protected final int arg1Column;
+  protected final <OperandType2> arg2Scalar;
+  protected final int arg3Column;
 
   public <ClassName>(int arg1Column, <OperandType2> arg2Scalar, int arg3Column,
-      int outputColumn) {
+      int outputColumnNum) {
+    super(outputColumnNum);
     this.arg1Column = arg1Column;
     this.arg2Scalar = arg2Scalar;
     this.arg3Column = arg3Column;
-    this.outputColumn = outputColumn;
   }
 
   public <ClassName>() {
+    super();
+
+    // Dummy final assignments.
+    arg1Column = -1;
+    arg2Scalar = 0;
+    arg3Column = -1;
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
+
+    // return immediately if batch is empty
+    final int n = batch.size;
+    if (n == 0) {
+      return;
+    }
 
     if (childExpressions != null) {
       super.evaluateChildren(batch);
@@ -59,23 +71,19 @@ public class <ClassName> extends VectorExpression {
 
     LongColumnVector arg1ColVector = (LongColumnVector) batch.cols[arg1Column];
     <Arg3ColumnVectorType> arg3ColVector = (<Arg3ColumnVectorType>) batch.cols[arg3Column];
-    <OutputColumnVectorType> outputColVector = (<OutputColumnVectorType>) batch.cols[outputColumn];
+    <OutputColumnVectorType> outputColVector = (<OutputColumnVectorType>) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] outputIsNull = outputColVector.isNull;
-    outputColVector.noNulls = arg3ColVector.noNulls; // nulls can only come from arg3 column vector
-    outputColVector.isRepeating = false; // may override later
-    int n = batch.size;
+
+    // We do not need to do a column reset since we are carefully changing the output.
+    outputColVector.isRepeating = false;
+
     long[] vector1 = arg1ColVector.vector;
     <OperandType3>[] vector3 = arg3ColVector.vector;
     <ReturnType>[] outputVector = outputColVector.vector;
 
-    // return immediately if batch is empty
-    if (n == 0) {
-      return;
-    }
-
     if (arg1ColVector.isRepeating) {
-      if (vector1[0] == 1) {
+      if ((arg1ColVector.noNulls || !arg1ColVector.isNull[0]) && vector1[0] == 1) {
         outputColVector.fill(arg2Scalar);
       } else {
         arg3ColVector.copySelected(batch.selectedInUse, sel, n, outputColVector);
@@ -89,18 +97,25 @@ public class <ClassName> extends VectorExpression {
     // for when arg3ColVector is repeating or has no nulls.
     arg3ColVector.flatten(batch.selectedInUse, sel, n);
 
+    /*
+     * Do careful maintenance of NULLs.
+     */
+    outputColVector.noNulls = false;
+
     if (arg1ColVector.noNulls) {
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
           outputVector[i] = (vector1[i] == 1 ? arg2Scalar : vector3[i]);
+          outputIsNull[i] = (vector1[i] == 1 ? false : arg3ColVector.isNull[i]);
         }
       } else {
         for(int i = 0; i != n; i++) {
           outputVector[i] = (vector1[i] == 1 ? arg2Scalar : vector3[i]);
+          outputIsNull[i] = (vector1[i] == 1 ? false : arg3ColVector.isNull[i]);
         }
       }
-    } else /* there are nulls */ {
+    } else /* there are NULLs in the inputColVector */ {
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
@@ -124,46 +139,9 @@ public class <ClassName> extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "<ReturnType>";
-  }
-
-  public int getArg1Column() {
-    return arg1Column;
-  }
-
-  public void setArg1Column(int colNum) {
-    this.arg1Column = colNum;
-  }
-
-  public int getArg3Column() {
-    return arg3Column;
-  }
-
-  public void setArg3Column(int colNum) {
-    this.arg3Column = colNum;
-  }
-
-  public <OperandType2> getArg2Scalar() {
-    return arg2Scalar;
-  }
-
-  public void setArg2Scalar(<OperandType2> value) {
-    this.arg2Scalar = value;
-  }
-
-  public void setOutputColumn(int outputColumn) {
-    this.outputColumn = outputColumn;
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + arg1Column + ", val "+ arg2Scalar + ", col "+ arg3Column;
+    return getColumnParamString(0, arg1Column) + ", val "+ arg2Scalar + ", " +
+        getColumnParamString(2, arg3Column);
   }
 
   @Override

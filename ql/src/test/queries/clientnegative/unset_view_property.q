@@ -1,3 +1,4 @@
+--! qt:dataset:src
 CREATE VIEW testView AS SELECT value FROM src WHERE key=86;
 ALTER VIEW testView SET TBLPROPERTIES ('propA'='100', 'propB'='200');
 SHOW TBLPROPERTIES testView;

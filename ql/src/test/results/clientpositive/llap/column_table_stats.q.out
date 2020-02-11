@@ -25,7 +25,6 @@ POSTHOOK: query: desc formatted s
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@s
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
@@ -36,6 +35,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	0                   
 	rawDataSize         	0                   
@@ -53,13 +53,18 @@ Sort Columns:       	[]
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: explain extended analyze table s compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@s
+PREHOOK: Output: default@s
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended analyze table s compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@s
+POSTHOOK: Output: default@s
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-2 depends on stages: Stage-0
-  Stage-3 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-0
@@ -73,15 +78,16 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s
-                  Statistics: Num rows: 29 Data size: 10672 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                   Statistics Aggregation Key Prefix: default.s/
                   GatherStats: true
                   Select Operator
                     expressions: key (type: string), value (type: string)
                     outputColumnNames: key, value
-                    Statistics: Num rows: 29 Data size: 10672 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 1248 Basic stats: COMPLETE Column stats: NONE
@@ -104,6 +110,7 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 'default','default'
@@ -124,6 +131,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
@@ -176,11 +184,9 @@ STAGE PLANS:
                   MultiFileSpray: false
 
   Stage: Stage-2
-    Stats-Aggr Operator
-      Stats Aggregation Key Prefix: default.s/
-
-  Stage: Stage-3
-    Column Stats Work
+    Stats Work
+      Basic Stats Work:
+          Stats Aggregation Key Prefix: default.s/
       Column Stats Desc:
           Columns: key, value
           Column Types: string, string
@@ -188,12 +194,12 @@ STAGE PLANS:
           Is Table Level Stats: true
 
 PREHOOK: query: analyze table s compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@s
 PREHOOK: Output: default@s
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table s compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@s
 POSTHOOK: Output: default@s
 #### A masked pattern was here ####
@@ -204,7 +210,6 @@ POSTHOOK: query: desc formatted s
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@s
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
@@ -216,6 +221,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	5312                
@@ -277,13 +283,11 @@ POSTHOOK: query: desc formatted spart
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@spart
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -294,6 +298,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 	numFiles            	2                   
 	numPartitions       	2                   
 	numRows             	0                   
@@ -312,13 +317,26 @@ Sort Columns:       	[]
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: explain extended analyze table spart compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@spart
+PREHOOK: Input: default@spart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@spart@ds=2008-04-08/hr=12
+PREHOOK: Output: default@spart
+PREHOOK: Output: default@spart@ds=2008-04-08/hr=11
+PREHOOK: Output: default@spart@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended analyze table spart compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@spart
+POSTHOOK: Input: default@spart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@spart@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@spart
+POSTHOOK: Output: default@spart@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@spart@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-2 depends on stages: Stage-0
-  Stage-3 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-0
@@ -332,25 +350,26 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: spart
-                  Statistics: Num rows: 58 Data size: 53944 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 196 Data size: 257552 Basic stats: PARTIAL Column stats: PARTIAL
                   Statistics Aggregation Key Prefix: default.spart/
                   GatherStats: true
                   Select Operator
                     expressions: key (type: string), value (type: string), ds (type: string), hr (type: string)
                     outputColumnNames: key, value, ds, hr
-                    Statistics: Num rows: 58 Data size: 53944 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 196 Data size: 257552 Basic stats: PARTIAL Column stats: PARTIAL
                     Group By Operator
                       aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
                       keys: ds (type: string), hr (type: string)
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
-                      Statistics: Num rows: 2 Data size: 2496 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 196 Data size: 313792 Basic stats: PARTIAL Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string)
-                        null sort order: aa
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                        Statistics: Num rows: 2 Data size: 2496 Basic stats: COMPLETE Column stats: PARTIAL
+                        Statistics: Num rows: 196 Data size: 313792 Basic stats: PARTIAL Column stats: PARTIAL
                         tag: -1
                         value expressions: _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
                         auto parallelism: true
@@ -391,6 +410,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
@@ -438,6 +458,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
@@ -465,17 +486,17 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string), KEY._col1 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 2 Data size: 2496 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 98 Data size: 155424 Basic stats: PARTIAL Column stats: PARTIAL
                 Select Operator
                   expressions: _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: string), _col1 (type: string)
                   outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics: Num rows: 2 Data size: 2496 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 98 Data size: 155424 Basic stats: PARTIAL Column stats: PARTIAL
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
 #### A masked pattern was here ####
                     NumFilesPerFileSink: 1
-                    Statistics: Num rows: 2 Data size: 2496 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 98 Data size: 155424 Basic stats: PARTIAL Column stats: PARTIAL
 #### A masked pattern was here ####
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -494,11 +515,9 @@ STAGE PLANS:
                     MultiFileSpray: false
 
   Stage: Stage-2
-    Stats-Aggr Operator
-      Stats Aggregation Key Prefix: default.spart/
-
-  Stage: Stage-3
-    Column Stats Work
+    Stats Work
+      Basic Stats Work:
+          Stats Aggregation Key Prefix: default.spart/
       Column Stats Desc:
           Columns: key, value
           Column Types: string, string
@@ -506,7 +525,7 @@ STAGE PLANS:
           Is Table Level Stats: false
 
 PREHOOK: query: analyze table spart compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@spart
 PREHOOK: Input: default@spart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@spart@ds=2008-04-08/hr=12
@@ -515,7 +534,7 @@ PREHOOK: Output: default@spart@ds=2008-04-08/hr=11
 PREHOOK: Output: default@spart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table spart compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@spart
 POSTHOOK: Input: default@spart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@spart@ds=2008-04-08/hr=12
@@ -530,13 +549,11 @@ POSTHOOK: query: desc formatted spart
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@spart
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -548,6 +565,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
 	numFiles            	2                   
 	numPartitions       	2                   
 	numRows             	1000                
@@ -572,13 +590,11 @@ POSTHOOK: query: desc formatted spart PARTITION(ds='2008-04-08', hr=11)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@spart
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -612,13 +628,11 @@ POSTHOOK: query: desc formatted spart PARTITION(ds='2008-04-08', hr=12)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@spart
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -694,13 +708,11 @@ POSTHOOK: query: desc formatted spart
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@spart
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -711,6 +723,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 	numFiles            	2                   
 	numPartitions       	2                   
 	numRows             	0                   
@@ -729,13 +742,26 @@ Sort Columns:       	[]
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: explain extended analyze table spart partition(ds,hr) compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@spart
+PREHOOK: Input: default@spart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@spart@ds=2008-04-08/hr=12
+PREHOOK: Output: default@spart
+PREHOOK: Output: default@spart@ds=2008-04-08/hr=11
+PREHOOK: Output: default@spart@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended analyze table spart partition(ds,hr) compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@spart
+POSTHOOK: Input: default@spart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@spart@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@spart
+POSTHOOK: Output: default@spart@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@spart@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-2 depends on stages: Stage-0
-  Stage-3 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-0
@@ -749,25 +775,26 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: spart
-                  Statistics: Num rows: 58 Data size: 53944 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 196 Data size: 257552 Basic stats: PARTIAL Column stats: PARTIAL
                   Statistics Aggregation Key Prefix: default.spart/
                   GatherStats: true
                   Select Operator
                     expressions: key (type: string), value (type: string), ds (type: string), hr (type: string)
                     outputColumnNames: key, value, ds, hr
-                    Statistics: Num rows: 58 Data size: 53944 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 196 Data size: 257552 Basic stats: PARTIAL Column stats: PARTIAL
                     Group By Operator
                       aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
                       keys: ds (type: string), hr (type: string)
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
-                      Statistics: Num rows: 2 Data size: 2496 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 196 Data size: 313792 Basic stats: PARTIAL Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string)
-                        null sort order: aa
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                        Statistics: Num rows: 2 Data size: 2496 Basic stats: COMPLETE Column stats: PARTIAL
+                        Statistics: Num rows: 196 Data size: 313792 Basic stats: PARTIAL Column stats: PARTIAL
                         tag: -1
                         value expressions: _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
                         auto parallelism: true
@@ -808,6 +835,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
@@ -855,6 +883,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
@@ -882,17 +911,17 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string), KEY._col1 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 2 Data size: 2496 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 98 Data size: 155424 Basic stats: PARTIAL Column stats: PARTIAL
                 Select Operator
                   expressions: _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: string), _col1 (type: string)
                   outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics: Num rows: 2 Data size: 2496 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 98 Data size: 155424 Basic stats: PARTIAL Column stats: PARTIAL
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
 #### A masked pattern was here ####
                     NumFilesPerFileSink: 1
-                    Statistics: Num rows: 2 Data size: 2496 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 98 Data size: 155424 Basic stats: PARTIAL Column stats: PARTIAL
 #### A masked pattern was here ####
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -911,11 +940,9 @@ STAGE PLANS:
                     MultiFileSpray: false
 
   Stage: Stage-2
-    Stats-Aggr Operator
-      Stats Aggregation Key Prefix: default.spart/
-
-  Stage: Stage-3
-    Column Stats Work
+    Stats Work
+      Basic Stats Work:
+          Stats Aggregation Key Prefix: default.spart/
       Column Stats Desc:
           Columns: key, value
           Column Types: string, string
@@ -923,7 +950,7 @@ STAGE PLANS:
           Is Table Level Stats: false
 
 PREHOOK: query: analyze table spart partition(ds,hr) compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@spart
 PREHOOK: Input: default@spart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@spart@ds=2008-04-08/hr=12
@@ -932,7 +959,7 @@ PREHOOK: Output: default@spart@ds=2008-04-08/hr=11
 PREHOOK: Output: default@spart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table spart partition(ds,hr) compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@spart
 POSTHOOK: Input: default@spart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@spart@ds=2008-04-08/hr=12
@@ -947,13 +974,11 @@ POSTHOOK: query: desc formatted spart
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@spart
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -965,6 +990,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
 	numFiles            	2                   
 	numPartitions       	2                   
 	numRows             	1000                
@@ -989,13 +1015,11 @@ POSTHOOK: query: desc formatted spart PARTITION(ds='2008-04-08', hr=11)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@spart
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -1029,13 +1053,11 @@ POSTHOOK: query: desc formatted spart PARTITION(ds='2008-04-08', hr=12)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@spart
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -1111,13 +1133,11 @@ POSTHOOK: query: desc formatted spart
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@spart
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -1128,6 +1148,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 	numFiles            	2                   
 	numPartitions       	2                   
 	numRows             	0                   
@@ -1146,13 +1167,22 @@ Sort Columns:       	[]
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: explain extended analyze table spart partition(hr="11") compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@spart
+PREHOOK: Input: default@spart@ds=2008-04-08/hr=11
+PREHOOK: Output: default@spart
+PREHOOK: Output: default@spart@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended analyze table spart partition(hr="11") compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@spart
+POSTHOOK: Input: default@spart@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@spart
+POSTHOOK: Output: default@spart@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-2 depends on stages: Stage-0
-  Stage-3 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-0
@@ -1166,25 +1196,27 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: spart
-                  Statistics: Num rows: 29 Data size: 21820 Basic stats: COMPLETE Column stats: PARTIAL
+                  filterExpr: (hr = '11') (type: boolean)
+                  Statistics: Num rows: 117 Data size: 121232 Basic stats: PARTIAL Column stats: PARTIAL
                   Statistics Aggregation Key Prefix: default.spart/
                   GatherStats: true
                   Select Operator
                     expressions: key (type: string), value (type: string), ds (type: string)
                     outputColumnNames: key, value, ds
-                    Statistics: Num rows: 29 Data size: 21820 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 117 Data size: 121232 Basic stats: PARTIAL Column stats: PARTIAL
                     Group By Operator
                       aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
                       keys: ds (type: string), '11' (type: string)
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
-                      Statistics: Num rows: 1 Data size: 1150 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 117 Data size: 166072 Basic stats: PARTIAL Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col0 (type: string), '11' (type: string)
-                        null sort order: aa
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), '11' (type: string)
-                        Statistics: Num rows: 1 Data size: 1150 Basic stats: COMPLETE Column stats: PARTIAL
+                        Statistics: Num rows: 117 Data size: 166072 Basic stats: PARTIAL Column stats: PARTIAL
                         tag: -1
                         value expressions: _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
                         auto parallelism: true
@@ -1225,6 +1257,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
@@ -1251,17 +1284,17 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string), '11' (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 1 Data size: 1150 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 58 Data size: 81584 Basic stats: PARTIAL Column stats: PARTIAL
                 Select Operator
                   expressions: _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: string), '11' (type: string)
                   outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics: Num rows: 1 Data size: 1150 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 58 Data size: 81584 Basic stats: PARTIAL Column stats: PARTIAL
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
 #### A masked pattern was here ####
                     NumFilesPerFileSink: 1
-                    Statistics: Num rows: 1 Data size: 1150 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 58 Data size: 81584 Basic stats: PARTIAL Column stats: PARTIAL
 #### A masked pattern was here ####
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -1280,11 +1313,9 @@ STAGE PLANS:
                     MultiFileSpray: false
 
   Stage: Stage-2
-    Stats-Aggr Operator
-      Stats Aggregation Key Prefix: default.spart/
-
-  Stage: Stage-3
-    Column Stats Work
+    Stats Work
+      Basic Stats Work:
+          Stats Aggregation Key Prefix: default.spart/
       Column Stats Desc:
           Columns: key, value
           Column Types: string, string
@@ -1292,14 +1323,14 @@ STAGE PLANS:
           Is Table Level Stats: false
 
 PREHOOK: query: analyze table spart partition(hr="11") compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@spart
 PREHOOK: Input: default@spart@ds=2008-04-08/hr=11
 PREHOOK: Output: default@spart
 PREHOOK: Output: default@spart@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table spart partition(hr="11") compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@spart
 POSTHOOK: Input: default@spart@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@spart
@@ -1312,13 +1343,11 @@ POSTHOOK: query: desc formatted spart
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@spart
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -1329,6 +1358,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 	numFiles            	2                   
 	numPartitions       	2                   
 	numRows             	500                 
@@ -1353,13 +1383,11 @@ POSTHOOK: query: desc formatted spart PARTITION(ds='2008-04-08', hr=11)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@spart
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -1393,13 +1421,11 @@ POSTHOOK: query: desc formatted spart PARTITION(ds='2008-04-08', hr=12)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@spart
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 

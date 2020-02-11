@@ -1,3 +1,4 @@
+--! qt:dataset:srcpart
 set hive.stats.column.autogather=true;
 -- SORT_QUERY_RESULTS
 
@@ -10,7 +11,6 @@ describe extended nzhang_part8;
 
 set hive.merge.mapfiles=false;
 set hive.exec.dynamic.partition=true;
-set hive.exec.dynamic.partition.mode=nonstrict;
 
 explain extended
 from srcpart

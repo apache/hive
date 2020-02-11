@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,12 +18,11 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.ptf;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 
 import com.google.common.base.Preconditions;
@@ -34,10 +33,6 @@ import com.google.common.base.Preconditions;
  * Sum up non-null column values; group result is sum / non-null count.
  */
 public class VectorPTFEvaluatorLongAvg extends VectorPTFEvaluatorBase {
-
-  private static final long serialVersionUID = 1L;
-  private static final String CLASS_NAME = VectorPTFEvaluatorLongAvg.class.getName();
-  private static final Log LOG = LogFactory.getLog(CLASS_NAME);
 
   protected boolean isGroupResultNull;
   protected long sum;
@@ -50,7 +45,10 @@ public class VectorPTFEvaluatorLongAvg extends VectorPTFEvaluatorBase {
     resetEvaluator();
   }
 
-  public void evaluateGroupBatch(VectorizedRowBatch batch, boolean isLastGroupBatch) {
+  @Override
+  public void evaluateGroupBatch(VectorizedRowBatch batch)
+      throws HiveException {
+
     evaluateInputExpr(batch);
 
     // Sum all non-null long column values for avg; maintain isGroupResultNull; after last row of
@@ -66,7 +64,7 @@ public class VectorPTFEvaluatorLongAvg extends VectorPTFEvaluatorBase {
     LongColumnVector longColVector = ((LongColumnVector) batch.cols[inputColumnNum]);
     if (longColVector.isRepeating) {
 
-      if (longColVector.noNulls) {
+      if (longColVector.noNulls || !longColVector.isNull[0]) {
 
         // We have a repeated value.  The sum increases by value * batch.size.
         if (isGroupResultNull) {
@@ -120,12 +118,19 @@ public class VectorPTFEvaluatorLongAvg extends VectorPTFEvaluatorBase {
         sum += varSum;
       }
     }
+  }
 
-    if (isLastGroupBatch) {
-      if (!isGroupResultNull) {
-        avg = ((double) sum) / nonNullGroupCount;
-      }
+  @Override
+  public void doLastBatchWork() {
+    if (!isGroupResultNull) {
+      avg = ((double) sum) / nonNullGroupCount;
     }
+  }
+
+  @Override
+  public boolean streamsResult() {
+    // We must evaluate whole group before producing a result.
+    return false;
   }
 
   @Override

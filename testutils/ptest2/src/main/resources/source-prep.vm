@@ -78,6 +78,12 @@ cd $workingDir/
     echo "Unknown repository type '${repositoryType}'"
     exit 1
   fi
+  rm -rf ../yetus_${buildTag}
+  mkdir ../yetus_${buildTag}
+  #Wait until git gc finishes in the background before proceeding:
+  while ! git gc 2>/dev/null; do sleep 1s ; done
+  cp -R . ../yetus_${buildTag}
+  mkdir $logDir/yetus
   patchCommandPath=$workingDir/scratch/smart-apply-patch.sh
   patchFilePath=$workingDir/scratch/build.patch
   if [[ -f $patchFilePath ]]
@@ -119,4 +125,9 @@ cd $workingDir/
    fi
    date +"%Y-%m-%d %T.%3N"
 ) 2>&1 | tee $logDir/source-prep.txt
-exit ${PIPESTATUS[0]}
+result=${PIPESTATUS[0]}
+if [ ${result} -ne 0 ]
+then
+  rm -rf yetus_${buildTag}
+fi
+exit ${result}

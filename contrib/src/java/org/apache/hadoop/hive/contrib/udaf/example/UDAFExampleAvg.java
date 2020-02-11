@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -44,7 +44,7 @@ public final class UDAFExampleAvg extends UDAF {
    * by a primitive.
    * 
    * The internal state can also contains fields with types like
-   * ArrayList<String> and HashMap<String,Double> if needed.
+   * ArrayList&lt;String&gt; and HashMap&lt;String,Double&gt; if needed.
    */
   public static class UDAFAvgState {
     private long mCount;

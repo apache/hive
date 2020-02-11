@@ -5,6 +5,8 @@ SELECT value from (
   ) A
 ) B WHERE value < 450
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT value from (
   select explode(array(key, value)) as (value) from (
@@ -12,6 +14,8 @@ SELECT value from (
   ) A
 ) B WHERE value < 450
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -22,27 +26,28 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: (UDFToDouble(key) > 400.0D) (type: boolean)
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (UDFToDouble(key) > 400.0) (type: boolean)
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              predicate: (UDFToDouble(key) > 400.0D) (type: boolean)
+              Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: array(key,value) (type: array<string>)
                 outputColumnNames: _col0
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 318720 Basic stats: COMPLETE Column stats: COMPLETE
                 UDTF Operator
-                  Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 166 Data size: 318720 Basic stats: COMPLETE Column stats: COMPLETE
                   function name: explode
                   Filter Operator
-                    predicate: (UDFToDouble(col) < 450.0) (type: boolean)
-                    Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
+                    predicate: (UDFToDouble(col) < 450.0D) (type: boolean)
+                    Statistics: Num rows: 55 Data size: 105600 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: col (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 55 Data size: 440 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 55 Data size: 440 Basic stats: COMPLETE Column stats: COMPLETE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

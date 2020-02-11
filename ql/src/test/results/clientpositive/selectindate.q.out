@@ -12,36 +12,44 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@datetest
 PREHOOK: query: insert into datetest values('2000-03-22', 1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@datetest
 POSTHOOK: query: insert into datetest values('2000-03-22', 1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@datetest
-POSTHOOK: Lineage: datetest.dvalue EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: datetest.ivalue EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: datetest.dvalue SCRIPT []
+POSTHOOK: Lineage: datetest.ivalue SCRIPT []
 PREHOOK: query: insert into datetest values('2001-03-22', 2)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@datetest
 POSTHOOK: query: insert into datetest values('2001-03-22', 2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@datetest
-POSTHOOK: Lineage: datetest.dvalue EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: datetest.ivalue EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: datetest.dvalue SCRIPT []
+POSTHOOK: Lineage: datetest.ivalue SCRIPT []
 PREHOOK: query: insert into datetest values('2002-03-22', 3)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@datetest
 POSTHOOK: query: insert into datetest values('2002-03-22', 3)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@datetest
-POSTHOOK: Lineage: datetest.dvalue EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: datetest.ivalue EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: datetest.dvalue SCRIPT []
+POSTHOOK: Lineage: datetest.ivalue SCRIPT []
 PREHOOK: query: insert into datetest values('2003-03-22', 4)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@datetest
 POSTHOOK: query: insert into datetest values('2003-03-22', 4)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@datetest
-POSTHOOK: Lineage: datetest.dvalue EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: datetest.ivalue EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: datetest.dvalue SCRIPT []
+POSTHOOK: Lineage: datetest.ivalue SCRIPT []
 PREHOOK: query: SELECT * FROM datetest WHERE dValue IN ('2000-03-22','2001-03-22')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@datetest

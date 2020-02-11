@@ -1,7 +1,13 @@
 PREHOOK: query: explain select * from srcpart where ds='2008-04-08' AND hr='11' limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from srcpart where ds='2008-04-08' AND hr='11' limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
 Plan optimized by CBO.
 
 Stage-0
@@ -16,8 +22,12 @@ Stage-0
 
 PREHOOK: query: explain select cast(key as int) * 10, upper(value) from src limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select cast(key as int) * 10, upper(value) from src limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 Plan optimized by CBO.
 
 Stage-0
@@ -32,8 +42,14 @@ Stage-0
 
 PREHOOK: query: explain select * from srcpart where ds='2008-04-08' AND hr='11' limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from srcpart where ds='2008-04-08' AND hr='11' limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
 Plan optimized by CBO.
 
 Stage-0
@@ -48,8 +64,12 @@ Stage-0
 
 PREHOOK: query: explain select cast(key as int) * 10, upper(value) from src limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select cast(key as int) * 10, upper(value) from src limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 Plan optimized by CBO.
 
 Stage-0
@@ -64,8 +84,12 @@ Stage-0
 
 PREHOOK: query: explain select concat(key, value)  from src
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select concat(key, value)  from src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 Plan optimized by CBO.
 
 Stage-0
@@ -78,8 +102,14 @@ Stage-0
 
 PREHOOK: query: explain select * from srcpart where ds='2008-04-08' AND hr='11' limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from srcpart where ds='2008-04-08' AND hr='11' limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
 Plan optimized by CBO.
 
 Stage-0
@@ -94,8 +124,12 @@ Stage-0
 
 PREHOOK: query: explain select cast(key as int) * 10, upper(value) from src limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select cast(key as int) * 10, upper(value) from src limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 Plan optimized by CBO.
 
 Stage-0
@@ -110,25 +144,33 @@ Stage-0
 
 PREHOOK: query: explain select concat(key, value)  from src
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select concat(key, value)  from src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 Plan optimized by CBO.
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Map 1 llap
-      File Output Operator [FS_2]
-        Select Operator [SEL_1] (rows=500 width=184)
+      Map 1 vectorized, llap
+      File Output Operator [FS_4]
+        Select Operator [SEL_3] (rows=500 width=184)
           Output:["_col0"]
           TableScan [TS_0] (rows=500 width=178)
             default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
 
 PREHOOK: query: explain select key, value  from src
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select key, value  from src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 Plan optimized by CBO.
 
 Stage-0
@@ -141,8 +183,12 @@ Stage-0
 
 PREHOOK: query: explain select key  from src
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select key  from src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 Plan optimized by CBO.
 
 Stage-0
@@ -155,8 +201,12 @@ Stage-0
 
 PREHOOK: query: explain select *    from src
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select *    from src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 Plan optimized by CBO.
 
 Stage-0
@@ -169,8 +219,12 @@ Stage-0
 
 PREHOOK: query: explain select key,1 from src
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select key,1 from src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 Plan optimized by CBO.
 
 Stage-0
@@ -183,8 +237,12 @@ Stage-0
 
 PREHOOK: query: explain select cast(key as char(20)),1 from src
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select cast(key as char(20)),1 from src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 Plan optimized by CBO.
 
 Stage-0

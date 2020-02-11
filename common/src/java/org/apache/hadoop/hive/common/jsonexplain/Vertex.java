@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -74,7 +74,7 @@ public final class Vertex implements Comparable<Vertex>{
   public VertexType vertexType;
 
   public static enum EdgeType {
-    BROADCAST, SHUFFLE, MULTICAST, PARTITION_ONLY_SHUFFLE, FORWARD, UNKNOWN
+    BROADCAST, SHUFFLE, MULTICAST, PARTITION_ONLY_SHUFFLE, FORWARD, XPROD_EDGE, UNKNOWN
   };
   public String edgeType;
 
@@ -249,7 +249,8 @@ public final class Vertex implements Comparable<Vertex>{
       // find the right op
       Op choose = null;
       for (Op op : this.outputOps) {
-        if (op.outputVertexName.equals(callingVertex.name)) {
+        // op.outputVertexName may be null
+        if (callingVertex.name.equals(op.outputVertexName)) {
           choose = op;
         }
       }

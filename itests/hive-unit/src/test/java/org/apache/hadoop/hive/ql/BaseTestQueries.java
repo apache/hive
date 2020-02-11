@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,12 +20,12 @@ package org.apache.hadoop.hive.ql;
 
 import java.io.File;
 
-import junit.framework.TestCase;
+
 
 /**
  * Base class for testing queries.
  */
-public abstract class BaseTestQueries extends TestCase {
+public abstract class BaseTestQueries {
 
   protected final String inpDir = System
       .getProperty("hive.root") + "/ql/src/test/queries/clientpositive";

@@ -14,20 +14,24 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_ppd_multifiles
 PREHOOK: query: insert into table parquet_ppd_multifiles values('Jim', 3)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@parquet_ppd_multifiles
 POSTHOOK: query: insert into table parquet_ppd_multifiles values('Jim', 3)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@parquet_ppd_multifiles
-POSTHOOK: Lineage: parquet_ppd_multifiles.dec EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: parquet_ppd_multifiles.name SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: parquet_ppd_multifiles.dec SCRIPT []
+POSTHOOK: Lineage: parquet_ppd_multifiles.name SCRIPT []
 PREHOOK: query: insert into table parquet_ppd_multifiles values('Tom', 5)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@parquet_ppd_multifiles
 POSTHOOK: query: insert into table parquet_ppd_multifiles values('Tom', 5)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@parquet_ppd_multifiles
-POSTHOOK: Lineage: parquet_ppd_multifiles.dec EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: parquet_ppd_multifiles.name SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: parquet_ppd_multifiles.dec SCRIPT []
+POSTHOOK: Lineage: parquet_ppd_multifiles.name SCRIPT []
 PREHOOK: query: select * from parquet_ppd_multifiles where (name = 'Jim' or `dec` = 5)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_ppd_multifiles

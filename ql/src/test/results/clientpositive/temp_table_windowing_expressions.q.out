@@ -628,54 +628,54 @@ Manufacturer#5	1241.29
 Manufacturer#5	1424.0900000000001
 Manufacturer#5	1515.25
 Manufacturer#5	1534.532
-PREHOOK: query: create table t1 (a1 int, b1 string)
+PREHOOK: query: create table t1_n144 (a1 int, b1 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t1
-POSTHOOK: query: create table t1 (a1 int, b1 string)
+PREHOOK: Output: default@t1_n144
+POSTHOOK: query: create table t1_n144 (a1 int, b1 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t1
-PREHOOK: query: create table t2 (a1 int, b1 string)
+POSTHOOK: Output: default@t1_n144
+PREHOOK: query: create table t2_n84 (a1 int, b1 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t2
-POSTHOOK: query: create table t2 (a1 int, b1 string)
+PREHOOK: Output: default@t2_n84
+POSTHOOK: query: create table t2_n84 (a1 int, b1 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t2
-PREHOOK: query: from (select sum(i) over (partition by ts order by i), s from over10k) tt insert overwrite table t1 select * insert overwrite table t2 select *
+POSTHOOK: Output: default@t2_n84
+PREHOOK: query: from (select sum(i) over (partition by ts order by i), s from over10k) tt insert overwrite table t1_n144 select * insert overwrite table t2_n84 select *
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k
-PREHOOK: Output: default@t1
-PREHOOK: Output: default@t2
-POSTHOOK: query: from (select sum(i) over (partition by ts order by i), s from over10k) tt insert overwrite table t1 select * insert overwrite table t2 select *
+PREHOOK: Output: default@t1_n144
+PREHOOK: Output: default@t2_n84
+POSTHOOK: query: from (select sum(i) over (partition by ts order by i), s from over10k) tt insert overwrite table t1_n144 select * insert overwrite table t2_n84 select *
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over10k
-POSTHOOK: Output: default@t1
-POSTHOOK: Output: default@t2
-POSTHOOK: Lineage: t1.a1 SCRIPT [(over10k)over10k.FieldSchema(name:t, type:tinyint, comment:null), (over10k)over10k.FieldSchema(name:si, type:smallint, comment:null), (over10k)over10k.FieldSchema(name:i, type:int, comment:null), (over10k)over10k.FieldSchema(name:b, type:bigint, comment:null), (over10k)over10k.FieldSchema(name:f, type:float, comment:null), (over10k)over10k.FieldSchema(name:d, type:double, comment:null), (over10k)over10k.FieldSchema(name:bo, type:boolean, comment:null), (over10k)over10k.FieldSchema(name:s, type:string, comment:null), (over10k)over10k.FieldSchema(name:ts, type:timestamp, comment:null), (over10k)over10k.FieldSchema(name:dec, type:decimal(4,2), comment:null), (over10k)over10k.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: t1.b1 SIMPLE [(over10k)over10k.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: t2.a1 SCRIPT [(over10k)over10k.FieldSchema(name:t, type:tinyint, comment:null), (over10k)over10k.FieldSchema(name:si, type:smallint, comment:null), (over10k)over10k.FieldSchema(name:i, type:int, comment:null), (over10k)over10k.FieldSchema(name:b, type:bigint, comment:null), (over10k)over10k.FieldSchema(name:f, type:float, comment:null), (over10k)over10k.FieldSchema(name:d, type:double, comment:null), (over10k)over10k.FieldSchema(name:bo, type:boolean, comment:null), (over10k)over10k.FieldSchema(name:s, type:string, comment:null), (over10k)over10k.FieldSchema(name:ts, type:timestamp, comment:null), (over10k)over10k.FieldSchema(name:dec, type:decimal(4,2), comment:null), (over10k)over10k.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: t2.b1 SIMPLE [(over10k)over10k.FieldSchema(name:s, type:string, comment:null), ]
-PREHOOK: query: select * from t1 limit 3
+POSTHOOK: Output: default@t1_n144
+POSTHOOK: Output: default@t2_n84
+POSTHOOK: Lineage: t1_n144.a1 SCRIPT [(over10k)over10k.FieldSchema(name:t, type:tinyint, comment:null), (over10k)over10k.FieldSchema(name:si, type:smallint, comment:null), (over10k)over10k.FieldSchema(name:i, type:int, comment:null), (over10k)over10k.FieldSchema(name:b, type:bigint, comment:null), (over10k)over10k.FieldSchema(name:f, type:float, comment:null), (over10k)over10k.FieldSchema(name:d, type:double, comment:null), (over10k)over10k.FieldSchema(name:bo, type:boolean, comment:null), (over10k)over10k.FieldSchema(name:s, type:string, comment:null), (over10k)over10k.FieldSchema(name:ts, type:timestamp, comment:null), (over10k)over10k.FieldSchema(name:dec, type:decimal(4,2), comment:null), (over10k)over10k.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: t1_n144.b1 SIMPLE [(over10k)over10k.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: t2_n84.a1 SCRIPT [(over10k)over10k.FieldSchema(name:t, type:tinyint, comment:null), (over10k)over10k.FieldSchema(name:si, type:smallint, comment:null), (over10k)over10k.FieldSchema(name:i, type:int, comment:null), (over10k)over10k.FieldSchema(name:b, type:bigint, comment:null), (over10k)over10k.FieldSchema(name:f, type:float, comment:null), (over10k)over10k.FieldSchema(name:d, type:double, comment:null), (over10k)over10k.FieldSchema(name:bo, type:boolean, comment:null), (over10k)over10k.FieldSchema(name:s, type:string, comment:null), (over10k)over10k.FieldSchema(name:ts, type:timestamp, comment:null), (over10k)over10k.FieldSchema(name:dec, type:decimal(4,2), comment:null), (over10k)over10k.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: t2_n84.b1 SIMPLE [(over10k)over10k.FieldSchema(name:s, type:string, comment:null), ]
+PREHOOK: query: select * from t1_n144 limit 3
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n144
 #### A masked pattern was here ####
-POSTHOOK: query: select * from t1 limit 3
+POSTHOOK: query: select * from t1_n144 limit 3
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n144
 #### A masked pattern was here ####
 65542	rachel thompson
 131088	oscar brown
 262258	wendy steinbeck
-PREHOOK: query: select * from t2 limit 3
+PREHOOK: query: select * from t2_n84 limit 3
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t2
+PREHOOK: Input: default@t2_n84
 #### A masked pattern was here ####
-POSTHOOK: query: select * from t2 limit 3
+POSTHOOK: query: select * from t2_n84 limit 3
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t2_n84
 #### A masked pattern was here ####
 65542	rachel thompson
 131088	oscar brown

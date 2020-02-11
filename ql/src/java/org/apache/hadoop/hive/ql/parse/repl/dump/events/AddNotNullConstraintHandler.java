@@ -18,20 +18,30 @@
 package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.messaging.AddNotNullConstraintMessage;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
-public class AddNotNullConstraintHandler extends AbstractEventHandler {
+public class AddNotNullConstraintHandler extends AbstractConstraintEventHandler<AddNotNullConstraintMessage> {
   AddNotNullConstraintHandler(NotificationEvent event) {
     super(event);
   }
 
   @Override
+  AddNotNullConstraintMessage eventMessage(String stringRepresentation) {
+    return deserializer.getAddNotNullConstraintMessage(stringRepresentation);
+  }
+
+  @Override
   public void handle(Context withinContext) throws Exception {
-    LOG.info("Processing#{} ADD_NOTNULLCONSTRAINT_MESSAGE message : {}", fromEventId(), event.getMessage());
-    DumpMetaData dmd = withinContext.createDmd(this);
-    dmd.setPayload(event.getMessage());
-    dmd.write();
+    LOG.debug("Processing#{} ADD_NOTNULLCONSTRAINT_MESSAGE message : {}", fromEventId(),
+        eventMessageAsJSON);
+
+    if (shouldReplicate(withinContext)) {
+      DumpMetaData dmd = withinContext.createDmd(this);
+      dmd.setPayload(eventMessageAsJSON);
+      dmd.write();
+    }
   }
 
   @Override

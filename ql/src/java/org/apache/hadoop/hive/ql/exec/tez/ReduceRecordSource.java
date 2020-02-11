@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -121,13 +121,25 @@ public class ReduceRecordSource implements RecordSource {
   private final GroupIterator groupIterator = new GroupIterator();
 
   private long vectorizedVertexNum;
+  private int vectorizedTestingReducerBatchSize;
+
+  // Flush the last record when reader is out of records
+  private boolean flushLastRecord = false;
 
   void init(JobConf jconf, Operator<?> reducer, boolean vectorized, TableDesc keyTableDesc,
       TableDesc valueTableDesc, Reader reader, boolean handleGroupKey, byte tag,
-      VectorizedRowBatchCtx batchContext, long vectorizedVertexNum)
+      VectorizedRowBatchCtx batchContext, long vectorizedVertexNum,
+      int vectorizedTestingReducerBatchSize)
       throws Exception {
 
     this.vectorizedVertexNum = vectorizedVertexNum;
+    if (vectorizedTestingReducerBatchSize > VectorizedRowBatch.DEFAULT_SIZE) {
+
+      // For now, we don't go higher than the default batch size unless we do more work
+      // to verify every vectorized operator downstream can handle a larger batch size.
+      vectorizedTestingReducerBatchSize = VectorizedRowBatch.DEFAULT_SIZE;
+    }
+    this.vectorizedTestingReducerBatchSize = vectorizedTestingReducerBatchSize;
     ObjectInspector keyObjectInspector;
 
     this.reducer = reducer;
@@ -225,6 +237,10 @@ public class ReduceRecordSource implements RecordSource {
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_INIT_OPERATORS);
   }
 
+  public TableDesc getKeyTableDesc() {
+    return keyTableDesc;
+  }
+
   @Override
   public final boolean isGrouped() {
     return vectorized;
@@ -245,6 +261,9 @@ public class ReduceRecordSource implements RecordSource {
 
     try {
       if (!reader.next()) {
+        if (flushLastRecord) {
+          reducer.flushRecursive();
+        }
         return false;
       }
 
@@ -334,7 +353,7 @@ public class ReduceRecordSource implements RecordSource {
       } else {
         row.add(passDownKey.get(0));
       }
-      if ((passDownKey == null) && (reducer instanceof CommonMergeJoinOperator)) {
+      if ((passDownKey == null) && (reducer instanceof CommonMergeJoinOperator) && hasNext()) {
         passDownKey =
             (List<Object>) ObjectInspectorUtils.copyToStandardObject(row,
                 reducer.getInputObjInspectors()[tag], ObjectInspectorCopyOption.WRITABLE);
@@ -354,8 +373,13 @@ public class ReduceRecordSource implements RecordSource {
           rowString = "[Error getting row data with exception "
               + StringUtils.stringifyException(e2) + " ]";
         }
-        throw new HiveException("Hive Runtime Error while processing row (tag="
-            + tag + ") " + rowString, e);
+
+        // Log the contents of the row that caused exception so that it's available for debugging. But
+        // when exposed through an error message it can leak sensitive information, even to the
+        // client application.
+        l4j.trace("Hive Runtime Error while processing row (tag="
+                + tag + ") " + rowString);
+        throw new HiveException("Hive Runtime Error while processing row", e);
       }
     }
   }
@@ -417,7 +441,10 @@ public class ReduceRecordSource implements RecordSource {
       VectorizedBatchUtil.setRepeatingColumn(batch, i);
     }
 
-    final int maxSize = batch.getMaxSize();
+    final int maxSize =
+        (vectorizedTestingReducerBatchSize > 0 ?
+            Math.min(vectorizedTestingReducerBatchSize, batch.getMaxSize()) :
+            batch.getMaxSize());
     Preconditions.checkState(maxSize > 0);
     int rowIdx = 0;
     int batchBytes = keyBytes.length;
@@ -432,6 +459,11 @@ public class ReduceRecordSource implements RecordSource {
             reducer.setNextVectorBatchGroupStatus(/* isLastGroupBatch */ false);
           }
           reducer.process(batch, tag);
+
+          // Do the non-column batch reset logic.
+          batch.selectedInUse = false;
+          batch.size = 0;
+          batch.endOfFile = false;
 
           // Reset just the value columns and value buffer.
           for (int i = firstValueColumnOffset; i < batch.numCols; i++) {
@@ -495,5 +527,9 @@ public class ReduceRecordSource implements RecordSource {
 
   public ObjectInspector getObjectInspector() {
     return rowObjectInspector;
+  }
+
+  public void setFlushLastRecord(boolean flushLastRecord) {
+    this.flushLastRecord = flushLastRecord;
   }
 }

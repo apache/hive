@@ -12,17 +12,23 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@predicate_fold_tb
 PREHOOK: query: insert into predicate_fold_tb values(NULL), (1), (2), (3), (4), (5)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@predicate_fold_tb
 POSTHOOK: query: insert into predicate_fold_tb values(NULL), (1), (2), (3), (4), (5)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@predicate_fold_tb
-POSTHOOK: Lineage: predicate_fold_tb.value EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: predicate_fold_tb.value SCRIPT []
 PREHOOK: query: explain
 SELECT * FROM predicate_fold_tb WHERE not(value IS NOT NULL AND value = 3)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@predicate_fold_tb
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT * FROM predicate_fold_tb WHERE not(value IS NOT NULL AND value = 3)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@predicate_fold_tb
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -33,21 +39,23 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: predicate_fold_tb
-            Statistics: Num rows: 6 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: ((value <> 3) or value is null) (type: boolean)
+            Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (value is null or (value <> 3)) (type: boolean)
-              Statistics: Num rows: 6 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+              predicate: ((value <> 3) or value is null) (type: boolean)
+              Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: value (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 6 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 6 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -71,9 +79,13 @@ NULL
 PREHOOK: query: explain
 SELECT * FROM predicate_fold_tb WHERE not(value IS NOT NULL AND value >= 3)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@predicate_fold_tb
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT * FROM predicate_fold_tb WHERE not(value IS NOT NULL AND value >= 3)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@predicate_fold_tb
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -84,21 +96,23 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: predicate_fold_tb
-            Statistics: Num rows: 6 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: (value is null or (value < 3)) (type: boolean)
+            Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (value is null or (value < 3)) (type: boolean)
-              Statistics: Num rows: 5 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: value (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 5 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 5 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -120,9 +134,13 @@ NULL
 PREHOOK: query: explain
 SELECT * FROM predicate_fold_tb WHERE not(value IS NOT NULL AND value <= 3)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@predicate_fold_tb
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT * FROM predicate_fold_tb WHERE not(value IS NOT NULL AND value <= 3)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@predicate_fold_tb
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -133,21 +151,23 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: predicate_fold_tb
-            Statistics: Num rows: 6 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: (value is null or (value > 3)) (type: boolean)
+            Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (value is null or (value > 3)) (type: boolean)
-              Statistics: Num rows: 5 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: value (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 5 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 5 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -169,9 +189,13 @@ NULL
 PREHOOK: query: explain
 SELECT * FROM predicate_fold_tb WHERE not(value IS NOT NULL AND value > 3)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@predicate_fold_tb
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT * FROM predicate_fold_tb WHERE not(value IS NOT NULL AND value > 3)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@predicate_fold_tb
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -182,21 +206,23 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: predicate_fold_tb
-            Statistics: Num rows: 6 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: (value is null or (value <= 3)) (type: boolean)
+            Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (value is null or (value <= 3)) (type: boolean)
-              Statistics: Num rows: 5 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: value (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 5 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 5 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -219,9 +245,13 @@ NULL
 PREHOOK: query: explain
 SELECT * FROM predicate_fold_tb WHERE not(value IS NOT NULL AND value < 3)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@predicate_fold_tb
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT * FROM predicate_fold_tb WHERE not(value IS NOT NULL AND value < 3)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@predicate_fold_tb
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -232,21 +262,23 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: predicate_fold_tb
-            Statistics: Num rows: 6 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: (value is null or (value >= 3)) (type: boolean)
+            Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (value is null or (value >= 3)) (type: boolean)
-              Statistics: Num rows: 5 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: value (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 5 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 5 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -269,9 +301,13 @@ NULL
 PREHOOK: query: explain
 SELECT * FROM predicate_fold_tb WHERE not(value IS NOT NULL AND value <> 3)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@predicate_fold_tb
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT * FROM predicate_fold_tb WHERE not(value IS NOT NULL AND value <> 3)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@predicate_fold_tb
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -282,21 +318,23 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: predicate_fold_tb
-            Statistics: Num rows: 6 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: (value is null or (value = 3)) (type: boolean)
+            Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (value is null or (value = 3)) (type: boolean)
-              Statistics: Num rows: 6 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: value (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 6 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 6 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -317,9 +355,13 @@ NULL
 PREHOOK: query: explain
 SELECT * FROM predicate_fold_tb WHERE not(value IS NOT NULL AND value > 1 AND value <=3)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@predicate_fold_tb
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT * FROM predicate_fold_tb WHERE not(value IS NOT NULL AND value > 1 AND value <=3)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@predicate_fold_tb
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -330,21 +372,23 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: predicate_fold_tb
-            Statistics: Num rows: 6 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: (value is null or (value <= 1) or (value > 3)) (type: boolean)
+            Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (value is null or (value <= 1) or (value > 3)) (type: boolean)
-              Statistics: Num rows: 6 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: value (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 6 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 6 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator

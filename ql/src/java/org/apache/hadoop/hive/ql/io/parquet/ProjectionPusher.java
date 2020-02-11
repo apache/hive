@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -18,13 +18,12 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
+import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +34,7 @@ import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
@@ -67,7 +67,8 @@ public class ProjectionPusher {
       pathToPartitionInfo.clear();
       for (final Map.Entry<Path, PartitionDesc> entry : mapWork.getPathToPartitionInfo().entrySet()) {
         // key contains scheme (such as pfile://) and we want only the path portion fix in HIVE-6366
-        pathToPartitionInfo.put(Path.getPathWithoutSchemeAndAuthority(entry.getKey()), entry.getValue());
+        pathToPartitionInfo.put(StringInternUtils.internUriStringsInPath(
+                Path.getPathWithoutSchemeAndAuthority(entry.getKey())), entry.getValue());
       }
     }
   }
@@ -83,17 +84,19 @@ public class ProjectionPusher {
     }
 
     final Set<String> aliases = new HashSet<String>();
-    final Iterator<Entry<Path, ArrayList<String>>> iterator =
-        mapWork.getPathToAliases().entrySet().iterator();
-
-    while (iterator.hasNext()) {
-      final Entry<Path, ArrayList<String>> entry = iterator.next();
-      final String key = entry.getKey().toUri().getPath();
-      if (splitPath.equals(key) || splitPathWithNoSchema.equals(key)) {
-        aliases.addAll(entry.getValue());
+    try {
+      List<String> a = HiveFileFormatUtils.getFromPathRecursively(
+          mapWork.getPathToAliases(), new Path(splitPath), null, false, true);
+      if (a != null) {
+        aliases.addAll(a);
       }
+      if (a == null || a.isEmpty()) {
+        // TODO: not having aliases for path usually means some bug. Should it give up?
+        LOG.warn("Couldn't find aliases for " + splitPath);
+      }
+    } catch (IllegalArgumentException | IOException e) {
+      throw new RuntimeException(e);
     }
-
     // Collect the needed columns from all the aliases and create ORed filter
     // expression for the table.
     boolean allColumnsNeeded = false;
@@ -183,7 +186,8 @@ public class ProjectionPusher {
       throws IOException {
     updateMrWork(jobConf);  // TODO: refactor this in HIVE-6366
     final JobConf cloneJobConf = new JobConf(jobConf);
-    final PartitionDesc part = pathToPartitionInfo.get(path);
+    final PartitionDesc part = HiveFileFormatUtils.getFromPathRecursively(
+        pathToPartitionInfo, path, null, false, true);
 
     try {
       if ((part != null) && (part.getTableDesc() != null)) {

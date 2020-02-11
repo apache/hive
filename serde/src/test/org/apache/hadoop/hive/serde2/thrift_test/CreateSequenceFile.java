@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -136,7 +136,8 @@ public final class CreateSequenceFile {
       unionMap.put("key_" + i,  erMap);
 
       Complex complex = new Complex(rand.nextInt(), "record_"
-          + (new Integer(i)).toString(), alist, slist, islist, hash, unionMap, PropValueUnion.stringValue("test" + i), PropValueUnion.unionMStringString(hash), PropValueUnion.lString(slist));
+          + String.valueOf(i), alist, slist, islist, hash, unionMap, PropValueUnion.stringValue("test" + i),
+          PropValueUnion.unionMStringString(hash), PropValueUnion.lString(slist));
 
       Writable value = serializer.serialize(complex);
       writer.append(key, value);

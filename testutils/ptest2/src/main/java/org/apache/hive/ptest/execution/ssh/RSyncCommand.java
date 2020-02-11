@@ -22,6 +22,7 @@ public class RSyncCommand extends AbstractSSHCommand<RSyncResult> {
   private final RSyncCommandExecutor executor;
   private final String localFile;
   private final String remoteFile;
+  private long elapsedTimeInMs;
   private RSyncCommand.Type type;
   public RSyncCommand(RSyncCommandExecutor executor, String privateKey,
       String user, String host, int instance,
@@ -35,17 +36,23 @@ public class RSyncCommand extends AbstractSSHCommand<RSyncResult> {
   public RSyncCommand.Type getType() {
     return type;
   }
+
+  public void setElapsedTimeInMs(long timeInMs) {
+    this.elapsedTimeInMs = timeInMs;
+  }
+
   public String getLocalFile() {
     return localFile;
   }
   public String getRemoteFile() {
     return remoteFile;
   }
+
   @Override
   public RSyncResult call() {
     executor.execute(this);
     return new RSyncResult(getUser(), getHost(), getInstance(), getLocalFile(), getRemoteFile(),
-        getExitCode(), getException(), getOutput());
+        getExitCode(), getException(), getOutput(), getElapsedTimeInMs());
   }
 
   @Override
@@ -53,6 +60,10 @@ public class RSyncCommand extends AbstractSSHCommand<RSyncResult> {
     return "RSyncCommand [executor=" + executor + ", localFile=" + localFile
         + ", remoteFile=" + remoteFile + ", type=" + type + ", getHost()="
         + getHost() + ", getInstance()=" + getInstance() + "]";
+  }
+
+  public long getElapsedTimeInMs() {
+    return elapsedTimeInMs;
   }
 
   public static enum Type {

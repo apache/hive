@@ -1,7 +1,6 @@
 -- Cleanup
 DROP TABLE alter_rename_partition_src;
 DROP TABLE alter_rename_partition;
-SHOW TABLES;
 
 create table alter_rename_partition_src ( col1 string ) stored as textfile ;
 load data local inpath '../../data/files/test.dat' overwrite into table alter_rename_partition_src ;
@@ -19,7 +18,6 @@ select * from alter_rename_partition where pcol1='new_part1:' and pcol2='new_par
 -- Cleanup
 DROP TABLE alter_rename_partition_src;
 DROP TABLE alter_rename_partition;
-SHOW TABLES;
 
 -- With non-default Database
 
@@ -35,6 +33,7 @@ CREATE TABLE alter_rename_partition (col1 STRING) PARTITIONED BY (pcol1 STRING, 
 INSERT OVERWRITE TABLE alter_rename_partition PARTITION (pCol1='old_part1:', pcol2='old_part2:') SELECT col1 FROM alter_rename_partition_src ;
 SELECT * FROM alter_rename_partition WHERE pcol1='old_part1:' AND pcol2='old_part2:';
 
+EXPLAIN ALTER TABLE alter_rename_partition PARTITION (pCol1='old_part1:', pcol2='old_part2:') RENAME TO PARTITION (pCol1='new_part1:', pcol2='new_part2:');
 ALTER TABLE alter_rename_partition PARTITION (pCol1='old_part1:', pcol2='old_part2:') RENAME TO PARTITION (pCol1='new_part1:', pcol2='new_part2:');
 SHOW PARTITIONS alter_rename_partition;
 SELECT * FROM alter_rename_partition WHERE pcol1='old_part1:' and pcol2='old_part2:';

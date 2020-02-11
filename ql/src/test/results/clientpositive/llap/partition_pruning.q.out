@@ -8,18 +8,22 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@daysales
 PREHOOK: query: insert into daysales partition(dt='2001-01-01') values(1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@daysales@dt=2001-01-01
 POSTHOOK: query: insert into daysales partition(dt='2001-01-01') values(1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@daysales@dt=2001-01-01
-POSTHOOK: Lineage: daysales PARTITION(dt=2001-01-01).customer EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: daysales PARTITION(dt=2001-01-01).customer SCRIPT []
 PREHOOK: query: insert into daysales partition(dt='2001-01-03') values(3)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@daysales@dt=2001-01-03
 POSTHOOK: query: insert into daysales partition(dt='2001-01-03') values(3)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@daysales@dt=2001-01-03
-POSTHOOK: Lineage: daysales PARTITION(dt=2001-01-03).customer EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: daysales PARTITION(dt=2001-01-03).customer SCRIPT []
 PREHOOK: query: select * from daysales where nvl(dt='2001-01-01' and customer=1, false)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@daysales
@@ -90,8 +94,17 @@ POSTHOOK: Input: default@daysales@dt=2001-01-03
 3	2001-01-03
 PREHOOK: query: explain extended select * from daysales where nvl(dt='2001-01-01' and customer=1, false)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@daysales
+PREHOOK: Input: default@daysales@dt=2001-01-01
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select * from daysales where nvl(dt='2001-01-01' and customer=1, false)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@daysales
+POSTHOOK: Input: default@daysales@dt=2001-01-01
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `customer`, `dt`
+FROM `default`.`daysales`
+WHERE NVL(`dt` = '2001-01-01' AND `customer` = 1, FALSE)
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -106,7 +119,7 @@ STAGE PLANS:
             partition values:
               dt 2001-01-01
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"customer":"true"}}
               bucket_count -1
               column.name.delimiter ,
               columns customer
@@ -130,6 +143,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns customer
                 columns.comments 
@@ -148,10 +162,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: daysales
+          filterExpr: COALESCE((customer = 1),false) (type: boolean)
           GatherStats: false
           Filter Operator
             isSamplingPred: false
-            predicate: NVL((customer = 1),false) (type: boolean)
+            predicate: COALESCE((customer = 1),false) (type: boolean)
             Select Operator
               expressions: customer (type: int), dt (type: string)
               outputColumnNames: _col0, _col1
@@ -159,8 +174,19 @@ STAGE PLANS:
 
 PREHOOK: query: explain extended select * from daysales where nvl(dt='2001-01-01' or customer=3, false)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@daysales
+PREHOOK: Input: default@daysales@dt=2001-01-01
+PREHOOK: Input: default@daysales@dt=2001-01-03
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select * from daysales where nvl(dt='2001-01-01' or customer=3, false)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@daysales
+POSTHOOK: Input: default@daysales@dt=2001-01-01
+POSTHOOK: Input: default@daysales@dt=2001-01-03
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `customer`, `dt`
+FROM `default`.`daysales`
+WHERE NVL(`dt` = '2001-01-01' OR `customer` = 3, FALSE)
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -175,7 +201,7 @@ STAGE PLANS:
             partition values:
               dt 2001-01-01
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"customer":"true"}}
               bucket_count -1
               column.name.delimiter ,
               columns customer
@@ -199,6 +225,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns customer
                 columns.comments 
@@ -220,7 +247,7 @@ STAGE PLANS:
             partition values:
               dt 2001-01-03
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"customer":"true"}}
               bucket_count -1
               column.name.delimiter ,
               columns customer
@@ -244,6 +271,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns customer
                 columns.comments 
@@ -262,10 +290,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: daysales
+          filterExpr: COALESCE(((dt = '2001-01-01') or (customer = 3)),false) (type: boolean)
           GatherStats: false
           Filter Operator
             isSamplingPred: false
-            predicate: NVL(((dt = '2001-01-01') or (customer = 3)),false) (type: boolean)
+            predicate: COALESCE(((dt = '2001-01-01') or (customer = 3)),false) (type: boolean)
             Select Operator
               expressions: customer (type: int), dt (type: string)
               outputColumnNames: _col0, _col1
@@ -273,8 +302,19 @@ STAGE PLANS:
 
 PREHOOK: query: explain extended select * from daysales where nvl(dt='2001-01-01' or customer=3, false)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@daysales
+PREHOOK: Input: default@daysales@dt=2001-01-01
+PREHOOK: Input: default@daysales@dt=2001-01-03
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select * from daysales where nvl(dt='2001-01-01' or customer=3, false)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@daysales
+POSTHOOK: Input: default@daysales@dt=2001-01-01
+POSTHOOK: Input: default@daysales@dt=2001-01-03
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `customer`, `dt`
+FROM `default`.`daysales`
+WHERE NVL(`dt` = '2001-01-01' OR `customer` = 3, FALSE)
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -289,7 +329,7 @@ STAGE PLANS:
             partition values:
               dt 2001-01-01
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"customer":"true"}}
               bucket_count -1
               column.name.delimiter ,
               columns customer
@@ -313,6 +353,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns customer
                 columns.comments 
@@ -334,7 +375,7 @@ STAGE PLANS:
             partition values:
               dt 2001-01-03
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"customer":"true"}}
               bucket_count -1
               column.name.delimiter ,
               columns customer
@@ -358,6 +399,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns customer
                 columns.comments 
@@ -376,10 +418,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: daysales
+          filterExpr: COALESCE(((dt = '2001-01-01') or (customer = 3)),false) (type: boolean)
           GatherStats: false
           Filter Operator
             isSamplingPred: false
-            predicate: NVL(((dt = '2001-01-01') or (customer = 3)),false) (type: boolean)
+            predicate: COALESCE(((dt = '2001-01-01') or (customer = 3)),false) (type: boolean)
             Select Operator
               expressions: customer (type: int), dt (type: string)
               outputColumnNames: _col0, _col1

@@ -61,6 +61,7 @@
         <include>beeline/**/*</include>
         <include>bin/**/*</include>
         <include>checkstyle/**/*</include>
+        <include>classification/**/*</include>
         <include>cli/**/*</include>
         <include>common/**/*</include>
         <include>conf/**/*</include>
@@ -69,6 +70,7 @@
         <include>dev-support/**/*</include>
         <include>druid-handler/**/*</include>
         <include>jdbc-handler/**/*</include>
+        <include>kafka-handler/**/*</include>
         <include>find-bugs/**/*</include>
         <include>hbase-handler/**/*</include>
         <include>hcatalog/**/*</include>
@@ -95,8 +97,14 @@
         <include>shims/**/*</include>
         <include>spark-client/**/*</include>
         <include>storage-api/**/*</include>
+        <include>standalone-metastore/metastore-common/**/*</include>
+        <include>standalone-metastore/metastore-server/**/*</include>
+        <include>streaming/**/*</include>
         <include>testutils/**/*</include>
+        <include>upgrade-acid/**/*</include>
         <include>vector-code-gen/**/*</include>
+        <include>kryo-registrator/**/*</include>
+        <include>kudu-handler/**/*</include>
       </includes>
       <outputDirectory>/</outputDirectory>
     </fileSet>

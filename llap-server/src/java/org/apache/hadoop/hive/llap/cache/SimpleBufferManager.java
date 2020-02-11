@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.llap.cache;
 import java.util.List;
 
 import org.apache.hadoop.hive.common.io.Allocator;
+import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.common.io.DataCache.BooleanRef;
 import org.apache.hadoop.hive.common.io.DataCache.DiskRangeListFactory;
 import org.apache.hadoop.hive.common.io.DiskRange;
@@ -84,9 +85,8 @@ public class SimpleBufferManager implements BufferUsageManager, LowLevelCache {
   }
 
   @Override
-  public long[] putFileData(Object fileKey, DiskRange[] ranges,
-      MemoryBuffer[] chunks, long baseOffset, Priority priority,
-      LowLevelCacheCounters qfCounters) {
+  public long[] putFileData(Object fileKey, DiskRange[] ranges, MemoryBuffer[] chunks,
+      long baseOffset, Priority priority, LowLevelCacheCounters qfCounters, CacheTag tag) {
     for (int i = 0; i < chunks.length; ++i) {
       LlapAllocatorBuffer buffer = (LlapAllocatorBuffer)chunks[i];
       if (LlapIoImpl.LOCKING_LOGGER.isTraceEnabled()) {
@@ -101,15 +101,5 @@ public class SimpleBufferManager implements BufferUsageManager, LowLevelCache {
   @Override
   public void notifyEvicted(MemoryBuffer buffer) {
     throw new UnsupportedOperationException("Buffer manager doesn't have cache");
-  }
-
-  @Override
-  public String debugDumpForOom() {
-    return "";
-  }
-
-  @Override
-  public void debugDumpShort(StringBuilder sb) {
-    // TODO Auto-generated method stub
   }
 }

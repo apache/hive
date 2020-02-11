@@ -1,0 +1,153 @@
+PREHOOK: query: DROP TABLE IF EXISTS decimal_part
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS decimal_part
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE decimal_part (id DECIMAL(4,0), foo VARCHAR(10))
+    PARTITIONED BY (nr_bank DECIMAL(4,0))
+STORED AS ORC TBLPROPERTIES ('orc.compress'='ZLIB')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@decimal_part
+POSTHOOK: query: CREATE TABLE decimal_part (id DECIMAL(4,0), foo VARCHAR(10))
+    PARTITIONED BY (nr_bank DECIMAL(4,0))
+STORED AS ORC TBLPROPERTIES ('orc.compress'='ZLIB')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@decimal_part
+PREHOOK: query: INSERT INTO decimal_part PARTITION (nr_bank = 88) VALUES (1, 'test')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@decimal_part@nr_bank=88
+POSTHOOK: query: INSERT INTO decimal_part PARTITION (nr_bank = 88) VALUES (1, 'test')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@decimal_part@nr_bank=88
+POSTHOOK: Lineage: decimal_part PARTITION(nr_bank=88).foo SCRIPT []
+POSTHOOK: Lineage: decimal_part PARTITION(nr_bank=88).id SCRIPT []
+PREHOOK: query: INSERT INTO decimal_part PARTITION (nr_bank = 8801) VALUES (1, '8801')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@decimal_part@nr_bank=8801
+POSTHOOK: query: INSERT INTO decimal_part PARTITION (nr_bank = 8801) VALUES (1, '8801')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@decimal_part@nr_bank=8801
+POSTHOOK: Lineage: decimal_part PARTITION(nr_bank=8801).foo SCRIPT []
+POSTHOOK: Lineage: decimal_part PARTITION(nr_bank=8801).id SCRIPT []
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT count(*), nr_bank FROM decimal_part GROUP BY nr_bank
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_part
+PREHOOK: Input: default@decimal_part@nr_bank=88
+PREHOOK: Input: default@decimal_part@nr_bank=8801
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT count(*), nr_bank FROM decimal_part GROUP BY nr_bank
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_part
+POSTHOOK: Input: default@decimal_part@nr_bank=88
+POSTHOOK: Input: default@decimal_part@nr_bank=8801
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: decimal_part
+            Statistics: Num rows: 2 Data size: 624 Basic stats: COMPLETE Column stats: COMPLETE
+            TableScan Vectorization:
+                native: true
+            Select Operator
+              expressions: nr_bank (type: decimal(4,0))
+              outputColumnNames: nr_bank
+              Select Vectorization:
+                  className: VectorSelectOperator
+                  native: true
+                  projectedOutputColumnNums: [2]
+              Statistics: Num rows: 2 Data size: 624 Basic stats: COMPLETE Column stats: COMPLETE
+              Group By Operator
+                aggregations: count()
+                Group By Vectorization:
+                    aggregators: VectorUDAFCountStar(*) -> bigint
+                    className: VectorGroupByOperator
+                    groupByMode: HASH
+                    keyExpressions: ConvertDecimal64ToDecimal(col 2:decimal(4,0)/DECIMAL_64) -> 4:decimal(4,0)
+                    native: false
+                    vectorProcessingMode: HASH
+                    projectedOutputColumnNums: [0]
+                keys: nr_bank (type: decimal(4,0))
+                minReductionHashAggr: 0.99
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: decimal(4,0))
+                  null sort order: z
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: decimal(4,0))
+                  Reduce Sink Vectorization:
+                      className: VectorReduceSinkOperator
+                      native: false
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+                  Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col1 (type: bigint)
+      Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          keys: KEY._col0 (type: decimal(4,0))
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
+          Select Operator
+            expressions: _col1 (type: bigint), _col0 (type: decimal(4,0))
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT count(*), nr_bank FROM decimal_part GROUP BY nr_bank
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_part
+PREHOOK: Input: default@decimal_part@nr_bank=88
+PREHOOK: Input: default@decimal_part@nr_bank=8801
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count(*), nr_bank FROM decimal_part GROUP BY nr_bank
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_part
+POSTHOOK: Input: default@decimal_part@nr_bank=88
+POSTHOOK: Input: default@decimal_part@nr_bank=8801
+#### A masked pattern was here ####
+1	88
+1	8801

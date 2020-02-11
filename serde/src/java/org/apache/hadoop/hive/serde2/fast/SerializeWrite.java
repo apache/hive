@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,17 +19,17 @@
 package org.apache.hadoop.hive.serde2.fast;
 
 import java.io.IOException;
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 
 /*
@@ -154,6 +154,8 @@ public interface SerializeWrite {
    * NOTE: The scale parameter is for text serialization (e.g. HiveDecimal.toFormatString) that
    * creates trailing zeroes output decimals.
    */
+  void writeDecimal64(long decimal64Long, int scale) throws IOException;
+
   void writeHiveDecimal(HiveDecimal dec, int scale) throws IOException;
   void writeHiveDecimal(HiveDecimalWritable decWritable, int scale) throws IOException;
 

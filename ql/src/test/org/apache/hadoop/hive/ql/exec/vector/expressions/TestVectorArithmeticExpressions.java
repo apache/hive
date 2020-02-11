@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,7 +21,8 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import junit.framework.Assert;
+import static org.junit.Assert.assertNull;
+import org.junit.Assert;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
@@ -41,6 +42,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColSubtractD
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColMultiplyDecimalColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColSubtractDecimalColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColAddLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColAddLongColumnChecked;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColAddLongScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColSubtractDecimalColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColAddDecimalColumn;
@@ -51,7 +53,11 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColMultiplyD
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalScalarAddDecimalColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalScalarSubtractDecimalColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalScalarMultiplyDecimalColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColAddLongScalarChecked;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColModuloLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.util.VectorizedRowGroupGenUtil;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.junit.Test;
 
 /**
@@ -60,9 +66,24 @@ import org.junit.Test;
 public class TestVectorArithmeticExpressions {
 
   @Test
-  public void testLongColAddLongScalarNoNulls()  {
+  public void testLongColAddLongScalarNoNulls() throws HiveException {
+    longColAddLongScalarNoNulls(false);
+  }
+
+  @Test
+  public void testLongColAddLongScalarCheckedNoNulls() throws HiveException {
+    longColAddLongScalarNoNulls(true);
+  }
+
+  private void longColAddLongScalarNoNulls(boolean checked) throws HiveException {
     VectorizedRowBatch vrg = getVectorizedRowBatchSingleLongVector(VectorizedRowBatch.DEFAULT_SIZE);
-    LongColAddLongScalar expr = new LongColAddLongScalar(0, 23, 1);
+    VectorExpression expr;
+    if (checked) {
+      expr = new LongColAddLongScalarChecked(0, 23, 1);
+      expr.setOutputTypeInfo(TypeInfoFactory.getPrimitiveTypeInfo("bigint"));
+    } else {
+      expr = new LongColAddLongScalar(0, 23, 1);
+    }
     expr.evaluate(vrg);
     //verify
     for (int i = 0; i < VectorizedRowBatch.DEFAULT_SIZE; i++) {
@@ -103,13 +124,28 @@ public class TestVectorArithmeticExpressions {
   }
 
   @Test
-  public void testLongColAddLongScalarWithNulls()  {
+  public void testLongColAddLongScalarWithNulls() throws HiveException {
+    longColAddLongScalarCheckedWithNulls(false);
+  }
+
+  @Test
+  public void testLongColAddLongScalarCheckedWithNulls() throws HiveException {
+    longColAddLongScalarCheckedWithNulls(true);
+  }
+
+  private void longColAddLongScalarCheckedWithNulls(boolean isChecked) throws HiveException {
     VectorizedRowBatch batch = getVectorizedRowBatchSingleLongVector(
         VectorizedRowBatch.DEFAULT_SIZE);
     LongColumnVector lcv = (LongColumnVector) batch.cols[0];
     LongColumnVector lcvOut = (LongColumnVector) batch.cols[1];
     TestVectorizedRowBatch.addRandomNulls(lcv);
-    LongColAddLongScalar expr = new LongColAddLongScalar(0, 23, 1);
+    VectorExpression expr;
+    if (isChecked) {
+      expr = new LongColAddLongScalarChecked(0, 23, 1);
+      expr.setOutputTypeInfo(TypeInfoFactory.getPrimitiveTypeInfo("bigint"));
+    } else {
+      expr = new LongColAddLongScalar(0, 23, 1);
+    }
     expr.evaluate(batch);
 
     // verify
@@ -126,10 +162,19 @@ public class TestVectorArithmeticExpressions {
   }
 
   @Test
-  public void testLongColAddLongScalarWithRepeating() {
+  public void testLongColAddLongScalarWithRepeating() throws HiveException {
+    longColAddLongScalarWithRepeatingUtil(false);
+  }
+
+  @Test
+  public void testLongColAddLongScalarCheckedWithRepeating() throws HiveException {
+    longColAddLongScalarWithRepeatingUtil(true);
+  }
+
+  private void longColAddLongScalarWithRepeatingUtil(boolean isChecked) throws HiveException {
     LongColumnVector in, out;
     VectorizedRowBatch batch;
-    LongColAddLongScalar expr;
+    VectorExpression expr;
 
     // Case 1: is repeating, no nulls
     batch = getVectorizedRowBatchSingleLongVector(VectorizedRowBatch.DEFAULT_SIZE);
@@ -137,7 +182,13 @@ public class TestVectorArithmeticExpressions {
     in.isRepeating = true;
     out = (LongColumnVector) batch.cols[1];
     out.isRepeating = false;
-    expr = new LongColAddLongScalar(0, 23, 1);
+    if(isChecked) {
+      expr = new LongColAddLongScalarChecked(0, 23, 1);
+      expr.setOutputTypeInfo(TypeInfoFactory.getPrimitiveTypeInfo("bigint"));
+    } else {
+      expr = new LongColAddLongScalar(0, 23, 1);
+    }
+
     expr.evaluate(batch);
     // verify
     Assert.assertTrue(out.isRepeating);
@@ -155,7 +206,13 @@ public class TestVectorArithmeticExpressions {
     out.isRepeating = false;
     out.isNull[0] = false;
     out.noNulls = true;
-    expr = new LongColAddLongScalar(0, 23, 1);
+    if (isChecked) {
+      expr = new LongColAddLongScalarChecked(0, 23, 1);
+      expr.setOutputTypeInfo(TypeInfoFactory.getPrimitiveTypeInfo("bigint"));
+    } else {
+      expr = new LongColAddLongScalar(0, 23, 1);
+    }
+
     expr.evaluate(batch);
     // verify
     Assert.assertTrue(out.isRepeating);
@@ -193,7 +250,16 @@ public class TestVectorArithmeticExpressions {
   }
 
   @Test
-  public void testLongColAddLongColumn() {
+  public void testLongColAddLongColumn() throws HiveException {
+    longColAddLongColumnUtil(false);
+  }
+
+  @Test
+  public void testLongColAddLongColumnChecked() throws HiveException {
+    longColAddLongColumnUtil(true);
+  }
+
+  private void longColAddLongColumnUtil(boolean isChecked) throws HiveException {
     int seed = 17;
     VectorizedRowBatch vrg = VectorizedRowGroupGenUtil.getVectorizedRowBatch(
         VectorizedRowBatch.DEFAULT_SIZE,
@@ -204,7 +270,14 @@ public class TestVectorArithmeticExpressions {
     LongColumnVector lcv3 = (LongColumnVector) vrg.cols[3];
     LongColumnVector lcv4 = (LongColumnVector) vrg.cols[4];
     LongColumnVector lcv5 = (LongColumnVector) vrg.cols[5];
-    LongColAddLongColumn expr = new LongColAddLongColumn(0, 1, 2);
+    VectorExpression expr;
+    if (isChecked) {
+      expr = new LongColAddLongColumnChecked(0, 1, 2);
+      expr.setOutputTypeInfo(TypeInfoFactory.getPrimitiveTypeInfo("bigint"));
+    } else {
+      expr = new LongColAddLongColumn(0, 1, 2);
+    }
+
     expr.evaluate(vrg);
     for (int i = 0; i < VectorizedRowBatch.DEFAULT_SIZE; i++) {
       assertEquals((i+1) * seed * 3, lcv2.vector[i]);
@@ -234,7 +307,13 @@ public class TestVectorArithmeticExpressions {
 
     // Now test with repeating flag
     lcv3.isRepeating = true;
-    LongColAddLongColumn expr2 = new LongColAddLongColumn(3, 4, 5);
+    VectorExpression expr2;
+    if (isChecked) {
+      expr2 = new LongColAddLongColumnChecked(3, 4, 5);
+      expr2.setOutputTypeInfo(TypeInfoFactory.getPrimitiveTypeInfo("bigint"));
+    } else {
+      expr2 = new LongColAddLongColumn(3, 4, 5);
+    }
     expr2.evaluate(vrg);
     for (int i = 0; i < VectorizedRowBatch.DEFAULT_SIZE; i++) {
       assertEquals(seed * (4 + 5*(i+1)), lcv5.vector[i]);
@@ -264,15 +343,14 @@ public class TestVectorArithmeticExpressions {
     lcv1.noNulls = true;
     lcv0.isRepeating = false;
     lcv1.isRepeating = false;
-    lcv2.noNulls = false;         // set output noNulls to true to make sure it gets over-written
-    lcv2.isRepeating = true;      // similarly with isRepeating
+    lcv2.reset();
     expr.evaluate(vrg);
     assertTrue(lcv2.noNulls);
     assertFalse(lcv2.isRepeating);
   }
 
   @Test
-  public void testLongColDivideLongColumn() {
+  public void testLongColDivideLongColumn() throws HiveException {
     /* Testing for equality of doubles after a math operation is
      * not always reliable so use this as a tolerance.
      */
@@ -308,7 +386,55 @@ public class TestVectorArithmeticExpressions {
   }
 
   @Test
-  public void testDecimalColAddDecimalColumn() {
+  public void testLongColModuloLongColumn() throws HiveException {
+    VectorizedRowBatch batch = getVectorizedRowBatch2LongInLongOut();
+    LongColModuloLongColumn expr = new LongColModuloLongColumn(0, 1, 2);
+    batch.cols[0].isNull[1] = true;
+    batch.cols[0].noNulls = false;
+    batch.cols[1].noNulls = false;
+    LongColumnVector out = (LongColumnVector) batch.cols[2];
+
+    // Set so we can verify they are reset by operation
+    out.noNulls = true;
+    out.isRepeating = true;
+
+    expr.evaluate(batch);
+
+    // 0/0 for entry 0 should be set as NULL
+    assertFalse(out.noNulls);
+    assertTrue(out.isNull[0]);
+
+    // verify NULL output in entry 1 is correct
+    assertTrue(out.isNull[1]);
+
+    // check entries beyond first 2
+    for (int i = 2; i != batch.size; i++) {
+      assertTrue(out.vector[i] == 0L);
+    }
+    assertFalse(out.noNulls);
+    assertFalse(out.isRepeating);
+  }
+
+  private VectorizedRowBatch getVectorizedRowBatch2LongInLongOut() {
+    VectorizedRowBatch batch = new VectorizedRowBatch(3);
+    LongColumnVector lcv, lcv2;
+    lcv = new LongColumnVector();
+    for (int i = 0; i < VectorizedRowBatch.DEFAULT_SIZE; i++) {
+      lcv.vector[i] = i * 37;
+    }
+    batch.cols[0] = lcv;
+    lcv2 = new LongColumnVector();
+    batch.cols[1] = lcv2;
+    for (int i = 0; i < VectorizedRowBatch.DEFAULT_SIZE; i++) {
+      lcv2.vector[i] = i * 37;
+    }
+    batch.cols[2] = new LongColumnVector();
+    batch.size = VectorizedRowBatch.DEFAULT_SIZE;
+    return batch;
+  }
+
+  @Test
+  public void testDecimalColAddDecimalColumn() throws HiveException {
     VectorizedRowBatch b = getVectorizedRowBatch3DecimalCols();
     VectorExpression expr = new DecimalColAddDecimalColumn(0, 1, 2);
     DecimalColumnVector r = (DecimalColumnVector) b.cols[2];
@@ -372,7 +498,7 @@ public class TestVectorArithmeticExpressions {
 
   // Spot check decimal column-column subtract
   @Test
-  public void testDecimalColSubtractDecimalColumn() {
+  public void testDecimalColSubtractDecimalColumn() throws HiveException {
     VectorizedRowBatch b = getVectorizedRowBatch3DecimalCols();
     VectorExpression expr = new DecimalColSubtractDecimalColumn(0, 1, 2);
     DecimalColumnVector r = (DecimalColumnVector) b.cols[2];
@@ -394,7 +520,7 @@ public class TestVectorArithmeticExpressions {
 
   // Spot check decimal column-column multiply
   @Test
-  public void testDecimalColMultiplyDecimalColumn() {
+  public void testDecimalColMultiplyDecimalColumn() throws HiveException {
     VectorizedRowBatch b = getVectorizedRowBatch3DecimalCols();
     VectorExpression expr = new DecimalColMultiplyDecimalColumn(0, 1, 2);
     DecimalColumnVector r = (DecimalColumnVector) b.cols[2];
@@ -420,7 +546,7 @@ public class TestVectorArithmeticExpressions {
    * cases used in the source code template ColumnArithmeticScalarDecimal.txt.
    */
   @Test
-  public void testDecimalColAddDecimalScalar() {
+  public void testDecimalColAddDecimalScalar() throws HiveException {
     VectorizedRowBatch b = getVectorizedRowBatch3DecimalCols();
     HiveDecimal d = HiveDecimal.create(1);
     VectorExpression expr = new DecimalColAddDecimalScalar(0, d, 2);
@@ -478,7 +604,7 @@ public class TestVectorArithmeticExpressions {
    * The template is used for division and modulo.
    */
   @Test
-  public void testDecimalColDivideDecimalScalar() {
+  public void testDecimalColDivideDecimalScalar() throws HiveException {
     VectorizedRowBatch b = getVectorizedRowBatch3DecimalCols();
     HiveDecimal d = HiveDecimal.create("2.00");
     VectorExpression expr = new DecimalColDivideDecimalScalar(0, d, 2);
@@ -537,7 +663,7 @@ public class TestVectorArithmeticExpressions {
    * for template ScalarDivideColumnDecimal.txt.
    */
   @Test
-  public void testDecimalScalarDivideDecimalColumn() {
+  public void testDecimalScalarDivideDecimalColumn() throws HiveException {
     VectorizedRowBatch b = getVectorizedRowBatch3DecimalCols();
     HiveDecimal d = HiveDecimal.create("3.96");  // 1.20 * 3.30
     VectorExpression expr = new DecimalScalarDivideDecimalColumn(d, 0, 2);
@@ -584,7 +710,7 @@ public class TestVectorArithmeticExpressions {
 
   // Spot check Decimal Col-Scalar Modulo
   @Test
-  public void testDecimalColModuloDecimalScalar() {
+  public void testDecimalColModuloDecimalScalar() throws HiveException {
     VectorizedRowBatch b = getVectorizedRowBatch3DecimalCols();
     HiveDecimal d = HiveDecimal.create("2.00");
     VectorExpression expr = new DecimalColModuloDecimalScalar(0, d, 2);
@@ -620,7 +746,7 @@ public class TestVectorArithmeticExpressions {
 
   // Spot check decimal scalar-column modulo
   @Test
-  public void testDecimalScalarModuloDecimalColumn() {
+  public void testDecimalScalarModuloDecimalColumn() throws HiveException {
     VectorizedRowBatch b = getVectorizedRowBatch3DecimalCols();
     HiveDecimal d = HiveDecimal.create("2.00");
     VectorExpression expr = new DecimalScalarModuloDecimalColumn(d, 0, 2);
@@ -647,7 +773,7 @@ public class TestVectorArithmeticExpressions {
   }
 
   @Test
-  public void testDecimalColDivideDecimalColumn() {
+  public void testDecimalColDivideDecimalColumn() throws HiveException {
     VectorizedRowBatch b = getVectorizedRowBatch3DecimalCols();
     DecimalColumnVector in1 = (DecimalColumnVector) b.cols[1];
     for (int i = 0; i < 3; i++) {
@@ -724,7 +850,7 @@ public class TestVectorArithmeticExpressions {
 
   // Spot check decimal column modulo decimal column
   @Test
-  public void testDecimalColModuloDecimalColumn() {
+  public void testDecimalColModuloDecimalColumn() throws HiveException {
     VectorizedRowBatch b = getVectorizedRowBatch3DecimalCols();
     DecimalColumnVector in1 = (DecimalColumnVector) b.cols[1];
     for (int i = 0; i < 3; i++) {
@@ -743,7 +869,7 @@ public class TestVectorArithmeticExpressions {
    * addition checks all the cases for the template, so don't do that redundantly here.
    */
   @Test
-  public void testDecimalColSubtractDecimalScalar() {
+  public void testDecimalColSubtractDecimalScalar() throws HiveException {
     VectorizedRowBatch b = getVectorizedRowBatch3DecimalCols();
     HiveDecimal d = HiveDecimal.create(1);
     VectorExpression expr = new DecimalColSubtractDecimalScalar(0, d, 2);
@@ -769,7 +895,7 @@ public class TestVectorArithmeticExpressions {
    * addition checks all the cases for the template, so don't do that redundantly here.
    */
   @Test
-  public void testDecimalColMultiplyDecimalScalar() {
+  public void testDecimalColMultiplyDecimalScalar() throws HiveException {
     VectorizedRowBatch b = getVectorizedRowBatch3DecimalCols();
     HiveDecimal d = HiveDecimal.create(2);
     VectorExpression expr = new DecimalColMultiplyDecimalScalar(0, d, 2);
@@ -795,7 +921,7 @@ public class TestVectorArithmeticExpressions {
    * cases used in the source code template ScalarArithmeticColumnDecimal.txt.
    */
   @Test
-  public void testDecimalScalarAddDecimalColumn() {
+  public void testDecimalScalarAddDecimalColumn() throws HiveException {
     VectorizedRowBatch b = getVectorizedRowBatch3DecimalCols();
     HiveDecimal d = HiveDecimal.create(1);
     VectorExpression expr = new DecimalScalarAddDecimalColumn(d, 0, 2);
@@ -852,7 +978,7 @@ public class TestVectorArithmeticExpressions {
    * addition checks all the cases for the template, so don't do that redundantly here.
    */
   @Test
-  public void testDecimalScalarSubtractDecimalColumn() {
+  public void testDecimalScalarSubtractDecimalColumn() throws HiveException {
     VectorizedRowBatch b = getVectorizedRowBatch3DecimalCols();
     HiveDecimal d = HiveDecimal.create(1);
     VectorExpression expr = new DecimalScalarSubtractDecimalColumn(d, 0, 2);
@@ -879,7 +1005,7 @@ public class TestVectorArithmeticExpressions {
    */
 
   @Test
-  public void testDecimalScalarMultiplyDecimalColumn() {
+  public void testDecimalScalarMultiplyDecimalColumn() throws HiveException {
     VectorizedRowBatch b = getVectorizedRowBatch3DecimalCols();
     HiveDecimal d = HiveDecimal.create(2);
     VectorExpression expr = new DecimalScalarMultiplyDecimalColumn(d, 0, 2);

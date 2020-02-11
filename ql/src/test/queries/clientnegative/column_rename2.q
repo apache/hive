@@ -1,3 +1,4 @@
+--! qt:dataset:src
 drop table tstsrc;
 create table tstsrc like src;
 insert overwrite table tstsrc

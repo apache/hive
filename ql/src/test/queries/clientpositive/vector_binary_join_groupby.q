@@ -6,11 +6,11 @@ SET hive.auto.convert.join.noconditionaltask.size=1000000000;
 SET hive.vectorized.execution.enabled=true;
 set hive.fetch.task.conversion=none;
 
-DROP TABLE over1k;
+DROP TABLE over1k_n7;
 DROP TABLE hundredorc;
 
 -- data setup
-CREATE TABLE over1k(t tinyint,
+CREATE TABLE over1k_n7(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -24,7 +24,7 @@ CREATE TABLE over1k(t tinyint,
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE;
 
-LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE over1k;
+LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE over1k_n7;
 
 CREATE TABLE hundredorc(t tinyint,
            si smallint,
@@ -39,7 +39,7 @@ CREATE TABLE hundredorc(t tinyint,
            bin binary)
 STORED AS ORC;
 
-INSERT INTO TABLE hundredorc SELECT * FROM over1k LIMIT 100;
+INSERT INTO TABLE hundredorc SELECT * FROM over1k_n7 LIMIT 100;
 
 EXPLAIN VECTORIZATION EXPRESSION
 SELECT sum(hash(*)) k

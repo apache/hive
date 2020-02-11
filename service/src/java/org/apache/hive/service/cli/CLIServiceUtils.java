@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -31,7 +31,7 @@ public class CLIServiceUtils {
    * Convert a SQL search pattern into an equivalent Java Regex.
    *
    * @param pattern input which may contain '%' or '_' wildcard characters, or
-   * these characters escaped using {@link #getSearchStringEscape()}.
+   * these characters escaped using getSearchStringEscape().
    * @return replace %/_ with regex search characters, also handle escaped
    * characters.
    */

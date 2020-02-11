@@ -21,6 +21,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.SecureRandom;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -60,6 +61,11 @@ import io.netty.util.concurrent.ScheduledFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.yarn.api.records.ApplicationId;
+import org.apache.hadoop.yarn.api.records.ApplicationReport;
+import org.apache.hadoop.yarn.api.records.YarnApplicationState;
+import org.apache.hadoop.yarn.client.api.YarnClient;
 
 /**
  * An RPC server. The server matches remote clients based on a secret that is generated on
@@ -78,13 +84,16 @@ public class RpcServer implements Closeable {
   private final int port;
   private final ConcurrentMap<String, ClientInfo> pendingClients;
   private final RpcConfiguration config;
+  private String applicationId;
+  private final HiveConf hiveConf;
 
-  public RpcServer(Map<String, String> mapConf) throws IOException, InterruptedException {
+  public RpcServer(Map<String, String> mapConf, HiveConf hiveConf) throws IOException, InterruptedException {
     this.config = new RpcConfiguration(mapConf);
+    this.hiveConf = hiveConf;
     this.group = new NioEventLoopGroup(
         this.config.getRpcThreadCount(),
         new ThreadFactoryBuilder()
-            .setNameFormat("RPC-Handler-%d")
+            .setNameFormat("Spark-Driver-RPC-Handler-%d")
             .setDaemon(true)
             .build());
      ServerBootstrap serverBootstrap = new ServerBootstrap()
@@ -100,7 +109,8 @@ public class RpcServer implements Closeable {
             Runnable cancelTask = new Runnable() {
                 @Override
                 public void run() {
-                  LOG.warn("Timed out waiting for hello from client.");
+                  LOG.warn("Timed out waiting for the completion of SASL negotiation "
+                          + "between HiveServer2 and the Remote Spark Driver.");
                   newRpc.close();
                 }
             };
@@ -117,6 +127,8 @@ public class RpcServer implements Closeable {
     this.port = ((InetSocketAddress) channel.localAddress()).getPort();
     this.pendingClients = Maps.newConcurrentMap();
     this.address = this.config.getServerAddress();
+
+    LOG.info("Successfully created Remote Spark Driver RPC Server with address {}:{}", this.address, this.port);
   }
 
   /**
@@ -143,7 +155,8 @@ public class RpcServer implements Closeable {
           // Retry the next port
         }
       }
-      throw new IOException("No available ports from configured RPC Server ports for HiveServer2");
+      throw new IOException("Remote Spark Driver RPC Server cannot bind to any of the configured ports: "
+              + Arrays.toString(config.getServerPorts().toArray()));
     }
   }
 
@@ -161,15 +174,119 @@ public class RpcServer implements Closeable {
     return registerClient(clientId, secret, serverDispatcher, config.getServerConnectTimeoutMs());
   }
 
+  public void setApplicationId(String applicationId) {
+    this.applicationId = applicationId;
+  }
+
+  /**
+   * This function converts an application in form of a String into a ApplicationId.
+   *
+   * @param appIDStr The application id in form of a string
+   * @return the application id as an instance of ApplicationId class.
+   */
+  private static ApplicationId getApplicationIDFromString(String appIDStr) {
+    String[] parts = appIDStr.split("_");
+    if (parts.length < 3) {
+      throw new IllegalStateException("the application id found is not valid. application id: " + appIDStr);
+    }
+    long timestamp = Long.parseLong(parts[1]);
+    int id = Integer.parseInt(parts[2]);
+    return ApplicationId.newInstance(timestamp, id);
+  }
+
+  public static boolean isApplicationAccepted(HiveConf conf, String applicationId) {
+    if (applicationId == null) {
+      return false;
+    }
+    YarnClient yarnClient = null;
+    try {
+      ApplicationId appId = getApplicationIDFromString(applicationId);
+      yarnClient = YarnClient.createYarnClient();
+      yarnClient.init(conf);
+      yarnClient.start();
+      ApplicationReport appReport = yarnClient.getApplicationReport(appId);
+      return appReport != null && appReport.getYarnApplicationState() == YarnApplicationState.ACCEPTED;
+    } catch (Exception ex) {
+      LOG.error("Failed getting application status for: " + applicationId + ": " + ex, ex);
+      return false;
+    } finally {
+      if (yarnClient != null) {
+        try {
+          yarnClient.stop();
+        } catch (Exception ex) {
+          LOG.error("Failed to stop yarn client: " + ex, ex);
+        }
+      }
+    }
+  }
+
+  static class YarnApplicationStateFinder {
+    public boolean isApplicationAccepted(HiveConf conf, String applicationId) {
+      if (applicationId == null) {
+        return false;
+      }
+      YarnClient yarnClient = null;
+      try {
+        LOG.info("Trying to find " + applicationId);
+        ApplicationId appId = getApplicationIDFromString(applicationId);
+        yarnClient = YarnClient.createYarnClient();
+        yarnClient.init(conf);
+        yarnClient.start();
+        ApplicationReport appReport = yarnClient.getApplicationReport(appId);
+        return appReport != null && appReport.getYarnApplicationState() == YarnApplicationState.ACCEPTED;
+      } catch (Exception ex) {
+        LOG.error("Failed getting application status for: " + applicationId + ": " + ex, ex);
+        return false;
+      } finally {
+        if (yarnClient != null) {
+          try {
+            yarnClient.stop();
+          } catch (Exception ex) {
+            LOG.error("Failed to stop yarn client: " + ex, ex);
+          }
+        }
+      }
+    }
+  }
+
   @VisibleForTesting
   Future<Rpc> registerClient(final String clientId, String secret,
-      RpcDispatcher serverDispatcher, long clientTimeoutMs) {
+      RpcDispatcher serverDispatcher, final long clientTimeoutMs) {
+    return registerClient(clientId, secret, serverDispatcher, clientTimeoutMs, new YarnApplicationStateFinder());
+  }
+
+  @VisibleForTesting
+  Future<Rpc> registerClient(final String clientId, String secret,
+      RpcDispatcher serverDispatcher, long clientTimeoutMs,
+      YarnApplicationStateFinder yarnApplicationStateFinder) {
     final Promise<Rpc> promise = group.next().newPromise();
 
     Runnable timeout = new Runnable() {
       @Override
       public void run() {
-        promise.setFailure(new TimeoutException("Timed out waiting for client connection."));
+        // check to see if application is in ACCEPTED state, if so, don't set failure
+        // if applicationId is not null
+        //   do yarn application -status $applicationId
+        //   if state == ACCEPTED
+        //     reschedule timeout runnable
+        //   else
+        //    set failure as below
+        LOG.info("Trying to find " + applicationId);
+        if (yarnApplicationStateFinder.isApplicationAccepted(hiveConf, applicationId)) {
+          final ClientInfo client = pendingClients.get(clientId);
+          if (client != null) {
+            LOG.info("Extending timeout for client " + clientId);
+            ScheduledFuture<?> oldTimeoutFuture = client.timeoutFuture;
+            client.timeoutFuture = group.schedule(this,
+                clientTimeoutMs,
+                TimeUnit.MILLISECONDS);
+            oldTimeoutFuture.cancel(true);
+            return;
+          }
+        }
+        promise.setFailure(new TimeoutException(
+                String.format("Client '%s' timed out waiting for connection from the Remote Spark" +
+                        " Driver", clientId)));
       }
     };
     ScheduledFuture<?> timeoutFuture = group.schedule(timeout,
@@ -179,7 +296,7 @@ public class RpcServer implements Closeable {
         timeoutFuture);
     if (pendingClients.putIfAbsent(clientId, client) != null) {
       throw new IllegalStateException(
-          String.format("Client '%s' already registered.", clientId));
+          String.format("Remote Spark Driver with client ID '%s' already registered", clientId));
     }
 
     promise.addListener(new GenericFutureListener<Promise<Rpc>>() {
@@ -195,11 +312,12 @@ public class RpcServer implements Closeable {
   }
 
   /**
-   * Tells the RPC server to cancel the connection from an existing pending client
+   * Tells the RPC server to cancel the connection from an existing pending client.
+   *
    * @param clientId The identifier for the client
-   * @param msg The error message about why the connection should be canceled
+   * @param failure The error about why the connection should be canceled
    */
-  public void cancelClient(final String clientId, final String msg) {
+  public void cancelClient(final String clientId, final Throwable failure) {
     final ClientInfo cinfo = pendingClients.remove(clientId);
     if (cinfo == null) {
       // Nothing to be done here.
@@ -207,9 +325,19 @@ public class RpcServer implements Closeable {
     }
     cinfo.timeoutFuture.cancel(true);
     if (!cinfo.promise.isDone()) {
-      cinfo.promise.setFailure(new RuntimeException(
-          String.format("Cancel client '%s'. Error: " + msg, clientId)));
+      cinfo.promise.setFailure(failure);
     }
+  }
+
+  /**
+   * Tells the RPC server to cancel the connection from an existing pending client.
+   *
+   * @param clientId The identifier for the client
+   * @param msg The error message about why the connection should be canceled
+   */
+  public void cancelClient(final String clientId, final String msg) {
+    cancelClient(clientId, new RuntimeException(String.format(
+            "Cancelling Remote Spark Driver client connection '%s' with error: " + msg, clientId)));
   }
 
   /**
@@ -351,7 +479,7 @@ public class RpcServer implements Closeable {
     final Promise<Rpc> promise;
     final String secret;
     final RpcDispatcher dispatcher;
-    final ScheduledFuture<?> timeoutFuture;
+    ScheduledFuture<?> timeoutFuture;
 
     private ClientInfo(String id, Promise<Rpc> promise, String secret, RpcDispatcher dispatcher,
         ScheduledFuture<?> timeoutFuture) {

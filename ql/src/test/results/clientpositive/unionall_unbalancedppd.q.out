@@ -53,6 +53,9 @@ from union_all_bug_test_2
 ) A
 WHERE (filter = 1)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@union_all_bug_test_1
+PREHOOK: Input: default@union_all_bug_test_2
+#### A masked pattern was here ####
 POSTHOOK: query: explain SELECT f1
 FROM (
 
@@ -70,6 +73,9 @@ from union_all_bug_test_2
 ) A
 WHERE (filter = 1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@union_all_bug_test_1
+POSTHOOK: Input: default@union_all_bug_test_2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -80,21 +86,23 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: union_all_bug_test_1
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            filterExpr: (if(true, f1, f2) = 1) (type: boolean)
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (if(true, f1, f2) = 1) (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: f1 (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -144,34 +152,42 @@ POSTHOOK: Input: default@union_all_bug_test_2
 #### A masked pattern was here ####
 PREHOOK: query: insert into table union_all_bug_test_1 values (1,1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@union_all_bug_test_1
 POSTHOOK: query: insert into table union_all_bug_test_1 values (1,1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@union_all_bug_test_1
-POSTHOOK: Lineage: union_all_bug_test_1.f1 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: union_all_bug_test_1.f2 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: union_all_bug_test_1.f1 SCRIPT []
+POSTHOOK: Lineage: union_all_bug_test_1.f2 SCRIPT []
 PREHOOK: query: insert into table union_all_bug_test_2 values (1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@union_all_bug_test_2
 POSTHOOK: query: insert into table union_all_bug_test_2 values (1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@union_all_bug_test_2
-POSTHOOK: Lineage: union_all_bug_test_2.f1 EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: union_all_bug_test_2.f1 SCRIPT []
 PREHOOK: query: insert into table union_all_bug_test_1 values (0,0)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@union_all_bug_test_1
 POSTHOOK: query: insert into table union_all_bug_test_1 values (0,0)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@union_all_bug_test_1
-POSTHOOK: Lineage: union_all_bug_test_1.f1 EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: union_all_bug_test_1.f2 EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: union_all_bug_test_1.f1 SCRIPT []
+POSTHOOK: Lineage: union_all_bug_test_1.f2 SCRIPT []
 PREHOOK: query: insert into table union_all_bug_test_2 values (0)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@union_all_bug_test_2
 POSTHOOK: query: insert into table union_all_bug_test_2 values (0)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@union_all_bug_test_2
-POSTHOOK: Lineage: union_all_bug_test_2.f1 EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: union_all_bug_test_2.f1 SCRIPT []
 PREHOOK: query: SELECT f1
 FROM (
 
@@ -319,6 +335,9 @@ from union_all_bug_test_2
 ) A
 WHERE (f1 = 1)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@union_all_bug_test_1
+PREHOOK: Input: default@union_all_bug_test_2
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 
 SELECT f1
@@ -338,6 +357,9 @@ from union_all_bug_test_2
 ) A
 WHERE (f1 = 1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@union_all_bug_test_1
+POSTHOOK: Input: default@union_all_bug_test_2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -348,42 +370,44 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: union_all_bug_test_1
-            Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: (f1 = 1) (type: boolean)
+            Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (f1 = 1) (type: boolean)
-              Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                 Union
-                  Statistics: Num rows: 2 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: 1 (type: int)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 2 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 2 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
             alias: union_all_bug_test_2
-            Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: (f1 = 1) (type: boolean)
+            Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (f1 = 1) (type: boolean)
-              Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                 Union
-                  Statistics: Num rows: 2 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: 1 (type: int)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 2 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 2 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

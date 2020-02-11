@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -263,7 +263,7 @@ public class HiveHistoryImpl implements HiveHistory{
   }
 
   @Override
-  public void startTask(String queryId, Task<? extends Serializable> task,
+  public void startTask(String queryId, Task<?> task,
       String taskName) {
     TaskInfo ti = new TaskInfo();
 
@@ -279,7 +279,7 @@ public class HiveHistoryImpl implements HiveHistory{
   }
 
   @Override
-  public void endTask(String queryId, Task<? extends Serializable> task) {
+  public void endTask(String queryId, Task<?> task) {
     String id = queryId + ":" + task.getId();
     TaskInfo ti = taskInfoMap.get(id);
 
@@ -291,7 +291,7 @@ public class HiveHistoryImpl implements HiveHistory{
   }
 
   @Override
-  public void progressTask(String queryId, Task<? extends Serializable> task) {
+  public void progressTask(String queryId, Task<?> task) {
     String id = queryId + ":" + task.getId();
     TaskInfo ti = taskInfoMap.get(id);
     if (ti == null) {
@@ -308,12 +308,12 @@ public class HiveHistoryImpl implements HiveHistory{
       new ThreadLocal<Map<String, String>>() {
     @Override
     protected Map<String,String> initialValue() {
-      return new HashMap<String,String>();
+      return new HashMap<>();
     }
   };
 
   @Override
-  public void logPlanProgress(QueryPlan plan) throws IOException {
+  public synchronized void logPlanProgress(QueryPlan plan) throws IOException {
     if (plan != null) {
       Map<String,String> ctrmap = ctrMapFactory.get();
       ctrmap.put("plan", plan.toString());

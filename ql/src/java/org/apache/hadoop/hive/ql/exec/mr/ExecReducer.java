@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,16 +19,10 @@
 package org.apache.hadoop.hive.ql.exec.mr;
 
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -49,6 +43,8 @@ import org.apache.hadoop.mapred.Reducer;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * ExecReducer is the generic Reducer class for Hive. Together with ExecMapper it is
@@ -94,17 +90,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
     ObjectInspector[] valueObjectInspector = new ObjectInspector[Byte.MAX_VALUE];
     ObjectInspector keyObjectInspector;
 
-    if (LOG.isInfoEnabled()) {
-      try {
-        LOG.info("conf classpath = "
-            + Arrays.asList(((URLClassLoader) job.getClassLoader()).getURLs()));
-        LOG.info("thread classpath = "
-            + Arrays.asList(((URLClassLoader) Thread.currentThread()
-            .getContextClassLoader()).getURLs()));
-      } catch (Exception e) {
-        LOG.info("cannot get classpath: " + e.getMessage());
-      }
-    }
+    Utilities.tryLoggingClassPaths(job, LOG);
     jc = job;
 
     ReduceWork gWork = Utilities.getReduceWork(job);
@@ -240,8 +226,13 @@ public class ExecReducer extends MapReduceBase implements Reducer {
             rowString = "[Error getting row data with exception " +
                   StringUtils.stringifyException(e2) + " ]";
           }
-          throw new HiveException("Hive Runtime Error while processing row (tag="
-              + tag + ") " + rowString, e);
+
+          // Log the contents of the row that caused exception so that it's available for debugging. But
+          // when exposed through an error message it can leak sensitive information, even to the
+          // client application.
+          LOG.trace("Hive Runtime Error while processing row (tag="
+              + tag + ") " + rowString);
+          throw new HiveException("Hive Runtime Error while processing row", e);
         }
       }
 

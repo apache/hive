@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,7 +18,7 @@
 
 package org.apache.hive.common.util;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 import org.apache.hive.common.util.Murmur3.IncrementalHash32;
 
 import com.google.common.hash.HashFunction;
@@ -222,14 +222,39 @@ public class TestMurmur3 {
       assertEquals(gl2, m2);
     }
   }
-  
+
+  @Test
+  public void test64() {
+    final int seed = 123, iters = 1000000;
+    ByteBuffer SHORT_BUFFER = ByteBuffer.allocate(Short.BYTES);
+    ByteBuffer INT_BUFFER = ByteBuffer.allocate(Integer.BYTES);
+    ByteBuffer LONG_BUFFER = ByteBuffer.allocate(Long.BYTES);
+    Random rdm = new Random(seed);
+    for (int i = 0; i < iters; ++i) {
+      long ln = rdm.nextLong();
+      int in = rdm.nextInt();
+      short sn = (short) (rdm.nextInt(2* Short.MAX_VALUE - 1) - Short.MAX_VALUE);
+      float fn = rdm.nextFloat();
+      double dn = rdm.nextDouble();
+      SHORT_BUFFER.putShort(0, sn);
+      assertEquals(Murmur3.hash64(SHORT_BUFFER.array()), Murmur3.hash64(sn));
+      INT_BUFFER.putInt(0, in);
+      assertEquals(Murmur3.hash64(INT_BUFFER.array()), Murmur3.hash64(in));
+      LONG_BUFFER.putLong(0, ln);
+      assertEquals(Murmur3.hash64(LONG_BUFFER.array()), Murmur3.hash64(ln));
+      INT_BUFFER.putFloat(0, fn);
+      assertEquals(Murmur3.hash64(INT_BUFFER.array()), Murmur3.hash64(Float.floatToIntBits(fn)));
+      LONG_BUFFER.putDouble(0, dn);
+      assertEquals(Murmur3.hash64(LONG_BUFFER.array()), Murmur3.hash64(Double.doubleToLongBits(dn)));
+    }
+  }
 
   @Test
   public void testIncremental() {
     final int seed = 123, arraySize = 1023;
     byte[] bytes = new byte[arraySize];
     new Random(seed).nextBytes(bytes);
-    int expected = Murmur3.hash32(bytes);
+    int expected = Murmur3.hash32(bytes, arraySize);
     Murmur3.IncrementalHash32 same = new IncrementalHash32(), diff = new IncrementalHash32();
     for (int blockSize = 1; blockSize <= arraySize; ++blockSize) {
       byte[] block = new byte[blockSize];
@@ -243,6 +268,53 @@ public class TestMurmur3 {
       }
       assertEquals("Block size " + blockSize, expected, same.end());
       assertEquals("Block size " + blockSize, expected, diff.end());
+    }
+  }
+
+  @Test
+  public void testTwoLongOrdered() {
+    ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES * 2);
+    for (long i = 0; i < 1000; i++) {
+      for (long j = 0; j < 1000; j++) {
+        buffer.putLong(0, i);
+        buffer.putLong(Long.BYTES, j);
+        assertEquals(Murmur3.hash32(buffer.array()), Murmur3.hash32(i, j));
+      }
+    }
+  }
+
+  @Test
+  public void testTwoLongRandom() {
+    ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES * 2);
+    Random random = new Random();
+    for (long i = 0; i < 1000; i++) {
+      for (long j = 0; j < 1000; j++) {
+        long x = random.nextLong();
+        long y = random.nextLong();
+        buffer.putLong(0, x);
+        buffer.putLong(Long.BYTES, y);
+        assertEquals(Murmur3.hash32(buffer.array()), Murmur3.hash32(x, y));
+      }
+    }
+  }
+
+  @Test
+  public void testSingleLongOrdered() {
+    ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
+    for (long i = 0; i < 1000; i++) {
+      buffer.putLong(0, i);
+      assertEquals(Murmur3.hash32(buffer.array()), Murmur3.hash32(i));
+    }
+  }
+
+  @Test
+  public void testSingleLongRandom() {
+    ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
+    Random random = new Random();
+    for (long i = 0; i < 1000; i++) {
+      long x = random.nextLong();
+      buffer.putLong(0, x);
+      assertEquals(Murmur3.hash32(buffer.array()), Murmur3.hash32(x));
     }
   }
 }

@@ -48,22 +48,26 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@gender_summary
 PREHOOK: query: insert into status_updates values (1, "status_1", "2009-03-20")
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@status_updates
 POSTHOOK: query: insert into status_updates values (1, "status_1", "2009-03-20")
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@status_updates
-POSTHOOK: Lineage: status_updates.ds SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: status_updates.status SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: status_updates.userid EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: status_updates.ds SCRIPT []
+POSTHOOK: Lineage: status_updates.status SCRIPT []
+POSTHOOK: Lineage: status_updates.userid SCRIPT []
 PREHOOK: query: insert into profiles values (1, "school_1", 0)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@profiles
 POSTHOOK: query: insert into profiles values (1, "school_1", 0)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@profiles
-POSTHOOK: Lineage: profiles.gender EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: profiles.school SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: profiles.userid EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: profiles.gender SCRIPT []
+POSTHOOK: Lineage: profiles.school SCRIPT []
+POSTHOOK: Lineage: profiles.userid SCRIPT []
 PREHOOK: query: FROM (SELECT a.status, b.school, b.gender
 FROM status_updates a JOIN profiles b
 ON (a.userid = b.userid and

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,26 +18,35 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
-import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.exec.tez.TezSessionState.HiveResources;
 
-import com.google.common.annotations.VisibleForTesting;
-
-import java.util.concurrent.Semaphore;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMTrigger;
+import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolSession.Manager;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.wm.ExecutionTrigger;
+import org.apache.hadoop.hive.ql.wm.SessionTriggerProvider;
+import org.apache.hadoop.hive.ql.wm.Trigger;
+import org.apache.hadoop.hive.ql.wm.TriggerActionHandler;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.tez.dag.api.TezConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolSession.OpenSessionTracker;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.shims.Utils;
-import org.apache.hadoop.security.UserGroupInformation;
+
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * This class is for managing multiple tez sessions particularly when
@@ -46,8 +55,8 @@ import org.apache.hadoop.security.UserGroupInformation;
  * In case the user specifies a queue explicitly, a new session is created
  * on that queue and assigned to the session state.
  */
-public class TezSessionPoolManager
-  implements SessionExpirationTracker.RestartImpl, OpenSessionTracker {
+public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTriggerValidator
+  implements Manager, SessionExpirationTracker.RestartImpl {
 
   private enum CustomQueueAllowed {
     TRUE,
@@ -56,7 +65,6 @@ public class TezSessionPoolManager
   }
 
   private static final Logger LOG = LoggerFactory.getLogger(TezSessionPoolManager.class);
-  static final Random rdm = new Random();
 
   private Semaphore llapQueue;
   private HiveConf initConf = null;
@@ -64,7 +72,7 @@ public class TezSessionPoolManager
   private int numConcurrentLlapQueries = -1;
   private CustomQueueAllowed customQueueAllowed = CustomQueueAllowed.TRUE;
 
-  private TezSessionPool defaultSessionPool;
+  private TezSessionPool<TezSessionPoolSession> defaultSessionPool;
   private SessionExpirationTracker expirationTracker;
   private RestrictedConfigChecker restrictedConfig;
 
@@ -77,10 +85,14 @@ public class TezSessionPoolManager
   private static TezSessionPoolManager instance = null;
 
   /** This is used to close non-default sessions, and also all sessions when stopping. */
-  private final List<TezSessionPoolSession> openSessions = new LinkedList<>();
+  private final List<TezSessionState> openSessions = new LinkedList<>();
+  private SessionTriggerProvider sessionTriggerProvider;
+  private TriggerActionHandler<?> triggerActionHandler;
+  private TriggerValidatorRunnable triggerValidatorRunnable;
+  private YarnQueueHelper yarnQueueChecker;
 
   /** Note: this is not thread-safe. */
-  public static TezSessionPoolManager getInstance() throws Exception {
+  public static TezSessionPoolManager getInstance() {
     TezSessionPoolManager local = instance;
     if (local == null) {
       instance = local = new TezSessionPoolManager();
@@ -92,17 +104,26 @@ public class TezSessionPoolManager
   protected TezSessionPoolManager() {
   }
 
-  public void startPool() throws Exception {
+  public void startPool(HiveConf conf, final WMFullResourcePlan resourcePlan) throws Exception {
+    if (restrictedConfig == null) { // Sanity check; restrictedConfig is always set in setup.
+      throw new AssertionError("setupPool or setupNonPool needs to be called first");
+    }
     if (defaultSessionPool != null) {
-      defaultSessionPool.startInitialSessions();
+      defaultSessionPool.start();
     }
     if (expirationTracker != null) {
       expirationTracker.start();
     }
+    initTriggers(conf);
+    if (resourcePlan != null) {
+      Collection<String> appliedTriggers = updateTriggers(resourcePlan);
+      LOG.info("Updated tez session pool manager with triggers {} from active resource plan: {}",
+          appliedTriggers, resourcePlan.getPlan().getName());
+    }
   }
 
-  public void setupPool(HiveConf conf) throws InterruptedException {
-    String[] defaultQueueList = HiveConf.getTrimmedStringsVar(
+  public void setupPool(HiveConf conf) throws Exception {
+    final String[] defaultQueueList = HiveConf.getTrimmedStringsVar(
         conf, HiveConf.ConfVars.HIVE_SERVER2_TEZ_DEFAULT_QUEUES);
     this.initConf = conf;
     int emptyNames = 0; // We don't create sessions for empty entries.
@@ -114,15 +135,55 @@ public class TezSessionPoolManager
     int numSessions = conf.getIntVar(ConfVars.HIVE_SERVER2_TEZ_SESSIONS_PER_DEFAULT_QUEUE);
     int numSessionsTotal = numSessions * (defaultQueueList.length - emptyNames);
     if (numSessionsTotal > 0) {
-      // TODO: this can be enabled to test. Will only be used in WM case for now.
       boolean enableAmRegistry = false;
-      defaultSessionPool = new TezSessionPool(initConf, numSessionsTotal, enableAmRegistry);
+      defaultSessionPool = new TezSessionPool<>(initConf, numSessionsTotal, enableAmRegistry,
+          new TezSessionPool.SessionObjectFactory<TezSessionPoolSession>() {
+            int queueIx = 0;
+
+            @Override
+            public TezSessionPoolSession create(TezSessionPoolSession oldSession) {
+              if (oldSession != null) {
+                return createAndInitSession(
+                    oldSession.getQueueName(), oldSession.isDefault(), oldSession.getConf());
+              }
+              // We never resize the pool, so assume this is initialization.
+              // If that changes, we might have to make the factory interface more complicated.
+              /*
+               * In a single-threaded init case, with this the ordering of sessions in the queue will be
+               * (with 2 sessions 3 queues) s1q1, s1q2, s1q3, s2q1, s2q2, s2q3 there by ensuring uniform
+               * distribution of the sessions across queues at least to begin with. Then as sessions get
+               * freed up, the list may change this ordering.
+               * In a multi threaded init case it's a free for all.
+               */
+              int localQueueIx;
+              synchronized (defaultQueueList) {
+                localQueueIx = queueIx;
+                ++queueIx;
+                if (queueIx == defaultQueueList.length) {
+                  queueIx = 0;
+                }
+              }
+              HiveConf sessionConf = new HiveConf(initConf);
+              return createAndInitSession(defaultQueueList[localQueueIx], true, sessionConf);
+          }
+      });
     }
 
+    setupNonPool(conf);
+
+    // Only creates the expiration tracker if expiration is configured.
+    expirationTracker = SessionExpirationTracker.create(conf, this);
+
+    // From this point on, session creation will wait for the default pool (if # of sessions > 0).
+    this.hasInitialSessions = numSessionsTotal > 0;
+  }
+
+  public void setupNonPool(HiveConf conf) {
+    this.initConf = conf;
     numConcurrentLlapQueries = conf.getIntVar(ConfVars.HIVE_SERVER2_LLAP_CONCURRENT_QUERIES);
     llapQueue = new Semaphore(numConcurrentLlapQueries, true);
 
-    String queueAllowedStr = HiveConf.getVar(initConf,
+    String queueAllowedStr = HiveConf.getVar(conf,
         ConfVars.HIVE_SERVER2_TEZ_SESSION_CUSTOM_QUEUE_ALLOWED);
     try {
       this.customQueueAllowed = CustomQueueAllowed.valueOf(queueAllowedStr.toUpperCase());
@@ -130,33 +191,23 @@ public class TezSessionPoolManager
       throw new RuntimeException("Invalid value '" + queueAllowedStr + "' for " +
           ConfVars.HIVE_SERVER2_TEZ_SESSION_CUSTOM_QUEUE_ALLOWED.varname);
     }
-
-    restrictedConfig = new RestrictedConfigChecker(conf);
-    // Only creates the expiration tracker if expiration is configured.
-    expirationTracker = SessionExpirationTracker.create(conf, this);
-
-    // From this point on, session creation will wait for the default pool (if # of sessions > 0).
-    this.hasInitialSessions = numSessionsTotal > 0;
-    if (!hasInitialSessions) {
-      return;
+    if (customQueueAllowed == CustomQueueAllowed.TRUE
+        && HiveConf.getBoolVar(conf, ConfVars.HIVE_SERVER2_TEZ_QUEUE_ACCESS_CHECK)) {
+      this.yarnQueueChecker = new YarnQueueHelper(conf);
     }
 
+    restrictedConfig = new RestrictedConfigChecker(conf);
+  }
 
-    /*
-     * In a single-threaded init case, with this the ordering of sessions in the queue will be
-     * (with 2 sessions 3 queues) s1q1, s1q2, s1q3, s2q1, s2q2, s2q3 there by ensuring uniform
-     * distribution of the sessions across queues at least to begin with. Then as sessions get
-     * freed up, the list may change this ordering.
-     * In a multi threaded init case it's a free for all.
-     */
-    for (int i = 0; i < numSessions; i++) {
-      for (String queueName : defaultQueueList) {
-        if (queueName.isEmpty()) {
-          continue;
-        }
-        HiveConf sessionConf = new HiveConf(initConf);
-        defaultSessionPool.addInitialSession(createAndInitSession(queueName, true, sessionConf));
-      }
+  public void initTriggers(final HiveConf conf) {
+    if (triggerValidatorRunnable == null) {
+      final long triggerValidationIntervalMs = HiveConf.getTimeVar(conf, ConfVars
+        .HIVE_TRIGGER_VALIDATION_INTERVAL, TimeUnit.MILLISECONDS);
+      sessionTriggerProvider = new SessionTriggerProvider(openSessions, new LinkedList<>());
+      triggerActionHandler = new KillTriggerActionHandler();
+      triggerValidatorRunnable = new TriggerValidatorRunnable(
+          sessionTriggerProvider, triggerActionHandler);
+      startTriggerValidator(triggerValidationIntervalMs);
     }
   }
 
@@ -185,7 +236,8 @@ public class TezSessionPoolManager
     boolean hasQueue = (queueName != null) && !queueName.isEmpty();
     if (hasQueue) {
       switch (customQueueAllowed) {
-      case FALSE: throw new HiveException("Specifying " + TezConfiguration.TEZ_QUEUE_NAME + " is not allowed");
+      case FALSE: throw new HiveException("Specifying "
+          + TezConfiguration.TEZ_QUEUE_NAME + " is not allowed");
       case IGNORE: {
         LOG.warn("User has specified " + queueName + " queue; ignoring the setting");
         queueName = null;
@@ -193,6 +245,20 @@ public class TezSessionPoolManager
         conf.unset(TezConfiguration.TEZ_QUEUE_NAME);
       }
       default: // All good.
+      }
+
+      if (yarnQueueChecker != null) {
+        SessionState ss = SessionState.get();
+        String userName = null;
+        if (ss != null) {
+          userName = ss.getAuthenticator() != null
+              ? ss.getAuthenticator().getUserName() : ss.getUserName();
+        }
+        if (userName == null) {
+          userName = Utils.getUGI().getShortUserName();
+          LOG.info("No session user set; using the UGI user " + userName);
+        }
+        yarnQueueChecker.checkQueueAccess(queueName, userName);
       }
     }
 
@@ -249,12 +315,16 @@ public class TezSessionPoolManager
     return retTezSessionState;
   }
 
-  public void returnSession(TezSessionState tezSessionState, boolean llap)
-      throws Exception {
+  @Override
+  public void returnAfterUse(TezSessionPoolSession session) throws Exception {
+    returnSession(session);
+  }
+
+  void returnSession(TezSessionState tezSessionState) throws Exception {
     // Ignore the interrupt status while returning the session, but set it back
     // on the thread in case anything else needs to deal with it.
     boolean isInterrupted = Thread.interrupted();
-
+    boolean llap = tezSessionState.getLegacyLlapMode();
     try {
       if (isInterrupted) {
         LOG.info("returnSession invoked with interrupt status set");
@@ -262,6 +332,7 @@ public class TezSessionPoolManager
       if (llap && (this.numConcurrentLlapQueries > 0)) {
         llapQueue.release();
       }
+      tezSessionState.setLegacyLlapMode(false);
       if (tezSessionState.isDefault() &&
           tezSessionState instanceof TezSessionPoolSession) {
         LOG.info("The session " + tezSessionState.getSessionId()
@@ -290,20 +361,27 @@ public class TezSessionPoolManager
     if ((instance == null) || !this.hasInitialSessions) {
       return;
     }
-
-    List<TezSessionPoolSession> sessionsToClose = null;
+    List<TezSessionState> sessionsToClose = null;
     synchronized (openSessions) {
-      sessionsToClose = new ArrayList<TezSessionPoolSession>(openSessions);
+      sessionsToClose = new ArrayList<TezSessionState>(openSessions);
     }
+
     // we can just stop all the sessions
     for (TezSessionState sessionState : sessionsToClose) {
       if (sessionState.isDefault()) {
         sessionState.close(false);
       }
     }
+
     if (expirationTracker != null) {
       expirationTracker.stop();
     }
+
+    if (triggerValidatorRunnable != null) {
+      stopTriggerValidator();
+    }
+
+    instance = null;
   }
 
   /**
@@ -314,10 +392,16 @@ public class TezSessionPoolManager
    *          the session to be closed
    * @throws Exception
    */
-  public void destroySession(TezSessionState tezSessionState) throws Exception {
+  @Override
+  public void destroy(TezSessionState tezSessionState) throws Exception {
     LOG.warn("We are closing a " + (tezSessionState.isDefault() ? "default" : "non-default")
         + " session because of retry failure.");
     tezSessionState.close(false);
+  }
+
+  @Override
+  TriggerValidatorRunnable getTriggerValidatorRunnable() {
+    return triggerValidatorRunnable;
   }
 
   protected TezSessionPoolSession createSession(String sessionId, HiveConf conf) {
@@ -337,8 +421,9 @@ public class TezSessionPoolManager
     }
 
     try {
-      UserGroupInformation ugi = Utils.getUGI();
-      String userName = ugi.getShortUserName();
+      // Note: this is not the calling user, but rather the user under which this session will
+      //       actually run (which is a different under doAs=false). This seems to be intended.
+      String userName = Utils.getUGI().getShortUserName();
       // TODO Will these checks work if some other user logs in. Isn't a doAs check required somewhere here as well.
       // Should a doAs check happen here instead of after the user test.
       // With HiveServer2 - who is the incoming user in terms of UGI (the hive user itself, or the user who actually submitted the query)
@@ -377,6 +462,7 @@ public class TezSessionPoolManager
     }
 
     if (canWorkWithSameSession(session, conf)) {
+      session.setLegacyLlapMode(llap);
       return session;
     }
 
@@ -384,46 +470,53 @@ public class TezSessionPoolManager
       closeIfNotDefault(session, false);
     }
 
-    return getSession(conf, doOpen);
+    session = getSession(conf, doOpen);
+    session.setLegacyLlapMode(llap);
+    return session;
   }
 
   /** Reopens the session that was found to not be running. */
-  public void reopenSession(TezSessionState sessionState, Configuration conf) throws Exception {
+  @Override
+  public TezSessionState reopen(TezSessionState sessionState) throws Exception {
     HiveConf sessionConf = sessionState.getConf();
     if (sessionState.getQueueName() != null
         && sessionConf.get(TezConfiguration.TEZ_QUEUE_NAME) == null) {
       sessionConf.set(TezConfiguration.TEZ_QUEUE_NAME, sessionState.getQueueName());
     }
-    Set<String> oldAdditionalFiles = sessionState.getAdditionalFilesNotFromConf();
-    // TODO: close basically resets the object to a bunch of nulls.
-    //       We should ideally not reuse the object because it's pointless and error-prone.
-    // Close the old one, but keep the tmp files around.
-    sessionState.close(true);
-    // TODO: should we reuse scratchDir too?
-    sessionState.open(oldAdditionalFiles, null);
+    reopenInternal(sessionState);
+    return sessionState;
   }
 
-  public void closeNonDefaultSessions(boolean keepTmpDir) throws Exception {
-    List<TezSessionPoolSession> sessionsToClose = null;
+  static void reopenInternal(
+      TezSessionState sessionState) throws Exception {
+    HiveResources resources = sessionState.extractHiveResources();
+    // TODO: close basically resets the object to a bunch of nulls.
+    //       We should ideally not reuse the object because it's pointless and error-prone.
+    sessionState.close(false);
+    // Note: scratchdir is reused implicitly because the sessionId is the same.
+    sessionState.open(resources);
+  }
+
+
+  public void closeNonDefaultSessions() throws Exception {
+    List<TezSessionState> sessionsToClose = null;
     synchronized (openSessions) {
-      sessionsToClose = new ArrayList<TezSessionPoolSession>(openSessions);
+      sessionsToClose = new ArrayList<TezSessionState>(openSessions);
     }
-    for (TezSessionPoolSession sessionState : sessionsToClose) {
+    for (TezSessionState sessionState : sessionsToClose) {
       System.err.println("Shutting down tez session.");
-      closeIfNotDefault(sessionState, keepTmpDir);
+      closeIfNotDefault(sessionState, false);
     }
   }
 
   /** Closes a running (expired) pool session and reopens it. */
   @Override
-  public void closeAndReopenPoolSession(TezSessionPoolSession oldSession) throws Exception {
+  public void closeAndReopenExpiredSession(TezSessionPoolSession oldSession) throws Exception {
     String queueName = oldSession.getQueueName();
     if (queueName == null) {
       LOG.warn("Pool session has a null queue: " + oldSession);
     }
-    TezSessionPoolSession newSession = createAndInitSession(
-        queueName, oldSession.isDefault(), oldSession.getConf());
-    defaultSessionPool.replaceSession(oldSession, newSession);
+    defaultSessionPool.replaceSession(oldSession);
   }
 
   /** Called by TezSessionPoolSession when opened. */
@@ -431,7 +524,33 @@ public class TezSessionPoolManager
   public void registerOpenSession(TezSessionPoolSession session) {
     synchronized (openSessions) {
       openSessions.add(session);
+      updateSessions();
     }
+  }
+
+  private void updateSessions() {
+    if (sessionTriggerProvider != null) {
+      sessionTriggerProvider.setSessions(Collections.unmodifiableList(openSessions));
+    }
+  }
+
+  public Collection<String> updateTriggers(final WMFullResourcePlan appliedRp) {
+    Set<String> triggerNames = new HashSet<>();
+    if (sessionTriggerProvider != null) {
+      List<WMTrigger> wmTriggers = appliedRp != null ? appliedRp.getTriggers() : null;
+      List<Trigger> triggers = new ArrayList<>();
+      if (wmTriggers != null) {
+        for (WMTrigger wmTrigger : wmTriggers) {
+          if (wmTrigger.isSetIsInUnmanaged() && wmTrigger.isIsInUnmanaged()) {
+            triggers.add(ExecutionTrigger.fromWMTrigger(wmTrigger));
+            triggerNames.add(wmTrigger.getTriggerName());
+          }
+        }
+      }
+      sessionTriggerProvider.setTriggers(Collections.unmodifiableList(triggers));
+    }
+
+    return triggerNames;
   }
 
   /** Called by TezSessionPoolSession when closed. */
@@ -442,11 +561,27 @@ public class TezSessionPoolManager
     }
     synchronized (openSessions) {
       openSessions.remove(session);
+      updateSessions();
+    }
+    if (defaultSessionPool != null) {
+      defaultSessionPool.notifyClosed(session);
     }
   }
 
   @VisibleForTesting
   public SessionExpirationTracker getExpirationTracker() {
     return expirationTracker;
+  }
+
+
+  List<String> getTriggerCounterNames() {
+    List<String> counterNames = new ArrayList<>();
+    if (sessionTriggerProvider != null) {
+      List<Trigger> activeTriggers = sessionTriggerProvider.getTriggers();
+      for (Trigger trigger : activeTriggers) {
+        counterNames.add(trigger.getExpression().getCounterLimit().getName());
+      }
+    }
+    return counterNames;
   }
 }

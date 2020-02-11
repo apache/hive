@@ -1,6 +1,10 @@
+--! qt:dataset:src
+--! qt:dataset:part
 -- following tests test queries in SELECT
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
+
+-- SORT_QUERY_RESULTS
 
 -- IN, non corr
 explain SELECT p_size, p_size IN (
@@ -115,23 +119,23 @@ where b.key in
          from src a
          where b.value = a.value and a.key > '9' );
 
-CREATE table tnull(i int);
-insert into tnull values(null);
+CREATE table tnull_n3(i int);
+insert into tnull_n3 values(null);
 
 -- IN query returns unknown/NULL instead of true/false
-explain select p_size, p_size IN (select i from tnull) from part;
-select p_size, p_size IN (select i from tnull) from part;
+explain select p_size, p_size IN (select i from tnull_n3) from part;
+select p_size, p_size IN (select i from tnull_n3) from part;
 
-CREATE TABLE tempty(i int);
+CREATE TABLE tempty_n3(i int);
 
-explain select p_size, (select count(*) from tempty) from part;
-select p_size, (select count(*) from tempty) from part;
+explain select p_size, (select count(*) from tempty_n3) from part;
+select p_size, (select count(*) from tempty_n3) from part;
 
-explain select p_size, (select max(i) from tempty) from part;
-select p_size, (select max(i) from tempty) from part;
+explain select p_size, (select max(i) from tempty_n3) from part;
+select p_size, (select max(i) from tempty_n3) from part;
 
-DROP table tempty;
-DROP table tnull;
+DROP table tempty_n3;
+DROP table tnull_n3;
 
 -- following tests test subquery in all kind of expressions (except UDAF, UDA and UDTF)
 
@@ -155,8 +159,8 @@ SELECT p_size, (SELECT count(p_size) FROM part p
     WHERE p.p_type = part.p_type) IS NULL from part;
 
 -- scalar, non-corr, non agg
-explain select p_type, (select p_size from part order by p_size limit 1) = 1 from part;
-select p_type, (select p_size from part order by p_size limit 1) = 1 from part;
+explain select p_type, (select p_size from part order by p_size limit 1) = 1 from part order by p_type;
+select p_type, (select p_size from part order by p_size limit 1) = 1 from part order by p_type;
 
 -- in corr, multiple
 EXPLAIN SELECT p_size, p_size IN (

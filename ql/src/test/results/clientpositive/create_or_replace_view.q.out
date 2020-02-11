@@ -25,7 +25,6 @@ POSTHOOK: query: describe formatted vt.v
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: vt@v
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 ds                  	string              	                    
@@ -37,6 +36,7 @@ Database:           	vt
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -49,9 +49,8 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	select * from srcpart	 
-View Expanded Text: 	select `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `default`.`srcpart`	 
-View Rewrite Enabled:	No                  	 
+Original Query:     	select * from srcpart	 
+Expanded Query:     	select `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `default`.`srcpart`	 
 PREHOOK: query: create or replace view vt.v partitioned on (ds, hr) as select * from srcpart
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@srcpart
@@ -110,13 +109,11 @@ POSTHOOK: query: describe formatted vt.v
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: vt@v
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -127,6 +124,7 @@ Retention:          	0
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
 	numFiles            	0                   
 	numPartitions       	2                   
 	numRows             	0                   
@@ -144,9 +142,8 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	select * from srcpart	 
-View Expanded Text: 	select `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `default`.`srcpart`	 
-View Rewrite Enabled:	No                  	 
+Original Query:     	select * from srcpart	 
+Expanded Query:     	select `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `default`.`srcpart`	 
 PREHOOK: query: show partitions vt.v
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: vt@v
@@ -209,12 +206,10 @@ POSTHOOK: query: describe formatted vt.v
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: vt@v
 # col_name            	data_type           	comment             
-	 	 
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -225,6 +220,7 @@ Retention:          	0
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
 	numFiles            	0                   
 	numPartitions       	0                   
 	numRows             	0                   
@@ -242,9 +238,8 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	select value, ds, hr from srcpart	 
-View Expanded Text: 	select `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `default`.`srcpart`	 
-View Rewrite Enabled:	No                  	 
+Original Query:     	select value, ds, hr from srcpart	 
+Expanded Query:     	select `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `default`.`srcpart`	 
 PREHOOK: query: show partitions vt.v
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: vt@v
@@ -283,13 +278,11 @@ POSTHOOK: query: describe formatted vt.v
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: vt@v
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -300,6 +293,7 @@ Retention:          	0
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
 	numFiles            	0                   
 	numPartitions       	0                   
 	numRows             	0                   
@@ -317,9 +311,8 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	select key, value, ds, hr from srcpart	 
-View Expanded Text: 	select `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `default`.`srcpart`	 
-View Rewrite Enabled:	No                  	 
+Original Query:     	select key, value, ds, hr from srcpart	 
+Expanded Query:     	select `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `default`.`srcpart`	 
 PREHOOK: query: show partitions vt.v
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: vt@v
@@ -381,13 +374,11 @@ POSTHOOK: query: describe formatted vt.v
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: vt@v
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -398,6 +389,7 @@ Retention:          	0
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
 	numFiles            	0                   
 	numPartitions       	0                   
 	numRows             	0                   
@@ -415,9 +407,8 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	select * from srcpart	 
-View Expanded Text: 	select `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `default`.`srcpart`	 
-View Rewrite Enabled:	No                  	 
+Original Query:     	select * from srcpart	 
+Expanded Query:     	select `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `default`.`srcpart`	 
 PREHOOK: query: drop view vt.v
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: vt@v

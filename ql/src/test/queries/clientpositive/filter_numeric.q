@@ -1,4 +1,4 @@
-set hive.exec.dynamic.partition.mode=nonstrict;
+--! qt:dataset:srcpart
 
 -- SORT_AND_HASH_QUERY_RESULTS
 

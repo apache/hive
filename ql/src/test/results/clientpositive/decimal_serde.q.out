@@ -44,7 +44,6 @@ POSTHOOK: query: SELECT * FROM DECIMAL_TEXT ORDER BY key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_text
 #### A masked pattern was here ####
-NULL	0
 -1234567890	-1234567890
 -4400	4400
 -1255	-1255
@@ -82,6 +81,7 @@ NULL	0
 125	125
 200	200
 1234567890	1234567890
+NULL	0
 PREHOOK: query: CREATE TABLE DECIMAL_RC
 STORED AS RCFile AS
 SELECT * FROM DECIMAL_TEXT
@@ -105,7 +105,6 @@ POSTHOOK: query: describe formatted DECIMAL_RC
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@decimal_rc
 # col_name            	data_type           	comment             
-	 	 
 key                 	decimal(10,0)       	                    
 value               	int                 	                    
 	 	 
@@ -116,7 +115,8 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	38                  
 	rawDataSize         	157                 
@@ -158,7 +158,6 @@ POSTHOOK: query: describe formatted DECIMAL_LAZY_COL
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@decimal_lazy_col
 # col_name            	data_type           	comment             
-	 	 
 key                 	decimal(10,0)       	                    
 value               	int                 	                    
 	 	 
@@ -169,7 +168,8 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	38                  
 	rawDataSize         	157                 
@@ -218,7 +218,6 @@ POSTHOOK: query: SELECT * FROM DECIMAL_SEQUENCE ORDER BY key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_sequence
 #### A masked pattern was here ####
-NULL	0
 -1234567890	-1234567890
 -4400	4400
 -1255	-1255
@@ -256,6 +255,7 @@ NULL	0
 125	125
 200	200
 1234567890	1234567890
+NULL	0
 PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_TEXT
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@decimal_text

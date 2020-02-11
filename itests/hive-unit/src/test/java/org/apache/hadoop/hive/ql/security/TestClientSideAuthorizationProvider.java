@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,30 +21,37 @@ package org.apache.hadoop.hive.ql.security;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
-import org.apache.hadoop.hive.ql.Driver;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.DriverFactory;
+import org.apache.hadoop.hive.ql.IDriver;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import org.junit.Before;
+import org.junit.After;
+import org.junit.Test;
 
 /**
  * TestClientSideAuthorizationProvider : Simple base test for client side
  * Authorization Providers. By default, tests DefaultHiveAuthorizationProvider
  */
-public class TestClientSideAuthorizationProvider extends TestCase {
+public class TestClientSideAuthorizationProvider {
   protected HiveConf clientHiveConf;
   protected HiveMetaStoreClient msc;
-  protected Driver driver;
+  protected IDriver driver;
   protected UserGroupInformation ugi;
 
 
@@ -53,18 +60,16 @@ public class TestClientSideAuthorizationProvider extends TestCase {
   }
 
 
-  @Override
-  protected void setUp() throws Exception {
+  @Before
+  public void setUp() throws Exception {
 
-    super.setUp();
 
-    int port = MetaStoreUtils.findFreePort();
 
     // Turn off metastore-side authorization
     System.setProperty(HiveConf.ConfVars.METASTORE_PRE_EVENT_LISTENERS.varname,
         "");
 
-    MetaStoreUtils.startMetaStore(port, HadoopThriftAuthBridge.getBridge());
+    int port = MetaStoreTestUtils.startMetaStoreWithRetry();
 
     clientHiveConf = new HiveConf(this.getClass());
 
@@ -87,12 +92,12 @@ public class TestClientSideAuthorizationProvider extends TestCase {
 
     SessionState.start(new CliSessionState(clientHiveConf));
     msc = new HiveMetaStoreClient(clientHiveConf);
-    driver = new Driver(clientHiveConf);
+    driver = DriverFactory.newDriver(clientHiveConf);
   }
 
-  @Override
-  protected void tearDown() throws Exception {
-    super.tearDown();
+  @After
+  public void tearDown() throws Exception {
+
   }
 
   private void validateCreateDb(Database expectedDb, String dbName) {
@@ -113,6 +118,7 @@ public class TestClientSideAuthorizationProvider extends TestCase {
     return "smp_cl_tbl";
   }
 
+  @Test
   public void testSimplePrivileges() throws Exception {
     String dbName = getTestDbName();
     String tblName = getTestTableName();
@@ -121,8 +127,7 @@ public class TestClientSideAuthorizationProvider extends TestCase {
 
     allowCreateDatabase(userName);
 
-    CommandProcessorResponse ret = driver.run("create database " + dbName);
-    assertEquals(0,ret.getResponseCode());
+    driver.run("create database " + dbName);
     Database db = msc.getDatabase(dbName);
     String dbLocn = db.getLocationUri();
 
@@ -132,19 +137,18 @@ public class TestClientSideAuthorizationProvider extends TestCase {
     disallowCreateInDb(dbName, userName, dbLocn);
 
     driver.run("use " + dbName);
-    ret = driver.run(
-        String.format("create table %s (a string) partitioned by (b string)", tblName));
-
-    // failure from not having permissions to create table
-    assertNoPrivileges(ret);
+    try {
+      driver.run(String.format("create table %s (a string) partitioned by (b string)", tblName));
+    } catch (CommandProcessorException e) {
+      // failure from not having permissions to create table
+      assertNoPrivileges(e);
+    }
 
     allowCreateInDb(dbName, userName, dbLocn);
 
     driver.run("use " + dbName);
-    ret = driver.run(
-        String.format("create table %s (a string) partitioned by (b string)", tblName));
+    driver.run(String.format("create table %s (a string) partitioned by (b string)", tblName));
 
-    assertEquals(0,ret.getResponseCode()); // now it succeeds.
     Table tbl = msc.getTable(dbName, tblName);
 
     validateCreateTable(tbl,tblName, dbName);
@@ -158,23 +162,26 @@ public class TestClientSideAuthorizationProvider extends TestCase {
     InjectableDummyAuthenticator.injectMode(true);
 
     allowSelectOnTable(tbl.getTableName(), fakeUser, tbl.getSd().getLocation());
-    ret = driver.run(String.format("select * from %s limit 10", tblName));
-    assertEquals(0,ret.getResponseCode());
+    driver.run(String.format("select * from %s limit 10", tblName));
 
-    ret = driver.run(
-        String.format("create table %s (a string) partitioned by (b string)", tblName+"mal"));
-
-    assertNoPrivileges(ret);
+    try {
+      driver.run(String.format("create table %s (a string) partitioned by (b string)", tblName+"mal"));
+    } catch (CommandProcessorException e) {
+      assertNoPrivileges(e);
+    }
 
     disallowCreateInTbl(tbl.getTableName(), userName, tbl.getSd().getLocation());
-    ret = driver.run("alter table "+tblName+" add partition (b='2011')");
-    assertNoPrivileges(ret);
+
+    try {
+      driver.run("alter table "+tblName+" add partition (b='2011')");
+    } catch (CommandProcessorException e) {
+      assertNoPrivileges(e);
+    }
 
     InjectableDummyAuthenticator.injectMode(false);
     allowCreateInTbl(tbl.getTableName(), userName, tbl.getSd().getLocation());
 
-    ret = driver.run("alter table "+tblName+" add partition (b='2011')");
-    assertEquals(0,ret.getResponseCode());
+    driver.run("alter table "+tblName+" add partition (b='2011')");
 
     allowDropOnTable(tblName, userName, tbl.getSd().getLocation());
     allowDropOnDb(dbName,userName,db.getLocationUri());
@@ -227,10 +234,10 @@ public class TestClientSideAuthorizationProvider extends TestCase {
     driver.run("grant select on table "+tblName+" to user "+userName);
   }
 
-  protected void assertNoPrivileges(CommandProcessorResponse ret){
+  protected void assertNoPrivileges(CommandProcessorException ret){
     assertNotNull(ret);
     assertFalse(0 == ret.getResponseCode());
-    assertTrue(ret.getErrorMessage().indexOf("No privilege") != -1);
+    assertTrue(ret.getMessage().indexOf("No privilege") != -1);
   }
 
 

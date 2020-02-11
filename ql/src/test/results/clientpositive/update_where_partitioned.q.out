@@ -53,11 +53,11 @@ POSTHOOK: Input: default@acid_uwp@ds=tomorrow
 762	BLoMwUJ51ns6pd	tomorrow
 762	a10E76jX35YwquKCTA	tomorrow
 762	q5y2Vy1	tomorrow
-6981	NULL	tomorrow
 6981	1FNNhmiFLGw425NA13g	tomorrow
 6981	4KhrrQ0nJ7bMNTvhSCA	tomorrow
 6981	K630vaVf	tomorrow
 6981	Y5x3JuI3M8jngv5N	tomorrow
+6981	YdG61y00526u5	tomorrow
 PREHOOK: query: update acid_uwp set b = 'fred' where b = 'k17Am8uPHWk02cEf1jet'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_uwp
@@ -99,8 +99,8 @@ POSTHOOK: Input: default@acid_uwp@ds=tomorrow
 762	BLoMwUJ51ns6pd	tomorrow
 762	a10E76jX35YwquKCTA	tomorrow
 762	q5y2Vy1	tomorrow
-6981	NULL	tomorrow
 6981	1FNNhmiFLGw425NA13g	tomorrow
 6981	4KhrrQ0nJ7bMNTvhSCA	tomorrow
 6981	K630vaVf	tomorrow
 6981	Y5x3JuI3M8jngv5N	tomorrow
+6981	YdG61y00526u5	tomorrow

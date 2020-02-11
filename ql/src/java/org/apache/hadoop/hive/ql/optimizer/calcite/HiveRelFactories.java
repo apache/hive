@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,8 +19,10 @@ package org.apache.hadoop.hive.ql.optimizer.calcite;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
+import org.apache.calcite.plan.Context;
 import org.apache.calcite.plan.Contexts;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelTraitSet;
@@ -41,17 +43,21 @@ import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlKind;
+import org.apache.calcite.sql.validate.SqlValidatorUtil;
 import org.apache.calcite.tools.RelBuilderFactory;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExcept;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIntersect;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExcept;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
+import org.apache.hadoop.hive.ql.optimizer.signature.RelTreeSignature;
+import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
+import org.apache.hadoop.hive.ql.stats.OperatorStats;
 
 import com.google.common.collect.ImmutableList;
 
@@ -101,7 +107,8 @@ public class HiveRelFactories {
     public RelNode createProject(RelNode child,
         List<? extends RexNode> childExprs, List<String> fieldNames) {
       RelOptCluster cluster = child.getCluster();
-      RelDataType rowType = RexUtil.createStructType(cluster.getTypeFactory(), childExprs, fieldNames);
+      RelDataType rowType = RexUtil.createStructType(
+          cluster.getTypeFactory(), childExprs, fieldNames, SqlValidatorUtil.EXPR_SUGGESTER);
       RelTraitSet trait = TraitsUtil.getDefaultTraitSet(cluster, child.getTraitSet());
       RelNode project = HiveProject.create(cluster, child,
           childExprs, rowType, trait, Collections.<RelCollation> emptyList());
@@ -117,7 +124,7 @@ public class HiveRelFactories {
    */
   private static class HiveFilterFactoryImpl implements FilterFactory {
     @Override
-    public RelNode createFilter(RelNode child, RexNode condition) {
+    public RelNode createFilter(RelNode child, RexNode condition, Set<CorrelationId> variablesSet) {
       RelOptCluster cluster = child.getCluster();
       HiveFilter filter = new HiveFilter(cluster, TraitsUtil.getDefaultTraitSet(cluster), child, condition);
       return filter;
@@ -146,6 +153,11 @@ public class HiveRelFactories {
     @Override
     public RelNode createJoin(RelNode left, RelNode right, RexNode condition, JoinRelType joinType,
         Set<String> variablesStopped, boolean semiJoinDone) {
+      if (joinType == JoinRelType.SEMI) {
+        final JoinInfo joinInfo = JoinInfo.of(left, right, condition);
+        final RelOptCluster cluster = left.getCluster();
+        return HiveSemiJoin.getSemiJoin(cluster, left.getTraitSet(), left, right, condition);
+      }
       return HiveJoin.getJoin(left.getCluster(), left, right, condition, joinType);
     }
 
@@ -154,6 +166,11 @@ public class HiveRelFactories {
         Set<CorrelationId> variablesSet, JoinRelType joinType, boolean semiJoinDone) {
       // According to calcite, it is going to be removed before Calcite-2.0
       // TODO: to handle CorrelationId
+      if (joinType == JoinRelType.SEMI) {
+        final JoinInfo joinInfo = JoinInfo.of(left, right, condition);
+        final RelOptCluster cluster = left.getCluster();
+        return HiveSemiJoin.getSemiJoin(cluster, left.getTraitSet(), left, right, condition);
+      }
       return HiveJoin.getJoin(left.getCluster(), left, right, condition, joinType);
     }
   }
@@ -169,8 +186,7 @@ public class HiveRelFactories {
             RexNode condition) {
       final JoinInfo joinInfo = JoinInfo.of(left, right, condition);
       final RelOptCluster cluster = left.getCluster();
-      return HiveSemiJoin.getSemiJoin(cluster, left.getTraitSet(), left, right, condition,
-          joinInfo.leftKeys, joinInfo.rightKeys);
+      return HiveSemiJoin.getSemiJoin(cluster, left.getTraitSet(), left, right, condition);
     }
   }
 
@@ -190,11 +206,11 @@ public class HiveRelFactories {
 
   private static class HiveAggregateFactoryImpl implements AggregateFactory {
     @Override
-    public RelNode createAggregate(RelNode child, boolean indicator,
+    public RelNode createAggregate(RelNode child,
             ImmutableBitSet groupSet, ImmutableList<ImmutableBitSet> groupSets,
             List<AggregateCall> aggCalls) {
-        return new HiveAggregate(child.getCluster(), child.getTraitSet(), child, indicator,
-                groupSet, groupSets, aggCalls);
+      return new HiveAggregate(child.getCluster(), child.getTraitSet(), child,
+              groupSet, groupSets, aggCalls);
     }
   }
 

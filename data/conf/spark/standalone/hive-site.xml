@@ -50,13 +50,18 @@
 </property>
 
 <property>
+  <name>datanucleus.connectionPool.maxPoolSize</name>
+  <value>4</value>
+</property>
+
+<property>
   <name>hive.metastore.schema.verification</name>
   <value>false</value>
 </property>
 
 <property>
   <name>javax.jdo.option.ConnectionURL</name>
-  <value>jdbc:derby:;databaseName=${test.tmp.dir}/junit_metastore_db;create=true</value>
+  <value>jdbc:derby:memory:${test.tmp.dir}/junit_metastore_db;create=true</value>
 </property>
 
 <property>
@@ -159,6 +164,11 @@
 </property>
 
 <property>
+  <name>hive.merge.nway.joins</name>
+  <value>true</value>
+</property>
+
+<property>
   <name>hive.auto.convert.join</name>
   <value>false</value>
   <description>Whether Hive enable the optimization about converting common join into mapjoin based on the input file size</description>
@@ -236,7 +246,17 @@
 
 <property>
   <name>spark.driver.extraClassPath</name>
-  <value>${maven.local.repository}/org/apache/hive/hive-it-util/${hive.version}/hive-it-util-${hive.version}.jar:${maven.local.repository}/org/apache/hive/hive-exec/${hive.version}/hive-exec-${hive.version}.jar:${maven.local.repository}/org/antlr/antlr-runtime/${antlr.version}/antlr-runtime-${antlr.version}.jar</value>
+  <value>${maven.local.repository}/org/apache/hive/hive-it-util/${hive.version}/hive-it-util-${hive.version}.jar:${maven.local.repository}/org/apache/hive/hive-exec/${hive.version}/hive-exec-${hive.version}.jar:${maven.local.repository}/org/antlr/antlr-runtime/${antlr.version}/antlr-runtime-${antlr.version}.jar:${maven.local.repository}/org/apache/hadoop/hadoop-common/${hadoop.version}/hadoop-common-${hadoop.version}.jar</value>
+</property>
+
+<property>
+  <name>spark.executor.extraClassPath</name>
+  <value>${maven.local.repository}/org/apache/hadoop/hadoop-common/${hadoop.version}/hadoop-common-${hadoop.version}.jar</value>
+</property>
+
+<property>
+  <name>spark.local.dir</name>
+  <value>${test.tmp.dir}/spark-local-dir</value>
 </property>
 
 <property>
@@ -253,6 +273,28 @@
   <name>hive.in.test</name>
   <value>true</value>
   <description>Internal marker for test. Used for masking env-dependent values</description>
+</property>
+
+<property>
+  <name>hive.spark.client.connect.timeout</name>
+  <value>30000ms</value>
+</property>
+
+<!-- remove this after HIVE-18139 -->
+<property>
+  <name>hive.stats.column.autogather</name>
+  <value>false</value>
+</property>
+
+<!-- remove this after HIVE-18139 and HIVE-20573 -->
+<property>
+  <name>hive.stats.fetch.column.stats</name>
+  <value>false</value>
+</property>
+
+<property>
+  <name>hive.query.results.cache.enabled</name>
+  <value>false</value>
 </property>
 
 </configuration>

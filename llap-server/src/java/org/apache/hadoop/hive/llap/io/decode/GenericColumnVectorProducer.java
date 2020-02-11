@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -36,7 +36,6 @@ import org.apache.hadoop.hive.llap.io.metadata.ConsumerFileMetadata;
 import org.apache.hadoop.hive.llap.io.metadata.ConsumerStripeMetadata;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonIOMetrics;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Consumer;
 import org.apache.hadoop.hive.ql.io.orc.encoded.IoTrace;
@@ -51,8 +50,8 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hive.common.util.FixedSizedObjectPool;
 import org.apache.orc.CompressionKind;
+import org.apache.orc.OrcFile;
 import org.apache.orc.OrcProto;
-import org.apache.orc.OrcUtils;
 import org.apache.orc.OrcProto.ColumnEncoding;
 import org.apache.orc.OrcProto.RowIndex;
 import org.apache.orc.OrcProto.RowIndexEntry;
@@ -81,13 +80,12 @@ public class GenericColumnVectorProducer implements ColumnVectorProducer {
 
   @Override
   public ReadPipeline createReadPipeline(Consumer<ColumnVectorBatch> consumer, FileSplit split,
-      List<Integer> columnIds, SearchArgument sarg, String[] columnNames,
-      QueryFragmentCounters counters, TypeDescription schema, InputFormat<?, ?> sourceInputFormat,
-      Deserializer sourceSerDe, Reporter reporter, JobConf job, Map<Path, PartitionDesc> parts)
-          throws IOException {
+      Includes includes, SearchArgument sarg, QueryFragmentCounters counters,
+      SchemaEvolutionFactory sef, InputFormat<?, ?> sourceInputFormat, Deserializer sourceSerDe,
+      Reporter reporter, JobConf job, Map<Path, PartitionDesc> parts) throws IOException {
     cacheMetrics.incrCacheReadRequests();
     OrcEncodedDataConsumer edc = new OrcEncodedDataConsumer(
-        consumer, columnIds.size(), false, counters, ioMetrics);
+        consumer, includes, false, counters, ioMetrics);
     SerDeFileMetadata fm;
     try {
       fm = new SerDeFileMetadata(sourceSerDe);
@@ -97,20 +95,17 @@ public class GenericColumnVectorProducer implements ColumnVectorProducer {
     edc.setFileMetadata(fm);
     // Note that we pass job config to the record reader, but use global config for LLAP IO.
     // TODO: add tracing to serde reader
-    SerDeEncodedDataReader reader = new SerDeEncodedDataReader(cache,
-        bufferManager, conf, split, columnIds, edc, job, reporter, sourceInputFormat,
+    SerDeEncodedDataReader reader = new SerDeEncodedDataReader(cache, bufferManager, conf,
+        split, includes.getPhysicalColumnIds(), edc, job, reporter, sourceInputFormat,
         sourceSerDe, counters, fm.getSchema(), parts);
     edc.init(reader, reader, new IoTrace(0, false));
-    if (LlapIoImpl.LOG.isDebugEnabled()) {
-      LlapIoImpl.LOG.debug("Ignoring schema: " + schema);
-    }
     return edc;
   }
 
 
   public static final class SerDeStripeMetadata implements ConsumerStripeMetadata {
     // The writer is local to the process.
-    private final String writerTimezone = TimeZone.getDefault().getID();
+    private final String writerTimezone = "UTC";
     private List<ColumnEncoding> encodings;
     private final int stripeIx;
     private long rowCount = -1;
@@ -291,6 +286,11 @@ public class GenericColumnVectorProducer implements ColumnVectorProducer {
     @Override
     public TypeDescription getSchema() {
       return schema;
+    }
+
+    @Override
+    public OrcFile.Version getFileVersion() {
+      return null;
     }
   }
 }

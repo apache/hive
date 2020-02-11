@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.processors;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -34,7 +35,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import com.google.common.base.Joiner;
 
 class CommandUtil {
-  public static final Logger LOG = LoggerFactory.getLogger(CommandUtil.class);
+  private static final Logger LOG = LoggerFactory.getLogger(CommandUtil.class);
 
   /**
    * Authorize command of given type and arguments
@@ -46,7 +47,7 @@ class CommandUtil {
    * capturing the authorization error
    */
   static CommandProcessorResponse authorizeCommand(SessionState ss, HiveOperationType type,
-      List<String> command) {
+      List<String> command) throws CommandProcessorException {
     if (ss == null) {
       // ss can be null in unit tests
       return null;
@@ -59,12 +60,9 @@ class CommandUtil {
         authorizeCommandThrowEx(ss, type, command);
         // authorized to perform action
         return null;
-      } catch (HiveAuthzPluginException e) {
+      } catch (HiveAuthzPluginException | HiveAccessControlException e) {
         LOG.error(errMsg, e);
-        return CommandProcessorResponse.create(e);
-      } catch (HiveAccessControlException e) {
-        LOG.error(errMsg, e);
-        return CommandProcessorResponse.create(e);
+        throw new CommandProcessorException(e);
       }
     }
     return null;
@@ -77,7 +75,7 @@ class CommandUtil {
    * @throws HiveAuthzPluginException
    * @throws HiveAccessControlException
    */
-  static void authorizeCommandThrowEx(SessionState ss, HiveOperationType type,
+  private static void authorizeCommandThrowEx(SessionState ss, HiveOperationType type,
       List<String> command) throws HiveAuthzPluginException, HiveAccessControlException {
     HivePrivilegeObject commandObj = HivePrivilegeObject.createHivePrivilegeObject(command);
     HiveAuthzContext.Builder ctxBuilder = new HiveAuthzContext.Builder();
@@ -87,5 +85,48 @@ class CommandUtil {
     ss.getAuthorizerV2().checkPrivileges(type, Arrays.asList(commandObj), null, ctxBuilder.build());
   }
 
+  /**
+   * Authorize command of given type, arguments and for service hosts (for Service Type authorization)
+   *
+   * @param ss - session state
+   * @param type - operation type
+   * @param command - command args
+   * @param serviceObject - service object
+   * @return null if there was no authorization error. Otherwise returns  CommandProcessorResponse
+   * capturing the authorization error
+   */
+  static CommandProcessorResponse authorizeCommandAndServiceObject(SessionState ss, HiveOperationType type,
+      List<String> command, String serviceObject) throws CommandProcessorException {
+    if (ss == null) {
+      // ss can be null in unit tests
+      return null;
+    }
 
+    if (ss.isAuthorizationModeV2() &&
+      HiveConf.getBoolVar(ss.getConf(), HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED)) {
+      String errMsg = "Error authorizing command " + command;
+      try {
+        authorizeCommandThrowEx(ss, type, command, serviceObject);
+        // authorized to perform action
+        return null;
+      } catch (HiveAuthzPluginException | HiveAccessControlException e) {
+        LOG.error(errMsg, e);
+        throw new CommandProcessorException(e);
+      }
+    }
+    return null;
+  }
+
+  private static void authorizeCommandThrowEx(SessionState ss, HiveOperationType type,
+    List<String> command, String serviceObject) throws HiveAuthzPluginException, HiveAccessControlException {
+    HivePrivilegeObject commandObj = HivePrivilegeObject.createHivePrivilegeObject(command);
+    HivePrivilegeObject serviceObj = new HivePrivilegeObject(HivePrivilegeObject.HivePrivilegeObjectType.SERVICE_NAME,
+      null, serviceObject, null, null, null);
+    HiveAuthzContext.Builder ctxBuilder = new HiveAuthzContext.Builder();
+    ctxBuilder.setCommandString(Joiner.on(' ').join(command));
+    ctxBuilder.setUserIpAddress(ss.getUserIpAddress());
+    ctxBuilder.setForwardedAddresses(ss.getForwardedAddresses());
+    ss.getAuthorizerV2().checkPrivileges(type, Collections.singletonList(commandObj),
+      Collections.singletonList(serviceObj), ctxBuilder.build());
+  }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -37,6 +37,7 @@ class TableOutputFormat implements OutputFormat {
     this.beeLine = beeLine;
   }
 
+  @Override
   public int print(Rows rows) {
     int index = 0;
     ColorBuffer header = null;

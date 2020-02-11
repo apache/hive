@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,19 +18,14 @@
 
 package org.apache.hadoop.hive.ql.hooks;
 
-import com.google.common.collect.Lists;
-
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
-
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.ArgumentMatcher;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
@@ -39,8 +34,6 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 
 public class TestQueryHooks {
 
@@ -55,12 +48,13 @@ public class TestQueryHooks {
   }
 
   @Test
-  public void testAllQueryLifeTimeWithParseHooks() throws IllegalAccessException, ClassNotFoundException, InstantiationException, CommandNeedRetryException {
+  public void testAllQueryLifeTimeWithParseHooks() throws Exception {
     String query = "select 1";
     ArgumentMatcher<QueryLifeTimeHookContext> argMatcher = new QueryLifeTimeHookContextMatcher(query);
     QueryLifeTimeHookWithParseHooks mockHook = mock(QueryLifeTimeHookWithParseHooks.class);
-    int ret = createDriver(mockHook).run(query).getResponseCode();
-    assertEquals("Expected query to succeed", 0, ret);
+    Driver driver = createDriver();
+    driver.getHookRunner().addLifeTimeHook(mockHook);
+    driver.run(query);
 
     verify(mockHook).beforeParse(argThat(argMatcher));
     verify(mockHook).afterParse(argThat(argMatcher), eq(false));
@@ -71,12 +65,19 @@ public class TestQueryHooks {
   }
 
   @Test
-  public void testQueryLifeTimeWithParseHooksWithParseError() throws IllegalAccessException, ClassNotFoundException, InstantiationException, CommandNeedRetryException {
+  public void testQueryLifeTimeWithParseHooksWithParseError() throws Exception {
     String query = "invalidquery";
     ArgumentMatcher<QueryLifeTimeHookContext> argMatcher = new QueryLifeTimeHookContextMatcher(query);
     QueryLifeTimeHookWithParseHooks mockHook = mock(QueryLifeTimeHookWithParseHooks.class);
-    int ret = createDriver(mockHook).run(query).getResponseCode();
-    assertNotEquals("Expected parsing to fail", 0, ret);
+    Driver driver = createDriver();
+    driver.getHookRunner().addLifeTimeHook(mockHook);
+    try {
+      driver.run(query);
+      Assert.fail("Expected parsing to fail");
+    } catch (CommandProcessorException e) {
+      // we expect to get here
+    }
+
 
     verify(mockHook).beforeParse(argThat(argMatcher));
     verify(mockHook).afterParse(argThat(argMatcher), eq(true));
@@ -87,12 +88,19 @@ public class TestQueryHooks {
   }
 
   @Test
-  public void testQueryLifeTimeWithParseHooksWithCompileError() throws IllegalAccessException, ClassNotFoundException, InstantiationException, CommandNeedRetryException {
+  public void testQueryLifeTimeWithParseHooksWithCompileError() throws Exception {
     String query = "select * from foo";
     ArgumentMatcher<QueryLifeTimeHookContext> argMatcher = new QueryLifeTimeHookContextMatcher(query);
     QueryLifeTimeHookWithParseHooks mockHook = mock(QueryLifeTimeHookWithParseHooks.class);
-    int ret = createDriver(mockHook).run(query).getResponseCode();
-    assertNotEquals("Expected compilation to fail", 0, ret);
+    Driver driver = createDriver();
+    driver.getHookRunner().addLifeTimeHook(mockHook);
+    try {
+      driver.run(query);
+      Assert.fail("Expected compilation to fail");
+    } catch (CommandProcessorException e) {
+      // we expect to get here
+    }
+
 
     verify(mockHook).beforeParse(argThat(argMatcher));
     verify(mockHook).afterParse(argThat(argMatcher), eq(false));
@@ -103,12 +111,13 @@ public class TestQueryHooks {
   }
 
   @Test
-  public void testAllQueryLifeTimeHooks() throws IllegalAccessException, ClassNotFoundException, InstantiationException, CommandNeedRetryException {
+  public void testAllQueryLifeTimeHooks() throws Exception {
     String query = "select 1";
     ArgumentMatcher<QueryLifeTimeHookContext> argMatcher = new QueryLifeTimeHookContextMatcher(query);
     QueryLifeTimeHook mockHook = mock(QueryLifeTimeHook.class);
-    int ret = createDriver(mockHook).run(query).getResponseCode();
-    assertEquals("Expected query to succeed", 0, ret);
+    Driver driver = createDriver();
+    driver.getHookRunner().addLifeTimeHook(mockHook);
+    driver.run(query);
 
     verify(mockHook).beforeCompile(argThat(argMatcher));
     verify(mockHook).afterCompile(argThat(argMatcher), eq(false));
@@ -117,12 +126,18 @@ public class TestQueryHooks {
   }
 
   @Test
-  public void testQueryLifeTimeWithCompileError() throws IllegalAccessException, ClassNotFoundException, InstantiationException, CommandNeedRetryException {
+  public void testQueryLifeTimeWithCompileError() throws Exception {
     String query = "select * from foo";
     ArgumentMatcher<QueryLifeTimeHookContext> argMatcher = new QueryLifeTimeHookContextMatcher(query);
     QueryLifeTimeHook mockHook = mock(QueryLifeTimeHook.class);
-    int ret = createDriver(mockHook).run(query).getResponseCode();
-    assertNotEquals("Expected compilation to fail", 0, ret);
+    Driver driver = createDriver();
+    driver.getHookRunner().addLifeTimeHook(mockHook);
+    try {
+      driver.run(query);
+      Assert.fail("Expected compilation to fail");
+    } catch (CommandProcessorException e) {
+      // we expect to get here
+    }
 
     verify(mockHook).beforeCompile(argThat(argMatcher));
     verify(mockHook).afterCompile(argThat(argMatcher), eq(true));
@@ -130,14 +145,9 @@ public class TestQueryHooks {
     verify(mockHook, never()).afterExecution(any(), anyBoolean());
   }
 
-  private Driver createDriver(QueryLifeTimeHook mockHook) throws IllegalAccessException, ClassNotFoundException, InstantiationException {
-    HooksLoader mockLoader = mock(HooksLoader.class);
-    when(mockLoader.getHooks(eq(HiveConf.ConfVars.HIVE_QUERY_LIFETIME_HOOKS), any())).thenReturn(
-            Lists.newArrayList(mockHook));
-
+  private Driver createDriver() throws IllegalAccessException, ClassNotFoundException, InstantiationException {
     SessionState.start(conf);
-    Driver driver = new Driver(conf, mockLoader);
-    driver.init();
+    Driver driver = new Driver(conf);
     return driver;
   }
 

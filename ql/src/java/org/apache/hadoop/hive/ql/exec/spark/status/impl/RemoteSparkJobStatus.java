@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,30 +18,41 @@
 
 package org.apache.hadoop.hive.ql.exec.spark.status.impl;
 
+import org.apache.hadoop.hive.ql.exec.spark.SparkUtilities;
+import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatisticsNames;
+
+import org.apache.hadoop.hive.ql.exec.spark.status.SparkStage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Throwables;
+
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatistics;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatisticsBuilder;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hive.spark.client.MetricsCollection;
-import org.apache.hive.spark.counter.SparkCounters;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobStatus;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkStageProgress;
+import org.apache.hive.spark.client.MetricsCollection;
 import org.apache.hive.spark.client.Job;
 import org.apache.hive.spark.client.JobContext;
 import org.apache.hive.spark.client.JobHandle;
 import org.apache.hive.spark.client.SparkClient;
+import org.apache.hive.spark.counter.SparkCounters;
 import org.apache.spark.JobExecutionStatus;
 import org.apache.spark.SparkJobInfo;
 import org.apache.spark.SparkStageInfo;
 import org.apache.spark.api.java.JavaFutureAction;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Used with remove spark client.
@@ -92,19 +103,21 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
   }
 
   @Override
-  public Map<String, SparkStageProgress> getSparkStageProgress() throws HiveException {
-    Map<String, SparkStageProgress> stageProgresses = new HashMap<String, SparkStageProgress>();
-    for (int stageId : getStageIds()) {
-      SparkStageInfo sparkStageInfo = getSparkStageInfo(stageId);
-      if (sparkStageInfo != null && sparkStageInfo.name() != null) {
-        int runningTaskCount = sparkStageInfo.numActiveTasks();
-        int completedTaskCount = sparkStageInfo.numCompletedTasks();
-        int failedTaskCount = sparkStageInfo.numFailedTasks();
-        int totalTaskCount = sparkStageInfo.numTasks();
-        SparkStageProgress sparkStageProgress = new SparkStageProgress(
-            totalTaskCount, completedTaskCount, runningTaskCount, failedTaskCount);
-        stageProgresses.put(String.valueOf(sparkStageInfo.stageId()) + "_"
-          + sparkStageInfo.currentAttemptId(), sparkStageProgress);
+  public Map<SparkStage, SparkStageProgress> getSparkStageProgress() throws HiveException {
+    List<SparkStageInfo> sparkStagesInfo = getSparkStagesInfo();
+    Map<SparkStage, SparkStageProgress> stageProgresses = new HashMap<SparkStage, SparkStageProgress>();
+    if (sparkStagesInfo != null) {
+      for (SparkStageInfo sparkStageInfo : sparkStagesInfo) {
+        if (sparkStageInfo != null && sparkStageInfo.name() != null) {
+          int runningTaskCount = sparkStageInfo.numActiveTasks();
+          int completedTaskCount = sparkStageInfo.numCompletedTasks();
+          int failedTaskCount = sparkStageInfo.numFailedTasks();
+          int totalTaskCount = sparkStageInfo.numTasks();
+          SparkStageProgress sparkStageProgress =
+              new SparkStageProgress(totalTaskCount, completedTaskCount, runningTaskCount, failedTaskCount);
+          SparkStage stage = new SparkStage(sparkStageInfo.stageId(), sparkStageInfo.currentAttemptId());
+          stageProgresses.put(stage, sparkStageProgress);
+        }
       }
     }
     return stageProgresses;
@@ -121,19 +134,36 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
     if (metricsCollection == null || getCounter() == null) {
       return null;
     }
-    SparkStatisticsBuilder sparkStatisticsBuilder = new SparkStatisticsBuilder();
-    // add Hive operator level statistics.
-    sparkStatisticsBuilder.add(getCounter());
-    // add spark job metrics.
-    String jobIdentifier = "Spark Job[" + jobHandle.getClientJobId() + "] Metrics";
 
+    SparkStatisticsBuilder sparkStatisticsBuilder = new SparkStatisticsBuilder();
+
+    // add Hive operator level statistics. - e.g. RECORDS_IN, RECORDS_OUT
+    sparkStatisticsBuilder.add(getCounter());
+
+    // add spark job metrics. - e.g. metrics collected by Spark itself (JvmGCTime,
+    // ExecutorRunTime, etc.)
     Map<String, Long> flatJobMetric = SparkMetricsUtils.collectMetrics(
         metricsCollection.getAllMetrics());
     for (Map.Entry<String, Long> entry : flatJobMetric.entrySet()) {
-      sparkStatisticsBuilder.add(jobIdentifier, entry.getKey(), Long.toString(entry.getValue()));
+      sparkStatisticsBuilder.add(SparkStatisticsNames.SPARK_GROUP_NAME, entry.getKey(),
+              Long.toString(entry.getValue()));
     }
 
     return sparkStatisticsBuilder.build();
+  }
+
+  @Override
+  public String getWebUIURL() {
+    Future<String> getWebUIURL = sparkClient.run(new GetWebUIURLJob());
+    try {
+      return getWebUIURL.get(sparkClientTimeoutInSeconds, TimeUnit.SECONDS);
+    } catch (Exception e) {
+      LOG.warn("Failed to get web UI URL.", e);
+      if (Thread.interrupted()) {
+        error = e;
+      }
+      return "UNKNOWN";
+    }
   }
 
   @Override
@@ -142,16 +172,18 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
   }
 
   @Override
-  public Throwable getError() {
-    if (error != null) {
-      return error;
-    }
-    return jobHandle.getError();
+  public Throwable getMonitorError() {
+    return error;
   }
 
   @Override
-  public void setError(Throwable e) {
+  public void setMonitorError(Throwable e) {
     this.error = e;
+  }
+
+  @Override
+  public Throwable getSparkJobException() {
+    return jobHandle.getError();
   }
 
   /**
@@ -172,19 +204,36 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
         new GetJobInfoJob(jobHandle.getClientJobId(), sparkJobId));
     try {
       return getJobInfo.get(sparkClientTimeoutInSeconds, TimeUnit.SECONDS);
-    } catch (Exception e) {
-      LOG.warn("Failed to get job info.", e);
-      throw new HiveException(e);
+    } catch (TimeoutException e) {
+      throw new HiveException(e, ErrorMsg.SPARK_GET_JOB_INFO_TIMEOUT,
+          Long.toString(sparkClientTimeoutInSeconds));
+    } catch (InterruptedException e) {
+      throw new HiveException(e, ErrorMsg.SPARK_GET_JOB_INFO_INTERRUPTED);
+    } catch (ExecutionException e) {
+      throw new HiveException(e, ErrorMsg.SPARK_GET_JOB_INFO_EXECUTIONERROR,
+          Throwables.getRootCause(e).getMessage());
     }
   }
 
-  private SparkStageInfo getSparkStageInfo(int stageId) {
-    Future<SparkStageInfo> getStageInfo = sparkClient.run(new GetStageInfoJob(stageId));
-    try {
-      return getStageInfo.get(sparkClientTimeoutInSeconds, TimeUnit.SECONDS);
-    } catch (Throwable t) {
-      LOG.warn("Error getting stage info", t);
+  private List<SparkStageInfo> getSparkStagesInfo()throws HiveException {
+
+    Integer sparkJobId = jobHandle.getSparkJobIds().size() == 1
+        ? jobHandle.getSparkJobIds().get(0) : null;
+    if (sparkJobId == null) {
       return null;
+    }
+    Future<ArrayList<SparkStageInfo>> getStagesInfo = sparkClient.run(
+        new GetSparkStagesInfoJob(jobHandle.getClientJobId(), sparkJobId));
+    try {
+      return getStagesInfo.get(sparkClientTimeoutInSeconds, TimeUnit.SECONDS);
+    } catch (TimeoutException e) {
+      throw new HiveException(e, ErrorMsg.SPARK_GET_STAGES_INFO_TIMEOUT,
+          Long.toString(sparkClientTimeoutInSeconds));
+    } catch (InterruptedException e) {
+      throw new HiveException(e, ErrorMsg.SPARK_GET_STAGES_INFO_INTERRUPTED);
+    } catch (ExecutionException e) {
+      throw new HiveException(e, ErrorMsg.SPARK_GET_STAGES_INFO_EXECUTIONERROR,
+          Throwables.getRootCause(e).getMessage());
     }
   }
 
@@ -195,6 +244,51 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
     return jobHandle.getState();
   }
 
+  private static class GetSparkStagesInfoJob implements Job<ArrayList<SparkStageInfo>> {
+    private final String clientJobId;
+    private final int sparkJobId;
+
+    private GetSparkStagesInfoJob() {
+      // For serialization.
+      this(null, -1);
+    }
+
+    GetSparkStagesInfoJob(String clientJobId, int sparkJobId) {
+      this.clientJobId = clientJobId;
+      this.sparkJobId = sparkJobId;
+    }
+    @Override
+    public ArrayList<SparkStageInfo> call(JobContext jc) throws Exception {
+      SparkJobInfo jobInfo = jc.sc().statusTracker().getJobInfo(sparkJobId);
+      if (jobInfo == null) {
+        ArrayList<JavaFutureAction<?>> list = new ArrayList<>(jc.getMonitoredJobs().get(clientJobId));
+        if (list != null && list.size() == 1) {
+          JavaFutureAction<?> futureAction = list.get(0);
+          if (futureAction.isDone()) {
+            boolean futureSucceed = true;
+            try {
+              futureAction.get();
+            } catch (Exception e) {
+              LOG.error("Failed to run job " + sparkJobId, e);
+              futureSucceed = false;
+            }
+            jobInfo = getDefaultJobInfo(sparkJobId,
+                futureSucceed ? JobExecutionStatus.SUCCEEDED : JobExecutionStatus.FAILED);
+          }
+        }
+      }
+      if (jobInfo == null) {
+        jobInfo = getDefaultJobInfo(sparkJobId, JobExecutionStatus.UNKNOWN);
+      }
+      ArrayList<SparkStageInfo> sparkStageInfos = new ArrayList<>();
+      int[] stageIds = jobInfo.stageIds();
+      for(Integer stageid : stageIds) {
+        SparkStageInfo stageInfo = jc.sc().statusTracker().getStageInfo(stageid);
+        sparkStageInfos.add(stageInfo);
+      }
+      return sparkStageInfos;
+    }
+  }
   private static class GetJobInfoJob implements Job<SparkJobInfo> {
     private final String clientJobId;
     private final int sparkJobId;
@@ -236,24 +330,6 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
     }
   }
 
-  private static class GetStageInfoJob implements Job<SparkStageInfo> {
-    private final int stageId;
-
-    private GetStageInfoJob() {
-      // For serialization.
-      this(-1);
-    }
-
-    GetStageInfoJob(int stageId) {
-      this.stageId = stageId;
-    }
-
-    @Override
-    public SparkStageInfo call(JobContext jc) throws Exception {
-      return jc.sc().statusTracker().getStageInfo(stageId);
-    }
-  }
-
   private static SparkJobInfo getDefaultJobInfo(final Integer jobId,
       final JobExecutionStatus status) {
     return new SparkJobInfo() {
@@ -283,6 +359,20 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
     @Override
     public String call(JobContext jc) throws Exception {
       return jc.sc().sc().applicationId();
+    }
+  }
+
+  private static class GetWebUIURLJob implements Job<String> {
+
+    public GetWebUIURLJob() {
+    }
+
+    @Override
+    public String call(JobContext jc) throws Exception {
+      if (jc.sc().sc().uiWebUrl().isDefined()) {
+        return SparkUtilities.reverseDNSLookupURL(jc.sc().sc().uiWebUrl().get());
+      }
+      return "UNDEFINED";
     }
   }
 }

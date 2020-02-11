@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,24 +18,29 @@
 
 package org.apache.hadoop.hive.serde2.binarysortable.fast;
 
+import static org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe.ONE;
+import static org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe.ZERO;
+
 import java.io.IOException;
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe;
+import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableUtils;
 import org.apache.hadoop.hive.serde2.fast.SerializeWrite;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,6 +51,16 @@ import org.slf4j.LoggerFactory;
  */
 public final class BinarySortableSerializeWrite implements SerializeWrite {
   public static final Logger LOG = LoggerFactory.getLogger(BinarySortableSerializeWrite.class.getName());
+
+  public static BinarySortableSerializeWrite with(Properties tbl, int columnCount) {
+    boolean[] columnSortOrderIsDesc = new boolean[columnCount];
+    byte[] columnNullMarker = new byte[columnCount];
+    byte[] columnNotNullMarker = new byte[columnCount];
+
+    BinarySortableUtils.fillOrderArrays(tbl, columnSortOrderIsDesc, columnNullMarker, columnNotNullMarker);
+
+    return new BinarySortableSerializeWrite(columnSortOrderIsDesc, columnNullMarker, columnNotNullMarker);
+  }
 
   private Output output;
 
@@ -60,8 +75,8 @@ public final class BinarySortableSerializeWrite implements SerializeWrite {
   private int index;
   private int level;
 
-  private TimestampWritable tempTimestampWritable;
-
+  private TimestampWritableV2 tempTimestampWritable;
+  private HiveDecimalWritable hiveDecimalWritable;
   private byte[] decimalBytesScratch;
 
   public BinarySortableSerializeWrite(boolean[] columnSortOrderIsDesc,
@@ -81,14 +96,14 @@ public final class BinarySortableSerializeWrite implements SerializeWrite {
     columnSortOrderIsDesc = new boolean[fieldCount];
     Arrays.fill(columnSortOrderIsDesc, false);
     columnNullMarker = new byte[fieldCount];
-    Arrays.fill(columnNullMarker, BinarySortableSerDe.ZERO);
+    Arrays.fill(columnNullMarker, ZERO);
     columnNotNullMarker = new byte[fieldCount];
-    Arrays.fill(columnNotNullMarker, BinarySortableSerDe.ONE);
+    Arrays.fill(columnNotNullMarker, ONE);
   }
 
   // Not public since we must have the field count or column sort order information.
   private BinarySortableSerializeWrite() {
-    tempTimestampWritable = new TimestampWritable();
+    tempTimestampWritable = new TimestampWritableV2();
   }
 
   /*
@@ -262,7 +277,7 @@ public final class BinarySortableSerializeWrite implements SerializeWrite {
   @Override
   public void writeDate(Date date) throws IOException {
     beginElement();
-    BinarySortableSerDe.serializeInt(output, DateWritable.dateToDays(date), columnSortOrderIsDesc[index]);
+    BinarySortableSerDe.serializeInt(output, DateWritableV2.dateToDays(date), columnSortOrderIsDesc[index]);
   }
 
   // We provide a faster way to write a date without a Date object.
@@ -312,6 +327,15 @@ public final class BinarySortableSerializeWrite implements SerializeWrite {
    * NOTE: The scale parameter is for text serialization (e.g. HiveDecimal.toFormatString) that
    * creates trailing zeroes output decimals.
    */
+  @Override
+  public void writeDecimal64(long decimal64Long, int scale) throws IOException {
+    if (hiveDecimalWritable == null) {
+      hiveDecimalWritable = new HiveDecimalWritable();
+    }
+    hiveDecimalWritable.deserialize64(decimal64Long, scale);
+    writeHiveDecimal(hiveDecimalWritable, scale);
+  }
+
   @Override
   public void writeHiveDecimal(HiveDecimal dec, int scale) throws IOException {
     beginElement();

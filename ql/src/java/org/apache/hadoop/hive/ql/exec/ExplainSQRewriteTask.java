@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -29,7 +29,6 @@ import java.util.Set;
 import org.antlr.runtime.TokenRewriteStream;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.QB;
@@ -38,11 +37,12 @@ import org.apache.hadoop.hive.ql.parse.SubQueryDiagnostic;
 import org.apache.hadoop.hive.ql.plan.ExplainSQRewriteWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.io.IOUtils;
-import org.apache.hadoop.util.StringUtils;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ExplainSQRewriteTask extends Task<ExplainSQRewriteWork> implements Serializable {
   private static final long serialVersionUID = 1L;
+  private final Logger LOG = LoggerFactory.getLogger(this.getClass().getName());
 
   @Override
   public StageType getType() {
@@ -50,7 +50,7 @@ public class ExplainSQRewriteTask extends Task<ExplainSQRewriteWork> implements 
   }
   
   @Override
-  public int execute(DriverContext driverContext) {
+  public int execute() {
 
     PrintStream out = null;
     try {
@@ -76,8 +76,8 @@ public class ExplainSQRewriteTask extends Task<ExplainSQRewriteWork> implements 
       return (0);
     }
     catch (Exception e) {
-      console.printError("Failed with exception " + e.getMessage(),
-          "\n" + StringUtils.stringifyException(e));
+      setException(e);
+      LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
       return (1);
     }
     finally {
@@ -201,5 +201,10 @@ public class ExplainSQRewriteTask extends Task<ExplainSQRewriteWork> implements 
 
     colList.add(tmpFieldSchema);
     return colList;
+  }
+
+  @Override
+  public boolean canExecuteInParallel() {
+    return false;
   }
 }

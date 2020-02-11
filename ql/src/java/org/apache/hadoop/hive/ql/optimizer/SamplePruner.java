@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -27,6 +27,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Stack;
 
+import org.apache.hadoop.hive.metastore.TableType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
@@ -36,12 +37,12 @@ import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
-import org.apache.hadoop.hive.ql.lib.Dispatcher;
-import org.apache.hadoop.hive.ql.lib.GraphWalker;
+import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
+import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
-import org.apache.hadoop.hive.ql.lib.Rule;
+import org.apache.hadoop.hive.ql.lib.SemanticRule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -61,17 +62,17 @@ public class SamplePruner extends Transform {
    *
    */
   public static class SamplePrunerCtx implements NodeProcessorCtx {
-    HashMap<TableScanOperator, SampleDesc> opToSamplePruner;
+    Map<TableScanOperator, SampleDesc> opToSamplePruner;
 
     public SamplePrunerCtx(
-        HashMap<TableScanOperator, SampleDesc> opToSamplePruner) {
+        Map<TableScanOperator, SampleDesc> opToSamplePruner) {
       this.opToSamplePruner = opToSamplePruner;
     }
 
     /**
      * @return the opToSamplePruner
      */
-    public HashMap<TableScanOperator, SampleDesc> getOpToSamplePruner() {
+    public Map<TableScanOperator, SampleDesc> getOpToSamplePruner() {
       return opToSamplePruner;
     }
 
@@ -100,10 +101,9 @@ public class SamplePruner extends Transform {
   public ParseContext transform(ParseContext pctx) throws SemanticException {
 
     // create a the context for walking operators
-    SamplePrunerCtx samplePrunerCtx = new SamplePrunerCtx(pctx
-        .getOpToSamplePruner());
+    SamplePrunerCtx samplePrunerCtx = new SamplePrunerCtx(pctx.getOpToSamplePruner());
 
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
     opRules.put(new RuleRegExp("R1",
       "(" + TableScanOperator.getOperatorName() + "%"
       + FilterOperator.getOperatorName() + "%"
@@ -113,9 +113,9 @@ public class SamplePruner extends Transform {
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
-    Dispatcher disp = new DefaultRuleDispatcher(getDefaultProc(), opRules,
+    SemanticDispatcher disp = new DefaultRuleDispatcher(getDefaultProc(), opRules,
         samplePrunerCtx);
-    GraphWalker ogw = new DefaultGraphWalker(disp);
+    SemanticGraphWalker ogw = new DefaultGraphWalker(disp);
 
     // Create a list of topop nodes
     ArrayList<Node> topNodes = new ArrayList<Node>();
@@ -128,7 +128,7 @@ public class SamplePruner extends Transform {
    * FilterPPR filter processor.
    *
    */
-  public static class FilterPPR implements NodeProcessor {
+  public static class FilterPPR implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -150,7 +150,7 @@ public class SamplePruner extends Transform {
     }
   }
 
-  public static NodeProcessor getFilterProc() {
+  public static SemanticNodeProcessor getFilterProc() {
     return new FilterPPR();
   }
 
@@ -158,7 +158,7 @@ public class SamplePruner extends Transform {
    * DefaultPPR default processor which does nothing.
    *
    */
-  public static class DefaultPPR implements NodeProcessor {
+  public static class DefaultPPR implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -168,7 +168,7 @@ public class SamplePruner extends Transform {
     }
   }
 
-  public static NodeProcessor getDefaultProc() {
+  public static SemanticNodeProcessor getDefaultProc() {
     return new DefaultPPR();
   }
 
@@ -190,7 +190,9 @@ public class SamplePruner extends Transform {
     String fullScanMsg = "";
 
     // check if input pruning is possible
-    if (sampleDescr.getInputPruning()) {
+    // TODO: this code is buggy - it relies on having one file per bucket; no MM support (by design).
+    boolean isManagedTable = part.getTable().getTableType() == TableType.MANAGED_TABLE;
+    if (sampleDescr.getInputPruning() && !isManagedTable) {
       LOG.trace("numerator = " + num);
       LOG.trace("denominator = " + den);
       LOG.trace("bucket count = " + bucketCount);
@@ -217,7 +219,7 @@ public class SamplePruner extends Transform {
       }
     } else {
       // need to do full scan
-      fullScanMsg = "Tablesample not on clustered columns";
+      fullScanMsg = isManagedTable ? "Managed table" : "Tablesample not on clustered columns";
     }
     LOG.warn(fullScanMsg + ", using full table scan");
     Path[] ret = part.getPath();

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,89 +18,75 @@
 package org.apache.hadoop.hive.druid.serde;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 
+import com.fasterxml.jackson.databind.JavaType;
 import org.apache.hadoop.hive.druid.DruidStorageHandlerUtils;
+import org.apache.hadoop.hive.druid.conf.DruidConstants;
 import org.apache.hadoop.io.NullWritable;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.google.common.collect.Iterators;
 
-import io.druid.query.Result;
-import io.druid.query.select.EventHolder;
-import io.druid.query.select.SelectQuery;
-import io.druid.query.select.SelectResultValue;
+import org.apache.druid.query.Result;
+import org.apache.druid.query.select.EventHolder;
+import org.apache.druid.query.select.SelectResultValue;
 
 /**
  * Record reader for results for Druid SelectQuery.
  */
-public class DruidSelectQueryRecordReader
-        extends DruidQueryRecordReader<SelectQuery, Result<SelectResultValue>> {
+public class DruidSelectQueryRecordReader extends DruidQueryRecordReader<Result<SelectResultValue>> {
 
-  private Result<SelectResultValue> current;
+  private static final TypeReference<Result<SelectResultValue>>
+      TYPE_REFERENCE =
+      new TypeReference<Result<SelectResultValue>>() {
+      };
 
-  private Iterator<EventHolder> values = Iterators.emptyIterator();
+  private Iterator<EventHolder> values = Collections.emptyIterator();
 
-  @Override
-  protected SelectQuery createQuery(String content) throws IOException {
-    return DruidStorageHandlerUtils.JSON_MAPPER.readValue(content, SelectQuery.class);
+  @Override protected JavaType getResultTypeDef() {
+    return DruidStorageHandlerUtils.JSON_MAPPER.getTypeFactory().constructType(TYPE_REFERENCE);
   }
 
-  @Override
-  protected List<Result<SelectResultValue>> createResultsList(InputStream content)
-          throws IOException {
-    return DruidStorageHandlerUtils.SMILE_MAPPER.readValue(content,
-            new TypeReference<List<Result<SelectResultValue>>>() {
-            }
-    );
-  }
-
-  @Override
-  public boolean nextKeyValue() throws IOException {
+  @Override public boolean nextKeyValue() throws IOException {
     if (values.hasNext()) {
       return true;
     }
-    if (results.hasNext()) {
-      current = results.next();
+    if (getQueryResultsIterator().hasNext()) {
+      Result<SelectResultValue> current = getQueryResultsIterator().next();
       values = current.getValue().getEvents().iterator();
       return nextKeyValue();
     }
     return false;
   }
 
-  @Override
-  public NullWritable getCurrentKey() throws IOException, InterruptedException {
+  @Override public NullWritable getCurrentKey() throws IOException, InterruptedException {
     return NullWritable.get();
   }
 
-  @Override
-  public DruidWritable getCurrentValue() throws IOException, InterruptedException {
+  @Override public DruidWritable getCurrentValue() throws IOException, InterruptedException {
     // Create new value
-    DruidWritable value = new DruidWritable();
+    DruidWritable value = new DruidWritable(false);
     EventHolder e = values.next();
-    value.getValue().put(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN, e.getTimestamp().getMillis());
+    value.getValue().put(DruidConstants.DEFAULT_TIMESTAMP_COLUMN, e.getTimestamp().getMillis());
     value.getValue().putAll(e.getEvent());
     return value;
   }
 
-  @Override
-  public boolean next(NullWritable key, DruidWritable value) throws IOException {
+  @Override public boolean next(NullWritable key, DruidWritable value) throws IOException {
     if (nextKeyValue()) {
       // Update value
       value.getValue().clear();
       EventHolder e = values.next();
-      value.getValue().put(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN, e.getTimestamp().getMillis());
+      value.getValue().put(DruidConstants.DEFAULT_TIMESTAMP_COLUMN, e.getTimestamp().getMillis());
       value.getValue().putAll(e.getEvent());
       return true;
     }
     return false;
   }
 
-  @Override
-  public float getProgress() {
-    return results.hasNext() || values.hasNext() ? 0 : 1;
+  @Override public float getProgress() {
+    return getQueryResultsIterator().hasNext() || values.hasNext() ? 0 : 1;
   }
 
 }

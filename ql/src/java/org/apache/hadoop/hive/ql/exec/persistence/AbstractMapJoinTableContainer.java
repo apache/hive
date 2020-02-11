@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -28,6 +28,8 @@ public abstract class AbstractMapJoinTableContainer implements MapJoinPersistabl
   protected static final String THESHOLD_NAME = "threshold";
   protected static final String LOAD_NAME = "load";
 
+  private String key;
+
   /** Creates metadata for implementation classes' ctors from threshold and load factor. */
   protected static Map<String, String> createConstructorMetaData(int threshold, float loadFactor) {
     Map<String, String> metaData = new HashMap<String, String>();
@@ -47,5 +49,15 @@ public abstract class AbstractMapJoinTableContainer implements MapJoinPersistabl
 
   protected void putMetaData(String key, String value) {
     metaData.put(key, value);
+  }
+
+  @Override
+  public void setKey(String key) {
+    this.key = key;
+  }
+
+  @Override
+  public String getKey() {
+    return key;
   }
 }

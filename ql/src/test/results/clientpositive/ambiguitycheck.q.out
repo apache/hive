@@ -703,8 +703,15 @@ POSTHOOK: Input: default@src
 98	val_98	2
 PREHOOK: query: explain extended select int(1.2) from src limit 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select int(1.2) from src limit 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT CAST(1.2 AS INTEGER) AS `$f0`
+FROM `default`.`src`
+LIMIT 1
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -811,18 +818,19 @@ NULL
 NULL
 PREHOOK: query: explain extended desc default.src key
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src
 POSTHOOK: query: explain extended desc default.src key
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-0
-      Describe Table Operator:
-        Describe Table
+    Describe Table
+      table: default.src
 #### A masked pattern was here ####
-          table: default.src
 
   Stage: Stage-1
     Fetch Operator

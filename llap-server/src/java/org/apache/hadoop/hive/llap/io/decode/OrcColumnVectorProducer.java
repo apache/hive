@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -33,7 +33,7 @@ import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
 import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.io.encoded.OrcEncodedDataReader;
-import org.apache.hadoop.hive.llap.io.metadata.OrcMetadataCache;
+import org.apache.hadoop.hive.llap.io.metadata.MetadataCache;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonIOMetrics;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
@@ -52,7 +52,7 @@ import org.apache.orc.OrcConf;
 
 public class OrcColumnVectorProducer implements ColumnVectorProducer {
 
-  private final OrcMetadataCache metadataCache;
+  private final MetadataCache metadataCache;
   private final LowLevelCache lowLevelCache;
   private final BufferUsageManager bufferManager;
   private final Configuration conf;
@@ -63,7 +63,7 @@ public class OrcColumnVectorProducer implements ColumnVectorProducer {
   // TODO: should this rather use a threadlocal for NUMA affinity?
   private final FixedSizedObjectPool<IoTrace> tracePool;
 
-  public OrcColumnVectorProducer(OrcMetadataCache metadataCache,
+  public OrcColumnVectorProducer(MetadataCache metadataCache,
       LowLevelCache lowLevelCache, BufferUsageManager bufferManager,
       Configuration conf, LlapDaemonCacheMetrics cacheMetrics, LlapDaemonIOMetrics ioMetrics,
       FixedSizedObjectPool<IoTrace> tracePool) {
@@ -79,18 +79,21 @@ public class OrcColumnVectorProducer implements ColumnVectorProducer {
     this.tracePool = tracePool;
   }
 
+  public Configuration getConf() {
+    return conf;
+  }
+
   @Override
   public ReadPipeline createReadPipeline(
-      Consumer<ColumnVectorBatch> consumer, FileSplit split, List<Integer> columnIds,
-      SearchArgument sarg, String[] columnNames, QueryFragmentCounters counters,
-      TypeDescription readerSchema, InputFormat<?, ?> unused0, Deserializer unused1,
-      Reporter reporter, JobConf job, Map<Path, PartitionDesc> unused2) throws IOException {
+      Consumer<ColumnVectorBatch> consumer, FileSplit split, Includes includes,
+      SearchArgument sarg, QueryFragmentCounters counters, SchemaEvolutionFactory sef,
+      InputFormat<?, ?> unused0, Deserializer unused1, Reporter reporter, JobConf job,
+      Map<Path, PartitionDesc> parts) throws IOException {
     cacheMetrics.incrCacheReadRequests();
-    OrcEncodedDataConsumer edc = new OrcEncodedDataConsumer(consumer, columnIds.size(),
-        _skipCorrupt, counters, ioMetrics);
-    OrcEncodedDataReader reader = new OrcEncodedDataReader(
-        lowLevelCache, bufferManager, metadataCache, conf, job, split, columnIds, sarg,
-        columnNames, edc, counters, readerSchema, tracePool);
+    OrcEncodedDataConsumer edc = new OrcEncodedDataConsumer(
+        consumer, includes, _skipCorrupt, counters, ioMetrics);
+    OrcEncodedDataReader reader = new OrcEncodedDataReader(lowLevelCache, bufferManager,
+        metadataCache, conf, job, split, includes, sarg, edc, counters, sef, tracePool, parts);
     edc.init(reader, reader, reader.getTrace());
     return edc;
   }

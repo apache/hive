@@ -1,39 +1,47 @@
-PREHOOK: query: create table a(s string) stored as orc
+PREHOOK: query: create table a_n6(s string) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@a
-POSTHOOK: query: create table a(s string) stored as orc
+PREHOOK: Output: default@a_n6
+POSTHOOK: query: create table a_n6(s string) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@a
-PREHOOK: query: create table b(s string) stored as orc
+POSTHOOK: Output: default@a_n6
+PREHOOK: query: create table b_n4(s string) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@b
-POSTHOOK: query: create table b(s string) stored as orc
+PREHOOK: Output: default@b_n4
+POSTHOOK: query: create table b_n4(s string) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@b
-PREHOOK: query: insert into table a values('aaa')
+POSTHOOK: Output: default@b_n4
+PREHOOK: query: insert into table a_n6 values('aaa_n6')
 PREHOOK: type: QUERY
-PREHOOK: Output: default@a
-POSTHOOK: query: insert into table a values('aaa')
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@a_n6
+POSTHOOK: query: insert into table a_n6 values('aaa_n6')
 POSTHOOK: type: QUERY
-POSTHOOK: Output: default@a
-POSTHOOK: Lineage: a.s SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-PREHOOK: query: insert into table b values('aaa')
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@a_n6
+POSTHOOK: Lineage: a_n6.s SCRIPT []
+PREHOOK: query: insert into table b_n4 values('aaa_n6')
 PREHOOK: type: QUERY
-PREHOOK: Output: default@b
-POSTHOOK: query: insert into table b values('aaa')
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@b_n4
+POSTHOOK: query: insert into table b_n4 values('aaa_n6')
 POSTHOOK: type: QUERY
-POSTHOOK: Output: default@b
-POSTHOOK: Lineage: b.s SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-PREHOOK: query: explain vectorization expression
-select NULL from a
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@b_n4
+POSTHOOK: Lineage: b_n4.s SCRIPT []
+PREHOOK: query: explain vectorization detail
+select NULL from a_n6
 PREHOOK: type: QUERY
-POSTHOOK: query: explain vectorization expression
-select NULL from a
+PREHOOK: Input: default@a_n6
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization detail
+select NULL from a_n6
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n6
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -50,27 +58,47 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: a
-                  Statistics: Num rows: 1 Data size: 87 Basic stats: COMPLETE Column stats: COMPLETE
+                  alias: a_n6
+                  Statistics: Num rows: 1 Data size: 90 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:s:string, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: null (type: void)
                     outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [2]
+                        selectExpressions: ConstantVectorExpression(val null) -> 2:void
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                notVectorizedReason: Select expression for SELECT operator: Vectorizing data type void not supported when mode = PROJECTION
-                vectorized: false
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 1
+                    includeColumns: []
+                    dataColumns: s:string
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [void]
 
   Stage: Stage-0
     Fetch Operator
@@ -78,21 +106,27 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select NULL from a
+PREHOOK: query: select NULL from a_n6
 PREHOOK: type: QUERY
-PREHOOK: Input: default@a
+PREHOOK: Input: default@a_n6
 #### A masked pattern was here ####
-POSTHOOK: query: select NULL from a
+POSTHOOK: query: select NULL from a_n6
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@a
+POSTHOOK: Input: default@a_n6
 #### A masked pattern was here ####
 NULL
 PREHOOK: query: explain vectorization expression
-select NULL as x from a union distinct select NULL as x from b
+select NULL as x from a_n6 union distinct select NULL as x from b_n4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@a_n6
+PREHOOK: Input: default@b_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
-select NULL as x from a union distinct select NULL as x from b
+select NULL as x from a_n6 union distinct select NULL as x from b_n4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n6
+POSTHOOK: Input: default@b_n4
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -114,76 +148,144 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: a
-                  Statistics: Num rows: 1 Data size: 87 Basic stats: COMPLETE Column stats: COMPLETE
+                  alias: a_n6
+                  Statistics: Num rows: 1 Data size: 90 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
                   Select Operator
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: []
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: []
                       Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
-                        keys: null (type: void)
+                        Group By Vectorization:
+                            className: VectorGroupByOperator
+                            groupByMode: HASH
+                            keyExpressions: ConstantVectorExpression(val 1) -> 2:boolean
+                            native: false
+                            vectorProcessingMode: HASH
+                            projectedOutputColumnNums: []
+                        keys: true (type: boolean)
+                        minReductionHashAggr: 0.5
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
-                          key expressions: _col0 (type: void)
+                          key expressions: _col0 (type: boolean)
+                          null sort order: z
                           sort order: +
-                          Map-reduce partition columns: _col0 (type: void)
+                          Map-reduce partition columns: _col0 (type: boolean)
+                          Reduce Sink Vectorization:
+                              className: VectorReduceSinkLongOperator
+                              native: true
+                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                notVectorizedReason: Key expression for GROUPBY operator: Vectorizing data type void not supported when mode = PROJECTION
-                vectorized: false
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: b
-                  Statistics: Num rows: 1 Data size: 87 Basic stats: COMPLETE Column stats: COMPLETE
+                  alias: b_n4
+                  Statistics: Num rows: 1 Data size: 90 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
                   Select Operator
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: []
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: []
                       Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
-                        keys: null (type: void)
+                        Group By Vectorization:
+                            className: VectorGroupByOperator
+                            groupByMode: HASH
+                            keyExpressions: ConstantVectorExpression(val 1) -> 2:boolean
+                            native: false
+                            vectorProcessingMode: HASH
+                            projectedOutputColumnNums: []
+                        keys: true (type: boolean)
+                        minReductionHashAggr: 0.5
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
-                          key expressions: _col0 (type: void)
+                          key expressions: _col0 (type: boolean)
+                          null sort order: z
                           sort order: +
-                          Map-reduce partition columns: _col0 (type: void)
+                          Map-reduce partition columns: _col0 (type: boolean)
+                          Reduce Sink Vectorization:
+                              className: VectorReduceSinkLongOperator
+                              native: true
+                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                notVectorizedReason: Key expression for GROUPBY operator: Vectorizing data type void not supported when mode = PROJECTION
-                vectorized: false
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: Key expression for GROUPBY operator: Vectorizing data type void not supported when mode = PROJECTION
-                vectorized: false
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Reduce Operator Tree:
               Group By Operator
-                keys: KEY._col0 (type: void)
+                Group By Vectorization:
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    keyExpressions: col 0:boolean
+                    native: false
+                    vectorProcessingMode: MERGE_PARTIAL
+                    projectedOutputColumnNums: []
+                keys: KEY._col0 (type: boolean)
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: null (type: void)
                   outputColumnNames: _col0
+                  Select Vectorization:
+                      className: VectorSelectOperator
+                      native: true
+                      projectedOutputColumnNums: [1]
+                      selectExpressions: ConstantVectorExpression(val null) -> 1:void
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
+                    File Sink Vectorization:
+                        className: VectorFileSinkOperator
+                        native: false
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -198,14 +300,14 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select NULL as x from a union distinct select NULL as x from b
+PREHOOK: query: select NULL as x from a_n6 union distinct select NULL as x from b_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@a
-PREHOOK: Input: default@b
+PREHOOK: Input: default@a_n6
+PREHOOK: Input: default@b_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select NULL as x from a union distinct select NULL as x from b
+POSTHOOK: query: select NULL as x from a_n6 union distinct select NULL as x from b_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@a
-POSTHOOK: Input: default@b
+POSTHOOK: Input: default@a_n6
+POSTHOOK: Input: default@b_n4
 #### A masked pattern was here ####
 NULL

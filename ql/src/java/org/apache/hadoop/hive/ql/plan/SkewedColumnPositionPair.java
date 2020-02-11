@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -32,7 +32,7 @@ package org.apache.hadoop.hive.ql.plan;
  * 1. It's position in table column is 1.
  * 2. It's position in skewed column list is 0.
  *
- * This information will be used in {@FileSinkOperator} generateListBucketingDirName
+ * This information will be used in {@link org.apache.hadoop.hive.ql.exec.FileSinkOperator} generateListBucketingDirName
  */
 public class SkewedColumnPositionPair {
   private int tblColPosition;

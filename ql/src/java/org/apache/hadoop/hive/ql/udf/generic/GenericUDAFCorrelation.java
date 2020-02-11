@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -47,12 +47,12 @@ import org.apache.hadoop.io.LongWritable;
  * Donald Knuth.
  *
  *  Incremental:
- *   n : <count>
- *   mx_n = mx_(n-1) + [x_n - mx_(n-1)]/n : <xavg>
- *   my_n = my_(n-1) + [y_n - my_(n-1)]/n : <yavg>
- *   c_n = c_(n-1) + (x_n - mx_(n-1))*(y_n - my_n) : <covariance * n>
- *   vx_n = vx_(n-1) + (x_n - mx_n)(x_n - mx_(n-1)): <variance * n>
- *   vy_n = vy_(n-1) + (y_n - my_n)(y_n - my_(n-1)): <variance * n>
+ *   n : &lt;count&gt;
+ *   mx_n = mx_(n-1) + [x_n - mx_(n-1)]/n : &lt;xavg&gt;
+ *   my_n = my_(n-1) + [y_n - my_(n-1)]/n : &lt;yavg&gt;
+ *   c_n = c_(n-1) + (x_n - mx_(n-1))*(y_n - my_n) : &lt;covariance * n&gt;
+ *   vx_n = vx_(n-1) + (x_n - mx_n)(x_n - mx_(n-1)): &lt;variance * n&gt;
+ *   vy_n = vy_(n-1) + (y_n - my_n)(y_n - my_(n-1)): &lt;variance * n&gt;
  *
  *  Merge:
  *   c_(A,B) = c_A + c_B + (mx_A - mx_B)*(my_A - my_B)*n_A*n_B/(n_A+n_B)
@@ -136,12 +136,12 @@ public class GenericUDAFCorrelation extends AbstractGenericUDAFResolver {
    * algorithm, based on work by Philippe Pébay and Donald Knuth.
    *
    *  Incremental:
-   *   n : <count>
-   *   mx_n = mx_(n-1) + [x_n - mx_(n-1)]/n : <xavg>
-   *   my_n = my_(n-1) + [y_n - my_(n-1)]/n : <yavg>
-   *   c_n = c_(n-1) + (x_n - mx_(n-1))*(y_n - my_n) : <covariance * n>
-   *   vx_n = vx_(n-1) + (x_n - mx_n)(x_n - mx_(n-1)): <variance * n>
-   *   vy_n = vy_(n-1) + (y_n - my_n)(y_n - my_(n-1)): <variance * n>
+   *   n : &lt;count&gt;
+   *   mx_n = mx_(n-1) + [x_n - mx_(n-1)]/n : &lt;xavg&gt;
+   *   my_n = my_(n-1) + [y_n - my_(n-1)]/n : &lt;yavg&gt;
+   *   c_n = c_(n-1) + (x_n - mx_(n-1))*(y_n - my_n) : &lt;covariance * n&gt;
+   *   vx_n = vx_(n-1) + (x_n - mx_n)(x_n - mx_(n-1)): &lt;variance * n&gt;
+   *   vy_n = vy_(n-1) + (y_n - my_n)(y_n - my_(n-1)): &lt;variance * n&gt;
    *
    *  Merge:
    *   c_X = c_A + c_B + (mx_A - mx_B)*(my_A - my_B)*n_A*n_B/n_X

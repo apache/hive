@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -39,8 +39,7 @@ import java.util.regex.Pattern;
  */
 public class StringColumnInList extends VectorExpression implements IStringInExpr {
   private static final long serialVersionUID = 1L;
-  private int inputCol;
-  private int outputColumn;
+  protected int inputCol;
   private byte[][] inListValues;
 
   // The set object containing the IN list. This is optimized for lookup
@@ -49,20 +48,19 @@ public class StringColumnInList extends VectorExpression implements IStringInExp
 
   public StringColumnInList() {
     super();
-    inSet = null;
   }
 
   /**
    * After construction you must call setInListValues() to add the values to the IN set.
    */
-  public StringColumnInList(int colNum, int outputColumn) {
+  public StringColumnInList(int colNum, int outputColumnNum) {
+    super(outputColumnNum);
     this.inputCol = colNum;
-    this.outputColumn = outputColumn;
     inSet = null;
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
 
     if (childExpressions != null) {
       super.evaluateChildren(batch);
@@ -74,91 +72,89 @@ public class StringColumnInList extends VectorExpression implements IStringInExp
     }
 
     BytesColumnVector inputColVector = (BytesColumnVector) batch.cols[inputCol];
-    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumn];
+    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
-    boolean[] nullPos = inputColVector.isNull;
+    boolean[] inputIsNull = inputColVector.isNull;
     int n = batch.size;
     byte[][] vector = inputColVector.vector;
     int[] start = inputColVector.start;
     int[] len = inputColVector.length;
     long[] outputVector = outputColVector.vector;
+    boolean[] outputIsNull = outputColVector.isNull;
 
     // return immediately if batch is empty
     if (n == 0) {
       return;
     }
 
-    outputColVector.isRepeating = inputColVector.isRepeating;
-    outputColVector.noNulls = inputColVector.noNulls;
-    if (inputColVector.noNulls) {
-      if (inputColVector.isRepeating) {
+    // We do not need to do a column reset since we are carefully changing the output.
+    outputColVector.isRepeating = false;
 
-        // All must be selected otherwise size would be zero
-        // Repeating property will not change.
+    if (inputColVector.isRepeating) {
+      if (inputColVector.noNulls || !inputIsNull[0]) {
+        // Set isNull before call in case it changes it mind.
+        outputIsNull[0] = false;
         outputVector[0] = inSet.lookup(vector[0], start[0], len[0]) ? 1 : 0;
-      } else if (batch.selectedInUse) {
-        for(int j = 0; j != n; j++) {
-          int i = sel[j];
-          outputVector[i] = inSet.lookup(vector[i], start[i], len[i]) ? 1 : 0;
+      } else {
+        outputIsNull[0] = true;
+        outputColVector.noNulls = false;
+      }
+      outputColVector.isRepeating = true;
+      return;
+    }
+
+    if (inputColVector.noNulls) {
+      if (batch.selectedInUse) {
+
+        // CONSIDER: For large n, fill n or all of isNull array and use the tighter ELSE loop.
+
+        if (!outputColVector.noNulls) {
+          for(int j = 0; j != n; j++) {
+           final int i = sel[j];
+           // Set isNull before call in case it changes it mind.
+           outputIsNull[i] = false;
+           outputVector[i] = inSet.lookup(vector[i], start[i], len[i]) ? 1 : 0;
+         }
+        } else {
+          for(int j = 0; j != n; j++) {
+            final int i = sel[j];
+            outputVector[i] = inSet.lookup(vector[i], start[i], len[i]) ? 1 : 0;
+          }
         }
       } else {
+        if (!outputColVector.noNulls) {
+
+          // Assume it is almost always a performance win to fill all of isNull so we can
+          // safely reset noNulls.
+          Arrays.fill(outputIsNull, false);
+          outputColVector.noNulls = true;
+        }
         for(int i = 0; i != n; i++) {
           outputVector[i] = inSet.lookup(vector[i], start[i], len[i]) ? 1 : 0;
         }
       }
-    } else {
-      if (inputColVector.isRepeating) {
+    } else /* there are nulls in the inputColVector */ {
 
-        // All must be selected otherwise size would be zero
-        // Repeating property will not change.
-        if (!nullPos[0]) {
-          outputVector[0] = inSet.lookup(vector[0], start[0], len[0]) ? 1 : 0;
-        }
-        outputColVector.isNull[0] = nullPos[0];
-      } else if (batch.selectedInUse) {
+      // Carefully handle NULLs...
+      outputColVector.noNulls = false;
+
+      if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          if (!nullPos[i]) {
+          outputColVector.isNull[i] = inputIsNull[i];
+          if (!inputIsNull[i]) {
             outputVector[i] = inSet.lookup(vector[i], start[i], len[i]) ? 1 : 0;
           }
-          outputColVector.isNull[i] = nullPos[i];
         }
       } else {
-        System.arraycopy(nullPos, 0, outputColVector.isNull, 0, n);
+        System.arraycopy(inputIsNull, 0, outputColVector.isNull, 0, n);
         for(int i = 0; i != n; i++) {
-          if (!nullPos[i]) {
+          if (!inputIsNull[i]) {
             outputVector[i] = inSet.lookup(vector[i], start[i], len[i]) ? 1 : 0;
           }
         }
       }
     }
-  }
-
-
-  @Override
-  public String getOutputType() {
-    return "boolean";
-  }
-
-  public void setInputColumn(int inputCol) {
-    this.inputCol = inputCol;
-  }
-
-  @Override
-  public int getOutputColumn() {
-    return this.outputColumn;
-  }
-
-  public void setOutputColumn(int value) {
-    this.outputColumn = value;
-  }
-
-  public int getInputCol() {
-    return inputCol;
-  }
-
-  public void setInputCol(int colNum) {
-    this.inputCol = colNum;
   }
 
   @Override
@@ -168,16 +164,17 @@ public class StringColumnInList extends VectorExpression implements IStringInExp
     return null;
   }
 
-  public byte[][] getInListValues() {
-    return this.inListValues;
-  }
-
   public void setInListValues(byte [][] a) {
     this.inListValues = a;
   }
 
   @Override
   public String vectorExpressionParameters() {
-    return "col " + inputCol + ", values " + Arrays.toString(inListValues);
+    StringBuilder sb = new StringBuilder();
+    sb.append("col ");
+    sb.append(inputCol);
+    sb.append(", values ");
+    sb.append(displayArrayOfUtf8ByteArrays(inListValues));
+    return sb.toString();
   }
 }

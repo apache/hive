@@ -67,7 +67,6 @@ p2                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	                    
 p2                  	string              	                    
 PREHOOK: query: describe alter_table_cascade partition (p1='abc', p2='123')
@@ -82,7 +81,6 @@ p2                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	                    
 p2                  	string              	                    
 PREHOOK: query: describe alter_table_cascade partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123')
@@ -97,7 +95,6 @@ p2                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	                    
 p2                  	string              	                    
 PREHOOK: query: select * from alter_table_cascade where p1='abc'
@@ -182,7 +179,6 @@ p2                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	                    
 p2                  	string              	                    
 PREHOOK: query: describe alter_table_cascade partition (p1='xyz', p2='123')
@@ -198,7 +194,6 @@ p2                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	                    
 p2                  	string              	                    
 PREHOOK: query: describe alter_table_cascade partition (p1='abc', p2='123')
@@ -214,7 +209,6 @@ p2                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	                    
 p2                  	string              	                    
 PREHOOK: query: describe alter_table_cascade partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123')
@@ -230,7 +224,6 @@ p2                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	                    
 p2                  	string              	                    
 PREHOOK: query: select * from alter_table_cascade where p1='xyz'
@@ -320,7 +313,6 @@ p2                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	                    
 p2                  	string              	                    
 PREHOOK: query: describe alter_table_cascade partition (p1='xyz', p2='123')
@@ -336,7 +328,6 @@ p2                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	                    
 p2                  	string              	                    
 PREHOOK: query: describe alter_table_cascade partition (p1='abc', p2='123')
@@ -352,7 +343,6 @@ p2                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	                    
 p2                  	string              	                    
 PREHOOK: query: describe alter_table_cascade partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123')
@@ -368,7 +358,6 @@ p2                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	                    
 p2                  	string              	                    
 PREHOOK: query: select * from alter_table_cascade where p1='xyz'
@@ -458,7 +447,6 @@ p2                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	                    
 p2                  	string              	                    
 PREHOOK: query: describe alter_table_cascade partition (p1='xyz', p2='123')
@@ -474,7 +462,6 @@ p2                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	                    
 p2                  	string              	                    
 PREHOOK: query: describe alter_table_cascade partition (p1='abc', p2='123')
@@ -490,7 +477,6 @@ p2                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	                    
 p2                  	string              	                    
 PREHOOK: query: describe alter_table_cascade partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123')
@@ -506,7 +492,6 @@ p2                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	                    
 p2                  	string              	                    
 PREHOOK: query: alter table alter_table_cascade change c2fromc1 c1 string comment "change position first" first cascade
@@ -536,7 +521,6 @@ p2                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	                    
 p2                  	string              	                    
 PREHOOK: query: describe alter_table_cascade partition (p1='xyz', p2='123')
@@ -552,7 +536,6 @@ p2                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	                    
 p2                  	string              	                    
 PREHOOK: query: describe alter_table_cascade partition (p1='abc', p2='123')
@@ -568,7 +551,6 @@ p2                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	                    
 p2                  	string              	                    
 PREHOOK: query: describe alter_table_cascade partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123')
@@ -584,7 +566,6 @@ p2                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	                    
 p2                  	string              	                    
 PREHOOK: query: alter table alter_table_cascade replace columns (c1 string) cascade
@@ -613,7 +594,6 @@ p2                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	                    
 p2                  	string              	                    
 PREHOOK: query: describe alter_table_cascade partition (p1='xyz', p2='123')
@@ -628,7 +608,6 @@ p2                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	                    
 p2                  	string              	                    
 PREHOOK: query: describe alter_table_cascade partition (p1='abc', p2='123')
@@ -643,7 +622,6 @@ p2                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	                    
 p2                  	string              	                    
 PREHOOK: query: describe alter_table_cascade partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123')
@@ -658,7 +636,6 @@ p2                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	                    
 p2                  	string              	                    
 PREHOOK: query: select * from alter_table_cascade where p1='xyz'
@@ -748,7 +725,6 @@ p2                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	                    
 p2                  	string              	                    
 PREHOOK: query: describe alter_table_cascade partition (p1='xyz', p2='123')
@@ -764,7 +740,6 @@ p2                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	                    
 p2                  	string              	                    
 PREHOOK: query: describe alter_table_cascade partition (p1='abc', p2='123')
@@ -780,7 +755,6 @@ p2                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	                    
 p2                  	string              	                    
 PREHOOK: query: describe alter_table_cascade partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123')
@@ -796,7 +770,6 @@ p2                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	                    
 p2                  	string              	                    
 PREHOOK: query: select * from alter_table_cascade where p1='xyz'
@@ -908,7 +881,6 @@ p2                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	                    
 p2                  	string              	                    
 PREHOOK: query: describe alter_table_restrict partition (p1='abc', p2='123')
@@ -923,7 +895,6 @@ p2                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	                    
 p2                  	string              	                    
 PREHOOK: query: describe alter_table_restrict partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123')
@@ -938,7 +909,6 @@ p2                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	                    
 p2                  	string              	                    
 PREHOOK: query: select * from alter_table_restrict where p1='abc'
@@ -1027,7 +997,6 @@ p2                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	                    
 p2                  	string              	                    
 PREHOOK: query: describe alter_table_restrict partition (p1='xyz', p2='123')
@@ -1043,7 +1012,6 @@ p2                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	                    
 p2                  	string              	                    
 PREHOOK: query: describe alter_table_restrict partition (p1='abc', p2='123')
@@ -1058,7 +1026,6 @@ p2                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	                    
 p2                  	string              	                    
 PREHOOK: query: describe alter_table_restrict partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123')
@@ -1073,7 +1040,6 @@ p2                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	                    
 p2                  	string              	                    
 PREHOOK: query: select * from alter_table_restrict where p1='xyz'
@@ -1157,7 +1123,6 @@ p2                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	                    
 p2                  	string              	                    
 PREHOOK: query: describe alter_table_restrict partition (p1='xyz', p2='123')
@@ -1173,7 +1138,6 @@ p2                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	                    
 p2                  	string              	                    
 PREHOOK: query: describe alter_table_restrict partition (p1='abc', p2='123')
@@ -1188,7 +1152,6 @@ p2                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	                    
 p2                  	string              	                    
 PREHOOK: query: describe alter_table_restrict partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123')
@@ -1203,7 +1166,6 @@ p2                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	                    
 p2                  	string              	                    
 PREHOOK: query: alter table alter_table_restrict replace columns (c1 string)
@@ -1226,7 +1188,6 @@ p2                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	                    
 p2                  	string              	                    
 PREHOOK: query: describe alter_table_restrict partition (p1='xyz', p2='123')
@@ -1242,7 +1203,6 @@ p2                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	                    
 p2                  	string              	                    
 PREHOOK: query: describe alter_table_restrict partition (p1='abc', p2='123')
@@ -1257,7 +1217,6 @@ p2                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	                    
 p2                  	string              	                    
 PREHOOK: query: describe alter_table_restrict partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123')
@@ -1272,7 +1231,6 @@ p2                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	                    
 p2                  	string              	                    
 PREHOOK: query: alter table alter_table_restrict add columns (c2 decimal(14,4))
@@ -1296,7 +1254,6 @@ p2                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	                    
 p2                  	string              	                    
 PREHOOK: query: describe alter_table_restrict partition (p1='xyz', p2='123')
@@ -1312,7 +1269,6 @@ p2                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	                    
 p2                  	string              	                    
 PREHOOK: query: describe alter_table_restrict partition (p1='abc', p2='123')
@@ -1327,7 +1283,6 @@ p2                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	                    
 p2                  	string              	                    
 PREHOOK: query: describe alter_table_restrict partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123')
@@ -1342,6 +1297,5 @@ p2                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	                    
 p2                  	string              	                    

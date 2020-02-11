@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -24,19 +24,13 @@ import java.util.Set;
 public class SubqueryConf{
 
   private Set<RelNode> corrScalarRexSQWithAgg;
-  private Set<RelNode> scalarAggWithoutGbyWindowing;
 
 
-  public SubqueryConf(Set<RelNode> corrScalarRexSQWithAgg,
-      Set<RelNode> scalarAggWithoutGbyWindowing) {
+  public SubqueryConf(Set<RelNode> corrScalarRexSQWithAgg){
     this.corrScalarRexSQWithAgg = corrScalarRexSQWithAgg;
-    this.scalarAggWithoutGbyWindowing = scalarAggWithoutGbyWindowing;
   }
 
   public Set<RelNode> getCorrScalarRexSQWithAgg() {
     return corrScalarRexSQWithAgg;
-  }
-  public Set<RelNode> getScalarAggWithoutGbyWindowing() {
-    return scalarAggWithoutGbyWindowing;
   }
 }

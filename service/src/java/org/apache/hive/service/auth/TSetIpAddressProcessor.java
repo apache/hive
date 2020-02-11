@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -31,12 +31,12 @@ import org.slf4j.LoggerFactory;
 
 /**
  * This class is responsible for setting the ipAddress for operations executed via HiveServer2.
- * <p>
+ * <br>
  * <ul>
  * <li>IP address is only set for operations that calls listeners with hookContext</li>
  * <li>IP address is only set if the underlying transport mechanism is socket</li>
  * </ul>
- * </p>
+ * <br>
  *
  * @see org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext
  */

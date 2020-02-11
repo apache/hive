@@ -22,22 +22,22 @@ import static org.junit.Assert.*;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.hooks.Entity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.reexec.ReExecDriver;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 public class TestCreateUdfEntities {
-  private Driver driver;
+  private IDriver driver;
   private String funcName = "print_test";
 
   @Before
   public void setUp() throws Exception {
 
-    HiveConf conf = new HiveConf(Driver.class);
+    HiveConf conf = new HiveConf(IDriver.class);
     SessionState.start(conf);
-    driver = new Driver(conf);
-    driver.init();
+    driver = DriverFactory.newDriver(conf);
   }
 
   @After
@@ -49,8 +49,8 @@ public class TestCreateUdfEntities {
 
   @Test
   public void testUdfWithLocalResource() throws Exception {
-    int rc = driver.compile("CREATE FUNCTION " + funcName + " AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFPrintf' "
-            + " using file '" + "file:///tmp/udf1.jar'");
+    int rc = ((ReExecDriver)driver).compile("CREATE FUNCTION " + funcName + " AS " +
+        "'org.apache.hadoop.hive.ql.udf.generic.GenericUDFPrintf'  using file '" + "file:///tmp/udf1.jar'", true);
     assertEquals(0, rc);
     WriteEntity outputEntities[] = driver.getPlan().getOutputs().toArray(new WriteEntity[] {});
     assertEquals(outputEntities.length, 3);
@@ -67,8 +67,8 @@ public class TestCreateUdfEntities {
 
   @Test
   public void testUdfWithDfsResource() throws Exception {
-    int rc = driver.compile("CREATE FUNCTION default." + funcName + " AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFPrintf' "
-            + " using file '" + "hdfs:///tmp/udf1.jar'");
+    int rc = ((ReExecDriver)driver).compile("CREATE FUNCTION default." + funcName + " AS " +
+        "'org.apache.hadoop.hive.ql.udf.generic.GenericUDFPrintf'  using file '" + "hdfs:///tmp/udf1.jar'", true);
     assertEquals(0, rc);
     WriteEntity outputEntities[] = driver.getPlan().getOutputs().toArray(new WriteEntity[] {});
     assertEquals(outputEntities.length, 3);

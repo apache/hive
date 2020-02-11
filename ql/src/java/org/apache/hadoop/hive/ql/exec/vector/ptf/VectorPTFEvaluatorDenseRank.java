@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,12 +18,10 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.ptf;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 
 /**
@@ -34,32 +32,31 @@ import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
  */
 public class VectorPTFEvaluatorDenseRank extends VectorPTFEvaluatorBase {
 
-  private static final long serialVersionUID = 1L;
-  private static final String CLASS_NAME = VectorPTFEvaluatorDenseRank.class.getName();
-  private static final Log LOG = LogFactory.getLog(CLASS_NAME);
-
   private int denseRank;
 
-  public VectorPTFEvaluatorDenseRank(WindowFrameDef windowFrameDef, VectorExpression inputVecExpr,
-      int outputColumnNum) {
-    super(windowFrameDef, inputVecExpr, outputColumnNum);
+  public VectorPTFEvaluatorDenseRank(WindowFrameDef windowFrameDef, int outputColumnNum) {
+    super(windowFrameDef, outputColumnNum);
     resetEvaluator();
   }
 
-  public void evaluateGroupBatch(VectorizedRowBatch batch, boolean isLastGroupBatch) {
-    evaluateInputExpr(batch);
+  @Override
+  public void evaluateGroupBatch(VectorizedRowBatch batch)
+      throws HiveException {
+
+    // We don't evaluate input columns...
 
     LongColumnVector longColVector = (LongColumnVector) batch.cols[outputColumnNum];
     longColVector.isRepeating = true;
-    longColVector.noNulls = true;
     longColVector.isNull[0] = false;
     longColVector.vector[0] = denseRank;
-
-    if (isLastGroupBatch) {
-      denseRank++;
-    }
   }
 
+  @Override
+  public void doLastBatchWork() {
+    denseRank++;
+  }
+
+  @Override
   public boolean streamsResult() {
     // No group value.
     return true;

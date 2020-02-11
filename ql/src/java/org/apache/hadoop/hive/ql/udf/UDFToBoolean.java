@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,21 +20,23 @@ package org.apache.hadoop.hive.ql.udf;
 
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastDecimalToBoolean;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.CastStringToBoolean;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastStringToLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.CastDoubleToBooleanViaDoubleToLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.CastLongToBooleanViaLongToLong;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.CastDateToBooleanViaLongToLong;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.CastDateToBoolean;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastTimestampToBoolean;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
@@ -47,8 +49,26 @@ import org.apache.hadoop.io.Text;
  *
  */
 @VectorizedExpressions({CastLongToBooleanViaLongToLong.class,
-  CastDateToBooleanViaLongToLong.class, CastTimestampToBoolean.class,
+    CastDateToBoolean.class, CastTimestampToBoolean.class, CastStringToBoolean.class,
   CastDoubleToBooleanViaDoubleToLong.class, CastDecimalToBoolean.class, CastStringToLong.class})
+@Description(
+        name = "boolean",
+        value = "_FUNC_(x) - converts it's parameter to _FUNC_",
+        extended =
+                "- x is NULL -> NULL\n" +
+                "- byte, short, integer, long, float, double, decimal:\n" +
+                "  x == 0 -> false\n" +
+                "  x != 0 -> true\n" +
+                "- string:\n" +
+                "  x is '', 'false', 'no', 'zero', 'off' -> false\n" +
+                "  true otherwise\n" +
+                "- date: always NULL\n" +
+                "- timestamp\n" +
+                "  seconds or nanos are 0 -> false\n" +
+                "  true otherwise\n" +
+                "Example:\n "
+                + "  > SELECT _FUNC_(0);\n"
+                + "  false")
 public class UDFToBoolean extends UDF {
   private final BooleanWritable booleanWritable = new BooleanWritable();
 
@@ -172,18 +192,18 @@ public class UDFToBoolean extends UDF {
   public BooleanWritable evaluate(Text i) {
     if (i == null) {
       return null;
-    } else {
-      booleanWritable.set(i.getLength() != 0);
-      return booleanWritable;
     }
+    boolean b = PrimitiveObjectInspectorUtils.parseBoolean(i.getBytes(), 0, i.getLength());
+    booleanWritable.set(b);
+    return booleanWritable;
   }
 
-  public BooleanWritable evaluate(DateWritable d) {
+  public BooleanWritable evaluate(DateWritableV2 d) {
     // date value to boolean doesn't make any sense.
     return null;
   }
 
-  public BooleanWritable evaluate(TimestampWritable i) {
+  public BooleanWritable evaluate(TimestampWritableV2 i) {
     if (i == null) {
       return null;
     } else {

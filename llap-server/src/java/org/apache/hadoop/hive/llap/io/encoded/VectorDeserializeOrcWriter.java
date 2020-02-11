@@ -20,14 +20,19 @@ package org.apache.hadoop.hive.llap.io.encoded;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.DebugUtils;
@@ -35,10 +40,12 @@ import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.io.encoded.SerDeEncodedDataReader.CacheWriter;
 import org.apache.hadoop.hive.llap.io.encoded.SerDeEncodedDataReader.DeserializerOrcWriter;
 import org.apache.hadoop.hive.llap.io.encoded.SerDeEncodedDataReader.EncodingWriter;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorDeserializeRow;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedSupport;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.orc.Writer;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -46,14 +53,20 @@ import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.lazy.fast.LazySimpleDeserializeRead;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazySimpleStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.BinaryComparable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.InputFormat;
@@ -92,8 +105,7 @@ class VectorDeserializeOrcWriter extends EncodingWriter implements Runnable {
       return new DeserializerOrcWriter(serDe, sourceOi, allocSize);
     }
     Path path = splitPath.getFileSystem(daemonConf).makeQualified(splitPath);
-    PartitionDesc partDesc = HiveFileFormatUtils.getPartitionDescFromPathRecursively(
-        parts, path, null);
+    PartitionDesc partDesc = HiveFileFormatUtils.getFromPathRecursively(parts, path, null);
     if (partDesc == null) {
       LlapIoImpl.LOG.info("Not using VertorDeserializeOrcWriter: no partition desc for " + path);
       return new DeserializerOrcWriter(serDe, sourceOi, allocSize);
@@ -114,7 +126,7 @@ class VectorDeserializeOrcWriter extends EncodingWriter implements Runnable {
     }
     LlapIoImpl.LOG.info("Creating VertorDeserializeOrcWriter for " + path);
     return new VectorDeserializeOrcWriter(
-        daemonConf, tblProps, sourceOi, sourceIncludes, cacheIncludes, allocSize);
+        jobConf, tblProps, sourceOi, sourceIncludes, cacheIncludes, allocSize);
   }
 
   private VectorDeserializeOrcWriter(Configuration conf, Properties tblProps,
@@ -122,12 +134,12 @@ class VectorDeserializeOrcWriter extends EncodingWriter implements Runnable {
       int allocSize) throws IOException {
     super(sourceOi, allocSize);
     // See also: the usage of VectorDeserializeType, for binary. For now, we only want text.
-    this.vrbCtx = createVrbCtx(sourceOi);
+    this.vrbCtx = createVrbCtx(sourceOi, tblProps, conf);
     this.sourceIncludes = sourceIncludes;
     this.cacheIncludes = cacheIncludes;
     this.sourceBatch = vrbCtx.createVectorizedRowBatch();
     deserializeRead = new LazySimpleDeserializeRead(vrbCtx.getRowColumnTypeInfos(),
-        /* useExternalBuffer */ true, createSerdeParams(conf, tblProps));
+      vrbCtx.getRowdataTypePhysicalVariations(),/* useExternalBuffer */ true, createSerdeParams(conf, tblProps));
     vectorDeserializeRow = new VectorDeserializeRow<LazySimpleDeserializeRead>(deserializeRead);
     int colCount = vrbCtx.getRowColumnTypeInfos().length;
     boolean[] includes = null;
@@ -193,12 +205,40 @@ class VectorDeserializeOrcWriter extends EncodingWriter implements Runnable {
     this.orcThread.start();
   }
 
-  private static VectorizedRowBatchCtx createVrbCtx(StructObjectInspector oi) throws IOException {
+  private static VectorizedRowBatchCtx createVrbCtx(StructObjectInspector oi, final Properties tblProps,
+    final Configuration conf) throws IOException {
+    final boolean useDecimal64ColumnVectors = HiveConf.getVar(conf, ConfVars
+      .HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED).equalsIgnoreCase("decimal_64");
+    final String serde = tblProps.getProperty(serdeConstants.SERIALIZATION_LIB);
+    final String inputFormat = tblProps.getProperty(hive_metastoreConstants.FILE_INPUT_FORMAT);
+    final boolean isTextFormat = inputFormat != null && inputFormat.equals(TextInputFormat.class.getName()) &&
+      serde != null && serde.equals(LazySimpleSerDe.class.getName());
+    List<DataTypePhysicalVariation> dataTypePhysicalVariations = new ArrayList<>();
+    if (isTextFormat) {
+      StructTypeInfo structTypeInfo = (StructTypeInfo) TypeInfoUtils.getTypeInfoFromObjectInspector(oi);
+      int dataColumnCount = structTypeInfo.getAllStructFieldTypeInfos().size();
+      for (int i = 0; i < dataColumnCount; i++) {
+        DataTypePhysicalVariation dataTypePhysicalVariation = DataTypePhysicalVariation.NONE;
+        if (useDecimal64ColumnVectors) {
+          TypeInfo typeInfo = structTypeInfo.getAllStructFieldTypeInfos().get(i);
+          if (typeInfo instanceof DecimalTypeInfo) {
+            DecimalTypeInfo decimalTypeInfo = (DecimalTypeInfo) typeInfo;
+            if (HiveDecimalWritable.isPrecisionDecimal64(decimalTypeInfo.precision())) {
+              dataTypePhysicalVariation = DataTypePhysicalVariation.DECIMAL_64;
+            }
+          }
+        }
+        dataTypePhysicalVariations.add(dataTypePhysicalVariation);
+      }
+    }
     VectorizedRowBatchCtx vrbCtx = new VectorizedRowBatchCtx();
     try {
       vrbCtx.init(oi, new String[0]);
     } catch (HiveException e) {
       throw new IOException(e);
+    }
+    if (!dataTypePhysicalVariations.isEmpty()) {
+      vrbCtx.setRowDataTypePhysicalVariations(dataTypePhysicalVariations.toArray(new DataTypePhysicalVariation[0]));
     }
     return vrbCtx;
   }
@@ -329,11 +369,17 @@ class VectorDeserializeOrcWriter extends EncodingWriter implements Runnable {
     destinationBatch.endOfFile = sourceBatch.endOfFile;
   }
 
-  private void addBatchToWriter() throws IOException {
+  void addBatchToWriter() throws IOException {
     propagateSourceBatchFieldsToDest();
     if (!isAsync) {
       orcWriter.addRowBatch(destinationBatch);
     } else {
+      //Lock ColumnVectors so we don't accidentally reset them before they're written out
+      for (ColumnVector cv : destinationBatch.cols) {
+        if (cv != null) {
+          cv.incRef();
+        }
+      }
       currentBatches.add(destinationBatch);
       addWriteOp(new VrbOperation(destinationBatch));
     }
@@ -391,7 +437,7 @@ class VectorDeserializeOrcWriter extends EncodingWriter implements Runnable {
     return result;
   }
 
-  private static interface WriteOperation {
+  interface WriteOperation {
     boolean apply(Writer writer, CacheWriter cacheWriter) throws IOException;
   }
 
@@ -407,6 +453,11 @@ class VectorDeserializeOrcWriter extends EncodingWriter implements Runnable {
     public boolean apply(Writer writer, CacheWriter cacheWriter) throws IOException {
       // LlapIoImpl.LOG.debug("Writing batch " + batch);
       writer.addRowBatch(batch);
+      for (ColumnVector cv : batch.cols) {
+        if (cv != null) {
+          assert (cv.decRef() == 0);
+        }
+      }
       return false;
     }
   }

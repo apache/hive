@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.ql.exec;
 import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.hadoop.hive.common.LogUtils;
+import org.apache.hadoop.hive.ql.TaskQueue;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
@@ -31,7 +33,7 @@ import org.slf4j.LoggerFactory;
  **/
 
 public class TaskRunner extends Thread {
-  protected Task<? extends Serializable> tsk;
+  protected Task<?> tsk;
   protected TaskResult result;
   protected SessionState ss;
   private static AtomicLong taskCounter = new AtomicLong(0);
@@ -46,13 +48,16 @@ public class TaskRunner extends Thread {
 
   private static transient final Logger LOG = LoggerFactory.getLogger(TaskRunner.class);
 
-  public TaskRunner(Task<? extends Serializable> tsk, TaskResult result) {
+  private final TaskQueue taskQueue;
+
+  public TaskRunner(Task<?> tsk, TaskQueue taskQueue) {
     this.tsk = tsk;
-    this.result = result;
-    ss = SessionState.get();
+    this.result = new TaskResult();
+    this.ss = SessionState.get();
+    this.taskQueue = taskQueue;
   }
 
-  public Task<? extends Serializable> getTask() {
+  public Task<?> getTask() {
     return tsk;
   }
 
@@ -70,9 +75,11 @@ public class TaskRunner extends Thread {
 
   @Override
   public void run() {
+    LogUtils.registerLoggingContext(tsk.getConf());
     runner = Thread.currentThread();
     try {
       SessionState.start(ss);
+      LogUtils.registerLoggingContext(tsk.conf);
       runSequential();
     } finally {
       try {
@@ -82,6 +89,7 @@ public class TaskRunner extends Thread {
       } catch (Exception e) {
         LOG.warn("Exception closing Metastore connection:" + e.getMessage());
       }
+      LogUtils.unregisterLoggingContext();
       runner = null;
       result.setRunning(false);
     }
@@ -94,7 +102,7 @@ public class TaskRunner extends Thread {
   public void runSequential() {
     int exitVal = -101;
     try {
-      exitVal = tsk.executeTask();
+      exitVal = tsk.executeTask(ss == null ? null : ss.getHiveHistory());
     } catch (Throwable t) {
       if (tsk.getException() == null) {
         tsk.setException(t);
@@ -102,6 +110,7 @@ public class TaskRunner extends Thread {
       LOG.error("Error in executeTask", t);
     }
     result.setExitVal(exitVal);
+    taskQueue.releaseRunnable();
     if (tsk.getException() != null) {
       result.setTaskError(tsk.getException());
     }

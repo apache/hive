@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,7 +17,10 @@
  */
 package org.apache.hadoop.hive.llap.daemon.impl;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -31,15 +34,15 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.llap.LlapUtil;
+import org.apache.hadoop.hive.llap.counters.LlapIOCounters;
 import org.apache.hadoop.hive.llap.io.encoded.TezCounterSource;
-import org.apache.log4j.MDC;
-import org.apache.log4j.NDC;
 import org.apache.tez.common.CallableWithNdc;
 import org.apache.tez.common.counters.FileSystemCounter;
 import org.apache.tez.common.counters.TezCounters;
 import org.apache.tez.runtime.task.TaskRunner2Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 /**
  * Custom thread pool implementation that records per thread file system statistics in TezCounters.
@@ -50,6 +53,7 @@ public class StatsRecordingThreadPool extends ThreadPoolExecutor {
   private static final Logger LOG = LoggerFactory.getLogger(StatsRecordingThreadPool.class);
   // uncaught exception handler that will be set for all threads before execution
   private Thread.UncaughtExceptionHandler uncaughtExceptionHandler;
+  private final ThreadMXBean mxBean;
 
   public StatsRecordingThreadPool(final int corePoolSize, final int maximumPoolSize,
       final long keepAliveTime,
@@ -66,11 +70,12 @@ public class StatsRecordingThreadPool extends ThreadPoolExecutor {
       final ThreadFactory threadFactory, Thread.UncaughtExceptionHandler handler) {
     super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory);
     this.uncaughtExceptionHandler = handler;
+    this.mxBean = LlapUtil.initThreadMxBean();
   }
 
   @Override
   protected <T> RunnableFuture<T> newTaskFor(final Callable<T> callable) {
-    return new FutureTask(new WrappedCallable(callable, uncaughtExceptionHandler));
+    return new FutureTask(new WrappedCallable(callable, uncaughtExceptionHandler, mxBean));
   }
 
   public void setUncaughtExceptionHandler(Thread.UncaughtExceptionHandler handler) {
@@ -86,11 +91,13 @@ public class StatsRecordingThreadPool extends ThreadPoolExecutor {
   private static class WrappedCallable<V> implements Callable<V> {
     private Callable<V> actualCallable;
     private Thread.UncaughtExceptionHandler uncaughtExceptionHandler;
+    private ThreadMXBean mxBean;
 
     WrappedCallable(final Callable<V> callable,
-        final Thread.UncaughtExceptionHandler uncaughtExceptionHandler) {
+        final Thread.UncaughtExceptionHandler uncaughtExceptionHandler, ThreadMXBean mxBean) {
       this.actualCallable = callable;
       this.uncaughtExceptionHandler = uncaughtExceptionHandler;
+      this.mxBean = mxBean;
     }
 
     @Override
@@ -104,12 +111,18 @@ public class StatsRecordingThreadPool extends ThreadPoolExecutor {
 
       // clone thread local file system statistics
       List<LlapUtil.StatisticsData> statsBefore = LlapUtil.cloneThreadLocalFileSystemStatistics();
-
+      long cpuTime = mxBean == null ? -1 : mxBean.getCurrentThreadCpuTime(),
+          userTime = mxBean == null ? -1 : mxBean.getCurrentThreadUserTime();
       setupMDCFromNDC(actualCallable);
       try {
         return actualCallable.call();
       } finally {
-        updateFileSystemCounters(statsBefore, actualCallable);
+        if (mxBean != null) {
+          cpuTime = mxBean.getCurrentThreadCpuTime() - cpuTime;
+          userTime = mxBean.getCurrentThreadUserTime() - userTime;
+        }
+        updateCounters(statsBefore, actualCallable, cpuTime, userTime);
+
         MDC.clear();
       }
     }
@@ -148,8 +161,17 @@ public class StatsRecordingThreadPool extends ThreadPoolExecutor {
       }
     }
 
-    private void updateFileSystemCounters(final List<LlapUtil.StatisticsData> statsBefore,
-        final Callable<V> actualCallable) {
+    /**
+     * LLAP IO related counters.
+     */
+    public enum LlapExecutorCounters {
+      EXECUTOR_CPU_NS,
+      EXECUTOR_USER_NS;
+
+    }
+
+    private void updateCounters(final List<LlapUtil.StatisticsData> statsBefore,
+        final Callable<V> actualCallable, long cpuTime, long userTime) {
       Thread thread = Thread.currentThread();
       TezCounters tezCounters = null;
       // add tez counters for task execution and llap io
@@ -160,9 +182,15 @@ public class StatsRecordingThreadPool extends ThreadPoolExecutor {
       } else if (actualCallable instanceof TezCounterSource) {
         // Other counter sources (currently used in LLAP IO).
         tezCounters = ((TezCounterSource) actualCallable).getTezCounters();
+      } else {
+        LOG.warn("Unexpected callable {}; cannot get counters", actualCallable);
       }
 
       if (tezCounters != null) {
+        if (cpuTime >= 0 && userTime >= 0) {
+          tezCounters.findCounter(LlapExecutorCounters.EXECUTOR_CPU_NS).increment(cpuTime);
+          tezCounters.findCounter(LlapExecutorCounters.EXECUTOR_USER_NS).increment(userTime);
+        }
         if (statsBefore != null) {
           // if there are multiple stats for the same scheme (from different NameNode), this
           // method will squash them together

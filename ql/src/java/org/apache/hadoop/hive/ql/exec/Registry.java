@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Sets;
 
+import org.apache.hive.common.util.AnnotationUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.JavaUtils;
@@ -158,10 +159,21 @@ public class Registry {
       Class<? extends UDF> UDFClass, boolean isOperator, String displayName,
       FunctionResource... resources) {
     validateClass(UDFClass, UDF.class);
+    validateDescription(UDFClass);
     FunctionInfo fI = new FunctionInfo(functionType, displayName,
         new GenericUDFBridge(displayName, isOperator, UDFClass.getName()), resources);
     addFunction(functionName, fI);
     return fI;
+  }
+
+  private void validateDescription(Class<?> input) {
+    Description description = AnnotationUtils.getAnnotation(input, Description.class);
+    if (description == null) {
+      LOG.warn("UDF Class {}"
+              + " does not have description. Please annotate the class with the " +
+              "org.apache.hadoop.hive.ql.exec.Description annotation and provide the description of the function.",
+              input.getCanonicalName());
+    }
   }
 
   public FunctionInfo registerGenericUDF(String functionName,
@@ -173,6 +185,7 @@ public class Registry {
   private FunctionInfo registerGenericUDF(String functionName, FunctionType functionType,
       Class<? extends GenericUDF> genericUDFClass, FunctionResource... resources) {
     validateClass(genericUDFClass, GenericUDF.class);
+    validateDescription(genericUDFClass);
     FunctionInfo fI = new FunctionInfo(functionType, functionName,
         ReflectionUtil.newInstance(genericUDFClass, null), resources);
     addFunction(functionName, fI);
@@ -204,6 +217,7 @@ public class Registry {
   private FunctionInfo registerGenericUDTF(String functionName, FunctionType functionType,
       Class<? extends GenericUDTF> genericUDTFClass, FunctionResource... resources) {
     validateClass(genericUDTFClass, GenericUDTF.class);
+    validateDescription(genericUDTFClass);
     FunctionInfo fI = new FunctionInfo(functionType, functionName,
         ReflectionUtil.newInstance(genericUDTFClass, null), resources);
     addFunction(functionName, fI);
@@ -218,6 +232,7 @@ public class Registry {
 
   private FunctionInfo registerGenericUDAF(String functionName, FunctionType functionType,
       GenericUDAFResolver genericUDAFResolver, FunctionResource... resources) {
+    validateDescription(genericUDAFResolver.getClass());
     FunctionInfo function =
         new WindowFunctionInfo(functionType, functionName, genericUDAFResolver, resources);
     addFunction(functionName, function);
@@ -269,7 +284,7 @@ public class Registry {
   }
 
   public FunctionInfo registerPermanentFunction(String functionName,
-      String className, boolean registerToSession, FunctionResource... resources) {
+      String className, boolean registerToSession, FunctionResource... resources) throws SemanticException {
     FunctionInfo function = new FunctionInfo(functionName, className, resources);
     // register to session first for backward compatibility
     if (registerToSession) {
@@ -318,7 +333,9 @@ public class Registry {
     try {
       functionName = functionName.toLowerCase();
       if (FunctionUtils.isQualifiedFunctionName(functionName)) {
-        return getQualifiedFunctionInfoUnderLock(functionName);
+        FunctionInfo functionInfo = getQualifiedFunctionInfoUnderLock(functionName);
+        addToCurrentFunctions(functionName, functionInfo);
+        return functionInfo;
       }
       // First try without qualifiers - would resolve builtin/temp functions.
       // Otherwise try qualifying with current db name.
@@ -327,19 +344,33 @@ public class Registry {
         throw new SemanticException ("UDF " + functionName + " is not allowed");
       }
       if (functionInfo == null) {
-        String qualifiedName = FunctionUtils.qualifyFunctionName(
+        functionName = FunctionUtils.qualifyFunctionName(
             functionName, SessionState.get().getCurrentDatabase().toLowerCase());
-        functionInfo = getQualifiedFunctionInfoUnderLock(qualifiedName);
+        functionInfo = getQualifiedFunctionInfoUnderLock(functionName);
       }
-    return functionInfo;
+      addToCurrentFunctions(functionName, functionInfo);
+      return functionInfo;
     } finally {
       lock.unlock();
     }
 
   }
 
+  private void addToCurrentFunctions(String functionName, FunctionInfo functionInfo) {
+    if (SessionState.get() != null && functionInfo != null) {
+      SessionState.get().getCurrentFunctionsInUse().put(functionName, functionInfo);
+    }
+  }
+
   public WindowFunctionInfo getWindowFunctionInfo(String functionName) throws SemanticException {
+    // First try without qualifiers - would resolve builtin/temp functions
     FunctionInfo info = getFunctionInfo(WINDOW_FUNC_PREFIX + functionName);
+    // Try qualifying with current db name for permanent functions
+    if (info == null) {
+      String qualifiedName = FunctionUtils.qualifyFunctionName(
+              functionName, SessionState.get().getCurrentDatabase().toLowerCase());
+      info = getFunctionInfo(WINDOW_FUNC_PREFIX + qualifiedName);
+    }
     if (info instanceof WindowFunctionInfo) {
       return (WindowFunctionInfo) info;
     }
@@ -509,8 +540,9 @@ public class Registry {
       FunctionInfo prev = mFunctions.get(functionName);
       if (prev != null) {
         if (isBuiltInFunc(prev.getFunctionClass())) {
-          throw new RuntimeException("Function " + functionName + " is hive builtin function, " +
-              "which cannot be overridden.");
+          String message = String.format("Function (%s / %s) is hive builtin function, which cannot be overridden.", functionName, prev.getFunctionClass());
+          LOG.debug(message);
+          throw new RuntimeException(message);
         }
         prev.discarded();
       }
@@ -636,7 +668,7 @@ public class Registry {
   }
 
   // should be called after session registry is checked
-  private FunctionInfo registerToSessionRegistry(String qualifiedName, FunctionInfo function) {
+  private FunctionInfo registerToSessionRegistry(String qualifiedName, FunctionInfo function) throws SemanticException {
     FunctionInfo ret = null;
     ClassLoader prev = Utilities.getSessionSpecifiedClassLoader();
     try {
@@ -644,7 +676,7 @@ public class Registry {
       // At this point we should add any relevant jars that would be needed for the UDf.
       FunctionResource[] resources = function.getResources();
       try {
-        FunctionTask.addFunctionResources(resources);
+        FunctionUtils.addFunctionResources(resources);
       } catch (Exception e) {
         LOG.error("Unable to load resources for " + qualifiedName + ":" + e, e);
         return null;
@@ -666,8 +698,14 @@ public class Registry {
       // Lookup of UDf class failed
       LOG.error("Unable to load UDF class: " + e);
       Utilities.restoreSessionSpecifiedClassLoader(prev);
+
+      throw new SemanticException("Unable to load UDF class: " + e +
+              "\nPlease ensure that the JAR file containing this class has been properly installed " +
+              "in the auxiliary directory or was added with ADD JAR command.");
+    }finally {
+      function.shareStateWith(ret);
     }
-    function.shareStateWith(ret);
+
     return ret;
   }
 
@@ -763,7 +801,7 @@ public class Registry {
       }
       // Found UDF in metastore - now add it to the function registry.
       FunctionInfo fi = registerPermanentFunction(functionName, func.getClassName(), true,
-          FunctionTask.toFunctionResource(func.getResourceUris()));
+          FunctionUtils.toFunctionResource(func.getResourceUris()));
       if (fi == null) {
         LOG.error(func.getClassName() + " is not a valid UDF class and was not registered");
         return null;

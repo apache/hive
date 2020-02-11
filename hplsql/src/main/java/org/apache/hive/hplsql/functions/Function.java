@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -30,7 +30,7 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.hive.hplsql.*;
 
@@ -143,6 +143,9 @@ public class Function {
     ArrayList<Var> actualParams = getActualCallParameters(ctx);
     exec.enterScope(Scope.Type.ROUTINE);
     setCallParameters(ctx, actualParams, userCtx.create_routine_params(), null);
+    if (userCtx.declare_block_inplace() != null) {
+      visit(userCtx.declare_block_inplace());
+    }
     visit(userCtx.single_block_stmt());
     exec.leaveScope(); 
     return true;
@@ -708,7 +711,7 @@ public class Function {
   }
   
   void evalInt(int i) {
-    evalInt(new Long(i));
+    evalInt(Long.valueOf(i));
   }
   
   /**
@@ -741,7 +744,7 @@ public class Function {
     if (ctx != null) {
       return evalPop(ctx);
     }
-    return new Var(new Long(value));
+    return new Var(Long.valueOf(value));
   }
   
   /**

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -28,6 +28,7 @@ import java.util.Map;
 
 import org.apache.commons.exec.ExecuteException;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.hcatalog.templeton.tool.JobSubmissionConstants;
 import org.apache.hive.hcatalog.templeton.tool.TempletonControllerJob;
 import org.apache.hive.hcatalog.templeton.tool.TempletonUtils;
@@ -52,13 +53,13 @@ public class HiveDelegator extends LauncherDelegator {
     ExecuteException, IOException, InterruptedException, TooManyRequestsException
   {
     runAs = user;
-    List<String> args = makeArgs(execute, srcFile, defines, hiveArgs, otherFiles, statusdir,
+    List<String> args = makeArgs(user, execute, srcFile, defines, hiveArgs, otherFiles, statusdir,
                    completedUrl, enablelog, enableJobReconnect);
 
     return enqueueController(user, userArgs, callback, args);
   }
 
-  private List<String> makeArgs(String execute, String srcFile,
+  private List<String> makeArgs(String user, String execute, String srcFile,
              List<String> defines, List<String> hiveArgs, String otherFiles,
              String statusdir, String completedUrl, boolean enablelog,
              Boolean enableJobReconnect)
@@ -73,26 +74,20 @@ public class HiveDelegator extends LauncherDelegator {
       
       args.add(appConf.hivePath());
 
-      args.add("--service");
-      args.add("cli");
+      args.add("-n");
+      args.add(user);
+      args.add("-p");
+      args.add("default");
 
-      //the token file location as initial hiveconf arg
-      args.add("--hiveconf");
-      args.add(TempletonControllerJob.TOKEN_FILE_ARG_PLACEHOLDER);
-
-      //this is needed specifcally for Hive on Tez (in addition to
-      //JobSubmissionConstants.TOKEN_FILE_ARG_PLACEHOLDER)
-      args.add("--hiveconf");
-      args.add(JobSubmissionConstants.TOKEN_FILE_ARG_PLACEHOLDER_TEZ);
+      if (UserGroupInformation.isSecurityEnabled()) {
+        args.add("-a");
+        args.add("delegationToken");
+      }
 
       //add mapreduce job tag placeholder
       args.add("--hiveconf");
-      args.add(TempletonControllerJob.MAPREDUCE_JOB_TAGS_ARG_PLACEHOLDER);
+      args.add(TempletonControllerJob.HIVE_QUERY_TAG_ARG_PLACEHOLDER);
 
-      for (String prop : appConf.hiveProps()) {
-        args.add("--hiveconf");
-        args.add(prop);
-      }
       for (String prop : defines) {
         args.add("--hiveconf");
         args.add(prop);

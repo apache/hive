@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -40,7 +40,6 @@ import org.apache.hadoop.mapred.InputFormat;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 @Explain(displayName = "Merge File Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
@@ -60,13 +59,13 @@ public class MergeFileWork extends MapWork {
   private Class<? extends InputFormat> internalInputFormat;
 
   public MergeFileWork(List<Path> inputPaths, Path outputDir,
-      String srcTblInputFormat) {
-    this(inputPaths, outputDir, false, srcTblInputFormat);
+      String srcTblInputFormat, TableDesc tbl) {
+    this(inputPaths, outputDir, false, srcTblInputFormat, tbl);
   }
 
   public MergeFileWork(List<Path> inputPaths, Path outputDir,
       boolean hasDynamicPartitions,
-      String srcTblInputFormat) {
+      String srcTblInputFormat, TableDesc tbl) {
     this.inputPaths = inputPaths;
     this.outputDir = outputDir;
     this.hasDynamicPartitions = hasDynamicPartitions;
@@ -78,6 +77,7 @@ public class MergeFileWork extends MapWork {
       this.internalInputFormat = RCFileBlockMergeInputFormat.class;
     }
     partDesc.setInputFileFormatClass(internalInputFormat);
+    partDesc.setTableDesc(tbl);
     for (Path path : this.inputPaths) {
       this.addPathToPartitionInfo(path, partDesc);
     }
@@ -131,7 +131,7 @@ public class MergeFileWork extends MapWork {
   public void resolveDynamicPartitionStoredAsSubDirsMerge(HiveConf conf,
       Path path,
       TableDesc tblDesc,
-      ArrayList<String> aliases,
+      List<String> aliases,
       PartitionDesc partDesc) {
     super.resolveDynamicPartitionStoredAsSubDirsMerge(conf, path, tblDesc,
         aliases, partDesc);
@@ -143,7 +143,7 @@ public class MergeFileWork extends MapWork {
 
   /**
    * alter table ... concatenate
-   * <p/>
+   * <br>
    * If it is skewed table, use subdirectories in inputpaths.
    */
   public void resolveConcatenateMerge(HiveConf conf) {
@@ -160,15 +160,14 @@ public class MergeFileWork extends MapWork {
       Path dirPath = inputPaths.get(0);
       try {
         FileSystem inpFs = dirPath.getFileSystem(conf);
-        FileStatus[] status =
-            HiveStatsUtils.getFileStatusRecurse(dirPath, listBucketingCtx
-                .getSkewedColNames().size(), inpFs);
+        List<FileStatus> status = HiveStatsUtils.getFileStatusRecurse(
+            dirPath, listBucketingCtx.getSkewedColNames().size(), inpFs);
         List<Path> newInputPath = new ArrayList<Path>();
         boolean succeed = true;
-        for (int i = 0; i < status.length; ++i) {
-          if (status[i].isDir()) {
+        for (FileStatus s : status) {
+          if (s.isDir()) {
             // Add the lb path to the list of input paths
-            newInputPath.add(status[i].getPath());
+            newInputPath.add(s.getPath());
           } else {
             // find file instead of dir. dont change inputpath
             succeed = false;

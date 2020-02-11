@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,8 +20,12 @@ package org.apache.hive.hcatalog.templeton.tool;
 
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.Arrays;
 
+import org.apache.hive.hcatalog.templeton.LauncherDelegator;
+import org.apache.hive.jdbc.HiveConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -142,32 +146,43 @@ public class TempletonControllerJob extends Configured implements Tool, JobSubmi
       Token<DelegationTokenIdentifier> mrdt = jc.getDelegationToken(new Text("mr token"));
       job.getCredentials().addToken(new Text("mr token"), mrdt);
     }
-    String metastoreTokenStrForm = addHMSToken(job, user);
+    LauncherDelegator.JobType jobType = LauncherDelegator.JobType.valueOf(conf.get(JOB_TYPE));
+
+    String tokenStrForm = null;
+    if (jobType == LauncherDelegator.JobType.HIVE) {
+      tokenStrForm = addToken(job, user, SecureProxySupport.HIVE_SERVICE);
+    } else {
+      tokenStrForm = addToken(job, user, SecureProxySupport.HCAT_SERVICE);
+    }
 
     job.submit();
 
     JobID submittedJobId = job.getJobID();
-    if(metastoreTokenStrForm != null) {
+    if(tokenStrForm != null) {
       //so that it can be cancelled later from CompleteDelegator
       DelegationTokenCache.getStringFormTokenCache().storeDelegationToken(
-              submittedJobId.toString(), metastoreTokenStrForm);
-      LOG.debug("Added metastore delegation token for jobId=" + submittedJobId.toString() +
+              submittedJobId.toString(), tokenStrForm);
+      LOG.debug("Added delegation token for jobId=" + submittedJobId.toString() +
               " user=" + user);
     }
     return 0;
   }
-  private String addHMSToken(Job job, String user) throws IOException, InterruptedException,
+  private String addToken(Job job, String user, String type) throws IOException, InterruptedException,
           TException {
     if(!secureMetastoreAccess) {
       return null;
     }
-    Token<org.apache.hadoop.hive.thrift.DelegationTokenIdentifier> hiveToken =
-            new Token<org.apache.hadoop.hive.thrift.DelegationTokenIdentifier>();
-    String metastoreTokenStrForm = buildHcatDelegationToken(user);
-    hiveToken.decodeFromUrlString(metastoreTokenStrForm);
-    job.getCredentials().addToken(new
-            Text(SecureProxySupport.HCAT_SERVICE), hiveToken);
-    return metastoreTokenStrForm;
+    Token<org.apache.hadoop.hive.metastore.security.DelegationTokenIdentifier> hiveToken =
+            new Token<org.apache.hadoop.hive.metastore.security.DelegationTokenIdentifier>();
+    String tokenStrForm;
+    if (type.equals(SecureProxySupport.HIVE_SERVICE)) {
+      tokenStrForm = buildHS2DelegationToken(user);
+    } else {
+      tokenStrForm = buildHcatDelegationToken(user);
+    }
+    hiveToken.decodeFromUrlString(tokenStrForm);
+    job.getCredentials().addToken(new Text(type), hiveToken);
+    return tokenStrForm;
   }
   private String buildHcatDelegationToken(String user) throws IOException, InterruptedException,
           TException {
@@ -186,6 +201,39 @@ public class TempletonControllerJob extends Configured implements Tool, JobSubmi
             return client.getDelegationToken(c.getUser(),u);
           }
         });
+      }
+    });
+  }
+
+  private String buildHS2DelegationToken(String user) throws IOException, InterruptedException,
+          TException {
+    final HiveConf c = new HiveConf();
+    LOG.debug("Creating hiveserver2 delegation token for user " + user);
+    final UserGroupInformation ugi = UgiFactory.getUgi(user);
+    UserGroupInformation real = ugi.getRealUser();
+    return real.doAs(new PrivilegedExceptionAction<String>() {
+      @Override
+      public String run() throws IOException, TException, InterruptedException {
+        try {
+          Class.forName("org.apache.hive.jdbc.HiveDriver");
+        } catch (ClassNotFoundException e) {
+          throw new IOException(e);
+        }
+        String hs2Url = appConf.get(AppConfig.HIVE_SERVER2_URL);
+        final HiveConnection con;
+        try {
+          con = (HiveConnection) DriverManager.getConnection(hs2Url);
+        } catch (SQLException e) {
+          throw new IOException(e);
+        }
+        String token = ugi.doAs(new PrivilegedExceptionAction<String>() {
+          @Override
+          public String run() throws SQLException {
+            String u = ugi.getUserName();
+            return con.getDelegationToken(u,u);
+          }
+        });
+        return token;
       }
     });
   }

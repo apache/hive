@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,10 +21,14 @@ package org.apache.hadoop.hive.cli.control;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.File;
+
 import org.apache.hadoop.hive.hbase.HBaseQTestUtil;
 import org.apache.hadoop.hive.hbase.HBaseTestSetup;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
-import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
+import org.apache.hadoop.hive.ql.QTestUtil;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
+import org.apache.hadoop.hive.ql.QTestMiniClusters.MiniClusterType;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -32,7 +36,6 @@ import org.junit.Before;
 public class CoreHBaseNegativeCliDriver extends CliAdapter {
 
   private HBaseQTestUtil qt;
-  private static HBaseTestSetup setup = new HBaseTestSetup();
 
   public CoreHBaseNegativeCliDriver(AbstractCliConfig testCliConfig) {
     super(testCliConfig);
@@ -40,20 +43,27 @@ public class CoreHBaseNegativeCliDriver extends CliAdapter {
 
   @Override
   public void beforeClass() throws Exception {
-  }
-
-  // hmm..this looks a bit wierd...setup boots qtestutil...this part used to be in beforeclass
-  @Override
-  @Before
-  public void setUp() {
-
     MiniClusterType miniMR = cliConfig.getClusterType();
     String initScript = cliConfig.getInitScript();
     String cleanupScript = cliConfig.getCleanupScript();
 
     try {
       qt = new HBaseQTestUtil(cliConfig.getResultsDir(), cliConfig.getLogDir(), miniMR,
-      setup, initScript, cleanupScript);
+          new HBaseTestSetup(), initScript, cleanupScript);
+
+    } catch (Exception e) {
+      System.err.println("Exception: " + e.getMessage());
+      e.printStackTrace();
+      System.err.flush();
+      throw new RuntimeException("Unexpected exception in static initialization: ", e);
+    }
+  }
+
+  @Override
+  @Before
+  public void setUp() {
+    try {
+      qt.newSession();
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
@@ -66,7 +76,8 @@ public class CoreHBaseNegativeCliDriver extends CliAdapter {
   @After
   public void tearDown() {
     try {
-      qt.shutdown();
+      qt.clearPostTestEffects();
+      qt.clearTestSideEffects();
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
@@ -77,39 +88,43 @@ public class CoreHBaseNegativeCliDriver extends CliAdapter {
 
   @Override
   @AfterClass
-  public void shutdown() throws Exception {
-    // closeHBaseConnections
-    setup.tearDown();
+  public void shutdown() {
+    try {
+      qt.shutdown();
+    } catch (Exception e) {
+      System.err.println("Exception: " + e.getMessage());
+      e.printStackTrace();
+      System.err.flush();
+      fail("Unexpected exception in shutdown");
+    }
   }
 
   @Override
-  public void runTest(String tname, String fname, String fpath) throws Exception {
+  protected QTestUtil getQt() {
+    return qt;
+  }
+
+  @Override
+  public void runTest(String tname, String fname, String fpath) {
     long startTime = System.currentTimeMillis();
     try {
       System.err.println("Begin query: " + fname);
-
       qt.addFile(fpath);
-
-      if (qt.shouldBeSkipped(fname)) {
-        System.err.println("Test " + fname + " skipped");
-        return;
-      }
-
-      qt.cliInit(fname);
-      qt.clearTestSideEffects();
-      int ecode = qt.executeClient(fname);
-      if (ecode == 0) {
+      qt.cliInit(new File(fpath));
+      try {
+        qt.executeClient(fname);
         qt.failed(fname, null);
+      } catch (CommandProcessorException e) {
+        // this is the expected result
       }
 
       QTestProcessExecResult result = qt.checkCliDriverResults(fname);
       if (result.getReturnCode() != 0) {
         qt.failedDiff(result.getReturnCode(), fname, result.getCapturedOutput());
       }
-      qt.clearPostTestEffects();
 
     } catch (Exception e) {
-      qt.failed(e, fname, null);
+      qt.failedWithException(e, fname, null);
     }
 
     long elapsedTime = System.currentTimeMillis() - startTime;

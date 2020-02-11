@@ -74,32 +74,32 @@ POSTHOOK: Input: default@oneline
 2009 Mar 20 11:30:01 am	1237573801
 unix_timestamp(void) is deprecated. Use current_timestamp instead.
 unix_timestamp(void) is deprecated. Use current_timestamp instead.
-PREHOOK: query: create table foo as SELECT
+PREHOOK: query: create table foo_n3 as SELECT
   'deprecated' as a,
   unix_timestamp() as b
 FROM oneline
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@oneline
 PREHOOK: Output: database:default
-PREHOOK: Output: default@foo
-POSTHOOK: query: create table foo as SELECT
+PREHOOK: Output: default@foo_n3
+POSTHOOK: query: create table foo_n3 as SELECT
   'deprecated' as a,
   unix_timestamp() as b
 FROM oneline
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@oneline
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@foo
-POSTHOOK: Lineage: foo.a SIMPLE []
-POSTHOOK: Lineage: foo.b SIMPLE []
-PREHOOK: query: drop table foo
+POSTHOOK: Output: default@foo_n3
+POSTHOOK: Lineage: foo_n3.a SIMPLE []
+POSTHOOK: Lineage: foo_n3.b SIMPLE []
+PREHOOK: query: drop table foo_n3
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@foo
-PREHOOK: Output: default@foo
-POSTHOOK: query: drop table foo
+PREHOOK: Input: default@foo_n3
+PREHOOK: Output: default@foo_n3
+POSTHOOK: query: drop table foo_n3
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@foo
-POSTHOOK: Output: default@foo
+POSTHOOK: Input: default@foo_n3
+POSTHOOK: Output: default@foo_n3
 PREHOOK: query: SELECT
   'random_string',
   unix_timestamp('random_string')

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -25,7 +25,7 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
  * The processor context for list bucketing pruner. This contains the table alias
  * that is being currently processed.
  */
-public class LBExprProcCtx implements NodeProcessorCtx{
+public class LBExprProcCtx implements NodeProcessorCtx {
 
   /**
    * The table alias that is being currently processed.

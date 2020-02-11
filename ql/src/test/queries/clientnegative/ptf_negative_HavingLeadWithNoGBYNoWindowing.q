@@ -1,3 +1,4 @@
+--! qt:dataset:part
 -- testHavingLeadWithNoGBYNoWindowing
 select  p_mfgr,p_name, p_size 
 from part 

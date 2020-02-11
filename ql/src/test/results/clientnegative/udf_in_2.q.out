@@ -1,1 +1,0 @@
-FAILED: SemanticException Line 0:-1 Wrong arguments 'false': The arguments for IN should be the same type! Types are: {int IN (boolean, boolean)}

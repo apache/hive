@@ -29,15 +29,15 @@ public interface ServiceInstanceSet<InstanceType extends ServiceInstance> {
    * The worker identity does not collide between restarts, so each restart will have a unique id,
    * while having the same host/ip pair.
    * 
-   * @return
+   * @return instance list
    */
   Collection<InstanceType> getAll();
 
   /**
    * Get an instance by worker identity.
    * 
-   * @param name
-   * @return
+   * @param name worker id
+   * @return instance
    */
   InstanceType getInstance(String name);
 
@@ -46,13 +46,13 @@ public interface ServiceInstanceSet<InstanceType extends ServiceInstance> {
    * 
    * The list could include dead and alive instances.
    * 
-   * @param host
-   * @return
+   * @param host hostname
+   * @return instance list
    */
   Set<InstanceType> getByHost(String host);
 
   /**
-   * Get number of instances in the currently availabe.
+   * Get number of instances in the currently available.
    *
    * @return - number of instances
    */

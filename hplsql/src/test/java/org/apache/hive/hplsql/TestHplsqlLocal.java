@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -107,6 +107,11 @@ public class TestHplsqlLocal {
   public void testCreateFunction4() throws Exception {
     run("create_function4");
   }
+  
+  @Test
+  public void testCreateFunction5() throws Exception {
+    run("create_function5");
+  }
 
   @Test
   public void testCreatePackage() throws Exception {
@@ -136,6 +141,11 @@ public class TestHplsqlLocal {
   @Test
   public void testCreateProcedure3() throws Exception {
     run("create_procedure3");
+  }
+  
+  @Test
+  public void testCreateProcedure4() throws Exception {
+    run("create_procedure4");
   }
   
   @Test
@@ -171,6 +181,11 @@ public class TestHplsqlLocal {
   @Test
   public void testDeclare3() throws Exception {
     run("declare3");
+  }
+
+  @Test
+  public void testDeclare4() throws Exception {
+    run("declare4");
   }
   
   @Test

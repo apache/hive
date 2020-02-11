@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -33,9 +33,11 @@ import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.LongAdder;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
@@ -44,7 +46,6 @@ import org.apache.hadoop.hive.common.metrics.common.MetricsVariable;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.hooks.HookUtils;
-import org.apache.hadoop.hive.ql.hooks.HooksLoader;
 import org.apache.hive.service.CompositeService;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.SessionHandle;
@@ -63,11 +64,26 @@ import org.slf4j.LoggerFactory;
  */
 public class SessionManager extends CompositeService {
 
+  private static final String INACTIVE_ERROR_MESSAGE =
+          "Cannot open sessions on an inactive HS2 instance, " +
+                  "or the HS2 server leader is not ready; please use service discovery to " +
+                  "connect the server leader again";
+  private static final String FAIL_CLOSE_ERROR_MESSAGE="Cannot close the session opened " +
+          "during the HA state change time";
   public static final String HIVERCFILE = ".hiverc";
   private static final Logger LOG = LoggerFactory.getLogger(CompositeService.class);
   private HiveConf hiveConf;
+  /** The lock that synchronizes the allowSessions flag and handleToSession map.
+      Active-passive HA first disables the connections, then closes existing one, making sure
+      there are no races between these two processes. */
+  private final Object sessionAddLock = new Object();
+  private boolean allowSessions;
   private final Map<SessionHandle, HiveSession> handleToSession =
       new ConcurrentHashMap<SessionHandle, HiveSession>();
+  private final Map<String, LongAdder> connectionsCount = new ConcurrentHashMap<>();
+  private int userLimit;
+  private int ipAddressLimit;
+  private int userIpAddressLimit;
   private final OperationManager operationManager = new OperationManager();
   private ThreadPoolExecutor backgroundOperationPool;
   private boolean isOperationLogEnabled;
@@ -83,9 +99,10 @@ public class SessionManager extends CompositeService {
   private String sessionImplWithUGIclassName;
   private String sessionImplclassName;
 
-  public SessionManager(HiveServer2 hiveServer2) {
+  public SessionManager(HiveServer2 hiveServer2, boolean allowSessions) {
     super(SessionManager.class.getSimpleName());
     this.hiveServer2 = hiveServer2;
+    this.allowSessions = allowSessions;
   }
 
   @Override
@@ -103,6 +120,12 @@ public class SessionManager extends CompositeService {
       registerOpenSesssionMetrics(metrics);
       registerActiveSesssionMetrics(metrics);
     }
+
+    userLimit = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_LIMIT_CONNECTIONS_PER_USER);
+    ipAddressLimit = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_LIMIT_CONNECTIONS_PER_IPADDRESS);
+    userIpAddressLimit = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_LIMIT_CONNECTIONS_PER_USER_IPADDRESS);
+    LOG.info("Connections limit are user: {} ipaddress: {} user-ipaddress: {}", userLimit, ipAddressLimit,
+      userIpAddressLimit);
     super.init(hiveConf);
   }
 
@@ -363,10 +386,22 @@ public class SessionManager extends CompositeService {
     return createSession(null, protocol, username, password, ipAddress, sessionConf,
       withImpersonation, delegationToken).getSessionHandle();
   }
+
   public HiveSession createSession(SessionHandle sessionHandle, TProtocolVersion protocol, String username,
     String password, String ipAddress, Map<String, String> sessionConf, boolean withImpersonation,
     String delegationToken)
     throws HiveSQLException {
+    // Check the flag opportunistically.
+    synchronized (sessionAddLock) {
+      if (!allowSessions) {
+        throw new HiveSQLException(INACTIVE_ERROR_MESSAGE);
+      }
+    }
+    // Do the expensive operations outside of any locks; we'll recheck the flag again at the end.
+
+    // if client proxies connection, use forwarded ip-addresses instead of just the gateway
+    final List<String> forwardedAddresses = getForwardedAddresses();
+    incrementConnections(username, ipAddress, forwardedAddresses);
 
     HiveSession session;
     // If doAs is set to true for HiveServer2, we will create a proxy object for the session impl.
@@ -375,16 +410,16 @@ public class SessionManager extends CompositeService {
       HiveSessionImplwithUGI hiveSessionUgi;
       if (sessionImplWithUGIclassName == null) {
         hiveSessionUgi = new HiveSessionImplwithUGI(sessionHandle, protocol, username, password,
-            hiveConf, ipAddress, delegationToken);
+            hiveConf, ipAddress, delegationToken, forwardedAddresses);
       } else {
         try {
           Class<?> clazz = Class.forName(sessionImplWithUGIclassName);
           Constructor<?> constructor = clazz.getConstructor(SessionHandle.class, TProtocolVersion.class, String.class,
-            String.class, HiveConf.class, String.class, String.class);
+            String.class, HiveConf.class, String.class, String.class, List.class);
           hiveSessionUgi = (HiveSessionImplwithUGI) constructor.newInstance(sessionHandle,
-              protocol, username, password, hiveConf, ipAddress, delegationToken);
+              protocol, username, password, hiveConf, ipAddress, delegationToken, forwardedAddresses);
         } catch (Exception e) {
-          throw new HiveSQLException("Cannot initilize session class:" + sessionImplWithUGIclassName);
+          throw new HiveSQLException("Cannot initialize session class:" + sessionImplWithUGIclassName);
         }
       }
       session = HiveSessionProxy.getProxy(hiveSessionUgi, hiveSessionUgi.getSessionUgi());
@@ -392,16 +427,16 @@ public class SessionManager extends CompositeService {
     } else {
       if (sessionImplclassName == null) {
         session = new HiveSessionImpl(sessionHandle, protocol, username, password, hiveConf,
-          ipAddress);
+          ipAddress, forwardedAddresses);
       } else {
         try {
         Class<?> clazz = Class.forName(sessionImplclassName);
         Constructor<?> constructor = clazz.getConstructor(SessionHandle.class, TProtocolVersion.class,
-          String.class, String.class, HiveConf.class, String.class);
+          String.class, String.class, HiveConf.class, String.class, List.class);
         session = (HiveSession) constructor.newInstance(sessionHandle, protocol, username, password,
-          hiveConf, ipAddress);
+          hiveConf, ipAddress, forwardedAddresses);
         } catch (Exception e) {
-          throw new HiveSQLException("Cannot initilize session class:" + sessionImplclassName, e);
+          throw new HiveSQLException("Cannot initialize session class:" + sessionImplclassName, e);
         }
       }
     }
@@ -434,9 +469,113 @@ public class SessionManager extends CompositeService {
       session = null;
       throw new HiveSQLException("Failed to execute session hooks: " + e.getMessage(), e);
     }
-    handleToSession.put(session.getSessionHandle(), session);
-    LOG.info("Session opened, " + session.getSessionHandle() + ", current sessions:" + getOpenSessionCount());
+    boolean isAdded = false;
+    synchronized (sessionAddLock) {
+      if (allowSessions) {
+        handleToSession.put(session.getSessionHandle(), session);
+        isAdded = true;
+      }
+    }
+    if (!isAdded) {
+      try {
+        closeSessionInternal(session);
+      } catch (Exception e) {
+        LOG.warn("Failed to close the session opened during an HA state change; ignoring", e);
+      }
+      throw new HiveSQLException(FAIL_CLOSE_ERROR_MESSAGE);
+    }
+    LOG.info("Session opened, " + session.getSessionHandle()
+        + ", current sessions:" + getOpenSessionCount());
     return session;
+  }
+
+  private void incrementConnections(final String username, final String ipAddress,
+    final List<String> forwardedAddresses) throws HiveSQLException {
+    final String clientIpAddress = getOriginClientIpAddress(ipAddress, forwardedAddresses);
+
+    String violation = anyViolations(username, clientIpAddress);
+    // increment the counters only when there are no violations
+    if (violation == null) {
+      if (trackConnectionsPerUser(username)) {
+        connectionsCount.computeIfAbsent(username, k -> new LongAdder()).increment();
+      }
+
+      if (trackConnectionsPerIpAddress(clientIpAddress)) {
+        connectionsCount.computeIfAbsent(clientIpAddress, k -> new LongAdder()).increment();
+      }
+
+      if (trackConnectionsPerUserIpAddress(username, clientIpAddress)) {
+        connectionsCount.computeIfAbsent(username + ":" + clientIpAddress, k -> new LongAdder()).increment();
+      }
+    } else {
+      LOG.error(violation);
+      throw new HiveSQLException(violation);
+    }
+  }
+
+  private String getOriginClientIpAddress(final String ipAddress, final List<String> forwardedAddresses) {
+    if (forwardedAddresses == null || forwardedAddresses.isEmpty()) {
+      return ipAddress;
+    }
+    // order of forwarded ips per X-Forwarded-For http spec (client, proxy1, proxy2)
+    return forwardedAddresses.get(0);
+  }
+
+  private void decrementConnections(final HiveSession session) {
+    final String username = session.getUserName();
+    final String clientIpAddress = getOriginClientIpAddress(session.getIpAddress(), session.getForwardedAddresses());
+    if (trackConnectionsPerUser(username)) {
+      connectionsCount.computeIfPresent(username, (k, v) -> v).decrement();
+    }
+
+    if (trackConnectionsPerIpAddress(clientIpAddress)) {
+      connectionsCount.computeIfPresent(clientIpAddress, (k, v) -> v).decrement();
+    }
+
+    if (trackConnectionsPerUserIpAddress(username, clientIpAddress)) {
+      connectionsCount.computeIfPresent(username + ":" + clientIpAddress, (k, v) -> v).decrement();
+    }
+  }
+
+  private String anyViolations(final String username, final String ipAddress) {
+    if (trackConnectionsPerUser(username) && !withinLimits(username, userLimit)) {
+      return "Connection limit per user reached (user: " + username + " limit: " + userLimit + ")";
+    }
+
+    if (trackConnectionsPerIpAddress(ipAddress) && !withinLimits(ipAddress, ipAddressLimit)) {
+      return "Connection limit per ipaddress reached (ipaddress: " + ipAddress + " limit: " + ipAddressLimit + ")";
+    }
+
+    if (trackConnectionsPerUserIpAddress(username, ipAddress) &&
+      !withinLimits(username + ":" + ipAddress, userIpAddressLimit)) {
+      return "Connection limit per user:ipaddress reached (user:ipaddress: " + username + ":" + ipAddress + " limit: " +
+        userIpAddressLimit + ")";
+    }
+
+    return null;
+  }
+
+  private boolean trackConnectionsPerUserIpAddress(final String username, final String ipAddress) {
+    return userIpAddressLimit > 0 && username != null && !username.isEmpty() && ipAddress != null &&
+      !ipAddress.isEmpty();
+  }
+
+  private boolean trackConnectionsPerIpAddress(final String ipAddress) {
+    return ipAddressLimit > 0 && ipAddress != null && !ipAddress.isEmpty();
+  }
+
+  private boolean trackConnectionsPerUser(final String username) {
+    return userLimit > 0 && username != null && !username.isEmpty();
+  }
+
+  private boolean withinLimits(final String track, final int limit) {
+    if (connectionsCount.containsKey(track)) {
+      final int connectionCount = connectionsCount.get(track).intValue();
+      if (connectionCount >= limit) {
+        return false;
+      }
+    }
+    return true;
   }
 
   public synchronized void closeSession(SessionHandle sessionHandle) throws HiveSQLException {
@@ -445,9 +584,14 @@ public class SessionManager extends CompositeService {
       throw new HiveSQLException("Session does not exist: " + sessionHandle);
     }
     LOG.info("Session closed, " + sessionHandle + ", current sessions:" + getOpenSessionCount());
+    closeSessionInternal(session);
+  }
+
+  private void closeSessionInternal(HiveSession session) throws HiveSQLException {
     try {
       session.close();
     } finally {
+      decrementConnections(session);
       // Shutdown HiveServer2 if it has been deregistered from ZooKeeper and has no active sessions
       if (!(hiveServer2 == null) && (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_SUPPORT_DYNAMIC_SERVICE_DISCOVERY))
           && (hiveServer2.isDeregisteredWithZooKeeper())) {
@@ -550,7 +694,8 @@ public class SessionManager extends CompositeService {
 
   // execute session hooks
   private void executeSessionHooks(HiveSession session) throws Exception {
-    List<HiveSessionHook> sessionHooks = new HooksLoader(hiveConf).getHooks(HiveConf.ConfVars.HIVE_SERVER2_SESSION_HOOK);
+    List<HiveSessionHook> sessionHooks =
+        HookUtils.readHooksFromConf(hiveConf, HiveConf.ConfVars.HIVE_SERVER2_SESSION_HOOK);
     for (HiveSessionHook sessionHook : sessionHooks) {
       sessionHook.run(new HiveSessionHookContextImpl(session));
     }
@@ -570,6 +715,19 @@ public class SessionManager extends CompositeService {
 
   public int getOpenSessionCount() {
     return handleToSession.size();
+  }
+
+  public String getHiveServer2HostName() throws Exception {
+    if (hiveServer2 == null) {
+      return null;
+    }
+    return hiveServer2.getServerHost();
+  }
+
+  public void allowSessions(boolean b) {
+    synchronized (sessionAddLock) {
+      this.allowSessions = b;
+    }
   }
 }
 

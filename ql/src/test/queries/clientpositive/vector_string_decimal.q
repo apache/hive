@@ -2,14 +2,14 @@ set hive.vectorized.execution.enabled=false;
 set hive.fetch.task.conversion=none;
 
 drop table orc_decimal;
-drop table staging;
+drop table staging_n1;
 create table orc_decimal (id decimal(18,0)) stored as orc;
 
-create table staging (id decimal(18,0));
+create table staging_n1 (id decimal(18,0));
 
-insert into staging values (34324.0), (100000000.0), (200000000.0), (300000000.0);
+insert into staging_n1 values (34324.0), (100000000.0), (200000000.0), (300000000.0);
 
-insert overwrite table orc_decimal select id from staging;
+insert overwrite table orc_decimal select id from staging_n1;
 
 set hive.vectorized.execution.enabled=true;
 
@@ -18,4 +18,4 @@ select * from orc_decimal where id in ('100000000', '200000000');
 select * from orc_decimal where id in ('100000000', '200000000');
 
 drop table orc_decimal;
-drop table staging;
+drop table staging_n1;

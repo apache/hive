@@ -24,16 +24,18 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 class BootStrapReplicationSpecFunction implements HiveWrapper.Tuple.Function<ReplicationSpec> {
   private final Hive db;
+  private final long currentNotificationId;
 
-  BootStrapReplicationSpecFunction(Hive db) {
+  BootStrapReplicationSpecFunction(Hive db, long currentNotificationId) {
     this.db = db;
+    this.currentNotificationId = currentNotificationId;
   }
 
   @Override
   public ReplicationSpec fromMetaStore() throws HiveException {
     try {
-      long currentNotificationId = db.getMSC()
-              .getCurrentNotificationEventId().getEventId();
+      long currentReplicationState = (this.currentNotificationId > 0)
+              ? this.currentNotificationId : db.getMSC().getCurrentNotificationEventId().getEventId();
       ReplicationSpec replicationSpec =
           new ReplicationSpec(
               true,
@@ -45,7 +47,7 @@ class BootStrapReplicationSpecFunction implements HiveWrapper.Tuple.Function<Rep
               false
           );
 
-      replicationSpec.setCurrentReplicationState(String.valueOf(currentNotificationId));
+      replicationSpec.setCurrentReplicationState(String.valueOf(currentReplicationState));
       return replicationSpec;
     } catch (Exception e) {
       throw new SemanticException(e);

@@ -21,6 +21,7 @@ import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 public class IfExprNullColumn extends VectorExpression {
 
@@ -28,16 +29,23 @@ public class IfExprNullColumn extends VectorExpression {
 
   private final int arg1Column;
   private final int arg2Column;
-  private final int outputColumn;
 
-  public IfExprNullColumn(int arg1Column, int arg2Column, int outputColumn) {
+  public IfExprNullColumn(int arg1Column, int arg2Column, int outputColumnNum) {
+	super(outputColumnNum);
     this.arg1Column = arg1Column;
     this.arg2Column = arg2Column;
-    this.outputColumn = outputColumn;
+  }
+
+  public IfExprNullColumn() {
+    super();
+
+    // Dummy final assignments.
+    arg1Column = -1;
+    arg2Column = -1;
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
 
     if (childExpressions != null) {
       super.evaluateChildren(batch);
@@ -45,7 +53,7 @@ public class IfExprNullColumn extends VectorExpression {
 
     final LongColumnVector arg1ColVector = (LongColumnVector) batch.cols[arg1Column];
     final ColumnVector arg2ColVector = batch.cols[arg2Column];
-    final ColumnVector outputColVector = batch.cols[outputColumn];
+    final ColumnVector outputColVector = batch.cols[outputColumnNum];
 
     final int[] sel = batch.selected;
     final int n = batch.size;
@@ -57,49 +65,137 @@ public class IfExprNullColumn extends VectorExpression {
       return;
     }
 
-    arg2ColVector.flatten(batch.selectedInUse, sel, n);
+    // We do not need to do a column reset since we are carefully changing the output.
+    outputColVector.isRepeating = false;
 
+    /*
+     * Repeating IF expression?
+     */
     if (arg1ColVector.isRepeating) {
-      if (!null1[0] && vector1[0] == 1) {
+      if ((arg1ColVector.noNulls || !null1[0]) && vector1[0] == 1) {
+        outputColVector.isRepeating = true;
         outputColVector.noNulls = false;
         isNull[0] = true;
       } else {
-        outputColVector.setElement(0, 0, arg2ColVector);
+        arg2ColVector.copySelected(batch.selectedInUse, sel, n, outputColVector);
       }
       return;
     }
-    if (batch.selectedInUse) {
-      for (int j = 0; j < n; j++) {
-        int i = sel[j];
-        if (!null1[0] && vector1[i] == 1) {
-          outputColVector.noNulls = false;
-          isNull[i] = true;
+
+    /*
+     * Do careful maintenance of the outputColVector.noNulls flag.
+     */
+
+    if (arg1ColVector.noNulls) {
+
+      /*
+       * Repeating ELSE expression?
+       */
+      if (arg2ColVector.isRepeating) {
+        if (batch.selectedInUse) {
+          for (int j = 0; j < n; j++) {
+            int i = sel[j];
+            if (vector1[i] == 1) {
+              isNull[i] = true;
+              outputColVector.noNulls = false;
+            } else {
+              isNull[i] = false;
+              outputColVector.setElement(i, 0, arg2ColVector);
+            }
+          }
         } else {
-          outputColVector.setElement(i, i, arg2ColVector);
+          for (int i = 0; i < n; i++) {
+            if (vector1[i] == 1) {
+              isNull[i] = true;
+              outputColVector.noNulls = false;
+            } else {
+              isNull[i] = false;
+              outputColVector.setElement(i, 0, arg2ColVector);
+            }
+          }
+        }
+      } else {
+        if (batch.selectedInUse) {
+          for (int j = 0; j < n; j++) {
+            int i = sel[j];
+            if (vector1[i] == 1) {
+              isNull[i] = true;
+              outputColVector.noNulls = false;
+            } else {
+              isNull[i] = false;
+              outputColVector.setElement(i, i, arg2ColVector);
+            }
+          }
+        } else {
+          for (int i = 0; i < n; i++) {
+            if (vector1[i] == 1) {
+              isNull[i] = true;
+              outputColVector.noNulls = false;
+            } else {
+              isNull[i] = false;
+              outputColVector.setElement(i, i, arg2ColVector);
+            }
+          }
         }
       }
     } else {
-      for (int i = 0; i < n; i++) {
-        if (!null1[0] && vector1[i] == 1) {
-          outputColVector.noNulls = false;
-          isNull[i] = true;
+
+      /*
+       * Repeating ELSE expression?
+       */
+      if (arg2ColVector.isRepeating) {
+        if (batch.selectedInUse) {
+          for (int j = 0; j < n; j++) {
+            int i = sel[j];
+            if (!null1[i] && vector1[i] == 1) {
+              isNull[i] = true;
+              outputColVector.noNulls = false;
+            } else {
+              isNull[i] = false;
+              outputColVector.setElement(i, 0, arg2ColVector);
+            }
+          }
         } else {
-          outputColVector.setElement(i, i, arg2ColVector);
+          for (int i = 0; i < n; i++) {
+            if (!null1[i] && vector1[i] == 1) {
+              isNull[i] = true;
+              outputColVector.noNulls = false;
+            } else {
+              isNull[i] = false;
+              outputColVector.setElement(i, 0, arg2ColVector);
+            }
+          }
+        }
+      } else {
+        if (batch.selectedInUse) {
+          for (int j = 0; j < n; j++) {
+            int i = sel[j];
+            if (!null1[i] && vector1[i] == 1) {
+              isNull[i] = true;
+              outputColVector.noNulls = false;
+            } else {
+              isNull[i] = false;
+              outputColVector.setElement(i, i, arg2ColVector);
+            }
+          }
+        } else {
+          for (int i = 0; i < n; i++) {
+            if (!null1[i] && vector1[i] == 1) {
+              isNull[i] = true;
+              outputColVector.noNulls = false;
+            } else {
+              isNull[i] = false;
+              outputColVector.setElement(i, i, arg2ColVector);
+            }
+          }
         }
       }
     }
-
-    arg2ColVector.unFlatten();
-  }
-
-  @Override
-  public int getOutputColumn() {
-    return outputColumn;
   }
 
   @Override
   public String vectorExpressionParameters() {
-    return "col " + arg1Column + ", null, col "+ arg2Column;
+    return getColumnParamString(0, arg1Column) + ", null, col "+ arg2Column;
   }
 
   @Override

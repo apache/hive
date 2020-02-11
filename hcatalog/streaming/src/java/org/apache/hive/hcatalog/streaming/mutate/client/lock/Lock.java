@@ -43,7 +43,9 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Manages the state required to safely read/write from/to an ACID table.
+ * @deprecated as of Hive 3.0.0
  */
+@Deprecated
 public class Lock {
 
   private static final Logger LOG = LoggerFactory.getLogger(Lock.class);
@@ -182,9 +184,9 @@ public class Lock {
       //todo: DataOperationType is set conservatively here, we'd really want to distinguish update/delete
       //and insert/select and if resource (that is written to) is ACID or not
       if (sinks.contains(table)) {
-        componentBuilder.setSemiShared().setOperationType(DataOperationType.UPDATE).setIsAcid(true);
+        componentBuilder.setSemiShared().setOperationType(DataOperationType.UPDATE).setIsTransactional(true);
       } else {
-        componentBuilder.setShared().setOperationType(DataOperationType.INSERT).setIsAcid(true);
+        componentBuilder.setShared().setOperationType(DataOperationType.INSERT).setIsTransactional(true);
       }
       LockComponent component = componentBuilder.build();
       requestBuilder.addLockComponent(component);

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,21 +22,27 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.hadoop.hive.ql.exec.spark.status.SparkStage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.apache.hadoop.hive.ql.exec.spark.SparkUtilities;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatistics;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatisticsBuilder;
+import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatisticsNames;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobStatus;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkStageProgress;
 import org.apache.hive.spark.client.MetricsCollection;
 import org.apache.hive.spark.client.metrics.Metrics;
 import org.apache.hive.spark.counter.SparkCounters;
+
 import org.apache.spark.JobExecutionStatus;
 import org.apache.spark.SparkJobInfo;
 import org.apache.spark.SparkStageInfo;
 import org.apache.spark.api.java.JavaFutureAction;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.executor.TaskMetrics;
+import org.apache.spark.scheduler.TaskInfo;
 
 public class LocalSparkJobStatus implements SparkJobStatus {
 
@@ -98,8 +104,8 @@ public class LocalSparkJobStatus implements SparkJobStatus {
   }
 
   @Override
-  public Map<String, SparkStageProgress> getSparkStageProgress() {
-    Map<String, SparkStageProgress> stageProgresses = new HashMap<String, SparkStageProgress>();
+  public Map<SparkStage, SparkStageProgress> getSparkStageProgress() {
+    Map<SparkStage, SparkStageProgress> stageProgresses = new HashMap<SparkStage, SparkStageProgress>();
     for (int stageId : getStageIds()) {
       SparkStageInfo sparkStageInfo = getStageInfo(stageId);
       if (sparkStageInfo != null) {
@@ -109,8 +115,8 @@ public class LocalSparkJobStatus implements SparkJobStatus {
         int totalTaskCount = sparkStageInfo.numTasks();
         SparkStageProgress sparkStageProgress = new SparkStageProgress(
             totalTaskCount, completedTaskCount, runningTaskCount, failedTaskCount);
-        stageProgresses.put(String.valueOf(sparkStageInfo.stageId()) + "_"
-          + sparkStageInfo.currentAttemptId(), sparkStageProgress);
+        SparkStage stage = new SparkStage(sparkStageInfo.stageId(), sparkStageInfo.currentAttemptId());
+        stageProgresses.put(stage, sparkStageProgress);
       }
     }
     return stageProgresses;
@@ -127,8 +133,7 @@ public class LocalSparkJobStatus implements SparkJobStatus {
     // add Hive operator level statistics.
     sparkStatisticsBuilder.add(sparkCounters);
     // add spark job metrics.
-    String jobIdentifier = "Spark Job[" + jobId + "] Metrics";
-    Map<Integer, List<TaskMetrics>> jobMetric = jobMetricsListener.getJobMetric(jobId);
+    Map<Integer, List<Map.Entry<TaskMetrics, TaskInfo>>> jobMetric = jobMetricsListener.getJobMetric(jobId);
     if (jobMetric == null) {
       return null;
     }
@@ -136,19 +141,34 @@ public class LocalSparkJobStatus implements SparkJobStatus {
     MetricsCollection metricsCollection = new MetricsCollection();
     Set<Integer> stageIds = jobMetric.keySet();
     for (int stageId : stageIds) {
-      List<TaskMetrics> taskMetrics = jobMetric.get(stageId);
-      for (TaskMetrics taskMetric : taskMetrics) {
-        Metrics metrics = new Metrics(taskMetric);
+      List<Map.Entry<TaskMetrics, TaskInfo>> taskMetrics = jobMetric.get(stageId);
+      for (Map.Entry<TaskMetrics, TaskInfo> taskMetric : taskMetrics) {
+        Metrics metrics = new Metrics(taskMetric.getKey(), taskMetric.getValue());
         metricsCollection.addMetrics(jobId, stageId, 0, metrics);
       }
     }
     Map<String, Long> flatJobMetric = SparkMetricsUtils.collectMetrics(metricsCollection
         .getAllMetrics());
     for (Map.Entry<String, Long> entry : flatJobMetric.entrySet()) {
-      sparkStatisticsBuilder.add(jobIdentifier, entry.getKey(), Long.toString(entry.getValue()));
+      sparkStatisticsBuilder.add(SparkStatisticsNames.SPARK_GROUP_NAME, entry.getKey(),
+              Long.toString(entry.getValue()));
     }
 
     return  sparkStatisticsBuilder.build();
+  }
+
+  @Override
+  public String getWebUIURL() {
+    try {
+      if (sparkContext.sc().uiWebUrl().isDefined()) {
+        return SparkUtilities.reverseDNSLookupURL(sparkContext.sc().uiWebUrl().get());
+      } else {
+        return "UNDEFINED";
+      }
+    } catch (Exception e) {
+      LOG.warn("Failed to get web UI URL.", e);
+    }
+    return "UNKNOWN";
   }
 
   @Override
@@ -162,10 +182,17 @@ public class LocalSparkJobStatus implements SparkJobStatus {
   }
 
   @Override
-  public Throwable getError() {
-    if (error != null) {
-      return error;
-    }
+  public Throwable getMonitorError() {
+    return error;
+  }
+
+  @Override
+  public void setMonitorError(Throwable e) {
+    this.error = e;
+  }
+
+  @Override
+  public Throwable getSparkJobException() {
     if (future.isDone()) {
       try {
         future.get();
@@ -174,11 +201,6 @@ public class LocalSparkJobStatus implements SparkJobStatus {
       }
     }
     return null;
-  }
-
-  @Override
-  public void setError(Throwable e) {
-    this.error = e;
   }
 
   private SparkJobInfo getJobInfo() {

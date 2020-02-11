@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -147,7 +147,7 @@ public final class SearchResultHandler {
    * Implementations of this interface perform the actual work of processing each record,
    * but don't need to worry about exception handling, closing underlying data structures,
    * and combining results from several search requests.
-   * {@see SearchResultHandler}
+   * @see SearchResultHandler
    */
   public interface RecordProcessor {
 

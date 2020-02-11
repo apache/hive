@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,21 +18,26 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.dump.io.DBSerializer;
 import org.apache.hadoop.hive.ql.parse.repl.dump.io.JsonWriter;
@@ -45,18 +50,18 @@ import org.json.JSONException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 /**
@@ -86,11 +91,13 @@ public class EximUtil {
   public static class SemanticAnalyzerWrapperContext {
     private HiveConf conf;
     private Hive db;
-    private HashSet<ReadEntity> inputs;
-    private HashSet<WriteEntity> outputs;
-    private List<Task<? extends Serializable>> tasks;
+    private Set<ReadEntity> inputs;
+    private Set<WriteEntity> outputs;
+    private List<Task<?>> tasks;
     private Logger LOG;
     private Context ctx;
+    private DumpType eventType = DumpType.EVENT_UNKNOWN;
+    private Task<?> openTxnTask = null;
 
     public HiveConf getConf() {
       return conf;
@@ -100,15 +107,15 @@ public class EximUtil {
       return db;
     }
 
-    public HashSet<ReadEntity> getInputs() {
+    public Set<ReadEntity> getInputs() {
       return inputs;
     }
 
-    public HashSet<WriteEntity> getOutputs() {
+    public Set<WriteEntity> getOutputs() {
       return outputs;
     }
 
-    public List<Task<? extends Serializable>> getTasks() {
+    public List<Task<?>> getTasks() {
       return tasks;
     }
 
@@ -120,10 +127,18 @@ public class EximUtil {
       return ctx;
     }
 
+    public void setEventType(DumpType eventType) {
+      this.eventType = eventType;
+    }
+
+    public DumpType getEventType() {
+      return eventType;
+    }
+
     public SemanticAnalyzerWrapperContext(HiveConf conf, Hive db,
-                                          HashSet<ReadEntity> inputs,
-                                          HashSet<WriteEntity> outputs,
-                                          List<Task<? extends Serializable>> tasks,
+                                          Set<ReadEntity> inputs,
+                                          Set<WriteEntity> outputs,
+                                          List<Task<?>> tasks,
                                           Logger LOG, Context ctx){
       this.conf = conf;
       this.db = db;
@@ -132,6 +147,13 @@ public class EximUtil {
       this.tasks = tasks;
       this.LOG = LOG;
       this.ctx = ctx;
+    }
+
+    public Task<?> getOpenTxnTask() {
+      return openTxnTask;
+    }
+    public void setOpenTxnTask(Task<?> openTxnTask) {
+      this.openTxnTask = openTxnTask;
     }
   }
 
@@ -145,7 +167,8 @@ public class EximUtil {
    */
   public static URI getValidatedURI(HiveConf conf, String dcPath) throws SemanticException {
     try {
-      boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODE);
+      boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODE)
+          || conf.getBoolVar(HiveConf.ConfVars.HIVEEXIMTESTMODE);
       URI uri = new Path(dcPath).toUri();
       FileSystem fs = FileSystem.get(uri, conf);
       // Get scheme from FileSystem
@@ -201,7 +224,8 @@ public class EximUtil {
   public static String relativeToAbsolutePath(HiveConf conf, String location)
       throws SemanticException {
     try {
-      boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODE);
+      boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODE)
+        || conf.getBoolVar(HiveConf.ConfVars.HIVEEXIMTESTMODE);;
       if (testMode) {
         URI uri = new Path(location).toUri();
         FileSystem fs = FileSystem.get(uri, conf);
@@ -211,6 +235,9 @@ public class EximUtil {
         if (!path.startsWith("/")) {
           path = (new Path(System.getProperty("test.tmp.dir"), path)).toUri().getPath();
         }
+        if (StringUtils.isEmpty(scheme)) {
+          scheme = "pfile";
+        }
         try {
           uri = new URI(scheme, authority, path, null, null);
         } catch (URISyntaxException e) {
@@ -218,8 +245,11 @@ public class EximUtil {
         }
         return uri.toString();
       } else {
-        // no-op for non-test mode for now
-        return location;
+        Path path = new Path(location);
+        if (path.isAbsolute()) {
+          return location;
+        }
+        return path.getFileSystem(conf).makeQualified(path).toString();
       }
     } catch (IOException e) {
       throw new SemanticException(ErrorMsg.IO_ERROR.getMsg() + ": " + e.getMessage(), e);
@@ -239,13 +269,15 @@ public class EximUtil {
     // If we later make this work for non-repl cases, analysis of this logic might become necessary. Also, this is using
     // Replv2 semantics, i.e. with listFiles laziness (no copy at export time)
 
-    // Remove all the entries from the parameters which are added for bootstrap dump progress
+    // Remove all the entries from the parameters which are added by repl tasks internally.
     Map<String, String> parameters = dbObj.getParameters();
-    Map<String, String> tmpParameters = new HashMap<>();
     if (parameters != null) {
-      tmpParameters.putAll(parameters);
+      Map<String, String> tmpParameters = new HashMap<>(parameters);
       tmpParameters.entrySet()
-                .removeIf(e -> e.getKey().startsWith(Utils.BOOTSTRAP_DUMP_STATE_KEY_PREFIX));
+                .removeIf(e -> e.getKey().startsWith(Utils.BOOTSTRAP_DUMP_STATE_KEY_PREFIX)
+                            || e.getKey().equals(ReplUtils.REPL_CHECKPOINT_KEY)
+                            || e.getKey().equals(ReplChangeManager.SOURCE_OF_REPLICATION)
+                            || e.getKey().equals(ReplUtils.REPL_FIRST_INC_PENDING_FLAG));
       dbObj.setParameters(tmpParameters);
     }
     try (JsonWriter jsonWriter = new JsonWriter(fs, metadataPath)) {
@@ -256,16 +288,15 @@ public class EximUtil {
     }
   }
 
-  public static void createExportDump(FileSystem fs, Path metadataPath,
-      org.apache.hadoop.hive.ql.metadata.Table tableHandle,
-      Iterable<org.apache.hadoop.hive.ql.metadata.Partition> partitions,
-      ReplicationSpec replicationSpec) throws SemanticException, IOException {
+  public static void createExportDump(FileSystem fs, Path metadataPath, Table tableHandle,
+      Iterable<Partition> partitions, ReplicationSpec replicationSpec, HiveConf hiveConf)
+      throws SemanticException, IOException {
 
-    if (replicationSpec == null){
+    if (replicationSpec == null) {
       replicationSpec = new ReplicationSpec(); // instantiate default values if not specified
     }
 
-    if (tableHandle == null){
+    if (tableHandle == null) {
       replicationSpec.setNoop(true);
     }
 
@@ -273,7 +304,7 @@ public class EximUtil {
       if (replicationSpec.isInReplicationScope()) {
         new ReplicationSpecSerializer().writeTo(writer, replicationSpec);
       }
-      new TableSerializer(tableHandle, partitions).writeTo(writer, replicationSpec);
+      new TableSerializer(tableHandle, partitions, hiveConf).writeTo(writer, replicationSpec);
     }
   }
 
@@ -290,14 +321,7 @@ public class EximUtil {
   public static String readAsString(final FileSystem fs, final Path fromMetadataPath)
       throws IOException {
     try (FSDataInputStream stream = fs.open(fromMetadataPath)) {
-      byte[] buffer = new byte[1024];
-      ByteArrayOutputStream sb = new ByteArrayOutputStream();
-      int read = stream.read(buffer);
-      while (read != -1) {
-        sb.write(buffer, 0, read);
-        read = stream.read(buffer);
-      }
-      return new String(sb.toByteArray(), "UTF-8");
+      return IOUtils.toString(stream, StandardCharsets.UTF_8);
     }
   }
 
@@ -398,36 +422,5 @@ public class EximUtil {
         }
       }
     };
-  }
-
-  /**
-   * Verify if a table should be exported or not
-   */
-  public static Boolean shouldExportTable(ReplicationSpec replicationSpec, Table tableHandle) throws SemanticException {
-    if (replicationSpec == null)
-    {
-      replicationSpec = new ReplicationSpec();
-    }
-
-    if (replicationSpec.isNoop())
-    {
-      return false;
-    }
-
-    if (tableHandle == null)
-    {
-      return false;
-    }
-
-    if (replicationSpec.isInReplicationScope()) {
-      return !(tableHandle == null || tableHandle.isTemporary() || tableHandle.isNonNative() ||
-          (tableHandle.getParameters() != null && StringUtils.equals(tableHandle.getParameters().get("transactional"), "true")));
-    }
-
-    if (tableHandle.isNonNative()) {
-      throw new SemanticException(ErrorMsg.EXIM_FOR_NON_NATIVE.getMsg());
-    }
-
-    return true;
   }
 }

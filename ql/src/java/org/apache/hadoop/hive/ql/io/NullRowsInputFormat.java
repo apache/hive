@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 
 import java.io.IOException;
 
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.io.NullWritable;
@@ -50,6 +51,11 @@ public class NullRowsInputFormat implements InputFormat<NullWritable, NullWritab
   static final int MAX_ROW = 100; // to prevent infinite loop
   static final Logger LOG = LoggerFactory.getLogger(NullRowsRecordReader.class.getName());
 
+  @Override
+  public VectorizedSupport.Support[] getSupportedFeatures() {
+    return null;
+  }
+
   public static class DummyInputSplit extends FileSplit {
     @SuppressWarnings("unused")  // Serialization ctor.
     private DummyInputSplit() {
@@ -57,7 +63,11 @@ public class NullRowsInputFormat implements InputFormat<NullWritable, NullWritab
     }
 
     public DummyInputSplit(String path) {
-      super(new Path(path, "null"), 0, 1, (String[])null);
+      this(new Path(path, "null"));
+    }
+
+    public DummyInputSplit(Path path) {
+      super(path, 0, 1, (String[]) null);
     }
   }
 
@@ -71,7 +81,7 @@ public class NullRowsInputFormat implements InputFormat<NullWritable, NullWritab
     private boolean addPartitionCols = true;
 
     public NullRowsRecordReader(Configuration conf, InputSplit split) throws IOException {
-      boolean isVectorMode = Utilities.getUseVectorizedInputFileFormat(conf);
+      boolean isVectorMode = Utilities.getIsVectorized(conf);
       if (LOG.isDebugEnabled()) {
         LOG.debug(getClass().getSimpleName() + " in "
             + (isVectorMode ? "" : "non-") + "vector mode");
@@ -119,7 +129,9 @@ public class NullRowsInputFormat implements InputFormat<NullWritable, NullWritab
     @Override
     public boolean next(Object arg0, Object value) throws IOException {
       if (rbCtx != null) {
-        if (counter >= MAX_ROW) return false;
+        if (counter >= MAX_ROW) {
+          return false;
+        }
         makeNullVrb(value, MAX_ROW);
         counter = MAX_ROW;
         return true;
@@ -163,7 +175,9 @@ public class NullRowsInputFormat implements InputFormat<NullWritable, NullWritab
   public InputSplit[] getSplits(JobConf conf, int arg1) throws IOException {
     // It's important to read the correct nulls! (in truth, the path is needed for SplitGrouper).
     String[] paths = conf.getTrimmedStrings(FileInputFormat.INPUT_DIR, (String[])null);
-    if (paths == null) throw new IOException("Cannot find path in conf");
+    if (paths == null) {
+      throw new IOException("Cannot find path in conf");
+    }
     InputSplit[] result = new InputSplit[paths.length];
     for (int i = 0; i < paths.length; ++i) {
       result[i] = new DummyInputSplit(paths[i]);

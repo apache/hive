@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -68,6 +68,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 public class ATSHook implements ExecuteWithHookContext {
 
   private static final Logger LOG = LoggerFactory.getLogger(ATSHook.class.getName());
+  private boolean isATSEnabled = false;
   private static final Object LOCK = new Object();
   private static final int VERSION = 2;
   private static ExecutorService executor;
@@ -143,7 +144,15 @@ public class ATSHook implements ExecuteWithHookContext {
   }
 
   public ATSHook() {
-    LOG.info("Created ATS Hook");
+    YarnConfiguration yarnConf = new YarnConfiguration();
+    if (yarnConf.getBoolean(YarnConfiguration.TIMELINE_SERVICE_ENABLED,
+            YarnConfiguration.DEFAULT_TIMELINE_SERVICE_ENABLED)) {
+      isATSEnabled = true;
+      LOG.info("Created ATS Hook");
+    } else {
+      isATSEnabled = false;
+      LOG.warn("ATSHook is disabled due to Timeline Service being disabled");
+    }
   }
 
   private void createTimelineDomain(String domainId, String readers, String writers) throws Exception {
@@ -219,6 +228,9 @@ public class ATSHook implements ExecuteWithHookContext {
   }
   @Override
   public void run(final HookContext hookContext) throws Exception {
+    if (!isATSEnabled) {
+      return;
+    }
     final long currentTime = System.currentTimeMillis();
 
     final HiveConf conf = new HiveConf(hookContext.getConf());
@@ -264,12 +276,15 @@ public class ATSHook implements ExecuteWithHookContext {
                   null,// pCtx
                   plan.getRootTasks(),// RootTasks
                   plan.getFetchTask(),// FetchTask
+                      null,
                   null,// analyzer
                   config, //explainConfig
-                  null// cboInfo
+                  null, // cboInfo
+                  plan.getOptimizedQueryString(), // optimizedSQL
+                  plan.getOptimizedCBOPlan()
               );
                 @SuppressWarnings("unchecked")
-                ExplainTask explain = (ExplainTask) TaskFactory.get(work, conf);
+                ExplainTask explain = (ExplainTask) TaskFactory.get(work);
                 explain.initialize(queryState, plan, null, null);
                 String query = plan.getQueryStr();
                 JSONObject explainPlan = explain.getJSONPlan(null, work);
@@ -314,7 +329,7 @@ public class ATSHook implements ExecuteWithHookContext {
     List<String> tableNames = new ArrayList<String>();
     for (Entity entity : entities) {
       if (entity.getType() == Entity.Type.TABLE) {
-        tableNames.add(entity.getTable().getDbName() + "." + entity.getTable().getTableName());
+        tableNames.add(entity.getTable().getFullyQualifiedName());
       }
     }
     return tableNames;

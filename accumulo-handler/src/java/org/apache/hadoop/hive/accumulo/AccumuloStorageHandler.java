@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -31,11 +31,12 @@ import org.apache.hadoop.hive.accumulo.predicate.AccumuloPredicateHandler;
 import org.apache.hadoop.hive.accumulo.serde.AccumuloIndexParameters;
 import org.apache.hadoop.hive.accumulo.serde.AccumuloSerDe;
 import org.apache.hadoop.hive.accumulo.serde.AccumuloSerDeParameters;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
@@ -110,7 +111,7 @@ public class AccumuloStorageHandler extends DefaultStorageHandler implements Hiv
     if (DEFAULT_PREFIX.equals(table.getDbName())) {
       return table.getTableName();
     } else {
-      return table.getDbName() + "." + table.getTableName();
+      return TableName.getDbTable(table.getDbName(), table.getTableName());
     }
   }
 
@@ -338,7 +339,6 @@ public class AccumuloStorageHandler extends DefaultStorageHandler implements Hiv
 
   @Override
   public void preCreateTable(Table table) throws MetaException {
-    boolean isExternal = isExternalTable(table);
     if (table.getSd().getLocation() != null) {
       throw new MetaException("Location can't be specified for Accumulo");
     }
@@ -357,17 +357,7 @@ public class AccumuloStorageHandler extends DefaultStorageHandler implements Hiv
 
       // Attempt to create the table, taking EXTERNAL into consideration
       if (!tableOpts.exists(tblName)) {
-        if (!isExternal) {
-          tableOpts.create(tblName);
-        } else {
-          throw new MetaException("Accumulo table " + tblName
-              + " doesn't exist even though declared external");
-        }
-      } else {
-        if (!isExternal) {
-          throw new MetaException("Table " + tblName
-              + " already exists in Accumulo. Use CREATE EXTERNAL TABLE to register with Hive.");
-        }
+        tableOpts.create(tblName);
       }
 
       String idxTable = getIndexTableName(table);
@@ -388,8 +378,8 @@ public class AccumuloStorageHandler extends DefaultStorageHandler implements Hiv
     }
   }
 
-  protected boolean isExternalTable(Table table) {
-    return MetaStoreUtils.isExternalTable(table);
+  protected boolean isPurge(Table table) {
+    return !MetaStoreUtils.isExternalTable(table) || MetaStoreUtils.isExternalTablePurge(table);
   }
 
   @Override
@@ -406,7 +396,7 @@ public class AccumuloStorageHandler extends DefaultStorageHandler implements Hiv
   @Override
   public void commitDropTable(Table table, boolean deleteData) throws MetaException {
     String tblName = getTableName(table);
-    if (!isExternalTable(table)) {
+    if (isPurge(table)) {
       try {
         if (deleteData) {
           TableOperations tblOpts = connectionParams.getConnector().tableOperations();

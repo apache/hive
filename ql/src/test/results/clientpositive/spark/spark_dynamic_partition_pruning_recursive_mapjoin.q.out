@@ -153,116 +153,148 @@ POSTHOOK: Output: default@part_table5
 POSTHOOK: Output: default@part_table5@part5_col=5
 PREHOOK: query: INSERT INTO TABLE part_table1 PARTITION (part1_col = 1) VALUES (1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@part_table1@part1_col=1
 POSTHOOK: query: INSERT INTO TABLE part_table1 PARTITION (part1_col = 1) VALUES (1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@part_table1@part1_col=1
-POSTHOOK: Lineage: part_table1 PARTITION(part1_col=1).col EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: part_table1 PARTITION(part1_col=1).col SCRIPT []
 PREHOOK: query: INSERT INTO TABLE part_table2 PARTITION (part2_col = 1) VALUES (1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@part_table2@part2_col=1
 POSTHOOK: query: INSERT INTO TABLE part_table2 PARTITION (part2_col = 1) VALUES (1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@part_table2@part2_col=1
-POSTHOOK: Lineage: part_table2 PARTITION(part2_col=1).col EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: part_table2 PARTITION(part2_col=1).col SCRIPT []
 PREHOOK: query: INSERT INTO TABLE part_table2 PARTITION (part2_col = 2) VALUES (2)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@part_table2@part2_col=2
 POSTHOOK: query: INSERT INTO TABLE part_table2 PARTITION (part2_col = 2) VALUES (2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@part_table2@part2_col=2
-POSTHOOK: Lineage: part_table2 PARTITION(part2_col=2).col EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: part_table2 PARTITION(part2_col=2).col SCRIPT []
 PREHOOK: query: INSERT INTO TABLE part_table3 PARTITION (part3_col = 1) VALUES (1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@part_table3@part3_col=1
 POSTHOOK: query: INSERT INTO TABLE part_table3 PARTITION (part3_col = 1) VALUES (1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@part_table3@part3_col=1
-POSTHOOK: Lineage: part_table3 PARTITION(part3_col=1).col EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: part_table3 PARTITION(part3_col=1).col SCRIPT []
 PREHOOK: query: INSERT INTO TABLE part_table3 PARTITION (part3_col = 2) VALUES (2)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@part_table3@part3_col=2
 POSTHOOK: query: INSERT INTO TABLE part_table3 PARTITION (part3_col = 2) VALUES (2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@part_table3@part3_col=2
-POSTHOOK: Lineage: part_table3 PARTITION(part3_col=2).col EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: part_table3 PARTITION(part3_col=2).col SCRIPT []
 PREHOOK: query: INSERT INTO TABLE part_table3 PARTITION (part3_col = 3) VALUES (3)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@part_table3@part3_col=3
 POSTHOOK: query: INSERT INTO TABLE part_table3 PARTITION (part3_col = 3) VALUES (3)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@part_table3@part3_col=3
-POSTHOOK: Lineage: part_table3 PARTITION(part3_col=3).col EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: part_table3 PARTITION(part3_col=3).col SCRIPT []
 PREHOOK: query: INSERT INTO TABLE part_table4 PARTITION (part4_col = 1) VALUES (1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@part_table4@part4_col=1
 POSTHOOK: query: INSERT INTO TABLE part_table4 PARTITION (part4_col = 1) VALUES (1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@part_table4@part4_col=1
-POSTHOOK: Lineage: part_table4 PARTITION(part4_col=1).col EXPRESSION [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: part_table4 PARTITION(part4_col=1).col SCRIPT []
 PREHOOK: query: INSERT INTO TABLE part_table4 PARTITION (part4_col = 2) VALUES (2)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@part_table4@part4_col=2
 POSTHOOK: query: INSERT INTO TABLE part_table4 PARTITION (part4_col = 2) VALUES (2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@part_table4@part4_col=2
-POSTHOOK: Lineage: part_table4 PARTITION(part4_col=2).col EXPRESSION [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: part_table4 PARTITION(part4_col=2).col SCRIPT []
 PREHOOK: query: INSERT INTO TABLE part_table4 PARTITION (part4_col = 3) VALUES (3)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@part_table4@part4_col=3
 POSTHOOK: query: INSERT INTO TABLE part_table4 PARTITION (part4_col = 3) VALUES (3)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@part_table4@part4_col=3
-POSTHOOK: Lineage: part_table4 PARTITION(part4_col=3).col EXPRESSION [(values__tmp__table__9)values__tmp__table__9.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: part_table4 PARTITION(part4_col=3).col SCRIPT []
 PREHOOK: query: INSERT INTO TABLE part_table4 PARTITION (part4_col = 4) VALUES (4)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@part_table4@part4_col=4
 POSTHOOK: query: INSERT INTO TABLE part_table4 PARTITION (part4_col = 4) VALUES (4)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@part_table4@part4_col=4
-POSTHOOK: Lineage: part_table4 PARTITION(part4_col=4).col EXPRESSION [(values__tmp__table__10)values__tmp__table__10.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: part_table4 PARTITION(part4_col=4).col SCRIPT []
 PREHOOK: query: INSERT INTO TABLE part_table5 PARTITION (part5_col = 1) VALUES (1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@part_table5@part5_col=1
 POSTHOOK: query: INSERT INTO TABLE part_table5 PARTITION (part5_col = 1) VALUES (1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@part_table5@part5_col=1
-POSTHOOK: Lineage: part_table5 PARTITION(part5_col=1).col EXPRESSION [(values__tmp__table__11)values__tmp__table__11.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: part_table5 PARTITION(part5_col=1).col SCRIPT []
 PREHOOK: query: INSERT INTO TABLE part_table5 PARTITION (part5_col = 2) VALUES (2)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@part_table5@part5_col=2
 POSTHOOK: query: INSERT INTO TABLE part_table5 PARTITION (part5_col = 2) VALUES (2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@part_table5@part5_col=2
-POSTHOOK: Lineage: part_table5 PARTITION(part5_col=2).col EXPRESSION [(values__tmp__table__12)values__tmp__table__12.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: part_table5 PARTITION(part5_col=2).col SCRIPT []
 PREHOOK: query: INSERT INTO TABLE part_table5 PARTITION (part5_col = 3) VALUES (3)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@part_table5@part5_col=3
 POSTHOOK: query: INSERT INTO TABLE part_table5 PARTITION (part5_col = 3) VALUES (3)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@part_table5@part5_col=3
-POSTHOOK: Lineage: part_table5 PARTITION(part5_col=3).col EXPRESSION [(values__tmp__table__13)values__tmp__table__13.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: part_table5 PARTITION(part5_col=3).col SCRIPT []
 PREHOOK: query: INSERT INTO TABLE part_table5 PARTITION (part5_col = 4) VALUES (4)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@part_table5@part5_col=4
 POSTHOOK: query: INSERT INTO TABLE part_table5 PARTITION (part5_col = 4) VALUES (4)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@part_table5@part5_col=4
-POSTHOOK: Lineage: part_table5 PARTITION(part5_col=4).col EXPRESSION [(values__tmp__table__14)values__tmp__table__14.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: part_table5 PARTITION(part5_col=4).col SCRIPT []
 PREHOOK: query: INSERT INTO TABLE part_table5 PARTITION (part5_col = 5) VALUES (5)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@part_table5@part5_col=5
 POSTHOOK: query: INSERT INTO TABLE part_table5 PARTITION (part5_col = 5) VALUES (5)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@part_table5@part5_col=5
-POSTHOOK: Lineage: part_table5 PARTITION(part5_col=5).col EXPRESSION [(values__tmp__table__15)values__tmp__table__15.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: part_table5 PARTITION(part5_col=5).col SCRIPT []
 PREHOOK: query: INSERT INTO table reg_table VALUES (1), (2), (3), (4), (5), (6)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@reg_table
 POSTHOOK: query: INSERT INTO table reg_table VALUES (1), (2), (3), (4), (5), (6)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@reg_table
-POSTHOOK: Lineage: reg_table.col EXPRESSION [(values__tmp__table__16)values__tmp__table__16.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: reg_table.col SCRIPT []
 PREHOOK: query: explain SELECT *
         FROM   part_table1 pt1,
                part_table2 pt2,
@@ -270,6 +302,13 @@ PREHOOK: query: explain SELECT *
         WHERE  rt.col = pt1.part1_col
         AND    pt2.part2_col = pt1.part1_col
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_table1
+PREHOOK: Input: default@part_table1@part1_col=1
+PREHOOK: Input: default@part_table2
+PREHOOK: Input: default@part_table2@part2_col=1
+PREHOOK: Input: default@part_table2@part2_col=2
+PREHOOK: Input: default@reg_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain SELECT *
         FROM   part_table1 pt1,
                part_table2 pt2,
@@ -277,6 +316,13 @@ POSTHOOK: query: explain SELECT *
         WHERE  rt.col = pt1.part1_col
         AND    pt2.part2_col = pt1.part1_col
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_table1
+POSTHOOK: Input: default@part_table1@part1_col=1
+POSTHOOK: Input: default@part_table2
+POSTHOOK: Input: default@part_table2@part2_col=1
+POSTHOOK: Input: default@part_table2@part2_col=2
+POSTHOOK: Input: default@reg_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -328,6 +374,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: rt
+                  filterExpr: col is not null (type: boolean)
                   Statistics: Num rows: 6 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: col is not null (type: boolean)
@@ -382,7 +429,7 @@ PREHOOK: Input: default@part_table2
 PREHOOK: Input: default@part_table2@part2_col=1
 PREHOOK: Input: default@part_table2@part2_col=2
 PREHOOK: Input: default@reg_table
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT *
 FROM   part_table1 pt1,
        part_table2 pt2,
@@ -396,7 +443,7 @@ POSTHOOK: Input: default@part_table2
 POSTHOOK: Input: default@part_table2@part2_col=1
 POSTHOOK: Input: default@part_table2@part2_col=2
 POSTHOOK: Input: default@reg_table
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	1	1	1	1
 PREHOOK: query: explain SELECT *
         FROM   part_table1 pt1,
@@ -407,6 +454,17 @@ PREHOOK: query: explain SELECT *
         AND    pt2.part2_col = pt1.part1_col
         AND    pt3.part3_col = pt1.part1_col
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_table1
+PREHOOK: Input: default@part_table1@part1_col=1
+PREHOOK: Input: default@part_table2
+PREHOOK: Input: default@part_table2@part2_col=1
+PREHOOK: Input: default@part_table2@part2_col=2
+PREHOOK: Input: default@part_table3
+PREHOOK: Input: default@part_table3@part3_col=1
+PREHOOK: Input: default@part_table3@part3_col=2
+PREHOOK: Input: default@part_table3@part3_col=3
+PREHOOK: Input: default@reg_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain SELECT *
         FROM   part_table1 pt1,
                part_table2 pt2,
@@ -416,6 +474,17 @@ POSTHOOK: query: explain SELECT *
         AND    pt2.part2_col = pt1.part1_col
         AND    pt3.part3_col = pt1.part1_col
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_table1
+POSTHOOK: Input: default@part_table1@part1_col=1
+POSTHOOK: Input: default@part_table2
+POSTHOOK: Input: default@part_table2@part2_col=1
+POSTHOOK: Input: default@part_table2@part2_col=2
+POSTHOOK: Input: default@part_table3
+POSTHOOK: Input: default@part_table3@part3_col=1
+POSTHOOK: Input: default@part_table3@part3_col=2
+POSTHOOK: Input: default@part_table3@part3_col=3
+POSTHOOK: Input: default@reg_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -486,6 +555,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: rt
+                  filterExpr: col is not null (type: boolean)
                   Statistics: Num rows: 6 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: col is not null (type: boolean)
@@ -549,7 +619,7 @@ PREHOOK: Input: default@part_table3@part3_col=1
 PREHOOK: Input: default@part_table3@part3_col=2
 PREHOOK: Input: default@part_table3@part3_col=3
 PREHOOK: Input: default@reg_table
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT *
 FROM   part_table1 pt1,
        part_table2 pt2,
@@ -569,7 +639,7 @@ POSTHOOK: Input: default@part_table3@part3_col=1
 POSTHOOK: Input: default@part_table3@part3_col=2
 POSTHOOK: Input: default@part_table3@part3_col=3
 POSTHOOK: Input: default@reg_table
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	1	1	1	1	1	1
 PREHOOK: query: explain SELECT *
         FROM   part_table1 pt1,
@@ -582,6 +652,22 @@ PREHOOK: query: explain SELECT *
         AND    pt3.part3_col = pt1.part1_col
         AND    pt4.part4_col = pt1.part1_col
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_table1
+PREHOOK: Input: default@part_table1@part1_col=1
+PREHOOK: Input: default@part_table2
+PREHOOK: Input: default@part_table2@part2_col=1
+PREHOOK: Input: default@part_table2@part2_col=2
+PREHOOK: Input: default@part_table3
+PREHOOK: Input: default@part_table3@part3_col=1
+PREHOOK: Input: default@part_table3@part3_col=2
+PREHOOK: Input: default@part_table3@part3_col=3
+PREHOOK: Input: default@part_table4
+PREHOOK: Input: default@part_table4@part4_col=1
+PREHOOK: Input: default@part_table4@part4_col=2
+PREHOOK: Input: default@part_table4@part4_col=3
+PREHOOK: Input: default@part_table4@part4_col=4
+PREHOOK: Input: default@reg_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain SELECT *
         FROM   part_table1 pt1,
                part_table2 pt2,
@@ -593,6 +679,22 @@ POSTHOOK: query: explain SELECT *
         AND    pt3.part3_col = pt1.part1_col
         AND    pt4.part4_col = pt1.part1_col
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_table1
+POSTHOOK: Input: default@part_table1@part1_col=1
+POSTHOOK: Input: default@part_table2
+POSTHOOK: Input: default@part_table2@part2_col=1
+POSTHOOK: Input: default@part_table2@part2_col=2
+POSTHOOK: Input: default@part_table3
+POSTHOOK: Input: default@part_table3@part3_col=1
+POSTHOOK: Input: default@part_table3@part3_col=2
+POSTHOOK: Input: default@part_table3@part3_col=3
+POSTHOOK: Input: default@part_table4
+POSTHOOK: Input: default@part_table4@part4_col=1
+POSTHOOK: Input: default@part_table4@part4_col=2
+POSTHOOK: Input: default@part_table4@part4_col=3
+POSTHOOK: Input: default@part_table4@part4_col=4
+POSTHOOK: Input: default@reg_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -684,6 +786,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: rt
+                  filterExpr: col is not null (type: boolean)
                   Statistics: Num rows: 6 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: col is not null (type: boolean)
@@ -757,7 +860,7 @@ PREHOOK: Input: default@part_table4@part4_col=2
 PREHOOK: Input: default@part_table4@part4_col=3
 PREHOOK: Input: default@part_table4@part4_col=4
 PREHOOK: Input: default@reg_table
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT *
 FROM   part_table1 pt1,
        part_table2 pt2,
@@ -784,7 +887,7 @@ POSTHOOK: Input: default@part_table4@part4_col=2
 POSTHOOK: Input: default@part_table4@part4_col=3
 POSTHOOK: Input: default@part_table4@part4_col=4
 POSTHOOK: Input: default@reg_table
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	1	1	1	1	1	1	1	1
 PREHOOK: query: explain SELECT *
         FROM   part_table1 pt1,
@@ -799,6 +902,28 @@ PREHOOK: query: explain SELECT *
         AND    pt4.part4_col = pt1.part1_col
         AND    pt5.part5_col = pt1.part1_col
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_table1
+PREHOOK: Input: default@part_table1@part1_col=1
+PREHOOK: Input: default@part_table2
+PREHOOK: Input: default@part_table2@part2_col=1
+PREHOOK: Input: default@part_table2@part2_col=2
+PREHOOK: Input: default@part_table3
+PREHOOK: Input: default@part_table3@part3_col=1
+PREHOOK: Input: default@part_table3@part3_col=2
+PREHOOK: Input: default@part_table3@part3_col=3
+PREHOOK: Input: default@part_table4
+PREHOOK: Input: default@part_table4@part4_col=1
+PREHOOK: Input: default@part_table4@part4_col=2
+PREHOOK: Input: default@part_table4@part4_col=3
+PREHOOK: Input: default@part_table4@part4_col=4
+PREHOOK: Input: default@part_table5
+PREHOOK: Input: default@part_table5@part5_col=1
+PREHOOK: Input: default@part_table5@part5_col=2
+PREHOOK: Input: default@part_table5@part5_col=3
+PREHOOK: Input: default@part_table5@part5_col=4
+PREHOOK: Input: default@part_table5@part5_col=5
+PREHOOK: Input: default@reg_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain SELECT *
         FROM   part_table1 pt1,
                part_table2 pt2,
@@ -812,6 +937,28 @@ POSTHOOK: query: explain SELECT *
         AND    pt4.part4_col = pt1.part1_col
         AND    pt5.part5_col = pt1.part1_col
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_table1
+POSTHOOK: Input: default@part_table1@part1_col=1
+POSTHOOK: Input: default@part_table2
+POSTHOOK: Input: default@part_table2@part2_col=1
+POSTHOOK: Input: default@part_table2@part2_col=2
+POSTHOOK: Input: default@part_table3
+POSTHOOK: Input: default@part_table3@part3_col=1
+POSTHOOK: Input: default@part_table3@part3_col=2
+POSTHOOK: Input: default@part_table3@part3_col=3
+POSTHOOK: Input: default@part_table4
+POSTHOOK: Input: default@part_table4@part4_col=1
+POSTHOOK: Input: default@part_table4@part4_col=2
+POSTHOOK: Input: default@part_table4@part4_col=3
+POSTHOOK: Input: default@part_table4@part4_col=4
+POSTHOOK: Input: default@part_table5
+POSTHOOK: Input: default@part_table5@part5_col=1
+POSTHOOK: Input: default@part_table5@part5_col=2
+POSTHOOK: Input: default@part_table5@part5_col=3
+POSTHOOK: Input: default@part_table5@part5_col=4
+POSTHOOK: Input: default@part_table5@part5_col=5
+POSTHOOK: Input: default@reg_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -926,6 +1073,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: rt
+                  filterExpr: col is not null (type: boolean)
                   Statistics: Num rows: 6 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: col is not null (type: boolean)
@@ -1010,7 +1158,7 @@ PREHOOK: Input: default@part_table5@part5_col=3
 PREHOOK: Input: default@part_table5@part5_col=4
 PREHOOK: Input: default@part_table5@part5_col=5
 PREHOOK: Input: default@reg_table
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT *
 FROM   part_table1 pt1,
        part_table2 pt2,
@@ -1045,7 +1193,7 @@ POSTHOOK: Input: default@part_table5@part5_col=3
 POSTHOOK: Input: default@part_table5@part5_col=4
 POSTHOOK: Input: default@part_table5@part5_col=5
 POSTHOOK: Input: default@reg_table
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	1	1	1	1	1	1	1	1	1	1
 PREHOOK: query: DROP TABLE part_table1
 PREHOOK: type: DROPTABLE

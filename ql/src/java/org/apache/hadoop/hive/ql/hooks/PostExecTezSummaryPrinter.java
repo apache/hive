@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,7 +20,9 @@ package org.apache.hadoop.hive.ql.hooks;
 import java.util.List;
 
 import org.apache.hadoop.hive.llap.counters.LlapIOCounters;
+import org.apache.hadoop.hive.ql.exec.tez.HiveInputCounters;
 import org.apache.tez.common.counters.FileSystemCounter;
+import org.apache.tez.dag.api.client.DAGClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -63,6 +65,11 @@ public class PostExecTezSummaryPrinter implements ExecuteWithHookContext {
         for (CounterGroup group : counters) {
           if (hiveCountersGroup.equals(group.getDisplayName())) {
             console.printInfo(tezTask.getId() + " HIVE COUNTERS:", false);
+            for (TezCounter counter : group) {
+              console.printInfo("   " + counter.getDisplayName() + ": " + counter.getValue(), false);
+            }
+          }  else if (group.getName().equals(HiveInputCounters.class.getName())) {
+            console.printInfo(tezTask.getId() + " INPUT COUNTERS:", false);
             for (TezCounter counter : group) {
               console.printInfo("   " + counter.getDisplayName() + ": " + counter.getValue(), false);
             }

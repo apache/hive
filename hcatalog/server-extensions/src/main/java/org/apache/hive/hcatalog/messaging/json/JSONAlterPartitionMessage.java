@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -37,7 +37,7 @@ public class JSONAlterPartitionMessage extends AlterPartitionMessage {
   String server, servicePrincipal, db, table, tableType;
 
   @JsonProperty
-  Long timestamp;
+  Long timestamp, writeId;
 
   @JsonProperty
   Map<String,String> keyValues;
@@ -52,8 +52,9 @@ public class JSONAlterPartitionMessage extends AlterPartitionMessage {
                                    String db,
                                    String table,
                                    Map<String,String> keyValues,
+                                   Long writeId,
                                    Long timestamp) {
-    this(server, servicePrincipal, db, table, null, keyValues, timestamp);
+    this(server, servicePrincipal, db, table, null, keyValues, writeId, timestamp);
   }
 
   public JSONAlterPartitionMessage(String server,
@@ -62,6 +63,7 @@ public class JSONAlterPartitionMessage extends AlterPartitionMessage {
                                    String table,
                                    String tableType,
                                    Map<String,String> keyValues,
+                                   long writeId,
                                    Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
@@ -70,6 +72,7 @@ public class JSONAlterPartitionMessage extends AlterPartitionMessage {
     this.tableType = tableType;
     this.timestamp = timestamp;
     this.keyValues = keyValues;
+    this.writeId = writeId;
     checkValid();
   }
 
@@ -106,6 +109,11 @@ public class JSONAlterPartitionMessage extends AlterPartitionMessage {
   @Override
   public Map<String,String> getKeyValues() {
     return keyValues;
+  }
+
+  @Override
+  public Long getWriteId() {
+    return writeId == null ? 0 : writeId;
   }
 
   @Override

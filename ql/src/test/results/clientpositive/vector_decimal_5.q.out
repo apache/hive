@@ -56,9 +56,6 @@ POSTHOOK: query: SELECT key FROM DECIMAL_5 ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_5
 #### A masked pattern was here ####
-NULL
-NULL
-NULL
 -4400.00000
 -1255.49000
 -1.12200
@@ -94,6 +91,9 @@ NULL
 124.00000
 125.20000
 200.00000
+NULL
+NULL
+NULL
 PREHOOK: query: SELECT DISTINCT key FROM DECIMAL_5 ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_5
@@ -102,7 +102,6 @@ POSTHOOK: query: SELECT DISTINCT key FROM DECIMAL_5 ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_5
 #### A masked pattern was here ####
-NULL
 -4400.00000
 -1255.49000
 -1.12200
@@ -129,6 +128,45 @@ NULL
 124.00000
 125.20000
 200.00000
+NULL
+PREHOOK: query: explain SELECT cast(key as decimal) FROM DECIMAL_5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_5
+#### A masked pattern was here ####
+POSTHOOK: query: explain SELECT cast(key as decimal) FROM DECIMAL_5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_5
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: decimal_5
+            Statistics: Num rows: 38 Data size: 4032 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              expressions: CAST( key AS decimal(10,0)) (type: decimal(10,0))
+              outputColumnNames: _col0
+              Statistics: Num rows: 38 Data size: 4032 Basic stats: COMPLETE Column stats: COMPLETE
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 38 Data size: 4032 Basic stats: COMPLETE Column stats: COMPLETE
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: SELECT cast(key as decimal) FROM DECIMAL_5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_5

@@ -18,34 +18,50 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hello_acid
 PREHOOK: query: insert into hello_acid partition (load_date='2016-03-01') values (1, 1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@hello_acid@load_date=2016-03-01
 POSTHOOK: query: insert into hello_acid partition (load_date='2016-03-01') values (1, 1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@hello_acid@load_date=2016-03-01
-POSTHOOK: Lineage: hello_acid PARTITION(load_date=2016-03-01).key EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: hello_acid PARTITION(load_date=2016-03-01).value EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: hello_acid PARTITION(load_date=2016-03-01).key SCRIPT []
+POSTHOOK: Lineage: hello_acid PARTITION(load_date=2016-03-01).value SCRIPT []
 PREHOOK: query: insert into hello_acid partition (load_date='2016-03-02') values (2, 2)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@hello_acid@load_date=2016-03-02
 POSTHOOK: query: insert into hello_acid partition (load_date='2016-03-02') values (2, 2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@hello_acid@load_date=2016-03-02
-POSTHOOK: Lineage: hello_acid PARTITION(load_date=2016-03-02).key EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: hello_acid PARTITION(load_date=2016-03-02).value EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: hello_acid PARTITION(load_date=2016-03-02).key SCRIPT []
+POSTHOOK: Lineage: hello_acid PARTITION(load_date=2016-03-02).value SCRIPT []
 PREHOOK: query: insert into hello_acid partition (load_date='2016-03-03') values (3, 3)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@hello_acid@load_date=2016-03-03
 POSTHOOK: query: insert into hello_acid partition (load_date='2016-03-03') values (3, 3)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@hello_acid@load_date=2016-03-03
-POSTHOOK: Lineage: hello_acid PARTITION(load_date=2016-03-03).key EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: hello_acid PARTITION(load_date=2016-03-03).value EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: hello_acid PARTITION(load_date=2016-03-03).key SCRIPT []
+POSTHOOK: Lineage: hello_acid PARTITION(load_date=2016-03-03).value SCRIPT []
 PREHOOK: query: explain
-select tid from (select row__id.transactionid as tid from hello_acid) sub order by tid
+select tid from (select row__id.writeid as tid from hello_acid) sub order by tid
 PREHOOK: type: QUERY
+PREHOOK: Input: default@hello_acid
+PREHOOK: Input: default@hello_acid@load_date=2016-03-01
+PREHOOK: Input: default@hello_acid@load_date=2016-03-02
+PREHOOK: Input: default@hello_acid@load_date=2016-03-03
+#### A masked pattern was here ####
 POSTHOOK: query: explain
-select tid from (select row__id.transactionid as tid from hello_acid) sub order by tid
+select tid from (select row__id.writeid as tid from hello_acid) sub order by tid
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hello_acid
+POSTHOOK: Input: default@hello_acid@load_date=2016-03-01
+POSTHOOK: Input: default@hello_acid@load_date=2016-03-02
+POSTHOOK: Input: default@hello_acid@load_date=2016-03-03
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -56,23 +72,25 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: hello_acid
-            Statistics: Num rows: 1 Data size: 1860 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 3 Data size: 19884 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: ROW__ID.transactionid (type: bigint)
+              expressions: ROW__ID.writeid (type: bigint)
               outputColumnNames: _col0
-              Statistics: Num rows: 1 Data size: 1860 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 3 Data size: 19884 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: bigint)
+                null sort order: z
                 sort order: +
-                Statistics: Num rows: 1 Data size: 1860 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 3 Data size: 19884 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: bigint)
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 1860 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 3 Data size: 19884 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 1860 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 19884 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -84,29 +102,39 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select tid from (select row__id.transactionid as tid from hello_acid) sub order by tid
+PREHOOK: query: select tid from (select row__id.writeid as tid from hello_acid) sub order by tid
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hello_acid
 PREHOOK: Input: default@hello_acid@load_date=2016-03-01
 PREHOOK: Input: default@hello_acid@load_date=2016-03-02
 PREHOOK: Input: default@hello_acid@load_date=2016-03-03
 #### A masked pattern was here ####
-POSTHOOK: query: select tid from (select row__id.transactionid as tid from hello_acid) sub order by tid
+POSTHOOK: query: select tid from (select row__id.writeid as tid from hello_acid) sub order by tid
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hello_acid
 POSTHOOK: Input: default@hello_acid@load_date=2016-03-01
 POSTHOOK: Input: default@hello_acid@load_date=2016-03-02
 POSTHOOK: Input: default@hello_acid@load_date=2016-03-03
 #### A masked pattern was here ####
+1
+2
 3
-4
-5
 PREHOOK: query: explain
-select tid from (select row__id.transactionid as tid from hello_acid) sub where tid = 3
+select tid from (select row__id.writeid as tid from hello_acid) sub where tid = 3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@hello_acid
+PREHOOK: Input: default@hello_acid@load_date=2016-03-01
+PREHOOK: Input: default@hello_acid@load_date=2016-03-02
+PREHOOK: Input: default@hello_acid@load_date=2016-03-03
+#### A masked pattern was here ####
 POSTHOOK: query: explain
-select tid from (select row__id.transactionid as tid from hello_acid) sub where tid = 3
+select tid from (select row__id.writeid as tid from hello_acid) sub where tid = 3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hello_acid
+POSTHOOK: Input: default@hello_acid@load_date=2016-03-01
+POSTHOOK: Input: default@hello_acid@load_date=2016-03-02
+POSTHOOK: Input: default@hello_acid@load_date=2016-03-03
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -117,21 +145,23 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: hello_acid
-            Statistics: Num rows: 1 Data size: 1860 Basic stats: PARTIAL Column stats: NONE
+            filterExpr: (ROW__ID.writeid = 3L) (type: boolean)
+            Statistics: Num rows: 3 Data size: 19884 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (ROW__ID.transactionid = 3) (type: boolean)
-              Statistics: Num rows: 1 Data size: 1860 Basic stats: COMPLETE Column stats: NONE
+              predicate: (ROW__ID.writeid = 3L) (type: boolean)
+              Statistics: Num rows: 1 Data size: 6628 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: ROW__ID.transactionid (type: bigint)
+                expressions: ROW__ID.writeid (type: bigint)
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 1860 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 6628 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 1860 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 6628 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -139,14 +169,14 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select tid from (select row__id.transactionid as tid from hello_acid) sub where tid = 3
+PREHOOK: query: select tid from (select row__id.writeid as tid from hello_acid) sub where tid = 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hello_acid
 PREHOOK: Input: default@hello_acid@load_date=2016-03-01
 PREHOOK: Input: default@hello_acid@load_date=2016-03-02
 PREHOOK: Input: default@hello_acid@load_date=2016-03-03
 #### A masked pattern was here ####
-POSTHOOK: query: select tid from (select row__id.transactionid as tid from hello_acid) sub where tid = 3
+POSTHOOK: query: select tid from (select row__id.writeid as tid from hello_acid) sub where tid = 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hello_acid
 POSTHOOK: Input: default@hello_acid@load_date=2016-03-01

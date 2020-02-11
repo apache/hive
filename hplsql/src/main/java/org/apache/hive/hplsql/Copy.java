@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -28,12 +28,14 @@ import java.util.List;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.io.IOException;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hive.hplsql.Var;
 import org.antlr.v4.runtime.ParserRuleContext;
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 public class Copy {
@@ -167,7 +169,9 @@ public class Copy {
     exec.setRowCount(rows);
     long elapsed = timer.stop();
     if (info) {
-      info(ctx, "COPY completed: " + rows + " row(s), " + timer.format() + ", " + rows/(elapsed/1000) + " rows/sec");
+      DecimalFormat df = new DecimalFormat("#,##0.00");
+      df.setRoundingMode(RoundingMode.HALF_UP);
+      info(ctx, "COPY completed: " + rows + " row(s), " + timer.format() + ", " + df.format(rows/(elapsed/1000.0)) + " rows/sec");
     }
   }
   
@@ -264,7 +268,9 @@ public class Copy {
     }
     long elapsed = timer.stop();
     if (info) {
-      info(ctx, "COPY completed: " + rows + " row(s), " + Utils.formatSizeInBytes(bytes) + ", " + timer.format() + ", " + rows/elapsed/1000 + " rows/sec");
+      DecimalFormat df = new DecimalFormat("#,##0.00");
+      df.setRoundingMode(RoundingMode.HALF_UP);
+      info(ctx, "COPY completed: " + rows + " row(s), " + Utils.formatSizeInBytes(bytes) + ", " + timer.format() + ", " + df.format(rows/(elapsed/1000.0)) + " rows/sec");
     }
   }
   

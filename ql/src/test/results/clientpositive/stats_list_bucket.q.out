@@ -45,13 +45,11 @@ POSTHOOK: query: desc formatted stats_list_bucket partition (ds = '2008-04-08', 
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@stats_list_bucket
 # col_name            	data_type           	comment             
-	 	 
 c1                  	string              	                    
 c2                  	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -61,7 +59,7 @@ Database:           	default
 Table:              	stats_list_bucket   	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c1\":\"true\",\"c2\":\"true\"}}
 	numFiles            	4                   
 	numRows             	500                 
 	rawDataSize         	4812                
@@ -122,7 +120,6 @@ POSTHOOK: query: desc formatted stats_list_bucket_1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@stats_list_bucket_1
 # col_name            	data_type           	comment             
-	 	 
 c1                  	string              	                    
 c2                  	string              	                    
 	 	 
@@ -133,7 +130,8 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c1\":\"true\",\"c2\":\"true\"}}
+	bucketing_version   	2                   
 	numFiles            	4                   
 	numRows             	500                 
 	rawDataSize         	4812                

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.management.ObjectName;
 
-import org.apache.hadoop.hive.llap.daemon.impl.LlapDaemon;
+import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.llap.daemon.impl.StatsRecordingThreadPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,9 +44,10 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.cache.BuddyAllocator;
 import org.apache.hadoop.hive.llap.cache.BufferUsageManager;
+import org.apache.hadoop.hive.llap.cache.CacheContentsTracker;
 import org.apache.hadoop.hive.llap.cache.EvictionDispatcher;
 import org.apache.hadoop.hive.llap.cache.LlapDataBuffer;
-import org.apache.hadoop.hive.llap.cache.LlapOomDebugDump;
+import org.apache.hadoop.hive.llap.cache.LlapIoDebugDump;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache;
 import org.apache.hadoop.hive.llap.cache.LowLevelCacheImpl;
 import org.apache.hadoop.hive.llap.cache.LowLevelCacheMemoryManager;
@@ -61,8 +62,7 @@ import org.apache.hadoop.hive.llap.io.api.LlapIo;
 import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer;
 import org.apache.hadoop.hive.llap.io.decode.GenericColumnVectorProducer;
 import org.apache.hadoop.hive.llap.io.decode.OrcColumnVectorProducer;
-import org.apache.hadoop.hive.llap.io.metadata.OrcMetadataCache;
-import org.apache.hadoop.hive.llap.io.metadata.ParquetMetadataCacheImpl;
+import org.apache.hadoop.hive.llap.io.metadata.MetadataCache;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonIOMetrics;
 import org.apache.hadoop.hive.llap.metrics.MetricsUtils;
@@ -72,23 +72,24 @@ import org.apache.hadoop.hive.ql.io.orc.encoded.IoTrace;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.metrics2.util.MBeans;
 import org.apache.hive.common.util.FixedSizedObjectPool;
 
 
 
+
+
+
+
 import com.google.common.primitives.Ints;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
-public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
+public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
   public static final Logger LOG = LoggerFactory.getLogger("LlapIoImpl");
   public static final Logger ORC_LOGGER = LoggerFactory.getLogger("LlapIoOrc");
   public static final Logger CACHE_LOGGER = LoggerFactory.getLogger("LlapIoCache");
   public static final Logger LOCKING_LOGGER = LoggerFactory.getLogger("LlapIoLocking");
-
   private static final String MODE_CACHE = "cache";
 
   // TODO: later, we may have a map
@@ -98,11 +99,13 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
   private final LlapDaemonIOMetrics ioMetrics;
   private ObjectName buddyAllocatorMXBean;
   private final Allocator allocator;
-  private final LlapOomDebugDump memoryDump;
   private final FileMetadataCache fileMetadataCache;
   private final LowLevelCache dataCache;
   private final BufferUsageManager bufferManager;
   private final Configuration daemonConf;
+  private final LowLevelCacheMemoryManager memoryManager;
+
+  private List<LlapIoDebugDump> debugDumpComponents = new ArrayList<>();
 
   private LlapIoImpl(Configuration conf) throws IOException {
     this.daemonConf = conf;
@@ -132,83 +135,84 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
     LOG.info("Started llap daemon metrics with displayName: {} sessionId: {}", displayName,
         sessionId);
 
-    OrcMetadataCache metadataCache = null;
+    MetadataCache metadataCache = null;
     SerDeLowLevelCacheImpl serdeCache = null; // TODO: extract interface when needed
     BufferUsageManager bufferManagerOrc = null, bufferManagerGeneric = null;
-    boolean isEncodeEnabled = HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_ENCODE_ENABLED);
+    boolean isEncodeEnabled = useLowLevelCache
+        && HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_ENCODE_ENABLED);
     if (useLowLevelCache) {
       // Memory manager uses cache policy to trigger evictions, so create the policy first.
       boolean useLrfu = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_USE_LRFU);
       long totalMemorySize = HiveConf.getSizeVar(conf, ConfVars.LLAP_IO_MEMORY_MAX_SIZE);
-      int minAllocSize = (int)HiveConf.getSizeVar(conf, ConfVars.LLAP_ALLOCATOR_MIN_ALLOC);
-      float metadataFraction = HiveConf.getFloatVar(conf, ConfVars.LLAP_IO_METADATA_FRACTION);
-      long metaMem = 0;
-      // TODO: this split a workaround until HIVE-15665.
-      //       Technically we don't have to do it for on-heap data cache but we'd do for testing.
-      boolean isSplitCache = metadataFraction > 0f;
-      if (isSplitCache) {
-        metaMem = (long)(LlapDaemon.getTotalHeapSize() * metadataFraction);
-      }
-      LowLevelCachePolicy cachePolicy = useLrfu ? new LowLevelLrfuCachePolicy(
-          minAllocSize, totalMemorySize, conf) : new LowLevelFifoCachePolicy();
-      // Allocator uses memory manager to request memory, so create the manager next.
-      LowLevelCacheMemoryManager memManager = new LowLevelCacheMemoryManager(
-          totalMemorySize, cachePolicy, cacheMetrics);
-      LowLevelCachePolicy metaCachePolicy = null;
-      LowLevelCacheMemoryManager metaMemManager = null;
-      if (isSplitCache) {
-        metaCachePolicy = useLrfu ? new LowLevelLrfuCachePolicy(
-            minAllocSize, metaMem, conf) : new LowLevelFifoCachePolicy();
-        metaMemManager = new LowLevelCacheMemoryManager(metaMem, metaCachePolicy, cacheMetrics);
+      int minAllocSize = (int) HiveConf.getSizeVar(conf, ConfVars.LLAP_ALLOCATOR_MIN_ALLOC);
+      LowLevelCachePolicy
+          realCachePolicy =
+          useLrfu ? new LowLevelLrfuCachePolicy(minAllocSize, totalMemorySize, conf) : new LowLevelFifoCachePolicy();
+      boolean trackUsage = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_TRACK_CACHE_USAGE);
+      LowLevelCachePolicy cachePolicyWrapper;
+      if (trackUsage) {
+        cachePolicyWrapper = new CacheContentsTracker(realCachePolicy);
       } else {
-        metaCachePolicy = cachePolicy;
-        metaMemManager = memManager;
+        cachePolicyWrapper = realCachePolicy;
       }
-      cacheMetrics.setCacheCapacityTotal(totalMemorySize + metaMem);
+      // Allocator uses memory manager to request memory, so create the manager next.
+      this.memoryManager = new LowLevelCacheMemoryManager(
+          totalMemorySize, cachePolicyWrapper, cacheMetrics);
+      cacheMetrics.setCacheCapacityTotal(totalMemorySize);
       // Cache uses allocator to allocate and deallocate, create allocator and then caches.
-      BuddyAllocator allocator = new BuddyAllocator(conf, memManager, cacheMetrics);
+      BuddyAllocator allocator = new BuddyAllocator(conf, memoryManager, cacheMetrics);
       this.allocator = allocator;
-      this.memoryDump = allocator;
       LowLevelCacheImpl cacheImpl = new LowLevelCacheImpl(
-          cacheMetrics, cachePolicy, allocator, true);
+          cacheMetrics, cachePolicyWrapper, allocator, true);
       dataCache = cacheImpl;
       if (isEncodeEnabled) {
         SerDeLowLevelCacheImpl serdeCacheImpl = new SerDeLowLevelCacheImpl(
-            cacheMetrics, cachePolicy, allocator);
+            cacheMetrics, cachePolicyWrapper, allocator);
         serdeCache = serdeCacheImpl;
+        serdeCacheImpl.setConf(conf);
       }
 
       boolean useGapCache = HiveConf.getBoolVar(conf, ConfVars.LLAP_CACHE_ENABLE_ORC_GAP_CACHE);
-      metadataCache = new OrcMetadataCache(metaMemManager, metaCachePolicy, useGapCache);
-      // TODO# temporary, see comments there
-      ParquetMetadataCacheImpl parquetMc = new ParquetMetadataCacheImpl(
-          allocator, memManager, cachePolicy, cacheMetrics);
-      fileMetadataCache = parquetMc;
+      metadataCache = new MetadataCache(
+          allocator, memoryManager, cachePolicyWrapper, useGapCache, cacheMetrics);
+      fileMetadataCache = metadataCache;
       // And finally cache policy uses cache to notify it of eviction. The cycle is complete!
       EvictionDispatcher e = new EvictionDispatcher(
-          dataCache, serdeCache, metadataCache, allocator, parquetMc);
-      if (isSplitCache) {
-        metaCachePolicy.setEvictionListener(e);
-        metaCachePolicy.setParentDebugDumper(e);
-      }
-      cachePolicy.setEvictionListener(e);
-      cachePolicy.setParentDebugDumper(e);
+          dataCache, serdeCache, metadataCache, allocator);
+      cachePolicyWrapper.setEvictionListener(e);
 
       cacheImpl.startThreads(); // Start the cache threads.
       bufferManager = bufferManagerOrc = cacheImpl; // Cache also serves as buffer manager.
       bufferManagerGeneric = serdeCache;
+      if (trackUsage) {
+        debugDumpComponents.add(cachePolicyWrapper); // Cache contents tracker.
+      }
+      debugDumpComponents.add(realCachePolicy);
+      debugDumpComponents.add(cacheImpl);
+      if (serdeCache != null) {
+        debugDumpComponents.add(serdeCache);
+      }
+      if (metadataCache != null) {
+        debugDumpComponents.add(metadataCache);
+      }
+      debugDumpComponents.add(allocator);
     } else {
       this.allocator = new SimpleAllocator(conf);
-      memoryDump = null;
       fileMetadataCache = null;
       SimpleBufferManager sbm = new SimpleBufferManager(allocator, cacheMetrics);
       bufferManager = bufferManagerOrc = bufferManagerGeneric = sbm;
       dataCache = sbm;
+      this.memoryManager = null;
+      debugDumpComponents.add(new LlapIoDebugDump() {
+        @Override
+        public void debugDumpShort(StringBuilder sb) {
+          sb.append("LLAP IO allocator is not in use!");
+        }
+      });
     }
     // IO thread pool. Listening is used for unhandled errors for now (TODO: remove?)
     int numThreads = HiveConf.getIntVar(conf, HiveConf.ConfVars.LLAP_IO_THREADPOOL_SIZE);
-    executor = new StatsRecordingThreadPool(numThreads, numThreads,
-        0L, TimeUnit.MILLISECONDS,
+    executor = new StatsRecordingThreadPool(numThreads, numThreads, 0L, TimeUnit.MILLISECONDS,
         new LinkedBlockingQueue<Runnable>(),
         new ThreadFactoryBuilder().setNameFormat("IO-Elevator-Thread-%d").setDaemon(true).build());
     FixedSizedObjectPool<IoTrace> tracePool = IoTrace.createTracePool(conf);
@@ -228,10 +232,17 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
 
   @Override
   public String getMemoryInfo() {
-    if (memoryDump == null) return "\nNot using the allocator";
     StringBuilder sb = new StringBuilder();
-    memoryDump.debugDumpShort(sb);
+    debugDumpShort(sb);
     return sb.toString();
+  }
+
+  @Override
+  public long purge() {
+    if (memoryManager != null) {
+      return memoryManager.purge();
+    }
+    return 0;
   }
 
   @Override
@@ -244,7 +255,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
       LOG.warn("LLAP encode is disabled; cannot use for " + sourceInputFormat.getClass());
       return null;
     }
-    return new LlapInputFormat(sourceInputFormat, sourceSerDe, cvp, executor);
+    return new LlapInputFormat(sourceInputFormat, sourceSerDe, cvp, executor, daemonConf);
   }
 
   @Override
@@ -285,7 +296,14 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
     @Override
     public long[] putFileData(Object fileKey, DiskRange[] ranges,
         MemoryBuffer[] data, long baseOffset) {
-      return lowLevelCache.putFileData(fileKey, ranges, data, baseOffset, Priority.NORMAL, null);
+      return putFileData(fileKey, ranges, data, baseOffset, null);
+    }
+
+    @Override
+    public long[] putFileData(Object fileKey, DiskRange[] ranges,
+        MemoryBuffer[] data, long baseOffset, CacheTag tag) {
+      return lowLevelCache.putFileData(
+          fileKey, ranges, data, baseOffset, Priority.NORMAL, null, tag);
     }
 
     @Override
@@ -312,6 +330,13 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
     @Override
     public MemoryBuffer create() {
       return new LlapDataBuffer();
+    }
+  }
+
+  @Override
+  public void debugDumpShort(StringBuilder sb) {
+    for (LlapIoDebugDump child : debugDumpComponents) {
+      child.debugDumpShort(sb);
     }
   }
 }

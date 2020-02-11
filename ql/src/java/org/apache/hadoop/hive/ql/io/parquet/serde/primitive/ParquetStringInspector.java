@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,16 +13,25 @@
  */
 package org.apache.hadoop.hive.ql.io.parquet.serde.primitive;
 
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.CharacterCodingException;
+import java.nio.charset.StandardCharsets;
 
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaStringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableStringObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.FloatWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.BooleanWritable;
 
 /**
- * The ParquetStringInspector inspects a BinaryWritable to give a Text or String.
+ * The ParquetStringInspector inspects a BytesWritable, TimestampWritableV2, HiveDecimalWritable,
+ * DoubleWritable, FloatWritable, LongWritable, IntWritable, and BooleanWritable to give a Text
+ * or String.
  *
  */
 public class ParquetStringInspector extends JavaStringObjectInspector implements SettableStringObjectInspector {
@@ -47,6 +56,13 @@ public class ParquetStringInspector extends JavaStringObjectInspector implements
 
     if (o instanceof String) {
       return new Text((String) o);
+    }
+
+    if ((o instanceof TimestampWritableV2) || (o instanceof HiveDecimalWritable)
+        || (o instanceof DoubleWritable) || (o instanceof FloatWritable)
+        || (o instanceof LongWritable) || (o instanceof IntWritable)
+        || (o instanceof BooleanWritable)) {
+      return new Text(o.toString());
     }
 
     throw new UnsupportedOperationException("Cannot inspect " + o.getClass().getCanonicalName());
@@ -74,6 +90,13 @@ public class ParquetStringInspector extends JavaStringObjectInspector implements
       return (String) o;
     }
 
+    if ((o instanceof TimestampWritableV2) || (o instanceof HiveDecimalWritable)
+        || (o instanceof DoubleWritable) || (o instanceof FloatWritable)
+        || (o instanceof LongWritable) || (o instanceof IntWritable)
+        || (o instanceof BooleanWritable)) {
+      return (String) o.toString();
+    }
+
     throw new UnsupportedOperationException("Cannot inspect " + o.getClass().getCanonicalName());
   }
 
@@ -84,11 +107,8 @@ public class ParquetStringInspector extends JavaStringObjectInspector implements
 
   @Override
   public Object set(final Object o, final String string) {
-    try {
-      return new BytesWritable(string == null ? null : string.getBytes("UTF-8"));
-    } catch (UnsupportedEncodingException e) {
-      throw new RuntimeException("Failed to encode string in UTF-8", e);
-    }
+    return new BytesWritable(
+        string == null ? null : string.getBytes(StandardCharsets.UTF_8));
   }
 
   @Override

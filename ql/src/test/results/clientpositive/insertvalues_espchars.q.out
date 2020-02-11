@@ -12,11 +12,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@escstr
 PREHOOK: query: insert into escstr values('It\'s a simple test')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@escstr
 POSTHOOK: query: insert into escstr values('It\'s a simple test')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@escstr
-POSTHOOK: Lineage: escstr.val SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: escstr.val SCRIPT []
 PREHOOK: query: select * from escstr
 PREHOOK: type: QUERY
 PREHOOK: Input: default@escstr

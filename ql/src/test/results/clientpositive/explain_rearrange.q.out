@@ -1,55 +1,61 @@
-PREHOOK: query: CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: query: CREATE TABLE tbl1_n9(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tbl1
-POSTHOOK: query: CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: Output: default@tbl1_n9
+POSTHOOK: query: CREATE TABLE tbl1_n9(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tbl1
-PREHOOK: query: CREATE TABLE tbl2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+POSTHOOK: Output: default@tbl1_n9
+PREHOOK: query: CREATE TABLE tbl2_n8(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tbl2
-POSTHOOK: query: CREATE TABLE tbl2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: Output: default@tbl2_n8
+POSTHOOK: query: CREATE TABLE tbl2_n8(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tbl2
+POSTHOOK: Output: default@tbl2_n8
 PREHOOK: query: explain
 select src1.key, src1.cnt1, src2.cnt1 from
 (
   select key, count(*) as cnt1 from
   (
-    select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+    select a.key as key, a.value as val1, b.value as val2 from tbl1_n9 a join tbl2_n8 b on a.key = b.key
   ) subq1 group by key
 ) src1
 join
 (
   select key, count(*) as cnt1 from
   (
-    select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+    select a.key as key, a.value as val1, b.value as val2 from tbl1_n9 a join tbl2_n8 b on a.key = b.key
   ) subq2 group by key
 ) src2
 on src1.key = src2.key
 order by src1.key, src1.cnt1, src2.cnt1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1_n9
+PREHOOK: Input: default@tbl2_n8
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select src1.key, src1.cnt1, src2.cnt1 from
 (
   select key, count(*) as cnt1 from
   (
-    select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+    select a.key as key, a.value as val1, b.value as val2 from tbl1_n9 a join tbl2_n8 b on a.key = b.key
   ) subq1 group by key
 ) src1
 join
 (
   select key, count(*) as cnt1 from
   (
-    select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+    select a.key as key, a.value as val1, b.value as val2 from tbl1_n9 a join tbl2_n8 b on a.key = b.key
   ) subq2 group by key
 ) src2
 on src1.key = src2.key
 order by src1.key, src1.cnt1, src2.cnt1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1_n9
+POSTHOOK: Input: default@tbl2_n8
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage [MAPRED]
   Stage-9 depends on stages: Stage-1, Stage-5 , consists of Stage-10, Stage-11, Stage-2 [CONDITIONAL]
@@ -68,14 +74,15 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            filterExpr: key is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                 Sorted Merge Bucket Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -86,10 +93,12 @@ STAGE PLANS:
                   Group By Operator
                     aggregations: count()
                     keys: _col0 (type: int)
+                    minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0, _col1
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: _col0 (type: int)
                       value expressions: _col1 (type: bigint)
@@ -143,6 +152,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
 
@@ -152,7 +162,9 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: int), _col1 (type: bigint), _col2 (type: bigint)
+              null sort order: zzz
               sort order: +++
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: bigint), KEY.reducesinkkey2 (type: bigint)
@@ -198,6 +210,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
 
@@ -207,12 +220,14 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: int)
+              null sort order: z
               sort order: +
               Map-reduce partition columns: _col0 (type: int)
               value expressions: _col1 (type: bigint)
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: int)
+              null sort order: z
               sort order: +
               Map-reduce partition columns: _col0 (type: int)
               value expressions: _col1 (type: bigint)
@@ -239,14 +254,15 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            filterExpr: key is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                 Sorted Merge Bucket Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -257,10 +273,12 @@ STAGE PLANS:
                   Group By Operator
                     aggregations: count()
                     keys: _col0 (type: int)
+                    minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0, _col1
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: _col0 (type: int)
                       value expressions: _col1 (type: bigint)
@@ -288,37 +306,43 @@ select src1.key, src1.cnt1, src2.cnt1 from
 (
   select key, count(*) as cnt1 from
   (
-    select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+    select a.key as key, a.value as val1, b.value as val2 from tbl1_n9 a join tbl2_n8 b on a.key = b.key
   ) subq1 group by key
 ) src1
 join
 (
   select key, count(*) as cnt1 from
   (
-    select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+    select a.key as key, a.value as val1, b.value as val2 from tbl1_n9 a join tbl2_n8 b on a.key = b.key
   ) subq2 group by key
 ) src2
 on src1.key = src2.key
 order by src1.key, src1.cnt1, src2.cnt1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1_n9
+PREHOOK: Input: default@tbl2_n8
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select src1.key, src1.cnt1, src2.cnt1 from
 (
   select key, count(*) as cnt1 from
   (
-    select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+    select a.key as key, a.value as val1, b.value as val2 from tbl1_n9 a join tbl2_n8 b on a.key = b.key
   ) subq1 group by key
 ) src1
 join
 (
   select key, count(*) as cnt1 from
   (
-    select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+    select a.key as key, a.value as val1, b.value as val2 from tbl1_n9 a join tbl2_n8 b on a.key = b.key
   ) subq2 group by key
 ) src2
 on src1.key = src2.key
 order by src1.key, src1.cnt1, src2.cnt1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1_n9
+POSTHOOK: Input: default@tbl2_n8
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage [MAPRED]
   Stage-2 depends on stages: Stage-1, Stage-9 , consists of Stage-3, Stage-6, Stage-8 [CONDITIONAL]
@@ -337,14 +361,15 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            filterExpr: key is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                 Sorted Merge Bucket Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -355,10 +380,12 @@ STAGE PLANS:
                   Group By Operator
                     aggregations: count()
                     keys: _col0 (type: int)
+                    minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0, _col1
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: _col0 (type: int)
                       value expressions: _col1 (type: bigint)
@@ -412,6 +439,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
 
@@ -421,7 +449,9 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: int), _col1 (type: bigint), _col2 (type: bigint)
+              null sort order: zzz
               sort order: +++
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: bigint), KEY.reducesinkkey2 (type: bigint)
@@ -467,6 +497,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
 
@@ -476,12 +507,14 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: int)
+              null sort order: z
               sort order: +
               Map-reduce partition columns: _col0 (type: int)
               value expressions: _col1 (type: bigint)
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: int)
+              null sort order: z
               sort order: +
               Map-reduce partition columns: _col0 (type: int)
               value expressions: _col1 (type: bigint)
@@ -508,14 +541,15 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            filterExpr: key is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                 Sorted Merge Bucket Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -526,10 +560,12 @@ STAGE PLANS:
                   Group By Operator
                     aggregations: count()
                     keys: _col0 (type: int)
+                    minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0, _col1
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: _col0 (type: int)
                       value expressions: _col1 (type: bigint)
@@ -557,37 +593,43 @@ select src1.key, src1.cnt1, src2.cnt1 from
 (
   select key, count(*) as cnt1 from
   (
-    select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+    select a.key as key, a.value as val1, b.value as val2 from tbl1_n9 a join tbl2_n8 b on a.key = b.key
   ) subq1 group by key
 ) src1
 join
 (
   select key, count(*) as cnt1 from
   (
-    select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+    select a.key as key, a.value as val1, b.value as val2 from tbl1_n9 a join tbl2_n8 b on a.key = b.key
   ) subq2 group by key
 ) src2
 on src1.key = src2.key
 order by src1.key, src1.cnt1, src2.cnt1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1_n9
+PREHOOK: Input: default@tbl2_n8
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select src1.key, src1.cnt1, src2.cnt1 from
 (
   select key, count(*) as cnt1 from
   (
-    select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+    select a.key as key, a.value as val1, b.value as val2 from tbl1_n9 a join tbl2_n8 b on a.key = b.key
   ) subq1 group by key
 ) src1
 join
 (
   select key, count(*) as cnt1 from
   (
-    select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+    select a.key as key, a.value as val1, b.value as val2 from tbl1_n9 a join tbl2_n8 b on a.key = b.key
   ) subq2 group by key
 ) src2
 on src1.key = src2.key
 order by src1.key, src1.cnt1, src2.cnt1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1_n9
+POSTHOOK: Input: default@tbl2_n8
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage [MAPRED]
   Stage-2 is a root stage [MAPRED]
@@ -606,14 +648,15 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            filterExpr: key is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                 Sorted Merge Bucket Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -624,10 +667,12 @@ STAGE PLANS:
                   Group By Operator
                     aggregations: count()
                     keys: _col0 (type: int)
+                    minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0, _col1
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: _col0 (type: int)
                       value expressions: _col1 (type: bigint)
@@ -649,14 +694,15 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            filterExpr: key is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                 Sorted Merge Bucket Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -667,10 +713,12 @@ STAGE PLANS:
                   Group By Operator
                     aggregations: count()
                     keys: _col0 (type: int)
+                    minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0, _col1
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: _col0 (type: int)
                       value expressions: _col1 (type: bigint)
@@ -724,6 +772,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
 
@@ -761,6 +810,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
 
@@ -770,12 +820,14 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: int)
+              null sort order: z
               sort order: +
               Map-reduce partition columns: _col0 (type: int)
               value expressions: _col1 (type: bigint)
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: int)
+              null sort order: z
               sort order: +
               Map-reduce partition columns: _col0 (type: int)
               value expressions: _col1 (type: bigint)
@@ -803,7 +855,9 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: int), _col1 (type: bigint), _col2 (type: bigint)
+              null sort order: zzz
               sort order: +++
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: bigint), KEY.reducesinkkey2 (type: bigint)
@@ -826,37 +880,43 @@ select src1.key, src1.cnt1, src2.cnt1 from
 (
   select key, count(*) as cnt1 from
   (
-    select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+    select a.key as key, a.value as val1, b.value as val2 from tbl1_n9 a join tbl2_n8 b on a.key = b.key
   ) subq1 group by key
 ) src1
 join
 (
   select key, count(*) as cnt1 from
   (
-    select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+    select a.key as key, a.value as val1, b.value as val2 from tbl1_n9 a join tbl2_n8 b on a.key = b.key
   ) subq2 group by key
 ) src2
 on src1.key = src2.key
 order by src1.key, src1.cnt1, src2.cnt1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1_n9
+PREHOOK: Input: default@tbl2_n8
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select src1.key, src1.cnt1, src2.cnt1 from
 (
   select key, count(*) as cnt1 from
   (
-    select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+    select a.key as key, a.value as val1, b.value as val2 from tbl1_n9 a join tbl2_n8 b on a.key = b.key
   ) subq1 group by key
 ) src1
 join
 (
   select key, count(*) as cnt1 from
   (
-    select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+    select a.key as key, a.value as val1, b.value as val2 from tbl1_n9 a join tbl2_n8 b on a.key = b.key
   ) subq2 group by key
 ) src2
 on src1.key = src2.key
 order by src1.key, src1.cnt1, src2.cnt1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1_n9
+POSTHOOK: Input: default@tbl2_n8
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage [MAPRED]
   Stage-2 is a root stage [MAPRED]
@@ -875,14 +935,15 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            filterExpr: key is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                 Sorted Merge Bucket Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -893,10 +954,12 @@ STAGE PLANS:
                   Group By Operator
                     aggregations: count()
                     keys: _col0 (type: int)
+                    minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0, _col1
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: _col0 (type: int)
                       value expressions: _col1 (type: bigint)
@@ -918,14 +981,15 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            filterExpr: key is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                 Sorted Merge Bucket Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -936,10 +1000,12 @@ STAGE PLANS:
                   Group By Operator
                     aggregations: count()
                     keys: _col0 (type: int)
+                    minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0, _col1
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: _col0 (type: int)
                       value expressions: _col1 (type: bigint)
@@ -993,12 +1059,14 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: int)
+              null sort order: z
               sort order: +
               Map-reduce partition columns: _col0 (type: int)
               value expressions: _col1 (type: bigint)
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: int)
+              null sort order: z
               sort order: +
               Map-reduce partition columns: _col0 (type: int)
               value expressions: _col1 (type: bigint)
@@ -1040,6 +1108,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
 
@@ -1063,6 +1132,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
 
@@ -1072,7 +1142,9 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: int), _col1 (type: bigint), _col2 (type: bigint)
+              null sort order: zzz
               sort order: +++
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: bigint), KEY.reducesinkkey2 (type: bigint)

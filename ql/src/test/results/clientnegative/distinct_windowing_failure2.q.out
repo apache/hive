@@ -44,4 +44,4 @@ POSTHOOK: query: load data local inpath '../../data/files/over10k' into table ov
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@over10k
-FAILED: ParseException line 4:7 cannot recognize input near 'distinct' 'first_value' '(' in selection target
+FAILED: ParseException line 3:65 missing EOF at ',' near ')'

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,11 +23,11 @@ import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.session.OperationLog;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.appender.RandomAccessFileAppender;
 import org.apache.logging.log4j.core.appender.routing.Route;
 import org.apache.logging.log4j.core.appender.routing.Routes;
 import org.apache.logging.log4j.core.appender.routing.RoutingAppender;
@@ -81,8 +81,9 @@ public class LogDivertAppender {
      */
     private static final Pattern executionIncludeNamePattern = Pattern.compile(Joiner.on("|").
         join(new String[]{"org.apache.hadoop.mapreduce.JobSubmitter",
-            "org.apache.hadoop.mapreduce.Job", "SessionState", "ReplState", Task.class.getName(),
-            Driver.class.getName(), "org.apache.hadoop.hive.ql.exec.spark.status.SparkJobMonitor"}));
+          "org.apache.hadoop.mapreduce.Job", "SessionState", "ReplState", Task.class.getName(),
+          TezTask.class.getName(), Driver.class.getName(),
+          "org.apache.hadoop.hive.ql.exec.spark.status.SparkJobMonitor"}));
 
     /* Patterns that are included in performance logging level.
      * In performance mode, show execution and performance logger messages.
@@ -109,7 +110,7 @@ public class LogDivertAppender {
     public Result filter(LogEvent event) {
       boolean excludeMatches = (loggingMode == OperationLog.LoggingLevel.VERBOSE);
 
-      String logLevel = event.getContextData().getValue(LogUtils.OPERATIONLOG_LEVEL_KEY);
+      String logLevel = event.getContextMap().get(LogUtils.OPERATIONLOG_LEVEL_KEY);
       logLevel = logLevel == null ? "" : logLevel;
       OperationLog.LoggingLevel currentLoggingMode = OperationLog.getLoggingLevel(logLevel);
       // If logging is disabled, deny everything.
@@ -171,6 +172,10 @@ public class LogDivertAppender {
    * @param conf  the configuration for HiveServer2 instance
    */
   public static void registerRoutingAppender(org.apache.hadoop.conf.Configuration conf) {
+    if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_ENABLED, false)) {
+      // spare some resources, do not register logger if it is not enabled .
+      return;
+    }
     String loggingLevel = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL);
     OperationLog.LoggingLevel loggingMode = OperationLog.getLoggingLevel(loggingLevel);
     String layout = loggingMode == OperationLog.LoggingLevel.VERBOSE ? verboseLayout : nonVerboseLayout;
@@ -203,11 +208,11 @@ public class LogDivertAppender {
     Node node = new Node(null, "Route", type);
 
     PluginEntry childEntry = new PluginEntry();
-    childEntry.setClassName(RandomAccessFileAppender.class.getName());
-    childEntry.setKey("randomaccessfile");
+    childEntry.setClassName(HushableRandomAccessFileAppender.class.getName());
+    childEntry.setKey("HushableMutableRandomAccess");
     childEntry.setName("appender");
-    PluginType<RandomAccessFileAppender> childType = new PluginType<RandomAccessFileAppender>(childEntry, RandomAccessFileAppender.class, "appender");
-    Node childNode = new Node(node, "RandomAccessFile", childType);
+    PluginType<HushableRandomAccessFileAppender> childType = new PluginType<>(childEntry, HushableRandomAccessFileAppender.class, "appender");
+    Node childNode = new Node(node, "HushableMutableRandomAccess", childType);
     childNode.getAttributes().put("name", "query-file-appender");
     childNode.getAttributes().put("fileName", logLocation + "/${ctx:sessionId}/${ctx:queryId}");
     node.getChildren().add(childNode);
@@ -216,7 +221,7 @@ public class LogDivertAppender {
     filterEntry.setClassName(NameFilter.class.getName());
     filterEntry.setKey("namefilter");
     filterEntry.setName("namefilter");
-    PluginType<NameFilter> filterType = new PluginType<NameFilter>(filterEntry, NameFilter.class, "filter");
+    PluginType<NameFilter> filterType = new PluginType<>(filterEntry, NameFilter.class, "filter");
     Node filterNode = new Node(childNode, "NameFilter", filterType);
     filterNode.getAttributes().put("loggingLevel", loggingMode.name());
     childNode.getChildren().add(filterNode);
@@ -225,26 +230,24 @@ public class LogDivertAppender {
     layoutEntry.setClassName(PatternLayout.class.getName());
     layoutEntry.setKey("patternlayout");
     layoutEntry.setName("layout");
-    PluginType<PatternLayout> layoutType = new PluginType<PatternLayout>(layoutEntry, PatternLayout.class, "layout");
+    PluginType<PatternLayout> layoutType = new PluginType<>(layoutEntry, PatternLayout.class, "layout");
     Node layoutNode = new Node(childNode, "PatternLayout", layoutType);
     layoutNode.getAttributes().put("pattern", layout);
     childNode.getChildren().add(layoutNode);
 
     Route mdcRoute = Route.createRoute(null, null, node);
-    Routes routes = Routes.newBuilder()
-            .withPattern("${ctx:queryId}")
-            .withRoutes(new Route[]{defaultRoute, mdcRoute})
-            .build();
+    Routes routes = Routes.createRoutes("${ctx:queryId}", defaultRoute, mdcRoute);
 
     LoggerContext context = (LoggerContext) LogManager.getContext(false);
     Configuration configuration = context.getConfiguration();
 
-    RoutingAppender routingAppender = RoutingAppender.newBuilder()
-            .withName(QUERY_ROUTING_APPENDER)
-            .withIgnoreExceptions(true)
-            .withRoutes(routes)
-            .setConfiguration(configuration)
-            .build();
+    RoutingAppender routingAppender = RoutingAppender.createAppender(QUERY_ROUTING_APPENDER,
+        "true",
+        routes,
+        configuration,
+        null,
+        null,
+        null);
 
     LoggerConfig loggerConfig = configuration.getRootLogger();
     loggerConfig.addAppender(routingAppender, null, null);

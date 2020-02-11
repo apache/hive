@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -37,19 +37,19 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.io.CachingPrintStream;
+import org.apache.hadoop.hive.common.log.LogRedirector;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.TaskQueue;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.BucketMatcher;
@@ -71,6 +71,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.apache.hadoop.hive.ql.session.SessionState.ResourceType;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -78,6 +79,7 @@ import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
+import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.StreamPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -129,9 +131,8 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
   }
 
   @Override
-  public void initialize(QueryState queryState, QueryPlan queryPlan, DriverContext driverContext,
-      CompilationOpContext opContext) {
-    super.initialize(queryState, queryPlan, driverContext, opContext);
+  public void initialize(QueryState queryState, QueryPlan queryPlan, TaskQueue taskQueue, Context context) {
+    super.initialize(queryState, queryPlan, taskQueue, context);
     job = new JobConf(conf, ExecDriver.class);
     execContext = new ExecMapperContext(job);
     //we don't use the HadoopJobExecHooks for local tasks
@@ -150,27 +151,26 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
   }
 
   @Override
-  public int execute(DriverContext driverContext) {
+  public int execute() {
     if (conf.getBoolVar(HiveConf.ConfVars.SUBMITLOCALTASKVIACHILD)) {
       // send task off to another jvm
-      return executeInChildVM(driverContext);
+      return executeInChildVM();
     } else {
       // execute in process
-      return executeInProcess(driverContext);
+      return executeInProcess();
     }
   }
 
-  public int executeInChildVM(DriverContext driverContext) {
+  private int executeInChildVM() {
     // execute in child jvm
     try {
       // generate the cmd line to run in the child jvm
-      Context ctx = driverContext.getCtx();
       String hiveJar = conf.getJar();
 
       String hadoopExec = conf.getVar(HiveConf.ConfVars.HADOOPBIN);
       conf.setVar(ConfVars.HIVEADDEDJARS, Utilities.getResourceFiles(conf, SessionState.ResourceType.JAR));
       // write out the plan to a local file
-      Path planPath = new Path(ctx.getLocalTmpPath(), "plan.xml");
+      Path planPath = new Path(context.getLocalTmpPath(), "plan.xml");
       MapredLocalWork plan = getWork();
       LOG.info("Generating plan file " + planPath.toString());
 
@@ -184,13 +184,13 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
         IOUtils.closeQuietly(out);
       }
 
-
       String isSilent = "true".equalsIgnoreCase(System.getProperty("test.silent")) ? "-nolog" : "";
 
-      String jarCmd;
+      String libJars = ExecDriver.getResource(conf, ResourceType.JAR);
+      String libJarsOption = StringUtils.isEmpty(libJars) ? " " : " -libjars " + libJars + " ";
 
-      jarCmd = hiveJar + " " + ExecDriver.class.getName();
-      String hiveConfArgs = ExecDriver.generateCmdLine(conf, ctx);
+      String jarCmd = hiveJar + " " + ExecDriver.class.getName() + libJarsOption;
+      String hiveConfArgs = ExecDriver.generateCmdLine(conf, context);
       String cmdLine = hadoopExec + " jar " + jarCmd + " -localtask -plan " + planPath.toString()
           + " " + isSilent + " " + hiveConfArgs;
 
@@ -200,7 +200,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
       if (!files.isEmpty()) {
         cmdLine = cmdLine + " -files " + files;
 
-        workDir = ctx.getLocalTmpPath().toUri().getPath();
+        workDir = context.getLocalTmpPath().toUri().getPath();
 
         if (!(new File(workDir)).mkdir()) {
           throw new IOException("Cannot create tmp working dir: " + workDir);
@@ -324,6 +324,15 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
       // Run ExecDriver in another JVM
       executor = Runtime.getRuntime().exec(cmdLine, env, new File(workDir));
 
+      final LogRedirector.LogSourceCallback callback = () -> {return executor.isAlive();};
+
+      LogRedirector.redirect(
+          Thread.currentThread().getName() + "-LocalTask-" + getName() + "-stdout",
+          new LogRedirector(executor.getInputStream(), LOG, callback));
+      LogRedirector.redirect(
+          Thread.currentThread().getName() + "-LocalTask-" + getName() + "-stderr",
+          new LogRedirector(executor.getErrorStream(), LOG, callback));
+
       CachingPrintStream errPrintStream = new CachingPrintStream(System.err);
 
       StreamPrinter outPrinter = new StreamPrinter(executor.getInputStream(), null, System.out);
@@ -358,7 +367,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
     }
   }
 
-  public int executeInProcess(DriverContext driverContext) {
+  public int executeInProcess() {
     // check the local work
     if (work == null) {
       return -1;
@@ -383,14 +392,19 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
       console.printInfo(Utilities.now() + "\tEnd of local task; Time Taken: "
           + Utilities.showTime(elapsed) + " sec.");
     } catch (Throwable throwable) {
+      int retVal;
+      String message;
       if (throwable instanceof OutOfMemoryError
           || (throwable instanceof MapJoinMemoryExhaustionError)) {
-        l4j.error("Hive Runtime Error: Map local work exhausted memory", throwable);
-        return 3;
+        message = "Hive Runtime Error: Map local work exhausted memory";
+        retVal = 3;
       } else {
-        l4j.error("Hive Runtime Error: Map local work failed", throwable);
-        return 2;
+        message = "Hive Runtime Error: Map local work failed";
+        retVal = 2;
       }
+      l4j.error(message, throwable);
+      console.printError(message, HiveStringUtils.stringifyException(throwable));
+      return retVal;
     }
     return 0;
   }
@@ -466,10 +480,11 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
       ColumnProjectionUtils.appendReadColumns(
           jobClone, ts.getNeededColumnIDs(), ts.getNeededColumns(), ts.getNeededNestedColumnPaths());
       // push down filters
-      HiveInputFormat.pushFilters(jobClone, ts);
+      HiveInputFormat.pushFilters(jobClone, ts, null);
 
-      AcidUtils.setTransactionalTableScan(jobClone, ts.getConf().isAcidTable());
-      AcidUtils.setAcidOperationalProperties(jobClone, ts.getConf().getAcidOperationalProperties());
+      AcidUtils.setAcidOperationalProperties(jobClone, ts.getConf().isTranscationalTable(),
+          ts.getConf().getAcidOperationalProperties());
+      AcidUtils.setValidWriteIdList(jobClone, ts.getConf());
 
       // create a fetch operator
       FetchOperator fetchOp = new FetchOperator(entry.getValue(), jobClone);

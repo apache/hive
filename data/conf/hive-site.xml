@@ -25,6 +25,12 @@
   <description>Internal marker for test. Used for masking env-dependent values</description>
 </property>
 
+<!-- Properties for test folders -->
+<property>
+  <name>mapreduce.jobtracker.staging.root.dir</name>
+  <value>${test.tmp.dir}/cli/mapred/staging</value>
+</property>
+
 <!-- Hive Configuration can either be stored in this file or in the hadoop configuration files  -->
 <!-- that are implied by Hadoop setup variables.                                                -->
 <!-- Aside from Hadoop setup variables - this file is provided as a convenience so that Hive    -->
@@ -61,6 +67,11 @@
 <property>
   <name>datanucleus.schema.autoCreateAll</name>
   <value>true</value>
+</property>
+
+<property>
+  <name>datanucleus.connectionPool.maxPoolSize</name>
+  <value>4</value>
 </property>
 
 <property>
@@ -141,7 +152,7 @@
 
 <property>
   <name>hive.exec.pre.hooks</name>
-  <value>org.apache.hadoop.hive.ql.hooks.PreExecutePrinter, org.apache.hadoop.hive.ql.hooks.EnforceReadOnlyTables</value>
+  <value>org.apache.hadoop.hive.ql.hooks.PreExecutePrinter, org.apache.hadoop.hive.ql.hooks.EnforceReadOnlyTables, org.apache.hadoop.hive.ql.hooks.MaterializedViewRegistryPropertiesHook</value>
   <description>Pre Execute Hook for Tests</description>
 </property>
 
@@ -195,6 +206,16 @@
   <name>hive.ignore.mapjoin.hint</name>
   <value>false</value>
   <description>Whether Hive ignores the mapjoin hint</description>
+</property>
+
+<property>
+  <name>hive.mapjoin.max.gc.time.percentage</name>
+  <value>0.99</value>
+  <description>
+  Maximum percentage of wallclock time that the JVM can spend in GC.
+  If this limit is exceeded, the local task will abort by itself.
+  Tests may run in very stressed environment, so this number is set very high to avoid false negatives.
+  </description>
 </property>
 
 <property>
@@ -302,12 +323,15 @@
   <value>true</value>
 </property>
 
-
 <property>
   <name>hive.llap.io.allocator.direct</name>
   <value>false</value>
 </property>
 
+<property>
+  <name>hive.stats.column.autogather</name>
+  <value>true</value>
+</property>
 
 <property>
   <name>hive.materializedview.rewriting</name>
@@ -319,4 +343,24 @@
   <value>true</value>
 </property>
 
+
+<property>
+  <name>yarn.nodemanager.disk-health-checker.max-disk-utilization-per-disk-percentage</name>
+  <value>99</value>
+</property>
+
+<property>
+  <name>hive.query.results.cache.enabled</name>
+  <value>false</value>
+</property>
+
+<property>
+  <name>hive.query.reexecution.stats.persist.scope</name>
+  <value>query</value>
+</property>
+
+<property>
+  <name>hive.scheduled.queries.executor.enabled</name>
+  <value>false</value>
+</property>
 </configuration>

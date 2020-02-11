@@ -2,7 +2,7 @@
 
 -- verify that new joins bring in correct schemas (including evolved schemas)
 
-CREATE TABLE doctors4
+CREATE TABLE doctors4_n2
 ROW FORMAT
 SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
 STORED AS
@@ -37,11 +37,11 @@ TBLPROPERTIES ('avro.schema.literal'='{
   ]
 }');
 
-DESCRIBE doctors4;
+DESCRIBE doctors4_n2;
 
-LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' INTO TABLE doctors4;
+LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' INTO TABLE doctors4_n2;
 
-CREATE TABLE episodes
+CREATE TABLE episodes_n3
 ROW FORMAT
 SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
 STORED AS
@@ -49,7 +49,7 @@ INPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat'
 OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat'
 TBLPROPERTIES ('avro.schema.literal'='{
   "namespace": "testing.hive.avro.serde",
-  "name": "episodes",
+  "name": "episodes_n3",
   "type": "record",
   "fields": [
     {
@@ -70,11 +70,11 @@ TBLPROPERTIES ('avro.schema.literal'='{
   ]
 }');
 
-DESCRIBE episodes;
+DESCRIBE episodes_n3;
 
-LOAD DATA LOCAL INPATH '../../data/files/episodes.avro' INTO TABLE episodes;
+LOAD DATA LOCAL INPATH '../../data/files/episodes.avro' INTO TABLE episodes_n3;
 
 SELECT e.title, e.air_date, d.first_name, d.last_name, d.extra_field, e.air_date
-FROM doctors4 d JOIN episodes e ON (d.number=e.doctor);
+FROM doctors4_n2 d JOIN episodes_n3 e ON (d.number=e.doctor);
 
 

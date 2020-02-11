@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,14 +23,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.hadoop.hive.ql.exec.DDLTask;
+import org.apache.hadoop.hive.ql.ddl.DDLTask;
+import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.AbstractSemanticAnalyzerHook;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 
@@ -56,14 +56,13 @@ public class DummySemanticAnalyzerHook1 extends AbstractSemanticAnalyzerHook {
 
   @Override
   public void postAnalyze(HiveSemanticAnalyzerHookContext context,
-      List<Task<? extends Serializable>> rootTasks) throws SemanticException {
+      List<Task<?>> rootTasks) throws SemanticException {
     count = 0;
     if (!isCreateTable) {
       return;
     }
 
-    CreateTableDesc desc = ((DDLTask) rootTasks.get(rootTasks.size() - 1)).getWork()
-        .getCreateTblDesc();
+    CreateTableDesc desc = (CreateTableDesc) ((DDLTask) rootTasks.get(rootTasks.size() - 1)).getWork().getDDLDesc();
     Map<String, String> tblProps = desc.getTblProps();
     if (tblProps == null) {
       tblProps = new HashMap<String, String>();

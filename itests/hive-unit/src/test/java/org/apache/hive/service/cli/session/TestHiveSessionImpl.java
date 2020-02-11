@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -29,6 +29,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import static org.mockito.Matchers.*;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -49,7 +50,7 @@ public class TestHiveSessionImpl {
     HiveConf serverhiveConf = new HiveConf();
     String ipAddress = null;
     HiveSessionImpl session = new HiveSessionImpl(null, protocol, username, password,
-      serverhiveConf, ipAddress) {
+      serverhiveConf, ipAddress, null) {
       @Override
       protected synchronized void acquire(boolean userAccess, boolean isOperation) {
       }
@@ -86,7 +87,7 @@ public class TestHiveSessionImpl {
 
     } catch (HiveSQLException e) {
       if (!"Fail for clean up test".equals(e.getMessage())) {
-        Assert.fail("unexpected exception:" + e.getMessage());
+        Assert.fail("unexpected exception:" + Arrays.toString(e.getStackTrace()));
       }
       //operationManager.closeOperation() is expected to be invoked once
       Mockito.verify(operationManager, Mockito.times(1)).closeOperation(opHandle);

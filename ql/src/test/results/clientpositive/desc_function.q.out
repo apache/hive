@@ -1,0 +1,80 @@
+PREHOOK: query: EXPLAIN DESC FUNCTION replace
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: EXPLAIN DESC FUNCTION replace
+POSTHOOK: type: DESCFUNCTION
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Describe Function
+      name: replace
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: DESC FUNCTION replace
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESC FUNCTION replace
+POSTHOOK: type: DESCFUNCTION
+replace(str, search, rep) - replace all substrings of 'str' that match 'search' with 'rep'
+PREHOOK: query: EXPLAIN DESC FUNCTION EXTENDED replace
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: EXPLAIN DESC FUNCTION EXTENDED replace
+POSTHOOK: type: DESCFUNCTION
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Describe Function
+      name: replace
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: DESC FUNCTION EXTENDED replace
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESC FUNCTION EXTENDED replace
+POSTHOOK: type: DESCFUNCTION
+replace(str, search, rep) - replace all substrings of 'str' that match 'search' with 'rep'
+Example:
+  > SELECT replace('Hack and Hue', 'H', 'BL') FROM src LIMIT 1;
+  'BLack and BLue'
+Function class:org.apache.hadoop.hive.ql.udf.UDFReplace
+Function type:BUILTIN
+PREHOOK: query: DESCRIBE FUNCTION dense_rank
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION dense_rank
+POSTHOOK: type: DESCFUNCTION
+dense_rank(x) The difference between RANK and DENSE_RANK is that DENSE_RANK leaves no gaps in ranking sequence when there are ties. That is, if you were ranking a competition using DENSE_RANK and had three people tie for second place, you would say that all three were in second place and that the next person came in third.
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED dense_rank
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED dense_rank
+POSTHOOK: type: DESCFUNCTION
+dense_rank(x) The difference between RANK and DENSE_RANK is that DENSE_RANK leaves no gaps in ranking sequence when there are ties. That is, if you were ranking a competition using DENSE_RANK and had three people tie for second place, you would say that all three were in second place and that the next person came in third.
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDAFDenseRank
+Function type:BUILTIN
+PREHOOK: query: DESCRIBE FUNCTION surrogate_key
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION surrogate_key
+POSTHOOK: type: DESCFUNCTION
+surrogate_key() - automatically generate numerical Ids for rows as you enter data into a table
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED surrogate_key
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED surrogate_key
+POSTHOOK: type: DESCFUNCTION
+surrogate_key() - automatically generate numerical Ids for rows as you enter data into a table
+Example: CREATE TABLE students 
+(`ID` BIGINT DEFAULT SURROGATE_KEY(),
+ name VARCHAR(64));
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFSurrogateKey
+Function type:BUILTIN

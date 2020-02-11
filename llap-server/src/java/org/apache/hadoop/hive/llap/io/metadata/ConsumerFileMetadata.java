@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.llap.io.metadata;
 import java.util.List;
 
 import org.apache.orc.CompressionKind;
+import org.apache.orc.FileFormatException;
+import org.apache.orc.OrcFile;
 import org.apache.orc.OrcProto.Type;
 import org.apache.orc.TypeDescription;
 
@@ -27,5 +29,6 @@ public interface ConsumerFileMetadata {
   int getStripeCount();
   CompressionKind getCompressionKind();
   List<Type> getTypes();
-  TypeDescription getSchema();
+  TypeDescription getSchema() throws FileFormatException;
+  OrcFile.Version getFileVersion();
 }

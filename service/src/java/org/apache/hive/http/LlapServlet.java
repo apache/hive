@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,19 +24,18 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.llap.cli.LlapStatusOptionsProcessor;
-import org.apache.hadoop.hive.llap.cli.LlapStatusServiceDriver;
+import org.apache.hadoop.hive.llap.cli.status.ExitCode;
+import org.apache.hadoop.hive.llap.cli.status.LlapStatusServiceCommandLine;
+import org.apache.hadoop.hive.llap.cli.status.LlapStatusServiceDriver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("serial")
 public class LlapServlet extends HttpServlet {
 
-  private static final Log LOG = LogFactory.getLog(JMXJsonServlet.class);
-  static final String ACCESS_CONTROL_ALLOW_METHODS = "Access-Control-Allow-Methods";
-  static final String ACCESS_CONTROL_ALLOW_ORIGIN = "Access-Control-Allow-Origin";
+  private static final Logger LOG = LoggerFactory.getLogger(LlapServlet.class);
 
   /**
    * Initialize this servlet.
@@ -75,10 +74,10 @@ public class LlapServlet extends HttpServlet {
           HiveConf.getVar(getConfFromContext(), HiveConf.ConfVars.LLAP_DAEMON_SERVICE_HOSTS);
 
       try {
-        response.setContentType("application/json; charset=utf8");
-        response.setHeader(ACCESS_CONTROL_ALLOW_METHODS, "GET");
-        response.setHeader(ACCESS_CONTROL_ALLOW_ORIGIN, "*");
-        response.setHeader("Cache-Control", "no-transform,public,max-age=60,s-maxage=60");
+        response.setContentType(HttpConstants.CONTENT_TYPE_JSON);
+        response.setHeader(HttpConstants.ACCESS_CONTROL_ALLOW_METHODS, HttpConstants.METHOD_GET);
+        response.setHeader(HttpConstants.ACCESS_CONTROL_ALLOW_ORIGIN, HttpConstants.WILDCARD);
+        response.setHeader(HttpConstants.CACHE_CONTROL, "no-transform,public,max-age=60,s-maxage=60");
 
         writer = response.getWriter();
 
@@ -98,8 +97,8 @@ public class LlapServlet extends HttpServlet {
 
         LOG.info("Retrieving info for cluster: " + clusterName);
         LlapStatusServiceDriver driver = new LlapStatusServiceDriver();
-        int ret = driver.run(new LlapStatusOptionsProcessor.LlapStatusOptions(clusterName), 0);
-        if (ret == LlapStatusServiceDriver.ExitCode.SUCCESS.getInt()) {
+        ExitCode ret = driver.run(LlapStatusServiceCommandLine.parseArguments(new String[] {"-n", clusterName}), 0);
+        if (ret == ExitCode.SUCCESS) {
           driver.outputJson(writer);
         }
 

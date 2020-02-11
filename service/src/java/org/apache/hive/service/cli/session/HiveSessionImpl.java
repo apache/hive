@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,6 +18,7 @@
 
 package org.apache.hive.service.cli.session;
 
+import java.util.Collections;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -33,7 +34,7 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.Semaphore;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.cli.HiveFileProcessor;
 import org.apache.hadoop.hive.common.cli.IHiveFileProcessor;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -44,6 +45,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.history.HiveHistory;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.processors.SetProcessor;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
@@ -73,9 +75,14 @@ import org.apache.hive.service.cli.operation.MetadataOperation;
 import org.apache.hive.service.cli.operation.Operation;
 import org.apache.hive.service.cli.operation.OperationManager;
 import org.apache.hive.service.rpc.thrift.TProtocolVersion;
+import org.apache.hive.service.server.KillQueryImpl;
 import org.apache.hive.service.server.ThreadWithGarbageCleanup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Lists;
+
+import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 
 /**
  * HiveSession
@@ -97,6 +104,7 @@ public class HiveSessionImpl implements HiveSession {
   //       2) Some parts of session state, like mrStats and vars, need proper synchronization.
   private SessionState sessionState;
   private String ipAddress;
+  private List<String> forwardedAddresses;
 
   private static final String FETCH_WORK_SERDE_CLASS =
       "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe";
@@ -117,25 +125,17 @@ public class HiveSessionImpl implements HiveSession {
 
 
   public HiveSessionImpl(SessionHandle sessionHandle, TProtocolVersion protocol,
-      String username, String password, HiveConf serverConf, String ipAddress) {
+    String username, String password, HiveConf serverConf, String ipAddress,
+    final List<String> forwardedAddresses) {
     this.username = username;
     this.password = password;
     creationTime = System.currentTimeMillis();
     this.sessionHandle = sessionHandle != null ? sessionHandle : new SessionHandle(protocol);
     this.sessionConf = new HiveConf(serverConf);
     this.ipAddress = ipAddress;
+    this.forwardedAddresses = forwardedAddresses;
     this.operationLock = serverConf.getBoolVar(
         ConfVars.HIVE_SERVER2_PARALLEL_OPS_IN_SESSION) ? null : new Semaphore(1);
-    try {
-      // In non-impersonation mode, map scheduler queue to current user
-      // if fair scheduler is configured.
-      if (! sessionConf.getBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS) &&
-        sessionConf.getBoolVar(ConfVars.HIVE_SERVER2_MAP_FAIR_SCHEDULER_QUEUE)) {
-        ShimLoader.getHadoopShims().refreshDefaultQueue(sessionConf, username);
-      }
-    } catch (IOException e) {
-      LOG.warn("Error setting scheduler queue: " + e, e);
-    }
     // Set an explicit session name to control the download directory name
     sessionConf.set(ConfVars.HIVESESSIONID.varname,
         this.sessionHandle.getHandleIdentifier().toString());
@@ -160,6 +160,14 @@ public class HiveSessionImpl implements HiveSession {
     sessionState.setIsHiveServerQuery(true);
     sessionState.setForwardedAddresses(SessionManager.getForwardedAddresses());
     sessionState.setIsUsingThriftJDBCBinarySerDe(updateIsUsingThriftJDBCBinarySerDe());
+    try {
+      if (sessionManager != null) {
+        sessionState.setHiveServer2Host(sessionManager.getHiveServer2HostName());
+      }
+    } catch (Exception e) {
+      throw new HiveSQLException(e);
+    }
+    sessionState.setKillQuery(new KillQueryImpl(operationManager));
     SessionState.start(sessionState);
     try {
       sessionState.loadAuxJars();
@@ -169,11 +177,10 @@ public class HiveSessionImpl implements HiveSession {
       LOG.error(msg, e);
       throw new HiveSQLException(msg, e);
     }
-    try {
-      sessionHive = Hive.get(getHiveConf());
-    } catch (HiveException e) {
-      throw new HiveSQLException("Failed to get metastore connection", e);
-    }
+
+    // Set sessionHive object created based on sessionConf.
+    setSessionHive();
+
     // Process global init file: .hiverc
     processGlobalInitFile();
     // Set fetch size in session conf map
@@ -219,6 +226,28 @@ public class HiveSessionImpl implements HiveSession {
       }
       return rc;
     }
+  }
+
+  /**
+   * Sets sessionHive object created based on sessionConf.
+   * @throws HiveSQLException
+   */
+  private void setSessionHive() throws HiveSQLException {
+    Hive newSessionHive;
+    try {
+      newSessionHive = Hive.get(getHiveConf());
+
+      // HMS connections from sessionHive shouldn't be closed by any query execution thread when it
+      // recreates the Hive object. It is allowed to be closed only when session is closed/released.
+      newSessionHive.setAllowClose(false);
+    } catch (HiveException e) {
+      throw new HiveSQLException("Failed to get metastore connection", e);
+    }
+
+    // The previous sessionHive object might still be referred by any async query execution thread.
+    // So, it shouldn't be closed here explicitly. Anyways, Hive object will auto-close HMS connection
+    // when it is garbage collected. So, it is safe to just overwrite sessionHive here.
+    sessionHive = newSessionHive;
   }
 
   private void processGlobalInitFile() {
@@ -274,7 +303,8 @@ public class HiveSessionImpl implements HiveSession {
         }
       } else if (key.startsWith("use:")) {
         try {
-          if (sessionHive.getDatabase(entry.getValue()) == null) {
+          if (!(StringUtils.equals(DEFAULT_DATABASE_NAME, entry.getValue()))
+              && sessionHive.getDatabase(entry.getValue()) == null) {
             throw new HiveSQLException("Database " + entry.getValue() + " does not exist");
           }
         } catch (HiveException e) {
@@ -386,7 +416,20 @@ public class HiveSessionImpl implements HiveSession {
     }
     // set the thread name with the logging prefix.
     sessionState.updateThreadName();
-    Hive.set(sessionHive);
+
+    // If the thread local Hive is different from sessionHive, it means, the previous query execution in
+    // master thread has re-created Hive object due to changes in MS related configurations in sessionConf.
+    // So, it is necessary to reset sessionHive object based on new sessionConf. Here, we cannot,
+    // directly set sessionHive with thread local Hive because if the previous command was REPL LOAD, then
+    // the config changes lives only within command execution not in session level.
+    // So, the safer option is to invoke Hive.get() which decides if to reuse Thread local Hive or re-create it.
+    if (Hive.getThreadLocal() != sessionHive) {
+      try {
+        setSessionHive();
+      } catch (HiveSQLException e) {
+        throw new RuntimeException(e);
+      }
+    }
   }
 
   /**
@@ -473,6 +516,8 @@ public class HiveSessionImpl implements HiveSession {
         return new GetInfoValue(128);
       case CLI_MAX_TABLE_NAME_LEN:
         return new GetInfoValue(128);
+      case CLI_ODBC_KEYWORDS:
+        return new GetInfoValue(ParseUtils.getKeywords(ODBC_KEYWORDS));
       case CLI_TXN_CAPABLE:
       default:
         throw new HiveSQLException("Unrecognized GetInfoType value: " + getInfoType.toString());
@@ -512,6 +557,7 @@ public class HiveSessionImpl implements HiveSession {
   private OperationHandle executeStatementInternal(String statement,
       Map<String, String> confOverlay, boolean runAsync, long queryTimeout) throws HiveSQLException {
     acquire(true, true);
+    LOG.info("executing " +  statement);
 
     ExecuteStatementOperation operation = null;
     OperationHandle opHandle = null;
@@ -758,11 +804,19 @@ public class HiveSessionImpl implements HiveSession {
       }
       if (sessionHive != null) {
         try {
-          Hive.closeCurrent();
+          sessionHive.close(true);
         } catch (Throwable t) {
           LOG.warn("Error closing sessionHive", t);
         }
         sessionHive = null;
+      }
+      try {
+        // The thread local Hive in master thread can be different from sessionHive if any query
+        // execution from master thread resets it to new Hive object due to changes in sessionConf.
+        // So, need to close it as well. If it is same as sessionHive, then it is just no-op.
+        Hive.closeCurrent();
+      } catch (Throwable t) {
+        LOG.warn("Error closing thread local Hive", t);
       }
       release(true, false);
     }
@@ -856,6 +910,11 @@ public class HiveSessionImpl implements HiveSession {
   }
 
   @Override
+  public void updateQueryTag(String queryId, String queryTag) throws HiveSQLException {
+    sessionManager.getOperationManager().updateQueryTag(queryId, queryTag);
+  }
+
+  @Override
   public void closeOperation(OperationHandle opHandle) throws HiveSQLException {
     acquire(true, false);
     try {
@@ -909,6 +968,16 @@ public class HiveSessionImpl implements HiveSession {
   @Override
   public void setIpAddress(String ipAddress) {
     this.ipAddress = ipAddress;
+  }
+
+  @Override
+  public List<String> getForwardedAddresses() {
+    return forwardedAddresses;
+  }
+
+  @Override
+  public void setForwardedAddresses(final List<String> forwardedAddresses) {
+    this.forwardedAddresses = forwardedAddresses;
   }
 
   @Override
@@ -985,4 +1054,44 @@ public class HiveSessionImpl implements HiveSession {
       release(true, true);
     }
   }
+
+  @Override
+  public void setApplicationName(String value) {
+    String oldName = sessionState.getHiveVariables().put("wmapp", value);
+    if (oldName != null && !oldName.equals(value)) {
+      LOG.info("ApplicationName changed from " + oldName + " to " + value);
+    }
+  }
+
+
+  // From https://docs.microsoft.com/en-us/sql/t-sql/language-elements/reserved-keywords-transact-sql#odbc-reserved-keywords
+  private static final Set<String> ODBC_KEYWORDS = Collections.unmodifiableSet(new HashSet<>(
+      Lists.newArrayList("ABSOLUTE", "ACTION", "ADA", "ADD", "ALL", "ALLOCATE", "ALTER", "AND",
+      "ANY", "ARE", "AS", "ASC", "ASSERTION", "AT", "AUTHORIZATION", "AVG", "BEGIN", "BETWEEN",
+      "BIT_LENGTH", "BIT", "BOTH", "BY", "CASCADE", "CASCADED", "CASE", "CAST", "CATALOG",
+      "CHAR_LENGTH", "CHAR", "CHARACTER_LENGTH", "CHARACTER", "CHECK", "CLOSE", "COALESCE",
+      "COLLATE", "COLLATION", "COLUMN", "COMMIT", "CONNECT", "CONNECTION", "CONSTRAINT",
+      "CONSTRAINTS", "CONTINUE", "CONVERT", "CORRESPONDING", "COUNT", "CREATE", "CROSS",
+      "CURRENT_DATE", "CURRENT_TIME", "CURRENT_TIMESTAMP", "CURRENT_USER", "CURRENT", "CURSOR",
+      "DATE", "DAY", "DEALLOCATE", "DEC", "DECIMAL", "DECLARE", "DEFAULT", "DEFERRABLE",
+      "DEFERRED", "DELETE", "DESC", "DESCRIBE", "DESCRIPTOR", "DIAGNOSTICS", "DISCONNECT",
+      "DISTINCT", "DOMAIN", "DOUBLE", "DROP", "ELSE", "END", "ESCAPE", "EXCEPT", "EXCEPTION",
+      "EXEC", "EXECUTE", "EXISTS", "EXTERNAL", "EXTRACT", "FALSE", "FETCH", "FIRST", "FLOAT",
+      "FOR", "FOREIGN", "FORTRAN", "FOUND", "FROM", "FULL", "GET", "GLOBAL", "GO", "GOTO", "GRANT",
+      "GROUP", "HAVING", "HOUR", "IDENTITY", "IMMEDIATE", "IN", "INCLUDE", "INDEX", "INDICATOR",
+      "INITIALLY", "INNER", "INPUT", "INSENSITIVE", "INSERT", "INT", "INTEGER", "INTERSECT",
+      "INTERVAL", "INTO", "IS", "ISOLATION", "JOIN", "KEY", "LANGUAGE", "LAST", "LEADING", "LEFT",
+      "LEVEL", "LIKE", "LOCAL", "LOWER", "MATCH", "MAX", "MIN", "MINUTE", "MODULE", "MONTH",
+      "NAMES", "NATIONAL", "NATURAL", "NCHAR", "NEXT", "NO", "NONE", "NOT", "NULL", "NULLIF",
+      "NUMERIC", "OCTET_LENGTH", "OF", "ON", "ONLY", "OPEN", "OPTION", "OR", "ORDER", "OUTER",
+      "OUTPUT", "OVERLAPS", "PAD", "PARTIAL", "PASCAL", "POSITION", "PRECISION", "PREPARE",
+      "PRESERVE", "PRIMARY", "PRIOR", "PRIVILEGES", "PROCEDURE", "PUBLIC", "READ", "REAL",
+      "REFERENCES", "RELATIVE", "RESTRICT", "REVOKE", "RIGHT", "ROLLBACK", "ROWS", "SCHEMA",
+      "SCROLL", "SECOND", "SECTION", "SELECT", "SESSION_USER", "SESSION", "SET", "SIZE",
+      "SMALLINT", "SOME", "SPACE", "SQL", "SQLCA", "SQLCODE", "SQLERROR", "SQLSTATE", "SQLWARNING",
+      "SUBSTRING", "SUM", "SYSTEM_USER", "TABLE", "TEMPORARY", "THEN", "TIME", "TIMESTAMP",
+      "TIMEZONE_HOUR", "TIMEZONE_MINUTE", "TO", "TRAILING", "TRANSACTION", "TRANSLATE",
+      "TRANSLATION", "TRIM", "TRUE", "UNION", "UNIQUE", "UNKNOWN", "UPDATE", "UPPER", "USAGE",
+      "USER", "USING", "VALUE", "VALUES", "VARCHAR", "VARYING", "VIEW", "WHEN", "WHENEVER",
+      "WHERE", "WITH", "WORK", "WRITE", "YEAR", "ZONE")));
 }

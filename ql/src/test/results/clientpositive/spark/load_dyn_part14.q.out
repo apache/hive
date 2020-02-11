@@ -1,30 +1,29 @@
-PREHOOK: query: create table if not exists nzhang_part14 (key string)
+PREHOOK: query: create table if not exists nzhang_part14_n0 (key string)
   partitioned by (value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@nzhang_part14
-POSTHOOK: query: create table if not exists nzhang_part14 (key string)
+PREHOOK: Output: default@nzhang_part14_n0
+POSTHOOK: query: create table if not exists nzhang_part14_n0 (key string)
   partitioned by (value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@nzhang_part14
-PREHOOK: query: describe extended nzhang_part14
+POSTHOOK: Output: default@nzhang_part14_n0
+PREHOOK: query: describe extended nzhang_part14_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@nzhang_part14
-POSTHOOK: query: describe extended nzhang_part14
+PREHOOK: Input: default@nzhang_part14_n0
+POSTHOOK: query: describe extended nzhang_part14_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@nzhang_part14
+POSTHOOK: Input: default@nzhang_part14_n0
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 value               	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: explain
-insert overwrite table nzhang_part14 partition(value) 
+insert overwrite table nzhang_part14_n0 partition(value) 
 select key, value from (
   select * from (select 'k1' as key, cast(null as string) as value from src limit 2)a 
   union all
@@ -33,8 +32,10 @@ select key, value from (
   select * from (select 'k3' as key, ' ' as value from src limit 2)c
 ) T
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@nzhang_part14_n0
 POSTHOOK: query: explain
-insert overwrite table nzhang_part14 partition(value) 
+insert overwrite table nzhang_part14_n0 partition(value) 
 select key, value from (
   select * from (select 'k1' as key, cast(null as string) as value from src limit 2)a 
   union all
@@ -43,6 +44,7 @@ select key, value from (
   select * from (select 'k3' as key, ' ' as value from src limit 2)c
 ) T
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -68,10 +70,13 @@ STAGE PLANS:
                       Number of rows: 2
                       Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         TopN Hash Memory Usage: 0.1
+            Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Limit
                 Number of rows: 2
@@ -87,8 +92,9 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.nzhang_part14
+                        name: default.nzhang_part14_n0
         Reducer 4 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Limit
                 Number of rows: 2
@@ -104,8 +110,9 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.nzhang_part14
+                        name: default.nzhang_part14_n0
         Reducer 6 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Limit
                 Number of rows: 2
@@ -121,7 +128,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.nzhang_part14
+                        name: default.nzhang_part14_n0
 
   Stage: Stage-0
     Move Operator
@@ -133,12 +140,13 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.nzhang_part14
+              name: default.nzhang_part14_n0
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
-PREHOOK: query: insert overwrite table nzhang_part14 partition(value) 
+PREHOOK: query: insert overwrite table nzhang_part14_n0 partition(value) 
 select key, value from (
   select * from (select 'k1' as key, cast(null as string) as value from src limit 2)a 
   union all
@@ -148,8 +156,8 @@ select key, value from (
 ) T
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@nzhang_part14
-POSTHOOK: query: insert overwrite table nzhang_part14 partition(value) 
+PREHOOK: Output: default@nzhang_part14_n0
+POSTHOOK: query: insert overwrite table nzhang_part14_n0 partition(value) 
 select key, value from (
   select * from (select 'k1' as key, cast(null as string) as value from src limit 2)a 
   union all
@@ -159,29 +167,29 @@ select key, value from (
 ) T
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@nzhang_part14@value= 
-POSTHOOK: Output: default@nzhang_part14@value=__HIVE_DEFAULT_PARTITION__
-POSTHOOK: Lineage: nzhang_part14 PARTITION(value= ).key EXPRESSION []
-POSTHOOK: Lineage: nzhang_part14 PARTITION(value=__HIVE_DEFAULT_PARTITION__).key EXPRESSION []
-PREHOOK: query: show partitions nzhang_part14
+POSTHOOK: Output: default@nzhang_part14_n0@value= 
+POSTHOOK: Output: default@nzhang_part14_n0@value=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: nzhang_part14_n0 PARTITION(value= ).key EXPRESSION []
+POSTHOOK: Lineage: nzhang_part14_n0 PARTITION(value=__HIVE_DEFAULT_PARTITION__).key EXPRESSION []
+PREHOOK: query: show partitions nzhang_part14_n0
 PREHOOK: type: SHOWPARTITIONS
-PREHOOK: Input: default@nzhang_part14
-POSTHOOK: query: show partitions nzhang_part14
+PREHOOK: Input: default@nzhang_part14_n0
+POSTHOOK: query: show partitions nzhang_part14_n0
 POSTHOOK: type: SHOWPARTITIONS
-POSTHOOK: Input: default@nzhang_part14
+POSTHOOK: Input: default@nzhang_part14_n0
 value= 
 value=__HIVE_DEFAULT_PARTITION__
-PREHOOK: query: select * from nzhang_part14 where value <> 'a'
+PREHOOK: query: select * from nzhang_part14_n0 where value <> 'a'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@nzhang_part14
-PREHOOK: Input: default@nzhang_part14@value= 
-PREHOOK: Input: default@nzhang_part14@value=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Input: default@nzhang_part14_n0
+PREHOOK: Input: default@nzhang_part14_n0@value= 
+PREHOOK: Input: default@nzhang_part14_n0@value=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
-POSTHOOK: query: select * from nzhang_part14 where value <> 'a'
+POSTHOOK: query: select * from nzhang_part14_n0 where value <> 'a'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@nzhang_part14
-POSTHOOK: Input: default@nzhang_part14@value= 
-POSTHOOK: Input: default@nzhang_part14@value=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Input: default@nzhang_part14_n0
+POSTHOOK: Input: default@nzhang_part14_n0@value= 
+POSTHOOK: Input: default@nzhang_part14_n0@value=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 k1	__HIVE_DEFAULT_PARTITION__
 k1	__HIVE_DEFAULT_PARTITION__

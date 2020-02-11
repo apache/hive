@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,6 +17,8 @@
  */
 
 package org.apache.hadoop.hive.ql.exec.vector;
+
+import java.util.Arrays;
 
 
 /**
@@ -78,7 +80,7 @@ public class BytesColumnVector extends ColumnVector {
    * @param size  number of elements in the column vector
    */
   public BytesColumnVector(int size) {
-    super(size);
+    super(Type.BYTES, size);
     vector = new byte[size][];
     start = new int[size];
     length = new int[size];
@@ -93,7 +95,12 @@ public class BytesColumnVector extends ColumnVector {
     initBuffer(0);
   }
 
-  /** Set a field by reference.
+  /**
+   * Set a field by reference.
+   *
+   * This is a FAST version that assumes the caller has checked to make sure the sourceBuf
+   * is not null and elementNum is correctly adjusted for isRepeating.  And, that the isNull entry
+   * has been set.  Only the output entry fields will be set by this method.
    *
    * @param elementNum index within column vector to set
    * @param sourceBuf container of source data
@@ -123,6 +130,7 @@ public class BytesColumnVector extends ColumnVector {
       if (bufferAllocationCount > 0) {
         for (int idx = 0; idx < vector.length; ++idx) {
           vector[idx] = null;
+          length[idx] = 0;
         }
         buffer = smallBuffer; // In case last row was a large bytes value
       }
@@ -161,6 +169,10 @@ public class BytesColumnVector extends ColumnVector {
    * DO NOT USE this method unless it's not practical to set data by reference with setRef().
    * Setting data by reference tends to run a lot faster than copying data in.
    *
+   * This is a FAST version that assumes the caller has checked to make sure the sourceBuf
+   * is not null and elementNum is correctly adjusted for isRepeating.  And, that the isNull entry
+   * has been set.  Only the output entry fields will be set by this method.
+   *
    * @param elementNum index within column vector to set
    * @param sourceBuf container of source data
    * @param start start byte position within source
@@ -170,7 +182,9 @@ public class BytesColumnVector extends ColumnVector {
     if ((nextFree + length) > buffer.length) {
       increaseBufferSpace(length);
     }
-    System.arraycopy(sourceBuf, start, buffer, nextFree, length);
+    if (length > 0) {
+      System.arraycopy(sourceBuf, start, buffer, nextFree, length);
+    }
     vector[elementNum] = buffer;
     this.start[elementNum] = nextFree;
     this.length[elementNum] = length;
@@ -182,6 +196,10 @@ public class BytesColumnVector extends ColumnVector {
    * If you must actually copy data in to the array, use this method.
    * DO NOT USE this method unless it's not practical to set data by reference with setRef().
    * Setting data by reference tends to run a lot faster than copying data in.
+   *
+   * This is a FAST version that assumes the caller has checked to make sure the sourceBuf
+   * is not null and elementNum is correctly adjusted for isRepeating.  And, that the isNull entry
+   * has been set.  Only the output entry fields will be set by this method.
    *
    * @param elementNum index within column vector to set
    * @param sourceBuf container of source data
@@ -290,11 +308,11 @@ public class BytesColumnVector extends ColumnVector {
       if ((nextFree + nextElemLength) > buffer.length) {
         int newLength = smallBuffer.length * 2;
         while (newLength < nextElemLength) {
-          if (newLength < 0) {
-            throw new RuntimeException("Overflow of newLength. smallBuffer.length="
-                + smallBuffer.length + ", nextElemLength=" + nextElemLength);
+          if (newLength > 0) {
+            newLength *= 2;
+          } else { // integer overflow happened; maximize size of next smallBuffer
+            newLength = Integer.MAX_VALUE;
           }
-          newLength *= 2;
         }
         smallBuffer = new byte[newLength];
         ++bufferAllocationCount;
@@ -309,46 +327,86 @@ public class BytesColumnVector extends ColumnVector {
   /** Copy the current object contents into the output. Only copy selected entries,
     * as indicated by selectedInUse and the sel array.
     */
+  @Override
   public void copySelected(
-      boolean selectedInUse, int[] sel, int size, BytesColumnVector output) {
+      boolean selectedInUse, int[] sel, int size, ColumnVector outputColVector) {
 
-    // Output has nulls if and only if input has nulls.
-    output.noNulls = noNulls;
+    BytesColumnVector output = (BytesColumnVector) outputColVector;
+    boolean[] outputIsNull = output.isNull;
+
+    // We do not need to do a column reset since we are carefully changing the output.
     output.isRepeating = false;
 
     // Handle repeating case
     if (isRepeating) {
-      output.setVal(0, vector[0], start[0], length[0]);
-      output.isNull[0] = isNull[0];
+      if (noNulls || !isNull[0]) {
+        outputIsNull[0] = false;
+        output.setVal(0, vector[0], start[0], length[0]);
+      } else {
+        outputIsNull[0] = true;
+        output.noNulls = false;
+      }
       output.isRepeating = true;
       return;
     }
 
     // Handle normal case
 
-    // Copy data values over
-    if (selectedInUse) {
-      for (int j = 0; j < size; j++) {
-        int i = sel[j];
-        output.setVal(i, vector[i], start[i], length[i]);
-      }
-    }
-    else {
-      for (int i = 0; i < size; i++) {
-        output.setVal(i, vector[i], start[i], length[i]);
-      }
-    }
+    if (noNulls) {
+      if (selectedInUse) {
 
-    // Copy nulls over if needed
-    if (!noNulls) {
+        // CONSIDER: For large n, fill n or all of isNull array and use the tighter ELSE loop.
+
+        if (!outputColVector.noNulls) {
+          for(int j = 0; j != size; j++) {
+           final int i = sel[j];
+           // Set isNull before call in case it changes it mind.
+           outputIsNull[i] = false;
+           output.setVal(i, vector[i], start[i], length[i]);
+         }
+        } else {
+          for(int j = 0; j != size; j++) {
+            final int i = sel[j];
+            output.setVal(i, vector[i], start[i], length[i]);
+          }
+        }
+      } else {
+        if (!outputColVector.noNulls) {
+
+          // Assume it is almost always a performance win to fill all of isNull so we can
+          // safely reset noNulls.
+          Arrays.fill(outputIsNull, false);
+          outputColVector.noNulls = true;
+        }
+        for(int i = 0; i != size; i++) {
+          output.setVal(i, vector[i], start[i], length[i]);
+        }
+      }
+    } else /* there are nulls in our column */ {
+
+      // Carefully handle NULLs...
+
       if (selectedInUse) {
         for (int j = 0; j < size; j++) {
           int i = sel[j];
-          output.isNull[i] = isNull[i];
+          if (!isNull[i]) {
+            output.isNull[i] = false;
+            output.setVal(i, vector[i], start[i], length[i]);
+          } else {
+            output.isNull[i] = true;
+            output.noNulls = false;
+          }
         }
-      }
-      else {
-        System.arraycopy(isNull, 0, output.isNull, 0, size);
+      } else {
+        for (int i = 0; i < size; i++) {
+          if (!isNull[i]) {
+            output.isNull[i] = false;
+            output.setVal(i, vector[i], start[i], length[i]);
+          } else {
+            output.isNull[i] = true;
+            output.noNulls = false;
+          }
+        }
       }
     }
   }
@@ -371,14 +429,13 @@ public class BytesColumnVector extends ColumnVector {
       // at position 0 is undefined if the position 0 value is null.
       if (noNulls || !isNull[0]) {
 
-        // loops start at position 1 because position 0 is already set
         if (selectedInUse) {
-          for (int j = 1; j < size; j++) {
+          for (int j = 0; j < size; j++) {
             int i = sel[j];
             this.setRef(i, vector[0], start[0], length[0]);
           }
         } else {
-          for (int i = 1; i < size; i++) {
+          for (int i = 0; i < size; i++) {
             this.setRef(i, vector[0], start[0], length[0]);
           }
         }
@@ -390,9 +447,9 @@ public class BytesColumnVector extends ColumnVector {
 
   // Fill the all the vector entries with provided value
   public void fill(byte[] value) {
-    noNulls = true;
     isRepeating = true;
-    setRef(0, value, 0, value.length);
+    isNull[0] = false;
+    setVal(0, value, 0, value.length);
   }
 
   // Fill the column vector with nulls
@@ -403,18 +460,55 @@ public class BytesColumnVector extends ColumnVector {
     isNull[0] = true;
   }
 
+  /**
+   * Set the element in this column vector from the given input vector.
+   *
+   * The inputElementNum will be adjusted to 0 if the input column has isRepeating set.
+   *
+   * On the other hand, the outElementNum must have been adjusted to 0 in ADVANCE when the output
+   * has isRepeating set.
+   *
+   * IMPORTANT: if the output entry is marked as NULL, this method will do NOTHING.  This
+   * supports the caller to do output NULL processing in advance that may cause the output results
+   * operation to be ignored.  Thus, make sure the output isNull entry is set in ADVANCE.
+   *
+   * The inputColVector noNulls and isNull entry will be examined.  The output will only
+   * be set if the input is NOT NULL.  I.e. noNulls || !isNull[inputElementNum] where
+   * inputElementNum may have been adjusted to 0 for isRepeating.
+   *
+   * If the input entry is NULL or out-of-range, the output will be marked as NULL.
+   * I.e. set output noNull = false and isNull[outElementNum] = true.  An example of out-of-range
+   * is the DecimalColumnVector which can find the input decimal does not fit in the output
+   * precision/scale.
+   *
+   * (Since we return immediately if the output entry is NULL, we have no need and do not mark
+   * the output entry to NOT NULL).
+   *
+   */
   @Override
-  public void setElement(int outElementNum, int inputElementNum, ColumnVector inputVector) {
-    if (inputVector.isRepeating) {
+  public void setElement(int outputElementNum, int inputElementNum, ColumnVector inputColVector) {
+
+    // Invariants.
+    if (isRepeating && outputElementNum != 0) {
+      throw new AssertionError("Output column number expected to be 0 when isRepeating");
+    }
+    if (inputColVector.isRepeating) {
       inputElementNum = 0;
     }
-    if (inputVector.noNulls || !inputVector.isNull[inputElementNum]) {
-      isNull[outElementNum] = false;
-      BytesColumnVector in = (BytesColumnVector) inputVector;
-      setVal(outElementNum, in.vector[inputElementNum],
+
+    // Do NOTHING if output is NULL.
+    if (!noNulls && isNull[outputElementNum]) {
+      return;
+    }
+
+    if (inputColVector.noNulls || !inputColVector.isNull[inputElementNum]) {
+      BytesColumnVector in = (BytesColumnVector) inputColVector;
+      setVal(outputElementNum, in.vector[inputElementNum],
           in.start[inputElementNum], in.length[inputElementNum]);
     } else {
-      isNull[outElementNum] = true;
+
+      // Only mark output NULL when input is NULL.
+      isNull[outputElementNum] = true;
       noNulls = false;
     }
   }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+import org.apache.hadoop.hive.ql.optimizer.signature.Signature;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 
@@ -109,6 +110,7 @@ public class FilterDesc extends AbstractOperatorDesc {
     this.sampleDescr = sampleDescr;
   }
 
+  @Signature
   @Explain(displayName = "predicate")
   public String getPredicateString() {
     return PlanUtils.getExprListString(Arrays.asList(predicate));
@@ -129,6 +131,7 @@ public class FilterDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "isSamplingPred", explainLevels = { Level.EXTENDED })
+  @Signature
   public boolean getIsSamplingPred() {
     return isSamplingPred;
   }
@@ -146,6 +149,7 @@ public class FilterDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "sampleDesc", explainLevels = { Level.EXTENDED })
+  @Signature
   public String getSampleDescExpr() {
     return sampleDescr == null ? null : sampleDescr.toString();
   }
@@ -194,11 +198,11 @@ public class FilterDesc extends AbstractOperatorDesc {
     private final FilterDesc filterDesc;
     private final VectorFilterDesc vectorFilterDesc;
 
-    public FilterOperatorExplainVectorization(FilterDesc filterDesc, VectorDesc vectorDesc) {
+    public FilterOperatorExplainVectorization(FilterDesc filterDesc, VectorFilterDesc vectorFilterDesc) {
       // Native vectorization supported.
-      super(vectorDesc, true);
+      super(vectorFilterDesc, true);
       this.filterDesc = filterDesc;
-      vectorFilterDesc = (VectorFilterDesc) vectorDesc;
+      this.vectorFilterDesc = vectorFilterDesc;
     }
 
     @Explain(vectorization = Vectorization.EXPRESSION, displayName = "predicateExpression", explainLevels = { Level.DEFAULT, Level.EXTENDED })
@@ -209,10 +213,11 @@ public class FilterDesc extends AbstractOperatorDesc {
 
   @Explain(vectorization = Vectorization.OPERATOR, displayName = "Filter Vectorization", explainLevels = { Level.DEFAULT, Level.EXTENDED })
   public FilterOperatorExplainVectorization getFilterVectorization() {
-    if (vectorDesc == null) {
+    VectorFilterDesc vectorFilterDesc = (VectorFilterDesc) getVectorDesc();
+    if (vectorFilterDesc == null) {
       return null;
     }
-    return new FilterOperatorExplainVectorization(this, vectorDesc);
+    return new FilterOperatorExplainVectorization(this, vectorFilterDesc);
   }
 
   @Override
@@ -225,4 +230,5 @@ public class FilterDesc extends AbstractOperatorDesc {
     }
     return false;
   }
+
 }

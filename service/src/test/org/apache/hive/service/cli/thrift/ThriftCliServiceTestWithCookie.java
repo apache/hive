@@ -1,6 +1,6 @@
 
 
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -29,10 +29,9 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hive.service.Service;
 import org.apache.hive.service.auth.HiveAuthConstants;
-import org.apache.hive.service.auth.HiveAuthConstants.AuthTypes;
 import org.apache.hive.service.cli.OperationHandle;
 import org.apache.hive.service.cli.OperationState;
 import org.apache.hive.service.cli.OperationStatus;
@@ -63,7 +62,7 @@ public class ThriftCliServiceTestWithCookie {
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
     // Find a free port
-    port = MetaStoreUtils.findFreePort();
+    port = MetaStoreTestUtils.findFreePort();
     hiveServer2 = new HiveServer2();
     hiveConf = new HiveConf();
     hiveConf.setBoolVar(ConfVars.HIVE_SERVER2_THRIFT_HTTP_COOKIE_AUTH_ENABLED, true);
@@ -96,15 +95,27 @@ public class ThriftCliServiceTestWithCookie {
   }
 
   protected static void startHiveServer2WithConf(HiveConf hiveConf) throws Exception {
-    hiveServer2.init(hiveConf);
-    // Start HiveServer2 with given config
-    // Fail if server doesn't start
-    try {
-      hiveServer2.start();
-    } catch (Throwable t) {
-      t.printStackTrace();
+    Exception HS2Exception = null;
+    boolean HS2Started = false;
+    for (int tryCount = 0; tryCount < MetaStoreTestUtils.RETRY_COUNT; tryCount++) {
+      try {
+        hiveServer2.init(hiveConf);
+        hiveServer2.start();
+        HS2Started = true;
+        break;
+      } catch (Exception t) {
+        HS2Exception = t;
+        port = MetaStoreTestUtils.findFreePort();
+        hiveConf.setIntVar(ConfVars.HIVE_SERVER2_THRIFT_HTTP_PORT, port);
+        hiveServer2 = new HiveServer2();
+      }
+    }
+
+    if (!HS2Started) {
+      HS2Exception.printStackTrace();
       fail();
     }
+
     // Wait for startup to complete
     Thread.sleep(2000);
     System.out.println("HiveServer2 started on port " + port);

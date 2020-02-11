@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,9 +18,11 @@
 
 package org.apache.hadoop.hive.ql.metadata.formatting;
 
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -33,32 +35,42 @@ import org.apache.hadoop.hive.metastore.api.Decimal;
 import org.apache.hadoop.hive.metastore.api.DecimalColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
-import org.apache.hadoop.hive.ql.index.HiveIndex;
-import org.apache.hadoop.hive.ql.index.HiveIndex.IndexType;
+import org.apache.hadoop.hive.metastore.api.TimestampColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMMapping;
+import org.apache.hadoop.hive.metastore.api.WMPool;
+import org.apache.hadoop.hive.metastore.api.WMPoolTrigger;
+import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMTrigger;
+import org.apache.hadoop.hive.ql.metadata.CheckConstraint;
+import org.apache.hadoop.hive.ql.metadata.DefaultConstraint;
 import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.NotNullConstraint;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.UniqueConstraint;
 import org.apache.hadoop.hive.ql.metadata.UniqueConstraint.UniqueConstraintCol;
 import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo.ForeignKeyCol;
-import org.apache.hadoop.hive.ql.metadata.NotNullConstraint;
-import org.apache.hadoop.hive.ql.plan.DescTableDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
-import org.apache.hadoop.hive.ql.plan.ShowIndexesDesc;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hive.common.util.HiveStringUtils;
 
+import com.google.common.collect.Lists;
+
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -81,82 +93,7 @@ public final class MetaDataFormatUtils {
   private MetaDataFormatUtils() {
   }
 
-  private static void formatColumnsHeader(StringBuilder columnInformation,
-      List<ColumnStatisticsObj> colStats) {
-    columnInformation.append("# "); // Easy for shell scripts to ignore
-    formatOutput(getColumnsHeader(colStats), columnInformation);
-    columnInformation.append(LINE_DELIM);
-  }
-
-  /**
-   * Write formatted information about the given columns to a string
-   * @param cols - list of columns
-   * @param printHeader - if header should be included
-   * @param isOutputPadded - make it more human readable by setting indentation
-   *        with spaces. Turned off for use by HiveServer2
-   * @param colStats
-   * @return string with formatted column information
-   */
-  public static String getAllColumnsInformation(List<FieldSchema> cols,
-      boolean printHeader, boolean isOutputPadded, List<ColumnStatisticsObj> colStats) {
-    StringBuilder columnInformation = new StringBuilder(DEFAULT_STRINGBUILDER_SIZE);
-    if(printHeader){
-      formatColumnsHeader(columnInformation, colStats);
-    }
-
-    formatAllFields(columnInformation, cols, isOutputPadded, colStats);
-    return columnInformation.toString();
-  }
-
-  /**
-   * Write formatted information about the given columns, including partition
-   * columns to a string
-   * @param cols - list of columns
-   * @param partCols - list of partition columns
-   * @param printHeader - if header should be included
-   * @param isOutputPadded - make it more human readable by setting indentation
-   *        with spaces. Turned off for use by HiveServer2
-   * @return string with formatted column information
-   */
-  public static String getAllColumnsInformation(List<FieldSchema> cols,
-      List<FieldSchema> partCols, boolean printHeader, boolean isOutputPadded, boolean showPartColsSep) {
-    StringBuilder columnInformation = new StringBuilder(DEFAULT_STRINGBUILDER_SIZE);
-    if(printHeader){
-      formatColumnsHeader(columnInformation, null);
-    }
-    formatAllFields(columnInformation, cols, isOutputPadded, null);
-
-    if ((partCols != null) && !partCols.isEmpty() && showPartColsSep) {
-      columnInformation.append(LINE_DELIM).append("# Partition Information")
-      .append(LINE_DELIM);
-      formatColumnsHeader(columnInformation, null);
-      formatAllFields(columnInformation, partCols, isOutputPadded, null);
-    }
-
-    return columnInformation.toString();
-  }
-
-  /**
-   * Write formatted column information into given StringBuilder
-   * @param tableInfo - StringBuilder to append column information into
-   * @param cols - list of columns
-   * @param isOutputPadded - make it more human readable by setting indentation
-   *        with spaces. Turned off for use by HiveServer2
-   * @param colStats
-   */
-  private static void formatAllFields(StringBuilder tableInfo,
-      List<FieldSchema> cols, boolean isOutputPadded, List<ColumnStatisticsObj> colStats) {
-    for (FieldSchema col : cols) {
-      if(isOutputPadded) {
-        formatWithIndentation(col.getName(), col.getType(), getComment(col), tableInfo, colStats);
-      }
-      else {
-        formatWithoutIndentation(col.getName(), col.getType(), col.getComment(), tableInfo, colStats);
-      }
-    }
-  }
-
-  private static String convertToString(Decimal val) {
+  public static String convertToString(Decimal val) {
     if (val == null) {
       return "";
     }
@@ -169,12 +106,22 @@ public final class MetaDataFormatUtils {
     }
   }
 
-  private static String convertToString(org.apache.hadoop.hive.metastore.api.Date val) {
+  public static String convertToString(org.apache.hadoop.hive.metastore.api.Date val) {
     if (val == null) {
       return "";
     }
 
-    DateWritable writableValue = new DateWritable((int) val.getDaysSinceEpoch());
+    DateWritableV2 writableValue = new DateWritableV2((int) val.getDaysSinceEpoch());
+    return writableValue.toString();
+  }
+
+  public static String convertToString(org.apache.hadoop.hive.metastore.api.Timestamp val) {
+    if (val == null) {
+      return "";
+    }
+
+    TimestampWritableV2 writableValue = new TimestampWritableV2(
+        Timestamp.ofEpochSecond(val.getSecondsSinceEpoch()));
     return writableValue.toString();
   }
 
@@ -183,14 +130,14 @@ public final class MetaDataFormatUtils {
       return "";
     }
     byte[] sub = new byte[2];
-    sub[0] = (byte) buf[0];
-    sub[1] = (byte) buf[1];
+    sub[0] = buf[0];
+    sub[1] = buf[1];
     return new String(sub);
   }
 
-  private static ColumnStatisticsObj getColumnStatisticsObject(String colName,
+  static ColumnStatisticsObj getColumnStatisticsObject(String colName,
       String colType, List<ColumnStatisticsObj> colStats) {
-    if (colStats != null && !colStats.isEmpty()) {
+    if (CollectionUtils.isNotEmpty(colStats)) {
       for (ColumnStatisticsObj cso : colStats) {
         if (cso.getColName().equalsIgnoreCase(colName)
             && cso.getColType().equalsIgnoreCase(colType)) {
@@ -201,115 +148,33 @@ public final class MetaDataFormatUtils {
     return null;
   }
 
-  private static void formatWithoutIndentation(String name, String type, String comment,
-      StringBuilder colBuffer, List<ColumnStatisticsObj> colStats) {
-    colBuffer.append(name);
-    colBuffer.append(FIELD_DELIM);
-    colBuffer.append(type);
-    colBuffer.append(FIELD_DELIM);
-    if (colStats != null) {
-      ColumnStatisticsObj cso = getColumnStatisticsObject(name, type, colStats);
-      if (cso != null) {
-        ColumnStatisticsData csd = cso.getStatsData();
-        if (csd.isSetBinaryStats()) {
-          BinaryColumnStatsData bcsd = csd.getBinaryStats();
-          appendColumnStatsNoFormatting(colBuffer, "", "", bcsd.getNumNulls(), "",
-              bcsd.getAvgColLen(), bcsd.getMaxColLen(), "", "");
-        } else if (csd.isSetStringStats()) {
-          StringColumnStatsData scsd = csd.getStringStats();
-          appendColumnStatsNoFormatting(colBuffer, "", "", scsd.getNumNulls(), scsd.getNumDVs(),
-              scsd.getAvgColLen(), scsd.getMaxColLen(), "", "");
-        } else if (csd.isSetBooleanStats()) {
-          BooleanColumnStatsData bcsd = csd.getBooleanStats();
-          appendColumnStatsNoFormatting(colBuffer, "", "", bcsd.getNumNulls(), "", "", "",
-              bcsd.getNumTrues(), bcsd.getNumFalses());
-        } else if (csd.isSetDecimalStats()) {
-          DecimalColumnStatsData dcsd = csd.getDecimalStats();
-          appendColumnStatsNoFormatting(colBuffer, convertToString(dcsd.getLowValue()),
-              convertToString(dcsd.getHighValue()), dcsd.getNumNulls(), dcsd.getNumDVs(),
-              "", "", "", "");
-        } else if (csd.isSetDoubleStats()) {
-          DoubleColumnStatsData dcsd = csd.getDoubleStats();
-          appendColumnStatsNoFormatting(colBuffer, dcsd.getLowValue(), dcsd.getHighValue(),
-              dcsd.getNumNulls(), dcsd.getNumDVs(), "", "", "", "");
-        } else if (csd.isSetLongStats()) {
-          LongColumnStatsData lcsd = csd.getLongStats();
-          appendColumnStatsNoFormatting(colBuffer, lcsd.getLowValue(), lcsd.getHighValue(),
-              lcsd.getNumNulls(), lcsd.getNumDVs(), "", "", "", "");
-        } else if (csd.isSetDateStats()) {
-          DateColumnStatsData dcsd = csd.getDateStats();
-          appendColumnStatsNoFormatting(colBuffer,
-              convertToString(dcsd.getLowValue()),
-              convertToString(dcsd.getHighValue()),
-              dcsd.getNumNulls(), dcsd.getNumDVs(), "", "", "", "");
-        }
-      } else {
-        appendColumnStatsNoFormatting(colBuffer, "", "", "", "", "", "", "", "");
-      }
-    }
-    colBuffer.append(comment == null ? "" : HiveStringUtils.escapeJava(comment));
-    colBuffer.append(LINE_DELIM);
-  }
-
-  public static String getIndexInformation(Index index, boolean isOutputPadded) {
-    StringBuilder indexInfo = new StringBuilder(DEFAULT_STRINGBUILDER_SIZE);
-
-    List<String> indexColumns = new ArrayList<String>();
-
-    indexColumns.add(index.getIndexName());
-    indexColumns.add(index.getOrigTableName());
-
-    // index key names
-    List<FieldSchema> indexKeys = index.getSd().getCols();
-    StringBuilder keyString = new StringBuilder();
-    boolean first = true;
-    for (FieldSchema key : indexKeys)
-    {
-      if (!first)
-      {
-        keyString.append(", ");
-      }
-      keyString.append(key.getName());
-      first = false;
-    }
-
-    indexColumns.add(keyString.toString());
-
-    indexColumns.add(index.getIndexTableName());
-
-    // index type
-    String indexHandlerClass = index.getIndexHandlerClass();
-    IndexType indexType = HiveIndex.getIndexTypeByClassName(indexHandlerClass);
-    indexColumns.add(indexType.getName());
-
-    String comment = index.getParameters().get("comment");
-    indexColumns.add(comment == null ? null : HiveStringUtils.escapeJava(comment));
-
-    formatOutput(indexColumns.toArray(new String[0]), indexInfo, isOutputPadded);
-
-    return indexInfo.toString();
-  }
-
-  public static String getConstraintsInformation(PrimaryKeyInfo pkInfo, ForeignKeyInfo fkInfo,
-          UniqueConstraint ukInfo, NotNullConstraint nnInfo) {
+  public static String getConstraintsInformation(Table table) {
     StringBuilder constraintsInfo = new StringBuilder(DEFAULT_STRINGBUILDER_SIZE);
 
     constraintsInfo.append(LINE_DELIM).append("# Constraints").append(LINE_DELIM);
-    if (pkInfo != null && !pkInfo.getColNames().isEmpty()) {
+    if (PrimaryKeyInfo.isPrimaryKeyInfoNotEmpty(table.getPrimaryKeyInfo())) {
       constraintsInfo.append(LINE_DELIM).append("# Primary Key").append(LINE_DELIM);
-      getPrimaryKeyInformation(constraintsInfo, pkInfo);
+      getPrimaryKeyInformation(constraintsInfo, table.getPrimaryKeyInfo());
     }
-    if (fkInfo != null && !fkInfo.getForeignKeys().isEmpty()) {
+    if (ForeignKeyInfo.isForeignKeyInfoNotEmpty(table.getForeignKeyInfo())) {
       constraintsInfo.append(LINE_DELIM).append("# Foreign Keys").append(LINE_DELIM);
-      getForeignKeysInformation(constraintsInfo, fkInfo);
+      getForeignKeysInformation(constraintsInfo, table.getForeignKeyInfo());
     }
-    if (ukInfo != null && !ukInfo.getUniqueConstraints().isEmpty()) {
+    if (UniqueConstraint.isUniqueConstraintNotEmpty(table.getUniqueKeyInfo())) {
       constraintsInfo.append(LINE_DELIM).append("# Unique Constraints").append(LINE_DELIM);
-      getUniqueConstraintsInformation(constraintsInfo, ukInfo);
+      getUniqueConstraintsInformation(constraintsInfo, table.getUniqueKeyInfo());
     }
-    if (nnInfo != null && !nnInfo.getNotNullConstraints().isEmpty()) {
+    if (NotNullConstraint.isNotNullConstraintNotEmpty(table.getNotNullConstraint())) {
       constraintsInfo.append(LINE_DELIM).append("# Not Null Constraints").append(LINE_DELIM);
-      getNotNullConstraintsInformation(constraintsInfo, nnInfo);
+      getNotNullConstraintsInformation(constraintsInfo, table.getNotNullConstraint());
+    }
+    if (DefaultConstraint.isCheckConstraintNotEmpty(table.getDefaultConstraint())) {
+      constraintsInfo.append(LINE_DELIM).append("# Default Constraints").append(LINE_DELIM);
+      getDefaultConstraintsInformation(constraintsInfo, table.getDefaultConstraint());
+    }
+    if (CheckConstraint.isCheckConstraintNotEmpty(table.getCheckConstraint())) {
+      constraintsInfo.append(LINE_DELIM).append("# Check Constraints").append(LINE_DELIM);
+      getCheckConstraintsInformation(constraintsInfo, table.getCheckConstraint());
     }
     return constraintsInfo.toString();
   }
@@ -319,10 +184,10 @@ public final class MetaDataFormatUtils {
     formatOutput("Table:", pkInfo.getDatabaseName()+"."+pkInfo.getTableName(), constraintsInfo);
     formatOutput("Constraint Name:", pkInfo.getConstraintName(), constraintsInfo);
     Map<Integer, String> colNames = pkInfo.getColNames();
-    final String columnNames = "Column Names:";
-    constraintsInfo.append(String.format("%-" + ALIGNMENT + "s", columnNames)).append(FIELD_DELIM);
-    if (colNames != null && colNames.size() > 0) {
-      formatOutput(colNames.values().toArray(new String[colNames.size()]), constraintsInfo);
+    final String title = "Column Name:".intern();
+    for (String colName : colNames.values()) {
+      constraintsInfo.append(String.format("%-" + ALIGNMENT + "s", title)).append(FIELD_DELIM);
+      formatOutput(new String[]{colName}, constraintsInfo);
     }
   }
 
@@ -411,6 +276,74 @@ public final class MetaDataFormatUtils {
     }
   }
 
+  private static void getDefaultConstraintColInformation(StringBuilder constraintsInfo,
+                                                        DefaultConstraint.DefaultConstraintCol ukCol) {
+    String[] fkcFields = new String[2];
+    fkcFields[0] = "Column Name:" + ukCol.colName;
+    fkcFields[1] = "Default Value:" + ukCol.defaultVal;
+    formatOutput(fkcFields, constraintsInfo);
+  }
+
+  private static void getCheckConstraintColInformation(StringBuilder constraintsInfo,
+                                                         CheckConstraint.CheckConstraintCol ukCol) {
+    String[] fkcFields = new String[2];
+    fkcFields[0] = "Column Name:" + ukCol.colName;
+    fkcFields[1] = "Check Value:" + ukCol.checkExpression;
+    formatOutput(fkcFields, constraintsInfo);
+  }
+
+  private static void getDefaultConstraintRelInformation(
+      StringBuilder constraintsInfo,
+      String constraintName,
+      List<DefaultConstraint.DefaultConstraintCol> ukRel) {
+    formatOutput("Constraint Name:", constraintName, constraintsInfo);
+    if (ukRel != null && ukRel.size() > 0) {
+      for (DefaultConstraint.DefaultConstraintCol ukc : ukRel) {
+        getDefaultConstraintColInformation(constraintsInfo, ukc);
+      }
+    }
+    constraintsInfo.append(LINE_DELIM);
+  }
+
+  private static void getCheckConstraintRelInformation(
+      StringBuilder constraintsInfo,
+      String constraintName,
+      List<CheckConstraint.CheckConstraintCol> ukRel) {
+    formatOutput("Constraint Name:", constraintName, constraintsInfo);
+    if (ukRel != null && ukRel.size() > 0) {
+      for (CheckConstraint.CheckConstraintCol ukc : ukRel) {
+        getCheckConstraintColInformation(constraintsInfo, ukc);
+      }
+    }
+    constraintsInfo.append(LINE_DELIM);
+  }
+
+  private static void getDefaultConstraintsInformation(StringBuilder constraintsInfo,
+                                                        DefaultConstraint dInfo) {
+    formatOutput("Table:",
+        dInfo.getDatabaseName() + "." + dInfo.getTableName(),
+        constraintsInfo);
+    Map<String, List<DefaultConstraint.DefaultConstraintCol>> defaultConstraints = dInfo.getDefaultConstraints();
+    if (defaultConstraints != null && defaultConstraints.size() > 0) {
+      for (Map.Entry<String, List<DefaultConstraint.DefaultConstraintCol>> me : defaultConstraints.entrySet()) {
+        getDefaultConstraintRelInformation(constraintsInfo, me.getKey(), me.getValue());
+      }
+    }
+  }
+
+  private static void getCheckConstraintsInformation(StringBuilder constraintsInfo,
+                                                       CheckConstraint dInfo) {
+    formatOutput("Table:",
+                 dInfo.getDatabaseName() + "." + dInfo.getTableName(),
+                 constraintsInfo);
+    Map<String, List<CheckConstraint.CheckConstraintCol>> checkConstraints = dInfo.getCheckConstraints();
+    if (checkConstraints != null && checkConstraints.size() > 0) {
+      for (Map.Entry<String, List<CheckConstraint.CheckConstraintCol>> me : checkConstraints.entrySet()) {
+        getCheckConstraintRelInformation(constraintsInfo, me.getKey(), me.getValue());
+      }
+    }
+  }
+
   public static String getPartitionInformation(Partition part) {
     StringBuilder tableInfo = new StringBuilder(DEFAULT_STRINGBUILDER_SIZE);
 
@@ -439,7 +372,7 @@ public final class MetaDataFormatUtils {
     getStorageDescriptorInfo(tableInfo, table.getTTable().getSd());
 
     if (table.isView() || table.isMaterializedView()) {
-      tableInfo.append(LINE_DELIM).append("# View Information").append(LINE_DELIM);
+      tableInfo.append(LINE_DELIM).append(table.isView() ? "# View Information" : "# Materialized View Information").append(LINE_DELIM);
       getViewInfo(tableInfo, table);
     }
 
@@ -447,9 +380,13 @@ public final class MetaDataFormatUtils {
   }
 
   private static void getViewInfo(StringBuilder tableInfo, Table tbl) {
-    formatOutput("View Original Text:", tbl.getViewOriginalText(), tableInfo);
-    formatOutput("View Expanded Text:", tbl.getViewExpandedText(), tableInfo);
-    formatOutput("View Rewrite Enabled:", tbl.isRewriteEnabled() ? "Yes" : "No", tableInfo);
+    formatOutput("Original Query:", tbl.getViewOriginalText(), tableInfo);
+    formatOutput("Expanded Query:", tbl.getViewExpandedText(), tableInfo);
+    if (tbl.isMaterializedView()) {
+      formatOutput("Rewrite Enabled:", tbl.isRewriteEnabled() ? "Yes" : "No", tableInfo);
+      formatOutput("Outdated for Rewriting:", tbl.isOutdatedForRewriting() == null ? "Unknown"
+          : tbl.isOutdatedForRewriting() ? "Yes" : "No", tableInfo);
+    }
   }
 
   private static void getStorageDescriptorInfo(StringBuilder tableInfo,
@@ -505,6 +442,7 @@ public final class MetaDataFormatUtils {
   private static void getTableMetaDataInformation(StringBuilder tableInfo, Table  tbl,
       boolean isOutputPadded) {
     formatOutput("Database:", tbl.getDbName(), tableInfo);
+    formatOutput("OwnerType:", (tbl.getOwnerType() != null) ? tbl.getOwnerType().name() : "null", tableInfo);
     formatOutput("Owner:", tbl.getOwner(), tableInfo);
     formatOutput("CreateTime:", formatDate(tbl.getTTable().getCreateTime()), tableInfo);
     formatOutput("LastAccessTime:", formatDate(tbl.getTTable().getLastAccessTime()), tableInfo);
@@ -553,10 +491,16 @@ public final class MetaDataFormatUtils {
     List<String> keys = new ArrayList<String>(params.keySet());
     Collections.sort(keys);
     for (String key : keys) {
+      String value = params.get(key);
+      if (key.equals(StatsSetupConst.NUM_ERASURE_CODED_FILES)) {
+        if ("0".equals(value)) {
+          continue;
+        }
+      }
       tableInfo.append(FIELD_DELIM); // Ensures all params are indented.
       formatOutput(key,
-          escapeUnicode ? StringEscapeUtils.escapeJava(params.get(key))
-              : HiveStringUtils.escapeJava(params.get(key)),
+          escapeUnicode ? StringEscapeUtils.escapeJava(value)
+              : HiveStringUtils.escapeJava(value),
           tableInfo, isOutputPadded);
     }
   }
@@ -634,27 +578,35 @@ public final class MetaDataFormatUtils {
    * @param isLastLinePadded Is the last field could be printed in multiple lines, if contains
    *                         newlines?
    */
-  private static void formatOutput(String[] fields, StringBuilder tableInfo,
-      boolean isLastLinePadded) {
-    int[] paddings = new int[fields.length-1];
-    if (fields.length > 1) {
-      for (int i = 0; i < fields.length - 1; i++) {
-        if (fields[i] == null) {
-          tableInfo.append(FIELD_DELIM);
-          continue;
+  static void formatOutput(String[] fields, StringBuilder tableInfo,
+      boolean isLastLinePadded, boolean isFormatted) {
+    if (!isFormatted) {
+      for (int i = 0; i < fields.length; i++) {
+        Object value = HiveStringUtils.escapeJava(fields[i]);
+        if (value != null) {
+          tableInfo.append(value);
         }
-        tableInfo.append(String.format("%-" + ALIGNMENT + "s", fields[i])).append(FIELD_DELIM);
-        paddings[i] = ALIGNMENT > fields[i].length() ? ALIGNMENT : fields[i].length();
+        tableInfo.append((i == fields.length - 1) ? LINE_DELIM : FIELD_DELIM);
       }
-    }
-    if (fields.length > 0) {
-      String value = fields[fields.length-1];
-      String unescapedValue =
-          (isLastLinePadded && value != null) ? value.replaceAll("\\\\n|\\\\r|\\\\r\\\\n","\n")
-              :value;
-      indentMultilineValue(unescapedValue, tableInfo, paddings, false);
     } else {
-      tableInfo.append(LINE_DELIM);
+      int[] paddings = new int[fields.length - 1];
+      if (fields.length > 1) {
+        for (int i = 0; i < fields.length - 1; i++) {
+          if (fields[i] == null) {
+            tableInfo.append(FIELD_DELIM);
+            continue;
+          }
+          tableInfo.append(String.format("%-" + ALIGNMENT + "s", fields[i])).append(FIELD_DELIM);
+          paddings[i] = ALIGNMENT > fields[i].length() ? ALIGNMENT : fields[i].length();
+        }
+      }
+      if (fields.length > 0) {
+        String value = fields[fields.length - 1];
+        String unescapedValue = (isLastLinePadded && value != null) ? value.replaceAll("\\\\n|\\\\r|\\\\r\\\\n", "\n") : value;
+        indentMultilineValue(unescapedValue, tableInfo, paddings, false);
+      } else {
+        tableInfo.append(LINE_DELIM);
+      }
     }
   }
 
@@ -664,7 +616,7 @@ public final class MetaDataFormatUtils {
    * @param tableInfo The target builder
    */
   private static void formatOutput(String[] fields, StringBuilder tableInfo) {
-    formatOutput(fields, tableInfo, false);
+    formatOutput(fields, tableInfo, false, true);
   }
 
   /**
@@ -689,68 +641,91 @@ public final class MetaDataFormatUtils {
    * @param tableInfo The target builder
    * @param isOutputPadded Should the value printed as a padded string?
    */
-  protected static void formatOutput(String name, String value, StringBuilder tableInfo,
+  static void formatOutput(String name, String value, StringBuilder tableInfo,
       boolean isOutputPadded) {
     String unescapedValue =
         (isOutputPadded && value != null) ? value.replaceAll("\\\\n|\\\\r|\\\\r\\\\n","\n"):value;
     formatOutput(name, unescapedValue, tableInfo);
   }
 
-  private static void formatWithIndentation(String colName, String colType, String colComment,
-      StringBuilder tableInfo, List<ColumnStatisticsObj> colStats) {
-    tableInfo.append(String.format("%-" + ALIGNMENT + "s", colName)).append(FIELD_DELIM);
-    tableInfo.append(String.format("%-" + ALIGNMENT + "s", colType)).append(FIELD_DELIM);
+  public static String[] extractColumnValues(FieldSchema col) {
+    return extractColumnValues(col, false, null);
+  }
 
-    if (colStats != null) {
-      ColumnStatisticsObj cso = getColumnStatisticsObject(colName, colType, colStats);
-      if (cso != null) {
-        ColumnStatisticsData csd = cso.getStatsData();
+  public static String[] extractColumnValues(FieldSchema col, boolean isColStatsAvailable, ColumnStatisticsObj columnStatisticsObj){
+    List<String> ret = new ArrayList<>();
+    ret.add(col.getName());
+    ret.add(col.getType());
+
+    if (isColStatsAvailable) {
+      if (columnStatisticsObj != null) {
+        ColumnStatisticsData csd = columnStatisticsObj.getStatsData();
+        // @formatter:off
         if (csd.isSetBinaryStats()) {
           BinaryColumnStatsData bcsd = csd.getBinaryStats();
-          appendColumnStats(tableInfo, "", "", bcsd.getNumNulls(), "", "", bcsd.getAvgColLen(),
-              bcsd.getMaxColLen(), "", "");
+          ret.addAll(Lists.newArrayList(  "", "",
+                                          "" + bcsd.getNumNulls(), "",
+                                          "" + bcsd.getAvgColLen(), "" + bcsd.getMaxColLen(),
+                                          "", "",
+                                          convertToString(bcsd.getBitVectors())));
         } else if (csd.isSetStringStats()) {
           StringColumnStatsData scsd = csd.getStringStats();
-          appendColumnStats(tableInfo, "", "", scsd.getNumNulls(), scsd.getNumDVs(),
-              convertToString(scsd.getBitVectors()), scsd.getAvgColLen(),
-              scsd.getMaxColLen(), "", "");
+          ret.addAll(Lists.newArrayList(  "", "",
+                                          "" + scsd.getNumNulls(), "" + scsd.getNumDVs(),
+                                          "" + scsd.getAvgColLen(), "" + scsd.getMaxColLen(),
+                                          "", "",
+                                          convertToString(scsd.getBitVectors())));
         } else if (csd.isSetBooleanStats()) {
           BooleanColumnStatsData bcsd = csd.getBooleanStats();
-          appendColumnStats(tableInfo, "", "", bcsd.getNumNulls(), "", "", "", "",
-              bcsd.getNumTrues(), bcsd.getNumFalses());
+          ret.addAll(Lists.newArrayList(  "", "",
+                                          "" + bcsd.getNumNulls(), "",
+                                          "", "",
+                                          "" + bcsd.getNumTrues(), "" + bcsd.getNumFalses(),
+                                          convertToString(bcsd.getBitVectors())));
         } else if (csd.isSetDecimalStats()) {
           DecimalColumnStatsData dcsd = csd.getDecimalStats();
-          appendColumnStats(tableInfo, convertToString(dcsd.getLowValue()),
-              convertToString(dcsd.getHighValue()), dcsd.getNumNulls(), dcsd.getNumDVs(),
-              convertToString(dcsd.getBitVectors()),
-              "", "", "", "");
+          ret.addAll(Lists.newArrayList(  convertToString(dcsd.getLowValue()), convertToString(dcsd.getHighValue()),
+                                          "" + dcsd.getNumNulls(), "" + dcsd.getNumDVs(),
+                                          "", "",
+                                          "", "",
+                                          convertToString(dcsd.getBitVectors())));
         } else if (csd.isSetDoubleStats()) {
           DoubleColumnStatsData dcsd = csd.getDoubleStats();
-          appendColumnStats(tableInfo, dcsd.getLowValue(), dcsd.getHighValue(), dcsd.getNumNulls(),
-              dcsd.getNumDVs(), convertToString(dcsd.getBitVectors()),
-              "", "", "", "");
+          ret.addAll(Lists.newArrayList(  "" + dcsd.getLowValue(), "" + dcsd.getHighValue(),
+                                          "" + dcsd.getNumNulls(), "" + dcsd.getNumDVs(),
+                                          "", "",
+                                          "", "",
+                                          convertToString(dcsd.getBitVectors())));
         } else if (csd.isSetLongStats()) {
           LongColumnStatsData lcsd = csd.getLongStats();
-          appendColumnStats(tableInfo, lcsd.getLowValue(), lcsd.getHighValue(), lcsd.getNumNulls(),
-              lcsd.getNumDVs(), convertToString(lcsd.getBitVectors()),
-              "", "", "", "");
+          ret.addAll(Lists.newArrayList(  "" + lcsd.getLowValue(), "" + lcsd.getHighValue(),
+                                          "" + lcsd.getNumNulls(), "" + lcsd.getNumDVs(),
+                                          "", "",
+                                          "", "",
+                                          convertToString(lcsd.getBitVectors())));
         } else if (csd.isSetDateStats()) {
           DateColumnStatsData dcsd = csd.getDateStats();
-          appendColumnStats(tableInfo,
-              convertToString(dcsd.getLowValue()),
-              convertToString(dcsd.getHighValue()),
-              dcsd.getNumNulls(), dcsd.getNumDVs(),
-              convertToString(dcsd.getBitVectors()),
-              "", "", "", "");
+          ret.addAll(Lists.newArrayList(  convertToString(dcsd.getLowValue()), convertToString(dcsd.getHighValue()),
+                                          "" + dcsd.getNumNulls(), "" + dcsd.getNumDVs(),
+                                          "", "",
+                                          "", "",
+                                          convertToString(dcsd.getBitVectors())));
+        } else if (csd.isSetTimestampStats()) {
+          TimestampColumnStatsData tcsd = csd.getTimestampStats();
+          ret.addAll(Lists.newArrayList(  convertToString(tcsd.getLowValue()), convertToString(tcsd.getHighValue()),
+              "" + tcsd.getNumNulls(), "" + tcsd.getNumDVs(),
+              "", "",
+              "", "",
+              convertToString(tcsd.getBitVectors())));
         }
+        // @formatter:on
       } else {
-        appendColumnStats(tableInfo, "", "", "", "", "", "", "", "", "");
+        ret.addAll(Lists.newArrayList("", "", "", "", "", "", "", "", ""));
+        }
       }
-    }
 
-    int colNameLength = ALIGNMENT > colName.length() ? ALIGNMENT : colName.length();
-    int colTypeLength = ALIGNMENT > colType.length() ? ALIGNMENT : colType.length();
-    indentMultilineValue(colComment, tableInfo, new int[]{colNameLength, colTypeLength}, false);
+    ret.add(getComment(col));
+    return ret.toArray(new String[] {});
   }
 
   /**
@@ -796,51 +771,233 @@ public final class MetaDataFormatUtils {
     }
   }
 
-  private static void appendColumnStats(StringBuilder sb, Object min, Object max, Object numNulls,
-      Object ndv, Object bitVector, Object avgColLen, Object maxColLen, Object numTrues, Object numFalses) {
-    sb.append(String.format("%-" + ALIGNMENT + "s", min)).append(FIELD_DELIM);
-    sb.append(String.format("%-" + ALIGNMENT + "s", max)).append(FIELD_DELIM);
-    sb.append(String.format("%-" + ALIGNMENT + "s", numNulls)).append(FIELD_DELIM);
-    sb.append(String.format("%-" + ALIGNMENT + "s", ndv)).append(FIELD_DELIM);
-    sb.append(String.format("%-" + ALIGNMENT + "s", avgColLen)).append(FIELD_DELIM);
-    sb.append(String.format("%-" + ALIGNMENT + "s", maxColLen)).append(FIELD_DELIM);
-    sb.append(String.format("%-" + ALIGNMENT + "s", numTrues)).append(FIELD_DELIM);
-    sb.append(String.format("%-" + ALIGNMENT + "s", numFalses)).append(FIELD_DELIM);
-    sb.append(String.format("%-" + ALIGNMENT + "s", bitVector)).append(FIELD_DELIM);
-  }
-
-  private static void appendColumnStatsNoFormatting(StringBuilder sb, Object min,
-      Object max, Object numNulls, Object ndv, Object avgColLen, Object maxColLen,
-      Object numTrues, Object numFalses) {
-    sb.append(min).append(FIELD_DELIM);
-    sb.append(max).append(FIELD_DELIM);
-    sb.append(numNulls).append(FIELD_DELIM);
-    sb.append(ndv).append(FIELD_DELIM);
-    sb.append(avgColLen).append(FIELD_DELIM);
-    sb.append(maxColLen).append(FIELD_DELIM);
-    sb.append(numTrues).append(FIELD_DELIM);
-    sb.append(numFalses).append(FIELD_DELIM);
-  }
-
-  public static String[] getColumnsHeader(List<ColumnStatisticsObj> colStats) {
-    boolean showColStats = false;
-    if (colStats != null) {
-      showColStats = true;
-    }
-    return DescTableDesc.getSchema(showColStats).split("#")[0].split(",");
-  }
-
-  public static String getIndexColumnsHeader() {
-    StringBuilder indexCols = new StringBuilder(DEFAULT_STRINGBUILDER_SIZE);
-    formatOutput(ShowIndexesDesc.getSchema().split("#")[0].split(","), indexCols);
-    return indexCols.toString();
-  }
-
   public static MetaDataFormatter getFormatter(HiveConf conf) {
     if ("json".equals(conf.get(HiveConf.ConfVars.HIVE_DDL_OUTPUT_FORMAT.varname, "text"))) {
       return new JsonMetaDataFormatter();
     } else {
-      return new TextMetaDataFormatter(conf.getIntVar(HiveConf.ConfVars.CLIPRETTYOUTPUTNUMCOLS), conf.getBoolVar(ConfVars.HIVE_DISPLAY_PARTITION_COLUMNS_SEPARATELY));
+      return new TextMetaDataFormatter(conf.getBoolVar(ConfVars.HIVE_DISPLAY_PARTITION_COLUMNS_SEPARATELY));
+    }
+  }
+
+  /**
+   * Interface to implement actual conversion to text or json of a resource plan.
+   */
+  public interface RPFormatter {
+    void startRP(String rpName, Object ... kvPairs) throws IOException;
+    void endRP() throws IOException;
+    void startPools() throws IOException;
+    void startPool(String poolName, Object ...kvPairs) throws IOException;
+    void endPool() throws IOException;
+    void endPools() throws IOException;
+    void startTriggers() throws IOException;
+    void formatTrigger(String triggerName,
+        String actionExpression, String triggerExpression) throws IOException;
+    void endTriggers() throws IOException;
+    void startMappings() throws IOException;
+    void formatMappingType(String type, List<String> names) throws IOException;
+    void endMappings() throws IOException;
+  }
+
+  /**
+   * A n-ary tree for the pools, each node contains a pool and its children.
+   */
+  private static class PoolTreeNode {
+    private String nonPoolName;
+    private WMPool pool;
+    private final List<PoolTreeNode> children = new ArrayList<>();
+    private final List<WMTrigger> triggers = new ArrayList<>();
+    private final HashMap<String, List<String>> mappings = new HashMap<>();
+    private boolean isDefault;
+
+    private PoolTreeNode() {}
+
+    private void writePoolTreeNode(RPFormatter rpFormatter) throws IOException {
+      if (pool != null) {
+        String path = pool.getPoolPath();
+        int idx = path.lastIndexOf('.');
+        if (idx != -1) {
+          path = path.substring(idx + 1);
+        }
+        Double allocFraction = pool.getAllocFraction();
+        String schedulingPolicy = pool.isSetSchedulingPolicy() ? pool.getSchedulingPolicy() : null;
+        Integer parallelism = pool.getQueryParallelism();
+        rpFormatter.startPool(path, "allocFraction", allocFraction,
+            "schedulingPolicy", schedulingPolicy, "parallelism", parallelism);
+      } else {
+        rpFormatter.startPool(nonPoolName);
+      }
+      rpFormatter.startTriggers();
+      for (WMTrigger trigger : triggers) {
+        rpFormatter.formatTrigger(trigger.getTriggerName(), trigger.getActionExpression(),
+            trigger.getTriggerExpression());
+      }
+      rpFormatter.endTriggers();
+      rpFormatter.startMappings();
+      for (Map.Entry<String, List<String>> mappingsOfType : mappings.entrySet()) {
+        mappingsOfType.getValue().sort(String::compareTo);
+        rpFormatter.formatMappingType(mappingsOfType.getKey(), mappingsOfType.getValue());
+      }
+      if (isDefault) {
+        rpFormatter.formatMappingType("default", Lists.<String>newArrayList());
+      }
+      rpFormatter.endMappings();
+      rpFormatter.startPools();
+      for (PoolTreeNode node : children) {
+        node.writePoolTreeNode(rpFormatter);
+      }
+      rpFormatter.endPools();
+      rpFormatter.endPool();
+    }
+
+    private void sortChildren() {
+      children.sort((PoolTreeNode p1, PoolTreeNode p2) -> {
+        if (p2.pool == null) {
+          return (p1.pool == null) ? 0 : -1;
+        }
+        if (p1.pool == null) {
+          return 1;
+        }
+        return Double.compare(p2.pool.getAllocFraction(), p1.pool.getAllocFraction());
+      });
+      for (PoolTreeNode child : children) {
+        child.sortChildren();
+      }
+      triggers.sort((WMTrigger t1, WMTrigger t2)
+          -> t1.getTriggerName().compareTo(t2.getTriggerName()));
+    }
+
+    static PoolTreeNode makePoolTree(WMFullResourcePlan fullRp) {
+      Map<String, PoolTreeNode> poolMap = new HashMap<>();
+      PoolTreeNode root = new PoolTreeNode();
+      for (WMPool pool : fullRp.getPools()) {
+        // Create or add node for current pool.
+        String path = pool.getPoolPath();
+        PoolTreeNode curr = poolMap.get(path);
+        if (curr == null) {
+          curr = new PoolTreeNode();
+          poolMap.put(path, curr);
+        }
+        curr.pool = pool;
+        if (fullRp.getPlan().isSetDefaultPoolPath()
+            && fullRp.getPlan().getDefaultPoolPath().equals(path)) {
+          curr.isDefault = true;
+        }
+
+        // Add this node to the parent node.
+        int ind = path.lastIndexOf('.');
+        PoolTreeNode parent;
+        if (ind == -1) {
+          parent = root;
+        } else {
+          String parentPath = path.substring(0, ind);
+          parent = poolMap.get(parentPath);
+          if (parent == null) {
+            parent = new PoolTreeNode();
+            poolMap.put(parentPath, parent);
+          }
+        }
+        parent.children.add(curr);
+      }
+      Map<String, WMTrigger> triggerMap = new HashMap<>();
+      List<WMTrigger> unmanagedTriggers = new ArrayList<>();
+      HashSet<WMTrigger> unusedTriggers = new HashSet<>();
+      if (fullRp.isSetTriggers()) {
+        for (WMTrigger trigger : fullRp.getTriggers()) {
+          triggerMap.put(trigger.getTriggerName(), trigger);
+          if (trigger.isIsInUnmanaged()) {
+            unmanagedTriggers.add(trigger);
+          } else {
+            unusedTriggers.add(trigger);
+          }
+        }
+      }
+      if (fullRp.isSetPoolTriggers()) {
+        for (WMPoolTrigger pool2Trigger : fullRp.getPoolTriggers()) {
+          PoolTreeNode node = poolMap.get(pool2Trigger.getPool());
+          WMTrigger trigger = triggerMap.get(pool2Trigger.getTrigger());
+          if (node == null || trigger == null) {
+            throw new IllegalStateException("Invalid trigger to pool: " + pool2Trigger.getPool() +
+                ", " + pool2Trigger.getTrigger());
+          }
+          unusedTriggers.remove(trigger);
+          node.triggers.add(trigger);
+        }
+      }
+      HashMap<String, List<String>> unmanagedMappings = new HashMap<>();
+      HashMap<String, List<String>> invalidMappings = new HashMap<>();
+      if (fullRp.isSetMappings()) {
+        for (WMMapping mapping : fullRp.getMappings()) {
+          if (mapping.isSetPoolPath()) {
+            PoolTreeNode destNode = poolMap.get(mapping.getPoolPath());
+            addMappingToMap((destNode == null) ? invalidMappings : destNode.mappings, mapping);
+          } else {
+            addMappingToMap(unmanagedMappings, mapping);
+          }
+        }
+      }
+
+      if (!unmanagedTriggers.isEmpty() || !unmanagedMappings.isEmpty()) {
+        PoolTreeNode curr = createNonPoolNode(poolMap, "unmanaged queries", root);
+        curr.triggers.addAll(unmanagedTriggers);
+        curr.mappings.putAll(unmanagedMappings);
+      }
+      // TODO: perhaps we should also summarize the triggers pointing to invalid pools.
+      if (!unusedTriggers.isEmpty()) {
+        PoolTreeNode curr = createNonPoolNode(poolMap, "unused triggers", root);
+        curr.triggers.addAll(unusedTriggers);
+      }
+      if (!invalidMappings.isEmpty()) {
+        PoolTreeNode curr = createNonPoolNode(poolMap, "invalid mappings", root);
+        curr.mappings.putAll(invalidMappings);
+      }
+      return root;
+    }
+
+    private static PoolTreeNode createNonPoolNode(
+        Map<String, PoolTreeNode> poolMap, String name, PoolTreeNode root) {
+      PoolTreeNode result;
+      do {
+        name = "<" + name + ">";
+        result = poolMap.get(name);
+        // We expect this to never happen in practice. Can pool paths even have angled braces?
+      } while (result != null);
+      result = new PoolTreeNode();
+      result.nonPoolName = name;
+      poolMap.put(name, result);
+      root.children.add(result);
+      return result;
+    }
+
+    private static void addMappingToMap(HashMap<String, List<String>> map, WMMapping mapping) {
+      List<String> list = map.get(mapping.getEntityType());
+      if (list == null) {
+        list = new ArrayList<String>();
+        map.put(mapping.getEntityType(), list);
+      }
+      list.add(mapping.getEntityName());
+    }
+  }
+
+  public static void formatFullRP(RPFormatter rpFormatter, WMFullResourcePlan fullRp)
+      throws HiveException {
+    try {
+      WMResourcePlan plan = fullRp.getPlan();
+      Integer parallelism = plan.isSetQueryParallelism() ? plan.getQueryParallelism() : null;
+      String defaultPool = plan.isSetDefaultPoolPath() ? plan.getDefaultPoolPath() : null;
+      rpFormatter.startRP(plan.getName(), "status", plan.getStatus().toString(),
+           "parallelism", parallelism, "defaultPool", defaultPool);
+      rpFormatter.startPools();
+
+      PoolTreeNode root = PoolTreeNode.makePoolTree(fullRp);
+      root.sortChildren();
+      for (PoolTreeNode pool : root.children) {
+        pool.writePoolTreeNode(rpFormatter);
+      }
+
+      rpFormatter.endPools();
+      rpFormatter.endRP();
+    } catch (IOException e) {
+      throw new HiveException(e);
     }
   }
 }

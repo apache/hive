@@ -1,9 +1,10 @@
+--! qt:dataset:srcpart
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 set hive.merge.mapfiles=true;
 set hive.merge.mapredfiles=true;
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 set hive.exec.dynamic.partition=true;
-set hive.exec.dynamic.partition.mode=nonstrict;
 
 -- SORT_QUERY_RESULTS
 

@@ -1,8 +1,8 @@
-PREHOOK: query: drop table over10k
+PREHOOK: query: drop table over10k_n13
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table over10k
+POSTHOOK: query: drop table over10k_n13
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table over10k(
+PREHOOK: query: create table over10k_n13(
            t tinyint,
            si smallint,
            i int,
@@ -18,8 +18,8 @@ PREHOOK: query: create table over10k(
        fields terminated by '|'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@over10k
-POSTHOOK: query: create table over10k(
+PREHOOK: Output: default@over10k_n13
+POSTHOOK: query: create table over10k_n13(
            t tinyint,
            si smallint,
            i int,
@@ -35,22 +35,22 @@ POSTHOOK: query: create table over10k(
        fields terminated by '|'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@over10k
-PREHOOK: query: load data local inpath '../../data/files/over10k' into table over10k
+POSTHOOK: Output: default@over10k_n13
+PREHOOK: query: load data local inpath '../../data/files/over10k' into table over10k_n13
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@over10k
-POSTHOOK: query: load data local inpath '../../data/files/over10k' into table over10k
+PREHOOK: Output: default@over10k_n13
+POSTHOOK: query: load data local inpath '../../data/files/over10k' into table over10k_n13
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@over10k
-PREHOOK: query: select i, ntile(10) over (partition by s order by i) from over10k limit 100
+POSTHOOK: Output: default@over10k_n13
+PREHOOK: query: select i, ntile(10) over (partition by s order by i) from over10k_n13 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n13
 #### A masked pattern was here ####
-POSTHOOK: query: select i, ntile(10) over (partition by s order by i) from over10k limit 100
+POSTHOOK: query: select i, ntile(10) over (partition by s order by i) from over10k_n13 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n13
 #### A masked pattern was here ####
 65545	1
 65557	2
@@ -152,13 +152,13 @@ POSTHOOK: Input: default@over10k
 65569	2
 65603	2
 65633	3
-PREHOOK: query: select s, ntile(100) over (partition by i order by s) from over10k limit 100
+PREHOOK: query: select s, ntile(100) over (partition by i order by s) from over10k_n13 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n13
 #### A masked pattern was here ####
-POSTHOOK: query: select s, ntile(100) over (partition by i order by s) from over10k limit 100
+POSTHOOK: query: select s, ntile(100) over (partition by i order by s) from over10k_n13 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n13
 #### A masked pattern was here ####
 alice ichabod	1
 alice robinson	2
@@ -260,13 +260,13 @@ priscilla xylophone	17
 quinn garcia	18
 quinn laertes	19
 rachel young	20
-PREHOOK: query: select f, ntile(4) over (partition by d order by f) from over10k limit 100
+PREHOOK: query: select f, ntile(4) over (partition by d order by f) from over10k_n13 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n13
 #### A masked pattern was here ####
-POSTHOOK: query: select f, ntile(4) over (partition by d order by f) from over10k limit 100
+POSTHOOK: query: select f, ntile(4) over (partition by d order by f) from over10k_n13 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n13
 #### A masked pattern was here ####
 8.39	1
 5.29	1
@@ -368,13 +368,13 @@ POSTHOOK: Input: default@over10k
 49.09	2
 67.28	3
 10.6	1
-PREHOOK: query: select d, ntile(1000) over (partition by `dec` order by d) from over10k limit 100
+PREHOOK: query: select d, ntile(1000) over (partition by `dec` order by d) from over10k_n13 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n13
 #### A masked pattern was here ####
-POSTHOOK: query: select d, ntile(1000) over (partition by `dec` order by d) from over10k limit 100
+POSTHOOK: query: select d, ntile(1000) over (partition by `dec` order by d) from over10k_n13 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n13
 #### A masked pattern was here ####
 9.71	1
 41.04	2

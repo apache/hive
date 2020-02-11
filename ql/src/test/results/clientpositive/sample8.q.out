@@ -4,12 +4,24 @@ FROM srcpart TABLESAMPLE (BUCKET 1 OUT OF 1 ON key) s
 JOIN srcpart TABLESAMPLE (BUCKET 1 OUT OF 10 ON key) t
 WHERE t.key = s.key and t.value = s.value and s.ds='2008-04-08' and s.hr='11'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT s.*
 FROM srcpart TABLESAMPLE (BUCKET 1 OUT OF 1 ON key) s
 JOIN srcpart TABLESAMPLE (BUCKET 1 OUT OF 10 ON key) t
 WHERE t.key = s.key and t.value = s.value and s.ds='2008-04-08' and s.hr='11'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -20,34 +32,35 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: s
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: ((ds = '2008-04-08') and (hr = '11')) (type: boolean)
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Filter Operator
               isSamplingPred: true
               predicate: ((((hash(key) & 2147483647) % 10) = 0) and value is not null and (((hash(key) & 2147483647) % 1) = 0)) (type: boolean)
-              Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 125 Data size: 22250 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: key (type: string), value (type: string)
-                null sort order: aa
+                null sort order: zz
                 sort order: ++
                 Map-reduce partition columns: key (type: string), value (type: string)
-                Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 125 Data size: 22250 Basic stats: COMPLETE Column stats: COMPLETE
                 tag: 0
                 auto parallelism: false
           TableScan
             alias: t
-            Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2000 Data size: 356000 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Filter Operator
               isSamplingPred: true
               predicate: ((((hash(key) & 2147483647) % 1) = 0) and value is not null and (((hash(key) & 2147483647) % 10) = 0)) (type: boolean)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: key (type: string), value (type: string)
-                null sort order: aa
+                null sort order: zz
                 sort order: ++
                 Map-reduce partition columns: key (type: string), value (type: string)
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                 tag: 1
                 auto parallelism: false
       Path -> Alias:
@@ -86,6 +99,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 'default','default'
@@ -134,6 +148,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 'default','default'
@@ -182,6 +197,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 'default','default'
@@ -230,6 +246,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 'default','default'
@@ -259,21 +276,21 @@ STAGE PLANS:
             0 key (type: string), value (type: string)
             1 key (type: string), value (type: string)
           outputColumnNames: _col0, _col1, _col7, _col8
-          Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 197 Data size: 70132 Basic stats: COMPLETE Column stats: COMPLETE
           Filter Operator
             isSamplingPred: false
             predicate: ((_col7 = _col0) and (_col8 = _col1)) (type: boolean)
-            Statistics: Num rows: 137 Data size: 1455 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 49 Data size: 17444 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: _col0 (type: string), _col1 (type: string), '2008-04-08' (type: string), '11' (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3
-              Statistics: Num rows: 137 Data size: 1455 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 49 Data size: 17444 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
 #### A masked pattern was here ####
                 NumFilesPerFileSink: 1
-                Statistics: Num rows: 137 Data size: 1455 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 49 Data size: 17444 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -319,364 +336,346 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
-105	val_105
-105	val_105
-105	val_105
-105	val_105
-114	val_114
-114	val_114
-114	val_114
-114	val_114
-150	val_150
-150	val_150
-150	val_150
-150	val_150
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-178	val_178
-178	val_178
-178	val_178
-178	val_178
-187	val_187
-187	val_187
-187	val_187
-187	val_187
-187	val_187
-187	val_187
-187	val_187
-187	val_187
-187	val_187
-187	val_187
-187	val_187
-187	val_187
-187	val_187
-187	val_187
-187	val_187
-187	val_187
-187	val_187
-187	val_187
-187	val_187
-187	val_187
-187	val_187
-187	val_187
-187	val_187
-187	val_187
-187	val_187
-187	val_187
-187	val_187
-187	val_187
-187	val_187
-187	val_187
-187	val_187
-187	val_187
-187	val_187
-187	val_187
-187	val_187
-187	val_187
+149	val_149
+149	val_149
+149	val_149
+149	val_149
+149	val_149
+149	val_149
+149	val_149
+149	val_149
+149	val_149
+149	val_149
+149	val_149
+149	val_149
+149	val_149
+149	val_149
+149	val_149
+149	val_149
 196	val_196
 196	val_196
 196	val_196
 196	val_196
-2	val_2
-2	val_2
-2	val_2
-2	val_2
-213	val_213
-213	val_213
-213	val_213
-213	val_213
-213	val_213
-213	val_213
-213	val_213
-213	val_213
-213	val_213
-213	val_213
-213	val_213
-213	val_213
-213	val_213
-213	val_213
-213	val_213
-213	val_213
-222	val_222
-222	val_222
-222	val_222
-222	val_222
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-286	val_286
-286	val_286
-286	val_286
-286	val_286
-321	val_321
-321	val_321
-321	val_321
-321	val_321
-321	val_321
-321	val_321
-321	val_321
-321	val_321
-321	val_321
-321	val_321
-321	val_321
-321	val_321
-321	val_321
-321	val_321
-321	val_321
-321	val_321
-367	val_367
-367	val_367
-367	val_367
-367	val_367
-367	val_367
-367	val_367
-367	val_367
-367	val_367
-367	val_367
-367	val_367
-367	val_367
-367	val_367
-367	val_367
-367	val_367
-367	val_367
-367	val_367
+219	val_219
+219	val_219
+219	val_219
+219	val_219
+219	val_219
+219	val_219
+219	val_219
+219	val_219
+219	val_219
+219	val_219
+219	val_219
+219	val_219
+219	val_219
+219	val_219
+219	val_219
+219	val_219
+238	val_238
+238	val_238
+238	val_238
+238	val_238
+238	val_238
+238	val_238
+238	val_238
+238	val_238
+238	val_238
+238	val_238
+238	val_238
+238	val_238
+238	val_238
+238	val_238
+238	val_238
+238	val_238
+258	val_258
+258	val_258
+258	val_258
+258	val_258
+280	val_280
+280	val_280
+280	val_280
+280	val_280
+280	val_280
+280	val_280
+280	val_280
+280	val_280
+280	val_280
+280	val_280
+280	val_280
+280	val_280
+280	val_280
+280	val_280
+280	val_280
+280	val_280
+285	val_285
+285	val_285
+285	val_285
+285	val_285
+291	val_291
+291	val_291
+291	val_291
+291	val_291
+298	val_298
+298	val_298
+298	val_298
+298	val_298
+298	val_298
+298	val_298
+298	val_298
+298	val_298
+298	val_298
+298	val_298
+298	val_298
+298	val_298
+298	val_298
+298	val_298
+298	val_298
+298	val_298
+298	val_298
+298	val_298
+298	val_298
+298	val_298
+298	val_298
+298	val_298
+298	val_298
+298	val_298
+298	val_298
+298	val_298
+298	val_298
+298	val_298
+298	val_298
+298	val_298
+298	val_298
+298	val_298
+298	val_298
+298	val_298
+298	val_298
+298	val_298
+306	val_306
+306	val_306
+306	val_306
+306	val_306
+37	val_37
+37	val_37
+37	val_37
+37	val_37
+37	val_37
+37	val_37
+37	val_37
+37	val_37
+37	val_37
+37	val_37
+37	val_37
+37	val_37
+37	val_37
+37	val_37
+37	val_37
+37	val_37
+374	val_374
+374	val_374
+374	val_374
+374	val_374
+377	val_377
+377	val_377
+377	val_377
+377	val_377
 394	val_394
 394	val_394
 394	val_394
 394	val_394
-402	val_402
-402	val_402
-402	val_402
-402	val_402
-411	val_411
-411	val_411
-411	val_411
-411	val_411
-439	val_439
-439	val_439
-439	val_439
-439	val_439
-439	val_439
-439	val_439
-439	val_439
-439	val_439
-439	val_439
-439	val_439
-439	val_439
-439	val_439
-439	val_439
-439	val_439
-439	val_439
-439	val_439
-448	val_448
-448	val_448
-448	val_448
-448	val_448
-457	val_457
-457	val_457
-457	val_457
-457	val_457
-466	val_466
-466	val_466
-466	val_466
-466	val_466
-466	val_466
-466	val_466
-466	val_466
-466	val_466
-466	val_466
-466	val_466
-466	val_466
-466	val_466
-466	val_466
-466	val_466
-466	val_466
-466	val_466
-466	val_466
-466	val_466
-466	val_466
-466	val_466
-466	val_466
-466	val_466
-466	val_466
-466	val_466
-466	val_466
-466	val_466
-466	val_466
-466	val_466
-466	val_466
-466	val_466
-466	val_466
-466	val_466
-466	val_466
-466	val_466
-466	val_466
-466	val_466
-475	val_475
-475	val_475
-475	val_475
-475	val_475
-484	val_484
-484	val_484
-484	val_484
-484	val_484
-493	val_493
-493	val_493
-493	val_493
-493	val_493
-77	val_77
-77	val_77
-77	val_77
-77	val_77
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+414	val_414
+414	val_414
+414	val_414
+414	val_414
+414	val_414
+414	val_414
+414	val_414
+414	val_414
+414	val_414
+414	val_414
+414	val_414
+414	val_414
+414	val_414
+414	val_414
+414	val_414
+414	val_414
+444	val_444
+444	val_444
+444	val_444
+444	val_444
+458	val_458
+458	val_458
+458	val_458
+458	val_458
+458	val_458
+458	val_458
+458	val_458
+458	val_458
+458	val_458
+458	val_458
+458	val_458
+458	val_458
+458	val_458
+458	val_458
+458	val_458
+458	val_458
+485	val_485
+485	val_485
+485	val_485
+485	val_485
+492	val_492
+492	val_492
+492	val_492
+492	val_492
+492	val_492
+492	val_492
+492	val_492
+492	val_492
+492	val_492
+492	val_492
+492	val_492
+492	val_492
+492	val_492
+492	val_492
+492	val_492
+492	val_492
+66	val_66
+66	val_66
+66	val_66
+66	val_66
+67	val_67
+67	val_67
+67	val_67
+67	val_67
+67	val_67
+67	val_67
+67	val_67
+67	val_67
+67	val_67
+67	val_67
+67	val_67
+67	val_67
+67	val_67
+67	val_67
+67	val_67
+67	val_67
+72	val_72
+72	val_72
+72	val_72
+72	val_72
+72	val_72
+72	val_72
+72	val_72
+72	val_72
+72	val_72
+72	val_72
+72	val_72
+72	val_72
+72	val_72
+72	val_72
+72	val_72
+72	val_72
+8	val_8
+8	val_8
+8	val_8
+8	val_8
 86	val_86
 86	val_86
 86	val_86
 86	val_86
-95	val_95
-95	val_95
-95	val_95
-95	val_95
-95	val_95
-95	val_95
-95	val_95
-95	val_95
-95	val_95
-95	val_95
-95	val_95
-95	val_95
-95	val_95
-95	val_95
-95	val_95
-95	val_95
+97	val_97
+97	val_97
+97	val_97
+97	val_97
+97	val_97
+97	val_97
+97	val_97
+97	val_97
+97	val_97
+97	val_97
+97	val_97
+97	val_97
+97	val_97
+97	val_97
+97	val_97
+97	val_97
 PREHOOK: query: EXPLAIN
 SELECT * FROM src TABLESAMPLE(100 ROWS) a JOIN src1 TABLESAMPLE(10 ROWS) b ON a.key=b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM src TABLESAMPLE(100 ROWS) a JOIN src1 TABLESAMPLE(10 ROWS) b ON a.key=b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -687,29 +686,33 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: key is not null (type: boolean)
             Row Limit Per Split: 100
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: key (type: string)
+                null sort order: z
                 sort order: +
                 Map-reduce partition columns: key (type: string)
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                 value expressions: value (type: string)
           TableScan
             alias: b
+            filterExpr: key is not null (type: boolean)
             Row Limit Per Split: 10
-            Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: key (type: string)
+                null sort order: z
                 sort order: +
                 Map-reduce partition columns: key (type: string)
-                Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
                 value expressions: value (type: string)
       Reduce Operator Tree:
         Join Operator
@@ -719,14 +722,14 @@ STAGE PLANS:
             0 key (type: string)
             1 key (type: string)
           outputColumnNames: _col0, _col1, _col5, _col6
-          Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 39 Data size: 13767 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string), _col6 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 39 Data size: 13767 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 39 Data size: 13767 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -757,9 +760,15 @@ POSTHOOK: Input: default@src1
 PREHOOK: query: EXPLAIN
 SELECT * FROM src TABLESAMPLE(100 ROWS) a, src1 TABLESAMPLE(10 ROWS) b WHERE a.key=b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM src TABLESAMPLE(100 ROWS) a, src1 TABLESAMPLE(10 ROWS) b WHERE a.key=b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -770,29 +779,33 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: key is not null (type: boolean)
             Row Limit Per Split: 100
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: key (type: string)
+                null sort order: z
                 sort order: +
                 Map-reduce partition columns: key (type: string)
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                 value expressions: value (type: string)
           TableScan
             alias: b
+            filterExpr: key is not null (type: boolean)
             Row Limit Per Split: 10
-            Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: key (type: string)
+                null sort order: z
                 sort order: +
                 Map-reduce partition columns: key (type: string)
-                Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
                 value expressions: value (type: string)
       Reduce Operator Tree:
         Join Operator
@@ -802,17 +815,17 @@ STAGE PLANS:
             0 key (type: string)
             1 key (type: string)
           outputColumnNames: _col0, _col1, _col5, _col6
-          Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 39 Data size: 13767 Basic stats: COMPLETE Column stats: COMPLETE
           Filter Operator
             predicate: (_col0 = _col5) (type: boolean)
-            Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 19 Data size: 6707 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string), _col6 (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3
-              Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 19 Data size: 6707 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 19 Data size: 6707 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

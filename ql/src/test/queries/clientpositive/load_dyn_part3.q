@@ -1,3 +1,4 @@
+--! qt:dataset:srcpart
 set hive.explain.user=false;
 -- SORT_QUERY_RESULTS
 
@@ -9,7 +10,6 @@ create table if not exists nzhang_part3 like srcpart;
 describe extended nzhang_part3;
 
 set hive.merge.mapfiles=false;
-set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.exec.dynamic.partition=true;
 
 explain

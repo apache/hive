@@ -22,6 +22,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
@@ -47,19 +48,21 @@ public class FunctionSerializer implements JsonWriter.Serializer {
 
   @Override
   public void writeTo(JsonWriter writer, ReplicationSpec additionalPropertiesProvider)
-      throws SemanticException, IOException {
+      throws SemanticException, IOException, MetaException {
     TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
     List<ResourceUri> resourceUris = new ArrayList<>();
-    for (ResourceUri uri : function.getResourceUris()) {
-      Path inputPath = new Path(uri.getUri());
-      if ("hdfs".equals(inputPath.toUri().getScheme())) {
-        FileSystem fileSystem = inputPath.getFileSystem(hiveConf);
-        Path qualifiedUri = PathBuilder.fullyQualifiedHDFSUri(inputPath, fileSystem);
-        String checkSum = ReplChangeManager.checksumFor(qualifiedUri, fileSystem);
-        String newFileUri = ReplChangeManager.encodeFileUri(qualifiedUri.toString(), checkSum);
-        resourceUris.add(new ResourceUri(uri.getResourceType(), newFileUri));
-      } else {
-        resourceUris.add(uri);
+    if (function.getResourceUris() != null) {
+      for (ResourceUri uri : function.getResourceUris()) {
+        Path inputPath = new Path(uri.getUri());
+        if ("hdfs".equals(inputPath.toUri().getScheme())) {
+          FileSystem fileSystem = inputPath.getFileSystem(hiveConf);
+          Path qualifiedUri = PathBuilder.fullyQualifiedHDFSUri(inputPath, fileSystem);
+          String checkSum = ReplChangeManager.checksumFor(qualifiedUri, fileSystem);
+          String newFileUri = ReplChangeManager.encodeFileUri(qualifiedUri.toString(), checkSum, null);
+          resourceUris.add(new ResourceUri(uri.getResourceType(), newFileUri));
+        } else {
+          resourceUris.add(uri);
+        }
       }
     }
     Function copyObj = new Function(this.function);

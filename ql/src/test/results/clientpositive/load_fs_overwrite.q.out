@@ -1,6 +1,6 @@
-PREHOOK: query: drop table target
+PREHOOK: query: drop table target_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table target
+POSTHOOK: query: drop table target_n0
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: drop table temp
 PREHOOK: type: DROPTABLE
@@ -10,12 +10,12 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 PREHOOK: Output: database:default
-PREHOOK: Output: default@target
+PREHOOK: Output: default@target_n0
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@target
+POSTHOOK: Output: default@target_n0
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
 #### A masked pattern was here ####
@@ -37,18 +37,18 @@ POSTHOOK: Output: default@temp
 #### A masked pattern was here ####
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@target
+PREHOOK: Output: default@target_n0
 #### A masked pattern was here ####
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@target
-PREHOOK: query: select count(*) from target
+POSTHOOK: Output: default@target_n0
+PREHOOK: query: select count(*) from target_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@target
+PREHOOK: Input: default@target_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from target
+POSTHOOK: query: select count(*) from target_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@target
+POSTHOOK: Input: default@target_n0
 #### A masked pattern was here ####
 500
 PREHOOK: query: load data local inpath '../../data/files/kv2.txt' into table temp
@@ -62,28 +62,28 @@ POSTHOOK: Output: default@temp
 #### A masked pattern was here ####
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@target
+PREHOOK: Output: default@target_n0
 #### A masked pattern was here ####
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@target
-PREHOOK: query: select count(*) from target
+POSTHOOK: Output: default@target_n0
+PREHOOK: query: select count(*) from target_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@target
+PREHOOK: Input: default@target_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from target
+POSTHOOK: query: select count(*) from target_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@target
+POSTHOOK: Input: default@target_n0
 #### A masked pattern was here ####
 500
-PREHOOK: query: drop table target
+PREHOOK: query: drop table target_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@target
-PREHOOK: Output: default@target
-POSTHOOK: query: drop table target
+PREHOOK: Input: default@target_n0
+PREHOOK: Output: default@target_n0
+POSTHOOK: query: drop table target_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@target
-POSTHOOK: Output: default@target
+POSTHOOK: Input: default@target_n0
+POSTHOOK: Output: default@target_n0
 PREHOOK: query: drop table temp
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@temp

@@ -1,51 +1,61 @@
-PREHOOK: query: CREATE TABLE test1 (key INT, value INT, col_1 STRING)
+PREHOOK: query: CREATE TABLE test1_n7 (key INT, value INT, col_1 STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test1
-POSTHOOK: query: CREATE TABLE test1 (key INT, value INT, col_1 STRING)
+PREHOOK: Output: default@test1_n7
+POSTHOOK: query: CREATE TABLE test1_n7 (key INT, value INT, col_1 STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test1
-PREHOOK: query: INSERT INTO test1 VALUES (NULL, NULL, 'None'), (98, NULL, 'None'),
+POSTHOOK: Output: default@test1_n7
+PREHOOK: query: INSERT INTO test1_n7 VALUES (NULL, NULL, 'None'), (98, NULL, 'None'),
     (99, 0, 'Alice'), (99, 2, 'Mat'), (100, 1, 'Bob'), (101, 2, 'Car')
 PREHOOK: type: QUERY
-PREHOOK: Output: default@test1
-POSTHOOK: query: INSERT INTO test1 VALUES (NULL, NULL, 'None'), (98, NULL, 'None'),
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test1_n7
+POSTHOOK: query: INSERT INTO test1_n7 VALUES (NULL, NULL, 'None'), (98, NULL, 'None'),
     (99, 0, 'Alice'), (99, 2, 'Mat'), (100, 1, 'Bob'), (101, 2, 'Car')
 POSTHOOK: type: QUERY
-POSTHOOK: Output: default@test1
-POSTHOOK: Lineage: test1.col_1 SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: test1.key EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: test1.value EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-PREHOOK: query: CREATE TABLE test2 (key INT, value INT, col_2 STRING)
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test1_n7
+POSTHOOK: Lineage: test1_n7.col_1 SCRIPT []
+POSTHOOK: Lineage: test1_n7.key SCRIPT []
+POSTHOOK: Lineage: test1_n7.value SCRIPT []
+PREHOOK: query: CREATE TABLE test2_n4 (key INT, value INT, col_2 STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test2
-POSTHOOK: query: CREATE TABLE test2 (key INT, value INT, col_2 STRING)
+PREHOOK: Output: default@test2_n4
+POSTHOOK: query: CREATE TABLE test2_n4 (key INT, value INT, col_2 STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test2
-PREHOOK: query: INSERT INTO test2 VALUES (102, 2, 'Del'), (103, 2, 'Ema'),
+POSTHOOK: Output: default@test2_n4
+PREHOOK: query: INSERT INTO test2_n4 VALUES (102, 2, 'Del'), (103, 2, 'Ema'),
     (104, 3, 'Fli'), (105, NULL, 'None')
 PREHOOK: type: QUERY
-PREHOOK: Output: default@test2
-POSTHOOK: query: INSERT INTO test2 VALUES (102, 2, 'Del'), (103, 2, 'Ema'),
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test2_n4
+POSTHOOK: query: INSERT INTO test2_n4 VALUES (102, 2, 'Del'), (103, 2, 'Ema'),
     (104, 3, 'Fli'), (105, NULL, 'None')
 POSTHOOK: type: QUERY
-POSTHOOK: Output: default@test2
-POSTHOOK: Lineage: test2.col_2 SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: test2.key EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: test2.value EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test2_n4
+POSTHOOK: Lineage: test2_n4.col_2 SCRIPT []
+POSTHOOK: Lineage: test2_n4.key SCRIPT []
+POSTHOOK: Lineage: test2_n4.value SCRIPT []
 PREHOOK: query: EXPLAIN
 SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.value=test2.value AND test1.key between 100 and 102)
+FROM test1_n7 LEFT OUTER JOIN test2_n4
+ON (test1_n7.value=test2_n4.value AND test1_n7.key between 100 and 102)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n7
+PREHOOK: Input: default@test2_n4
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.value=test2.value AND test1.key between 100 and 102)
+FROM test1_n7 LEFT OUTER JOIN test2_n4
+ON (test1_n7.value=test2_n4.value AND test1_n7.key between 100 and 102)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n7
+POSTHOOK: Input: default@test2_n4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -55,50 +65,60 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: test1
-            Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+            alias: test1_n7
+            Statistics: Num rows: 6 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              expressions: key (type: int), value (type: int), col_1 (type: string)
-              outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+              expressions: key (type: int), value (type: int), col_1 (type: string), key BETWEEN 100 AND 102 (type: boolean)
+              outputColumnNames: _col0, _col1, _col2, _col3
+              Statistics: Num rows: 6 Data size: 596 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: _col1 (type: int)
+                null sort order: z
                 sort order: +
                 Map-reduce partition columns: _col1 (type: int)
-                Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: int), _col2 (type: string)
+                Statistics: Num rows: 6 Data size: 596 Basic stats: COMPLETE Column stats: COMPLETE
+                value expressions: _col0 (type: int), _col2 (type: string), _col3 (type: boolean)
           TableScan
-            alias: test2
-            Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: key (type: int), value (type: int), col_2 (type: string)
-              outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col1 (type: int)
-                sort order: +
-                Map-reduce partition columns: _col1 (type: int)
-                Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: int), _col2 (type: string)
+            alias: test2_n4
+            filterExpr: value is not null (type: boolean)
+            Statistics: Num rows: 4 Data size: 380 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: value is not null (type: boolean)
+              Statistics: Num rows: 3 Data size: 285 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: key (type: int), value (type: int), col_2 (type: string)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 3 Data size: 285 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col1 (type: int)
+                  null sort order: z
+                  sort order: +
+                  Map-reduce partition columns: _col1 (type: int)
+                  Statistics: Num rows: 3 Data size: 285 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: int), _col2 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Left Outer Join 0 to 1
           filter predicates:
-            0 {VALUE._col0 BETWEEN 100 AND 102}
+            0 {VALUE._col2}
             1 
           keys:
             0 _col1 (type: int)
             1 _col1 (type: int)
-          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-          Statistics: Num rows: 6 Data size: 61 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 6 Data size: 61 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          outputColumnNames: _col0, _col1, _col2, _col4, _col5, _col6
+          Statistics: Num rows: 9 Data size: 1521 Basic stats: COMPLETE Column stats: COMPLETE
+          Select Operator
+            expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col4 (type: int), _col5 (type: int), _col6 (type: string)
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+            Statistics: Num rows: 9 Data size: 1521 Basic stats: COMPLETE Column stats: COMPLETE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 9 Data size: 1521 Basic stats: COMPLETE Column stats: COMPLETE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -107,37 +127,43 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.value=test2.value AND test1.key between 100 and 102)
+FROM test1_n7 LEFT OUTER JOIN test2_n4
+ON (test1_n7.value=test2_n4.value AND test1_n7.key between 100 and 102)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test1
-PREHOOK: Input: default@test2
+PREHOOK: Input: default@test1_n7
+PREHOOK: Input: default@test2_n4
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.value=test2.value AND test1.key between 100 and 102)
+FROM test1_n7 LEFT OUTER JOIN test2_n4
+ON (test1_n7.value=test2_n4.value AND test1_n7.key between 100 and 102)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test1
-POSTHOOK: Input: default@test2
+POSTHOOK: Input: default@test1_n7
+POSTHOOK: Input: default@test2_n4
 #### A masked pattern was here ####
-98	NULL	None	NULL	NULL	NULL
-NULL	NULL	None	NULL	NULL	NULL
 99	0	Alice	NULL	NULL	NULL
 100	1	Bob	NULL	NULL	NULL
 101	2	Car	103	2	Ema
 101	2	Car	102	2	Del
 99	2	Mat	NULL	NULL	NULL
+98	NULL	None	NULL	NULL	NULL
+NULL	NULL	None	NULL	NULL	NULL
 Warning: Shuffle Join JOIN[6][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: EXPLAIN
 SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.key between 100 and 102)
+FROM test1_n7 LEFT OUTER JOIN test2_n4
+ON (test1_n7.key between 100 and 102)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n7
+PREHOOK: Input: default@test2_n4
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.key between 100 and 102)
+FROM test1_n7 LEFT OUTER JOIN test2_n4
+ON (test1_n7.key between 100 and 102)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n7
+POSTHOOK: Input: default@test2_n4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -147,46 +173,52 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: test1
-            Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+            alias: test1_n7
+            Statistics: Num rows: 6 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              expressions: key (type: int), value (type: int), col_1 (type: string)
-              outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+              expressions: key (type: int), value (type: int), col_1 (type: string), key BETWEEN 100 AND 102 (type: boolean)
+              outputColumnNames: _col0, _col1, _col2, _col3
+              Statistics: Num rows: 6 Data size: 596 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
+                null sort order: 
                 sort order: 
-                Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+                Statistics: Num rows: 6 Data size: 596 Basic stats: COMPLETE Column stats: COMPLETE
+                value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col3 (type: boolean)
           TableScan
-            alias: test2
-            Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+            alias: test2_n4
+            Statistics: Num rows: 4 Data size: 380 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: key (type: int), value (type: int), col_2 (type: string)
               outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 380 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
+                null sort order: 
                 sort order: 
-                Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 380 Basic stats: COMPLETE Column stats: COMPLETE
                 value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Left Outer Join 0 to 1
           filter predicates:
-            0 {VALUE._col0 BETWEEN 100 AND 102}
+            0 {VALUE._col3}
             1 
           keys:
             0 
             1 
-          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-          Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          outputColumnNames: _col0, _col1, _col2, _col4, _col5, _col6
+          Statistics: Num rows: 24 Data size: 4580 Basic stats: COMPLETE Column stats: COMPLETE
+          Select Operator
+            expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col4 (type: int), _col5 (type: int), _col6 (type: string)
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+            Statistics: Num rows: 24 Data size: 4580 Basic stats: COMPLETE Column stats: COMPLETE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 24 Data size: 4580 Basic stats: COMPLETE Column stats: COMPLETE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -196,18 +228,18 @@ STAGE PLANS:
 
 Warning: Shuffle Join JOIN[6][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.key between 100 and 102)
+FROM test1_n7 LEFT OUTER JOIN test2_n4
+ON (test1_n7.key between 100 and 102)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test1
-PREHOOK: Input: default@test2
+PREHOOK: Input: default@test1_n7
+PREHOOK: Input: default@test2_n4
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.key between 100 and 102)
+FROM test1_n7 LEFT OUTER JOIN test2_n4
+ON (test1_n7.key between 100 and 102)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test1
-POSTHOOK: Input: default@test2
+POSTHOOK: Input: default@test1_n7
+POSTHOOK: Input: default@test2_n4
 #### A masked pattern was here ####
 101	2	Car	105	NULL	None
 101	2	Car	104	3	Fli

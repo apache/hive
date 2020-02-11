@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,11 +18,17 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.io.Text;
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
-public class TestUDFUnhex extends TestCase {
+/**
+ * TestUDFUnhex.
+ */
+public class TestUDFUnhex {
+  @Test
   public void testUnhexConversion(){
     Text hex = new Text();
     // Let's make sure we only read the relevant part of the writable in case of reuse

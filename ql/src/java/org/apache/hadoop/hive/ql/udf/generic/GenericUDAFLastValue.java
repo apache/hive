@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -37,7 +37,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
-@WindowFunctionDescription(description = @Description(name = "last_value", value = "_FUNC_(x)"),
+@Description(name = "last_value", value = "_FUNC_(x)")
+@WindowFunctionDescription(
   supportsWindow = true, pivotResult = false, impliesOrder = true)
 public class GenericUDAFLastValue extends AbstractGenericUDAFResolver {
 

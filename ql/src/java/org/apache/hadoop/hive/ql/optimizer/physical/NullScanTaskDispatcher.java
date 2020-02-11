@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,40 +19,37 @@
 package org.apache.hadoop.hive.ql.optimizer.physical;
 
 import java.io.IOException;
-
-import org.apache.hadoop.hive.common.StringInternUtils;
-import org.apache.hadoop.hive.ql.exec.Utilities;
-
-import org.apache.hadoop.hive.ql.io.ZeroRowsInputFormat;
-
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.Stack;
+import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.NullScanFileSystem;
 import org.apache.hadoop.hive.ql.io.OneNullRowInputFormat;
+import org.apache.hadoop.hive.ql.io.ZeroRowsInputFormat;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
-import org.apache.hadoop.hive.ql.lib.Dispatcher;
-import org.apache.hadoop.hive.ql.lib.GraphWalker;
+import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
+import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.PreOrderOnceWalker;
-import org.apache.hadoop.hive.ql.lib.Rule;
+import org.apache.hadoop.hive.ql.lib.SemanticRule;
 import org.apache.hadoop.hive.ql.optimizer.physical.MetadataOnlyOptimizer.WalkerCtx;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -61,39 +58,44 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.NullStructSerDe;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Iterate over all tasks one by one and removes all input paths from task if conditions as
- * defined in rules match.
+ * Iterate over all tasks one by one and removes all input paths from task if
+ * conditions as defined in rules match.
  */
-public class NullScanTaskDispatcher implements Dispatcher {
+public class NullScanTaskDispatcher implements SemanticDispatcher {
 
-  static final Logger LOG = LoggerFactory.getLogger(NullScanTaskDispatcher.class.getName());
+  static final Logger LOG =
+      LoggerFactory.getLogger(NullScanTaskDispatcher.class);
 
   private final PhysicalContext physicalContext;
-  private final Map<Rule, NodeProcessor> rules;
+  private final Map<SemanticRule, SemanticNodeProcessor> rules;
 
-  public NullScanTaskDispatcher(PhysicalContext context,  Map<Rule, NodeProcessor> rules) {
+  public NullScanTaskDispatcher(PhysicalContext context,
+      Map<SemanticRule, SemanticNodeProcessor> rules) {
     super();
-    physicalContext = context;
+    this.physicalContext = context;
     this.rules = rules;
   }
 
   private String getAliasForTableScanOperator(MapWork work,
       TableScanOperator tso) {
-
-    for (Map.Entry<String, Operator<? extends OperatorDesc>> entry :
-      work.getAliasToWork().entrySet()) {
+    for (Map.Entry<String, Operator<? extends OperatorDesc>> entry : work
+        .getAliasToWork().entrySet()) {
       if (entry.getValue() == tso) {
         return entry.getKey();
       }
     }
-
     return null;
   }
 
-  private PartitionDesc changePartitionToMetadataOnly(PartitionDesc desc, Path path) {
-    if (desc == null) return null;
+  private PartitionDesc changePartitionToMetadataOnly(PartitionDesc desc,
+      Path path) {
+    if (desc == null) {
+      return null;
+    }
     boolean isEmpty = false;
     try {
       isEmpty = Utilities.isEmptyPath(physicalContext.getConf(), path);
@@ -104,25 +106,23 @@ public class NullScanTaskDispatcher implements Dispatcher {
         isEmpty ? ZeroRowsInputFormat.class : OneNullRowInputFormat.class);
     desc.setOutputFileFormatClass(HiveIgnoreKeyTextOutputFormat.class);
     desc.getProperties().setProperty(serdeConstants.SERIALIZATION_LIB,
-      NullStructSerDe.class.getName());
+        NullStructSerDe.class.getName());
     return desc;
   }
 
-  private void processAlias(MapWork work, Path path, ArrayList<String> aliasesAffected,
-      ArrayList<String> aliases) {
+  private void processAlias(MapWork work, Path path,
+      Collection<String> aliasesAffected, Set<String> aliases) {
     // the aliases that are allowed to map to a null scan.
-    ArrayList<String> allowed = new ArrayList<String>();
-    for (String alias : aliasesAffected) {
-      if (aliases.contains(alias)) {
-        allowed.add(alias);
-      }
-    }
-    if (allowed.size() > 0) {
+    Collection<String> allowed = aliasesAffected.stream()
+        .filter(a -> aliases.contains(a)).collect(Collectors.toList());
+    if (!allowed.isEmpty()) {
       PartitionDesc partDesc = work.getPathToPartitionInfo().get(path).clone();
-      PartitionDesc newPartition = changePartitionToMetadataOnly(partDesc, path);
+      PartitionDesc newPartition =
+          changePartitionToMetadataOnly(partDesc, path);
       // Prefix partition with something to avoid it being a hidden file.
-      Path fakePath = new Path(NullScanFileSystem.getBase() + newPartition.getTableName()
-          + "/part" + encode(newPartition.getPartSpec()));
+      Path fakePath =
+          new Path(NullScanFileSystem.getBase() + newPartition.getTableName()
+              + "/part" + encode(newPartition.getPartSpec()));
       StringInternUtils.internUriStringsInPath(fakePath);
       work.addPathToPartitionInfo(fakePath, newPartition);
       work.addPathToAlias(fakePath, new ArrayList<>(allowed));
@@ -134,12 +134,11 @@ public class NullScanTaskDispatcher implements Dispatcher {
     }
   }
 
-  private void processAlias(MapWork work, HashSet<TableScanOperator> tableScans) {
-    ArrayList<String> aliases = new ArrayList<String>();
+  private void processAlias(MapWork work, Set<TableScanOperator> tableScans) {
+    Set<String> aliases = new HashSet<>();
     for (TableScanOperator tso : tableScans) {
       // use LinkedHashMap<String, Operator<? extends OperatorDesc>>
-      // getAliasToWork()
-      // should not apply this for non-native table
+      // getAliasToWork() should not apply this for non-native table
       if (tso.getConf().getTableMetadata().getStorageHandler() != null) {
         continue;
       }
@@ -148,14 +147,14 @@ public class NullScanTaskDispatcher implements Dispatcher {
       tso.getConf().setIsMetadataOnly(true);
     }
     // group path alias according to work
-    LinkedHashMap<Path, ArrayList<String>> candidates = new LinkedHashMap<>();
+    Map<Path, List<String>> candidates = new HashMap<>();
     for (Path path : work.getPaths()) {
-      ArrayList<String> aliasesAffected = work.getPathToAliases().get(path);
-      if (aliasesAffected != null && aliasesAffected.size() > 0) {
+      List<String> aliasesAffected = work.getPathToAliases().get(path);
+      if (CollectionUtils.isNotEmpty(aliasesAffected)) {
         candidates.put(path, aliasesAffected);
       }
     }
-    for (Entry<Path, ArrayList<String>> entry : candidates.entrySet()) {
+    for (Entry<Path, List<String>> entry : candidates.entrySet()) {
       processAlias(work, entry.getKey(), entry.getValue(), aliases);
     }
   }
@@ -168,7 +167,7 @@ public class NullScanTaskDispatcher implements Dispatcher {
   @Override
   public Object dispatch(Node nd, Stack<Node> stack, Object... nodeOutputs)
       throws SemanticException {
-    Task<? extends Serializable> task = (Task<? extends Serializable>) nd;
+    Task<?> task = (Task<?>) nd;
 
     // create a the context for walking operators
     ParseContext parseContext = physicalContext.getParseContext();
@@ -183,10 +182,10 @@ public class NullScanTaskDispatcher implements Dispatcher {
     });
 
     for (MapWork mapWork : mapWorks) {
-      LOG.debug("Looking at: "+mapWork.getName());
-      Collection<Operator<? extends OperatorDesc>> topOperators
-        = mapWork.getAliasToWork().values();
-      if (topOperators.size() == 0) {
+      LOG.debug("Looking at: {}", mapWork.getName());
+      Collection<Operator<? extends OperatorDesc>> topOperators =
+          mapWork.getAliasToWork().values();
+      if (topOperators.isEmpty()) {
         LOG.debug("No top operators");
         return null;
       }
@@ -195,15 +194,15 @@ public class NullScanTaskDispatcher implements Dispatcher {
 
       // The dispatcher fires the processor corresponding to the closest
       // matching rule and passes the context along
-      Dispatcher disp = new DefaultRuleDispatcher(null, rules, walkerCtx);
-      GraphWalker ogw = new PreOrderOnceWalker(disp);
+      SemanticDispatcher disp = new DefaultRuleDispatcher(null, rules, walkerCtx);
+      SemanticGraphWalker ogw = new PreOrderOnceWalker(disp);
 
       // Create a list of topOp nodes
-      ArrayList<Node> topNodes = new ArrayList<Node>();
+      ArrayList<Node> topNodes = new ArrayList<>();
       // Get the top Nodes for this task
-      for (Operator<? extends OperatorDesc>
-             workOperator : topOperators) {
-        if (parseContext.getTopOps().values().contains(workOperator)) {
+      Collection<TableScanOperator> topOps = parseContext.getTopOps().values();
+      for (Operator<? extends OperatorDesc> workOperator : topOperators) {
+        if (topOps.contains(workOperator)) {
           topNodes.add(workOperator);
         }
       }
@@ -215,10 +214,11 @@ public class NullScanTaskDispatcher implements Dispatcher {
 
       ogw.startWalking(topNodes, null);
 
-      LOG.debug(String.format("Found %d null table scans",
-          walkerCtx.getMetadataOnlyTableScans().size()));
-      if (walkerCtx.getMetadataOnlyTableScans().size() > 0)
+      int scanTableSize = walkerCtx.getMetadataOnlyTableScans().size();
+      LOG.debug("Found {} null table scans", scanTableSize);
+      if (scanTableSize > 0) {
         processAlias(mapWork, walkerCtx.getMetadataOnlyTableScans());
+      }
     }
     return null;
   }

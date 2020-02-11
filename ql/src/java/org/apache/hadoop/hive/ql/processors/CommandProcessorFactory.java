@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,19 +18,19 @@
 
 package org.apache.hadoop.hive.ql.processors;
 
-import static org.apache.commons.lang.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
+import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nonnull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.metadata.*;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
@@ -42,13 +42,6 @@ public final class CommandProcessorFactory {
 
   private CommandProcessorFactory() {
     // prevent instantiation
-  }
-
-  private static final Map<HiveConf, Driver> mapDrivers = Collections.synchronizedMap(new HashMap<HiveConf, Driver>());
-
-  public static CommandProcessor get(String cmd)
-      throws SQLException {
-    return get(new String[]{cmd}, null);
   }
 
   public static CommandProcessor getForHiveCommand(String[] cmd, HiveConf conf)
@@ -80,37 +73,47 @@ public final class CommandProcessorFactory {
       return null;
     }
     switch (hiveCommand) {
-      case SET:
-        return new SetProcessor();
-      case RESET:
-        return new ResetProcessor();
-      case DFS:
-        SessionState ss = SessionState.get();
-        return new DfsProcessor(ss.getConf());
-      case ADD:
-        return new AddResourceProcessor();
-      case LIST:
-        return new ListResourceProcessor();
-      case DELETE:
-        return new DeleteResourceProcessor();
-      case COMPILE:
-        return new CompileProcessor();
-      case RELOAD:
-        return new ReloadProcessor();
-      case CRYPTO:
-        try {
-          return new CryptoProcessor(SessionState.get().getHdfsEncryptionShim(), conf);
-        } catch (HiveException e) {
-          throw new SQLException("Fail to start the command processor due to the exception: ", e);
-        }
-      default:
-        throw new AssertionError("Unknown HiveCommand " + hiveCommand);
+    case SET:
+      return new SetProcessor();
+    case RESET:
+      return new ResetProcessor();
+    case DFS:
+      SessionState ss = SessionState.get();
+      return new DfsProcessor(ss.getConf());
+    case ADD:
+      return new AddResourceProcessor();
+    case LIST:
+      return new ListResourceProcessor();
+    case LLAP_CLUSTER:
+      return new LlapClusterResourceProcessor();
+    case LLAP_CACHE:
+      return new LlapCacheResourceProcessor();
+    case DELETE:
+      return new DeleteResourceProcessor();
+    case COMPILE:
+      return new CompileProcessor();
+    case RELOAD:
+      return new ReloadProcessor();
+    case CRYPTO:
+      try {
+        return new CryptoProcessor(SessionState.get().getHdfsEncryptionShim(), conf);
+      } catch (HiveException e) {
+        throw new SQLException("Fail to start the command processor due to the exception: ", e);
+      }
+    case ERASURE:
+      try {
+        return new ErasureProcessor(conf);
+      } catch (IOException e) {
+        throw new SQLException("Fail to start the erasure command processor due to the exception: ", e);
+      }
+    default:
+      throw new AssertionError("Unknown HiveCommand " + hiveCommand);
     }
   }
 
-  static Logger LOG = LoggerFactory.getLogger(CommandProcessorFactory.class);
-  public static CommandProcessor get(String[] cmd, HiveConf conf)
-      throws SQLException {
+  private static Logger LOG = LoggerFactory.getLogger(CommandProcessorFactory.class);
+
+  public static CommandProcessor get(String[] cmd, @Nonnull HiveConf conf) throws SQLException {
     CommandProcessor result = getForHiveCommand(cmd, conf);
     if (result != null) {
       return result;
@@ -118,27 +121,7 @@ public final class CommandProcessorFactory {
     if (isBlank(cmd[0])) {
       return null;
     } else {
-      if (conf == null) {
-        return new Driver();
-      }
-      Driver drv = mapDrivers.get(conf);
-      if (drv == null) {
-        drv = new Driver();
-        mapDrivers.put(conf, drv);
-      } else {
-        drv.resetQueryState();
-      }
-      drv.init();
-      return drv;
+      return DriverFactory.newDriver(conf);
     }
-  }
-
-  public static void clean(HiveConf conf) {
-    Driver drv = mapDrivers.get(conf);
-    if (drv != null) {
-      drv.destroy();
-    }
-
-    mapDrivers.remove(conf);
   }
 }

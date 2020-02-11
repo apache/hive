@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -43,8 +43,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
-import org.apache.hadoop.hive.ql.Driver.DriverState;
-import org.apache.hadoop.hive.ql.Driver.LockedDriverState;
+import org.apache.hadoop.hive.ql.DriverState;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
@@ -88,32 +87,42 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     private final int start;
     private final int length;
     private final JobConf conf;
+    private final boolean isMerge;
 
-    public CheckNonCombinablePathCallable(Path[] paths, int start, int length, JobConf conf) {
+    public CheckNonCombinablePathCallable(
+        Path[] paths, int start, int length, JobConf conf, boolean isMerge) {
       this.paths = paths;
       this.start = start;
       this.length = length;
       this.conf = conf;
+      this.isMerge = isMerge;
     }
 
     @Override
     public Set<Integer> call() throws Exception {
       Set<Integer> nonCombinablePathIndices = new HashSet<Integer>();
       for (int i = 0; i < length; i++) {
-        PartitionDesc part =
-            HiveFileFormatUtils.getPartitionDescFromPathRecursively(
+        PartitionDesc part = HiveFileFormatUtils.getFromPathRecursively(
                 pathToPartitionInfo, paths[i + start],
                 IOPrepareCache.get().allocatePartitionDescMap());
         // Use HiveInputFormat if any of the paths is not splittable
         Class<? extends InputFormat> inputFormatClass = part.getInputFileFormatClass();
         InputFormat<WritableComparable, Writable> inputFormat =
             getInputFormatFromCache(inputFormatClass, conf);
-        if (inputFormat instanceof AvoidSplitCombination &&
-            ((AvoidSplitCombination) inputFormat).shouldSkipCombine(paths[i + start], conf)) {
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("The path [" + paths[i + start] +
-                "] is being parked for HiveInputFormat.getSplits");
-          }
+        boolean isAvoidSplitCombine = inputFormat instanceof AvoidSplitCombination &&
+            ((AvoidSplitCombination) inputFormat).shouldSkipCombine(paths[i + start], conf);
+        TableDesc tbl = part.getTableDesc();
+        boolean isMmNonMerge = false;
+        if (tbl != null) {
+          isMmNonMerge = !isMerge && AcidUtils.isInsertOnlyTable(tbl.getProperties());
+        } else {
+          // This would be the case for obscure tasks like truncate column (unsupported for MM).
+          Utilities.FILE_OP_LOGGER.warn("Assuming not insert-only; no table in partition spec " + part);
+        }
+
+        if (isAvoidSplitCombine || isMmNonMerge) {
+          Utilities.FILE_OP_LOGGER.info("The path [" + paths[i + start] +
+              "] is being parked for HiveInputFormat.getSplits");
           nonCombinablePathIndices.add(i + start);
         }
       }
@@ -159,7 +168,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
         Path[] ipaths = inputSplitShim.getPaths();
         if (ipaths.length > 0) {
           PartitionDesc part = HiveFileFormatUtils
-              .getPartitionDescFromPathRecursively(this.pathToPartitionInfo,
+              .getFromPathRecursively(this.pathToPartitionInfo,
                   ipaths[0], IOPrepareCache.get().getPartitionDescMap());
           inputFormatClassName = part.getInputFileFormatClass().getName();
         }
@@ -273,7 +282,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
 
         // extract all the inputFormatClass names for each chunk in the
         // CombinedSplit.
-        PartitionDesc part = HiveFileFormatUtils.getPartitionDescFromPathRecursively(pathToPartitionInfo,
+        PartitionDesc part = HiveFileFormatUtils.getFromPathRecursively(pathToPartitionInfo,
             inputSplitShim.getPath(0), IOPrepareCache.get().getPartitionDescMap());
 
         // create a new InputFormat instance if this is the first time to see
@@ -325,7 +334,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
       Map<Path, PartitionDesc> pathToPartitionInfo)
       throws IOException {
     init(job);
-    Map<Path, ArrayList<String>> pathToAliases = mrwork.getPathToAliases();
+    Map<Path, List<String>> pathToAliases = mrwork.getPathToAliases();
     Map<String, Operator<? extends OperatorDesc>> aliasToWork =
       mrwork.getAliasToWork();
     CombineFileInputFormatShim combine = ShimLoader.getHadoopShims()
@@ -351,13 +360,14 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     Map<CombinePathInputFormat, CombineFilter> poolMap =
       new HashMap<CombinePathInputFormat, CombineFilter>();
     Set<Path> poolSet = new HashSet<Path>();
-    LockedDriverState lDrvStat = LockedDriverState.getLockedDriverState();
+    DriverState driverState = DriverState.getDriverState();
 
     for (Path path : paths) {
-      if (lDrvStat != null && lDrvStat.driverState == DriverState.INTERRUPT)
+      if (driverState != null && driverState.isAborted()) {
         throw new IOException("Operation is Canceled. ");
+      }
 
-      PartitionDesc part = HiveFileFormatUtils.getPartitionDescFromPathRecursively(
+      PartitionDesc part = HiveFileFormatUtils.getFromPathRecursively(
           pathToPartitionInfo, path, IOPrepareCache.get().allocatePartitionDescMap());
       TableDesc tableDesc = part.getTableDesc();
       if ((tableDesc != null) && tableDesc.isNonNative()) {
@@ -405,7 +415,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
           combine.createPool(job, f);
           poolMap.put(combinePathInputFormat, f);
         } else {
-          LOG.info("CombineHiveInputSplit: pool is already created for " + path +
+          LOG.debug("CombineHiveInputSplit: pool is already created for " + path +
                    "; using filter path " + filterPath);
           f.addPath(filterPath);
         }
@@ -454,9 +464,8 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
       CombineHiveInputSplit csplit = new CombineHiveInputSplit(job, is, pathToPartitionInfo);
       result.add(csplit);
     }
-
-    LOG.info("number of splits " + result.size());
-    return result.toArray(new CombineHiveInputSplit[result.size()]);
+    LOG.debug("Number of splits " + result.size());
+    return result.toArray(new InputSplit[result.size()]);
   }
 
   /**
@@ -472,11 +481,12 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     ExecutorService executor = Executors.newFixedThreadPool(numThreads);
     List<Future<Set<Integer>>> futureList = new ArrayList<Future<Set<Integer>>>(numThreads);
     try {
+      boolean isMerge = mrwork != null && mrwork.isMergeFromResolver();
       for (int i = 0; i < numThreads; i++) {
         int start = i * numPathPerThread;
         int length = i != numThreads - 1 ? numPathPerThread : paths.length - start;
-        futureList.add(executor.submit(
-            new CheckNonCombinablePathCallable(paths, start, length, job)));
+        futureList.add(executor.submit(new CheckNonCombinablePathCallable(
+            paths, start, length, job, isMerge)));
       }
       Set<Integer> nonCombinablePathIndices = new HashSet<Integer>();
       for (Future<Set<Integer>> future : futureList) {
@@ -567,6 +577,13 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     // clear work from ThreadLocal after splits generated in case of thread is reused in pool.
     Utilities.clearWorkMapForConf(job);
 
+    if (result.isEmpty() && paths.length > 0 && job.getBoolean(Utilities.ENSURE_OPERATORS_EXECUTED, false)) {
+      // If there are no inputs; the Execution engine skips the operator tree.
+      // To prevent it from happening; an opaque  ZeroRows input is added here - when needed.
+      result.add(
+          new HiveInputSplit(new NullRowsInputFormat.DummyInputSplit(paths[0]), ZeroRowsInputFormat.class.getName()));
+    }
+
     LOG.info("Number of all splits " + result.size());
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
     return result.toArray(new InputSplit[result.size()]);
@@ -591,11 +608,11 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
    * @return the sampled splits
    */
   private List<CombineFileSplit> sampleSplits(List<CombineFileSplit> splits) {
-    HashMap<String, SplitSample> nameToSamples = mrwork.getNameToSplitSample();
+    Map<String, SplitSample> nameToSamples = mrwork.getNameToSplitSample();
     List<CombineFileSplit> retLists = new ArrayList<CombineFileSplit>();
     Map<String, ArrayList<CombineFileSplit>> aliasToSplitList = new HashMap<String, ArrayList<CombineFileSplit>>();
-    Map<Path, ArrayList<String>> pathToAliases = mrwork.getPathToAliases();
-    Map<Path, ArrayList<String>> pathToAliasesNoScheme = removeScheme(pathToAliases);
+    Map<Path, List<String>> pathToAliases = mrwork.getPathToAliases();
+    Map<Path, List<String>> pathToAliasesNoScheme = removeScheme(pathToAliases);
 
     // Populate list of exclusive splits for every sampled alias
     //
@@ -664,9 +681,9 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     return retLists;
   }
 
-  Map<Path, ArrayList<String>> removeScheme(Map<Path, ArrayList<String>> pathToAliases) {
-    Map<Path, ArrayList<String>> result = new HashMap<>();
-    for (Map.Entry <Path, ArrayList<String>> entry : pathToAliases.entrySet()) {
+  Map<Path, List<String>> removeScheme(Map<Path, List<String>> pathToAliases) {
+    Map<Path, List<String>> result = new HashMap<>();
+    for (Map.Entry <Path, List<String>> entry : pathToAliases.entrySet()) {
       Path newKey = Path.getPathWithoutSchemeAndAuthority(entry.getKey());
       StringInternUtils.internUriStringsInPath(newKey);
       result.put(newKey, entry.getValue());

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 import java.util.List;
 
-import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
@@ -43,8 +43,16 @@ public class ExprNodeConstantDesc extends ExprNodeDesc implements Serializable {
   // If this constant was created while doing constant folding, foldedFromCol holds the name of
   // original column from which it was folded.
   private transient String foldedFromCol;
+  // If this constant was created while doing constant folding, foldedFromTab holds the name of
+  // the original tabAlias from which it was folded.
+  private transient String foldedFromTab;
   // string representation of folding constant.
   private transient String foldedFromVal;
+
+  public void setFoldedTabCol(ExprNodeColumnDesc colDesc) {
+    setFoldedFromTab(colDesc.getTabAlias());
+    setFoldedFromCol(colDesc.getColumn());
+  }
 
   public ExprNodeConstantDesc setFoldedFromVal(String foldedFromVal) {
     this.foldedFromVal = foldedFromVal;
@@ -61,6 +69,14 @@ public class ExprNodeConstantDesc extends ExprNodeDesc implements Serializable {
 
   public void setFoldedFromCol(String foldedFromCol) {
     this.foldedFromCol = foldedFromCol;
+  }
+
+  public String getFoldedFromTab() {
+    return foldedFromTab;
+  }
+
+  public void setFoldedFromTab(String foldedFromTab) {
+    this.foldedFromTab = foldedFromTab;
   }
 
   public ExprNodeConstantDesc() {
@@ -116,11 +132,36 @@ public class ExprNodeConstantDesc extends ExprNodeDesc implements Serializable {
         hexChars[j * 2 + 1] = hexArray[v & 0x0F];
       }
       return new String(hexChars);
+    } else if(typeInfo.getTypeName().equals(serdeConstants.DATE_TYPE_NAME)) {
+      return "DATE'" + value.toString() + "'";
+    } else if(typeInfo.getTypeName().equals(serdeConstants.TIMESTAMP_TYPE_NAME)) {
+      return "TIMESTAMP'" + value.toString() + "'";
+    } else if(typeInfo.getTypeName().equals(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME)) {
+      return "TIMESTAMPLOCALTZ'" + value.toString() + "'";
+    } else if(typeInfo.getTypeName().equals(serdeConstants.TINYINT_TYPE_NAME)) {
+      return value.toString() + "Y";
+    } else if(typeInfo.getTypeName().equals(serdeConstants.SMALLINT_TYPE_NAME)) {
+      return value.toString() + "S";
+    } else if(typeInfo.getTypeName().equals(serdeConstants.BIGINT_TYPE_NAME)) {
+      return value.toString() + "L";
+    } else if(typeInfo.getTypeName().equals(serdeConstants.DOUBLE_TYPE_NAME)) {
+      return value.toString() + "D";
+    } else if(typeInfo.getTypeName().equals(serdeConstants.DECIMAL_TYPE_NAME)) {
+      return value.toString() + "BD";
+    } else if(typeInfo.getTypeName().equals(serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME)
+        || typeInfo.getTypeName().equals(serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME)) {
+      return "INTERVAL'" + value.toString() + "'";
     }
     return value.toString();
   }
 
   @Override
+  /**
+   * Return string representation of constant expression
+   * Beside ExplainPlan task Default constraint also make use it to deserialize constant expression
+   * to store it in metastore, which is later reparsed to generate appropriate constant expression
+   * Therefore it is necessary for this method to qualify the intervals with appropriate qualifiers
+   */
   public String getExprString() {
     if (typeInfo.getCategory() == Category.PRIMITIVE) {
       return getFormatted(typeInfo, value);

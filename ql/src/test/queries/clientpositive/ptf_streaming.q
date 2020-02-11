@@ -1,4 +1,8 @@
+--! qt:dataset:part
+
+set hive.vectorized.execution.enabled=false;
 set hive.explain.user=false;
+
 -- SORT_QUERY_RESULTS
 
 --1. test1

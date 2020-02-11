@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,11 +22,14 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import com.google.common.base.Preconditions;
+import com.google.common.util.concurrent.SettableFuture;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -35,13 +38,14 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.LlapItUtils;
 import org.apache.hadoop.hive.llap.daemon.MiniLlapCluster;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
-import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
+import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.util.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.shims.HadoopShims.MiniDFSShim;
 import org.apache.hadoop.hive.shims.HadoopShims.MiniMrShim;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hive.http.security.PamAuthenticator;
+import org.apache.hive.jdbc.Utils;
 import org.apache.hive.service.Service;
 import org.apache.hive.service.cli.CLIServiceClient;
 import org.apache.hive.service.cli.SessionHandle;
@@ -62,6 +66,7 @@ public class MiniHS2 extends AbstractHiveService {
   private static final FsPermission FULL_PERM = new FsPermission((short)00777);
   private static final FsPermission WRITE_ALL_PERM = new FsPermission((short)00733);
   private static final String tmpDir = System.getProperty("test.tmp.dir");
+  private static final int DEFAULT_DATANODE_COUNT = 4;
   private HiveServer2 hiveServer2 = null;
   private final File baseDir;
   private final Path baseFsDir;
@@ -73,7 +78,10 @@ public class MiniHS2 extends AbstractHiveService {
   private final String serverPrincipal;
   private final boolean isMetastoreRemote;
   private final boolean cleanupLocalDirOnStartup;
+  private final boolean isMetastoreSecure;
   private MiniClusterType miniClusterType = MiniClusterType.LOCALFS_ONLY;
+  private boolean usePortsFromConf = false;
+  private PamAuthenticator pamAuthenticator;
 
   public enum MiniClusterType {
     MR,
@@ -94,6 +102,10 @@ public class MiniHS2 extends AbstractHiveService {
     private String authType = "KERBEROS";
     private boolean isHA = false;
     private boolean cleanupLocalDirOnStartup = true;
+    private boolean isMetastoreSecure;
+    private String metastoreServerPrincipal;
+    private String metastoreServerKeyTab;
+    private int dataNodes = DEFAULT_DATANODE_COUNT; // default number of datanodes for miniHS2
 
     public Builder() {
     }
@@ -117,6 +129,14 @@ public class MiniHS2 extends AbstractHiveService {
 
     public Builder withRemoteMetastore() {
       this.isMetastoreRemote = true;
+      return this;
+    }
+
+    public Builder withSecureRemoteMetastore(String metastoreServerPrincipal, String metastoreServerKeyTab) {
+      this.isMetastoreRemote = true;
+      this.isMetastoreSecure = true;
+      this.metastoreServerPrincipal = metastoreServerPrincipal;
+      this.metastoreServerKeyTab = metastoreServerKeyTab;
       return this;
     }
 
@@ -144,9 +164,24 @@ public class MiniHS2 extends AbstractHiveService {
       return this;
     }
 
+    /**
+     * Set the number of datanodes to be used by HS2.
+     * @param count the number of datanodes
+     * @return this Builder
+     */
+    public Builder withDataNodes(int count) {
+      this.dataNodes = count;
+      return this;
+    }
+
     public MiniHS2 build() throws Exception {
       if (miniClusterType == MiniClusterType.MR && useMiniKdc) {
         throw new IOException("Can't create secure miniMr ... yet");
+      }
+      Iterator<Map.Entry<String, String>> iter = hiveConf.iterator();
+      while (iter.hasNext()) {
+        String key = iter.next().getKey();
+        hiveConf.set(key, hiveConf.get(key));
       }
       if (isHTTPTransMode) {
         hiveConf.setVar(ConfVars.HIVE_SERVER2_TRANSPORT_MODE, HS2_HTTP_MODE);
@@ -154,7 +189,8 @@ public class MiniHS2 extends AbstractHiveService {
         hiveConf.setVar(ConfVars.HIVE_SERVER2_TRANSPORT_MODE, HS2_BINARY_MODE);
       }
       return new MiniHS2(hiveConf, miniClusterType, useMiniKdc, serverPrincipal, serverKeytab,
-          isMetastoreRemote, usePortsFromConf, authType, isHA, cleanupLocalDirOnStartup);
+          isMetastoreRemote, usePortsFromConf, authType, isHA, cleanupLocalDirOnStartup,
+          isMetastoreSecure, metastoreServerPrincipal, metastoreServerKeyTab, dataNodes);
     }
   }
 
@@ -192,31 +228,38 @@ public class MiniHS2 extends AbstractHiveService {
 
   private MiniHS2(HiveConf hiveConf, MiniClusterType miniClusterType, boolean useMiniKdc,
       String serverPrincipal, String serverKeytab, boolean isMetastoreRemote,
-      boolean usePortsFromConf, String authType, boolean isHA, boolean cleanupLocalDirOnStartup) throws Exception {
+      boolean usePortsFromConf, String authType, boolean isHA, boolean cleanupLocalDirOnStartup,
+      boolean isMetastoreSecure, String metastoreServerPrincipal, String metastoreKeyTab,
+      int dataNodes) throws Exception {
     // Always use localhost for hostname as some tests like SSL CN validation ones
     // are tied to localhost being present in the certificate name
     super(
         hiveConf,
         "localhost",
-        (usePortsFromConf ? hiveConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_PORT) : MetaStoreUtils
+        (usePortsFromConf ? hiveConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_PORT) : MetaStoreTestUtils
             .findFreePort()),
-        (usePortsFromConf ? hiveConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_PORT) : MetaStoreUtils
+        (usePortsFromConf ? hiveConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_PORT) : MetaStoreTestUtils
+            .findFreePort()),
+        (usePortsFromConf ? hiveConf.getIntVar(ConfVars.HIVE_SERVER2_WEBUI_PORT) : MetaStoreTestUtils
             .findFreePort()));
     hiveConf.setLongVar(ConfVars.HIVE_SERVER2_MAX_START_ATTEMPTS, 3l);
     hiveConf.setTimeVar(ConfVars.HIVE_SERVER2_SLEEP_INTERVAL_BETWEEN_START_ATTEMPTS, 10,
         TimeUnit.SECONDS);
+    hiveConf.setBoolVar(ConfVars.HIVE_SCHEDULED_QUERIES_EXECUTOR_ENABLED, false);
     this.miniClusterType = miniClusterType;
     this.useMiniKdc = useMiniKdc;
     this.serverPrincipal = serverPrincipal;
     this.isMetastoreRemote = isMetastoreRemote;
+    this.isMetastoreSecure = isMetastoreSecure;
     this.cleanupLocalDirOnStartup = cleanupLocalDirOnStartup;
+    this.usePortsFromConf = usePortsFromConf;
     baseDir = getBaseDir();
     localFS = FileSystem.getLocal(hiveConf);
     FileSystem fs;
 
     if (miniClusterType != MiniClusterType.LOCALFS_ONLY) {
       // Initialize dfs
-      dfs = ShimLoader.getHadoopShims().getMiniDfs(hiveConf, 4, true, null, isHA);
+      dfs = ShimLoader.getHadoopShims().getMiniDfs(hiveConf, dataNodes, true, null, isHA);
       fs = dfs.getFileSystem();
       String uriString = fs.getUri().toString();
 
@@ -262,9 +305,12 @@ public class MiniHS2 extends AbstractHiveService {
       hiveConf.setVar(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB, serverKeytab);
       hiveConf.setVar(ConfVars.HIVE_SERVER2_AUTHENTICATION, authType);
     }
-    String metaStoreURL =
-        "jdbc:derby:;databaseName=" + baseDir.getAbsolutePath() + File.separator
-            + "test_metastore;create=true";
+
+    if (isMetastoreSecure) {
+      hiveConf.setVar(ConfVars.METASTORE_KERBEROS_PRINCIPAL, metastoreServerPrincipal);
+      hiveConf.setVar(ConfVars.METASTORE_KERBEROS_KEYTAB_FILE, metastoreKeyTab);
+      hiveConf.setBoolVar(ConfVars.METASTORE_USE_THRIFT_SASL, true);
+    }
 
     fs.mkdirs(baseFsDir);
     Path wareHouseDir = new Path(baseFsDir, "warehouse");
@@ -273,15 +319,14 @@ public class MiniHS2 extends AbstractHiveService {
 
     fs.mkdirs(wareHouseDir);
     setWareHouseDir(wareHouseDir.toString());
-    System.setProperty(HiveConf.ConfVars.METASTORECONNECTURLKEY.varname, metaStoreURL);
-    hiveConf.setVar(HiveConf.ConfVars.METASTORECONNECTURLKEY, metaStoreURL);
     if (!usePortsFromConf) {
       // reassign a new port, just in case if one of the MR services grabbed the last one
-      setBinaryPort(MetaStoreUtils.findFreePort());
+      setBinaryPort(MetaStoreTestUtils.findFreePort());
     }
     hiveConf.setVar(ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST, getHost());
     hiveConf.setIntVar(ConfVars.HIVE_SERVER2_THRIFT_PORT, getBinaryPort());
     hiveConf.setIntVar(ConfVars.HIVE_SERVER2_THRIFT_HTTP_PORT, getHttpPort());
+    hiveConf.setIntVar(ConfVars.HIVE_SERVER2_WEBUI_PORT, getWebPort());
 
     Path scratchDir = new Path(baseFsDir, "scratch");
     // Create root scratchdir with write all, so that user impersonation has no issues.
@@ -302,26 +347,56 @@ public class MiniHS2 extends AbstractHiveService {
     this(hiveConf, clusterType, false);
   }
 
-  public MiniHS2(HiveConf hiveConf, MiniClusterType clusterType,
-      boolean usePortsFromConf) throws Exception {
-    this(hiveConf, clusterType, false, null, null, false, usePortsFromConf,
-      "KERBEROS", false, true);
+  public MiniHS2(HiveConf hiveConf, MiniClusterType clusterType, boolean usePortsFromConf)
+      throws Exception {
+    this(hiveConf, clusterType, false, null, null,
+        false, usePortsFromConf, "KERBEROS", false, true,
+        false, null, null, DEFAULT_DATANODE_COUNT);
   }
 
   public void start(Map<String, String> confOverlay) throws Exception {
     if (isMetastoreRemote) {
-      int metaStorePort = MetaStoreUtils.findFreePort();
-      getHiveConf().setVar(ConfVars.METASTOREURIS, "thrift://localhost:" + metaStorePort);
-      MetaStoreUtils.startMetaStore(metaStorePort, HadoopThriftAuthBridge.getBridge(), getHiveConf());
+      MetaStoreTestUtils.startMetaStoreWithRetry(getHiveConf());
+      setWareHouseDir(MetastoreConf.getVar(getHiveConf(), MetastoreConf.ConfVars.WAREHOUSE));
     }
 
-    hiveServer2 = new HiveServer2();
     // Set confOverlay parameters
     for (Map.Entry<String, String> entry : confOverlay.entrySet()) {
       setConfProperty(entry.getKey(), entry.getValue());
     }
-    hiveServer2.init(getHiveConf());
-    hiveServer2.start();
+
+    Exception hs2Exception = null;
+    boolean hs2Started = false;
+    for (int tryCount = 0; (tryCount < MetaStoreTestUtils.RETRY_COUNT); tryCount++) {
+      try {
+        hiveServer2 = new HiveServer2();
+        if (pamAuthenticator != null) {
+          hiveServer2.setPamAuthenticator(pamAuthenticator);
+        }
+        hiveServer2.init(getHiveConf());
+        hiveServer2.start();
+        hs2Started = true;
+        break;
+      } catch (Exception t) {
+        hs2Exception = t;
+        if (usePortsFromConf) {
+          hs2Started = false;
+          break;
+        } else {
+          HiveConf.setIntVar(getHiveConf(), HiveConf.ConfVars.HIVE_SERVER2_THRIFT_PORT,
+              MetaStoreTestUtils.findFreePort());
+          HiveConf.setIntVar(getHiveConf(), HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_PORT,
+              MetaStoreTestUtils.findFreePort());
+          HiveConf.setIntVar(getHiveConf(), HiveConf.ConfVars.HIVE_SERVER2_WEBUI_PORT,
+              MetaStoreTestUtils.findFreePort());
+        }
+      }
+    }
+
+    if (!hs2Started) {
+      throw(hs2Exception);
+    }
+
     waitForStartup();
     setStarted(true);
   }
@@ -354,6 +429,26 @@ public class MiniHS2 extends AbstractHiveService {
     FileUtils.deleteQuietly(baseDir);
   }
 
+
+  public boolean isLeader() {
+    return hiveServer2.isLeader();
+  }
+
+  public SettableFuture<Boolean> getIsLeaderTestFuture() {
+    return hiveServer2.getIsLeaderTestFuture();
+  }
+
+  public SettableFuture<Boolean> getNotLeaderTestFuture() {
+    return hiveServer2.getNotLeaderTestFuture();
+  }
+
+  public void setPamAuthenticator(final PamAuthenticator pamAuthenticator) {
+    this.pamAuthenticator = pamAuthenticator;
+  }
+
+  public int getOpenSessionsCount() {
+    return hiveServer2.getOpenSessionsCount();
+  }
 
   public CLIServiceClient getServiceClient() {
     verifyStarted();
@@ -434,10 +529,14 @@ public class MiniHS2 extends AbstractHiveService {
     }
     String baseJdbcURL;
     if (isDynamicServiceDiscovery()) {
-      sessionConfExt =
-          "serviceDiscoveryMode=zooKeeper;zooKeeperNamespace="
-              + getServerConf().getVar(HiveConf.ConfVars.HIVE_SERVER2_ZOOKEEPER_NAMESPACE) + ";"
-              + sessionConfExt;
+      String namespace = getServerConf().getVar(HiveConf.ConfVars.HIVE_SERVER2_ZOOKEEPER_NAMESPACE);
+      String serviceDiscoveryMode = Utils.JdbcConnectionParams.SERVICE_DISCOVERY_MODE_ZOOKEEPER;
+      if (HiveConf.getBoolVar(getServerConf(), ConfVars.HIVE_SERVER2_ACTIVE_PASSIVE_HA_ENABLE)) {
+        namespace = getServerConf().getVar(ConfVars.HIVE_SERVER2_ACTIVE_PASSIVE_HA_REGISTRY_NAMESPACE);
+        serviceDiscoveryMode = Utils.JdbcConnectionParams.SERVICE_DISCOVERY_MODE_ZOOKEEPER_HA;
+      }
+      sessionConfExt = "serviceDiscoveryMode=" + serviceDiscoveryMode + ";zooKeeperNamespace="
+        + namespace + ";" + sessionConfExt;
       baseJdbcURL = getZKBaseJdbcURL();
     } else {
       baseJdbcURL = getBaseJdbcURL();
@@ -473,7 +572,7 @@ public class MiniHS2 extends AbstractHiveService {
   private String getZKBaseJdbcURL() throws Exception {
     HiveConf hiveConf = getServerConf();
     if (hiveConf != null) {
-      String zkEnsemble =  ZooKeeperHiveHelper.getQuorumServers(hiveConf);
+      String zkEnsemble =  hiveConf.getZKConfig().getQuorumServers();
       return "jdbc:hive2://" + zkEnsemble + "/";
     }
     throw new Exception("Server's HiveConf is null. Unable to read ZooKeeper configs.");
@@ -528,6 +627,10 @@ public class MiniHS2 extends AbstractHiveService {
          */
         sessionHandle = hs2Client.openSession("foo", "bar", sessionConf);
       } catch (Exception e) {
+        if (e.getMessage().contains("Cannot open sessions on an inactive HS2")) {
+          // Passive HS2 has started. TODO: seems fragile
+          return;
+        }
         // service not started yet
         continue;
       }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -37,8 +37,6 @@ import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorDeserializeRow;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedBatchUtil;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
@@ -295,6 +293,9 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
    */
   @Override
   public void processRow(Object key, final Object value) throws IOException {
+    if (!anyRow) {
+      anyRow = true;
+    }
     if (vectorized) {
       processVectorRow(key, value);
     } else {
@@ -307,6 +308,9 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
 
   @Override
   public <E> void processRow(Object key, Iterator<E> values) throws IOException {
+    if (!anyRow) {
+      anyRow = true;
+    }
     if (vectorized) {
       processVectorRows(key, values);
       return;
@@ -342,11 +346,14 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
         try {
           keyObject = inputKeyDeserializer.deserialize(keyWritable);
         } catch (Exception e) {
-          throw new HiveException(
-            "Hive Runtime Error: Unable to deserialize reduce input key from "
+          // Log the input key which caused exception so that it's available for debugging. But when
+          // exposed through an error message it can leak sensitive information, even to the client
+          // application.
+          LOG.trace("Hive Runtime Error: Unable to deserialize reduce input key from "
               + Utilities.formatBinaryString(keyWritable.get(), 0,
               keyWritable.getSize()) + " with properties "
-              + keyTableDesc.getProperties(), e);
+              + keyTableDesc.getProperties());
+          throw new HiveException("Hive Runtime Error: Unable to deserialize reduce input key ", e);
         }
 
         groupKey.set(keyWritable.get(), 0, keyWritable.getSize());
@@ -380,20 +387,21 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
       try {
         valueObject[tag] = inputValueDeserializer[tag].deserialize(valueWritable);
       } catch (SerDeException e) {
-        throw new HiveException(
-          "Hive Runtime Error: Unable to deserialize reduce input value (tag="
+        // Log the input value which caused exception so that it's available for debugging. But when
+        // exposed through an error message it can leak sensitive information, even to the client
+        // application.
+        LOG.trace("Hive Runtime Error: Unable to deserialize reduce input value (tag="
             + tag
             + ") from "
             + Utilities.formatBinaryString(valueWritable.get(), 0,
             valueWritable.getSize()) + " with properties "
-            + valueTableDesc[tag].getProperties(), e);
+            + valueTableDesc[tag].getProperties());
+        throw new HiveException("Hive Runtime Error: Unable to deserialize reduce input value ", e);
       }
       row.clear();
       row.add(keyObject);
       row.add(valueObject[tag]);
-      if (LOG.isInfoEnabled()) {
-        logMemoryInfo();
-      }
+      incrementRowNumber();
       try {
         reducer.process(row, tag);
       } catch (Exception e) {
@@ -404,8 +412,12 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
           rowString = "[Error getting row data with exception "
             + StringUtils.stringifyException(e2) + " ]";
         }
-        throw new HiveException("Error while processing row (tag="
-          + tag + ") " + rowString, e);
+
+        // Log contents of the row which caused exception so that it's available for debugging. But
+        // when exposed through an error message it can leak sensitive information, even to the
+        // client application.
+        LOG.trace("Hive exception while processing row (tag=" + tag + ") " + rowString);
+        throw new HiveException("Error while processing row ", e);
       }
     }
     return true; // give me more
@@ -557,30 +569,31 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
     }
 
     batchBytes = 0;
-    if (LOG.isInfoEnabled()) {
-      logMemoryInfo();
-    }
+    incrementRowNumber();
   }
 
   private Object deserializeValue(BytesWritable valueWritable, byte tag) throws HiveException {
     try {
       return inputValueDeserializer[tag].deserialize(valueWritable);
     } catch (SerDeException e) {
-      throw new HiveException("Error: Unable to deserialize reduce input value (tag="
-        + tag + ") from "
-        + Utilities.formatBinaryString(valueWritable.getBytes(), 0, valueWritable.getLength())
-        + " with properties " + valueTableDesc[tag].getProperties(), e);
+      // Log the input value which caused exception so that it's available for debugging. But when
+      // exposed through an error message it can leak sensitive information, even to the client
+      // application.
+      LOG.trace("Error: Unable to deserialize reduce input value (tag=" + tag + ") from " +
+              Utilities.formatBinaryString(valueWritable.getBytes(), 0,
+                      valueWritable.getLength()) +
+              " with properties " + valueTableDesc[tag].getProperties());
+      throw new HiveException("Error: Unable to deserialize reduce input value ", e);
     }
   }
 
   @Override
   public void close() {
-
+    super.close();
     // No row was processed
-    if (oc == null) {
+    if (!anyRow) {
       LOG.trace("Close called without any rows processed");
     }
-
     try {
       if (vectorized) {
         if (batch.size > 0) {
@@ -598,9 +611,6 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
           LOG.trace("End Group");
           reducer.endGroup();
         }
-      }
-      if (LOG.isInfoEnabled()) {
-        logCloseInfo();
       }
 
       reducer.close(abort);

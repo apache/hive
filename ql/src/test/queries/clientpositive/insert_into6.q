@@ -1,5 +1,5 @@
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
-set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.exec.dynamic.partition=true;
 
 DROP TABLE insert_into6a;

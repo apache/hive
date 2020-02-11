@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,35 +20,41 @@ package org.apache.hive.jdbc;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public abstract class HiveMetaDataResultSet<M> extends HiveBaseResultSet {
-  protected final List<M> data;
 
-  @SuppressWarnings("unchecked")
-  public HiveMetaDataResultSet(final List<String> columnNames
-          , final List<String> columnTypes
-          , final List<M> data) throws SQLException {
-    if (data!=null) {
+  protected List<M> data = Collections.emptyList();
+
+  public HiveMetaDataResultSet(final List<String> columnNames, final List<String> columnTypes,
+    final List<M> data) throws SQLException {
+
+    if (data != null) {
       this.data = new ArrayList<M>(data);
-    } else {
-      this.data =  new ArrayList<M>();
     }
-    if (columnNames!=null) {
-      this.columnNames = new ArrayList<String>(columnNames);
-      this.normalizedColumnNames = new ArrayList<String>();
-      for (String colName : columnNames) {
-        this.normalizedColumnNames.add(colName.toLowerCase());
-      }
-    } else {
-      this.columnNames =  new ArrayList<String>();
-      this.normalizedColumnNames = new ArrayList<String>();
-    }
-    if (columnTypes!=null) {
+
+    if (columnTypes != null) {
       this.columnTypes = new ArrayList<String>(columnTypes);
     } else {
-      this.columnTypes =  new ArrayList<String>();
+      this.columnTypes = Collections.emptyList();
     }
+
+    if (columnNames != null) {
+      this.columnNames = new ArrayList<String>(columnNames);
+      this.normalizedColumnNames = normalizeColumnNames(columnNames);
+    } else {
+      this.columnNames = Collections.emptyList();
+      this.normalizedColumnNames = Collections.emptyList();
+    }
+  }
+  
+  private List<String> normalizeColumnNames(final List<String> columnNames) {
+    List<String> result = new ArrayList<String>(columnNames.size());
+    for (String colName : columnNames) {
+      result.add(colName.toLowerCase());
+    }
+    return result;
   }
 
   @Override

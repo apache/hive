@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -47,6 +47,7 @@ import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.SessionHandle;
 import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.rpc.thrift.TCLIService;
+import org.apache.hive.service.rpc.thrift.TOperationHandle;
 import org.apache.thrift.TApplicationException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
@@ -195,6 +196,11 @@ public class RetryingThriftCLIServiceClient implements InvocationHandler {
     }
 
     @Override
+    public String getQueryId(TOperationHandle operationHandle) throws HiveSQLException {
+      return cliService.getQueryId(operationHandle);
+    }
+
+    @Override
     public void cancelOperation(OperationHandle opHandle) throws HiveSQLException {
       cliService.cancelOperation(opHandle);
     }
@@ -233,6 +239,11 @@ public class RetryingThriftCLIServiceClient implements InvocationHandler {
       throws HiveSQLException {
       return cliService.getCrossReference(sessionHandle, primaryCatalog, primarySchema,
         primaryTable, foreignCatalog, foreignSchema, foreignTable);
+    }
+
+    @Override
+    public void setApplicationName(SessionHandle sh, String value) throws HiveSQLException {
+      cliService.setApplicationName(sh, value);
     }
   }
 

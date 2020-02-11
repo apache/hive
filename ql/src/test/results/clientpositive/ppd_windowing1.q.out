@@ -1,7 +1,11 @@
 PREHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key) as c1 from src)r1 where key > '2'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key) as c1 from src)r1 where key > '2'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -12,20 +16,23 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: (key > '2') (type: boolean)
+            Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (key > '2') (type: boolean)
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 14442 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: key (type: string)
+                null sort order: a
                 sort order: +
                 Map-reduce partition columns: key (type: string)
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 14442 Basic stats: COMPLETE Column stats: COMPLETE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string)
           outputColumnNames: _col0
-          Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 166 Data size: 58930 Basic stats: COMPLETE Column stats: COMPLETE
           PTF Operator
             Function definitions:
                 Input definition
@@ -45,14 +52,14 @@ STAGE PLANS:
                         name: sum
                         window function: GenericUDAFSumDouble
                         window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
-            Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 166 Data size: 58930 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: _col0 (type: string), sum_window_0 (type: double)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 15770 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 15770 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -66,8 +73,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key) as c1 from src)r1 where key > 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key) as c1 from src)r1 where key > 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -78,20 +89,23 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: (UDFToDouble(key) > 2.0D) (type: boolean)
+            Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (UDFToDouble(key) > 2.0) (type: boolean)
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              predicate: (UDFToDouble(key) > 2.0D) (type: boolean)
+              Statistics: Num rows: 166 Data size: 14442 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: key (type: string)
+                null sort order: a
                 sort order: +
                 Map-reduce partition columns: key (type: string)
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 14442 Basic stats: COMPLETE Column stats: COMPLETE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string)
           outputColumnNames: _col0
-          Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 166 Data size: 58930 Basic stats: COMPLETE Column stats: COMPLETE
           PTF Operator
             Function definitions:
                 Input definition
@@ -111,14 +125,14 @@ STAGE PLANS:
                         name: sum
                         window function: GenericUDAFSumDouble
                         window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
-            Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 166 Data size: 58930 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: _col0 (type: string), sum_window_0 (type: double)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 15770 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 15770 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -132,8 +146,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key) as c1 from src)r1 where cast(key as int) > 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key) as c1 from src)r1 where cast(key as int) > 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -144,20 +162,23 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: (UDFToInteger(key) > 2) (type: boolean)
+            Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (UDFToInteger(key) > 2) (type: boolean)
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 14442 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: key (type: string)
+                null sort order: a
                 sort order: +
                 Map-reduce partition columns: key (type: string)
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 14442 Basic stats: COMPLETE Column stats: COMPLETE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string)
           outputColumnNames: _col0
-          Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 166 Data size: 58930 Basic stats: COMPLETE Column stats: COMPLETE
           PTF Operator
             Function definitions:
                 Input definition
@@ -177,14 +198,14 @@ STAGE PLANS:
                         name: sum
                         window function: GenericUDAFSumDouble
                         window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
-            Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 166 Data size: 58930 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: _col0 (type: string), sum_window_0 (type: double)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 15770 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 15770 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -198,8 +219,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key) as c1 from src)r1 where (cast(key as int) + 1) > 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key) as c1 from src)r1 where (cast(key as int) + 1) > 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -210,20 +235,23 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: ((UDFToInteger(key) + 1) > 2) (type: boolean)
+            Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ((UDFToInteger(key) + 1) > 2) (type: boolean)
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 14442 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: key (type: string)
+                null sort order: a
                 sort order: +
                 Map-reduce partition columns: key (type: string)
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 14442 Basic stats: COMPLETE Column stats: COMPLETE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string)
           outputColumnNames: _col0
-          Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 166 Data size: 58930 Basic stats: COMPLETE Column stats: COMPLETE
           PTF Operator
             Function definitions:
                 Input definition
@@ -243,14 +271,14 @@ STAGE PLANS:
                         name: sum
                         window function: GenericUDAFSumDouble
                         window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
-            Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 166 Data size: 58930 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: _col0 (type: string), sum_window_0 (type: double)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 15770 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 15770 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -264,8 +292,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select * from (SELECT (cast(key as int))+2 as key, sum(key) over(partition by key) as c1 from src)r1 where (cast(key as int) + 1) > 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select * from (SELECT (cast(key as int))+2 as key, sum(key) over(partition by key) as c1 from src)r1 where (cast(key as int) + 1) > 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -276,20 +308,23 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: (((UDFToInteger(key) + 2) + 1) > 2) (type: boolean)
+            Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (((UDFToInteger(key) + 2) + 1) > 2) (type: boolean)
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 14442 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: key (type: string)
+                null sort order: a
                 sort order: +
                 Map-reduce partition columns: key (type: string)
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 14442 Basic stats: COMPLETE Column stats: COMPLETE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string)
           outputColumnNames: _col0
-          Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 166 Data size: 58930 Basic stats: COMPLETE Column stats: COMPLETE
           PTF Operator
             Function definitions:
                 Input definition
@@ -309,14 +344,14 @@ STAGE PLANS:
                         name: sum
                         window function: GenericUDAFSumDouble
                         window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
-            Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 166 Data size: 58930 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: (UDFToInteger(_col0) + 2) (type: int), sum_window_0 (type: double)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 1992 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 1992 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -330,8 +365,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key, value) as c1  from src)r1 where key > '2'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key, value) as c1  from src)r1 where key > '2'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -342,20 +381,23 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: (key > '2') (type: boolean)
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (key > '2') (type: boolean)
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: key (type: string), value (type: string)
+                null sort order: aa
                 sort order: ++
                 Map-reduce partition columns: key (type: string), value (type: string)
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 166 Data size: 74036 Basic stats: COMPLETE Column stats: COMPLETE
           PTF Operator
             Function definitions:
                 Input definition
@@ -375,14 +417,14 @@ STAGE PLANS:
                         name: sum
                         window function: GenericUDAFSumDouble
                         window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
-            Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 166 Data size: 74036 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: _col0 (type: string), sum_window_0 (type: double)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 15770 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 15770 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -396,8 +438,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key, value) as c1  from src)r1 where key > 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key, value) as c1  from src)r1 where key > 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -408,20 +454,23 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: (UDFToDouble(key) > 2.0D) (type: boolean)
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (UDFToDouble(key) > 2.0) (type: boolean)
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              predicate: (UDFToDouble(key) > 2.0D) (type: boolean)
+              Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: key (type: string), value (type: string)
+                null sort order: aa
                 sort order: ++
                 Map-reduce partition columns: key (type: string), value (type: string)
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 166 Data size: 74036 Basic stats: COMPLETE Column stats: COMPLETE
           PTF Operator
             Function definitions:
                 Input definition
@@ -441,14 +490,14 @@ STAGE PLANS:
                         name: sum
                         window function: GenericUDAFSumDouble
                         window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
-            Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 166 Data size: 74036 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: _col0 (type: string), sum_window_0 (type: double)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 15770 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 15770 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -462,8 +511,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key, value) as c1  from src)r1 where cast(key as int) > 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key, value) as c1  from src)r1 where cast(key as int) > 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -474,20 +527,23 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: (UDFToInteger(key) > 2) (type: boolean)
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (UDFToInteger(key) > 2) (type: boolean)
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: key (type: string), value (type: string)
+                null sort order: aa
                 sort order: ++
                 Map-reduce partition columns: key (type: string), value (type: string)
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 166 Data size: 74036 Basic stats: COMPLETE Column stats: COMPLETE
           PTF Operator
             Function definitions:
                 Input definition
@@ -507,14 +563,14 @@ STAGE PLANS:
                         name: sum
                         window function: GenericUDAFSumDouble
                         window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
-            Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 166 Data size: 74036 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: _col0 (type: string), sum_window_0 (type: double)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 15770 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 15770 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -528,8 +584,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key, value) as c1  from src)r1 where (cast(key as int) + 1) > 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key, value) as c1  from src)r1 where (cast(key as int) + 1) > 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -540,20 +600,23 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: ((UDFToInteger(key) + 1) > 2) (type: boolean)
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ((UDFToInteger(key) + 1) > 2) (type: boolean)
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: key (type: string), value (type: string)
+                null sort order: aa
                 sort order: ++
                 Map-reduce partition columns: key (type: string), value (type: string)
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 166 Data size: 74036 Basic stats: COMPLETE Column stats: COMPLETE
           PTF Operator
             Function definitions:
                 Input definition
@@ -573,14 +636,14 @@ STAGE PLANS:
                         name: sum
                         window function: GenericUDAFSumDouble
                         window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
-            Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 166 Data size: 74036 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: _col0 (type: string), sum_window_0 (type: double)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 15770 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 15770 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -594,8 +657,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select * from (SELECT (cast(key as int))+2 as key, sum(key) over(partition by key, value) as c1  from src)r1 where (cast(key as int) + 1) > 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select * from (SELECT (cast(key as int))+2 as key, sum(key) over(partition by key, value) as c1  from src)r1 where (cast(key as int) + 1) > 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -606,20 +673,23 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: (((UDFToInteger(key) + 2) + 1) > 2) (type: boolean)
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (((UDFToInteger(key) + 2) + 1) > 2) (type: boolean)
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: key (type: string), value (type: string)
+                null sort order: aa
                 sort order: ++
                 Map-reduce partition columns: key (type: string), value (type: string)
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 166 Data size: 74036 Basic stats: COMPLETE Column stats: COMPLETE
           PTF Operator
             Function definitions:
                 Input definition
@@ -639,14 +709,14 @@ STAGE PLANS:
                         name: sum
                         window function: GenericUDAFSumDouble
                         window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
-            Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 166 Data size: 74036 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: (UDFToInteger(_col0) + 2) (type: int), sum_window_0 (type: double)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 1992 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 1992 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -660,8 +730,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, sum(key) over(partition by key) as c2  from src)r1 where key > '2'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, sum(key) over(partition by key) as c2  from src)r1 where key > '2'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -673,20 +747,23 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: (key > '2') (type: boolean)
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (key > '2') (type: boolean)
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: key (type: string), value (type: string)
+                null sort order: aa
                 sort order: ++
                 Map-reduce partition columns: key (type: string), value (type: string)
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 166 Data size: 74036 Basic stats: COMPLETE Column stats: COMPLETE
           PTF Operator
             Function definitions:
                 Input definition
@@ -706,11 +783,11 @@ STAGE PLANS:
                         name: sum
                         window function: GenericUDAFSumDouble
                         window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
-            Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 166 Data size: 74036 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: sum_window_0 (type: double), _col0 (type: string)
               outputColumnNames: sum_window_0, _col0
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 74036 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
                 table:
@@ -724,15 +801,17 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: string)
+              null sort order: a
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 74036 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: sum_window_0 (type: double)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: double), KEY.reducesinkkey0 (type: string)
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 166 Data size: 60258 Basic stats: COMPLETE Column stats: COMPLETE
           PTF Operator
             Function definitions:
                 Input definition
@@ -752,14 +831,14 @@ STAGE PLANS:
                         name: sum
                         window function: GenericUDAFSumDouble
                         window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
-            Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 166 Data size: 60258 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: _col1 (type: string), _col0 (type: double), sum_window_1 (type: double)
               outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 17098 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 17098 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -773,8 +852,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, sum(key) over(partition by key) as c2  from src)r1 where key > 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, sum(key) over(partition by key) as c2  from src)r1 where key > 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -786,20 +869,23 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: (UDFToDouble(key) > 2.0D) (type: boolean)
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (UDFToDouble(key) > 2.0) (type: boolean)
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              predicate: (UDFToDouble(key) > 2.0D) (type: boolean)
+              Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: key (type: string), value (type: string)
+                null sort order: aa
                 sort order: ++
                 Map-reduce partition columns: key (type: string), value (type: string)
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 166 Data size: 74036 Basic stats: COMPLETE Column stats: COMPLETE
           PTF Operator
             Function definitions:
                 Input definition
@@ -819,11 +905,11 @@ STAGE PLANS:
                         name: sum
                         window function: GenericUDAFSumDouble
                         window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
-            Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 166 Data size: 74036 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: sum_window_0 (type: double), _col0 (type: string)
               outputColumnNames: sum_window_0, _col0
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 74036 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
                 table:
@@ -837,15 +923,17 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: string)
+              null sort order: a
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 74036 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: sum_window_0 (type: double)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: double), KEY.reducesinkkey0 (type: string)
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 166 Data size: 60258 Basic stats: COMPLETE Column stats: COMPLETE
           PTF Operator
             Function definitions:
                 Input definition
@@ -865,14 +953,14 @@ STAGE PLANS:
                         name: sum
                         window function: GenericUDAFSumDouble
                         window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
-            Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 166 Data size: 60258 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: _col1 (type: string), _col0 (type: double), sum_window_1 (type: double)
               outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 17098 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 17098 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -886,8 +974,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, sum(key) over(partition by key) as c2  from src)r1 where (cast(key as int) + 1) > 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, sum(key) over(partition by key) as c2  from src)r1 where (cast(key as int) + 1) > 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -899,20 +991,23 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: ((UDFToInteger(key) + 1) > 2) (type: boolean)
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ((UDFToInteger(key) + 1) > 2) (type: boolean)
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: key (type: string), value (type: string)
+                null sort order: aa
                 sort order: ++
                 Map-reduce partition columns: key (type: string), value (type: string)
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 166 Data size: 74036 Basic stats: COMPLETE Column stats: COMPLETE
           PTF Operator
             Function definitions:
                 Input definition
@@ -932,11 +1027,11 @@ STAGE PLANS:
                         name: sum
                         window function: GenericUDAFSumDouble
                         window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
-            Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 166 Data size: 74036 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: sum_window_0 (type: double), _col0 (type: string)
               outputColumnNames: sum_window_0, _col0
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 74036 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
                 table:
@@ -950,15 +1045,17 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: string)
+              null sort order: a
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 74036 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: sum_window_0 (type: double)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: double), KEY.reducesinkkey0 (type: string)
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 166 Data size: 60258 Basic stats: COMPLETE Column stats: COMPLETE
           PTF Operator
             Function definitions:
                 Input definition
@@ -978,14 +1075,14 @@ STAGE PLANS:
                         name: sum
                         window function: GenericUDAFSumDouble
                         window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
-            Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 166 Data size: 60258 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: _col1 (type: string), _col0 (type: double), sum_window_1 (type: double)
               outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 17098 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 17098 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -999,8 +1096,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select * from (SELECT (cast(key as int))+2 as key, sum(key) over(partition by key,value) as c1, sum(key) over(partition by key) as c2  from src)r1 where (cast(key as int) + 1) > 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select * from (SELECT (cast(key as int))+2 as key, sum(key) over(partition by key,value) as c1, sum(key) over(partition by key) as c2  from src)r1 where (cast(key as int) + 1) > 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1012,20 +1113,23 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: (((UDFToInteger(key) + 2) + 1) > 2) (type: boolean)
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (((UDFToInteger(key) + 2) + 1) > 2) (type: boolean)
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: key (type: string), value (type: string)
+                null sort order: aa
                 sort order: ++
                 Map-reduce partition columns: key (type: string), value (type: string)
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 166 Data size: 74036 Basic stats: COMPLETE Column stats: COMPLETE
           PTF Operator
             Function definitions:
                 Input definition
@@ -1045,11 +1149,11 @@ STAGE PLANS:
                         name: sum
                         window function: GenericUDAFSumDouble
                         window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
-            Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 166 Data size: 74036 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: sum_window_0 (type: double), _col0 (type: string)
               outputColumnNames: sum_window_0, _col0
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 74036 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
                 table:
@@ -1063,15 +1167,17 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: string)
+              null sort order: a
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 74036 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: sum_window_0 (type: double)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: double), KEY.reducesinkkey0 (type: string)
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 166 Data size: 60258 Basic stats: COMPLETE Column stats: COMPLETE
           PTF Operator
             Function definitions:
                 Input definition
@@ -1091,14 +1197,14 @@ STAGE PLANS:
                         name: sum
                         window function: GenericUDAFSumDouble
                         window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
-            Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 166 Data size: 60258 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: (UDFToInteger(_col1) + 2) (type: int), _col0 (type: double), sum_window_1 (type: double)
               outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 3320 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 3320 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1112,8 +1218,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, sum(value) over(partition by key) as c2  from src)r1 where key > '2'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, sum(value) over(partition by key) as c2  from src)r1 where key > '2'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1125,20 +1235,23 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: (key > '2') (type: boolean)
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (key > '2') (type: boolean)
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: key (type: string), value (type: string)
+                null sort order: aa
                 sort order: ++
                 Map-reduce partition columns: key (type: string), value (type: string)
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 166 Data size: 74036 Basic stats: COMPLETE Column stats: COMPLETE
           PTF Operator
             Function definitions:
                 Input definition
@@ -1158,11 +1271,11 @@ STAGE PLANS:
                         name: sum
                         window function: GenericUDAFSumDouble
                         window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
-            Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 166 Data size: 74036 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: sum_window_0 (type: double), _col0 (type: string), _col1 (type: string)
               outputColumnNames: sum_window_0, _col0, _col1
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 74036 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
                 table:
@@ -1176,15 +1289,17 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: string)
+              null sort order: a
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 74036 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: sum_window_0 (type: double), _col1 (type: string)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: double), KEY.reducesinkkey0 (type: string), VALUE._col1 (type: string)
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 166 Data size: 75364 Basic stats: COMPLETE Column stats: COMPLETE
           PTF Operator
             Function definitions:
                 Input definition
@@ -1204,14 +1319,14 @@ STAGE PLANS:
                         name: sum
                         window function: GenericUDAFSumDouble
                         window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
-            Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 166 Data size: 75364 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: _col1 (type: string), _col0 (type: double), sum_window_1 (type: double)
               outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 17098 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 17098 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1225,8 +1340,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, sum(value) over(partition by key) as c2  from src)r1 where key > 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, sum(value) over(partition by key) as c2  from src)r1 where key > 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1238,20 +1357,23 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: (UDFToDouble(key) > 2.0D) (type: boolean)
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (UDFToDouble(key) > 2.0) (type: boolean)
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              predicate: (UDFToDouble(key) > 2.0D) (type: boolean)
+              Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: key (type: string), value (type: string)
+                null sort order: aa
                 sort order: ++
                 Map-reduce partition columns: key (type: string), value (type: string)
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 166 Data size: 74036 Basic stats: COMPLETE Column stats: COMPLETE
           PTF Operator
             Function definitions:
                 Input definition
@@ -1271,11 +1393,11 @@ STAGE PLANS:
                         name: sum
                         window function: GenericUDAFSumDouble
                         window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
-            Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 166 Data size: 74036 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: sum_window_0 (type: double), _col0 (type: string), _col1 (type: string)
               outputColumnNames: sum_window_0, _col0, _col1
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 74036 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
                 table:
@@ -1289,15 +1411,17 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: string)
+              null sort order: a
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 74036 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: sum_window_0 (type: double), _col1 (type: string)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: double), KEY.reducesinkkey0 (type: string), VALUE._col1 (type: string)
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 166 Data size: 75364 Basic stats: COMPLETE Column stats: COMPLETE
           PTF Operator
             Function definitions:
                 Input definition
@@ -1317,14 +1441,14 @@ STAGE PLANS:
                         name: sum
                         window function: GenericUDAFSumDouble
                         window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
-            Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 166 Data size: 75364 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: _col1 (type: string), _col0 (type: double), sum_window_1 (type: double)
               outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 17098 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 17098 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1338,8 +1462,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, sum(value) over(partition by key) as c2  from src)r1 where (cast(key as int) + 1) > 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, sum(value) over(partition by key) as c2  from src)r1 where (cast(key as int) + 1) > 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1351,20 +1479,23 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: ((UDFToInteger(key) + 1) > 2) (type: boolean)
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ((UDFToInteger(key) + 1) > 2) (type: boolean)
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: key (type: string), value (type: string)
+                null sort order: aa
                 sort order: ++
                 Map-reduce partition columns: key (type: string), value (type: string)
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 166 Data size: 74036 Basic stats: COMPLETE Column stats: COMPLETE
           PTF Operator
             Function definitions:
                 Input definition
@@ -1384,11 +1515,11 @@ STAGE PLANS:
                         name: sum
                         window function: GenericUDAFSumDouble
                         window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
-            Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 166 Data size: 74036 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: sum_window_0 (type: double), _col0 (type: string), _col1 (type: string)
               outputColumnNames: sum_window_0, _col0, _col1
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 74036 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
                 table:
@@ -1402,15 +1533,17 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: string)
+              null sort order: a
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 74036 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: sum_window_0 (type: double), _col1 (type: string)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: double), KEY.reducesinkkey0 (type: string), VALUE._col1 (type: string)
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 166 Data size: 75364 Basic stats: COMPLETE Column stats: COMPLETE
           PTF Operator
             Function definitions:
                 Input definition
@@ -1430,14 +1563,14 @@ STAGE PLANS:
                         name: sum
                         window function: GenericUDAFSumDouble
                         window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
-            Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 166 Data size: 75364 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: _col1 (type: string), _col0 (type: double), sum_window_1 (type: double)
               outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 17098 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 17098 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1451,8 +1584,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select * from (SELECT (cast(key as int))+2 as key, sum(key) over(partition by key,value) as c1, sum(value) over(partition by key) as c2  from src)r1 where (cast(key as int) + 1) > 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select * from (SELECT (cast(key as int))+2 as key, sum(key) over(partition by key,value) as c1, sum(value) over(partition by key) as c2  from src)r1 where (cast(key as int) + 1) > 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1464,20 +1601,23 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: (((UDFToInteger(key) + 2) + 1) > 2) (type: boolean)
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (((UDFToInteger(key) + 2) + 1) > 2) (type: boolean)
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: key (type: string), value (type: string)
+                null sort order: aa
                 sort order: ++
                 Map-reduce partition columns: key (type: string), value (type: string)
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 166 Data size: 74036 Basic stats: COMPLETE Column stats: COMPLETE
           PTF Operator
             Function definitions:
                 Input definition
@@ -1497,11 +1637,11 @@ STAGE PLANS:
                         name: sum
                         window function: GenericUDAFSumDouble
                         window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
-            Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 166 Data size: 74036 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: sum_window_0 (type: double), _col0 (type: string), _col1 (type: string)
               outputColumnNames: sum_window_0, _col0, _col1
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 74036 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
                 table:
@@ -1515,15 +1655,17 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: string)
+              null sort order: a
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 74036 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: sum_window_0 (type: double), _col1 (type: string)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: double), KEY.reducesinkkey0 (type: string), VALUE._col1 (type: string)
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 166 Data size: 75364 Basic stats: COMPLETE Column stats: COMPLETE
           PTF Operator
             Function definitions:
                 Input definition
@@ -1543,14 +1685,14 @@ STAGE PLANS:
                         name: sum
                         window function: GenericUDAFSumDouble
                         window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
-            Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 166 Data size: 75364 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: (UDFToInteger(_col1) + 2) (type: int), _col0 (type: double), sum_window_1 (type: double)
               outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 3320 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 3320 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1564,8 +1706,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, avg(value) over(partition by value) as c2  from src)r1 where key > '2'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, avg(value) over(partition by value) as c2  from src)r1 where key > '2'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1577,17 +1723,19 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Reduce Output Operator
               key expressions: key (type: string), value (type: string)
+              null sort order: aa
               sort order: ++
               Map-reduce partition columns: key (type: string), value (type: string)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 500 Data size: 223000 Basic stats: COMPLETE Column stats: COMPLETE
           PTF Operator
             Function definitions:
                 Input definition
@@ -1607,11 +1755,11 @@ STAGE PLANS:
                         name: sum
                         window function: GenericUDAFSumDouble
                         window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 223000 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: sum_window_0 (type: double), _col0 (type: string), _col1 (type: string)
               outputColumnNames: sum_window_0, _col0, _col1
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 223000 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
                 table:
@@ -1625,15 +1773,17 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col1 (type: string)
+              null sort order: a
               sort order: +
               Map-reduce partition columns: _col1 (type: string)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 223000 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: sum_window_0 (type: double), _col0 (type: string)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: double), VALUE._col1 (type: string), KEY.reducesinkkey0 (type: string)
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 500 Data size: 227000 Basic stats: COMPLETE Column stats: COMPLETE
           PTF Operator
             Function definitions:
                 Input definition
@@ -1653,17 +1803,17 @@ STAGE PLANS:
                         name: avg
                         window function: GenericUDAFAverageEvaluatorDouble
                         window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 227000 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: _col1 (type: string), _col0 (type: double), avg_window_1 (type: double)
               outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 51500 Basic stats: COMPLETE Column stats: COMPLETE
               Filter Operator
                 predicate: (_col0 > '2') (type: boolean)
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 17098 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 166 Data size: 17098 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1677,8 +1827,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key + 2) as c1 from src)r1 where key > '2'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key + 2) as c1 from src)r1 where key > '2'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1689,18 +1843,20 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Reduce Output Operator
               key expressions: (UDFToDouble(key) + UDFToDouble(2)) (type: double)
+              null sort order: a
               sort order: +
               Map-reduce partition columns: (UDFToDouble(key) + UDFToDouble(2)) (type: double)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: key (type: string)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: string)
           outputColumnNames: _col0
-          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 500 Data size: 177500 Basic stats: COMPLETE Column stats: COMPLETE
           PTF Operator
             Function definitions:
                 Input definition
@@ -1720,17 +1876,17 @@ STAGE PLANS:
                         name: sum
                         window function: GenericUDAFSumDouble
                         window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 177500 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: _col0 (type: string), sum_window_0 (type: double)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
               Filter Operator
                 predicate: (_col0 > '2') (type: boolean)
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 15770 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 166 Data size: 15770 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1744,8 +1900,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key + value) as c1 from src)r1 where key > '2'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key + value) as c1 from src)r1 where key > '2'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1756,18 +1916,20 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Reduce Output Operator
               key expressions: (UDFToDouble(key) + UDFToDouble(value)) (type: double)
+              null sort order: a
               sort order: +
               Map-reduce partition columns: (UDFToDouble(key) + UDFToDouble(value)) (type: double)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: key (type: string), value (type: string)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: string), VALUE._col1 (type: string)
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 500 Data size: 223000 Basic stats: COMPLETE Column stats: COMPLETE
           PTF Operator
             Function definitions:
                 Input definition
@@ -1787,17 +1949,17 @@ STAGE PLANS:
                         name: sum
                         window function: GenericUDAFSumDouble
                         window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 223000 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: _col0 (type: string), sum_window_0 (type: double)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
               Filter Operator
                 predicate: (_col0 > '2') (type: boolean)
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 15770 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 166 Data size: 15770 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1811,8 +1973,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select * from (SELECT key, value, sum(key) over(partition by key, value) as c1 from src)r1 where (key + value) > '2'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select * from (SELECT key, value, sum(key) over(partition by key, value) as c1 from src)r1 where (key + value) > '2'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1823,17 +1989,19 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Reduce Output Operator
               key expressions: key (type: string), value (type: string)
+              null sort order: aa
               sort order: ++
               Map-reduce partition columns: key (type: string), value (type: string)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 500 Data size: 223000 Basic stats: COMPLETE Column stats: COMPLETE
           PTF Operator
             Function definitions:
                 Input definition
@@ -1853,17 +2021,17 @@ STAGE PLANS:
                         name: sum
                         window function: GenericUDAFSumDouble
                         window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 223000 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: _col0 (type: string), _col1 (type: string), sum_window_0 (type: double)
               outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 93000 Basic stats: COMPLETE Column stats: COMPLETE
               Filter Operator
-                predicate: ((UDFToDouble(_col0) + UDFToDouble(_col1)) > 2.0) (type: boolean)
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                predicate: ((UDFToDouble(_col0) + UDFToDouble(_col1)) > 2.0D) (type: boolean)
+                Statistics: Num rows: 166 Data size: 30876 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 166 Data size: 30876 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1877,8 +2045,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select * from (SELECT key, value, sum(key) over(partition by key + value) as c1 from src)r1 where (key + value) > '2'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select * from (SELECT key, value, sum(key) over(partition by key + value) as c1 from src)r1 where (key + value) > '2'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1889,18 +2061,20 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Reduce Output Operator
               key expressions: (UDFToDouble(key) + UDFToDouble(value)) (type: double)
+              null sort order: a
               sort order: +
               Map-reduce partition columns: (UDFToDouble(key) + UDFToDouble(value)) (type: double)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: key (type: string), value (type: string)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: string), VALUE._col1 (type: string)
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 500 Data size: 223000 Basic stats: COMPLETE Column stats: COMPLETE
           PTF Operator
             Function definitions:
                 Input definition
@@ -1920,17 +2094,17 @@ STAGE PLANS:
                         name: sum
                         window function: GenericUDAFSumDouble
                         window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 223000 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: _col0 (type: string), _col1 (type: string), sum_window_0 (type: double)
               outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 93000 Basic stats: COMPLETE Column stats: COMPLETE
               Filter Operator
-                predicate: ((UDFToDouble(_col0) + UDFToDouble(_col1)) > 2.0) (type: boolean)
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                predicate: ((UDFToDouble(_col0) + UDFToDouble(_col1)) > 2.0D) (type: boolean)
+                Statistics: Num rows: 166 Data size: 30876 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 166 Data size: 30876 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1944,8 +2118,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select * from (SELECT (cast(key as int))+(cast(value as int)) as key, sum(key) over(partition by key) as c1 from src)r1 where key > 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select * from (SELECT (cast(key as int))+(cast(value as int)) as key, sum(key) over(partition by key) as c1 from src)r1 where key > 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1956,18 +2134,20 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Reduce Output Operator
               key expressions: key (type: string)
+              null sort order: a
               sort order: +
               Map-reduce partition columns: key (type: string)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: value (type: string)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 500 Data size: 223000 Basic stats: COMPLETE Column stats: COMPLETE
           PTF Operator
             Function definitions:
                 Input definition
@@ -1987,21 +2167,21 @@ STAGE PLANS:
                         name: sum
                         window function: GenericUDAFSumDouble
                         window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 223000 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: _col0 (type: string), _col1 (type: string), sum_window_0 (type: double)
               outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 93000 Basic stats: COMPLETE Column stats: COMPLETE
               Filter Operator
                 predicate: ((UDFToInteger(_col0) + UDFToInteger(_col1)) > 2) (type: boolean)
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 30876 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: (UDFToInteger(_col0) + UDFToInteger(_col1)) (type: int), _col2 (type: double)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 166 Data size: 1992 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 166 Data size: 1992 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

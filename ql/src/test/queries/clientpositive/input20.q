@@ -1,4 +1,5 @@
-CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE;
+--! qt:dataset:src
+CREATE TABLE dest1_n138(key INT, value STRING) STORED AS TEXTFILE;
 
 ADD FILE ../../data/scripts/input20_script.py;
 
@@ -9,7 +10,7 @@ FROM (
   USING 'cat'
   DISTRIBUTE BY key, value
 ) tmap
-INSERT OVERWRITE TABLE dest1
+INSERT OVERWRITE TABLE dest1_n138
 REDUCE tmap.key, tmap.value
 USING 'python input20_script.py'
 AS key, value;
@@ -20,9 +21,9 @@ FROM (
   USING 'cat' 
   DISTRIBUTE BY key, value
 ) tmap
-INSERT OVERWRITE TABLE dest1
+INSERT OVERWRITE TABLE dest1_n138
 REDUCE tmap.key, tmap.value
 USING 'python input20_script.py'
 AS key, value;
 
-SELECT * FROM dest1 ORDER BY key, value;
+SELECT * FROM dest1_n138 ORDER BY key, value;

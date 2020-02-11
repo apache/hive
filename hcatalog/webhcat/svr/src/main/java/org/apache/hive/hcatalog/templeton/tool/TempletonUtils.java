@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -115,6 +115,7 @@ public class TempletonUtils {
    * groups that don't add information such as "Map 1: -/-"
    */
   public static final Pattern HIVE_TEZ_COMPLETE = Pattern.compile("(Map|Reducer) (\\d+:) (\\d+(\\(\\+\\d+\\))?/\\d+)");
+  public static final Pattern HIVE_BEELINE_COMPLETE = Pattern.compile("VERTICES: .* (\\d+%)");
   /**
    * Pig on Tez produces progress report that looks like this
    * DAG Status: status=RUNNING, progress=TotalTasks: 3 Succeeded: 0 Running: 0 Failed: 0 Killed: 0
@@ -138,6 +139,11 @@ public class TempletonUtils {
     Matcher pig = PIG_COMPLETE.matcher(line);
     if (pig.find())
       return pig.group().trim();
+
+    Matcher beeline = HIVE_BEELINE_COMPLETE.matcher(line);
+    if (beeline.find()) {
+      return beeline.group(1).trim() + " complete";
+    }
 
     Matcher hive = HIVE_COMPLETE.matcher(line);
     if(hive.find()) {

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,26 +21,30 @@ package org.apache.hadoop.hive.serde2.objectinspector;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableTimestampLocalTZObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampLocalTZObjectInspector;
+import org.apache.hive.common.util.Murmur3;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazyDouble;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.ObjectInspectorOptions;
@@ -116,7 +120,18 @@ public final class ObjectInspectorUtils {
    *
    */
   public enum NullValueOption {
-	MINVALUE, MAXVALUE
+    MINVALUE(-1),
+    MAXVALUE(1);
+
+    private final int cmpReturnValue;
+
+    NullValueOption(int cmpReturnValue) {
+      this.cmpReturnValue = cmpReturnValue;
+    }
+
+    public int getCmpReturnValue() {
+      return cmpReturnValue;
+    }
   }
 
   /**
@@ -153,7 +168,7 @@ public final class ObjectInspectorUtils {
 
     @Override
     public int hashCode() {
-      return ObjectInspectorUtils.getBucketHashCode(objects, oi);
+      return ObjectInspectorUtils.getBucketHashCodeOld(objects, oi);
     }
   }
 
@@ -167,13 +182,17 @@ public final class ObjectInspectorUtils {
     int hashcode = 1;
     for (Object element : keys) {
       hashcode = 31 * hashcode;
-      if (element == null) continue;
-      if (element instanceof LazyDouble) {
-        long v = Double.doubleToLongBits(((LazyDouble)element).getWritableObject().get());
+      if (element == null) {
+        // nothing
+      } else if (element instanceof LazyDouble) {
+        long v = Double.doubleToLongBits(((LazyDouble) element).getWritableObject().get());
         hashcode = hashcode + (int) (v ^ (v >>> 32));
-      } else if (element instanceof DoubleWritable){
-        long v = Double.doubleToLongBits(((DoubleWritable)element).get());
+      } else if (element instanceof DoubleWritable) {
+        long v = Double.doubleToLongBits(((DoubleWritable) element).get());
         hashcode = hashcode + (int) (v ^ (v >>> 32));
+      } else if (element instanceof Object[]) {
+        // use deep hashcode for arrays
+        hashcode = hashcode + Arrays.deepHashCode((Object[]) element);
       } else {
         hashcode = hashcode + element.hashCode();
       }
@@ -440,7 +459,7 @@ public final class ObjectInspectorUtils {
     }
     case MAP: {
       MapObjectInspector moi = (MapObjectInspector) oi;
-      HashMap<Object, Object> map = new HashMap<Object, Object>();
+      Map<Object, Object> map = new LinkedHashMap<Object, Object>();
       Map<? extends Object, ? extends Object> omap = moi.getMap(o);
       for (Map.Entry<? extends Object, ? extends Object> entry : omap
           .entrySet()) {
@@ -613,10 +632,22 @@ public final class ObjectInspectorUtils {
    * @param bucketFields  the bucketed fields of the row
    * @param bucketFieldInspectors  the ObjectInpsectors for each of the bucketed fields
    * @param totalBuckets the number of buckets in the table
-   * @return the bucket number
+   * @return the bucket number using Murmur hash
    */
   public static int getBucketNumber(Object[] bucketFields, ObjectInspector[] bucketFieldInspectors, int totalBuckets) {
     return getBucketNumber(getBucketHashCode(bucketFields, bucketFieldInspectors), totalBuckets);
+  }
+
+  /**
+   * Computes the bucket number to which the bucketFields belong to
+   * @param bucketFields  the bucketed fields of the row
+   * @param bucketFieldInspectors  the ObjectInpsectors for each of the bucketed fields
+   * @param totalBuckets the number of buckets in the table
+   * @return the bucket number
+   */
+  @Deprecated
+  public static int getBucketNumberOld(Object[] bucketFields, ObjectInspector[] bucketFieldInspectors, int totalBuckets) {
+    return getBucketNumber(getBucketHashCodeOld(bucketFields, bucketFieldInspectors), totalBuckets);
   }
 
   /**
@@ -631,13 +662,15 @@ public final class ObjectInspectorUtils {
     }
     return (hashCode & Integer.MAX_VALUE) % numberOfBuckets;
   }
+
   /**
    * Computes the hash code for the given bucketed fields
    * @param bucketFields
    * @param bucketFieldInspectors
    * @return
    */
-  public static int getBucketHashCode(Object[] bucketFields, ObjectInspector[] bucketFieldInspectors) {
+  @Deprecated
+  public static int getBucketHashCodeOld(Object[] bucketFields, ObjectInspector[] bucketFieldInspectors) {
     int hashCode = 0;
     for (int i = 0; i < bucketFields.length; i++) {
       int fieldHash = ObjectInspectorUtils.hashCode(bucketFields[i], bucketFieldInspectors[i]);
@@ -645,7 +678,6 @@ public final class ObjectInspectorUtils {
     }
     return hashCode;
   }
-
 
   public static int hashCode(Object o, ObjectInspector objIns) {
     if (o == null) {
@@ -698,9 +730,11 @@ public final class ObjectInspectorUtils {
       case DATE:
         return ((DateObjectInspector) poi).getPrimitiveWritableObject(o).hashCode();
       case TIMESTAMP:
-        TimestampWritable t = ((TimestampObjectInspector) poi)
-            .getPrimitiveWritableObject(o);
-        return t.hashCode();
+        // Use old timestamp writable hash code for backwards compatibility
+        TimestampWritable ts = new TimestampWritable(
+            java.sql.Timestamp.valueOf(
+                ((TimestampObjectInspector) poi).getPrimitiveWritableObject(o).toString()));
+        return ts.hashCode();
       case TIMESTAMPLOCALTZ:
         TimestampLocalTZWritable tstz = ((TimestampLocalTZObjectInspector) poi).getPrimitiveWritableObject(o);
         return tstz.hashCode();
@@ -764,6 +798,144 @@ public final class ObjectInspectorUtils {
     }
   }
 
+  public static int getBucketHashCode(Object[] bucketFields, ObjectInspector[] bucketFieldInspectors) {
+    int hashCode = 0;
+    ByteBuffer b = ByteBuffer.allocate(8); // To be used with primitive types
+    for (int i = 0; i < bucketFields.length; i++) {
+      int fieldHash = ObjectInspectorUtils.hashCodeMurmur(
+          bucketFields[i], bucketFieldInspectors[i], b);
+      hashCode = 31 * hashCode + fieldHash;
+    }
+    return hashCode;
+  }
+
+  public static int hashCodeMurmur(Object o, ObjectInspector objIns, ByteBuffer byteBuffer) {
+    if (o == null) {
+      return 0;
+    }
+    // Reset the bytebuffer
+    byteBuffer.clear();
+    switch (objIns.getCategory()) {
+      case PRIMITIVE: {
+        PrimitiveObjectInspector poi = ((PrimitiveObjectInspector) objIns);
+        switch (poi.getPrimitiveCategory()) {
+          case VOID:
+            return 0;
+          case BOOLEAN:
+            return (((BooleanObjectInspector) poi).get(o) ? 1 : 0);
+          case BYTE:
+            return ((ByteObjectInspector) poi).get(o);
+          case SHORT: {
+            byteBuffer.putShort(((ShortObjectInspector) poi).get(o));
+            return Murmur3.hash32(byteBuffer.array(), 2);
+          }
+          case INT: {
+            byteBuffer.putInt(((IntObjectInspector) poi).get(o));
+            return Murmur3.hash32(byteBuffer.array(), 4);
+          }
+          case LONG: {
+            byteBuffer.putLong(((LongObjectInspector) poi).get(o));
+            return Murmur3.hash32(byteBuffer.array(), 8);
+          }
+          case FLOAT: {
+            byteBuffer.putFloat(Float.floatToIntBits(((FloatObjectInspector) poi).get(o)));
+            return Murmur3.hash32(byteBuffer.array(), 4);
+          }
+          case DOUBLE: {
+            // This hash function returns the same result as Double.hashCode()
+            // while DoubleWritable.hashCode returns a different result.
+            byteBuffer.putDouble(Double.doubleToLongBits(((DoubleObjectInspector) poi).get(o)));
+            return Murmur3.hash32(byteBuffer.array(), 8);
+          }
+          case STRING: {
+            // This hash function returns the same result as String.hashCode() when
+            // all characters are ASCII, while Text.hashCode() always returns a
+            // different result.
+            Text text = ((StringObjectInspector) poi).getPrimitiveWritableObject(o);
+            return Murmur3.hash32(text.getBytes(), text.getLength());
+          }
+          case CHAR: {
+            Text text = ((HiveCharObjectInspector) poi).getPrimitiveWritableObject(o).getStrippedValue();
+            return Murmur3.hash32(text.getBytes(), text.getLength());
+          }
+          case VARCHAR: {
+            Text text = ((HiveVarcharObjectInspector)poi).getPrimitiveWritableObject(o).getTextValue();
+            return Murmur3.hash32(text.getBytes(), text.getLength());
+          }
+          case BINARY:
+            return Murmur3.hash32(((BinaryObjectInspector) poi).getPrimitiveWritableObject(o).getBytes());
+
+          case DATE:
+            byteBuffer.putInt(((DateObjectInspector) poi).getPrimitiveWritableObject(o).getDays());
+            return Murmur3.hash32(byteBuffer.array(), 4);
+          case TIMESTAMP: {
+            TimestampWritableV2 t = ((TimestampObjectInspector) poi)
+                    .getPrimitiveWritableObject(o);
+            return Murmur3.hash32(t.getBytes());
+          }
+          case TIMESTAMPLOCALTZ:
+            return Murmur3.hash32((((TimestampLocalTZObjectInspector) poi).getPrimitiveWritableObject(o)).getBytes());
+          case INTERVAL_YEAR_MONTH:
+            byteBuffer.putInt(((HiveIntervalYearMonthObjectInspector) poi)
+                    .getPrimitiveWritableObject(o).hashCode());
+            return Murmur3.hash32(byteBuffer.array(), 4);
+          case INTERVAL_DAY_TIME:
+            byteBuffer.putInt(((HiveIntervalDayTimeObjectInspector) poi)
+                    .getPrimitiveWritableObject(o).hashCode());
+            return Murmur3.hash32(byteBuffer.array(), 4);
+          case DECIMAL:
+            // Since getBucketHashCode uses this, HiveDecimal return the old (much slower) but
+            // compatible hash code.
+            return Murmur3.hash32(((HiveDecimalObjectInspector) poi).getPrimitiveWritableObject(o).getInternalStorage());
+
+          default: {
+            throw new RuntimeException("Unknown type: "
+                    + poi.getPrimitiveCategory());
+          }
+        }
+      }
+      case LIST: {
+        int r = 0;
+        ListObjectInspector listOI = (ListObjectInspector)objIns;
+        ObjectInspector elemOI = listOI.getListElementObjectInspector();
+        for (int ii = 0; ii < listOI.getListLength(o); ++ii) {
+          //r = 31 * r + hashCode(listOI.getListElement(o, ii), elemOI);
+          r = 31 * r + hashCodeMurmur(listOI.getListElement(o, ii), elemOI, byteBuffer);
+        }
+        return r;
+      }
+      case MAP: {
+        int r = 0;
+        MapObjectInspector mapOI = (MapObjectInspector)objIns;
+        ObjectInspector keyOI = mapOI.getMapKeyObjectInspector();
+        ObjectInspector valueOI = mapOI.getMapValueObjectInspector();
+        Map<?, ?> map = mapOI.getMap(o);
+        for (Map.Entry<?,?> entry : map.entrySet()) {
+          r += hashCodeMurmur(entry.getKey(), keyOI, byteBuffer) ^
+                  hashCode(entry.getValue(), valueOI);
+        }
+        return r;
+      }
+      case STRUCT:
+        int r = 0;
+        StructObjectInspector structOI = (StructObjectInspector)objIns;
+        List<? extends StructField> fields = structOI.getAllStructFieldRefs();
+        for (StructField field : fields) {
+          r = 31 * r + hashCodeMurmur(structOI.getStructFieldData(o, field),
+                  field.getFieldObjectInspector(), byteBuffer);
+        }
+        return r;
+
+      case UNION:
+        UnionObjectInspector uOI = (UnionObjectInspector)objIns;
+        byte tag = uOI.getTag(o);
+        return hashCodeMurmur(uOI.getField(o), uOI.getObjectInspectors().get(tag), byteBuffer);
+
+      default:
+        throw new RuntimeException("Unknown type: "+ objIns.getTypeName());
+    }
+  }
+
   /**
    * Compare two arrays of objects with their respective arrays of
    * ObjectInspectors.
@@ -779,6 +951,41 @@ public final class ObjectInspectorUtils {
       if (r != 0) {
         return r;
       }
+    }
+    return 0;
+  }
+
+  public static int compare(Object[] o1, ObjectInspector[] oi1, Object[] o2,
+      ObjectInspector[] oi2, boolean[] columnSortOrderIsDesc, NullValueOption[] nullSortOrder) {
+    assert (o1.length == oi1.length);
+    assert (o2.length == oi2.length);
+    assert (o1.length == o2.length);
+    assert (o1.length == columnSortOrderIsDesc.length);
+    assert (o1.length == nullSortOrder.length);
+
+    for (int i = 0; i < o1.length; i++) {
+      int r = compareNull(o1[i], o2[i]);
+      if (r != 0) {
+        return nullSortOrder[i] == NullValueOption.MINVALUE ? -r : r;
+      }
+
+      if (columnSortOrderIsDesc[i]) {
+        r = compare(o2[i], oi2[i], o1[i], oi1[i]);
+      } else {
+        r = compare(o1[i], oi1[i], o2[i], oi2[i]);
+      }
+      if (r != 0) {
+        return r;
+      }
+    }
+    return 0;
+  }
+
+  public static int compareNull(Object o1, Object o2) {
+    if (o1 == null) {
+      return o2 == null ? 0 : 1;
+    } else if (o2 == null) {
+      return -1;
     }
     return 0;
   }
@@ -846,20 +1053,10 @@ public final class ObjectInspectorUtils {
       return oi1.getCategory().compareTo(oi2.getCategory());
     }
 
-    int nullCmpRtn = -1;
-    switch (nullValueOpt) {
-    case MAXVALUE:
-      nullCmpRtn = 1;
-      break;
-    case MINVALUE:
-      nullCmpRtn = -1;
-      break;
-    }
-
     if (o1 == null) {
-      return o2 == null ? 0 : nullCmpRtn;
+      return o2 == null ? 0 : nullValueOpt.getCmpReturnValue();
     } else if (o2 == null) {
-      return -nullCmpRtn;
+      return -nullValueOpt.getCmpReturnValue();
     }
 
     switch (oi1.getCategory()) {
@@ -952,16 +1149,16 @@ public final class ObjectInspectorUtils {
       }
 
       case DATE: {
-        DateWritable d1 = ((DateObjectInspector) poi1)
+        DateWritableV2 d1 = ((DateObjectInspector) poi1)
             .getPrimitiveWritableObject(o1);
-        DateWritable d2 = ((DateObjectInspector) poi2)
+        DateWritableV2 d2 = ((DateObjectInspector) poi2)
             .getPrimitiveWritableObject(o2);
         return d1.compareTo(d2);
       }
       case TIMESTAMP: {
-        TimestampWritable t1 = ((TimestampObjectInspector) poi1)
+        TimestampWritableV2 t1 = ((TimestampObjectInspector) poi1)
             .getPrimitiveWritableObject(o1);
-        TimestampWritable t2 = ((TimestampObjectInspector) poi2)
+        TimestampWritableV2 t2 = ((TimestampObjectInspector) poi2)
             .getPrimitiveWritableObject(o2);
         return t1.compareTo(t2);
       }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -282,7 +282,7 @@ public enum JavaDataModel {
     return ((size + 8) >> 3) << 3;
   }
 
-  private long lengthForPrimitiveArrayOfSize(int primitiveSize, long length) {
+  public long lengthForPrimitiveArrayOfSize(int primitiveSize, long length) {
     return alignUp(array() + primitiveSize*length, memoryAlign());
   }
 

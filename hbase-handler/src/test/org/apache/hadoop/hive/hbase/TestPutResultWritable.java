@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -43,9 +43,9 @@ public class TestPutResultWritable {
       new KeyValue(Bytes.toBytes("test-row"), Bytes.toBytes("cfa"),
         Bytes.toBytes("col2"), Bytes.toBytes("cfacol2"))
     };
-    Result expected = new Result(kvs);
+    Result expected = Result.create(kvs);
     ResultWritable actual = copy(new ResultWritable(expected), new ResultWritable());
-    Assert.assertArrayEquals(expected.raw(), actual.getResult().raw());
+    Assert.assertArrayEquals(expected.rawCells(), actual.getResult().rawCells());
 
   }
 
@@ -65,7 +65,8 @@ public class TestPutResultWritable {
     }
     PutWritable actual = copy(new PutWritable(expected), new PutWritable());
     Assert.assertArrayEquals(expected.getRow(), actual.getPut().getRow());
-    Assert.assertEquals(expected.getFamilyMap(), actual.getPut().getFamilyMap());
+    Assert.assertEquals(expected.getFamilyCellMap().keySet(),
+        actual.getPut().getFamilyCellMap().keySet());
   }
 
   private <T extends Writable> T copy(T oldWritable, T newWritable) throws IOException {

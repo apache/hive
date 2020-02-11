@@ -1,9 +1,12 @@
+--! qt:dataset:src
+--! qt:dataset:part
+
+set hive.vectorized.execution.enabled=false;
 set hive.compute.query.using.stats=false;
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 set hive.merge.orcfile.stripe.level=false;
 set hive.exec.dynamic.partition=true;
-set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.optimize.sort.dynamic.partition=false;
 set mapred.min.split.size=1000;
 set mapred.max.split.size=2000;

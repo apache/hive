@@ -184,7 +184,7 @@ public class QueryInfo {
   private static String createAppSpecificLocalDir(String baseDir, String applicationIdString,
                                                   String user, int dagIdentifier) {
     // TODO This is broken for secure clusters. The app will not have permission to create these directories.
-    // May work via Slider - since the directory would already exist. Otherwise may need a custom shuffle handler.
+    // May work via YARN Service - since the directory would already exist. Otherwise may need a custom shuffle handler.
     // TODO This should be the process user - and not the user on behalf of whom the query is being submitted.
     return baseDir + File.separator + "usercache" + File.separator + user + File.separator +
         "appcache" + File.separator + applicationIdString + File.separator + dagIdentifier;

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -121,7 +121,7 @@ public class TestHs2Hooks {
 
     @Override
     public void postAnalyze(HiveSemanticAnalyzerHookContext context,
-        List<Task<? extends Serializable>> rootTasks) throws SemanticException {
+        List<Task<?>> rootTasks) throws SemanticException {
       try {
         userName = context.getUserName();
         ipAddress = context.getIpAddress();
@@ -147,6 +147,7 @@ public class TestHs2Hooks {
     hiveConf.setVar(ConfVars.SEMANTIC_ANALYZER_HOOK,
         SemanticAnalysisHook.class.getName());
     hiveConf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
+    hiveConf.setBoolVar(ConfVars.HIVESTATSCOLAUTOGATHER, false);
 
     hiveServer2 = new HiveServer2();
     hiveServer2.init(hiveConf);
@@ -187,6 +188,7 @@ public class TestHs2Hooks {
     Properties connProp = new Properties();
     connProp.setProperty("user", System.getProperty("user.name"));
     connProp.setProperty("password", "");
+
     HiveConnection connection = new HiveConnection("jdbc:hive2://localhost:10000/default", connProp);
     Statement stmt = connection.createStatement();
     stmt.executeQuery("show databases");
@@ -234,5 +236,40 @@ public class TestHs2Hooks {
     Assert.assertTrue(SemanticAnalysisHook.ipAddress,
         SemanticAnalysisHook.ipAddress.contains("127.0.0.1"));
     Assert.assertEquals("show tables", SemanticAnalysisHook.command);
+
+    stmt.close();
+    connection.close();
+  }
+
+  @Test
+  public void testPostAnalysisHookContexts() throws Throwable {
+    Properties connProp = new Properties();
+    connProp.setProperty("user", System.getProperty("user.name"));
+    connProp.setProperty("password", "");
+
+    HiveConnection connection = new HiveConnection("jdbc:hive2://localhost:10000/default", connProp);
+    Statement stmt = connection.createStatement();
+    stmt.execute("create table testPostAnalysisHookContexts as select '3'");
+    Throwable error = PostExecHook.error;
+    if (error != null) {
+      throw error;
+    }
+    error = PreExecHook.error;
+    if (error != null) {
+      throw error;
+    }
+
+    Assert.assertEquals(HiveOperation.CREATETABLE_AS_SELECT, SemanticAnalysisHook.commandType);
+
+    error = SemanticAnalysisHook.preAnalyzeError;
+    if (error != null) {
+      throw error;
+    }
+    error = SemanticAnalysisHook.postAnalyzeError;
+    if (error != null) {
+      throw error;
+    }
+    stmt.close();
+    connection.close();
   }
 }

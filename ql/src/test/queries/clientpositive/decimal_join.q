@@ -1,3 +1,4 @@
+SET hive.vectorized.execution.enabled=false;
 -- HIVE-5292 Join on decimal columns fails
 -- SORT_QUERY_RESULTS
 

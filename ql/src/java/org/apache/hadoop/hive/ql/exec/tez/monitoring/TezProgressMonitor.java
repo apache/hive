@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -35,12 +35,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import static org.apache.tez.dag.api.client.DAGStatus.State.KILLED;
 
-class TezProgressMonitor implements ProgressMonitor {
+public class TezProgressMonitor implements ProgressMonitor {
   private static final int COLUMN_1_WIDTH = 16;
   private final List<BaseWork> topSortedWork;
   private final SessionState.LogHelper console;
@@ -94,6 +92,7 @@ class TezProgressMonitor implements ProgressMonitor {
         if (progress != null) {
           // Map 1 .......... container  SUCCEEDED      7          7        0        0       0       0
 
+          // TODO: can we pass custom things thru the progress?
           results.add(
             Arrays.asList(
               getNameWithProgress(vertexName, progress.succeededTaskCount, progress.totalTaskCount),
@@ -210,7 +209,7 @@ class TezProgressMonitor implements ProgressMonitor {
     return mode;
   }
 
-  static class VertexProgress {
+  public static class VertexProgress {
     private final int totalTaskCount;
     private final int succeededTaskCount;
     private final int failedTaskAttemptCount;
@@ -326,5 +325,9 @@ class TezProgressMonitor implements ProgressMonitor {
       result = 31 * result + dagState.hashCode();
       return result;
     }
+  }
+
+  public DAGStatus getStatus() {
+    return status;
   }
 }

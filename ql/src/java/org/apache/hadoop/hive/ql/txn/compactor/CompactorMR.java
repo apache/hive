@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -24,7 +25,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.regex.Matcher;
 
 import org.apache.hadoop.conf.Configuration;
@@ -34,20 +34,25 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.StringableMap;
-import org.apache.hadoop.hive.common.ValidCompactorTxnList;
+import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
+import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
-import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.AcidUtils.Directory;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
@@ -70,7 +75,11 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapred.TaskAttemptContext;
 import org.apache.hadoop.mapred.lib.NullOutputFormat;
+import org.apache.hadoop.mapreduce.security.TokenCache;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hive.common.util.Ref;
+import org.apache.parquet.Strings;
+import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -108,7 +117,7 @@ public class CompactorMR {
   }
 
   private JobConf createBaseJobConf(HiveConf conf, String jobName, Table t, StorageDescriptor sd,
-                                    ValidTxnList txns, CompactionInfo ci) {
+                                    ValidWriteIdList writeIds, CompactionInfo ci) {
     JobConf job = new JobConf(conf);
     job.setJobName(jobName);
     job.setOutputKeyClass(NullWritable.class);
@@ -121,23 +130,24 @@ public class CompactorMR {
     job.setOutputFormat(NullOutputFormat.class);
     job.setOutputCommitter(CompactorOutputCommitter.class);
 
-    String queueName = conf.getVar(HiveConf.ConfVars.COMPACTOR_JOB_QUEUE);
-    if(queueName != null && queueName.length() > 0) {
-      job.setQueueName(queueName);
-    }
-
     job.set(FINAL_LOCATION, sd.getLocation());
-    job.set(TMP_LOCATION, sd.getLocation() + "/" + TMPDIR + "_" + UUID.randomUUID().toString());
+    job.set(TMP_LOCATION, QueryCompactor.Util.generateTmpPath(sd));
     job.set(INPUT_FORMAT_CLASS_NAME, sd.getInputFormat());
     job.set(OUTPUT_FORMAT_CLASS_NAME, sd.getOutputFormat());
     job.setBoolean(IS_COMPRESSED, sd.isCompressed());
     job.set(TABLE_PROPS, new StringableMap(t.getParameters()).toString());
     job.setInt(NUM_BUCKETS, sd.getNumBuckets());
-    job.set(ValidTxnList.VALID_TXNS_KEY, txns.toString());
+    job.set(ValidWriteIdList.VALID_WRITEIDS_KEY, writeIds.toString());
     overrideMRProps(job, t.getParameters()); // override MR properties from tblproperties if applicable
     if (ci.properties != null) {
       overrideTblProps(job, t.getParameters(), ci.properties);
     }
+
+    String queueName = HiveConf.getVar(job, ConfVars.COMPACTOR_JOB_QUEUE);
+    if (queueName != null && queueName.length() > 0) {
+      job.setQueueName(queueName);
+    }
+
     setColumnTypes(job, sd.getCols());
     //with feature on, multiple tasks may get into conflict creating/using TMP_LOCATION and if we were
     //to generate the target dir in the Map task, there is no easy way to pass it to OutputCommitter
@@ -145,7 +155,7 @@ public class CompactorMR {
     job.setBoolean("mapreduce.map.speculative", false);
 
     // Set appropriate Acid readers/writers based on the table properties.
-    AcidUtils.setAcidOperationalProperties(job,
+    AcidUtils.setAcidOperationalProperties(job, true,
             AcidUtils.getAcidOperationalProperties(t.getParameters()));
 
     return job;
@@ -195,27 +205,39 @@ public class CompactorMR {
    * @param jobName name to run this job with
    * @param t metastore table
    * @param sd metastore storage descriptor
-   * @param txns list of valid transactions
+   * @param writeIds list of valid write ids
    * @param ci CompactionInfo
    * @throws java.io.IOException if the job fails
    */
-  void run(HiveConf conf, String jobName, Table t, StorageDescriptor sd,
-           ValidTxnList txns, CompactionInfo ci, Worker.StatsUpdater su, TxnStore txnHandler) throws IOException {
+  void run(HiveConf conf, String jobName, Table t, Partition p, StorageDescriptor sd, ValidWriteIdList writeIds,
+           CompactionInfo ci, Worker.StatsUpdater su, IMetaStoreClient msc, Directory dir) throws IOException {
 
     if(conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST) && conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION)) {
       throw new RuntimeException(HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION.name() + "=true");
     }
-    JobConf job = createBaseJobConf(conf, jobName, t, sd, txns, ci);
+    
+    /**
+     * Run major compaction in a HiveQL query (compaction for MM tables handled in {@link MmMajorQueryCompactor}
+     * class).
+     * Find a better way:
+     * 1. A good way to run minor compaction (currently disabled when this config is enabled)
+     * 2. More generic approach to collecting files in the same logical bucket to compact within the same task
+     * (currently we're using Tez split grouping).
+     */
+    QueryCompactor queryCompactor = QueryCompactorFactory.getQueryCompactor(t, conf, ci);
+    if (queryCompactor != null) {
+      queryCompactor.runCompaction(conf, t, p, sd, writeIds, ci);
+      return;
+    }
 
-    // Figure out and encode what files we need to read.  We do this here (rather than in
-    // getSplits below) because as part of this we discover our minimum and maximum transactions,
-    // and discovering that in getSplits is too late as we then have no way to pass it to our
-    // mapper.
+    JobConf job = createBaseJobConf(conf, jobName, t, sd, writeIds, ci);
+    if (!QueryCompactor.Util.isEnoughToCompact(ci.isMajorCompaction(), dir, sd)) {
+      return;
+    }
 
-    AcidUtils.Directory dir = AcidUtils.getAcidState(new Path(sd.getLocation()), conf, txns, false, true);
     List<AcidUtils.ParsedDelta> parsedDeltas = dir.getCurrentDirectories();
-    int maxDeltastoHandle = conf.getIntVar(HiveConf.ConfVars.COMPACTOR_MAX_NUM_DELTA);
-    if(parsedDeltas.size() > maxDeltastoHandle) {
+    int maxDeltasToHandle = conf.getIntVar(HiveConf.ConfVars.COMPACTOR_MAX_NUM_DELTA);
+    if (parsedDeltas.size() > maxDeltasToHandle) {
       /**
        * if here, that means we have very high number of delta files.  This may be sign of a temporary
        * glitch or a real issue.  For example, if transaction batch size or transaction size is set too
@@ -228,16 +250,16 @@ public class CompactorMR {
         + " located at " + sd.getLocation() + "! This is likely a sign of misconfiguration, " +
         "especially if this message repeats.  Check that compaction is running properly.  Check for any " +
         "runaway/mis-configured process writing to ACID tables, especially using Streaming Ingest API.");
-      int numMinorCompactions = parsedDeltas.size() / maxDeltastoHandle;
-      for(int jobSubId = 0; jobSubId < numMinorCompactions; jobSubId++) {
-        JobConf jobMinorCompact = createBaseJobConf(conf, jobName + "_" + jobSubId, t, sd, txns, ci);
+      int numMinorCompactions = parsedDeltas.size() / maxDeltasToHandle;
+      for (int jobSubId = 0; jobSubId < numMinorCompactions; jobSubId++) {
+        JobConf jobMinorCompact = createBaseJobConf(conf, jobName + "_" + jobSubId, t, sd, writeIds, ci);
         launchCompactionJob(jobMinorCompact,
           null, CompactionType.MINOR, null,
-          parsedDeltas.subList(jobSubId * maxDeltastoHandle, (jobSubId + 1) * maxDeltastoHandle),
-          maxDeltastoHandle, -1, conf, txnHandler, ci.id, jobName);
+            parsedDeltas.subList(jobSubId * maxDeltasToHandle, (jobSubId + 1) * maxDeltasToHandle),
+            maxDeltasToHandle, -1, conf, msc, ci.id, jobName);
       }
       //now recompute state since we've done minor compactions and have different 'best' set of deltas
-      dir = AcidUtils.getAcidState(new Path(sd.getLocation()), conf, txns);
+      dir = AcidUtils.getAcidState(null, new Path(sd.getLocation()), conf, writeIds, Ref.from(false), false, null, false);
     }
 
     StringableList dirsToSearch = new StringableList();
@@ -266,20 +288,14 @@ public class CompactorMR {
       }
     }
 
-    if (parsedDeltas.size() == 0 && dir.getOriginalFiles().size() == 0) {
-      // Skip compaction if there's no delta files AND there's no original files
-      LOG.error("No delta files or original files found to compact in " + sd.getLocation() + " for compactionId=" + ci.id);
-      return;
-    }
-
     launchCompactionJob(job, baseDir, ci.type, dirsToSearch, dir.getCurrentDirectories(),
-      dir.getCurrentDirectories().size(), dir.getObsolete().size(), conf, txnHandler, ci.id, jobName);
+      dir.getCurrentDirectories().size(), dir.getObsolete().size(), conf, msc, ci.id, jobName);
 
     su.gatherStats();
   }
 
   /**
-   * @param baseDir if not null, it's either table/partition root folder or base_xxxx.  
+   * @param baseDir if not null, it's either table/partition root folder or base_xxxx.
    *                If it's base_xxxx, it's in dirsToSearch, else the actual original files
    *                (all leaves recursively) are in the dirsToSearch list
    */
@@ -287,20 +303,24 @@ public class CompactorMR {
                                    StringableList dirsToSearch,
                                    List<AcidUtils.ParsedDelta> parsedDeltas,
                                    int curDirNumber, int obsoleteDirNumber, HiveConf hiveConf,
-                                   TxnStore txnHandler, long id, String jobName) throws IOException {
+                                   IMetaStoreClient msc, long id, String jobName) throws IOException {
     job.setBoolean(IS_MAJOR, compactionType == CompactionType.MAJOR);
     if(dirsToSearch == null) {
       dirsToSearch = new StringableList();
     }
     StringableList deltaDirs = new StringableList();
+    // Note: if compaction creates a delta, it won't replace an existing base dir, so the txn ID
+    //       of the base dir won't be a part of delta's range. If otoh compaction creates a base,
+    //       we don't care about this value because bases don't have min txn ID in the name.
+    //       However logically this should also take base into account if it's included.
     long minTxn = Long.MAX_VALUE;
     long maxTxn = Long.MIN_VALUE;
     for (AcidUtils.ParsedDelta delta : parsedDeltas) {
       LOG.debug("Adding delta " + delta.getPath() + " to directories to search");
       dirsToSearch.add(delta.getPath());
       deltaDirs.add(delta.getPath());
-      minTxn = Math.min(minTxn, delta.getMinTransaction());
-      maxTxn = Math.max(maxTxn, delta.getMaxTransaction());
+      minTxn = Math.min(minTxn, delta.getMinWriteId());
+      maxTxn = Math.max(maxTxn, delta.getMaxWriteId());
     }
 
     if (baseDir != null) job.set(BASE_DIR, baseDir.toString());
@@ -308,6 +328,15 @@ public class CompactorMR {
     job.set(DIRS_TO_SEARCH, dirsToSearch.toString());
     job.setLong(MIN_TXN, minTxn);
     job.setLong(MAX_TXN, maxTxn);
+
+    // Add tokens for all the file system in the input path.
+    ArrayList<Path> dirs = new ArrayList<>();
+    if (baseDir != null) {
+      dirs.add(baseDir);
+    }
+    dirs.addAll(deltaDirs);
+    dirs.addAll(dirsToSearch);
+    TokenCache.obtainTokensForNamenodes(job.getCredentials(), dirs.toArray(new Path[]{}), job);
 
     if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST)) {
       mrJob = job;
@@ -317,13 +346,27 @@ public class CompactorMR {
       job.getJobName() + "' to " + job.getQueueName() + " queue.  " +
       "(current delta dirs count=" + curDirNumber +
       ", obsolete delta dirs count=" + obsoleteDirNumber + ". TxnIdRange[" + minTxn + "," + maxTxn + "]");
-    RunningJob rj = new JobClient(job).submitJob(job);
-    LOG.info("Submitted compaction job '" + job.getJobName() + "' with jobID=" + rj.getID() + " compaction ID=" + id);
-    txnHandler.setHadoopJobId(rj.getID().toString(), id);
-    rj.waitForCompletion();
-    if (!rj.isSuccessful()) {
-      throw new IOException(compactionType == CompactionType.MAJOR ? "Major" : "Minor" +
-          " compactor job failed for " + jobName + "! Hadoop JobId: " + rj.getID() );
+    JobClient jc = null;
+    try {
+      jc = new JobClient(job);
+      RunningJob rj = jc.submitJob(job);
+      LOG.info("Submitted compaction job '" + job.getJobName() +
+          "' with jobID=" + rj.getID() + " compaction ID=" + id);
+      try {
+        msc.setHadoopJobid(rj.getID().toString(), id);
+      } catch (TException e) {
+        LOG.warn("Error setting hadoop job, jobId=" + rj.getID().toString()
+            + " compactionId=" + id, e);
+      }
+      rj.waitForCompletion();
+      if (!rj.isSuccessful()) {
+        throw new IOException((compactionType == CompactionType.MAJOR ? "Major" : "Minor") +
+               " compactor job failed for " + jobName + "! Hadoop JobId: " + rj.getID());
+      }
+    } finally {
+      if (jc!=null) {
+        jc.close();
+      }
     }
   }
   /**
@@ -348,8 +391,22 @@ public class CompactorMR {
     }
     job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, colNames.toString());
     job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, colTypes.toString());
-    HiveConf.setBoolVar(job, HiveConf.ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN, true);
     HiveConf.setVar(job, HiveConf.ConfVars.HIVEINPUTFORMAT, HiveInputFormat.class.getName());
+  }
+
+  // Remove the directories for aborted transactions only
+  private void removeFilesForMmTable(HiveConf conf, Directory dir) throws IOException {
+    // For MM table, we only want to delete delta dirs for aborted txns.
+    List<Path> filesToDelete = dir.getAbortedDirectories();
+    if (filesToDelete.size() < 1) {
+      return;
+    }
+    LOG.info("About to remove " + filesToDelete.size() + " aborted directories from " + dir);
+    FileSystem fs = filesToDelete.get(0).getFileSystem(conf);
+    for (Path dead : filesToDelete) {
+      LOG.debug("Going to delete path " + dead.toString());
+      fs.delete(dead, true);
+    }
   }
 
   public JobConf getMrJob() {
@@ -536,11 +593,16 @@ public class CompactorMR {
             dir.getName().startsWith(AcidUtils.DELTA_PREFIX) ||
             dir.getName().startsWith(AcidUtils.DELETE_DELTA_PREFIX)) {
           boolean sawBase = dir.getName().startsWith(AcidUtils.BASE_PREFIX);
+          boolean isRawFormat = !dir.getName().startsWith(AcidUtils.DELETE_DELTA_PREFIX)
+            && AcidUtils.MetaDataFile.isRawFormat(dir, fs, null);//deltes can't be raw format
 
-          FileStatus[] files = fs.listStatus(dir, AcidUtils.bucketFileFilter);
+          FileStatus[] files = fs.listStatus(dir, isRawFormat ? AcidUtils.originalBucketFilter
+            : AcidUtils.bucketFileFilter);
           for(FileStatus f : files) {
             // For each file, figure out which bucket it is.
-            Matcher matcher = AcidUtils.BUCKET_DIGIT_PATTERN.matcher(f.getPath().getName());
+            Matcher matcher = isRawFormat ?
+              AcidUtils.LEGACY_BUCKET_DIGIT_PATTERN.matcher(f.getPath().getName())
+              : AcidUtils.BUCKET_DIGIT_PATTERN.matcher(f.getPath().getName());
             addFileToMap(matcher, f.getPath(), sawBase, splitToBucketMap);
           }
         } else {
@@ -550,16 +612,34 @@ public class CompactorMR {
         }
       }
 
+      boolean isTableBucketed = entries.getInt(NUM_BUCKETS, -1) != -1;
 
       List<InputSplit> splits = new ArrayList<InputSplit>(splitToBucketMap.size());
       for (Map.Entry<Integer, BucketTracker> e : splitToBucketMap.entrySet()) {
         BucketTracker bt = e.getValue();
+        // For non-bucketed tables we might not have a 00000x_0 in all the delta dirs e.g. after
+        // multiple ingestions of various sizes.
+        Path[] deltasForSplit = isTableBucketed ? deltaDirs : getDeltaDirsFromBucketTracker(bt);
         splits.add(new CompactorInputSplit(entries, e.getKey(), bt.buckets,
-            bt.sawBase ? baseDir : null, deltaDirs));
+            bt.sawBase ? baseDir : null, deltasForSplit));
       }
 
       LOG.debug("Returning " + splits.size() + " splits");
       return splits.toArray(new InputSplit[splits.size()]);
+    }
+
+    private static Path[] getDeltaDirsFromBucketTracker(BucketTracker bucketTracker) {
+      List<Path> resultList = new ArrayList<>(bucketTracker.buckets.size());
+
+      for (int i = 0; i < bucketTracker.buckets.size(); ++i) {
+        Path p = bucketTracker.buckets.get(i).getParent();
+        if (p.getName().startsWith(AcidUtils.DELTA_PREFIX) ||
+            p.getName().startsWith(AcidUtils.DELETE_DELTA_PREFIX)) {
+          resultList.add(p);
+        }
+      }
+
+      return resultList.toArray(new Path[0]);
     }
 
     @Override
@@ -571,8 +651,12 @@ public class CompactorMR {
     private void addFileToMap(Matcher matcher, Path file, boolean sawBase,
                               Map<Integer, BucketTracker> splitToBucketMap) {
       if (!matcher.find()) {
-        LOG.warn("Found a non-bucket file that we thought matched the bucket pattern! " +
-            file.toString() + " Matcher=" + matcher.toString());
+        String msg = "Found a non-bucket file that we thought matched the bucket pattern! " +
+          file.toString() + " Matcher=" + matcher.toString();
+        LOG.error(msg);
+        //following matcher.group() would fail anyway and we don't want to skip files since that
+        //may be a data loss scenario
+        throw new IllegalArgumentException(msg);
       }
       int bucketNum = Integer.parseInt(matcher.group());
       BucketTracker bt = splitToBucketMap.get(bucketNum);
@@ -659,34 +743,28 @@ public class CompactorMR {
       @SuppressWarnings("unchecked")//since there is no way to parametrize instance of Class
       AcidInputFormat<WritableComparable, V> aif =
           instantiate(AcidInputFormat.class, jobConf.get(INPUT_FORMAT_CLASS_NAME));
-      ValidTxnList txnList =
-          new ValidCompactorTxnList(jobConf.get(ValidTxnList.VALID_TXNS_KEY));
+      ValidWriteIdList writeIdList =
+          new ValidCompactorWriteIdList(jobConf.get(ValidWriteIdList.VALID_WRITEIDS_KEY));
 
       boolean isMajor = jobConf.getBoolean(IS_MAJOR, false);
       AcidInputFormat.RawReader<V> reader =
           aif.getRawReader(jobConf, isMajor, split.getBucket(),
-              txnList, split.getBaseDir(), split.getDeltaDirs());
+                  writeIdList, split.getBaseDir(), split.getDeltaDirs());
       RecordIdentifier identifier = reader.createKey();
       V value = reader.createValue();
       getWriter(reporter, reader.getObjectInspector(), split.getBucket());
 
-      AcidUtils.AcidOperationalProperties acidOperationalProperties
-          = AcidUtils.getAcidOperationalProperties(jobConf);
-
-      if (!isMajor && acidOperationalProperties.isSplitUpdate()) {
-        // When split-update is enabled for ACID, we initialize a separate deleteEventWriter
-        // that is used to write all the delete events (in case of minor compaction only). For major
-        // compaction, history is not required to be maintained hence the delete events are processed
-        // but not re-written separately.
-        getDeleteEventWriter(reporter, reader.getObjectInspector(), split.getBucket());
-      }
+      AcidUtils.AcidOperationalProperties acidOperationalProperties = AcidUtils.getAcidOperationalProperties(jobConf);
 
       while (reader.next(identifier, value)) {
         boolean sawDeleteRecord = reader.isDelete(value);
-        if (isMajor && sawDeleteRecord) continue;
-        if (sawDeleteRecord && deleteEventWriter != null) {
-          // When minor compacting, write delete events to a separate file when split-update is
-          // turned on.
+        if (isMajor && sawDeleteRecord) {
+          continue;
+        }
+        if (sawDeleteRecord && acidOperationalProperties.isSplitUpdate()) {
+          if (deleteEventWriter == null) {
+            getDeleteEventWriter(reporter, reader.getObjectInspector(), split.getBucket());
+          }
           deleteEventWriter.write(value);
           reporter.progress();
         } else {
@@ -710,7 +788,17 @@ public class CompactorMR {
         deleteEventWriter.close(false);
       }
     }
-
+    static long getCompactorTxnId(Configuration jobConf) {
+      String snapshot = jobConf.get(ValidTxnList.VALID_TXNS_KEY);
+      if(Strings.isNullOrEmpty(snapshot)) {
+        throw new IllegalStateException(ValidTxnList.VALID_TXNS_KEY + " not found for writing to "
+            + jobConf.get(FINAL_LOCATION));
+      }
+      ValidTxnList validTxnList = new ValidReadTxnList();
+      validTxnList.readFromString(snapshot);
+      //this is id of the current (compactor) txn
+      return validTxnList.getHighWatermark();
+    }
     private void getWriter(Reporter reporter, ObjectInspector inspector,
                            int bucket) throws IOException {
       if (writer == null) {
@@ -720,11 +808,12 @@ public class CompactorMR {
             .isCompressed(jobConf.getBoolean(IS_COMPRESSED, false))
             .tableProperties(new StringableMap(jobConf.get(TABLE_PROPS)).toProperties())
             .reporter(reporter)
-            .minimumTransactionId(jobConf.getLong(MIN_TXN, Long.MAX_VALUE))
-            .maximumTransactionId(jobConf.getLong(MAX_TXN, Long.MIN_VALUE))
+            .minimumWriteId(jobConf.getLong(MIN_TXN, Long.MAX_VALUE))
+            .maximumWriteId(jobConf.getLong(MAX_TXN, Long.MIN_VALUE))
             .bucket(bucket)
-            .statementId(-1);//setting statementId == -1 makes compacted delta files use
-        //delta_xxxx_yyyy format
+            .statementId(-1)//setting statementId == -1 makes compacted delta files use
+            .visibilityTxnId(getCompactorTxnId(jobConf));
+      //delta_xxxx_yyyy format
 
         // Instantiate the underlying output format
         @SuppressWarnings("unchecked")//since there is no way to parametrize instance of Class
@@ -737,27 +826,25 @@ public class CompactorMR {
 
     private void getDeleteEventWriter(Reporter reporter, ObjectInspector inspector,
         int bucket) throws IOException {
-      if (deleteEventWriter == null) {
-        AcidOutputFormat.Options options = new AcidOutputFormat.Options(jobConf);
-        options.inspector(inspector)
-          .writingBase(false)
+
+      AcidOutputFormat.Options options = new AcidOutputFormat.Options(jobConf);
+      options.inspector(inspector).writingBase(false)
           .writingDeleteDelta(true)   // this is the option which will make it a delete writer
           .isCompressed(jobConf.getBoolean(IS_COMPRESSED, false))
-          .tableProperties(new StringableMap(jobConf.get(TABLE_PROPS)).toProperties())
-          .reporter(reporter)
-          .minimumTransactionId(jobConf.getLong(MIN_TXN, Long.MAX_VALUE))
-          .maximumTransactionId(jobConf.getLong(MAX_TXN, Long.MIN_VALUE))
-          .bucket(bucket)
-          .statementId(-1);//setting statementId == -1 makes compacted delta files use
-        //delta_xxxx_yyyy format
+          .tableProperties(new StringableMap(jobConf.get(TABLE_PROPS)).toProperties()).reporter(reporter)
+          .minimumWriteId(jobConf.getLong(MIN_TXN, Long.MAX_VALUE))
+          .maximumWriteId(jobConf.getLong(MAX_TXN, Long.MIN_VALUE)).bucket(bucket)
+          .statementId(-1)//setting statementId == -1 makes compacted delta files use
+          // delta_xxxx_yyyy format
+          .visibilityTxnId(getCompactorTxnId(jobConf));
 
-        // Instantiate the underlying output format
-        @SuppressWarnings("unchecked")//since there is no way to parametrize instance of Class
-        AcidOutputFormat<WritableComparable, V> aof =
+      // Instantiate the underlying output format
+      @SuppressWarnings("unchecked")//since there is no way to parametrize instance of Class
+          AcidOutputFormat<WritableComparable, V> aof =
           instantiate(AcidOutputFormat.class, jobConf.get(OUTPUT_FORMAT_CLASS_NAME));
 
-        deleteEventWriter = aof.getRawRecordWriter(new Path(jobConf.get(TMP_LOCATION)), options);
-      }
+      deleteEventWriter = aof.getRawRecordWriter(new Path(jobConf.get(TMP_LOCATION)), options);
+
     }
   }
 
@@ -857,13 +944,39 @@ public class CompactorMR {
       FileSystem fs = tmpLocation.getFileSystem(conf);
       LOG.debug("Moving contents of " + tmpLocation.toString() + " to " +
           finalLocation.toString());
-
-      FileStatus[] contents = fs.listStatus(tmpLocation);//expect 1 base or delta dir in this list
-      //we have MIN_TXN, MAX_TXN and IS_MAJOR in JobConf so we could figure out exactly what the dir
-      //name is that we want to rename; leave it for another day
-      for (int i = 0; i < contents.length; i++) {
-        Path newPath = new Path(finalLocation, contents[i].getPath().getName());
-        fs.rename(contents[i].getPath(), newPath);
+      if(!fs.exists(tmpLocation)) {
+        /**
+         * No 'tmpLocation' may happen if job generated created 0 splits, which happens if all
+         * input delta and/or base files were empty or had
+         * only {@link org.apache.orc.impl.OrcAcidUtils#getSideFile(Path)} files.
+         * So make sure the new base/delta is created.
+         */
+        AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf)
+            .writingBase(conf.getBoolean(IS_MAJOR, false))
+            .isCompressed(conf.getBoolean(IS_COMPRESSED, false))
+            .minimumWriteId(conf.getLong(MIN_TXN, Long.MAX_VALUE))
+            .maximumWriteId(conf.getLong(MAX_TXN, Long.MIN_VALUE))
+            .bucket(0)
+            .statementId(-1)
+            .visibilityTxnId(CompactorMap.getCompactorTxnId(conf));
+        Path newDeltaDir = AcidUtils.createFilename(finalLocation, options).getParent();
+        LOG.info(context.getJobID() + ": " + tmpLocation +
+            " not found.  Assuming 0 splits.  Creating " + newDeltaDir);
+        fs.mkdirs(newDeltaDir);
+        AcidUtils.OrcAcidVersion.writeVersionFile(newDeltaDir, fs);
+        return;
+      }
+      FileStatus[] contents = fs.listStatus(tmpLocation);
+      //minor compaction may actually have delta_x_y and delete_delta_x_y
+      for (FileStatus fileStatus : contents) {
+        //newPath is the base/delta dir
+        Path newPath = new Path(finalLocation, fileStatus.getPath().getName());
+        /*rename(A, B) has "interesting" behavior if A and B are directories. If  B doesn't exist,
+        * it does the expected operation and everything that was in A is now in B.  If B exists,
+        * it will make A a child of B...  thus make sure the rename() is done before creating the
+        * meta files which will create base_x/ (i.e. B)...*/
+        fs.rename(fileStatus.getPath(), newPath);
+        AcidUtils.OrcAcidVersion.writeVersionFile(newPath, fs);
       }
       fs.delete(tmpLocation, true);
     }

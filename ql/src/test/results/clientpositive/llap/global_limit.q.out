@@ -60,20 +60,20 @@ POSTHOOK: Lineage: gl_tgt.key SIMPLE [(gl_src1)gl_src1.FieldSchema(name:key, typ
 PREHOOK: query: select * from gl_tgt ORDER BY key ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@gl_tgt
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from gl_tgt ORDER BY key ASC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@gl_tgt
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 165
 PREHOOK: query: select 'x' as key_new , split(value,',') as value_new from gl_src1 ORDER BY key_new ASC, value_new[0] ASC limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@gl_src1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select 'x' as key_new , split(value,',') as value_new from gl_src1 ORDER BY key_new ASC, value_new[0] ASC limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@gl_src1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 x	["val_0"]
 x	["val_0"]
 x	["val_0"]
@@ -97,11 +97,11 @@ x	["val_114"]
 PREHOOK: query: select key, value, split(value,',') as value_new from gl_src1 ORDER BY key ASC, value ASC, value_new[0] ASC limit 30
 PREHOOK: type: QUERY
 PREHOOK: Input: default@gl_src1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select key, value, split(value,',') as value_new from gl_src1 ORDER BY key ASC, value ASC, value_new[0] ASC limit 30
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@gl_src1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	val_0	["val_0"]
 0	val_0	["val_0"]
 0	val_0	["val_0"]
@@ -135,11 +135,11 @@ POSTHOOK: Input: default@gl_src1
 PREHOOK: query: select key from gl_src1 ORDER BY key ASC limit 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@gl_src1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select key from gl_src1 ORDER BY key ASC limit 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@gl_src1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 0
 0
@@ -243,11 +243,11 @@ POSTHOOK: Input: default@gl_src1
 PREHOOK: query: select key from gl_src1 ORDER BY key ASC limit 30
 PREHOOK: type: QUERY
 PREHOOK: Input: default@gl_src1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select key from gl_src1 ORDER BY key ASC limit 30
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@gl_src1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 0
 0
@@ -281,11 +281,11 @@ POSTHOOK: Input: default@gl_src1
 PREHOOK: query: select key, count(1) from gl_src1 group by key ORDER BY key ASC limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@gl_src1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select key, count(1) from gl_src1 group by key ORDER BY key ASC limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@gl_src1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	9
 4	3
 8	3
@@ -294,11 +294,11 @@ POSTHOOK: Input: default@gl_src1
 PREHOOK: query: select distinct key from gl_src1 ORDER BY key ASC limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@gl_src1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select distinct key from gl_src1 ORDER BY key ASC limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@gl_src1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 4
 8
@@ -312,22 +312,22 @@ POSTHOOK: Input: default@gl_src1
 PREHOOK: query: select count(1) from gl_src1 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@gl_src1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(1) from gl_src1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@gl_src1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 354
 PREHOOK: query: select transform(*) using "tr _ \n" as t from
 (select "a_a_a_a_a_a_" from gl_src1 limit 100) subq ORDER BY t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@gl_src1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select transform(*) using "tr _ \n" as t from
 (select "a_a_a_a_a_a_" from gl_src1 limit 100) subq ORDER BY t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@gl_src1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 
 
 
@@ -1031,11 +1031,11 @@ a
 PREHOOK: query: select key from (select * from (select key,value from gl_src1)t1 limit 10)t2 ORDER BY key ASC limit 2000
 PREHOOK: type: QUERY
 PREHOOK: Input: default@gl_src1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select key from (select * from (select key,value from gl_src1)t1 limit 10)t2 ORDER BY key ASC limit 2000
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@gl_src1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 37
 66
 150
@@ -1049,11 +1049,11 @@ POSTHOOK: Input: default@gl_src1
 PREHOOK: query: select key from (select * from (select key,value from gl_src1 limit 10)t1 )t2 ORDER BY key ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@gl_src1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select key from (select * from (select key,value from gl_src1 limit 10)t1 )t2 ORDER BY key ASC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@gl_src1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 37
 66
 150
@@ -1067,11 +1067,11 @@ POSTHOOK: Input: default@gl_src1
 PREHOOK: query: select key from (select * from (select key,value from gl_src1)t1 limit 10)t2 ORDER BY key ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@gl_src1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select key from (select * from (select key,value from gl_src1)t1 limit 10)t2 ORDER BY key ASC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@gl_src1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 37
 66
 150
@@ -1094,11 +1094,11 @@ POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key,
 PREHOOK: query: select * from gl_tgt ORDER BY key ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@gl_tgt
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from gl_tgt ORDER BY key ASC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@gl_tgt
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 38
 67
 151
@@ -1120,11 +1120,11 @@ POSTHOOK: Output: default@gl_src2
 PREHOOK: query: select key from gl_src2 ORDER BY key ASC limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@gl_src2
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select key from gl_src2 ORDER BY key ASC limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@gl_src2
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: create table gl_src_part1 (key int, value string) partitioned by (p string) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -1172,13 +1172,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@gl_src_part1
 PREHOOK: Input: default@gl_src_part1@p=11
 PREHOOK: Input: default@gl_src_part1@p=12
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select key from gl_src_part1 where p like '1%' ORDER BY key ASC limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@gl_src_part1
 POSTHOOK: Input: default@gl_src_part1@p=11
 POSTHOOK: Input: default@gl_src_part1@p=12
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 0
 0
@@ -1193,12 +1193,12 @@ PREHOOK: query: select key from gl_src_part1 where p='11' ORDER BY key ASC limit
 PREHOOK: type: QUERY
 PREHOOK: Input: default@gl_src_part1
 PREHOOK: Input: default@gl_src_part1@p=11
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select key from gl_src_part1 where p='11' ORDER BY key ASC limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@gl_src_part1
 POSTHOOK: Input: default@gl_src_part1@p=11
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 5
 5
 5
@@ -1213,12 +1213,12 @@ PREHOOK: query: select key from gl_src_part1 where p='12' ORDER BY key ASC limit
 PREHOOK: type: QUERY
 PREHOOK: Input: default@gl_src_part1
 PREHOOK: Input: default@gl_src_part1@p=12
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select key from gl_src_part1 where p='12' ORDER BY key ASC limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@gl_src_part1
 POSTHOOK: Input: default@gl_src_part1@p=12
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 0
 0
@@ -1232,11 +1232,11 @@ POSTHOOK: Input: default@gl_src_part1@p=12
 PREHOOK: query: select key from gl_src_part1 where p='13' ORDER BY key ASC limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@gl_src_part1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select key from gl_src_part1 where p='13' ORDER BY key ASC limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@gl_src_part1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: alter table gl_src_part1 add partition (p='13')
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Output: default@gl_src_part1
@@ -1248,22 +1248,22 @@ PREHOOK: query: select key from gl_src_part1 where p='13' ORDER BY key ASC limit
 PREHOOK: type: QUERY
 PREHOOK: Input: default@gl_src_part1
 PREHOOK: Input: default@gl_src_part1@p=13
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select key from gl_src_part1 where p='13' ORDER BY key ASC limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@gl_src_part1
 POSTHOOK: Input: default@gl_src_part1@p=13
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: select key from gl_src_part1 where p='12' ORDER BY key ASC limit 1000
 PREHOOK: type: QUERY
 PREHOOK: Input: default@gl_src_part1
 PREHOOK: Input: default@gl_src_part1@p=12
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select key from gl_src_part1 where p='12' ORDER BY key ASC limit 1000
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@gl_src_part1
 POSTHOOK: Input: default@gl_src_part1@p=12
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 0
 0
@@ -1621,11 +1621,11 @@ POSTHOOK: Input: default@gl_src_part1@p=12
 PREHOOK: query: select * from gl_src1 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@gl_src1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from gl_src1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@gl_src1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 165	val_165
 PREHOOK: query: drop table gl_src1
 PREHOOK: type: DROPTABLE

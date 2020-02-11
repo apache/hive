@@ -13,13 +13,7 @@
  */
 package org.apache.hadoop.hive.registry.impl;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -34,6 +28,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.api.ACLProvider;
@@ -44,12 +39,15 @@ import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheListener;
 import org.apache.curator.framework.recipes.nodes.PersistentEphemeralNode;
 import org.apache.curator.framework.recipes.nodes.PersistentEphemeralNode.Mode;
+import org.apache.curator.framework.state.ConnectionState;
+import org.apache.curator.framework.state.ConnectionStateListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.curator.utils.CloseableUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.LlapUtil;
+import org.apache.hadoop.hive.registry.RegistryUtilities;
 import org.apache.hadoop.hive.registry.ServiceInstance;
 import org.apache.hadoop.hive.registry.ServiceInstanceStateChangeListener;
 import org.apache.hadoop.registry.client.binding.RegistryUtils;
@@ -65,6 +63,12 @@ import org.apache.zookeeper.data.Id;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Joiner;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 /**
  * This is currently used for implementation inheritance only; it doesn't provide a unified flow
  * into which one can just plug a few abstract method implementations, because providing one with
@@ -77,29 +81,33 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
   private static final Logger LOG = LoggerFactory.getLogger(ZkRegistryBase.class);
   private final static String SASL_NAMESPACE = "sasl";
   private final static String UNSECURE_NAMESPACE = "unsecure";
-
-  static final String UNIQUE_IDENTIFIER = "registry.unique.id";
-  private static final UUID uniq = UUID.randomUUID();
+  protected final static String USER_SCOPE_PATH_PREFIX = "user-";
+  protected static final String WORKER_PREFIX = "worker-";
+  protected static final String WORKER_GROUP = "workers";
+  public static final String UNIQUE_IDENTIFIER = "registry.unique.id";
+  protected static final UUID UNIQUE_ID = UUID.randomUUID();
+  private static final Joiner PATH_JOINER = Joiner.on("/").skipNulls();
 
   protected final Configuration conf;
   protected final CuratorFramework zooKeeperClient;
-  // userPathPrefix is the path specific to the user for which ACLs should be restrictive.
   // workersPath is the directory path where all the worker znodes are located.
   protected final String workersPath;
-  private final String userPathPrefix, workerNodePrefix;
+  private final String workerNodePrefix;
 
   protected final ServiceRecordMarshal encoder; // to marshal/unmarshal znode data
 
   private final Set<ServiceInstanceStateChangeListener<InstanceType>> stateChangeListeners;
 
-  private final boolean doCheckAcls;
+  protected final boolean doCheckAcls;
   // Secure ZK is only set up by the registering service; anyone can read the registrations.
   private final String zkPrincipal, zkKeytab, saslLoginContextName;
   private String userNameFromPrincipal; // Only set when setting up the secure config for ZK.
   private final String disableMessage;
 
   private final Lock instanceCacheLock = new ReentrantLock();
-  private final Map<String, Set<InstanceType>> pathToInstanceCache;
+  // there can be only one instance per path
+  private final Map<String, InstanceType> pathToInstanceCache;
+  // there can be multiple instances per node
   private final Map<String, Set<InstanceType>> nodeToInstanceCache;
 
   // The registration znode.
@@ -109,29 +117,22 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
   private PathChildrenCache instancesCache; // Created on demand.
 
   /** Local hostname. */
-  protected static final String hostname;
-  static {
-    String localhost = "localhost";
-    try {
-      localhost = InetAddress.getLocalHost().getCanonicalHostName();
-    } catch (UnknownHostException uhe) {
-      // ignore
-    }
-    hostname = localhost;
-  }
+  protected static final String hostname = RegistryUtilities.getCanonicalHostName();
 
   /**
    * @param rootNs A single root namespace override. Not recommended.
-   * @param nsPrefix The namespace prefix to use with default namespaces.
+   * @param nsPrefix The namespace prefix to use with default namespaces (appends 'sasl' for secure else 'unsecure'
+   *                 to namespace prefix to get effective root namespace).
    * @param userScopePathPrefix The prefix to use for the user-specific part of the path.
    * @param workerPrefix The prefix to use for each worker znode.
+   * @param workerGroup group name to use for all workers
    * @param zkSaslLoginContextName SASL login context name for ZK security; null if not needed.
    * @param zkPrincipal ZK security principal.
    * @param zkKeytab ZK security keytab.
    * @param aclsConfig A config setting to use to determine if ACLs should be verified.
    */
   public ZkRegistryBase(String instanceName, Configuration conf, String rootNs, String nsPrefix,
-      String userScopePathPrefix, String workerPrefix,
+      String userScopePathPrefix, String workerPrefix, String workerGroup,
       String zkSaslLoginContextName, String zkPrincipal, String zkKeytab, ConfVars aclsConfig) {
     this.conf = new Configuration(conf);
     this.saslLoginContextName = zkSaslLoginContextName;
@@ -145,29 +146,53 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
       this.disableMessage = "";
     }
     this.conf.addResource(YarnConfiguration.YARN_SITE_CONFIGURATION_FILE);
-    String zkEnsemble = getQuorumServers(this.conf);
     this.encoder = new RegistryUtils.ServiceRecordMarshal();
-    int sessionTimeout = (int) HiveConf.getTimeVar(conf,
-        ConfVars.HIVE_ZOOKEEPER_SESSION_TIMEOUT, TimeUnit.MILLISECONDS);
-    int baseSleepTime = (int) HiveConf.getTimeVar(conf,
-        ConfVars.HIVE_ZOOKEEPER_CONNECTION_BASESLEEPTIME, TimeUnit.MILLISECONDS);
-    int maxRetries = HiveConf.getIntVar(conf, ConfVars.HIVE_ZOOKEEPER_CONNECTION_MAX_RETRIES);
 
     // sample path: /llap-sasl/hiveuser/hostname/workers/worker-0000000
     // worker-0000000 is the sequence number which will be retained until session timeout. If a
     // worker does not respond due to communication interruptions it will retain the same sequence
     // number when it returns back. If session timeout expires, the node will be deleted and new
     // addition of the same node (restart) will get next sequence number
-    this.userPathPrefix = userScopePathPrefix + getZkPathUser(this.conf);
-    this.workerNodePrefix = workerPrefix;
-    this.workersPath =  "/" + userPathPrefix + "/" + instanceName + "/workers";
+    final String userPathPrefix = userScopePathPrefix == null ? null : userScopePathPrefix + getZkPathUser(conf);
+    this.workerNodePrefix = workerPrefix == null ? WORKER_PREFIX : workerPrefix;
+    this.workersPath =  "/" + PATH_JOINER.join(userPathPrefix, instanceName, workerGroup);
     this.instancesCache = null;
     this.stateChangeListeners = new HashSet<>();
     this.pathToInstanceCache = new ConcurrentHashMap<>();
     this.nodeToInstanceCache = new ConcurrentHashMap<>();
+    final String namespace = getRootNamespace(conf, rootNs, nsPrefix);
+    ACLProvider aclProvider;
+    // get acl provider for most outer path that is non-null
+    if (userPathPrefix == null) {
+      if (instanceName == null) {
+        if (workerGroup == null) {
+          aclProvider = getACLProviderForZKPath(namespace);
+        } else {
+          aclProvider = getACLProviderForZKPath(workerGroup);
+        }
+      } else {
+        aclProvider = getACLProviderForZKPath(instanceName);
+      }
+    } else {
+      aclProvider = getACLProviderForZKPath(userScopePathPrefix);
+    }
+    this.zooKeeperClient = getZookeeperClient(conf, namespace, aclProvider);
+    this.zooKeeperClient.getConnectionStateListenable().addListener(new ZkConnectionStateListener());
+  }
 
-    final boolean isSecure = UserGroupInformation.isSecurityEnabled();
-    ACLProvider zooKeeperAclProvider = new ACLProvider() {
+  public static String getRootNamespace(Configuration conf, String userProvidedNamespace,
+      String defaultNamespacePrefix) {
+    final boolean isSecure = ZookeeperUtils.isKerberosEnabled(conf);
+    String rootNs = userProvidedNamespace;
+    if (rootNs == null) {
+      rootNs = defaultNamespacePrefix + (isSecure ? SASL_NAMESPACE : UNSECURE_NAMESPACE);
+    }
+    return rootNs;
+  }
+
+  private ACLProvider getACLProviderForZKPath(String zkPath) {
+    final boolean isSecure = ZookeeperUtils.isKerberosEnabled(conf);
+    return new ACLProvider() {
       @Override
       public List<ACL> getDefaultAcl() {
         // We always return something from getAclForPath so this should not happen.
@@ -177,31 +202,43 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
 
       @Override
       public List<ACL> getAclForPath(String path) {
-        if (!isSecure || path == null || !path.contains(userPathPrefix)) {
+        if (!isSecure || path == null || !path.contains(zkPath)) {
           // No security or the path is below the user path - full access.
           return Lists.newArrayList(ZooDefs.Ids.OPEN_ACL_UNSAFE);
         }
         return createSecureAcls();
       }
     };
-    if (rootNs == null) {
-      rootNs = nsPrefix + (isSecure ? SASL_NAMESPACE : UNSECURE_NAMESPACE); // The normal path.
-    }
+  }
 
+  private CuratorFramework getZookeeperClient(Configuration conf, String namespace, ACLProvider zooKeeperAclProvider) {
+    String zkEnsemble = getQuorumServers(conf);
+    int sessionTimeout = (int) HiveConf.getTimeVar(conf,
+      ConfVars.HIVE_ZOOKEEPER_SESSION_TIMEOUT, TimeUnit.MILLISECONDS);
+    int connectionTimeout = (int) HiveConf.getTimeVar(conf,
+      ConfVars.HIVE_ZOOKEEPER_CONNECTION_TIMEOUT, TimeUnit.MILLISECONDS);
+    int baseSleepTime = (int) HiveConf.getTimeVar(conf,
+      ConfVars.HIVE_ZOOKEEPER_CONNECTION_BASESLEEPTIME, TimeUnit.MILLISECONDS);
+    int maxRetries = HiveConf.getIntVar(conf, ConfVars.HIVE_ZOOKEEPER_CONNECTION_MAX_RETRIES);
+
+    LOG.info("Creating curator client with connectString: {} sessionTimeoutMs: {} connectionTimeoutMs: {}" +
+      " namespace: {} exponentialBackoff - sleepTime: {} maxRetries: {}", zkEnsemble, sessionTimeout,
+      connectionTimeout, namespace, baseSleepTime, maxRetries);
     // Create a CuratorFramework instance to be used as the ZooKeeper client
     // Use the zooKeeperAclProvider to create appropriate ACLs
-    this.zooKeeperClient = CuratorFrameworkFactory.builder()
-        .connectString(zkEnsemble)
-        .sessionTimeoutMs(sessionTimeout)
-        .aclProvider(zooKeeperAclProvider)
-        .namespace(rootNs)
-        .retryPolicy(new ExponentialBackoffRetry(baseSleepTime, maxRetries))
-        .build();
+    return CuratorFrameworkFactory.builder()
+      .connectString(zkEnsemble)
+      .sessionTimeoutMs(sessionTimeout)
+      .connectionTimeoutMs(connectionTimeout)
+      .aclProvider(zooKeeperAclProvider)
+      .namespace(namespace)
+      .retryPolicy(new ExponentialBackoffRetry(baseSleepTime, maxRetries))
+      .build();
   }
 
   private static List<ACL> createSecureAcls() {
     // Read all to the world
-    List<ACL> nodeAcls = new ArrayList<ACL>(ZooDefs.Ids.READ_ACL_UNSAFE);
+    List<ACL> nodeAcls = new ArrayList<>(ZooDefs.Ids.READ_ACL_UNSAFE);
     // Create/Delete/Write/Admin to creator
     nodeAcls.addAll(ZooDefs.Ids.CREATOR_ALL_ACL);
     return nodeAcls;
@@ -211,9 +248,9 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
    * Get the ensemble server addresses from the configuration. The format is: host1:port,
    * host2:port..
    *
-   * @param conf
+   * @param conf configuration
    **/
-  private String getQuorumServers(Configuration conf) {
+  private static String getQuorumServers(Configuration conf) {
     String[] hosts = conf.getTrimmedStrings(ConfVars.HIVE_ZOOKEEPER_QUORUM.varname);
     String port = conf.get(ConfVars.HIVE_ZOOKEEPER_CLIENT_PORT.varname,
         ConfVars.HIVE_ZOOKEEPER_CLIENT_PORT.getDefaultValue());
@@ -237,8 +274,12 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
   protected abstract String getZkPathUser(Configuration conf);
 
   protected final String registerServiceRecord(ServiceRecord srv) throws IOException {
+    return registerServiceRecord(srv, UNIQUE_ID.toString());
+  }
+
+  protected final String registerServiceRecord(ServiceRecord srv, final String uniqueId) throws IOException {
     // restart sensitive instance id
-    srv.set(UNIQUE_IDENTIFIER, uniq.toString());
+    srv.set(UNIQUE_IDENTIFIER, uniqueId);
 
     // Create a znode under the rootNamespace parent for this instance of the server
     try {
@@ -246,7 +287,7 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
       // even under connection or session interruption (will automatically handle retries)
       znode = new PersistentEphemeralNode(zooKeeperClient, Mode.EPHEMERAL_SEQUENTIAL,
           workersPath + "/" + workerNodePrefix, encoder.toBytes(srv));
-
+    
       // start the creation of znodes
       znode.start();
 
@@ -275,11 +316,36 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
       CloseableUtils.closeQuietly(znode);
       throw (e instanceof IOException) ? (IOException)e : new IOException(e);
     }
-    return uniq.toString();
+    return uniqueId;
+  }
+
+  protected final void updateServiceRecord(
+     ServiceRecord srv, boolean doCheckAcls, boolean closeOnFailure) throws IOException {
+    if (srv.get(UNIQUE_IDENTIFIER) == null) {
+      srv.set(UNIQUE_IDENTIFIER, UNIQUE_ID.toString());
+    }
+    // waitForInitialCreate must have already been called in registerServiceRecord.
+    try {
+      znode.setData(encoder.toBytes(srv));
+
+      if (doCheckAcls) {
+        try {
+          checkAndSetAcls();
+        } catch (Exception ex) {
+          throw new IOException("Error validating or setting ACLs. " + disableMessage, ex);
+        }
+      }
+    } catch (Exception e) {
+      LOG.error("Unable to update znode with new service record", e);
+      if (closeOnFailure) {
+        CloseableUtils.closeQuietly(znode);
+      }
+      throw (e instanceof IOException) ? (IOException) e : new IOException(e);
+    }
   }
 
 
-  protected final void initializeWithoutRegisteringInternal() throws IOException {
+  final void initializeWithoutRegisteringInternal() throws IOException {
     // Create a znode under the rootNamespace parent for this instance of the server
     try {
       try {
@@ -301,7 +367,9 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
   }
 
   private void checkAndSetAcls() throws Exception {
-    if (!UserGroupInformation.isSecurityEnabled()) return;
+    if (!ZookeeperUtils.isKerberosEnabled(conf)) {
+      return;
+    }
     // We are trying to check ACLs on the "workers" directory, which noone except us should be
     // able to write to. Higher-level directories shouldn't matter - we don't read them.
     String pathToCheck = workersPath;
@@ -345,8 +413,8 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
   private void addToCache(String path, String host, InstanceType instance) {
     instanceCacheLock.lock();
     try {
-      putInCache(path, pathToInstanceCache, instance);
-      putInCache(host, nodeToInstanceCache, instance);
+      putInInstanceCache(path, pathToInstanceCache, instance);
+      putInNodeCache(host, nodeToInstanceCache, instance);
     } finally {
       instanceCacheLock.unlock();
     }
@@ -368,27 +436,35 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
         path, host, pathToInstanceCache.size(), nodeToInstanceCache.size());
   }
 
-  private void putInCache(String key, Map<String, Set<InstanceType>> cache,
+  private void putInInstanceCache(String key, Map<String, InstanceType> cache,
       InstanceType instance) {
+    cache.put(key, instance);
+  }
+
+  private void putInNodeCache(String key, Map<String, Set<InstanceType>> cache,
+    InstanceType instance) {
     Set<InstanceType> instanceSet = cache.get(key);
     if (instanceSet == null) {
-      instanceSet = Sets.newHashSet();
-      cache.put(key, instanceSet);
+      instanceSet = new HashSet<>();
+      instanceSet.add(instance);
     }
-    instanceSet.add(instance);
+    cache.put(key, instanceSet);
   }
 
   protected final void populateCache(PathChildrenCache instancesCache, boolean doInvokeListeners) {
     for (ChildData childData : instancesCache.getCurrentData()) {
       byte[] data = getWorkerData(childData, workerNodePrefix);
       if (data == null) continue;
+      String nodeName = extractNodeName(childData);
+      if (!isLlapWorker(nodeName, workerNodePrefix)) continue;
+      int ephSeqVersion = extractSeqNum(nodeName);
       try {
         ServiceRecord srv = encoder.fromBytes(childData.getPath(), data);
         InstanceType instance = createServiceInstance(srv);
         addToCache(childData.getPath(), instance.getHost(), instance);
         if (doInvokeListeners) {
           for (ServiceInstanceStateChangeListener<InstanceType> listener : stateChangeListeners) {
-            listener.onCreate(instance);
+            listener.onCreate(instance, ephSeqVersion);
           }
         }
       } catch (IOException e) {
@@ -398,13 +474,17 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
     }
   }
 
+  private static boolean isLlapWorker(String nodeName, String workerNodePrefix) {
+    return nodeName.startsWith(workerNodePrefix) && nodeName.length() > workerNodePrefix.length();
+  }
+
   protected abstract InstanceType createServiceInstance(ServiceRecord srv) throws IOException;
 
-  protected static final byte[] getWorkerData(ChildData childData, String workerNodePrefix) {
+  protected static byte[] getWorkerData(ChildData childData, String workerNodePrefix) {
     if (childData == null) return null;
     byte[] data = childData.getData();
     if (data == null) return null;
-    if (!extractNodeName(childData).startsWith(workerNodePrefix)) return null;
+    if (!isLlapWorker(extractNodeName(childData), workerNodePrefix)) return null;
     return data;
   }
 
@@ -412,8 +492,7 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
     private final Logger LOG = LoggerFactory.getLogger(InstanceStateChangeListener.class);
 
     @Override
-    public void childEvent(final CuratorFramework client, final PathChildrenCacheEvent event)
-        throws Exception {
+    public void childEvent(final CuratorFramework client, final PathChildrenCacheEvent event) {
       Preconditions.checkArgument(client != null
           && client.getState() == CuratorFrameworkState.STARTED, "client is not started");
 
@@ -421,30 +500,38 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
         ChildData childData = event.getData();
         if (childData == null) return;
         String nodeName = extractNodeName(childData);
-        if (!nodeName.startsWith(workerNodePrefix)) return;
+        if (nodeName.equals(workerNodePrefix)) {
+          LOG.warn("Invalid LLAP worker node name: {} was {}", childData.getPath(), event.getType());
+        }
+        if (!isLlapWorker(nodeName, workerNodePrefix)) return;
         LOG.info("{} for zknode {}", event.getType(), childData.getPath());
         InstanceType instance = extractServiceInstance(event, childData);
-        switch (event.getType()) {
-        case CHILD_ADDED:
-          addToCache(childData.getPath(), instance.getHost(), instance);
-          for (ServiceInstanceStateChangeListener<InstanceType> listener : stateChangeListeners) {
-            listener.onCreate(instance);
+        if (instance != null) {
+          int ephSeqVersion = extractSeqNum(nodeName);
+          switch (event.getType()) {
+            case CHILD_ADDED:
+              addToCache(childData.getPath(), instance.getHost(), instance);
+              for (ServiceInstanceStateChangeListener<InstanceType> listener : stateChangeListeners) {
+                listener.onCreate(instance, ephSeqVersion);
+              }
+              break;
+            case CHILD_UPDATED:
+              addToCache(childData.getPath(), instance.getHost(), instance);
+              for (ServiceInstanceStateChangeListener<InstanceType> listener : stateChangeListeners) {
+                listener.onUpdate(instance, ephSeqVersion);
+              }
+              break;
+            case CHILD_REMOVED:
+              removeFromCache(childData.getPath(), instance.getHost());
+              for (ServiceInstanceStateChangeListener<InstanceType> listener : stateChangeListeners) {
+                listener.onRemove(instance, ephSeqVersion);
+              }
+              break;
+            default:
+              // Ignore all the other events; logged above.
           }
-          break;
-        case CHILD_UPDATED:
-          addToCache(childData.getPath(), instance.getHost(), instance);
-          for (ServiceInstanceStateChangeListener<InstanceType> listener : stateChangeListeners) {
-            listener.onUpdate(instance);
-          }
-          break;
-        case CHILD_REMOVED:
-          removeFromCache(childData.getPath(), instance.getHost());
-          for (ServiceInstanceStateChangeListener<InstanceType> listener : stateChangeListeners) {
-            listener.onRemove(instance);
-          }
-          break;
-        default:
-          // Ignore all the other events; logged above.
+        } else {
+          LOG.info("instance is null for event: {} childData: {}", event.getType(), childData);
         }
       }
     }
@@ -460,7 +547,7 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
 
   protected final Set<InstanceType> getByHostInternal(String host) {
     Set<InstanceType> byHost = nodeToInstanceCache.get(host);
-    byHost = (byHost == null) ? Sets.<InstanceType>newHashSet() : byHost;
+    byHost = (byHost == null) ? Sets.newHashSet() : byHost;
     if (LOG.isDebugEnabled()) {
       LOG.debug("Returning " + byHost.size() + " hosts for locality allocation on " + host);
     }
@@ -468,11 +555,7 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
   }
 
   protected final Collection<InstanceType> getAllInternal() {
-    Set<InstanceType> instances =  new HashSet<>();
-    for(Set<InstanceType> instanceSet : pathToInstanceCache.values()) {
-      instances.addAll(instanceSet);
-    }
-    return instances;
+    return new HashSet<>(pathToInstanceCache.values());
   }
 
   private static String extractNodeName(ChildData childData) {
@@ -560,17 +643,48 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
     CloseableUtils.class.getName();
   }
 
+  protected void unregisterInternal() {
+    CloseableUtils.closeQuietly(znode);
+  }
+
   public void stop() {
     CloseableUtils.closeQuietly(znode);
     CloseableUtils.closeQuietly(instancesCache);
     CloseableUtils.closeQuietly(zooKeeperClient);
   }
 
-  protected final Set<InstanceType> getInstancesByPath(String path) {
+  protected final InstanceType getInstanceByPath(String path) {
     return pathToInstanceCache.get(path);
   }
 
   protected final String getRegistrationZnodePath() {
     return znodePath;
+  }
+
+  private int extractSeqNum(String nodeName) {
+    // Extract the sequence number of this ephemeral-sequential znode.
+    String ephSeqVersionStr = nodeName.substring(workerNodePrefix.length());
+    try {
+      return Integer.parseInt(ephSeqVersionStr);
+    } catch (NumberFormatException e) {
+      LOG.error("Cannot parse " + ephSeqVersionStr + " from " + nodeName, e);
+      throw e;
+    }
+  }
+
+  // for debugging
+  private class ZkConnectionStateListener implements ConnectionStateListener {
+    @Override
+    public void stateChanged(final CuratorFramework curatorFramework, final ConnectionState connectionState) {
+      LOG.info("Connection state change notification received. State: {}", connectionState);
+    }
+  }
+
+  public String currentUser() {
+    try {
+      return UserGroupInformation.getCurrentUser().getShortUserName();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 }

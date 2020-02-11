@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,30 +16,31 @@
  * limitations under the License.
  */
 package org.apache.hadoop.hive.ql.parse;
+
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.Serializable;
-import java.util.List;
+import java.io.File;
 
-import com.google.common.base.Strings;
 import org.apache.hadoop.hive.cli.control.AbstractCliConfig;
 import org.apache.hadoop.hive.cli.control.CliAdapter;
 import org.apache.hadoop.hive.cli.control.CliConfigs;
+import org.apache.hadoop.hive.ql.QTestArguments;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil;
-import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
-import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.QTestMiniClusters.MiniClusterType;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+
+import com.google.common.base.Strings;
 
 public class CoreParseNegative extends CliAdapter{
 
   private static QTestUtil qt;
 
-  static CliConfigs.ParseNegativeConfig cliConfig = new CliConfigs.ParseNegativeConfig();
-  static boolean firstRun;
+  private static CliConfigs.ParseNegativeConfig cliConfig = new CliConfigs.ParseNegativeConfig();
+
   public CoreParseNegative(AbstractCliConfig testCliConfig) {
     super(testCliConfig);
   }
@@ -50,16 +51,23 @@ public class CoreParseNegative extends CliAdapter{
     MiniClusterType miniMR = cliConfig.getClusterType();
     String initScript = cliConfig.getInitScript();
     String cleanupScript = cliConfig.getCleanupScript();
-    firstRun = true;
+
     try {
-      String hadoopVer = cliConfig.getHadoopVersion();
-      qt = new QTestUtil((cliConfig.getResultsDir()), (cliConfig.getLogDir()), miniMR, null,
-          hadoopVer, initScript, cleanupScript, false);
+      qt = new QTestUtil(
+          QTestArguments.QTestArgumentsBuilder.instance()
+            .withOutDir(cliConfig.getResultsDir())
+            .withLogDir(cliConfig.getLogDir())
+            .withClusterType(miniMR)
+            .withConfDir(null)
+            .withInitScript(initScript)
+            .withCleanupScript(cleanupScript)
+            .withLlapIo(false)
+            .build());
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
       System.err.flush();
-      throw new RuntimeException("Unexpected exception in static initialization",e);
+      throw new RuntimeException("Unexpected exception in static initialization", e);
     }
   }
 
@@ -74,23 +82,29 @@ public class CoreParseNegative extends CliAdapter{
 
   @Override
   @AfterClass
-  public void shutdown() throws Exception {
+  public void shutdown() {
     String reason = "clear post test effects";
     try {
       qt.clearPostTestEffects();
       reason = "shutdown";
       qt.shutdown();
+
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
       System.err.flush();
-      throw new RuntimeException("Unexpected exception in " + reason,e);
+      throw new RuntimeException("Unexpected exception in " + reason, e);
     }
   }
 
-  static String debugHint = "\nSee ./ql/target/tmp/log/hive.log or ./itests/qtest/target/tmp/log/hive.log, "
-     + "or check ./ql/target/surefire-reports or ./itests/qtest/target/surefire-reports/ for specific test cases logs.";
+  protected boolean shouldRunCreateScriptBeforeEveryTest() {
+    return true;
+  }
 
+  @Override
+  protected QTestUtil getQt() {
+    return qt;
+  }
 
   @Override
   public void runTest(String tname, String fname, String fpath) throws Exception {
@@ -99,30 +113,25 @@ public class CoreParseNegative extends CliAdapter{
       System.err.println("Begin query: " + fname);
 
       qt.addFile(fpath);
-      if (firstRun) {
-        qt.init(fname);
-        firstRun = false;
-      }
+      qt.cliInit(new File(fpath));
+
       ASTNode tree = qt.parseQuery(fname);
-      List<Task<? extends Serializable>> tasks = qt.analyzeAST(tree);
-      fail("Unexpected success for query: " + fname + debugHint);
-    }
-    catch (ParseException pe) {
+      qt.analyzeAST(tree);
+      fail("Unexpected success for query: " + fname + QTestUtil.DEBUG_HINT);
+    } catch (ParseException pe) {
       QTestProcessExecResult result = qt.checkNegativeResults(fname, pe);
       if (result.getReturnCode() != 0) {
-        qt.failed(result.getReturnCode(), fname, result.getCapturedOutput() + "\r\n" + debugHint);
+        qt.failedQuery(null, result.getReturnCode(), fname, result.getCapturedOutput() + "\r\n" + QTestUtil.DEBUG_HINT);
       }
-    }
-    catch (SemanticException se) {
+    } catch (SemanticException se) {
       QTestProcessExecResult result = qt.checkNegativeResults(fname, se);
       if (result.getReturnCode() != 0) {
-        String message = Strings.isNullOrEmpty(result.getCapturedOutput()) ?
-            debugHint : "\r\n" + result.getCapturedOutput();
+        String message = Strings.isNullOrEmpty(result.getCapturedOutput()) ? QTestUtil.DEBUG_HINT
+          : "\r\n" + result.getCapturedOutput();
         qt.failedDiff(result.getReturnCode(), fname, message);
       }
-    }
-    catch (Exception e) {
-      qt.failed(e, fname, debugHint);
+    } catch (Exception e) {
+      qt.failedWithException(e, fname, QTestUtil.DEBUG_HINT);
     }
 
     long elapsedTime = System.currentTimeMillis() - startTime;

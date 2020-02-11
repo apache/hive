@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,7 +22,10 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.hive.common.LogUtils;
@@ -34,8 +37,9 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.log.LogDivertAppender;
 import org.apache.hadoop.hive.ql.log.LogDivertAppenderForTest;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.OperationLog;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.service.cli.FetchOrientation;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.OperationHandle;
@@ -58,15 +62,17 @@ public abstract class Operation {
   private final OperationHandle opHandle;
   public static final FetchOrientation DEFAULT_FETCH_ORIENTATION = FetchOrientation.FETCH_NEXT;
   public static final Logger LOG = LoggerFactory.getLogger(Operation.class.getName());
-  protected boolean hasResultSet;
+  protected Boolean hasResultSet = null;
   protected volatile HiveSQLException operationException;
   protected volatile Future<?> backgroundHandle;
   protected OperationLog operationLog;
   protected boolean isOperationLogEnabled;
+  private ScheduledExecutorService scheduledExecutorService;
 
   private long operationTimeout;
   private volatile long lastAccessTime;
   private final long beginTime;
+  private final CountDownLatch opTerminateMonitorLatch;
 
   protected long operationStart;
   protected long operationComplete;
@@ -80,26 +86,22 @@ public abstract class Operation {
   protected Operation(HiveSession parentSession, OperationType opType) {
     this(parentSession, null, opType);
   }
-  
-  protected Operation(HiveSession parentSession, Map<String, String> confOverlay,
-      OperationType opType) {
-    this(parentSession, confOverlay, opType, false);
-  }
 
   protected Operation(HiveSession parentSession,
-      Map<String, String> confOverlay, OperationType opType, boolean isAsyncQueryState) {
+      Map<String, String> confOverlay, OperationType opType) {
     this.parentSession = parentSession;
     this.opHandle = new OperationHandle(opType, parentSession.getProtocolVersion());
+    opTerminateMonitorLatch = new CountDownLatch(1);
     beginTime = System.currentTimeMillis();
     lastAccessTime = beginTime;
     operationTimeout = HiveConf.getTimeVar(parentSession.getHiveConf(),
         HiveConf.ConfVars.HIVE_SERVER2_IDLE_OPERATION_TIMEOUT, TimeUnit.MILLISECONDS);
+    scheduledExecutorService = Executors.newScheduledThreadPool(1);
 
     currentStateScope = updateOperationStateMetrics(null, MetricsConstant.OPERATION_PREFIX,
         MetricsConstant.COMPLETED_OPERATION_PREFIX, state);
     queryState = new QueryState.Builder()
                      .withConfOverlay(confOverlay)
-                     .withRunAsync(isAsyncQueryState)
                      .withGenerateNewQueryId(true)
                      .withHiveConf(parentSession.getHiveConf())
                      .build();
@@ -144,7 +146,7 @@ public abstract class Operation {
   }
 
   public boolean hasResultSet() {
-    return hasResultSet;
+    return hasResultSet == null ? false : hasResultSet;
   }
 
   protected void setHasResultSet(boolean hasResultSet) {
@@ -190,6 +192,10 @@ public abstract class Operation {
     this.operationTimeout = operationTimeout;
   }
 
+  public long getNumModifiedRows() {
+    return queryState.getNumModifiedRows();
+  }
+
   protected void setOperationException(HiveSQLException operationException) {
     this.operationException = operationException;
   }
@@ -204,6 +210,16 @@ public abstract class Operation {
 
   public boolean isDone() {
     return state.isTerminal();
+  }
+
+  /**
+   * Wait until the operation terminates and returns false if timeout.
+   * @param timeOutMs - timeout in milli-seconds
+   * @return true if operation is terminated or false if timed-out
+   * @throws InterruptedException
+   */
+  public boolean waitToTerminate(long timeOutMs) throws InterruptedException {
+    return opTerminateMonitorLatch.await(timeOutMs, TimeUnit.MILLISECONDS);
   }
 
   protected void createOperationLog() {
@@ -221,8 +237,19 @@ public abstract class Operation {
    * Set up some preconditions, or configurations.
    */
   protected void beforeRun() {
+    ShimLoader.getHadoopShims().setHadoopQueryContext(queryState.getQueryId());
     createOperationLog();
     LogUtils.registerLoggingContext(queryState.getConf());
+
+    LOG.info(
+        "[opType={}, queryId={}, startTime={}, sessionId={}, createTime={}, userName={}, ipAddress={}]",
+        opHandle.getOperationType(),
+        queryState.getQueryId(),
+        beginTime,
+        parentSession.getSessionState().getSessionId(),
+        parentSession.getCreationTime(),
+        parentSession.getUserName(),
+        parentSession.getIpAddress());
   }
 
   /**
@@ -231,6 +258,8 @@ public abstract class Operation {
    */
   protected void afterRun() {
     LogUtils.unregisterLoggingContext();
+    // Reset back to session context after the query is done
+    ShimLoader.getHadoopShims().setHadoopSessionContext(parentSession.getSessionState().getSessionId());
   }
 
   /**
@@ -252,7 +281,28 @@ public abstract class Operation {
     }
   }
 
-  protected synchronized void cleanupOperationLog() {
+  private static class OperationLogCleaner implements Runnable {
+    public static final Logger LOG = LoggerFactory.getLogger(OperationLogCleaner.class.getName());
+    private OperationLog operationLog;
+
+    public OperationLogCleaner(OperationLog operationLog) {
+      this.operationLog = operationLog;
+    }
+
+    @Override
+    public void run() {
+      if (operationLog != null) {
+        LOG.info("Closing operation log {}", operationLog);
+        operationLog.close();
+      }
+    }
+  }
+
+  protected synchronized void cleanupOperationLog(final long operationLogCleanupDelayMs) {
+    // stop the appenders for the operation log
+    String queryId = queryState.getQueryId();
+    LogUtils.stopQueryAppender(LogDivertAppender.QUERY_ROUTING_APPENDER, queryId);
+    LogUtils.stopQueryAppender(LogDivertAppenderForTest.TEST_QUERY_ROUTING_APPENDER, queryId);
     if (isOperationLogEnabled) {
       if (opHandle == null) {
         LOG.warn("Operation seems to be in invalid state, opHandle is null");
@@ -263,13 +313,16 @@ public abstract class Operation {
             + "but its OperationLog object cannot be found. "
             + "Perhaps the operation has already terminated.");
       } else {
-        operationLog.close();
+        if (operationLogCleanupDelayMs > 0) {
+          scheduledExecutorService.schedule(new OperationLogCleaner(operationLog), operationLogCleanupDelayMs,
+            TimeUnit.MILLISECONDS);
+        } else {
+          LOG.info("Closing operation log {} without delay", operationLog);
+          operationLog.close();
+        }
       }
-      // stop the appenders for the operation log
-      String queryId = queryState.getQueryId();
-      LogUtils.stopQueryAppender(LogDivertAppender.QUERY_ROUTING_APPENDER, queryId);
-      LogUtils.stopQueryAppender(LogDivertAppenderForTest.TEST_QUERY_ROUTING_APPENDER, queryId);
     }
+
   }
 
   public abstract void cancel(OperationState stateAfterCancel) throws HiveSQLException;
@@ -308,11 +361,11 @@ public abstract class Operation {
     }
   }
 
-  protected HiveSQLException toSQLException(String prefix, CommandProcessorResponse response) {
-    HiveSQLException ex = new HiveSQLException(prefix + ": " + response.getErrorMessage(),
-        response.getSQLState(), response.getResponseCode());
-    if (response.getException() != null) {
-      ex.initCause(response.getException());
+  protected HiveSQLException toSQLException(String prefix, CommandProcessorException e) {
+    HiveSQLException ex =
+        new HiveSQLException(prefix + ": " + e.getMessage(), e.getSqlState(), e.getResponseCode());
+    if (e.getCause() != null) {
+      ex.initCause(e.getCause());
     }
     return ex;
   }
@@ -370,6 +423,11 @@ public abstract class Operation {
         markOperationCompletedTime();
         break;
     }
+
+    if (state.isTerminal()) {
+      // Unlock the execution thread as operation is already terminated.
+      opTerminateMonitorLatch.countDown();
+    }
   }
 
   public long getOperationComplete() {
@@ -386,5 +444,13 @@ public abstract class Operation {
 
   protected void markOperationCompletedTime() {
     operationComplete = System.currentTimeMillis();
+  }
+
+  public String getQueryTag() {
+    return queryState.getQueryTag();
+  }
+
+  public String getQueryId() {
+    return queryState.getQueryId();
   }
 }

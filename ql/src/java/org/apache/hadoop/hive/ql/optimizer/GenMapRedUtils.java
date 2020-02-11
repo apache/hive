@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,19 +32,17 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.BlobStorageUtils;
 import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.DemuxOperator;
@@ -69,6 +66,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
+import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.io.merge.MergeFileWork;
@@ -88,9 +86,11 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
+import org.apache.hadoop.hive.ql.plan.BasicStatsWork;
 import org.apache.hadoop.hive.ql.plan.ConditionalResolverMergeFiles;
 import org.apache.hadoop.hive.ql.plan.ConditionalResolverMergeFiles.ConditionalResolverMergeFilesCtx;
 import org.apache.hadoop.hive.ql.plan.ConditionalWork;
+import org.apache.hadoop.hive.ql.plan.DependencyCollectionWork;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
@@ -117,13 +117,13 @@ import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.session.LineageState;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.InputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Interner;
 
@@ -152,9 +152,9 @@ public final class GenMapRedUtils {
     Map<Operator<? extends OperatorDesc>, GenMapRedCtx> mapCurrCtx =
         opProcCtx.getMapCurrCtx();
     GenMapRedCtx mapredCtx = mapCurrCtx.get(op.getParentOperators().get(0));
-    Task<? extends Serializable> currTask = mapredCtx.getCurrTask();
+    Task<?> currTask = mapredCtx.getCurrTask();
     MapredWork plan = (MapredWork) currTask.getWork();
-    HashMap<Operator<? extends OperatorDesc>, Task<? extends Serializable>> opTaskMap =
+    HashMap<Operator<? extends OperatorDesc>, Task<?>> opTaskMap =
         opProcCtx.getOpTaskMap();
     TableScanOperator currTopOp = opProcCtx.getCurrTopOp();
 
@@ -195,11 +195,11 @@ public final class GenMapRedUtils {
    */
   public static void initUnionPlan(ReduceSinkOperator op, UnionOperator currUnionOp,
       GenMRProcContext opProcCtx,
-      Task<? extends Serializable> unionTask) throws SemanticException {
+      Task<?> unionTask) throws SemanticException {
     Operator<? extends OperatorDesc> reducer = op.getChildOperators().get(0);
 
     MapredWork plan = (MapredWork) unionTask.getWork();
-    HashMap<Operator<? extends OperatorDesc>, Task<? extends Serializable>> opTaskMap =
+    HashMap<Operator<? extends OperatorDesc>, Task<?>> opTaskMap =
         opProcCtx.getOpTaskMap();
 
     opTaskMap.put(reducer, unionTask);
@@ -219,7 +219,7 @@ public final class GenMapRedUtils {
   }
 
   private static void setUnionPlan(GenMRProcContext opProcCtx,
-      boolean local, Task<? extends Serializable> currTask, GenMRUnionCtx uCtx,
+      boolean local, Task<?> currTask, GenMRUnionCtx uCtx,
       boolean mergeTask) throws SemanticException {
     TableScanOperator currTopOp = opProcCtx.getCurrTopOp();
 
@@ -245,12 +245,12 @@ public final class GenMapRedUtils {
         MapredWork plan = (MapredWork) currTask.getWork();
         for (int pos = 0; pos < size; pos++) {
           String taskTmpDir = taskTmpDirLst.get(pos);
-          TableDesc tt_desc = tt_descLst.get(pos);
+          Path taskTmpDirPath = new Path(taskTmpDir);
           MapWork mWork = plan.getMapWork();
-          if (mWork.getPathToAliases().get(taskTmpDir) == null) {
+          if (!mWork.getPathToAliases().containsKey(taskTmpDirPath)) {
             taskTmpDir = taskTmpDir.intern();
-            Path taskTmpDirPath = StringInternUtils.internUriStringsInPath(new Path(taskTmpDir));
-            mWork.removePathToAlias(taskTmpDirPath);
+            StringInternUtils.internUriStringsInPath(taskTmpDirPath);
+            TableDesc tt_desc = tt_descLst.get(pos);
             mWork.addPathToAlias(taskTmpDirPath, taskTmpDir);
             mWork.addPathToPartitionInfo(taskTmpDirPath, new PartitionDesc(tt_desc, null));
             mWork.getAliasToWork().put(taskTmpDir, topOperators.get(pos));
@@ -265,7 +265,7 @@ public final class GenMapRedUtils {
    * for the union. The plan has already been created.
    */
   public static void initUnionPlan(GenMRProcContext opProcCtx, UnionOperator currUnionOp,
-      Task<? extends Serializable> currTask, boolean local)
+      Task<?> currTask, boolean local)
       throws SemanticException {
     // In case of lateral views followed by a join, the same tree
     // can be traversed more than one
@@ -281,8 +281,8 @@ public final class GenMapRedUtils {
    */
   public static void joinUnionPlan(GenMRProcContext opProcCtx,
       UnionOperator currUnionOp,
-      Task<? extends Serializable> currentUnionTask,
-      Task<? extends Serializable> existingTask, boolean local)
+      Task<?> currentUnionTask,
+      Task<?> existingTask, boolean local)
       throws SemanticException {
     assert currUnionOp != null;
     GenMRUnionCtx uCtx = opProcCtx.getUnionTask(currUnionOp);
@@ -290,7 +290,7 @@ public final class GenMapRedUtils {
 
     setUnionPlan(opProcCtx, local, existingTask, uCtx, true);
 
-    List<Task<? extends Serializable>> parTasks = null;
+    List<Task<?>> parTasks = null;
     if (opProcCtx.getRootTasks().contains(currentUnionTask)) {
       opProcCtx.getRootTasks().remove(currentUnionTask);
       if (!opProcCtx.getRootTasks().contains(existingTask) &&
@@ -301,17 +301,17 @@ public final class GenMapRedUtils {
 
     if ((currentUnionTask != null) && (currentUnionTask.getParentTasks() != null)
         && !currentUnionTask.getParentTasks().isEmpty()) {
-      parTasks = new ArrayList<Task<? extends Serializable>>();
+      parTasks = new ArrayList<Task<?>>();
       parTasks.addAll(currentUnionTask.getParentTasks());
       Object[] parTaskArr = parTasks.toArray();
       for (Object parTask : parTaskArr) {
-        ((Task<? extends Serializable>) parTask)
+        ((Task<?>) parTask)
             .removeDependentTask(currentUnionTask);
       }
     }
 
     if ((currentUnionTask != null) && (parTasks != null)) {
-      for (Task<? extends Serializable> parTask : parTasks) {
+      for (Task<?> parTask : parTasks) {
         parTask.addDependentTask(existingTask);
         if (opProcCtx.getRootTasks().contains(existingTask)) {
           opProcCtx.getRootTasks().remove(existingTask);
@@ -332,22 +332,22 @@ public final class GenMapRedUtils {
    * @param opProcCtx
    *          processing context
    */
-  public static void joinPlan(Task<? extends Serializable> currTask,
-      Task<? extends Serializable> oldTask, GenMRProcContext opProcCtx)
+  public static void joinPlan(Task<?> currTask,
+      Task<?> oldTask, GenMRProcContext opProcCtx)
       throws SemanticException {
     assert currTask != null && oldTask != null;
 
     TableScanOperator currTopOp = opProcCtx.getCurrTopOp();
-    List<Task<? extends Serializable>> parTasks = null;
+    List<Task<?>> parTasks = null;
     // terminate the old task and make current task dependent on it
     if (currTask.getParentTasks() != null
         && !currTask.getParentTasks().isEmpty()) {
-      parTasks = new ArrayList<Task<? extends Serializable>>();
+      parTasks = new ArrayList<Task<?>>();
       parTasks.addAll(currTask.getParentTasks());
 
       Object[] parTaskArr = parTasks.toArray();
       for (Object element : parTaskArr) {
-        ((Task<? extends Serializable>) element).removeDependentTask(currTask);
+        ((Task<?>) element).removeDependentTask(currTask);
       }
     }
 
@@ -356,7 +356,7 @@ public final class GenMapRedUtils {
     }
 
     if (parTasks != null) {
-      for (Task<? extends Serializable> parTask : parTasks) {
+      for (Task<?> parTask : parTasks) {
         parTask.addDependentTask(oldTask);
       }
     }
@@ -374,7 +374,7 @@ public final class GenMapRedUtils {
    * If currTopOp is not set for input of the task, add input for to the task
    */
   static boolean mergeInput(TableScanOperator currTopOp,
-      GenMRProcContext opProcCtx, Task<? extends Serializable> task, boolean local)
+      GenMRProcContext opProcCtx, Task<?> task, boolean local)
       throws SemanticException {
     if (!opProcCtx.isSeenOp(task, currTopOp)) {
       String currAliasId = opProcCtx.getCurrAliasId();
@@ -389,7 +389,7 @@ public final class GenMapRedUtils {
    * Split and link two tasks by temporary file : pRS-FS / TS-cRS-OP
    */
   static void splitPlan(ReduceSinkOperator cRS,
-      Task<? extends Serializable> parentTask, Task<? extends Serializable> childTask,
+      Task<?> parentTask, Task<?> childTask,
       GenMRProcContext opProcCtx) throws SemanticException {
     assert parentTask != null && childTask != null;
     splitTasks(cRS, parentTask, childTask, opProcCtx);
@@ -408,11 +408,10 @@ public final class GenMapRedUtils {
       throws SemanticException {
     // Generate a new task
     ParseContext parseCtx = opProcCtx.getParseCtx();
-    Task<? extends Serializable> parentTask = opProcCtx.getCurrTask();
+    Task<?> parentTask = opProcCtx.getCurrTask();
 
     MapredWork childPlan = getMapRedWork(parseCtx);
-    Task<? extends Serializable> childTask = TaskFactory.get(childPlan, parseCtx
-        .getConf());
+    Task<?> childTask = TaskFactory.get(childPlan);
     Operator<? extends OperatorDesc> reducer = cRS.getChildOperators().get(0);
 
     // Add the reducer
@@ -420,7 +419,7 @@ public final class GenMapRedUtils {
     childPlan.setReduceWork(rWork);
     rWork.setReducer(reducer);
     ReduceSinkDesc desc = cRS.getConf();
-    childPlan.getReduceWork().setNumReduceTasks(new Integer(desc.getNumReducers()));
+    childPlan.getReduceWork().setNumReduceTasks(Integer.valueOf(desc.getNumReducers()));
 
     opProcCtx.getOpTaskMap().put(reducer, childTask);
 
@@ -434,8 +433,8 @@ public final class GenMapRedUtils {
    *          current alias
    * @param topOp
    *          the top operator of the stack
-   * @param plan
-   *          current plan
+   * @param task
+   *          current task
    * @param local
    *          whether you need to add to map-reduce or local work
    * @param opProcCtx
@@ -454,8 +453,8 @@ public final class GenMapRedUtils {
    *          current alias
    * @param topOp
    *          the top operator of the stack
-   * @param plan
-   *          current plan
+   * @param task
+   *          current task
    * @param local
    *          whether you need to add to map-reduce or local work
    * @param opProcCtx
@@ -476,13 +475,11 @@ public final class GenMapRedUtils {
    *
    * @param alias_id
    *          current alias
-   * @param topOp
-   *          the top operator of the stack
    * @param plan
    *          map work to initialize
    * @param local
    *          whether you need to add to map-reduce or local work
-   * @param pList
+   * @param partsList
    *          pruned partition list. If it is null it will be computed on-the-fly.
    * @param inputs
    *          read entities for the map work
@@ -494,15 +491,19 @@ public final class GenMapRedUtils {
       HiveConf conf, boolean local) throws SemanticException {
     ArrayList<Path> partDir = new ArrayList<Path>();
     ArrayList<PartitionDesc> partDesc = new ArrayList<PartitionDesc>();
-    boolean isAcidTable = false;
+    boolean isFullAcidTable = false;
 
     Path tblDir = null;
     plan.setNameToSplitSample(parseCtx.getNameToSplitSample());
+    // we also collect table stats while collecting column stats.
+    if (parseCtx.getAnalyzeRewrite() != null) {
+      plan.setGatheringStats(true);
+    }
 
     if (partsList == null) {
       try {
         partsList = PartitionPruner.prune(tsOp, parseCtx, alias_id);
-        isAcidTable = tsOp.getConf().isAcidTable();
+        isFullAcidTable = tsOp.getConf().isFullAcidTable();
       } catch (SemanticException e) {
         throw e;
       }
@@ -512,10 +513,11 @@ public final class GenMapRedUtils {
     // pass both confirmed and unknown partitions through the map-reduce
     // framework
     Set<Partition> parts = partsList.getPartitions();
+    TableDesc tableSpec = Utilities.getTableDesc(tsOp.getConf().getTableMetadata());
     PartitionDesc aliasPartnDesc = null;
     try {
       if (!parts.isEmpty()) {
-        aliasPartnDesc = Utilities.getPartitionDesc(parts.iterator().next());
+        aliasPartnDesc = Utilities.getPartitionDesc(parts.iterator().next(), tableSpec);
       }
     } catch (HiveException e) {
       LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
@@ -524,8 +526,7 @@ public final class GenMapRedUtils {
 
     // The table does not have any partitions
     if (aliasPartnDesc == null) {
-      aliasPartnDesc = new PartitionDesc(Utilities.getTableDesc(tsOp
-          .getConf().getTableMetadata()), null);
+      aliasPartnDesc = new PartitionDesc(tableSpec, null);
     }
 
     Map<String, String> props = tsOp.getConf().getOpProps();
@@ -539,8 +540,8 @@ public final class GenMapRedUtils {
     long sizeNeeded = Integer.MAX_VALUE;
     int fileLimit = -1;
     if (parseCtx.getGlobalLimitCtx().isEnable()) {
-      if (isAcidTable) {
-        LOG.info("Skip Global Limit optimization for ACID table");
+      if (isFullAcidTable) {
+        LOG.info("Skipping Global Limit optimization for an ACID table");
         parseCtx.getGlobalLimitCtx().disableOpt();
       } else {
         long sizePerRow = HiveConf.getLongVar(parseCtx.getConf(),
@@ -678,13 +679,13 @@ public final class GenMapRedUtils {
         }
         String path = p.toString();
         if (LOG.isDebugEnabled()) {
-          LOG.debug("Adding " + path + " of table" + alias_id);
+          LOG.debug("Adding " + path + " of table " + alias_id);
         }
 
         partDir.add(p);
         try {
           if (part.getTable().isPartitioned()) {
-            partDesc.add(Utilities.getPartitionDesc(part));
+            partDesc.add(Utilities.getPartitionDesc(part, tblDesc));
           }
           else {
             partDesc.add(Utilities.getPartitionDescFromTableDesc(tblDesc, part, false));
@@ -760,7 +761,7 @@ public final class GenMapRedUtils {
    *          whether you need to add to map-reduce or local work
    * @param tt_desc
    *          table descriptor
-   * @throws SerDeException
+   * @throws SemanticException
    */
   public static void setTaskPlan(Path path, String alias,
       Operator<? extends OperatorDesc> topOp, MapWork plan, boolean local,
@@ -849,19 +850,18 @@ public final class GenMapRedUtils {
    *
    * @param task
    */
-  public static void setKeyAndValueDescForTaskTree(Task<? extends Serializable> task) {
+  public static void setKeyAndValueDescForTaskTree(Task<?> task) {
 
     if (task instanceof ConditionalTask) {
-      List<Task<? extends Serializable>> listTasks = ((ConditionalTask) task)
+      List<Task<?>> listTasks = ((ConditionalTask) task)
           .getListTasks();
-      for (Task<? extends Serializable> tsk : listTasks) {
+      for (Task<?> tsk : listTasks) {
         setKeyAndValueDescForTaskTree(tsk);
       }
     } else if (task instanceof ExecDriver) {
       MapredWork work = (MapredWork) task.getWork();
       work.getMapWork().deriveExplainAttributes();
-      HashMap<String, Operator<? extends OperatorDesc>> opMap = work
-          .getMapWork().getAliasToWork();
+      Map<String, Operator<? extends OperatorDesc>> opMap = work.getMapWork().getAliasToWork();
       if (opMap != null && !opMap.isEmpty()) {
         for (Operator<? extends OperatorDesc> op : opMap.values()) {
           setKeyAndValueDesc(work.getReduceWork(), op);
@@ -887,70 +887,73 @@ public final class GenMapRedUtils {
       return;
     }
 
-    for (Task<? extends Serializable> childTask : task.getChildTasks()) {
+    for (Task<?> childTask : task.getChildTasks()) {
       setKeyAndValueDescForTaskTree(childTask);
     }
   }
 
   /**
-   * Called at the end of TaskCompiler::compile to derive final
-   * explain attributes based on previous compilation.
+   * Called at the end of TaskCompiler::compile
+   * This currently does the following for each map work
+   *   1.  Intern the table descriptors of the partitions
+   *   2.  derive final explain attributes based on previous compilation.
+   *
+   * The original implementation had 2 functions internTableDesc and deriveFinalExplainAttributes,
+   * respectively implementing 1 and 2 mentioned above.  This was done using recursion over the
+   * task graph.  The recursion was inefficient in a couple of ways.
+   *   - For large graphs the recursion was filling up the stack
+   *   - Instead of finding the mapworks, it was walking all possible paths from root
+   *     causing a huge performance problem.
+   *
+   * This implementation combines internTableDesc and deriveFinalExplainAttributes into 1 call.
+   * This can be done because each refers to information within Map Work and performs a specific
+   * action.
+   *
+   * The revised implementation generates all the map works from all MapReduce tasks (getMRTasks),
+   * Spark Tasks (getSparkTasks) and Tez tasks (getTezTasks).  Then for each of those map works
+   * invokes the respective call.  getMRTasks, getSparkTasks and getTezTasks iteratively walks
+   * the task graph to find the respective map works.
+   *
+   * The iterative implementation of these functions was done as part of HIVE-17195.  Before
+   * HIVE-17195, these functions were recursive and had the same issue.  So, picking this patch
+   * for an older release will also require picking HIVE-17195 at the least.
    */
-  public static void deriveFinalExplainAttributes(
-      Task<? extends Serializable> task, Configuration conf) {
-    // TODO: deriveExplainAttributes should be called here, code is too fragile to move it around.
-    if (task instanceof ConditionalTask) {
-      for (Task<? extends Serializable> tsk : ((ConditionalTask) task).getListTasks()) {
-        deriveFinalExplainAttributes(tsk, conf);
-      }
-    } else if (task instanceof ExecDriver) {
-      MapredWork work = (MapredWork) task.getWork();
-      work.getMapWork().deriveLlap(conf, true);
-    } else if (task != null && (task.getWork() instanceof TezWork)) {
-      TezWork work = (TezWork)task.getWork();
-      for (BaseWork w : work.getAllWorkUnsorted()) {
-        if (w instanceof MapWork) {
-          ((MapWork)w).deriveLlap(conf, false);
-        }
-      }
-    } else if (task instanceof SparkTask) {
-      SparkWork work = (SparkWork) task.getWork();
-      for (BaseWork w : work.getAllWorkUnsorted()) {
-        if (w instanceof MapWork) {
-          ((MapWork) w).deriveLlap(conf, false);
-        }
+  public static void finalMapWorkChores(
+      List<Task<?>> tasks, Configuration conf,
+      Interner<TableDesc> interner) {
+    List<ExecDriver> mrTasks = Utilities.getMRTasks(tasks);
+    if (!mrTasks.isEmpty()) {
+      for (ExecDriver execDriver : mrTasks) {
+        execDriver.getWork().getMapWork().internTable(interner);
+        execDriver.getWork().getMapWork().deriveLlap(conf, true);
       }
     }
 
-    if (task.getChildTasks() == null) {
-      return;
-    }
-
-    for (Task<? extends Serializable> childTask : task.getChildTasks()) {
-      deriveFinalExplainAttributes(childTask, conf);
-    }
-  }
-
-  public static void internTableDesc(Task<?> task, Interner<TableDesc> interner) {
-
-    if (task instanceof ConditionalTask) {
-      for (Task tsk : ((ConditionalTask) task).getListTasks()) {
-        internTableDesc(tsk, interner);
-      }
-    } else if (task instanceof ExecDriver) {
-      MapredWork work = (MapredWork) task.getWork();
-      work.getMapWork().internTable(interner);
-    } else if (task != null && (task.getWork() instanceof TezWork)) {
-      TezWork work = (TezWork)task.getWork();
-      for (BaseWork w : work.getAllWorkUnsorted()) {
-        if (w instanceof MapWork) {
-          ((MapWork)w).internTable(interner);
+    List<TezTask> tezTasks = Utilities.getTezTasks(tasks);
+    if (!tezTasks.isEmpty()) {
+      for (TezTask tezTask : tezTasks) {
+        if (tezTask.getWork() instanceof TezWork) {
+          TezWork work = tezTask.getWork();
+          for (BaseWork w : work.getAllWorkUnsorted()) {
+            if (w instanceof MapWork) {
+              ((MapWork)w).internTable(interner);
+              ((MapWork)w).deriveLlap(conf, false);
+            }
+          }
         }
       }
     }
-    if (task.getNumChild() > 0) {
-      for (Task childTask : task.getChildTasks()) {
-        internTableDesc(childTask, interner);
+
+    List<SparkTask> sparkTasks = Utilities.getSparkTasks(tasks);
+    if (!sparkTasks.isEmpty()) {
+      for (SparkTask sparkTask : sparkTasks) {
+        SparkWork work = sparkTask.getWork();
+        for (BaseWork w : work.getAllWorkUnsorted()) {
+          if (w instanceof MapWork) {
+            ((MapWork) w).internTable(interner);
+            ((MapWork) w).deriveLlap(conf, false);
+          }
+        }
       }
     }
   }
@@ -980,7 +983,7 @@ public final class GenMapRedUtils {
         conf.getBoolVar(
             HiveConf.ConfVars.HIVE_MAPPER_CANNOT_SPAN_MULTIPLE_PARTITIONS);
     work.setMapperCannotSpanPartns(mapperCannotSpanPartns);
-    work.setPathToAliases(new LinkedHashMap<Path, ArrayList<String>>());
+    work.setPathToAliases(new LinkedHashMap<Path, List<String>>());
     work.setPathToPartitionInfo(new LinkedHashMap<Path, PartitionDesc>());
     work.setAliasToWork(new LinkedHashMap<String, Operator<? extends OperatorDesc>>());
     return mrWork;
@@ -1059,7 +1062,7 @@ public final class GenMapRedUtils {
    * @param opProcCtx context
    **/
   private static void splitTasks(ReduceSinkOperator op,
-      Task<? extends Serializable> parentTask, Task<? extends Serializable> childTask,
+      Task<?> parentTask, Task<?> childTask,
       GenMRProcContext opProcCtx) throws SemanticException {
     if (op.getNumParent() != 1) {
       throw new IllegalStateException("Expecting operator " + op + " to have one parent. " +
@@ -1071,7 +1074,7 @@ public final class GenMapRedUtils {
 
     // Root Task cannot depend on any other task, therefore childTask cannot be
     // a root Task
-    List<Task<? extends Serializable>> rootTasks = opProcCtx.getRootTasks();
+    List<Task<?>> rootTasks = opProcCtx.getRootTasks();
     if (rootTasks.contains(childTask)) {
       rootTasks.remove(childTask);
     }
@@ -1159,13 +1162,13 @@ public final class GenMapRedUtils {
    */
   public static void replaceMapWork(String sourceAlias, String targetAlias,
       MapWork source, MapWork target) {
-    Map<Path, ArrayList<String>> sourcePathToAliases = source.getPathToAliases();
+    Map<Path, List<String>> sourcePathToAliases = source.getPathToAliases();
     Map<Path, PartitionDesc> sourcePathToPartitionInfo = source.getPathToPartitionInfo();
     Map<String, Operator<? extends OperatorDesc>> sourceAliasToWork = source.getAliasToWork();
     Map<String, PartitionDesc> sourceAliasToPartnInfo = source.getAliasToPartnInfo();
 
-    LinkedHashMap<Path, ArrayList<String>> targetPathToAliases = target.getPathToAliases();
-    LinkedHashMap<Path, PartitionDesc> targetPathToPartitionInfo = target.getPathToPartitionInfo();
+    Map<Path, List<String>> targetPathToAliases = target.getPathToAliases();
+    Map<Path, PartitionDesc> targetPathToPartitionInfo = target.getPathToPartitionInfo();
     Map<String, Operator<? extends OperatorDesc>> targetAliasToWork = target.getAliasToWork();
     Map<String, PartitionDesc> targetAliasToPartnInfo = target.getAliasToPartnInfo();
 
@@ -1187,8 +1190,8 @@ public final class GenMapRedUtils {
     targetAliasToWork.remove(targetAlias);
     targetAliasToPartnInfo.remove(targetAlias);
     List<Path> pathsToRemove = new ArrayList<>();
-    for (Entry<Path, ArrayList<String>> entry: targetPathToAliases.entrySet()) {
-      ArrayList<String> aliases = entry.getValue();
+    for (Entry<Path, List<String>> entry: targetPathToAliases.entrySet()) {
+      List<String> aliases = entry.getValue();
       aliases.remove(targetAlias);
       if (aliases.isEmpty()) {
         pathsToRemove.add(entry.getKey());
@@ -1204,8 +1207,8 @@ public final class GenMapRedUtils {
     targetAliasToPartnInfo.putAll(sourceAliasToPartnInfo);
     targetPathToPartitionInfo.putAll(sourcePathToPartitionInfo);
     List<Path> pathsToAdd = new ArrayList<>();
-    for (Entry<Path, ArrayList<String>> entry: sourcePathToAliases.entrySet()) {
-      ArrayList<String> aliases = entry.getValue();
+    for (Entry<Path, List<String>> entry: sourcePathToAliases.entrySet()) {
+      List<String> aliases = entry.getValue();
       if (aliases.contains(sourceAlias)) {
         pathsToAdd.add(entry.getKey());
       }
@@ -1222,12 +1225,12 @@ public final class GenMapRedUtils {
 
   /**
    * @param fsInput The FileSink operator.
-   * @param ctx The MR processing context.
    * @param finalName the final destination path the merge job should output.
    * @param dependencyTask
    * @param mvTasks
    * @param conf
    * @param currTask
+   * @param lineageState
    * @throws SemanticException
 
    * create a Map-only merge job using CombineHiveInputFormat for all partitions with
@@ -1247,36 +1250,54 @@ public final class GenMapRedUtils {
    *          v
    *          FileSinkOperator (fsMerge)
    *
-   *          Here the pathToPartitionInfo & pathToAlias will remain the same, which means the paths
+   *          Here the pathToPartitionInfo &amp; pathToAlias will remain the same, which means the paths
    *          do
    *          not contain the dynamic partitions (their parent). So after the dynamic partitions are
    *          created (after the first job finished before the moveTask or ConditionalTask start),
-   *          we need to change the pathToPartitionInfo & pathToAlias to include the dynamic
+   *          we need to change the pathToPartitionInfo &amp; pathToAlias to include the dynamic
    *          partition
    *          directories.
    *
    */
-  public static void createMRWorkForMergingFiles (FileSinkOperator fsInput,
-   Path finalName, DependencyCollectionTask dependencyTask,
-   List<Task<MoveWork>> mvTasks, HiveConf conf,
-   Task<? extends Serializable> currTask) throws SemanticException {
+  public static void createMRWorkForMergingFiles(FileSinkOperator fsInput,
+      Path finalName, DependencyCollectionTask dependencyTask,
+      List<Task<MoveWork>> mvTasks, HiveConf conf,
+      Task<?> currTask, LineageState lineageState)
+      throws SemanticException {
 
     //
     // 1. create the operator tree
     //
     FileSinkDesc fsInputDesc = fsInput.getConf();
+    if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+      Utilities.FILE_OP_LOGGER.trace("Creating merge work from " + System.identityHashCode(fsInput)
+          + " with write ID " + (fsInputDesc.isMmTable() ? fsInputDesc.getTableWriteId() : null)
+          + " into " + finalName);
+    }
 
-    // Create a TableScan operator
+    boolean isBlockMerge = (conf.getBoolVar(ConfVars.HIVEMERGERCFILEBLOCKLEVEL) &&
+        fsInputDesc.getTableInfo().getInputFileFormatClass().equals(RCFileInputFormat.class)) ||
+        (conf.getBoolVar(ConfVars.HIVEMERGEORCFILESTRIPELEVEL) &&
+            fsInputDesc.getTableInfo().getInputFileFormatClass().equals(OrcInputFormat.class));
+
     RowSchema inputRS = fsInput.getSchema();
-    TableScanOperator tsMerge = GenMapRedUtils.createTemporaryTableScanOperator(
-        fsInput.getCompilationOpContext(), inputRS);
+    Long srcMmWriteId = fsInputDesc.isMmTable() ? fsInputDesc.getTableWriteId() : null;
+    FileSinkDesc fsOutputDesc = null;
+    TableScanOperator tsMerge = null;
+    if (!isBlockMerge) {
+      // Create a TableScan operator
+      tsMerge = GenMapRedUtils.createTemporaryTableScanOperator(
+          fsInput.getCompilationOpContext(), inputRS);
 
-    // Create a FileSink operator
-    TableDesc ts = (TableDesc) fsInputDesc.getTableInfo().clone();
-    FileSinkDesc fsOutputDesc = new FileSinkDesc(finalName, ts,
-      conf.getBoolVar(ConfVars.COMPRESSRESULT));
-    FileSinkOperator fsOutput = (FileSinkOperator) OperatorFactory.getAndMakeChild(
-      fsOutputDesc, inputRS, tsMerge);
+      // Create a FileSink operator
+      TableDesc ts = (TableDesc) fsInputDesc.getTableInfo().clone();
+      Path mergeDest = srcMmWriteId == null ? finalName : finalName.getParent();
+      fsOutputDesc = new FileSinkDesc(mergeDest, ts, conf.getBoolVar(ConfVars.COMPRESSRESULT));
+      fsOutputDesc.setMmWriteId(srcMmWriteId);
+      fsOutputDesc.setIsMerge(true);
+      // Create and attach the filesink for the merge.
+      OperatorFactory.getAndMakeChild(fsOutputDesc, inputRS, tsMerge);
+    }
 
     // If the input FileSinkOperator is a dynamic partition enabled, the tsMerge input schema
     // needs to include the partition column, and the fsOutput should have
@@ -1284,7 +1305,7 @@ public final class GenMapRedUtils {
     DynamicPartitionCtx dpCtx = fsInputDesc.getDynPartCtx();
     if (dpCtx != null && dpCtx.getNumDPCols() > 0) {
       // adding DP ColumnInfo to the RowSchema signature
-      ArrayList<ColumnInfo> signature = inputRS.getSignature();
+      List<ColumnInfo> signature = inputRS.getSignature();
       String tblAlias = fsInputDesc.getTableInfo().getTableName();
       for (String dpCol : dpCtx.getDPColNames()) {
         ColumnInfo colInfo = new ColumnInfo(dpCol,
@@ -1294,12 +1315,14 @@ public final class GenMapRedUtils {
       }
       inputRS.setSignature(signature);
 
+      if (!isBlockMerge) {
       // create another DynamicPartitionCtx, which has a different input-to-DP column mapping
-      DynamicPartitionCtx dpCtx2 = new DynamicPartitionCtx(dpCtx);
-      fsOutputDesc.setDynPartCtx(dpCtx2);
+        DynamicPartitionCtx dpCtx2 = new DynamicPartitionCtx(dpCtx);
+        fsOutputDesc.setDynPartCtx(dpCtx2);
+      }
 
       // update the FileSinkOperator to include partition columns
-      usePartitionColumns(fsInputDesc.getTableInfo().getProperties(), dpCtx.getDPColNames());
+      usePartitionColumns(fsInputDesc.getTableInfo().getProperties(), fsInputDesc.getTable(), dpCtx.getDPColNames());
     } else {
       // non-partitioned table
       fsInputDesc.getTableInfo().getProperties().remove(
@@ -1309,16 +1332,11 @@ public final class GenMapRedUtils {
     //
     // 2. Constructing a conditional task consisting of a move task and a map reduce task
     //
-    MoveWork dummyMv = new MoveWork(null, null, null,
-         new LoadFileDesc(fsInputDesc.getFinalDirName(), finalName, true, null, null), false);
+    Path inputDirName = fsInputDesc.getMergeInputDirName();
     MapWork cplan;
     Serializable work;
 
-    if ((conf.getBoolVar(ConfVars.HIVEMERGERCFILEBLOCKLEVEL) &&
-        fsInputDesc.getTableInfo().getInputFileFormatClass().equals(RCFileInputFormat.class)) ||
-        (conf.getBoolVar(ConfVars.HIVEMERGEORCFILESTRIPELEVEL) &&
-            fsInputDesc.getTableInfo().getInputFileFormatClass().equals(OrcInputFormat.class))) {
-
+    if (isBlockMerge) {
       cplan = GenMapRedUtils.createMergeTask(fsInputDesc, finalName,
           dpCtx != null && dpCtx.getNumDPCols() > 0, fsInput.getCompilationOpContext());
       if (conf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
@@ -1351,37 +1369,31 @@ public final class GenMapRedUtils {
     cplan.setInputformat("org.apache.hadoop.hive.ql.io.CombineHiveInputFormat");
     // NOTE: we should gather stats in MR1 rather than MR2 at merge job since we don't
     // know if merge MR2 will be triggered at execution time
-    Task<MoveWork> mvTask = GenMapRedUtils.findMoveTask(mvTasks, fsOutput);
+    MoveWork dummyMv = null;
+    if (srcMmWriteId == null) {
+      // Only create the movework for non-MM table. No action needed for a MM table.
+      dummyMv = new MoveWork(null, null, null,
+          new LoadFileDesc(inputDirName, finalName, true, null, null, false), false);
+    }
+    // Use the original fsOp path here in case of MM - while the new FSOP merges files inside the
+    // MM directory, the original MoveTask still commits based on the parent. Note that this path
+    // can only be triggered for a merge that's part of insert for now; MM tables do not support
+    // concatenate. Keeping the old logic for non-MM tables with temp directories and stuff.
+    Path fsopPath = srcMmWriteId != null ? fsInputDesc.getFinalDirName() : finalName;
+
+    Task<MoveWork> mvTask = GenMapRedUtils.findMoveTaskForFsopOutput(
+        mvTasks, fsopPath, fsInputDesc.isMmTable());
     ConditionalTask cndTsk = GenMapRedUtils.createCondTask(conf, currTask, dummyMv, work,
-        fsInputDesc.getFinalDirName(), finalName, mvTask, dependencyTask);
+        fsInputDesc.getMergeInputDirName(), finalName, mvTask, dependencyTask, lineageState);
 
     // keep the dynamic partition context in conditional task resolver context
     ConditionalResolverMergeFilesCtx mrCtx =
         (ConditionalResolverMergeFilesCtx) cndTsk.getResolverCtx();
     mrCtx.setDPCtx(fsInputDesc.getDynPartCtx());
     mrCtx.setLbCtx(fsInputDesc.getLbCtx());
+
   }
 
-  /**
-   * Make the move task in the GenMRProcContext following the FileSinkOperator a dependent of all
-   * possible subtrees branching from the ConditionalTask.
-   *
-   * @param newOutput
-   * @param cndTsk
-   * @param mvTasks
-   * @param hconf
-   * @param dependencyTask
-   */
-  public static void linkMoveTask(FileSinkOperator newOutput,
-      ConditionalTask cndTsk, List<Task<MoveWork>> mvTasks, HiveConf hconf,
-      DependencyCollectionTask dependencyTask) {
-
-    Task<MoveWork> mvTask = GenMapRedUtils.findMoveTask(mvTasks, newOutput);
-
-    for (Task<? extends Serializable> tsk : cndTsk.getListTasks()) {
-      linkMoveTask(mvTask, tsk, hconf, dependencyTask);
-    }
-  }
 
   /**
    * Follows the task tree down from task and makes all leaves parents of mvTask
@@ -1391,8 +1403,8 @@ public final class GenMapRedUtils {
    * @param hconf
    * @param dependencyTask
    */
-  public static void linkMoveTask(Task<MoveWork> mvTask,
-      Task<? extends Serializable> task, HiveConf hconf,
+  private static void linkMoveTask(Task<MoveWork> mvTask,
+      Task<?> task, HiveConf hconf,
       DependencyCollectionTask dependencyTask) {
 
     if (task.getDependentTasks() == null || task.getDependentTasks().isEmpty()) {
@@ -1400,7 +1412,7 @@ public final class GenMapRedUtils {
       addDependentMoveTasks(mvTask, hconf, task, dependencyTask);
     } else {
       // Otherwise, for each child run this method recursively
-      for (Task<? extends Serializable> childTask : task.getDependentTasks()) {
+      for (Task<?> childTask : task.getDependentTasks()) {
         linkMoveTask(mvTask, childTask, hconf, dependencyTask);
       }
     }
@@ -1418,7 +1430,7 @@ public final class GenMapRedUtils {
    * @param dependencyTask
    */
   public static void addDependentMoveTasks(Task<MoveWork> mvTask, HiveConf hconf,
-      Task<? extends Serializable> parentTask, DependencyCollectionTask dependencyTask) {
+      Task<?> parentTask, DependencyCollectionTask dependencyTask) {
 
     if (mvTask != null) {
       if (dependencyTask != null) {
@@ -1471,20 +1483,51 @@ public final class GenMapRedUtils {
    *          HiveConf
    */
   public static void addStatsTask(FileSinkOperator nd, MoveTask mvTask,
-      Task<? extends Serializable> currTask, HiveConf hconf) {
+      Task<?> currTask, HiveConf hconf) {
 
     MoveWork mvWork = mvTask.getWork();
-    StatsWork statsWork = null;
+    BasicStatsWork statsWork = null;
+    Table table = null;
+    boolean truncate = false;
     if (mvWork.getLoadTableWork() != null) {
-      statsWork = new StatsWork(mvWork.getLoadTableWork());
+      statsWork = new BasicStatsWork(mvWork.getLoadTableWork());
+      truncate = mvWork.getLoadTableWork().getReplace();
+      String tableName = mvWork.getLoadTableWork().getTable().getTableName();
+      try {
+        // For partitioned CTAS, the table has not been created, but we can retrieve it
+        // from the loadTableWork. For rest of query types, we just retrieve it from
+        // metastore.
+        table = mvWork.getLoadTableWork().getMdTable() != null ?
+            mvWork.getLoadTableWork().getMdTable() :
+            Hive.get().getTable(SessionState.get().getCurrentDatabase(), tableName);
+      } catch (HiveException e) {
+        throw new RuntimeException("unexpected; table should be present already..: " + tableName, e);
+      }
     } else if (mvWork.getLoadFileWork() != null) {
-      statsWork = new StatsWork(mvWork.getLoadFileWork());
+      statsWork = new BasicStatsWork(mvWork.getLoadFileWork());
+
+      truncate = true;
+      if (mvWork.getLoadFileWork().getCtasCreateTableDesc() != null) {
+        try {
+          table = mvWork.getLoadFileWork().getCtasCreateTableDesc().toTable(hconf);
+        } catch (HiveException e) {
+          LOG.debug("can't pre-create table for CTAS", e);
+          table = null;
+        }
+      } else if (mvWork.getLoadFileWork().getCreateViewDesc() != null) {
+        // CREATE MATERIALIZED VIEW ...
+        try {
+          table = mvWork.getLoadFileWork().getCreateViewDesc().toTable(hconf);
+        } catch (HiveException e) {
+          LOG.debug("can't pre-create table for MV", e);
+          table = null;
+        }
+      } else {
+        throw new RuntimeException("unexpected; this should be a CTAS or a CREATE/REBUILD MV - however no desc present");
+      }
     }
     assert statsWork != null : "Error when generating StatsTask";
 
-    statsWork.setSourceTask(currTask);
-    statsWork.setStatsReliable(hconf.getBoolVar(ConfVars.HIVE_STATS_RELIABLE));
-    statsWork.setStatsTmpDir(nd.getConf().getStatsTmpDir());
     if (currTask.getWork() instanceof MapredWork) {
       MapredWork mrWork = (MapredWork) currTask.getWork();
       mrWork.getMapWork().setGatheringStats(true);
@@ -1503,10 +1546,13 @@ public final class GenMapRedUtils {
       }
     }
 
-    // AggKey in StatsWork is used for stats aggregation while StatsAggPrefix
-    // in FileSinkDesc is used for stats publishing. They should be consistent.
-    statsWork.setAggKey(nd.getConf().getStatsAggPrefix());
-    Task<? extends Serializable> statsTask = TaskFactory.get(statsWork, hconf);
+    StatsWork columnStatsWork = new StatsWork(table, statsWork, hconf);
+    columnStatsWork.collectStatsFromAggregator(nd.getConf());
+
+    columnStatsWork.truncateExisting(truncate);
+
+    columnStatsWork.setSourceTask(currTask);
+    Task<?> statsTask = TaskFactory.get(columnStatsWork);
 
     // subscribe feeds from the MoveTask so that MoveTask can forward the list
     // of dynamic partition list to the StatsTask
@@ -1544,7 +1590,7 @@ public final class GenMapRedUtils {
     TableScanOperator topOp,  FileSinkDesc fsDesc) {
 
     ArrayList<String> aliases = new ArrayList<String>();
-    Path inputDir = StringInternUtils.internUriStringsInPath(fsDesc.getFinalDirName());
+    Path inputDir = StringInternUtils.internUriStringsInPath(fsDesc.getMergeInputDirName());
     String inputDirStr = inputDir.toString().intern();
     TableDesc tblDesc = fsDesc.getTableInfo();
     aliases.add(inputDirStr); // dummy alias: just use the input path
@@ -1566,15 +1612,16 @@ public final class GenMapRedUtils {
    *
    * @param fsInputDesc
    * @param finalName
+   * @param hasDynamicPartitions
    * @param ctx
-   * @param inputFormatClass
    * @return MergeWork if table is stored as RCFile or ORCFile,
    *         null otherwise
    */
   public static MapWork createMergeTask(FileSinkDesc fsInputDesc, Path finalName,
       boolean hasDynamicPartitions, CompilationOpContext ctx) throws SemanticException {
 
-    Path inputDir = fsInputDesc.getFinalDirName();
+    Path inputDir = fsInputDesc.getMergeInputDirName();
+
     TableDesc tblDesc = fsInputDesc.getTableInfo();
 
     List<Path> inputDirs = new ArrayList<Path>(1);
@@ -1598,10 +1645,13 @@ public final class GenMapRedUtils {
           + " format other than RCFile or ORCFile");
     }
 
+    if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+      Utilities.FILE_OP_LOGGER.trace("creating mergefilework from " + inputDirs + " to " + finalName);
+    }
     // create the merge file work
     MergeFileWork work = new MergeFileWork(inputDirs, finalName,
-        hasDynamicPartitions, tblDesc.getInputFileFormatClass().getName());
-    LinkedHashMap<Path, ArrayList<String>> pathToAliases = new LinkedHashMap<>();
+        hasDynamicPartitions, tblDesc.getInputFileFormatClass().getName(), tblDesc);
+    Map<Path, List<String>> pathToAliases = new LinkedHashMap<>();
     pathToAliases.put(inputDir, inputDirstr);
     work.setMapperCannotSpanPartns(true);
     work.setPathToAliases(pathToAliases);
@@ -1620,6 +1670,10 @@ public final class GenMapRedUtils {
     } else {
       fmd = new OrcFileMergeDesc();
     }
+    fmd.setIsMmTable(fsInputDesc.isMmTable());
+    fmd.setWriteId(fsInputDesc.getTableWriteId());
+    int stmtId = fsInputDesc.getStatementId();
+    fmd.setStmtId(stmtId == -1 ? 0 : stmtId);
     fmd.setDpCtx(fsInputDesc.getDynPartCtx());
     fmd.setOutputPath(finalName);
     fmd.setHasDynamicPartitions(work.hasDynamicPartitions());
@@ -1673,15 +1727,16 @@ public final class GenMapRedUtils {
    *
    * @param condInputPath A path that the ConditionalTask uses as input for its sub-tasks.
    * @param linkedMoveWork A MoveWork that the ConditionalTask uses to link to its sub-tasks.
+   * @param lineageState A LineageState used to track what changes.
    * @return A new MoveWork that has the Conditional input path as source and the linkedMoveWork as target.
    */
   @VisibleForTesting
-  protected static MoveWork mergeMovePaths(Path condInputPath, MoveWork linkedMoveWork) {
+  protected static MoveWork mergeMovePaths(Path condInputPath, MoveWork linkedMoveWork,
+      LineageState lineageState) {
     MoveWork newWork = new MoveWork(linkedMoveWork);
     LoadFileDesc fileDesc = null;
     LoadTableDesc tableDesc = null;
 
-    LineageState lineageState = SessionState.get().getLineageState();
     if (linkedMoveWork.getLoadFileWork() != null) {
       fileDesc = new LoadFileDesc(linkedMoveWork.getLoadFileWork());
       fileDesc.setSourcePath(condInputPath);
@@ -1719,20 +1774,29 @@ public final class GenMapRedUtils {
    *          a MoveTask that may be linked to the conditional sub-tasks
    * @param dependencyTask
    *          a dependency task that may be linked to the conditional sub-tasks
+   * @param lineageState
+   *          to track activity
    * @return The conditional task
    */
+  @SuppressWarnings("unchecked")
   private static ConditionalTask createCondTask(HiveConf conf,
-      Task<? extends Serializable> currTask, MoveWork dummyMoveWork, Serializable mergeWork,
-      Path condInputPath, Path condOutputPath, Task<MoveWork> moveTaskToLink, DependencyCollectionTask dependencyTask) {
+      Task<?> currTask, MoveWork mvWork, Serializable mergeWork,
+      Path condInputPath, Path condOutputPath, Task<MoveWork> moveTaskToLink,
+      DependencyCollectionTask dependencyTask, LineageState lineageState) {
+    if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+      Utilities.FILE_OP_LOGGER.trace("Creating conditional merge task for " + condInputPath);
+    }
+    // Create a dummy task if no move is needed.
+    Serializable moveWork = mvWork != null ? mvWork : new DependencyCollectionWork();
 
+    // Note: this should never happen for mm tables.
     boolean shouldMergeMovePaths = (moveTaskToLink != null && dependencyTask == null
         && shouldMergeMovePaths(conf, condInputPath, condOutputPath, moveTaskToLink.getWork()));
 
-    MoveWork workForMoveOnlyTask;
+    Serializable workForMoveOnlyTask = moveWork;
     if (shouldMergeMovePaths) {
-      workForMoveOnlyTask = mergeMovePaths(condInputPath, moveTaskToLink.getWork());
-    } else {
-      workForMoveOnlyTask = dummyMoveWork;
+      workForMoveOnlyTask = mergeMovePaths(condInputPath, moveTaskToLink.getWork(),
+          lineageState);
     }
 
     // There are 3 options for this ConditionalTask:
@@ -1741,10 +1805,12 @@ public final class GenMapRedUtils {
     // 3) Merge some partitions and move other partitions (i.e. merge some partitions and don't
     // merge others) in this case the merge is done first followed by the move to prevent
     // conflicts.
-    Task<? extends Serializable> mergeOnlyMergeTask = TaskFactory.get(mergeWork, conf);
-    Task<? extends Serializable> moveOnlyMoveTask = TaskFactory.get(workForMoveOnlyTask, conf);
-    Task<? extends Serializable> mergeAndMoveMergeTask = TaskFactory.get(mergeWork, conf);
-    Task<? extends Serializable> mergeAndMoveMoveTask = TaskFactory.get(dummyMoveWork, conf);
+    // TODO: if we are not dealing with concatenate DDL, we should not create a merge+move path
+    //       because it should be impossible to get incompatible outputs.
+    Task<?> mergeOnlyMergeTask = TaskFactory.get(mergeWork);
+    Task<?> moveOnlyMoveTask = TaskFactory.get(workForMoveOnlyTask);
+    Task<?> mergeAndMoveMergeTask = TaskFactory.get(mergeWork);
+    Task<?> mergeAndMoveMoveTask = TaskFactory.get(moveWork);
 
     // NOTE! It is necessary merge task is the parent of the move task, and not
     // the other way around, for the proper execution of the execute method of
@@ -1757,12 +1823,12 @@ public final class GenMapRedUtils {
 
     ConditionalWork cndWork = new ConditionalWork(listWorks);
 
-    List<Task<? extends Serializable>> listTasks = new ArrayList<Task<? extends Serializable>>();
+    List<Task<?>> listTasks = new ArrayList<Task<?>>();
     listTasks.add(moveOnlyMoveTask);
     listTasks.add(mergeOnlyMergeTask);
     listTasks.add(mergeAndMoveMergeTask);
 
-    ConditionalTask cndTsk = (ConditionalTask) TaskFactory.get(cndWork, conf);
+    ConditionalTask cndTsk = (ConditionalTask) TaskFactory.get(cndWork);
     cndTsk.setListTasks(listTasks);
 
     // create resolver
@@ -1785,6 +1851,7 @@ public final class GenMapRedUtils {
       addDependentMoveTasks(moveTaskToLink, conf, moveOnlyMoveTask, dependencyTask);
     }
 
+
     addDependentMoveTasks(moveTaskToLink, conf, mergeOnlyMergeTask, dependencyTask);
     addDependentMoveTasks(moveTaskToLink, conf, mergeAndMoveMoveTask, dependencyTask);
 
@@ -1802,20 +1869,29 @@ public final class GenMapRedUtils {
         .isSkewedStoredAsDir();
   }
 
-  public static Task<MoveWork> findMoveTask(
-      List<Task<MoveWork>> mvTasks, FileSinkOperator fsOp) {
+  public static Task<MoveWork> findMoveTaskForFsopOutput(
+      List<Task<MoveWork>> mvTasks, Path fsopFinalDir, boolean isMmFsop) {
     // find the move task
     for (Task<MoveWork> mvTsk : mvTasks) {
       MoveWork mvWork = mvTsk.getWork();
       Path srcDir = null;
+      boolean isLfd = false;
       if (mvWork.getLoadFileWork() != null) {
         srcDir = mvWork.getLoadFileWork().getSourcePath();
+        isLfd = true;
+        if (isMmFsop) {
+          srcDir = srcDir.getParent();
+        }
       } else if (mvWork.getLoadTableWork() != null) {
         srcDir = mvWork.getLoadTableWork().getSourcePath();
       }
+      if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+        Utilities.FILE_OP_LOGGER.trace("Observing MoveWork " + System.identityHashCode(mvWork)
+          + " with " + srcDir + "(from " + (isLfd ? "LFD" : "LTD") + ") while looking for "
+          + fsopFinalDir + "(mm = " + isMmFsop + ")");
+      }
 
-      if ((srcDir != null)
-          && (srcDir.equals(fsOp.getConf().getFinalDirName()))) {
+      if ((srcDir != null) && srcDir.equals(fsopFinalDir)) {
         return mvTsk;
       }
     }
@@ -1824,70 +1900,66 @@ public final class GenMapRedUtils {
 
   /**
    * Returns true iff the fsOp requires a merge
-   * @param mvTasks
-   * @param hconf
-   * @param fsOp
-   * @param currTask
-   * @param isInsertTable
-   * @return
    */
-  public static boolean isMergeRequired(List<Task<MoveWork>> mvTasks, HiveConf hconf, FileSinkOperator fsOp,
-      Task<? extends Serializable> currTask, boolean isInsertTable) {
-
+  public static boolean isMergeRequired(List<Task<MoveWork>> mvTasks, HiveConf hconf,
+      FileSinkOperator fsOp, Task<?> currTask, boolean isInsertTable) {
     // Has the user enabled merging of files for map-only jobs or for all jobs
-    if ((mvTasks != null) && (!mvTasks.isEmpty())) {
+    if (mvTasks == null  || mvTasks.isEmpty()) {
+      return false;
+    }
 
-      // no need of merging if the move is to a local file system
-      MoveTask mvTask = (MoveTask) GenMapRedUtils.findMoveTask(mvTasks, fsOp);
+    // no need of merging if the move is to a local file system
+    // We are looking based on the original FSOP, so use the original path as is.
+    MoveTask mvTask = (MoveTask) GenMapRedUtils.findMoveTaskForFsopOutput(
+        mvTasks, fsOp.getConf().getFinalDirName(), fsOp.getConf().isMmTable());
 
-      if (mvTask != null && isInsertTable && hconf.getBoolVar(ConfVars.HIVESTATSAUTOGATHER)
-          && !fsOp.getConf().isMaterialization()) {
-        // mark the MapredWork and FileSinkOperator for gathering stats
-        fsOp.getConf().setGatherStats(true);
-        fsOp.getConf().setStatsReliable(hconf.getBoolVar(ConfVars.HIVE_STATS_RELIABLE));
-        if (!mvTask.hasFollowingStatsTask()) {
-          GenMapRedUtils.addStatsTask(fsOp, mvTask, currTask, hconf);
-        }
+    // TODO: wtf?!! why is this in this method? This has nothing to do with anything.
+    if (isInsertTable && hconf.getBoolVar(ConfVars.HIVESTATSAUTOGATHER)
+        && !fsOp.getConf().isMaterialization()) {
+      // mark the MapredWork and FileSinkOperator for gathering stats
+      fsOp.getConf().setGatherStats(true);
+      fsOp.getConf().setStatsReliable(hconf.getBoolVar(ConfVars.HIVE_STATS_RELIABLE));
+      if (mvTask != null && !mvTask.hasFollowingStatsTask()) {
+        GenMapRedUtils.addStatsTask(fsOp, mvTask, currTask, hconf);
       }
+    }
 
-      if ((mvTask != null) && !mvTask.isLocal() && fsOp.getConf().canBeMerged()) {
+    if (mvTask == null || mvTask.isLocal() || !fsOp.getConf().canBeMerged()) {
+      return false;
+    }
 
-        if (currTask.getWork() instanceof TezWork) {
-          // tez blurs the boundary between map and reduce, thus it has it's own
-          // config
-          return hconf.getBoolVar(ConfVars.HIVEMERGETEZFILES);
-        } else if (currTask.getWork() instanceof SparkWork) {
-          // spark has its own config for merging
-          return hconf.getBoolVar(ConfVars.HIVEMERGESPARKFILES);
-        }
+    if (currTask.getWork() instanceof TezWork) {
+      // tez blurs the boundary between map and reduce, thus it has it's own config
+      return hconf.getBoolVar(ConfVars.HIVEMERGETEZFILES);
+    } else if (currTask.getWork() instanceof SparkWork) {
+      // spark has its own config for merging
+      return hconf.getBoolVar(ConfVars.HIVEMERGESPARKFILES);
+    }
+    return isMergeRequiredForMr(hconf, fsOp, currTask);
+  }
 
-        if (fsOp.getConf().isLinkedFileSink()) {
-          // If the user has HIVEMERGEMAPREDFILES set to false, the idea was the
-          // number of reducers are few, so the number of files anyway are small.
-          // However, with this optimization, we are increasing the number of files
-          // possibly by a big margin. So, merge aggresively.
-          if (hconf.getBoolVar(ConfVars.HIVEMERGEMAPFILES) ||
-              hconf.getBoolVar(ConfVars.HIVEMERGEMAPREDFILES)) {
-            return true;
-          }
-        } else {
-          // There are separate configuration parameters to control whether to
-          // merge for a map-only job
-          // or for a map-reduce job
-          if (currTask.getWork() instanceof MapredWork) {
-            ReduceWork reduceWork = ((MapredWork) currTask.getWork()).getReduceWork();
-            boolean mergeMapOnly =
-              hconf.getBoolVar(ConfVars.HIVEMERGEMAPFILES) && reduceWork == null;
-            boolean mergeMapRed =
-              hconf.getBoolVar(ConfVars.HIVEMERGEMAPREDFILES) &&
-              reduceWork != null;
-            if (mergeMapOnly || mergeMapRed) {
-              return true;
-            }
-          } else {
-            return false;
-          }
-        }
+  private static boolean isMergeRequiredForMr(HiveConf hconf,
+      FileSinkOperator fsOp, Task<?> currTask) {
+    if (fsOp.getConf().isLinkedFileSink()) {
+      // If the user has HIVEMERGEMAPREDFILES set to false, the idea was the
+      // number of reducers are few, so the number of files anyway are small.
+      // However, with this optimization, we are increasing the number of files
+      // possibly by a big margin. So, merge aggresively.
+      return (hconf.getBoolVar(ConfVars.HIVEMERGEMAPFILES) ||
+          hconf.getBoolVar(ConfVars.HIVEMERGEMAPREDFILES));
+    }
+    // There are separate configuration parameters to control whether to
+    // merge for a map-only job
+    // or for a map-reduce job
+    if (currTask.getWork() instanceof MapredWork) {
+      ReduceWork reduceWork = ((MapredWork) currTask.getWork()).getReduceWork();
+      boolean mergeMapOnly =
+        hconf.getBoolVar(ConfVars.HIVEMERGEMAPFILES) && reduceWork == null;
+      boolean mergeMapRed =
+        hconf.getBoolVar(ConfVars.HIVEMERGEMAPREDFILES) &&
+        reduceWork != null;
+      if (mergeMapOnly || mergeMapRed) {
+        return true;
       }
     }
     return false;
@@ -1905,39 +1977,49 @@ public final class GenMapRedUtils {
    * @param dependencyTask
    * @return
    */
-  public static Path createMoveTask(Task<? extends Serializable> currTask, boolean chDir,
+  public static Path createMoveTask(Task<?> currTask, boolean chDir,
       FileSinkOperator fsOp, ParseContext parseCtx, List<Task<MoveWork>> mvTasks,
       HiveConf hconf, DependencyCollectionTask dependencyTask) {
 
     Path dest = null;
 
+    FileSinkDesc fileSinkDesc = fsOp.getConf();
+    boolean isMmTable = fileSinkDesc.isMmTable();
     if (chDir) {
-      FileSinkDesc fileSinkDesc = fsOp.getConf();
-      dest = fileSinkDesc.getFinalDirName();
+      dest = fileSinkDesc.getMergeInputDirName();
+      if (!isMmTable) {
+        // generate the temporary file
+        // it must be on the same file system as the current destination
+        Context baseCtx = parseCtx.getContext();
 
-      // generate the temporary file
-      // it must be on the same file system as the current destination
-      Context baseCtx = parseCtx.getContext();
+        // Create the required temporary file in the HDFS location if the destination
+        // path of the FileSinkOperator table is a blobstore path.
+        Path tmpDir = baseCtx.getTempDirForFinalJobPath(fileSinkDesc.getDestPath());
 
-      // Create the required temporary file in the HDFS location if the destination
-      // path of the FileSinkOperator table is a blobstore path.
-      Path tmpDir = baseCtx.getTempDirForPath(fileSinkDesc.getDestPath(), true);
-
-      // Change all the linked file sink descriptors
-      if (fileSinkDesc.isLinkedFileSink()) {
-        for (FileSinkDesc fsConf:fileSinkDesc.getLinkedFileSinkDesc()) {
-          fsConf.setParentDir(tmpDir);
-          fsConf.setDirName(new Path(tmpDir, fsConf.getDirName().getName()));
+        // Change all the linked file sink descriptors
+        if (fileSinkDesc.isLinkedFileSink()) {
+          for (FileSinkDesc fsConf : fileSinkDesc.getLinkedFileSinkDesc()) {
+            fsConf.setDirName(new Path(tmpDir, fsConf.getDirName().getName()));
+            if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+              Utilities.FILE_OP_LOGGER.trace("createMoveTask setting tmpDir for LinkedFileSink chDir "
+                + fsConf.getDirName() + "; dest was " + fileSinkDesc.getDestPath());
+            }
+          }
+        } else {
+          fileSinkDesc.setDirName(tmpDir);
+          if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+            Utilities.FILE_OP_LOGGER.trace("createMoveTask setting tmpDir chDir "
+              + tmpDir + "; dest was " + fileSinkDesc.getDestPath());
+          }
         }
-      } else {
-        fileSinkDesc.setDirName(tmpDir);
       }
     }
 
     Task<MoveWork> mvTask = null;
 
     if (!chDir) {
-      mvTask = GenMapRedUtils.findMoveTask(mvTasks, fsOp);
+      mvTask = GenMapRedUtils.findMoveTaskForFsopOutput(
+          mvTasks, fsOp.getConf().getFinalDirName(), fsOp.getConf().isMmTable());
     }
 
     // Set the move task to be dependent on the current task
@@ -1974,33 +2056,6 @@ public final class GenMapRedUtils {
     return Collections.emptyList();
   }
 
-  public static List<Path> getInputPathsForPartialScan(TableScanOperator tableScanOp,
-          Appendable aggregationKey) throws SemanticException {
-    List<Path> inputPaths = new ArrayList<Path>();
-    switch (tableScanOp.getConf().getTableMetadata().getTableSpec().specType) {
-      case TABLE_ONLY:
-        inputPaths.add(tableScanOp.getConf().getTableMetadata()
-                .getTableSpec().tableHandle.getPath());
-        break;
-      case STATIC_PARTITION:
-        Partition part = tableScanOp.getConf().getTableMetadata()
-                .getTableSpec().partHandle;
-        try {
-          aggregationKey.append(Warehouse.makePartPath(part.getSpec()));
-        } catch (MetaException e) {
-          throw new SemanticException(ErrorMsg.ANALYZE_TABLE_PARTIALSCAN_AGGKEY.getMsg(
-              part.getDataLocation().toString() + e.getMessage()));
-        } catch (IOException e) {
-          throw new RuntimeException(e);
-        }
-        inputPaths.add(part.getDataLocation());
-        break;
-      default:
-        assert false;
-    }
-    return inputPaths;
-  }
-
   public static Set<String> findAliases(final MapWork work, Operator<?> startOp) {
     Set<String> aliases = new LinkedHashSet<String>();
     for (Operator<?> topOp : findTopOps(startOp, null)) {
@@ -2033,6 +2088,23 @@ public final class GenMapRedUtils {
     }
     return null;
   }
+
+  static void usePartitionColumns(Properties properties, Table table, List<String> partColNames) {
+    if (properties.containsKey(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_PARTITION_COLUMNS)) {
+      usePartitionColumns(properties, partColNames);
+    } else {
+      List<FieldSchema> partCols = table.getPartCols();
+      String partNames = partCols.stream().map(FieldSchema::getName).collect(Collectors.joining("/"));
+      String partTypes = partCols.stream().map(FieldSchema::getType).collect(Collectors.joining(":"));
+      properties.setProperty(
+        org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_PARTITION_COLUMNS,
+        partNames);
+      properties.setProperty(
+        org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_PARTITION_COLUMN_TYPES,
+        partTypes);
+    }
+  }
+
   /**
    * Uses only specified partition columns.
    * Provided properties should be pre-populated with partition column names and types.

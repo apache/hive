@@ -18,10 +18,16 @@ PREHOOK: query: explain extended
 insert overwrite table list_bucketing_static_part partition (ds = '2008-04-08',  hr = '11')
 select key, value from src
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@list_bucketing_static_part@ds=2008-04-08/hr=11
 POSTHOOK: query: explain extended
 insert overwrite table list_bucketing_static_part partition (ds = '2008-04-08',  hr = '11')
 select key, value from src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@list_bucketing_static_part@ds=2008-04-08/hr=11
+OPTIMIZED SQL: SELECT `key`, `value`
+FROM `default`.`src`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -45,21 +51,23 @@ STAGE PLANS:
                     File Output Operator
                       compressed: false
                       GlobalTableId: 1
-#### A masked pattern was here ####
+                      directory: hdfs://### HDFS PATH ###
                       NumFilesPerFileSink: 1
                       Static Partition Specification: ds=2008-04-08/hr=11/
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-#### A masked pattern was here ####
+                      Stats Publishing Key Prefix: hdfs://### HDFS PATH ###
                       table:
                           input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
                           properties:
                             bucket_count -1
+                            bucketing_version 2
                             column.name.delimiter ,
                             columns key,value
                             columns.comments 
                             columns.types string:string
 #### A masked pattern was here ####
+                            location hdfs://### HDFS PATH ###
                             name default.list_bucketing_static_part
                             partition_columns ds/hr
                             partition_columns.types string:string
@@ -72,10 +80,11 @@ STAGE PLANS:
                       TotalFiles: 1
                       GatherStats: true
                       MultiFileSpray: false
+            Execution mode: vectorized
             Path -> Alias:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### [src]
             Path -> Partition:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### 
                 Partition
                   base file name: src
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -83,11 +92,13 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 'default','default'
                     columns.types string:string
 #### A masked pattern was here ####
+                    location hdfs://### HDFS PATH ###
                     name default.src
                     numFiles 1
                     numRows 500
@@ -104,11 +115,13 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
                       columns.types string:string
 #### A masked pattern was here ####
+                      location hdfs://### HDFS PATH ###
                       name default.src
                       numFiles 1
                       numRows 500
@@ -131,17 +144,19 @@ STAGE PLANS:
             ds 2008-04-08
             hr 11
           replace: true
-#### A masked pattern was here ####
+          source: hdfs://### HDFS PATH ###
           table:
               input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
               output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
+                location hdfs://### HDFS PATH ###
                 name default.list_bucketing_static_part
                 partition_columns ds/hr
                 partition_columns.types string:string
@@ -153,8 +168,9 @@ STAGE PLANS:
               name: default.list_bucketing_static_part
 
   Stage: Stage-2
-    Stats-Aggr Operator
-#### A masked pattern was here ####
+    Stats Work
+      Basic Stats Work:
+          Stats Aggregation Key Prefix: hdfs://### HDFS PATH ###
 
 PREHOOK: query: insert overwrite table list_bucketing_static_part partition (ds = '2008-04-08', hr = '11')
 select key, value from src
@@ -182,13 +198,11 @@ POSTHOOK: query: desc formatted list_bucketing_static_part partition (ds='2008-0
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@list_bucketing_static_part
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -216,7 +230,7 @@ Sort Columns:       	[]
 Stored As SubDirectories:	Yes                 	 
 Skewed Columns:     	[key]               	 
 Skewed Values:      	[[103], [484], [51]]	 
-#### A masked pattern was here ####
+Skewed Value to Path:	{[103]=hdfs://### HDFS PATH ###, [484]=hdfs://### HDFS PATH ###, [51]=hdfs://### HDFS PATH ###}	 
 Skewed Value to Truncated Path:	{[103]=/list_bucketing_static_part/ds=2008-04-08/hr=11/key=103, [484]=/list_bucketing_static_part/ds=2008-04-08/hr=11/key=484, [51]=/list_bucketing_static_part/ds=2008-04-08/hr=11/key=51}	 
 Storage Desc Params:	 	 
 	serialization.format	1                   

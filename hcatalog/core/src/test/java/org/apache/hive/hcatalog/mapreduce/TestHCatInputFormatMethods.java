@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,7 +19,7 @@
 
 package org.apache.hive.hcatalog.mapreduce;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.Job;
@@ -40,10 +40,8 @@ public class TestHCatInputFormatMethods extends HCatBaseTest {
       return;
     }
 
-    Assert.assertEquals(0, driver.run("drop table if exists testHCIFMethods").getResponseCode());
-    Assert.assertEquals(0, driver.run(
-      "create table testHCIFMethods (a string, b int) partitioned by (x string, y string)")
-      .getResponseCode());
+    driver.run("drop table if exists testHCIFMethods");
+    driver.run("create table testHCIFMethods (a string, b int) partitioned by (x string, y string)");
 
     setUpComplete = true;
   }

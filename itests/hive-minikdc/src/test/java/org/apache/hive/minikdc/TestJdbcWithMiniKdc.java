@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -36,6 +36,7 @@ import org.apache.hive.service.auth.HiveAuthConstants;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.session.HiveSessionHook;
 import org.apache.hive.service.cli.session.HiveSessionHookContext;
+import org.apache.hive.service.cli.session.SessionUtils;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -67,9 +68,10 @@ public class TestJdbcWithMiniKdc {
     Class.forName(MiniHS2.getJdbcDriverName());
     confOverlay.put(ConfVars.HIVE_SERVER2_SESSION_HOOK.varname,
         SessionHookTest.class.getName());
+    confOverlay.put(ConfVars.HIVE_SCHEDULED_QUERIES_EXECUTOR_ENABLED.varname, "false");
 
+    miniHiveKdc = new MiniHiveKdc();
     HiveConf hiveConf = new HiveConf();
-    miniHiveKdc = MiniHiveKdc.getMiniHiveKdc(hiveConf);
     miniHS2 = MiniHiveKdc.getMiniHS2WithKerb(miniHiveKdc, hiveConf);
     miniHS2.start(confOverlay);
   }
@@ -173,6 +175,47 @@ public class TestJdbcWithMiniKdc {
     verifyProperty(SESSION_USER_NAME, MiniHiveKdc.HIVE_TEST_USER_1);
   }
 
+  @Test
+  public void testRenewDelegationToken() throws Exception {
+    UserGroupInformation currentUGI = miniHiveKdc.loginUser(MiniHiveKdc.HIVE_TEST_SUPER_USER);
+    hs2Conn = DriverManager.getConnection(miniHS2.getJdbcURL());
+    String currentUser = currentUGI.getUserName();
+    // retrieve token and store in the cache
+    String token = ((HiveConnection) hs2Conn)
+        .getDelegationToken(MiniHiveKdc.HIVE_TEST_USER_1,
+            miniHiveKdc.getFullyQualifiedServicePrincipal(MiniHiveKdc.HIVE_TEST_SUPER_USER));
+    assertTrue(token != null && !token.isEmpty());
+
+    ((HiveConnection) hs2Conn).renewDelegationToken(token);
+
+    hs2Conn.close();
+  }
+
+  @Test
+  public void testCancelRenewTokenFlow() throws Exception {
+    miniHiveKdc.loginUser(MiniHiveKdc.HIVE_TEST_SUPER_USER);
+    hs2Conn = DriverManager.getConnection(miniHS2.getJdbcURL());
+
+    // retrieve token and store in the cache
+    String token = ((HiveConnection) hs2Conn)
+        .getDelegationToken(MiniHiveKdc.HIVE_TEST_USER_1, MiniHiveKdc.HIVE_SERVICE_PRINCIPAL);
+    assertTrue(token != null && !token.isEmpty());
+
+    Exception ex = null;
+    ((HiveConnection) hs2Conn).cancelDelegationToken(token);
+    try {
+      ((HiveConnection) hs2Conn).renewDelegationToken(token);
+    } catch (Exception SQLException) {
+      ex = SQLException;
+    }
+    assertTrue(ex != null && ex instanceof HiveSQLException);
+    // retrieve token and store in the cache
+    token = ((HiveConnection) hs2Conn)
+        .getDelegationToken(MiniHiveKdc.HIVE_TEST_USER_1, MiniHiveKdc.HIVE_SERVICE_PRINCIPAL);
+    assertTrue(token != null && !token.isEmpty());
+
+    hs2Conn.close();
+  }
   /***
    * Negative test for token based authentication
    * Verify that a user can't retrieve a token for user that
@@ -193,7 +236,7 @@ public class TestJdbcWithMiniKdc {
           MiniHiveKdc.HIVE_TEST_USER_2);
     } catch (SQLException e) {
       // Expected error
-      assertTrue(e.getMessage().contains("Error retrieving delegation token for user"));
+      assertEquals("Unexpected type of exception class thrown", HiveSQLException.class, e.getClass());
       assertTrue(e.getCause().getCause().getMessage().contains("is not allowed to impersonate"));
     } finally {
       hs2Conn.close();
@@ -254,7 +297,7 @@ public class TestJdbcWithMiniKdc {
   // Store the given token in the UGI
   protected void storeToken(String tokenStr, UserGroupInformation ugi)
       throws Exception {
-    Utils.setTokenStr(ugi,
+    SessionUtils.setTokenStr(ugi,
         tokenStr, HiveAuthConstants.HS2_CLIENT_TOKEN);
   }
 

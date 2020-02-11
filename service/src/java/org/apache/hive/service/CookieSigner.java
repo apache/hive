@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
  */
 public class CookieSigner {
   private static final String SIGNATURE = "&s=";
-  private static final String SHA_STRING = "SHA";
+  private static final String SHA_STRING = "SHA-256";
   private byte[] secretBytes;
   private static final Logger LOG = LoggerFactory.getLogger(CookieSigner.class);
 
@@ -81,7 +81,7 @@ public class CookieSigner {
     if (LOG.isDebugEnabled()) {
       LOG.debug("Signature generated for " + rawValue + " inside verify is " + currentSignature);
     }
-    if (!originalSignature.equals(currentSignature)) {
+    if (!MessageDigest.isEqual(originalSignature.getBytes(), currentSignature.getBytes())) {
       throw new IllegalArgumentException("Invalid sign, original = " + originalSignature +
         " current = " + currentSignature);
     }

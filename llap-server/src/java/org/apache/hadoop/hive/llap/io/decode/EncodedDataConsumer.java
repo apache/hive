@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,19 +17,27 @@
  */
 package org.apache.hadoop.hive.llap.io.decode;
 
+import java.lang.management.ThreadMXBean;
 import java.util.concurrent.Callable;
 
 import org.apache.hadoop.hive.common.Pool;
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch;
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
 import org.apache.hadoop.hive.llap.DebugUtils;
+import org.apache.hadoop.hive.llap.LlapUtil;
+import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
 import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
+import org.apache.hadoop.hive.llap.io.encoded.TezCounterSource;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonIOMetrics;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Consumer;
 import org.apache.hadoop.hive.ql.io.orc.encoded.IoTrace;
 import org.apache.hive.common.util.FixedSizedObjectPool;
 import org.apache.orc.TypeDescription;
+import org.apache.tez.common.counters.FileSystemCounter;
+import org.apache.tez.common.counters.TezCounters;
+import org.apache.tez.runtime.task.TaskRunner2Callable;
 
 public abstract class EncodedDataConsumer<BatchKey, BatchType extends EncodedColumnBatch<BatchKey>>
   implements Consumer<BatchType>, ReadPipeline {
@@ -39,30 +47,63 @@ public abstract class EncodedDataConsumer<BatchKey, BatchType extends EncodedCol
   private Callable<Void> readCallable;
   private final LlapDaemonIOMetrics ioMetrics;
   // Note that the pool is per EDC - within EDC, CVBs are expected to have the same schema.
-  private final static int CVB_POOL_SIZE = 128;
+  private static final int CVB_POOL_SIZE = 128;
   protected final FixedSizedObjectPool<ColumnVectorBatch> cvbPool;
+  protected final QueryFragmentCounters counters;
+  private final ThreadMXBean mxBean;
 
   public EncodedDataConsumer(Consumer<ColumnVectorBatch> consumer, final int colCount,
-      LlapDaemonIOMetrics ioMetrics) {
+      LlapDaemonIOMetrics ioMetrics, QueryFragmentCounters counters) {
     this.downstreamConsumer = consumer;
     this.ioMetrics = ioMetrics;
-    cvbPool = new FixedSizedObjectPool<ColumnVectorBatch>(CVB_POOL_SIZE,
-        new Pool.PoolObjectHelper<ColumnVectorBatch>() {
-          @Override
-          public ColumnVectorBatch create() {
-            return new ColumnVectorBatch(colCount);
-          }
-          @Override
-          public void resetBeforeOffer(ColumnVectorBatch t) {
-            // Don't reset anything, we are reusing column vectors.
-          }
-        });
+    this.mxBean = LlapUtil.initThreadMxBean();
+    cvbPool = new FixedSizedObjectPool<>(CVB_POOL_SIZE, new Pool.PoolObjectHelper<ColumnVectorBatch>() {
+      @Override public ColumnVectorBatch create() {
+        return new ColumnVectorBatch(colCount);
+      }
+
+      @Override public void resetBeforeOffer(ColumnVectorBatch t) {
+        // Don't reset anything, we are reusing column vectors.
+      }
+    });
+    this.counters = counters;
+  }
+
+  // Implementing TCS is needed for StatsRecordingThreadPool.
+  private class CpuRecordingCallable implements Callable<Void>, TezCounterSource {
+    private final Callable<Void> readCallable;
+
+    public CpuRecordingCallable(Callable<Void> readCallable) {
+      this.readCallable = readCallable;
+    }
+
+    @Override
+    public Void call() throws Exception {
+      if (mxBean == null) {
+        return readCallable.call();
+      }
+      long cpuTime = mxBean.getCurrentThreadCpuTime(),
+          userTime = mxBean.getCurrentThreadUserTime();
+      try {
+        return readCallable.call();
+      } finally {
+        counters.recordThreadTimes(mxBean.getCurrentThreadCpuTime() - cpuTime,
+            mxBean.getCurrentThreadUserTime() - userTime);
+      }
+    }
+
+    @Override
+    public TezCounters getTezCounters() {
+      return (readCallable instanceof TezCounterSource)
+          ? ((TezCounterSource) readCallable).getTezCounters() : null;
+    }
+
   }
 
   public void init(ConsumerFeedback<BatchType> upstreamFeedback,
       Callable<Void> readCallable) {
     this.upstreamFeedback = upstreamFeedback;
-    this.readCallable = readCallable;
+    this.readCallable = mxBean == null ? readCallable : new CpuRecordingCallable(readCallable);
   }
 
   @Override
@@ -71,7 +112,7 @@ public abstract class EncodedDataConsumer<BatchKey, BatchType extends EncodedCol
   }
 
   @Override
-  public void consumeData(BatchType data) {
+  public void consumeData(BatchType data) throws InterruptedException {
     if (isStopped) {
       returnSourceData(data);
       return;
@@ -100,20 +141,27 @@ public abstract class EncodedDataConsumer<BatchKey, BatchType extends EncodedCol
   }
 
   protected abstract void decodeBatch(BatchType batch,
-      Consumer<ColumnVectorBatch> downstreamConsumer);
+      Consumer<ColumnVectorBatch> downstreamConsumer) throws InterruptedException;
 
   @Override
-  public void setDone() {
+  public void setDone() throws InterruptedException {
     downstreamConsumer.setDone();
+    cvbPool.clear();
   }
 
   @Override
-  public void setError(Throwable t) {
+  public void setError(Throwable t) throws InterruptedException {
     downstreamConsumer.setError(t);
   }
 
   @Override
   public void returnData(ColumnVectorBatch data) {
+    //In case a writer has a lock on any of the vectors we don't return it to the pool.
+    for (ColumnVector cv : data.cols) {
+      if (cv != null && cv.getRef() > 0) {
+        return;
+      }
+    }
     cvbPool.offer(data);
   }
 

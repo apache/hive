@@ -14,6 +14,7 @@
 
 package org.apache.hadoop.hive.llap;
 
+import java.io.IOException;
 import java.security.PrivilegedAction;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -81,7 +82,7 @@ public abstract class AsyncPbRpcProxy<ProtocolType, TokenType extends TokenIdent
       private final Condition queueCondition = lock.newCondition();
       private final AtomicBoolean shouldRun = new AtomicBoolean(false);
 
-      private final int maxConcurrentRequestsPerNode = 1;
+      private final int maxConcurrentRequestsPerNode;
       private final ListeningExecutorService executor;
 
 
@@ -97,9 +98,10 @@ public abstract class AsyncPbRpcProxy<ProtocolType, TokenType extends TokenIdent
       // Tracks completed requests pre node
       private final LinkedList<LlapNodeId> completedNodes = new LinkedList<>();
 
-      public RequestManager(int numThreads) {
+      public RequestManager(int numThreads, int maxPerNode) {
         ExecutorService localExecutor = Executors.newFixedThreadPool(numThreads,
             new ThreadFactoryBuilder().setNameFormat("TaskCommunicator #%2d").build());
+        maxConcurrentRequestsPerNode = maxPerNode;
         executor = MoreExecutors.listeningDecorator(localExecutor);
       }
 
@@ -123,18 +125,20 @@ public abstract class AsyncPbRpcProxy<ProtocolType, TokenType extends TokenIdent
               break;
             }
           } catch (InterruptedException e) {
-            if (isShutdown.get()) {
-              break;
-            } else {
-              LOG.warn("RunLoop interrupted without being shutdown first");
-              throw new RuntimeException(e);
-            }
+            handleInterrupt(e);
+            break;
           } finally {
             lock.unlock();
           }
         }
         LOG.info("CallScheduler loop exiting");
         return null;
+      }
+
+      private void handleInterrupt(InterruptedException e) {
+        if (isShutdown.get()) return;
+        LOG.warn("RunLoop interrupted without being shutdown first");
+        throw new RuntimeException(e);
       }
 
       /* Add a new request to be executed */
@@ -171,7 +175,7 @@ public abstract class AsyncPbRpcProxy<ProtocolType, TokenType extends TokenIdent
       }
 
       @VisibleForTesting
-      boolean process() {
+      boolean process() throws InterruptedException {
         if (isShutdown.get()) {
           return true;
         }
@@ -182,6 +186,7 @@ public abstract class AsyncPbRpcProxy<ProtocolType, TokenType extends TokenIdent
         // otherwise an add/completion after draining the lists but before setting it to false,
         // will not trigger a run. May cause one unnecessary run if an add comes in before drain.
         // drain list. add request (setTrue). setFalse needs to be avoided.
+        // TODO: why CAS if the result is not checked?
         shouldRun.compareAndSet(true, false);
         // Drain any calls which may have come in during the last execution of the loop.
         drainNewRequestList();  // Locks newRequestList
@@ -192,7 +197,16 @@ public abstract class AsyncPbRpcProxy<ProtocolType, TokenType extends TokenIdent
         while (iterator.hasNext()) {
           CallableRequest<?, ?> request = iterator.next();
           iterator.remove();
-          LlapNodeId nodeId = request.getNodeId();
+          LlapNodeId nodeId;
+          try {
+            nodeId = request.getNodeId();
+          } catch (InterruptedException e) {
+            throw e;
+          } catch (Exception e) {
+            request.getCallback().indicateError(e);
+            continue;
+          }
+
           if (canRunForNode(nodeId, currentLoopDisabledNodes)) {
             submitToExecutor(request, nodeId);
           } else {
@@ -321,19 +335,15 @@ public abstract class AsyncPbRpcProxy<ProtocolType, TokenType extends TokenIdent
   @VisibleForTesting
   protected static abstract class CallableRequest<REQUEST extends Message, RESPONSE extends Message>
         implements Callable<RESPONSE> {
-    protected final LlapNodeId nodeId;
     protected final ExecuteRequestCallback<RESPONSE> callback;
     protected final REQUEST request;
 
-    protected CallableRequest(LlapNodeId nodeId, REQUEST request, ExecuteRequestCallback<RESPONSE> callback) {
-      this.nodeId = nodeId;
+    protected CallableRequest(REQUEST request, ExecuteRequestCallback<RESPONSE> callback) {
       this.request = request;
       this.callback = callback;
     }
 
-    public LlapNodeId getNodeId() {
-      return nodeId;
-    }
+    public abstract LlapNodeId getNodeId() throws Exception;
 
     public ExecuteRequestCallback<RESPONSE> getCallback() {
       return callback;
@@ -342,13 +352,31 @@ public abstract class AsyncPbRpcProxy<ProtocolType, TokenType extends TokenIdent
     public abstract RESPONSE call() throws Exception;
   }
 
+
+  @VisibleForTesting
+  protected static abstract class NodeCallableRequest<
+    REQUEST extends Message, RESPONSE extends Message> extends CallableRequest<REQUEST, RESPONSE> {
+    protected final LlapNodeId nodeId;
+
+    protected NodeCallableRequest(LlapNodeId nodeId, REQUEST request,
+        ExecuteRequestCallback<RESPONSE> callback) {
+      super(request, callback);
+      this.nodeId = nodeId;
+    }
+
+    @Override
+    public LlapNodeId getNodeId() {
+      return nodeId;
+    }
+  }
+
   public interface ExecuteRequestCallback<T extends Message> {
     void setResponse(T response);
     void indicateError(Throwable t);
   }
 
-  public AsyncPbRpcProxy(String name, int numThreads, Configuration conf,
-      Token<TokenType> token, long connectionTimeoutMs, long retrySleepMs, int expectedNodes) {
+  public AsyncPbRpcProxy(String name, int numThreads, Configuration conf, Token<TokenType> token,
+      long connectionTimeoutMs, long retrySleepMs, int expectedNodes, int maxPerNode) {
     super(name);
     // Note: we may make size/etc. configurable later.
     CacheBuilder<String, ProtocolType> cb = CacheBuilder.newBuilder().expireAfterAccess(
@@ -365,13 +393,25 @@ public abstract class AsyncPbRpcProxy<ProtocolType, TokenType extends TokenIdent
     this.hostProxies = cb.build();
     this.socketFactory = NetUtils.getDefaultSocketFactory(conf);
     this.token = token;
-    String tokenUser = getTokenUser(token);
-    this.tokenUser = tokenUser;
+    if (token != null) {
+      String tokenUser = getTokenUser(token);
+      if (tokenUser == null) {
+        try {
+          tokenUser = UserGroupInformation.getCurrentUser().getShortUserName();
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+        LOG.warn("Cannot determine token user from the token; using {}", tokenUser);
+      }
+      this.tokenUser = tokenUser;
+    } else {
+      this.tokenUser = null;
+    }
 
     this.retryPolicy = RetryPolicies.retryUpToMaximumTimeWithFixedSleep(
         connectionTimeoutMs, retrySleepMs, TimeUnit.MILLISECONDS);
 
-    this.requestManager = new RequestManager(numThreads);
+    this.requestManager = new RequestManager(numThreads, maxPerNode);
     ExecutorService localExecutor = Executors.newFixedThreadPool(1,
         new ThreadFactoryBuilder().setNameFormat("RequestManagerExecutor").build());
     this.requestManagerExecutor = MoreExecutors.listeningDecorator(localExecutor);
@@ -382,13 +422,19 @@ public abstract class AsyncPbRpcProxy<ProtocolType, TokenType extends TokenIdent
         "retrySleep(millis)=" + retrySleepMs);
   }
 
-  protected final ProtocolType getProxy(final LlapNodeId nodeId) {
+  /**
+   * @param nodeId Hostname + post.
+   * @param nodeToken A custom node token. If not specified, the default token is used.
+   * @return the protocol client implementation for the node.
+   */
+  protected final ProtocolType getProxy(
+      final LlapNodeId nodeId, final Token<TokenType> nodeToken) {
     String hostId = getHostIdentifier(nodeId.getHostname(), nodeId.getPort());
     try {
       return hostProxies.get(hostId, new Callable<ProtocolType>() {
         @Override
         public ProtocolType call() throws Exception {
-          return createProxy(nodeId);
+          return createProxy(nodeId, nodeToken);
         }
       });
     } catch (ExecutionException e) {
@@ -396,17 +442,29 @@ public abstract class AsyncPbRpcProxy<ProtocolType, TokenType extends TokenIdent
     }
   }
 
-  private ProtocolType createProxy(final LlapNodeId nodeId) {
-    if (token == null) {
+  private ProtocolType createProxy(
+      final LlapNodeId nodeId, Token<TokenType> nodeToken) throws IOException {
+    if (nodeToken == null && this.token == null) {
       if (LOG.isDebugEnabled()) {
         LOG.debug("Creating a client without a token for " + nodeId);
       }
       return createProtocolImpl(getConfig(), nodeId.getHostname(),
           nodeId.getPort(), null, retryPolicy, socketFactory);
     }
+    if (this.token != null && this.tokenUser == null) {
+      throw new AssertionError("Invalid internal state from " + this.token);
+    }
+    // Either the token should be passed in here, or in ctor.
+    String tokenUser = this.tokenUser == null ? getTokenUser(nodeToken) : this.tokenUser;
+    if (tokenUser == null) {
+      tokenUser = UserGroupInformation.getCurrentUser().getShortUserName();
+      LOG.warn("Cannot determine token user for UGI; using {}", tokenUser);
+    }
     final UserGroupInformation ugi = UserGroupInformation.createRemoteUser(tokenUser);
     // Clone the token as we'd need to set the service to the one we are talking to.
-    Token<TokenType> nodeToken = new Token<TokenType>(token);
+    if (nodeToken == null) {
+      nodeToken = new Token<TokenType>(token);
+    }
     SecurityUtil.setTokenService(nodeToken, NetUtils.createSocketAddrForHost(
         nodeId.getHostname(), nodeId.getPort()));
     ugi.addToken(nodeToken);

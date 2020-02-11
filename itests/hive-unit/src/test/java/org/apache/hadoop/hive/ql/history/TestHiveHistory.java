@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,37 +19,44 @@
 package org.apache.hadoop.hive.ql.history;
 
 
-import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Proxy;
 import java.util.LinkedList;
 import java.util.Map;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
+import org.apache.hadoop.hive.common.io.SessionStream;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.ql.DriverFactory;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
 import org.apache.hadoop.hive.ql.history.HiveHistory.QueryInfo;
 import org.apache.hadoop.hive.ql.history.HiveHistory.TaskInfo;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.plan.LoadTableDesc.LoadFileType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.tools.LineageInfo;
 import org.apache.hadoop.mapred.TextInputFormat;
+import static org.junit.Assert.fail;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * TestHiveHistory.
  *
  */
-public class TestHiveHistory extends TestCase {
+public class TestHiveHistory {
 
   static HiveConf conf;
 
@@ -61,8 +68,8 @@ public class TestHiveHistory extends TestCase {
    * intialize the tables
    */
 
-  @Override
-  protected void setUp() {
+  @Before
+  public void setUp() {
     try {
       conf = new HiveConf(HiveHistory.class);
       SessionState.start(conf);
@@ -101,10 +108,11 @@ public class TestHiveHistory extends TestCase {
       cols.add("key");
       cols.add("value");
       for (String src : srctables) {
-        db.dropTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, src, true, true);
+        db.dropTable(Warehouse.DEFAULT_DATABASE_NAME, src, true, true);
         db.createTable(src, cols, null, TextInputFormat.class,
             IgnoreKeyTextOutputFormat.class);
-        db.loadTable(hadoopDataFile[i], src, false, false, false, false, false);
+        db.loadTable(hadoopDataFile[i], src,
+          LoadFileType.KEEP_EXISTING, false, false, false, false, null, 0, false);
         i++;
       }
 
@@ -117,6 +125,7 @@ public class TestHiveHistory extends TestCase {
   /**
    * Check history file output for this query.
    */
+  @Test
   public void testSimpleQuery() {
     new LineageInfo();
     try {
@@ -132,8 +141,8 @@ public class TestHiveHistory extends TestCase {
       CliSessionState ss = new CliSessionState(hconf);
       ss.in = System.in;
       try {
-        ss.out = new PrintStream(System.out, true, "UTF-8");
-        ss.err = new PrintStream(System.err, true, "UTF-8");
+        ss.out = new SessionStream(System.out, true, "UTF-8");
+        ss.err = new SessionStream(System.err, true, "UTF-8");
       } catch (UnsupportedEncodingException e) {
         System.exit(3);
       }
@@ -141,11 +150,8 @@ public class TestHiveHistory extends TestCase {
       SessionState.start(ss);
 
       String cmd = "select a.key+1 from src a";
-      Driver d = new Driver(conf);
-      int ret = d.run(cmd).getResponseCode();
-      if (ret != 0) {
-        fail("Failed");
-      }
+      IDriver d = DriverFactory.newDriver(conf);
+      d.run(cmd);
       HiveHistoryViewer hv = new HiveHistoryViewer(SessionState.get()
           .getHiveHistory().getHistFileName());
       Map<String, QueryInfo> jobInfoMap = hv.getJobInfoMap();
@@ -171,6 +177,7 @@ public class TestHiveHistory extends TestCase {
     }
   }
 
+  @Test
   public void testQueryloglocParentDirNotExist() throws Exception {
     String parentTmpDir = tmpdir + "/HIVE2654";
     Path parentDirPath = new Path(parentTmpDir);
@@ -200,6 +207,7 @@ public class TestHiveHistory extends TestCase {
    * Check if HiveHistoryImpl class is returned when hive history is enabled
    * @throws Exception
    */
+  @Test
   public void testHiveHistoryConfigEnabled() throws Exception {
       HiveConf conf = new HiveConf(SessionState.class);
       conf.setBoolVar(ConfVars.HIVE_SESSION_HISTORY_ENABLED, true);
@@ -213,6 +221,7 @@ public class TestHiveHistory extends TestCase {
    * Check if HiveHistory class is a Proxy class when hive history is disabled
    * @throws Exception
    */
+  @Test
   public void testHiveHistoryConfigDisabled() throws Exception {
     HiveConf conf = new HiveConf(SessionState.class);
     conf.setBoolVar(ConfVars.HIVE_SESSION_HISTORY_ENABLED, false);

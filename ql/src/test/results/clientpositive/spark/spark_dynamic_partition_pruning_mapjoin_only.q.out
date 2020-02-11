@@ -1,4 +1,4 @@
-PREHOOK: query: create table srcpart_date as select ds as ds, ds as ds2 from srcpart group by ds
+PREHOOK: query: create table srcpart_date_n3 as select ds as ds, ds as ds2 from srcpart group by ds
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -6,8 +6,8 @@ PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcpart_date
-POSTHOOK: query: create table srcpart_date as select ds as ds, ds as ds2 from srcpart group by ds
+PREHOOK: Output: default@srcpart_date_n3
+POSTHOOK: query: create table srcpart_date_n3 as select ds as ds, ds as ds2 from srcpart group by ds
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -15,9 +15,9 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcpart_date
-POSTHOOK: Lineage: srcpart_date.ds SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_date.ds2 SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Output: default@srcpart_date_n3
+POSTHOOK: Lineage: srcpart_date_n3.ds SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: srcpart_date_n3.ds2 SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
 PREHOOK: query: create table srcpart2 as select * from srcpart
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@srcpart
@@ -42,18 +42,30 @@ POSTHOOK: Lineage: srcpart2.key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, t
 POSTHOOK: Lineage: srcpart2.value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: EXPLAIN select *
  from srcpart
- join srcpart_date on (srcpart.ds = srcpart_date.ds)
+ join srcpart_date_n3 on (srcpart.ds = srcpart_date_n3.ds)
  join srcpart2 on (srcpart.hr = srcpart2.hr)
- where srcpart_date.ds2 = '2008-04-08'
+ where srcpart_date_n3.ds2 = '2008-04-08'
  and srcpart2.hr = 11
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart2
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart_date_n3
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select *
  from srcpart
- join srcpart_date on (srcpart.ds = srcpart_date.ds)
+ join srcpart_date_n3 on (srcpart.ds = srcpart_date_n3.ds)
  join srcpart2 on (srcpart.hr = srcpart2.hr)
- where srcpart_date.ds2 = '2008-04-08'
+ where srcpart_date_n3.ds2 = '2008-04-08'
  and srcpart2.hr = 11
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart2
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart_date_n3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -67,7 +79,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n3
                   filterExpr: ((ds2 = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -94,7 +106,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: ((11.0 = 11.0) and ds is not null) (type: boolean)
+                  filterExpr: ((11.0D = 11.0D) and ds is not null) (type: boolean)
                   Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string), ds (type: string), hr (type: string)
@@ -102,6 +114,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col3 (type: string)
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: _col3 (type: string)
                       Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
@@ -110,10 +123,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart2
-                  filterExpr: (UDFToDouble(hr) = 11.0) (type: boolean)
+                  filterExpr: (UDFToDouble(hr) = 11.0D) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 49248 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (UDFToDouble(hr) = 11.0) (type: boolean)
+                    predicate: (UDFToDouble(hr) = 11.0D) (type: boolean)
                     Statistics: Num rows: 1000 Data size: 24624 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string), ds (type: string), hr (type: string)
@@ -121,6 +134,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1000 Data size: 24624 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col3 (type: string)
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col3 (type: string)
                         Statistics: Num rows: 1000 Data size: 24624 Basic stats: COMPLETE Column stats: NONE
@@ -167,18 +181,30 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select *
  from srcpart
- join srcpart_date on (srcpart.ds = srcpart_date.ds)
+ join srcpart_date_n3 on (srcpart.ds = srcpart_date_n3.ds)
  join srcpart2 on (srcpart.hr = srcpart2.hr)
- where srcpart_date.ds2 = '2008-04-08'
+ where srcpart_date_n3.ds2 = '2008-04-08'
  and srcpart2.hr = 11
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart2
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart_date_n3
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select *
  from srcpart
- join srcpart_date on (srcpart.ds = srcpart_date.ds)
+ join srcpart_date_n3 on (srcpart.ds = srcpart_date_n3.ds)
  join srcpart2 on (srcpart.hr = srcpart2.hr)
- where srcpart_date.ds2 = '2008-04-08'
+ where srcpart_date_n3.ds2 = '2008-04-08'
  and srcpart2.hr = 11
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart2
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart_date_n3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
@@ -194,10 +220,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart2
-                  filterExpr: (UDFToDouble(hr) = 11.0) (type: boolean)
+                  filterExpr: (UDFToDouble(hr) = 11.0D) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 49248 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (UDFToDouble(hr) = 11.0) (type: boolean)
+                    predicate: (UDFToDouble(hr) = 11.0D) (type: boolean)
                     Statistics: Num rows: 1000 Data size: 24624 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string), ds (type: string), hr (type: string)
@@ -209,14 +235,13 @@ STAGE PLANS:
                         Statistics: Num rows: 1000 Data size: 24624 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           keys: _col0 (type: string)
+                          minReductionHashAggr: 0.99
                           mode: hash
                           outputColumnNames: _col0
                           Statistics: Num rows: 1000 Data size: 24624 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: hr (string)
-                            partition key expr: hr
+                            Target Columns: [Map 1 -> [hr:string (hr)]]
                             Statistics: Num rows: 1000 Data size: 24624 Basic stats: COMPLETE Column stats: NONE
-                            target work: Map 1
 
   Stage: Stage-3
     Spark
@@ -225,7 +250,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n3
                   filterExpr: ((ds2 = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -245,14 +270,13 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           keys: _col0 (type: string)
+                          minReductionHashAggr: 0.99
                           mode: hash
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: ds (string)
-                            partition key expr: ds
+                            Target Columns: [Map 1 -> [ds:string (ds)]]
                             Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                            target work: Map 1
             Local Work:
               Map Reduce Local Work
 
@@ -273,6 +297,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col3 (type: string)
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: _col3 (type: string)
                       Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
@@ -281,10 +306,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart2
-                  filterExpr: (UDFToDouble(hr) = 11.0) (type: boolean)
+                  filterExpr: (UDFToDouble(hr) = 11.0D) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 49248 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (UDFToDouble(hr) = 11.0) (type: boolean)
+                    predicate: (UDFToDouble(hr) = 11.0D) (type: boolean)
                     Statistics: Num rows: 1000 Data size: 24624 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string), ds (type: string), hr (type: string)
@@ -292,6 +317,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1000 Data size: 24624 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col3 (type: string)
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col3 (type: string)
                         Statistics: Num rows: 1000 Data size: 24624 Basic stats: COMPLETE Column stats: NONE
@@ -338,18 +364,30 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select *
  from srcpart
- join srcpart_date on (srcpart.ds = srcpart_date.ds)
+ join srcpart_date_n3 on (srcpart.ds = srcpart_date_n3.ds)
  join srcpart2 on (srcpart.hr = srcpart2.hr)
- where srcpart_date.ds2 = '2008-04-08'
+ where srcpart_date_n3.ds2 = '2008-04-08'
  and srcpart2.hr = 11
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart2
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart_date_n3
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select *
  from srcpart
- join srcpart_date on (srcpart.ds = srcpart_date.ds)
+ join srcpart_date_n3 on (srcpart.ds = srcpart_date_n3.ds)
  join srcpart2 on (srcpart.hr = srcpart2.hr)
- where srcpart_date.ds2 = '2008-04-08'
+ where srcpart_date_n3.ds2 = '2008-04-08'
  and srcpart2.hr = 11
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart2
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart_date_n3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -363,7 +401,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n3
                   filterExpr: ((ds2 = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -383,14 +421,13 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           keys: _col0 (type: string)
+                          minReductionHashAggr: 0.99
                           mode: hash
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: ds (string)
-                            partition key expr: ds
+                            Target Columns: [Map 1 -> [ds:string (ds)]]
                             Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                            target work: Map 1
             Local Work:
               Map Reduce Local Work
 
@@ -411,6 +448,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col3 (type: string)
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: _col3 (type: string)
                       Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
@@ -419,10 +457,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart2
-                  filterExpr: (UDFToDouble(hr) = 11.0) (type: boolean)
+                  filterExpr: (UDFToDouble(hr) = 11.0D) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 49248 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (UDFToDouble(hr) = 11.0) (type: boolean)
+                    predicate: (UDFToDouble(hr) = 11.0D) (type: boolean)
                     Statistics: Num rows: 1000 Data size: 24624 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string), ds (type: string), hr (type: string)
@@ -430,6 +468,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1000 Data size: 24624 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col3 (type: string)
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col3 (type: string)
                         Statistics: Num rows: 1000 Data size: 24624 Basic stats: COMPLETE Column stats: NONE
@@ -474,14 +513,14 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: drop table srcpart_date
+PREHOOK: query: drop table srcpart_date_n3
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@srcpart_date
-PREHOOK: Output: default@srcpart_date
-POSTHOOK: query: drop table srcpart_date
+PREHOOK: Input: default@srcpart_date_n3
+PREHOOK: Output: default@srcpart_date_n3
+POSTHOOK: query: drop table srcpart_date_n3
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@srcpart_date
-POSTHOOK: Output: default@srcpart_date
+POSTHOOK: Input: default@srcpart_date_n3
+POSTHOOK: Output: default@srcpart_date_n3
 PREHOOK: query: drop table srcpart2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srcpart2

@@ -1,5 +1,8 @@
+--! qt:dataset:src
 set hive.exec.parallel=true;
 
-explain analyze table src compute statistics for columns;
+create table t_n25 as select * from src;
 
-analyze table src compute statistics for columns;
+explain analyze table t_n25 compute statistics for columns;
+
+analyze table t_n25 compute statistics for columns;

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,12 +18,18 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.io.Text;
 import org.apache.hive.common.util.HiveVersionInfo;
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
-public class TestUDFVersion extends TestCase {
+/**
+ * TestUDFVersion.
+ */
+public class TestUDFVersion {
+  @Test
   public void testVersion(){
     UDFVersion udf = new UDFVersion();
     Text result = udf.evaluate();

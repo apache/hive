@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -58,7 +58,7 @@ public abstract class HCatWriter {
    *
    * @param recordItr
    *          {@link Iterator} records to be written into HCatalog.
-   * @throws {@link HCatException}
+   * @throws  HCatException
    */
   public abstract void write(final Iterator<HCatRecord> recordItr)
     throws HCatException;
@@ -67,7 +67,7 @@ public abstract class HCatWriter {
    * This method should be called at master node. Primary purpose of this is to
    * do metadata commit.
    *
-   * @throws {@link HCatException}
+   * @throws HCatException
    */
   public abstract void commit(final WriterContext context) throws HCatException;
 
@@ -75,7 +75,7 @@ public abstract class HCatWriter {
    * This method should be called at master node. Primary purpose of this is to
    * do cleanups in case of failures.
    *
-   * @throws {@link HCatException} *
+   * @throws HCatException
    */
   public abstract void abort(final WriterContext context) throws HCatException;
 

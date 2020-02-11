@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 public class VectorizationCondition {
@@ -60,7 +61,7 @@ public class VectorizationCondition {
     return notMetList;
   }
 
-  public static List<String> addBooleans(List<String> conditions, boolean flag) {
+  public static List<String> addBooleans(Collection<String> conditions, boolean flag) {
     ArrayList<String> result = new ArrayList<String>(conditions.size());
     for (String condition : conditions) {
       result.add(condition + " IS " + flag);

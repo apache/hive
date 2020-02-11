@@ -1,0 +1,909 @@
+PREHOOK: query: CREATE TABLE src_txn stored as orc TBLPROPERTIES ('transactional' = 'true')
+AS SELECT * FROM src
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_txn
+POSTHOOK: query: CREATE TABLE src_txn stored as orc TBLPROPERTIES ('transactional' = 'true')
+AS SELECT * FROM src
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_txn
+POSTHOOK: Lineage: src_txn.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_txn.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: EXPLAIN
+CREATE MATERIALIZED VIEW sort_mv_1 SORTED ON (key) STORED AS TEXTFILE AS
+SELECT value, key FROM src_txn where key > 200 and key < 250
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@src_txn
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sort_mv_1
+POSTHOOK: query: EXPLAIN
+CREATE MATERIALIZED VIEW sort_mv_1 SORTED ON (key) STORED AS TEXTFILE AS
+SELECT value, key FROM src_txn where key > 200 and key < 250
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@src_txn
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@sort_mv_1
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-4 depends on stages: Stage-0, Stage-2
+  Stage-3 depends on stages: Stage-4
+  Stage-5 depends on stages: Stage-3
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src_txn
+                  filterExpr: ((UDFToDouble(key) > 200.0D) and (UDFToDouble(key) < 250.0D)) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((UDFToDouble(key) > 200.0D) and (UDFToDouble(key) < 250.0D)) (type: boolean)
+                    Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: value (type: string), key (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: string)
+                        sort order: +
+                        Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: string), KEY._col1 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.sort_mv_1
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: string)
+                  outputColumnNames: col1, col2
+                  Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
+                  Group By Operator
+                    aggregations: compute_stats(col1, 'hll'), compute_stats(col2, 'hll')
+                    minReductionHashAggr: 0.9818182
+                    mode: hash
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-4
+    Create View
+      columns: value string, key string
+      sort columns: key string
+      expanded text: SELECT `src_txn`.`value`, `src_txn`.`key` FROM `default`.`src_txn` where `src_txn`.`key` > 200 and `src_txn`.`key` < 250
+      name: default.sort_mv_1
+      original text: SELECT value, key FROM src_txn where key > 200 and key < 250
+      rewrite enabled: true
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: value, key
+          Column Types: string, string
+          Table: default.sort_mv_1
+
+  Stage: Stage-5
+    Materialized View Work
+
+  Stage: Stage-0
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+PREHOOK: query: CREATE MATERIALIZED VIEW sort_mv_1 SORTED ON (key) STORED AS TEXTFILE AS
+SELECT value, key FROM src_txn where key > 200 and key < 250
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@src_txn
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sort_mv_1
+POSTHOOK: query: CREATE MATERIALIZED VIEW sort_mv_1 SORTED ON (key) STORED AS TEXTFILE AS
+SELECT value, key FROM src_txn where key > 200 and key < 250
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@src_txn
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@sort_mv_1
+PREHOOK: query: DESCRIBE FORMATTED sort_mv_1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@sort_mv_1
+POSTHOOK: query: DESCRIBE FORMATTED sort_mv_1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@sort_mv_1
+# col_name            	data_type           	comment             
+value               	string              	                    
+key                 	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MATERIALIZED_VIEW   	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	bucketing_version   	2                   
+	materializedview.sort.columns	[\"key\"]           
+	numFiles            	1                   
+	numRows             	55                  
+	rawDataSize         	605                 
+	totalSize           	660                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# Materialized View Information	 	 
+Original Query:     	SELECT value, key FROM src_txn where key > 200 and key < 250	 
+Expanded Query:     	SELECT `src_txn`.`value`, `src_txn`.`key` FROM `default`.`src_txn` where `src_txn`.`key` > 200 and `src_txn`.`key` < 250	 
+Rewrite Enabled:    	Yes                 	 
+Outdated for Rewriting:	No                  	 
+Found 1 items
+#### A masked pattern was here ####
+val_201201
+val_202202
+val_203203
+val_203203
+val_205205
+val_205205
+val_207207
+val_207207
+val_208208
+val_208208
+val_208208
+val_209209
+val_209209
+val_213213
+val_213213
+val_214214
+val_216216
+val_216216
+val_217217
+val_217217
+val_218218
+val_219219
+val_219219
+val_221221
+val_221221
+val_222222
+val_223223
+val_223223
+val_224224
+val_224224
+val_226226
+val_228228
+val_229229
+val_229229
+val_230230
+val_230230
+val_230230
+val_230230
+val_230230
+val_233233
+val_233233
+val_235235
+val_237237
+val_237237
+val_238238
+val_238238
+val_239239
+val_239239
+val_241241
+val_242242
+val_242242
+val_244244
+val_247247
+val_248248
+val_249249
+PREHOOK: query: EXPLAIN
+SELECT * FROM sort_mv_1 where key = 238
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sort_mv_1
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT * FROM sort_mv_1 where key = 238
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sort_mv_1
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: sort_mv_1
+          filterExpr: (UDFToDouble(key) = 238.0D) (type: boolean)
+          Filter Operator
+            predicate: (UDFToDouble(key) = 238.0D) (type: boolean)
+            Select Operator
+              expressions: value (type: string), key (type: string)
+              outputColumnNames: _col0, _col1
+              ListSink
+
+PREHOOK: query: SELECT * FROM sort_mv_1 where key = 238
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sort_mv_1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM sort_mv_1 where key = 238
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sort_mv_1
+#### A masked pattern was here ####
+val_238	238
+val_238	238
+PREHOOK: query: CREATE MATERIALIZED VIEW sort_mv_2 SORTED ON (value) STORED AS TEXTFILE AS
+SELECT key, value FROM src_txn where key > 200 and key < 250
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@src_txn
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sort_mv_2
+POSTHOOK: query: CREATE MATERIALIZED VIEW sort_mv_2 SORTED ON (value) STORED AS TEXTFILE AS
+SELECT key, value FROM src_txn where key > 200 and key < 250
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@src_txn
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@sort_mv_2
+Found 1 items
+#### A masked pattern was here ####
+201val_201
+202val_202
+203val_203
+203val_203
+205val_205
+205val_205
+207val_207
+207val_207
+208val_208
+208val_208
+208val_208
+209val_209
+209val_209
+213val_213
+213val_213
+214val_214
+216val_216
+216val_216
+217val_217
+217val_217
+218val_218
+219val_219
+219val_219
+221val_221
+221val_221
+222val_222
+223val_223
+223val_223
+224val_224
+224val_224
+226val_226
+228val_228
+229val_229
+229val_229
+230val_230
+230val_230
+230val_230
+230val_230
+230val_230
+233val_233
+233val_233
+235val_235
+237val_237
+237val_237
+238val_238
+238val_238
+239val_239
+239val_239
+241val_241
+242val_242
+242val_242
+244val_244
+247val_247
+248val_248
+249val_249
+PREHOOK: query: EXPLAIN
+SELECT * FROM sort_mv_2 where value = 'val_238'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sort_mv_2
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT * FROM sort_mv_2 where value = 'val_238'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sort_mv_2
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: sort_mv_2
+          filterExpr: (value = 'val_238') (type: boolean)
+          Filter Operator
+            predicate: (value = 'val_238') (type: boolean)
+            Select Operator
+              expressions: key (type: string), 'val_238' (type: string)
+              outputColumnNames: _col0, _col1
+              ListSink
+
+PREHOOK: query: SELECT * FROM sort_mv_2 where value = 'val_238'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sort_mv_2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM sort_mv_2 where value = 'val_238'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sort_mv_2
+#### A masked pattern was here ####
+238	val_238
+238	val_238
+PREHOOK: query: EXPLAIN
+SELECT value FROM sort_mv_2 where key = 238
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sort_mv_2
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT value FROM sort_mv_2 where key = 238
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sort_mv_2
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: sort_mv_2
+          filterExpr: (UDFToDouble(key) = 238.0D) (type: boolean)
+          Filter Operator
+            predicate: (UDFToDouble(key) = 238.0D) (type: boolean)
+            Select Operator
+              expressions: value (type: string)
+              outputColumnNames: _col0
+              ListSink
+
+PREHOOK: query: SELECT value FROM sort_mv_2 where key = 238
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sort_mv_2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT value FROM sort_mv_2 where key = 238
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sort_mv_2
+#### A masked pattern was here ####
+val_238
+val_238
+PREHOOK: query: INSERT INTO src_txn VALUES (238, 'val_238_n')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@src_txn
+POSTHOOK: query: INSERT INTO src_txn VALUES (238, 'val_238_n')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@src_txn
+POSTHOOK: Lineage: src_txn.key SCRIPT []
+POSTHOOK: Lineage: src_txn.value SCRIPT []
+PREHOOK: query: EXPLAIN
+ALTER MATERIALIZED VIEW sort_mv_1 REBUILD
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_txn
+PREHOOK: Output: default@sort_mv_1
+POSTHOOK: query: EXPLAIN
+ALTER MATERIALIZED VIEW sort_mv_1 REBUILD
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_txn
+POSTHOOK: Output: default@sort_mv_1
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+  Stage-4 depends on stages: Stage-3
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src_txn
+                  filterExpr: ((ROW__ID.writeid > 1L) and (UDFToDouble(key) > 200.0D) and (UDFToDouble(key) < 250.0D)) (type: boolean)
+                  Statistics: Num rows: 501 Data size: 90180 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((ROW__ID.writeid > 1L) and (UDFToDouble(key) > 200.0D) and (UDFToDouble(key) < 250.0D)) (type: boolean)
+                    Statistics: Num rows: 18 Data size: 3240 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: value (type: string), key (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 18 Data size: 3240 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 18 Data size: 3240 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            name: default.sort_mv_1
+                      Select Operator
+                        expressions: _col0 (type: string), _col1 (type: string)
+                        outputColumnNames: value, key
+                        Statistics: Num rows: 18 Data size: 3240 Basic stats: COMPLETE Column stats: COMPLETE
+                        Group By Operator
+                          aggregations: compute_stats(value, 'hll'), compute_stats(key, 'hll')
+                          minReductionHashAggr: 0.9444444
+                          mode: hash
+                          outputColumnNames: _col0, _col1
+                          Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
+                          Reduce Output Operator
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
+                            value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+            Execution mode: llap
+            LLAP IO: may be used (ACID table)
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.sort_mv_1
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: value, key
+          Column Types: string, string
+          Table: default.sort_mv_1
+
+  Stage: Stage-4
+    Materialized View Work
+
+PREHOOK: query: ALTER MATERIALIZED VIEW sort_mv_1 REBUILD
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_txn
+PREHOOK: Output: default@sort_mv_1
+POSTHOOK: query: ALTER MATERIALIZED VIEW sort_mv_1 REBUILD
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_txn
+POSTHOOK: Output: default@sort_mv_1
+POSTHOOK: Lineage: sort_mv_1.key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: sort_mv_1.value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM sort_mv_1 where key = 238
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sort_mv_1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM sort_mv_1 where key = 238
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sort_mv_1
+#### A masked pattern was here ####
+val_238	238
+val_238	238
+val_238_n	238
+PREHOOK: query: SELECT * FROM sort_mv_2 where key = 238
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sort_mv_2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM sort_mv_2 where key = 238
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sort_mv_2
+#### A masked pattern was here ####
+238	val_238
+238	val_238
+PREHOOK: query: CREATE TABLE src_txn_2 stored as orc TBLPROPERTIES ('transactional' = 'true')
+AS SELECT * FROM src
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_txn_2
+POSTHOOK: query: CREATE TABLE src_txn_2 stored as orc TBLPROPERTIES ('transactional' = 'true')
+AS SELECT * FROM src
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_txn_2
+POSTHOOK: Lineage: src_txn_2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_txn_2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: CREATE MATERIALIZED VIEW sort_mv_3 SORTED ON (key) STORED AS TEXTFILE AS
+SELECT src_txn.value, src_txn.key FROM src_txn, src_txn_2
+WHERE src_txn.key = src_txn_2.key
+  AND src_txn.key > 200 AND src_txn.key < 250
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@src_txn
+PREHOOK: Input: default@src_txn_2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sort_mv_3
+POSTHOOK: query: CREATE MATERIALIZED VIEW sort_mv_3 SORTED ON (key) STORED AS TEXTFILE AS
+SELECT src_txn.value, src_txn.key FROM src_txn, src_txn_2
+WHERE src_txn.key = src_txn_2.key
+  AND src_txn.key > 200 AND src_txn.key < 250
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@src_txn
+POSTHOOK: Input: default@src_txn_2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@sort_mv_3
+Found 1 items
+#### A masked pattern was here ####
+val_201201
+val_202202
+val_203203
+val_203203
+val_203203
+val_203203
+val_205205
+val_205205
+val_205205
+val_205205
+val_207207
+val_207207
+val_207207
+val_207207
+val_208208
+val_208208
+val_208208
+val_208208
+val_208208
+val_208208
+val_208208
+val_208208
+val_208208
+val_209209
+val_209209
+val_209209
+val_209209
+val_213213
+val_213213
+val_213213
+val_213213
+val_214214
+val_216216
+val_216216
+val_216216
+val_216216
+val_217217
+val_217217
+val_217217
+val_217217
+val_218218
+val_219219
+val_219219
+val_219219
+val_219219
+val_221221
+val_221221
+val_221221
+val_221221
+val_222222
+val_223223
+val_223223
+val_223223
+val_223223
+val_224224
+val_224224
+val_224224
+val_224224
+val_226226
+val_228228
+val_229229
+val_229229
+val_229229
+val_229229
+val_230230
+val_230230
+val_230230
+val_230230
+val_230230
+val_230230
+val_230230
+val_230230
+val_230230
+val_230230
+val_230230
+val_230230
+val_230230
+val_230230
+val_230230
+val_230230
+val_230230
+val_230230
+val_230230
+val_230230
+val_230230
+val_230230
+val_230230
+val_230230
+val_230230
+val_233233
+val_233233
+val_233233
+val_233233
+val_235235
+val_237237
+val_237237
+val_237237
+val_237237
+val_238_n238
+val_238238
+val_238238
+val_238238
+val_238238
+val_238_n238
+val_239239
+val_239239
+val_239239
+val_239239
+val_241241
+val_242242
+val_242242
+val_242242
+val_242242
+val_244244
+val_247247
+val_248248
+val_249249
+PREHOOK: query: INSERT INTO src_txn VALUES (238, 'val_238_n2')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@src_txn
+POSTHOOK: query: INSERT INTO src_txn VALUES (238, 'val_238_n2')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@src_txn
+POSTHOOK: Lineage: src_txn.key SCRIPT []
+POSTHOOK: Lineage: src_txn.value SCRIPT []
+PREHOOK: query: EXPLAIN
+ALTER MATERIALIZED VIEW sort_mv_3 REBUILD
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_txn
+PREHOOK: Input: default@src_txn_2
+PREHOOK: Output: default@sort_mv_3
+POSTHOOK: query: EXPLAIN
+ALTER MATERIALIZED VIEW sort_mv_3 REBUILD
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_txn
+POSTHOOK: Input: default@src_txn_2
+POSTHOOK: Output: default@sort_mv_3
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+  Stage-4 depends on stages: Stage-3
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src_txn
+                  filterExpr: ((ROW__ID.writeid > 2L) and (UDFToDouble(key) > 200.0D) and (UDFToDouble(key) < 250.0D)) (type: boolean)
+                  Statistics: Num rows: 502 Data size: 90862 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((ROW__ID.writeid > 2L) and (UDFToDouble(key) > 200.0D) and (UDFToDouble(key) < 250.0D)) (type: boolean)
+                    Statistics: Num rows: 18 Data size: 3258 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 18 Data size: 3258 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 18 Data size: 3258 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: src_txn_2
+                  filterExpr: ((UDFToDouble(key) > 200.0D) and (UDFToDouble(key) < 250.0D)) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((UDFToDouble(key) > 200.0D) and (UDFToDouble(key) < 250.0D)) (type: boolean)
+                    Statistics: Num rows: 55 Data size: 4785 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 55 Data size: 4785 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 55 Data size: 4785 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 18 Data size: 3258 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col1 (type: string), _col0 (type: string)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 18 Data size: 3258 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 18 Data size: 3258 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.sort_mv_3
+                  Select Operator
+                    expressions: _col0 (type: string), _col1 (type: string)
+                    outputColumnNames: value, key
+                    Statistics: Num rows: 18 Data size: 3258 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: compute_stats(value, 'hll'), compute_stats(key, 'hll')
+                      minReductionHashAggr: 0.9444444
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.sort_mv_3
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: value, key
+          Column Types: string, string
+          Table: default.sort_mv_3
+
+  Stage: Stage-4
+    Materialized View Work
+
+PREHOOK: query: ALTER MATERIALIZED VIEW sort_mv_3 REBUILD
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_txn
+PREHOOK: Input: default@src_txn_2
+PREHOOK: Output: default@sort_mv_3
+POSTHOOK: query: ALTER MATERIALIZED VIEW sort_mv_3 REBUILD
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_txn
+POSTHOOK: Input: default@src_txn_2
+POSTHOOK: Output: default@sort_mv_3
+POSTHOOK: Lineage: sort_mv_3.key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: sort_mv_3.value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM sort_mv_3 where key = 238
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sort_mv_3
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM sort_mv_3 where key = 238
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sort_mv_3
+#### A masked pattern was here ####
+val_238	238
+val_238	238
+val_238	238
+val_238	238
+val_238_n	238
+val_238_n	238
+val_238_n2	238
+val_238_n2	238

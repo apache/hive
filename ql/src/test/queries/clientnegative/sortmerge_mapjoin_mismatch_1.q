@@ -1,3 +1,4 @@
+--! qt:dataset:src
 create table table_asc(key int, value string) CLUSTERED BY (key) SORTED BY (key asc) 
 INTO 1 BUCKETS STORED AS RCFILE; 
 create table table_desc(key int, value string) CLUSTERED BY (key) SORTED BY (key desc) 

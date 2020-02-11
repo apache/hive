@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,10 +20,12 @@ package org.apache.hadoop.hive.serde2.lazy;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Properties;
 import java.util.Random;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -37,13 +39,22 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.UnionObject;
+import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 
-import junit.framework.TestCase;
 
-public class TestLazySimpleFast extends TestCase {
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import org.junit.Test;
+
+/**
+ * LazySimpleFast Test.
+ */
+public class TestLazySimpleFast {
 
   private void testLazySimpleFast(
     SerdeRandomRowSource source, Object[][] rows,
@@ -117,7 +128,7 @@ public class TestLazySimpleFast extends TestCase {
         }
       }
       if (writeColumnCount == columnCount) {
-        TestCase.assertTrue(lazySimpleDeserializeRead.isEndOfInputReached());
+        assertTrue(lazySimpleDeserializeRead.isEndOfInputReached());
       }
     }
 
@@ -192,7 +203,7 @@ public class TestLazySimpleFast extends TestCase {
         }
       }
       if (writeColumnCount == columnCount) {
-        TestCase.assertTrue(lazySimpleDeserializeRead.isEndOfInputReached());
+        assertTrue(lazySimpleDeserializeRead.isEndOfInputReached());
       }
     }
   }
@@ -204,7 +215,7 @@ public class TestLazySimpleFast extends TestCase {
     } else {
       Object complexFieldObj = VerifyFast.deserializeReadComplexType(lazySimpleDeserializeRead, typeInfo);
       if (complexFieldObj != null) {
-        TestCase.fail("Field report not null but object is null");
+        fail("Field report not null but object is null");
       }
     }
   }
@@ -217,7 +228,8 @@ public class TestLazySimpleFast extends TestCase {
       Object complexFieldObj = VerifyFast.deserializeReadComplexType(lazySimpleDeserializeRead, typeInfo);
       if (expectedObject == null) {
         if (complexFieldObj != null) {
-          TestCase.fail("Field reports not null but object is null (class " + complexFieldObj.getClass().getName() + ", " + complexFieldObj.toString() + ")");
+          fail("Field reports not null but object is null (class " + complexFieldObj.getClass().getName() +
+              ", " + complexFieldObj.toString() + ")");
         }
       } else {
         if (complexFieldObj == null) {
@@ -228,11 +240,12 @@ public class TestLazySimpleFast extends TestCase {
               return;
             }
           }
-          TestCase.fail("Field reports null but object is not null (class " + expectedObject.getClass().getName() + ", " + expectedObject.toString() + ")");
+          fail("Field reports null but object is not null (class " + expectedObject.getClass().getName() +
+              ", " + expectedObject.toString() + ")");
         }
       }
       if (!VerifyLazy.lazyCompare(typeInfo, complexFieldObj, expectedObject)) {
-        TestCase.fail("Comparision failed typeInfo " + typeInfo.toString());
+        fail("Comparision failed typeInfo " + typeInfo.toString());
       }
     }
   }
@@ -376,15 +389,46 @@ public class TestLazySimpleFast extends TestCase {
     }
   }
 
+  @Test
   public void testLazyBinarySimplePrimitive() throws Throwable {
     testLazySimpleFast(SerdeRandomRowSource.SupportedTypes.PRIMITIVE, 0);
   }
 
+  @Test
   public void testLazyBinarySimpleComplexDepthOne() throws Throwable {
     testLazySimpleFast(SerdeRandomRowSource.SupportedTypes.ALL, 1);
   }
 
+  @Test
   public void testLazyBinarySimpleComplexDepthFour() throws Throwable {
     testLazySimpleFast(SerdeRandomRowSource.SupportedTypes.ALL, 4);
+  }
+
+  @Test
+  public void testLazySimpleDeserializeRowEmptyArray() throws Throwable {
+    HiveConf hconf = new HiveConf();
+
+    // set the escaping related properties
+    Properties props = new Properties();
+    props.setProperty(serdeConstants.FIELD_DELIM, ",");
+
+    LazySerDeParameters lazyParams =
+        new LazySerDeParameters(hconf, props,
+            LazySimpleSerDe.class.getName());
+
+    TypeInfo[] typeInfos = new TypeInfo[] {
+        TypeInfoFactory.getListTypeInfo(
+            TypeInfoFactory.intTypeInfo),
+        TypeInfoFactory.getListTypeInfo(
+            TypeInfoFactory.getListTypeInfo(
+                TypeInfoFactory.stringTypeInfo))};
+    LazySimpleDeserializeRead deserializeRead =
+        new LazySimpleDeserializeRead(typeInfos, null, true, lazyParams);
+
+    byte[] bytes = ",".getBytes();
+    deserializeRead.set(bytes,  0, bytes.length);
+    verifyRead(deserializeRead, typeInfos[0], Collections.emptyList());
+    verifyRead(deserializeRead, typeInfos[1], Collections.emptyList());
+    assertTrue(deserializeRead.isEndOfInputReached());
   }
 }

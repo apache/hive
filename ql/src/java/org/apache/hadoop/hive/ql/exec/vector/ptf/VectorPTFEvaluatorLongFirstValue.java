@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,13 +18,11 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.ptf;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 
 import com.google.common.base.Preconditions;
@@ -37,10 +35,6 @@ import com.google.common.base.Preconditions;
  */
 public class VectorPTFEvaluatorLongFirstValue extends VectorPTFEvaluatorBase {
 
-  private static final long serialVersionUID = 1L;
-  private static final String CLASS_NAME = VectorPTFEvaluatorLongFirstValue.class.getName();
-  private static final Log LOG = LogFactory.getLog(CLASS_NAME);
-
   protected boolean haveFirstValue;
   protected boolean isGroupResultNull;
   protected long firstValue;
@@ -51,7 +45,10 @@ public class VectorPTFEvaluatorLongFirstValue extends VectorPTFEvaluatorBase {
     resetEvaluator();
   }
 
-  public void evaluateGroupBatch(VectorizedRowBatch batch, boolean isLastGroupBatch) {
+  @Override
+  public void evaluateGroupBatch(VectorizedRowBatch batch)
+      throws HiveException {
+
     evaluateInputExpr(batch);
 
     // First row determines isGroupResultNull and long firstValue; stream fill result as repeated.
@@ -66,7 +63,8 @@ public class VectorPTFEvaluatorLongFirstValue extends VectorPTFEvaluatorBase {
       }
       LongColumnVector longColVector = ((LongColumnVector) batch.cols[inputColumnNum]);
       if (longColVector.isRepeating) {
-        if (longColVector.noNulls) {
+
+        if (longColVector.noNulls || !longColVector.isNull[0]) {
           firstValue = longColVector.vector[0];
           isGroupResultNull = false;
         }
@@ -82,6 +80,10 @@ public class VectorPTFEvaluatorLongFirstValue extends VectorPTFEvaluatorBase {
       haveFirstValue = true;
     }
 
+    /*
+     * Do careful maintenance of the outputColVector.noNulls flag.
+     */
+
     // First value is repeated for all batches.
     LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
     outputColVector.isRepeating = true;
@@ -89,12 +91,12 @@ public class VectorPTFEvaluatorLongFirstValue extends VectorPTFEvaluatorBase {
       outputColVector.noNulls = false;
       outputColVector.isNull[0] = true;
     } else {
-      outputColVector.noNulls = true;
       outputColVector.isNull[0] = false;
       outputColVector.vector[0] = firstValue;
     }
   }
 
+  @Override
   public boolean streamsResult() {
     return true;
   }

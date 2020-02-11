@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -29,18 +29,24 @@ import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hive.common.util.RetryTestRunner;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
+import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Ignore("Flaky")
 public class TestAutoPurgeTables {
   private static final String driverName = "org.apache.hive.jdbc.HiveDriver";
   private static final String testDbName = "auto_purge_test_db";
@@ -79,26 +85,28 @@ public class TestAutoPurgeTables {
     } else {
       createTablePrefix = "create table ";
     }
+    String qualifiedTableName = StatsUtils.getFullyQualifiedTableName(testDbName, testTableName);
     if (isPartitioned) {
       // create a partitioned table
-      stmt.execute(createTablePrefix + testDbName + "." + testTableName + " (id int, value string) "
+      stmt.execute(
+          createTablePrefix + qualifiedTableName + " (id int, value string) "
           + " partitioned by (" + partitionedColumnName + " STRING)");
       // load data
-      stmt.execute("insert into " + testDbName + "." + testTableName + " PARTITION ("
+      stmt.execute("insert into " + qualifiedTableName + " PARTITION ("
           + partitionedColumnName + "=" + partitionedColumnValue1
           + ") values (1, \"dummy1\"), (2, \"dummy2\"), (3, \"dummy3\")");
-      stmt.execute("insert into " + testDbName + "." + testTableName + " PARTITION ("
+      stmt.execute("insert into " + qualifiedTableName + " PARTITION ("
           + partitionedColumnName + "=" + partitionedColumnValue2
           + ") values (4, \"dummy4\"), (5, \"dummy5\"), (6, \"dummy6\")");
     } else {
       // create a table
-      stmt.execute(createTablePrefix + testDbName + "." + testTableName + " (id int, value string)");
+      stmt.execute(createTablePrefix + qualifiedTableName + " (id int, value string)");
       // load data
-      stmt.execute("insert into " + testDbName + "." + testTableName
+      stmt.execute("insert into " + qualifiedTableName
           + " values (1, \"dummy1\"), (2, \"dummy2\"), (3, \"dummy3\")");
     }
     if (isAutopurge != null) {
-      stmt.execute("alter table " + testDbName + "." + testTableName
+      stmt.execute("alter table " + qualifiedTableName
           + " set tblproperties (\"auto.purge\"=\"" + isAutopurge + "\")");
     }
   }
@@ -158,6 +166,13 @@ public class TestAutoPurgeTables {
   }
 
   @Before
+  public void beforeTest() throws Exception {
+    FileSystem fs = FileSystem.get(conf);
+    Path trashDir = ShimLoader.getHadoopShims().getCurrentTrashPath(conf, fs);
+    fs.delete(trashDir, true);
+  }
+
+  @After
   public void afterTest() throws Exception {
     FileSystem fs = FileSystem.get(conf);
     Path trashDir = ShimLoader.getHadoopShims().getCurrentTrashPath(conf, fs);

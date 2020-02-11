@@ -15,7 +15,6 @@ POSTHOOK: query: describe formatted stored_as_dirs_multiple
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@stored_as_dirs_multiple
 # col_name            	data_type           	comment             
-	 	 
 col1                	string              	                    
 col2                	int                 	                    
 col3                	string              	                    
@@ -28,6 +27,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}
+	bucketing_version   	2                   
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
@@ -62,7 +62,6 @@ POSTHOOK: query: describe formatted stored_as_dirs_multiple
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@stored_as_dirs_multiple
 # col_name            	data_type           	comment             
-	 	 
 col1                	string              	                    
 col2                	int                 	                    
 col3                	string              	                    
@@ -75,6 +74,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	numFiles            	0                   
 	numRows             	0                   
@@ -109,7 +109,6 @@ POSTHOOK: query: describe formatted stored_as_dirs_multiple
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@stored_as_dirs_multiple
 # col_name            	data_type           	comment             
-	 	 
 col1                	string              	                    
 col2                	int                 	                    
 col3                	string              	                    
@@ -122,6 +121,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	numFiles            	0                   
 	numRows             	0                   
@@ -164,7 +164,6 @@ POSTHOOK: query: describe formatted stored_as_dirs_single
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@stored_as_dirs_single
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -176,6 +175,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	numFiles            	0                   
 	numRows             	0                   
@@ -211,7 +211,6 @@ POSTHOOK: query: describe formatted stored_as_dirs_single
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@stored_as_dirs_single
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -223,6 +222,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	numFiles            	0                   
 	numRows             	0                   
@@ -257,7 +257,6 @@ POSTHOOK: query: describe formatted stored_as_dirs_single
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@stored_as_dirs_single
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -269,6 +268,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	numFiles            	0                   
 	numRows             	0                   
@@ -304,7 +304,6 @@ POSTHOOK: query: describe formatted stored_as_dirs_single_like
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@stored_as_dirs_single_like
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -316,6 +315,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	bucketing_version   	2                   
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   

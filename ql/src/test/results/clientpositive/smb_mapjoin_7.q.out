@@ -38,19 +38,19 @@ POSTHOOK: query: create table normal_join_results(k1 int, v1 string, k2 int, v2 
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@normal_join_results
-PREHOOK: query: load data local inpath '../../data/files/empty1.txt' into table smb_bucket4_1
+PREHOOK: query: load data local inpath '../../data/files/empty/000000_0' into table smb_bucket4_1
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@smb_bucket4_1
-POSTHOOK: query: load data local inpath '../../data/files/empty1.txt' into table smb_bucket4_1
+POSTHOOK: query: load data local inpath '../../data/files/empty/000000_0' into table smb_bucket4_1
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@smb_bucket4_1
-PREHOOK: query: load data local inpath '../../data/files/empty2.txt' into table smb_bucket4_1
+PREHOOK: query: load data local inpath '../../data/files/empty/000001_0' into table smb_bucket4_1
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@smb_bucket4_1
-POSTHOOK: query: load data local inpath '../../data/files/empty2.txt' into table smb_bucket4_1
+POSTHOOK: query: load data local inpath '../../data/files/empty/000001_0' into table smb_bucket4_1
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@smb_bucket4_1
@@ -610,10 +610,16 @@ PREHOOK: query: explain
 insert overwrite table smb_join_results
 select /*+mapjoin(a)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_bucket4_1
+PREHOOK: Input: default@smb_bucket4_2
+PREHOOK: Output: default@smb_join_results
 POSTHOOK: query: explain
 insert overwrite table smb_join_results
 select /*+mapjoin(a)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_bucket4_1
+POSTHOOK: Input: default@smb_bucket4_2
+POSTHOOK: Output: default@smb_join_results
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-8 depends on stages: Stage-1 , consists of Stage-5, Stage-4, Stage-6
@@ -630,10 +636,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
             Sorted Merge Bucket Map Join Operator
               condition map:
-                   Outer Join 0 to 1
+                   Full Outer Join 0 to 1
               keys:
                 0 key (type: int)
                 1 key (type: int)
@@ -648,6 +654,29 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.smb_join_results
+                Select Operator
+                  expressions: _col0 (type: int), _col1 (type: string), _col2 (type: int), _col3 (type: string)
+                  outputColumnNames: k1, v1, k2, v2
+                  Group By Operator
+                    aggregations: compute_stats(k1, 'hll'), compute_stats(v1, 'hll'), compute_stats(k2, 'hll'), compute_stats(v2, 'hll')
+                    minReductionHashAggr: 0.99
+                    mode: hash
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2), compute_stats(VALUE._col3)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2, _col3
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-8
     Conditional Operator
@@ -669,7 +698,12 @@ STAGE PLANS:
               name: default.smb_join_results
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: k1, v1, k2, v2
+          Column Types: int, string, int, string
+          Table: default.smb_join_results
 
   Stage: Stage-4
     Map Reduce

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -41,12 +41,18 @@ public class ExplainConfiguration {
   private boolean extended = false;
   private boolean formatted = false;
   private boolean dependency = false;
+  private boolean cbo = false;
+  private boolean cboCost = false;
+  private boolean cboJoinCost = false;
   private boolean logical = false;
   private boolean authorize = false;
   private boolean userLevelExplain = false;
   private boolean vectorization = false;
   private boolean vectorizationOnly = false;
   private VectorizationDetailLevel vectorizationDetailLevel = VectorizationDetailLevel.SUMMARY;
+  private boolean locks = false;
+  private boolean ast = false;
+  private boolean debug = false;
 
   private Path explainRootPath;
   private Map<String, Long> opIdToRuntimeNumRows;
@@ -79,6 +85,30 @@ public class ExplainConfiguration {
 
   public void setDependency(boolean dependency) {
     this.dependency = dependency;
+  }
+
+  public boolean isCbo() {
+    return cbo;
+  }
+
+  public void setCbo(boolean cbo) {
+    this.cbo = cbo;
+  }
+
+  public boolean isCboCost() {
+    return cboCost;
+  }
+
+  public void setCboCost(boolean cboExtended) {
+    this.cboCost = cboExtended;
+  }
+
+  public boolean isCboJoinCost() {
+    return cboJoinCost;
+  }
+
+  public void setCboJoinCost(boolean cboJoinCost) {
+    this.cboJoinCost = cboJoinCost;
   }
 
   public boolean isLogical() {
@@ -137,6 +167,14 @@ public class ExplainConfiguration {
     this.vectorizationDetailLevel = vectorizationDetailLevel;
   }
 
+  public boolean isDebug() {
+    return debug;
+  }
+
+  public void setDebug(boolean debug) {
+    this.debug = debug;
+  }
+
   public Path getExplainRootPath() {
     return explainRootPath;
   }
@@ -153,4 +191,19 @@ public class ExplainConfiguration {
     this.opIdToRuntimeNumRows = opIdToRuntimeNumRows;
   }
 
+  public boolean isLocks() {
+    return locks;
+  }
+
+  public void setLocks(boolean locks) {
+    this.locks = locks;
+  }
+
+  public boolean isAst() {
+    return ast;
+  }
+
+  public void setAst(boolean ast) {
+    this.ast = ast;
+  }
 }

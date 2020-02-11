@@ -1,0 +1,26 @@
+PREHOOK: query: create temporary table addpart1_temp (a int) partitioned by (b string, c string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@addpart1_temp
+POSTHOOK: query: create temporary table addpart1_temp (a int) partitioned by (b string, c string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@addpart1_temp
+PREHOOK: query: alter table addpart1_temp add partition (b='f', c='s')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@addpart1_temp
+POSTHOOK: query: alter table addpart1_temp add partition (b='f', c='s')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@addpart1_temp
+POSTHOOK: Output: default@addpart1_temp@b=f/c=s
+PREHOOK: query: show partitions addpart1_temp
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@addpart1_temp
+POSTHOOK: query: show partitions addpart1_temp
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@addpart1_temp
+b=f/c=s
+PREHOOK: query: alter table addpart1_temp add partition (b='f', c='')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@addpart1_temp
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. partition spec is invalid; field c does not exist or is empty

@@ -14,13 +14,17 @@
 package org.apache.hadoop.hive.llap.registry;
 
 import java.io.IOException;
+import java.util.Map;
+
+import org.apache.hadoop.hive.registry.ServiceInstance;
+import org.apache.hadoop.hive.registry.ServiceInstanceSet;
 import org.apache.hadoop.hive.registry.ServiceInstanceStateChangeListener;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 
 /**
  * ServiceRegistry interface for switching between fixed host and dynamic registry implementations.
  */
-public interface ServiceRegistry {
+public interface ServiceRegistry<T extends ServiceInstance> {
 
   /**
    * Start the service registry
@@ -44,19 +48,24 @@ public interface ServiceRegistry {
   void unregister() throws IOException;
 
   /**
+   * Update the current registration with the given attributes.
+   */
+  void updateRegistration(Iterable<Map.Entry<String, String>> attributes) throws IOException;
+
+  /**
    * Client API to get the list of instances registered via the current registry key.
    * @param component
    * @param clusterReadyTimeoutMs The time to wait for the cluster to be ready, if it's not
    *                              started yet. 0 means do not wait.
    */
-  LlapServiceInstanceSet getInstances(String component, long clusterReadyTimeoutMs) throws IOException;
+  ServiceInstanceSet<T> getInstances(String component, long clusterReadyTimeoutMs) throws
+    IOException;
 
   /**
    * Adds state change listeners for service instances.
    * @param listener - state change listener
    */
-  void registerStateChangeListener(
-      ServiceInstanceStateChangeListener<LlapServiceInstance> listener) throws IOException;
+  void registerStateChangeListener(ServiceInstanceStateChangeListener<T> listener) throws IOException;
 
   /**
    * @return The application ID of the LLAP cluster.

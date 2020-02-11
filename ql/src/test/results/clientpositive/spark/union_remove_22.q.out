@@ -1,45 +1,49 @@
-PREHOOK: query: create table inputTbl1(key string, val string) stored as textfile
+PREHOOK: query: create table inputTbl1_n5(key string, val string) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@inputTbl1
-POSTHOOK: query: create table inputTbl1(key string, val string) stored as textfile
+PREHOOK: Output: default@inputTbl1_n5
+POSTHOOK: query: create table inputTbl1_n5(key string, val string) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@inputTbl1
-PREHOOK: query: create table outputTbl1(key string, `values` bigint, values2 bigint) stored as textfile
+POSTHOOK: Output: default@inputTbl1_n5
+PREHOOK: query: create table outputTbl1_n7(key string, `values` bigint, values2 bigint) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@outputTbl1
-POSTHOOK: query: create table outputTbl1(key string, `values` bigint, values2 bigint) stored as textfile
+PREHOOK: Output: default@outputTbl1_n7
+POSTHOOK: query: create table outputTbl1_n7(key string, `values` bigint, values2 bigint) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@outputTbl1
-PREHOOK: query: load data local inpath '../../data/files/T1.txt' into table inputTbl1
+POSTHOOK: Output: default@outputTbl1_n7
+PREHOOK: query: load data local inpath '../../data/files/T1.txt' into table inputTbl1_n5
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@inputtbl1
-POSTHOOK: query: load data local inpath '../../data/files/T1.txt' into table inputTbl1
+PREHOOK: Output: default@inputtbl1_n5
+POSTHOOK: query: load data local inpath '../../data/files/T1.txt' into table inputTbl1_n5
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@inputtbl1
+POSTHOOK: Output: default@inputtbl1_n5
 PREHOOK: query: explain
-insert overwrite table outputTbl1
+insert overwrite table outputTbl1_n7
 SELECT a.key, a.`values`, a.`values`
 FROM (
-  SELECT key, count(1) as `values` from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1_n5 group by key
   UNION ALL
-  SELECT key, count(1) as `values` from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1_n5 group by key
 ) a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@inputtbl1_n5
+PREHOOK: Output: default@outputtbl1_n7
 POSTHOOK: query: explain
-insert overwrite table outputTbl1
+insert overwrite table outputTbl1_n7
 SELECT a.key, a.`values`, a.`values`
 FROM (
-  SELECT key, count(1) as `values` from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1_n5 group by key
   UNION ALL
-  SELECT key, count(1) as `values` from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1_n5 group by key
 ) a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inputtbl1_n5
+POSTHOOK: Output: default@outputtbl1_n7
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -55,64 +59,69 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: inputtbl1
-                  Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                  alias: inputtbl1_n5
+                  Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string)
                     outputColumnNames: key
-                    Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(1)
+                      aggregations: count()
                       keys: key (type: string)
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: bigint)
+            Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: string), _col1 (type: bigint), _col1 (type: bigint)
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 2 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 600 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 2 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 600 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.outputtbl1
+                        name: default.outputtbl1_n7
         Reducer 4 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: string), _col1 (type: bigint), _col1 (type: bigint)
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 2 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 600 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 2 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 600 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.outputtbl1
+                        name: default.outputtbl1_n7
 
   Stage: Stage-0
     Move Operator
@@ -122,39 +131,38 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.outputtbl1
+              name: default.outputtbl1_n7
 
-PREHOOK: query: insert overwrite table outputTbl1
+PREHOOK: query: insert overwrite table outputTbl1_n7
 SELECT a.key, a.`values`, a.`values`
 FROM (
-  SELECT key, count(1) as `values` from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1_n5 group by key
   UNION ALL
-  SELECT key, count(1) as `values` from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1_n5 group by key
 ) a
 PREHOOK: type: QUERY
-PREHOOK: Input: default@inputtbl1
-PREHOOK: Output: default@outputtbl1
-POSTHOOK: query: insert overwrite table outputTbl1
+PREHOOK: Input: default@inputtbl1_n5
+PREHOOK: Output: default@outputtbl1_n7
+POSTHOOK: query: insert overwrite table outputTbl1_n7
 SELECT a.key, a.`values`, a.`values`
 FROM (
-  SELECT key, count(1) as `values` from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1_n5 group by key
   UNION ALL
-  SELECT key, count(1) as `values` from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1_n5 group by key
 ) a
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@inputtbl1
-POSTHOOK: Output: default@outputtbl1
-POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.values EXPRESSION [(inputtbl1)inputtbl1.null, ]
-POSTHOOK: Lineage: outputtbl1.values2 EXPRESSION [(inputtbl1)inputtbl1.null, ]
-PREHOOK: query: desc formatted outputTbl1
+POSTHOOK: Input: default@inputtbl1_n5
+POSTHOOK: Output: default@outputtbl1_n7
+POSTHOOK: Lineage: outputtbl1_n7.key EXPRESSION [(inputtbl1_n5)inputtbl1_n5.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl1_n7.values EXPRESSION [(inputtbl1_n5)inputtbl1_n5.null, ]
+POSTHOOK: Lineage: outputtbl1_n7.values2 EXPRESSION [(inputtbl1_n5)inputtbl1_n5.null, ]
+PREHOOK: query: desc formatted outputTbl1_n7
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@outputtbl1
-POSTHOOK: query: desc formatted outputTbl1
+PREHOOK: Input: default@outputtbl1_n7
+POSTHOOK: query: desc formatted outputTbl1_n7
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@outputtbl1
+POSTHOOK: Input: default@outputtbl1_n7
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 values              	bigint              	                    
 values2             	bigint              	                    
@@ -166,6 +174,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 	numFiles            	4                   
 	totalSize           	60                  
 #### A masked pattern was here ####
@@ -180,13 +189,13 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: select * from outputTbl1
+PREHOOK: query: select * from outputTbl1_n7
 PREHOOK: type: QUERY
-PREHOOK: Input: default@outputtbl1
+PREHOOK: Input: default@outputtbl1_n7
 #### A masked pattern was here ####
-POSTHOOK: query: select * from outputTbl1
+POSTHOOK: query: select * from outputTbl1_n7
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@outputtbl1
+POSTHOOK: Input: default@outputtbl1_n7
 #### A masked pattern was here ####
 1	1	1
 1	1	1
@@ -199,23 +208,27 @@ POSTHOOK: Input: default@outputtbl1
 8	2	2
 8	2	2
 PREHOOK: query: explain
-insert overwrite table outputTbl1
+insert overwrite table outputTbl1_n7
 SELECT a.key, concat(a.`values`, a.`values`), concat(a.`values`, a.`values`)
 FROM (
-  SELECT key, count(1) as `values` from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1_n5 group by key
   UNION ALL
-  SELECT key, count(1) as `values` from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1_n5 group by key
 ) a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@inputtbl1_n5
+PREHOOK: Output: default@outputtbl1_n7
 POSTHOOK: query: explain
-insert overwrite table outputTbl1
+insert overwrite table outputTbl1_n7
 SELECT a.key, concat(a.`values`, a.`values`), concat(a.`values`, a.`values`)
 FROM (
-  SELECT key, count(1) as `values` from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1_n5 group by key
   UNION ALL
-  SELECT key, count(1) as `values` from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1_n5 group by key
 ) a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inputtbl1_n5
+POSTHOOK: Output: default@outputtbl1_n7
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -231,64 +244,69 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: inputtbl1
-                  Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                  alias: inputtbl1_n5
+                  Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string)
                     outputColumnNames: key
-                    Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
                       keys: key (type: string)
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: bigint)
+            Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col0 (type: string), UDFToLong(concat(_col1, _col1)) (type: bigint), UDFToLong(concat(_col1, _col1)) (type: bigint)
+                  expressions: _col0 (type: string), UDFToLong(concat(CAST( _col1 AS STRING), _col1)) (type: bigint), UDFToLong(concat(CAST( _col1 AS STRING), _col1)) (type: bigint)
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 2 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 600 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 2 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 600 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.outputtbl1
+                        name: default.outputtbl1_n7
         Reducer 4 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col0 (type: string), UDFToLong(concat(_col1, _col1)) (type: bigint), UDFToLong(concat(_col1, _col1)) (type: bigint)
+                  expressions: _col0 (type: string), UDFToLong(concat(CAST( _col1 AS STRING), _col1)) (type: bigint), UDFToLong(concat(CAST( _col1 AS STRING), _col1)) (type: bigint)
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 2 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 600 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 2 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 600 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.outputtbl1
+                        name: default.outputtbl1_n7
 
   Stage: Stage-0
     Move Operator
@@ -298,38 +316,38 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.outputtbl1
+              name: default.outputtbl1_n7
 
-PREHOOK: query: insert overwrite table outputTbl1
+PREHOOK: query: insert overwrite table outputTbl1_n7
 SELECT a.key, concat(a.`values`, a.`values`), concat(a.`values`, a.`values`)
 FROM (
-  SELECT key, count(1) as `values` from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1_n5 group by key
   UNION ALL
-  SELECT key, count(1) as `values` from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1_n5 group by key
 ) a
 PREHOOK: type: QUERY
-PREHOOK: Input: default@inputtbl1
-PREHOOK: Output: default@outputtbl1
-POSTHOOK: query: insert overwrite table outputTbl1
+PREHOOK: Input: default@inputtbl1_n5
+PREHOOK: Output: default@outputtbl1_n7
+POSTHOOK: query: insert overwrite table outputTbl1_n7
 SELECT a.key, concat(a.`values`, a.`values`), concat(a.`values`, a.`values`)
 FROM (
-  SELECT key, count(1) as `values` from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1_n5 group by key
   UNION ALL
-  SELECT key, count(1) as `values` from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1_n5 group by key
 ) a
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@inputtbl1
-POSTHOOK: Output: default@outputtbl1
-POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.values EXPRESSION [(inputtbl1)inputtbl1.null, ]
-POSTHOOK: Lineage: outputtbl1.values2 EXPRESSION [(inputtbl1)inputtbl1.null, ]
-PREHOOK: query: select * from outputTbl1
+POSTHOOK: Input: default@inputtbl1_n5
+POSTHOOK: Output: default@outputtbl1_n7
+POSTHOOK: Lineage: outputtbl1_n7.key EXPRESSION [(inputtbl1_n5)inputtbl1_n5.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl1_n7.values EXPRESSION [(inputtbl1_n5)inputtbl1_n5.null, ]
+POSTHOOK: Lineage: outputtbl1_n7.values2 EXPRESSION [(inputtbl1_n5)inputtbl1_n5.null, ]
+PREHOOK: query: select * from outputTbl1_n7
 PREHOOK: type: QUERY
-PREHOOK: Input: default@outputtbl1
+PREHOOK: Input: default@outputtbl1_n7
 #### A masked pattern was here ####
-POSTHOOK: query: select * from outputTbl1
+POSTHOOK: query: select * from outputTbl1_n7
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@outputtbl1
+POSTHOOK: Input: default@outputtbl1_n7
 #### A masked pattern was here ####
 1	11	11
 1	11	11

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -26,14 +26,16 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggreg
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;
 import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationBufferRow;
+import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationDesc;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 
 /**
 * <ClassName>. Vectorized implementation for MIN/MAX aggregates.
@@ -62,7 +64,7 @@ public class <ClassName> extends VectorAggregateExpression {
         value = new Timestamp(0);
       }
 
-      public void checkValue(TimestampColumnVector colVector, int index) {
+      public void minmaxValue(TimestampColumnVector colVector, int index) {
         if (isNull) {
           isNull = false;
           colVector.timestampUpdate(this.value, index);
@@ -83,21 +85,17 @@ public class <ClassName> extends VectorAggregateExpression {
       }
     }
 
-    private transient VectorExpressionWriter resultWriter;
+  // This constructor is used to momentarily create the object so match can be called.
+  public <ClassName>() {
+    super();
+  }
 
-    public <ClassName>(VectorExpression inputExpression, GenericUDAFEvaluator.Mode mode) {
-      super(inputExpression, mode);
-    }
+  public <ClassName>(VectorAggregationDesc vecAggrDesc) {
+    super(vecAggrDesc);
+    init();
+  }
 
     private void init() {
-    }
-
-    @Override
-    public void init(AggregationDesc desc) throws HiveException {
-      init();
-
-      resultWriter = VectorExpressionWriterFactory.genVectorExpressionWritable(
-          desc.getParameters().get(0));
     }
 
     private Aggregation getCurrentAggregationBuffer(
@@ -123,8 +121,9 @@ public class <ClassName> extends VectorAggregateExpression {
 
       inputExpression.evaluate(batch);
 
-      TimestampColumnVector inputColVector = (TimestampColumnVector)batch.
-        cols[this.inputExpression.getOutputColumn()];
+      TimestampColumnVector inputColVector =
+          (TimestampColumnVector) batch.cols[
+              this.inputExpression.getOutputColumnNum()];
 
       if (inputColVector.noNulls) {
         if (inputColVector.isRepeating) {
@@ -144,15 +143,9 @@ public class <ClassName> extends VectorAggregateExpression {
         }
       } else {
         if (inputColVector.isRepeating) {
-          if (batch.selectedInUse) {
-            iterateHasNullsRepeatingSelectionWithAggregationSelection(
-              aggregationBufferSets, aggregrateIndex,
-              inputColVector, batchSize, batch.selected, inputColVector.isNull);
-          } else {
-            iterateHasNullsRepeatingWithAggregationSelection(
-              aggregationBufferSets, aggregrateIndex,
-              inputColVector, batchSize, inputColVector.isNull);
-          }
+          iterateHasNullsRepeatingWithAggregationSelection(
+            aggregationBufferSets, aggregrateIndex,
+            inputColVector, batchSize, inputColVector.isNull);
         } else {
           if (batch.selectedInUse) {
             iterateHasNullsSelectionWithAggregationSelection(
@@ -179,7 +172,7 @@ public class <ClassName> extends VectorAggregateExpression {
           aggregrateIndex,
           i);
         // Repeating use index 0.
-        myagg.checkValue(inputColVector, 0);
+        myagg.minmaxValue(inputColVector, 0);
       }
     }
 
@@ -195,7 +188,7 @@ public class <ClassName> extends VectorAggregateExpression {
           aggregationBufferSets,
           aggregrateIndex,
           i);
-        myagg.checkValue(inputColVector, selection[i]);
+        myagg.minmaxValue(inputColVector, selection[i]);
       }
     }
 
@@ -209,29 +202,8 @@ public class <ClassName> extends VectorAggregateExpression {
           aggregationBufferSets,
           aggregrateIndex,
           i);
-        myagg.checkValue(inputColVector, i);
+        myagg.minmaxValue(inputColVector, i);
       }
-    }
-
-    private void iterateHasNullsRepeatingSelectionWithAggregationSelection(
-      VectorAggregationBufferRow[] aggregationBufferSets,
-      int aggregrateIndex,
-      TimestampColumnVector inputColVector,
-      int batchSize,
-      int[] selection,
-      boolean[] isNull) {
-
-      for (int i=0; i < batchSize; ++i) {
-        if (!isNull[selection[i]]) {
-          Aggregation myagg = getCurrentAggregationBuffer(
-            aggregationBufferSets,
-            aggregrateIndex,
-            i);
-          // Repeating use index 0.
-          myagg.checkValue(inputColVector, 0);
-        }
-      }
-
     }
 
     private void iterateHasNullsRepeatingWithAggregationSelection(
@@ -241,15 +213,17 @@ public class <ClassName> extends VectorAggregateExpression {
       int batchSize,
       boolean[] isNull) {
 
+      if (isNull[0]) {
+        return;
+      }
+
       for (int i=0; i < batchSize; ++i) {
-        if (!isNull[i]) {
-          Aggregation myagg = getCurrentAggregationBuffer(
-            aggregationBufferSets,
-            aggregrateIndex,
-            i);
-          // Repeating use index 0.
-          myagg.checkValue(inputColVector, 0);
-        }
+        Aggregation myagg = getCurrentAggregationBuffer(
+          aggregationBufferSets,
+          aggregrateIndex,
+          i);
+        // Repeating use index 0.
+        myagg.minmaxValue(inputColVector, 0);
       }
     }
 
@@ -268,7 +242,7 @@ public class <ClassName> extends VectorAggregateExpression {
             aggregationBufferSets,
             aggregrateIndex,
             j);
-          myagg.checkValue(inputColVector, i);
+          myagg.minmaxValue(inputColVector, i);
         }
       }
    }
@@ -286,7 +260,7 @@ public class <ClassName> extends VectorAggregateExpression {
             aggregationBufferSets,
             aggregrateIndex,
             i);
-          myagg.checkValue(inputColVector, i);
+          myagg.minmaxValue(inputColVector, i);
         }
       }
    }
@@ -297,8 +271,9 @@ public class <ClassName> extends VectorAggregateExpression {
 
         inputExpression.evaluate(batch);
 
-        TimestampColumnVector inputColVector = (TimestampColumnVector)batch.
-            cols[this.inputExpression.getOutputColumn()];
+        TimestampColumnVector inputColVector =
+            (TimestampColumnVector) batch.cols[
+                this.inputExpression.getOutputColumnNum()];
 
         int batchSize = batch.size;
 
@@ -309,10 +284,8 @@ public class <ClassName> extends VectorAggregateExpression {
         Aggregation myagg = (Aggregation)agg;
 
         if (inputColVector.isRepeating) {
-          if (inputColVector.noNulls &&
-            (myagg.isNull || (inputColVector.compareTo(myagg.value, 0) <OperatorSymbol> 0))) {
-            myagg.isNull = false;
-            inputColVector.timestampUpdate(myagg.value, 0);
+          if (inputColVector.noNulls || !inputColVector.isNull[0]) {
+            myagg.minmaxValue(inputColVector, 0);
           }
           return;
         }
@@ -343,13 +316,7 @@ public class <ClassName> extends VectorAggregateExpression {
       for (int j=0; j< batchSize; ++j) {
         int i = selected[j];
         if (!isNull[i]) {
-          if (myagg.isNull) {
-            myagg.isNull = false;
-            inputColVector.timestampUpdate(myagg.value, i);
-          }
-          else if (inputColVector.compareTo(myagg.value, i) <OperatorSymbol> 0) {
-            inputColVector.timestampUpdate(myagg.value, i);
-          }
+          myagg.minmaxValue(inputColVector, i);
         }
       }
     }
@@ -360,16 +327,9 @@ public class <ClassName> extends VectorAggregateExpression {
         int batchSize,
         int[] selected) {
 
-      if (myagg.isNull) {
-        inputColVector.timestampUpdate(myagg.value, selected[0]);
-        myagg.isNull = false;
-      }
-
-      for (int i=0; i< batchSize; ++i) {
+     for (int i=0; i< batchSize; ++i) {
         int sel = selected[i];
-        if (inputColVector.compareTo(myagg.value, sel) <OperatorSymbol> 0) {
-          inputColVector.timestampUpdate(myagg.value, sel);
-        }
+        myagg.minmaxValue(inputColVector, sel);
       }
     }
 
@@ -381,13 +341,7 @@ public class <ClassName> extends VectorAggregateExpression {
 
       for(int i=0;i<batchSize;++i) {
         if (!isNull[i]) {
-          if (myagg.isNull) {
-            inputColVector.timestampUpdate(myagg.value, i);
-            myagg.isNull = false;
-          }
-          else if (inputColVector.compareTo(myagg.value, i) <OperatorSymbol> 0) {
-            inputColVector.timestampUpdate(myagg.value, i);
-          }
+          myagg.minmaxValue(inputColVector, i);
         }
       }
     }
@@ -396,15 +350,9 @@ public class <ClassName> extends VectorAggregateExpression {
         Aggregation myagg,
         TimestampColumnVector inputColVector,
         int batchSize) {
-      if (myagg.isNull) {
-        inputColVector.timestampUpdate(myagg.value, 0);
-        myagg.isNull = false;
-      }
 
       for (int i=0;i<batchSize;++i) {
-        if (inputColVector.compareTo(myagg.value, i) <OperatorSymbol> 0) {
-          inputColVector.timestampUpdate(myagg.value, i);
-        }
+        myagg.minmaxValue(inputColVector, i);
       }
     }
 
@@ -420,29 +368,42 @@ public class <ClassName> extends VectorAggregateExpression {
     }
 
     @Override
-    public Object evaluateOutput(
-        AggregationBuffer agg) throws HiveException {
-    Aggregation myagg = (Aggregation) agg;
-      if (myagg.isNull) {
-        return null;
-      }
-      else {
-        return resultWriter.writeValue(myagg.value);
-      }
-    }
-
-    @Override
-    public ObjectInspector getOutputObjectInspector() {
-      return resultWriter.getObjectInspector();
-    }
-
-    @Override
     public long getAggregationBufferFixedSize() {
     JavaDataModel model = JavaDataModel.get();
     return JavaDataModel.alignUp(
       model.object() +
       model.primitive2(),
       model.memoryAlign());
+  }
+
+  @Override
+  public boolean matches(String name, ColumnVector.Type inputColVectorType,
+      ColumnVector.Type outputColVectorType, Mode mode) {
+
+    /*
+     * Min/max input and output is TIMESTAMP.
+     *
+     * Any mode (PARTIAL1, PARTIAL2, FINAL, COMPLETE).
+     */
+    return
+        name.equals("<DescriptionName>") &&
+        inputColVectorType == ColumnVector.Type.TIMESTAMP &&
+        outputColVectorType == ColumnVector.Type.TIMESTAMP;
+  }
+
+  @Override
+  public void assignRowColumn(VectorizedRowBatch batch, int batchIndex, int columnNum,
+      AggregationBuffer agg) throws HiveException {
+
+    TimestampColumnVector outputColVector = (TimestampColumnVector) batch.cols[columnNum];
+    Aggregation myagg = (Aggregation) agg;
+    if (myagg.isNull) {
+      outputColVector.noNulls = false;
+      outputColVector.isNull[batchIndex] = true;
+      return;
+    }
+    outputColVector.isNull[batchIndex] = false;
+    outputColVector.set(batchIndex, myagg.value);
   }
 }
 

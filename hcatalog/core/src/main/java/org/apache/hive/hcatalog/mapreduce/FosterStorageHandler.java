@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -44,6 +44,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -113,7 +114,12 @@ public class FosterStorageHandler extends DefaultStorageHandler {
       String jobInfoProperty = tableProperties.get(HCatConstants.HCAT_KEY_JOB_INFO);
       if (jobInfoProperty != null) {
 
-        InputJobInfo inputJobInfo = (InputJobInfo) HCatUtil.deserialize(jobInfoProperty);
+        LinkedList<InputJobInfo> inputJobInfos = (LinkedList<InputJobInfo>) HCatUtil.deserialize(
+                jobInfoProperty);
+        if (inputJobInfos == null || inputJobInfos.isEmpty()) {
+          throw new IOException("No InputJobInfo was set in job config");
+        }
+        InputJobInfo inputJobInfo = inputJobInfos.getLast();
 
         HCatTableInfo tableInfo = inputJobInfo.getTableInfo();
         HCatSchema dataColumns = tableInfo.getDataColumns();
@@ -131,11 +137,11 @@ public class FosterStorageHandler extends DefaultStorageHandler {
         jobProperties.put(IOConstants.SCHEMA_EVOLUTION_COLUMNS, columnNamesSb.toString());
         jobProperties.put(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, typeNamesSb.toString());
 
-        boolean isAcidTable = AcidUtils.isTablePropertyTransactional(tableProperties);
-        AcidUtils.setTransactionalTableScan(jobProperties, isAcidTable);
+        boolean isTransactionalTable = AcidUtils.isTablePropertyTransactional(tableProperties);
         AcidUtils.AcidOperationalProperties acidOperationalProperties =
                 AcidUtils.getAcidOperationalProperties(tableProperties);
-        AcidUtils.setAcidOperationalProperties(jobProperties, acidOperationalProperties);
+        AcidUtils.setAcidOperationalProperties(
+            jobProperties, isTransactionalTable, acidOperationalProperties);
       }
     } catch (IOException e) {
       throw new IllegalStateException("Failed to set output path", e);

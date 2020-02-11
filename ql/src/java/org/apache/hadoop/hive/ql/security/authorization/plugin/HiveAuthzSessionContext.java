@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -29,7 +29,7 @@ import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 public final class HiveAuthzSessionContext {
 
   public enum CLIENT_TYPE {
-    HIVESERVER2, HIVECLI
+    HIVESERVER2, HIVECLI, HIVEMETASTORE, OTHER
   };
 
   public static class Builder {

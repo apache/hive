@@ -1,4 +1,4 @@
-PREHOOK: query: create table date_dim
+PREHOOK: query: create table date_dim_n0
 (
     d_date_sk                 int,
     d_date_id                 string,
@@ -32,8 +32,8 @@ PREHOOK: query: create table date_dim
 stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@date_dim
-POSTHOOK: query: create table date_dim
+PREHOOK: Output: default@date_dim_n0
+POSTHOOK: query: create table date_dim_n0
 (
     d_date_sk                 int,
     d_date_id                 string,
@@ -67,8 +67,8 @@ POSTHOOK: query: create table date_dim
 stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@date_dim
-PREHOOK: query: create table store_sales
+POSTHOOK: Output: default@date_dim_n0
+PREHOOK: query: create table store_sales_n2
 (
     ss_sold_date_sk           int,
     ss_sold_time_sk           int,
@@ -101,8 +101,8 @@ stored as orc
 tblproperties ("orc.stripe.size"="33554432", "orc.compress.size"="16384")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@store_sales
-POSTHOOK: query: create table store_sales
+PREHOOK: Output: default@store_sales_n2
+POSTHOOK: query: create table store_sales_n2
 (
     ss_sold_date_sk           int,
     ss_sold_time_sk           int,
@@ -135,8 +135,8 @@ stored as orc
 tblproperties ("orc.stripe.size"="33554432", "orc.compress.size"="16384")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@store_sales
-PREHOOK: query: create table store
+POSTHOOK: Output: default@store_sales_n2
+PREHOOK: query: create table store_n2
 (
     s_store_sk                int,
     s_store_id                string,
@@ -171,8 +171,8 @@ PREHOOK: query: create table store
 stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@store
-POSTHOOK: query: create table store
+PREHOOK: Output: default@store_n2
+POSTHOOK: query: create table store_n2
 (
     s_store_sk                int,
     s_store_id                string,
@@ -207,31 +207,39 @@ POSTHOOK: query: create table store
 stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@store
+POSTHOOK: Output: default@store_n2
 PREHOOK: query: explain vectorization select
         s_state, count(1)
- from store_sales,
- store,
- date_dim
- where store_sales.ss_sold_date_sk = date_dim.d_date_sk and
-       store_sales.ss_store_sk = store.s_store_sk and
-       store.s_state in ('KS','AL', 'MN', 'AL', 'SC', 'VT')
+ from store_sales_n2,
+ store_n2,
+ date_dim_n0
+ where store_sales_n2.ss_sold_date_sk = date_dim_n0.d_date_sk and
+       store_sales_n2.ss_store_sk = store_n2.s_store_sk and
+       store_n2.s_state in ('KS','AL', 'MN', 'AL', 'SC', 'VT')
  group by s_state
  order by s_state
  limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim_n0
+PREHOOK: Input: default@store_n2
+PREHOOK: Input: default@store_sales_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization select
         s_state, count(1)
- from store_sales,
- store,
- date_dim
- where store_sales.ss_sold_date_sk = date_dim.d_date_sk and
-       store_sales.ss_store_sk = store.s_store_sk and
-       store.s_state in ('KS','AL', 'MN', 'AL', 'SC', 'VT')
+ from store_sales_n2,
+ store_n2,
+ date_dim_n0
+ where store_sales_n2.ss_sold_date_sk = date_dim_n0.d_date_sk and
+       store_sales_n2.ss_store_sk = store_n2.s_store_sk and
+       store_n2.s_state in ('KS','AL', 'MN', 'AL', 'SC', 'VT')
  group by s_state
  order by s_state
  limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim_n0
+POSTHOOK: Input: default@store_n2
+POSTHOOK: Input: default@store_sales_n2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -248,36 +256,40 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: store_sales
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            alias: store_sales_n2
+            filterExpr: (ss_store_sk is not null and ss_sold_date_sk is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (ss_store_sk is not null and ss_sold_date_sk is not null) (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: ss_sold_date_sk (type: int), ss_store_sk (type: int)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col1 (type: int)
           TableScan
-            alias: date_dim
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            alias: date_dim_n0
+            filterExpr: d_date_sk is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: d_date_sk is not null (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: d_date_sk (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
       Map Vectorization:
           enabled: false
           enabledConditionsNotMet: Vectorized map work only works with 1 TableScanOperator IS false
@@ -293,7 +305,7 @@ STAGE PLANS:
             0 _col0 (type: int)
             1 _col0 (type: int)
           outputColumnNames: _col1
-          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             table:
@@ -307,24 +319,27 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col1 (type: int)
+              null sort order: z
               sort order: +
               Map-reduce partition columns: _col1 (type: int)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
           TableScan
-            alias: store
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            alias: store_n2
+            filterExpr: ((s_state) IN ('KS', 'AL', 'MN', 'SC', 'VT') and s_store_sk is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((s_state) IN ('KS', 'AL', 'MN', 'SC', 'VT') and s_store_sk is not null) (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: s_store_sk (type: int), s_state (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: string)
       Map Vectorization:
           enabled: false
@@ -341,13 +356,14 @@ STAGE PLANS:
             0 _col1 (type: int)
             1 _col0 (type: int)
           outputColumnNames: _col4
-          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
           Group By Operator
             aggregations: count()
             keys: _col4 (type: string)
+            minReductionHashAggr: 0.99
             mode: hash
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
               table:
@@ -361,16 +377,18 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: string)
+              null sort order: z
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
               TopN Hash Memory Usage: 0.1
               value expressions: _col1 (type: bigint)
       Execution mode: vectorized
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -385,7 +403,7 @@ STAGE PLANS:
           keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             table:
@@ -399,15 +417,17 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: string)
+              null sort order: z
               sort order: +
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
               TopN Hash Memory Usage: 0.1
               value expressions: _col1 (type: bigint)
       Execution mode: vectorized
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -420,13 +440,13 @@ STAGE PLANS:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: bigint)
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
           Limit
             Number of rows: 100
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

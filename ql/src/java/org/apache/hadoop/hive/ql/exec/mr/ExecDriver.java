@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -24,13 +24,17 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
+import java.security.AccessController;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.ThreadLocalRandom;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.hive.ql.exec.AddToClassPathAction;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.log.LogDivertAppenderForTest;
 import org.apache.hadoop.mapreduce.MRJobConfig;
@@ -48,9 +52,8 @@ import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveConfUtil;
-import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.TaskQueue;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -63,7 +66,6 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
-import org.apache.hadoop.hive.ql.exec.tez.TezSessionState;
 import org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveKey;
@@ -170,9 +172,8 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
    * Initialization when invoked from QL.
    */
   @Override
-  public void initialize(QueryState queryState, QueryPlan queryPlan, DriverContext driverContext,
-      CompilationOpContext opContext) {
-    super.initialize(queryState, queryPlan, driverContext, opContext);
+  public void initialize(QueryState queryState, QueryPlan queryPlan, TaskQueue taskQueue, Context context) {
+    super.initialize(queryState, queryPlan, taskQueue, context);
 
     job = new JobConf(conf, ExecDriver.class);
 
@@ -208,7 +209,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
   public boolean checkFatalErrors(Counters ctrs, StringBuilder errMsg) {
      Counters.Counter cntr = ctrs.findCounter(
         HiveConf.getVar(job, HiveConf.ConfVars.HIVECOUNTERGROUP),
-        Operator.HIVECOUNTERFATAL);
+        Operator.HIVE_COUNTER_FATAL);
     return cntr != null && cntr.getValue() > 0;
   }
 
@@ -217,19 +218,18 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
    */
   @SuppressWarnings({"deprecation", "unchecked"})
   @Override
-  public int execute(DriverContext driverContext) {
+  public int execute() {
 
     IOPrepareCache ioPrepareCache = IOPrepareCache.get();
     ioPrepareCache.clear();
 
     boolean success = true;
 
-    Context ctx = driverContext.getCtx();
     boolean ctxCreated = false;
     Path emptyScratchDir;
     JobClient jc = null;
 
-    if (driverContext.isShutdown()) {
+    if (taskQueue.isShutdown()) {
       LOG.warn("Task was cancelled");
       return 5;
     }
@@ -237,6 +237,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     MapWork mWork = work.getMapWork();
     ReduceWork rWork = work.getReduceWork();
 
+    Context ctx = context;
     try {
       if (ctx == null) {
         ctx = new Context(job);
@@ -257,6 +258,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     //See the javadoc on HiveOutputFormatImpl and HadoopShims.prepareJobOutput()
     job.setOutputFormat(HiveOutputFormatImpl.class);
 
+    job.setMapRunnerClass(ExecMapRunner.class);
     job.setMapperClass(ExecMapper.class);
 
     job.setMapOutputKeyClass(HiveKey.class);
@@ -305,7 +307,8 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
 
     if (noName) {
       // This is for a special case to ensure unit tests pass
-      job.set(MRJobConfig.JOB_NAME, "JOB" + Utilities.randGen.nextInt());
+      job.set(MRJobConfig.JOB_NAME,
+          "JOB" + ThreadLocalRandom.current().nextInt());
     }
 
     try{
@@ -399,22 +402,22 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       Utilities.createTmpDirs(job, rWork);
 
       SessionState ss = SessionState.get();
-      if (HiveConf.getVar(job, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")
-          && ss != null) {
-        TezSessionState session = ss.getTezSession();
-        TezSessionPoolManager.getInstance().closeIfNotDefault(session, true);
+      // TODO: why is there a TezSession in MR ExecDriver?
+      if (ss != null && HiveConf.getVar(job, ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
+        // TODO: this is the only place that uses keepTmpDir. Why?
+        TezSessionPoolManager.closeIfNotDefault(ss.getTezSession(), true);
       }
 
       HiveConfUtil.updateJobCredentialProviders(job);
       // Finally SUBMIT the JOB!
-      if (driverContext.isShutdown()) {
+      if (taskQueue.isShutdown()) {
         LOG.warn("Task was cancelled");
         return 5;
       }
 
-      rj = jc.submitJob(job);
+    rj = jc.submitJob(job);
 
-      if (driverContext.isShutdown()) {
+      if (taskQueue.isShutdown()) {
         LOG.warn("Task was cancelled");
         killJob();
         return 5;
@@ -435,7 +438,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       }
 
       // Has to use full name to make sure it does not conflict with
-      // org.apache.commons.lang.StringUtils
+      // org.apache.commons.lang3.StringUtils
       console.printError(mesg, "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e));
 
       success = false;
@@ -457,9 +460,9 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
           jc.close();
         }
       } catch (Exception e) {
-	LOG.warn("Failed while cleaning up ", e);
+        LOG.warn("Failed while cleaning up ", e);
       } finally {
-	HadoopJobExecHelper.runningJobs.remove(rj);
+        HadoopJobExecHelper.runningJobs.remove(rj);
       }
     }
 
@@ -574,11 +577,6 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     if (mWork.getInputformat() != null) {
       HiveConf.setVar(conf, ConfVars.HIVEINPUTFORMAT, mWork.getInputformat());
     }
-    if (mWork.getIndexIntermediateFile() != null) {
-      conf.set(ConfVars.HIVE_INDEX_COMPACT_FILE.varname, mWork.getIndexIntermediateFile());
-      conf.set(ConfVars.HIVE_INDEX_BLOCKFILTER_FILE.varname, mWork.getIndexIntermediateFile());
-    }
-
     // Intentionally overwrites anything the user may have put here
     conf.setBoolean("hive.input.format.sorted", mWork.isInputFormatSorted());
 
@@ -749,7 +747,9 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       // see also - code in CliDriver.java
       ClassLoader loader = conf.getClassLoader();
       if (StringUtils.isNotBlank(libjars)) {
-        loader = Utilities.addToClassPath(loader, StringUtils.split(libjars, ","));
+        AddToClassPathAction addAction = new AddToClassPathAction(
+            loader, Arrays.asList(StringUtils.split(libjars, ",")));
+        loader = AccessController.doPrivileged(addAction);
       }
       conf.setClassLoader(loader);
       // Also set this to the Thread ContextClassLoader, so new threads will
@@ -766,12 +766,14 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       memoryMXBean = ManagementFactory.getMemoryMXBean();
       MapredLocalWork plan = SerializationUtilities.deserializePlan(pathData, MapredLocalWork.class);
       MapredLocalTask ed = new MapredLocalTask(plan, conf, isSilent);
-      ret = ed.executeInProcess(new DriverContext());
+      ed.initialize(null, null, new TaskQueue(), null);
+      ret = ed.executeInProcess();
 
     } else {
       MapredWork plan = SerializationUtilities.deserializePlan(pathData, MapredWork.class);
       ExecDriver ed = new ExecDriver(plan, conf, isSilent);
-      ret = ed.execute(new DriverContext());
+      ed.setTaskQueue(new TaskQueue());
+      ret = ed.execute();
     }
 
     if (ret != 0) {
@@ -807,8 +809,10 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     // working dirs and system dirs
     // Workaround is to rename map red working dir to a temp dir in such cases
     if (hadoopLocalMode) {
-      tempConf.set(hadoopSysDir, hconf.get(hadoopSysDir) + "/" + Utilities.randGen.nextInt());
-      tempConf.set(hadoopWorkDir, hconf.get(hadoopWorkDir) + "/" + Utilities.randGen.nextInt());
+      tempConf.set(hadoopSysDir, hconf.get(hadoopSysDir) + "/"
+          + ThreadLocalRandom.current().nextInt(Integer.MAX_VALUE));
+      tempConf.set(hadoopWorkDir, hconf.get(hadoopWorkDir) + "/"
+          + ThreadLocalRandom.current().nextInt(Integer.MAX_VALUE));
     }
 
     try {

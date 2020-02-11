@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,49 +22,57 @@ import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.HashSet;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.Descriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
  * Evaluate IN filter on a batch for a vector of timestamps.
  */
 public class FilterTimestampColumnInList extends VectorExpression implements ITimestampInExpr {
   private static final long serialVersionUID = 1L;
-  private int inputCol;
+  private final int inputColumn;
   private Timestamp[] inListValues;
+
+  // Transient members initialized by transientInit method.
 
   // The set object containing the IN list.
   private transient HashSet<Timestamp> inSet;
 
   public FilterTimestampColumnInList() {
     super();
-    inSet = null;
+
+    // Dummy final assignments.
+    inputColumn = -1;
   }
 
   /**
    * After construction you must call setInListValues() to add the values to the IN set.
    */
   public FilterTimestampColumnInList(int colNum) {
-    this.inputCol = colNum;
-    inSet = null;
+    this.inputColumn = colNum;
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void transientInit(Configuration conf) throws HiveException {
+    super.transientInit(conf);
+
+    inSet = new HashSet<Timestamp>(inListValues.length);
+    for (Timestamp val : inListValues) {
+      inSet.add(val);
+    }
+  }
+
+  @Override
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
 
     if (childExpressions != null) {
       super.evaluateChildren(batch);
     }
 
-    if (inSet == null) {
-      inSet = new HashSet<Timestamp>(inListValues.length);
-      for (Timestamp val : inListValues) {
-        inSet.add(val);
-      }
-    }
-
-    TimestampColumnVector inputColVector = (TimestampColumnVector) batch.cols[inputCol];
+    TimestampColumnVector inputColVector = (TimestampColumnVector) batch.cols[inputColumn];
     int[] sel = batch.selected;
     boolean[] nullPos = inputColVector.isNull;
     int n = batch.size;
@@ -149,17 +157,6 @@ public class FilterTimestampColumnInList extends VectorExpression implements ITi
     }
   }
 
-
-  @Override
-  public String getOutputType() {
-    return "boolean";
-  }
-
-  @Override
-  public int getOutputColumn() {
-    return -1;
-  }
-
   @Override
   public Descriptor getDescriptor() {
 
@@ -173,7 +170,7 @@ public class FilterTimestampColumnInList extends VectorExpression implements ITi
 
   @Override
   public String vectorExpressionParameters() {
-    return "col " + inputCol + ", values " + Arrays.toString(inListValues);
+    return getColumnParamString(0, inputColumn) + ", values " + Arrays.toString(inListValues);
   }
 
 }

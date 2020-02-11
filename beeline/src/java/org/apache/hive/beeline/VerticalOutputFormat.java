@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -36,6 +36,7 @@ class VerticalOutputFormat implements OutputFormat {
     this.beeLine = beeLine;
   }
 
+  @Override
   public int print(Rows rows) {
     int count = 0;
     Rows.Row header = (Rows.Row) rows.next();

@@ -114,12 +114,16 @@ SELECT customer_name, SUM(customer_balance), SUM(order_quantity) FROM default.te
 (SUM(customer_balance) <= 4074689.000000041)
 )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@testv1_staples
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT customer_name, SUM(customer_balance), SUM(order_quantity) FROM default.testv1_staples s1 GROUP BY customer_name HAVING (
 (COUNT(s1.discount) <= 822) AND
 (SUM(customer_balance) <= 4074689.000000041)
 )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testv1_staples
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -130,40 +134,43 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: s1
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 208 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: order_quantity (type: double), discount (type: double), customer_name (type: string), customer_balance (type: double)
               outputColumnNames: order_quantity, discount, customer_name, customer_balance
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 208 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: sum(customer_balance), sum(order_quantity), count(discount)
                 keys: customer_name (type: string)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: double), _col2 (type: double), _col3 (type: bigint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: sum(VALUE._col0), sum(VALUE._col1), count(VALUE._col2)
           keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2, _col3
-          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 1 Data size: 208 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
-            predicate: ((_col3 <= 822) and (_col1 <= 4074689.000000041)) (type: boolean)
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            predicate: ((_col3 <= 822L) and (_col1 <= 4074689.000000041D)) (type: boolean)
+            Statistics: Num rows: 1 Data size: 208 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col0 (type: string), _col1 (type: double), _col2 (type: double)
               outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 208 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -181,12 +188,16 @@ SELECT customer_name, SUM(customer_balance), SUM(order_quantity) FROM default.te
 AND (COUNT(s1.discount) <= 822)
 )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@testv1_staples
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT customer_name, SUM(customer_balance), SUM(order_quantity) FROM default.testv1_staples s1 GROUP BY customer_name HAVING (
 (SUM(customer_balance) <= 4074689.000000041)
 AND (COUNT(s1.discount) <= 822)
 )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testv1_staples
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -197,40 +208,43 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: s1
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 208 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: order_quantity (type: double), discount (type: double), customer_name (type: string), customer_balance (type: double)
               outputColumnNames: order_quantity, discount, customer_name, customer_balance
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 208 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: sum(customer_balance), sum(order_quantity), count(discount)
                 keys: customer_name (type: string)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: double), _col2 (type: double), _col3 (type: bigint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: sum(VALUE._col0), sum(VALUE._col1), count(VALUE._col2)
           keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2, _col3
-          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 1 Data size: 208 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
-            predicate: ((_col1 <= 4074689.000000041) and (_col3 <= 822)) (type: boolean)
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            predicate: ((_col1 <= 4074689.000000041D) and (_col3 <= 822L)) (type: boolean)
+            Statistics: Num rows: 1 Data size: 208 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col0 (type: string), _col1 (type: double), _col2 (type: double)
               outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 208 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -251,6 +265,9 @@ AND (AVG(s1.discount) <= 822)
 AND (COUNT(s2.value) > 4)
 )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@testv1_staples
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT s1.customer_name FROM default.testv1_staples s1 join default.src s2 on s1.customer_name = s2.key
 GROUP BY s1.customer_name
@@ -260,6 +277,9 @@ AND (AVG(s1.discount) <= 822)
 AND (COUNT(s2.value) > 4)
 )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@testv1_staples
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -271,35 +291,39 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: s1
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            filterExpr: customer_name is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: customer_name is not null (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: discount (type: double), customer_name (type: string), customer_balance (type: double)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col1 (type: string)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col1 (type: string)
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: double), _col2 (type: double)
           TableScan
             alias: s2
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: key is not null (type: boolean)
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col1 (type: string)
       Reduce Operator Tree:
         Join Operator
@@ -309,13 +333,14 @@ STAGE PLANS:
             0 _col1 (type: string)
             1 _col0 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col4
-          Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 550 Data size: 97900 Basic stats: COMPLETE Column stats: NONE
           Group By Operator
-            aggregations: sum(_col2), avg(_col0), count(_col4)
+            aggregations: sum(_col2), count(_col4), sum(_col0), count(_col0)
             keys: _col1 (type: string)
+            minReductionHashAggr: 0.99
             mode: hash
-            outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4
+            Statistics: Num rows: 550 Data size: 97900 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
               table:
@@ -329,27 +354,29 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: string)
+              null sort order: z
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col1 (type: double), _col2 (type: struct<count:bigint,sum:double,input:double>), _col3 (type: bigint)
+              Statistics: Num rows: 550 Data size: 97900 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col1 (type: double), _col2 (type: bigint), _col3 (type: double), _col4 (type: bigint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
-          aggregations: sum(VALUE._col0), avg(VALUE._col1), count(VALUE._col2)
+          aggregations: sum(VALUE._col0), count(VALUE._col1), sum(VALUE._col2), count(VALUE._col3)
           keys: KEY._col0 (type: string)
           mode: mergepartial
-          outputColumnNames: _col0, _col1, _col2, _col3
-          Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4
+          Statistics: Num rows: 275 Data size: 48950 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
-            predicate: ((_col1 <= 4074689.000000041) and (_col2 <= 822.0) and (_col3 > 4)) (type: boolean)
-            Statistics: Num rows: 10 Data size: 106 Basic stats: COMPLETE Column stats: NONE
+            predicate: ((_col1 <= 4074689.000000041D) and (_col2 > 4L) and ((_col3 / _col4) <= 822.0D)) (type: boolean)
+            Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col0 (type: string)
               outputColumnNames: _col0
-              Statistics: Num rows: 10 Data size: 106 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 10 Data size: 106 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -370,6 +397,9 @@ AND (AVG(s1.discount) <= 822)
 AND (COUNT(s2.value) > 4)
 )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@testv1_staples
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT s1.customer_name FROM default.testv1_staples s1 join default.src s2 on s1.customer_name = s2.key
 GROUP BY s1.customer_name, s1.customer_name
@@ -379,6 +409,9 @@ AND (AVG(s1.discount) <= 822)
 AND (COUNT(s2.value) > 4)
 )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@testv1_staples
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -390,35 +423,39 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: s1
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            filterExpr: customer_name is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: customer_name is not null (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: discount (type: double), customer_name (type: string), customer_balance (type: double)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col1 (type: string)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col1 (type: string)
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: double), _col2 (type: double)
           TableScan
             alias: s2
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: key is not null (type: boolean)
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col1 (type: string)
       Reduce Operator Tree:
         Join Operator
@@ -428,13 +465,14 @@ STAGE PLANS:
             0 _col1 (type: string)
             1 _col0 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col4
-          Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 550 Data size: 97900 Basic stats: COMPLETE Column stats: NONE
           Group By Operator
-            aggregations: sum(_col2), avg(_col0), count(_col4)
+            aggregations: sum(_col2), sum(_col0), count(_col0), count(_col4)
             keys: _col1 (type: string)
+            minReductionHashAggr: 0.99
             mode: hash
-            outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4
+            Statistics: Num rows: 550 Data size: 97900 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
               table:
@@ -448,31 +486,33 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: string)
+              null sort order: z
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col1 (type: double), _col2 (type: struct<count:bigint,sum:double,input:double>), _col3 (type: bigint)
+              Statistics: Num rows: 550 Data size: 97900 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col1 (type: double), _col2 (type: double), _col3 (type: bigint), _col4 (type: bigint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
-          aggregations: sum(VALUE._col0), avg(VALUE._col1), count(VALUE._col2)
+          aggregations: sum(VALUE._col0), sum(VALUE._col1), count(VALUE._col2), count(VALUE._col3)
           keys: KEY._col0 (type: string)
           mode: mergepartial
-          outputColumnNames: _col0, _col1, _col2, _col3
-          Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4
+          Statistics: Num rows: 275 Data size: 48950 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: string), _col1 (type: double), _col2 (type: double), _col3 (type: bigint)
-            outputColumnNames: _col1, _col2, _col3, _col4
-            Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+            expressions: _col0 (type: string), _col1 (type: double), _col2 (type: double), _col3 (type: bigint), _col4 (type: bigint)
+            outputColumnNames: _col1, _col2, _col3, _col4, _col5
+            Statistics: Num rows: 275 Data size: 48950 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((_col2 <= 4074689.000000041) and (_col3 <= 822.0) and (_col4 > 4)) (type: boolean)
-              Statistics: Num rows: 10 Data size: 106 Basic stats: COMPLETE Column stats: NONE
+              predicate: ((_col2 <= 4074689.000000041D) and (_col5 > 4L) and ((_col3 / _col4) <= 822.0D)) (type: boolean)
+              Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: _col1 (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 10 Data size: 106 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 10 Data size: 106 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -493,6 +533,9 @@ AND (AVG(s1.discount) <= 822)
 AND (COUNT(s2.value) > 4)
 )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@testv1_staples
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT distinct s1.customer_name as x, s1.customer_name as y
 FROM default.testv1_staples s1 join default.src s2 on s1.customer_name = s2.key
@@ -502,6 +545,9 @@ AND (AVG(s1.discount) <= 822)
 AND (COUNT(s2.value) > 4)
 )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@testv1_staples
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -513,35 +559,39 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: s1
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            filterExpr: customer_name is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: customer_name is not null (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: discount (type: double), customer_name (type: string), customer_balance (type: double)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col1 (type: string)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col1 (type: string)
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: double), _col2 (type: double)
           TableScan
             alias: s2
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: key is not null (type: boolean)
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col1 (type: string)
       Reduce Operator Tree:
         Join Operator
@@ -551,13 +601,14 @@ STAGE PLANS:
             0 _col1 (type: string)
             1 _col0 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col4
-          Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 550 Data size: 97900 Basic stats: COMPLETE Column stats: NONE
           Group By Operator
-            aggregations: sum(_col2), avg(_col0), count(_col4)
+            aggregations: sum(_col2), sum(_col0), count(_col0), count(_col4)
             keys: _col1 (type: string)
+            minReductionHashAggr: 0.99
             mode: hash
-            outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4
+            Statistics: Num rows: 550 Data size: 97900 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
               table:
@@ -571,31 +622,33 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: string)
+              null sort order: z
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col1 (type: double), _col2 (type: struct<count:bigint,sum:double,input:double>), _col3 (type: bigint)
+              Statistics: Num rows: 550 Data size: 97900 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col1 (type: double), _col2 (type: double), _col3 (type: bigint), _col4 (type: bigint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
-          aggregations: sum(VALUE._col0), avg(VALUE._col1), count(VALUE._col2)
+          aggregations: sum(VALUE._col0), sum(VALUE._col1), count(VALUE._col2), count(VALUE._col3)
           keys: KEY._col0 (type: string)
           mode: mergepartial
-          outputColumnNames: _col0, _col1, _col2, _col3
-          Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4
+          Statistics: Num rows: 275 Data size: 48950 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: string), _col1 (type: double), _col2 (type: double), _col3 (type: bigint)
-            outputColumnNames: _col1, _col2, _col3, _col4
-            Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+            expressions: _col0 (type: string), _col1 (type: double), _col2 (type: double), _col3 (type: bigint), _col4 (type: bigint)
+            outputColumnNames: _col1, _col2, _col3, _col4, _col5
+            Statistics: Num rows: 275 Data size: 48950 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((_col2 <= 4074689.000000041) and (_col3 <= 822.0) and (_col4 > 4)) (type: boolean)
-              Statistics: Num rows: 10 Data size: 106 Basic stats: COMPLETE Column stats: NONE
+              predicate: ((_col2 <= 4074689.000000041D) and (_col5 > 4L) and ((_col3 / _col4) <= 822.0D)) (type: boolean)
+              Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: _col1 (type: string), _col1 (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 10 Data size: 106 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 10 Data size: 106 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,11 +17,10 @@
  */
 package org.apache.hadoop.hive.serde2.lazy;
 
-import java.sql.Date;
-import java.sql.Timestamp;
 
-import junit.framework.TestCase;
 
+import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -31,12 +30,16 @@ import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import org.junit.Test;
 
 /**
  * TestLazyPrimitive.
  *
  */
-public class TestLazyPrimitive extends TestCase {
+public class TestLazyPrimitive {
 
   /**
    * Initialize the LazyObject with the parameters, wrapping the byte[]
@@ -52,6 +55,7 @@ public class TestLazyPrimitive extends TestCase {
   /**
    * Test the LazyByte class.
    */
+  @Test
   public void testLazyByte() throws Throwable {
     try {
       LazyByte b = new LazyByte(
@@ -95,6 +99,7 @@ public class TestLazyPrimitive extends TestCase {
   /**
    * Test the LazyShort class.
    */
+  @Test
   public void testLazyShort() throws Throwable {
     try {
       LazyShort b = new LazyShort(
@@ -142,6 +147,7 @@ public class TestLazyPrimitive extends TestCase {
   /**
    * Test the LazyInteger class.
    */
+  @Test
   public void testLazyInteger() throws Throwable {
     try {
       LazyInteger b = new LazyInteger(
@@ -197,6 +203,7 @@ public class TestLazyPrimitive extends TestCase {
   /**
    * Test the LazyLong class.
    */
+  @Test
   public void testLazyLong() throws Throwable {
     try {
       LazyLong b = new LazyLong(
@@ -260,6 +267,7 @@ public class TestLazyPrimitive extends TestCase {
   /**
    * Test the LazyDouble class.
    */
+  @Test
   public void testLazyDouble() throws Throwable {
     try {
       LazyDouble b = new LazyDouble(
@@ -360,6 +368,7 @@ public class TestLazyPrimitive extends TestCase {
   /**
    * Test the LazyString class.
    */
+  @Test
   public void testLazyString() throws Throwable {
     try {
       LazyString b = new LazyString(LazyPrimitiveObjectInspectorFactory
@@ -377,6 +386,7 @@ public class TestLazyPrimitive extends TestCase {
     }
   }
 
+  @Test
   public void testLazyBinary() {
     LazyBinary ba = new LazyBinary(LazyPrimitiveObjectInspectorFactory.LAZY_BINARY_OBJECT_INSPECTOR);
     initLazyObject(ba, new byte[] {}, 0, 0);
@@ -391,6 +401,7 @@ public class TestLazyPrimitive extends TestCase {
     assertEquals(new BytesWritable(new byte[] {'\n'}), ba.getWritableObject());
   }
 
+  @Test
   public void testLazyTimestamp() throws Throwable {
     LazyTimestamp t = new LazyTimestamp(LazyPrimitiveObjectInspectorFactory.LAZY_TIMESTAMP_OBJECT_INSPECTOR);
     String nullDate = "NULL";
@@ -409,6 +420,7 @@ public class TestLazyPrimitive extends TestCase {
     assertEquals(true, t.isNull);
   }
 
+  @Test
   public void testLazyDate() throws Throwable {
     LazyDate t = new LazyDate(LazyPrimitiveObjectInspectorFactory.LAZY_DATE_OBJECT_INSPECTOR);
     String nullDate = "NULL";
@@ -428,6 +440,7 @@ public class TestLazyPrimitive extends TestCase {
 
   }
 
+  @Test
   public void testLazyIntegerWrite() throws Throwable {
     try {
       ByteStream.Output out = new ByteStream.Output();
@@ -448,6 +461,7 @@ public class TestLazyPrimitive extends TestCase {
     }
   }
 
+  @Test
   public void testLazyLongWrite() throws Throwable {
     try {
       ByteStream.Output out = new ByteStream.Output();
@@ -468,4 +482,203 @@ public class TestLazyPrimitive extends TestCase {
     }
   }
 
+  private void testIntCaseWithPass(String strVal, int intVal, boolean trim) {
+    Text text = new Text(strVal);
+    assertEquals(
+        intVal,
+        LazyInteger.parseInt(text.getBytes(), 0, text.getLength(), 10, trim));
+  }
+
+  private void testIntCaseWithFail(String strVal, boolean trim) {
+    Text text = new Text(strVal);
+    try {
+      LazyInteger.parseInt(text.getBytes(), 0, text.getLength(), 10, trim);
+      fail("Expected to fail while parsing '" + strVal + "'");
+    } catch (NumberFormatException err) {
+      // Error was expected
+    }
+  }
+
+  private void testLongCaseWithPass(String strVal, long longVal, boolean trim) {
+    Text text = new Text(strVal);
+    assertEquals(
+        longVal,
+        LazyLong.parseLong(text.getBytes(), 0, text.getLength(), 10, trim));
+  }
+
+  private void testLongCaseWithFail(String strVal, boolean trim) {
+    Text text = new Text(strVal);
+    try {
+      LazyLong.parseLong(text.getBytes(), 0, text.getLength(), 10, trim);
+      fail("Expected to fail while parsing '" + strVal + "'");
+    } catch (NumberFormatException err) {
+      // Error was expected
+    }
+  }
+
+  @Test
+  public void testLazyIntWithSpaces() throws Throwable {
+    Object[][] casesWithoutSpaces = {
+        {"0", 0},
+        {"-128", -128},
+        {"128", 128},
+        {"+128", 128},
+        {"-2147483648", -2147483648},
+        {"2147483647", 2147483647},
+        {"+2147483647", 2147483647},
+    };
+
+    Object[][] casesWithSpaces = {
+        {" 0", 0},
+        {"0 ", 0},
+        {" 0 ", 0},
+        {" -128", -128},
+        {"-128 ", -128},
+        {"   -128   ", -128},
+        {"  128", 128},
+        {"128  ", 128},
+        {"  128  ", 128},
+        {" +128", 128},
+        {"+128 ", 128},
+        {"   +128    ", 128},
+        {"   +128    ", 128},
+        {"   -2147483648", -2147483648},
+        {"-2147483648    ", -2147483648},
+        {"   -2147483648   ", -2147483648},
+        {"  2147483647", 2147483647},
+        {"2147483647  ", 2147483647},
+        {"  2147483647  ", 2147483647},
+        {"   +2147483647", 2147483647},
+        {"+2147483647   ", 2147483647},
+        {"   +2147483647   ", 2147483647},
+    };
+
+    String[] casesWithErrors = {
+        "",
+        "  ",
+        "one",
+        " one ",
+        "123:",
+        "123a",
+        " 123a ",
+        "a123",
+        " a123 ",
+        // Exceeds MAX_VALUE
+        "2147483648",
+        "-2147483649",
+    };
+
+    //
+    // trim=false
+    //
+    boolean trim = false;
+    for (Object[] testCase : casesWithoutSpaces) {
+      testIntCaseWithPass((String) testCase[0], ((Number) testCase[1]).intValue(), trim);
+    }
+    for (Object[] testCase : casesWithSpaces) {
+      // With trim=false, parsing cannot handle spaces
+      testIntCaseWithFail((String) testCase[0], trim);
+    }
+    for (String testCase : casesWithErrors) {
+      testIntCaseWithFail(testCase, trim);
+    }
+
+    //
+    // trim=true
+    //
+    trim = true;
+    for (Object[] testCase : casesWithoutSpaces) {
+      testIntCaseWithPass((String) testCase[0], ((Number) testCase[1]).intValue(), trim);
+    }
+    for (Object[] testCase : casesWithSpaces) {
+      // With trim=true, parsing can handle spaces
+      testIntCaseWithPass((String) testCase[0], ((Number) testCase[1]).intValue(), trim);
+    }
+    for (String testCase : casesWithErrors) {
+      testIntCaseWithFail(testCase, trim);
+    }
+  }
+
+  @Test
+  public void testLazyLongWithSpaces() throws Throwable {
+    Object[][] casesWithoutSpaces = {
+        {"0", 0},
+        {"-128", -128},
+        {"128", 128},
+        {"+128", 128},
+        {"-9223372036854775808", -9223372036854775808L},
+        {"9223372036854775807", 9223372036854775807L},
+        {"+9223372036854775807", 9223372036854775807L},
+    };
+
+    Object[][] casesWithSpaces = {
+        {" 0", 0},
+        {"0 ", 0},
+        {" 0 ", 0},
+        {" -128", -128},
+        {"-128 ", -128},
+        {"   -128   ", -128},
+        {"  128", 128},
+        {"128  ", 128},
+        {"  128  ", 128},
+        {" +128", 128},
+        {"+128 ", 128},
+        {"   +128    ", 128},
+        {"   +128    ", 128},
+        {"   -9223372036854775808", -9223372036854775808L},
+        {"-9223372036854775808    ", -9223372036854775808L},
+        {"   -9223372036854775808   ", -9223372036854775808L},
+        {"  9223372036854775807", 9223372036854775807L},
+        {"9223372036854775807  ", 9223372036854775807L},
+        {"  9223372036854775807  ", 9223372036854775807L},
+        {"   +9223372036854775807", 9223372036854775807L},
+        {"+9223372036854775807   ", 9223372036854775807L},
+        {"   +9223372036854775807   ", 9223372036854775807L},
+    };
+
+    String[] casesWithErrors = {
+        "",
+        "  ",
+        "one",
+        " one ",
+        "123:",
+        "123a",
+        " 123a ",
+        "a123",
+        " a123 ",
+        // Exceeds max value
+        "9223372036854775808",
+        "9223372036854775809",
+    };
+
+    //
+    // trim=false
+    //
+    boolean trim = false;
+    for (Object[] testCase : casesWithoutSpaces) {
+      testLongCaseWithPass((String) testCase[0], ((Number) testCase[1]).longValue(), trim);
+    }
+    for (Object[] testCase : casesWithSpaces) {
+      // With trim=false, parsing cannot handle spaces
+      testLongCaseWithFail((String) testCase[0], trim);
+    }
+    for (String testCase : casesWithErrors) {
+      testLongCaseWithFail(testCase, trim);
+    }
+
+    //
+    // trim=true
+    //
+    trim = true;
+    for (Object[] testCase : casesWithoutSpaces) {
+      testLongCaseWithPass((String) testCase[0], ((Number) testCase[1]).longValue(), trim);
+    }
+    for (Object[] testCase : casesWithSpaces) {
+      // With trim=true, parsing can handle spaces
+      testLongCaseWithPass((String) testCase[0], ((Number) testCase[1]).longValue(), trim);
+    }
+    for (String testCase : casesWithErrors) {
+      testLongCaseWithFail(testCase, trim);
+    }
+  }
 }

@@ -13,12 +13,10 @@ POSTHOOK: query: desc formatted mp
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@mp
 # col_name            	data_type           	comment             
-	 	 
 a                   	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 b                   	int                 	                    
 	 	 
 # Detailed Table Information	 	 
@@ -29,6 +27,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
 	numFiles            	0                   
 	numPartitions       	0                   
 	numRows             	0                   
@@ -60,12 +59,10 @@ POSTHOOK: query: desc formatted mp
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@mp
 # col_name            	data_type           	comment             
-	 	 
 a                   	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 b                   	int                 	                    
 	 	 
 # Detailed Table Information	 	 
@@ -76,6 +73,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
 	numFiles            	0                   
 	numPartitions       	1                   
 	numRows             	0                   
@@ -100,12 +98,10 @@ POSTHOOK: query: desc formatted mp partition (b=1)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@mp
 # col_name            	data_type           	comment             
-	 	 
 a                   	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 b                   	int                 	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -133,11 +129,13 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: insert into mp partition (b=1) values (1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@mp@b=1
 POSTHOOK: query: insert into mp partition (b=1) values (1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@mp@b=1
-POSTHOOK: Lineage: mp PARTITION(b=1).a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: mp PARTITION(b=1).a SCRIPT []
 PREHOOK: query: desc formatted mp
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@mp
@@ -145,12 +143,10 @@ POSTHOOK: query: desc formatted mp
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@mp
 # col_name            	data_type           	comment             
-	 	 
 a                   	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 b                   	int                 	                    
 	 	 
 # Detailed Table Information	 	 
@@ -161,6 +157,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
 	numFiles            	1                   
 	numPartitions       	1                   
 	numRows             	1                   
@@ -185,12 +182,10 @@ POSTHOOK: query: desc formatted mp partition (b=1)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@mp
 # col_name            	data_type           	comment             
-	 	 
 a                   	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 b                   	int                 	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -199,7 +194,7 @@ Database:           	default
 Table:              	mp                  	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\"}}
 	numFiles            	1                   
 	numRows             	1                   
 	rawDataSize         	1                   

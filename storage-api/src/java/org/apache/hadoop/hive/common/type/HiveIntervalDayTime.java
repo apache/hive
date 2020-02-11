@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,16 +18,13 @@
 package org.apache.hadoop.hive.common.type;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.hive.common.util.IntervalDayTimeUtils;
 
-import sun.util.calendar.BaseCalendar;
 
 /**
  * Day-time interval type representing an offset in days/hours/minutes/seconds,
@@ -170,6 +167,7 @@ public class HiveIntervalDayTime implements Comparable<HiveIntervalDayTime> {
   /**
    * Return a copy of this object.
    */
+  @Override
   public Object clone() {
       return new HiveIntervalDayTime(totalSeconds, nanos);
   }

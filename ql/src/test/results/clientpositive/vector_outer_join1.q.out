@@ -120,11 +120,11 @@ POSTHOOK: query: select * from small_alltypesorc3a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@small_alltypesorc3a
 #### A masked pattern was here ####
-NULL	NULL	-1015272448	-1887561756	NULL	NULL	jTQ68531mP	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 15:59:45.854	false	false
-NULL	NULL	-850295959	-1887561756	NULL	NULL	WMIgGA73	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 16:00:00.348	false	false
-NULL	NULL	-886426182	-1887561756	NULL	NULL	0i88xYq3gx1nW4vKjp7vBp3	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 16:00:04.472	true	false
-NULL	NULL	-899422227	-1645852809	NULL	NULL	73xdw4X	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:07.395	false	false
-NULL	NULL	-971543377	-1645852809	NULL	NULL	uN803aW	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:05.43	false	false
+NULL	-16306	384405526	-1645852809	NULL	-16306.0	b5SoK8	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:11.105	true	false
+NULL	-16307	559926362	-1645852809	NULL	-16307.0	nA8bdtWfPPQyP2hL5	xH7445Rals48VOulSyR5F	NULL	1969-12-31 15:59:58.072	false	false
+NULL	-16309	-826497289	-1645852809	NULL	-16309.0	54o058c3mK6ewOQ5	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:10.761	false	false
+NULL	-16310	206154150	1864027286	NULL	-16310.0	5Hy1y6	4KWs6gw7lv2WYd66P	NULL	1969-12-31 16:00:00.821	false	true
+NULL	-16379	-894716315	1864027286	NULL	-16379.0	2ArdYqML3654nUjGJk3	4KWs6gw7lv2WYd66P	NULL	1969-12-31 15:59:47.059	true	true
 PREHOOK: query: select * from small_alltypesorc4a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@small_alltypesorc4a
@@ -184,12 +184,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@small_alltypesorc_a
 POSTHOOK: Output: default@small_alltypesorc_a
 PREHOOK: query: ANALYZE TABLE small_alltypesorc_a COMPUTE STATISTICS FOR COLUMNS
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@small_alltypesorc_a
+PREHOOK: Output: default@small_alltypesorc_a
 #### A masked pattern was here ####
 POSTHOOK: query: ANALYZE TABLE small_alltypesorc_a COMPUTE STATISTICS FOR COLUMNS
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@small_alltypesorc_a
+POSTHOOK: Output: default@small_alltypesorc_a
 #### A masked pattern was here ####
 PREHOOK: query: select * from small_alltypesorc_a
 PREHOOK: type: QUERY
@@ -209,23 +211,27 @@ POSTHOOK: Input: default@small_alltypesorc_a
 -64	-7196	NULL	658026952	-64.0	-7196.0	NULL	4tAur	1969-12-31 15:59:53.866	1969-12-31 15:59:58.174	NULL	true
 -64	-8080	528534767	NULL	-64.0	-8080.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:58.044	1969-12-31 15:59:48.655	true	NULL
 -64	-9842	253665376	NULL	-64.0	-9842.0	1cGVWH7n1QU	NULL	1969-12-31 16:00:00.631	1969-12-31 16:00:01.781	true	NULL
-NULL	NULL	-1015272448	-1887561756	NULL	NULL	jTQ68531mP	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 15:59:45.854	false	false
-NULL	NULL	-850295959	-1887561756	NULL	NULL	WMIgGA73	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 16:00:00.348	false	false
-NULL	NULL	-886426182	-1887561756	NULL	NULL	0i88xYq3gx1nW4vKjp7vBp3	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 16:00:04.472	true	false
-NULL	NULL	-899422227	-1645852809	NULL	NULL	73xdw4X	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:07.395	false	false
-NULL	NULL	-971543377	-1645852809	NULL	NULL	uN803aW	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:05.43	false	false
+NULL	-16306	384405526	-1645852809	NULL	-16306.0	b5SoK8	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:11.105	true	false
+NULL	-16307	559926362	-1645852809	NULL	-16307.0	nA8bdtWfPPQyP2hL5	xH7445Rals48VOulSyR5F	NULL	1969-12-31 15:59:58.072	false	false
+NULL	-16309	-826497289	-1645852809	NULL	-16309.0	54o058c3mK6ewOQ5	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:10.761	false	false
+NULL	-16310	206154150	1864027286	NULL	-16310.0	5Hy1y6	4KWs6gw7lv2WYd66P	NULL	1969-12-31 16:00:00.821	false	true
+NULL	-16379	-894716315	1864027286	NULL	-16379.0	2ArdYqML3654nUjGJk3	4KWs6gw7lv2WYd66P	NULL	1969-12-31 15:59:47.059	true	true
 PREHOOK: query: explain vectorization detail
 select * 
 from small_alltypesorc_a c
 left outer join small_alltypesorc_a cd
   on cd.cint = c.cint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@small_alltypesorc_a
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select * 
 from small_alltypesorc_a c
 left outer join small_alltypesorc_a cd
   on cd.cint = c.cint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@small_alltypesorc_a
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -246,33 +252,37 @@ STAGE PLANS:
         $hdt$_1:cd 
           TableScan
             alias: cd
-            Statistics: Num rows: 15 Data size: 3320 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: ctinyint (type: tinyint), csmallint (type: smallint), cint (type: int), cbigint (type: bigint), cfloat (type: float), cdouble (type: double), cstring1 (type: string), cstring2 (type: string), ctimestamp1 (type: timestamp), ctimestamp2 (type: timestamp), cboolean1 (type: boolean), cboolean2 (type: boolean)
-              outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
-              Statistics: Num rows: 15 Data size: 3320 Basic stats: COMPLETE Column stats: NONE
-              HashTable Sink Operator
-                keys:
-                  0 _col2 (type: int)
-                  1 _col2 (type: int)
+            filterExpr: cint is not null (type: boolean)
+            Statistics: Num rows: 15 Data size: 3545 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: cint is not null (type: boolean)
+              Statistics: Num rows: 10 Data size: 2520 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: ctinyint (type: tinyint), csmallint (type: smallint), cint (type: int), cbigint (type: bigint), cfloat (type: float), cdouble (type: double), cstring1 (type: string), cstring2 (type: string), ctimestamp1 (type: timestamp), ctimestamp2 (type: timestamp), cboolean1 (type: boolean), cboolean2 (type: boolean)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                Statistics: Num rows: 10 Data size: 2520 Basic stats: COMPLETE Column stats: COMPLETE
+                HashTable Sink Operator
+                  keys:
+                    0 _col2 (type: int)
+                    1 _col2 (type: int)
 
   Stage: Stage-3
     Map Reduce
       Map Operator Tree:
           TableScan
             alias: c
-            Statistics: Num rows: 15 Data size: 3320 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 15 Data size: 3545 Basic stats: COMPLETE Column stats: COMPLETE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+                vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: ctinyint (type: tinyint), csmallint (type: smallint), cint (type: int), cbigint (type: bigint), cfloat (type: float), cdouble (type: double), cstring1 (type: string), cstring2 (type: string), ctimestamp1 (type: timestamp), ctimestamp2 (type: timestamp), cboolean1 (type: boolean), cboolean2 (type: boolean)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
-                  projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
-              Statistics: Num rows: 15 Data size: 3320 Basic stats: COMPLETE Column stats: NONE
+                  projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+              Statistics: Num rows: 15 Data size: 3545 Basic stats: COMPLETE Column stats: COMPLETE
               Map Join Operator
                 condition map:
                      Left Outer Join 0 to 1
@@ -280,18 +290,20 @@ STAGE PLANS:
                   0 _col2 (type: int)
                   1 _col2 (type: int)
                 Map Join Vectorization:
+                    bigTableKeyExpressions: col 2:int
+                    bigTableValueExpressions: col 0:tinyint, col 1:smallint, col 2:int, col 3:bigint, col 4:float, col 5:double, col 6:string, col 7:string, col 8:timestamp, col 9:timestamp, col 10:boolean, col 11:boolean
                     className: VectorMapJoinOperator
                     native: false
-                    nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                    nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Outer Join has keys IS true, Optimized Table and Supports Key Types IS true
                     nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23
-                Statistics: Num rows: 16 Data size: 3652 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 33 Data size: 14099 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 16 Data size: 3652 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 33 Data size: 14099 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -300,7 +312,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -310,7 +323,7 @@ STAGE PLANS:
               includeColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
               dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
               partitionColumnCount: 0
-              scratchColumnTypeNames: bigint, bigint, bigint, bigint, double, double, string, string, timestamp, timestamp, bigint, bigint
+              scratchColumnTypeNames: [bigint, bigint, bigint, bigint, double, double, string, string, timestamp, timestamp, bigint, bigint]
       Local Work:
         Map Reduce Local Work
 
@@ -348,23 +361,27 @@ POSTHOOK: Input: default@small_alltypesorc_a
 -64	-8080	528534767	NULL	-64.0	-8080.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:58.044	1969-12-31 15:59:48.655	true	NULL	-64	-8080	528534767	NULL	-64.0	-8080.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:58.044	1969-12-31 15:59:48.655	true	NULL
 -64	-9842	253665376	NULL	-64.0	-9842.0	1cGVWH7n1QU	NULL	1969-12-31 16:00:00.631	1969-12-31 16:00:01.781	true	NULL	-64	-6907	253665376	NULL	-64.0	-6907.0	1cGVWH7n1QU	NULL	NULL	1969-12-31 15:59:53.66	true	NULL
 -64	-9842	253665376	NULL	-64.0	-9842.0	1cGVWH7n1QU	NULL	1969-12-31 16:00:00.631	1969-12-31 16:00:01.781	true	NULL	-64	-9842	253665376	NULL	-64.0	-9842.0	1cGVWH7n1QU	NULL	1969-12-31 16:00:00.631	1969-12-31 16:00:01.781	true	NULL
-NULL	NULL	-1015272448	-1887561756	NULL	NULL	jTQ68531mP	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 15:59:45.854	false	false	NULL	NULL	-1015272448	-1887561756	NULL	NULL	jTQ68531mP	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 15:59:45.854	false	false
-NULL	NULL	-850295959	-1887561756	NULL	NULL	WMIgGA73	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 16:00:00.348	false	false	NULL	NULL	-850295959	-1887561756	NULL	NULL	WMIgGA73	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 16:00:00.348	false	false
-NULL	NULL	-886426182	-1887561756	NULL	NULL	0i88xYq3gx1nW4vKjp7vBp3	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 16:00:04.472	true	false	NULL	NULL	-886426182	-1887561756	NULL	NULL	0i88xYq3gx1nW4vKjp7vBp3	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 16:00:04.472	true	false
-NULL	NULL	-899422227	-1645852809	NULL	NULL	73xdw4X	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:07.395	false	false	NULL	NULL	-899422227	-1645852809	NULL	NULL	73xdw4X	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:07.395	false	false
-NULL	NULL	-971543377	-1645852809	NULL	NULL	uN803aW	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:05.43	false	false	NULL	NULL	-971543377	-1645852809	NULL	NULL	uN803aW	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:05.43	false	false
+NULL	-16306	384405526	-1645852809	NULL	-16306.0	b5SoK8	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:11.105	true	false	NULL	-16306	384405526	-1645852809	NULL	-16306.0	b5SoK8	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:11.105	true	false
+NULL	-16307	559926362	-1645852809	NULL	-16307.0	nA8bdtWfPPQyP2hL5	xH7445Rals48VOulSyR5F	NULL	1969-12-31 15:59:58.072	false	false	NULL	-16307	559926362	-1645852809	NULL	-16307.0	nA8bdtWfPPQyP2hL5	xH7445Rals48VOulSyR5F	NULL	1969-12-31 15:59:58.072	false	false
+NULL	-16309	-826497289	-1645852809	NULL	-16309.0	54o058c3mK6ewOQ5	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:10.761	false	false	NULL	-16309	-826497289	-1645852809	NULL	-16309.0	54o058c3mK6ewOQ5	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:10.761	false	false
+NULL	-16310	206154150	1864027286	NULL	-16310.0	5Hy1y6	4KWs6gw7lv2WYd66P	NULL	1969-12-31 16:00:00.821	false	true	NULL	-16310	206154150	1864027286	NULL	-16310.0	5Hy1y6	4KWs6gw7lv2WYd66P	NULL	1969-12-31 16:00:00.821	false	true
+NULL	-16379	-894716315	1864027286	NULL	-16379.0	2ArdYqML3654nUjGJk3	4KWs6gw7lv2WYd66P	NULL	1969-12-31 15:59:47.059	true	true	NULL	-16379	-894716315	1864027286	NULL	-16379.0	2ArdYqML3654nUjGJk3	4KWs6gw7lv2WYd66P	NULL	1969-12-31 15:59:47.059	true	true
 PREHOOK: query: explain vectorization detail
 select c.ctinyint 
 from small_alltypesorc_a c
 left outer join small_alltypesorc_a hd
   on hd.ctinyint = c.ctinyint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@small_alltypesorc_a
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select c.ctinyint 
 from small_alltypesorc_a c
 left outer join small_alltypesorc_a hd
   on hd.ctinyint = c.ctinyint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@small_alltypesorc_a
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -385,33 +402,37 @@ STAGE PLANS:
         $hdt$_1:hd 
           TableScan
             alias: hd
-            Statistics: Num rows: 15 Data size: 3320 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: ctinyint (type: tinyint)
-              outputColumnNames: _col0
-              Statistics: Num rows: 15 Data size: 3320 Basic stats: COMPLETE Column stats: NONE
-              HashTable Sink Operator
-                keys:
-                  0 _col0 (type: tinyint)
-                  1 _col0 (type: tinyint)
+            filterExpr: ctinyint is not null (type: boolean)
+            Statistics: Num rows: 15 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: ctinyint is not null (type: boolean)
+              Statistics: Num rows: 10 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: ctinyint (type: tinyint)
+                outputColumnNames: _col0
+                Statistics: Num rows: 10 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                HashTable Sink Operator
+                  keys:
+                    0 _col0 (type: tinyint)
+                    1 _col0 (type: tinyint)
 
   Stage: Stage-3
     Map Reduce
       Map Operator Tree:
           TableScan
             alias: c
-            Statistics: Num rows: 15 Data size: 3320 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 15 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+                vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: ctinyint (type: tinyint)
               outputColumnNames: _col0
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
-                  projectedOutputColumns: [0]
-              Statistics: Num rows: 15 Data size: 3320 Basic stats: COMPLETE Column stats: NONE
+                  projectedOutputColumnNums: [0]
+              Statistics: Num rows: 15 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
               Map Join Operator
                 condition map:
                      Left Outer Join 0 to 1
@@ -419,18 +440,20 @@ STAGE PLANS:
                   0 _col0 (type: tinyint)
                   1 _col0 (type: tinyint)
                 Map Join Vectorization:
+                    bigTableKeyExpressions: col 0:tinyint
+                    bigTableValueExpressions: col 0:tinyint
                     className: VectorMapJoinOperator
                     native: false
-                    nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                    nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Outer Join has keys IS true, Optimized Table and Supports Key Types IS true
                     nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
                 outputColumnNames: _col0
-                Statistics: Num rows: 16 Data size: 3652 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 150 Data size: 584 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 16 Data size: 3652 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 150 Data size: 584 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -439,7 +462,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -449,6 +473,7 @@ STAGE PLANS:
               includeColumns: [0]
               dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
               partitionColumnCount: 0
+              scratchColumnTypeNames: []
       Local Work:
         Map Reduce Local Work
 
@@ -586,6 +611,8 @@ left outer join small_alltypesorc_a hd
   on hd.ctinyint = c.ctinyint
 ) t1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@small_alltypesorc_a
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select count(*), sum(t1.c_ctinyint) from (select c.ctinyint as c_ctinyint
 from small_alltypesorc_a c
@@ -595,6 +622,8 @@ left outer join small_alltypesorc_a hd
   on hd.ctinyint = c.ctinyint
 ) t1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@small_alltypesorc_a
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -618,45 +647,53 @@ STAGE PLANS:
         $hdt$_1:cd 
           TableScan
             alias: cd
-            Statistics: Num rows: 15 Data size: 3320 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: cint (type: int)
-              outputColumnNames: _col0
-              Statistics: Num rows: 15 Data size: 3320 Basic stats: COMPLETE Column stats: NONE
-              HashTable Sink Operator
-                keys:
-                  0 _col1 (type: int)
-                  1 _col0 (type: int)
+            filterExpr: cint is not null (type: boolean)
+            Statistics: Num rows: 15 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: cint is not null (type: boolean)
+              Statistics: Num rows: 10 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: cint (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 10 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                HashTable Sink Operator
+                  keys:
+                    0 _col1 (type: int)
+                    1 _col0 (type: int)
         $hdt$_2:hd 
           TableScan
             alias: hd
-            Statistics: Num rows: 15 Data size: 3320 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: ctinyint (type: tinyint)
-              outputColumnNames: _col0
-              Statistics: Num rows: 15 Data size: 3320 Basic stats: COMPLETE Column stats: NONE
-              HashTable Sink Operator
-                keys:
-                  0 _col0 (type: tinyint)
-                  1 _col0 (type: tinyint)
+            filterExpr: ctinyint is not null (type: boolean)
+            Statistics: Num rows: 15 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: ctinyint is not null (type: boolean)
+              Statistics: Num rows: 10 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: ctinyint (type: tinyint)
+                outputColumnNames: _col0
+                Statistics: Num rows: 10 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                HashTable Sink Operator
+                  keys:
+                    0 _col0 (type: tinyint)
+                    1 _col0 (type: tinyint)
 
   Stage: Stage-3
     Map Reduce
       Map Operator Tree:
           TableScan
             alias: c
-            Statistics: Num rows: 15 Data size: 3320 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 15 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+                vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: ctinyint (type: tinyint), cint (type: int)
               outputColumnNames: _col0, _col1
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
-                  projectedOutputColumns: [0, 2]
-              Statistics: Num rows: 15 Data size: 3320 Basic stats: COMPLETE Column stats: NONE
+                  projectedOutputColumnNums: [0, 2]
+              Statistics: Num rows: 15 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
               Map Join Operator
                 condition map:
                      Left Outer Join 0 to 1
@@ -664,12 +701,14 @@ STAGE PLANS:
                   0 _col1 (type: int)
                   1 _col0 (type: int)
                 Map Join Vectorization:
+                    bigTableKeyExpressions: col 2:int
+                    bigTableValueExpressions: col 0:tinyint
                     className: VectorMapJoinOperator
                     native: false
-                    nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                    nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Outer Join has keys IS true, Optimized Table and Supports Key Types IS true
                     nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
                 outputColumnNames: _col0
-                Statistics: Num rows: 16 Data size: 3652 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 22 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
                 Map Join Operator
                   condition map:
                        Left Outer Join 0 to 1
@@ -677,39 +716,43 @@ STAGE PLANS:
                     0 _col0 (type: tinyint)
                     1 _col0 (type: tinyint)
                   Map Join Vectorization:
+                      bigTableKeyExpressions: col 0:tinyint
+                      bigTableValueExpressions: col 0:tinyint
                       className: VectorMapJoinOperator
                       native: false
-                      nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                      nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Outer Join has keys IS true, Optimized Table and Supports Key Types IS true
                       nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
                   outputColumnNames: _col0
-                  Statistics: Num rows: 17 Data size: 4017 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 220 Data size: 864 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count(), sum(_col0)
                     Group By Vectorization:
-                        aggregators: VectorUDAFCountStar(*) -> bigint, VectorUDAFSumLong(col 0) -> bigint
+                        aggregators: VectorUDAFCountStar(*) -> bigint, VectorUDAFSumLong(col 0:tinyint) -> bigint
                         className: VectorGroupByOperator
                         groupByMode: HASH
-                        vectorOutput: true
                         native: false
                         vectorProcessingMode: HASH
-                        projectedOutputColumns: [0, 1]
+                        projectedOutputColumnNums: [0, 1]
+                    minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
+                      null sort order: 
                       sort order: 
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkOperator
                           native: false
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
-                      Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: bigint), _col1 (type: bigint)
       Execution mode: vectorized
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -719,6 +762,7 @@ STAGE PLANS:
               includeColumns: [0, 2]
               dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
               partitionColumnCount: 0
+              scratchColumnTypeNames: []
       Local Work:
         Map Reduce Local Work
       Reduce Vectorization:
@@ -728,18 +772,12 @@ STAGE PLANS:
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0), sum(VALUE._col1)
-          Group By Vectorization:
-              groupByMode: MERGEPARTIAL
-              vectorOutput: false
-              native: false
-              vectorProcessingMode: NONE
-              projectedOutputColumns: null
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

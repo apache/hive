@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableTimestamp
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableTimestampLocalTZObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.VoidObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableStringObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 
 /**
  * ObjectInspectorConverters.
@@ -75,6 +76,12 @@ public final class ObjectInspectorConverters {
   private static Converter getConverter(PrimitiveObjectInspector inputOI,
       PrimitiveObjectInspector outputOI) {
     switch (outputOI.getPrimitiveCategory()) {
+    case VOID:
+      if (!outputOI.getTypeInfo().equals(inputOI.getTypeInfo())) {
+        throw new RuntimeException("Hive internal error: conversion of "
+            + inputOI.getTypeName() + " to void not possible.");
+      }
+      return new IdentityConverter();
     case BOOLEAN:
       return new PrimitiveObjectInspectorConverter.BooleanConverter(
           inputOI,
@@ -111,6 +118,7 @@ public final class ObjectInspectorConverters {
         return new PrimitiveObjectInspectorConverter.StringConverter(
             inputOI);
       }
+      break;
     case CHAR:
       return new PrimitiveObjectInspectorConverter.HiveCharConverter(
           inputOI,
@@ -147,11 +155,10 @@ public final class ObjectInspectorConverters {
       return new PrimitiveObjectInspectorConverter.HiveDecimalConverter(
           inputOI,
           (SettableHiveDecimalObjectInspector) outputOI);
-    default:
-      throw new RuntimeException("Hive internal error: conversion of "
-          + inputOI.getTypeName() + " to " + outputOI.getTypeName()
-          + " not supported yet.");
     }
+    throw new RuntimeException("Hive internal error: conversion of "
+            + inputOI.getTypeName() + " to " + outputOI.getTypeName()
+            + " not supported yet.");
   }
 
   /**
@@ -471,7 +478,7 @@ public final class ObjectInspectorConverters {
       }
 
       Object inputFieldValue = inputOI.getField(input);
-      Object inputFieldTag = inputOI.getTag(input);
+      byte inputFieldTag = inputOI.getTag(input);
       Object outputFieldValue = null;
 
       int inputFieldTagIndex = ((Byte)inputFieldTag).intValue();
@@ -480,7 +487,7 @@ public final class ObjectInspectorConverters {
          outputFieldValue = fieldConverters.get(inputFieldTagIndex).convert(inputFieldValue);
       }
 
-      outputOI.addField(output, outputFieldValue);
+      outputOI.setFieldAndTag(output, outputFieldValue, inputFieldTag);
 
       return output;
     }

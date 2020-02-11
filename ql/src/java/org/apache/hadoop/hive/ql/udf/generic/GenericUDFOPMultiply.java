@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressionsSupportDecimal64;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.*;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -34,13 +35,21 @@ import org.apache.hadoop.io.LongWritable;
 
 @Description(name = "*", value = "a _FUNC_ b - Multiplies a by b")
 @VectorizedExpressions({LongColMultiplyLongColumn.class, LongColMultiplyDoubleColumn.class,
+    LongColMultiplyLongColumnChecked.class, LongColMultiplyDoubleColumnChecked.class,
   DoubleColMultiplyLongColumn.class, DoubleColMultiplyDoubleColumn.class,
+    DoubleColMultiplyLongColumnChecked.class, DoubleColMultiplyDoubleColumnChecked.class,
   LongColMultiplyLongScalar.class, LongColMultiplyDoubleScalar.class,
+    LongColMultiplyLongScalarChecked.class, LongColMultiplyDoubleScalarChecked.class,
   DoubleColMultiplyLongScalar.class, DoubleColMultiplyDoubleScalar.class,
+    DoubleColMultiplyLongScalarChecked.class, DoubleColMultiplyDoubleScalarChecked.class,
   LongScalarMultiplyLongColumn.class, LongScalarMultiplyDoubleColumn.class,
+    LongScalarMultiplyLongColumnChecked.class, LongScalarMultiplyDoubleColumnChecked.class,
   DoubleScalarMultiplyLongColumn.class, DoubleScalarMultiplyDoubleColumn.class,
+    DoubleScalarMultiplyLongColumnChecked.class, DoubleScalarMultiplyDoubleColumnChecked.class,
   DecimalColMultiplyDecimalColumn.class, DecimalColMultiplyDecimalScalar.class,
-  DecimalScalarMultiplyDecimalColumn.class})
+    DecimalScalarMultiplyDecimalColumn.class, Decimal64ColMultiplyDecimal64ScalarUnscaled.class,
+  Decimal64ColMultiplyDecimal64Column.class, Decimal64ScalarMultiplyDecimal64ColumnUnscaled.class})
+@VectorizedExpressionsSupportDecimal64()
 public class GenericUDFOPMultiply extends GenericUDFBaseNumeric {
 
   public GenericUDFOPMultiply() {

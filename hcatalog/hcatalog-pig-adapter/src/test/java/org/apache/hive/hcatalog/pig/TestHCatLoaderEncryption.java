@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,6 +18,24 @@
  */
 package org.apache.hive.hcatalog.pig;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
+
+import java.io.File;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -25,15 +43,15 @@ import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.cli.CliSessionState;
+import org.apache.hadoop.hive.common.io.SessionStream;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
-import org.apache.hadoop.hive.ql.Driver;
-import org.apache.hadoop.hive.ql.io.IOConstants;
+import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.ql.DriverFactory;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.io.StorageFormats;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.processors.HiveCommand;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.HadoopShims;
@@ -44,13 +62,12 @@ import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
-import org.apache.hadoop.util.Shell;
 import org.apache.hive.hcatalog.HcatTestUtils;
 import org.apache.hive.hcatalog.common.HCatUtil;
 import org.apache.hive.hcatalog.data.HCatRecord;
 import org.apache.hive.hcatalog.data.Pair;
+import org.apache.hive.hcatalog.mapreduce.HCatBaseTest;
 import org.apache.hive.hcatalog.mapreduce.HCatInputFormat;
-import org.apache.pig.ExecType;
 import org.apache.pig.PigServer;
 import org.apache.pig.data.Tuple;
 import org.junit.After;
@@ -61,27 +78,9 @@ import org.junit.runners.Parameterized;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeTrue;
-
 @RunWith(Parameterized.class)
 public class TestHCatLoaderEncryption {
+
   private static final AtomicInteger salt = new AtomicInteger(new Random().nextInt());
   private static final Logger LOG = LoggerFactory.getLogger(TestHCatLoaderEncryption.class);
   private final String TEST_DATA_DIR = HCatUtil.makePathASafeFileName(System.getProperty
@@ -94,9 +93,8 @@ public class TestHCatLoaderEncryption {
   private static final String SECURITY_KEY_PROVIDER_URI_NAME = "dfs.encryption.key.provider.uri";
 
   private HadoopShims.MiniDFSShim dfs = null;
-  private HadoopShims.HdfsEncryptionShim hes = null;
   private final String[] testOnlyCommands = new String[]{"crypto"};
-  private Driver driver;
+  private IDriver driver;
   private Map<Integer, Pair<Integer, String>> basicInputData;
   private static List<HCatRecord> readRecords = new ArrayList<HCatRecord>();
 
@@ -114,20 +112,20 @@ public class TestHCatLoaderEncryption {
     this.storageFormat = storageFormat;
   }
 
-  private void dropTable(String tablename) throws IOException, CommandNeedRetryException {
+  private void dropTable(String tablename) throws Exception {
     dropTable(tablename, driver);
   }
 
-  static void dropTable(String tablename, Driver driver) throws IOException, CommandNeedRetryException {
+  static void dropTable(String tablename, IDriver driver) throws Exception {
     driver.run("drop table if exists " + tablename);
   }
 
-  private void createTable(String tablename, String schema, String partitionedBy) throws IOException, CommandNeedRetryException {
+  private void createTable(String tablename, String schema, String partitionedBy) throws Exception {
     createTable(tablename, schema, partitionedBy, driver, storageFormat);
   }
 
-  static void createTable(String tablename, String schema, String partitionedBy, Driver driver, String storageFormat)
-      throws IOException, CommandNeedRetryException {
+  static void createTable(String tablename, String schema, String partitionedBy, IDriver driver, String storageFormat)
+      throws Exception {
     String createTable;
     createTable = "create table " + tablename + "(" + schema + ") ";
     if ((partitionedBy != null) && (!partitionedBy.trim().isEmpty())) {
@@ -137,7 +135,7 @@ public class TestHCatLoaderEncryption {
     executeStatementOnDriver(createTable, driver);
   }
 
-  private void createTable(String tablename, String schema) throws IOException, CommandNeedRetryException {
+  private void createTable(String tablename, String schema) throws Exception {
     createTable(tablename, schema, null);
   }
 
@@ -145,12 +143,9 @@ public class TestHCatLoaderEncryption {
    * Execute Hive CLI statement
    * @param cmd arbitrary statement to execute
    */
-  static void executeStatementOnDriver(String cmd, Driver driver) throws IOException, CommandNeedRetryException {
+  static void executeStatementOnDriver(String cmd, IDriver driver) throws Exception {
     LOG.debug("Executing: " + cmd);
-    CommandProcessorResponse cpr = driver.run(cmd);
-    if(cpr.getResponseCode() != 0) {
-      throw new IOException("Failed to execute \"" + cmd + "\". Driver returned " + cpr.getResponseCode() + " Error: " + cpr.getErrorMessage());
-    }
+    driver.run(cmd);
   }
 
   @Before
@@ -175,18 +170,18 @@ public class TestHCatLoaderEncryption {
     String s = hiveConf.get("hdfs.minidfs.basedir");
     if(s == null || s.length() <= 0) {
       //return System.getProperty("test.build.data", "build/test/data") + "/dfs/";
-      hiveConf.set("hdfs.minidfs.basedir", 
+      hiveConf.set("hdfs.minidfs.basedir",
         System.getProperty("test.build.data", "build/test/data") + "_" + System.currentTimeMillis() +
           "_" + salt.getAndIncrement() + "/dfs/");
     }
-
-    driver = new Driver(hiveConf);
 
     initEncryptionShim(hiveConf);
     String encryptedTablePath =  TEST_WAREHOUSE_DIR + "/encryptedTable";
     SessionState.start(new CliSessionState(hiveConf));
 
-    SessionState.get().out = System.out;
+    driver = DriverFactory.newDriver(hiveConf);
+
+    SessionState.get().out = new SessionStream(System.out);
 
     createTable(BASIC_TABLE, "a int, b string");
     createTableInSpecifiedPath(ENCRYPTED_TABLE, "a int, b string",
@@ -208,7 +203,7 @@ public class TestHCatLoaderEncryption {
       }
     }
     HcatTestUtils.createTestDataFile(BASIC_FILE_NAME, input);
-    PigServer server = new PigServer(ExecType.LOCAL);
+    PigServer server = HCatBaseTest.createPigServer(false);
     server.setBatchOn();
     int i = 0;
     server.registerQuery("A = load '" + BASIC_FILE_NAME + "' as (a:int, b:chararray);", ++i);
@@ -225,7 +220,7 @@ public class TestHCatLoaderEncryption {
     fs = dfs.getFileSystem();
 
     // set up a java key provider for encrypted hdfs cluster
-    hes = shims.createHdfsEncryptionShim(fs, conf);
+    shims.createHdfsEncryptionShim(fs, conf);
   }
 
   public static String ensurePathEndsInSlash(String path) {
@@ -239,32 +234,35 @@ public class TestHCatLoaderEncryption {
     }
   }
 
-  private void associateEncryptionZoneWithPath(String path) throws SQLException, CommandNeedRetryException {
+  private void associateEncryptionZoneWithPath(String path) throws Exception {
     LOG.info(this.storageFormat + ": associateEncryptionZoneWithPath");
     assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
     enableTestOnlyCmd(SessionState.get().getConf());
     CommandProcessor crypto = getTestCommand("crypto");
-    if (crypto == null) return;
-    checkExecutionResponse(crypto.run("CREATE_KEY --keyName key_128 --bitLength 128"));
-    checkExecutionResponse(crypto.run("CREATE_ZONE --keyName key_128 --path " + path));
-  }
-
-  private void checkExecutionResponse(CommandProcessorResponse response) {
-    int rc = response.getResponseCode();
-    if (rc != 0) {
-      SessionState.get().out.println(response);
+    if (crypto == null) {
+      return;
     }
-    assertEquals("Crypto command failed with the exit code" + rc, 0, rc);
+    checkExecutionResponse(crypto, "CREATE_KEY --keyName key_128 --bitLength 128");
+    checkExecutionResponse(crypto, "CREATE_ZONE --keyName key_128 --path " + path);
   }
 
-  private void removeEncryptionZone() throws SQLException, CommandNeedRetryException {
+  private void checkExecutionResponse(CommandProcessor processor, String command) {
+    try {
+      processor.run(command);
+    } catch (CommandProcessorException e) {
+      SessionState.get().out.println(e);
+      assertTrue("Crypto command failed with the exit code " + e.getResponseCode(), false);
+    }
+  }
+
+  private void removeEncryptionZone() throws Exception {
     LOG.info(this.storageFormat + ": removeEncryptionZone");
     enableTestOnlyCmd(SessionState.get().getConf());
     CommandProcessor crypto = getTestCommand("crypto");
     if (crypto == null) {
       return;
     }
-    checkExecutionResponse(crypto.run("DELETE_KEY --keyName key_128"));
+    checkExecutionResponse(crypto, "DELETE_KEY --keyName key_128");
   }
 
   private CommandProcessor getTestCommand(final String commandName) throws SQLException {
@@ -300,7 +298,7 @@ public class TestHCatLoaderEncryption {
   @Test
   public void testReadDataFromEncryptedHiveTableByPig() throws IOException {
     assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
-    PigServer server = new PigServer(ExecType.LOCAL);
+    PigServer server = HCatBaseTest.createPigServer(false);
 
     server.registerQuery("X = load '" + ENCRYPTED_TABLE + "' using org.apache.hive.hcatalog.pig.HCatLoader();");
     Iterator<Tuple> XIter = server.openIterator("X");
@@ -333,7 +331,7 @@ public class TestHCatLoaderEncryption {
     job.setInputFormatClass(HCatInputFormat.class);
     job.setOutputFormatClass(TextOutputFormat.class);
 
-    HCatInputFormat.setInput(job, MetaStoreUtils.DEFAULT_DATABASE_NAME, ENCRYPTED_TABLE, null);
+    HCatInputFormat.setInput(job, Warehouse.DEFAULT_DATABASE_NAME, ENCRYPTED_TABLE, null);
 
     job.setMapOutputKeyClass(BytesWritable.class);
     job.setMapOutputValueClass(Text.class);
@@ -396,7 +394,8 @@ public class TestHCatLoaderEncryption {
     }
   }
 
-  static void createTableInSpecifiedPath(String tableName, String schema, String path, Driver driver) throws IOException, CommandNeedRetryException {
+  static void createTableInSpecifiedPath(String tableName, String schema, String path, IDriver driver)
+      throws Exception {
     String createTableStr;
     createTableStr = "create table " + tableName + "(" + schema + ") location \'" + path + "\'";
     executeStatementOnDriver(createTableStr, driver);

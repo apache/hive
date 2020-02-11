@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -29,10 +29,11 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Appender;
-import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.appender.FileAppender;
+import org.apache.logging.log4j.core.appender.RollingFileAppender;
 import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.RollingRandomAccessFileAppender;
 import org.apache.logging.log4j.core.appender.routing.RoutingAppender;
-import org.apache.logging.log4j.core.config.AppenderControl;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.impl.Log4jContextFactory;
@@ -218,10 +219,13 @@ public class LogUtils {
    * Register logging context so that log system can print QueryId, SessionId, etc for each message
    */
   public static void registerLoggingContext(Configuration conf) {
-    MDC.put(SESSIONID_LOG_KEY, HiveConf.getVar(conf, HiveConf.ConfVars.HIVESESSIONID));
-    MDC.put(QUERYID_LOG_KEY, HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID));
     if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_ENABLED)) {
+      MDC.put(SESSIONID_LOG_KEY, HiveConf.getVar(conf, HiveConf.ConfVars.HIVESESSIONID));
+      MDC.put(QUERYID_LOG_KEY, HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID));
       MDC.put(OPERATIONLOG_LEVEL_KEY, HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL));
+      l4j.info("Thread context registration is done.");
+    } else {
+      l4j.info("Thread context registration is skipped.");
     }
   }
 
@@ -229,7 +233,33 @@ public class LogUtils {
    * Unregister logging context
    */
   public static void unregisterLoggingContext() {
-    MDC.clear();
+    // Remove the keys added, don't use clear, as it may clear all other things which are not intended to be removed.
+    MDC.remove(SESSIONID_LOG_KEY);
+    MDC.remove(QUERYID_LOG_KEY);
+    MDC.remove(OPERATIONLOG_LEVEL_KEY);
+    l4j.info("Unregistered logging context.");
+  }
+
+  /**
+   * Get path of the log file for user to see on the WebUI.
+   */
+  public static String getLogFilePath() {
+    String logFilePath = null;
+    org.apache.logging.log4j.Logger rootLogger = LogManager.getRootLogger();
+    if (rootLogger instanceof org.apache.logging.log4j.core.Logger) {
+      org.apache.logging.log4j.core.Logger coreLogger =
+          (org.apache.logging.log4j.core.Logger)rootLogger;
+      for (Appender appender : coreLogger.getAppenders().values()) {
+        if (appender instanceof FileAppender) {
+          logFilePath = ((FileAppender) appender).getFileName();
+        } else if (appender instanceof RollingFileAppender) {
+          logFilePath = ((RollingFileAppender) appender).getFileName();
+        } else if (appender instanceof RollingRandomAccessFileAppender) {
+          logFilePath = ((RollingRandomAccessFileAppender) appender).getFileName();
+        }
+      }
+    }
+    return logFilePath;
   }
 
   /**
@@ -248,14 +278,9 @@ public class LogUtils {
       // The appender is configured to use ${ctx:queryId} by registerRoutingAppender()
       try {
         Class<? extends RoutingAppender> clazz = routingAppender.getClass();
-        Method method = clazz.getDeclaredMethod("getControl", String.class, LogEvent.class);
+        Method method = clazz.getDeclaredMethod("deleteAppender", String.class);
         method.setAccessible(true);
-        AppenderControl control = (AppenderControl) method.invoke(routingAppender, queryId, null);
-        Appender subordinateAppender = control.getAppender();
-        if (!subordinateAppender.isStopped()) {
-          // this will cause the subordinate appender to close its output stream.
-          subordinateAppender.stop();
-        }
+        method.invoke(routingAppender, queryId);
       } catch (NoSuchMethodException | SecurityException | IllegalAccessException |
           IllegalArgumentException | InvocationTargetException e) {
         l4j.warn("Unable to close the operation log appender for query id " + queryId, e);

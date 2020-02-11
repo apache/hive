@@ -17,8 +17,6 @@
  */
 package org.apache.hadoop.hive.llap.io.encoded;
 
-import org.apache.orc.impl.MemoryManager;
-
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.security.PrivilegedExceptionAction;
@@ -29,6 +27,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -36,18 +35,18 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.Pool.PoolObjectHelper;
 import org.apache.hadoop.hive.common.io.Allocator;
 import org.apache.hadoop.hive.common.io.Allocator.BufferObjectFactory;
+import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.common.io.DataCache.BooleanRef;
-import org.apache.hadoop.hive.common.io.DiskRangeList;
 import org.apache.hadoop.hive.common.io.DataCache.DiskRangeListFactory;
+import org.apache.hadoop.hive.common.io.DiskRangeList;
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch.ColumnStreamData;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
 import org.apache.hadoop.hive.llap.DebugUtils;
+import org.apache.hadoop.hive.llap.LlapHiveUtils;
 import org.apache.hadoop.hive.llap.cache.BufferUsageManager;
-import org.apache.hadoop.hive.llap.cache.EvictionDispatcher;
-import org.apache.hadoop.hive.llap.cache.LlapAllocatorBuffer;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.cache.SerDeLowLevelCacheImpl;
 import org.apache.hadoop.hive.llap.cache.SerDeLowLevelCacheImpl.FileData;
@@ -58,7 +57,6 @@ import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.io.decode.GenericColumnVectorProducer.SerDeStripeMetadata;
 import org.apache.hadoop.hive.llap.io.decode.OrcEncodedDataConsumer;
-import org.apache.hadoop.hive.llap.io.encoded.SerDeEncodedDataReader.CacheWriter;
 import org.apache.hadoop.hive.llap.io.encoded.VectorDeserializeOrcWriter.AsyncCallback;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -70,6 +68,7 @@ import org.apache.hadoop.hive.ql.io.orc.Reader;
 import org.apache.hadoop.hive.ql.io.orc.Writer;
 import org.apache.hadoop.hive.ql.io.orc.encoded.CacheChunk;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.OrcEncodedColumnBatch;
+import org.apache.hadoop.hive.ql.io.orc.encoded.StoppableAllocator;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -89,19 +88,21 @@ import org.apache.hive.common.util.Ref;
 import org.apache.orc.CompressionCodec;
 import org.apache.orc.CompressionKind;
 import org.apache.orc.OrcConf;
-import org.apache.orc.OrcUtils;
 import org.apache.orc.OrcFile.EncodingStrategy;
 import org.apache.orc.OrcFile.Version;
 import org.apache.orc.OrcProto;
 import org.apache.orc.OrcProto.ColumnEncoding;
-import org.apache.orc.TypeDescription;
+import org.apache.orc.OrcUtils;
 import org.apache.orc.PhysicalWriter;
 import org.apache.orc.PhysicalWriter.OutputReceiver;
+import org.apache.orc.TypeDescription;
+import org.apache.orc.impl.MemoryManager;
 import org.apache.orc.impl.SchemaEvolution;
 import org.apache.orc.impl.StreamName;
 import org.apache.tez.common.CallableWithNdc;
 import org.apache.tez.common.counters.TezCounters;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
 public class SerDeEncodedDataReader extends CallableWithNdc<Void>
@@ -129,23 +130,10 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
           t.reset();
         }
       });
-  public static final FixedSizedObjectPool<CacheChunk> TCC_POOL =
-      new FixedSizedObjectPool<>(1024, new PoolObjectHelper<CacheChunk>() {
-      @Override
-      public CacheChunk create() {
-        return new CacheChunk();
-      }
-      @Override
-      public void resetBeforeOffer(CacheChunk t) {
-        t.reset();
-      }
-    });
   private final static DiskRangeListFactory CC_FACTORY = new DiskRangeListFactory() {
     @Override
     public DiskRangeList createCacheChunk(MemoryBuffer buffer, long offset, long end) {
-      CacheChunk tcc = TCC_POOL.take();
-      tcc.init(buffer, offset, end);
-      return tcc;
+      return new CacheChunk(buffer, offset, end);
     }
   };
 
@@ -161,9 +149,10 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
   private final Map<Path, PartitionDesc> parts;
 
   private final Object fileKey;
+  private final CacheTag cacheTag;
   private final FileSystem fs;
 
-  private volatile boolean isStopped = false;
+  private AtomicBoolean isStopped = new AtomicBoolean(false);
   private final Deserializer sourceSerDe;
   private final InputFormat<?, ?> sourceInputFormat;
   private final Reporter reporter;
@@ -172,6 +161,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
   private final int allocSize;
   private final int targetSliceRowCount;
   private final boolean isLrrEnabled;
+  private final boolean useObjectPools;
 
   private final boolean[] writerIncludes;
   private FileReaderYieldReturn currentFileRead = null;
@@ -190,6 +180,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
       InputFormat<?, ?> sourceInputFormat, Deserializer sourceSerDe,
       QueryFragmentCounters counters, TypeDescription schema, Map<Path, PartitionDesc> parts)
           throws IOException {
+    assert cache != null;
     this.cache = cache;
     this.bufferManager = bufferManager;
     this.bufferFactory = new BufferObjectFactory() {
@@ -210,6 +201,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     this.targetSliceRowCount = HiveConf.getIntVar(
         sliceConf, ConfVars.LLAP_IO_ENCODE_SLICE_ROW_COUNT);
     this.isLrrEnabled = HiveConf.getBoolVar(sliceConf, ConfVars.LLAP_IO_ENCODE_SLICE_LRR);
+    this.useObjectPools = HiveConf.getBoolVar(sliceConf, ConfVars.LLAP_IO_SHARE_OBJECT_POOLS);
     if (this.columnIds != null) {
       Collections.sort(this.columnIds);
     }
@@ -224,11 +216,17 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     fs = split.getPath().getFileSystem(daemonConf);
     fileKey = determineFileId(fs, split,
         HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_CACHE_ALLOW_SYNTHETIC_FILEID),
-        HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_CACHE_DEFAULT_FS_FILE_ID));
+        HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_CACHE_DEFAULT_FS_FILE_ID),
+        !HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_IO_USE_FILEID_PATH));
+    cacheTag = HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_TRACK_CACHE_USAGE)
+        ? LlapHiveUtils.getDbAndTableNameForMetrics(split.getPath(), true, parts) : null;
     this.sourceInputFormat = sourceInputFormat;
     this.sourceSerDe = sourceSerDe;
     this.reporter = reporter;
     this.jobConf = jobConf;
+    final boolean useDecimal64ColumnVectors = HiveConf.getVar(jobConf, ConfVars
+      .HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED).equalsIgnoreCase("decimal_64");
+    consumer.setUseDecimal64ColumnVectors(useDecimal64ColumnVectors);
     this.schema = schema;
     this.writerIncludes = OrcInputFormat.genIncludedColumns(schema, columnIds);
     SchemaEvolution evolution = new SchemaEvolution(schema, null,
@@ -250,7 +248,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
   @Override
   public void stop() {
     LlapIoImpl.LOG.debug("Encoded reader is being stopped");
-    isStopped = true;
+    isStopped.set(true);
   }
 
   @Override
@@ -349,16 +347,18 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     private final Map<StreamName, OutputReceiver> streams = new HashMap<>();
     private final Map<Integer, List<CacheOutputReceiver>> colStreams = new HashMap<>();
     private final boolean doesSourceHaveIncludes;
+    private final AtomicBoolean isStopped;
 
     public CacheWriter(BufferUsageManager bufferManager, List<Integer> columnIds,
         boolean[] writerIncludes, boolean doesSourceHaveIncludes,
-        Allocator.BufferObjectFactory bufferFactory) {
+        Allocator.BufferObjectFactory bufferFactory, AtomicBoolean isStopped) {
       this.bufferManager = bufferManager;
       assert writerIncludes != null; // Taken care of on higher level.
       this.writerIncludes = writerIncludes;
       this.doesSourceHaveIncludes = doesSourceHaveIncludes;
       this.columnIds = columnIds;
       this.bufferFactory = bufferFactory;
+      this.isStopped = isStopped;
       startStripe();
     }
 
@@ -400,7 +400,6 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
           }
         }
       }
-
     }
 
     private String throwIncludesMismatchError(boolean[] translated) throws IOException {
@@ -446,7 +445,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
         if (LlapIoImpl.LOG.isTraceEnabled()) {
           LlapIoImpl.LOG.trace("Creating cache receiver for " + name);
         }
-        CacheOutputReceiver cor = new CacheOutputReceiver(bufferManager, bufferFactory, name);
+        CacheOutputReceiver cor = new CacheOutputReceiver(bufferManager, name, bufferFactory, isStopped);
         or = cor;
         List<CacheOutputReceiver> list = colStreams.get(name.getColumn());
         if (list == null) {
@@ -567,6 +566,28 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
       currentStripe.lastRowStart = lastStartOffset;
       currentStripe.lastRowEnd = currentFileOffset;
     }
+
+    @Override
+    public CompressionCodec getCompressionCodec() {
+      return null;
+    }
+
+    @Override
+    public long getFileBytes(int column) {
+      long size = 0L;
+      List<CacheOutputReceiver> l = this.colStreams.get(column);
+      if (l == null) {
+        return size;
+      }
+      for (CacheOutputReceiver c : l) {
+        if (c.getData() != null && !c.suppressed && c.getName().getArea() != StreamName.Area.INDEX) {
+          for (MemoryBuffer buffer : c.getData()) {
+            size += buffer.getByteBufferRaw().limit();
+          }
+        }
+      }
+      return size;
+    }
   }
 
   private interface CacheOutput {
@@ -581,12 +602,17 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     private List<MemoryBuffer> buffers = null;
     private int lastBufferPos = -1;
     private boolean suppressed = false;
+    private final AtomicBoolean isStopped;
+    private final StoppableAllocator allocator;
 
     public CacheOutputReceiver(BufferUsageManager bufferManager,
-        BufferObjectFactory bufferFactory, StreamName name) {
+        StreamName name, BufferObjectFactory bufferFactory, AtomicBoolean isStopped) {
       this.bufferManager = bufferManager;
       this.bufferFactory = bufferFactory;
+      Allocator alloc = bufferManager.getAllocator();
+      this.allocator = alloc instanceof StoppableAllocator ? (StoppableAllocator) alloc : null;
       this.name = name;
+      this.isStopped = isStopped;
     }
 
     public void clear() {
@@ -600,6 +626,15 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
       suppressed = true;
       lastBufferPos = -1;
     }
+
+    private void allocateMultiple(MemoryBuffer[] dest, int size) {
+      if (allocator != null) {
+        allocator.allocateMultiple(dest, size, bufferFactory, isStopped);
+      } else {
+        bufferManager.getAllocator().allocateMultiple(dest, size, bufferFactory);
+      }
+    }
+
 
     @Override
     public void output(ByteBuffer buffer) throws IOException {
@@ -624,7 +659,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
       boolean isNewBuffer = (lastBufferPos == -1);
       if (isNewBuffer) {
         MemoryBuffer[] dest = new MemoryBuffer[1];
-        bufferManager.getAllocator().allocateMultiple(dest, size, bufferFactory);
+        allocateMultiple(dest, size);
         LlapSerDeDataBuffer newBuffer = (LlapSerDeDataBuffer)dest[0];
         bb = newBuffer.getByteBufferRaw();
         lastBufferPos = bb.position();
@@ -666,7 +701,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     }
   }
 
-  protected Void performDataRead() throws IOException {
+  protected Void performDataRead() throws IOException, InterruptedException {
     boolean isOk = false;
     try {
       try {
@@ -742,9 +777,9 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
           throw new AssertionError("Caching data without an encoding at " + i + ": " + sd);
         }
       }
-      FileData fd = new FileData(fileKey, encodings.length);
+      FileData fd = new FileData(daemonConf, fileKey, encodings.length);
       fd.addStripe(sd);
-      cache.putFileData(fd, Priority.NORMAL, counters);
+      cache.putFileData(fd, Priority.NORMAL, counters, cacheTag);
     } else {
       lockAllBuffers(sd);
     }
@@ -769,7 +804,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     }
   }
 
-  public Boolean readFileWithCache(long startTime) throws IOException {
+  public Boolean readFileWithCache(long startTime) throws IOException, InterruptedException {
     if (fileKey == null) return false;
     BooleanRef gotAllData = new BooleanRef();
     long endOfSplit = split.getStart() + split.getLength();
@@ -785,7 +820,8 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     List<StripeData> slices = cachedData.getData();
     if (slices.isEmpty()) return false;
     long uncachedPrefixEnd = slices.get(0).getKnownTornStart(),
-        uncachedSuffixStart = slices.get(slices.size() - 1).getLastEnd();
+        uncachedSuffixStart = slices.get(slices.size() - 1).getLastEnd(),
+        lastStripeLastStart = slices.get(slices.size() - 1).getLastStart();
     Ref<Integer> stripeIx = Ref.from(0);
     if (uncachedPrefixEnd > split.getStart()) {
       // TODO: can we merge neighboring splits? So we don't init so many readers.
@@ -821,15 +857,16 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     if (uncachedSuffixStart < endOfSplit || isUnfortunate) {
       // Note: we assume 0-length split is correct given now LRR interprets offsets (reading an
       // extra row). Should we instead assume 1+ chars and add 1 for isUnfortunate?
-      FileSplit splitPart = new FileSplit(split.getPath(), uncachedSuffixStart,
-          endOfSplit - uncachedSuffixStart, hosts, inMemoryHosts);
+      // Do not read from uncachedSuffixStart as LineRecordReader skips first row
+      FileSplit splitPart = new FileSplit(split.getPath(), lastStripeLastStart,
+          endOfSplit - lastStripeLastStart, hosts, inMemoryHosts);
       if (!processOneFileSplit(splitPart, startTime, stripeIx, null)) return null;
     }
     return true;
   }
 
   public boolean processOneFileSplit(FileSplit split, long startTime,
-      Ref<Integer> stripeIxRef, StripeData slice) throws IOException {
+      Ref<Integer> stripeIxRef, StripeData slice) throws IOException, InterruptedException {
     LlapIoImpl.LOG.info("Processing one split {" + split.getPath() + ", "
         + split.getStart() + ", " + split.getLength() + "}");
     if (LlapIoImpl.CACHE_LOGGER.isTraceEnabled()) {
@@ -857,7 +894,9 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     try {
       if (slice != null) {
         // If we had a cache range already, we expect a single matching disk slice.
+        // Given that there's cached data we expect there to be some disk data.
         Vectors vectors = currentFileRead.readNextSlice();
+        assert vectors != null;
         if (!vectors.isSupported()) {
           // Not in VRB mode - the new cache data is ready, we should use it.
           CacheWriter cacheWriter = currentFileRead.getCacheWriter();
@@ -873,8 +912,9 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
         ++stripeIxRef.value;
       } else {
         // All the data comes from disk. The reader may have split it into multiple slices.
+        // It is also possible there's no data in the file.
         Vectors vectors = currentFileRead.readNextSlice();
-        assert vectors != null;
+        if (vectors == null) return true;
         result = true;
         if (!vectors.isSupported()) {
           // Not in VRB mode - the new cache data is (partially) ready, we should use it.
@@ -929,7 +969,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
   }
 
   private boolean processOneSlice(CacheWriter.CacheStripeData diskData, boolean[] splitIncludes,
-      int stripeIx, StripeData cacheData, long startTime) throws IOException {
+      int stripeIx, StripeData cacheData, long startTime) throws IOException, InterruptedException {
     logProcessOneSlice(stripeIx, diskData, cacheData);
 
     ColumnEncoding[] cacheEncodings = cacheData == null ? null : cacheData.getEncodings();
@@ -951,9 +991,10 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     }
     consumer.setStripeMetadata(metadata);
 
-    OrcEncodedColumnBatch ecb = ECB_POOL.take();
+    OrcEncodedColumnBatch ecb = useObjectPools ? ECB_POOL.take() : new OrcEncodedColumnBatch();
     ecb.init(fileKey, metadata.getStripeIx(), OrcEncodedColumnBatch.ALL_RGS, writerIncludes.length);
-    for (int colIx = 0; colIx < writerIncludes.length; ++colIx) {
+    // Skip the 0th column that is the root structure.
+    for (int colIx = 1; colIx < writerIncludes.length; ++colIx) {
       if (!writerIncludes[colIx]) continue;
       ecb.initColumn(colIx, OrcEncodedColumnBatch.MAX_DATA_STREAMS);
       if (!hasAllData && splitIncludes[colIx]) {
@@ -973,7 +1014,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
             continue;
           }
           int streamIx = setStreamDataToCache(newCacheDataForCol, stream);
-          ColumnStreamData cb = CSD_POOL.take();
+          ColumnStreamData cb = useObjectPools ? CSD_POOL.take() : new ColumnStreamData();
           cb.incRef();
           cb.setCacheBuffers(stream.data);
           ecb.setStreamData(colIx, streamIx, cb);
@@ -1010,8 +1051,8 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
 
 
   /** Unlike the other overload of processOneSlice, doesn't cache data. */
-  private boolean processOneSlice(Vectors diskData, boolean[] splitIncludes,
-      int stripeIx, StripeData cacheData, long startTime) throws IOException {
+  private boolean processOneSlice(Vectors diskData, boolean[] splitIncludes, int stripeIx,
+      StripeData cacheData, long startTime) throws IOException, InterruptedException {
     if (diskData == null) {
       throw new AssertionError(); // The other overload should have been used.
     }
@@ -1036,22 +1077,19 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     }
     consumer.setStripeMetadata(metadata);
 
-    OrcEncodedColumnBatch ecb = ECB_POOL.take();
+    OrcEncodedColumnBatch ecb = useObjectPools ? ECB_POOL.take() : new OrcEncodedColumnBatch();
     ecb.init(fileKey, metadata.getStripeIx(), OrcEncodedColumnBatch.ALL_RGS, writerIncludes.length);
     int vectorsIx = 0;
     for (int colIx = 0; colIx < writerIncludes.length; ++colIx) {
+      // Skip the 0-th column, since it won't have a vector after reading the text source.
+      if (colIx == 0) continue;
       if (!writerIncludes[colIx]) continue;
       if (splitIncludes[colIx]) {
-        // Skip the 0-th column, since it won't have a vector after reading the text source.
-        if (colIx != 0 ) {
-          List<ColumnVector> vectors = diskData.getVectors(vectorsIx++);
-          if (LlapIoImpl.LOG.isTraceEnabled()) {
-            LlapIoImpl.LOG.trace("Processing vectors for column " + colIx + ": " + vectors);
-          }
-          ecb.initColumnWithVectors(colIx, vectors);
-        } else {
-          ecb.initColumn(0, OrcEncodedColumnBatch.MAX_DATA_STREAMS);
+        List<ColumnVector> vectors = diskData.getVectors(vectorsIx++);
+        if (LlapIoImpl.LOG.isTraceEnabled()) {
+          LlapIoImpl.LOG.trace("Processing vectors for column " + colIx + ": " + vectors);
         }
+        ecb.initColumnWithVectors(colIx, vectors);
       } else {
         ecb.initColumn(colIx, OrcEncodedColumnBatch.MAX_DATA_STREAMS);
         processColumnCacheData(cacheBuffers, ecb, colIx);
@@ -1156,7 +1194,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     }
     for (int streamIx = 0; streamIx < colData.length; ++streamIx) {
       if (colData[streamIx] == null) continue;
-      ColumnStreamData cb = CSD_POOL.take();
+      ColumnStreamData cb = useObjectPools ? CSD_POOL.take() : new ColumnStreamData();
       cb.incRef();
       cb.setCacheBuffers(Lists.<MemoryBuffer>newArrayList(colData[streamIx]));
       ecb.setStreamData(colIx, streamIx, cb);
@@ -1264,7 +1302,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     private int rowsPerSlice = 0;
     private long currentKnownTornStart;
     private long lastStartOffset = Long.MIN_VALUE, firstStartOffset = Long.MIN_VALUE;
-    private boolean hasUnsplittableData = false;
+    private boolean hasAnyData = false;
     private final EncodingWriter writer;
     private final boolean maySplitTheSplit;
     private final int targetSliceRowCount;
@@ -1272,6 +1310,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
 
     public FileReaderYieldReturn(ReaderWithOffsets offsetReader, FileSplit split, EncodingWriter writer,
         boolean maySplitTheSplit, int targetSliceRowCount) {
+      Preconditions.checkNotNull(offsetReader);
       this.offsetReader = offsetReader;
       currentKnownTornStart = split.getStart();
       this.writer = writer;
@@ -1285,10 +1324,12 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     }
 
     public Vectors readNextSlice() throws IOException {
-      if (offsetReader == null) return null;
+      if (offsetReader == null) {
+        return null; // This means the reader has already been closed.
+      }
       try {
         while (offsetReader.next()) {
-          hasUnsplittableData = true;
+          hasAnyData = true;
           Writable value = offsetReader.getCurrentRow();
           lastStartOffset = offsetReader.getCurrentRowStartOffset();
           if (firstStartOffset == Long.MIN_VALUE) {
@@ -1319,12 +1360,11 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
           }
         }
         try {
-          Vectors result = null;
-          if (rowsPerSlice > 0 || (!maySplitTheSplit && hasUnsplittableData)) {
+          if (rowsPerSlice > 0 || (!maySplitTheSplit && hasAnyData)) {
             long fileOffset = -1;
             if (!offsetReader.hasOffsets()) {
               // The reader doesn't support offsets. We adjust offsets to match future splits.
-              // If cached split was starting at row start, that row would be skipped, so +1
+              // If cached split was starting at row start, that row would be skipped, so +1 byte.
               firstStartOffset = split.getStart() + 1;
               // Last row starting at the end of the split would be read.
               lastStartOffset = split.getStart() + split.getLength();
@@ -1342,11 +1382,11 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
                 currentKnownTornStart, firstStartOffset, lastStartOffset, fileOffset);
             // Close the writer to finalize the metadata.
             writer.close();
-            result = new Vectors(writer.extractCurrentVrbs());
+            return new Vectors(writer.extractCurrentVrbs());
           } else {
             writer.close();
+            return null; // There's no more data.
           }
-          return result;
         } finally {
           closeOffsetReader();
         }
@@ -1398,7 +1438,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
       // TODO: move this into ctor? EW would need to create CacheWriter then
       List<Integer> cwColIds = writer.isOnlyWritingIncludedColumns() ? splitColumnIds : columnIds;
       writer.init(new CacheWriter(bufferManager, cwColIds, splitIncludes,
-          writer.isOnlyWritingIncludedColumns(), bufferFactory), daemonConf, split.getPath());
+          writer.isOnlyWritingIncludedColumns(), bufferFactory, isStopped), daemonConf, split.getPath());
       if (writer instanceof VectorDeserializeOrcWriter) {
         VectorDeserializeOrcWriter asyncWriter = (VectorDeserializeOrcWriter)writer;
         asyncWriter.startAsync(new AsyncCacheDataCallback());
@@ -1610,7 +1650,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
   }
 
   private boolean sendEcbToConsumer(OrcEncodedColumnBatch ecb,
-      boolean hasCachedSlice, CacheWriter.CacheStripeData diskData) {
+      boolean hasCachedSlice, CacheWriter.CacheStripeData diskData) throws InterruptedException {
     if (ecb == null) { // This basically means stop has been called.
       cleanup(true);
       return false;
@@ -1650,23 +1690,23 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
   }
 
   private void recordReaderTime(long startTime) {
-    counters.incrTimeCounter(LlapIOCounters.TOTAL_IO_TIME_NS, startTime);
+    counters.incrWallClockCounter(LlapIOCounters.TOTAL_IO_TIME_NS, startTime);
   }
 
   private boolean processStop() {
-    if (!isStopped) return false;
+    if (!isStopped.get()) return false;
     LlapIoImpl.LOG.info("SerDe-based data reader is stopping");
     cleanup(true);
     return true;
   }
 
   private static Object determineFileId(FileSystem fs, FileSplit split,
-      boolean allowSynthetic, boolean checkDefaultFs) throws IOException {
+      boolean allowSynthetic, boolean checkDefaultFs, boolean forceSynthetic) throws IOException {
     /* TODO: support this optionally? this is not OrcSplit, but we could add a custom split.
       Object fileKey = ((OrcSplit)split).getFileKey();
       if (fileKey != null) return fileKey; */
     LlapIoImpl.LOG.warn("Split for " + split.getPath() + " (" + split.getClass() + ") does not have file ID");
-    return HdfsUtils.getFileId(fs, split.getPath(), allowSynthetic, checkDefaultFs);
+    return HdfsUtils.getFileId(fs, split.getPath(), allowSynthetic, checkDefaultFs, forceSynthetic);
   }
 
   @Override
@@ -1683,11 +1723,15 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
           }
         }
         bufferManager.decRefBuffers(data.getCacheBuffers());
-        CSD_POOL.offer(data);
+        if (useObjectPools) {
+          CSD_POOL.offer(data);
+        }
       }
     }
     // We can offer ECB even with some streams not discarded; reset() will clear the arrays.
-    ECB_POOL.offer(ecb);
+    if (useObjectPools) {
+      ECB_POOL.offer(ecb);
+    }
   }
 
   @Override

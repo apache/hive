@@ -47,6 +47,7 @@
         <exclude>co.cask.tephra:*</exclude>
         <exclude>commons-configuration:commons-configuration</exclude>
         <exclude>org.apache.hive:hive-jdbc:*:standalone</exclude>
+        <exclude>org.apache.hive:hive-contrib</exclude>
       </excludes>
     </dependencySet>
     <dependencySet>
@@ -59,6 +60,15 @@
       </includes>
     </dependencySet>
     <dependencySet>
+      <outputDirectory>contrib/</outputDirectory>
+      <unpack>false</unpack>
+      <useProjectArtifact>false</useProjectArtifact>
+      <useStrictFiltering>true</useStrictFiltering>
+      <includes>
+        <include>org.apache.hive:hive-contrib</include>
+      </includes>
+    </dependencySet>
+    <dependencySet>
       <outputDirectory>lib</outputDirectory>
       <unpack>false</unpack>
       <useProjectArtifact>false</useProjectArtifact>
@@ -66,6 +76,7 @@
       <includes>
         <include>org.apache.hive.hcatalog:hive-hcatalog-core</include>
         <include>org.apache.hive.hcatalog:hive-hcatalog-server-extensions</include>
+        <include>javax.ws.rs:javax.ws.rs-api</include>
       </includes>
     </dependencySet>
     <dependencySet>
@@ -91,9 +102,12 @@
       <useTransitiveFiltering>true</useTransitiveFiltering>
       <excludes>
         <exclude>org.apache.hadoop:*</exclude>
+        <exclude>org.apache.hive:hive-jdbc:jar:standalone</exclude>
+        <exclude>org.apache.httpcomponents:*</exclude>
       </excludes>
       <includes>
         <include>org.apache.hive.hcatalog:hive-webhcat:*</include>
+        <include>org.apache.hive:hive-jdbc:jar</include>
       </includes>
     </dependencySet>
     <dependencySet>
@@ -172,6 +186,7 @@
         <include>beeline</include>
         <include>hiveserver2</include>
         <include>hive-config.sh</include>
+        <include>init-hive-dfs.sh</include>
         <include>hive-config.cmd</include>
         <include>hive.cmd</include>
         <include>hplsql.cmd</include>
@@ -205,11 +220,19 @@
         <include>**/*.py</include>
         <include>**/*.xml</include>
       </includes>
-      <outputDirectory>scripts/llap/slider</outputDirectory>
+      <outputDirectory>scripts/llap/yarn</outputDirectory>
     </fileSet>
 
     <fileSet>
       <directory>${project.parent.basedir}/metastore/scripts/upgrade</directory>
+      <includes>
+        <include>**/*</include>
+      </includes>
+      <outputDirectory>scripts/metastore/upgrade</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.parent.basedir}/standalone-metastore/metastore-server/src/main/sql</directory>
       <includes>
         <include>**/*</include>
       </includes>

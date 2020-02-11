@@ -18,7 +18,7 @@ POSTHOOK: query: insert overwrite table tstz1 select cast('2016-01-03 12:26:34 A
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tstz1
-POSTHOOK: Lineage: tstz1.t EXPRESSION []
+POSTHOOK: Lineage: tstz1.t SIMPLE []
 PREHOOK: query: select cast(t as string) from tstz1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tstz1

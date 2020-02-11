@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -99,10 +99,10 @@ import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.*;
  * The {@link Reader} is used to read and explain the bytes of RCFile.
  * </p>
  *
- * <h4 id="Formats">RCFile Formats</h4>
+ * <h3 id="Formats">RCFile Formats</h3>
  *
  *
- * <h5 id="Header">RC Header</h5>
+ * <h4 id="Header">RC Header</h4>
  * <ul>
  * <li>version - 3 bytes of magic header <b>RCF</b>, followed by 1 byte of
  * actual version number (e.g. RCF1)</li>
@@ -114,10 +114,10 @@ import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.*;
  * <li>sync - A sync marker to denote end of the header.</li>
  * </ul>
  *
- * <h5>RCFile Format</h5>
+ * <h4>RCFile Format</h4>
  * <ul>
  * <li><a href="#Header">Header</a></li>
- * <li>Record
+ * <li>Record </li>
  * <li>Key part
  * <ul>
  * <li>Record length in bytes</li>
@@ -133,7 +133,6 @@ import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.*;
  * <li>...</li>
  * </ul>
  * </li>
- * </li>
  * <li>Value part
  * <ul>
  * <li>Compressed or plain data of [column_1_row_1_value,
@@ -143,7 +142,6 @@ import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.*;
  * </ul>
  * </li>
  * </ul>
- * <p>
  * <pre>
  * {@code
  * The following is a pseudo-BNF grammar for RCFile. Comments are prefixed
@@ -336,7 +334,6 @@ import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.*;
  * Text ::= VInt, Chars (Length prefixed UTF-8 characters)
  * }
  * </pre>
- * </p>
  */
 public class RCFile {
 
@@ -1095,7 +1092,7 @@ public class RCFile {
     private int columnBufferSize = 0;
 
     /**
-     * Append a row of values. Currently it only can accept <
+     * Append a row of values. Currently it only can accept &lt;
      * {@link BytesRefArrayWritable}. If its <code>size()</code> is less than the
      * column number in the file, zero bytes are appended for the empty columns.
      * If its size() is greater then the column number in the file, the exceeded

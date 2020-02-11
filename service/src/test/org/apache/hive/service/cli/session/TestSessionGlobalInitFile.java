@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,7 +22,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import junit.framework.TestCase;
+
 
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -38,7 +38,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-public class TestSessionGlobalInitFile extends TestCase {
+/**
+ * TestSessionGlobalInitFile.
+ */
+public class TestSessionGlobalInitFile {
 
   private FakeEmbeddedThriftBinaryCLIService service;
   private ThriftCLIServiceClient client;
@@ -52,7 +55,7 @@ public class TestSessionGlobalInitFile extends TestCase {
    */
   private class FakeEmbeddedThriftBinaryCLIService extends ThriftBinaryCLIService {
     public FakeEmbeddedThriftBinaryCLIService(HiveConf hiveConf) {
-      super(new CLIService(null), null);
+      super(new CLIService(null, true), null);
       isEmbedded = true;
       cliService.init(hiveConf);
       cliService.start();
@@ -65,7 +68,7 @@ public class TestSessionGlobalInitFile extends TestCase {
 
   @Before
   public void setUp() throws Exception {
-    super.setUp();
+
 
     // create and put .hiverc sample file to default directory
     initFile = File.createTempFile("test", "hive");

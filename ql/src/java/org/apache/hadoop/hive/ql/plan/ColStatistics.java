@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -30,6 +30,7 @@ public class ColStatistics {
   private Range range;
   private boolean isPrimaryKey;
   private boolean isEstimated;
+  private boolean isFilteredColumn;
 
   public ColStatistics(String colName, String colType) {
     this.setColumnName(colName);
@@ -140,7 +141,7 @@ public class ColStatistics {
   }
 
   @Override
-  public ColStatistics clone() throws CloneNotSupportedException {
+  public ColStatistics clone() {
     ColStatistics clone = new ColStatistics(colName, colType);
     clone.setAvgColLen(avgColLen);
     clone.setCountDistint(countDistint);
@@ -149,6 +150,7 @@ public class ColStatistics {
     clone.setNumFalses(numFalses);
     clone.setPrimaryKey(isPrimaryKey);
     clone.setIsEstimated(isEstimated);
+    clone.setIsFilteredColumn(isFilteredColumn);
     if (range != null ) {
       clone.setRange(range.clone());
     }
@@ -197,4 +199,17 @@ public class ColStatistics {
     }
   }
 
+  public void setFilterColumn() {
+    isFilteredColumn = true;
+  }
+
+  private void setIsFilteredColumn(boolean isFilteredColumn2) {
+    isFilteredColumn=isFilteredColumn2;
+    
+  }
+  
+  public boolean isFilteredColumn() {
+    return isFilteredColumn;
+  }
+  
 }

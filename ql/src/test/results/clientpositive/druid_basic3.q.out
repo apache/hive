@@ -1,0 +1,476 @@
+PREHOOK: query: CREATE EXTERNAL TABLE druid_table_1_n4
+STORED BY 'org.apache.hadoop.hive.druid.QTestDruidStorageHandler'
+TBLPROPERTIES ("druid.datasource" = "wikipedia")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@druid_table_1_n4
+POSTHOOK: query: CREATE EXTERNAL TABLE druid_table_1_n4
+STORED BY 'org.apache.hadoop.hive.druid.QTestDruidStorageHandler'
+TBLPROPERTIES ("druid.datasource" = "wikipedia")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@druid_table_1_n4
+PREHOOK: query: EXPLAIN
+SELECT sum(added) + sum(delta) as a, language
+FROM druid_table_1_n4
+GROUP BY language
+ORDER BY a DESC
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT sum(added) + sum(delta) as a, language
+FROM druid_table_1_n4
+GROUP BY language
+ORDER BY a DESC
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table_1_n4
+          properties:
+            druid.fieldNames a,language
+            druid.fieldTypes double,string
+            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"language","outputName":"language","outputType":"STRING"}],"limitSpec":{"type":"default","columns":[{"dimension":"a","direction":"descending","dimensionOrder":"numeric"}]},"aggregations":[{"type":"doubleSum","name":"$f1","fieldName":"added"},{"type":"doubleSum","name":"$f2","fieldName":"delta"}],"postAggregations":[{"type":"expression","name":"a","expression":"(\"$f1\" + \"$f2\")"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.type groupBy
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Select Operator
+            expressions: a (type: double), language (type: string)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            ListSink
+
+PREHOOK: query: EXPLAIN
+SELECT sum(delta), sum(added) + sum(delta) AS a, language
+FROM druid_table_1_n4
+GROUP BY language
+ORDER BY a DESC
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT sum(delta), sum(added) + sum(delta) AS a, language
+FROM druid_table_1_n4
+GROUP BY language
+ORDER BY a DESC
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table_1_n4
+          properties:
+            druid.fieldNames $f1,a,language
+            druid.fieldTypes double,double,string
+            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"language","outputName":"language","outputType":"STRING"}],"limitSpec":{"type":"default","columns":[{"dimension":"a","direction":"descending","dimensionOrder":"numeric"}]},"aggregations":[{"type":"doubleSum","name":"$f1","fieldName":"delta"},{"type":"doubleSum","name":"$f2","fieldName":"added"}],"postAggregations":[{"type":"expression","name":"a","expression":"(\"$f2\" + \"$f1\")"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.type groupBy
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Select Operator
+            expressions: $f1 (type: double), a (type: double), language (type: string)
+            outputColumnNames: _col0, _col1, _col2
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            ListSink
+
+PREHOOK: query: EXPLAIN
+SELECT language, sum(added) / sum(delta) AS a
+FROM druid_table_1_n4
+GROUP BY language
+ORDER BY a DESC
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT language, sum(added) / sum(delta) AS a
+FROM druid_table_1_n4
+GROUP BY language
+ORDER BY a DESC
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table_1_n4
+          properties:
+            druid.fieldNames language,a
+            druid.fieldTypes string,double
+            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"language","outputName":"language","outputType":"STRING"}],"limitSpec":{"type":"default","columns":[{"dimension":"a","direction":"descending","dimensionOrder":"numeric"}]},"aggregations":[{"type":"doubleSum","name":"$f1","fieldName":"added"},{"type":"doubleSum","name":"$f2","fieldName":"delta"}],"postAggregations":[{"type":"expression","name":"a","expression":"(\"$f1\" / \"$f2\")"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.type groupBy
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Select Operator
+            expressions: language (type: string), a (type: double)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            ListSink
+
+PREHOOK: query: EXPLAIN
+SELECT language, sum(added) * sum(delta) AS a
+FROM druid_table_1_n4
+GROUP BY language
+ORDER BY a DESC
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT language, sum(added) * sum(delta) AS a
+FROM druid_table_1_n4
+GROUP BY language
+ORDER BY a DESC
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table_1_n4
+          properties:
+            druid.fieldNames language,a
+            druid.fieldTypes string,double
+            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"language","outputName":"language","outputType":"STRING"}],"limitSpec":{"type":"default","columns":[{"dimension":"a","direction":"descending","dimensionOrder":"numeric"}]},"aggregations":[{"type":"doubleSum","name":"$f1","fieldName":"added"},{"type":"doubleSum","name":"$f2","fieldName":"delta"}],"postAggregations":[{"type":"expression","name":"a","expression":"(\"$f1\" * \"$f2\")"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.type groupBy
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Select Operator
+            expressions: language (type: string), a (type: double)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            ListSink
+
+PREHOOK: query: EXPLAIN
+SELECT language, sum(added) - sum(delta) AS a
+FROM druid_table_1_n4
+GROUP BY language
+ORDER BY a DESC
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT language, sum(added) - sum(delta) AS a
+FROM druid_table_1_n4
+GROUP BY language
+ORDER BY a DESC
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table_1_n4
+          properties:
+            druid.fieldNames language,a
+            druid.fieldTypes string,double
+            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"language","outputName":"language","outputType":"STRING"}],"limitSpec":{"type":"default","columns":[{"dimension":"a","direction":"descending","dimensionOrder":"numeric"}]},"aggregations":[{"type":"doubleSum","name":"$f1","fieldName":"added"},{"type":"doubleSum","name":"$f2","fieldName":"delta"}],"postAggregations":[{"type":"expression","name":"a","expression":"(\"$f1\" - \"$f2\")"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.type groupBy
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Select Operator
+            expressions: language (type: string), a (type: double)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            ListSink
+
+PREHOOK: query: EXPLAIN
+SELECT language, sum(added) + 100 AS a
+FROM druid_table_1_n4
+GROUP BY language
+ORDER BY a DESC
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT language, sum(added) + 100 AS a
+FROM druid_table_1_n4
+GROUP BY language
+ORDER BY a DESC
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table_1_n4
+          properties:
+            druid.fieldNames language,a
+            druid.fieldTypes string,double
+            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"language","outputName":"language","outputType":"STRING"}],"limitSpec":{"type":"default","columns":[{"dimension":"a","direction":"descending","dimensionOrder":"numeric"}]},"aggregations":[{"type":"doubleSum","name":"$f1","fieldName":"added"}],"postAggregations":[{"type":"expression","name":"a","expression":"(\"$f1\" + CAST(100, 'DOUBLE'))"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.type groupBy
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Select Operator
+            expressions: language (type: string), a (type: double)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            ListSink
+
+PREHOOK: query: EXPLAIN
+SELECT language, -1 * (a + b) AS c
+FROM (
+  SELECT (sum(added)-sum(delta)) / (count(*) * 3) AS a, sum(deleted) AS b, language
+  FROM druid_table_1_n4
+  GROUP BY language) subq
+ORDER BY c DESC
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT language, -1 * (a + b) AS c
+FROM (
+  SELECT (sum(added)-sum(delta)) / (count(*) * 3) AS a, sum(deleted) AS b, language
+  FROM druid_table_1_n4
+  GROUP BY language) subq
+ORDER BY c DESC
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table_1_n4
+          properties:
+            druid.fieldNames language,c
+            druid.fieldTypes string,double
+            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"language","outputName":"language","outputType":"STRING"}],"limitSpec":{"type":"default","columns":[{"dimension":"c","direction":"descending","dimensionOrder":"numeric"}]},"aggregations":[{"type":"doubleSum","name":"$f1","fieldName":"added"},{"type":"doubleSum","name":"$f2","fieldName":"delta"},{"type":"count","name":"$f3"},{"type":"doubleSum","name":"$f4","fieldName":"deleted"}],"postAggregations":[{"type":"expression","name":"c","expression":"(-1.0 * (((\"$f1\" - \"$f2\") / CAST((\"$f3\" * 3), 'DOUBLE')) + \"$f4\"))"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.type groupBy
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Select Operator
+            expressions: language (type: string), c (type: double)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            ListSink
+
+PREHOOK: query: EXPLAIN
+SELECT language, robot, sum(added) - sum(delta) AS a
+FROM druid_table_1_n4
+WHERE extract (week from `__time`) IN (10,11)
+GROUP BY language, robot
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT language, robot, sum(added) - sum(delta) AS a
+FROM druid_table_1_n4
+WHERE extract (week from `__time`) IN (10,11)
+GROUP BY language, robot
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table_1_n4
+          properties:
+            druid.fieldNames language,robot,a
+            druid.fieldTypes string,string,double
+            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"robot","outputName":"robot","outputType":"STRING"},{"type":"default","dimension":"language","outputName":"language","outputType":"STRING"}],"limitSpec":{"type":"default"},"filter":{"type":"in","dimension":"__time","values":["10","11"],"extractionFn":{"type":"timeFormat","format":"w","timeZone":"US/Pacific","locale":"en-US"}},"aggregations":[{"type":"doubleSum","name":"$f2","fieldName":"added"},{"type":"doubleSum","name":"$f3","fieldName":"delta"}],"postAggregations":[{"type":"expression","name":"a","expression":"(\"$f2\" - \"$f3\")"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.type groupBy
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Select Operator
+            expressions: language (type: string), robot (type: string), a (type: double)
+            outputColumnNames: _col0, _col1, _col2
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            ListSink
+
+PREHOOK: query: EXPLAIN
+SELECT language, sum(delta) / count(*) AS a
+FROM druid_table_1_n4
+GROUP BY language
+ORDER BY a DESC
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT language, sum(delta) / count(*) AS a
+FROM druid_table_1_n4
+GROUP BY language
+ORDER BY a DESC
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table_1_n4
+          properties:
+            druid.fieldNames language,a
+            druid.fieldTypes string,double
+            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"language","outputName":"language","outputType":"STRING"}],"limitSpec":{"type":"default","columns":[{"dimension":"a","direction":"descending","dimensionOrder":"numeric"}]},"aggregations":[{"type":"doubleSum","name":"$f1","fieldName":"delta"},{"type":"count","name":"$f2"}],"postAggregations":[{"type":"expression","name":"a","expression":"(\"$f1\" / CAST(\"$f2\", 'DOUBLE'))"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.type groupBy
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Select Operator
+            expressions: language (type: string), a (type: double)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            ListSink
+
+PREHOOK: query: EXPLAIN
+SELECT language, sum(added) / sum(delta) AS a,
+       CASE WHEN sum(deleted)=0 THEN 1.0 ELSE sum(deleted) END AS b
+FROM druid_table_1_n4
+GROUP BY language
+ORDER BY a DESC
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT language, sum(added) / sum(delta) AS a,
+       CASE WHEN sum(deleted)=0 THEN 1.0 ELSE sum(deleted) END AS b
+FROM druid_table_1_n4
+GROUP BY language
+ORDER BY a DESC
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table_1_n4
+          properties:
+            druid.fieldNames language,a,b
+            druid.fieldTypes string,double,double
+            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"language","outputName":"language","outputType":"STRING"}],"limitSpec":{"type":"default","columns":[{"dimension":"a","direction":"descending","dimensionOrder":"numeric"}]},"aggregations":[{"type":"doubleSum","name":"$f1","fieldName":"added"},{"type":"doubleSum","name":"$f2","fieldName":"delta"},{"type":"doubleSum","name":"$f3","fieldName":"deleted"}],"postAggregations":[{"type":"expression","name":"a","expression":"(\"$f1\" / \"$f2\")"},{"type":"expression","name":"b","expression":"case_searched((\"$f3\" == 0.0),1,\"$f3\")"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.type groupBy
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Select Operator
+            expressions: language (type: string), a (type: double), b (type: double)
+            outputColumnNames: _col0, _col1, _col2
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            ListSink
+
+PREHOOK: query: EXPLAIN
+SELECT language, a, a - b as c
+FROM (
+  SELECT language, sum(added) + 100 AS a, sum(delta) AS b
+  FROM druid_table_1_n4
+  GROUP BY language) subq
+ORDER BY a DESC
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT language, a, a - b as c
+FROM (
+  SELECT language, sum(added) + 100 AS a, sum(delta) AS b
+  FROM druid_table_1_n4
+  GROUP BY language) subq
+ORDER BY a DESC
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table_1_n4
+          properties:
+            druid.fieldNames language,a,c
+            druid.fieldTypes string,double,double
+            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"language","outputName":"language","outputType":"STRING"}],"limitSpec":{"type":"default","columns":[{"dimension":"a","direction":"descending","dimensionOrder":"numeric"}]},"aggregations":[{"type":"doubleSum","name":"$f1","fieldName":"added"},{"type":"doubleSum","name":"$f2","fieldName":"delta"}],"postAggregations":[{"type":"expression","name":"a","expression":"(\"$f1\" + CAST(100, 'DOUBLE'))"},{"type":"expression","name":"c","expression":"((\"$f1\" + CAST(100, 'DOUBLE')) - \"$f2\")"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.type groupBy
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Select Operator
+            expressions: language (type: string), a (type: double), c (type: double)
+            outputColumnNames: _col0, _col1, _col2
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            ListSink
+
+PREHOOK: query: EXPLAIN
+SELECT language, robot, "A"
+FROM (
+  SELECT sum(added) - sum(delta) AS a, language, robot
+  FROM druid_table_1_n4
+  GROUP BY language, robot ) subq
+ORDER BY "A"
+LIMIT 5
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT language, robot, "A"
+FROM (
+  SELECT sum(added) - sum(delta) AS a, language, robot
+  FROM druid_table_1_n4
+  GROUP BY language, robot ) subq
+ORDER BY "A"
+LIMIT 5
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table_1_n4
+          properties:
+            druid.fieldNames robot,language
+            druid.fieldTypes string,string
+            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"robot","outputName":"robot","outputType":"STRING"},{"type":"default","dimension":"language","outputName":"language","outputType":"STRING"}],"limitSpec":{"type":"default","limit":5,"columns":[]},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.type groupBy
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Select Operator
+            expressions: language (type: string), robot (type: string), 'A' (type: string)
+            outputColumnNames: _col0, _col1, _col2
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            ListSink
+
+PREHOOK: query: EXPLAIN
+SELECT language, robot, "A"
+FROM (
+  SELECT language, sum(added) + sum(delta) AS a, robot
+  FROM druid_table_1_n4
+  GROUP BY language, robot) subq
+ORDER BY robot, language
+LIMIT 5
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT language, robot, "A"
+FROM (
+  SELECT language, sum(added) + sum(delta) AS a, robot
+  FROM druid_table_1_n4
+  GROUP BY language, robot) subq
+ORDER BY robot, language
+LIMIT 5
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table_1_n4
+          properties:
+            druid.fieldNames robot,language
+            druid.fieldTypes string,string
+            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"robot","outputName":"robot","outputType":"STRING"},{"type":"default","dimension":"language","outputName":"language","outputType":"STRING"}],"limitSpec":{"type":"default","limit":5,"columns":[{"dimension":"robot","direction":"ascending","dimensionOrder":"lexicographic"},{"dimension":"language","direction":"ascending","dimensionOrder":"lexicographic"}]},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.type groupBy
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Select Operator
+            expressions: language (type: string), robot (type: string), 'A' (type: string)
+            outputColumnNames: _col0, _col1, _col2
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            ListSink
+

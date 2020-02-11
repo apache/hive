@@ -1,3 +1,4 @@
+--! qt:dataset:src_thrift
 
 CREATE TABLE input_columnarserde(a array<int>, b array<string>, c map<string,string>, d int, e string)
 ROW FORMAT SERDE

@@ -40,6 +40,7 @@ import org.apache.accumulo.start.Main;
 import org.apache.accumulo.trace.instrument.Tracer;
 import org.apache.accumulo.core.client.impl.AuthenticationTokenIdentifier;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.metadata.JarUtils;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobConf;
@@ -323,7 +324,7 @@ public class HiveAccumuloHelper {
       log.warn("Failed to load class for HTrace jar, trying to continue", e);
     }
     try {
-      Utils.addDependencyJars(conf, classesToLoad);
+      JarUtils.addDependencyJars(conf, classesToLoad);
     } catch (IOException e) {
       log.error("Could not add necessary Accumulo dependencies to classpath", e);
     }

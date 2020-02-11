@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHash
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashMultiSetResult;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.VectorDesc;
 
 /**
  * This class has methods for generating vectorized join results for the big table only
@@ -94,33 +95,33 @@ public abstract class VectorMapJoinInnerBigOnlyGenerateResultOperator
     super(ctx);
   }
 
-  public VectorMapJoinInnerBigOnlyGenerateResultOperator(CompilationOpContext ctx,
-      VectorizationContext vContext, OperatorDesc conf) throws HiveException {
-    super(ctx, vContext, conf);
+  public VectorMapJoinInnerBigOnlyGenerateResultOperator(CompilationOpContext ctx, OperatorDesc conf,
+      VectorizationContext vContext, VectorDesc vectorDesc) throws HiveException {
+    super(ctx, conf, vContext, vectorDesc);
   }
 
   /*
    * Setup our inner big table only join specific members.
    */
-  protected void commonSetup(VectorizedRowBatch batch) throws HiveException {
-    super.commonSetup(batch);
+  protected void commonSetup() throws HiveException {
+    super.commonSetup();
 
     // Inner big-table only join specific.
     VectorMapJoinHashMultiSet baseHashMultiSet = (VectorMapJoinHashMultiSet) vectorMapJoinHashTable;
 
-    hashMultiSetResults = new VectorMapJoinHashMultiSetResult[batch.DEFAULT_SIZE];
+    hashMultiSetResults = new VectorMapJoinHashMultiSetResult[VectorizedRowBatch.DEFAULT_SIZE];
     for (int i = 0; i < hashMultiSetResults.length; i++) {
       hashMultiSetResults[i] = baseHashMultiSet.createHashMultiSetResult();
     }
 
-    allMatchs = new int[batch.DEFAULT_SIZE];
+    allMatchs = new int[VectorizedRowBatch.DEFAULT_SIZE];
 
-    equalKeySeriesValueCounts = new long[batch.DEFAULT_SIZE];
-    equalKeySeriesAllMatchIndices = new int[batch.DEFAULT_SIZE];
-    equalKeySeriesDuplicateCounts = new int[batch.DEFAULT_SIZE];
+    equalKeySeriesValueCounts = new long[VectorizedRowBatch.DEFAULT_SIZE];
+    equalKeySeriesAllMatchIndices = new int[VectorizedRowBatch.DEFAULT_SIZE];
+    equalKeySeriesDuplicateCounts = new int[VectorizedRowBatch.DEFAULT_SIZE];
 
-    spills = new int[batch.DEFAULT_SIZE];
-    spillHashMapResultIndices = new int[batch.DEFAULT_SIZE];
+    spills = new int[VectorizedRowBatch.DEFAULT_SIZE];
+    spillHashMapResultIndices = new int[VectorizedRowBatch.DEFAULT_SIZE];
   }
 
   //-----------------------------------------------------------------------------------------------
@@ -251,11 +252,15 @@ public abstract class VectorMapJoinInnerBigOnlyGenerateResultOperator
 
       for (long l = 0; l < count; l++) {
 
-        // Copy the BigTable values into the overflow batch. Since the overflow batch may
+        // Copy the values into the overflow batch. Since the overflow batch may
         // not get flushed here, we must copy by value.
         if (bigTableRetainedVectorCopy != null) {
           bigTableRetainedVectorCopy.copyByValue(batch, batchIndex,
                                                  overflowBatch, overflowBatch.size);
+        }
+        if (nonOuterSmallTableKeyVectorCopy != null) {
+          nonOuterSmallTableKeyVectorCopy.copyByValue(batch, batchIndex,
+              overflowBatch, overflowBatch.size);
         }
 
         overflowBatch.size++;

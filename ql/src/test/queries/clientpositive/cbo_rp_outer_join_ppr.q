@@ -1,3 +1,5 @@
+--! qt:dataset:srcpart
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 set hive.cbo.enable=true;
 set hive.cbo.returnpath.hiveop=true;

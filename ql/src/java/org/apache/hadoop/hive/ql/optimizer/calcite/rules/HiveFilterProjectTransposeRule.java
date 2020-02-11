@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -69,7 +69,13 @@ public class HiveFilterProjectTransposeRule extends FilterProjectTransposeRule {
   @Override
   public boolean matches(RelOptRuleCall call) {
     final Filter filterRel = call.rel(0);
-    RexNode condition = filterRel.getCondition();
+
+    // The condition fetched here can reference a udf that is not deterministic, but defined
+    // as part of the select list when a view is in play.  But the condition after the pushdown
+    // will resolve to using the udf from select list.  The check here for deterministic filters
+    // should be based on the resolved expression.  Refer to test case cbo_ppd_non_deterministic.q.
+    RexNode condition = RelOptUtil.pushPastProject(filterRel.getCondition(), call.rel(1));
+
     if (this.onlyDeterministic && !HiveCalciteUtil.isDeterministic(condition)) {
       return false;
     }

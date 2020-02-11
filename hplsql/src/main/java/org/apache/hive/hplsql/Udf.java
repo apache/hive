@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -103,7 +103,7 @@ public class Udf extends GenericUDF {
       else if (argumentsOI[i] instanceof IntObjectInspector) {
         Integer value = (Integer)((IntObjectInspector)argumentsOI[i]).getPrimitiveJavaObject(arguments[i].get());
         if (value != null) {
-          exec.setVariable(name, new Var(new Long(value)));
+          exec.setVariable(name, new Var(Long.valueOf(value)));
         }        
       }
       else if (argumentsOI[i] instanceof LongObjectInspector) {

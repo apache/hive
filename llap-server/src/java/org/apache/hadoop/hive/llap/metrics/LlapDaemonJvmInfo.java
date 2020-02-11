@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,13 +17,14 @@
  */
 package org.apache.hadoop.hive.llap.metrics;
 
+import com.google.common.base.MoreObjects;
 import org.apache.hadoop.metrics2.MetricsInfo;
 
 import com.google.common.base.Objects;
 
 /**
  * Llap daemon JVM info. These are some additional metrics that are not exposed via
- * {@link org.apache.hadoop.metrics.jvm.JvmMetrics}
+ * {@link org.apache.hadoop.hive.common.JvmMetrics}
  *
  * NOTE: These metrics are for sinks supported by hadoop-metrics2. There is already a /jmx endpoint
  * that gives all these info.
@@ -56,7 +57,7 @@ public enum LlapDaemonJvmInfo implements MetricsInfo {
 
   @Override
   public String toString() {
-    return Objects.toStringHelper(this)
+    return MoreObjects.toStringHelper(this)
       .add("name", name()).add("description", desc)
       .toString();
   }

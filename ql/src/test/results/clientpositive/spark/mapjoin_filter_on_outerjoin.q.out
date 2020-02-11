@@ -42,12 +42,18 @@ SELECT /*+ mapjoin(src1, src2) */ * FROM src1
   JOIN src src3 ON (src2.key = src3.key AND src3.key < 300)
   SORT BY src1.key, src2.key, src3.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT /*+ mapjoin(src1, src2) */ * FROM src1
   RIGHT OUTER JOIN src1 src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key > 10)
   JOIN src src3 ON (src2.key = src3.key AND src3.key < 300)
   SORT BY src1.key, src2.key, src3.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -62,6 +68,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src1
+                  filterExpr: ((key < 300) and (key < 10)) (type: boolean)
                   Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((key < 300) and (key < 10)) (type: boolean)
@@ -75,12 +82,14 @@ STAGE PLANS:
                         0 key (type: string)
                         1 key (type: string)
                         2 key (type: string)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
         Map 2 
             Map Operator Tree:
                 TableScan
                   alias: src2
+                  filterExpr: (key < 300) (type: boolean)
                   Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key < 300) (type: boolean)
@@ -94,6 +103,7 @@ STAGE PLANS:
                         0 key (type: string)
                         1 key (type: string)
                         2 key (type: string)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 
@@ -107,6 +117,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src3
+                  filterExpr: (key < 300) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key < 300) (type: boolean)
@@ -134,12 +145,15 @@ STAGE PLANS:
                         Statistics: Num rows: 365 Data size: 3878 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: string), _col2 (type: string), _col4 (type: string)
+                          null sort order: zzz
                           sort order: +++
                           Statistics: Num rows: 365 Data size: 3878 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col1 (type: string), _col3 (type: string), _col5 (type: string)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
         Reducer 4 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string), KEY.reducesinkkey1 (type: string), VALUE._col1 (type: string), KEY.reducesinkkey2 (type: string), VALUE._col2 (type: string)
@@ -203,12 +217,18 @@ SELECT * FROM src1
   JOIN src src3 ON (src2.key = src3.key AND src3.key < 300)
   SORT BY src1.key, src2.key, src3.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT * FROM src1
   RIGHT OUTER JOIN src1 src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key > 10)
   JOIN src src3 ON (src2.key = src3.key AND src3.key < 300)
   SORT BY src1.key, src2.key, src3.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -223,6 +243,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src1
+                  filterExpr: ((key < 300) and (key < 10)) (type: boolean)
                   Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((key < 300) and (key < 10)) (type: boolean)
@@ -236,12 +257,14 @@ STAGE PLANS:
                         0 key (type: string)
                         1 key (type: string)
                         2 key (type: string)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
         Map 2 
             Map Operator Tree:
                 TableScan
                   alias: src2
+                  filterExpr: (key < 300) (type: boolean)
                   Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key < 300) (type: boolean)
@@ -255,6 +278,7 @@ STAGE PLANS:
                         0 key (type: string)
                         1 key (type: string)
                         2 key (type: string)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 
@@ -268,6 +292,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src3
+                  filterExpr: (key < 300) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key < 300) (type: boolean)
@@ -295,12 +320,15 @@ STAGE PLANS:
                         Statistics: Num rows: 365 Data size: 3878 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: string), _col2 (type: string), _col4 (type: string)
+                          null sort order: zzz
                           sort order: +++
                           Statistics: Num rows: 365 Data size: 3878 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col1 (type: string), _col3 (type: string), _col5 (type: string)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
         Reducer 4 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string), KEY.reducesinkkey1 (type: string), VALUE._col1 (type: string), KEY.reducesinkkey2 (type: string), VALUE._col2 (type: string)

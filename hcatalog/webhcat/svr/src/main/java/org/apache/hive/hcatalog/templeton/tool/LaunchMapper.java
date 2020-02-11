@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,6 +18,10 @@
  */
 package org.apache.hive.hcatalog.templeton.tool;
 
+import org.apache.hadoop.security.Credentials;
+import org.apache.hadoop.security.token.Token;
+import org.apache.hadoop.security.token.TokenIdentifier;
+import org.apache.hive.hcatalog.templeton.SecureProxySupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -153,9 +157,10 @@ public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text>
       env.put(pathVarName, paths);
     }
   }
-  protected Process startJob(Configuration conf, String jobId, String user, String overrideClasspath)
+  protected Process startJob(Context context, String jobId, String user, String overrideClasspath,
+                             LauncherDelegator.JobType jobType)
     throws IOException, InterruptedException {
-
+    Configuration conf = context.getConfiguration();
     copyLocal(COPY_NAME, conf);
     String[] jarArgs = TempletonUtils.decodeArray(conf.get(JAR_ARGS_NAME));
 
@@ -172,8 +177,24 @@ public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text>
     List<String> jarArgsList = new LinkedList<String>(Arrays.asList(jarArgs));
     handleTokenFile(jarArgsList, JobSubmissionConstants.TOKEN_FILE_ARG_PLACEHOLDER, "mapreduce.job.credentials.binary");
     handleTokenFile(jarArgsList, JobSubmissionConstants.TOKEN_FILE_ARG_PLACEHOLDER_TEZ, "tez.credentials.path");
-    handleMapReduceJobTag(jarArgsList, JobSubmissionConstants.MAPREDUCE_JOB_TAGS_ARG_PLACEHOLDER,
-        JobSubmissionConstants.MAPREDUCE_JOB_TAGS, jobId);
+    if (jobType == LauncherDelegator.JobType.HIVE) {
+      Credentials cred = new Credentials();
+      Token<? extends TokenIdentifier> token = context.getCredentials().getToken(new
+              Text(SecureProxySupport.HIVE_SERVICE));
+      cred.addToken(new
+              Text(SecureProxySupport.HIVE_SERVICE), token);
+      File t = File.createTempFile("templeton", null);
+      Path tokenPath = new Path(t.toURI());
+      cred.writeTokenStorageFile(tokenPath, conf);
+      env.put(UserGroupInformation.HADOOP_TOKEN_FILE_LOCATION,
+              tokenPath.toUri().getPath());
+      replaceJobTag(jarArgsList, JobSubmissionConstants.HIVE_QUERY_TAG_ARG_PLACEHOLDER,
+              JobSubmissionConstants.HIVE_QUERY_TAG, jobId);
+    } else {
+      replaceJobTag(jarArgsList, JobSubmissionConstants.MAPREDUCE_JOB_TAGS_ARG_PLACEHOLDER,
+              JobSubmissionConstants.MAPREDUCE_JOB_TAGS, jobId);
+    }
+
     return TrivialExecService.getInstance().run(jarArgsList, removeEnv, env);
   }
 
@@ -245,11 +266,11 @@ public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text>
   }
 
   /**
-   * Replace the placeholder mapreduce tags with our MR jobid so that all child jobs
+   * Replace the placeholder tags with our MR jobid so that all child jobs or hive queries are
    * get tagged with it. This is used on launcher task restart to prevent from having
    * same jobs running in parallel.
    */
-  private static void handleMapReduceJobTag(List<String> jarArgsList, String placeholder,
+  private static void replaceJobTag(List<String> jarArgsList, String placeholder,
       String mapReduceJobTagsProp, String currentJobId) throws IOException {
     String arg = String.format("%s=%s", mapReduceJobTagsProp, currentJobId);
     for(int i = 0; i < jarArgsList.size(); i++) {
@@ -398,11 +419,15 @@ public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text>
     killLauncherChildJobs(conf, context.getJobID().toString());
 
     // Start the job
-    Process proc = startJob(conf,
+    Process proc = startJob(context,
             context.getJobID().toString(),
             conf.get("user.name"),
-            conf.get(OVERRIDE_CLASSPATH));
+            conf.get(OVERRIDE_CLASSPATH),
+            jobType);
 
+    JobState state = new JobState(context.getJobID().toString(), conf);
+    state.setJobType(jobType.toString());
+    state.close();
     ExecutorService pool = Executors.newCachedThreadPool();
     executeWatcher(pool, conf, context.getJobID(),
             proc.getInputStream(), statusdir, STDOUT_FNAME);

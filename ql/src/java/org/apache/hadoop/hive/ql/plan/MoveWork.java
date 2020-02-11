@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,14 +19,14 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
-
 
 /**
  * MoveWork.
@@ -38,49 +38,53 @@ public class MoveWork implements Serializable {
   private LoadTableDesc loadTableWork;
   private LoadFileDesc loadFileWork;
   private LoadMultiFilesDesc loadMultiFilesWork;
-
   private boolean checkFileFormat;
   private boolean srcLocal;
+  private boolean needCleanTarget;
 
   /**
    * ReadEntitites that are passed to the hooks.
    */
-  protected HashSet<ReadEntity> inputs;
+  protected Set<ReadEntity> inputs;
   /**
    * List of WriteEntities that are passed to the hooks.
    */
-  protected HashSet<WriteEntity> outputs;
+  protected Set<WriteEntity> outputs;
 
   /**
    * List of inserted partitions
    */
   protected List<Partition> movedParts;
+  private boolean isInReplicationScope = false;
 
   public MoveWork() {
   }
 
-  public MoveWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs) {
+
+  private MoveWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs) {
     this.inputs = inputs;
     this.outputs = outputs;
+    this.needCleanTarget = true;
   }
 
-  public MoveWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
+  public MoveWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs,
       final LoadTableDesc loadTableWork, final LoadFileDesc loadFileWork,
       boolean checkFileFormat, boolean srcLocal) {
     this(inputs, outputs);
+    if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+      Utilities.FILE_OP_LOGGER.trace("Creating MoveWork " + System.identityHashCode(this)
+        + " with " + loadTableWork + "; " + loadFileWork);
+    }
     this.loadTableWork = loadTableWork;
     this.loadFileWork = loadFileWork;
     this.checkFileFormat = checkFileFormat;
     this.srcLocal = srcLocal;
   }
 
-  public MoveWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
+  public MoveWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs,
       final LoadTableDesc loadTableWork, final LoadFileDesc loadFileWork,
       boolean checkFileFormat) {
-    this(inputs, outputs);
-    this.loadTableWork = loadTableWork;
-    this.loadFileWork = loadFileWork;
-    this.checkFileFormat = checkFileFormat;
+    this(inputs, outputs, loadTableWork, loadFileWork, checkFileFormat, false);
   }
 
   public MoveWork(final MoveWork o) {
@@ -91,6 +95,7 @@ public class MoveWork implements Serializable {
     srcLocal = o.isSrcLocal();
     inputs = o.getInputs();
     outputs = o.getOutputs();
+    needCleanTarget = o.needCleanTarget;
   }
 
   @Explain(displayName = "tables", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
@@ -128,19 +133,19 @@ public class MoveWork implements Serializable {
     this.checkFileFormat = checkFileFormat;
   }
 
-  public HashSet<ReadEntity> getInputs() {
+  public Set<ReadEntity> getInputs() {
     return inputs;
   }
 
-  public HashSet<WriteEntity> getOutputs() {
+  public Set<WriteEntity> getOutputs() {
     return outputs;
   }
 
-  public void setInputs(HashSet<ReadEntity> inputs) {
+  public void setInputs(Set<ReadEntity> inputs) {
     this.inputs = inputs;
   }
 
-  public void setOutputs(HashSet<WriteEntity> outputs) {
+  public void setOutputs(Set<WriteEntity> outputs) {
     this.outputs = outputs;
   }
 
@@ -152,4 +157,19 @@ public class MoveWork implements Serializable {
     this.srcLocal = srcLocal;
   }
 
+  public boolean isNeedCleanTarget() {
+    return needCleanTarget;
+  }
+
+  public void setNeedCleanTarget(boolean needCleanTarget) {
+    this.needCleanTarget = needCleanTarget;
+  }
+
+  public void setIsInReplicationScope(boolean isInReplicationScope) {
+    this.isInReplicationScope = isInReplicationScope;
+  }
+
+  public boolean getIsInReplicationScope() {
+    return this.isInReplicationScope;
+  }
 }

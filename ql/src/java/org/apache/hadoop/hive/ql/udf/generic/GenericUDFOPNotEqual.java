@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,9 +20,7 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColNotEqualLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColNotEqualLongScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.LongScalarNotEqualLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressionsSupportDecimal64;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.*;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -37,6 +35,11 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
   DoubleColNotEqualLongScalar.class, DoubleColNotEqualDoubleScalar.class,
   LongScalarNotEqualLongColumn.class, LongScalarNotEqualDoubleColumn.class,
   DoubleScalarNotEqualLongColumn.class, DoubleScalarNotEqualDoubleColumn.class,
+
+  DecimalColNotEqualDecimalColumn.class, DecimalColNotEqualDecimalScalar.class,
+  DecimalScalarNotEqualDecimalColumn.class,
+  Decimal64ColNotEqualDecimal64Column.class, Decimal64ColNotEqualDecimal64Scalar.class,
+  Decimal64ScalarNotEqualDecimal64Column.class,
 
   StringGroupColNotEqualStringGroupColumn.class, FilterStringGroupColNotEqualStringGroupColumn.class,
   StringGroupColNotEqualStringScalar.class,
@@ -57,6 +60,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 
   FilterDecimalColNotEqualDecimalColumn.class, FilterDecimalColNotEqualDecimalScalar.class,
   FilterDecimalScalarNotEqualDecimalColumn.class,
+
+  FilterDecimal64ColNotEqualDecimal64Column.class, FilterDecimal64ColNotEqualDecimal64Scalar.class,
+  FilterDecimal64ScalarNotEqualDecimal64Column.class,
 
   TimestampColNotEqualTimestampColumn.class,
   TimestampColNotEqualTimestampScalar.class, TimestampScalarNotEqualTimestampColumn.class,
@@ -90,6 +96,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
   DateColNotEqualDateScalar.class,FilterDateColNotEqualDateScalar.class,
   DateScalarNotEqualDateColumn.class,FilterDateScalarNotEqualDateColumn.class,
   })
+@VectorizedExpressionsSupportDecimal64()
 @NDV(maxNdv = 2)
 public class GenericUDFOPNotEqual extends GenericUDFBaseCompare {
   public GenericUDFOPNotEqual(){

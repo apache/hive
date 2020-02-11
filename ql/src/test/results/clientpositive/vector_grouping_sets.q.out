@@ -80,59 +80,63 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/store_200' OVERWRITE I
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@store_txt
-PREHOOK: query: create table store
+PREHOOK: query: create table store_n1
 stored as orc as
 select * from store_txt
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@store_txt
 PREHOOK: Output: database:default
-PREHOOK: Output: default@store
-POSTHOOK: query: create table store
+PREHOOK: Output: default@store_n1
+POSTHOOK: query: create table store_n1
 stored as orc as
 select * from store_txt
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@store_txt
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@store
-POSTHOOK: Lineage: store.s_city SIMPLE [(store_txt)store_txt.FieldSchema(name:s_city, type:string, comment:null), ]
-POSTHOOK: Lineage: store.s_closed_date_sk SIMPLE [(store_txt)store_txt.FieldSchema(name:s_closed_date_sk, type:int, comment:null), ]
-POSTHOOK: Lineage: store.s_company_id SIMPLE [(store_txt)store_txt.FieldSchema(name:s_company_id, type:int, comment:null), ]
-POSTHOOK: Lineage: store.s_company_name SIMPLE [(store_txt)store_txt.FieldSchema(name:s_company_name, type:string, comment:null), ]
-POSTHOOK: Lineage: store.s_country SIMPLE [(store_txt)store_txt.FieldSchema(name:s_country, type:string, comment:null), ]
-POSTHOOK: Lineage: store.s_county SIMPLE [(store_txt)store_txt.FieldSchema(name:s_county, type:string, comment:null), ]
-POSTHOOK: Lineage: store.s_division_id SIMPLE [(store_txt)store_txt.FieldSchema(name:s_division_id, type:int, comment:null), ]
-POSTHOOK: Lineage: store.s_division_name SIMPLE [(store_txt)store_txt.FieldSchema(name:s_division_name, type:string, comment:null), ]
-POSTHOOK: Lineage: store.s_floor_space SIMPLE [(store_txt)store_txt.FieldSchema(name:s_floor_space, type:int, comment:null), ]
-POSTHOOK: Lineage: store.s_geography_class SIMPLE [(store_txt)store_txt.FieldSchema(name:s_geography_class, type:string, comment:null), ]
-POSTHOOK: Lineage: store.s_gmt_offset SIMPLE [(store_txt)store_txt.FieldSchema(name:s_gmt_offset, type:decimal(5,2), comment:null), ]
-POSTHOOK: Lineage: store.s_hours SIMPLE [(store_txt)store_txt.FieldSchema(name:s_hours, type:string, comment:null), ]
-POSTHOOK: Lineage: store.s_manager SIMPLE [(store_txt)store_txt.FieldSchema(name:s_manager, type:string, comment:null), ]
-POSTHOOK: Lineage: store.s_market_desc SIMPLE [(store_txt)store_txt.FieldSchema(name:s_market_desc, type:string, comment:null), ]
-POSTHOOK: Lineage: store.s_market_id SIMPLE [(store_txt)store_txt.FieldSchema(name:s_market_id, type:int, comment:null), ]
-POSTHOOK: Lineage: store.s_market_manager SIMPLE [(store_txt)store_txt.FieldSchema(name:s_market_manager, type:string, comment:null), ]
-POSTHOOK: Lineage: store.s_number_employees SIMPLE [(store_txt)store_txt.FieldSchema(name:s_number_employees, type:int, comment:null), ]
-POSTHOOK: Lineage: store.s_rec_end_date SIMPLE [(store_txt)store_txt.FieldSchema(name:s_rec_end_date, type:string, comment:null), ]
-POSTHOOK: Lineage: store.s_rec_start_date SIMPLE [(store_txt)store_txt.FieldSchema(name:s_rec_start_date, type:string, comment:null), ]
-POSTHOOK: Lineage: store.s_state SIMPLE [(store_txt)store_txt.FieldSchema(name:s_state, type:string, comment:null), ]
-POSTHOOK: Lineage: store.s_store_id SIMPLE [(store_txt)store_txt.FieldSchema(name:s_store_id, type:string, comment:null), ]
-POSTHOOK: Lineage: store.s_store_name SIMPLE [(store_txt)store_txt.FieldSchema(name:s_store_name, type:string, comment:null), ]
-POSTHOOK: Lineage: store.s_store_sk SIMPLE [(store_txt)store_txt.FieldSchema(name:s_store_sk, type:int, comment:null), ]
-POSTHOOK: Lineage: store.s_street_name SIMPLE [(store_txt)store_txt.FieldSchema(name:s_street_name, type:string, comment:null), ]
-POSTHOOK: Lineage: store.s_street_number SIMPLE [(store_txt)store_txt.FieldSchema(name:s_street_number, type:string, comment:null), ]
-POSTHOOK: Lineage: store.s_street_type SIMPLE [(store_txt)store_txt.FieldSchema(name:s_street_type, type:string, comment:null), ]
-POSTHOOK: Lineage: store.s_suite_number SIMPLE [(store_txt)store_txt.FieldSchema(name:s_suite_number, type:string, comment:null), ]
-POSTHOOK: Lineage: store.s_tax_precentage SIMPLE [(store_txt)store_txt.FieldSchema(name:s_tax_precentage, type:decimal(5,2), comment:null), ]
-POSTHOOK: Lineage: store.s_zip SIMPLE [(store_txt)store_txt.FieldSchema(name:s_zip, type:string, comment:null), ]
+POSTHOOK: Output: default@store_n1
+POSTHOOK: Lineage: store_n1.s_city SIMPLE [(store_txt)store_txt.FieldSchema(name:s_city, type:string, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_closed_date_sk SIMPLE [(store_txt)store_txt.FieldSchema(name:s_closed_date_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_company_id SIMPLE [(store_txt)store_txt.FieldSchema(name:s_company_id, type:int, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_company_name SIMPLE [(store_txt)store_txt.FieldSchema(name:s_company_name, type:string, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_country SIMPLE [(store_txt)store_txt.FieldSchema(name:s_country, type:string, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_county SIMPLE [(store_txt)store_txt.FieldSchema(name:s_county, type:string, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_division_id SIMPLE [(store_txt)store_txt.FieldSchema(name:s_division_id, type:int, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_division_name SIMPLE [(store_txt)store_txt.FieldSchema(name:s_division_name, type:string, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_floor_space SIMPLE [(store_txt)store_txt.FieldSchema(name:s_floor_space, type:int, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_geography_class SIMPLE [(store_txt)store_txt.FieldSchema(name:s_geography_class, type:string, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_gmt_offset SIMPLE [(store_txt)store_txt.FieldSchema(name:s_gmt_offset, type:decimal(5,2), comment:null), ]
+POSTHOOK: Lineage: store_n1.s_hours SIMPLE [(store_txt)store_txt.FieldSchema(name:s_hours, type:string, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_manager SIMPLE [(store_txt)store_txt.FieldSchema(name:s_manager, type:string, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_market_desc SIMPLE [(store_txt)store_txt.FieldSchema(name:s_market_desc, type:string, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_market_id SIMPLE [(store_txt)store_txt.FieldSchema(name:s_market_id, type:int, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_market_manager SIMPLE [(store_txt)store_txt.FieldSchema(name:s_market_manager, type:string, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_number_employees SIMPLE [(store_txt)store_txt.FieldSchema(name:s_number_employees, type:int, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_rec_end_date SIMPLE [(store_txt)store_txt.FieldSchema(name:s_rec_end_date, type:string, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_rec_start_date SIMPLE [(store_txt)store_txt.FieldSchema(name:s_rec_start_date, type:string, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_state SIMPLE [(store_txt)store_txt.FieldSchema(name:s_state, type:string, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_store_id SIMPLE [(store_txt)store_txt.FieldSchema(name:s_store_id, type:string, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_store_name SIMPLE [(store_txt)store_txt.FieldSchema(name:s_store_name, type:string, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_store_sk SIMPLE [(store_txt)store_txt.FieldSchema(name:s_store_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_street_name SIMPLE [(store_txt)store_txt.FieldSchema(name:s_street_name, type:string, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_street_number SIMPLE [(store_txt)store_txt.FieldSchema(name:s_street_number, type:string, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_street_type SIMPLE [(store_txt)store_txt.FieldSchema(name:s_street_type, type:string, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_suite_number SIMPLE [(store_txt)store_txt.FieldSchema(name:s_suite_number, type:string, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_tax_precentage SIMPLE [(store_txt)store_txt.FieldSchema(name:s_tax_precentage, type:decimal(5,2), comment:null), ]
+POSTHOOK: Lineage: store_n1.s_zip SIMPLE [(store_txt)store_txt.FieldSchema(name:s_zip, type:string, comment:null), ]
 PREHOOK: query: explain vectorization expression
 select s_store_id
- from store
+ from store_n1
  group by s_store_id with rollup
 PREHOOK: type: QUERY
+PREHOOK: Input: default@store_n1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select s_store_id
- from store
+ from store_n1
  group by s_store_id with rollup
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@store_n1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -146,47 +150,48 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: store
-            Statistics: Num rows: 12 Data size: 25632 Basic stats: COMPLETE Column stats: NONE
+            alias: store_n1
+            Statistics: Num rows: 12 Data size: 1200 Basic stats: COMPLETE Column stats: COMPLETE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28]
             Select Operator
               expressions: s_store_id (type: string)
               outputColumnNames: s_store_id
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
-                  projectedOutputColumns: [1]
-              Statistics: Num rows: 12 Data size: 25632 Basic stats: COMPLETE Column stats: NONE
+                  projectedOutputColumnNums: [1]
+              Statistics: Num rows: 12 Data size: 1200 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
                 Group By Vectorization:
                     className: VectorGroupByOperator
                     groupByMode: HASH
-                    vectorOutput: true
-                    keyExpressions: col 1, ConstantVectorExpression(val 0) -> 29:long
+                    keyExpressions: col 1:string, ConstantVectorExpression(val 0) -> 30:bigint
                     native: false
                     vectorProcessingMode: HASH
-                    projectedOutputColumns: []
-                keys: s_store_id (type: string), 0 (type: int)
+                    projectedOutputColumnNums: []
+                keys: s_store_id (type: string), 0L (type: bigint)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 24 Data size: 51264 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 12 Data size: 1296 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
-                  key expressions: _col0 (type: string), _col1 (type: int)
+                  key expressions: _col0 (type: string), _col1 (type: bigint)
+                  null sort order: zz
                   sort order: ++
-                  Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkOperator
                       native: false
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
-                  Statistics: Num rows: 24 Data size: 51264 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12 Data size: 1296 Basic stats: COMPLETE Column stats: COMPLETE
       Execution mode: vectorized
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -197,20 +202,14 @@ STAGE PLANS:
           enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Group By Operator
-          Group By Vectorization:
-              groupByMode: MERGEPARTIAL
-              vectorOutput: false
-              native: false
-              vectorProcessingMode: NONE
-              projectedOutputColumns: null
-          keys: KEY._col0 (type: string), KEY._col1 (type: int)
+          keys: KEY._col0 (type: string), KEY._col1 (type: bigint)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 12 Data size: 25632 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 12 Data size: 1296 Basic stats: COMPLETE Column stats: COMPLETE
           pruneGroupingSetId: true
           File Output Operator
             compressed: false
-            Statistics: Num rows: 12 Data size: 25632 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12 Data size: 1296 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -223,34 +222,38 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select s_store_id
- from store
+ from store_n1
  group by s_store_id with rollup
 PREHOOK: type: QUERY
-PREHOOK: Input: default@store
+PREHOOK: Input: default@store_n1
 #### A masked pattern was here ####
 POSTHOOK: query: select s_store_id
- from store
+ from store_n1
  group by s_store_id with rollup
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@store
+POSTHOOK: Input: default@store_n1
 #### A masked pattern was here ####
-NULL
 AAAAAAAABAAAAAAA
 AAAAAAAACAAAAAAA
 AAAAAAAAEAAAAAAA
 AAAAAAAAHAAAAAAA
 AAAAAAAAIAAAAAAA
 AAAAAAAAKAAAAAAA
+NULL
 PREHOOK: query: explain vectorization expression
 select s_store_id, GROUPING__ID
- from store
+ from store_n1
  group by s_store_id with rollup
 PREHOOK: type: QUERY
+PREHOOK: Input: default@store_n1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select s_store_id, GROUPING__ID
- from store
+ from store_n1
  group by s_store_id with rollup
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@store_n1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -264,47 +267,48 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: store
-            Statistics: Num rows: 12 Data size: 25632 Basic stats: COMPLETE Column stats: NONE
+            alias: store_n1
+            Statistics: Num rows: 12 Data size: 1200 Basic stats: COMPLETE Column stats: COMPLETE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28]
             Select Operator
               expressions: s_store_id (type: string)
               outputColumnNames: _col0
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
-                  projectedOutputColumns: [1]
-              Statistics: Num rows: 12 Data size: 25632 Basic stats: COMPLETE Column stats: NONE
+                  projectedOutputColumnNums: [1]
+              Statistics: Num rows: 12 Data size: 1200 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
                 Group By Vectorization:
                     className: VectorGroupByOperator
                     groupByMode: HASH
-                    vectorOutput: true
-                    keyExpressions: col 1, ConstantVectorExpression(val 0) -> 29:long
+                    keyExpressions: col 1:string, ConstantVectorExpression(val 0) -> 30:bigint
                     native: false
                     vectorProcessingMode: HASH
-                    projectedOutputColumns: []
-                keys: _col0 (type: string), 0 (type: int)
+                    projectedOutputColumnNums: []
+                keys: _col0 (type: string), 0L (type: bigint)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 24 Data size: 51264 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 12 Data size: 1296 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
-                  key expressions: _col0 (type: string), _col1 (type: int)
+                  key expressions: _col0 (type: string), _col1 (type: bigint)
+                  null sort order: zz
                   sort order: ++
-                  Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkOperator
                       native: false
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
-                  Statistics: Num rows: 24 Data size: 51264 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12 Data size: 1296 Basic stats: COMPLETE Column stats: COMPLETE
       Execution mode: vectorized
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -315,23 +319,17 @@ STAGE PLANS:
           enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Group By Operator
-          Group By Vectorization:
-              groupByMode: MERGEPARTIAL
-              vectorOutput: false
-              native: false
-              vectorProcessingMode: NONE
-              projectedOutputColumns: null
-          keys: KEY._col0 (type: string), KEY._col1 (type: int)
+          keys: KEY._col0 (type: string), KEY._col1 (type: bigint)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 12 Data size: 25632 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 12 Data size: 1296 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions: _col0 (type: string), _col1 (type: int)
+            expressions: _col0 (type: string), _col1 (type: bigint)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 12 Data size: 25632 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12 Data size: 1296 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 12 Data size: 25632 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 12 Data size: 1296 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -344,34 +342,38 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select s_store_id, GROUPING__ID
- from store
+ from store_n1
  group by s_store_id with rollup
 PREHOOK: type: QUERY
-PREHOOK: Input: default@store
+PREHOOK: Input: default@store_n1
 #### A masked pattern was here ####
 POSTHOOK: query: select s_store_id, GROUPING__ID
- from store
+ from store_n1
  group by s_store_id with rollup
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@store
+POSTHOOK: Input: default@store_n1
 #### A masked pattern was here ####
-NULL	1
 AAAAAAAABAAAAAAA	0
 AAAAAAAACAAAAAAA	0
 AAAAAAAAEAAAAAAA	0
 AAAAAAAAHAAAAAAA	0
 AAAAAAAAIAAAAAAA	0
 AAAAAAAAKAAAAAAA	0
+NULL	1
 PREHOOK: query: explain
 select s_store_id, GROUPING__ID
- from store
+ from store_n1
  group by rollup(s_store_id)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@store_n1
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select s_store_id, GROUPING__ID
- from store
+ from store_n1
  group by rollup(s_store_id)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@store_n1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -381,36 +383,38 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: store
-            Statistics: Num rows: 12 Data size: 25632 Basic stats: COMPLETE Column stats: NONE
+            alias: store_n1
+            Statistics: Num rows: 12 Data size: 1200 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: s_store_id (type: string)
               outputColumnNames: _col0
-              Statistics: Num rows: 12 Data size: 25632 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 12 Data size: 1200 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
-                keys: _col0 (type: string), 0 (type: int)
+                keys: _col0 (type: string), 0L (type: bigint)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 24 Data size: 51264 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 12 Data size: 1296 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
-                  key expressions: _col0 (type: string), _col1 (type: int)
+                  key expressions: _col0 (type: string), _col1 (type: bigint)
+                  null sort order: zz
                   sort order: ++
-                  Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
-                  Statistics: Num rows: 24 Data size: 51264 Basic stats: COMPLETE Column stats: NONE
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
+                  Statistics: Num rows: 12 Data size: 1296 Basic stats: COMPLETE Column stats: COMPLETE
       Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
-          keys: KEY._col0 (type: string), KEY._col1 (type: int)
+          keys: KEY._col0 (type: string), KEY._col1 (type: bigint)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 12 Data size: 25632 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 12 Data size: 1296 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions: _col0 (type: string), _col1 (type: int)
+            expressions: _col0 (type: string), _col1 (type: bigint)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 12 Data size: 25632 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12 Data size: 1296 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 12 Data size: 25632 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 12 Data size: 1296 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

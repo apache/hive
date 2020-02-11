@@ -1,9 +1,19 @@
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization detail
 select * from src a join src1 b on a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization detail
 select * from src a join src1 b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -15,37 +25,46 @@ STAGE PLANS:
           TableScan
             alias: a
             filterExpr: key is not null (type: boolean)
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col1 (type: string)
           TableScan
             alias: b
             filterExpr: key is not null (type: boolean)
-            Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col1 (type: string)
+      Map Vectorization:
+          enabled: false
+          enabledConditionsNotMet: Vectorized map work only works with 1 TableScanOperator IS false
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -54,10 +73,10 @@ STAGE PLANS:
             0 _col0 (type: string)
             1 _col0 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3
-          Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -116,124 +135,138 @@ POSTHOOK: Input: default@src1
 66	val_66	66	val_66
 98	val_98	98	val_98
 98	val_98	98	val_98
-PREHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE srcbucket_mapjoin_n16(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+PREHOOK: Output: default@srcbucket_mapjoin_n16
+POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_n16(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcbucket_mapjoin
-PREHOOK: query: CREATE TABLE tab_part (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS ORCFILE
+POSTHOOK: Output: default@srcbucket_mapjoin_n16
+PREHOOK: query: CREATE TABLE tab_part_n10 (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS ORCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tab_part
-POSTHOOK: query: CREATE TABLE tab_part (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS ORCFILE
+PREHOOK: Output: default@tab_part_n10
+POSTHOOK: query: CREATE TABLE tab_part_n10 (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS ORCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tab_part
-PREHOOK: query: CREATE TABLE srcbucket_mapjoin_part (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+POSTHOOK: Output: default@tab_part_n10
+PREHOOK: query: CREATE TABLE srcbucket_mapjoin_part_n17 (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcbucket_mapjoin_part
-POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_part (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+PREHOOK: Output: default@srcbucket_mapjoin_part_n17
+POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_part_n17 (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcbucket_mapjoin_part
-PREHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n17
+PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_n16 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_n16
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_n16 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_n16
+POSTHOOK: Output: default@srcbucket_mapjoin_n16@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj1/000001_0' INTO TABLE srcbucket_mapjoin_n16 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_n16@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/bmj1/000001_0' INTO TABLE srcbucket_mapjoin_n16 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_n16@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part_n17 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin_part
-POSTHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_part_n17
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part_n17 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin_part
-POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n17
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n17@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part_n17 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_part_n17@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part_n17 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n17@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part_n17 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_part_n17@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part_n17 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/srcbucket23.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n17@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part_n17 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/srcbucket23.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_part_n17@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part_n17 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: query: insert overwrite table tab_part partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin_part
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n17@ds=2008-04-08
+PREHOOK: query: insert overwrite table tab_part_n10 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_part_n17
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin_part
-PREHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: Output: default@tab_part@ds=2008-04-08
-POSTHOOK: query: insert overwrite table tab_part partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin_part
+PREHOOK: Input: default@srcbucket_mapjoin_part_n17
+PREHOOK: Input: default@srcbucket_mapjoin_part_n17@ds=2008-04-08
+PREHOOK: Output: default@tab_part_n10@ds=2008-04-08
+POSTHOOK: query: insert overwrite table tab_part_n10 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_part_n17
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin_part
-POSTHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
-POSTHOOK: Output: default@tab_part@ds=2008-04-08
-POSTHOOK: Lineage: tab_part PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_part)srcbucket_mapjoin_part.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: tab_part PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_part)srcbucket_mapjoin_part.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: CREATE TABLE tab(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS ORCFILE
+POSTHOOK: Input: default@srcbucket_mapjoin_part_n17
+POSTHOOK: Input: default@srcbucket_mapjoin_part_n17@ds=2008-04-08
+POSTHOOK: Output: default@tab_part_n10@ds=2008-04-08
+POSTHOOK: Lineage: tab_part_n10 PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_part_n17)srcbucket_mapjoin_part_n17.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tab_part_n10 PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_part_n17)srcbucket_mapjoin_part_n17.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: CREATE TABLE tab_n9(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS ORCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tab
-POSTHOOK: query: CREATE TABLE tab(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS ORCFILE
+PREHOOK: Output: default@tab_n9
+POSTHOOK: query: CREATE TABLE tab_n9(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS ORCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tab
-PREHOOK: query: insert overwrite table tab partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin
+POSTHOOK: Output: default@tab_n9
+PREHOOK: query: insert overwrite table tab_n9 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_n16
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin
-PREHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
-PREHOOK: Output: default@tab@ds=2008-04-08
-POSTHOOK: query: insert overwrite table tab partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin
+PREHOOK: Input: default@srcbucket_mapjoin_n16
+PREHOOK: Input: default@srcbucket_mapjoin_n16@ds=2008-04-08
+PREHOOK: Output: default@tab_n9@ds=2008-04-08
+POSTHOOK: query: insert overwrite table tab_n9 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_n16
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin
-POSTHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
-POSTHOOK: Output: default@tab@ds=2008-04-08
-POSTHOOK: Lineage: tab PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin)srcbucket_mapjoin.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: tab PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin)srcbucket_mapjoin.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: explain
+POSTHOOK: Input: default@srcbucket_mapjoin_n16
+POSTHOOK: Input: default@srcbucket_mapjoin_n16@ds=2008-04-08
+POSTHOOK: Output: default@tab_n9@ds=2008-04-08
+POSTHOOK: Lineage: tab_n9 PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_n16)srcbucket_mapjoin_n16.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tab_n9 PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_n16)srcbucket_mapjoin_n16.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: explain vectorization detail
 select count(*)
-from tab a join tab_part b on a.key = b.key
+from tab_n9 a join tab_part_n10 b on a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization detail
 select count(*)
-from tab a join tab_part b on a.key = b.key
+from tab_n9 a join tab_part_n10 b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -246,35 +279,44 @@ STAGE PLANS:
           TableScan
             alias: a
             filterExpr: key is not null (type: boolean)
-            Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: b
             filterExpr: key is not null (type: boolean)
-            Statistics: Num rows: 500 Data size: 47000 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 500 Data size: 47000 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 500 Data size: 47000 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 500 Data size: 47000 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
+      Map Vectorization:
+          enabled: false
+          enabledConditionsNotMet: Vectorized map work only works with 1 TableScanOperator IS false
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -282,12 +324,13 @@ STAGE PLANS:
           keys:
             0 _col0 (type: int)
             1 _col0 (type: int)
-          Statistics: Num rows: 550 Data size: 51700 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
           Group By Operator
             aggregations: count()
+            minReductionHashAggr: 0.99
             mode: hash
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
               table:
@@ -299,20 +342,48 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
+            TableScan Vectorization:
+                native: true
+                vectorizationSchemaColumns: [0:_col0:bigint]
             Reduce Output Operator
+              null sort order: 
               sort order: 
-              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              Reduce Sink Vectorization:
+                  className: VectorReduceSinkOperator
+                  native: false
+                  nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                  nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+              Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col0 (type: bigint)
       Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
+          inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+          rowBatchContext:
+              dataColumnCount: 1
+              includeColumns: [0]
+              dataColumns: _col0:bigint
+              partitionColumnCount: 0
+              scratchColumnTypeNames: []
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -324,19 +395,19 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from tab a join tab_part b on a.key = b.key
+PREHOOK: query: select * from tab_n9 a join tab_part_n10 b on a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab@ds=2008-04-08
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
-POSTHOOK: query: select * from tab a join tab_part b on a.key = b.key
+POSTHOOK: query: select * from tab_n9 a join tab_part_n10 b on a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab@ds=2008-04-08
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 0	val_0	2008-04-08	0	val_0	2008-04-08
 0	val_0	2008-04-08	0	val_0	2008-04-08
@@ -818,19 +889,19 @@ POSTHOOK: Input: default@tab_part@ds=2008-04-08
 97	val_97	2008-04-08	97	val_97	2008-04-08
 97	val_97	2008-04-08	97	val_97	2008-04-08
 97	val_97	2008-04-08	97	val_97	2008-04-08
-PREHOOK: query: select * from tab a join tab_part b on a.key = b.key
+PREHOOK: query: select * from tab_n9 a join tab_part_n10 b on a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab@ds=2008-04-08
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
-POSTHOOK: query: select * from tab a join tab_part b on a.key = b.key
+POSTHOOK: query: select * from tab_n9 a join tab_part_n10 b on a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab@ds=2008-04-08
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 0	val_0	2008-04-08	0	val_0	2008-04-08
 0	val_0	2008-04-08	0	val_0	2008-04-08
@@ -1312,14 +1383,28 @@ POSTHOOK: Input: default@tab_part@ds=2008-04-08
 97	val_97	2008-04-08	97	val_97	2008-04-08
 97	val_97	2008-04-08	97	val_97	2008-04-08
 97	val_97	2008-04-08	97	val_97	2008-04-08
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization detail
 select count(*)
-from tab a left outer join tab_part b on a.key = b.key
+from tab_n9 a left outer join tab_part_n10 b on a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization detail
 select count(*)
-from tab a left outer join tab_part b on a.key = b.key
+from tab_n9 a left outer join tab_part_n10 b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1331,28 +1416,41 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: key (type: int)
               outputColumnNames: _col0
-              Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: _col0 (type: int)
+                null sort order: z
                 sort order: +
                 Map-reduce partition columns: _col0 (type: int)
-                Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: b
-            Statistics: Num rows: 500 Data size: 47000 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: key (type: int)
-              outputColumnNames: _col0
-              Statistics: Num rows: 500 Data size: 47000 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col0 (type: int)
-                sort order: +
-                Map-reduce partition columns: _col0 (type: int)
-                Statistics: Num rows: 500 Data size: 47000 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: key is not null (type: boolean)
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: key (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  null sort order: z
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
+      Map Vectorization:
+          enabled: false
+          enabledConditionsNotMet: Vectorized map work only works with 1 TableScanOperator IS false
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -1360,12 +1458,13 @@ STAGE PLANS:
           keys:
             0 _col0 (type: int)
             1 _col0 (type: int)
-          Statistics: Num rows: 550 Data size: 51700 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
           Group By Operator
             aggregations: count()
+            minReductionHashAggr: 0.99
             mode: hash
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
               table:
@@ -1377,20 +1476,48 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
+            TableScan Vectorization:
+                native: true
+                vectorizationSchemaColumns: [0:_col0:bigint]
             Reduce Output Operator
+              null sort order: 
               sort order: 
-              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              Reduce Sink Vectorization:
+                  className: VectorReduceSinkOperator
+                  native: false
+                  nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                  nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+              Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col0 (type: bigint)
       Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
+          inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+          rowBatchContext:
+              dataColumnCount: 1
+              includeColumns: [0]
+              dataColumns: _col0:bigint
+              partitionColumnCount: 0
+              scratchColumnTypeNames: []
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1403,30 +1530,44 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select count(*)
-from tab a left outer join tab_part b on a.key = b.key
+from tab_n9 a left outer join tab_part_n10 b on a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab@ds=2008-04-08
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*)
-from tab a left outer join tab_part b on a.key = b.key
+from tab_n9 a left outer join tab_part_n10 b on a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab@ds=2008-04-08
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 480
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization detail
 select count (*)
-from tab a right outer join tab_part b on a.key = b.key
+from tab_n9 a right outer join tab_part_n10 b on a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization detail
 select count (*)
-from tab a right outer join tab_part b on a.key = b.key
+from tab_n9 a right outer join tab_part_n10 b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1438,28 +1579,41 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: key (type: int)
-              outputColumnNames: _col0
-              Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col0 (type: int)
-                sort order: +
-                Map-reduce partition columns: _col0 (type: int)
-                Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: key is not null (type: boolean)
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: key (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  null sort order: z
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: b
-            Statistics: Num rows: 500 Data size: 47000 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: key (type: int)
               outputColumnNames: _col0
-              Statistics: Num rows: 500 Data size: 47000 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: _col0 (type: int)
+                null sort order: z
                 sort order: +
                 Map-reduce partition columns: _col0 (type: int)
-                Statistics: Num rows: 500 Data size: 47000 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
+      Map Vectorization:
+          enabled: false
+          enabledConditionsNotMet: Vectorized map work only works with 1 TableScanOperator IS false
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -1467,12 +1621,13 @@ STAGE PLANS:
           keys:
             0 _col0 (type: int)
             1 _col0 (type: int)
-          Statistics: Num rows: 550 Data size: 51700 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
           Group By Operator
             aggregations: count()
+            minReductionHashAggr: 0.99
             mode: hash
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
               table:
@@ -1484,20 +1639,48 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
+            TableScan Vectorization:
+                native: true
+                vectorizationSchemaColumns: [0:_col0:bigint]
             Reduce Output Operator
+              null sort order: 
               sort order: 
-              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              Reduce Sink Vectorization:
+                  className: VectorReduceSinkOperator
+                  native: false
+                  nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                  nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+              Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col0 (type: bigint)
       Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
+          inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+          rowBatchContext:
+              dataColumnCount: 1
+              includeColumns: [0]
+              dataColumns: _col0:bigint
+              partitionColumnCount: 0
+              scratchColumnTypeNames: []
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1510,30 +1693,44 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select count (*)
-from tab a right outer join tab_part b on a.key = b.key
+from tab_n9 a right outer join tab_part_n10 b on a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab@ds=2008-04-08
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 POSTHOOK: query: select count (*)
-from tab a right outer join tab_part b on a.key = b.key
+from tab_n9 a right outer join tab_part_n10 b on a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab@ds=2008-04-08
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 738
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization detail
 select count(*)
-from tab a full outer join tab_part b on a.key = b.key
+from tab_n9 a full outer join tab_part_n10 b on a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization detail
 select count(*)
-from tab a full outer join tab_part b on a.key = b.key
+from tab_n9 a full outer join tab_part_n10 b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1545,41 +1742,51 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: key (type: int)
               outputColumnNames: _col0
-              Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: _col0 (type: int)
+                null sort order: z
                 sort order: +
                 Map-reduce partition columns: _col0 (type: int)
-                Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: b
-            Statistics: Num rows: 500 Data size: 47000 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: key (type: int)
               outputColumnNames: _col0
-              Statistics: Num rows: 500 Data size: 47000 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: _col0 (type: int)
+                null sort order: z
                 sort order: +
                 Map-reduce partition columns: _col0 (type: int)
-                Statistics: Num rows: 500 Data size: 47000 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
+      Map Vectorization:
+          enabled: false
+          enabledConditionsNotMet: Vectorized map work only works with 1 TableScanOperator IS false
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Outer Join 0 to 1
+               Full Outer Join 0 to 1
           keys:
             0 _col0 (type: int)
             1 _col0 (type: int)
-          Statistics: Num rows: 550 Data size: 51700 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
           Group By Operator
             aggregations: count()
+            minReductionHashAggr: 0.99
             mode: hash
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
               table:
@@ -1591,20 +1798,48 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
+            TableScan Vectorization:
+                native: true
+                vectorizationSchemaColumns: [0:_col0:bigint]
             Reduce Output Operator
+              null sort order: 
               sort order: 
-              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              Reduce Sink Vectorization:
+                  className: VectorReduceSinkOperator
+                  native: false
+                  nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                  nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+              Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col0 (type: bigint)
       Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
+          inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+          rowBatchContext:
+              dataColumnCount: 1
+              includeColumns: [0]
+              dataColumns: _col0:bigint
+              partitionColumnCount: 0
+              scratchColumnTypeNames: []
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1617,26 +1852,44 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select count(*)
-from tab a full outer join tab_part b on a.key = b.key
+from tab_n9 a full outer join tab_part_n10 b on a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab@ds=2008-04-08
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*)
-from tab a full outer join tab_part b on a.key = b.key
+from tab_n9 a full outer join tab_part_n10 b on a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab@ds=2008-04-08
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 738
-PREHOOK: query: explain select count(*) from tab a join tab_part b on a.key = b.key join src1 c on a.value = c.value
+PREHOOK: query: explain vectorization detail
+select count(*) from tab_n9 a join tab_part_n10 b on a.key = b.key join src1 c on a.value = c.value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select count(*) from tab a join tab_part b on a.key = b.key join src1 c on a.value = c.value
+PREHOOK: Input: default@src1
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization detail
+select count(*) from tab_n9 a join tab_part_n10 b on a.key = b.key join src1 c on a.value = c.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1650,36 +1903,45 @@ STAGE PLANS:
           TableScan
             alias: a
             filterExpr: (key is not null and value is not null) (type: boolean)
-            Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (key is not null and value is not null) (type: boolean)
-              Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: int), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col1 (type: string)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col1 (type: string)
-                  Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: int)
           TableScan
             alias: c
             filterExpr: value is not null (type: boolean)
-            Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: value is not null (type: boolean)
-              Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: value (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
+      Map Vectorization:
+          enabled: false
+          enabledConditionsNotMet: Vectorized map work only works with 1 TableScanOperator IS false
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -1688,7 +1950,7 @@ STAGE PLANS:
             0 _col1 (type: string)
             1 _col0 (type: string)
           outputColumnNames: _col0
-          Statistics: Num rows: 266 Data size: 25022 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
             table:
@@ -1702,25 +1964,34 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: int)
+              null sort order: z
               sort order: +
               Map-reduce partition columns: _col0 (type: int)
-              Statistics: Num rows: 266 Data size: 25022 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: b
             filterExpr: key is not null (type: boolean)
-            Statistics: Num rows: 500 Data size: 47000 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 500 Data size: 47000 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 500 Data size: 47000 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 500 Data size: 47000 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
+      Map Vectorization:
+          enabled: false
+          enabledConditionsNotMet: Vectorized map work only works with 1 TableScanOperator IS false
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -1728,12 +1999,13 @@ STAGE PLANS:
           keys:
             0 _col0 (type: int)
             1 _col0 (type: int)
-          Statistics: Num rows: 550 Data size: 51700 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
           Group By Operator
             aggregations: count()
+            minReductionHashAggr: 0.99
             mode: hash
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
               table:
@@ -1745,20 +2017,48 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
+            TableScan Vectorization:
+                native: true
+                vectorizationSchemaColumns: [0:_col0:bigint]
             Reduce Output Operator
+              null sort order: 
               sort order: 
-              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              Reduce Sink Vectorization:
+                  className: VectorReduceSinkOperator
+                  native: false
+                  nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                  nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+              Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col0 (type: bigint)
       Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
+          inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+          rowBatchContext:
+              dataColumnCount: 1
+              includeColumns: [0]
+              dataColumns: _col0:bigint
+              partitionColumnCount: 0
+              scratchColumnTypeNames: []
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1770,27 +2070,43 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from tab a join tab_part b on a.key = b.key join src1 c on a.value = c.value
+PREHOOK: query: select count(*) from tab_n9 a join tab_part_n10 b on a.key = b.key join src1 c on a.value = c.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab@ds=2008-04-08
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from tab a join tab_part b on a.key = b.key join src1 c on a.value = c.value
+POSTHOOK: query: select count(*) from tab_n9 a join tab_part_n10 b on a.key = b.key join src1 c on a.value = c.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab@ds=2008-04-08
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 40
-PREHOOK: query: explain select count(*) from tab a join tab_part b on a.value = b.value
+PREHOOK: query: explain vectorization detail
+select count(*) from tab_n9 a join tab_part_n10 b on a.value = b.value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select count(*) from tab a join tab_part b on a.value = b.value
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization detail
+select count(*) from tab_n9 a join tab_part_n10 b on a.value = b.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1803,48 +2119,58 @@ STAGE PLANS:
           TableScan
             alias: a
             filterExpr: value is not null (type: boolean)
-            Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: value is not null (type: boolean)
-              Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: value (type: string)
-                outputColumnNames: _col1
-                Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+                outputColumnNames: _col0
+                Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
-                  key expressions: _col1 (type: string)
+                  key expressions: _col0 (type: string)
+                  null sort order: z
                   sort order: +
-                  Map-reduce partition columns: _col1 (type: string)
-                  Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: b
             filterExpr: value is not null (type: boolean)
-            Statistics: Num rows: 500 Data size: 47000 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: value is not null (type: boolean)
-              Statistics: Num rows: 500 Data size: 47000 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: value (type: string)
-                outputColumnNames: _col1
-                Statistics: Num rows: 500 Data size: 47000 Basic stats: COMPLETE Column stats: NONE
+                outputColumnNames: _col0
+                Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
-                  key expressions: _col1 (type: string)
+                  key expressions: _col0 (type: string)
+                  null sort order: z
                   sort order: +
-                  Map-reduce partition columns: _col1 (type: string)
-                  Statistics: Num rows: 500 Data size: 47000 Basic stats: COMPLETE Column stats: NONE
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
+      Map Vectorization:
+          enabled: false
+          enabledConditionsNotMet: Vectorized map work only works with 1 TableScanOperator IS false
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           keys:
-            0 _col1 (type: string)
-            1 _col1 (type: string)
-          Statistics: Num rows: 550 Data size: 51700 Basic stats: COMPLETE Column stats: NONE
+            0 _col0 (type: string)
+            1 _col0 (type: string)
+          Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
           Group By Operator
             aggregations: count()
+            minReductionHashAggr: 0.99
             mode: hash
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
               table:
@@ -1856,20 +2182,48 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
+            TableScan Vectorization:
+                native: true
+                vectorizationSchemaColumns: [0:_col0:bigint]
             Reduce Output Operator
+              null sort order: 
               sort order: 
-              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              Reduce Sink Vectorization:
+                  className: VectorReduceSinkOperator
+                  native: false
+                  nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                  nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+              Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col0 (type: bigint)
       Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
+          inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+          rowBatchContext:
+              dataColumnCount: 1
+              includeColumns: [0]
+              dataColumns: _col0:bigint
+              partitionColumnCount: 0
+              scratchColumnTypeNames: []
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1881,33 +2235,47 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from tab a join tab_part b on a.value = b.value
+PREHOOK: query: select count(*) from tab_n9 a join tab_part_n10 b on a.value = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab@ds=2008-04-08
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from tab a join tab_part b on a.value = b.value
+POSTHOOK: query: select count(*) from tab_n9 a join tab_part_n10 b on a.value = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab@ds=2008-04-08
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 480
-PREHOOK: query: explain
-select count(*) from (select s1.key as key, s1.value as value from tab s1 join tab s3 on s1.key=s3.key
+PREHOOK: query: explain vectorization detail
+select count(*) from (select s1.key as key, s1.value as value from tab_n9 s1 join tab_n9 s3 on s1.key=s3.key
 UNION  ALL
-select s2.key as key, s2.value as value from tab s2
-) a join tab_part b on (a.key = b.key)
+select s2.key as key, s2.value as value from tab_n9 s2
+) a join tab_part_n10 b on (a.key = b.key)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
-select count(*) from (select s1.key as key, s1.value as value from tab s1 join tab s3 on s1.key=s3.key
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization detail
+select count(*) from (select s1.key as key, s1.value as value from tab_n9 s1 join tab_n9 s3 on s1.key=s3.key
 UNION  ALL
-select s2.key as key, s2.value as value from tab s2
-) a join tab_part b on (a.key = b.key)
+select s2.key as key, s2.value as value from tab_n9 s2
+) a join tab_part_n10 b on (a.key = b.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1921,35 +2289,44 @@ STAGE PLANS:
           TableScan
             alias: s1
             filterExpr: key is not null (type: boolean)
-            Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: s3
             filterExpr: key is not null (type: boolean)
-            Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
+      Map Vectorization:
+          enabled: false
+          enabledConditionsNotMet: Vectorized map work only works with 1 TableScanOperator IS false
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -1958,7 +2335,7 @@ STAGE PLANS:
             0 _col0 (type: int)
             1 _col0 (type: int)
           outputColumnNames: _col0
-          Statistics: Num rows: 266 Data size: 25022 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
             table:
@@ -1971,46 +2348,56 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             Union
-              Statistics: Num rows: 508 Data size: 47770 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: _col0 (type: int)
+                null sort order: z
                 sort order: +
                 Map-reduce partition columns: _col0 (type: int)
-                Statistics: Num rows: 508 Data size: 47770 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: s2
             filterExpr: key is not null (type: boolean)
-            Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                 Union
-                  Statistics: Num rows: 508 Data size: 47770 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int)
+                    null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col0 (type: int)
-                    Statistics: Num rows: 508 Data size: 47770 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: b
             filterExpr: key is not null (type: boolean)
-            Statistics: Num rows: 500 Data size: 47000 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 500 Data size: 47000 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 500 Data size: 47000 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 500 Data size: 47000 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
+      Map Vectorization:
+          enabled: false
+          enabledConditionsNotMet: Vectorized map work only works with 1 TableScanOperator IS false
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -2018,12 +2405,13 @@ STAGE PLANS:
           keys:
             0 _col0 (type: int)
             1 _col0 (type: int)
-          Statistics: Num rows: 558 Data size: 52547 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
           Group By Operator
             aggregations: count()
+            minReductionHashAggr: 0.99
             mode: hash
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
               table:
@@ -2035,20 +2423,48 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
+            TableScan Vectorization:
+                native: true
+                vectorizationSchemaColumns: [0:_col0:bigint]
             Reduce Output Operator
+              null sort order: 
               sort order: 
-              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              Reduce Sink Vectorization:
+                  className: VectorReduceSinkOperator
+                  native: false
+                  nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                  nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+              Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col0 (type: bigint)
       Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
+          inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+          rowBatchContext:
+              dataColumnCount: 1
+              includeColumns: [0]
+              dataColumns: _col0:bigint
+              partitionColumnCount: 0
+              scratchColumnTypeNames: []
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2060,10 +2476,26 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select count(*) from tab a join tab_part b on a.value = b.value
+PREHOOK: query: explain vectorization detail
+select count(*) from tab_n9 a join tab_part_n10 b on a.value = b.value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select count(*) from tab a join tab_part b on a.value = b.value
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization detail
+select count(*) from tab_n9 a join tab_part_n10 b on a.value = b.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -2076,48 +2508,58 @@ STAGE PLANS:
           TableScan
             alias: a
             filterExpr: value is not null (type: boolean)
-            Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: value is not null (type: boolean)
-              Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: value (type: string)
-                outputColumnNames: _col1
-                Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+                outputColumnNames: _col0
+                Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
-                  key expressions: _col1 (type: string)
+                  key expressions: _col0 (type: string)
+                  null sort order: z
                   sort order: +
-                  Map-reduce partition columns: _col1 (type: string)
-                  Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: b
             filterExpr: value is not null (type: boolean)
-            Statistics: Num rows: 500 Data size: 47000 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: value is not null (type: boolean)
-              Statistics: Num rows: 500 Data size: 47000 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: value (type: string)
-                outputColumnNames: _col1
-                Statistics: Num rows: 500 Data size: 47000 Basic stats: COMPLETE Column stats: NONE
+                outputColumnNames: _col0
+                Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
-                  key expressions: _col1 (type: string)
+                  key expressions: _col0 (type: string)
+                  null sort order: z
                   sort order: +
-                  Map-reduce partition columns: _col1 (type: string)
-                  Statistics: Num rows: 500 Data size: 47000 Basic stats: COMPLETE Column stats: NONE
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
+      Map Vectorization:
+          enabled: false
+          enabledConditionsNotMet: Vectorized map work only works with 1 TableScanOperator IS false
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           keys:
-            0 _col1 (type: string)
-            1 _col1 (type: string)
-          Statistics: Num rows: 550 Data size: 51700 Basic stats: COMPLETE Column stats: NONE
+            0 _col0 (type: string)
+            1 _col0 (type: string)
+          Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
           Group By Operator
             aggregations: count()
+            minReductionHashAggr: 0.99
             mode: hash
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
               table:
@@ -2129,20 +2571,48 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
+            TableScan Vectorization:
+                native: true
+                vectorizationSchemaColumns: [0:_col0:bigint]
             Reduce Output Operator
+              null sort order: 
               sort order: 
-              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              Reduce Sink Vectorization:
+                  className: VectorReduceSinkOperator
+                  native: false
+                  nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                  nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+              Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col0 (type: bigint)
       Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
+          inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+          rowBatchContext:
+              dataColumnCount: 1
+              includeColumns: [0]
+              dataColumns: _col0:bigint
+              partitionColumnCount: 0
+              scratchColumnTypeNames: []
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2154,25 +2624,43 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from tab a join tab_part b on a.value = b.value
+PREHOOK: query: select count(*) from tab_n9 a join tab_part_n10 b on a.value = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab@ds=2008-04-08
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from tab a join tab_part b on a.value = b.value
+POSTHOOK: query: select count(*) from tab_n9 a join tab_part_n10 b on a.value = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab@ds=2008-04-08
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 480
-PREHOOK: query: explain select count(*) from tab a join tab_part b on a.key = b.key join src1 c on a.value = c.value
+PREHOOK: query: explain vectorization detail
+select count(*) from tab_n9 a join tab_part_n10 b on a.key = b.key join src1 c on a.value = c.value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select count(*) from tab a join tab_part b on a.key = b.key join src1 c on a.value = c.value
+PREHOOK: Input: default@src1
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization detail
+select count(*) from tab_n9 a join tab_part_n10 b on a.key = b.key join src1 c on a.value = c.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -2186,36 +2674,45 @@ STAGE PLANS:
           TableScan
             alias: a
             filterExpr: (key is not null and value is not null) (type: boolean)
-            Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (key is not null and value is not null) (type: boolean)
-              Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: int), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col1 (type: string)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col1 (type: string)
-                  Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: int)
           TableScan
             alias: c
             filterExpr: value is not null (type: boolean)
-            Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: value is not null (type: boolean)
-              Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: value (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
+      Map Vectorization:
+          enabled: false
+          enabledConditionsNotMet: Vectorized map work only works with 1 TableScanOperator IS false
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -2224,7 +2721,7 @@ STAGE PLANS:
             0 _col1 (type: string)
             1 _col0 (type: string)
           outputColumnNames: _col0
-          Statistics: Num rows: 266 Data size: 25022 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
             table:
@@ -2238,25 +2735,34 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: int)
+              null sort order: z
               sort order: +
               Map-reduce partition columns: _col0 (type: int)
-              Statistics: Num rows: 266 Data size: 25022 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: b
             filterExpr: key is not null (type: boolean)
-            Statistics: Num rows: 500 Data size: 47000 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 500 Data size: 47000 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 500 Data size: 47000 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 500 Data size: 47000 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
+      Map Vectorization:
+          enabled: false
+          enabledConditionsNotMet: Vectorized map work only works with 1 TableScanOperator IS false
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -2264,12 +2770,13 @@ STAGE PLANS:
           keys:
             0 _col0 (type: int)
             1 _col0 (type: int)
-          Statistics: Num rows: 550 Data size: 51700 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
           Group By Operator
             aggregations: count()
+            minReductionHashAggr: 0.99
             mode: hash
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
               table:
@@ -2281,20 +2788,48 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
+            TableScan Vectorization:
+                native: true
+                vectorizationSchemaColumns: [0:_col0:bigint]
             Reduce Output Operator
+              null sort order: 
               sort order: 
-              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              Reduce Sink Vectorization:
+                  className: VectorReduceSinkOperator
+                  native: false
+                  nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                  nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+              Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col0 (type: bigint)
       Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
+          inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+          rowBatchContext:
+              dataColumnCount: 1
+              includeColumns: [0]
+              dataColumns: _col0:bigint
+              partitionColumnCount: 0
+              scratchColumnTypeNames: []
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2306,35 +2841,49 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from tab a join tab_part b on a.key = b.key join src1 c on a.value = c.value
+PREHOOK: query: select count(*) from tab_n9 a join tab_part_n10 b on a.key = b.key join src1 c on a.value = c.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab@ds=2008-04-08
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from tab a join tab_part b on a.key = b.key join src1 c on a.value = c.value
+POSTHOOK: query: select count(*) from tab_n9 a join tab_part_n10 b on a.key = b.key join src1 c on a.value = c.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab@ds=2008-04-08
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 40
-PREHOOK: query: explain
-select count(*) from (select s1.key as key, s1.value as value from tab s1 join tab s3 on s1.key=s3.key
+PREHOOK: query: explain vectorization detail
+select count(*) from (select s1.key as key, s1.value as value from tab_n9 s1 join tab_n9 s3 on s1.key=s3.key
 UNION  ALL
-select s2.key as key, s2.value as value from tab s2
-) a join tab_part b on (a.key = b.key)
+select s2.key as key, s2.value as value from tab_n9 s2
+) a join tab_part_n10 b on (a.key = b.key)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
-select count(*) from (select s1.key as key, s1.value as value from tab s1 join tab s3 on s1.key=s3.key
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization detail
+select count(*) from (select s1.key as key, s1.value as value from tab_n9 s1 join tab_n9 s3 on s1.key=s3.key
 UNION  ALL
-select s2.key as key, s2.value as value from tab s2
-) a join tab_part b on (a.key = b.key)
+select s2.key as key, s2.value as value from tab_n9 s2
+) a join tab_part_n10 b on (a.key = b.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -2348,35 +2897,44 @@ STAGE PLANS:
           TableScan
             alias: s1
             filterExpr: key is not null (type: boolean)
-            Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: s3
             filterExpr: key is not null (type: boolean)
-            Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
+      Map Vectorization:
+          enabled: false
+          enabledConditionsNotMet: Vectorized map work only works with 1 TableScanOperator IS false
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -2385,7 +2943,7 @@ STAGE PLANS:
             0 _col0 (type: int)
             1 _col0 (type: int)
           outputColumnNames: _col0
-          Statistics: Num rows: 266 Data size: 25022 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
             table:
@@ -2398,46 +2956,56 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             Union
-              Statistics: Num rows: 508 Data size: 47770 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: _col0 (type: int)
+                null sort order: z
                 sort order: +
                 Map-reduce partition columns: _col0 (type: int)
-                Statistics: Num rows: 508 Data size: 47770 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: s2
             filterExpr: key is not null (type: boolean)
-            Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                 Union
-                  Statistics: Num rows: 508 Data size: 47770 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int)
+                    null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col0 (type: int)
-                    Statistics: Num rows: 508 Data size: 47770 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: b
             filterExpr: key is not null (type: boolean)
-            Statistics: Num rows: 500 Data size: 47000 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 500 Data size: 47000 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 500 Data size: 47000 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 500 Data size: 47000 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
+      Map Vectorization:
+          enabled: false
+          enabledConditionsNotMet: Vectorized map work only works with 1 TableScanOperator IS false
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -2445,12 +3013,13 @@ STAGE PLANS:
           keys:
             0 _col0 (type: int)
             1 _col0 (type: int)
-          Statistics: Num rows: 558 Data size: 52547 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
           Group By Operator
             aggregations: count()
+            minReductionHashAggr: 0.99
             mode: hash
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
               table:
@@ -2462,20 +3031,48 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
+            TableScan Vectorization:
+                native: true
+                vectorizationSchemaColumns: [0:_col0:bigint]
             Reduce Output Operator
+              null sort order: 
               sort order: 
-              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              Reduce Sink Vectorization:
+                  className: VectorReduceSinkOperator
+                  native: false
+                  nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                  nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+              Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col0 (type: bigint)
       Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
+          inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+          rowBatchContext:
+              dataColumnCount: 1
+              includeColumns: [0]
+              dataColumns: _col0:bigint
+              partitionColumnCount: 0
+              scratchColumnTypeNames: []
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2487,24 +3084,38 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain
+PREHOOK: query: explain  vectorization detail
 select count(*) from
 (select rt1.id from
-(select t1.key as id, t1.value as od from tab t1 order by id, od) rt1) vt1
+(select t1.key as id, t1.value as od from tab_n9 t1 order by id, od) rt1) vt1
 join
 (select rt2.id from
-(select t2.key as id, t2.value as od from tab_part t2 order by id, od) rt2) vt2
+(select t2.key as id, t2.value as od from tab_part_n10 t2 order by id, od) rt2) vt2
 where vt1.id=vt2.id
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
+POSTHOOK: query: explain  vectorization detail
 select count(*) from
 (select rt1.id from
-(select t1.key as id, t1.value as od from tab t1 order by id, od) rt1) vt1
+(select t1.key as id, t1.value as od from tab_n9 t1 order by id, od) rt1) vt1
 join
 (select rt2.id from
-(select t2.key as id, t2.value as od from tab_part t2 order by id, od) rt2) vt2
+(select t2.key as id, t2.value as od from tab_part_n10 t2 order by id, od) rt2) vt2
 where vt1.id=vt2.id
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-4
@@ -2519,24 +3130,61 @@ STAGE PLANS:
           TableScan
             alias: t1
             filterExpr: key is not null (type: boolean)
-            Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
+            TableScan Vectorization:
+                native: true
+                vectorizationSchemaColumns: [0:key:int, 1:value:string, 2:ds:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Filter Operator
+              Filter Vectorization:
+                  className: VectorFilterOperator
+                  native: true
+                  predicateExpression: SelectColumnIsNotNull(col 0:int)
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: int), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [0, 1]
+                Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int), _col1 (type: string)
+                  null sort order: zz
                   sort order: ++
-                  Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Sink Vectorization:
+                      className: VectorReduceSinkOperator
+                      native: false
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+                  Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
       Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+          rowBatchContext:
+              dataColumnCount: 2
+              includeColumns: [0, 1]
+              dataColumns: key:int, value:string
+              partitionColumnCount: 1
+              partitionColumns: ds:string
+              scratchColumnTypeNames: []
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int)
           outputColumnNames: _col0
-          Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
             table:
@@ -2550,15 +3198,24 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: int)
+              null sort order: z
               sort order: +
               Map-reduce partition columns: _col0 (type: int)
-              Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: int)
+              null sort order: z
               sort order: +
               Map-reduce partition columns: _col0 (type: int)
-              Statistics: Num rows: 500 Data size: 47000 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
+      Map Vectorization:
+          enabled: false
+          enabledConditionsNotMet: Vectorized map work only works with 1 TableScanOperator IS false
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -2566,12 +3223,13 @@ STAGE PLANS:
           keys:
             0 _col0 (type: int)
             1 _col0 (type: int)
-          Statistics: Num rows: 550 Data size: 51700 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
           Group By Operator
             aggregations: count()
+            minReductionHashAggr: 0.99
             mode: hash
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
               table:
@@ -2583,20 +3241,48 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
+            TableScan Vectorization:
+                native: true
+                vectorizationSchemaColumns: [0:_col0:bigint]
             Reduce Output Operator
+              null sort order: 
               sort order: 
-              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              Reduce Sink Vectorization:
+                  className: VectorReduceSinkOperator
+                  native: false
+                  nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                  nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+              Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col0 (type: bigint)
       Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
+          inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+          rowBatchContext:
+              dataColumnCount: 1
+              includeColumns: [0]
+              dataColumns: _col0:bigint
+              partitionColumnCount: 0
+              scratchColumnTypeNames: []
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2608,24 +3294,61 @@ STAGE PLANS:
           TableScan
             alias: t2
             filterExpr: key is not null (type: boolean)
-            Statistics: Num rows: 500 Data size: 47000 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
+            TableScan Vectorization:
+                native: true
+                vectorizationSchemaColumns: [0:key:int, 1:value:string, 2:ds:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Filter Operator
+              Filter Vectorization:
+                  className: VectorFilterOperator
+                  native: true
+                  predicateExpression: SelectColumnIsNotNull(col 0:int)
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 500 Data size: 47000 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: int), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 500 Data size: 47000 Basic stats: COMPLETE Column stats: NONE
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [0, 1]
+                Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int), _col1 (type: string)
+                  null sort order: zz
                   sort order: ++
-                  Statistics: Num rows: 500 Data size: 47000 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Sink Vectorization:
+                      className: VectorReduceSinkOperator
+                      native: false
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+                  Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
       Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+          rowBatchContext:
+              dataColumnCount: 2
+              includeColumns: [0, 1]
+              dataColumns: key:int, value:string
+              partitionColumnCount: 1
+              partitionColumns: ds:string
+              scratchColumnTypeNames: []
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int)
           outputColumnNames: _col0
-          Statistics: Num rows: 500 Data size: 47000 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
             table:
@@ -2641,128 +3364,137 @@ STAGE PLANS:
 
 PREHOOK: query: select count(*) from
 (select rt1.id from
-(select t1.key as id, t1.value as od from tab t1 order by id, od) rt1) vt1
+(select t1.key as id, t1.value as od from tab_n9 t1 order by id, od) rt1) vt1
 join
 (select rt2.id from
-(select t2.key as id, t2.value as od from tab_part t2 order by id, od) rt2) vt2
+(select t2.key as id, t2.value as od from tab_part_n10 t2 order by id, od) rt2) vt2
 where vt1.id=vt2.id
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab@ds=2008-04-08
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from
 (select rt1.id from
-(select t1.key as id, t1.value as od from tab t1 order by id, od) rt1) vt1
+(select t1.key as id, t1.value as od from tab_n9 t1 order by id, od) rt1) vt1
 join
 (select rt2.id from
-(select t2.key as id, t2.value as od from tab_part t2 order by id, od) rt2) vt2
+(select t2.key as id, t2.value as od from tab_part_n10 t2 order by id, od) rt2) vt2
 where vt1.id=vt2.id
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab@ds=2008-04-08
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 480
 Warning: Shuffle Join JOIN[8][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
-PREHOOK: query: select * from (select * from tab where tab.key = 0)a full outer join (select * from tab_part where tab_part.key = 98)b on a.key = b.key
+PREHOOK: query: select * from (select * from tab_n9 where tab_n9.key = 0)a full outer join (select * from tab_part_n10 where tab_part_n10.key = 98)b on a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab@ds=2008-04-08
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
-POSTHOOK: query: select * from (select * from tab where tab.key = 0)a full outer join (select * from tab_part where tab_part.key = 98)b on a.key = b.key
+POSTHOOK: query: select * from (select * from tab_n9 where tab_n9.key = 0)a full outer join (select * from tab_part_n10 where tab_part_n10.key = 98)b on a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab@ds=2008-04-08
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 0	val_0	2008-04-08	NULL	NULL	NULL
 0	val_0	2008-04-08	NULL	NULL	NULL
 0	val_0	2008-04-08	NULL	NULL	NULL
 NULL	NULL	NULL	98	val_98	2008-04-08
 NULL	NULL	NULL	98	val_98	2008-04-08
+Warning: Shuffle Join JOIN[10][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+PREHOOK: query: select * from (select * from tab_n9 where tab_n9.key = 0)a right outer join (select * from tab_part_n10 where tab_part_n10.key = 98)b on a.key = b.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
+POSTHOOK: query: select * from (select * from tab_n9 where tab_n9.key = 0)a right outer join (select * from tab_part_n10 where tab_part_n10.key = 98)b on a.key = b.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
+NULL	NULL	NULL	98	val_98	2008-04-08
+NULL	NULL	NULL	98	val_98	2008-04-08
+Warning: Shuffle Join JOIN[16][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-2:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+PREHOOK: query: select * from
+(select * from tab_n9 where tab_n9.key = 0)a
+full outer join
+(select * from tab_part_n10 where tab_part_n10.key = 98)b join tab_part_n10 c on a.key = b.key and b.key = c.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
+POSTHOOK: query: select * from
+(select * from tab_n9 where tab_n9.key = 0)a
+full outer join
+(select * from tab_part_n10 where tab_part_n10.key = 98)b join tab_part_n10 c on a.key = b.key and b.key = c.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
+Warning: Shuffle Join JOIN[16][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-2:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+PREHOOK: query: select * from
+(select * from tab_n9 where tab_n9.key = 0)a
+full outer join
+(select * from tab_part_n10 where tab_part_n10.key = 98)b on a.key = b.key join tab_part_n10 c on b.key = c.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
+POSTHOOK: query: select * from
+(select * from tab_n9 where tab_n9.key = 0)a
+full outer join
+(select * from tab_part_n10 where tab_part_n10.key = 98)b on a.key = b.key join tab_part_n10 c on b.key = c.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
+NULL	NULL	NULL	98	val_98	2008-04-08	98	val_98	2008-04-08
+NULL	NULL	NULL	98	val_98	2008-04-08	98	val_98	2008-04-08
+NULL	NULL	NULL	98	val_98	2008-04-08	98	val_98	2008-04-08
+NULL	NULL	NULL	98	val_98	2008-04-08	98	val_98	2008-04-08
+Warning: Shuffle Join JOIN[14][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-2:MAPRED' is a cross product
 Warning: Shuffle Join JOIN[8][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
-PREHOOK: query: select * from (select * from tab where tab.key = 0)a right outer join (select * from tab_part where tab_part.key = 98)b on a.key = b.key
-PREHOOK: type: QUERY
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
-#### A masked pattern was here ####
-POSTHOOK: query: select * from (select * from tab where tab.key = 0)a right outer join (select * from tab_part where tab_part.key = 98)b on a.key = b.key
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
-#### A masked pattern was here ####
-NULL	NULL	NULL	98	val_98	2008-04-08
-NULL	NULL	NULL	98	val_98	2008-04-08
-Warning: Shuffle Join JOIN[12][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: select * from
-(select * from tab where tab.key = 0)a
-full outer join
-(select * from tab_part where tab_part.key = 98)b join tab_part c on a.key = b.key and b.key = c.key
-PREHOOK: type: QUERY
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab_part
-#### A masked pattern was here ####
-POSTHOOK: query: select * from
-(select * from tab where tab.key = 0)a
-full outer join
-(select * from tab_part where tab_part.key = 98)b join tab_part c on a.key = b.key and b.key = c.key
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab_part
-#### A masked pattern was here ####
-Warning: Shuffle Join JOIN[14][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-2:MAPRED' is a cross product
-Warning: Shuffle Join JOIN[11][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
-PREHOOK: query: select * from
-(select * from tab where tab.key = 0)a
-full outer join
-(select * from tab_part where tab_part.key = 98)b on a.key = b.key join tab_part c on b.key = c.key
-PREHOOK: type: QUERY
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
-#### A masked pattern was here ####
-POSTHOOK: query: select * from
-(select * from tab where tab.key = 0)a
-full outer join
-(select * from tab_part where tab_part.key = 98)b on a.key = b.key join tab_part c on b.key = c.key
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
-#### A masked pattern was here ####
-NULL	NULL	NULL	98	val_98	2008-04-08	98	val_98	2008-04-08
-NULL	NULL	NULL	98	val_98	2008-04-08	98	val_98	2008-04-08
-NULL	NULL	NULL	98	val_98	2008-04-08	98	val_98	2008-04-08
-NULL	NULL	NULL	98	val_98	2008-04-08	98	val_98	2008-04-08
-Warning: Shuffle Join JOIN[13][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-2:MAPRED' is a cross product
-Warning: Shuffle Join JOIN[10][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
-PREHOOK: query: select * from
-(select * from tab where tab.key = 0)a
+(select * from tab_n9 where tab_n9.key = 0)a
 join
-(select * from tab_part where tab_part.key = 98)b full outer join tab_part c on a.key = b.key and b.key = c.key
+(select * from tab_part_n10 where tab_part_n10.key = 98)b full outer join tab_part_n10 c on a.key = b.key and b.key = c.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab@ds=2008-04-08
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 POSTHOOK: query: select * from
-(select * from tab where tab.key = 0)a
+(select * from tab_n9 where tab_n9.key = 0)a
 join
-(select * from tab_part where tab_part.key = 98)b full outer join tab_part c on a.key = b.key and b.key = c.key
+(select * from tab_part_n10 where tab_part_n10.key = 98)b full outer join tab_part_n10 c on a.key = b.key and b.key = c.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab@ds=2008-04-08
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 0	val_0	2008-04-08	98	val_98	2008-04-08	NULL	NULL	NULL
 0	val_0	2008-04-08	98	val_98	2008-04-08	NULL	NULL	NULL
@@ -3270,25 +4002,27 @@ NULL	NULL	NULL	NULL	NULL	NULL	97	val_97	2008-04-08
 NULL	NULL	NULL	NULL	NULL	NULL	97	val_97	2008-04-08
 NULL	NULL	NULL	NULL	NULL	NULL	98	val_98	2008-04-08
 NULL	NULL	NULL	NULL	NULL	NULL	98	val_98	2008-04-08
-Warning: Shuffle Join JOIN[13][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-2:MAPRED' is a cross product
-Warning: Shuffle Join JOIN[10][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[16][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[12][tables = [$hdt$_1, $hdt$_2]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: select * from
-(select * from tab where tab.key = 0)a
+(select * from tab_n9 where tab_n9.key = 0)a
 join
-(select * from tab_part where tab_part.key = 98)b on a.key = b.key full outer join tab_part c on b.key = c.key
+(select * from tab_part_n10 where tab_part_n10.key = 98)b on a.key = b.key full outer join tab_part_n10 c on b.key = c.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 POSTHOOK: query: select * from
-(select * from tab where tab.key = 0)a
+(select * from tab_n9 where tab_n9.key = 0)a
 join
-(select * from tab_part where tab_part.key = 98)b on a.key = b.key full outer join tab_part c on b.key = c.key
+(select * from tab_part_n10 where tab_part_n10.key = 98)b on a.key = b.key full outer join tab_part_n10 c on b.key = c.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 NULL	NULL	NULL	NULL	NULL	NULL	0	val_0	2008-04-08
 NULL	NULL	NULL	NULL	NULL	NULL	0	val_0	2008-04-08
@@ -3792,45 +4526,45 @@ NULL	NULL	NULL	NULL	NULL	NULL	98	val_98	2008-04-08
 NULL	NULL	NULL	NULL	NULL	NULL	98	val_98	2008-04-08
 Warning: Shuffle Join JOIN[9][tables = [a, b]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: select * from
-(select * from tab where tab.key = 0)a
+(select * from tab_n9 where tab_n9.key = 0)a
 full outer join
-(select * from tab_part where tab_part.key = 98)b join tab_part c on a.key = b.key and b.key = c.key
+(select * from tab_part_n10 where tab_part_n10.key = 98)b join tab_part_n10 c on a.key = b.key and b.key = c.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab@ds=2008-04-08
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 POSTHOOK: query: select * from
-(select * from tab where tab.key = 0)a
+(select * from tab_n9 where tab_n9.key = 0)a
 full outer join
-(select * from tab_part where tab_part.key = 98)b join tab_part c on a.key = b.key and b.key = c.key
+(select * from tab_part_n10 where tab_part_n10.key = 98)b join tab_part_n10 c on a.key = b.key and b.key = c.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab@ds=2008-04-08
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 Warning: Shuffle Join JOIN[9][tables = [a, b]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: select * from
-(select * from tab where tab.key = 0)a
+(select * from tab_n9 where tab_n9.key = 0)a
 join
-(select * from tab_part where tab_part.key = 98)b full outer join tab_part c on a.key = b.key and b.key = c.key
+(select * from tab_part_n10 where tab_part_n10.key = 98)b full outer join tab_part_n10 c on a.key = b.key and b.key = c.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab@ds=2008-04-08
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 POSTHOOK: query: select * from
-(select * from tab where tab.key = 0)a
+(select * from tab_n9 where tab_n9.key = 0)a
 join
-(select * from tab_part where tab_part.key = 98)b full outer join tab_part c on a.key = b.key and b.key = c.key
+(select * from tab_part_n10 where tab_part_n10.key = 98)b full outer join tab_part_n10 c on a.key = b.key and b.key = c.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab@ds=2008-04-08
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 0	val_0	2008-04-08	98	val_98	2008-04-08	NULL	NULL	NULL
 0	val_0	2008-04-08	98	val_98	2008-04-08	NULL	NULL	NULL

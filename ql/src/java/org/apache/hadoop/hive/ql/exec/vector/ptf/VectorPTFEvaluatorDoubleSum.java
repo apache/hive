@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,12 +18,11 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.ptf;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 
 import com.google.common.base.Preconditions;
@@ -32,10 +31,6 @@ import com.google.common.base.Preconditions;
  * This class evaluates double sum() for a PTF group.
  */
 public class VectorPTFEvaluatorDoubleSum extends VectorPTFEvaluatorBase {
-
-  private static final long serialVersionUID = 1L;
-  private static final String CLASS_NAME = VectorPTFEvaluatorDoubleSum.class.getName();
-  private static final Log LOG = LogFactory.getLog(CLASS_NAME);
 
   protected boolean isGroupResultNull;
   protected double sum;
@@ -46,7 +41,10 @@ public class VectorPTFEvaluatorDoubleSum extends VectorPTFEvaluatorBase {
     resetEvaluator();
   }
 
-  public void evaluateGroupBatch(VectorizedRowBatch batch, boolean isLastGroupBatch) {
+  @Override
+  public void evaluateGroupBatch(VectorizedRowBatch batch)
+      throws HiveException {
+
     evaluateInputExpr(batch);
 
     // Sum all non-null double column values; maintain isGroupResultNull.
@@ -61,7 +59,7 @@ public class VectorPTFEvaluatorDoubleSum extends VectorPTFEvaluatorBase {
     DoubleColumnVector doubleColVector = ((DoubleColumnVector) batch.cols[inputColumnNum]);
     if (doubleColVector.isRepeating) {
 
-      if (doubleColVector.noNulls) {
+      if (doubleColVector.noNulls || !doubleColVector.isNull[0]) {
         if (isGroupResultNull) {
 
           // First aggregation calculation for group.
@@ -109,6 +107,12 @@ public class VectorPTFEvaluatorDoubleSum extends VectorPTFEvaluatorBase {
         sum += varSum;
       }
     }
+  }
+
+  @Override
+  public boolean streamsResult() {
+    // We must evaluate whole group before producing a result.
+    return false;
   }
 
   @Override

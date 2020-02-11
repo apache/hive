@@ -17,40 +17,49 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.dump.io;
 
-import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.metadata.Partition;
-import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.thrift.TException;
 import org.apache.thrift.TSerializer;
 import org.apache.thrift.protocol.TJSONProtocol;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Map;
 
 public class TableSerializer implements JsonWriter.Serializer {
   public static final String FIELD_NAME = "table";
+  private static final Logger LOG = LoggerFactory.getLogger(TableSerializer.class);
+
   private final org.apache.hadoop.hive.ql.metadata.Table tableHandle;
   private final Iterable<Partition> partitions;
+  private final HiveConf hiveConf;
 
   public TableSerializer(org.apache.hadoop.hive.ql.metadata.Table tableHandle,
-      Iterable<Partition> partitions) {
+      Iterable<Partition> partitions, HiveConf hiveConf) {
     this.tableHandle = tableHandle;
     this.partitions = partitions;
+    this.hiveConf = hiveConf;
   }
 
   @Override
   public void writeTo(JsonWriter writer, ReplicationSpec additionalPropertiesProvider)
       throws SemanticException, IOException {
-    if (!EximUtil.shouldExportTable(additionalPropertiesProvider, tableHandle)) {
+    if (!Utils.shouldReplicate(additionalPropertiesProvider, tableHandle,
+            false, null, null, hiveConf)) {
       return;
     }
 
-    Table tTable = tableHandle.getTTable();
-    tTable = addPropertiesToTable(tTable, additionalPropertiesProvider);
+    Table tTable = updatePropertiesInTable(
+        tableHandle.getTTable(), additionalPropertiesProvider
+    );
     try {
       TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
       writer.jsonGenerator
@@ -62,8 +71,15 @@ public class TableSerializer implements JsonWriter.Serializer {
     }
   }
 
-  private Table addPropertiesToTable(Table table, ReplicationSpec additionalPropertiesProvider)
-      throws SemanticException, IOException {
+  private Table updatePropertiesInTable(Table table, ReplicationSpec additionalPropertiesProvider) {
+    // Remove all the entries from the parameters which are added by repl tasks internally.
+    Map<String, String> parameters = table.getParameters();
+    if (parameters != null) {
+      parameters.entrySet()
+              .removeIf(e -> (e.getKey().equals(ReplUtils.REPL_CHECKPOINT_KEY) ||
+                      e.getKey().equals(ReplUtils.REPL_FIRST_INC_PENDING_FLAG)));
+    }
+
     if (additionalPropertiesProvider.isInReplicationScope()) {
       // Current replication state must be set on the Table object only for bootstrap dump.
       // Event replication State will be null in case of bootstrap dump.
@@ -73,33 +89,14 @@ public class TableSerializer implements JsonWriter.Serializer {
                 ReplicationSpec.KEY.CURR_STATE_ID.toString(),
                 additionalPropertiesProvider.getCurrentReplicationState());
       }
-      if (isExternalTable(table)) {
-          // Replication destination will not be external - override if set
-        table.putToParameters("EXTERNAL", "FALSE");
-      }
-      if (isExternalTableType(table)) {
-          // Replication dest will not be external - override if set
-        table.setTableType(TableType.MANAGED_TABLE.toString());
-      }
     } else {
       // ReplicationSpec.KEY scopeKey = ReplicationSpec.KEY.REPL_SCOPE;
       // write(out, ",\""+ scopeKey.toString() +"\":\"" + replicationSpec.get(scopeKey) + "\"");
       // TODO: if we want to be explicit about this dump not being a replication dump, we can
-      // uncomment this else section, but currently unnneeded. Will require a lot of golden file
+      // uncomment this else section, but currently unneeded. Will require a lot of golden file
       // regen if we do so.
     }
     return table;
-  }
-
-  private boolean isExternalTableType(org.apache.hadoop.hive.metastore.api.Table table) {
-    return table.isSetTableType()
-        && table.getTableType().equalsIgnoreCase(TableType.EXTERNAL_TABLE.toString());
-  }
-
-  private boolean isExternalTable(org.apache.hadoop.hive.metastore.api.Table table) {
-    Map<String, String> params = table.getParameters();
-    return params.containsKey("EXTERNAL")
-        && params.get("EXTERNAL").equalsIgnoreCase("TRUE");
   }
 
   private void writePartitions(JsonWriter writer, ReplicationSpec additionalPropertiesProvider)

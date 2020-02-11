@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,6 +16,8 @@
  * limitations under the License.
  */
 package org.apache.hadoop.hive.llap.cache;
+
+import org.apache.hadoop.hive.common.io.CacheTag;
 
 /**
  * Buffer that can be managed by LowLevelEvictionPolicy.
@@ -55,6 +57,8 @@ public abstract class LlapCacheableBuffer {
     return "[" + Integer.toHexString(hashCode()) + " " + String.format("%1$.2f", priority) + " "
         + lastUpdate + " " + (isLocked() ? "!" : ".") + "]";
   }
+
+  public abstract CacheTag getTag();
 
   protected abstract boolean isLocked();
 }

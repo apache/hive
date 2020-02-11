@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,12 +18,17 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.ZoneId;
+import java.util.TimeZone;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.hive.common.type.TimestampTZ;
+import org.apache.hadoop.hive.common.type.TimestampTZUtil;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
@@ -31,6 +36,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFUnixTimeStampD
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFUnixTimeStampString;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFUnixTimeStampTimestamp;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
@@ -39,11 +45,10 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DateObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampLocalTZObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.Text;
 
 /**
  * deterministic version of UDFUnixTimeStamp. enforces argument
@@ -56,11 +61,14 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
 
   private transient DateObjectInspector inputDateOI;
   private transient TimestampObjectInspector inputTimestampOI;
+  private transient TimestampLocalTZObjectInspector inputTimestampLocalTzOI;
   private transient Converter inputTextConverter;
   private transient Converter patternConverter;
+  private transient ZoneId timeZone;
 
   private transient String lasPattern = "yyyy-MM-dd HH:mm:ss";
   private transient final SimpleDateFormat formatter = new SimpleDateFormat(lasPattern);
+
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
@@ -74,7 +82,7 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
           "requires at least one argument");
     }
     for (ObjectInspector argument : arguments) {
-      if (arguments[0].getCategory() != Category.PRIMITIVE) {
+      if (argument.getCategory() != Category.PRIMITIVE) {
         throw new UDFArgumentException(getName().toUpperCase() +
             " only takes string/date/timestamp types, got " + argument.getTypeName());
       }
@@ -105,9 +113,27 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
       case TIMESTAMP:
         inputTimestampOI = (TimestampObjectInspector) arguments[0];
         break;
+      case TIMESTAMPLOCALTZ:
+        inputTimestampLocalTzOI = (TimestampLocalTZObjectInspector) arguments[0];
+        break;
       default:
-        throw new UDFArgumentException(
-            "The function " + getName().toUpperCase() + " takes only string/date/timestamp types");
+        throw new UDFArgumentException("The function " + getName().toUpperCase()
+            + " takes only string/date/timestamp/timestampwltz types. Got Type:" + arg1OI
+            .getPrimitiveCategory().name());
+    }
+
+    if (timeZone == null) {
+      timeZone = SessionState.get().getConf().getLocalTimeZone();
+      formatter.setTimeZone(TimeZone.getTimeZone(timeZone));
+    }
+  }
+
+  @Override
+  public void configure(MapredContext context) {
+    if (context != null) {
+      String timeZoneStr = HiveConf.getVar(context.getJobConf(), HiveConf.ConfVars.HIVE_LOCAL_TIME_ZONE);
+      timeZone = TimestampTZUtil.parseTimeZone(timeZoneStr);
+      formatter.setTimeZone(TimeZone.getTimeZone(timeZone));
     }
   }
 
@@ -143,22 +169,24 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
       }
       try {
         retValue.set(formatter.parse(textVal).getTime() / 1000);
-        return retValue;
       } catch (ParseException e) {
         return null;
       }
     } else if (inputDateOI != null) {
-      retValue.set(inputDateOI.getPrimitiveWritableObject(arguments[0].get())
-                   .getTimeInSeconds());
-      return retValue;
+      TimestampTZ timestampTZ = TimestampTZUtil.convert(
+          inputDateOI.getPrimitiveJavaObject(arguments[0].get()), timeZone);
+      retValue.set(timestampTZ.getEpochSecond());
+    } else if (inputTimestampOI != null)  {
+      TimestampTZ timestampTZ = TimestampTZUtil.convert(
+          inputTimestampOI.getPrimitiveJavaObject(arguments[0].get()), timeZone);
+      retValue.set(timestampTZ.getEpochSecond());
+    } else {
+      TimestampTZ timestampTZ =
+          inputTimestampLocalTzOI.getPrimitiveJavaObject(arguments[0].get());
+      retValue.set(timestampTZ.getEpochSecond());
     }
-    Timestamp timestamp = inputTimestampOI.getPrimitiveJavaObject(arguments[0].get());
-    setValueFromTs(retValue, timestamp);
-    return retValue;
-  }
 
-  protected static void setValueFromTs(LongWritable value, Timestamp timestamp) {
-    value.set(timestamp.getTime() / 1000);
+    return retValue;
   }
 
   @Override

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,12 +21,13 @@ package org.apache.hadoop.hive.serde2.lazy.fast;
 import java.io.IOException;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.StandardCharsets;
-import java.sql.Date;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.hadoop.hive.common.type.Date;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.serde2.fast.DeserializeRead;
@@ -83,10 +84,11 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
     public final Category complexCategory;
 
     public final TypeInfo typeInfo;
+    public final DataTypePhysicalVariation dataTypePhysicalVariation;
 
     public ComplexTypeHelper complexTypeHelper;
 
-    public Field(TypeInfo typeInfo) {
+    public Field(TypeInfo typeInfo, DataTypePhysicalVariation dataTypePhysicalVariation) {
       Category category = typeInfo.getCategory();
       if (category == Category.PRIMITIVE) {
         isPrimitive = true;
@@ -99,8 +101,13 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
       }
 
       this.typeInfo = typeInfo;
- 
+      this.dataTypePhysicalVariation = dataTypePhysicalVariation;
+
       complexTypeHelper = null;
+    }
+
+    public Field(TypeInfo typeInfo) {
+      this(typeInfo, DataTypePhysicalVariation.NONE);
     }
   }
 
@@ -300,9 +307,10 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
     return depth;
   }
 
-  public LazySimpleDeserializeRead(TypeInfo[] typeInfos, boolean useExternalBuffer,
+  public LazySimpleDeserializeRead(TypeInfo[] typeInfos,
+      DataTypePhysicalVariation[] dataTypePhysicalVariations, boolean useExternalBuffer,
       LazySerDeParameters lazyParams) {
-    super(typeInfos, useExternalBuffer);
+    super(typeInfos, dataTypePhysicalVariations, useExternalBuffer);
 
     final int count = typeInfos.length;
     fieldCount = count;
@@ -310,7 +318,7 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
     fields = new Field[count];
     Field field;
     for (int i = 0; i < count; i++) {
-      field = new Field(typeInfos[i]);
+      field = new Field(typeInfos[i], this.dataTypePhysicalVariations[i]);
       if (!field.isPrimitive) {
         depth = Math.max(depth, addComplexTypeHelper(field, 0));
       }
@@ -341,6 +349,11 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
     timestampParser = new TimestampParser();
 
     internalBufferLen = -1;
+  }
+
+  public LazySimpleDeserializeRead(TypeInfo[] typeInfos, boolean useExternalBuffer,
+      LazySerDeParameters lazyParams) {
+    this(typeInfos, null, useExternalBuffer, lazyParams);
   }
 
   /*
@@ -483,6 +496,12 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
   }
 
   private int parseComplexField(int start, int end, int level) {
+
+    if (start == end + 1) {
+
+      // Data prematurely ended. Return start - 1 so we don't move our field position.
+      return start - 1;
+    }
 
     final byte separator = separators[level];
     int fieldByteEnd = start;
@@ -833,16 +852,19 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
               int scale = decimalTypeInfo.getScale();
 
               decimalIsNull = !currentHiveDecimalWritable.mutateEnforcePrecisionScale(precision, scale);
-            }
-            if (decimalIsNull) {
-              if (LOG.isDebugEnabled()) {
-                LOG.debug("Data not in the HiveDecimal data type range so converted to null. Given data is :"
-                  + new String(bytes, fieldStart, fieldLength, StandardCharsets.UTF_8));
+              if (!decimalIsNull) {
+                if (field.dataTypePhysicalVariation == DataTypePhysicalVariation.DECIMAL_64) {
+                  currentDecimal64 = currentHiveDecimalWritable.serialize64(scale);
+                }
+                return true;
               }
-              return false;
+            }
+            if (LOG.isDebugEnabled()) {
+              LOG.debug("Data not in the HiveDecimal data type range so converted to null. Given data is :"
+                  + new String(bytes, fieldStart, fieldLength, StandardCharsets.UTF_8));
             }
           }
-          return true;
+          return false;
 
         default:
           throw new Error("Unexpected primitive category " + field.primitiveCategory);
@@ -895,10 +917,11 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
   private void copyToBuffer(byte[] buffer, int bufferStart, int bufferLength) {
 
     final int fieldStart = currentFieldStart;
+    final int fieldLength = currentFieldLength;
     int k = 0;
-    for (int i = 0; i < bufferLength; i++) {
+    for (int i = 0; i < fieldLength; i++) {
       byte b = bytes[fieldStart + i];
-      if (b == escapeChar && i < bufferLength - 1) {
+      if (b == escapeChar && i < fieldLength - 1) {
         ++i;
         // Check if it's '\r' or '\n'
         if (bytes[fieldStart + i] == 'r') {
@@ -927,7 +950,29 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
     case LIST:
       {
         // Allow for empty string, etc.
-        final boolean isNext = (fieldPosition <= complexFieldEnd);
+        final ListComplexTypeHelper listHelper = (ListComplexTypeHelper) complexTypeHelper;
+        final boolean isElementStringFamily;
+        final Field elementField = listHelper.elementField;
+        if (elementField.isPrimitive) {
+          switch (elementField.primitiveCategory) {
+            case STRING:
+            case VARCHAR:
+            case CHAR:
+              isElementStringFamily = true;
+              break;
+            default:
+              isElementStringFamily = false;
+              break;
+          }
+        } else {
+          isElementStringFamily = false;
+        }
+        final boolean isNext;
+        if (isElementStringFamily) {
+          isNext = (fieldPosition <= complexFieldEnd);
+        } else {
+          isNext = (fieldPosition < complexFieldEnd);
+        }
         if (!isNext) {
           popComplexType();
         }
@@ -980,7 +1025,9 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
         final ListComplexTypeHelper listHelper = (ListComplexTypeHelper) complexTypeHelper;
         final int fieldPosition = listHelper.fieldPosition;
         final int complexFieldEnd = listHelper.complexFieldEnd;
-        Preconditions.checkState(fieldPosition <= complexFieldEnd);
+
+        // When data is prematurely ended the fieldPosition will be 1 more than the end.
+        Preconditions.checkState(fieldPosition <= complexFieldEnd + 1);
 
         final int fieldEnd = parseComplexField(fieldPosition, complexFieldEnd, currentLevel);
         listHelper.fieldPosition = fieldEnd + 1;  // Move past separator.
@@ -995,7 +1042,9 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
         final MapComplexTypeHelper mapHelper = (MapComplexTypeHelper) complexTypeHelper;
         final int fieldPosition = mapHelper.fieldPosition;
         final int complexFieldEnd = mapHelper.complexFieldEnd;
-        Preconditions.checkState(fieldPosition <= complexFieldEnd);
+
+        // When data is prematurely ended the fieldPosition will be 1 more than the end.
+        Preconditions.checkState(fieldPosition <= complexFieldEnd + 1);
   
         currentFieldStart = fieldPosition;
 
@@ -1041,7 +1090,9 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
         final StructComplexTypeHelper structHelper = (StructComplexTypeHelper) complexTypeHelper;
         final int fieldPosition = structHelper.fieldPosition;
         final int complexFieldEnd = structHelper.complexFieldEnd;
-        Preconditions.checkState(fieldPosition <= complexFieldEnd);
+
+        // When data is prematurely ended the fieldPosition will be 1 more than the end.
+        Preconditions.checkState(fieldPosition <= complexFieldEnd + 1);
 
         currentFieldStart = fieldPosition;
 
@@ -1053,7 +1104,7 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
           // Parse until field separator (currentLevel).
           fieldEnd = parseComplexField(fieldPosition, complexFieldEnd, currentLevel);
 
-          structHelper.fieldPosition = fieldEnd + 1;  // Move past key separator.
+          structHelper.fieldPosition = fieldEnd + 1;  // Move past parent field separator.
 
           currentFieldLength = fieldEnd - fieldPosition;
 
@@ -1085,7 +1136,9 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
         final UnionComplexTypeHelper unionHelper = (UnionComplexTypeHelper) complexTypeHelper;
         final int fieldPosition = unionHelper.fieldPosition;
         final int complexFieldEnd = unionHelper.complexFieldEnd;
-        Preconditions.checkState(fieldPosition <= complexFieldEnd);
+
+        // When data is prematurely ended the fieldPosition will be 1 more than the end.
+        Preconditions.checkState(fieldPosition <= complexFieldEnd + 1);
 
         currentFieldStart = fieldPosition;
 

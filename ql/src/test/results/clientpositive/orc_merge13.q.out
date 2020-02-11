@@ -12,20 +12,24 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@aa
 PREHOOK: query: insert into table aa values("b",2)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@aa
 POSTHOOK: query: insert into table aa values("b",2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@aa
-POSTHOOK: Lineage: aa.a SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: aa.b EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: aa.a SCRIPT []
+POSTHOOK: Lineage: aa.b SCRIPT []
 PREHOOK: query: insert into table aa values("c",3)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@aa
 POSTHOOK: query: insert into table aa values("c",3)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@aa
-POSTHOOK: Lineage: aa.a SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: aa.b EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: aa.a SCRIPT []
+POSTHOOK: Lineage: aa.b SCRIPT []
 PREHOOK: query: select * from aa
 PREHOOK: type: QUERY
 PREHOOK: Input: default@aa
@@ -46,24 +50,28 @@ POSTHOOK: Input: default@aa
 POSTHOOK: Output: default@aa
 PREHOOK: query: insert into table aa values("b",2,"b",2)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@aa
 POSTHOOK: query: insert into table aa values("b",2,"b",2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@aa
-POSTHOOK: Lineage: aa.a SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: aa.aa SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: aa.b EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: aa.bb EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: aa.a SCRIPT []
+POSTHOOK: Lineage: aa.aa SCRIPT []
+POSTHOOK: Lineage: aa.b SCRIPT []
+POSTHOOK: Lineage: aa.bb SCRIPT []
 PREHOOK: query: insert into table aa values("c",3,"c",3)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@aa
 POSTHOOK: query: insert into table aa values("c",3,"c",3)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@aa
-POSTHOOK: Lineage: aa.a SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: aa.aa SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: aa.b EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: aa.bb EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: aa.a SCRIPT []
+POSTHOOK: Lineage: aa.aa SCRIPT []
+POSTHOOK: Lineage: aa.b SCRIPT []
+POSTHOOK: Lineage: aa.bb SCRIPT []
 PREHOOK: query: select * from aa
 PREHOOK: type: QUERY
 PREHOOK: Input: default@aa

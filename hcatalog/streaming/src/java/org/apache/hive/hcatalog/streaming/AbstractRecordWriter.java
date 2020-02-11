@@ -19,6 +19,7 @@
 package org.apache.hive.hcatalog.streaming;
 
 
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +28,7 @@ import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -51,7 +53,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 
-
+/**
+ * @deprecated as of Hive 3.0.0, replaced by org.apache.hive.streaming.AbstractRecordWriter
+ */
+@Deprecated
 public abstract class AbstractRecordWriter implements RecordWriter {
   static final private Logger LOG = LoggerFactory.getLogger(AbstractRecordWriter.class.getName());
 
@@ -73,8 +78,8 @@ public abstract class AbstractRecordWriter implements RecordWriter {
 
   private final AcidOutputFormat<?,?> outf;
   private Object[] bucketFieldData; // Pre-allocated in constructor. Updated on each write.
-  private Long curBatchMinTxnId;
-  private Long curBatchMaxTxnId;
+  private Long curBatchMinWriteId;
+  private Long curBatchMaxWriteId;
 
   private static final class TableWriterPair {
     private final Table tbl;
@@ -143,7 +148,7 @@ public abstract class AbstractRecordWriter implements RecordWriter {
    * used to tag error msgs to provied some breadcrumbs
    */
   String getWatermark() {
-    return partitionPath + " txnIds[" + curBatchMinTxnId + "," + curBatchMaxTxnId + "]";
+    return partitionPath + " writeIds[" + curBatchMinWriteId + "," + curBatchMaxWriteId + "]";
   }
   // return the column numbers of the bucketed columns
   private List<Integer> getBucketColIDs(List<String> bucketCols, List<FieldSchema> cols) {
@@ -185,7 +190,12 @@ public abstract class AbstractRecordWriter implements RecordWriter {
     }
     ObjectInspector[] inspectors = getBucketObjectInspectors();
     Object[] bucketFields = getBucketFields(row);
-    return ObjectInspectorUtils.getBucketNumber(bucketFields, inspectors, totalBuckets);
+    int bucketingVersion = Utilities.getBucketingVersion(
+        tbl.getParameters().get(hive_metastoreConstants.TABLE_BUCKETING_VERSION));
+
+    return bucketingVersion == 2 ?
+        ObjectInspectorUtils.getBucketNumber(bucketFields, inspectors, totalBuckets) :
+        ObjectInspectorUtils.getBucketNumberOld(bucketFields, inspectors, totalBuckets);
   }
 
   @Override
@@ -207,15 +217,15 @@ public abstract class AbstractRecordWriter implements RecordWriter {
 
   /**
    * Creates a new record updater for the new batch
-   * @param minTxnId smallest Txnid in the batch
-   * @param maxTxnID largest Txnid in the batch
+   * @param minWriteId smallest writeid in the batch
+   * @param maxWriteID largest writeid in the batch
    * @throws StreamingIOFailure if failed to create record updater
    */
   @Override
-  public void newBatch(Long minTxnId, Long maxTxnID)
+  public void newBatch(Long minWriteId, Long maxWriteID)
           throws StreamingIOFailure, SerializationError {
-    curBatchMinTxnId = minTxnId;
-    curBatchMaxTxnId = maxTxnID;
+    curBatchMinWriteId = minWriteId;
+    curBatchMaxWriteId = maxWriteID;
     updaters = new ArrayList<RecordUpdater>(totalBuckets);
     for (int bucket = 0; bucket < totalBuckets; bucket++) {
       updaters.add(bucket, null);//so that get(i) returns null rather than ArrayOutOfBounds
@@ -265,7 +275,7 @@ public abstract class AbstractRecordWriter implements RecordWriter {
     return bucketFieldData;
   }
 
-  private RecordUpdater createRecordUpdater(int bucketId, Long minTxnId, Long maxTxnID)
+  private RecordUpdater createRecordUpdater(int bucketId, Long minWriteId, Long maxWriteID)
           throws IOException, SerializationError {
     try {
       // Initialize table properties from the table parameters. This is required because the table
@@ -278,8 +288,8 @@ public abstract class AbstractRecordWriter implements RecordWriter {
                       .inspector(getSerde().getObjectInspector())
                       .bucket(bucketId)
                       .tableProperties(tblProperties)
-                      .minimumTransactionId(minTxnId)
-                      .maximumTransactionId(maxTxnID)
+                      .minimumWriteId(minWriteId)
+                      .maximumWriteId(maxWriteID)
                       .statementId(-1)
                       .finalDestination(partitionPath));
     } catch (SerDeException e) {
@@ -292,7 +302,7 @@ public abstract class AbstractRecordWriter implements RecordWriter {
     RecordUpdater recordUpdater = updaters.get(bucketId);
     if (recordUpdater == null) {
       try {
-        recordUpdater = createRecordUpdater(bucketId, curBatchMinTxnId, curBatchMaxTxnId);
+        recordUpdater = createRecordUpdater(bucketId, curBatchMinWriteId, curBatchMaxWriteId);
       } catch (IOException e) {
         String errMsg = "Failed creating RecordUpdater for " + getWatermark();
         LOG.error(errMsg, e);

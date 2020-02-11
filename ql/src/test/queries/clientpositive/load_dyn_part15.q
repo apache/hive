@@ -1,6 +1,6 @@
+--! qt:dataset:src
 
 set hive.exec.dynamic.partition=true;
-set hive.exec.dynamic.partition.mode=nonstrict;
 
 create table if not exists load_dyn_part15_test (key string) 
   partitioned by (part_key string);

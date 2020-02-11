@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,18 +17,24 @@
  */
 package org.apache.hadoop.hive.conf;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import org.junit.Before;
 import org.junit.Test;
 
-public class TestHiveConfRestrictList extends TestCase {
+/**
+ * HiveConfRestrictList Test.
+ */
+public class TestHiveConfRestrictList {
 
   private HiveConf conf = null;
 
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
+  @Before
+  public void setUp() throws Exception {
+
     System.setProperty(ConfVars.HIVE_CONF_RESTRICTED_LIST.varname,
         ConfVars.HIVETESTMODEPREFIX.varname);
     conf = new HiveConf();

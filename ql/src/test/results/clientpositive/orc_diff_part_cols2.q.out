@@ -1,37 +1,37 @@
-PREHOOK: query: CREATE TABLE test_orc (key STRING)
+PREHOOK: query: CREATE TABLE test_orc_n4 (key STRING)
 STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_orc
-POSTHOOK: query: CREATE TABLE test_orc (key STRING)
+PREHOOK: Output: default@test_orc_n4
+POSTHOOK: query: CREATE TABLE test_orc_n4 (key STRING)
 STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_orc
-PREHOOK: query: INSERT OVERWRITE TABLE test_orc SELECT key FROM src LIMIT 5
+POSTHOOK: Output: default@test_orc_n4
+PREHOOK: query: INSERT OVERWRITE TABLE test_orc_n4 SELECT key FROM src LIMIT 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@test_orc
-POSTHOOK: query: INSERT OVERWRITE TABLE test_orc SELECT key FROM src LIMIT 5
+PREHOOK: Output: default@test_orc_n4
+POSTHOOK: query: INSERT OVERWRITE TABLE test_orc_n4 SELECT key FROM src LIMIT 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@test_orc
-POSTHOOK: Lineage: test_orc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: ALTER TABLE test_orc ADD COLUMNS (value STRING)
+POSTHOOK: Output: default@test_orc_n4
+POSTHOOK: Lineage: test_orc_n4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: ALTER TABLE test_orc_n4 ADD COLUMNS (value STRING)
 PREHOOK: type: ALTERTABLE_ADDCOLS
-PREHOOK: Input: default@test_orc
-PREHOOK: Output: default@test_orc
-POSTHOOK: query: ALTER TABLE test_orc ADD COLUMNS (value STRING)
+PREHOOK: Input: default@test_orc_n4
+PREHOOK: Output: default@test_orc_n4
+POSTHOOK: query: ALTER TABLE test_orc_n4 ADD COLUMNS (value STRING)
 POSTHOOK: type: ALTERTABLE_ADDCOLS
-POSTHOOK: Input: default@test_orc
-POSTHOOK: Output: default@test_orc
-PREHOOK: query: SELECT * FROM test_orc
+POSTHOOK: Input: default@test_orc_n4
+POSTHOOK: Output: default@test_orc_n4
+PREHOOK: query: SELECT * FROM test_orc_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_orc
+PREHOOK: Input: default@test_orc_n4
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM test_orc
+POSTHOOK: query: SELECT * FROM test_orc_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_orc
+POSTHOOK: Input: default@test_orc_n4
 #### A masked pattern was here ####
 165	NULL
 238	NULL

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -26,13 +26,35 @@ public class CollectorTestOperator extends Operator {
 
   private static final long serialVersionUID = 1L;
 
+  private boolean isClosed;
+  private boolean isAborted;
+
   public CollectorTestOperator() {
     super();
+
+    isClosed = false;
+    isAborted = false;
+  }
+
+  public boolean getIsClosed() {
+    return isClosed;
+  }
+
+  public boolean getIsAborted() {
+    return isAborted;
   }
 
   @Override
   public void process(Object row, int tag) throws HiveException {
     // Do nothing.
+  }
+
+  @Override
+  public void closeOp(boolean abort) {
+    isClosed = true;
+    if (abort) {
+      isAborted = true;
+    }
   }
 
   @Override

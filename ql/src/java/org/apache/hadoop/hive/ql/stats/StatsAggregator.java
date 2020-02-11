@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -31,9 +31,6 @@ public interface StatsAggregator {
   /**
    * This method connects to the temporary storage.
    *
-   * @param hconf
-   *          HiveConf that contains the connection parameters.
-   * @param sourceTask
    * @return true if connection is successful, false otherwise.
    */
   public boolean connect(StatsCollectionContext scc);

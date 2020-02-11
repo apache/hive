@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -26,10 +26,12 @@ import java.net.URI;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
@@ -37,6 +39,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 
@@ -45,8 +48,8 @@ public class HdfsUtils {
   private static final Logger LOG = LoggerFactory.getLogger(HdfsUtils.class);
 
   public static Object getFileId(FileSystem fileSystem, Path path,
-      boolean allowSynthetic, boolean checkDefaultFs) throws IOException {
-    if (fileSystem instanceof DistributedFileSystem) {
+      boolean allowSynthetic, boolean checkDefaultFs, boolean forceSyntheticIds) throws IOException {
+    if (forceSyntheticIds == false && fileSystem instanceof DistributedFileSystem) {
       DistributedFileSystem dfs = (DistributedFileSystem) fileSystem;
       if ((!checkDefaultFs) || isDefaultFs(dfs)) {
         Object result = SHIMS.getFileId(dfs, path.toUri().getPath());
@@ -122,5 +125,14 @@ public class HdfsUtils {
     if (port == -1) return true; // No port, assume default.
     // Note - this makes assumptions that are DFS-specific; DFS::getDefaultPort is not visible.
     return (defaultPort == -1) ? (port == NameNode.DEFAULT_PORT) : (port == defaultPort);
+  }
+
+  public static boolean pathExists(Path p, Configuration conf) throws HiveException {
+    try {
+      FileSystem fs = p.getFileSystem(conf);
+      return fs.exists(p);
+    } catch (IOException e) {
+      throw new HiveException(e);
+    }
   }
 }

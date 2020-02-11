@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -36,7 +36,7 @@ import org.apache.hadoop.io.ArrayWritable;
 
 /**
  *
- * The ArrayWritableObjectInspector will inspect an ArrayWritable, considering it as a Hive struct.<br />
+ * The ArrayWritableObjectInspector will inspect an ArrayWritable, considering it as a Hive struct.<br>
  * It can also inspect a List if Hive decides to inspect the result of an inspection.
  *
  */
@@ -246,7 +246,7 @@ public class ArrayWritableObjectInspector extends SettableStructObjectInspector 
       return false;
     }
 
-    return fieldsByName != null ? fieldsByName.equals(that.fieldsByName) : that.fieldsByName == null;
+    return true;
   }
 
   @Override
@@ -255,7 +255,6 @@ public class ArrayWritableObjectInspector extends SettableStructObjectInspector 
     result = 31 * result + (fieldInfos != null ? fieldInfos.hashCode() : 0);
     result = 31 * result + (fieldNames != null ? fieldNames.hashCode() : 0);
     result = 31 * result + (fields != null ? fields.hashCode() : 0);
-    result = 31 * result + (fieldsByName != null ? fieldsByName.hashCode() : 0);
     result = 31 * result + (isRoot ? 1 : 0);
     return result;
   }

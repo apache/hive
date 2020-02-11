@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,12 +18,16 @@
  */
 package org.apache.hive.hcatalog.api;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 
 /**
  * A wrapper class for {@link org.apache.hadoop.hive.metastore.api.NotificationEvent},
  * so that if that class changes we can still keep this one constant for backward compatibility
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public class HCatNotificationEvent {
   private long eventId;
   private int eventTime;

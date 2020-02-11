@@ -27,10 +27,14 @@ PREHOOK: query: explain
 select day(t)
 from extract_udf
 PREHOOK: type: QUERY
+PREHOOK: Input: default@extract_udf
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select day(t)
 from extract_udf
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@extract_udf
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -41,18 +45,19 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: extract_udf
-            Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: day(t) (type: int)
               outputColumnNames: _col0
-              Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -75,10 +80,14 @@ PREHOOK: query: explain
 select extract(day from t)
 from extract_udf
 PREHOOK: type: QUERY
+PREHOOK: Input: default@extract_udf
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select extract(day from t)
 from extract_udf
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@extract_udf
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -89,18 +98,19 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: extract_udf
-            Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: day(t) (type: int)
               outputColumnNames: _col0
-              Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator

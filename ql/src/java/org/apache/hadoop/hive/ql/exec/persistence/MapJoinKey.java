@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -24,9 +24,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapper;
-import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapperBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
+import org.apache.hadoop.hive.ql.exec.vector.wrapper.VectorHashKeyWrapperBase;
+import org.apache.hadoop.hive.ql.exec.vector.wrapper.VectorHashKeyWrapperBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.Pr
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Writable;
 
 /**
@@ -66,10 +67,8 @@ public abstract class MapJoinKey {
   private static final HashSet<PrimitiveCategory> SUPPORTED_PRIMITIVES
       = new HashSet<PrimitiveCategory>();
   static {
-    // All but decimal.
     SUPPORTED_PRIMITIVES.add(PrimitiveCategory.BOOLEAN);
     SUPPORTED_PRIMITIVES.add(PrimitiveCategory.VOID);
-    SUPPORTED_PRIMITIVES.add(PrimitiveCategory.BOOLEAN);
     SUPPORTED_PRIMITIVES.add(PrimitiveCategory.BYTE);
     SUPPORTED_PRIMITIVES.add(PrimitiveCategory.SHORT);
     SUPPORTED_PRIMITIVES.add(PrimitiveCategory.INT);
@@ -84,6 +83,13 @@ public abstract class MapJoinKey {
     SUPPORTED_PRIMITIVES.add(PrimitiveCategory.BINARY);
     SUPPORTED_PRIMITIVES.add(PrimitiveCategory.VARCHAR);
     SUPPORTED_PRIMITIVES.add(PrimitiveCategory.CHAR);
+    /**
+     * No matter what scale/precision join keys are, they end up cast to common in query plan.
+     * We should be ok comparing them byte by byte. See
+     * {@link org.apache.hadoop.hive.ql.exec.FunctionRegistry#getCommonClassForComparison(TypeInfo, TypeInfo)}
+     * Q test: mapjoin_decimal_vectorized.q
+     */
+    SUPPORTED_PRIMITIVES.add(PrimitiveCategory.DECIMAL);
   }
 
   public static boolean isSupportedField(ObjectInspector foi) {
@@ -118,7 +124,7 @@ public abstract class MapJoinKey {
    * Serializes row to output for vectorized path.
    * @param byteStream Output to reuse. Can be null, in that case a new one would be created.
    */
-  public static Output serializeVector(Output byteStream, VectorHashKeyWrapper kw,
+  public static Output serializeVector(Output byteStream, VectorHashKeyWrapperBase kw,
       VectorExpressionWriter[] keyOutputWriters, VectorHashKeyWrapperBatch keyWrapperBatch,
       boolean[] nulls, boolean[] sortableSortOrders, byte[] nullMarkers, byte[] notNullMarkers)
               throws HiveException, SerDeException {
@@ -170,5 +176,19 @@ public abstract class MapJoinKey {
       throw new HiveException("Serialization error", e);
     }
     return byteStream;
+  }
+
+  /*
+   * Deserializes a key.  Needed for FULL OUTER MapJoin to unpack the Small Table key when
+   * adding the non matched key to the join output result.
+   */
+  public static List<Object> deserializeRow(byte[] keyBytes, int keyOffset, int keyLength,
+      BytesWritable bytesWritable, AbstractSerDe serde) throws HiveException {
+    try {
+      bytesWritable.set(keyBytes, keyOffset, keyLength);
+      return (List<Object>) serde.deserialize(bytesWritable);
+    } catch (SerDeException e) {
+      throw new HiveException("Serialization error", e);
+    }
   }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -27,11 +27,11 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedSupport;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
 import org.apache.hadoop.hive.ql.io.SelfDescribingInputFormatInterface;
@@ -66,7 +66,7 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
     VectorizedOrcRecordReader(Reader file, Configuration conf,
         FileSplit fileSplit) throws IOException {
 
-      boolean isAcidRead = HiveConf.getBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN);
+      boolean isAcidRead = AcidUtils.isFullAcidScan(conf);
       if (isAcidRead) {
         OrcInputFormat.raiseAcidTablesMustBeReadWithAcidReaderException(conf);
       }
@@ -92,7 +92,7 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
         }
       }
       List<OrcProto.Type> types = OrcUtils.getOrcTypes(schema);
-      Reader.Options options = new Reader.Options().schema(schema);
+      Reader.Options options = new Reader.Options(conf).schema(schema);
 
       this.offset = fileSplit.getStart();
       this.length = fileSplit.getLength();
@@ -100,7 +100,7 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
       options.include(OrcInputFormat.genIncludedColumns(schema, conf));
       OrcInputFormat.setSearchArgument(options, types, conf, true);
 
-      this.reader = file.rowsOptions(options);
+      this.reader = file.rowsOptions(options, conf);
 
       int partitionColumnCount = rbCtx.getPartitionColumnCount();
       if (partitionColumnCount > 0) {
@@ -204,5 +204,10 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
       }
     }
     return true;
+  }
+
+  @Override
+  public VectorizedSupport.Support[] getSupportedFeatures() {
+    return new VectorizedSupport.Support[] {VectorizedSupport.Support.DECIMAL_64};
   }
 }

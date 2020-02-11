@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,210 +18,224 @@
 
 package org.apache.hadoop.hive.ql;
 
-import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
-import org.apache.hadoop.hive.ql.exec.NodeUtils;
-import org.apache.hadoop.hive.ql.exec.NodeUtils.Function;
-import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.exec.StatsTask;
-import org.apache.hadoop.hive.ql.exec.Task;
-import org.apache.hadoop.hive.ql.exec.TaskRunner;
-import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.MapWork;
-import org.apache.hadoop.hive.ql.plan.ReduceWork;
+import java.io.DataInput;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Iterator;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-
-import org.apache.hadoop.hive.ql.session.SessionState;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.Schema;
+import org.apache.hadoop.hive.metastore.api.TxnType;
+import org.apache.hadoop.hive.ql.cache.results.CacheUsage;
+import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache.CacheEntry;
+import org.apache.hadoop.hive.ql.exec.FetchTask;
+import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
+import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
 
 /**
- * DriverContext.
- *
+ * Context for the procedure managed by the Driver.
  */
 public class DriverContext {
+  // For WebUI.  Kept alive after queryPlan is freed.
+  private final QueryDisplay queryDisplay = new QueryDisplay();
 
-  private static final Logger LOG = LoggerFactory.getLogger(Driver.class.getName());
-  private static final SessionState.LogHelper console = new SessionState.LogHelper(LOG);
+  private final QueryState queryState;
+  private final QueryInfo queryInfo;
+  private final HiveConf conf;
+  private final HookRunner hookRunner;
 
-  private static final int SLEEP_TIME = 2000;
+  // Transaction manager the Driver has been initialized with (can be null).
+  // If this is set then this Transaction manager will be used during query
+  // compilation/execution rather than using the current session's transaction manager.
+  // This might be needed in a situation where a Driver is nested within an already
+  // running Driver/query - the nested Driver requires a separate transaction manager
+  // so as not to conflict with the outer Driver/query which is using the session
+  // transaction manager.
+  private final HiveTxnManager initTxnManager;
 
-  private Queue<Task<? extends Serializable>> runnable;
-  private Queue<TaskRunner> running;
+  private QueryPlan plan;
+  private Schema schema;
 
-  // how many jobs have been started
-  private int curJobNo;
+  private FetchTask fetchTask;
+  // Transaction manager used for the query. This will be set at compile time based on
+  // either initTxnMgr or from the SessionState, in that order.
+  private HiveTxnManager txnManager;
+  private TxnType txnType = TxnType.DEFAULT;
+  private StatsSource statsSource;
 
-  private Context ctx;
-  private boolean shutdown;
+  // Boolean to store information about whether valid txn list was generated
+  // for current query.
+  private boolean validTxnListsGenerated;
 
-  final Map<String, StatsTask> statsTasks = new HashMap<String, StatsTask>(1);
+  private CacheUsage cacheUsage;
+  private CacheEntry usedCacheEntry;
+  private ValidWriteIdList compactionWriteIds = null;
+  private long compactorTxnId = 0;
 
-  public DriverContext() {
+  private Context backupContext = null;
+  private boolean retrial = false;
+
+  private DataInput resStream;
+
+  // HS2 operation handle guid string
+  private String operationId;
+
+  public DriverContext(QueryState queryState, QueryInfo queryInfo, HookRunner hookRunner,
+      HiveTxnManager initTxnManager) {
+    this.queryState = queryState;
+    this.queryInfo = queryInfo;
+    this.conf = queryState.getConf();
+    this.hookRunner = hookRunner;
+    this.initTxnManager = initTxnManager;
   }
 
-  public DriverContext(Context ctx) {
-    this.runnable = new ConcurrentLinkedQueue<Task<? extends Serializable>>();
-    this.running = new LinkedBlockingQueue<TaskRunner>();
-    this.ctx = ctx;
+  public QueryDisplay getQueryDisplay() {
+    return queryDisplay;
   }
 
-  public synchronized boolean isShutdown() {
-    return shutdown;
+  public String getQueryId() {
+    return queryDisplay.getQueryId();
   }
 
-  public synchronized boolean isRunning() {
-    return !shutdown && (!running.isEmpty() || !runnable.isEmpty());
+  public String getQueryString() {
+    return queryDisplay.getQueryString();
   }
 
-  public synchronized void remove(Task<? extends Serializable> task) {
-    runnable.remove(task);
+  public QueryState getQueryState() {
+    return queryState;
   }
 
-  public synchronized void launching(TaskRunner runner) throws HiveException {
-    checkShutdown();
-    running.add(runner);
+  public QueryInfo getQueryInfo() {
+    return queryInfo;
   }
 
-  public synchronized Task<? extends Serializable> getRunnable(int maxthreads) throws HiveException {
-    checkShutdown();
-    if (runnable.peek() != null && running.size() < maxthreads) {
-      return runnable.remove();
-    }
-    return null;
+  public HiveConf getConf() {
+    return conf;
   }
 
-  /**
-   * Polls running tasks to see if a task has ended.
-   *
-   * @return The result object for any completed/failed task
-   */
-  public synchronized TaskRunner pollFinished() throws InterruptedException {
-    while (!shutdown) {
-      Iterator<TaskRunner> it = running.iterator();
-      while (it.hasNext()) {
-        TaskRunner runner = it.next();
-        if (runner != null && !runner.isRunning()) {
-          it.remove();
-          return runner;
-        }
-      }
-      wait(SLEEP_TIME);
-    }
-    return null;
+  public HookRunner getHookRunner() {
+    return hookRunner;
   }
 
-  private void checkShutdown() throws HiveException {
-    if (shutdown) {
-      throw new HiveException("FAILED: Operation cancelled");
-    }
-  }
-  /**
-   * Cleans up remaining tasks in case of failure
-   */
-  public synchronized void shutdown() {
-    LOG.debug("Shutting down query " + ctx.getCmd());
-    shutdown = true;
-    for (TaskRunner runner : running) {
-      if (runner.isRunning()) {
-        Task<?> task = runner.getTask();
-        LOG.warn("Shutting down task : " + task);
-        try {
-          task.shutdown();
-        } catch (Exception e) {
-          console.printError("Exception on shutting down task " + task.getId() + ": " + e);
-        }
-        Thread thread = runner.getRunner();
-        if (thread != null) {
-          thread.interrupt();
-        }
-      }
-    }
-    running.clear();
+  public HiveTxnManager getInitTxnManager() {
+    return initTxnManager;
   }
 
-  /**
-   * Checks if a task can be launched.
-   *
-   * @param tsk
-   *          the task to be checked
-   * @return true if the task is launchable, false otherwise
-   */
-
-  public static boolean isLaunchable(Task<? extends Serializable> tsk) {
-    // A launchable task is one that hasn't been queued, hasn't been
-    // initialized, and is runnable.
-    return !tsk.getQueued() && !tsk.getInitialized() && tsk.isRunnable();
+  public QueryPlan getPlan() {
+    return plan;
   }
 
-  public synchronized boolean addToRunnable(Task<? extends Serializable> tsk) throws HiveException {
-    if (runnable.contains(tsk)) {
-      return false;
-    }
-    checkShutdown();
-    runnable.add(tsk);
-    tsk.setQueued();
-    return true;
+  public void setPlan(QueryPlan plan) {
+    this.plan = plan;
   }
 
-  public int getCurJobNo() {
-    return curJobNo;
+  public Schema getSchema() {
+    return schema;
   }
 
-  public Context getCtx() {
-    return ctx;
+  public void setSchema(Schema schema) {
+    this.schema = schema;
   }
 
-  public void incCurJobNo(int amount) {
-    this.curJobNo = this.curJobNo + amount;
+  public FetchTask getFetchTask() {
+    return fetchTask;
   }
 
-  public void prepare(QueryPlan plan) {
-    // extract stats keys from StatsTask
-    List<Task<?>> rootTasks = plan.getRootTasks();
-    NodeUtils.iterateTask(rootTasks, StatsTask.class, new Function<StatsTask>() {
-      @Override
-      public void apply(StatsTask statsTask) {
-        statsTasks.put(statsTask.getWork().getAggKey(), statsTask);
-      }
-    });
+  public void setFetchTask(FetchTask fetchTask) {
+    this.fetchTask = fetchTask;
   }
 
-  public void prepare(TaskRunner runner) {
+  public HiveTxnManager getTxnManager() {
+    return txnManager;
   }
 
-  public void finished(TaskRunner runner) {
-    if (statsTasks.isEmpty() || !(runner.getTask() instanceof MapRedTask)) {
-      return;
-    }
-    MapRedTask mapredTask = (MapRedTask) runner.getTask();
+  public void setTxnManager(HiveTxnManager txnManager) {
+    this.txnManager = txnManager;
+  }
 
-    MapWork mapWork = mapredTask.getWork().getMapWork();
-    ReduceWork reduceWork = mapredTask.getWork().getReduceWork();
-    List<Operator> operators = new ArrayList<Operator>(mapWork.getAliasToWork().values());
-    if (reduceWork != null) {
-      operators.add(reduceWork.getReducer());
-    }
-    final List<String> statKeys = new ArrayList<String>(1);
-    NodeUtils.iterate(operators, FileSinkOperator.class, new Function<FileSinkOperator>() {
-      @Override
-      public void apply(FileSinkOperator fsOp) {
-        if (fsOp.getConf().isGatherStats()) {
-          statKeys.add(fsOp.getConf().getStatsAggPrefix());
-        }
-      }
-    });
-    for (String statKey : statKeys) {
-      statsTasks.get(statKey).getWork().setSourceTask(mapredTask);
-    }
+  public TxnType getTxnType() {
+    return txnType;
+  }
+
+  public void setTxnType(TxnType txnType) {
+    this.txnType = txnType;
+  }
+
+  public StatsSource getStatsSource() {
+    return statsSource;
+  }
+
+  public void setStatsSource(StatsSource statsSource) {
+    this.statsSource = statsSource;
+  }
+
+  public boolean isValidTxnListsGenerated() {
+    return validTxnListsGenerated;
+  }
+
+  public void setValidTxnListsGenerated(boolean validTxnListsGenerated) {
+    this.validTxnListsGenerated = validTxnListsGenerated;
+  }
+
+  public CacheUsage getCacheUsage() {
+    return cacheUsage;
+  }
+
+  public void setCacheUsage(CacheUsage cacheUsage) {
+    this.cacheUsage = cacheUsage;
+  }
+
+  public CacheEntry getUsedCacheEntry() {
+    return usedCacheEntry;
+  }
+
+  public void setUsedCacheEntry(CacheEntry usedCacheEntry) {
+    this.usedCacheEntry = usedCacheEntry;
+  }
+
+  public ValidWriteIdList getCompactionWriteIds() {
+    return compactionWriteIds;
+  }
+
+  public void setCompactionWriteIds(ValidWriteIdList compactionWriteIds) {
+    this.compactionWriteIds = compactionWriteIds;
+  }
+
+  public long getCompactorTxnId() {
+    return compactorTxnId;
+  }
+
+  public void setCompactorTxnId(long compactorTxnId) {
+    this.compactorTxnId = compactorTxnId;
+  }
+
+  public Context getBackupContext() {
+    return backupContext;
+  }
+
+  public void setBackupContext(Context backupContext) {
+    this.backupContext = backupContext;
+  }
+
+  public boolean isRetrial() {
+    return retrial;
+  }
+
+  public void setRetrial(boolean retrial) {
+    this.retrial = retrial;
+  }
+
+  public DataInput getResStream() {
+    return resStream;
+  }
+
+  public void setResStream(DataInput resStream) {
+    this.resStream = resStream;
+  }
+
+  public String getOperationId() {
+    return operationId;
+  }
+
+  public void setOperationId(String operationId) {
+    this.operationId = operationId;
   }
 }

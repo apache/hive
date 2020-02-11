@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,7 +20,7 @@ package org.apache.hive.beeline;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
-import org.apache.hadoop.hive.ql.QTestUtil;
+import org.apache.hadoop.hive.ql.dataset.QTestDatasetHandler;
 import org.apache.hadoop.util.Shell;
 import org.apache.hive.common.util.StreamPrinter;
 import org.apache.hive.beeline.ConvertedOutputFile.Converter;
@@ -43,7 +43,7 @@ import java.util.regex.Pattern;
  * input and output files, and provides methods for filtering the output of the runs.
  */
 public final class QFile {
-  private static final Set<String> srcTables = QTestUtil.getSrcTables();
+  private static final Set<String> srcTables = QTestDatasetHandler.getSrcTables();
   private static final String DEBUG_HINT =
       "The following files can help you identifying the problem:%n"
       + " - Query file: %1s%n"
@@ -67,6 +67,15 @@ public final class QFile {
 
   private static final String MASK_PATTERN = "#### A masked pattern was here ####\n";
 
+  private static final String[] COMMANDS_TO_REMOVE = {
+      "EXPLAIN",
+      "DESC(RIBE)?[\\s\\n]+EXTENDED",
+      "DESC(RIBE)?[\\s\\n]+FORMATTED",
+      "DESC(RIBE)?",
+      "SHOW[\\s\\n]+TABLES",
+      "SHOW[\\s\\n]+FORMATTED[\\s\\n]+INDEXES",
+      "SHOW[\\s\\n]+DATABASES"};
+
   private String name;
   private String databaseName;
   private File inputFile;
@@ -77,15 +86,18 @@ public final class QFile {
   private File beforeExecuteLogFile;
   private File afterExecuteLogFile;
   private static RegexFilterSet staticFilterSet = getStaticFilterSet();
+  private static RegexFilterSet portableFilterSet = getPortableFilterSet();
   private RegexFilterSet specificFilterSet;
-  private boolean rewriteSourceTables;
+  private boolean useSharedDatabase;
   private Converter converter;
+  private boolean comparePortable;
 
   private QFile() {}
 
   public String getName() {
     return name;
   }
+
 
   public String getDatabaseName() {
     return databaseName;
@@ -123,6 +135,10 @@ public final class QFile {
     return converter;
   }
 
+  public boolean isUseSharedDatabase() {
+    return useSharedDatabase;
+  }
+
   public String getDebugHint() {
     return String.format(DEBUG_HINT, inputFile, rawOutputFile, outputFile, expectedOutputFile,
         logFile, beforeExecuteLogFile, afterExecuteLogFile,
@@ -130,13 +146,13 @@ public final class QFile {
   }
 
   /**
-   * Filters the sql commands if necessary.
+   * Filters the sql commands if necessary - eg. not using the shared database.
    * @param commands The array of the sql commands before filtering
    * @return The filtered array of the sql command strings
    * @throws IOException File read error
    */
   public String[] filterCommands(String[] commands) throws IOException {
-    if (rewriteSourceTables) {
+    if (!useSharedDatabase) {
       for (int i=0; i<commands.length; i++) {
         if (USE_PATTERN.matcher(commands[i]).matches()) {
           System.err.println(String.format(USE_COMMAND_WARNING, inputFile, commands[i]));
@@ -159,8 +175,7 @@ public final class QFile {
    */
   private String replaceTableNames(String source) {
     for (String table : srcTables) {
-      source = source.replaceAll("(?is)(\\s+)" + table + "([\\s;\\n\\)])", "$1default." + table
-          + "$2");
+      source = source.replaceAll("(?is)(\\s+)(" + table + ")([\\s;\\n\\),])", "$1default.$2$3");
     }
     return source;
   }
@@ -173,8 +188,8 @@ public final class QFile {
    */
   private String revertReplaceTableNames(String source) {
     for (String table : srcTables) {
-      source = source.replaceAll("(?is)(?<!name:?|alias:?)(\\s+)default\\." + table
-          + "([\\s;\\n\\)])", "$1" + table + "$2");
+      source = source.replaceAll("(?is)(?<!name:?|alias:?)(\\s+)default\\.(" + table
+          + ")([\\s;\\n\\),])", "$1$2$3");
     }
     return source;
   }
@@ -195,15 +210,28 @@ public final class QFile {
     return source;
   }
 
+  /**
+   * Filters the generated output file
+   * @throws IOException
+   */
   public void filterOutput() throws IOException {
     String output = FileUtils.readFileToString(rawOutputFile, "UTF-8");
+    if (comparePortable) {
+      output = portableFilterSet.filter(output);
+    }
     output = staticFilterSet.filter(specificFilterSet.filter(output));
-    if (rewriteSourceTables) {
+    if (!useSharedDatabase) {
       output = sortInputOutput(revertReplaceTableNames(output));
     }
     FileUtils.writeStringToFile(outputFile, output);
   }
 
+  /**
+   * Compare the filtered file with the expected golden file
+   * @return The comparison data
+   * @throws IOException If there is a problem accessing the golden or generated file
+   * @throws InterruptedException If there is a problem running the diff command
+   */
   public QTestProcessExecResult compareResults() throws IOException, InterruptedException {
     if (!expectedOutputFile.exists()) {
       throw new IOException("Expected results file does not exist: " + expectedOutputFile);
@@ -211,6 +239,10 @@ public final class QFile {
     return executeDiff();
   }
 
+  /**
+   * Overwrite the golden file with the generated output
+   * @throws IOException If there is a problem accessing the golden or generated file
+   */
   public void overwriteResults() throws IOException {
     FileUtils.copyFile(outputFile, expectedOutputFile);
   }
@@ -239,7 +271,7 @@ public final class QFile {
     diffCommandArgs.add(getQuotedString(expectedOutputFile));
     diffCommandArgs.add(getQuotedString(outputFile));
 
-    System.out.println("Running: " + org.apache.commons.lang.StringUtils.join(diffCommandArgs,
+    System.out.println("Running: " + org.apache.commons.lang3.StringUtils.join(diffCommandArgs,
         ' '));
     Process executor = Runtime.getRuntime().exec(diffCommandArgs.toArray(
         new String[diffCommandArgs.size()]));
@@ -286,6 +318,11 @@ public final class QFile {
       return this;
     }
 
+    public RegexFilterSet addFilter(String regex, int flags, String replacement) {
+      regexFilters.add(new Filter(Pattern.compile(regex, flags), replacement));
+      return this;
+    }
+
     public String filter(String input) {
       for (Filter filter : regexFilters) {
         input = filter.pattern.matcher(input).replaceAll(filter.replacement);
@@ -304,13 +341,35 @@ public final class QFile {
         .addFilter(".*/tmp/.*\n", MASK_PATTERN)
         .addFilter(".*file:.*\n", MASK_PATTERN)
         .addFilter(".*file\\..*\n", MASK_PATTERN)
+        .addFilter(".*Location.*\n", MASK_PATTERN)
+        .addFilter(".*LOCATION '.*\n", MASK_PATTERN)
         .addFilter(".*Output:.*/data/files/.*\n", MASK_PATTERN)
         .addFilter(".*CreateTime.*\n", MASK_PATTERN)
+        .addFilter(".*last_modified_.*\n", MASK_PATTERN)
         .addFilter(".*transient_lastDdlTime.*\n", MASK_PATTERN)
         .addFilter(".*lastUpdateTime.*\n", MASK_PATTERN)
         .addFilter(".*lastAccessTime.*\n", MASK_PATTERN)
         .addFilter(".*[Oo]wner.*\n", MASK_PATTERN)
         .addFilter("(?s)(" + MASK_PATTERN + ")+", MASK_PATTERN);
+  }
+
+  /**
+   * If the test.beeline.compare.portable system property is true,
+   * the commands, listed in the COMMANDS_TO_REMOVE array will be removed
+   * from the out files before comparison.
+   * @return The regex filters to apply to remove the commands from the out files.
+   */
+  private static RegexFilterSet getPortableFilterSet() {
+    RegexFilterSet filterSet = new RegexFilterSet();
+    String regex = "PREHOOK: query:\\s+%s[\\n\\s]+.*?(?=(PREHOOK: query:|$))";
+    for (String command : COMMANDS_TO_REMOVE) {
+      filterSet.addFilter(String.format(regex, command),
+          Pattern.DOTALL | Pattern.CASE_INSENSITIVE, "");
+    }
+    filterSet.addFilter("(Warning: )(.* Join .*JOIN\\[\\d+\\].*)( is a cross product)", "$1MASKED$3");
+    filterSet.addFilter("mapreduce.jobtracker.address=.*\n",
+        "mapreduce.jobtracker.address=MASKED\n");
+    return filterSet;
   }
 
   /**
@@ -321,7 +380,8 @@ public final class QFile {
     private File queryDirectory;
     private File logDirectory;
     private File resultsDirectory;
-    private boolean rewriteSourceTables;
+    private boolean useSharedDatabase;
+    private boolean comparePortable;
 
     public QFileBuilder() {
     }
@@ -341,31 +401,40 @@ public final class QFile {
       return this;
     }
 
-    public QFileBuilder setRewriteSourceTables(boolean rewriteSourceTables) {
-      this.rewriteSourceTables = rewriteSourceTables;
+    public QFileBuilder setUseSharedDatabase(boolean useSharedDatabase) {
+      this.useSharedDatabase = useSharedDatabase;
+      return this;
+    }
+
+    public QFileBuilder setComparePortable(boolean compareProtable) {
+      this.comparePortable = compareProtable;
       return this;
     }
 
     public QFile getQFile(String name) throws IOException {
       QFile result = new QFile();
       result.name = name;
-      result.databaseName = "test_db_" + name;
+      if (!useSharedDatabase) {
+        result.databaseName = "test_db_" + name.toLowerCase();
+        result.specificFilterSet = new RegexFilterSet()
+            .addFilter("(PREHOOK|POSTHOOK): (Output|Input): database:" + result.databaseName + "\n",
+                "$1: $2: database:default\n")
+            .addFilter("(PREHOOK|POSTHOOK): (Output|Input): " + result.databaseName + "@",
+                "$1: $2: default@")
+            .addFilter("name(:?) " + result.databaseName + "\\.(.*)\n", "name$1 default.$2\n")
+            .addFilter("alias(:?) " + result.databaseName + "\\.(.*)\n", "alias$1 default.$2\n")
+            .addFilter("/" + result.databaseName + ".db/", "/");
+      } else {
+        result.databaseName = "default";
+        result.specificFilterSet = new RegexFilterSet();
+      }
       result.inputFile = new File(queryDirectory, name + ".q");
       result.rawOutputFile = new File(logDirectory, name + ".q.out.raw");
       result.outputFile = new File(logDirectory, name + ".q.out");
-      result.expectedOutputFile = new File(resultsDirectory, name + ".q.out");
       result.logFile = new File(logDirectory, name + ".q.beeline");
       result.beforeExecuteLogFile = new File(logDirectory, name + ".q.beforeExecute.log");
       result.afterExecuteLogFile = new File(logDirectory, name + ".q.afterExecute.log");
-      result.rewriteSourceTables = rewriteSourceTables;
-      result.specificFilterSet = new RegexFilterSet()
-          .addFilter("(PREHOOK|POSTHOOK): (Output|Input): database:" + result.databaseName + "\n",
-              "$1: $2: database:default\n")
-          .addFilter("(PREHOOK|POSTHOOK): (Output|Input): " + result.databaseName + "@",
-              "$1: $2: default@")
-          .addFilter("name(:?) " + result.databaseName + "\\.(.*)\n", "name$1 default.$2\n")
-          .addFilter("alias(:?) " + result.databaseName + "\\.(.*)\n", "alias$1 default.$2\n")
-          .addFilter("/" + result.databaseName + ".db/", "/");
+      result.useSharedDatabase = useSharedDatabase;
       result.converter = Converter.NONE;
       String input = FileUtils.readFileToString(result.inputFile, "UTF-8");
       if (input.contains("-- SORT_QUERY_RESULTS")) {
@@ -377,7 +446,31 @@ public final class QFile {
       if (input.contains("-- SORT_AND_HASH_QUERY_RESULTS")) {
         result.converter = Converter.SORT_AND_HASH_QUERY_RESULTS;
       }
+
+      result.comparePortable = comparePortable;
+      result.expectedOutputFile = prepareExpectedOutputFile(name, comparePortable);
       return result;
+    }
+
+    /**
+     * Prepare the output file and apply the necessary filters on it.
+     * @param name
+     * @param comparePortable If this parameter is true, the commands, listed in the
+     * COMMANDS_TO_REMOVE array will be filtered out in the output file.
+     * @return The expected output file.
+     * @throws IOException
+     */
+    private File prepareExpectedOutputFile (String name, boolean comparePortable) throws IOException {
+      if (!comparePortable) {
+        return new File(resultsDirectory, name + ".q.out");
+      } else {
+        File rawExpectedOutputFile = new File(resultsDirectory, name + ".q.out");
+        String rawOutput = FileUtils.readFileToString(rawExpectedOutputFile, "UTF-8");
+        rawOutput = portableFilterSet.filter(rawOutput);
+        File expectedOutputFile = new File(logDirectory, name + ".q.out.portable");
+        FileUtils.writeStringToFile(expectedOutputFile, rawOutput);
+        return expectedOutputFile;
+      }
     }
   }
 }

@@ -20,10 +20,10 @@ PREHOOK: type: SHOW_ROLE_GRANT
 POSTHOOK: query: show role grant user ruser1
 POSTHOOK: type: SHOW_ROLE_GRANT
 public	false	-1	
-PREHOOK: query: create database test_replload_adminpriv_src
+PREHOOK: query: create database test_replload_adminpriv_src with DBPROPERTIES ('repl.source.for' = '1,2,3')
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:test_replload_adminpriv_src
-POSTHOOK: query: create database test_replload_adminpriv_src
+POSTHOOK: query: create database test_replload_adminpriv_src with DBPROPERTIES ('repl.source.for' = '1,2,3')
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:test_replload_adminpriv_src
 PREHOOK: query: create table test_replload_adminpriv_src.dummy_tbl(a int) partitioned by (b string)

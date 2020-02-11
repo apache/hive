@@ -1,3 +1,4 @@
+--! qt:dataset:src
 FROM (
   FROM src select src.* WHERE src.key < 100
 ) unioninput

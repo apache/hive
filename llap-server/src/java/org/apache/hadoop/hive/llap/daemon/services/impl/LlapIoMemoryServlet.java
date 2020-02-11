@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,16 +24,16 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.llap.io.api.LlapIo;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hive.http.HttpServer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("serial")
 public class LlapIoMemoryServlet extends HttpServlet {
 
-  private static final Log LOG = LogFactory.getLog(LlapIoMemoryServlet.class);
+  private static final Logger LOG = LoggerFactory.getLogger(LlapIoMemoryServlet.class);
   static final String ACCESS_CONTROL_ALLOW_METHODS = "Access-Control-Allow-Methods";
   static final String ACCESS_CONTROL_ALLOW_ORIGIN = "Access-Control-Allow-Origin";
 
@@ -59,7 +59,7 @@ public class LlapIoMemoryServlet extends HttpServlet {
         return;
       }
       PrintWriter writer = null;
- 
+
       try {
         response.setContentType("text/plain; charset=utf8");
         response.setHeader(ACCESS_CONTROL_ALLOW_METHODS, "GET");

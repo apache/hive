@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,36 +18,49 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
+import com.google.common.collect.Multimap;
+import java.util.Collection;
+import org.apache.hadoop.hive.ql.parse.type.TypeCheckProcFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
-import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
+import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqual;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotNull;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFStruct;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.util.ReflectionUtils;
 
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 
 public class ExprNodeDescUtils {
+
+  protected static final Logger LOG = LoggerFactory.getLogger(ExprNodeDescUtils.class);
 
   public static int indexOf(ExprNodeDesc origin, List<ExprNodeDesc> sources) {
     for (int i = 0; i < sources.size(); i++) {
@@ -74,8 +87,7 @@ public class ExprNodeDescUtils {
     // for ExprNodeGenericFuncDesc, it should be deterministic and stateless
     if (origin instanceof ExprNodeGenericFuncDesc) {
       ExprNodeGenericFuncDesc func = (ExprNodeGenericFuncDesc) origin;
-      if (!FunctionRegistry.isDeterministic(func.getGenericUDF())
-          || FunctionRegistry.isStateful(func.getGenericUDF())) {
+      if (!FunctionRegistry.isConsistentWithinQuery(func.getGenericUDF())) {
         return null;
       }
       List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>();
@@ -97,7 +109,8 @@ public class ExprNodeDescUtils {
 
   private static boolean isDefaultPartition(ExprNodeDesc origin, String defaultPartitionName) {
     if (origin instanceof ExprNodeConstantDesc && ((ExprNodeConstantDesc)origin).getValue() != null &&
-        ((ExprNodeConstantDesc)origin).getValue().equals(defaultPartitionName)) {
+        ((ExprNodeConstantDesc)origin).getValue() instanceof String && ((ExprNodeConstantDesc)origin).getValue()
+            .equals(defaultPartitionName)) {
       return true;
     } else {
       return false;
@@ -139,6 +152,37 @@ public class ExprNodeDescUtils {
       if (origin.getChildren() != null) {
         for (ExprNodeDesc child : origin.getChildren()) {
           replaceEqualDefaultPartition(child, defaultPartitionName);
+        }
+      }
+    }
+  }
+
+  public static void replaceNullFiltersWithDefaultPartition(ExprNodeDesc origin,
+                                            String defaultPartitionName) throws SemanticException {
+    // Convert "ptn_col isnull" to "ptn_col = default_partition" and
+    // "ptn_col isnotnull" to "ptn_col <> default_partition"
+    String fnName = null;
+    if (origin instanceof ExprNodeGenericFuncDesc) {
+      if (((ExprNodeGenericFuncDesc) origin).getGenericUDF() instanceof GenericUDFOPNull) {
+        fnName = "=";
+      } else if (((ExprNodeGenericFuncDesc) origin).getGenericUDF() instanceof GenericUDFOPNotNull) {
+        fnName = "<>";
+      }
+    }
+    // Found an expression for function "isnull" or "isnotnull"
+    if (fnName != null) {
+      List<ExprNodeDesc> children = origin.getChildren();
+      assert(children.size() == 1);
+      ExprNodeConstantDesc defaultPartition = new ExprNodeConstantDesc(defaultPartitionName);
+      children.add(defaultPartition);
+      ((ExprNodeGenericFuncDesc) origin).setChildren(children);
+
+      ((ExprNodeGenericFuncDesc) origin).setGenericUDF(
+              FunctionRegistry.getFunctionInfo(fnName).getGenericUDF());
+    } else {
+      if (origin.getChildren() != null) {
+        for (ExprNodeDesc child : origin.getChildren()) {
+          replaceNullFiltersWithDefaultPartition(child, defaultPartitionName);
         }
       }
     }
@@ -379,7 +423,7 @@ public class ExprNodeDescUtils {
   /**
    * Join keys are expressions based on the select operator. Resolve the expressions so they
    * are based on the ReduceSink operator
-   *   SEL -> RS -> JOIN
+   *   SEL -&gt; RS -&gt; JOIN
    * @param source
    * @param reduceSinkOp
    * @return
@@ -397,8 +441,12 @@ public class ExprNodeDescUtils {
     // Find the key/value where the ExprNodeDesc value matches the column we are searching for.
     // The key portion of the entry will be the internal column name for the join key expression.
     for (Map.Entry<String, ExprNodeDesc> mapEntry : reduceSinkOp.getColumnExprMap().entrySet()) {
-      if (mapEntry.getValue().isSame(source)) {
+      if (mapEntry.getValue().equals(source)) {
         String columnInternalName = mapEntry.getKey();
+        // Joins always use KEY columns for the keys, so avoid resolving to VALUE columns
+        if(columnInternalName.startsWith(Utilities.ReduceField.VALUE.toString())) {
+          continue;
+        }
         if (source instanceof ExprNodeColumnDesc) {
           // The join key is a table column. Create the ExprNodeDesc based on this column.
           ColumnInfo columnInfo = reduceSinkOp.getSchema().getColumnInfo(columnInternalName);
@@ -407,8 +455,13 @@ public class ExprNodeDescUtils {
           // Join key expression is likely some expression involving functions/operators, so there
           // is no actual table column for this. But the ReduceSink operator should still have an
           // output column corresponding to this expression, using the columnInternalName.
-          // TODO: does tableAlias matter for this kind of expression?
-          return new ExprNodeColumnDesc(source.getTypeInfo(), columnInternalName, "", false);
+          String tabAlias = "";
+          // HIVE-21746: Set tabAlias when possible, such as for constant folded column
+          // that has foldedFromTab info.
+          if (source instanceof ExprNodeConstantDesc) {
+            tabAlias = ((ExprNodeConstantDesc) source).getFoldedFromTab();
+          }
+          return new ExprNodeColumnDesc(source.getTypeInfo(), columnInternalName, tabAlias, false);
         }
       }
     }
@@ -487,7 +540,7 @@ public class ExprNodeDescUtils {
 
   private static ExprNodeConstantDesc foldConstant(ExprNodeGenericFuncDesc func) {
     GenericUDF udf = func.getGenericUDF();
-    if (!FunctionRegistry.isDeterministic(udf) || FunctionRegistry.isStateful(udf)) {
+    if (!FunctionRegistry.isConsistentWithinQuery(udf)) {
       return null;
     }
     try {
@@ -527,44 +580,51 @@ public class ExprNodeDescUtils {
     } catch (Exception e) {
       return null;
     }
-	}
+  }
 
-	public static void getExprNodeColumnDesc(List<ExprNodeDesc> exprDescList,
-			Map<Integer, ExprNodeDesc> hashCodeTocolumnDescMap) {
-		for (ExprNodeDesc exprNodeDesc : exprDescList) {
-			getExprNodeColumnDesc(exprNodeDesc, hashCodeTocolumnDescMap);
-		}
-	}
+  public static void getExprNodeColumnDesc(List<ExprNodeDesc> exprDescList,
+      Multimap<Integer, ExprNodeColumnDesc> hashCodeTocolumnDescMap) {
+    for (ExprNodeDesc exprNodeDesc : exprDescList) {
+      getExprNodeColumnDesc(exprNodeDesc, hashCodeTocolumnDescMap);
+    }
+  }
 
-	/**
-	 * Get Map of ExprNodeColumnDesc HashCode to ExprNodeColumnDesc.
-	 * 
-	 * @param exprDesc
-	 * @param hashCodeToColumnDescMap
-	 *            Assumption: If two ExprNodeColumnDesc have same hash code then
-	 *            they are logically referring to same projection
-	 */
-	public static void getExprNodeColumnDesc(ExprNodeDesc exprDesc,
-			Map<Integer, ExprNodeDesc> hashCodeToColumnDescMap) {
-		if (exprDesc instanceof ExprNodeColumnDesc) {
-			hashCodeToColumnDescMap.put(exprDesc.hashCode(), exprDesc);
-		} else if (exprDesc instanceof ExprNodeColumnListDesc) {
-			for (ExprNodeDesc child : exprDesc.getChildren()) {
-				getExprNodeColumnDesc(child, hashCodeToColumnDescMap);
-			}
-		} else if (exprDesc instanceof ExprNodeGenericFuncDesc) {
-			for (ExprNodeDesc child : exprDesc.getChildren()) {
-				getExprNodeColumnDesc(child, hashCodeToColumnDescMap);
-			}
-		} else if (exprDesc instanceof ExprNodeFieldDesc) {
-			getExprNodeColumnDesc(((ExprNodeFieldDesc) exprDesc).getDesc(),
-					hashCodeToColumnDescMap);
-		} else if( exprDesc instanceof  ExprNodeSubQueryDesc) {
-		    getExprNodeColumnDesc(((ExprNodeSubQueryDesc) exprDesc).getSubQueryLhs(),
-                    hashCodeToColumnDescMap);
+  /**
+   * Get Map of ExprNodeColumnDesc HashCode to ExprNodeColumnDesc.
+   *
+   * @param exprDesc
+   * @param hashCodeToColumnDescMap
+   */
+  public static void getExprNodeColumnDesc(ExprNodeDesc exprDesc,
+      Multimap<Integer, ExprNodeColumnDesc> hashCodeToColumnDescMap) {
+    if (exprDesc instanceof ExprNodeColumnDesc) {
+      Collection<ExprNodeColumnDesc> nodes = hashCodeToColumnDescMap.get(exprDesc.hashCode());
+      boolean insert = true;
+      for (ExprNodeColumnDesc node : nodes) {
+        if (node.isSame(exprDesc)) {
+          insert = false;
+          break;
         }
-
-	}
+      }
+      if (insert) {
+        nodes.add((ExprNodeColumnDesc) exprDesc);
+      }
+    } else if (exprDesc instanceof ExprNodeColumnListDesc) {
+      for (ExprNodeDesc child : exprDesc.getChildren()) {
+        getExprNodeColumnDesc(child, hashCodeToColumnDescMap);
+      }
+    } else if (exprDesc instanceof ExprNodeGenericFuncDesc) {
+      for (ExprNodeDesc child : exprDesc.getChildren()) {
+        getExprNodeColumnDesc(child, hashCodeToColumnDescMap);
+      }
+    } else if (exprDesc instanceof ExprNodeFieldDesc) {
+      getExprNodeColumnDesc(((ExprNodeFieldDesc) exprDesc).getDesc(),
+          hashCodeToColumnDescMap);
+    } else if(exprDesc instanceof  ExprNodeSubQueryDesc) {
+      getExprNodeColumnDesc(((ExprNodeSubQueryDesc) exprDesc).getSubQueryLhs(),
+          hashCodeToColumnDescMap);
+    }
+  }
 
   public static boolean isConstant(ExprNodeDesc value) {
     if (value instanceof ExprNodeConstantDesc) {
@@ -572,7 +632,7 @@ public class ExprNodeDescUtils {
     }
     if (value instanceof ExprNodeGenericFuncDesc) {
       ExprNodeGenericFuncDesc func = (ExprNodeGenericFuncDesc) value;
-      if (!FunctionRegistry.isDeterministic(func.getGenericUDF())) {
+      if (!FunctionRegistry.isConsistentWithinQuery(func.getGenericUDF())) {
         return false;
       }
       for (ExprNodeDesc child : func.getChildren()) {
@@ -609,7 +669,9 @@ public class ExprNodeDescUtils {
     // We only do the minimum cast for decimals. Other types are assumed safe; fix if needed.
     // We also don't do anything for non-primitive children (maybe we should assert).
     if ((pti.getPrimitiveCategory() != PrimitiveCategory.DECIMAL)
-        || (!(childExpr.getTypeInfo() instanceof PrimitiveTypeInfo))) return pti;
+        || (!(childExpr.getTypeInfo() instanceof PrimitiveTypeInfo))) {
+      return pti;
+    }
     PrimitiveTypeInfo childTi = (PrimitiveTypeInfo)childExpr.getTypeInfo();
     // If the child is also decimal, no cast is needed (we hope - can target type be narrower?).
     return HiveDecimalUtils.getDecimalTypeForPrimitiveCategory(childTi);
@@ -619,14 +681,14 @@ public class ExprNodeDescUtils {
    * Build ExprNodeColumnDesc for the projections in the input operator from
    * sartpos to endpos(both included). Operator must have an associated
    * colExprMap.
-   * 
+   *
    * @param inputOp
    *          Input Hive Operator
    * @param startPos
-   *          starting position in the input operator schema; must be >=0 and <=
+   *          starting position in the input operator schema; must be &gt;=0 and &lt;=
    *          endPos
    * @param endPos
-   *          end position in the input operator schema; must be >=0.
+   *          end position in the input operator schema; must be &gt;=0.
    * @return List of ExprNodeDesc
    */
   public static ArrayList<ExprNodeDesc> genExprNodeDesc(Operator inputOp, int startPos, int endPos,
@@ -651,7 +713,7 @@ public class ExprNodeDescUtils {
     }
 
     return exprColLst;
-  }  
+  }
 
   public static List<ExprNodeDesc> flattenExprList(List<ExprNodeDesc> sourceList) {
     ArrayList<ExprNodeDesc> result = new ArrayList<ExprNodeDesc>(sourceList.size());
@@ -936,4 +998,33 @@ public class ExprNodeDescUtils {
     }
     return true;
   }
+
+  // Given an expression this method figures out if the type for the expression is integer
+  // i.e. INT, SHORT, TINYINT (BYTE) or LONG
+  public static boolean isIntegerType(ExprNodeDesc expr) {
+    TypeInfo typeInfo = expr.getTypeInfo();
+    if (typeInfo.getCategory() == ObjectInspector.Category.PRIMITIVE) {
+      PrimitiveObjectInspector.PrimitiveCategory primitiveCategory = ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory();
+      if(primitiveCategory == PrimitiveCategory.INT
+        || primitiveCategory == PrimitiveCategory.SHORT
+          || primitiveCategory == PrimitiveCategory.BYTE
+        || primitiveCategory == PrimitiveCategory.LONG){
+        return true;
+      }
+    }
+    return false;
+  }
+
+  public static boolean isConstantStruct(ExprNodeDesc valueDesc) {
+    return valueDesc instanceof ExprNodeConstantDesc && valueDesc.getTypeInfo() instanceof StructTypeInfo;
+  }
+
+  public static boolean isStructUDF(ExprNodeDesc columnDesc) {
+    if (columnDesc instanceof ExprNodeGenericFuncDesc) {
+      ExprNodeGenericFuncDesc exprNodeGenericFuncDesc = (ExprNodeGenericFuncDesc) columnDesc;
+      return (exprNodeGenericFuncDesc.getGenericUDF() instanceof GenericUDFStruct);
+    }
+    return false;
+  }
+
 }

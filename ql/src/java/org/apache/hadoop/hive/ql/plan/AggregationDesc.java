@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,11 +18,9 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-import java.io.Externalizable;
 import java.io.Serializable;
+import java.util.List;
 
-import org.apache.hadoop.hive.common.JavaUtils;
-import org.apache.hadoop.hive.ql.exec.PTFUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.util.ReflectionUtils;
@@ -36,7 +34,7 @@ public class AggregationDesc implements java.io.Serializable {
   private static final long serialVersionUID = 1L;
   private String genericUDAFName;
 
-  private java.util.ArrayList<ExprNodeDesc> parameters;
+  private List<ExprNodeDesc> parameters;
   private boolean distinct;
   private GenericUDAFEvaluator.Mode mode;
 
@@ -52,7 +50,7 @@ public class AggregationDesc implements java.io.Serializable {
 
   public AggregationDesc(final String genericUDAFName,
       final GenericUDAFEvaluator genericUDAFEvaluator,
-      final java.util.ArrayList<ExprNodeDesc> parameters,
+      final List<ExprNodeDesc> parameters,
       final boolean distinct, final GenericUDAFEvaluator.Mode mode) {
     this.genericUDAFName = genericUDAFName;
     this.parameters = parameters;
@@ -72,8 +70,7 @@ public class AggregationDesc implements java.io.Serializable {
   public void setGenericUDAFEvaluator(
       final GenericUDAFEvaluator genericUDAFEvaluator) {
     this.genericUDAFEvaluator = genericUDAFEvaluator;
-    if (genericUDAFEvaluator instanceof Serializable ||
-        genericUDAFEvaluator instanceof Externalizable) {
+    if (genericUDAFEvaluator instanceof Serializable) {
       this.genericUDAFWritableEvaluator = genericUDAFEvaluator;
     } else {
       this.genericUDAFEvaluatorClassName = genericUDAFEvaluator.getClass().getName();
@@ -112,11 +109,11 @@ public class AggregationDesc implements java.io.Serializable {
     this.genericUDAFWritableEvaluator = genericUDAFWritableEvaluator;
   }
 
-  public java.util.ArrayList<ExprNodeDesc> getParameters() {
+  public List<ExprNodeDesc> getParameters() {
     return parameters;
   }
 
-  public void setParameters(final java.util.ArrayList<ExprNodeDesc> parameters) {
+  public void setParameters(List<ExprNodeDesc> parameters) {
     this.parameters = parameters;
   }
 

@@ -24,6 +24,12 @@
     <description>Internal marker for test. Used for masking env-dependent values</description>
   </property>
 
+  <!-- Properties for test folders -->
+  <property>
+    <name>mapreduce.jobtracker.staging.root.dir</name>
+    <value>${test.tmp.dir}/blobstore/mapred/staging</value>
+  </property>
+
   <!-- Hive Configuration can either be stored in this file or in the hadoop configuration files  -->
   <!-- that are implied by Hadoop setup variables.                                                -->
   <!-- Aside from Hadoop setup variables - this file is provided as a convenience so that Hive    -->
@@ -282,6 +288,11 @@
   <property>
     <name>hive.exim.uri.scheme.whitelist</name>
     <value>hdfs,pfile,file,s3,s3a,pblob</value>
+  </property>
+
+  <property>
+    <name>hive.query.results.cache.enabled</name>
+    <value>false</value>
   </property>
 
   <!--

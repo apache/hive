@@ -22,6 +22,8 @@ import static org.apache.hadoop.fs.permission.AclEntryType.GROUP;
 import static org.apache.hadoop.fs.permission.AclEntryType.OTHER;
 import static org.apache.hadoop.fs.permission.AclEntryType.USER;
 
+import org.junit.After;
+
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.security.PrivilegedExceptionAction;
@@ -49,7 +51,12 @@ public class TestStorageBasedMetastoreAuthorizationProviderWithACL
   protected static Path warehouseDir = null;
   protected UserGroupInformation userUgi = null;
   protected String testUserName = "test_user";
+  protected String proxyUserName = null;
 
+  @Override
+  protected String getProxyUserName() {
+    return proxyUserName;
+  }
 
   @Override
   protected boolean isTestEnabled() {
@@ -74,10 +81,10 @@ public class TestStorageBasedMetastoreAuthorizationProviderWithACL
 
     // Hadoop FS ACLs do not work with LocalFileSystem, so set up MiniDFS.
     HiveConf conf = super.createHiveConf();
-    String currentUserName = Utils.getUGI().getShortUserName();
+    proxyUserName = Utils.getUGI().getShortUserName();
     conf.set("dfs.namenode.acls.enabled", "true");
-    conf.set("hadoop.proxyuser." + currentUserName + ".groups", "*");
-    conf.set("hadoop.proxyuser." + currentUserName + ".hosts", "*");
+    conf.set("hadoop.proxyuser." + proxyUserName + ".groups", "*");
+    conf.set("hadoop.proxyuser." + proxyUserName + ".hosts", "*");
     dfs = ShimLoader.getHadoopShims().getMiniDfs(conf, 4, true, null);
     FileSystem fs = dfs.getFileSystem();
 
@@ -102,8 +109,8 @@ public class TestStorageBasedMetastoreAuthorizationProviderWithACL
     return userUgi.getShortUserName();
   }
 
-  @Override
-  protected void tearDown() throws Exception {
+  @After
+  public void tearDown() throws Exception {
     super.tearDown();
 
     if (dfs != null) {
@@ -170,9 +177,21 @@ public class TestStorageBasedMetastoreAuthorizationProviderWithACL
         .setPermission(permission).build();
   }
 
+  @Override
+  protected boolean mayTestLocation() {
+    return false;
+  }
+
+  @Override
   protected void allowCreateDatabase(String userName)
       throws Exception {
     allowWriteAccessViaAcl(userName, warehouseDir.toString());
+  }
+
+  @Override
+  protected void disallowCreateDatabase(String userName)
+      throws Exception {
+    disallowWriteAccessViaAcl(userName, warehouseDir.toString());
   }
 
   @Override

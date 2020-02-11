@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -37,6 +37,7 @@ import org.apache.hadoop.fs.PositionedReadable;
 import org.apache.hadoop.fs.Seekable;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.io.Allocator;
+import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.common.io.DataCache;
 import org.apache.hadoop.hive.common.io.DiskRange;
 import org.apache.hadoop.hive.common.io.DiskRangeList;
@@ -61,10 +62,10 @@ public class LlapCacheAwareFs extends FileSystem {
       new ConcurrentHashMap<>();
 
   public static Path registerFile(DataCache cache, Path path, Object fileKey,
-      TreeMap<Long, Long> index, Configuration conf) throws IOException {
+      TreeMap<Long, Long> index, Configuration conf, CacheTag tag) throws IOException {
     long splitId = currentSplitId.incrementAndGet();
     CacheAwareInputStream stream = new CacheAwareInputStream(
-        cache, conf, index, path, fileKey, -1);
+        cache, conf, index, path, fileKey, -1, tag);
     if (files.putIfAbsent(splitId, stream) != null) {
       throw new IOException("Record already exists for " + splitId);
     }
@@ -140,7 +141,11 @@ public class LlapCacheAwareFs extends FileSystem {
   @Override
   public FileStatus getFileStatus(Path arg0) throws IOException {
     LlapCacheAwareFs.CacheAwareInputStream ctx = getCtx(arg0);
-    return ctx.getFs().getFileStatus(ctx.path);
+    FileStatus fileStatus = ctx.getFs().getFileStatus(ctx.path);
+    // We replace the path in the file status by the input path as Parquet
+    // may use the path in the file status to open the file
+    fileStatus.setPath(arg0);
+    return fileStatus;
   }
 
   @Override
@@ -166,23 +171,25 @@ public class LlapCacheAwareFs extends FileSystem {
     private final TreeMap<Long, Long> chunkIndex;
     private final Path path;
     private final Object fileKey;
+    private final CacheTag tag;
     private final Configuration conf;
     private final DataCache cache;
     private final int bufferSize;
     private long position = 0;
 
     public CacheAwareInputStream(DataCache cache, Configuration conf,
-        TreeMap<Long, Long> chunkIndex, Path path, Object fileKey, int bufferSize) {
+        TreeMap<Long, Long> chunkIndex, Path path, Object fileKey, int bufferSize, CacheTag tag) {
       this.cache = cache;
       this.fileKey = fileKey;
       this.chunkIndex = chunkIndex;
       this.path = path;
       this.conf = conf;
       this.bufferSize = bufferSize;
+      this.tag = tag;
     }
 
     public LlapCacheAwareFs.CacheAwareInputStream cloneWithBufferSize(int bufferSize) {
-      return new CacheAwareInputStream(cache, conf, chunkIndex, path, fileKey, bufferSize);
+      return new CacheAwareInputStream(cache, conf, chunkIndex, path, fileKey, bufferSize, tag);
     }
 
     @Override
@@ -204,13 +211,11 @@ public class LlapCacheAwareFs extends FileSystem {
         @Override
         public DiskRangeList createCacheChunk(
             MemoryBuffer buffer, long startOffset, long endOffset) {
-          CacheChunk result = new CacheChunk(); // TODO: pool?
-          result.init(buffer, startOffset, endOffset);
-          return result;
+          return new CacheChunk(buffer, startOffset, endOffset);
         }
       }, gotAllData);
-      if (LOG.isInfoEnabled()) {
-        LOG.info("Buffers after cache " + RecordReaderUtils.stringifyDiskRanges(drl));
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Buffers after cache " + RecordReaderUtils.stringifyDiskRanges(drl));
       }
       if (gotAllData.value) {
         long sizeRead = 0;
@@ -220,6 +225,7 @@ public class LlapCacheAwareFs extends FileSystem {
           int offsetFromReadStart = (int)(from - readStartPos), candidateSize = (int)(to - from);
           ByteBuffer data = drl.getData().duplicate();
           data.get(array, arrayOffset + offsetFromReadStart, candidateSize);
+          cache.releaseBuffer(((CacheChunk)drl).getBuffer());
           sizeRead += candidateSize;
           drl = drl.next;
         }
@@ -246,6 +252,7 @@ public class LlapCacheAwareFs extends FileSystem {
         if (candidate.hasData()) {
           ByteBuffer data = candidate.getData().duplicate();
           data.get(array, arrayOffset + offsetFromReadStart, candidateSize);
+          cache.releaseBuffer(((CacheChunk)candidate).getBuffer());
           sizeRead += candidateSize;
           continue;
         }
@@ -265,6 +272,10 @@ public class LlapCacheAwareFs extends FileSystem {
           long chunkFrom = Math.max(from, missingChunk.getKey()),
               chunkTo = Math.min(to, missingChunk.getValue()),
               chunkLength = chunkTo - chunkFrom;
+          // TODO: if we allow partial reads (right now we disable this), we'd have to handle it here.
+          //       chunksInThisRead should probably be changed to be a struct array indicating both
+          //       partial and full sizes for each chunk; then the partial ones could be merged
+          //       with the previous partial ones, and any newly-full chunks put in the cache.
           MemoryBuffer[] largeBuffers = null, smallBuffer = null, newCacheData = null;
           try {
             int largeBufCount = (int) (chunkLength / maxAlloc);
@@ -274,6 +285,7 @@ public class LlapCacheAwareFs extends FileSystem {
             int extraOffsetInChunk = 0;
             if (maxAlloc < chunkLength) {
               largeBuffers = new MemoryBuffer[largeBufCount];
+              // Note: we don't use StoppableAllocator here - this is not on an IO thread.
               allocator.allocateMultiple(largeBuffers, maxAlloc, cache.getDataBufferFactory());
               for (int i = 0; i < largeBuffers.length; ++i) {
                 // By definition here we copy up to the limit of the buffer.
@@ -291,6 +303,7 @@ public class LlapCacheAwareFs extends FileSystem {
             largeBuffers = null;
             if (smallSize > 0) {
               smallBuffer = new MemoryBuffer[1];
+              // Note: we don't use StoppableAllocator here - this is not on an IO thread.
               allocator.allocateMultiple(smallBuffer, smallSize, cache.getDataBufferFactory());
               ByteBuffer bb = smallBuffer[0].getByteBufferRaw();
               copyDiskDataToCacheBuffer(array,
@@ -309,7 +322,7 @@ public class LlapCacheAwareFs extends FileSystem {
               }
               smallBuffer = null;
             }
-            cache.putFileData(fileKey, cacheRanges, newCacheData, 0);
+            cache.putFileData(fileKey, cacheRanges, newCacheData, 0, tag);
           } finally {
             // We do not use the new cache buffers for the actual read, given the way read() API is.
             // Therefore, we don't need to handle cache collisions - just decref all the buffers.
@@ -360,12 +373,12 @@ public class LlapCacheAwareFs extends FileSystem {
         int maxAlloc, long from, long to) {
       Map.Entry<Long, Long> firstMissing = chunkIndex.floorEntry(from);
       if (firstMissing == null) {
-        throw new AssertionError("No lower bound for offset " + from);
+        throw new AssertionError("No lower bound for start offset " + from);
       }
       if (firstMissing.getValue() <= from
           || ((from - firstMissing.getKey()) % maxAlloc) != 0) {
         // The data does not belong to a recognized chunk, or is split wrong.
-        throw new AssertionError("Lower bound for offset " + from + " is ["
+        throw new AssertionError("Lower bound for start offset " + from + " is ["
             + firstMissing.getKey() + ", " + firstMissing.getValue() + ")");
       }
       SortedMap<Long, Long> missingChunks = chunkIndex.subMap(firstMissing.getKey(), to);
@@ -377,7 +390,7 @@ public class LlapCacheAwareFs extends FileSystem {
       if (lastMissingEnd < to
           || (to != lastMissingEnd && ((to - lastMissingOffset) % maxAlloc) != 0)) {
         // The data does not belong to a recognized chunk, or is split wrong.
-        throw new AssertionError("Lower bound for offset " + to + " is ["
+        throw new AssertionError("Lower bound for end offset " + to + " is ["
             + lastMissingOffset + ", " + lastMissingEnd + ")");
       }
       return missingChunks;

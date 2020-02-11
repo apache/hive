@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -40,6 +40,8 @@ public class VectorMapJoinOptimizedCreateHashTable {
     ReusableGetAdaptor hashMapRowGetter = mapJoinTableContainer.createGetter(refKey);
 
     boolean isOuterJoin = !desc.isNoOuterJoin();
+
+    // UNDONE
     VectorMapJoinDesc vectorDesc = (VectorMapJoinDesc) desc.getVectorDesc();
     HashTableKind hashTableKind = vectorDesc.getHashTableKind();
     HashTableKeyType hashTableKeyType = vectorDesc.getHashTableKeyType();
@@ -57,17 +59,17 @@ public class VectorMapJoinOptimizedCreateHashTable {
       case HASH_MAP:
         hashTable = new VectorMapJoinOptimizedLongHashMap(
                   minMaxEnabled, isOuterJoin, hashTableKeyType,
-                  mapJoinTableContainer, hashMapRowGetter);
+                  mapJoinTableContainer, hashMapRowGetter, desc.getKeyTblDesc());
         break;
       case HASH_MULTISET:
         hashTable = new VectorMapJoinOptimizedLongHashMultiSet(
                   minMaxEnabled, isOuterJoin, hashTableKeyType,
-                  mapJoinTableContainer, hashMapRowGetter);
+                  mapJoinTableContainer, hashMapRowGetter, desc.getKeyTblDesc());
         break;
       case HASH_SET:
         hashTable = new VectorMapJoinOptimizedLongHashSet(
                   minMaxEnabled, isOuterJoin, hashTableKeyType,
-                  mapJoinTableContainer, hashMapRowGetter);
+                  mapJoinTableContainer, hashMapRowGetter, desc.getKeyTblDesc());
         break;
       }
       break;
@@ -77,17 +79,17 @@ public class VectorMapJoinOptimizedCreateHashTable {
       case HASH_MAP:
         hashTable = new VectorMapJoinOptimizedStringHashMap(
                   isOuterJoin,
-                  mapJoinTableContainer, hashMapRowGetter);
+                  mapJoinTableContainer, hashMapRowGetter, desc.getKeyTblDesc());
         break;
       case HASH_MULTISET:
         hashTable = new VectorMapJoinOptimizedStringHashMultiSet(
                   isOuterJoin,
-                  mapJoinTableContainer, hashMapRowGetter);
+                  mapJoinTableContainer, hashMapRowGetter, desc.getKeyTblDesc());
         break;
       case HASH_SET:
         hashTable = new VectorMapJoinOptimizedStringHashSet(
                   isOuterJoin,
-                  mapJoinTableContainer, hashMapRowGetter);
+                  mapJoinTableContainer, hashMapRowGetter, desc.getKeyTblDesc());
         break;
       }
       break;
@@ -114,16 +116,4 @@ public class VectorMapJoinOptimizedCreateHashTable {
     }
     return hashTable;
   }
-
-  /*
-  @Override
-  public com.esotericsoftware.kryo.io.Output getHybridBigTableSpillOutput(int partitionId) {
-
-    HybridHashTableContainer ht = (HybridHashTableContainer) mapJoinTableContainer;
-
-    HashPartition hp = ht.getHashPartitions()[partitionId];
-
-    return hp.getMatchfileOutput();
-  }
-  */
 }

@@ -1,26 +1,28 @@
-PREHOOK: query: create table dummy(i int)
+PREHOOK: query: create table dummy_n2(i int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dummy
-POSTHOOK: query: create table dummy(i int)
+PREHOOK: Output: default@dummy_n2
+POSTHOOK: query: create table dummy_n2(i int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dummy
-PREHOOK: query: insert into table dummy values (1)
+POSTHOOK: Output: default@dummy_n2
+PREHOOK: query: insert into table dummy_n2 values (1)
 PREHOOK: type: QUERY
-PREHOOK: Output: default@dummy
-POSTHOOK: query: insert into table dummy values (1)
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@dummy_n2
+POSTHOOK: query: insert into table dummy_n2 values (1)
 POSTHOOK: type: QUERY
-POSTHOOK: Output: default@dummy
-POSTHOOK: Lineage: dummy.i EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-PREHOOK: query: select * from dummy
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@dummy_n2
+POSTHOOK: Lineage: dummy_n2.i SCRIPT []
+PREHOOK: query: select * from dummy_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dummy
-#### A masked pattern was here ####
-POSTHOOK: query: select * from dummy
+PREHOOK: Input: default@dummy_n2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from dummy_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dummy
-#### A masked pattern was here ####
+POSTHOOK: Input: default@dummy_n2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1
 PREHOOK: query: create table partunion1(id1 int) partitioned by (part1 string)
 PREHOOK: type: CREATETABLE
@@ -32,16 +34,19 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partunion1
 PREHOOK: query: explain insert into table partunion1 partition(part1)
 select temps.* from (
-select 1 as id1, '2014' as part1 from dummy 
+select 1 as id1, '2014' as part1 from dummy_n2 
 union all 
-select 2 as id1, '2014' as part1 from dummy ) temps
+select 2 as id1, '2014' as part1 from dummy_n2 ) temps
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dummy_n2
+PREHOOK: Output: default@partunion1
 POSTHOOK: query: explain insert into table partunion1 partition(part1)
 select temps.* from (
-select 1 as id1, '2014' as part1 from dummy 
+select 1 as id1, '2014' as part1 from dummy_n2 
 union all 
-select 2 as id1, '2014' as part1 from dummy ) temps
+select 2 as id1, '2014' as part1 from dummy_n2 ) temps
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dummy_n2
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -54,13 +59,14 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Map 1 <- Union 2 (CONTAINS)
-        Map 3 <- Union 2 (CONTAINS)
+        Map 4 <- Union 2 (CONTAINS)
+        Reducer 3 <- Union 2 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: dummy
+                  alias: dummy_n2
                   Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: 1 (type: int)
@@ -78,12 +84,30 @@ STAGE PLANS:
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.partunion1
+                      Select Operator
+                        expressions: _col0 (type: int), _col1 (type: string)
+                        outputColumnNames: id1, part1
+                        Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                        Group By Operator
+                          aggregations: compute_stats(id1, 'hll')
+                          keys: part1 (type: string)
+                          minReductionHashAggr: 0.5
+                          mode: hash
+                          outputColumnNames: _col0, _col1
+                          Statistics: Num rows: 1 Data size: 512 Basic stats: COMPLETE Column stats: COMPLETE
+                          Reduce Output Operator
+                            key expressions: _col0 (type: string)
+                            null sort order: z
+                            sort order: +
+                            Map-reduce partition columns: _col0 (type: string)
+                            Statistics: Num rows: 1 Data size: 512 Basic stats: COMPLETE Column stats: COMPLETE
+                            value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
             Execution mode: llap
             LLAP IO: no inputs
-        Map 3 
+        Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: dummy
+                  alias: dummy_n2
                   Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: 2 (type: int)
@@ -101,8 +125,46 @@ STAGE PLANS:
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.partunion1
+                      Select Operator
+                        expressions: _col0 (type: int), _col1 (type: string)
+                        outputColumnNames: id1, part1
+                        Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                        Group By Operator
+                          aggregations: compute_stats(id1, 'hll')
+                          keys: part1 (type: string)
+                          minReductionHashAggr: 0.5
+                          mode: hash
+                          outputColumnNames: _col0, _col1
+                          Statistics: Num rows: 1 Data size: 512 Basic stats: COMPLETE Column stats: COMPLETE
+                          Reduce Output Operator
+                            key expressions: _col0 (type: string)
+                            null sort order: z
+                            sort order: +
+                            Map-reduce partition columns: _col0 (type: string)
+                            Statistics: Num rows: 1 Data size: 512 Basic stats: COMPLETE Column stats: COMPLETE
+                            value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
             Execution mode: llap
             LLAP IO: no inputs
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: compute_stats(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 528 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: string)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 528 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 528 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Union 2 
             Vertex: Union 2
 
@@ -122,34 +184,39 @@ STAGE PLANS:
               name: default.partunion1
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: id1
+          Column Types: int
+          Table: default.partunion1
 
 PREHOOK: query: insert into table partunion1 partition(part1)
 select temps.* from (
-select 1 as id1, '2014' as part1 from dummy 
+select 1 as id1, '2014' as part1 from dummy_n2 
 union all 
-select 2 as id1, '2014' as part1 from dummy ) temps
+select 2 as id1, '2014' as part1 from dummy_n2 ) temps
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dummy
+PREHOOK: Input: default@dummy_n2
 PREHOOK: Output: default@partunion1
 POSTHOOK: query: insert into table partunion1 partition(part1)
 select temps.* from (
-select 1 as id1, '2014' as part1 from dummy 
+select 1 as id1, '2014' as part1 from dummy_n2 
 union all 
-select 2 as id1, '2014' as part1 from dummy ) temps
+select 2 as id1, '2014' as part1 from dummy_n2 ) temps
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dummy
+POSTHOOK: Input: default@dummy_n2
 POSTHOOK: Output: default@partunion1@part1=2014
 POSTHOOK: Lineage: partunion1 PARTITION(part1=2014).id1 EXPRESSION []
 PREHOOK: query: select * from partunion1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partunion1
 PREHOOK: Input: default@partunion1@part1=2014
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from partunion1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partunion1
 POSTHOOK: Input: default@partunion1@part1=2014
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	2014
 2	2014

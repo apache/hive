@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,9 +18,11 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 
 /**
@@ -30,16 +32,24 @@ public class CastDecimalToString extends DecimalToStringUnaryUDF {
 
   private static final long serialVersionUID = 1L;
 
+  // Transient members initialized by transientInit method.
+
   // We use a scratch buffer with the HiveDecimalWritable toBytes method so
   // we don't incur poor performance creating a String result.
-  private byte[] scratchBuffer;
+  private transient byte[] scratchBuffer;
 
   public CastDecimalToString() {
     super();
   }
 
-  public CastDecimalToString(int inputColumn, int outputColumn) {
-    super(inputColumn, outputColumn);
+  public CastDecimalToString(int inputColumn, int outputColumnNum) {
+    super(inputColumn, outputColumnNum);
+  }
+
+  @Override
+  public void transientInit(Configuration conf) throws HiveException {
+    super.transientInit(conf);
+
     scratchBuffer = new byte[HiveDecimal.SCRATCH_BUFFER_LEN_TO_BYTES];
   }
 
@@ -51,7 +61,7 @@ public class CastDecimalToString extends DecimalToStringUnaryUDF {
   @Override
   protected void func(BytesColumnVector outV, DecimalColumnVector inV, int i) {
     HiveDecimalWritable decWritable = inV.vector[i];
-    final int byteIndex = decWritable.toBytes(scratchBuffer);
+    final int byteIndex = decWritable.toFormatBytes(inV.scale, scratchBuffer);
     assign(outV, i, scratchBuffer, byteIndex, HiveDecimal.SCRATCH_BUFFER_LEN_TO_BYTES - byteIndex);
   }
 }

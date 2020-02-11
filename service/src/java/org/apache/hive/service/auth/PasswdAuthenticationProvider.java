@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -26,7 +26,7 @@ public interface PasswdAuthenticationProvider {
    * to authenticate users for their requests.
    * If a user is to be granted, return nothing/throw nothing.
    * When a user is to be disallowed, throw an appropriate {@link AuthenticationException}.
-   * <p/>
+   * <br>
    * For an example implementation, see {@link LdapAuthenticationProviderImpl}.
    *
    * @param user     The username received over the connection request

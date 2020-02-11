@@ -7,6 +7,8 @@ from
   on (t2.key=t3.key )
   where t2.value='val_105' and t3.key='105'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select t2.* 
 from
@@ -16,6 +18,8 @@ from
   on (t2.key=t3.key )
   where t2.value='val_105' and t3.key='105'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -30,6 +34,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: ((value = 'val_105') and (key = '105')) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((value = 'val_105') and (key = '105')) (type: boolean)
@@ -40,6 +45,7 @@ STAGE PLANS:
                         keys:
                           0 '105' (type: string)
                           1 '105' (type: string)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 
@@ -51,6 +57,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: (key = '105') (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key = '105') (type: boolean)
@@ -77,6 +84,7 @@ STAGE PLANS:
                                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 

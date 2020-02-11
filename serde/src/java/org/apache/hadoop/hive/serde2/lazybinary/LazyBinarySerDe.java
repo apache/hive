@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampLocalTZObjectInspector;
 import org.slf4j.Logger;
@@ -37,12 +38,11 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
@@ -98,10 +98,10 @@ public class LazyBinarySerDe extends AbstractSerDe {
   // The object for storing row data
   LazyBinaryStruct cachedLazyBinaryStruct;
 
-  private int serializedSize;
-  private SerDeStats stats;
-  private boolean lastOperationSerialize;
-  private boolean lastOperationDeserialize;
+  int serializedSize;
+  SerDeStats stats;
+  boolean lastOperationSerialize;
+  boolean lastOperationDeserialize;
 
   /**
    * Initialize the SerDe with configuration and table information.
@@ -297,7 +297,7 @@ public class LazyBinarySerDe extends AbstractSerDe {
     serialize(byteStream, uoi.getField(obj), uoi.getObjectInspectors().get(tag), false, warnedOnceNullMapKey);
   }
 
-  private static void serializeText(
+  protected static void serializeText(
       RandomAccessOutput byteStream, Text t, boolean skipLengthPrefix) {
     /* write byte size of the string which is a vint */
     int length = t.getLength();
@@ -317,8 +317,8 @@ public class LazyBinarySerDe extends AbstractSerDe {
     public boolean value;
   }
 
-  private static void writeDateToByteStream(RandomAccessOutput byteStream,
-                                            DateWritable date) {
+  public static void writeDateToByteStream(RandomAccessOutput byteStream,
+                                            DateWritableV2 date) {
     LazyBinaryUtils.writeVInt(byteStream, date.getDays());
   }
 
@@ -505,13 +505,13 @@ public class LazyBinarySerDe extends AbstractSerDe {
       }
 
       case DATE: {
-        DateWritable d = ((DateObjectInspector) poi).getPrimitiveWritableObject(obj);
+        DateWritableV2 d = ((DateObjectInspector) poi).getPrimitiveWritableObject(obj);
         writeDateToByteStream(byteStream, d);
         return;
       }
       case TIMESTAMP: {
         TimestampObjectInspector toi = (TimestampObjectInspector) poi;
-        TimestampWritable t = toi.getPrimitiveWritableObject(obj);
+        TimestampWritableV2 t = toi.getPrimitiveWritableObject(obj);
         t.writeToByteStream(byteStream);
         return;
       }
@@ -692,7 +692,7 @@ public class LazyBinarySerDe extends AbstractSerDe {
     }
   }
 
-  private static void writeSizeAtOffset(
+  protected static void writeSizeAtOffset(
       RandomAccessOutput byteStream, int byteSizeStart, int size) {
     byteStream.writeInt(byteSizeStart, size);
   }

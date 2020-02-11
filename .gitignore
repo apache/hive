@@ -5,6 +5,7 @@ build-eclipse
 .externalToolBuilders
 .project
 .settings
+.factorypath
 *.launch
 *~
 metastore_db
@@ -29,4 +30,10 @@ hcatalog/webhcat/svr/target
 conf/hive-default.xml.template
 itests/hive-blobstore/src/test/resources/blobstore-conf.xml
 .DS_Store
+.factorypath
 patchprocess
+standalone-metastore/src/gen/version
+standalone-metastore/metastore-common/src/gen/version
+standalone-metastore/metastore-server/src/gen/version
+launch.json
+settings.json

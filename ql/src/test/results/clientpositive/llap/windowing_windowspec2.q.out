@@ -1,8 +1,8 @@
-PREHOOK: query: drop table over10k
+PREHOOK: query: drop table over10k_n16
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table over10k
+POSTHOOK: query: drop table over10k_n16
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table over10k(
+PREHOOK: query: create table over10k_n16(
            t tinyint,
            si smallint,
            i int,
@@ -18,8 +18,8 @@ PREHOOK: query: create table over10k(
        fields terminated by '|'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@over10k
-POSTHOOK: query: create table over10k(
+PREHOOK: Output: default@over10k_n16
+POSTHOOK: query: create table over10k_n16(
            t tinyint,
            si smallint,
            i int,
@@ -35,22 +35,22 @@ POSTHOOK: query: create table over10k(
        fields terminated by '|'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@over10k
-PREHOOK: query: load data local inpath '../../data/files/over10k' into table over10k
+POSTHOOK: Output: default@over10k_n16
+PREHOOK: query: load data local inpath '../../data/files/over10k' into table over10k_n16
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@over10k
-POSTHOOK: query: load data local inpath '../../data/files/over10k' into table over10k
+PREHOOK: Output: default@over10k_n16
+POSTHOOK: query: load data local inpath '../../data/files/over10k' into table over10k_n16
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@over10k
-PREHOOK: query: select ts, f, sum(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k limit 100
+POSTHOOK: Output: default@over10k_n16
+PREHOOK: query: select ts, f, sum(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k_n16 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
-POSTHOOK: query: select ts, f, sum(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k limit 100
+POSTHOOK: query: select ts, f, sum(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k_n16 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
 2013-03-01 09:11:58.70307	3.17	NULL
 2013-03-01 09:11:58.70307	10.89	3.1700000762939453
@@ -152,13 +152,13 @@ POSTHOOK: Input: default@over10k
 2013-03-01 09:11:58.703072	71.68	130.28999710083008
 2013-03-01 09:11:58.703072	79.46	139.87999725341797
 2013-03-01 09:11:58.703072	80.02	151.13999938964844
-PREHOOK: query: select ts, f, sum(f) over (partition by ts order by f rows between unbounded preceding and 1 preceding) from over10k limit 100
+PREHOOK: query: select ts, f, sum(f) over (partition by ts order by f rows between unbounded preceding and 1 preceding) from over10k_n16 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
-POSTHOOK: query: select ts, f, sum(f) over (partition by ts order by f rows between unbounded preceding and 1 preceding) from over10k limit 100
+POSTHOOK: query: select ts, f, sum(f) over (partition by ts order by f rows between unbounded preceding and 1 preceding) from over10k_n16 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
 2013-03-01 09:11:58.70307	3.17	NULL
 2013-03-01 09:11:58.70307	10.89	3.1700000762939453
@@ -260,13 +260,13 @@ POSTHOOK: Input: default@over10k
 2013-03-01 09:11:58.703072	71.68	650.9699944555759
 2013-03-01 09:11:58.703072	79.46	722.6499947607517
 2013-03-01 09:11:58.703072	80.02	802.1099938452244
-PREHOOK: query: select ts, f, sum(f) over (partition by ts order by f rows between 1 following and 2 following) from over10k limit 100
+PREHOOK: query: select ts, f, sum(f) over (partition by ts order by f rows between 1 following and 2 following) from over10k_n16 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
-POSTHOOK: query: select ts, f, sum(f) over (partition by ts order by f rows between 1 following and 2 following) from over10k limit 100
+POSTHOOK: query: select ts, f, sum(f) over (partition by ts order by f rows between 1 following and 2 following) from over10k_n16 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
 2013-03-01 09:11:58.70307	3.17	25.43000030517578
 2013-03-01 09:11:58.70307	10.89	29.31999969482422
@@ -368,13 +368,13 @@ POSTHOOK: Input: default@over10k
 2013-03-01 09:11:58.703072	71.68	159.47999572753906
 2013-03-01 09:11:58.703072	79.46	161.30999755859375
 2013-03-01 09:11:58.703072	80.02	168.27000427246094
-PREHOOK: query: select ts, f, sum(f) over (partition by ts order by f rows between unbounded preceding and 1 following) from over10k limit 100
+PREHOOK: query: select ts, f, sum(f) over (partition by ts order by f rows between unbounded preceding and 1 following) from over10k_n16 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
-POSTHOOK: query: select ts, f, sum(f) over (partition by ts order by f rows between unbounded preceding and 1 following) from over10k limit 100
+POSTHOOK: query: select ts, f, sum(f) over (partition by ts order by f rows between unbounded preceding and 1 following) from over10k_n16 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
 2013-03-01 09:11:58.70307	3.17	14.0600004196167
 2013-03-01 09:11:58.70307	10.89	28.600000381469727
@@ -476,13 +476,13 @@ POSTHOOK: Input: default@over10k
 2013-03-01 09:11:58.703072	71.68	802.1099938452244
 2013-03-01 09:11:58.703072	79.46	882.1299904882908
 2013-03-01 09:11:58.703072	80.02	963.4199914038181
-PREHOOK: query: select ts, f, avg(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k limit 100
+PREHOOK: query: select ts, f, avg(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k_n16 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
-POSTHOOK: query: select ts, f, avg(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k limit 100
+POSTHOOK: query: select ts, f, avg(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k_n16 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
 2013-03-01 09:11:58.70307	3.17	NULL
 2013-03-01 09:11:58.70307	10.89	3.1700000762939453
@@ -584,13 +584,13 @@ POSTHOOK: Input: default@over10k
 2013-03-01 09:11:58.703072	71.68	65.14499855041504
 2013-03-01 09:11:58.703072	79.46	69.93999862670898
 2013-03-01 09:11:58.703072	80.02	75.56999969482422
-PREHOOK: query: select ts, f, avg(f) over (partition by ts order by f rows between unbounded preceding and 1 preceding) from over10k limit 100
+PREHOOK: query: select ts, f, avg(f) over (partition by ts order by f rows between unbounded preceding and 1 preceding) from over10k_n16 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
-POSTHOOK: query: select ts, f, avg(f) over (partition by ts order by f rows between unbounded preceding and 1 preceding) from over10k limit 100
+POSTHOOK: query: select ts, f, avg(f) over (partition by ts order by f rows between unbounded preceding and 1 preceding) from over10k_n16 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
 2013-03-01 09:11:58.70307	3.17	NULL
 2013-03-01 09:11:58.70307	10.89	3.1700000762939453
@@ -692,13 +692,13 @@ POSTHOOK: Input: default@over10k
 2013-03-01 09:11:58.703072	71.68	30.998571164551237
 2013-03-01 09:11:58.703072	79.46	32.84772703457963
 2013-03-01 09:11:58.703072	80.02	34.87434755848802
-PREHOOK: query: select ts, f, avg(f) over (partition by ts order by f rows between 1 following and 2 following) from over10k limit 100
+PREHOOK: query: select ts, f, avg(f) over (partition by ts order by f rows between 1 following and 2 following) from over10k_n16 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
-POSTHOOK: query: select ts, f, avg(f) over (partition by ts order by f rows between 1 following and 2 following) from over10k limit 100
+POSTHOOK: query: select ts, f, avg(f) over (partition by ts order by f rows between 1 following and 2 following) from over10k_n16 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
 2013-03-01 09:11:58.70307	3.17	12.71500015258789
 2013-03-01 09:11:58.70307	10.89	14.65999984741211
@@ -800,13 +800,13 @@ POSTHOOK: Input: default@over10k
 2013-03-01 09:11:58.703072	71.68	79.73999786376953
 2013-03-01 09:11:58.703072	79.46	80.65499877929688
 2013-03-01 09:11:58.703072	80.02	84.13500213623047
-PREHOOK: query: select ts, f, avg(f) over (partition by ts order by f rows between unbounded preceding and 1 following) from over10k limit 100
+PREHOOK: query: select ts, f, avg(f) over (partition by ts order by f rows between unbounded preceding and 1 following) from over10k_n16 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
-POSTHOOK: query: select ts, f, avg(f) over (partition by ts order by f rows between unbounded preceding and 1 following) from over10k limit 100
+POSTHOOK: query: select ts, f, avg(f) over (partition by ts order by f rows between unbounded preceding and 1 following) from over10k_n16 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
 2013-03-01 09:11:58.70307	3.17	7.03000020980835
 2013-03-01 09:11:58.70307	10.89	9.533333460489908
@@ -908,13 +908,13 @@ POSTHOOK: Input: default@over10k
 2013-03-01 09:11:58.703072	71.68	34.87434755848802
 2013-03-01 09:11:58.703072	79.46	36.75541627034545
 2013-03-01 09:11:58.703072	80.02	38.53679965615272
-PREHOOK: query: select ts, f, count(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k limit 100
+PREHOOK: query: select ts, f, count(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k_n16 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
-POSTHOOK: query: select ts, f, count(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k limit 100
+POSTHOOK: query: select ts, f, count(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k_n16 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
 2013-03-01 09:11:58.70307	3.17	0
 2013-03-01 09:11:58.70307	10.89	1
@@ -1016,13 +1016,13 @@ POSTHOOK: Input: default@over10k
 2013-03-01 09:11:58.703072	71.68	2
 2013-03-01 09:11:58.703072	79.46	2
 2013-03-01 09:11:58.703072	80.02	2
-PREHOOK: query: select ts, f, count(f) over (partition by ts order by f rows between unbounded preceding and 1 preceding) from over10k limit 100
+PREHOOK: query: select ts, f, count(f) over (partition by ts order by f rows between unbounded preceding and 1 preceding) from over10k_n16 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
-POSTHOOK: query: select ts, f, count(f) over (partition by ts order by f rows between unbounded preceding and 1 preceding) from over10k limit 100
+POSTHOOK: query: select ts, f, count(f) over (partition by ts order by f rows between unbounded preceding and 1 preceding) from over10k_n16 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
 2013-03-01 09:11:58.70307	3.17	0
 2013-03-01 09:11:58.70307	10.89	1
@@ -1124,13 +1124,13 @@ POSTHOOK: Input: default@over10k
 2013-03-01 09:11:58.703072	71.68	21
 2013-03-01 09:11:58.703072	79.46	22
 2013-03-01 09:11:58.703072	80.02	23
-PREHOOK: query: select ts, f, count(f) over (partition by ts order by f rows between 1 following and 2 following) from over10k limit 100
+PREHOOK: query: select ts, f, count(f) over (partition by ts order by f rows between 1 following and 2 following) from over10k_n16 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
-POSTHOOK: query: select ts, f, count(f) over (partition by ts order by f rows between 1 following and 2 following) from over10k limit 100
+POSTHOOK: query: select ts, f, count(f) over (partition by ts order by f rows between 1 following and 2 following) from over10k_n16 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
 2013-03-01 09:11:58.70307	3.17	2
 2013-03-01 09:11:58.70307	10.89	2
@@ -1232,13 +1232,13 @@ POSTHOOK: Input: default@over10k
 2013-03-01 09:11:58.703072	71.68	2
 2013-03-01 09:11:58.703072	79.46	2
 2013-03-01 09:11:58.703072	80.02	2
-PREHOOK: query: select ts, f, count(f) over (partition by ts order by f rows between unbounded preceding and 1 following) from over10k limit 100
+PREHOOK: query: select ts, f, count(f) over (partition by ts order by f rows between unbounded preceding and 1 following) from over10k_n16 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
-POSTHOOK: query: select ts, f, count(f) over (partition by ts order by f rows between unbounded preceding and 1 following) from over10k limit 100
+POSTHOOK: query: select ts, f, count(f) over (partition by ts order by f rows between unbounded preceding and 1 following) from over10k_n16 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
 2013-03-01 09:11:58.70307	3.17	2
 2013-03-01 09:11:58.70307	10.89	3
@@ -1340,13 +1340,13 @@ POSTHOOK: Input: default@over10k
 2013-03-01 09:11:58.703072	71.68	23
 2013-03-01 09:11:58.703072	79.46	24
 2013-03-01 09:11:58.703072	80.02	25
-PREHOOK: query: select ts, f, max(f) over (partition by ts order by t,f rows between 2 preceding and 1 preceding) from over10k limit 100
+PREHOOK: query: select ts, f, max(f) over (partition by ts order by t,f rows between 2 preceding and 1 preceding) from over10k_n16 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
-POSTHOOK: query: select ts, f, max(f) over (partition by ts order by t,f rows between 2 preceding and 1 preceding) from over10k limit 100
+POSTHOOK: query: select ts, f, max(f) over (partition by ts order by t,f rows between 2 preceding and 1 preceding) from over10k_n16 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
 2013-03-01 09:11:58.70307	14.54	NULL
 2013-03-01 09:11:58.70307	29.22	14.54
@@ -1448,13 +1448,13 @@ POSTHOOK: Input: default@over10k
 2013-03-01 09:11:58.703072	9.0	88.08
 2013-03-01 09:11:58.703072	88.83	9.0
 2013-03-01 09:11:58.703072	45.91	88.83
-PREHOOK: query: select ts, f, max(f) over (partition by ts order by t,f rows between unbounded preceding and 1 preceding) from over10k limit 100
+PREHOOK: query: select ts, f, max(f) over (partition by ts order by t,f rows between unbounded preceding and 1 preceding) from over10k_n16 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
-POSTHOOK: query: select ts, f, max(f) over (partition by ts order by t,f rows between unbounded preceding and 1 preceding) from over10k limit 100
+POSTHOOK: query: select ts, f, max(f) over (partition by ts order by t,f rows between unbounded preceding and 1 preceding) from over10k_n16 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
 2013-03-01 09:11:58.70307	14.54	NULL
 2013-03-01 09:11:58.70307	29.22	14.54
@@ -1556,13 +1556,13 @@ POSTHOOK: Input: default@over10k
 2013-03-01 09:11:58.703072	9.0	99.26
 2013-03-01 09:11:58.703072	88.83	99.26
 2013-03-01 09:11:58.703072	45.91	99.26
-PREHOOK: query: select ts, f, max(f) over (partition by ts order by t,f rows between 1 following and 2 following) from over10k limit 100
+PREHOOK: query: select ts, f, max(f) over (partition by ts order by t,f rows between 1 following and 2 following) from over10k_n16 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
-POSTHOOK: query: select ts, f, max(f) over (partition by ts order by t,f rows between 1 following and 2 following) from over10k limit 100
+POSTHOOK: query: select ts, f, max(f) over (partition by ts order by t,f rows between 1 following and 2 following) from over10k_n16 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
 2013-03-01 09:11:58.70307	14.54	39.48
 2013-03-01 09:11:58.70307	29.22	39.48
@@ -1664,13 +1664,13 @@ POSTHOOK: Input: default@over10k
 2013-03-01 09:11:58.703072	9.0	88.83
 2013-03-01 09:11:58.703072	88.83	54.1
 2013-03-01 09:11:58.703072	45.91	54.1
-PREHOOK: query: select ts, f, max(f) over (partition by ts order by t,f rows between unbounded preceding and 1 following) from over10k limit 100
+PREHOOK: query: select ts, f, max(f) over (partition by ts order by t,f rows between unbounded preceding and 1 following) from over10k_n16 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
-POSTHOOK: query: select ts, f, max(f) over (partition by ts order by t,f rows between unbounded preceding and 1 following) from over10k limit 100
+POSTHOOK: query: select ts, f, max(f) over (partition by ts order by t,f rows between unbounded preceding and 1 following) from over10k_n16 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
 2013-03-01 09:11:58.70307	14.54	29.22
 2013-03-01 09:11:58.70307	29.22	39.48
@@ -1772,13 +1772,13 @@ POSTHOOK: Input: default@over10k
 2013-03-01 09:11:58.703072	9.0	99.26
 2013-03-01 09:11:58.703072	88.83	99.26
 2013-03-01 09:11:58.703072	45.91	99.26
-PREHOOK: query: select ts, f, min(f) over (partition by ts order by t,f rows between 2 preceding and 1 preceding) from over10k limit 100
+PREHOOK: query: select ts, f, min(f) over (partition by ts order by t,f rows between 2 preceding and 1 preceding) from over10k_n16 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
-POSTHOOK: query: select ts, f, min(f) over (partition by ts order by t,f rows between 2 preceding and 1 preceding) from over10k limit 100
+POSTHOOK: query: select ts, f, min(f) over (partition by ts order by t,f rows between 2 preceding and 1 preceding) from over10k_n16 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
 2013-03-01 09:11:58.70307	14.54	NULL
 2013-03-01 09:11:58.70307	29.22	14.54
@@ -1880,13 +1880,13 @@ POSTHOOK: Input: default@over10k
 2013-03-01 09:11:58.703072	9.0	0.48
 2013-03-01 09:11:58.703072	88.83	0.48
 2013-03-01 09:11:58.703072	45.91	9.0
-PREHOOK: query: select ts, f, min(f) over (partition by ts order by t,f rows between unbounded preceding and 1 preceding) from over10k limit 100
+PREHOOK: query: select ts, f, min(f) over (partition by ts order by t,f rows between unbounded preceding and 1 preceding) from over10k_n16 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
-POSTHOOK: query: select ts, f, min(f) over (partition by ts order by t,f rows between unbounded preceding and 1 preceding) from over10k limit 100
+POSTHOOK: query: select ts, f, min(f) over (partition by ts order by t,f rows between unbounded preceding and 1 preceding) from over10k_n16 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
 2013-03-01 09:11:58.70307	14.54	NULL
 2013-03-01 09:11:58.70307	29.22	14.54
@@ -1988,13 +1988,13 @@ POSTHOOK: Input: default@over10k
 2013-03-01 09:11:58.703072	9.0	0.48
 2013-03-01 09:11:58.703072	88.83	0.48
 2013-03-01 09:11:58.703072	45.91	0.48
-PREHOOK: query: select ts, f, min(f) over (partition by ts order by t,f rows between 1 following and 2 following) from over10k limit 100
+PREHOOK: query: select ts, f, min(f) over (partition by ts order by t,f rows between 1 following and 2 following) from over10k_n16 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
-POSTHOOK: query: select ts, f, min(f) over (partition by ts order by t,f rows between 1 following and 2 following) from over10k limit 100
+POSTHOOK: query: select ts, f, min(f) over (partition by ts order by t,f rows between 1 following and 2 following) from over10k_n16 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
 2013-03-01 09:11:58.70307	14.54	29.22
 2013-03-01 09:11:58.70307	29.22	17.85
@@ -2096,13 +2096,13 @@ POSTHOOK: Input: default@over10k
 2013-03-01 09:11:58.703072	9.0	45.91
 2013-03-01 09:11:58.703072	88.83	45.91
 2013-03-01 09:11:58.703072	45.91	0.36
-PREHOOK: query: select ts, f, min(f) over (partition by ts order by t,f rows between unbounded preceding and 1 following) from over10k limit 100
+PREHOOK: query: select ts, f, min(f) over (partition by ts order by t,f rows between unbounded preceding and 1 following) from over10k_n16 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
-POSTHOOK: query: select ts, f, min(f) over (partition by ts order by t,f rows between unbounded preceding and 1 following) from over10k limit 100
+POSTHOOK: query: select ts, f, min(f) over (partition by ts order by t,f rows between unbounded preceding and 1 following) from over10k_n16 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
 2013-03-01 09:11:58.70307	14.54	14.54
 2013-03-01 09:11:58.70307	29.22	14.54
@@ -2204,13 +2204,13 @@ POSTHOOK: Input: default@over10k
 2013-03-01 09:11:58.703072	9.0	0.48
 2013-03-01 09:11:58.703072	88.83	0.48
 2013-03-01 09:11:58.703072	45.91	0.48
-PREHOOK: query: select ts, f, first_value(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k limit 100
+PREHOOK: query: select ts, f, first_value(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k_n16 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
-POSTHOOK: query: select ts, f, first_value(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k limit 100
+POSTHOOK: query: select ts, f, first_value(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k_n16 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
 2013-03-01 09:11:58.70307	3.17	NULL
 2013-03-01 09:11:58.70307	10.89	3.17
@@ -2312,13 +2312,13 @@ POSTHOOK: Input: default@over10k
 2013-03-01 09:11:58.703072	71.68	62.09
 2013-03-01 09:11:58.703072	79.46	68.2
 2013-03-01 09:11:58.703072	80.02	71.68
-PREHOOK: query: select ts, f, first_value(f) over (partition by ts order by f rows between unbounded preceding and 1 preceding) from over10k limit 100
+PREHOOK: query: select ts, f, first_value(f) over (partition by ts order by f rows between unbounded preceding and 1 preceding) from over10k_n16 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
-POSTHOOK: query: select ts, f, first_value(f) over (partition by ts order by f rows between unbounded preceding and 1 preceding) from over10k limit 100
+POSTHOOK: query: select ts, f, first_value(f) over (partition by ts order by f rows between unbounded preceding and 1 preceding) from over10k_n16 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
 2013-03-01 09:11:58.70307	3.17	NULL
 2013-03-01 09:11:58.70307	10.89	3.17
@@ -2420,13 +2420,13 @@ POSTHOOK: Input: default@over10k
 2013-03-01 09:11:58.703072	71.68	0.36
 2013-03-01 09:11:58.703072	79.46	0.36
 2013-03-01 09:11:58.703072	80.02	0.36
-PREHOOK: query: select ts, f, first_value(f) over (partition by ts order by f rows between 1 following and 2 following) from over10k limit 100
+PREHOOK: query: select ts, f, first_value(f) over (partition by ts order by f rows between 1 following and 2 following) from over10k_n16 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
-POSTHOOK: query: select ts, f, first_value(f) over (partition by ts order by f rows between 1 following and 2 following) from over10k limit 100
+POSTHOOK: query: select ts, f, first_value(f) over (partition by ts order by f rows between 1 following and 2 following) from over10k_n16 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
 2013-03-01 09:11:58.70307	3.17	10.89
 2013-03-01 09:11:58.70307	10.89	14.54
@@ -2528,13 +2528,13 @@ POSTHOOK: Input: default@over10k
 2013-03-01 09:11:58.703072	71.68	79.46
 2013-03-01 09:11:58.703072	79.46	80.02
 2013-03-01 09:11:58.703072	80.02	81.29
-PREHOOK: query: select ts, f, first_value(f) over (partition by ts order by f rows between unbounded preceding and 1 following) from over10k limit 100
+PREHOOK: query: select ts, f, first_value(f) over (partition by ts order by f rows between unbounded preceding and 1 following) from over10k_n16 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
-POSTHOOK: query: select ts, f, first_value(f) over (partition by ts order by f rows between unbounded preceding and 1 following) from over10k limit 100
+POSTHOOK: query: select ts, f, first_value(f) over (partition by ts order by f rows between unbounded preceding and 1 following) from over10k_n16 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
 2013-03-01 09:11:58.70307	3.17	3.17
 2013-03-01 09:11:58.70307	10.89	3.17
@@ -2636,13 +2636,13 @@ POSTHOOK: Input: default@over10k
 2013-03-01 09:11:58.703072	71.68	0.36
 2013-03-01 09:11:58.703072	79.46	0.36
 2013-03-01 09:11:58.703072	80.02	0.36
-PREHOOK: query: select ts, f, last_value(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k limit 100
+PREHOOK: query: select ts, f, last_value(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k_n16 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
-POSTHOOK: query: select ts, f, last_value(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k limit 100
+POSTHOOK: query: select ts, f, last_value(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k_n16 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
 2013-03-01 09:11:58.70307	3.17	NULL
 2013-03-01 09:11:58.70307	10.89	3.17
@@ -2744,13 +2744,13 @@ POSTHOOK: Input: default@over10k
 2013-03-01 09:11:58.703072	71.68	68.2
 2013-03-01 09:11:58.703072	79.46	71.68
 2013-03-01 09:11:58.703072	80.02	79.46
-PREHOOK: query: select ts, f, last_value(f) over (partition by ts order by f rows between unbounded preceding and 1 preceding) from over10k limit 100
+PREHOOK: query: select ts, f, last_value(f) over (partition by ts order by f rows between unbounded preceding and 1 preceding) from over10k_n16 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
-POSTHOOK: query: select ts, f, last_value(f) over (partition by ts order by f rows between unbounded preceding and 1 preceding) from over10k limit 100
+POSTHOOK: query: select ts, f, last_value(f) over (partition by ts order by f rows between unbounded preceding and 1 preceding) from over10k_n16 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
 2013-03-01 09:11:58.70307	3.17	NULL
 2013-03-01 09:11:58.70307	10.89	3.17
@@ -2852,13 +2852,13 @@ POSTHOOK: Input: default@over10k
 2013-03-01 09:11:58.703072	71.68	68.2
 2013-03-01 09:11:58.703072	79.46	71.68
 2013-03-01 09:11:58.703072	80.02	79.46
-PREHOOK: query: select ts, f, last_value(f) over (partition by ts order by f rows between 1 following and 2 following) from over10k limit 100
+PREHOOK: query: select ts, f, last_value(f) over (partition by ts order by f rows between 1 following and 2 following) from over10k_n16 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
-POSTHOOK: query: select ts, f, last_value(f) over (partition by ts order by f rows between 1 following and 2 following) from over10k limit 100
+POSTHOOK: query: select ts, f, last_value(f) over (partition by ts order by f rows between 1 following and 2 following) from over10k_n16 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
 2013-03-01 09:11:58.70307	3.17	14.54
 2013-03-01 09:11:58.70307	10.89	14.78
@@ -2960,13 +2960,13 @@ POSTHOOK: Input: default@over10k
 2013-03-01 09:11:58.703072	71.68	80.02
 2013-03-01 09:11:58.703072	79.46	81.29
 2013-03-01 09:11:58.703072	80.02	86.98
-PREHOOK: query: select ts, f, last_value(f) over (partition by ts order by f rows between unbounded preceding and 1 following) from over10k limit 100
+PREHOOK: query: select ts, f, last_value(f) over (partition by ts order by f rows between unbounded preceding and 1 following) from over10k_n16 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
-POSTHOOK: query: select ts, f, last_value(f) over (partition by ts order by f rows between unbounded preceding and 1 following) from over10k limit 100
+POSTHOOK: query: select ts, f, last_value(f) over (partition by ts order by f rows between unbounded preceding and 1 following) from over10k_n16 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n16
 #### A masked pattern was here ####
 2013-03-01 09:11:58.70307	3.17	10.89
 2013-03-01 09:11:58.70307	10.89	14.54

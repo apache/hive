@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,34 +22,47 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.<InputColumnVectorType>;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
  * Generated from template FilterColumnBetween.txt, which covers [NOT] BETWEEN filter 
  * expressions where a column is [NOT] between one scalar and another.
  * Output is not produced in a separate column.  The selected vector of the input 
- * {@link VectorizedRowBatch} is updated for in-place filtering.
+ * {@link org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch VectorizedRowBatch} is updated for in-place filtering.
  */
 public class <ClassName> extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private int colNum;
-  
-  // The comparison is of the form "column BETWEEN leftValue AND rightValue"
-  private <OperandType> leftValue;
-  private <OperandType> rightValue;
+  protected final int colNum;
 
-  public <ClassName>(int colNum, <OperandType> leftValue, <OperandType> rightValue) { 
+  // The comparison is of the form "column BETWEEN leftValue AND rightValue".
+  // NOTE: These can be set later by FilterColumnBetweenDynamicValue.txt so they are not final.
+  protected <OperandType> leftValue;
+  protected <OperandType> rightValue;
+
+  public <ClassName>(int colNum, <OperandType> leftValue, <OperandType> rightValue) {
+    super();
     this.colNum = colNum;
     this.leftValue = leftValue;
     this.rightValue = rightValue;
   }
 
   public <ClassName>() {
+    super();
+
+    // Dummy final assignments.
+    colNum = -1;
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
+
+    // return immediately if batch is empty
+    final int n = batch.size;
+    if (n == 0) {
+      return;
+    }
 
     if (childExpressions != null) {
       super.evaluateChildren(batch);
@@ -57,22 +70,15 @@ public class <ClassName> extends VectorExpression {
 
     <InputColumnVectorType> inputColVector = (<InputColumnVectorType>) batch.cols[colNum];
     int[] sel = batch.selected;
-    boolean[] nullPos = inputColVector.isNull;
-    int n = batch.size;
+    boolean[] inputIsNull = inputColVector.isNull;
+
     <OperandType>[] vector = inputColVector.vector;
 
-    // return immediately if batch is empty
-    if (n == 0) {
-      return;
-    }
-    
     if (inputColVector.noNulls) {
       if (inputColVector.isRepeating) {
-      
-        // All must be selected otherwise size would be zero.
-        // Repeating property will not change.
+
         if (<OptionalNot>(vector[0] < leftValue || vector[0] > rightValue)) {
-        
+
           // Entire batch is filtered out.
           batch.size = 0;
         }
@@ -99,12 +105,9 @@ public class <ClassName> extends VectorExpression {
       }
     } else {
       if (inputColVector.isRepeating) {
-      
-        // All must be selected otherwise size would be zero.
-        // Repeating property will not change.
-        if (!nullPos[0]) {
+        if (!inputIsNull[0]) {
           if (<OptionalNot>(vector[0] < leftValue || vector[0] > rightValue)) {
-           
+
             // Entire batch is filtered out.
             batch.size = 0;
           }
@@ -115,7 +118,7 @@ public class <ClassName> extends VectorExpression {
         int newSize = 0;
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          if (!nullPos[i]) {
+          if (!inputIsNull[i]) {
            if (<OptionalNot>(leftValue <= vector[i] && vector[i] <= rightValue)) {
              sel[newSize++] = i;
            }
@@ -126,7 +129,7 @@ public class <ClassName> extends VectorExpression {
       } else {
         int newSize = 0;
         for(int i = 0; i != n; i++) {
-          if (!nullPos[i]) {
+          if (!inputIsNull[i]) {
             if (<OptionalNot>(leftValue <= vector[i] && vector[i] <= rightValue)) {
               sel[newSize++] = i;
             }
@@ -140,24 +143,6 @@ public class <ClassName> extends VectorExpression {
     }
   }
 
-  @Override
-  public int getOutputColumn() {
-    return -1;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "boolean";
-  }
-  
-  public int getColNum() {
-    return colNum;
-  }
-
-  public void setColNum(int colNum) {
-    this.colNum = colNum;
-  }
-
   public <OperandType> getLeftValue() {
     return leftValue;
   }
@@ -165,7 +150,7 @@ public class <ClassName> extends VectorExpression {
   public void setLeftValue(<OperandType> value) {
     this.leftValue = value;
   }
-  
+
   public <OperandType> getRightValue() {
     return rightValue;
   }
@@ -176,7 +161,7 @@ public class <ClassName> extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return "col " + colNum + ", left " + leftValue + ", right " + rightValue;
+    return getColumnParamString(0, colNum) + ", left " + leftValue + ", right " + rightValue;
   }
 
   @Override

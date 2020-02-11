@@ -66,14 +66,18 @@ Found 1 items
 5val_5
 9val_9
 PREHOOK: query: ANALYZE TABLE ex_table PARTITION (part='part1') COMPUTE STATISTICS FOR COLUMNS
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@ex_table
 PREHOOK: Input: default@ex_table@part=part1
+PREHOOK: Output: default@ex_table
+PREHOOK: Output: default@ex_table@part=part1
 #### A masked pattern was here ####
 POSTHOOK: query: ANALYZE TABLE ex_table PARTITION (part='part1') COMPUTE STATISTICS FOR COLUMNS
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@ex_table
 POSTHOOK: Input: default@ex_table@part=part1
+POSTHOOK: Output: default@ex_table
+POSTHOOK: Output: default@ex_table@part=part1
 #### A masked pattern was here ####
 PREHOOK: query: DESCRIBE FORMATTED ex_table
 PREHOOK: type: DESCTABLE
@@ -82,13 +86,11 @@ POSTHOOK: query: DESCRIBE FORMATTED ex_table
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ex_table
 # col_name            	data_type           	comment             
-	 	 
 key                 	int                 	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 part                	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -100,6 +102,8 @@ Table Type:         	EXTERNAL_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	discover.partitions 	true                
 	numFiles            	1                   
 	numPartitions       	1                   
 	numRows             	10                  
@@ -124,13 +128,11 @@ POSTHOOK: query: DESCRIBE FORMATTED ex_table PARTITION (part='part1')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ex_table
 # col_name            	data_type           	comment             
-	 	 
 key                 	int                 	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 part                	string              	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -162,18 +164,36 @@ PREHOOK: Input: default@ex_table
 POSTHOOK: query: DESCRIBE FORMATTED ex_table PARTITION (part='part1') key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ex_table
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
-	 	 	 	 	 	 	 	 	 	 	 
-key                 	int                 	0                   	9                   	0                   	6                   	                    	                    	                    	                    	HL                  	from deserializer   
+col_name            	key                 
+data_type           	int                 
+min                 	0                   
+max                 	9                   
+num_nulls           	0                   
+distinct_count      	6                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: DESCRIBE FORMATTED ex_table PARTITION (part='part1') value
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ex_table
 POSTHOOK: query: DESCRIBE FORMATTED ex_table PARTITION (part='part1') value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ex_table
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
-	 	 	 	 	 	 	 	 	 	 	 
-value               	string              	                    	                    	0                   	6                   	5.0                 	5                   	                    	                    	HL                  	from deserializer   
+col_name            	value               
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	6                   
+avg_col_len         	5.0                 
+max_col_len         	5                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: ALTER TABLE ex_table PARTITION (part='part1') RENAME TO PARTITION (part='part2')
 PREHOOK: type: ALTERTABLE_RENAMEPART
 PREHOOK: Input: default@ex_table
@@ -230,13 +250,11 @@ POSTHOOK: query: DESCRIBE FORMATTED ex_table
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ex_table
 # col_name            	data_type           	comment             
-	 	 
 key                 	int                 	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 part                	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -248,6 +266,8 @@ Table Type:         	EXTERNAL_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	discover.partitions 	true                
 	numFiles            	1                   
 	numPartitions       	1                   
 	numRows             	10                  
@@ -272,13 +292,11 @@ POSTHOOK: query: DESCRIBE FORMATTED ex_table PARTITION (part='part2')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ex_table
 # col_name            	data_type           	comment             
-	 	 
 key                 	int                 	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 part                	string              	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -310,15 +328,33 @@ PREHOOK: Input: default@ex_table
 POSTHOOK: query: DESCRIBE FORMATTED ex_table PARTITION (part='part2') key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ex_table
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
-	 	 	 	 	 	 	 	 	 	 	 
-key                 	int                 	0                   	9                   	0                   	6                   	                    	                    	                    	                    	HL                  	from deserializer   
+col_name            	key                 
+data_type           	int                 
+min                 	0                   
+max                 	9                   
+num_nulls           	0                   
+distinct_count      	6                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: DESCRIBE FORMATTED ex_table PARTITION (part='part2') value
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ex_table
 POSTHOOK: query: DESCRIBE FORMATTED ex_table PARTITION (part='part2') value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ex_table
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
-	 	 	 	 	 	 	 	 	 	 	 
-value               	string              	                    	                    	0                   	6                   	5.0                 	5                   	                    	                    	HL                  	from deserializer   
+col_name            	value               
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	6                   
+avg_col_len         	5.0                 
+max_col_len         	5                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   

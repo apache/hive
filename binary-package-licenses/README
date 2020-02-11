@@ -42,6 +42,7 @@ guava
 guice*
 hbase*
 hibernate-validator
+Hikaricp
 htrace-core
 http-client
 httpclient
@@ -73,7 +74,6 @@ pentaho-aggdesigner-algorithm
 plexus-utils
 regexp
 server-metrics
-slider-core
 snappy*
 stax-api
 super-csv

@@ -1,3 +1,7 @@
+--! qt:dataset:alltypesorc
+
+set hive.vectorized.execution.enabled=false;
+
 create table ts_merge (
 userid bigint,
 string1 string,

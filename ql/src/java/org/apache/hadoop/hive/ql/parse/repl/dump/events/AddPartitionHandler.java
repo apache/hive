@@ -17,25 +17,26 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Iterables;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.messaging.AddPartitionMessage;
+import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.messaging.PartitionFiles;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
+import org.apache.hadoop.hive.ql.parse.repl.DumpType;
+import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 
-import javax.annotation.Nullable;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.Iterator;
-
-import org.apache.hadoop.hive.ql.parse.repl.DumpType;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 class AddPartitionHandler extends AbstractEventHandler {
   protected AddPartitionHandler(NotificationEvent notificationEvent) {
@@ -43,38 +44,51 @@ class AddPartitionHandler extends AbstractEventHandler {
   }
 
   @Override
+  EventMessage eventMessage(String stringRepresentation) {
+    return deserializer.getAddPartitionMessage(stringRepresentation);
+  }
+
+  @Override
   public void handle(Context withinContext) throws Exception {
-    AddPartitionMessage apm = deserializer.getAddPartitionMessage(event.getMessage());
-    LOG.info("Processing#{} ADD_PARTITION message : {}", fromEventId(), event.getMessage());
-    Iterable<org.apache.hadoop.hive.metastore.api.Partition> ptns = apm.getPartitionObjs();
-    if ((ptns == null) || (!ptns.iterator().hasNext())) {
-      LOG.debug("Event#{} was an ADD_PTN_EVENT with no partitions");
+    LOG.info("Processing#{} ADD_PARTITION message : {}", fromEventId(), eventMessageAsJSON);
+
+    // We do not dump partitions during metadata only bootstrap dump (See TableExport
+    // .getPartitions(), for bootstrap dump we pass tableSpec with TABLE_ONLY set.). So don't
+    // dump partition related events for metadata-only dump.
+    if (withinContext.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY)) {
       return;
     }
+
+    AddPartitionMessage apm = (AddPartitionMessage) eventMessage;
     org.apache.hadoop.hive.metastore.api.Table tobj = apm.getTableObj();
     if (tobj == null) {
-      LOG.debug("Event#{} was a ADD_PTN_EVENT with no table listed");
+      LOG.debug("Event#{} was a ADD_PTN_EVENT with no table listed", fromEventId());
       return;
     }
 
     final Table qlMdTable = new Table(tobj);
-    Iterable<Partition> qlPtns = Iterables.transform(
-        ptns,
-        new Function<org.apache.hadoop.hive.metastore.api.Partition, Partition>() {
-          @Nullable
-          @Override
-          public Partition apply(@Nullable org.apache.hadoop.hive.metastore.api.Partition input) {
-            if (input == null) {
-              return null;
-            }
-            try {
-              return new Partition(qlMdTable, input);
-            } catch (HiveException e) {
-              throw new IllegalArgumentException(e);
-            }
+    if (!Utils.shouldReplicate(withinContext.replicationSpec, qlMdTable, true,
+            withinContext.getTablesForBootstrap(), withinContext.oldReplScope,  withinContext.hiveConf)) {
+      return;
+    }
+
+    Iterable<org.apache.hadoop.hive.metastore.api.Partition> ptns = apm.getPartitionObjs();
+    if ((ptns == null) || (!ptns.iterator().hasNext())) {
+      LOG.debug("Event#{} was an ADD_PTN_EVENT with no partitions", fromEventId());
+      return;
+    }
+
+    Iterable<Partition> qlPtns = StreamSupport.stream(ptns.spliterator(), true).map(
+        input -> {
+          if (input == null) {
+            return null;
           }
-        }
-    );
+          try {
+            return new Partition(qlMdTable, input);
+          } catch (HiveException e) {
+            throw new IllegalArgumentException(e);
+          }
+        }).collect(Collectors.toList());
 
     Path metaDataPath = new Path(withinContext.eventRoot, EximUtil.METADATA_NAME);
     EximUtil.createExportDump(
@@ -82,17 +96,23 @@ class AddPartitionHandler extends AbstractEventHandler {
         metaDataPath,
         qlMdTable,
         qlPtns,
-        withinContext.replicationSpec);
+        withinContext.replicationSpec,
+        withinContext.hiveConf);
 
     Iterator<PartitionFiles> partitionFilesIter = apm.getPartitionFilesIter().iterator();
-    for (Partition qlPtn : qlPtns) {
-      Iterable<String> files = partitionFilesIter.next().getFiles();
-      if (files != null) {
-        // encoded filename/checksum of files, write into _files
-        try (BufferedWriter fileListWriter = writer(withinContext, qlPtn)) {
-          for (String file : files) {
-            fileListWriter.write(file);
-            fileListWriter.newLine();
+
+    // We expect one to one mapping between partitions and file iterators. For external table, this
+    // list would be empty. So, it is enough to check hasNext outside the loop.
+    if (partitionFilesIter.hasNext()) {
+      for (Partition qlPtn : qlPtns) {
+        Iterable<String> files = partitionFilesIter.next().getFiles();
+        if (files != null) {
+          // encoded filename/checksum of files, write into _files
+          try (BufferedWriter fileListWriter = writer(withinContext, qlPtn)) {
+            for (String file : files) {
+              fileListWriter.write(file);
+              fileListWriter.newLine();
+            }
           }
         }
       }

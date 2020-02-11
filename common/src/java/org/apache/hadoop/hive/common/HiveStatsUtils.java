@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -29,6 +29,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Lists;
+
 /**
  * HiveStatsUtils.
  * A collection of utilities used for hive statistics.
@@ -50,11 +52,11 @@ public class HiveStatsUtils {
    * @return array of FileStatus
    * @throws IOException
    */
-  public static FileStatus[] getFileStatusRecurse(Path path, int level, FileSystem fs)
+  public static List<FileStatus> getFileStatusRecurse(Path path, int level,  FileSystem fs)
       throws IOException {
 
     // if level is <0, the return all files/directories under the specified path
-    if ( level < 0) {
+    if (level < 0) {
       List<FileStatus> result = new ArrayList<FileStatus>();
       try {
         FileStatus fileStatus = fs.getFileStatus(path);
@@ -64,9 +66,9 @@ public class HiveStatsUtils {
         // does not exist. But getFileStatus() throw IOException. To mimic the
         // similar behavior we will return empty array on exception. For external
         // tables, the path of the table will not exists during table creation
-        return new FileStatus[0];
+        return new ArrayList<>(0);
       }
-      return result.toArray(new FileStatus[result.size()]);
+      return result;
     }
 
     // construct a path pattern (e.g., /*/*) to find all dynamically generated paths
@@ -75,7 +77,7 @@ public class HiveStatsUtils {
       sb.append(Path.SEPARATOR).append("*");
     }
     Path pathPattern = new Path(path, sb.toString());
-    return fs.globStatus(pathPattern, FileUtils.HIDDEN_FILES_PATH_FILTER);
+    return Lists.newArrayList(fs.globStatus(pathPattern, FileUtils.HIDDEN_FILES_PATH_FILTER));
   }
 
   public static int getNumBitVectorsForNDVEstimation(Configuration conf) throws Exception {

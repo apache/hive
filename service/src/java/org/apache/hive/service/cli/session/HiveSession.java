@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -200,6 +200,8 @@ public interface HiveSession extends HiveSessionBase {
 
   void cancelOperation(OperationHandle opHandle) throws HiveSQLException;
 
+  void updateQueryTag(String queryId, String queryTag) throws HiveSQLException;
+
   void closeOperation(OperationHandle opHandle) throws HiveSQLException;
 
   TableSchema getResultSetMetadata(OperationHandle opHandle)
@@ -222,4 +224,6 @@ public interface HiveSession extends HiveSessionBase {
   long getNoOperationTime();
 
   Future<?> submitBackgroundOperation(Runnable work);
+
+  void setApplicationName(String value);
 }

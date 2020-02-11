@@ -1,3 +1,6 @@
+--! qt:dataset:srcbucket
+--! qt:dataset:src1
+--! qt:dataset:lineitem
 set hive.mapred.mode=nonstrict;
 set hive.fetch.task.conversion=more;
 set hive.optimize.constant.propagation=true;

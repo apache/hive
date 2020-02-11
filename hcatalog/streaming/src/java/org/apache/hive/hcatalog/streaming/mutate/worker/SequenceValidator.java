@@ -29,22 +29,22 @@ class SequenceValidator {
 
   private static final Logger LOG = LoggerFactory.getLogger(SequenceValidator.class);
 
-  private Long lastTxId;
+  private Long lastWriteId;
   private Long lastRowId;
 
   SequenceValidator() {
   }
 
   boolean isInSequence(RecordIdentifier recordIdentifier) {
-    if (lastTxId != null && recordIdentifier.getTransactionId() < lastTxId) {
-      LOG.debug("Non-sequential transaction ID. Expected >{}, recordIdentifier={}", lastTxId, recordIdentifier);
+    if (lastWriteId != null && recordIdentifier.getWriteId() < lastWriteId) {
+      LOG.debug("Non-sequential write ID. Expected >{}, recordIdentifier={}", lastWriteId, recordIdentifier);
       return false;
-    } else if (lastTxId != null && recordIdentifier.getTransactionId() == lastTxId && lastRowId != null
+    } else if (lastWriteId != null && recordIdentifier.getWriteId() == lastWriteId && lastRowId != null
         && recordIdentifier.getRowId() <= lastRowId) {
       LOG.debug("Non-sequential row ID. Expected >{}, recordIdentifier={}", lastRowId, recordIdentifier);
       return false;
     }
-    lastTxId = recordIdentifier.getTransactionId();
+    lastWriteId = recordIdentifier.getWriteId();
     lastRowId = recordIdentifier.getRowId();
     return true;
   }
@@ -53,14 +53,14 @@ class SequenceValidator {
    * Validator must be reset for each new partition and or bucket.
    */
   void reset() {
-    lastTxId = null;
+    lastWriteId = null;
     lastRowId = null;
     LOG.debug("reset");
   }
 
   @Override
   public String toString() {
-    return "SequenceValidator [lastTxId=" + lastTxId + ", lastRowId=" + lastRowId + "]";
+    return "SequenceValidator [lastWriteId=" + lastWriteId + ", lastRowId=" + lastRowId + "]";
   }
 
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,70 +17,72 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import org.apache.hadoop.conf.Configurable;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.MetaStoreThread;
 import org.apache.hadoop.hive.metastore.RawStore;
-import org.apache.hadoop.hive.metastore.RawStoreProxy;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
-import org.apache.hadoop.hive.metastore.txn.TxnStore;
-import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+
 
 /**
  * Superclass for all threads in the compactor.
  */
-abstract class CompactorThread extends Thread implements MetaStoreThread {
+public abstract class CompactorThread extends Thread implements Configurable {
   static final private String CLASS_NAME = CompactorThread.class.getName();
-  static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
+  protected static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
   protected HiveConf conf;
-  protected TxnStore txnHandler;
-  protected RawStore rs;
-  protected int threadId;
+
   protected AtomicBoolean stop;
   protected AtomicBoolean looped;
 
-  @Override
-  public void setHiveConf(HiveConf conf) {
-    this.conf = conf;
-  }
+  protected int threadId;
 
-  @Override
   public void setThreadId(int threadId) {
     this.threadId = threadId;
-
   }
 
   @Override
-  public void init(AtomicBoolean stop, AtomicBoolean looped) throws MetaException {
-    this.stop = stop;
-    this.looped = looped;
+  public void setConf(Configuration configuration) {
+    // TODO MS-SPLIT for now, keep a copy of HiveConf around as we need to call other methods with
+    // it. This should be changed to Configuration once everything that this calls that requires
+    // HiveConf is moved to the standalone metastore.
+    //clone the conf - compactor needs to set properties in it which we don't
+    // want to bleed into the caller
+    conf = new HiveConf(configuration, HiveConf.class);
+  }
+
+  @Override
+  public Configuration getConf() {
+    return conf;
+  }
+
+  public void init(AtomicBoolean stop, AtomicBoolean looped) throws Exception {
     setPriority(MIN_PRIORITY);
     setDaemon(true); // this means the process will exit without waiting for this thread
-
-    // Get our own instance of the transaction handler
-    txnHandler = TxnUtils.getTxnStore(conf);
-
-    // Get our own connection to the database so we can get table and partition information.
-    rs = RawStoreProxy.getProxy(conf, conf,
-        conf.getVar(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL), threadId);
+    this.stop = stop;
+    this.looped = looped;
   }
 
   /**
@@ -89,14 +91,17 @@ abstract class CompactorThread extends Thread implements MetaStoreThread {
    * @return metastore table
    * @throws org.apache.hadoop.hive.metastore.api.MetaException if the table cannot be found.
    */
-  protected Table resolveTable(CompactionInfo ci) throws MetaException {
-    try {
-      return rs.getTable(ci.dbname, ci.tableName);
-    } catch (MetaException e) {
-      LOG.error("Unable to find table " + ci.getFullTableName() + ", " + e.getMessage());
-      throw e;
-    }
-  }
+  abstract Table resolveTable(CompactionInfo ci) throws MetaException;
+
+  abstract boolean replIsCompactionDisabledForDatabase(String dbName) throws TException;
+
+  /**
+   * Get list of partitions by name.
+   * @param ci compaction info.
+   * @return list of partitions
+   * @throws MetaException if an error occurs.
+   */
+  abstract List<Partition> getPartitionsByNames(CompactionInfo ci) throws MetaException;
 
   /**
    * Get the partition being compacted.
@@ -107,10 +112,9 @@ abstract class CompactorThread extends Thread implements MetaStoreThread {
    */
   protected Partition resolvePartition(CompactionInfo ci) throws Exception {
     if (ci.partName != null) {
-      List<Partition> parts = null;
+      List<Partition> parts;
       try {
-        parts = rs.getPartitionsByNames(ci.dbname, ci.tableName,
-            Collections.singletonList(ci.partName));
+        parts = getPartitionsByNames(ci);
         if (parts == null || parts.size() == 0) {
           // The partition got dropped before we went looking for it.
           return null;
@@ -163,13 +167,15 @@ abstract class CompactorThread extends Thread implements MetaStoreThread {
       LOG.debug("Unable to stat file as current user, trying as table owner");
 
       // Now, try it as the table owner and see if we get better luck.
-      final List<String> wrapper = new ArrayList<String>(1);
+      final List<String> wrapper = new ArrayList<>(1);
       UserGroupInformation ugi = UserGroupInformation.createProxyUser(t.getOwner(),
           UserGroupInformation.getLoginUser());
       ugi.doAs(new PrivilegedExceptionAction<Object>() {
         @Override
         public Object run() throws Exception {
-          FileStatus stat = fs.getFileStatus(p);
+          // need to use a new filesystem object here to have the correct ugi
+          FileSystem proxyFs = p.getFileSystem(conf);
+          FileStatus stat = proxyFs.getFileStatus(p);
           wrapper.add(stat.getOwner());
           return null;
         }
@@ -202,6 +208,26 @@ abstract class CompactorThread extends Thread implements MetaStoreThread {
   }
 
   protected String tableName(Table t) {
-    return t.getDbName() + "." + t.getTableName();
+    return Warehouse.getQualifiedName(t);
+  }
+
+  private static AtomicInteger nextThreadId = new AtomicInteger(1000000);
+
+  public static void initializeAndStartThread(CompactorThread thread,
+      Configuration conf) throws Exception {
+    LOG.info("Starting compactor thread of type " + thread.getClass().getName());
+    thread.setConf(conf);
+    thread.setThreadId(nextThreadId.incrementAndGet());
+    thread.init(new AtomicBoolean(), new AtomicBoolean());
+    thread.start();
+  }
+
+  protected boolean replIsCompactionDisabledForTable(Table tbl) {
+    // Compaction is disabled until after first successful incremental load. Check HIVE-21197 for more detail.
+    boolean isCompactDisabled = ReplUtils.isFirstIncPending(tbl.getParameters());
+    if (isCompactDisabled) {
+      LOG.info("Compaction is disabled for table " + tbl.getTableName());
+    }
+    return isCompactDisabled;
   }
 }

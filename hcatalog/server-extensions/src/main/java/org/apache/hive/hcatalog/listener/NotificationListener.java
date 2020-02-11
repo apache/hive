@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -34,12 +34,9 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
+import org.apache.hadoop.hive.metastore.IHMSHandler;
 import org.apache.hadoop.hive.metastore.MetaStoreEventListener;
-import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
@@ -54,6 +51,7 @@ import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
 import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.messaging.HCatEventMessage;
 import org.apache.hive.hcatalog.messaging.MessageFactory;
+import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -142,7 +140,8 @@ public class NotificationListener extends MetaStoreEventListener {
       Partition after = ape.getNewPartition();
 
       String topicName = getTopicName(ape.getTable());
-      send(messageFactory.buildAlterPartitionMessage(ape.getTable(),before, after), topicName);
+      send(messageFactory.buildAlterPartitionMessage(ape.getTable(),before, after,
+              ape.getWriteId()), topicName);
     }
   }
 
@@ -151,7 +150,7 @@ public class NotificationListener extends MetaStoreEventListener {
    * particular table by listening on a topic named "dbName.tableName" with message selector
    * string {@value org.apache.hive.hcatalog.common.HCatConstants#HCAT_EVENT} =
    * {@value org.apache.hive.hcatalog.common.HCatConstants#HCAT_DROP_PARTITION_EVENT}.
-   * </br>
+   * <br>
    * TODO: DataNucleus 2.0.3, currently used by the HiveMetaStore for persistence, has been
    * found to throw NPE when serializing objects that contain null. For this reason we override
    * some fields in the StorageDescriptor of this notification. This should be fixed after
@@ -182,7 +181,7 @@ public class NotificationListener extends MetaStoreEventListener {
     // by listening on a topic named "HCAT" and message selector string
     // as "HCAT_EVENT = HCAT_ADD_DATABASE"
     if (dbEvent.getStatus()) {
-      String topicName = getTopicPrefix(dbEvent.getHandler().getHiveConf());
+      String topicName = getTopicPrefix(dbEvent.getIHMSHandler().getConf());
       send(messageFactory.buildCreateDatabaseMessage(dbEvent.getDatabase()), topicName);
     }
   }
@@ -193,7 +192,7 @@ public class NotificationListener extends MetaStoreEventListener {
     // by listening on a topic named "HCAT" and message selector string
     // as "HCAT_EVENT = HCAT_DROP_DATABASE"
     if (dbEvent.getStatus()) {
-      String topicName = getTopicPrefix(dbEvent.getHandler().getHiveConf());
+      String topicName = getTopicPrefix(dbEvent.getIHMSHandler().getConf());
       send(messageFactory.buildDropDatabaseMessage(dbEvent.getDatabase()), topicName);
     }
   }
@@ -205,22 +204,18 @@ public class NotificationListener extends MetaStoreEventListener {
     // as "HCAT_EVENT = HCAT_ADD_TABLE"
     if (tableEvent.getStatus()) {
       Table tbl = tableEvent.getTable();
-      HMSHandler handler = tableEvent.getHandler();
-      HiveConf conf = handler.getHiveConf();
+      IHMSHandler handler = tableEvent.getIHMSHandler();
+      Configuration conf = handler.getConf();
       Table newTbl;
       try {
-        newTbl = handler.get_table_core(tbl.getDbName(), tbl.getTableName())
+        newTbl = handler.get_table_core(tbl.getCatName(), tbl.getDbName(), tbl.getTableName())
           .deepCopy();
         newTbl.getParameters().put(
           HCatConstants.HCAT_MSGBUS_TOPIC_NAME,
           getTopicPrefix(conf) + "." + newTbl.getDbName().toLowerCase() + "."
             + newTbl.getTableName().toLowerCase());
         handler.alter_table(newTbl.getDbName(), newTbl.getTableName(), newTbl);
-      } catch (InvalidOperationException e) {
-        MetaException me = new MetaException(e.toString());
-        me.initCause(e);
-        throw me;
-      } catch (NoSuchObjectException e) {
+      } catch (TException e) {
         MetaException me = new MetaException(e.toString());
         me.initCause(e);
         throw me;
@@ -258,9 +253,9 @@ public class NotificationListener extends MetaStoreEventListener {
       }
       // I think this is wrong, the alter table statement should come on the table topic not the
       // DB topic - Alan.
-      String topicName = getTopicPrefix(tableEvent.getHandler().getHiveConf()) + "." +
+      String topicName = getTopicPrefix(tableEvent.getIHMSHandler().getConf()) + "." +
           after.getDbName().toLowerCase();
-      send(messageFactory.buildAlterTableMessage(before, after), topicName);
+      send(messageFactory.buildAlterTableMessage(before, after, tableEvent.getWriteId()), topicName);
     }
   }
 
@@ -269,7 +264,7 @@ public class NotificationListener extends MetaStoreEventListener {
    * dropped tables by listening on topic "HCAT" with message selector string
    * {@value org.apache.hive.hcatalog.common.HCatConstants#HCAT_EVENT} =
    * {@value org.apache.hive.hcatalog.common.HCatConstants#HCAT_DROP_TABLE_EVENT}
-   * </br>
+   * <br>
    * TODO: DataNucleus 2.0.3, currently used by the HiveMetaStore for persistence, has been
    * found to throw NPE when serializing objects that contain null. For this reason we override
    * some fields in the StorageDescriptor of this notification. This should be fixed after
@@ -288,7 +283,7 @@ public class NotificationListener extends MetaStoreEventListener {
       Table table = tableEvent.getTable();
       // I think this is wrong, the drop table statement should come on the table topic not the
       // DB topic - Alan.
-      String topicName = getTopicPrefix(tableEvent.getHandler().getHiveConf()) + "." + table.getDbName().toLowerCase();
+      String topicName = getTopicPrefix(tableEvent.getIHMSHandler().getConf()) + "." + table.getDbName().toLowerCase();
       send(messageFactory.buildDropTableMessage(table), topicName);
     }
   }
@@ -428,6 +423,9 @@ public class NotificationListener extends MetaStoreEventListener {
    * @throws JMSException
    */
   protected Session createSession() throws JMSException {
+    if (conn == null) {
+      return null;
+    }
     // We want message to be sent when session commits, thus we run in
     // transacted mode.
     return conn.createSession(true, Session.SESSION_TRANSACTED);

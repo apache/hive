@@ -1,3 +1,6 @@
+--! qt:dataset:srcpart
+--! qt:dataset:src1
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 create database source;
 create database target;
@@ -34,3 +37,13 @@ load data local inpath '../../data/files/kv1.txt' overwrite into table source.sr
 
 ALTER TABLE source.src RENAME TO target.src1;
 select * from target.src1 tablesample (10 rows);
+
+set metastore.rawstore.batch.size=1;
+set metastore.try.direct.sql=false;
+
+create table source.src2 like default.src;
+load data local inpath '../../data/files/kv1.txt' overwrite into table source.src2;
+ANALYZE TABlE source.src2 COMPUTE STATISTICS FOR COLUMNS;
+ALTER TABLE source.src2 RENAME TO target.src3;
+DESC FORMATTED target.src3;
+select * from target.src3 tablesample (10 rows);

@@ -12,10 +12,17 @@ LOAD DATA LOCAL INPATH '../../data/files/decimal_10_0.txt' OVERWRITE INTO TABLE 
 
 CREATE TABLE `DECIMAL` STORED AS ORC AS SELECT * FROM decimal_txt;
 
-EXPLAIN
+EXPLAIN VECTORIZATION DETAIL
 SELECT `dec` FROM `DECIMAL` order by `dec`;
 
 SELECT `dec` FROM `DECIMAL` order by `dec`;
+
+-- DECIMAL_64
+
+EXPLAIN VECTORIZATION DETAIL
+SELECT `dec` FROM `decimal_txt` order by `dec`;
+
+SELECT `dec` FROM `decimal_txt` order by `dec`;
 
 DROP TABLE DECIMAL_txt;
 DROP TABLE `DECIMAL`;

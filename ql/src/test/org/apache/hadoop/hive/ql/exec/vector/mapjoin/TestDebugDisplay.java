@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,13 +18,15 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.mapjoin;
 
-import junit.framework.TestCase;
+
+import org.junit.Test;
 
 /**
  * Unit test for the vectorized conversion to and from row object[].
  */
-public class TestDebugDisplay extends TestCase {
+public class TestDebugDisplay {
 
+  @Test
   public void testDebugDisplay() throws Throwable {
 
   try {

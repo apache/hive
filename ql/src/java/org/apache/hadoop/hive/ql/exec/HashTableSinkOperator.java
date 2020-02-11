@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -32,7 +32,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
-import org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionHandler;
 import org.apache.hadoop.hive.ql.exec.persistence.HashMapWrapper;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinEagerRowContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinKeyObject;
@@ -103,7 +102,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
   private long rowNumber = 0;
   protected transient LogHelper console;
   private long hashTableScale;
-  private MapJoinMemoryExhaustionHandler memoryExhaustionHandler;
+  private MemoryExhaustionChecker memoryExhaustionChecker;
 
   /** Kryo ctor. */
   protected HashTableSinkOperator() {
@@ -126,7 +125,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
     super.initializeOp(hconf);
     boolean isSilent = HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVESESSIONSILENT);
     console = new LogHelper(LOG, isSilent);
-    memoryExhaustionHandler = new MapJoinMemoryExhaustionHandler(console, conf.getHashtableMemoryUsage());
+    memoryExhaustionChecker = MemoryExhaustionCheckerFactory.getChecker(console, hconf, conf);
     emptyRowContainer.addRow(emptyObjectArray);
 
     // for small tables only; so get the big table position first
@@ -255,9 +254,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
         rowContainer = emptyRowContainer;
       }
       rowNumber++;
-      if (rowNumber > hashTableScale && rowNumber % hashTableScale == 0) {
-        memoryExhaustionHandler.checkMemoryStatus(tableContainer.size(), rowNumber);
-      }
+      memoryExhaustionChecker.checkMemoryOverhead(rowNumber, hashTableScale, tableContainer.size());
       tableContainer.put(key, rowContainer);
     } else if (rowContainer == emptyRowContainer) {
       rowContainer = rowContainer.copy();
@@ -301,6 +298,11 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
       String bigBucketFileName = getExecContext().getCurrentBigBucketFile();
       String fileName = getExecContext().getLocalWork().getBucketFileName(bigBucketFileName);
       // get the tmp URI path; it will be a hdfs path if not local mode
+      // TODO [MM gap?]: this doesn't work, however this is MR only.
+      //      The path for writer and reader mismatch:
+      //      Dump the side-table for tag ... -local-10004/HashTable-Stage-1/MapJoin-a-00-(ds%3D2008-04-08)mm_2.hashtable
+      //      Load back 1 hashtable file      -local-10004/HashTable-Stage-1/MapJoin-a-00-srcsortbucket3outof4.txt.hashtable
+      //      Hive3 probably won't support MR so do we really care? 
       String dumpFilePrefix = conf.getDumpFilePrefix();
       Path path = Utilities.generatePath(tmpURI, dumpFilePrefix, tag, fileName);
       console.printInfo(Utilities.now() + "\tDump the side-table for tag: " + tag +

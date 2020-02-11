@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,14 +21,16 @@ package org.apache.hive.hcatalog.listener;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 
-import java.lang.reflect.Field;
+import java.util.concurrent.TimeUnit;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -49,12 +51,11 @@ import org.apache.hadoop.hive.metastore.api.FireEventRequest;
 import org.apache.hadoop.hive.metastore.api.FireEventRequestData;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.FunctionType;
-import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.InsertEventRequestData;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
-import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.metastore.api.NotificationEventsCountRequest;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.ResourceType;
@@ -62,9 +63,9 @@ import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.events.AddIndexEvent;
+import org.apache.hadoop.hive.metastore.api.TxnType;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
-import org.apache.hadoop.hive.metastore.events.AlterIndexEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
@@ -72,29 +73,33 @@ import org.apache.hadoop.hive.metastore.events.CreateFunctionEvent;
 import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.DropFunctionEvent;
-import org.apache.hadoop.hive.metastore.events.DropIndexEvent;
 import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
 import org.apache.hadoop.hive.metastore.events.InsertEvent;
+import org.apache.hadoop.hive.metastore.events.OpenTxnEvent;
+import org.apache.hadoop.hive.metastore.events.CommitTxnEvent;
+import org.apache.hadoop.hive.metastore.events.AbortTxnEvent;
 import org.apache.hadoop.hive.metastore.events.ListenerEvent;
+import org.apache.hadoop.hive.metastore.events.AllocWriteIdEvent;
+import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
 import org.apache.hadoop.hive.metastore.messaging.AddPartitionMessage;
-import org.apache.hadoop.hive.metastore.messaging.AlterIndexMessage;
+import org.apache.hadoop.hive.metastore.messaging.AlterDatabaseMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
 import org.apache.hadoop.hive.metastore.messaging.CreateDatabaseMessage;
 import org.apache.hadoop.hive.metastore.messaging.CreateFunctionMessage;
-import org.apache.hadoop.hive.metastore.messaging.CreateIndexMessage;
 import org.apache.hadoop.hive.metastore.messaging.CreateTableMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropDatabaseMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropFunctionMessage;
-import org.apache.hadoop.hive.metastore.messaging.DropIndexMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropTableMessage;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
 import org.apache.hadoop.hive.metastore.messaging.InsertMessage;
 import org.apache.hadoop.hive.metastore.messaging.MessageDeserializer;
 import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.metastore.messaging.json.JSONMessageEncoder;
+import org.apache.hadoop.hive.ql.DriverFactory;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.hcatalog.api.repl.ReplicationV1CompatRule;
 import org.apache.hive.hcatalog.data.Pair;
@@ -118,13 +123,23 @@ public class TestDbNotificationListener {
   private static final int CLEANUP_SLEEP_TIME = 10;
   private static Map<String, String> emptyParameters = new HashMap<String, String>();
   private static IMetaStoreClient msClient;
-  private static Driver driver;
-  private static MessageDeserializer md = null;
+  private static IDriver driver;
+  private static MessageDeserializer md;
+
+  static {
+    try {
+      md = MessageFactory.getInstance(JSONMessageEncoder.FORMAT).getDeserializer();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   private int startTime;
   private long firstEventId;
+  private final String testTempDir = Paths.get(System.getProperty("java.io.tmpdir"), "testDbNotif").toString();
 
   private static List<String> testsToSkipForReplV1BackwardCompatTesting =
-      new ArrayList<>(Arrays.asList("cleanupNotifs", "sqlTempTable"));
+      new ArrayList<>(Arrays.asList("cleanupNotifs", "cleanupNotificationWithError", "sqlTempTable"));
   // Make sure we skip backward-compat checking for those tests that don't generate events
 
   private static ReplicationV1CompatRule bcompat = null;
@@ -172,60 +187,79 @@ public class TestDbNotificationListener {
       super(config);
     }
 
+    @Override
     public void onCreateTable (CreateTableEvent tableEvent) throws MetaException {
       pushEventId(EventType.CREATE_TABLE, tableEvent);
     }
 
+    @Override
     public void onDropTable (DropTableEvent tableEvent)  throws MetaException {
       pushEventId(EventType.DROP_TABLE, tableEvent);
     }
 
+    @Override
     public void onAlterTable (AlterTableEvent tableEvent) throws MetaException {
       pushEventId(EventType.ALTER_TABLE, tableEvent);
     }
 
+    @Override
     public void onAddPartition (AddPartitionEvent partitionEvent) throws MetaException {
       pushEventId(EventType.ADD_PARTITION, partitionEvent);
     }
 
+    @Override
     public void onDropPartition (DropPartitionEvent partitionEvent)  throws MetaException {
       pushEventId(EventType.DROP_PARTITION, partitionEvent);
     }
 
+    @Override
     public void onAlterPartition (AlterPartitionEvent partitionEvent)  throws MetaException {
       pushEventId(EventType.ALTER_PARTITION, partitionEvent);
     }
 
+    @Override
     public void onCreateDatabase (CreateDatabaseEvent dbEvent) throws MetaException {
       pushEventId(EventType.CREATE_DATABASE, dbEvent);
     }
 
+    @Override
     public void onDropDatabase (DropDatabaseEvent dbEvent) throws MetaException {
       pushEventId(EventType.DROP_DATABASE, dbEvent);
     }
 
-    public void onAddIndex(AddIndexEvent indexEvent) throws MetaException {
-      pushEventId(EventType.CREATE_INDEX, indexEvent);
-    }
-
-    public void onDropIndex(DropIndexEvent indexEvent) throws MetaException {
-      pushEventId(EventType.DROP_INDEX, indexEvent);
-    }
-
-    public void onAlterIndex(AlterIndexEvent indexEvent) throws MetaException {
-      pushEventId(EventType.ALTER_INDEX, indexEvent);
-    }
-
+    @Override
     public void onCreateFunction (CreateFunctionEvent fnEvent) throws MetaException {
       pushEventId(EventType.CREATE_FUNCTION, fnEvent);
     }
 
+    @Override
     public void onDropFunction (DropFunctionEvent fnEvent) throws MetaException {
       pushEventId(EventType.DROP_FUNCTION, fnEvent);
     }
 
+    @Override
     public void onInsert(InsertEvent insertEvent) throws MetaException {
       pushEventId(EventType.INSERT, insertEvent);
+    }
+
+    public void onOpenTxn(OpenTxnEvent openTxnEvent) throws MetaException {
+      pushEventId(EventType.OPEN_TXN, openTxnEvent);
+    }
+
+    public void onCommitTxn(CommitTxnEvent commitTxnEvent) throws MetaException {
+      pushEventId(EventType.COMMIT_TXN, commitTxnEvent);
+    }
+
+    public void onAbortTxn(AbortTxnEvent abortTxnEvent) throws MetaException {
+      pushEventId(EventType.ABORT_TXN, abortTxnEvent);
+    }
+
+    public void onAllocWriteId(AllocWriteIdEvent allocWriteIdEvent) throws MetaException {
+      pushEventId(EventType.ALLOC_WRITE_ID, allocWriteIdEvent);
+    }
+
+    public void onAcidWrite(AcidWriteEvent acidWriteEvent) throws MetaException {
+      pushEventId(EventType.ACID_WRITE, acidWriteEvent);
     }
   }
 
@@ -239,24 +273,15 @@ public class TestDbNotificationListener {
     conf.setVar(HiveConf.ConfVars.METASTORE_EVENT_DB_LISTENER_TTL, String.valueOf(EVENTS_TTL) + "s");
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     conf.setBoolVar(HiveConf.ConfVars.FIRE_EVENTS_FOR_DML, true);
-    conf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
     conf.setVar(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL, DummyRawStoreFailEvent.class.getName());
-    Class dbNotificationListener =
-        Class.forName("org.apache.hive.hcatalog.listener.DbNotificationListener");
-    Class[] classes = dbNotificationListener.getDeclaredClasses();
-    for (Class c : classes) {
-      if (c.getName().endsWith("CleanerThread")) {
-        Field sleepTimeField = c.getDeclaredField("sleepTime");
-        sleepTimeField.setAccessible(true);
-        sleepTimeField.set(null, CLEANUP_SLEEP_TIME * 1000);
-      }
-    }
+    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.EVENT_DB_LISTENER_CLEAN_INTERVAL, CLEANUP_SLEEP_TIME, TimeUnit.SECONDS);
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY, JSONMessageEncoder.class.getName());
     conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     SessionState.start(new CliSessionState(conf));
     msClient = new HiveMetaStoreClient(conf);
-    driver = new Driver(conf);
-    md = MessageFactory.getInstance().getDeserializer();
+    driver = DriverFactory.newDriver(conf);
+    md = JSONMessageEncoder.getInstance().getDeserializer();
 
     bcompat = new ReplicationV1CompatRule(msClient, conf, testsToSkipForReplV1BackwardCompatTesting );
   }
@@ -279,12 +304,27 @@ public class TestDbNotificationListener {
     MockMetaStoreEventListener.clearEvents();
   }
 
+  // Test if the number of events between the given event ids and with the given database name are
+  // same as expected. toEventId = 0 is treated as unbounded. Same is the case with limit 0.
+  private void testEventCounts(String dbName, long fromEventId, Long toEventId, Integer limit,
+                               long expectedCount) throws Exception {
+    NotificationEventsCountRequest rqst = new NotificationEventsCountRequest(fromEventId, dbName);
+
+    if (toEventId != null) {
+      rqst.setToEventId(toEventId);
+    }
+    if (limit != null) {
+      rqst.setLimit(limit);
+    }
+
+    assertEquals(expectedCount, msClient.getNotificationEventsCount(rqst).getEventsCount());
+  }
 
   @Test
   public void createDatabase() throws Exception {
     String dbName = "createdb";
     String dbName2 = "createdb2";
-    String dbLocationUri = "file:/tmp";
+    String dbLocationUri = testTempDir;
     String dbDescription = "no description";
     Database db = new Database(dbName, dbDescription, dbLocationUri, emptyParameters);
     msClient.createDatabase(db);
@@ -304,6 +344,7 @@ public class TestDbNotificationListener {
     // Parse the message field
     CreateDatabaseMessage createDbMsg = md.getCreateDatabaseMessage(event.getMessage());
     assertEquals(dbName, createDbMsg.getDB());
+    assertEquals(db, createDbMsg.getDatabaseObject());
 
     // Verify the eventID was passed to the non-transactional listener
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.CREATE_DATABASE, firstEventId + 1);
@@ -320,16 +361,56 @@ public class TestDbNotificationListener {
     }
     rsp = msClient.getNextNotification(firstEventId, 0, null);
     assertEquals(1, rsp.getEventsSize());
+
+    // There's only one event corresponding to CREATE DATABASE
+    testEventCounts(dbName, firstEventId, null, null, 1);
+    testEventCounts(dbName2, firstEventId, null, null, 0);
+  }
+
+  @Test
+  public void alterDatabase() throws Exception {
+    String dbName = "alterdb";
+    String dbLocationUri = testTempDir;
+    String dbDescription = "no description";
+    msClient.createDatabase(new Database(dbName, dbDescription, dbLocationUri, emptyParameters));
+    // get the db for comparison below since it may include additional parameters
+    Database dbBefore = msClient.getDatabase(dbName);
+    // create alter database notification
+    String newDesc = "test database";
+    Database dbAfter = dbBefore.deepCopy();
+    dbAfter.setDescription(newDesc);
+    msClient.alterDatabase(dbName, dbAfter);
+    dbAfter = msClient.getDatabase(dbName);
+
+    // Read notification from metastore
+    NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
+    assertEquals(2, rsp.getEventsSize());
+    // check the contents of alter database notification
+    NotificationEvent event = rsp.getEvents().get(1);
+    assertEquals(firstEventId + 2, event.getEventId());
+    assertTrue(event.getEventTime() >= startTime);
+    assertEquals(EventType.ALTER_DATABASE.toString(), event.getEventType());
+    assertEquals(dbName, event.getDbName());
+    assertNull(event.getTableName());
+
+    // Parse the message field
+    AlterDatabaseMessage alterDatabaseMessage = md.getAlterDatabaseMessage(event.getMessage());
+    assertEquals(dbName, alterDatabaseMessage.getDB());
+    assertEquals(dbBefore, alterDatabaseMessage.getDbObjBefore());
+    assertEquals(dbAfter, alterDatabaseMessage.getDbObjAfter());
   }
 
   @Test
   public void dropDatabase() throws Exception {
     String dbName = "dropdb";
     String dbName2 = "dropdb2";
-    String dbLocationUri = "file:/tmp";
+    String dbLocationUri = testTempDir;
     String dbDescription = "no description";
-    Database db = new Database(dbName, dbDescription, dbLocationUri, emptyParameters);
-    msClient.createDatabase(db);
+    msClient.createDatabase(new Database(dbName, dbDescription, dbLocationUri, emptyParameters));
+
+    // Get the DB for comparison below since it may include additional parameters
+    Database db = msClient.getDatabase(dbName);
+    // Drop the database
     msClient.dropDatabase(dbName);
 
     // Read notification from metastore
@@ -337,6 +418,7 @@ public class TestDbNotificationListener {
 
     // Two events: one for create db and other for drop db
     assertEquals(2, rsp.getEventsSize());
+    testEventCounts(dbName, firstEventId, null, null, 2);
 
     // Read event from notification
     NotificationEvent event = rsp.getEvents().get(1);
@@ -349,6 +431,7 @@ public class TestDbNotificationListener {
     // Parse the message field
     DropDatabaseMessage dropDbMsg = md.getDropDatabaseMessage(event.getMessage());
     assertEquals(dbName, dropDbMsg.getDB());
+    assertEquals(db, dropDbMsg.getDatabaseObject());
 
     // Verify the eventID was passed to the non-transactional listener
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.DROP_DATABASE, firstEventId + 2);
@@ -356,8 +439,7 @@ public class TestDbNotificationListener {
 
     // When hive.metastore.transactional.event.listeners is set,
     // a failed event should not create a new notification
-    db = new Database(dbName2, dbDescription, dbLocationUri, emptyParameters);
-    msClient.createDatabase(db);
+    msClient.createDatabase(new Database(dbName2, dbDescription, dbLocationUri, emptyParameters));
     DummyRawStoreFailEvent.setEventSucceed(false);
     try {
       msClient.dropDatabase(dbName2);
@@ -367,6 +449,7 @@ public class TestDbNotificationListener {
     }
     rsp = msClient.getNextNotification(firstEventId, 0, null);
     assertEquals(3, rsp.getEventsSize());
+    testEventCounts(dbName2, firstEventId, null, null, 1);
   }
 
   @Test
@@ -375,7 +458,7 @@ public class TestDbNotificationListener {
     String tblName = "createtable";
     String tblName2 = "createtable2";
     String tblOwner = "me";
-    String serdeLocation = "file:/tmp";
+    String serdeLocation = testTempDir;
     FieldSchema col1 = new FieldSchema("col1", "int", "no comment");
     List<FieldSchema> cols = new ArrayList<FieldSchema>();
     cols.add(col1);
@@ -422,6 +505,7 @@ public class TestDbNotificationListener {
     }
     rsp = msClient.getNextNotification(firstEventId, 0, null);
     assertEquals(1, rsp.getEventsSize());
+    testEventCounts(defaultDbName, firstEventId, null, null, 1);
   }
 
   @Test
@@ -429,7 +513,7 @@ public class TestDbNotificationListener {
     String defaultDbName = "default";
     String tblName = "altertabletbl";
     String tblOwner = "me";
-    String serdeLocation = "file:/tmp";
+    String serdeLocation = testTempDir;
     FieldSchema col1 = new FieldSchema("col1", "int", "no comment");
     FieldSchema col2 = new FieldSchema("col2", "int", "no comment");
     List<FieldSchema> cols = new ArrayList<FieldSchema>();
@@ -466,6 +550,7 @@ public class TestDbNotificationListener {
     assertEquals(TableType.MANAGED_TABLE.toString(), alterTableMessage.getTableType());
 
     // Verify the eventID was passed to the non-transactional listener
+    MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.ALTER_TABLE, firstEventId + 2);
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.CREATE_TABLE, firstEventId + 1);
 
     // When hive.metastore.transactional.event.listeners is set,
@@ -479,6 +564,7 @@ public class TestDbNotificationListener {
     }
     rsp = msClient.getNextNotification(firstEventId, 0, null);
     assertEquals(2, rsp.getEventsSize());
+    testEventCounts(defaultDbName, firstEventId, null, null, 2);
   }
 
   @Test
@@ -487,7 +573,7 @@ public class TestDbNotificationListener {
     String tblName = "droptbl";
     String tblName2 = "droptbl2";
     String tblOwner = "me";
-    String serdeLocation = "file:/tmp";
+    String serdeLocation = testTempDir;
     FieldSchema col1 = new FieldSchema("col1", "int", "no comment");
     List<FieldSchema> cols = new ArrayList<FieldSchema>();
     cols.add(col1);
@@ -519,6 +605,12 @@ public class TestDbNotificationListener {
     assertEquals(defaultDbName, dropTblMsg.getDB());
     assertEquals(tblName, dropTblMsg.getTable());
     assertEquals(TableType.MANAGED_TABLE.toString(), dropTblMsg.getTableType());
+    Table tableObj = dropTblMsg.getTableObj();
+    assertEquals(table.getDbName(), tableObj.getDbName());
+    assertEquals(table.getTableName(), tableObj.getTableName());
+    assertEquals(table.getOwner(), tableObj.getOwner());
+    assertEquals(table.getParameters(), tableObj.getParameters());
+    assertEquals(TableType.MANAGED_TABLE.toString(), tableObj.getTableType());
 
     // Verify the eventID was passed to the non-transactional listener
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.DROP_TABLE, firstEventId + 2);
@@ -539,6 +631,7 @@ public class TestDbNotificationListener {
     }
     rsp = msClient.getNextNotification(firstEventId, 0, null);
     assertEquals(3, rsp.getEventsSize());
+    testEventCounts(defaultDbName, firstEventId, null, null, 3);
   }
 
   @Test
@@ -547,7 +640,7 @@ public class TestDbNotificationListener {
     String tblName = "addptn";
     String tblName2 = "addptn2";
     String tblOwner = "me";
-    String serdeLocation = "file:/tmp";
+    String serdeLocation = testTempDir;
     FieldSchema col1 = new FieldSchema("col1", "int", "no comment");
     List<FieldSchema> cols = new ArrayList<FieldSchema>();
     cols.add(col1);
@@ -608,6 +701,7 @@ public class TestDbNotificationListener {
     }
     rsp = msClient.getNextNotification(firstEventId, 0, null);
     assertEquals(2, rsp.getEventsSize());
+    testEventCounts(defaultDbName, firstEventId, null, null, 2);
   }
 
   @Test
@@ -615,7 +709,7 @@ public class TestDbNotificationListener {
     String defaultDbName = "default";
     String tblName = "alterptn";
     String tblOwner = "me";
-    String serdeLocation = "file:/tmp";
+    String serdeLocation = testTempDir;
     FieldSchema col1 = new FieldSchema("col1", "int", "no comment");
     List<FieldSchema> cols = new ArrayList<FieldSchema>();
     cols.add(col1);
@@ -676,6 +770,7 @@ public class TestDbNotificationListener {
     }
     rsp = msClient.getNextNotification(firstEventId, 0, null);
     assertEquals(3, rsp.getEventsSize());
+    testEventCounts(defaultDbName, firstEventId, null, null, 3);
   }
 
   @Test
@@ -683,7 +778,7 @@ public class TestDbNotificationListener {
     String defaultDbName = "default";
     String tblName = "dropptn";
     String tblOwner = "me";
-    String serdeLocation = "file:/tmp";
+    String serdeLocation = testTempDir;
     FieldSchema col1 = new FieldSchema("col1", "int", "no comment");
     List<FieldSchema> cols = new ArrayList<FieldSchema>();
     cols.add(col1);
@@ -750,6 +845,7 @@ public class TestDbNotificationListener {
     }
     rsp = msClient.getNextNotification(firstEventId, 0, null);
     assertEquals(4, rsp.getEventsSize());
+    testEventCounts(defaultDbName, firstEventId, null, null, 4);
   }
 
   @Test
@@ -760,28 +856,33 @@ public class TestDbNotificationListener {
     List<FieldSchema> partCols = new ArrayList<FieldSchema>();
     partCols.add(new FieldSchema("part", "int", ""));
     SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
-    StorageDescriptor sd1 = new StorageDescriptor(cols, "file:/tmp/1", "input", "output", false, 0,
-        serde, null, null, emptyParameters);
+    StorageDescriptor sd1 =
+        new StorageDescriptor(cols, Paths.get(testTempDir, "1").toString(), "input", "output", false, 0, serde, null,
+            null, emptyParameters);
     Table tab1 = new Table("tab1", dbName, "me", startTime, startTime, 0, sd1, partCols,
         emptyParameters, null, null, null);
     msClient.createTable(tab1);
     NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
     assertEquals(1, rsp.getEventsSize()); // add_table
 
-    StorageDescriptor sd2 = new StorageDescriptor(cols, "file:/tmp/2", "input", "output", false, 0,
-        serde, null, null, emptyParameters);
+    StorageDescriptor sd2 =
+        new StorageDescriptor(cols, Paths.get(testTempDir, "2").toString(), "input", "output", false, 0, serde, null,
+            null, emptyParameters);
     Table tab2 = new Table("tab2", dbName, "me", startTime, startTime, 0, sd2, partCols,
         emptyParameters, null, null, null); // add_table
     msClient.createTable(tab2);
     rsp = msClient.getNextNotification(firstEventId + 1, 0, null);
     assertEquals(1, rsp.getEventsSize());
 
-    StorageDescriptor sd1part = new StorageDescriptor(cols, "file:/tmp/1/part=1", "input", "output", false, 0,
-        serde, null, null, emptyParameters);
-    StorageDescriptor sd2part = new StorageDescriptor(cols, "file:/tmp/1/part=2", "input", "output", false, 0,
-        serde, null, null, emptyParameters);
-    StorageDescriptor sd3part = new StorageDescriptor(cols, "file:/tmp/1/part=3", "input", "output", false, 0,
-        serde, null, null, emptyParameters);
+    StorageDescriptor sd1part =
+        new StorageDescriptor(cols, Paths.get(testTempDir, "1", "part=1").toString(), "input", "output", false, 0,
+            serde, null, null, emptyParameters);
+    StorageDescriptor sd2part =
+        new StorageDescriptor(cols, Paths.get(testTempDir, "1", "part=2").toString(), "input", "output", false, 0,
+            serde, null, null, emptyParameters);
+    StorageDescriptor sd3part =
+        new StorageDescriptor(cols, Paths.get(testTempDir, "1", "part=3").toString(), "input", "output", false, 0,
+            serde, null, null, emptyParameters);
     Partition part1 = new Partition(Arrays.asList("1"), "default", tab1.getTableName(),
         startTime, startTime, sd1part, emptyParameters);
     Partition part2 = new Partition(Arrays.asList("2"), "default", tab1.getTableName(),
@@ -840,6 +941,7 @@ public class TestDbNotificationListener {
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.ADD_PARTITION, firstEventId + 3);
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.CREATE_TABLE, firstEventId + 2);
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.CREATE_TABLE, firstEventId + 1);
+    testEventCounts(dbName, firstEventId, null, null, 5);
   }
 
   @Test
@@ -850,8 +952,8 @@ public class TestDbNotificationListener {
     String ownerName = "me";
     String funcClass = "o.a.h.h.createfunc";
     String funcClass2 = "o.a.h.h.createfunc2";
-    String funcResource = "file:/tmp/somewhere";
-    String funcResource2 = "file:/tmp/somewhere2";
+    String funcResource = Paths.get(testTempDir, "somewhere").toString();
+    String funcResource2 = Paths.get(testTempDir, "somewhere2").toString();
     Function func =
         new Function(funcName, defaultDbName, funcClass, ownerName, PrincipalType.USER, startTime,
             FunctionType.JAVA, Arrays.asList(new ResourceUri(ResourceType.JAR, funcResource)));
@@ -898,6 +1000,7 @@ public class TestDbNotificationListener {
     }
     rsp = msClient.getNextNotification(firstEventId, 0, null);
     assertEquals(1, rsp.getEventsSize());
+    testEventCounts(defaultDbName, firstEventId, null, null, 1);
   }
 
   @Test
@@ -908,8 +1011,8 @@ public class TestDbNotificationListener {
     String ownerName = "me";
     String funcClass = "o.a.h.h.dropfunction";
     String funcClass2 = "o.a.h.h.dropfunction2";
-    String funcResource = "file:/tmp/somewhere";
-    String funcResource2 = "file:/tmp/somewhere2";
+    String funcResource = Paths.get(testTempDir, "somewhere").toString();
+    String funcResource2 = Paths.get(testTempDir, "somewhere2").toString();
     Function func =
         new Function(funcName, defaultDbName, funcClass, ownerName, PrincipalType.USER, startTime,
             FunctionType.JAVA, Arrays.asList(new ResourceUri(ResourceType.JAR, funcResource)));
@@ -952,223 +1055,89 @@ public class TestDbNotificationListener {
     }
     rsp = msClient.getNextNotification(firstEventId, 0, null);
     assertEquals(3, rsp.getEventsSize());
+    testEventCounts(defaultDbName, firstEventId, null, null, 3);
   }
 
   @Test
-  public void createIndex() throws Exception {
-    String indexName = "createIndex";
-    String dbName = "default";
-    String tableName = "createIndexTable";
-    String indexTableName = tableName + "__" + indexName + "__";
-    int startTime = (int) (System.currentTimeMillis() / 1000);
-    List<FieldSchema> cols = new ArrayList<FieldSchema>();
-    cols.add(new FieldSchema("col1", "int", ""));
-    SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
-    Map<String, String> params = new HashMap<String, String>();
-    params.put("key", "value");
-    StorageDescriptor sd =
-        new StorageDescriptor(cols, "file:/tmp", "input", "output", false, 17, serde,
-            Arrays.asList("bucketcol"), Arrays.asList(new Order("sortcol", 1)), params);
-    Table table =
-        new Table(tableName, dbName, "me", startTime, startTime, 0, sd, null, emptyParameters,
-            null, null, null);
-    // Event 1
-    msClient.createTable(table);
-    Index index =
-        new Index(indexName, null, "default", tableName, startTime, startTime, indexTableName, sd,
-            emptyParameters, false);
-    Table indexTable =
-        new Table(indexTableName, dbName, "me", startTime, startTime, 0, sd, null, emptyParameters,
-            null, null, null);
-    // Event 2, 3 (index table and index)
-    msClient.createIndex(index, indexTable);
-
-    // Get notifications from metastore
+  public void openTxn() throws Exception {
+    msClient.openTxn("me", TxnType.READ_ONLY);
     NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
-    assertEquals(3, rsp.getEventsSize());
-    NotificationEvent event = rsp.getEvents().get(2);
-    assertEquals(firstEventId + 3, event.getEventId());
-    assertTrue(event.getEventTime() >= startTime);
-    assertEquals(EventType.CREATE_INDEX.toString(), event.getEventType());
-    assertEquals(dbName, event.getDbName());
+    assertEquals(0, rsp.getEventsSize());
 
-    // Parse the message field
-    CreateIndexMessage createIdxMessage = md.getCreateIndexMessage(event.getMessage());
-    assertEquals(dbName, createIdxMessage.getDB());
-    Index indexObj = createIdxMessage.getIndexObj();
-    assertEquals(dbName, indexObj.getDbName());
-    assertEquals(indexName, indexObj.getIndexName());
-    assertEquals(tableName, indexObj.getOrigTableName());
-    assertEquals(indexTableName, indexObj.getIndexTableName());
-
-    // Verify the eventID was passed to the non-transactional listener
-    MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.CREATE_INDEX, firstEventId + 3);
-    MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.CREATE_TABLE, firstEventId + 2);
-    MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.CREATE_TABLE, firstEventId + 1);
-
-    // When hive.metastore.transactional.event.listeners is set,
-    // a failed event should not create a new notification
-    DummyRawStoreFailEvent.setEventSucceed(false);
-    index =
-        new Index("createIndexTable2", null, "default", tableName, startTime, startTime,
-            "createIndexTable2__createIndexTable2__", sd, emptyParameters, false);
-    Table indexTable2 =
-        new Table("createIndexTable2__createIndexTable2__", dbName, "me", startTime, startTime, 0,
-            sd, null, emptyParameters, null, null, null);
-    try {
-      msClient.createIndex(index, indexTable2);
-      fail("Error: create index should've failed");
-    } catch (Exception ex) {
-      // expected
-    }
+    msClient.openTxn("me", TxnType.DEFAULT);
     rsp = msClient.getNextNotification(firstEventId, 0, null);
-    assertEquals(3, rsp.getEventsSize());
+    assertEquals(1, rsp.getEventsSize());
+
+    NotificationEvent event = rsp.getEvents().get(0);
+    assertEquals(firstEventId + 1, event.getEventId());
+    assertTrue(event.getEventTime() >= startTime);
+    assertEquals(EventType.OPEN_TXN.toString(), event.getEventType());
   }
 
   @Test
-  public void dropIndex() throws Exception {
-    String indexName = "dropIndex";
-    String dbName = "default";
-    String tableName = "dropIndexTable";
-    String indexTableName = tableName + "__" + indexName + "__";
-    int startTime = (int) (System.currentTimeMillis() / 1000);
-    List<FieldSchema> cols = new ArrayList<FieldSchema>();
-    cols.add(new FieldSchema("col1", "int", ""));
-    SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
-    Map<String, String> params = new HashMap<String, String>();
-    params.put("key", "value");
-    StorageDescriptor sd =
-        new StorageDescriptor(cols, "file:/tmp", "input", "output", false, 17, serde,
-            Arrays.asList("bucketcol"), Arrays.asList(new Order("sortcol", 1)), params);
-    Table table =
-        new Table(tableName, dbName, "me", startTime, startTime, 0, sd, null, emptyParameters,
-            null, null, null);
-    // Event 1
-    msClient.createTable(table);
-    Index index =
-        new Index(indexName, null, "default", tableName, startTime, startTime, indexTableName, sd,
-            emptyParameters, false);
-    Table indexTable =
-        new Table(indexTableName, dbName, "me", startTime, startTime, 0, sd, null, emptyParameters,
-            null, null, null);
-    // Event 2, 3 (index table and index)
-    msClient.createIndex(index, indexTable);
-    // Event 4 (drops index and indexTable)
-    msClient.dropIndex(dbName, tableName, indexName, true);
+  public void abortTxn() throws Exception {
+    long txnId1 = msClient.openTxn("me", TxnType.READ_ONLY);
+    long txnId2 = msClient.openTxn("me", TxnType.DEFAULT);
 
-    // Get notifications from metastore
     NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
-    assertEquals(4, rsp.getEventsSize());
-    NotificationEvent event = rsp.getEvents().get(3);
-    assertEquals(firstEventId + 4, event.getEventId());
+    assertEquals(1, rsp.getEventsSize());
+
+    msClient.abortTxns(Collections.singletonList(txnId1));
+    rsp = msClient.getNextNotification(firstEventId + 1, 0, null);
+    assertEquals(0, rsp.getEventsSize());
+
+    msClient.abortTxns(Collections.singletonList(txnId2));
+    rsp = msClient.getNextNotification(firstEventId + 1, 0, null);
+    assertEquals(1, rsp.getEventsSize());
+
+    NotificationEvent event = rsp.getEvents().get(0);
+    assertEquals(firstEventId + 2, event.getEventId());
     assertTrue(event.getEventTime() >= startTime);
-    assertEquals(EventType.DROP_INDEX.toString(), event.getEventType());
-    assertEquals(dbName, event.getDbName());
-
-    // Parse the message field
-    DropIndexMessage dropIdxMsg = md.getDropIndexMessage(event.getMessage());
-    assertEquals(dbName, dropIdxMsg.getDB());
-    assertEquals(indexName.toLowerCase(), dropIdxMsg.getIndexName());
-    assertEquals(indexTableName.toLowerCase(), dropIdxMsg.getIndexTableName());
-    assertEquals(tableName.toLowerCase(), dropIdxMsg.getOrigTableName());
-
-    // Verify the eventID was passed to the non-transactional listener
-    MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.DROP_INDEX, firstEventId + 4);
-    MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.CREATE_INDEX, firstEventId + 3);
-    MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.CREATE_TABLE, firstEventId + 2);
-    MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.CREATE_TABLE, firstEventId + 1);
-
-    // When hive.metastore.transactional.event.listeners is set,
-    // a failed event should not create a new notification
-    index =
-        new Index("dropIndexTable2", null, "default", tableName, startTime, startTime,
-            "dropIndexTable__dropIndexTable2__", sd, emptyParameters, false);
-    Table indexTable2 =
-        new Table("dropIndexTable__dropIndexTable2__", dbName, "me", startTime, startTime, 0, sd,
-            null, emptyParameters, null, null, null);
-    msClient.createIndex(index, indexTable2);
-    DummyRawStoreFailEvent.setEventSucceed(false);
-    try {
-      // drops index and indexTable
-      msClient.dropIndex(dbName, tableName, "dropIndex2", true);
-      fail("Error: drop index should've failed");
-    } catch (Exception ex) {
-      // expected
-    }
-
-    rsp = msClient.getNextNotification(firstEventId, 0, null);
-    assertEquals(6, rsp.getEventsSize());
+    assertEquals(EventType.ABORT_TXN.toString(), event.getEventType());
   }
 
   @Test
-  public void alterIndex() throws Exception {
-    String indexName = "alterIndex";
-    String dbName = "default";
-    String tableName = "alterIndexTable";
-    String indexTableName = tableName + "__" + indexName + "__";
-    int startTime = (int) (System.currentTimeMillis() / 1000);
-    List<FieldSchema> cols = new ArrayList<FieldSchema>();
-    cols.add(new FieldSchema("col1", "int", ""));
-    SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
-    Map<String, String> params = new HashMap<String, String>();
-    params.put("key", "value");
-    StorageDescriptor sd =
-        new StorageDescriptor(cols, "file:/tmp", "input", "output", false, 17, serde,
-            Arrays.asList("bucketcol"), Arrays.asList(new Order("sortcol", 1)), params);
-    Table table =
-        new Table(tableName, dbName, "me", startTime, startTime, 0, sd, null, emptyParameters,
-            null, null, null);
-    // Event 1
-    msClient.createTable(table);
-    Index oldIndex =
-        new Index(indexName, null, "default", tableName, startTime, startTime, indexTableName, sd,
-            emptyParameters, false);
-    Table oldIndexTable =
-        new Table(indexTableName, dbName, "me", startTime, startTime, 0, sd, null, emptyParameters,
-            null, null, null);
-    // Event 2, 3
-    msClient.createIndex(oldIndex, oldIndexTable); // creates index and index table
-    Index newIndex =
-        new Index(indexName, null, "default", tableName, startTime, startTime + 1, indexTableName,
-            sd, emptyParameters, false);
-    // Event 4
-    msClient.alter_index(dbName, tableName, indexName, newIndex);
+  public void rollbackTxn() throws Exception {
+    long txnId1 = msClient.openTxn("me", TxnType.READ_ONLY);
+    long txnId2 = msClient.openTxn("me", TxnType.DEFAULT);
 
-    // Get notifications from metastore
     NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
-    assertEquals(4, rsp.getEventsSize());
-    NotificationEvent event = rsp.getEvents().get(3);
-    assertEquals(firstEventId + 4, event.getEventId());
+    assertEquals(1, rsp.getEventsSize());
+
+    msClient.rollbackTxn(txnId1);
+    rsp = msClient.getNextNotification(firstEventId + 1, 0, null);
+    assertEquals(0, rsp.getEventsSize());
+
+    msClient.rollbackTxn(txnId2);
+    rsp = msClient.getNextNotification(firstEventId + 1, 0, null);
+    assertEquals(1, rsp.getEventsSize());
+
+    NotificationEvent event = rsp.getEvents().get(0);
+    assertEquals(firstEventId + 2, event.getEventId());
     assertTrue(event.getEventTime() >= startTime);
-    assertEquals(EventType.ALTER_INDEX.toString(), event.getEventType());
-    assertEquals(dbName, event.getDbName());
+    assertEquals(EventType.ABORT_TXN.toString(), event.getEventType());
+  }
 
-    // Parse the message field
-    AlterIndexMessage alterIdxMsg = md.getAlterIndexMessage(event.getMessage());
-    Index indexObj = alterIdxMsg.getIndexObjAfter();
-    assertEquals(dbName, indexObj.getDbName());
-    assertEquals(indexName, indexObj.getIndexName());
-    assertEquals(tableName, indexObj.getOrigTableName());
-    assertEquals(indexTableName, indexObj.getIndexTableName());
-    assertTrue(indexObj.getCreateTime() < indexObj.getLastAccessTime());
+  @Test
+  public void commitTxn() throws Exception {
+    long txnId1 = msClient.openTxn("me", TxnType.READ_ONLY);
+    long txnId2 = msClient.openTxn("me", TxnType.DEFAULT);
 
-    // Verify the eventID was passed to the non-transactional listener
-    MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.ALTER_INDEX, firstEventId + 4);
-    MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.CREATE_INDEX, firstEventId + 3);
-    MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.CREATE_TABLE, firstEventId + 2);
-    MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.CREATE_TABLE, firstEventId + 1);
+    NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
+    assertEquals(1, rsp.getEventsSize());
 
-    // When hive.metastore.transactional.event.listeners is set,
-    // a failed event should not create a new notification
-    DummyRawStoreFailEvent.setEventSucceed(false);
-    try {
-      msClient.alter_index(dbName, tableName, indexName, newIndex);
-      fail("Error: alter index should've failed");
-    } catch (Exception ex) {
-      // expected
-    }
-    rsp = msClient.getNextNotification(firstEventId, 0, null);
-    assertEquals(4, rsp.getEventsSize());
+    msClient.commitTxn(txnId1);
+    rsp = msClient.getNextNotification(firstEventId + 1, 0, null);
+    assertEquals(0, rsp.getEventsSize());
+
+    msClient.commitTxn(txnId2);
+    rsp = msClient.getNextNotification(firstEventId + 1, 0, null);
+    assertEquals(1, rsp.getEventsSize());
+
+    NotificationEvent event = rsp.getEvents().get(0);
+    assertEquals(firstEventId + 2, event.getEventId());
+    assertTrue(event.getEventTime() >= startTime);
+    assertEquals(EventType.COMMIT_TXN.toString(), event.getEventType());
   }
 
   @Test
@@ -1176,7 +1145,7 @@ public class TestDbNotificationListener {
     String defaultDbName = "default";
     String tblName = "inserttbl";
     String tblOwner = "me";
-    String serdeLocation = "file:/tmp";
+    String serdeLocation = testTempDir;
     String fileAdded = "/warehouse/mytable/b1";
     String checksumAdded = "1234";
     FieldSchema col1 = new FieldSchema("col1", "int", "no comment");
@@ -1197,6 +1166,7 @@ public class TestDbNotificationListener {
     data.setInsertData(insertData);
     insertData.addToFilesAdded(fileAdded);
     insertData.addToFilesAddedChecksum(checksumAdded);
+    insertData.setReplace(false);
     FireEventRequest rqst = new FireEventRequest(true, data);
     rqst.setDbName(defaultDbName);
     rqst.setTableName(tblName);
@@ -1220,10 +1190,12 @@ public class TestDbNotificationListener {
     assertEquals(defaultDbName, insertMessage.getDB());
     assertEquals(tblName, insertMessage.getTable());
     assertEquals(TableType.MANAGED_TABLE.toString(), insertMessage.getTableType());
+    assertFalse(insertMessage.isReplace());
 
     // Verify the eventID was passed to the non-transactional listener
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.INSERT, firstEventId + 2);
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.CREATE_TABLE, firstEventId + 1);
+    testEventCounts(defaultDbName, firstEventId, null, null, 2);
   }
 
   @Test
@@ -1231,7 +1203,7 @@ public class TestDbNotificationListener {
     String defaultDbName = "default";
     String tblName = "insertptn";
     String tblOwner = "me";
-    String serdeLocation = "file:/tmp";
+    String serdeLocation = testTempDir;
     String fileAdded = "/warehouse/mytable/b1";
     String checksumAdded = "1234";
     FieldSchema col1 = new FieldSchema("col1", "int", "no comment");
@@ -1263,6 +1235,7 @@ public class TestDbNotificationListener {
     data.setInsertData(insertData);
     insertData.addToFilesAdded(fileAdded);
     insertData.addToFilesAddedChecksum(checksumAdded);
+    insertData.setReplace(false);
     FireEventRequest rqst = new FireEventRequest(true, data);
     rqst.setDbName(defaultDbName);
     rqst.setTableName(tblName);
@@ -1283,23 +1256,24 @@ public class TestDbNotificationListener {
     verifyInsert(event, defaultDbName, tblName);
     InsertMessage insertMessage = md.getInsertMessage(event.getMessage());
     List<String> ptnValues = insertMessage.getPtnObj().getValues();
-
+    assertFalse(insertMessage.isReplace());
     assertEquals(partKeyVals, ptnValues);
 
     // Verify the eventID was passed to the non-transactional listener
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.INSERT, firstEventId + 3);
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.ADD_PARTITION, firstEventId + 2);
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.CREATE_TABLE, firstEventId + 1);
+    testEventCounts(defaultDbName, firstEventId, null, null, 3);
   }
 
 
   @Test
   public void getOnlyMaxEvents() throws Exception {
-    Database db = new Database("db1", "no description", "file:/tmp", emptyParameters);
+    Database db = new Database("db1", "no description", testTempDir, emptyParameters);
     msClient.createDatabase(db);
-    db = new Database("db2", "no description", "file:/tmp", emptyParameters);
+    db = new Database("db2", "no description", testTempDir, emptyParameters);
     msClient.createDatabase(db);
-    db = new Database("db3", "no description", "file:/tmp", emptyParameters);
+    db = new Database("db3", "no description", testTempDir, emptyParameters);
     msClient.createDatabase(db);
 
     // Get notifications from metastore
@@ -1311,9 +1285,9 @@ public class TestDbNotificationListener {
 
   @Test
   public void filter() throws Exception {
-    Database db = new Database("f1", "no description", "file:/tmp", emptyParameters);
+    Database db = new Database("f1", "no description", testTempDir, emptyParameters);
     msClient.createDatabase(db);
-    db = new Database("f2", "no description", "file:/tmp", emptyParameters);
+    db = new Database("f2", "no description", testTempDir, emptyParameters);
     msClient.createDatabase(db);
     msClient.dropDatabase("f2");
 
@@ -1332,9 +1306,9 @@ public class TestDbNotificationListener {
 
   @Test
   public void filterWithMax() throws Exception {
-    Database db = new Database("f10", "no description", "file:/tmp", emptyParameters);
+    Database db = new Database("f10", "no description", testTempDir, emptyParameters);
     msClient.createDatabase(db);
-    db = new Database("f11", "no description", "file:/tmp", emptyParameters);
+    db = new Database("f11", "no description", testTempDir, emptyParameters);
     msClient.createDatabase(db);
     msClient.dropDatabase("f11");
 
@@ -1366,7 +1340,7 @@ public class TestDbNotificationListener {
 
     // Get notifications from metastore
     NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
-    assertEquals(6, rsp.getEventsSize());
+    assertEquals(7, rsp.getEventsSize());
     NotificationEvent event = rsp.getEvents().get(0);
     assertEquals(firstEventId + 1, event.getEventId());
     assertEquals(EventType.CREATE_TABLE.toString(), event.getEventType());
@@ -1376,30 +1350,34 @@ public class TestDbNotificationListener {
     assertEquals(EventType.INSERT.toString(), event.getEventType());
     // Parse the message field
     verifyInsert(event, defaultDbName, tblName);
-
-    event = rsp.getEvents().get(4);
-    assertEquals(firstEventId + 5, event.getEventId());
-    assertEquals(EventType.ALTER_TABLE.toString(), event.getEventType());
+    InsertMessage insertMsg = md.getInsertMessage(event.getMessage());
+    assertFalse(insertMsg.isReplace());
 
     event = rsp.getEvents().get(5);
     assertEquals(firstEventId + 6, event.getEventId());
+    assertEquals(EventType.ALTER_TABLE.toString(), event.getEventType());
+
+    event = rsp.getEvents().get(6);
+    assertEquals(firstEventId + 7, event.getEventId());
     assertEquals(EventType.DROP_TABLE.toString(), event.getEventType());
+    testEventCounts(defaultDbName, firstEventId, null, null, 7);
   }
 
   @Test
   public void sqlCTAS() throws Exception {
+    String defaultDbName = "default";
     String sourceTblName = "sqlctasins1";
     String targetTblName = "sqlctasins2";
     // Event 1
     driver.run("create table " + sourceTblName + " (c int)");
     // Event 2 (alter: marker stats event), 3 (insert), 4 (alter: stats update event)
     driver.run("insert into table " + sourceTblName + " values (1)");
-    // Event 5, 6 (alter: stats update event)
+    // Event 5, 6 (alter), 7 (alter: stats update event)
     driver.run("create table " + targetTblName + " as select c from " + sourceTblName);
 
     // Get notifications from metastore
     NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
-    assertEquals(6, rsp.getEventsSize());
+    assertEquals(8, rsp.getEventsSize());
     NotificationEvent event = rsp.getEvents().get(0);
     assertEquals(firstEventId + 1, event.getEventId());
     assertEquals(EventType.CREATE_TABLE.toString(), event.getEventType());
@@ -1410,13 +1388,15 @@ public class TestDbNotificationListener {
     // Parse the message field
     verifyInsert(event, null, sourceTblName);
 
-    event = rsp.getEvents().get(4);
-    assertEquals(firstEventId + 5, event.getEventId());
+    event = rsp.getEvents().get(5);
+    assertEquals(firstEventId + 6, event.getEventId());
     assertEquals(EventType.CREATE_TABLE.toString(), event.getEventType());
+    testEventCounts(defaultDbName, firstEventId, null, null, 8);
   }
 
   @Test
   public void sqlTempTable() throws Exception {
+    String defaultDbName = "default";
     String tempTblName = "sqltemptbl";
     driver.run("create temporary table " + tempTblName + "  (c int)");
     driver.run("insert into table " + tempTblName + " values (1)");
@@ -1424,6 +1404,7 @@ public class TestDbNotificationListener {
     // Get notifications from metastore
     NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
     assertEquals(0, rsp.getEventsSize());
+    testEventCounts(defaultDbName, firstEventId, null, null, 0);
   }
 
   @Test
@@ -1447,6 +1428,7 @@ public class TestDbNotificationListener {
 
   @Test
   public void sqlInsertPartition() throws Exception {
+    String defaultDbName = "default";
     String tblName = "sqlinsptn";
     // Event 1
     driver.run("create table " + tblName + " (c int) partitioned by (ds string)");
@@ -1458,6 +1440,13 @@ public class TestDbNotificationListener {
     driver.run("insert into table " + tblName + " partition (ds) values (3, 'today')");
     // Event 9, 10
     driver.run("alter table " + tblName + " add partition (ds = 'yesterday')");
+
+    testEventCounts(defaultDbName, firstEventId, null, null, 13);
+    // Test a limit higher than available events
+    testEventCounts(defaultDbName, firstEventId, null, 100, 13);
+    // Test toEventId lower than current eventId
+    testEventCounts(defaultDbName, firstEventId, firstEventId + 5, null, 5);
+
     // Event 10, 11, 12
     driver.run("insert into table " + tblName + " partition (ds = 'yesterday') values (2)");
     // Event 12, 13, 14
@@ -1474,32 +1463,33 @@ public class TestDbNotificationListener {
 
     // Get notifications from metastore
     NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
-    assertEquals(24, rsp.getEventsSize());
+    assertEquals(31, rsp.getEventsSize());
+
     NotificationEvent event = rsp.getEvents().get(1);
     assertEquals(firstEventId + 2, event.getEventId());
     assertEquals(EventType.ADD_PARTITION.toString(), event.getEventType());
 
     event = rsp.getEvents().get(3);
     assertEquals(firstEventId + 4, event.getEventId());
+    assertEquals(EventType.UPDATE_PARTITION_COLUMN_STAT.toString(), event.getEventType());
+
+    event = rsp.getEvents().get(4);
+    assertEquals(firstEventId + 5, event.getEventId());
+    assertEquals(EventType.INSERT.toString(), event.getEventType());
+    // Parse the message field
+    verifyInsert(event, null, tblName);
+    // Verify the replace flag.
+    InsertMessage insertMsg = md.getInsertMessage(event.getMessage());
+    assertFalse(insertMsg.isReplace());
+    event = rsp.getEvents().get(8);
+    assertEquals(firstEventId + 9, event.getEventId());
     assertEquals(EventType.INSERT.toString(), event.getEventType());
     // Parse the message field
     verifyInsert(event, null, tblName);
 
-    event = rsp.getEvents().get(6);
-    assertEquals(firstEventId + 7, event.getEventId());
-    assertEquals(EventType.INSERT.toString(), event.getEventType());
-    // Parse the message field
-    verifyInsert(event, null, tblName);
-
-    event = rsp.getEvents().get(9);
-    assertEquals(firstEventId + 10, event.getEventId());
+    event = rsp.getEvents().get(12);
+    assertEquals(firstEventId + 13, event.getEventId());
     assertEquals(EventType.ADD_PARTITION.toString(), event.getEventType());
-
-    event = rsp.getEvents().get(10);
-    assertEquals(firstEventId + 11, event.getEventId());
-    assertEquals(EventType.INSERT.toString(), event.getEventType());
-    // Parse the message field
-    verifyInsert(event, null, tblName);
 
     event = rsp.getEvents().get(13);
     assertEquals(firstEventId + 14, event.getEventId());
@@ -1507,38 +1497,61 @@ public class TestDbNotificationListener {
     // Parse the message field
     verifyInsert(event, null, tblName);
 
-    event = rsp.getEvents().get(16);
-    assertEquals(firstEventId + 17, event.getEventId());
-    assertEquals(EventType.ADD_PARTITION.toString(), event.getEventType());
-
-    event = rsp.getEvents().get(18);
-    assertEquals(firstEventId + 19, event.getEventId());
-    assertEquals(EventType.DROP_PARTITION.toString(), event.getEventType());
-
-    event = rsp.getEvents().get(19);
-    assertEquals(firstEventId + 20, event.getEventId());
-    assertEquals(EventType.ADD_PARTITION.toString(), event.getEventType());
-
-    event = rsp.getEvents().get(20);
-    assertEquals(firstEventId + 21, event.getEventId());
-    assertEquals(EventType.ALTER_PARTITION.toString(), event.getEventType());
-    assertTrue(event.getMessage().matches(".*\"ds\":\"todaytwo\".*"));
+    event = rsp.getEvents().get(17);
+    assertEquals(firstEventId + 18, event.getEventId());
+    assertEquals(EventType.INSERT.toString(), event.getEventType());
+    // Parse the message field
+    verifyInsert(event, null, tblName);
 
     event = rsp.getEvents().get(21);
     assertEquals(firstEventId + 22, event.getEventId());
+    assertEquals(EventType.ADD_PARTITION.toString(), event.getEventType());
+
+    event = rsp.getEvents().get(24);
+    assertEquals(firstEventId + 25, event.getEventId());
+    assertEquals(EventType.DROP_PARTITION.toString(), event.getEventType());
+
+    event = rsp.getEvents().get(25);
+    assertEquals(firstEventId + 26, event.getEventId());
+    assertEquals(EventType.ADD_PARTITION.toString(), event.getEventType());
+
+    event = rsp.getEvents().get(26);
+    assertEquals(firstEventId + 27, event.getEventId());
+    assertEquals(EventType.ALTER_PARTITION.toString(), event.getEventType());
+    assertTrue(event.getMessage().matches(".*\"ds\":\"todaytwo\".*"));
+
+    // Test fromEventId different from the very first
+    testEventCounts(defaultDbName, event.getEventId(), null, null, 4);
+
+    event = rsp.getEvents().get(28);
+    assertEquals(firstEventId + 29, event.getEventId());
     assertEquals(EventType.INSERT.toString(), event.getEventType());
+    // Verify the replace flag.
+    insertMsg = md.getInsertMessage(event.getMessage());
+    assertTrue(insertMsg.isReplace());
     // replace-overwrite introduces no new files
-    assertTrue(event.getMessage().matches(".*\"files\":\\[\\].*"));
+    // the insert overwrite creates an empty file with the current change
+    //assertTrue(event.getMessage().matches(".*\"files\":\\[\\].*"));
 
-    event = rsp.getEvents().get(22);
-    assertEquals(firstEventId + 23, event.getEventId());
+    event = rsp.getEvents().get(29);
+    assertEquals(firstEventId + 30, event.getEventId());
     assertEquals(EventType.ALTER_PARTITION.toString(), event.getEventType());
     assertTrue(event.getMessage().matches(".*\"ds\":\"todaytwo\".*"));
 
-    event = rsp.getEvents().get(23);
-    assertEquals(firstEventId + 24, event.getEventId());
+    event = rsp.getEvents().get(30);
+    assertEquals(firstEventId + 31, event.getEventId());
     assertEquals(EventType.ALTER_PARTITION.toString(), event.getEventType());
     assertTrue(event.getMessage().matches(".*\"ds\":\"todaytwo\".*"));
+    testEventCounts(defaultDbName, firstEventId, null, null, 31);
+
+    // Test a limit within the available events
+    testEventCounts(defaultDbName, firstEventId, null, 10, 10);
+    // Test toEventId greater than current eventId
+    testEventCounts(defaultDbName, firstEventId, firstEventId + 100, null, 31);
+    // Test toEventId greater than current eventId with some limit within available events
+    testEventCounts(defaultDbName, firstEventId, firstEventId + 100, 10, 10);
+    // Test toEventId greater than current eventId with some limit beyond available events
+    testEventCounts(defaultDbName, firstEventId, firstEventId + 100, 50, 31);
   }
 
   private void verifyInsert(NotificationEvent event, String dbName, String tblName) throws Exception {
@@ -1558,7 +1571,7 @@ public class TestDbNotificationListener {
 
   @Test
   public void cleanupNotifs() throws Exception {
-    Database db = new Database("cleanup1", "no description", "file:/tmp", emptyParameters);
+    Database db = new Database("cleanup1", "no description", testTempDir, emptyParameters);
     msClient.createDatabase(db);
     msClient.dropDatabase("cleanup1");
 
@@ -1573,6 +1586,34 @@ public class TestDbNotificationListener {
     LOG.info("Pulling events again after cleanup");
     NotificationEventResponse rsp2 = msClient.getNextNotification(firstEventId, 0, null);
     LOG.info("second trigger done");
+    assertEquals(0, rsp2.getEventsSize());
+  }
+
+  @Test
+  public void cleanupNotificationWithError() throws Exception {
+    Database db = new Database("cleanup1", "no description", testTempDir, emptyParameters);
+    msClient.createDatabase(db);
+    msClient.dropDatabase("cleanup1");
+
+    LOG.info("Pulling events immediately after createDatabase/dropDatabase");
+    NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
+    assertEquals(2, rsp.getEventsSize());
+    //this simulates that cleaning thread will error out while cleaning the notifications
+    DummyRawStoreFailEvent.setEventSucceed(false);
+    // sleep for expiry time, and then fetch again
+    // sleep twice the TTL interval - things should have been cleaned by then.
+    Thread.sleep(EVENTS_TTL * 2 * 1000);
+
+    LOG.info("Pulling events again after failing to cleanup");
+    NotificationEventResponse rsp2 = msClient.getNextNotification(firstEventId, 0, null);
+    LOG.info("second trigger done");
+    assertEquals(2, rsp2.getEventsSize());
+    DummyRawStoreFailEvent.setEventSucceed(true);
+    Thread.sleep(EVENTS_TTL * 2 * 1000);
+
+    LOG.info("Pulling events again after cleanup");
+    rsp2 = msClient.getNextNotification(firstEventId, 0, null);
+    LOG.info("third trigger done");
     assertEquals(0, rsp2.getEventsSize());
   }
 }

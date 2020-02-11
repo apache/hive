@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -79,7 +79,7 @@ public class GenericUDTFPosExplode extends GenericUDTF {
 
     for (int i = 0; i < list.size(); i++) {
       Object r = list.get(i);
-      forwardObj[0] = new Integer(i);
+      forwardObj[0] = Integer.valueOf(i);
       forwardObj[1] = r;
       forward(forwardObj);
     }

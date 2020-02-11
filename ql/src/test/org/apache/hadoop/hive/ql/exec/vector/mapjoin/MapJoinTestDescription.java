@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.mapjoin;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -27,20 +28,23 @@ import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.VectorMapJoinVariation;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 public class MapJoinTestDescription extends DescriptionTest {
 
+  public static enum MapJoinPlanVariation {
+    DYNAMIC_PARTITION_HASH_JOIN,
+    SHARED_SMALL_TABLE
+  }
+
   public static class SmallTableGenerationParameters {
 
     public static enum ValueOption {
       NO_RESTRICTION,
       ONLY_ONE,
-      ONLY_TWO,
-      AT_LEAST_TWO
+      NO_REGULAR_SMALL_KEYS
     }
 
     private ValueOption valueOption;
@@ -82,70 +86,103 @@ public class MapJoinTestDescription extends DescriptionTest {
   final VectorMapJoinVariation vectorMapJoinVariation;
 
   // Adjustable.
-  public String[] bigTableColumnNames;
+  public String[] bigTableKeyColumnNames;
   public TypeInfo[] bigTableTypeInfos;
+
   public int[] bigTableKeyColumnNums;
-  public String[] smallTableValueColumnNames;
+
   public TypeInfo[] smallTableValueTypeInfos;
-  public int[] bigTableRetainColumnNums;
+
   public int[] smallTableRetainKeyColumnNums;
-  public int[] smallTableRetainValueColumnNums;
 
   public SmallTableGenerationParameters smallTableGenerationParameters;
 
   // Derived.
-  public List<String> bigTableColumnNamesList;
-  public String[] bigTableKeyColumnNames;
-  public TypeInfo[] bigTableKeyTypeInfos;
-  public List<String> smallTableValueColumnNamesList;
+
+  public int[] bigTableColumnNums;
+  public String[] bigTableColumnNames;
+  public List<String> bigTableColumnNameList;
   public ObjectInspector[] bigTableObjectInspectors;
-  public List<ObjectInspector> bigTableObjectInspectorsList;
+  public List<ObjectInspector> bigTableObjectInspectorList;
+
+  public TypeInfo[] bigTableKeyTypeInfos;
+
+  public List<String> smallTableKeyColumnNameList;
+  public String[] smallTableKeyColumnNames;
+  public TypeInfo[] smallTableKeyTypeInfos;
+  public ObjectInspector[] smallTableKeyObjectInspectors;
+  public List<ObjectInspector> smallTableKeyObjectInspectorList;
+
+  public List<String> smallTableValueColumnNameList;
+  public String[] smallTableValueColumnNames;
+  public ObjectInspector[] smallTableValueObjectInspectors;
+  public List<ObjectInspector> smallTableValueObjectInspectorList;
+
+  public int[] bigTableRetainColumnNums;
+  public int[] smallTableRetainValueColumnNums;
+
+  public String[] smallTableColumnNames;
+  public List<String> smallTableColumnNameList;
+  public TypeInfo[] smallTableTypeInfos;
+  public List<ObjectInspector> smallTableObjectInspectorList;
+
   public StandardStructObjectInspector bigTableStandardObjectInspector;
-  public PrimitiveTypeInfo[] smallTableValuePrimitiveTypeInfos;
-  public ObjectInspector[] smallTableObjectInspectors;
-  public PrimitiveCategory[] smallTablePrimitiveCategories;
-  public List<ObjectInspector> smallTableObjectInspectorsList;
   public StandardStructObjectInspector smallTableStandardObjectInspector;
   public ObjectInspector[] inputObjectInspectors;
+
   public String[] outputColumnNames;
   public TypeInfo[] outputTypeInfos;
   public ObjectInspector[] outputObjectInspectors;
 
+  final MapJoinPlanVariation mapJoinPlanVariation;
+
+  public MapJoinTestDescription (
+      HiveConf hiveConf,
+      VectorMapJoinVariation vectorMapJoinVariation,
+      TypeInfo[] bigTableTypeInfos,
+      int[] bigTableKeyColumnNums,
+      TypeInfo[] smallTableValueTypeInfos,
+      int[] smallTableRetainKeyColumnNums,
+      SmallTableGenerationParameters smallTableGenerationParameters,
+      MapJoinPlanVariation mapJoinPlanVariation) {
+    this(
+        hiveConf,
+        vectorMapJoinVariation,
+        /* bigTableColumnNames */ null,
+        bigTableTypeInfos,
+        bigTableKeyColumnNums,
+        smallTableValueTypeInfos,
+        smallTableRetainKeyColumnNums,
+        smallTableGenerationParameters,
+        mapJoinPlanVariation);
+  }
+
   public MapJoinTestDescription (
     HiveConf hiveConf,
     VectorMapJoinVariation vectorMapJoinVariation,
-    String[] bigTableColumnNames, TypeInfo[] bigTableTypeInfos,
+    String[] bigTableColumnNames,
+    TypeInfo[] bigTableTypeInfos,
     int[] bigTableKeyColumnNums,
-    String[] smallTableValueColumnNames, TypeInfo[] smallTableValueTypeInfos,
-    int[] bigTableRetainColumnNums,
-    int[] smallTableRetainKeyColumnNums, int[] smallTableRetainValueColumnNums,
-    SmallTableGenerationParameters smallTableGenerationParameters) {
+    TypeInfo[] smallTableValueTypeInfos,
+    int[] smallTableRetainKeyColumnNums,
+    SmallTableGenerationParameters smallTableGenerationParameters,
+    MapJoinPlanVariation mapJoinPlanVariation) {
 
     super(hiveConf);
+
     this.vectorMapJoinVariation = vectorMapJoinVariation;
 
     this.bigTableColumnNames = bigTableColumnNames;
     this.bigTableTypeInfos = bigTableTypeInfos;
     this.bigTableKeyColumnNums = bigTableKeyColumnNums;
-    this.smallTableValueColumnNames = smallTableValueColumnNames;
+
     this.smallTableValueTypeInfos = smallTableValueTypeInfos;
-    this.bigTableRetainColumnNums = bigTableRetainColumnNums;
-    this.smallTableRetainKeyColumnNums = smallTableRetainKeyColumnNums;
-    this.smallTableRetainValueColumnNums = smallTableRetainValueColumnNums;
+
+    this.smallTableRetainKeyColumnNums = smallTableRetainKeyColumnNums;;
 
     this.smallTableGenerationParameters = smallTableGenerationParameters;
 
-    switch (vectorMapJoinVariation) {
-    case INNER_BIG_ONLY:
-    case LEFT_SEMI:
-      trimAwaySmallTableValueInfo();
-      break;
-    case INNER:
-    case OUTER:
-      break;
-    default:
-      throw new RuntimeException("Unknown operator variation " + vectorMapJoinVariation);
-    }
+    this.mapJoinPlanVariation = mapJoinPlanVariation;
 
     computeDerived();
   }
@@ -155,45 +192,121 @@ public class MapJoinTestDescription extends DescriptionTest {
   }
 
   public void computeDerived() {
-    bigTableColumnNamesList = Arrays.asList(bigTableColumnNames);
 
-    bigTableKeyColumnNames = new String[bigTableKeyColumnNums.length];
-    bigTableKeyTypeInfos = new TypeInfo[bigTableKeyColumnNums.length];
-    for (int i = 0; i < bigTableKeyColumnNums.length; i++) {
-      bigTableKeyColumnNames[i] = bigTableColumnNames[bigTableKeyColumnNums[i]];
-      bigTableKeyTypeInfos[i] = bigTableTypeInfos[bigTableKeyColumnNums[i]];
+    final int bigTableSize = bigTableTypeInfos.length;
+
+    if (bigTableKeyColumnNames == null) {
+
+      // Automatically populate.
+      bigTableColumnNames = new String[bigTableSize];
+      for (int i = 0; i < bigTableSize; i++) {
+        bigTableColumnNames[i] = HiveConf.getColumnInternalName(i);
+      }
     }
 
-    smallTableValueColumnNamesList = Arrays.asList(smallTableValueColumnNames);
+    // Automatically populate.
+    bigTableColumnNums = new int[bigTableSize];
 
-    bigTableObjectInspectors = new ObjectInspector[bigTableTypeInfos.length];
-    for (int i = 0; i < bigTableTypeInfos.length; i++) {
+    for (int i = 0; i < bigTableSize; i++) {
+      bigTableColumnNums[i] = i;
+    }
+
+    // Automatically populate.
+    bigTableRetainColumnNums = new int[bigTableSize];
+    for (int i = 0; i < bigTableSize; i++) {
+      bigTableRetainColumnNums[i] = i;
+    }
+
+    /*
+     * Big Table key information.
+     */
+    final int keySize = bigTableKeyColumnNums.length;
+
+    bigTableKeyColumnNames = new String[keySize];
+    bigTableKeyTypeInfos = new TypeInfo[keySize];
+    for (int i = 0; i < keySize; i++) {
+      final int bigTableKeyColumnNum = bigTableKeyColumnNums[i];
+      bigTableKeyColumnNames[i] = bigTableColumnNames[bigTableKeyColumnNum];
+      bigTableKeyTypeInfos[i] = bigTableTypeInfos[bigTableKeyColumnNum];
+    }
+
+    /*
+     * Big Table object inspectors.
+     */
+    bigTableObjectInspectors = new ObjectInspector[bigTableSize];
+    for (int i = 0; i < bigTableSize; i++) {
       bigTableObjectInspectors[i] =
-          PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector((PrimitiveTypeInfo) bigTableTypeInfos[i]);
+          PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
+              (PrimitiveTypeInfo) bigTableTypeInfos[i]);
     }
-    bigTableObjectInspectorsList = Arrays.asList(bigTableObjectInspectors);
+    bigTableColumnNameList = Arrays.asList(bigTableColumnNames);
+    bigTableObjectInspectorList = Arrays.asList(bigTableObjectInspectors);
 
-    smallTableObjectInspectors = new ObjectInspector[smallTableValueTypeInfos.length];
-    smallTablePrimitiveCategories = new PrimitiveCategory[smallTableValueTypeInfos.length];
-    smallTableValuePrimitiveTypeInfos = new PrimitiveTypeInfo[smallTableValueTypeInfos.length];
-    for (int i = 0; i < smallTableValueTypeInfos.length; i++) {
-      PrimitiveTypeInfo primitiveTypeInfo = (PrimitiveTypeInfo) smallTableValueTypeInfos[i];
-      smallTableObjectInspectors[i] =
-          PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(primitiveTypeInfo);
-      smallTablePrimitiveCategories[i] = primitiveTypeInfo.getPrimitiveCategory();
-      smallTableValuePrimitiveTypeInfos[i] = primitiveTypeInfo;
+    /*
+     * Small Table key object inspectors are derived directly from the Big Table key information.
+     */
+    smallTableKeyColumnNames = new String[keySize];
+    smallTableKeyTypeInfos = Arrays.copyOf(bigTableKeyTypeInfos, keySize);
+    smallTableKeyObjectInspectors = new ObjectInspector[keySize];
+    for (int i = 0; i < keySize; i++) {
+      smallTableKeyColumnNames[i] = HiveConf.getColumnInternalName(i);
+      final int bigTableKeyColumnNum = bigTableKeyColumnNums[i];
+      smallTableKeyObjectInspectors[i] = bigTableObjectInspectors[bigTableKeyColumnNum];
     }
-    smallTableObjectInspectorsList = Arrays.asList(smallTableObjectInspectors);
+    smallTableKeyColumnNameList = Arrays.asList(smallTableKeyColumnNames);
+    smallTableKeyObjectInspectorList = Arrays.asList(smallTableKeyObjectInspectors);
 
+    // First part of Small Table information is the key information.
+    smallTableColumnNameList = new ArrayList<String>(smallTableKeyColumnNameList);
+    List<TypeInfo> smallTableTypeInfoList =
+        new ArrayList<TypeInfo>(Arrays.asList(smallTableKeyTypeInfos));
+    smallTableObjectInspectorList = new ArrayList<ObjectInspector>();
+    smallTableObjectInspectorList.addAll(smallTableKeyObjectInspectorList);
+
+    final int valueSize = smallTableValueTypeInfos.length;
+
+    // Automatically populate.
+    smallTableValueColumnNames = new String[valueSize];
+    for (int i = 0; i < valueSize; i++) {
+      smallTableValueColumnNames[i] = HiveConf.getColumnInternalName(keySize + i);
+    }
+
+    smallTableValueObjectInspectors = new ObjectInspector[valueSize];
+    for (int i = 0; i < valueSize; i++) {
+      smallTableValueObjectInspectors[i] =
+          PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
+              (PrimitiveTypeInfo) smallTableValueTypeInfos[i]);
+    }
+    smallTableValueColumnNameList = Arrays.asList(smallTableValueColumnNames);
+    smallTableTypeInfoList.addAll(Arrays.asList(smallTableValueTypeInfos));
+    smallTableValueObjectInspectorList = Arrays.asList(smallTableValueObjectInspectors);
+
+    smallTableColumnNameList.addAll(smallTableValueColumnNameList);
+    smallTableColumnNames = smallTableColumnNameList.toArray(new String[0]);
+    smallTableTypeInfos = smallTableTypeInfoList.toArray(new TypeInfo[0]);
+
+    smallTableObjectInspectorList.addAll(smallTableValueObjectInspectorList);
+
+    /*
+     * The inputObjectInspectors describe the keys and values of the Big Table and Small Table.
+     */
     bigTableStandardObjectInspector =
         ObjectInspectorFactory.getStandardStructObjectInspector(
-            bigTableColumnNamesList, Arrays.asList((ObjectInspector[]) bigTableObjectInspectors));
+            bigTableColumnNameList, bigTableObjectInspectorList);
     smallTableStandardObjectInspector =
         ObjectInspectorFactory.getStandardStructObjectInspector(
-            smallTableValueColumnNamesList, Arrays.asList((ObjectInspector[]) smallTableObjectInspectors));
+            smallTableColumnNameList, smallTableObjectInspectorList);
 
     inputObjectInspectors =
-        new ObjectInspector[] { bigTableStandardObjectInspector, smallTableStandardObjectInspector };
+        new ObjectInspector[] {
+            bigTableStandardObjectInspector, smallTableStandardObjectInspector };
+
+    // For now, we always retain the Small Table values...
+    // Automatically populate.
+    smallTableRetainValueColumnNums = new int[valueSize];
+    for (int i = 0; i < valueSize; i++) {
+      smallTableRetainValueColumnNums[i] = i;
+    }
 
     int outputLength =
         bigTableRetainColumnNums.length +
@@ -203,12 +316,13 @@ public class MapJoinTestDescription extends DescriptionTest {
 
     outputTypeInfos = new TypeInfo[outputLength];
     int outputIndex = 0;
-    for (int i = 0; i < bigTableRetainColumnNums.length; i++) {
+    final int bigTableRetainSize = bigTableRetainColumnNums.length;
+    for (int i = 0; i < bigTableRetainSize; i++) {
       outputTypeInfos[outputIndex++] = bigTableTypeInfos[bigTableRetainColumnNums[i]];
     }
-    // for (int i = 0; i < smallTableRetainKeyColumnNums.length; i++) {
-    //   outputTypeInfos[outputIndex++] = smallTableTypeInfos[smallTableRetainKeyColumnNums[i]];
-    // }
+    for (int i = 0; i < smallTableRetainKeyColumnNums.length; i++) {
+      outputTypeInfos[outputIndex++] = smallTableKeyTypeInfos[smallTableRetainKeyColumnNums[i]];
+    }
     for (int i = 0; i < smallTableRetainValueColumnNums.length; i++) {
       outputTypeInfos[outputIndex++] = smallTableValueTypeInfos[smallTableRetainValueColumnNums[i]];
     }
@@ -219,13 +333,6 @@ public class MapJoinTestDescription extends DescriptionTest {
       outputObjectInspectors[i] =
           PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(primitiveTypeInfo);
     }
-  }
-
-  public void trimAwaySmallTableValueInfo() {
-    smallTableValueColumnNames = new String[] {};
-    smallTableValueTypeInfos = new TypeInfo[] {};
-    smallTableRetainKeyColumnNums = new int[] {};
-    smallTableRetainValueColumnNums = new int[] {};
   }
 
   private String[] createOutputColumnNames(int outputColumnCount) {

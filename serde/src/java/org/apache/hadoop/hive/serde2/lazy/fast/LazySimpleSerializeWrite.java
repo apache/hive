@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,14 +20,14 @@ package org.apache.hadoop.hive.serde2.lazy.fast;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.HiveChar;
@@ -35,12 +35,12 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.lazy.LazyDate;
 import org.apache.hadoop.hive.serde2.lazy.LazyHiveDecimal;
 import org.apache.hadoop.hive.serde2.lazy.LazyHiveIntervalDayTime;
@@ -77,11 +77,12 @@ public final class LazySimpleSerializeWrite implements SerializeWrite {
   private Deque<Integer> indexStack = new ArrayDeque<Integer>();
 
   // For thread safety, we allocate private writable objects for our use only.
-  private DateWritable dateWritable;
-  private TimestampWritable timestampWritable;
+  private DateWritableV2 dateWritable;
+  private TimestampWritableV2 timestampWritable;
   private HiveIntervalYearMonthWritable hiveIntervalYearMonthWritable;
   private HiveIntervalDayTimeWritable hiveIntervalDayTimeWritable;
   private HiveIntervalDayTime hiveIntervalDayTime;
+  private HiveDecimalWritable hiveDecimalWritable;
   private byte[] decimalScratchBuffer;
 
   public LazySimpleSerializeWrite(int fieldCount,
@@ -298,7 +299,7 @@ public final class LazySimpleSerializeWrite implements SerializeWrite {
   public void writeDate(Date date) throws IOException {
     beginPrimitive();
     if (dateWritable == null) {
-      dateWritable = new DateWritable();
+      dateWritable = new DateWritableV2();
     }
     dateWritable.set(date);
     LazyDate.writeUTF8(output, dateWritable);
@@ -310,7 +311,7 @@ public final class LazySimpleSerializeWrite implements SerializeWrite {
   public void writeDate(int dateAsDays) throws IOException {
     beginPrimitive();
     if (dateWritable == null) {
-      dateWritable = new DateWritable();
+      dateWritable = new DateWritableV2();
     }
     dateWritable.set(dateAsDays);
     LazyDate.writeUTF8(output, dateWritable);
@@ -324,7 +325,7 @@ public final class LazySimpleSerializeWrite implements SerializeWrite {
   public void writeTimestamp(Timestamp v) throws IOException {
     beginPrimitive();
     if (timestampWritable == null) {
-      timestampWritable = new TimestampWritable();
+      timestampWritable = new TimestampWritableV2();
     }
     timestampWritable.set(v);
     LazyTimestamp.writeUTF8(output, timestampWritable);
@@ -377,6 +378,15 @@ public final class LazySimpleSerializeWrite implements SerializeWrite {
    * NOTE: The scale parameter is for text serialization (e.g. HiveDecimal.toFormatString) that
    * creates trailing zeroes output decimals.
    */
+  @Override
+  public void writeDecimal64(long decimal64Long, int scale) throws IOException {
+    if (hiveDecimalWritable == null) {
+      hiveDecimalWritable = new HiveDecimalWritable();
+    }
+    hiveDecimalWritable.deserialize64(decimal64Long, scale);
+    writeHiveDecimal(hiveDecimalWritable, scale);
+  }
+
   @Override
   public void writeHiveDecimal(HiveDecimal dec, int scale) throws IOException {
     beginPrimitive();

@@ -1,7 +1,4 @@
-set hive.security.authorization.enabled=true;
-set hive.test.authz.sstd.hs2.mode=true;
-set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactoryForTest;
-set hive.security.authenticator.manager=org.apache.hadoop.hive.ql.security.SessionStateConfigUserAuthenticator;
+--! qt:authorizer
 set hive.repl.rootdir=${system:test.tmp.dir}/hrepl;
 
 dfs ${system:test.dfs.mkdir} ${system:test.tmp.dir}/hrepl/sentinel;
@@ -16,7 +13,7 @@ drop database if exists test_repldump_adminpriv cascade;
 set user.name=ruser1;
 show role grant user ruser1;
 
-create database test_repldump_adminpriv;
+create database test_repldump_adminpriv with DBPROPERTIES ('repl.source.for' = '1,2,3');
 create table test_repldump_adminpriv.dummy_tbl(a int) partitioned by (b string);
 show tables test_repldump_adminpriv;
 

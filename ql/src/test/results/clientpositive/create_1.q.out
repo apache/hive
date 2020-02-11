@@ -1,55 +1,55 @@
-PREHOOK: query: CREATE TABLE table1 (a STRING, b STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE table1_n5 (a STRING, b STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@table1
-POSTHOOK: query: CREATE TABLE table1 (a STRING, b STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@table1_n5
+POSTHOOK: query: CREATE TABLE table1_n5 (a STRING, b STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@table1
-PREHOOK: query: DESCRIBE table1
+POSTHOOK: Output: default@table1_n5
+PREHOOK: query: DESCRIBE table1_n5
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table1
-POSTHOOK: query: DESCRIBE table1
+PREHOOK: Input: default@table1_n5
+POSTHOOK: query: DESCRIBE table1_n5
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1_n5
 a                   	string              	                    
 b                   	string              	                    
-PREHOOK: query: DESCRIBE EXTENDED table1
+PREHOOK: query: DESCRIBE EXTENDED table1_n5
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table1
-POSTHOOK: query: DESCRIBE EXTENDED table1
+PREHOOK: Input: default@table1_n5
+POSTHOOK: query: DESCRIBE EXTENDED table1_n5
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1_n5
 a                   	string              	                    
 b                   	string              	                    
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: CREATE TABLE IF NOT EXISTS table1 (a STRING, b STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE IF NOT EXISTS table1_n5 (a STRING, b STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS table1 (a STRING, b STRING) STORED AS TEXTFILE
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS table1_n5 (a STRING, b STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
-PREHOOK: query: CREATE TABLE IF NOT EXISTS table2 (a STRING, b INT) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE IF NOT EXISTS table2_n2 (a STRING, b INT) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@table2
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS table2 (a STRING, b INT) STORED AS TEXTFILE
+PREHOOK: Output: default@table2_n2
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS table2_n2 (a STRING, b INT) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@table2
-PREHOOK: query: DESCRIBE table2
+POSTHOOK: Output: default@table2_n2
+PREHOOK: query: DESCRIBE table2_n2
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table2
-POSTHOOK: query: DESCRIBE table2
+PREHOOK: Input: default@table2_n2
+POSTHOOK: query: DESCRIBE table2_n2
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table2
+POSTHOOK: Input: default@table2_n2
 a                   	string              	                    
 b                   	int                 	                    
-PREHOOK: query: DESCRIBE EXTENDED table2
+PREHOOK: query: DESCRIBE EXTENDED table2_n2
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table2
-POSTHOOK: query: DESCRIBE EXTENDED table2
+PREHOOK: Input: default@table2_n2
+POSTHOOK: query: DESCRIBE EXTENDED table2_n2
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table2
+POSTHOOK: Input: default@table2_n2
 a                   	string              	                    
 b                   	int                 	                    
 	 	 
@@ -114,32 +114,32 @@ a                   	string
 b                   	string              	                    
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: CREATE TABLE table5 (a STRING, b STRING)
+PREHOOK: query: CREATE TABLE table5_n1 (a STRING, b STRING)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
 STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@table5
-POSTHOOK: query: CREATE TABLE table5 (a STRING, b STRING)
+PREHOOK: Output: default@table5_n1
+POSTHOOK: query: CREATE TABLE table5_n1 (a STRING, b STRING)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
 STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@table5
-PREHOOK: query: DESCRIBE table5
+POSTHOOK: Output: default@table5_n1
+PREHOOK: query: DESCRIBE table5_n1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table5
-POSTHOOK: query: DESCRIBE table5
+PREHOOK: Input: default@table5_n1
+POSTHOOK: query: DESCRIBE table5_n1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table5
+POSTHOOK: Input: default@table5_n1
 a                   	string              	                    
 b                   	string              	                    
-PREHOOK: query: DESCRIBE EXTENDED table5
+PREHOOK: query: DESCRIBE EXTENDED table5_n1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table5
-POSTHOOK: query: DESCRIBE EXTENDED table5
+PREHOOK: Input: default@table5_n1
+POSTHOOK: query: DESCRIBE EXTENDED table5_n1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table5
+POSTHOOK: Input: default@table5_n1
 a                   	string              	                    
 b                   	string              	                    
 	 	 

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,53 +18,28 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.reducesink;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
 import java.util.Random;
+import java.util.function.BiFunction;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
-import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator.Counter;
-import org.apache.hadoop.hive.ql.exec.TerminalOperator;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExtractRow;
 import org.apache.hadoop.hive.ql.exec.vector.VectorSerializeRow;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizationContextRegion;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.BucketNumExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
-import org.apache.hadoop.hive.ql.exec.vector.keyseries.VectorKeySeriesSerialized;
-import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
-import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
-import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.ql.plan.VectorReduceSinkDesc;
-import org.apache.hadoop.hive.ql.plan.VectorReduceSinkInfo;
-import org.apache.hadoop.hive.ql.plan.api.OperatorType;
-import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.ql.plan.VectorDesc;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
-import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe;
 import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableSerializeWrite;
-import org.apache.hadoop.hive.serde2.lazybinary.fast.LazyBinarySerializeWrite;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.StructField;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.mapred.OutputCollector;
-import org.apache.hive.common.util.HashCodeUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 
@@ -77,7 +52,7 @@ public class VectorReduceSinkObjectHashOperator extends VectorReduceSinkCommonOp
 
   private static final long serialVersionUID = 1L;
   private static final String CLASS_NAME = VectorReduceSinkObjectHashOperator.class.getName();
-  private static final Log LOG = LogFactory.getLog(CLASS_NAME);
+  private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
   protected boolean isEmptyBuckets;
   protected int[] reduceSinkBucketColumnMap;
@@ -88,6 +63,8 @@ public class VectorReduceSinkObjectHashOperator extends VectorReduceSinkCommonOp
   protected boolean isEmptyPartitions;
   protected int[] reduceSinkPartitionColumnMap;
   protected TypeInfo[] reduceSinkPartitionTypeInfos;
+
+  private boolean isSingleReducer;
 
   protected VectorExpression[] reduceSinkPartitionExpressions;
 
@@ -100,17 +77,18 @@ public class VectorReduceSinkObjectHashOperator extends VectorReduceSinkCommonOp
   protected transient Output keyOutput;
   protected transient VectorSerializeRow<BinarySortableSerializeWrite> keyVectorSerializeRow;
 
-  private transient boolean hasBuckets;
   private transient int numBuckets;
   private transient ObjectInspector[] bucketObjectInspectors;
   private transient VectorExtractRow bucketVectorExtractRow;
   private transient Object[] bucketFieldValues;
 
-  private transient boolean isPartitioned;
   private transient ObjectInspector[] partitionObjectInspectors;
   private transient VectorExtractRow partitionVectorExtractRow;
   private transient Object[] partitionFieldValues;
   private transient Random nonPartitionRandom;
+
+  private transient BiFunction<Object[], ObjectInspector[], Integer> hashFunc;
+  private transient BucketNumExpression bucketExpr = null;
 
   /** Kryo ctor. */
   protected VectorReduceSinkObjectHashOperator() {
@@ -121,28 +99,30 @@ public class VectorReduceSinkObjectHashOperator extends VectorReduceSinkCommonOp
     super(ctx);
   }
 
-  public VectorReduceSinkObjectHashOperator(CompilationOpContext ctx,
-      VectorizationContext vContext, OperatorDesc conf) throws HiveException {
-    super(ctx, vContext, conf);
+  public VectorReduceSinkObjectHashOperator(CompilationOpContext ctx, OperatorDesc conf,
+      VectorizationContext vContext, VectorDesc vectorDesc) throws HiveException {
+    super(ctx, conf, vContext, vectorDesc);
 
     LOG.info("VectorReduceSinkObjectHashOperator constructor vectorReduceSinkInfo " + vectorReduceSinkInfo);
 
     // This the is Object Hash class variation.
     Preconditions.checkState(!vectorReduceSinkInfo.getUseUniformHash());
 
-    isEmptyBuckets = vectorDesc.getIsEmptyBuckets();
+    isEmptyBuckets = this.vectorDesc.getIsEmptyBuckets();
     if (!isEmptyBuckets) {
       reduceSinkBucketColumnMap = vectorReduceSinkInfo.getReduceSinkBucketColumnMap();
       reduceSinkBucketTypeInfos = vectorReduceSinkInfo.getReduceSinkBucketTypeInfos();
       reduceSinkBucketExpressions = vectorReduceSinkInfo.getReduceSinkBucketExpressions();
     }
 
-    isEmptyPartitions = vectorDesc.getIsEmptyPartitions();
+    isEmptyPartitions = this.vectorDesc.getIsEmptyPartitions();
     if (!isEmptyPartitions) {
       reduceSinkPartitionColumnMap = vectorReduceSinkInfo.getReduceSinkPartitionColumnMap();
       reduceSinkPartitionTypeInfos = vectorReduceSinkInfo.getReduceSinkPartitionTypeInfos();
       reduceSinkPartitionExpressions = vectorReduceSinkInfo.getReduceSinkPartitionExpressions();
     }
+
+    isSingleReducer = this.conf.getNumReducers() == 1;
   }
 
   private ObjectInspector[] getObjectInspectorArray(TypeInfo[] typeInfos) {
@@ -157,9 +137,17 @@ public class VectorReduceSinkObjectHashOperator extends VectorReduceSinkCommonOp
     return objectInspectors;
   }
 
+  private void evaluateBucketExpr(VectorizedRowBatch batch, int rowNum, int bucketNum) throws HiveException{
+    bucketExpr.setRowNum(rowNum);
+    bucketExpr.setBucketNum(bucketNum);
+    bucketExpr.evaluate(batch);
+  }
+
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
+    VectorExpression.doTransientInit(reduceSinkBucketExpressions, hconf);
+    VectorExpression.doTransientInit(reduceSinkPartitionExpressions, hconf);
 
     if (!isEmptyKey) {
 
@@ -194,6 +182,21 @@ public class VectorReduceSinkObjectHashOperator extends VectorReduceSinkCommonOp
       partitionVectorExtractRow.init(reduceSinkPartitionTypeInfos, reduceSinkPartitionColumnMap);
       partitionFieldValues = new Object[reduceSinkPartitionTypeInfos.length];
     }
+
+    // Set hashFunc
+    hashFunc = bucketingVersion == 2 && !vectorDesc.getIsAcidChange() ?
+      ObjectInspectorUtils::getBucketHashCode :
+      ObjectInspectorUtils::getBucketHashCodeOld;
+
+    // Set function to evaluate _bucket_number if needed.
+    if (reduceSinkKeyExpressions != null) {
+      for (VectorExpression ve : reduceSinkKeyExpressions) {
+        if (ve instanceof BucketNumExpression) {
+          bucketExpr = (BucketNumExpression) ve;
+          break;
+        }
+      }
+    }
   }
 
   @Override
@@ -222,6 +225,10 @@ public class VectorReduceSinkObjectHashOperator extends VectorReduceSinkCommonOp
       // Perform any key expressions.  Results will go into scratch columns.
       if (reduceSinkKeyExpressions != null) {
         for (VectorExpression ve : reduceSinkKeyExpressions) {
+          // Handle _bucket_number
+          if (ve instanceof BucketNumExpression) {
+            continue; // Evaluate per row
+          }
           ve.evaluate(batch);
         }
       }
@@ -251,60 +258,84 @@ public class VectorReduceSinkObjectHashOperator extends VectorReduceSinkCommonOp
       int[] selected = batch.selected;
 
       final int size = batch.size;
-      for (int logical = 0; logical < size; logical++) {
-        final int batchIndex = (selectedInUse ? selected[logical] : logical);
 
-        final int hashCode;
-        if (isEmptyBuckets) {
-          if (isEmptyPartitions) {
-            hashCode = nonPartitionRandom.nextInt();
+      for (int logical = 0; logical< size; logical++) {
+        final int batchIndex = (selectedInUse ? selected[logical] : logical);
+        int hashCode;
+        if (isEmptyPartitions) {
+          if (isSingleReducer) {
+            // Empty partition, single reducer -> constant hashCode
+            hashCode = 0;
           } else {
-            partitionVectorExtractRow.extractRow(batch, batchIndex, partitionFieldValues);
-            hashCode =
-                ObjectInspectorUtils.getBucketHashCode(
-                    partitionFieldValues, partitionObjectInspectors);
+            // Empty partition, multiple reducers -> random hashCode
+            hashCode = nonPartitionRandom.nextInt();
           }
         } else {
+          // Compute hashCode from partitions
+          partitionVectorExtractRow.extractRow(batch, batchIndex, partitionFieldValues);
+          hashCode = hashFunc.apply(partitionFieldValues, partitionObjectInspectors);
+        }
+
+        // Compute hashCode from buckets
+        if (!isEmptyBuckets) {
           bucketVectorExtractRow.extractRow(batch, batchIndex, bucketFieldValues);
-          final int bucketNum =
-              ObjectInspectorUtils.getBucketNumber(
-                  bucketFieldValues, bucketObjectInspectors, numBuckets);
-          if (isEmptyPartitions) {
-            hashCode = nonPartitionRandom.nextInt() * 31 + bucketNum;
-          } else {
-            partitionVectorExtractRow.extractRow(batch, batchIndex, partitionFieldValues);
-            hashCode =
-                ObjectInspectorUtils.getBucketHashCode(
-                    partitionFieldValues, partitionObjectInspectors) * 31 + bucketNum;
+          final int bucketNum = ObjectInspectorUtils.getBucketNumber(
+              hashFunc.apply(bucketFieldValues, bucketObjectInspectors), numBuckets);
+          if (bucketExpr != null) {
+            evaluateBucketExpr(batch, batchIndex, bucketNum);
           }
+          hashCode = hashCode * 31 + bucketNum;
         }
 
-        if (!isEmptyKey) {
-          keyBinarySortableSerializeWrite.reset();
-          keyVectorSerializeRow.serializeWrite(batch, batchIndex);
-
-          // One serialized key for 1 or more rows for the duplicate keys.
-          final int keyLength = keyOutput.getLength();
-          if (tag == -1 || reduceSkipTag) {
-            keyWritable.set(keyOutput.getData(), 0, keyLength);
-          } else {
-            keyWritable.setSize(keyLength + 1);
-            System.arraycopy(keyOutput.getData(), 0, keyWritable.get(), 0, keyLength);
-            keyWritable.get()[keyLength] = reduceTagByte;
-          }
-          keyWritable.setDistKeyLength(keyLength);
-          keyWritable.setHashCode(hashCode);
-        }
-
-        if (!isEmptyValue) {
-          valueLazyBinarySerializeWrite.reset();
-          valueVectorSerializeRow.serializeWrite(batch, batchIndex);
-
-          valueBytesWritable.set(valueOutput.getData(), 0, valueOutput.getLength());
-        }
-
-        collect(keyWritable, valueBytesWritable);
+        postProcess(batch, batchIndex, tag, hashCode);
       }
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  private void processKey(VectorizedRowBatch batch, int batchIndex, int tag)
+  throws HiveException{
+    if (isEmptyKey) return;
+
+    try {
+      keyBinarySortableSerializeWrite.reset();
+      keyVectorSerializeRow.serializeWrite(batch, batchIndex);
+
+      // One serialized key for 1 or more rows for the duplicate keys.
+      final int keyLength = keyOutput.getLength();
+      if (tag == -1 || reduceSkipTag) {
+        keyWritable.set(keyOutput.getData(), 0, keyLength);
+      } else {
+        keyWritable.setSize(keyLength + 1);
+        System.arraycopy(keyOutput.getData(), 0, keyWritable.get(), 0, keyLength);
+        keyWritable.get()[keyLength] = reduceTagByte;
+      }
+      keyWritable.setDistKeyLength(keyLength);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  private void processValue(VectorizedRowBatch batch, int batchIndex)  throws HiveException {
+    if (isEmptyValue) return;
+
+    try {
+      valueLazyBinarySerializeWrite.reset();
+      valueVectorSerializeRow.serializeWrite(batch, batchIndex);
+
+      valueBytesWritable.set(valueOutput.getData(), 0, valueOutput.getLength());
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  private void postProcess(VectorizedRowBatch batch, int batchIndex, int tag, int hashCode) throws HiveException {
+    try {
+      processKey(batch, batchIndex, tag);
+      keyWritable.setHashCode(hashCode);
+      processValue(batch, batchIndex);
+      collect(keyWritable, valueBytesWritable);
     } catch (Exception e) {
       throw new HiveException(e);
     }

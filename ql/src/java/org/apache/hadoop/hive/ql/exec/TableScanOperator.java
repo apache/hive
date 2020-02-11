@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -31,13 +31,14 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizationContextRegion;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
-import org.apache.hadoop.hive.ql.plan.VectorTableScanDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
@@ -55,8 +56,10 @@ import org.apache.hadoop.mapred.JobConf;
  * read as part of map-reduce framework
  **/
 public class TableScanOperator extends Operator<TableScanDesc> implements
-    Serializable {
+    Serializable, VectorizationContextRegion {
   private static final long serialVersionUID = 1L;
+
+  private VectorizationContext taskVectorizationContext;
 
   protected transient JobConf jc;
   private transient boolean inputFileChanged = false;
@@ -81,11 +84,11 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
   private String schemaEvolutionColumns;
   private String schemaEvolutionColumnsTypes;
 
-  public TableDesc getTableDesc() {
+  public TableDesc getTableDescSkewJoin() {
     return tableDesc;
   }
 
-  public void setTableDesc(TableDesc tableDesc) {
+  public void setTableDescSkewJoin(TableDesc tableDesc) {
     this.tableDesc = tableDesc;
   }
 
@@ -112,35 +115,50 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
   @Override
   public void process(Object row, int tag) throws HiveException {
     if (rowLimit >= 0) {
-      if (row instanceof VectorizedRowBatch) {
-        // We need to check with 'instanceof' instead of just checking
-        // vectorized because the row can be a VectorizedRowBatch when
-        // FetchOptimizer kicks in even if the operator pipeline is not
-        // vectorized
-        VectorizedRowBatch batch = (VectorizedRowBatch) row;
-        if (currCount >= rowLimit) {
-          setDone(true);
-          return;
-        }
-        if (currCount + batch.size > rowLimit) {
-          batch.size = rowLimit - currCount;
-        }
-        currCount += batch.size;
-      } else if (currCount++ >= rowLimit) {
-        setDone(true);
+      if (checkSetDone(row, tag)) {
         return;
       }
     }
     if (conf != null && conf.isGatherStats()) {
       gatherStats(row);
     }
-    forward(row, inputObjInspectors[tag], vectorized);
+    if (vectorized) {
+      vectorForward((VectorizedRowBatch) row);
+    } else {
+      forward(row, inputObjInspectors[tag]);
+    }
+  }
+
+  private boolean checkSetDone(Object row, int tag) {
+    if (row instanceof VectorizedRowBatch) {
+      // We need to check with 'instanceof' instead of just checking
+      // vectorized because the row can be a VectorizedRowBatch when
+      // FetchOptimizer kicks in even if the operator pipeline is not
+      // vectorized
+      VectorizedRowBatch batch = (VectorizedRowBatch) row;
+      if (currCount >= rowLimit) {
+        setDone(true);
+        return true;
+      }
+      if (currCount + batch.size > rowLimit) {
+        batch.size = rowLimit - currCount;
+      }
+      currCount += batch.size;
+    } else if (currCount++ >= rowLimit) {
+      setDone(true);
+      return true;
+    }
+    return false;
   }
 
   // Change the table partition for collecting stats
   @Override
   public void cleanUpInputFileChangedOp() throws HiveException {
     inputFileChanged = true;
+    updateFileId();
+  }
+
+  private void updateFileId() {
     // If the file name to bucket number mapping is maintained, store the bucket number
     // in the execution context. This is needed for the following scenario:
     // insert overwrite table T1 select * from T2;
@@ -251,9 +269,6 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
     }
 
     rowLimit = conf.getRowLimit();
-    if (!conf.isGatherStats()) {
-      return;
-    }
 
     if (hconf instanceof JobConf) {
       jc = (JobConf) hconf;
@@ -266,11 +281,18 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
     currentStat = null;
     stats = new HashMap<String, Stat>();
 
+    /*
+     * This TableScanDesc flag is strictly set by the Vectorizer class for vectorized MapWork
+     * vertices.
+     */
     vectorized = conf.isVectorized();
   }
 
   @Override
   public void closeOp(boolean abort) throws HiveException {
+    if (getExecContext() != null && getExecContext().getFileId() == null) {
+      updateFileId();
+    }
     if (conf != null) {
       if (conf.isGatherStats() && stats.size() != 0) {
         publishStats();
@@ -338,6 +360,7 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
     StatsPublisher statsPublisher = Utilities.getStatsPublisher(jc);
     StatsCollectionContext sc = new StatsCollectionContext(jc);
     sc.setStatsTmpDir(conf.getTmpStatsDir());
+    sc.setContextSuffix(getOperatorId());
     if (!statsPublisher.connect(sc)) {
       // just return, stats gathering should not block the main query.
       if (LOG.isInfoEnabled()) {
@@ -401,6 +424,15 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
 
   public void setInsideView(boolean insiderView) {
     this.insideView = insiderView;
+  }
+
+  public void setTaskVectorizationContext(VectorizationContext taskVectorizationContext) {
+    this.taskVectorizationContext = taskVectorizationContext;
+  }
+
+  @Override
+  public VectorizationContext getOutputVectorizationContext() {
+    return taskVectorizationContext;
   }
 
 }

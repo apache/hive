@@ -1,96 +1,103 @@
-PREHOOK: query: create table analyze_srcpart like srcpart
+PREHOOK: query: create table analyze_srcpart_n0 like srcpart
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@analyze_srcpart
-POSTHOOK: query: create table analyze_srcpart like srcpart
+PREHOOK: Output: default@analyze_srcpart_n0
+POSTHOOK: query: create table analyze_srcpart_n0 like srcpart
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@analyze_srcpart
-PREHOOK: query: insert overwrite table analyze_srcpart partition (ds, hr) select * from srcpart where ds is not null
+POSTHOOK: Output: default@analyze_srcpart_n0
+PREHOOK: query: insert overwrite table analyze_srcpart_n0 partition (ds, hr) select * from srcpart where ds is not null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Output: default@analyze_srcpart
-POSTHOOK: query: insert overwrite table analyze_srcpart partition (ds, hr) select * from srcpart where ds is not null
+PREHOOK: Output: default@analyze_srcpart_n0
+POSTHOOK: query: insert overwrite table analyze_srcpart_n0 partition (ds, hr) select * from srcpart where ds is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Output: default@analyze_srcpart@ds=2008-04-08/hr=11
-POSTHOOK: Output: default@analyze_srcpart@ds=2008-04-08/hr=12
-POSTHOOK: Output: default@analyze_srcpart@ds=2008-04-09/hr=11
-POSTHOOK: Output: default@analyze_srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@analyze_srcpart_n0@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@analyze_srcpart_n0@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@analyze_srcpart_n0@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@analyze_srcpart_n0@ds=2008-04-09/hr=12
+POSTHOOK: Lineage: analyze_srcpart_n0 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: analyze_srcpart_n0 PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: analyze_srcpart_n0 PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: analyze_srcpart_n0 PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: analyze_srcpart_n0 PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: analyze_srcpart_n0 PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: analyze_srcpart_n0 PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: analyze_srcpart_n0 PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain
-analyze table analyze_srcpart PARTITION(ds='2008-04-08',hr=11) compute statistics noscan
+analyze table analyze_srcpart_n0 PARTITION(ds='2008-04-08',hr=11) compute statistics noscan
 PREHOOK: type: QUERY
+PREHOOK: Input: default@analyze_srcpart_n0
+PREHOOK: Input: default@analyze_srcpart_n0@ds=2008-04-08/hr=11
+PREHOOK: Output: default@analyze_srcpart_n0
+PREHOOK: Output: default@analyze_srcpart_n0@ds=2008-04-08/hr=11
 POSTHOOK: query: explain
-analyze table analyze_srcpart PARTITION(ds='2008-04-08',hr=11) compute statistics noscan
+analyze table analyze_srcpart_n0 PARTITION(ds='2008-04-08',hr=11) compute statistics noscan
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@analyze_srcpart_n0
+POSTHOOK: Input: default@analyze_srcpart_n0@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@analyze_srcpart_n0
+POSTHOOK: Output: default@analyze_srcpart_n0@ds=2008-04-08/hr=11
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
 
 STAGE PLANS:
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
-PREHOOK: query: analyze table analyze_srcpart PARTITION(ds='2008-04-08',hr=11) compute statistics noscan
+PREHOOK: query: analyze table analyze_srcpart_n0 PARTITION(ds='2008-04-08',hr=11) compute statistics noscan
 PREHOOK: type: QUERY
-PREHOOK: Input: default@analyze_srcpart
-PREHOOK: Input: default@analyze_srcpart@ds=2008-04-08/hr=11
-PREHOOK: Output: default@analyze_srcpart
-PREHOOK: Output: default@analyze_srcpart@ds=2008-04-08/hr=11
-POSTHOOK: query: analyze table analyze_srcpart PARTITION(ds='2008-04-08',hr=11) compute statistics noscan
+PREHOOK: Input: default@analyze_srcpart_n0
+PREHOOK: Input: default@analyze_srcpart_n0@ds=2008-04-08/hr=11
+PREHOOK: Output: default@analyze_srcpart_n0
+PREHOOK: Output: default@analyze_srcpart_n0@ds=2008-04-08/hr=11
+POSTHOOK: query: analyze table analyze_srcpart_n0 PARTITION(ds='2008-04-08',hr=11) compute statistics noscan
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@analyze_srcpart
-POSTHOOK: Input: default@analyze_srcpart@ds=2008-04-08/hr=11
-POSTHOOK: Output: default@analyze_srcpart
-POSTHOOK: Output: default@analyze_srcpart@ds=2008-04-08/hr=11
-PREHOOK: query: analyze table analyze_srcpart PARTITION(ds='2008-04-08',hr=12) compute statistics noscan
+POSTHOOK: Input: default@analyze_srcpart_n0
+POSTHOOK: Input: default@analyze_srcpart_n0@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@analyze_srcpart_n0
+POSTHOOK: Output: default@analyze_srcpart_n0@ds=2008-04-08/hr=11
+PREHOOK: query: analyze table analyze_srcpart_n0 PARTITION(ds='2008-04-08',hr=12) compute statistics noscan
 PREHOOK: type: QUERY
-PREHOOK: Input: default@analyze_srcpart
-PREHOOK: Input: default@analyze_srcpart@ds=2008-04-08/hr=12
-PREHOOK: Output: default@analyze_srcpart
-PREHOOK: Output: default@analyze_srcpart@ds=2008-04-08/hr=12
-POSTHOOK: query: analyze table analyze_srcpart PARTITION(ds='2008-04-08',hr=12) compute statistics noscan
+PREHOOK: Input: default@analyze_srcpart_n0
+PREHOOK: Input: default@analyze_srcpart_n0@ds=2008-04-08/hr=12
+PREHOOK: Output: default@analyze_srcpart_n0
+PREHOOK: Output: default@analyze_srcpart_n0@ds=2008-04-08/hr=12
+POSTHOOK: query: analyze table analyze_srcpart_n0 PARTITION(ds='2008-04-08',hr=12) compute statistics noscan
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@analyze_srcpart
-POSTHOOK: Input: default@analyze_srcpart@ds=2008-04-08/hr=12
-POSTHOOK: Output: default@analyze_srcpart
-POSTHOOK: Output: default@analyze_srcpart@ds=2008-04-08/hr=12
-PREHOOK: query: describe formatted analyze_srcpart PARTITION(ds='2008-04-08',hr=11)
+POSTHOOK: Input: default@analyze_srcpart_n0
+POSTHOOK: Input: default@analyze_srcpart_n0@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@analyze_srcpart_n0
+POSTHOOK: Output: default@analyze_srcpart_n0@ds=2008-04-08/hr=12
+PREHOOK: query: describe formatted analyze_srcpart_n0 PARTITION(ds='2008-04-08',hr=11)
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@analyze_srcpart
-POSTHOOK: query: describe formatted analyze_srcpart PARTITION(ds='2008-04-08',hr=11)
+PREHOOK: Input: default@analyze_srcpart_n0
+POSTHOOK: query: describe formatted analyze_srcpart_n0 PARTITION(ds='2008-04-08',hr=11)
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@analyze_srcpart
+POSTHOOK: Input: default@analyze_srcpart_n0
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[2008-04-08, 11]    	 
 Database:           	default             	 
-Table:              	analyze_srcpart     	 
+Table:              	analyze_srcpart_n0  	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
@@ -108,27 +115,25 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: describe formatted analyze_srcpart PARTITION(ds='2008-04-08',hr=12)
+PREHOOK: query: describe formatted analyze_srcpart_n0 PARTITION(ds='2008-04-08',hr=12)
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@analyze_srcpart
-POSTHOOK: query: describe formatted analyze_srcpart PARTITION(ds='2008-04-08',hr=12)
+PREHOOK: Input: default@analyze_srcpart_n0
+POSTHOOK: query: describe formatted analyze_srcpart_n0 PARTITION(ds='2008-04-08',hr=12)
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@analyze_srcpart
+POSTHOOK: Input: default@analyze_srcpart_n0
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[2008-04-08, 12]    	 
 Database:           	default             	 
-Table:              	analyze_srcpart     	 
+Table:              	analyze_srcpart_n0  	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
@@ -146,27 +151,25 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: describe formatted analyze_srcpart PARTITION(ds='2008-04-09',hr=11)
+PREHOOK: query: describe formatted analyze_srcpart_n0 PARTITION(ds='2008-04-09',hr=11)
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@analyze_srcpart
-POSTHOOK: query: describe formatted analyze_srcpart PARTITION(ds='2008-04-09',hr=11)
+PREHOOK: Input: default@analyze_srcpart_n0
+POSTHOOK: query: describe formatted analyze_srcpart_n0 PARTITION(ds='2008-04-09',hr=11)
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@analyze_srcpart
+POSTHOOK: Input: default@analyze_srcpart_n0
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[2008-04-09, 11]    	 
 Database:           	default             	 
-Table:              	analyze_srcpart     	 
+Table:              	analyze_srcpart_n0  	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	numFiles            	1                   
@@ -183,27 +186,25 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: describe formatted analyze_srcpart PARTITION(ds='2008-04-09',hr=12)
+PREHOOK: query: describe formatted analyze_srcpart_n0 PARTITION(ds='2008-04-09',hr=12)
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@analyze_srcpart
-POSTHOOK: query: describe formatted analyze_srcpart PARTITION(ds='2008-04-09',hr=12)
+PREHOOK: Input: default@analyze_srcpart_n0
+POSTHOOK: query: describe formatted analyze_srcpart_n0 PARTITION(ds='2008-04-09',hr=12)
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@analyze_srcpart
+POSTHOOK: Input: default@analyze_srcpart_n0
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[2008-04-09, 12]    	 
 Database:           	default             	 
-Table:              	analyze_srcpart     	 
+Table:              	analyze_srcpart_n0  	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	numFiles            	1                   
@@ -220,20 +221,18 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: describe formatted analyze_srcpart
+PREHOOK: query: describe formatted analyze_srcpart_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@analyze_srcpart
-POSTHOOK: query: describe formatted analyze_srcpart
+PREHOOK: Input: default@analyze_srcpart_n0
+POSTHOOK: query: describe formatted analyze_srcpart_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@analyze_srcpart
+POSTHOOK: Input: default@analyze_srcpart_n0
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -244,6 +243,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 	numFiles            	4                   
 	numPartitions       	4                   
 	numRows             	0                   
@@ -261,14 +261,14 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: drop table analyze_srcpart
+PREHOOK: query: drop table analyze_srcpart_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@analyze_srcpart
-PREHOOK: Output: default@analyze_srcpart
-POSTHOOK: query: drop table analyze_srcpart
+PREHOOK: Input: default@analyze_srcpart_n0
+PREHOOK: Output: default@analyze_srcpart_n0
+POSTHOOK: query: drop table analyze_srcpart_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@analyze_srcpart
-POSTHOOK: Output: default@analyze_srcpart
+POSTHOOK: Input: default@analyze_srcpart_n0
+POSTHOOK: Output: default@analyze_srcpart_n0
 PREHOOK: query: create table analyze_srcpart_partial like srcpart
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -307,15 +307,28 @@ POSTHOOK: Lineage: analyze_srcpart_partial PARTITION(ds=2008-04-09,hr=12).value 
 PREHOOK: query: explain
 analyze table analyze_srcpart_partial PARTITION(ds='2008-04-08') compute statistics noscan
 PREHOOK: type: QUERY
+PREHOOK: Input: default@analyze_srcpart_partial
+PREHOOK: Input: default@analyze_srcpart_partial@ds=2008-04-08/hr=11
+PREHOOK: Input: default@analyze_srcpart_partial@ds=2008-04-08/hr=12
+PREHOOK: Output: default@analyze_srcpart_partial
+PREHOOK: Output: default@analyze_srcpart_partial@ds=2008-04-08/hr=11
+PREHOOK: Output: default@analyze_srcpart_partial@ds=2008-04-08/hr=12
 POSTHOOK: query: explain
 analyze table analyze_srcpart_partial PARTITION(ds='2008-04-08') compute statistics noscan
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@analyze_srcpart_partial
+POSTHOOK: Input: default@analyze_srcpart_partial@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@analyze_srcpart_partial@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@analyze_srcpart_partial
+POSTHOOK: Output: default@analyze_srcpart_partial@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@analyze_srcpart_partial@ds=2008-04-08/hr=12
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
 
 STAGE PLANS:
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: analyze table analyze_srcpart_partial PARTITION(ds='2008-04-08') compute statistics noscan
 PREHOOK: type: QUERY
@@ -340,13 +353,11 @@ POSTHOOK: query: describe formatted analyze_srcpart_partial PARTITION(ds='2008-0
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@analyze_srcpart_partial
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -378,13 +389,11 @@ POSTHOOK: query: describe formatted analyze_srcpart_partial PARTITION(ds='2008-0
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@analyze_srcpart_partial
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -416,13 +425,11 @@ POSTHOOK: query: describe formatted analyze_srcpart_partial PARTITION(ds='2008-0
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@analyze_srcpart_partial
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -453,13 +460,11 @@ POSTHOOK: query: describe formatted analyze_srcpart_partial PARTITION(ds='2008-0
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@analyze_srcpart_partial
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 

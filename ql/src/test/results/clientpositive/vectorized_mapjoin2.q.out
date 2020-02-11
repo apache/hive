@@ -16,24 +16,34 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@y
 PREHOOK: query: insert into x values(1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@x
 POSTHOOK: query: insert into x values(1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@x
-POSTHOOK: Lineage: x.a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: x.a SCRIPT []
 PREHOOK: query: insert into y values(1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@y
 POSTHOOK: query: insert into y values(1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@y
-POSTHOOK: Lineage: y.b EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: y.b SCRIPT []
 PREHOOK: query: explain vectorization expression
 select count(1) from x, y where a = b
 PREHOOK: type: QUERY
+PREHOOK: Input: default@x
+PREHOOK: Input: default@y
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select count(1) from x, y where a = b
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@x
+POSTHOOK: Input: default@y
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -54,14 +64,15 @@ STAGE PLANS:
         $hdt$_0:x 
           TableScan
             alias: x
-            Statistics: Num rows: 45 Data size: 181 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: a is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: a is not null (type: boolean)
-              Statistics: Num rows: 45 Data size: 181 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: a (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 45 Data size: 181 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: int)
@@ -72,25 +83,25 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: y
-            Statistics: Num rows: 45 Data size: 181 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: b is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0]
             Filter Operator
               Filter Vectorization:
                   className: VectorFilterOperator
                   native: true
-                  predicateExpression: SelectColumnIsNotNull(col 0) -> boolean
+                  predicateExpression: SelectColumnIsNotNull(col 0:int)
               predicate: b is not null (type: boolean)
-              Statistics: Num rows: 45 Data size: 181 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: b (type: int)
                 outputColumnNames: _col0
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [0]
-                Statistics: Num rows: 45 Data size: 181 Basic stats: COMPLETE Column stats: NONE
+                    projectedOutputColumnNums: [0]
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -98,25 +109,27 @@ STAGE PLANS:
                     0 _col0 (type: int)
                     1 _col0 (type: int)
                   Map Join Vectorization:
+                      bigTableKeyExpressions: col 0:int
                       className: VectorMapJoinOperator
                       native: false
                       nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Fast Hash Table and No Hybrid Hash Join IS true
                       nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
-                  Statistics: Num rows: 49 Data size: 199 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count()
                     Group By Vectorization:
                         aggregators: VectorUDAFCountStar(*) -> bigint
                         className: VectorGroupByOperator
                         groupByMode: HASH
-                        vectorOutput: true
                         native: false
                         vectorProcessingMode: HASH
-                        projectedOutputColumns: [0]
+                        projectedOutputColumnNums: [0]
+                    minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
+                      null sort order: 
                       sort order: 
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkOperator
@@ -129,7 +142,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -143,12 +157,6 @@ STAGE PLANS:
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
-          Group By Vectorization:
-              groupByMode: MERGEPARTIAL
-              vectorOutput: false
-              native: false
-              vectorProcessingMode: NONE
-              projectedOutputColumns: null
           mode: mergepartial
           outputColumnNames: _col0
           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE

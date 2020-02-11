@@ -1,0 +1,73 @@
+PREHOOK: query: CREATE TABLE cmv_basetable_n4 (a int, b varchar(256), c decimal(10,2))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cmv_basetable_n4
+POSTHOOK: query: CREATE TABLE cmv_basetable_n4 (a int, b varchar(256), c decimal(10,2))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cmv_basetable_n4
+PREHOOK: query: INSERT INTO cmv_basetable_n4 VALUES (1, 'alfred', 10.30),(2, 'bob', 3.14),(2, 'bonnie', 172342.2),(3, 'calvin', 978.76),(3, 'charlie', 9.8)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@cmv_basetable_n4
+POSTHOOK: query: INSERT INTO cmv_basetable_n4 VALUES (1, 'alfred', 10.30),(2, 'bob', 3.14),(2, 'bonnie', 172342.2),(3, 'calvin', 978.76),(3, 'charlie', 9.8)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@cmv_basetable_n4
+POSTHOOK: Lineage: cmv_basetable_n4.a SCRIPT []
+POSTHOOK: Lineage: cmv_basetable_n4.b SCRIPT []
+POSTHOOK: Lineage: cmv_basetable_n4.c SCRIPT []
+PREHOOK: query: CREATE MATERIALIZED VIEW cmv_mat_view_n4 disable rewrite
+AS SELECT a, b, c FROM cmv_basetable_n4
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@cmv_basetable_n4
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cmv_mat_view_n4
+POSTHOOK: query: CREATE MATERIALIZED VIEW cmv_mat_view_n4 disable rewrite
+AS SELECT a, b, c FROM cmv_basetable_n4
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@cmv_basetable_n4
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cmv_mat_view_n4
+PREHOOK: query: DESCRIBE FORMATTED cmv_mat_view_n4
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@cmv_mat_view_n4
+POSTHOOK: query: DESCRIBE FORMATTED cmv_mat_view_n4
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@cmv_mat_view_n4
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+b                   	varchar(256)        	                    
+c                   	decimal(10,2)       	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MATERIALIZED_VIEW   	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	1                   
+	numRows             	5                   
+	rawDataSize         	0                   
+	totalSize           	924                 
+	transactional       	true                
+	transactional_properties	default             
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# Materialized View Information	 	 
+Original Query:     	SELECT a, b, c FROM cmv_basetable_n4	 
+Expanded Query:     	SELECT `cmv_basetable_n4`.`a`, `cmv_basetable_n4`.`b`, `cmv_basetable_n4`.`c` FROM `default`.`cmv_basetable_n4`	 
+Rewrite Enabled:    	No                  	 
+Outdated for Rewriting:	No                  	 

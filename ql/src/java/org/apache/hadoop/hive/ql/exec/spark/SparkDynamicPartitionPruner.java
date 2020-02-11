@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -30,8 +30,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.clearspring.analytics.util.Preconditions;
-import javolution.testing.AssertionException;
+import com.google.common.base.Preconditions;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
+import org.apache.hadoop.hive.ql.optimizer.spark.SparkPartitionPruningSinkDesc;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
@@ -62,7 +64,11 @@ import org.apache.hadoop.util.ReflectionUtils;
  * The spark version of DynamicPartitionPruner.
  */
 public class SparkDynamicPartitionPruner {
+
   private static final Logger LOG = LoggerFactory.getLogger(SparkDynamicPartitionPruner.class);
+  private static final String CLASS_NAME = SparkDynamicPartitionPruner.class.getName();
+
+  private final PerfLogger perfLogger = SessionState.getPerfLogger();
   private final Map<String, List<SourceInfo>> sourceInfoMap = new LinkedHashMap<String, List<SourceInfo>>();
   private final BytesWritable writable = new BytesWritable();
 
@@ -73,8 +79,12 @@ public class SparkDynamicPartitionPruner {
       // Nothing to prune for this MapWork
       return;
     }
+    perfLogger.PerfLogBegin(CLASS_NAME,
+            PerfLogger.SPARK_DYNAMICALLY_PRUNE_PARTITIONS + work.getName());
     processFiles(work, jobConf);
     prunePartitions(work);
+    perfLogger.PerfLogBegin(CLASS_NAME,
+            PerfLogger.SPARK_DYNAMICALLY_PRUNE_PARTITIONS + work.getName());
   }
 
   public void initialize(MapWork work, JobConf jobConf) throws SerDeException {
@@ -124,27 +134,28 @@ public class SparkDynamicPartitionPruner {
         for (FileStatus fstatus : fs.listStatus(sourceDir)) {
           LOG.info("Start processing pruning file: " + fstatus.getPath());
           in = new ObjectInputStream(fs.open(fstatus.getPath()));
-          String columnName = in.readUTF();
-          SourceInfo info = null;
-
-          for (SourceInfo si : sourceInfoMap.get(name)) {
-            if (columnName.equals(si.columnName)) {
-              info = si;
-              break;
-            }
+          final int numName = in.readInt();
+          Set<String> columnNames = new HashSet<>();
+          for (int i = 0; i < numName; i++) {
+            columnNames.add(in.readUTF());
           }
 
-          Preconditions.checkArgument(info != null,
-              "AssertionError: no source info for the column: " + columnName);
+          // make sure the dpp sink has output for all the corresponding part columns
+          for (SourceInfo si : sourceInfoMap.get(name)) {
+            Preconditions.checkArgument(columnNames.contains(si.columnName),
+                "AssertionError: no output for column " + si.columnName);
+          }
 
-          // Read fields
+          // Read dpp outputs
           while (in.available() > 0) {
             writable.readFields(in);
 
-            Object row = info.deserializer.deserialize(writable);
-            Object value = info.soi.getStructFieldData(row, info.field);
-            value = ObjectInspectorUtils.copyToStandardObject(value, info.fieldInspector);
-            info.values.add(value);
+            for (SourceInfo info : sourceInfoMap.get(name)) {
+              Object row = info.deserializer.deserialize(writable);
+              Object value = info.soi.getStructFieldData(row, info.field);
+              value = ObjectInspectorUtils.copyToStandardObject(value, info.fieldInspector);
+              info.values.add(value);
+            }
           }
         }
       }
@@ -172,7 +183,8 @@ public class SparkDynamicPartitionPruner {
   private void prunePartitionSingleSource(SourceInfo info, MapWork work)
       throws HiveException {
     Set<Object> values = info.values;
-    String columnName = info.columnName;
+    // strip the column name of the targetId
+    String columnName = SparkPartitionPruningSinkDesc.stripOffTargetId(info.columnName);
 
     ObjectInspector oi =
         PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(TypeInfoFactory
@@ -207,14 +219,11 @@ public class SparkDynamicPartitionPruner {
       Path p = it.next();
       PartitionDesc desc = work.getPathToPartitionInfo().get(p);
       Map<String, String> spec = desc.getPartSpec();
-      if (spec == null) {
-        throw new AssertionException("No partition spec found in dynamic pruning");
-      }
+      Preconditions.checkNotNull(spec, "No partition spec found in dynamic pruning");
 
       String partValueString = spec.get(columnName);
-      if (partValueString == null) {
-        throw new AssertionException("Could not find partition value for column: " + columnName);
-      }
+      Preconditions.checkNotNull(partValueString,
+              "Could not find partition value for column: " + columnName);
 
       Object partValue = converter.convert(partValueString);
       if (LOG.isDebugEnabled()) {
@@ -231,8 +240,7 @@ public class SparkDynamicPartitionPruner {
         LOG.info("Pruning path: " + p);
         it.remove();
         work.removePathToAlias(p);
-        // HIVE-12244 call currently ineffective
-        work.getPartitionDescs().remove(desc);
+        work.removePathToPartitionInfo(p);
       }
     }
   }

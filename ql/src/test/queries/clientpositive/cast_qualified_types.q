@@ -1,3 +1,4 @@
+--! qt:dataset:src
 select
   cast(key as decimal(10,2)) as c1,
   cast(key as char(10)) as c2,

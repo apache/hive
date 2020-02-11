@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -78,6 +78,9 @@ final class ColorBuffer implements Comparable<Object> {
   }
 
   ColorBuffer center(String str, int len) {
+    if (str == null) {
+      str = "";
+    }
     StringBuilder buf = new StringBuilder(str);
     while (buf.length() < len) {
       buf.append(" ");
@@ -233,6 +236,7 @@ final class ColorBuffer implements Comparable<Object> {
     }
   }
 
+  @Override
   public int compareTo(Object other) {
     return getMono().compareTo(((ColorBuffer) other).getMono());
   }

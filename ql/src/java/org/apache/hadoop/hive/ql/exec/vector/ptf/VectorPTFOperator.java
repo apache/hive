@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,16 +18,9 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.ptf;
 
-import java.io.IOException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
@@ -35,6 +28,7 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.IntervalDayTimeColumnVector;
@@ -42,40 +36,39 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContextRegion;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizationOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedBatchUtil;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.IdentityExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
-import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PTFDesc;
+import org.apache.hadoop.hive.ql.plan.VectorDesc;
 import org.apache.hadoop.hive.ql.plan.VectorPTFDesc;
-import org.apache.hadoop.hive.ql.plan.VectorPTFDesc.SupportedFunctionType;
+import org.apache.hadoop.hive.ql.plan.VectorPTFInfo;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
-import org.apache.hadoop.hive.ql.plan.VectorPTFInfo;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class is native vectorized PTF operator class.
  */
 public class VectorPTFOperator extends Operator<PTFDesc>
-    implements VectorizationContextRegion {
+    implements VectorizationOperator, VectorizationContextRegion {
 
   private static final long serialVersionUID = 1L;
   private static final String CLASS_NAME = VectorPTFOperator.class.getName();
-  private static final Log LOG = LogFactory.getLog(CLASS_NAME);
+  private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
+  private VectorizationContext vContext;
   private VectorPTFDesc vectorDesc;
 
   /**
@@ -83,8 +76,6 @@ public class VectorPTFOperator extends Operator<PTFDesc>
    * it decision process and useful for execution.
    */
   private VectorPTFInfo vectorPTFInfo;
-
-  private VectorizationContext vContext;
 
   // This is the vectorized row batch description of the output of the native vectorized PTF
   // operator.  It is based on the incoming vectorization context.  Its projection may include
@@ -97,10 +88,9 @@ public class VectorPTFOperator extends Operator<PTFDesc>
    * PTF vector expressions.
    */
 
-  // This is map of which vectorized row batch columns are the input columns and the group value
-  // (aggregation) output columns.
-  // And, their types.
-  private int[] outputColumnMap;
+  private TypeInfo[] reducerBatchTypeInfos;
+
+  private int[] outputProjectionColumnMap;
   private String[] outputColumnNames;
   private TypeInfo[] outputTypeInfos;
 
@@ -135,7 +125,7 @@ public class VectorPTFOperator extends Operator<PTFDesc>
 
   private transient VectorPTFEvaluatorBase[] evaluators;
 
-  private transient int[] streamingColumnMap;
+  private transient int[] streamingEvaluatorNums;
 
   private transient boolean allEvaluatorsAreStreaming;
 
@@ -167,23 +157,25 @@ public class VectorPTFOperator extends Operator<PTFDesc>
     super(ctx);
   }
 
-  public VectorPTFOperator(CompilationOpContext ctx,
-      VectorizationContext vContext, OperatorDesc conf) throws HiveException {
+  public VectorPTFOperator(CompilationOpContext ctx, OperatorDesc conf,
+      VectorizationContext vContext, VectorDesc vectorDesc) throws HiveException {
     this(ctx);
 
     LOG.info("VectorPTF constructor");
 
     PTFDesc desc = (PTFDesc) conf;
     this.conf = desc;
-    vectorDesc = (VectorPTFDesc) desc.getVectorDesc();
-    vectorPTFInfo = vectorDesc.getVectorPTFInfo();
+    this.vectorDesc = (VectorPTFDesc) vectorDesc;
+    vectorPTFInfo = this.vectorDesc.getVectorPTFInfo();
     this.vContext = vContext;
 
-    isPartitionOrderBy = vectorDesc.getIsPartitionOrderBy();
+    reducerBatchTypeInfos = this.vectorDesc.getReducerBatchTypeInfos();
 
-    outputColumnNames = vectorDesc.getOutputColumnNames();
-    outputTypeInfos = vectorDesc.getOutputTypeInfos();
-    outputColumnMap = vectorPTFInfo.getOutputColumnMap();
+    isPartitionOrderBy = this.vectorDesc.getIsPartitionOrderBy();
+
+    outputColumnNames = this.vectorDesc.getOutputColumnNames();
+    outputTypeInfos = this.vectorDesc.getOutputTypeInfos();
+    outputProjectionColumnMap = vectorPTFInfo.getOutputColumnMap();
 
     /*
      * Create a new vectorization context to create a new projection, but keep
@@ -192,18 +184,18 @@ public class VectorPTFOperator extends Operator<PTFDesc>
     vOutContext = new VectorizationContext(getName(), this.vContext);
     setupVOutContext();
 
-    evaluatorFunctionNames = vectorDesc.getEvaluatorFunctionNames();
+    evaluatorFunctionNames = this.vectorDesc.getEvaluatorFunctionNames();
     evaluatorCount = evaluatorFunctionNames.length;
-    evaluatorWindowFrameDefs = vectorDesc.getEvaluatorWindowFrameDefs();
+    evaluatorWindowFrameDefs = this.vectorDesc.getEvaluatorWindowFrameDefs();
     evaluatorInputExpressions = vectorPTFInfo.getEvaluatorInputExpressions();
     evaluatorInputColumnVectorTypes = vectorPTFInfo.getEvaluatorInputColumnVectorTypes();
 
-    orderExprNodeDescs = vectorDesc.getOrderExprNodeDescs();
+    orderExprNodeDescs = this.vectorDesc.getOrderExprNodeDescs();
     orderColumnMap = vectorPTFInfo.getOrderColumnMap();
     orderColumnVectorTypes = vectorPTFInfo.getOrderColumnVectorTypes();
     orderExpressions = vectorPTFInfo.getOrderExpressions();
 
-    partitionExprNodeDescs = vectorDesc.getPartitionExprNodeDescs();
+    partitionExprNodeDescs = this.vectorDesc.getPartitionExprNodeDescs();
     partitionColumnMap = vectorPTFInfo.getPartitionColumnMap();
     partitionColumnVectorTypes = vectorPTFInfo.getPartitionColumnVectorTypes();
     partitionExpressions = vectorPTFInfo.getPartitionExpressions();
@@ -222,7 +214,7 @@ public class VectorPTFOperator extends Operator<PTFDesc>
     final int count = outputColumnNames.length;
     for (int i = 0; i < count; ++i) {
       String columnName = outputColumnNames[i];
-      int outputColumn = outputColumnMap[i];
+      int outputColumn = outputProjectionColumnMap[i];
       vOutContext.addProjectionColumn(columnName, outputColumn);
     }
   }
@@ -255,8 +247,8 @@ public class VectorPTFOperator extends Operator<PTFDesc>
     overflowBatch = new VectorizedRowBatch(totalNumColumns);
 
     // First, just allocate just the output columns we will be using.
-    for (int i = 0; i < outputColumnMap.length; i++) {
-      int outputColumn = outputColumnMap[i];
+    for (int i = 0; i < outputProjectionColumnMap.length; i++) {
+      int outputColumn = outputProjectionColumnMap[i];
       String typeName = outputTypeInfos[i].getTypeName();
       allocateOverflowBatchColumnVector(overflowBatch, outputColumn, typeName);
     }
@@ -267,8 +259,8 @@ public class VectorPTFOperator extends Operator<PTFDesc>
       allocateOverflowBatchColumnVector(overflowBatch, outputColumn++, typeName);
     }
 
-    overflowBatch.projectedColumns = outputColumnMap;
-    overflowBatch.projectionSize = outputColumnMap.length;
+    overflowBatch.projectedColumns = outputProjectionColumnMap;
+    overflowBatch.projectionSize = outputProjectionColumnMap.length;
 
     overflowBatch.reset();
 
@@ -311,18 +303,26 @@ public class VectorPTFOperator extends Operator<PTFDesc>
 
     evaluators = VectorPTFDesc.getEvaluators(vectorDesc, vectorPTFInfo);
 
-    streamingColumnMap = VectorPTFDesc.getStreamingColumnMap(evaluators);
+    streamingEvaluatorNums = VectorPTFDesc.getStreamingEvaluatorNums(evaluators);
 
-    allEvaluatorsAreStreaming = (streamingColumnMap.length == evaluatorCount);
+    allEvaluatorsAreStreaming = (streamingEvaluatorNums.length == evaluatorCount);
 
     /*
      * Setup the overflow batch.
      */
     overflowBatch = setupOverflowBatch();
 
-    groupBatches = new VectorPTFGroupBatches();
+    groupBatches = new VectorPTFGroupBatches(
+        hconf, vectorDesc.getVectorizedPTFMaxMemoryBufferingBatchCount());
     groupBatches.init(
-        evaluators, outputColumnMap, keyInputColumnMap, nonKeyInputColumnMap, streamingColumnMap, overflowBatch);
+        reducerBatchTypeInfos,
+        evaluators,
+        outputProjectionColumnMap,
+        outputTypeInfos,
+        keyInputColumnMap,
+        nonKeyInputColumnMap,
+        streamingEvaluatorNums,
+        overflowBatch);
 
     isFirstPartition = true;
 
@@ -424,6 +424,7 @@ public class VectorPTFOperator extends Operator<PTFDesc>
         return true;
       }
       if (isNull) {
+        // NULL does equal NULL here.
         continue;
       }
 
@@ -564,7 +565,17 @@ public class VectorPTFOperator extends Operator<PTFDesc>
   }
 
   @Override
-  public VectorizationContext getOuputVectorizationContext() {
+  public VectorizationContext getOutputVectorizationContext() {
     return vOutContext;
+  }
+
+  @Override
+  public VectorizationContext getInputVectorizationContext() {
+    return vContext;
+  }
+
+  @Override
+  public VectorDesc getVectorDesc() {
+    return vectorDesc;
   }
 }

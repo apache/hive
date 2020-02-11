@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,12 +21,11 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 import org.apache.hadoop.hive.ql.udf.generic.RoundUtils;
 
 // Vectorized implementation of BROUND(Col, N) function
-public class BRoundWithNumDigitsDoubleToDouble extends RoundWithNumDigitsDoubleToDouble
-    implements ISetLongArg {
+public class BRoundWithNumDigitsDoubleToDouble extends RoundWithNumDigitsDoubleToDouble {
   private static final long serialVersionUID = 18493485928L;
 
-  public BRoundWithNumDigitsDoubleToDouble(int colNum, long scalarVal, int outputColumn) {
-    super(colNum, scalarVal, outputColumn);
+  public BRoundWithNumDigitsDoubleToDouble(int colNum, long scalarVal, int outputColumnNum) {
+    super(colNum, scalarVal, outputColumnNum);
   }
 
   public BRoundWithNumDigitsDoubleToDouble() {

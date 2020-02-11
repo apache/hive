@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -49,8 +49,11 @@ public interface AcidOutputFormat<K extends WritableComparable, V> extends HiveO
     private boolean isCompressed = false;
     private Properties properties;
     private Reporter reporter;
-    private long minimumTransactionId;
-    private long maximumTransactionId;
+    private long minimumWriteId;
+    private long maximumWriteId;
+    /**
+     * actual bucketId (as opposed to bucket property via BucketCodec)
+     */
     private int bucketId;
     /**
      * Based on {@link org.apache.hadoop.hive.ql.metadata.Hive#mvFile(HiveConf, FileSystem, Path, FileSystem, Path, boolean, boolean)}
@@ -61,8 +64,17 @@ public interface AcidOutputFormat<K extends WritableComparable, V> extends HiveO
     private boolean oldStyle = false;
     private int recIdCol = -1;  // Column the record identifier is in, -1 indicates no record id
     //unique within a transaction
+    /**
+     * todo: Link to AcidUtils?
+     */
     private int statementId = 0;
     private Path finalDestination;
+    /**
+     * todo: link to AcidUtils?
+     */
+    private long visibilityTxnId = 0;
+    private boolean temporary = false;
+
     /**
      * Create the options object.
      * @param conf Use the given configuration
@@ -156,22 +168,22 @@ public interface AcidOutputFormat<K extends WritableComparable, V> extends HiveO
     }
 
     /**
-     * The minimum transaction id that is included in this file.
-     * @param min minimum transaction id
+     * The minimum write id that is included in this file.
+     * @param min minimum write id
      * @return this
      */
-    public Options minimumTransactionId(long min) {
-      this.minimumTransactionId = min;
+    public Options minimumWriteId(long min) {
+      this.minimumWriteId = min;
       return this;
     }
 
     /**
-     * The maximum transaction id that is included in this file.
-     * @param max maximum transaction id
+     * The maximum write id that is included in this file.
+     * @param max maximum write id
      * @return this
      */
-    public Options maximumTransactionId(long max) {
-      this.maximumTransactionId = max;
+    public Options maximumWriteId(long max) {
+      this.maximumWriteId = max;
       return this;
     }
 
@@ -189,7 +201,7 @@ public interface AcidOutputFormat<K extends WritableComparable, V> extends HiveO
      * Multiple inserts into legacy (pre-acid) tables can generate multiple copies of each bucket
      * file.
      * @see org.apache.hadoop.hive.ql.exec.Utilities#COPY_KEYWORD
-     * @param copyNumber the number of the copy ( > 0)
+     * @param copyNumber the number of the copy ( &gt; 0)
      * @return this
      */
     public Options copyNumber(int copyNumber) {
@@ -236,7 +248,7 @@ public interface AcidOutputFormat<K extends WritableComparable, V> extends HiveO
      */
     public Options statementId(int id) {
       if(id >= AcidUtils.MAX_STATEMENTS_PER_TXN) {
-        throw new RuntimeException("Too many statements for transactionId: " + maximumTransactionId);
+        throw new RuntimeException("Too many statements for writeId: " + maximumWriteId);
       }
       if(id < -1) {
         throw new IllegalArgumentException("Illegal statementId value: " + id);
@@ -250,6 +262,10 @@ public interface AcidOutputFormat<K extends WritableComparable, V> extends HiveO
      */
     public Options finalDestination(Path p) {
       this.finalDestination = p;
+      return this;
+    }
+    public Options visibilityTxnId(long visibilityTxnId) {
+      this.visibilityTxnId = visibilityTxnId;
       return this;
     }
 
@@ -277,12 +293,12 @@ public interface AcidOutputFormat<K extends WritableComparable, V> extends HiveO
       return reporter;
     }
 
-    public long getMinimumTransactionId() {
-      return minimumTransactionId;
+    public long getMinimumWriteId() {
+      return minimumWriteId;
     }
 
-    public long getMaximumTransactionId() {
-      return maximumTransactionId;
+    public long getMaximumWriteId() {
+      return maximumWriteId;
     }
 
     public boolean isWritingBase() {
@@ -316,6 +332,18 @@ public interface AcidOutputFormat<K extends WritableComparable, V> extends HiveO
     }
     public Path getFinalDestination() {
       return finalDestination;
+    }
+    public long getVisibilityTxnId() {
+      return visibilityTxnId;
+    }
+
+    public Options temporary(boolean temporary) {
+      this.temporary = temporary;
+      return this;
+    }
+
+    public boolean isTemporary() {
+      return temporary;
     }
   }
 

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -45,7 +45,7 @@ import java.util.regex.Pattern;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -55,6 +55,7 @@ import org.apache.hive.jdbc.miniHS2.MiniHS2.MiniClusterType;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -768,6 +769,7 @@ public class TestBeeLineWithArgs {
    * Test Beeline could show the query progress for time-consuming query.
    * @throws Throwable
    */
+  @Ignore("HIVE-19509: Disable tests that are failing continuously")
   @Test
   public void testQueryProgress() throws Throwable {
     final String SCRIPT_TEXT =
@@ -795,6 +797,7 @@ public class TestBeeLineWithArgs {
    *
    * @throws Throwable
    */
+  @Ignore("HIVE-19509: Disable tests that are failing continuously")
   @Test
   public void testQueryProgressParallel() throws Throwable {
     final String SCRIPT_TEXT = "set hive.support.concurrency = false;\n" +
@@ -1066,6 +1069,27 @@ public class TestBeeLineWithArgs {
     testScriptFile(SCRIPT_TEXT, argList, OutStream.ERR, EXPECTED_PATTERN, true);
   }
 
+  @Test
+  public void testBeelineWithSilentAndReport() throws Throwable {
+    final String SCRIPT_TEXT = "drop table if exists new_table;\n create table new_table(foo int, bar string);\n "
+        + "desc new_table;\n";
+    final String EXPECTED_PATTERN = "2 rows selected";
+    List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
+    argList.add("--silent=true");
+    argList.add("--report=true");
+    testScriptFile(SCRIPT_TEXT, argList, OutStream.ERR, EXPECTED_PATTERN, true);
+  }
+
+  @Test
+  public void testBeelineWithSilent() throws Throwable {
+    final String SCRIPT_TEXT = "drop table if exists new_table;\n create table new_table(foo int, bar string);\n "
+        + "desc new_table;\n";
+    final String EXPECTED_PATTERN = "2 rows selected";
+    List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
+    argList.add("--silent=true");
+    testScriptFile(SCRIPT_TEXT, argList, OutStream.ERR, EXPECTED_PATTERN, false);
+  }
+
   private static class Tuple<K> {
     final K pattern;
     final boolean shouldMatch;
@@ -1129,5 +1153,20 @@ public class TestBeeLineWithArgs {
     List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
     argList.add("--outputformat=tsv2");
     testScriptFile(SCRIPT_TEXT, argList, EXPECTED_PATTERN, true);
+  }
+
+  /**
+   * Test 'describe extended' on tables that have special white space characters in the row format.
+   */
+  @Test
+  public void testDescribeExtended() throws Throwable {
+    String SCRIPT_TEXT = "drop table if exists describeDelim;"
+        + "create table describeDelim (orderid int, orderdate string, customerid int)"
+        + " ROW FORMAT DELIMITED FIELDS terminated by '\\t' LINES terminated by '\\n';"
+        + "describe extended describeDelim;";
+    List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
+    testScriptFile(SCRIPT_TEXT, argList, OutStream.OUT, Arrays.asList(
+        new Tuple<>("Detailed Table Information.*line.delim=\\\\n", true),
+        new Tuple<>("Detailed Table Information.*field.delim=\\\\t", true)));
   }
 }

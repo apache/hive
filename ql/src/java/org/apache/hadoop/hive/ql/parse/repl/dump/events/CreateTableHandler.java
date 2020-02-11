@@ -19,41 +19,55 @@ package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.messaging.CreateTableMessage;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
+import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 
-class CreateTableHandler extends AbstractEventHandler {
+class CreateTableHandler extends AbstractEventHandler<CreateTableMessage> {
 
   CreateTableHandler(NotificationEvent event) {
     super(event);
   }
 
   @Override
+  CreateTableMessage eventMessage(String stringRepresentation) {
+    return deserializer.getCreateTableMessage(stringRepresentation);
+  }
+
+  @Override
   public void handle(Context withinContext) throws Exception {
-    CreateTableMessage ctm = deserializer.getCreateTableMessage(event.getMessage());
-    LOG.info("Processing#{} CREATE_TABLE message : {}", fromEventId(), event.getMessage());
-    org.apache.hadoop.hive.metastore.api.Table tobj = ctm.getTableObj();
+    LOG.info("Processing#{} CREATE_TABLE message : {}", fromEventId(), eventMessageAsJSON);
+    org.apache.hadoop.hive.metastore.api.Table tobj = eventMessage.getTableObj();
 
     if (tobj == null) {
-      LOG.debug("Event#{} was a CREATE_TABLE_EVENT with no table listed");
+      LOG.debug("Event#{} was a CREATE_TABLE_EVENT with no table listed", fromEventId());
       return;
     }
 
     Table qlMdTable = new Table(tobj);
 
-    if (!EximUtil.shouldExportTable(withinContext.replicationSpec, qlMdTable)) {
+    if (!Utils.shouldReplicate(withinContext.replicationSpec, qlMdTable, true,
+            withinContext.getTablesForBootstrap(), withinContext.oldReplScope, withinContext.hiveConf)) {
       return;
     }
 
     if (qlMdTable.isView()) {
       withinContext.replicationSpec.setIsMetadataOnly(true);
+    }
+
+    // If we are not dumping data about a table, we shouldn't be dumping basic statistics
+    // as well, since that won't be accurate. So reset them to what they would look like for an
+    // empty table.
+    if (withinContext.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY)) {
+      qlMdTable.setStatsStateLikeNewTable();
     }
 
     Path metaDataPath = new Path(withinContext.eventRoot, EximUtil.METADATA_NAME);
@@ -62,10 +76,11 @@ class CreateTableHandler extends AbstractEventHandler {
         metaDataPath,
         qlMdTable,
         null,
-        withinContext.replicationSpec);
+        withinContext.replicationSpec,
+        withinContext.hiveConf);
 
     Path dataPath = new Path(withinContext.eventRoot, "data");
-    Iterable<String> files = ctm.getFiles();
+    Iterable<String> files = eventMessage.getFiles();
     if (files != null) {
       // encoded filename/checksum of files, write into _files
       try (BufferedWriter fileListWriter = writer(withinContext, dataPath)) {
@@ -74,6 +89,7 @@ class CreateTableHandler extends AbstractEventHandler {
         }
       }
     }
+
     withinContext.createDmd(this).write();
   }
 

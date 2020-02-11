@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,13 +17,13 @@
  */
 package org.apache.hadoop.hive.common.type;
 
-import java.sql.Timestamp;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.time.DateTimeException;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
@@ -31,7 +31,6 @@ import java.time.format.DateTimeParseException;
 import java.time.format.TextStyle;
 import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalAccessor;
-import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -44,9 +43,6 @@ public class TimestampTZUtil {
 
   private static final LocalTime DEFAULT_LOCAL_TIME = LocalTime.of(0, 0);
   private static final Pattern SINGLE_DIGIT_PATTERN = Pattern.compile("[\\+-]\\d:\\d\\d");
-
-  private static final ThreadLocal<DateFormat> CONVERT_FORMATTER =
-      ThreadLocal.withInitial(() -> new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
 
   static final DateTimeFormatter FORMATTER;
   static {
@@ -126,11 +122,14 @@ public class TimestampTZUtil {
     }
   }
 
-  // Converts Date to TimestampTZ. The conversion is done text-wise since
-  // Date/Timestamp should be treated as description of date/time.
+  // Converts Date to TimestampTZ.
   public static TimestampTZ convert(Date date, ZoneId defaultTimeZone) {
-    String s = date instanceof Timestamp ? date.toString() : CONVERT_FORMATTER.get().format(date);
-    return parse(s, defaultTimeZone);
+    return parse(date.toString(), defaultTimeZone);
+  }
+
+  // Converts Timestamp to TimestampTZ.
+  public static TimestampTZ convert(Timestamp ts, ZoneId defaultTimeZone) {
+    return parse(ts.toString(), defaultTimeZone);
   }
 
   public static ZoneId parseTimeZone(String timeZoneStr) {
@@ -143,8 +142,23 @@ public class TimestampTZUtil {
       return ZoneId.of(timeZoneStr);
     } catch (DateTimeException e1) {
       // default
-      throw new RuntimeException("Invalid time zone displacement value");
+      throw new RuntimeException("Invalid time zone displacement value", e1);
     }
   }
 
+  /**
+   * Timestamps are technically time zone agnostic, and this method sort of cheats its logic.
+   * Timestamps are supposed to represent nanos since [UTC epoch]. Here,
+   * the input timestamp represents nanoseconds since [epoch at fromZone], and
+   * we return a Timestamp representing nanoseconds since [epoch at toZone].
+   */
+  public static Timestamp convertTimestampToZone(Timestamp ts, ZoneId fromZone, ZoneId toZone) {
+    // get nanos since [epoch at fromZone]
+    Instant instant = convert(ts, fromZone).getZonedDateTime().toInstant();
+    // get [local time at toZone]
+    LocalDateTime localDateTimeAtToZone = LocalDateTime.ofInstant(instant, toZone);
+    // get nanos between [epoch at toZone] and [local time at toZone]
+    return Timestamp.ofEpochSecond(localDateTimeAtToZone.toEpochSecond(ZoneOffset.UTC),
+        localDateTimeAtToZone.getNano());
+  }
 }

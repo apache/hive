@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,6 +21,7 @@ public interface LowLevelCacheCounters {
   void recordCacheHit(long bytesHit);
   void recordCacheMiss(long bytesMissed);
   void recordAllocBytes(long bytesWasted, long bytesAllocated);
-  void recordHdfsTime(long timeUs);
+  void recordHdfsTime(long timeNs);
+  void recordThreadTimes(long cpuNs, long userNs);
   long startTimeCounter();
 }

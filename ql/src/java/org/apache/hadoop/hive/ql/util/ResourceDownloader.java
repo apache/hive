@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,17 +22,17 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.util.Shell;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Lists;
 
 public class ResourceDownloader {
   private static final Logger LOG = LoggerFactory.getLogger(ResourceDownloader.class);
@@ -56,17 +56,19 @@ public class ResourceDownloader {
   }
 
   public static boolean isIvyUri(String value) throws URISyntaxException {
-    return "ivy".equalsIgnoreCase(createURI(value).getScheme());
+    return UriType.IVY == getURLType(createURI(value));
+  }
+
+  public static boolean isHdfsUri(String value) throws URISyntaxException {
+    return UriType.HDFS == getURLType(createURI(value));
   }
 
   public static boolean isFileUri(String value) {
-    String scheme = null;
     try {
-      scheme = createURI(value).getScheme();
+      return UriType.FILE == getURLType(createURI(value));
     } catch (URISyntaxException ex) {
       throw new RuntimeException(ex);
     }
-    return (scheme == null) || scheme.equalsIgnoreCase("file");
   }
 
   public List<URI> resolveAndDownload(String source, boolean convertToUnix)
@@ -82,48 +84,51 @@ public class ResourceDownloader {
   private List<URI> resolveAndDownloadInternal(URI source, String subDir,
       boolean convertToUnix, boolean isLocalAllowed) throws URISyntaxException, IOException {
     switch (getURLType(source)) {
-    case FILE: return isLocalAllowed ? Lists.newArrayList(source) : null;
+    case FILE: return isLocalAllowed ? Collections.singletonList(source) : null;
     case IVY: return dependencyResolver.downloadDependencies(source);
-    case OTHER: return Lists.newArrayList(
-        createURI(downloadResource(source, subDir, convertToUnix)));
+    case HDFS:
+    case OTHER:
+      return Collections.singletonList(createURI(downloadResource(source, subDir, convertToUnix)));
     default: throw new AssertionError(getURLType(source));
     }
   }
 
   private String downloadResource(URI srcUri, String subDir, boolean convertToUnix)
       throws IOException, URISyntaxException {
-    LOG.info("converting to local " + srcUri);
+    LOG.debug("Converting to local {}", srcUri);
     File destinationDir = (subDir == null) ? resourceDir : new File(resourceDir, subDir);
     ensureDirectory(destinationDir);
-    File destinationFile = new File(destinationDir, new Path(srcUri.toString()).getName());
+    File destinationFile = new File(destinationDir, new Path(srcUri).getName());
     String dest = destinationFile.getCanonicalPath();
     if (destinationFile.exists()) {
       return dest;
     }
     FileSystem fs = FileSystem.get(srcUri, conf);
-    fs.copyToLocalFile(new Path(srcUri.toString()), new Path(dest));
+    fs.copyToLocalFile(new Path(srcUri), new Path(dest));
     // add "execute" permission to downloaded resource file (needed when loading dll file)
     FileUtil.chmod(dest, "ugo+rx", true);
     return dest;
   }
 
   private static void ensureDirectory(File resourceDir) {
-    boolean doesExist = resourceDir.exists();
-    if (doesExist && !resourceDir.isDirectory()) {
-      throw new RuntimeException(resourceDir + " is not a directory");
-    }
-    if (!doesExist && !resourceDir.mkdirs()) {
-      throw new RuntimeException("Couldn't create directory " + resourceDir);
+    try {
+      FileUtils.forceMkdir(resourceDir);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
   }
 
-  private enum UriType { IVY, FILE, OTHER };
-  private static ResourceDownloader.UriType getURLType(URI value) throws URISyntaxException {
-    String scheme = value.getScheme();
+  private enum UriType { IVY, FILE, HDFS, OTHER };
+
+  /**
+   * If the URI has no scheme defined, the default is {@link UriType#FILE}
+   */
+  private static ResourceDownloader.UriType getURLType(URI value) {
+    String scheme = StringUtils.lowerCase(value.getScheme());
     if (scheme == null) return UriType.FILE;
-    scheme = scheme.toLowerCase();
-    if ("ivy".equals(scheme)) return UriType.IVY;
     if ("file".equals(scheme)) return UriType.FILE;
+    if ("hdfs".equals(scheme)) return UriType.HDFS;
+    if ("ivy".equals(scheme))  return UriType.IVY;
     return UriType.OTHER;
   }
 }

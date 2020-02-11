@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -35,15 +35,12 @@ public interface StatsPublisher {
    * database (if not exist).
    * This method is usually called in the Hive client side rather than by the mappers/reducers
    * so that it is initialized only once.
-   * @param hconf HiveConf that contains the configurations parameters used to connect to
-   * intermediate stats database.
    * @return true if initialization is successful, false otherwise.
    */
   public boolean init(StatsCollectionContext context);
 
   /**
    * This method connects to the intermediate statistics database.
-   * @param hconf HiveConf that contains the connection parameters.
    * @return true if connection is successful, false otherwise.
    */
   public boolean connect(StatsCollectionContext context);

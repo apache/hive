@@ -1,40 +1,40 @@
-PREHOOK: query: CREATE TABLE t1 (c1 int, c2 string, c3 timestamp)
+PREHOOK: query: CREATE TABLE t1_n156 (c1 int, c2 string, c3 timestamp)
 ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe'
 WITH SERDEPROPERTIES ('timestamp.formats'='yyyy-MM-dd\'T\'HH:mm:ss')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t1
-POSTHOOK: query: CREATE TABLE t1 (c1 int, c2 string, c3 timestamp)
+PREHOOK: Output: default@t1_n156
+POSTHOOK: query: CREATE TABLE t1_n156 (c1 int, c2 string, c3 timestamp)
 ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe'
 WITH SERDEPROPERTIES ('timestamp.formats'='yyyy-MM-dd\'T\'HH:mm:ss')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t1
-PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/tsformat.json" INTO TABLE t1
+POSTHOOK: Output: default@t1_n156
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/tsformat.json" INTO TABLE t1_n156
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t1
-POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/tsformat.json" INTO TABLE t1
+PREHOOK: Output: default@t1_n156
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/tsformat.json" INTO TABLE t1_n156
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t1
+POSTHOOK: Output: default@t1_n156
 PREHOOK: query: select a.c1, a.c2, b.c3
-from t1 a join t1 b on a.c1 = b.c1
+from t1_n156 a join t1_n156 b on a.c1 = b.c1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n156
 #### A masked pattern was here ####
 POSTHOOK: query: select a.c1, a.c2, b.c3
-from t1 a join t1 b on a.c1 = b.c1
+from t1_n156 a join t1_n156 b on a.c1 = b.c1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n156
 #### A masked pattern was here ####
 123	abc	2001-02-03 12:34:56
 456	xyz	1906-04-18 05:12:00
-PREHOOK: query: drop table t1
+PREHOOK: query: drop table t1_n156
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@t1
-POSTHOOK: query: drop table t1
+PREHOOK: Input: default@t1_n156
+PREHOOK: Output: default@t1_n156
+POSTHOOK: query: drop table t1_n156
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@t1
+POSTHOOK: Input: default@t1_n156
+POSTHOOK: Output: default@t1_n156

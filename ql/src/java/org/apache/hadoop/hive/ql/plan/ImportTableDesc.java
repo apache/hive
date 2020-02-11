@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,23 +18,26 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-import java.io.Serializable;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import com.google.common.collect.ImmutableSet;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.ql.ddl.DDLWork;
+import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
+import org.apache.hadoop.hive.ql.ddl.view.create.CreateViewDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.HiveTableName;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
@@ -53,46 +56,51 @@ public class ImportTableDesc {
   public ImportTableDesc(String dbName, Table table) throws Exception {
     this.dbName = dbName;
     this.table = table;
+    final TableName tableName = HiveTableName.ofNullable(table.getTableName(), dbName);
 
     switch (getDescType()) {
-      case TABLE:
-        this.createTblDesc = new CreateTableDesc(dbName,
-                table.getTableName(),
-                false, // isExternal: set to false here, can be overwritten by the IMPORT stmt
-                table.isTemporary(),
-                table.getSd().getCols(),
-                table.getPartitionKeys(),
-                table.getSd().getBucketCols(),
-                table.getSd().getSortCols(),
-                table.getSd().getNumBuckets(),
-                null, null, null, null, null, // these 5 delims passed as serde params
-                null, // comment passed as table params
-                table.getSd().getInputFormat(),
-                table.getSd().getOutputFormat(),
-                null, // location: set to null here, can be overwritten by the IMPORT stmt
-                table.getSd().getSerdeInfo().getSerializationLib(),
-                null, // storagehandler passed as table params
-                table.getSd().getSerdeInfo().getParameters(),
-                table.getParameters(), false,
-                (null == table.getSd().getSkewedInfo()) ? null : table.getSd().getSkewedInfo()
-                        .getSkewedColNames(),
-                (null == table.getSd().getSkewedInfo()) ? null : table.getSd().getSkewedInfo()
-                        .getSkewedColValues(),
-                null,
-                null,
-                null,
-                null);
-        this.createTblDesc.setStoredAsSubDirectories(table.getSd().isStoredAsSubDirectories());
-        break;
-      case VIEW:
-        String[] qualViewName = { dbName, table.getTableName() };
-        String dbDotView = BaseSemanticAnalyzer.getDotName(qualViewName);
+    case TABLE:
+      this.createTblDesc = new CreateTableDesc(tableName,
+              false, // isExternal: set to false here, can be overwritten by the IMPORT stmt
+              false,
+              table.getSd().getCols(),
+              table.getPartitionKeys(),
+              table.getSd().getBucketCols(),
+              table.getSd().getSortCols(),
+              table.getSd().getNumBuckets(),
+              null, null, null, null, null, // these 5 delims passed as serde params
+              null, // comment passed as table params
+              table.getSd().getInputFormat(),
+              table.getSd().getOutputFormat(),
+              null, // location: set to null here, can be overwritten by the IMPORT stmt
+              table.getSd().getSerdeInfo().getSerializationLib(),
+              null, // storagehandler passed as table params
+              table.getSd().getSerdeInfo().getParameters(),
+              table.getParameters(), false,
+              (null == table.getSd().getSkewedInfo()) ? null : table.getSd().getSkewedInfo()
+                      .getSkewedColNames(),
+              (null == table.getSd().getSkewedInfo()) ? null : table.getSd().getSkewedInfo()
+                      .getSkewedColValues(),
+              null,
+              null,
+              null,
+              null,
+          null,
+          null,
+              table.getColStats(),
+              table.getTTable().getWriteId());
+      this.createTblDesc.setStoredAsSubDirectories(table.getSd().isStoredAsSubDirectories());
+      break;
+    case VIEW:
+      final String dbDotView = tableName.getNotEmptyDbTable();
         if (table.isMaterializedView()) {
           this.createViewDesc = new CreateViewDesc(dbDotView,
                   table.getAllCols(),
                   null, // comment passed as table params
                   table.getParameters(),
                   table.getPartColNames(),
+                  null, // sort columns passed as table params (if present)
+                  null, // distribute columns passed as table params (if present)
                   false,false,false,false,
                   table.getSd().getInputFormat(),
                   table.getSd().getOutputFormat(),
@@ -100,6 +108,10 @@ public class ImportTableDesc {
                   table.getSd().getSerdeInfo().getSerializationLib(),
                   null, // storagehandler passed as table params
                   table.getSd().getSerdeInfo().getParameters());
+          // TODO: If the DB name from the creation metadata for any of the tables has changed,
+          // we should update it. Currently it refers to the source database name.
+          this.createViewDesc.setTablesUsed(table.getCreationMetadata() != null ?
+              table.getCreationMetadata().getTablesUsed() : ImmutableSet.of());
         } else {
           this.createViewDesc = new CreateViewDesc(dbDotView,
                   table.getAllCols(),
@@ -185,27 +197,23 @@ public class ImportTableDesc {
     return null;
   }
 
-  public void setTableName(String tableName) throws SemanticException {
+  public void setTableName(TableName tableName) throws SemanticException {
     switch (getDescType()) {
-      case TABLE:
-        createTblDesc.setTableName(tableName);
-        break;
-      case VIEW:
-        String[] qualViewName = { dbName, tableName };
-        String dbDotView = BaseSemanticAnalyzer.getDotName(qualViewName);
-        createViewDesc.setViewName(dbDotView);
-        break;
+    case TABLE:
+      createTblDesc.setTableName(tableName);
+      break;
+    case VIEW:
+      createViewDesc.setViewName(tableName.getNotEmptyDbTable());
+      break;
     }
   }
 
   public String getTableName() throws SemanticException {
     switch (getDescType()) {
       case TABLE:
-        return createTblDesc.getTableName();
+        return createTblDesc.getTableName().getTable();
       case VIEW:
-        String dbDotView = createViewDesc.getViewName();
-        String[] names = Utilities.getDbTableName(dbDotView);
-        return names[1]; // names[0] have the Db name and names[1] have the view name
+        return TableName.fromString(createViewDesc.getViewName(), null, null).getTable();
     }
     return null;
   }
@@ -303,7 +311,7 @@ public class ImportTableDesc {
         createTblDesc.setReplaceMode(replaceMode);
         break;
       case VIEW:
-        createViewDesc.setOrReplace(replaceMode);
+        createViewDesc.setReplace(replaceMode);
     }
   }
 
@@ -311,13 +319,13 @@ public class ImportTableDesc {
     return dbName;
   }
 
-  public Task<? extends Serializable> getCreateTableTask(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
+  public Task<?> getCreateTableTask(Set<ReadEntity> inputs, Set<WriteEntity> outputs,
       HiveConf conf) {
     switch (getDescType()) {
-      case TABLE:
-        return TaskFactory.get(new DDLWork(inputs, outputs, createTblDesc), conf);
-      case VIEW:
-        return TaskFactory.get(new DDLWork(inputs, outputs, createViewDesc), conf);
+    case TABLE:
+      return TaskFactory.get(new DDLWork(inputs, outputs, createTblDesc), conf);
+    case VIEW:
+      return TaskFactory.get(new DDLWork(inputs, outputs, createViewDesc), conf);
     }
     return null;
   }
@@ -325,7 +333,9 @@ public class ImportTableDesc {
   /**
    * @return whether this table is actually a view
    */
-  public boolean isView() { return table.isView(); }
+  public boolean isView() {
+    return table.isView();
+  }
 
   public boolean isMaterializedView() {
     return table.isMaterializedView();
@@ -338,5 +348,42 @@ public class ImportTableDesc {
       return TableType.MATERIALIZED_VIEW;
     }
     return TableType.MANAGED_TABLE;
+  }
+
+  public Table toTable(HiveConf conf) throws Exception {
+    switch (getDescType()) {
+      case TABLE:
+        return createTblDesc.toTable(conf);
+      case VIEW:
+        return createViewDesc.toTable(conf);
+      default:
+        return null;
+    }
+  }
+
+  public void setReplWriteId(Long replWriteId) {
+    if (this.createTblDesc != null) {
+      this.createTblDesc.setReplWriteId(replWriteId);
+    }
+  }
+
+  public void setOwnerName(String ownerName) {
+    switch (getDescType()) {
+      case TABLE:
+        createTblDesc.setOwnerName(ownerName);
+        break;
+      case VIEW:
+        createViewDesc.setOwnerName(ownerName);
+        break;
+      default:
+        throw new RuntimeException("Invalid table type : " + getDescType());
+    }
+  }
+
+  public Long getReplWriteId() {
+    if (this.createTblDesc != null) {
+      return this.createTblDesc.getReplWriteId();
+    }
+    return -1L;
   }
 }

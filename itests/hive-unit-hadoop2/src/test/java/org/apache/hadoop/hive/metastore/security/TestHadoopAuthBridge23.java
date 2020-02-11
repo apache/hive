@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,11 +20,10 @@ package org.apache.hadoop.hive.metastore.security;
 
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.io.Text;
@@ -42,7 +41,6 @@ import org.apache.hadoop.security.token.delegation.DelegationKey;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.transport.TSaslServerTransport;
 import org.apache.thrift.transport.TTransportException;
-import org.apache.thrift.transport.TTransportFactory;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -84,7 +82,7 @@ public class TestHadoopAuthBridge23 {
 
   private static class MyHadoopThriftAuthBridge23 extends HadoopThriftAuthBridge23 {
     @Override
-    public Server createServer(String keytabFile, String principalConf)
+    public Server createServer(String keytabFile, String principalConf, String clientConf)
     throws TTransportException {
       //Create a Server that doesn't interpret any Kerberos stuff
       return new Server();
@@ -95,8 +93,7 @@ public class TestHadoopAuthBridge23 {
         super();
       }
       @Override
-      public TTransportFactory createTransportFactory(Map<String, String> saslProps)
-      throws TTransportException {
+      public TSaslServerTransport.Factory createSaslServerTransportFactory(Map<String, String> saslProps) {
         TSaslServerTransport.Factory transFactory =
           new TSaslServerTransport.Factory();
         transFactory.addServerDefinition(AuthMethod.DIGEST.getMechanismName(),
@@ -104,7 +101,7 @@ public class TestHadoopAuthBridge23 {
             saslProps,
             new SaslDigestCallbackHandler(secretManager));
 
-        return new TUGIAssumingTransportFactory(transFactory, realUgi);
+        return transFactory;
       }
 
 
@@ -140,17 +137,12 @@ public class TestHadoopAuthBridge23 {
   @Before
   public void setup() throws Exception {
     isMetastoreTokenManagerInited = false;
-    int port = findFreePort();
     System.setProperty(HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL.varname,
         "true");
-    System.setProperty(HiveConf.ConfVars.METASTOREURIS.varname,
-        "thrift://localhost:" + port);
-    System.setProperty(HiveConf.ConfVars.METASTOREWAREHOUSE.varname, new Path(
-        System.getProperty("test.build.data", "/tmp")).toString());
     System.setProperty(HiveConf.ConfVars.METASTORE_CLUSTER_DELEGATION_TOKEN_STORE_CLS.varname,
         MyTokenStore.class.getName());
     conf = new HiveConf(TestHadoopAuthBridge23.class);
-    MetaStoreUtils.startMetaStore(port, new MyHadoopThriftAuthBridge23());
+    MetaStoreTestUtils.startMetaStoreWithRetry(new MyHadoopThriftAuthBridge23(), conf);
   }
 
   /**
@@ -168,7 +160,8 @@ public class TestHadoopAuthBridge23 {
     tokenManager.startThreads();
     tokenManager.stopThreads();
 
-    String tokenStrForm = tokenManager.getDelegationToken(clientUgi.getShortUserName());
+    String tokenStrForm =
+        tokenManager.getDelegationToken(clientUgi.getShortUserName(), clientUgi.getShortUserName());
     Token<DelegationTokenIdentifier> t= new Token<DelegationTokenIdentifier>();
     t.decodeFromUrlString(tokenStrForm);
 

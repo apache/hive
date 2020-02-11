@@ -2,4 +2,4 @@ PREHOOK: query: CREATE TEMPORARY FUNCTION moo AS 'org.apache.hadoop.hive.ql.Driv
 PREHOOK: type: CREATEFUNCTION
 PREHOOK: Output: moo
 FAILED: Class org.apache.hadoop.hive.ql.Driver does not implement UDF, GenericUDF, or UDAF
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.FunctionTask
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask

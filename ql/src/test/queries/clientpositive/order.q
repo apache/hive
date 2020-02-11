@@ -1,3 +1,4 @@
+--! qt:dataset:src
 EXPLAIN
 SELECT x.* FROM SRC x ORDER BY key limit 10;
 

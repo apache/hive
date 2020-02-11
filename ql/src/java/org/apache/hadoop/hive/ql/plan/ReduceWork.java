@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.plan;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -29,18 +28,12 @@ import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
-import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
-import org.apache.hadoop.hive.ql.optimizer.physical.VectorizerReason;
-import org.apache.hadoop.hive.ql.plan.BaseWork.BaseExplainVectorization;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
-import org.apache.hadoop.hive.serde2.Deserializer;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hive.common.util.ReflectionUtil;
 
 /**
  * ReduceWork represents all the information used to run a reduce task on the cluster.
@@ -133,15 +126,17 @@ public class ReduceWork extends BaseWork {
   @Explain(displayName = "Execution mode", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED },
       vectorization = Vectorization.SUMMARY_PATH)
   public String getExecutionMode() {
-    if (vectorMode) {
+    if (vectorMode &&
+        !(getIsTestForcedVectorizationEnable() &&
+          getIsTestVectorizationSuppressExplainExecutionMode())) {
       if (llapMode) {
-	if (uberMode) {
-	  return "vectorized, uber";
-	} else {
-	  return "vectorized, llap";
-	}
+        if (uberMode) {
+          return "vectorized, uber";
+        } else {
+          return "vectorized, llap";
+        }
       } else {
-	return "vectorized";
+        return "vectorized";
       }
     } else if (llapMode) {
       return uberMode? "uber" : "llap";

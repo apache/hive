@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,6 +21,8 @@ import java.util.HashSet;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedUDAFs;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.*;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
@@ -84,6 +86,10 @@ public class GenericUDAFCount implements GenericUDAFResolver2 {
    * GenericUDAFCountEvaluator.
    *
    */
+  @VectorizedUDAFs({
+    VectorUDAFCount.class,
+    VectorUDAFCountMerge.class,
+    VectorUDAFCountStar.class})
   public static class GenericUDAFCountEvaluator extends GenericUDAFEvaluator {
     private boolean isWindowing = false;
     private boolean countAllColumns = false;
@@ -112,8 +118,12 @@ public class GenericUDAFCount implements GenericUDAFResolver2 {
       this.isWindowing = isWindowing;
     }
 
-    private void setCountAllColumns(boolean countAllCols) {
+    public void setCountAllColumns(boolean countAllCols) {
       countAllColumns = countAllCols;
+    }
+
+    public boolean getCountAllColumns() {
+      return countAllColumns;
     }
 
     private void setCountDistinct(boolean countDistinct) {
@@ -143,7 +153,7 @@ public class GenericUDAFCount implements GenericUDAFResolver2 {
     @Override
     public void reset(AggregationBuffer agg) throws HiveException {
       ((CountAgg) agg).value = 0;
-      ((CountAgg) agg).uniqueObjects = new HashSet<ObjectInspectorObject>();
+      ((CountAgg) agg).uniqueObjects = null;
     }
 
     @Override
@@ -167,7 +177,11 @@ public class GenericUDAFCount implements GenericUDAFResolver2 {
 
         // Skip the counting if the values are the same for windowing COUNT(DISTINCT) case
         if (countThisRow && isWindowingDistinct()) {
+          if (((CountAgg) agg).uniqueObjects == null) {
+            ((CountAgg) agg).uniqueObjects = new HashSet<ObjectInspectorObject>();
+          }
           HashSet<ObjectInspectorObject> uniqueObjs = ((CountAgg) agg).uniqueObjects;
+
           ObjectInspectorObject obj = new ObjectInspectorObject(
               ObjectInspectorUtils.copyToStandardObject(parameters, inputOI, ObjectInspectorCopyOption.JAVA),
               outputOI);

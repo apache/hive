@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -30,10 +30,15 @@ import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;
+import org.apache.hadoop.hive.ql.exec.vector.wrapper.VectorHashKeyWrapperBase;
+import org.apache.hadoop.hive.ql.exec.vector.wrapper.VectorHashKeyWrapperBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SMBJoinDesc;
+import org.apache.hadoop.hive.ql.plan.VectorDesc;
+import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc;
+import org.apache.hadoop.hive.ql.plan.VectorSMBJoinDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
@@ -49,12 +54,16 @@ import com.google.common.annotations.VisibleForTesting;
  * It accepts a vectorized batch input from the big table and iterates over the batch, calling the parent row-mode
  * implementation for each row in the batch.
  */
-public class VectorSMBMapJoinOperator extends SMBMapJoinOperator implements VectorizationContextRegion {
+public class VectorSMBMapJoinOperator extends SMBMapJoinOperator
+    implements VectorizationOperator, VectorizationContextRegion {
 
   private static final Logger LOG = LoggerFactory.getLogger(
       VectorSMBMapJoinOperator.class.getName());
 
   private static final long serialVersionUID = 1L;
+
+  private VectorizationContext vContext;
+  private VectorSMBJoinDesc vectorDesc;
 
   private VectorExpression[] bigTableValueExpressions;
 
@@ -80,14 +89,14 @@ public class VectorSMBMapJoinOperator extends SMBMapJoinOperator implements Vect
 
   private transient int batchIndex = -1;
 
-  private transient VectorHashKeyWrapper[] keyValues;
+  private transient VectorHashKeyWrapperBase[] keyValues;
 
   private transient SMBJoinKeyEvaluator keyEvaluator;
 
   private transient VectorExpressionWriter[] valueWriters;
 
   private interface SMBJoinKeyEvaluator {
-    List<Object> evaluate(VectorHashKeyWrapper kw) throws HiveException;
+    List<Object> evaluate(VectorHashKeyWrapperBase kw) throws HiveException;
 }
 
   /** Kryo ctor. */
@@ -100,11 +109,13 @@ public class VectorSMBMapJoinOperator extends SMBMapJoinOperator implements Vect
     super(ctx);
   }
 
-  public VectorSMBMapJoinOperator(CompilationOpContext ctx,
-      VectorizationContext vContext, OperatorDesc conf) throws HiveException {
+  public VectorSMBMapJoinOperator(CompilationOpContext ctx, OperatorDesc conf,
+      VectorizationContext vContext, VectorDesc vectorDesc) throws HiveException {
     this(ctx);
     SMBJoinDesc desc = (SMBJoinDesc) conf;
     this.conf = desc;
+    this.vContext = vContext;
+    this.vectorDesc = (VectorSMBJoinDesc) vectorDesc;
 
     order = desc.getTagOrder();
     numAliases = desc.getExprs().size();
@@ -120,7 +131,7 @@ public class VectorSMBMapJoinOperator extends SMBMapJoinOperator implements Vect
 
     List<ExprNodeDesc> keyDesc = desc.getKeys().get(posBigTable);
     keyExpressions = vContext.getVectorExpressions(keyDesc);
-    keyOutputWriters = VectorExpressionWriterFactory.getExpressionWriters(keyDesc);
+    keyOutputWriters = VectorExpressionWriterFactory.getExpressionWriters(keyExpressions);
 
     Map<Byte, List<ExprNodeDesc>> exprs = desc.getExprs();
     bigTableValueExpressions = vContext.getVectorExpressions(exprs.get(posBigTable));
@@ -128,6 +139,11 @@ public class VectorSMBMapJoinOperator extends SMBMapJoinOperator implements Vect
     // We are making a new output vectorized row batch.
     vOutContext = new VectorizationContext(getName(), desc.getOutputColumnNames(),
         /* vContextEnvironment */ vContext);
+  }
+
+  @Override
+  public VectorizationContext getInputVectorizationContext() {
+    return vContext;
   }
 
   @Override
@@ -152,6 +168,9 @@ public class VectorSMBMapJoinOperator extends SMBMapJoinOperator implements Vect
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
+    VectorExpression.doTransientInit(bigTableFilterExpressions, hconf);
+    VectorExpression.doTransientInit(keyExpressions, hconf);
+    VectorExpression.doTransientInit(bigTableValueExpressions, hconf);
 
     vrbCtx = new VectorizedRowBatchCtx();
     vrbCtx.init((StructObjectInspector) this.outputObjInspector, vOutContext.getScratchColumnTypeNames());
@@ -176,7 +195,7 @@ public class VectorSMBMapJoinOperator extends SMBMapJoinOperator implements Vect
       }
 
       @Override
-      public List<Object> evaluate(VectorHashKeyWrapper kw) throws HiveException {
+      public List<Object> evaluate(VectorHashKeyWrapperBase kw) throws HiveException {
         for(int i = 0; i < keyExpressions.length; ++i) {
           key.set(i, keyWrapperBatch.getWritableKeyValue(kw, i, keyOutputWriters[i]));
         }
@@ -228,7 +247,7 @@ public class VectorSMBMapJoinOperator extends SMBMapJoinOperator implements Vect
           int rowIndex = inBatch.selectedInUse ? inBatch.selected[batchIndex] : batchIndex;
           return valueWriters[writerIndex].writeValue(inBatch.cols[columnIndex], rowIndex);
         }
-      }.initVectorExpr(vectorExpr.getOutputColumn(), i);
+      }.initVectorExpr(vectorExpr.getOutputColumnNum(), i);
       vectorNodeEvaluators.add(eval);
     }
     // Now replace the old evaluators with our own
@@ -307,12 +326,17 @@ public class VectorSMBMapJoinOperator extends SMBMapJoinOperator implements Vect
   }
 
   private void flushOutput() throws HiveException {
-    forward(outputBatch, null, true);
+    vectorForward(outputBatch);
     outputBatch.reset();
   }
 
   @Override
-  public VectorizationContext getOuputVectorizationContext() {
+  public VectorizationContext getOutputVectorizationContext() {
     return vOutContext;
+  }
+
+  @Override
+  public VectorDesc getVectorDesc() {
+    return vectorDesc;
   }
 }

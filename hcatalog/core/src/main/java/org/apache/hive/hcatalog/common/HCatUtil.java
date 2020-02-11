@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -33,7 +33,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.security.auth.login.LoginException;
+
+import com.google.common.collect.Maps;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
@@ -41,10 +45,11 @@ import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.security.DelegationTokenIdentifier;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
@@ -54,7 +59,6 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hadoop.hive.thrift.DelegationTokenIdentifier;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
@@ -76,12 +80,19 @@ import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.security.auth.login.LoginException;
-
 public class HCatUtil {
 
   private static final Logger LOG = LoggerFactory.getLogger(HCatUtil.class);
+  private static final HashMap<String, String> hiveConfCodeDefaults;
   private static volatile HiveClientCache hiveClientCache;
+
+  static {
+    // Load all of the default config values from HiveConf.
+    hiveConfCodeDefaults = Maps.newHashMapWithExpectedSize(HiveConf.ConfVars.values().length);
+    for (HiveConf.ConfVars var : HiveConf.ConfVars.values()) {
+      hiveConfCodeDefaults.put(var.toString(), var.getDefaultValue());
+    }
+  }
 
   public static boolean checkJobContextIfRunningFromBackend(JobContext j) {
     if (j.getConfiguration().get("pig.job.converted.fetch", "").equals("") &&
@@ -289,11 +300,11 @@ public class HCatUtil {
    * Test if the first FsAction is more permissive than the second. This is
    * useful in cases where we want to ensure that a file owner has more
    * permissions than the group they belong to, for eg. More completely(but
-   * potentially more cryptically) owner-r >= group-r >= world-r : bitwise
-   * and-masked with 0444 => 444 >= 440 >= 400 >= 000 owner-w >= group-w >=
-   * world-w : bitwise and-masked with &0222 => 222 >= 220 >= 200 >= 000
-   * owner-x >= group-x >= world-x : bitwise and-masked with &0111 => 111 >=
-   * 110 >= 100 >= 000
+   * potentially more cryptically) owner-r &gt;= group-r &gt;= world-r : bitwise
+   * and-masked with 0444 =&gt; 444 &gt;= 440 &gt;= 400 &gt;= 000 owner-w &gt;= group-w &gt;=
+   * world-w : bitwise and-masked with &amp;0222 =&gt; 222 &gt;= 220 &gt;= 200 &gt;= 000
+   * owner-x &gt;= group-x &gt;= world-x : bitwise and-masked with &amp;0111 =&gt; 111 &gt;=
+   * 110 &gt;= 100 &gt;= 000
    *
    * @return true if first FsAction is more permissive than the second, false
    *         if not.
@@ -426,7 +437,7 @@ public class HCatUtil {
   public static Pair<String, String> getDbAndTableName(String tableName) throws IOException {
     String[] dbTableNametokens = tableName.split("\\.");
     if (dbTableNametokens.length == 1) {
-      return new Pair<String, String>(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName);
+      return new Pair<String, String>(Warehouse.DEFAULT_DATABASE_NAME, tableName);
     } else if (dbTableNametokens.length == 2) {
       return new Pair<String, String>(dbTableNametokens[0], dbTableNametokens[1]);
     } else {
@@ -451,12 +462,17 @@ public class HCatUtil {
 
     Map<String, String> jobProperties = new HashMap<String, String>();
     try {
-      tableDesc.getJobProperties().put(
-        HCatConstants.HCAT_KEY_JOB_INFO,
-        HCatUtil.serialize(inputJobInfo));
 
-      storageHandler.configureInputJobProperties(tableDesc,
-        jobProperties);
+      Map<String, String> properties = tableDesc.getJobProperties();
+      LinkedList<InputJobInfo> inputJobInfos = (LinkedList<InputJobInfo>) HCatUtil.deserialize(
+              properties.get(HCatConstants.HCAT_KEY_JOB_INFO));
+      if (inputJobInfos == null) {
+        inputJobInfos = new LinkedList<>();
+      }
+      inputJobInfos.add(inputJobInfo);
+      properties.put(HCatConstants.HCAT_KEY_JOB_INFO, HCatUtil.serialize(inputJobInfos));
+
+      storageHandler.configureInputJobProperties(tableDesc, jobProperties);
 
     } catch (IOException e) {
       throw new IllegalStateException(
@@ -563,9 +579,9 @@ public class HCatUtil {
 
   /**
    * Get or create a hive client depending on whether it exits in cache or not.
-   * @Deprecated : use {@link #getHiveMetastoreClient(HiveConf)} instead.
+   * @deprecated : use {@link #getHiveMetastoreClient(HiveConf)} instead.
    * This was deprecated in Hive 1.2, slated for removal in two versions
-   * (i.e. 1.2 & 1.3(projected) will have it, but it will be removed after that)
+   * (i.e. 1.2 &amp; 1.3(projected) will have it, but it will be removed after that)
    * @param hiveConf The hive configuration
    * @return the client
    * @throws MetaException When HiveMetaStoreClient couldn't be created
@@ -588,6 +604,47 @@ public class HCatUtil {
     }
   }
 
+  private static Configuration getHiveSiteContentsFromClasspath() {
+    Configuration configuration = new Configuration(false); // Don't load defaults.
+    configuration.addResource("hive-site.xml"); // NOTE: hive-site.xml is only available on client, not AM.
+    return configuration;
+  }
+
+  private static Properties getHiveSiteOverrides(Configuration jobConf) {
+    return getHiveSiteOverrides(getHiveSiteContentsFromClasspath(), jobConf);
+  }
+
+  /**
+   * Returns the hive-site.xml config settings which do not appear in <code>jobConf<code> or
+   * the hive-site.xml config settings which appear in <code>jobConf<code>, but have a
+   * different value than HiveConf code defaults.
+   * @param hiveSite the config settings as found in the hive-site.xml only.
+   * @param jobConf the config settings used to launch the job.
+   * @return the set difference between hiveSite and jobConf.
+   */
+  private static Properties getHiveSiteOverrides(Configuration hiveSite, Configuration jobConf) {
+    // return (hiveSite - jobConf);
+    Properties difference = new Properties();
+    for (Map.Entry<String,String> keyValue : hiveSite) {
+      String key = keyValue.getKey();
+      String hiveSiteValue = keyValue.getValue();
+      String jobConfValue = jobConf.getRaw(key);
+
+      if (jobConfValue == null) {
+        difference.put(key, hiveSiteValue);
+      } else if (hiveConfCodeDefaults.containsKey(key)) {
+        // Necessary to compare against HiveConf defaults as hive-site.xml is not available on task nodes (like AM).
+        if (! jobConfValue.equals(hiveConfCodeDefaults.get(key))) {
+          difference.put(key, jobConfValue);
+        }
+      }
+    }
+
+    LOG.info("Configuration differences=" + difference);
+
+    return difference;
+  }
+
   public static HiveConf getHiveConf(Configuration conf)
     throws IOException {
 
@@ -595,30 +652,23 @@ public class HCatUtil {
 
     //copy the hive conf into the job conf and restore it
     //in the backend context
-    if (conf.get(HCatConstants.HCAT_KEY_HIVE_CONF) == null) {
-      conf.set(HCatConstants.HCAT_KEY_HIVE_CONF,
-        HCatUtil.serialize(hiveConf.getAllProperties()));
-    } else {
-      //Copy configuration properties into the hive conf
-      Properties properties = (Properties) HCatUtil.deserialize(
-        conf.get(HCatConstants.HCAT_KEY_HIVE_CONF));
+    if (StringUtils.isBlank(conf.get(HCatConstants.HCAT_KEY_HIVE_CONF))) {
+      // Called once on the client.
+      LOG.info(HCatConstants.HCAT_KEY_HIVE_CONF + " not set. Generating configuration differences.");
 
-      for (Map.Entry<Object, Object> prop : properties.entrySet()) {
-        if (prop.getValue() instanceof String) {
-          hiveConf.set((String) prop.getKey(), (String) prop.getValue());
-        } else if (prop.getValue() instanceof Integer) {
-          hiveConf.setInt((String) prop.getKey(),
-            (Integer) prop.getValue());
-        } else if (prop.getValue() instanceof Boolean) {
-          hiveConf.setBoolean((String) prop.getKey(),
-            (Boolean) prop.getValue());
-        } else if (prop.getValue() instanceof Long) {
-          hiveConf.setLong((String) prop.getKey(), (Long) prop.getValue());
-        } else if (prop.getValue() instanceof Float) {
-          hiveConf.setFloat((String) prop.getKey(),
-            (Float) prop.getValue());
-        }
-      }
+      Properties differences = getHiveSiteOverrides(conf);
+
+      // Must set this key even if differences is empty otherwise client and AM will attempt
+      // to set this multiple times.
+      conf.set(HCatConstants.HCAT_KEY_HIVE_CONF, HCatUtil.serialize(differences));
+    } else {
+      // Called one or more times on the client and AM.
+      LOG.info(HCatConstants.HCAT_KEY_HIVE_CONF + " is set. Applying configuration differences.");
+
+      Properties properties = (Properties) HCatUtil.deserialize(
+          conf.get(HCatConstants.HCAT_KEY_HIVE_CONF));
+
+      storePropertiesToHiveConf(properties, hiveConf);
     }
 
     if (conf.get(HCatConstants.HCAT_KEY_TOKEN_SIGNATURE) != null) {
@@ -629,6 +679,25 @@ public class HCatUtil {
     return hiveConf;
   }
 
+  public static HiveConf storePropertiesToHiveConf(Properties properties, HiveConf hiveConf)
+      throws IOException {
+    for (Map.Entry<Object, Object> prop : properties.entrySet()) {
+      if (prop.getValue() instanceof String) {
+        hiveConf.set((String) prop.getKey(), (String) prop.getValue());
+      } else if (prop.getValue() instanceof Integer) {
+        hiveConf.setInt((String) prop.getKey(), (Integer) prop.getValue());
+      } else if (prop.getValue() instanceof Boolean) {
+        hiveConf.setBoolean((String) prop.getKey(), (Boolean) prop.getValue());
+      } else if (prop.getValue() instanceof Long) {
+        hiveConf.setLong((String) prop.getKey(), (Long) prop.getValue());
+      } else if (prop.getValue() instanceof Float) {
+        hiveConf.setFloat((String) prop.getKey(), (Float) prop.getValue());
+      } else {
+        LOG.warn("Unsupported type: key=" + prop.getKey() + " value=" + prop.getValue());
+      }
+    }
+    return hiveConf;
+  }
 
   public static JobConf getJobConfFromContext(JobContext jobContext) {
     JobConf jobConf;
@@ -642,6 +711,30 @@ public class HCatUtil {
     return jobConf;
   }
 
+  // Retrieve settings in HiveConf that aren't also set in the JobConf.
+  public static Map<String,String> getHCatKeyHiveConf(JobConf conf) {
+    try {
+      Properties properties = null;
+
+      if (! StringUtils.isBlank(conf.get(HCatConstants.HCAT_KEY_HIVE_CONF))) {
+        properties = (Properties) HCatUtil.deserialize(
+            conf.get(HCatConstants.HCAT_KEY_HIVE_CONF));
+
+        LOG.info(HCatConstants.HCAT_KEY_HIVE_CONF + " is set. Using differences=" + properties);
+      } else {
+        LOG.info(HCatConstants.HCAT_KEY_HIVE_CONF + " not set. Generating configuration differences.");
+
+        properties = getHiveSiteOverrides(conf);
+      }
+
+      // This method may not be safe as it can throw an NPE if a key or value is null.
+      return Maps.fromProperties(properties);
+    }
+    catch (IOException e) {
+      throw new IllegalStateException("Failed to deserialize hive conf", e);
+    }
+  }
+
   public static void copyJobPropertiesToJobConf(
     Map<String, String> jobProperties, JobConf jobConf) {
     for (Map.Entry<String, String> entry : jobProperties.entrySet()) {
@@ -649,10 +742,9 @@ public class HCatUtil {
     }
   }
 
-
   public static boolean isHadoop23() {
     String version = org.apache.hadoop.util.VersionInfo.getVersion();
-    if (version.matches("\\b0\\.23\\..+\\b")||version.matches("\\b2\\..*"))
+    if (version.matches("\\b0\\.23\\..+\\b")||version.matches("\\b2\\..*")||version.matches("\\b3\\..*"))
       return true;
     return false;
   }
@@ -670,4 +762,35 @@ public class HCatUtil {
       throw new IllegalArgumentException(msg);
     }
   }
+
+  public static void putInputJobInfoToConf(InputJobInfo inputJobInfo, Configuration conf)
+   throws IOException {
+
+    LinkedList<InputJobInfo> inputJobInfos = (LinkedList<InputJobInfo>) HCatUtil.deserialize(
+            conf.get(HCatConstants.HCAT_KEY_JOB_INFO));
+
+    if (inputJobInfos == null) {
+      inputJobInfos = new LinkedList<>();
+    }
+    inputJobInfos.add(inputJobInfo);
+    conf.set(HCatConstants.HCAT_KEY_JOB_INFO, HCatUtil.serialize(inputJobInfos));
+  }
+
+  public static LinkedList<InputJobInfo> getInputJobInfosFromConf(Configuration conf)
+          throws IOException {
+    LinkedList<InputJobInfo> inputJobInfos = (LinkedList<InputJobInfo>) HCatUtil.deserialize(
+            conf.get(HCatConstants.HCAT_KEY_JOB_INFO));
+    return inputJobInfos;
+  }
+
+  public static InputJobInfo getLastInputJobInfosFromConf(Configuration conf)
+          throws IOException {
+    LinkedList<InputJobInfo> inputJobInfos = getInputJobInfosFromConf(conf);
+    if (inputJobInfos == null || inputJobInfos.isEmpty()) {
+      return null;
+    } else {
+      return getInputJobInfosFromConf(conf).getLast();
+    }
+  }
+
 }

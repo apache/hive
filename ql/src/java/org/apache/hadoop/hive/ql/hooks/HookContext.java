@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -32,13 +32,10 @@ import org.apache.hadoop.hive.ql.QueryInfo;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.TaskRunner;
-import org.apache.hadoop.hive.ql.history.HiveHistory;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.optimizer.lineage.LineageCtx.Index;
-import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hadoop.yarn.api.records.ApplicationId;
 /**
  * Hook Context keeps all the necessary information for all the hooks.
  * New implemented hook can get the query plan, job conf and the list of all completed tasks from this hook context
@@ -88,12 +85,8 @@ public class HookContext {
     inputs = queryPlan.getInputs();
     outputs = queryPlan.getOutputs();
     ugi = Utils.getUGI();
-    linfo= null;
-    depMap = null;
-    if(SessionState.get() != null){
-      linfo = SessionState.get().getLineageState().getLineageInfo();
-      depMap = SessionState.get().getLineageState().getIndex();
-    }
+    linfo = queryState.getLineageState().getLineageInfo();
+    depMap = queryState.getLineageState().getIndex();
     this.userName = userName;
     this.ipAddress = ipAddress;
     this.hiveInstanceAddress = hiveInstanceAddress;

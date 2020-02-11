@@ -1,6 +1,6 @@
-PREHOOK: query: DROP TABLE IF EXISTS encrypted_table
+PREHOOK: query: DROP TABLE IF EXISTS encrypted_table_n2
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE IF EXISTS encrypted_table
+POSTHOOK: query: DROP TABLE IF EXISTS encrypted_table_n2
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: DROP TABLE IF EXISTS encrypted_ext_table
 PREHOOK: type: DROPTABLE
@@ -8,45 +8,44 @@ POSTHOOK: query: DROP TABLE IF EXISTS encrypted_ext_table
 POSTHOOK: type: DROPTABLE
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
-#### A masked pattern was here ####
+PREHOOK: Input: hdfs://### HDFS PATH ###
 PREHOOK: Output: database:default
-PREHOOK: Output: default@encrypted_table
+PREHOOK: Output: default@encrypted_table_n2
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
-#### A masked pattern was here ####
+POSTHOOK: Input: hdfs://### HDFS PATH ###
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@encrypted_table
+POSTHOOK: Output: default@encrypted_table_n2
 Encryption key created: 'key_128'
 Encryption zone created: '/build/ql/test/data/warehouse/default/encrypted_table' using key: 'key_128'
-PREHOOK: query: INSERT OVERWRITE TABLE encrypted_table SELECT * FROM src
+PREHOOK: query: INSERT OVERWRITE TABLE encrypted_table_n2 SELECT * FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@encrypted_table
-POSTHOOK: query: INSERT OVERWRITE TABLE encrypted_table SELECT * FROM src
+PREHOOK: Output: default@encrypted_table_n2
+POSTHOOK: query: INSERT OVERWRITE TABLE encrypted_table_n2 SELECT * FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@encrypted_table
-POSTHOOK: Lineage: encrypted_table.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: encrypted_table.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@encrypted_table_n2
+POSTHOOK: Lineage: encrypted_table_n2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: encrypted_table_n2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
-#### A masked pattern was here ####
+PREHOOK: Input: hdfs://### HDFS PATH ###
 PREHOOK: Output: database:default
 PREHOOK: Output: default@encrypted_ext_table
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
-#### A masked pattern was here ####
+POSTHOOK: Input: hdfs://### HDFS PATH ###
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@encrypted_ext_table
-PREHOOK: query: SHOW TABLES
+PREHOOK: query: SHOW TABLES LIKE "encrypted_*"
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:default
-POSTHOOK: query: SHOW TABLES
+POSTHOOK: query: SHOW TABLES LIKE "encrypted_*"
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
 encrypted_ext_table
-encrypted_table
-src
+encrypted_table_n2
 PREHOOK: query: DROP TABLE default.encrypted_ext_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@encrypted_ext_table
@@ -55,41 +54,39 @@ POSTHOOK: query: DROP TABLE default.encrypted_ext_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@encrypted_ext_table
 POSTHOOK: Output: default@encrypted_ext_table
-PREHOOK: query: SHOW TABLES
+PREHOOK: query: SHOW TABLES LIKE "encrypted_*"
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:default
-POSTHOOK: query: SHOW TABLES
+POSTHOOK: query: SHOW TABLES LIKE "encrypted_*"
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
-encrypted_table
-src
-PREHOOK: query: DROP TABLE default.encrypted_table
+encrypted_table_n2
+PREHOOK: query: DROP TABLE default.encrypted_table_n2
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@encrypted_table
-PREHOOK: Output: default@encrypted_table
-POSTHOOK: query: DROP TABLE default.encrypted_table
+PREHOOK: Input: default@encrypted_table_n2
+PREHOOK: Output: default@encrypted_table_n2
+POSTHOOK: query: DROP TABLE default.encrypted_table_n2
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@encrypted_table
-POSTHOOK: Output: default@encrypted_table
-PREHOOK: query: SHOW TABLES
+POSTHOOK: Input: default@encrypted_table_n2
+POSTHOOK: Output: default@encrypted_table_n2
+PREHOOK: query: SHOW TABLES LIKE "encrypted_*"
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:default
-POSTHOOK: query: SHOW TABLES
+POSTHOOK: query: SHOW TABLES LIKE "encrypted_*"
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
-src
 PREHOOK: query: DROP TABLE IF EXISTS encrypted_table1
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE IF EXISTS encrypted_table1
 POSTHOOK: type: DROPTABLE
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
-#### A masked pattern was here ####
+PREHOOK: Input: hdfs://### HDFS PATH ###
 PREHOOK: Output: database:default
 PREHOOK: Output: default@encrypted_table1
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
-#### A masked pattern was here ####
+POSTHOOK: Input: hdfs://### HDFS PATH ###
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@encrypted_table1
 Encryption zone created: '/build/ql/test/data/warehouse/default/encrypted_table1' using key: 'key_128'
@@ -145,22 +142,20 @@ POSTHOOK: query: DROP TABLE default.encrypted_table1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@encrypted_table1
 POSTHOOK: Output: default@encrypted_table1
-PREHOOK: query: SHOW TABLES
+PREHOOK: query: SHOW TABLES LIKE "encrypted_*"
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:default
-POSTHOOK: query: SHOW TABLES
+POSTHOOK: query: SHOW TABLES LIKE "encrypted_*"
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
-src
 FAILED: SemanticException [Error 10001]: Table not found encrypted_table1
 PREHOOK: query: DROP TABLE default.encrypted_table1
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE default.encrypted_table1
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: SHOW TABLES
+PREHOOK: query: SHOW TABLES LIKE "encrypted_*"
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:default
-POSTHOOK: query: SHOW TABLES
+POSTHOOK: query: SHOW TABLES LIKE "encrypted_*"
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
-src

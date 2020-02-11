@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -30,8 +30,11 @@ public enum HiveCommand {
   RESET(),
   DFS(),
   CRYPTO(true),
+  ERASURE(true),
   ADD(),
   LIST(),
+  LLAP_CLUSTER(),
+  LLAP_CACHE(),
   RELOAD(),
   DELETE(),
   COMPILE();
@@ -77,6 +80,8 @@ public enum HiveCommand {
         return null;
       } else if(command.length > 1 && "set".equalsIgnoreCase(command[0]) && "autocommit".equalsIgnoreCase(command[1])) {
         return null;//don't want set autocommit true|false to get mixed with set hive.foo.bar...
+      } else if (command.length > 1 && "llap".equalsIgnoreCase(command[0])) {
+        return getLlapSubCommand(command);
       } else if (COMMANDS.contains(cmd)) {
         HiveCommand hiveCommand = HiveCommand.valueOf(cmd);
 
@@ -88,5 +93,15 @@ public enum HiveCommand {
       }
     }
     return null;
+  }
+
+  private static HiveCommand getLlapSubCommand(final String[] command) {
+    if ("cluster".equalsIgnoreCase(command[1])) {
+      return LLAP_CLUSTER;
+    } else if ("cache".equalsIgnoreCase(command[1])) {
+      return LLAP_CACHE;
+    } else {
+      return null;
+    }
   }
 }

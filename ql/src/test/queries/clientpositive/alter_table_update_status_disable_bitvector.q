@@ -1,3 +1,4 @@
+--! qt:dataset:src1
 set hive.stats.fetch.bitvector=false;
 
 create table src_stat as select * from src1;

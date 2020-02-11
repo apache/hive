@@ -1,3 +1,4 @@
+--! qt:dataset:alltypesorc
 SET hive.vectorized.execution.enabled=true;
 set hive.mapred.mode=nonstrict;
 SELECT   cfloat,

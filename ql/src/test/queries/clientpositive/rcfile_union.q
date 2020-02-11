@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 
 CREATE table rcfile_unionTable (b STRING, c STRING)

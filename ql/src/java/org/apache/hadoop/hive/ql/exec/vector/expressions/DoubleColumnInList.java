@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
  * Output a boolean value indicating if a column is IN a list of constants.
@@ -34,16 +35,15 @@ public class DoubleColumnInList extends VectorExpression implements IDoubleInExp
   private static final long serialVersionUID = 1L;
 
   private int colNum;
-  private int outputColumn;
   private double[] inListValues;
 
   // The set object containing the IN list. This is optimized for lookup
   // of the data type of the column.
   private transient CuckooSetDouble inSet;
 
-  public DoubleColumnInList(int colNum, int outputColumn) {
+  public DoubleColumnInList(int colNum, int outputColumnNum) {
+    super(outputColumnNum);
     this.colNum = colNum;
-    this.outputColumn = outputColumn;
   }
 
   public DoubleColumnInList() {
@@ -52,7 +52,7 @@ public class DoubleColumnInList extends VectorExpression implements IDoubleInExp
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
 
     if (childExpressions != null) {
       super.evaluateChildren(batch);
@@ -64,10 +64,10 @@ public class DoubleColumnInList extends VectorExpression implements IDoubleInExp
     }
 
     DoubleColumnVector inputColVector = (DoubleColumnVector) batch.cols[colNum];
-    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumn];
+    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
-    boolean[] nullPos = inputColVector.isNull;
-    boolean[] outNulls = outputColVector.isNull;
+    boolean[] inputIsNull = inputColVector.isNull;
+    boolean[] outputIsNull = outputColVector.isNull;
     int n = batch.size;
     double[] vector = inputColVector.vector;
     long[] outputVector = outputColVector.vector;
@@ -77,80 +77,74 @@ public class DoubleColumnInList extends VectorExpression implements IDoubleInExp
       return;
     }
 
+    // We do not need to do a column reset since we are carefully changing the output.
     outputColVector.isRepeating = false;
-    outputColVector.noNulls = inputColVector.noNulls;
-    if (inputColVector.noNulls) {
-      if (inputColVector.isRepeating) {
 
-        // All must be selected otherwise size would be zero
-        // Repeating property will not change.
+    if (inputColVector.isRepeating) {
+      if (inputColVector.noNulls || !inputIsNull[0]) {
+        // Set isNull before call in case it changes it mind.
+        outputIsNull[0] = false;
         outputVector[0] = inSet.lookup(vector[0]) ? 1 : 0;
-        outputColVector.isRepeating = true;
-      } else if (batch.selectedInUse) {
-        for(int j = 0; j != n; j++) {
-          int i = sel[j];
-          outputVector[i] = inSet.lookup(vector[i]) ? 1 : 0;
-        }
       } else {
-        for(int i = 0; i != n; i++) {
-          outputVector[i] = inSet.lookup(vector[i]) ? 1 : 0;
-        }
+        outputIsNull[0] = true;
+        outputColVector.noNulls = false;
       }
-    } else {
-      if (inputColVector.isRepeating) {
+      outputColVector.isRepeating = true;
+      return;
+    }
 
-        // All must be selected otherwise size would be zero
-        // Repeating property will not change.
-        if (!nullPos[0]) {
-          outputVector[0] = inSet.lookup(vector[0]) ? 1 : 0;
-          outNulls[0] = false;
+    if (inputColVector.noNulls) {
+      if (batch.selectedInUse) {
+
+        // CONSIDER: For large n, fill n or all of isNull array and use the tighter ELSE loop.
+
+        if (!outputColVector.noNulls) {
+          for(int j = 0; j != n; j++) {
+           final int i = sel[j];
+           // Set isNull before call in case it changes it mind.
+           outputIsNull[i] = false;
+           outputVector[i] = inSet.lookup(vector[i]) ? 1 : 0;
+         }
         } else {
-          outNulls[0] = true;
-        }
-        outputColVector.isRepeating = true;
-      } else if (batch.selectedInUse) {
-        for(int j = 0; j != n; j++) {
-          int i = sel[j];
-          outNulls[i] = nullPos[i];
-          if (!nullPos[i]) {
+          for(int j = 0; j != n; j++) {
+            final int i = sel[j];
             outputVector[i] = inSet.lookup(vector[i]) ? 1 : 0;
           }
         }
       } else {
-        System.arraycopy(nullPos, 0, outNulls, 0, n);
+        if (!outputColVector.noNulls) {
+
+          // Assume it is almost always a performance win to fill all of isNull so we can
+          // safely reset noNulls.
+          Arrays.fill(outputIsNull, false);
+          outputColVector.noNulls = true;
+        }
         for(int i = 0; i != n; i++) {
-          if (!nullPos[i]) {
+          outputVector[i] = inSet.lookup(vector[i]) ? 1 : 0;
+        }
+      }
+    } else /* there are NULLs in the inputColVector */ {
+
+      // Carefully handle NULLs...
+      outputColVector.noNulls = false;
+
+      if (batch.selectedInUse) {
+        for(int j = 0; j != n; j++) {
+          int i = sel[j];
+          outputIsNull[i] = inputIsNull[i];
+          if (!inputIsNull[i]) {
+            outputVector[i] = inSet.lookup(vector[i]) ? 1 : 0;
+          }
+        }
+      } else {
+        System.arraycopy(inputIsNull, 0, outputIsNull, 0, n);
+        for(int i = 0; i != n; i++) {
+          if (!inputIsNull[i]) {
             outputVector[i] = inSet.lookup(vector[i]) ? 1 : 0;
           }
         }
       }
     }
-  }
-
-  @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "boolean";
-  }
-
-  public int getColNum() {
-    return colNum;
-  }
-
-  public void setColNum(int colNum) {
-    this.colNum = colNum;
-  }
-
-  public void setOutputColumn(int outputColumn) {
-    this.outputColumn = outputColumn;
-  }
-
-  public double[] getInListValues() {
-    return this.inListValues;
   }
 
   public void setInListValues(double[] a) {
@@ -159,7 +153,7 @@ public class DoubleColumnInList extends VectorExpression implements IDoubleInExp
 
   @Override
   public String vectorExpressionParameters() {
-    return "col " + colNum + ", values " + Arrays.toString(inListValues);
+    return getColumnParamString(0, colNum) + ", values " + Arrays.toString(inListValues);
   }
 
   @Override

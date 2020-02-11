@@ -1,3 +1,4 @@
+--! qt:dataset:src
 DESCRIBE FUNCTION current_user;
 DESCRIBE FUNCTION EXTENDED current_user;
 

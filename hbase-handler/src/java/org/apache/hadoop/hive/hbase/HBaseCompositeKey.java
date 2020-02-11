@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -35,22 +35,21 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructField;
  * HBaseCompositeKey extension of LazyStruct. All complex composite keys should extend this class
  * and override the {@link LazyStruct#getField(int)} method where fieldID corresponds to the ID of a
  * key in the composite key.
- * <p>
+ * <br>
  * For example, for a composite key <i>"/part1/part2/part3"</i>, <i>part1</i> will have an id
  * <i>0</i>, <i>part2</i> will have an id <i>1</i> and <i>part3</i> will have an id <i>2</i>. Custom
  * implementations of getField(fieldID) should return the value corresponding to that fieldID. So,
- * for the above example, the value returned for <i>getField(0)</i> should be </i>part1</i>,
+ * for the above example, the value returned for <i>getField(0)</i> should be <i>part1</i>,
  * <i>getField(1)</i> should be <i>part2</i> and <i>getField(2)</i> should be <i>part3</i>.
- * </p>
  * 
- * <p>
+ *
+ * <br>
  * All custom implementation are expected to have a constructor of the form:
  * 
  * <pre>
  * MyCustomCompositeKey(LazySimpleStructObjectInspector oi, Properties tbl, Configuration conf)
  * </pre>
  *
- * </p>
  * 
  * */
 public class HBaseCompositeKey extends LazyStruct {

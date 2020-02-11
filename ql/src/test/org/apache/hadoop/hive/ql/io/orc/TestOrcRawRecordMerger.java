@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,14 +20,13 @@ package org.apache.hadoop.hive.ql.io.orc;
 
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.RawLocalFileSystem;
-import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.hive.common.ValidReadTxnList;
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.orc.CompressionKind;
-import org.apache.orc.MemoryManager;
+import org.apache.orc.OrcConf;
 import org.apache.orc.StripeInformation;
-import org.apache.orc.impl.MemoryManagerImpl;
 import org.apache.orc.impl.OrcAcidUtils;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -37,8 +36,8 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.ValidTxnList;
-import org.apache.hadoop.hive.common.ValidReadTxnList;
+import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -67,28 +66,24 @@ import org.mockito.Mockito;
 import com.google.common.collect.Lists;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 
 public class TestOrcRawRecordMerger {
 
   private static final Logger LOG = LoggerFactory.getLogger(TestOrcRawRecordMerger.class);
-//todo: why is statementId -1?
   @Test
   public void testOrdering() throws Exception {
     ReaderKey left = new ReaderKey(100, 200, 1200, 300);
     ReaderKey right = new ReaderKey();
-    right.setValues(100, 200, 1000, 200,1);
+    right.setValues(100, 200, 1000, 200, false);
     assertTrue(right.compareTo(left) < 0);
     assertTrue(left.compareTo(right) > 0);
     assertEquals(false, left.equals(right));
@@ -97,16 +92,16 @@ public class TestOrcRawRecordMerger {
     assertEquals(true, right.equals(left));
     right.setRowId(2000);
     assertTrue(right.compareTo(left) > 0);
-    left.setValues(1, 2, 3, 4,-1);
-    right.setValues(100, 2, 3, 4,-1);
+    left.setValues(1, 2, 3, 4, false);
+    right.setValues(100, 2, 3, 4, false);
     assertTrue(left.compareTo(right) < 0);
     assertTrue(right.compareTo(left) > 0);
-    left.setValues(1, 2, 3, 4,-1);
-    right.setValues(1, 100, 3, 4,-1);
+    left.setValues(1, 2, 3, 4, false);
+    right.setValues(1, 100, 3, 4, false);
     assertTrue(left.compareTo(right) < 0);
     assertTrue(right.compareTo(left) > 0);
-    left.setValues(1, 2, 3, 100,-1);
-    right.setValues(1, 2, 3, 4,-1);
+    left.setValues(1, 2, 3, 100, false);
+    right.setValues(1, 2, 3, 4, false);
     assertTrue(left.compareTo(right) < 0);
     assertTrue(right.compareTo(left) > 0);
 
@@ -126,11 +121,11 @@ public class TestOrcRawRecordMerger {
                              long currentTransaction,
                              String value) {
     event.setFieldValue(OrcRecordUpdater.OPERATION, new IntWritable(operation));
-    event.setFieldValue(OrcRecordUpdater.ORIGINAL_TRANSACTION,
+    event.setFieldValue(OrcRecordUpdater.ORIGINAL_WRITEID,
         new LongWritable(originalTransaction));
     event.setFieldValue(OrcRecordUpdater.BUCKET, new IntWritable(bucket));
     event.setFieldValue(OrcRecordUpdater.ROW_ID, new LongWritable(rowId));
-    event.setFieldValue(OrcRecordUpdater.CURRENT_TRANSACTION,
+    event.setFieldValue(OrcRecordUpdater.CURRENT_WRITEID,
         new LongWritable(currentTransaction));
     OrcStruct row = new OrcStruct(1);
     row.setFieldValue(0, new Text(value));
@@ -174,7 +169,7 @@ public class TestOrcRawRecordMerger {
     setRow(row4, OrcRecordUpdater.INSERT_OPERATION, 40, 50, 60, 130, "fourth");
     OrcStruct row5 = new OrcStruct(OrcRecordUpdater.FIELDS);
     setRow(row5, OrcRecordUpdater.INSERT_OPERATION, 40, 50, 61, 140, "fifth");
-    Mockito.when(reader.rowsOptions(Mockito.any(Reader.Options.class)))
+    Mockito.when(reader.rowsOptions(Mockito.any(Reader.Options.class), Mockito.any(HiveConf.class)))
         .thenReturn(recordReader);
 
     Mockito.when(recordReader.hasNext()).
@@ -198,19 +193,19 @@ public class TestOrcRawRecordMerger {
     RecordIdentifier minKey = new RecordIdentifier(10, 20, 30);
     RecordIdentifier maxKey = new RecordIdentifier(40, 50, 60);
     ReaderPair pair = new OrcRawRecordMerger.ReaderPairAcid(key, reader, minKey, maxKey,
-        new Reader.Options(), 0);
+        new Reader.Options(), new HiveConf());
     RecordReader recordReader = pair.getRecordReader();
-    assertEquals(10, key.getTransactionId());
+    assertEquals(10, key.getWriteId());
     assertEquals(20, key.getBucketProperty());
     assertEquals(40, key.getRowId());
-    assertEquals(120, key.getCurrentTransactionId());
+    assertEquals(120, key.getCurrentWriteId());
     assertEquals("third", value(pair.nextRecord()));
 
     pair.next(pair.nextRecord());
-    assertEquals(40, key.getTransactionId());
+    assertEquals(40, key.getWriteId());
     assertEquals(50, key.getBucketProperty());
     assertEquals(60, key.getRowId());
-    assertEquals(130, key.getCurrentTransactionId());
+    assertEquals(130, key.getCurrentWriteId());
     assertEquals("fourth", value(pair.nextRecord()));
 
     pair.next(pair.nextRecord());
@@ -224,40 +219,40 @@ public class TestOrcRawRecordMerger {
     Reader reader = createMockReader();
 
     ReaderPair pair = new OrcRawRecordMerger.ReaderPairAcid(key, reader, null, null,
-        new Reader.Options(), 0);
+        new Reader.Options(), new HiveConf());
     RecordReader recordReader = pair.getRecordReader();
-    assertEquals(10, key.getTransactionId());
+    assertEquals(10, key.getWriteId());
     assertEquals(20, key.getBucketProperty());
     assertEquals(20, key.getRowId());
-    assertEquals(100, key.getCurrentTransactionId());
+    assertEquals(100, key.getCurrentWriteId());
     assertEquals("first", value(pair.nextRecord()));
 
     pair.next(pair.nextRecord());
-    assertEquals(10, key.getTransactionId());
+    assertEquals(10, key.getWriteId());
     assertEquals(20, key.getBucketProperty());
     assertEquals(30, key.getRowId());
-    assertEquals(110, key.getCurrentTransactionId());
+    assertEquals(110, key.getCurrentWriteId());
     assertEquals("second", value(pair.nextRecord()));
 
     pair.next(pair.nextRecord());
-    assertEquals(10, key.getTransactionId());
+    assertEquals(10, key.getWriteId());
     assertEquals(20, key.getBucketProperty());
     assertEquals(40, key.getRowId());
-    assertEquals(120, key.getCurrentTransactionId());
+    assertEquals(120, key.getCurrentWriteId());
     assertEquals("third", value(pair.nextRecord()));
 
     pair.next(pair.nextRecord());
-    assertEquals(40, key.getTransactionId());
+    assertEquals(40, key.getWriteId());
     assertEquals(50, key.getBucketProperty());
     assertEquals(60, key.getRowId());
-    assertEquals(130, key.getCurrentTransactionId());
+    assertEquals(130, key.getCurrentWriteId());
     assertEquals("fourth", value(pair.nextRecord()));
 
     pair.next(pair.nextRecord());
-    assertEquals(40, key.getTransactionId());
+    assertEquals(40, key.getWriteId());
     assertEquals(50, key.getBucketProperty());
     assertEquals(61, key.getRowId());
-    assertEquals(140, key.getCurrentTransactionId());
+    assertEquals(140, key.getCurrentWriteId());
     assertEquals("fifth", value(pair.nextRecord()));
 
     pair.next(pair.nextRecord());
@@ -280,7 +275,7 @@ public class TestOrcRawRecordMerger {
     OrcStruct row4 = createOriginalRow("fourth");
     OrcStruct row5 = createOriginalRow("fifth");
 
-    Mockito.when(reader.rowsOptions(Mockito.any(Reader.Options.class)))
+    Mockito.when(reader.rowsOptions(Mockito.any(Reader.Options.class), Mockito.any(HiveConf.class)))
         .thenReturn(recordReader);
     Mockito.when(recordReader.hasNext()).
         thenReturn(true, true, true, true, true, false);
@@ -298,7 +293,7 @@ public class TestOrcRawRecordMerger {
     int BUCKET = 10;
     ReaderKey key = new ReaderKey();
     Configuration conf = new Configuration();
-    int bucketProperty = OrcRawRecordMerger.encodeBucketId(conf, BUCKET);
+    int bucketProperty = OrcRawRecordMerger.encodeBucketId(conf, BUCKET, 0);
     Reader reader = createMockOriginalReader();
     RecordIdentifier minKey = new RecordIdentifier(0, bucketProperty, 1);
     RecordIdentifier maxKey = new RecordIdentifier(0, bucketProperty, 3);
@@ -308,19 +303,20 @@ public class TestOrcRawRecordMerger {
     fs.makeQualified(root);
     fs.create(root);
     ReaderPair pair = new OrcRawRecordMerger.OriginalReaderPairToRead(key, reader, BUCKET, minKey, maxKey,
-        new Reader.Options().include(includes), new OrcRawRecordMerger.Options().rootPath(root), conf, new ValidReadTxnList());
+        new Reader.Options().include(includes), new OrcRawRecordMerger.Options().rootPath(root),
+            conf, new ValidReaderWriteIdList(), 0);
     RecordReader recordReader = pair.getRecordReader();
-    assertEquals(0, key.getTransactionId());
+    assertEquals(0, key.getWriteId());
     assertEquals(bucketProperty, key.getBucketProperty());
     assertEquals(2, key.getRowId());
-    assertEquals(0, key.getCurrentTransactionId());
+    assertEquals(0, key.getCurrentWriteId());
     assertEquals("third", value(pair.nextRecord()));
 
     pair.next(pair.nextRecord());
-    assertEquals(0, key.getTransactionId());
+    assertEquals(0, key.getWriteId());
     assertEquals(bucketProperty, key.getBucketProperty());
     assertEquals(3, key.getRowId());
-    assertEquals(0, key.getCurrentTransactionId());
+    assertEquals(0, key.getCurrentWriteId());
     assertEquals("fourth", value(pair.nextRecord()));
 
     pair.next(pair.nextRecord());
@@ -328,8 +324,8 @@ public class TestOrcRawRecordMerger {
     Mockito.verify(recordReader).close();
   }
 
-  private static ValidTxnList createMaximalTxnList() {
-    return new ValidReadTxnList();
+  private static ValidWriteIdList createMaximalTxnList() {
+    return new ValidReaderWriteIdList();
   }
 
   @Test
@@ -338,46 +334,46 @@ public class TestOrcRawRecordMerger {
     ReaderKey key = new ReaderKey();
     Reader reader = createMockOriginalReader();
     Configuration conf = new Configuration();
-    int bucketProperty = OrcRawRecordMerger.encodeBucketId(conf, BUCKET);
+    int bucketProperty = OrcRawRecordMerger.encodeBucketId(conf, BUCKET, 0);
     FileSystem fs = FileSystem.getLocal(conf);
     Path root = new Path(tmpDir, "testOriginalReaderPairNoMin");
     fs.makeQualified(root);
     fs.create(root);
     ReaderPair pair = new OrcRawRecordMerger.OriginalReaderPairToRead(key, reader, BUCKET, null, null,
-        new Reader.Options(), new OrcRawRecordMerger.Options().rootPath(root), conf, new ValidReadTxnList());
+        new Reader.Options(), new OrcRawRecordMerger.Options().rootPath(root), conf, new ValidReaderWriteIdList(), 0);
     assertEquals("first", value(pair.nextRecord()));
-    assertEquals(0, key.getTransactionId());
+    assertEquals(0, key.getWriteId());
     assertEquals(bucketProperty, key.getBucketProperty());
     assertEquals(0, key.getRowId());
-    assertEquals(0, key.getCurrentTransactionId());
+    assertEquals(0, key.getCurrentWriteId());
 
     pair.next(pair.nextRecord());
     assertEquals("second", value(pair.nextRecord()));
-    assertEquals(0, key.getTransactionId());
+    assertEquals(0, key.getWriteId());
     assertEquals(bucketProperty, key.getBucketProperty());
     assertEquals(1, key.getRowId());
-    assertEquals(0, key.getCurrentTransactionId());
+    assertEquals(0, key.getCurrentWriteId());
 
     pair.next(pair.nextRecord());
     assertEquals("third", value(pair.nextRecord()));
-    assertEquals(0, key.getTransactionId());
+    assertEquals(0, key.getWriteId());
     assertEquals(bucketProperty, key.getBucketProperty());
     assertEquals(2, key.getRowId());
-    assertEquals(0, key.getCurrentTransactionId());
+    assertEquals(0, key.getCurrentWriteId());
 
     pair.next(pair.nextRecord());
     assertEquals("fourth", value(pair.nextRecord()));
-    assertEquals(0, key.getTransactionId());
+    assertEquals(0, key.getWriteId());
     assertEquals(bucketProperty, key.getBucketProperty());
     assertEquals(3, key.getRowId());
-    assertEquals(0, key.getCurrentTransactionId());
+    assertEquals(0, key.getCurrentWriteId());
 
     pair.next(pair.nextRecord());
     assertEquals("fifth", value(pair.nextRecord()));
-    assertEquals(0, key.getTransactionId());
+    assertEquals(0, key.getWriteId());
     assertEquals(bucketProperty, key.getBucketProperty());
     assertEquals(4, key.getRowId());
-    assertEquals(0, key.getCurrentTransactionId());
+    assertEquals(0, key.getCurrentWriteId());
 
     pair.next(pair.nextRecord());
     assertEquals(null, pair.nextRecord());
@@ -398,8 +394,13 @@ public class TestOrcRawRecordMerger {
     typeBuilder.setKind(OrcProto.Type.Kind.STRUCT).addSubtypes(1)
         .addSubtypes(2).addSubtypes(3).addSubtypes(4).addSubtypes(5)
         .addSubtypes(6);
-    typeBuilder.addAllFieldNames(Lists.newArrayList("operation", "originalTransaction", "bucket",
-        "rowId", "currentTransaction", "row"));
+    typeBuilder.addAllFieldNames(Lists.newArrayList(
+        OrcRecordUpdater.OPERATION_FIELD_NAME,
+        OrcRecordUpdater.CURRENT_WRITEID_FIELD_NAME,
+        OrcRecordUpdater.BUCKET_FIELD_NAME,
+        OrcRecordUpdater.ROW_ID_FIELD_NAME,
+        OrcRecordUpdater.CURRENT_WRITEID_FIELD_NAME,
+        OrcRecordUpdater.ROW_FIELD_NAME));
     types.add(typeBuilder.build());
     types.add(null);
     types.add(null);
@@ -415,7 +416,7 @@ public class TestOrcRawRecordMerger {
     types.add(typeBuilder.build());
 
     Mockito.when(reader.getTypes()).thenReturn(types);
-    Mockito.when(reader.rowsOptions(Mockito.any(Reader.Options.class)))
+    Mockito.when(reader.rowsOptions(Mockito.any(Reader.Options.class), Mockito.any(HiveConf.class)))
         .thenReturn(recordReader);
 
     OrcStruct row1 = new OrcStruct(OrcRecordUpdater.FIELDS);
@@ -439,6 +440,8 @@ public class TestOrcRawRecordMerger {
     Mockito.when(recordReader.next(row2)).thenReturn(row3);
     Mockito.when(recordReader.next(row3)).thenReturn(row5);
 
+    Mockito.when(reader.hasMetadataValue(OrcRecordUpdater.ACID_KEY_INDEX_NAME))
+        .thenReturn(true);
     Mockito.when(reader.getMetadataValue(OrcRecordUpdater.ACID_KEY_INDEX_NAME))
         .thenReturn(ByteBuffer.wrap("10,20,30;40,50,60;40,50,61"
             .getBytes("UTF-8")));
@@ -457,13 +460,13 @@ public class TestOrcRawRecordMerger {
     OrcStruct event = merger.createValue();
 
     assertEquals(true, merger.next(id, event));
-    assertEquals(10, id.getTransactionId());
+    assertEquals(10, id.getWriteId());
     assertEquals(20, id.getBucketProperty());
     assertEquals(40, id.getRowId());
     assertEquals("third", getValue(event));
 
     assertEquals(true, merger.next(id, event));
-    assertEquals(40, id.getTransactionId());
+    assertEquals(40, id.getWriteId());
     assertEquals(50, id.getBucketProperty());
     assertEquals(60, id.getRowId());
     assertEquals("fourth", getValue(event));
@@ -479,15 +482,15 @@ public class TestOrcRawRecordMerger {
     List<? extends StructField> fields =
         eventObjectInspector.getAllStructFieldRefs();
     assertEquals(OrcRecordUpdater.FIELDS, fields.size());
-    assertEquals("operation",
+    assertEquals(OrcRecordUpdater.OPERATION_FIELD_NAME,
         fields.get(OrcRecordUpdater.OPERATION).getFieldName());
-    assertEquals("currentTransaction",
-        fields.get(OrcRecordUpdater.CURRENT_TRANSACTION).getFieldName());
-    assertEquals("originalTransaction",
-        fields.get(OrcRecordUpdater.ORIGINAL_TRANSACTION).getFieldName());
-    assertEquals("bucket",
+    assertEquals(OrcRecordUpdater.CURRENT_WRITEID_FIELD_NAME,
+        fields.get(OrcRecordUpdater.CURRENT_WRITEID).getFieldName());
+    assertEquals(OrcRecordUpdater.ORIGINAL_WRITEID_FIELD_NAME,
+        fields.get(OrcRecordUpdater.ORIGINAL_WRITEID).getFieldName());
+    assertEquals(OrcRecordUpdater.BUCKET_FIELD_NAME,
         fields.get(OrcRecordUpdater.BUCKET).getFieldName());
-    assertEquals("rowId",
+    assertEquals(OrcRecordUpdater.ROW_ID_FIELD_NAME,
         fields.get(OrcRecordUpdater.ROW_ID).getFieldName());
     StructObjectInspector rowObjectInspector =
         (StructObjectInspector) fields.get(OrcRecordUpdater.ROW)
@@ -513,7 +516,7 @@ public class TestOrcRawRecordMerger {
       return "col1,ROW__ID";
     }
     static String getColumnTypesProperty() {
-      return "string:struct<transactionId:bigint,bucketId:int,rowId:bigint>";
+      return "string:struct<writeId:bigint,bucketId:int,rowId:bigint>";
     }
 
   }
@@ -534,7 +537,7 @@ public class TestOrcRawRecordMerger {
     Configuration conf = new Configuration();
     FileSystem fs = FileSystem.getLocal(conf);
     OrcOutputFormat of = new OrcOutputFormat();
-    Path root = new Path(tmpDir, "testEmpty").makeQualified(fs);
+    Path root = new Path(tmpDir, "testLogicalEmpty").makeQualified(fs);
     fs.delete(root, true);
     ObjectInspector inspector;
     synchronized (TestOrcFile.class) {
@@ -543,15 +546,15 @@ public class TestOrcRawRecordMerger {
     }
     /*create delta_1_1_0/bucket0 with 1 row and close the file*/
     AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf)
-      .inspector(inspector).bucket(BUCKET).writingBase(false).minimumTransactionId(1)
-      .maximumTransactionId(1).finalDestination(root);
-    Path delta1_1_0 = new Path(root, AcidUtils.deltaSubdir(
-      options.getMinimumTransactionId(), options.getMaximumTransactionId(), options.getStatementId()));
-    Path bucket0 = AcidUtils.createBucketFile(delta1_1_0, BUCKET);
+        .inspector(inspector).bucket(BUCKET).writingBase(false).minimumWriteId(1)
+        .maximumWriteId(2).finalDestination(root);
+    Path delta1_2_0 = new Path(root, AcidUtils.deltaSubdir(
+        options.getMinimumWriteId(), options.getMaximumWriteId(), options.getStatementId()));
+    Path bucket0 = AcidUtils.createBucketFile(delta1_2_0, BUCKET);
     Path bucket0SideFile = OrcAcidUtils.getSideFile(bucket0);
 
     RecordUpdater ru = of.getRecordUpdater(root, options);
-    ru.insert(options.getMaximumTransactionId(), new MyRow("first"));
+    ru.insert(options.getMaximumWriteId(), new MyRow("first"));
     ru.close(false);
 
     FileStatus bucket0File = fs.getFileStatus(bucket0);
@@ -586,20 +589,12 @@ public class TestOrcRawRecordMerger {
     // write the empty base
     AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf)
         .inspector(inspector).bucket(BUCKET).writingBase(true)
-        .maximumTransactionId(100).finalDestination(root);
+        .maximumWriteId(100).finalDestination(root);
     of.getRecordUpdater(root, options).close(false);
-    {
-      /*OrcRecordUpdater is inconsistent about when it creates empty files and when it does not.
-      This creates an empty bucket. HIVE-17138*/
-      OrcFile.WriterOptions wo = OrcFile.writerOptions(conf);
-      wo.inspector(inspector);
-      wo.callback(new OrcRecordUpdater.KeyIndexBuilder("testEmpty"));
-      Writer w = OrcFile.createWriter(AcidUtils.createBucketFile(new Path(root,
-        AcidUtils.baseDir(100)), BUCKET), wo);
-      w.close();
-    }
-    ValidTxnList txnList = new ValidReadTxnList("200:" + Long.MAX_VALUE);
-    AcidUtils.Directory directory = AcidUtils.getAcidState(root, conf, txnList);
+    conf.set(ValidTxnList.VALID_TXNS_KEY,
+        new ValidReadTxnList(new long[0], new BitSet(), 1000, Long.MAX_VALUE).writeToString());
+    ValidWriteIdList writeIdList = new ValidReaderWriteIdList("testEmpty:200:" + Long.MAX_VALUE);
+    AcidUtils.Directory directory = AcidUtils.getAcidState(fs, root, conf, writeIdList, null, false, null, false);
 
     Path basePath = AcidUtils.createBucketFile(directory.getBaseDirectory(),
         BUCKET);
@@ -651,7 +646,7 @@ public class TestOrcRawRecordMerger {
       options.statementId(-1);
     }
     RecordUpdater ru = of.getRecordUpdater(root,
-        options.writingBase(true).maximumTransactionId(100));
+        options.writingBase(true).maximumWriteId(100));
     for(String v: values) {
       ru.insert(0, new MyRow(v));
     }
@@ -659,7 +654,7 @@ public class TestOrcRawRecordMerger {
 
     // write a delta
     ru = of.getRecordUpdater(root, options.writingBase(false)
-        .minimumTransactionId(200).maximumTransactionId(200).recordIdColumn(1));
+        .minimumWriteId(200).maximumWriteId(200).recordIdColumn(1));
     ru.update(200, new MyRow("update 1", 0, 0, BUCKET_PROPERTY));
     ru.update(200, new MyRow("update 2", 2, 0, BUCKET_PROPERTY));
     ru.update(200, new MyRow("update 3", 3, 0, BUCKET_PROPERTY));
@@ -667,8 +662,11 @@ public class TestOrcRawRecordMerger {
     ru.delete(200, new MyRow("", 8, 0, BUCKET_PROPERTY));
     ru.close(false);
 
-    ValidTxnList txnList = new ValidReadTxnList("200:" + Long.MAX_VALUE);
-    AcidUtils.Directory directory = AcidUtils.getAcidState(root, conf, txnList);
+    conf.set(ValidTxnList.VALID_TXNS_KEY,
+        new ValidReadTxnList(new long[0], new BitSet(), 1000, Long.MAX_VALUE).writeToString());
+    ValidWriteIdList writeIdList = new ValidReaderWriteIdList("testNewBaseAndDelta:200:" + Long.MAX_VALUE);
+    AcidUtils.Directory directory = AcidUtils.getAcidState(fs, root, conf, writeIdList, null, use130Format, null,
+        use130Format);
 
     assertEquals(new Path(root, "base_0000100"), directory.getBaseDirectory());
     assertEquals(new Path(root, use130Format ?
@@ -686,7 +684,7 @@ public class TestOrcRawRecordMerger {
 
     conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, MyRow.getColumnNamesProperty());
     conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, MyRow.getColumnTypesProperty());
-    AcidUtils.setTransactionalTableScan(conf,true);
+    AcidUtils.setAcidOperationalProperties(conf, true, null);
     conf.setBoolean(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, true);
 
     //the first "split" is for base/
@@ -835,6 +833,8 @@ public class TestOrcRawRecordMerger {
     assertEquals(null, merger.getMaxKey());
 
     assertEquals(true, merger.next(id, event));
+    //minor comp, so we ignore 'base_0000100' files so all Deletes end up first since
+    // they all modify primordial rows
     assertEquals(OrcRecordUpdater.DELETE_OPERATION,
       OrcRecordUpdater.getOperation(event));
     assertEquals(new ReaderKey(0, BUCKET_PROPERTY, 0, 200), id);
@@ -891,10 +891,10 @@ public class TestOrcRawRecordMerger {
     baseReader = OrcFile.createReader(basePath,
       OrcFile.readerOptions(conf));
     merger =
-      new OrcRawRecordMerger(conf, true, baseReader, false, BUCKET,
+      new OrcRawRecordMerger(conf, true, null, false, BUCKET,
         createMaximalTxnList(), new Reader.Options(),
         AcidUtils.getPaths(directory.getCurrentDirectories()), new OrcRawRecordMerger.Options()
-        .isCompacting(true).isMajorCompaction(true));
+        .isCompacting(true).isMajorCompaction(true).baseDir(new Path(root, "base_0000100")));
     assertEquals(null, merger.getMinKey());
     assertEquals(null, merger.getMaxKey());
 
@@ -981,13 +981,13 @@ public class TestOrcRawRecordMerger {
     merger.close();
 
     // try ignoring the 200 transaction and make sure it works still
-    ValidTxnList txns = new ValidReadTxnList("2000:200:200");
+    ValidWriteIdList writeIds = new ValidReaderWriteIdList("testNewBaseAndDelta:2000:200:200");
     //again 1st split is for base/
     baseReader = OrcFile.createReader(basePath,
       OrcFile.readerOptions(conf));
     merger =
       new OrcRawRecordMerger(conf, false, baseReader, false, BUCKET,
-        txns, new Reader.Options(),
+              writeIds, new Reader.Options(),
         new Path[] {deleteDeltaDir}, new OrcRawRecordMerger.Options().isCompacting(false));
 
     assertEquals(null, merger.getMinKey());
@@ -1009,7 +1009,7 @@ public class TestOrcRawRecordMerger {
       OrcFile.readerOptions(conf));
     merger =
       new OrcRawRecordMerger(conf, false, baseReader, false, BUCKET,
-        txns, new Reader.Options(),
+              writeIds, new Reader.Options(),
         new Path[] {deleteDeltaDir}, new OrcRawRecordMerger.Options().isCompacting(false));
 
     assertEquals(null, merger.getMinKey());
@@ -1053,7 +1053,7 @@ public class TestOrcRawRecordMerger {
       return "myint,mylong,mytext,myfloat,mydouble,ROW__ID";
     }
     static String getColumnTypesProperty() {
-      return "int:bigint:string:float:double:struct<transactionId:bigint,bucketId:int,rowId:bigint>";
+      return "int:bigint:string:float:double:struct<writeId:bigint,bucketId:int,rowId:bigint>";
     }
   }
 
@@ -1067,6 +1067,7 @@ public class TestOrcRawRecordMerger {
   public void testRecordReaderOldBaseAndDelta() throws Exception {
     final int BUCKET = 10;
     Configuration conf = new Configuration();
+    OrcConf.ROWS_BETWEEN_CHECKS.setLong(conf, 2);
     OrcOutputFormat of = new OrcOutputFormat();
     FileSystem fs = FileSystem.getLocal(conf);
     Path root = new Path(tmpDir, "testOldBaseAndDelta").makeQualified(fs);
@@ -1076,25 +1077,11 @@ public class TestOrcRawRecordMerger {
       inspector = ObjectInspectorFactory.getReflectionObjectInspector
           (BigRow.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
     }
-
-    // write the base
-    MemoryManager mgr = new MemoryManagerImpl(conf){
-      int rowsAddedSinceCheck = 0;
-
-      @Override
-      public synchronized void addedRow(int rows) throws IOException {
-        rowsAddedSinceCheck += rows;
-        if (rowsAddedSinceCheck >= 2) {
-          notifyWriters();
-          rowsAddedSinceCheck = 0;
-        }
-      }
-    };
     // make 5 stripes with 2 rows each
     Writer writer = OrcFile.createWriter(new Path(root, "0000010_0"),
         OrcFile.writerOptions(conf).inspector(inspector).fileSystem(fs)
         .blockPadding(false).bufferSize(10000).compress(CompressionKind.NONE)
-        .stripeSize(1).memory(mgr).batchSize(2).version(OrcFile.Version.V_0_11));
+        .stripeSize(1).batchSize(2).version(OrcFile.Version.V_0_11));
     String[] values= new String[]{"ignore.1", "0.1", "ignore.2", "ignore.3",
        "2.0", "2.1", "3.0", "ignore.4", "ignore.5", "ignore.6"};
     for(int i=0; i < values.length; ++i) {
@@ -1104,7 +1091,7 @@ public class TestOrcRawRecordMerger {
 
     // write a delta
     AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf)
-        .writingBase(false).minimumTransactionId(1).maximumTransactionId(1)
+        .writingBase(false).minimumWriteId(1).maximumWriteId(1)
         .bucket(BUCKET).inspector(inspector).filesystem(fs).recordIdColumn(5)
         .finalDestination(root);
 
@@ -1122,7 +1109,7 @@ public class TestOrcRawRecordMerger {
     ru.close(false);//this doesn't create a key index presumably because writerOptions are not set on 'options'
 
     // write a delta
-    options = options.minimumTransactionId(100).maximumTransactionId(100);
+    options = options.minimumWriteId(100).maximumWriteId(100);
     ru = of.getRecordUpdater(root, options);
     values = new String[]{null, null, "1.0", null, null, null, null, "3.1"};
     for(int i=0; i < values.length - 1; ++i) {
@@ -1150,9 +1137,12 @@ public class TestOrcRawRecordMerger {
 
     InputFormat inf = new OrcInputFormat();
     JobConf job = new JobConf();
+    job.set(ValidTxnList.VALID_TXNS_KEY,
+        new ValidReadTxnList(new long[0], new BitSet(), 1000, Long.MAX_VALUE).writeToString());
     job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, BigRow.getColumnNamesProperty());
     job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, BigRow.getColumnTypesProperty());
-    AcidUtils.setTransactionalTableScan(job,true);
+    AcidUtils.setAcidOperationalProperties(job, true, null);
+
     job.setBoolean(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, true);
     job.set("mapred.min.split.size", "1");
     job.set("mapred.max.split.size", "2");
@@ -1197,6 +1187,7 @@ public class TestOrcRawRecordMerger {
   public void testRecordReaderNewBaseAndDelta() throws Exception {
     final int BUCKET = 11;
     Configuration conf = new Configuration();
+    OrcConf.ROWS_BETWEEN_CHECKS.setLong(conf, 2);
     OrcOutputFormat of = new OrcOutputFormat();
     FileSystem fs = FileSystem.getLocal(conf);
     Path root = new Path(tmpDir, "testRecordReaderNewBaseAndDelta").makeQualified(fs);
@@ -1207,31 +1198,18 @@ public class TestOrcRawRecordMerger {
           (BigRow.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
     }
 
-    // write the base
-    MemoryManager mgr = new MemoryManagerImpl(conf){
-      int rowsAddedSinceCheck = 0;
-
-      @Override
-      public synchronized void addedRow(int rows) throws IOException {
-        rowsAddedSinceCheck += rows;
-        if (rowsAddedSinceCheck >= 2) {
-          notifyWriters();
-          rowsAddedSinceCheck = 0;
-        }
-      }
-    };
-
     // make 5 stripes with 2 rows each
     OrcRecordUpdater.OrcOptions options = (OrcRecordUpdater.OrcOptions)
         new OrcRecordUpdater.OrcOptions(conf)
-        .writingBase(true).minimumTransactionId(0).maximumTransactionId(0)
+        .writingBase(true).minimumWriteId(0).maximumWriteId(0)
         .bucket(BUCKET).inspector(inspector).filesystem(fs);
 
     final int BUCKET_PROPERTY = BucketCodec.V1.encode(options);
 
     options.orcOptions(OrcFile.writerOptions(conf)
-      .stripeSize(1).blockPadding(false).compress(CompressionKind.NONE)
-      .memory(mgr).batchSize(2));
+        .stripeSize(1).blockPadding(false)
+        .compress(CompressionKind.NONE)
+        .batchSize(2));
     options.finalDestination(root);
     RecordUpdater ru = of.getRecordUpdater(root, options);
     String[] values= new String[]{"ignore.1", "0.1", "ignore.2", "ignore.3",
@@ -1242,7 +1220,7 @@ public class TestOrcRawRecordMerger {
     ru.close(false);
 
     // write a delta
-    options.writingBase(false).minimumTransactionId(1).maximumTransactionId(1)
+    options.writingBase(false).minimumWriteId(1).maximumWriteId(1)
         .recordIdColumn(5);
     ru = of.getRecordUpdater(root, options);
     values = new String[]{"0.0", null, null, "1.1", null, null, null,
@@ -1256,7 +1234,7 @@ public class TestOrcRawRecordMerger {
     ru.close(false);
 
     // write a delta
-    options.minimumTransactionId(100).maximumTransactionId(100);
+    options.minimumWriteId(100).maximumWriteId(100);
     ru = of.getRecordUpdater(root, options);
     values = new String[]{null, null, "1.0", null, null, null, null, "3.1"};
     for(int i=0; i < values.length - 1; ++i) {
@@ -1282,12 +1260,15 @@ public class TestOrcRawRecordMerger {
 
     InputFormat inf = new OrcInputFormat();
     JobConf job = new JobConf();
+    job.set(ValidTxnList.VALID_TXNS_KEY,
+        new ValidReadTxnList(new long[0], new BitSet(), 1000, Long.MAX_VALUE).writeToString());
     job.set("mapred.min.split.size", "1");
     job.set("mapred.max.split.size", "2");
     job.set("mapred.input.dir", root.toString());
     job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, BigRow.getColumnNamesProperty());
     job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, BigRow.getColumnTypesProperty());
-    AcidUtils.setTransactionalTableScan(job,true);
+    AcidUtils.setAcidOperationalProperties(job, true, null);
+
     job.setBoolean(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, true);
     InputSplit[] splits = inf.getSplits(job, 5);
     //base has 10 rows, so 5 splits, 1 delta has 2 rows so 1 split, and 1 delta has 3 so 2 splits
@@ -1359,7 +1340,7 @@ public class TestOrcRawRecordMerger {
     AcidOutputFormat.Options options =
         new AcidOutputFormat.Options(conf)
             .bucket(BUCKET).inspector(inspector).filesystem(fs)
-            .writingBase(false).minimumTransactionId(1).maximumTransactionId(1)
+            .writingBase(false).minimumWriteId(1).maximumWriteId(1)
           .finalDestination(root);
     RecordUpdater ru = of.getRecordUpdater(root, options);
     String[][] values = {new String[]{"a", "b", "c", "d", "e"}, new String[]{"f", "g", "h", "i", "j"}};
@@ -1369,7 +1350,7 @@ public class TestOrcRawRecordMerger {
     ru.close(false);
 
     // write a delta
-    options.minimumTransactionId(2).maximumTransactionId(2);
+    options.minimumWriteId(2).maximumWriteId(2);
     ru = of.getRecordUpdater(root, options);
     for(int i=0; i < values[1].length; ++i) {
       ru.insert(2, new MyRow(values[1][i]));
@@ -1378,13 +1359,16 @@ public class TestOrcRawRecordMerger {
 
     InputFormat inf = new OrcInputFormat();
     JobConf job = new JobConf();
+    job.set(ValidTxnList.VALID_TXNS_KEY,
+        new ValidReadTxnList(new long[0], new BitSet(), 1000, Long.MAX_VALUE).writeToString());
     job.set("mapred.min.split.size", "1");
     job.set("mapred.max.split.size", "2");
     job.set("mapred.input.dir", root.toString());
     job.set("bucket_count", "1");
     job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, MyRow.getColumnNamesProperty());
     job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, MyRow.getColumnTypesProperty());
-    AcidUtils.setTransactionalTableScan(job,true);
+    AcidUtils.setAcidOperationalProperties(job, true, null);
+
     job.setBoolean(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, true);
     InputSplit[] splits = inf.getSplits(job, 5);
     assertEquals(2, splits.length);
@@ -1432,7 +1416,7 @@ public class TestOrcRawRecordMerger {
     // write a base
     AcidOutputFormat.Options options =
         new AcidOutputFormat.Options(conf)
-            .writingBase(true).minimumTransactionId(0).maximumTransactionId(0)
+            .writingBase(true).minimumWriteId(0).maximumWriteId(0)
             .bucket(BUCKET).inspector(inspector).filesystem(fs).finalDestination(root);
     if(!use130Format) {
       options.statementId(-1);
@@ -1445,8 +1429,8 @@ public class TestOrcRawRecordMerger {
     ru.close(false);
 
     // write a delta
-    options.writingBase(false).minimumTransactionId(10)
-        .maximumTransactionId(19);
+    options.writingBase(false).minimumWriteId(10)
+        .maximumWriteId(19);
     ru = of.getRecordUpdater(root, options);
     values = new String[]{"6", "7", "8"};
     for(int i=0; i < values.length; ++i) {
@@ -1454,11 +1438,14 @@ public class TestOrcRawRecordMerger {
     }
     InputFormat inf = new OrcInputFormat();
     JobConf job = new JobConf();
+    job.set(ValidTxnList.VALID_TXNS_KEY,
+        new ValidReadTxnList(new long[0], new BitSet(), 1000, Long.MAX_VALUE).writeToString());
     job.set("mapred.input.dir", root.toString());
     job.set("bucket_count", "2");
     job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, MyRow.getColumnNamesProperty());
     job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, MyRow.getColumnTypesProperty());
-    AcidUtils.setTransactionalTableScan(job,true);
+    AcidUtils.setAcidOperationalProperties(job, true, null);
+
     job.setBoolean(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, true);
 
     // read the keys before the delta is flushed

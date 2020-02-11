@@ -1,31 +1,31 @@
-PREHOOK: query: CREATE TABLE part_whitelist_test (key STRING, value STRING) PARTITIONED BY (ds STRING)
+PREHOOK: query: CREATE TABLE part_whitelist_test_n0 (key STRING, value STRING) PARTITIONED BY (ds STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@part_whitelist_test
-POSTHOOK: query: CREATE TABLE part_whitelist_test (key STRING, value STRING) PARTITIONED BY (ds STRING)
+PREHOOK: Output: default@part_whitelist_test_n0
+POSTHOOK: query: CREATE TABLE part_whitelist_test_n0 (key STRING, value STRING) PARTITIONED BY (ds STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@part_whitelist_test
-PREHOOK: query: SHOW PARTITIONS part_whitelist_test
+POSTHOOK: Output: default@part_whitelist_test_n0
+PREHOOK: query: SHOW PARTITIONS part_whitelist_test_n0
 PREHOOK: type: SHOWPARTITIONS
-PREHOOK: Input: default@part_whitelist_test
-POSTHOOK: query: SHOW PARTITIONS part_whitelist_test
+PREHOOK: Input: default@part_whitelist_test_n0
+POSTHOOK: query: SHOW PARTITIONS part_whitelist_test_n0
 POSTHOOK: type: SHOWPARTITIONS
-POSTHOOK: Input: default@part_whitelist_test
-PREHOOK: query: ALTER TABLE part_whitelist_test ADD PARTITION (ds='Part')
+POSTHOOK: Input: default@part_whitelist_test_n0
+PREHOOK: query: ALTER TABLE part_whitelist_test_n0 ADD PARTITION (ds='Part')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Output: default@part_whitelist_test
-POSTHOOK: query: ALTER TABLE part_whitelist_test ADD PARTITION (ds='Part')
+PREHOOK: Output: default@part_whitelist_test_n0
+POSTHOOK: query: ALTER TABLE part_whitelist_test_n0 ADD PARTITION (ds='Part')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Output: default@part_whitelist_test
-POSTHOOK: Output: default@part_whitelist_test@ds=Part
-PREHOOK: query: ALTER TABLE part_whitelist_test PARTITION (ds='Part') rename to partition (ds='Apart')
+POSTHOOK: Output: default@part_whitelist_test_n0
+POSTHOOK: Output: default@part_whitelist_test_n0@ds=Part
+PREHOOK: query: ALTER TABLE part_whitelist_test_n0 PARTITION (ds='Part') rename to partition (ds='Apart')
 PREHOOK: type: ALTERTABLE_RENAMEPART
-PREHOOK: Input: default@part_whitelist_test
-PREHOOK: Output: default@part_whitelist_test@ds=Part
-POSTHOOK: query: ALTER TABLE part_whitelist_test PARTITION (ds='Part') rename to partition (ds='Apart')
+PREHOOK: Input: default@part_whitelist_test_n0
+PREHOOK: Output: default@part_whitelist_test_n0@ds=Part
+POSTHOOK: query: ALTER TABLE part_whitelist_test_n0 PARTITION (ds='Part') rename to partition (ds='Apart')
 POSTHOOK: type: ALTERTABLE_RENAMEPART
-POSTHOOK: Input: default@part_whitelist_test
-POSTHOOK: Input: default@part_whitelist_test@ds=Part
-POSTHOOK: Output: default@part_whitelist_test@ds=Apart
-POSTHOOK: Output: default@part_whitelist_test@ds=Part
+POSTHOOK: Input: default@part_whitelist_test_n0
+POSTHOOK: Input: default@part_whitelist_test_n0@ds=Part
+POSTHOOK: Output: default@part_whitelist_test_n0@ds=Apart
+POSTHOOK: Output: default@part_whitelist_test_n0@ds=Part

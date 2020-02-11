@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -30,10 +30,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.MapRedStats;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskHandle;
@@ -55,11 +57,6 @@ import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapred.TaskCompletionEvent;
 import org.apache.hadoop.mapred.TaskReport;
 import org.apache.hive.common.util.ShutdownHookManager;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.core.Appender;
-import org.apache.logging.log4j.core.Logger;
-import org.apache.logging.log4j.core.appender.FileAppender;
-import org.apache.logging.log4j.core.appender.RollingFileAppender;
 import org.slf4j.LoggerFactory;
 
 public class HadoopJobExecHelper {
@@ -67,7 +64,7 @@ public class HadoopJobExecHelper {
   static final private org.slf4j.Logger LOG = LoggerFactory.getLogger(HadoopJobExecHelper.class.getName());
 
   protected transient JobConf job;
-  protected Task<? extends Serializable> task;
+  protected Task<?> task;
 
   protected transient int mapProgress = -1;
   protected transient int reduceProgress = -1;
@@ -145,7 +142,7 @@ public class HadoopJobExecHelper {
   }
 
   public HadoopJobExecHelper(JobConf job, LogHelper console,
-      Task<? extends Serializable> task, HadoopJobExecHook hookCallBack) {
+      Task<?> task, HadoopJobExecHook hookCallBack) {
     this.queryId = HiveConf.getVar(job, HiveConf.ConfVars.HIVEQUERYID, "unknown-" + System.currentTimeMillis());
     this.job = job;
     this.console = console;
@@ -209,7 +206,7 @@ public class HadoopJobExecHelper {
     }
     // check for number of created files
     Counters.Counter cntr = ctrs.findCounter(HiveConf.getVar(job, ConfVars.HIVECOUNTERGROUP),
-        Operator.HIVECOUNTERCREATEDFILES);
+        Operator.HIVE_COUNTER_CREATED_FILES);
     long numFiles = cntr != null ? cntr.getValue() : 0;
     long upperLimit = HiveConf.getLongVar(job, HiveConf.ConfVars.MAXCREATEDFILES);
     if (numFiles > upperLimit) {
@@ -237,6 +234,10 @@ public class HadoopJobExecHelper {
     int numReduce = -1;
     List<ClientStatsPublisher> clientStatPublishers = getClientStatPublishers();
     final boolean localMode = ShimLoader.getHadoopShims().isLocalMode(job);
+
+    MapRedStats mapRedStats = new MapRedStats(
+            job, numMap, numReduce, cpuMsec, false, rj.getID().toString());
+    updateMapRedTaskWebUIStatistics(mapRedStats, rj);
 
     while (!rj.isComplete()) {
       if (th.getContext() != null) {
@@ -312,6 +313,11 @@ public class HadoopJobExecHelper {
       }
 
       Counters ctrs = th.getCounters();
+
+      mapRedStats.setCounters(ctrs);
+      mapRedStats.setNumMap(numMap);
+      mapRedStats.setNumReduce(numReduce);
+      updateMapRedTaskWebUIStatistics(mapRedStats, rj);
 
       if (fatal = checkFatalErrors(ctrs, errMsg)) {
         console.printError("[Fatal Error] " + errMsg.toString() + ". Killing the job.");
@@ -418,18 +424,36 @@ public class HadoopJobExecHelper {
       }
     }
 
-    MapRedStats mapRedStats = new MapRedStats(numMap, numReduce, cpuMsec, success, rj.getID().toString());
+    mapRedStats.setSuccess(success);
     mapRedStats.setCounters(ctrs);
+    mapRedStats.setCpuMSec(cpuMsec);
+    updateMapRedTaskWebUIStatistics(mapRedStats, rj);
 
     // update based on the final value of the counters
     updateCounters(ctrs, rj);
 
     SessionState ss = SessionState.get();
     if (ss != null) {
+      //Set the number of table rows affected in mapRedStats to display number of rows inserted.
+      if (ctrs != null) {
+        Counter counter = ctrs.findCounter(
+            ss.getConf().getVar(HiveConf.ConfVars.HIVECOUNTERGROUP),
+            FileSinkOperator.TOTAL_TABLE_ROWS_WRITTEN);
+        if (counter != null) {
+          mapRedStats.setNumModifiedRows(counter.getValue());
+        }
+      }
+
       this.callBackObj.logPlanProgress(ss);
     }
     // LOG.info(queryPlan);
     return mapRedStats;
+  }
+
+  private void updateMapRedTaskWebUIStatistics(MapRedStats mapRedStats, RunningJob rj) {
+    if (task instanceof MapRedTask) {
+      ((MapRedTask) task).updateWebUiStats(mapRedStats, rj);
+    }
   }
 
 
@@ -450,7 +474,7 @@ public class HadoopJobExecHelper {
       }
       console.printInfo(getJobStartMsg(rj.getID()) + ", Tracking URL = "
           + rj.getTrackingURL());
-      console.printInfo("Kill Command = " + HiveConf.getVar(job, HiveConf.ConfVars.HADOOPBIN)
+      console.printInfo("Kill Command = " + HiveConf.getVar(job, ConfVars.MAPREDBIN)
           + " job  -kill " + rj.getID());
     }
   }
@@ -500,14 +524,7 @@ public class HadoopJobExecHelper {
     sb.append("Task ID:\n  " + taskId + "\n\n");
     sb.append("Logs:\n");
     console.printError(sb.toString());
-
-    for (Appender appender : ((Logger) LogManager.getRootLogger()).getAppenders().values()) {
-      if (appender instanceof FileAppender) {
-        console.printError(((FileAppender) appender).getFileName());
-      } else if (appender instanceof RollingFileAppender) {
-        console.printError(((RollingFileAppender) appender).getFileName());
-      }
-    }
+    console.printError(LogUtils.getLogFilePath());
   }
 
   public int progressLocal(Process runningJob, String taskId) {
@@ -614,7 +631,7 @@ public class HadoopJobExecHelper {
 
     for (TaskCompletionEvent taskCompletion : taskCompletions) {
       if (!taskCompletion.isMapTask()) {
-        reducersRunTimes.add(new Integer(taskCompletion.getTaskRunTime()));
+        reducersRunTimes.add(Integer.valueOf(taskCompletion.getTaskRunTime()));
       }
     }
     // Compute the reducers run time statistics for the job
@@ -629,7 +646,7 @@ public class HadoopJobExecHelper {
     Map<String, Double> exctractedCounters = new HashMap<String, Double>();
     for (Counters.Group cg : counters) {
       for (Counter c : cg) {
-        exctractedCounters.put(cg.getName() + "::" + c.getName(), new Double(c.getCounter()));
+        exctractedCounters.put(cg.getName() + "::" + c.getName(), Double.valueOf(c.getCounter()));
       }
     }
     return exctractedCounters;

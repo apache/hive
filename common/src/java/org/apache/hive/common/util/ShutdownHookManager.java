@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,8 +22,11 @@ import java.io.File;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.fs.FileSystem;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -35,6 +38,8 @@ public class ShutdownHookManager {
   private static final org.apache.hadoop.util.ShutdownHookManager MGR = org.apache.hadoop.util.ShutdownHookManager.get();
 
   private static final DeleteOnExitHook DELETE_ON_EXIT_HOOK = new DeleteOnExitHook();
+
+  static final private Logger LOG = LoggerFactory.getLogger(ShutdownHookManager.class.getName());
 
   static {
     MGR.addShutdownHook(DELETE_ON_EXIT_HOOK, -1);
@@ -60,7 +65,7 @@ public class ShutdownHookManager {
     if (priority < 0) {
       throw new IllegalArgumentException("Priority should be greater than or equal to zero");
     }
-    MGR.addShutdownHook(shutdownHook, priority);
+    MGR.addShutdownHook(shutdownHook, priority, 30, TimeUnit.SECONDS);
   }
 
   /**
@@ -93,7 +98,7 @@ public class ShutdownHookManager {
    */
   public static void deleteOnExit(File file) {
     if (MGR.isShutdownInProgress()) {
-      throw new IllegalStateException("Shutdown in progress, cannot add a deleteOnExit");
+      LOG.warn("Shutdown in progress, cannot add a deleteOnExit");
     }
     DELETE_ON_EXIT_HOOK.deleteTargets.add(file);
   }
@@ -103,7 +108,7 @@ public class ShutdownHookManager {
    */
   public static void cancelDeleteOnExit(File file) {
     if (MGR.isShutdownInProgress()) {
-      throw new IllegalStateException("Shutdown in progress, cannot cancel a deleteOnExit");
+      LOG.warn("Shutdown in progress, cannot cancel a deleteOnExit");
     }
     DELETE_ON_EXIT_HOOK.deleteTargets.remove(file);
   }

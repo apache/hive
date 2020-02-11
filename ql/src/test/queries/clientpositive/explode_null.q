@@ -1,3 +1,4 @@
+--! qt:dataset:src
 SELECT explode(col) AS myCol FROM 
     (select * from (SELECT array(1,2,3) AS col FROM src LIMIT 1)ea 
      UNION ALL

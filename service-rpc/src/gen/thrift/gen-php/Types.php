@@ -202,6 +202,7 @@ final class TGetInfoType {
   const CLI_CATALOG_NAME = 10003;
   const CLI_COLLATION_SEQ = 10004;
   const CLI_MAX_IDENTIFIER_LEN = 10005;
+  const CLI_ODBC_KEYWORDS = 10006;
   static public $__names = array(
     0 => 'CLI_MAX_DRIVER_CONNECTIONS',
     1 => 'CLI_MAX_CONCURRENT_ACTIVITIES',
@@ -250,6 +251,7 @@ final class TGetInfoType {
     10003 => 'CLI_CATALOG_NAME',
     10004 => 'CLI_COLLATION_SEQ',
     10005 => 'CLI_MAX_IDENTIFIER_LEN',
+    10006 => 'CLI_ODBC_KEYWORDS',
   );
 }
 
@@ -4887,6 +4889,223 @@ class TOpenSessionResp {
 
 }
 
+class TSetClientInfoReq {
+  static $_TSPEC;
+
+  /**
+   * @var \TSessionHandle
+   */
+  public $sessionHandle = null;
+  /**
+   * @var array
+   */
+  public $configuration = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'sessionHandle',
+          'type' => TType::STRUCT,
+          'class' => '\TSessionHandle',
+          ),
+        2 => array(
+          'var' => 'configuration',
+          'type' => TType::MAP,
+          'ktype' => TType::STRING,
+          'vtype' => TType::STRING,
+          'key' => array(
+            'type' => TType::STRING,
+          ),
+          'val' => array(
+            'type' => TType::STRING,
+            ),
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['sessionHandle'])) {
+        $this->sessionHandle = $vals['sessionHandle'];
+      }
+      if (isset($vals['configuration'])) {
+        $this->configuration = $vals['configuration'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'TSetClientInfoReq';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRUCT) {
+            $this->sessionHandle = new \TSessionHandle();
+            $xfer += $this->sessionHandle->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::MAP) {
+            $this->configuration = array();
+            $_size143 = 0;
+            $_ktype144 = 0;
+            $_vtype145 = 0;
+            $xfer += $input->readMapBegin($_ktype144, $_vtype145, $_size143);
+            for ($_i147 = 0; $_i147 < $_size143; ++$_i147)
+            {
+              $key148 = '';
+              $val149 = '';
+              $xfer += $input->readString($key148);
+              $xfer += $input->readString($val149);
+              $this->configuration[$key148] = $val149;
+            }
+            $xfer += $input->readMapEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('TSetClientInfoReq');
+    if ($this->sessionHandle !== null) {
+      if (!is_object($this->sessionHandle)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('sessionHandle', TType::STRUCT, 1);
+      $xfer += $this->sessionHandle->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->configuration !== null) {
+      if (!is_array($this->configuration)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('configuration', TType::MAP, 2);
+      {
+        $output->writeMapBegin(TType::STRING, TType::STRING, count($this->configuration));
+        {
+          foreach ($this->configuration as $kiter150 => $viter151)
+          {
+            $xfer += $output->writeString($kiter150);
+            $xfer += $output->writeString($viter151);
+          }
+        }
+        $output->writeMapEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class TSetClientInfoResp {
+  static $_TSPEC;
+
+  /**
+   * @var \TStatus
+   */
+  public $status = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'status',
+          'type' => TType::STRUCT,
+          'class' => '\TStatus',
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['status'])) {
+        $this->status = $vals['status'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'TSetClientInfoResp';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRUCT) {
+            $this->status = new \TStatus();
+            $xfer += $this->status->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('TSetClientInfoResp');
+    if ($this->status !== null) {
+      if (!is_object($this->status)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('status', TType::STRUCT, 1);
+      $xfer += $this->status->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
 class TCloseSessionReq {
   static $_TSPEC;
 
@@ -5562,17 +5781,17 @@ class TExecuteStatementReq {
         case 3:
           if ($ftype == TType::MAP) {
             $this->confOverlay = array();
-            $_size143 = 0;
-            $_ktype144 = 0;
-            $_vtype145 = 0;
-            $xfer += $input->readMapBegin($_ktype144, $_vtype145, $_size143);
-            for ($_i147 = 0; $_i147 < $_size143; ++$_i147)
+            $_size152 = 0;
+            $_ktype153 = 0;
+            $_vtype154 = 0;
+            $xfer += $input->readMapBegin($_ktype153, $_vtype154, $_size152);
+            for ($_i156 = 0; $_i156 < $_size152; ++$_i156)
             {
-              $key148 = '';
-              $val149 = '';
-              $xfer += $input->readString($key148);
-              $xfer += $input->readString($val149);
-              $this->confOverlay[$key148] = $val149;
+              $key157 = '';
+              $val158 = '';
+              $xfer += $input->readString($key157);
+              $xfer += $input->readString($val158);
+              $this->confOverlay[$key157] = $val158;
             }
             $xfer += $input->readMapEnd();
           } else {
@@ -5627,10 +5846,10 @@ class TExecuteStatementReq {
       {
         $output->writeMapBegin(TType::STRING, TType::STRING, count($this->confOverlay));
         {
-          foreach ($this->confOverlay as $kiter150 => $viter151)
+          foreach ($this->confOverlay as $kiter159 => $viter160)
           {
-            $xfer += $output->writeString($kiter150);
-            $xfer += $output->writeString($viter151);
+            $xfer += $output->writeString($kiter159);
+            $xfer += $output->writeString($viter160);
           }
         }
         $output->writeMapEnd();
@@ -6496,14 +6715,14 @@ class TGetTablesReq {
         case 5:
           if ($ftype == TType::LST) {
             $this->tableTypes = array();
-            $_size152 = 0;
-            $_etype155 = 0;
-            $xfer += $input->readListBegin($_etype155, $_size152);
-            for ($_i156 = 0; $_i156 < $_size152; ++$_i156)
+            $_size161 = 0;
+            $_etype164 = 0;
+            $xfer += $input->readListBegin($_etype164, $_size161);
+            for ($_i165 = 0; $_i165 < $_size161; ++$_i165)
             {
-              $elem157 = null;
-              $xfer += $input->readString($elem157);
-              $this->tableTypes []= $elem157;
+              $elem166 = null;
+              $xfer += $input->readString($elem166);
+              $this->tableTypes []= $elem166;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -6554,9 +6773,9 @@ class TGetTablesReq {
       {
         $output->writeListBegin(TType::STRING, count($this->tableTypes));
         {
-          foreach ($this->tableTypes as $iter158)
+          foreach ($this->tableTypes as $iter167)
           {
-            $xfer += $output->writeString($iter158);
+            $xfer += $output->writeString($iter167);
           }
         }
         $output->writeListEnd();
@@ -8132,6 +8351,10 @@ class TGetOperationStatusResp {
    * @var \TProgressUpdateResp
    */
   public $progressUpdateResponse = null;
+  /**
+   * @var int
+   */
+  public $numModifiedRows = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -8178,6 +8401,10 @@ class TGetOperationStatusResp {
           'type' => TType::STRUCT,
           'class' => '\TProgressUpdateResp',
           ),
+        11 => array(
+          'var' => 'numModifiedRows',
+          'type' => TType::I64,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -8210,6 +8437,9 @@ class TGetOperationStatusResp {
       }
       if (isset($vals['progressUpdateResponse'])) {
         $this->progressUpdateResponse = $vals['progressUpdateResponse'];
+      }
+      if (isset($vals['numModifiedRows'])) {
+        $this->numModifiedRows = $vals['numModifiedRows'];
       }
     }
   }
@@ -8305,6 +8535,13 @@ class TGetOperationStatusResp {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 11:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->numModifiedRows);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -8372,6 +8609,11 @@ class TGetOperationStatusResp {
       }
       $xfer += $output->writeFieldBegin('progressUpdateResponse', TType::STRUCT, 10);
       $xfer += $this->progressUpdateResponse->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->numModifiedRows !== null) {
+      $xfer += $output->writeFieldBegin('numModifiedRows', TType::I64, 11);
+      $xfer += $output->writeI64($this->numModifiedRows);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -9877,14 +10119,14 @@ class TProgressUpdateResp {
         case 1:
           if ($ftype == TType::LST) {
             $this->headerNames = array();
-            $_size159 = 0;
-            $_etype162 = 0;
-            $xfer += $input->readListBegin($_etype162, $_size159);
-            for ($_i163 = 0; $_i163 < $_size159; ++$_i163)
+            $_size168 = 0;
+            $_etype171 = 0;
+            $xfer += $input->readListBegin($_etype171, $_size168);
+            for ($_i172 = 0; $_i172 < $_size168; ++$_i172)
             {
-              $elem164 = null;
-              $xfer += $input->readString($elem164);
-              $this->headerNames []= $elem164;
+              $elem173 = null;
+              $xfer += $input->readString($elem173);
+              $this->headerNames []= $elem173;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -9894,24 +10136,24 @@ class TProgressUpdateResp {
         case 2:
           if ($ftype == TType::LST) {
             $this->rows = array();
-            $_size165 = 0;
-            $_etype168 = 0;
-            $xfer += $input->readListBegin($_etype168, $_size165);
-            for ($_i169 = 0; $_i169 < $_size165; ++$_i169)
+            $_size174 = 0;
+            $_etype177 = 0;
+            $xfer += $input->readListBegin($_etype177, $_size174);
+            for ($_i178 = 0; $_i178 < $_size174; ++$_i178)
             {
-              $elem170 = null;
-              $elem170 = array();
-              $_size171 = 0;
-              $_etype174 = 0;
-              $xfer += $input->readListBegin($_etype174, $_size171);
-              for ($_i175 = 0; $_i175 < $_size171; ++$_i175)
+              $elem179 = null;
+              $elem179 = array();
+              $_size180 = 0;
+              $_etype183 = 0;
+              $xfer += $input->readListBegin($_etype183, $_size180);
+              for ($_i184 = 0; $_i184 < $_size180; ++$_i184)
               {
-                $elem176 = null;
-                $xfer += $input->readString($elem176);
-                $elem170 []= $elem176;
+                $elem185 = null;
+                $xfer += $input->readString($elem185);
+                $elem179 []= $elem185;
               }
               $xfer += $input->readListEnd();
-              $this->rows []= $elem170;
+              $this->rows []= $elem179;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -9967,9 +10209,9 @@ class TProgressUpdateResp {
       {
         $output->writeListBegin(TType::STRING, count($this->headerNames));
         {
-          foreach ($this->headerNames as $iter177)
+          foreach ($this->headerNames as $iter186)
           {
-            $xfer += $output->writeString($iter177);
+            $xfer += $output->writeString($iter186);
           }
         }
         $output->writeListEnd();
@@ -9984,14 +10226,14 @@ class TProgressUpdateResp {
       {
         $output->writeListBegin(TType::LST, count($this->rows));
         {
-          foreach ($this->rows as $iter178)
+          foreach ($this->rows as $iter187)
           {
             {
-              $output->writeListBegin(TType::STRING, count($iter178));
+              $output->writeListBegin(TType::STRING, count($iter187));
               {
-                foreach ($iter178 as $iter179)
+                foreach ($iter187 as $iter188)
                 {
-                  $xfer += $output->writeString($iter179);
+                  $xfer += $output->writeString($iter188);
                 }
               }
               $output->writeListEnd();
@@ -10020,6 +10262,161 @@ class TProgressUpdateResp {
     if ($this->startTime !== null) {
       $xfer += $output->writeFieldBegin('startTime', TType::I64, 6);
       $xfer += $output->writeI64($this->startTime);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class TGetQueryIdReq {
+  static $_TSPEC;
+
+  /**
+   * @var \TOperationHandle
+   */
+  public $operationHandle = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'operationHandle',
+          'type' => TType::STRUCT,
+          'class' => '\TOperationHandle',
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['operationHandle'])) {
+        $this->operationHandle = $vals['operationHandle'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'TGetQueryIdReq';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRUCT) {
+            $this->operationHandle = new \TOperationHandle();
+            $xfer += $this->operationHandle->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('TGetQueryIdReq');
+    if ($this->operationHandle !== null) {
+      if (!is_object($this->operationHandle)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('operationHandle', TType::STRUCT, 1);
+      $xfer += $this->operationHandle->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class TGetQueryIdResp {
+  static $_TSPEC;
+
+  /**
+   * @var string
+   */
+  public $queryId = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'queryId',
+          'type' => TType::STRING,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['queryId'])) {
+        $this->queryId = $vals['queryId'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'TGetQueryIdResp';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->queryId);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('TGetQueryIdResp');
+    if ($this->queryId !== null) {
+      $xfer += $output->writeFieldBegin('queryId', TType::STRING, 1);
+      $xfer += $output->writeString($this->queryId);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,14 +19,14 @@
 package org.apache.hadoop.hive.serde2.lazybinary.fast;
 
 import java.io.IOException;
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.serde2.ByteStream;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,12 +35,12 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils;
 import org.apache.hadoop.hive.serde2.fast.SerializeWrite;
@@ -64,20 +64,22 @@ public class LazyBinarySerializeWrite implements SerializeWrite {
   private boolean skipLengthPrefix = false;
 
   // For thread safety, we allocate private writable objects for our use only.
-  private TimestampWritable timestampWritable;
+  private TimestampWritableV2 timestampWritable;
   private HiveIntervalYearMonthWritable hiveIntervalYearMonthWritable;
   private HiveIntervalDayTimeWritable hiveIntervalDayTimeWritable;
   private HiveIntervalDayTime hiveIntervalDayTime;
+  private HiveDecimalWritable hiveDecimalWritable;
   private byte[] vLongBytes;
   private long[] scratchLongs;
   private byte[] scratchBuffer;
 
-  private Field root;
+  private final Field root;
   private Deque<Field> stack = new ArrayDeque<>();
   private LazyBinarySerDe.BooleanRef warnedOnceNullMapKey;
 
   private static class Field {
-    Category type;
+    // Make sure the root.type never changes from STRUCT
+    final Category type;
 
     int fieldCount;
     int fieldIndex;
@@ -88,6 +90,15 @@ public class LazyBinarySerializeWrite implements SerializeWrite {
 
     Field(Category type) {
       this.type = type;
+    }
+
+    public void clean() {
+      fieldCount = 0;
+      fieldIndex = 0;
+      byteSizeStart = 0;
+      start = 0;
+      nullOffset = 0;
+      nullByte = 0;
     }
   }
 
@@ -100,6 +111,7 @@ public class LazyBinarySerializeWrite implements SerializeWrite {
 
   // Not public since we must have the field count and other information.
   private LazyBinarySerializeWrite() {
+    this.root = new Field(STRUCT);
   }
 
   /*
@@ -132,7 +144,7 @@ public class LazyBinarySerializeWrite implements SerializeWrite {
   }
 
   private void resetWithoutOutput() {
-    root = new Field(STRUCT);
+    root.clean();
     root.fieldCount = rootFieldCount;
     stack.clear();
     stack.push(root);
@@ -307,7 +319,7 @@ public class LazyBinarySerializeWrite implements SerializeWrite {
   @Override
   public void writeDate(Date date) throws IOException {
     beginElement();
-    writeVInt(DateWritable.dateToDays(date));
+    writeVInt(DateWritableV2.dateToDays(date));
     finishElement();
   }
 
@@ -326,7 +338,7 @@ public class LazyBinarySerializeWrite implements SerializeWrite {
   public void writeTimestamp(Timestamp v) throws IOException {
     beginElement();
     if (timestampWritable == null) {
-      timestampWritable = new TimestampWritable();
+      timestampWritable = new TimestampWritableV2();
     }
     timestampWritable.set(v);
     timestampWritable.writeToByteStream(output);
@@ -378,6 +390,15 @@ public class LazyBinarySerializeWrite implements SerializeWrite {
    * NOTE: The scale parameter is for text serialization (e.g. HiveDecimal.toFormatString) that
    * creates trailing zeroes output decimals.
    */
+  @Override
+  public void writeDecimal64(long decimal64Long, int scale) throws IOException {
+    if (hiveDecimalWritable == null) {
+      hiveDecimalWritable = new HiveDecimalWritable();
+    }
+    hiveDecimalWritable.deserialize64(decimal64Long, scale);
+    writeHiveDecimal(hiveDecimalWritable, scale);
+  }
+
   @Override
   public void writeHiveDecimal(HiveDecimal dec, int scale) throws IOException {
     beginElement();

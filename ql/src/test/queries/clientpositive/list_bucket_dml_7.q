@@ -1,6 +1,6 @@
+--! qt:dataset:srcpart
 set hive.mapred.mode=nonstrict;
 set hive.exec.dynamic.partition=true;
-set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.input.format=org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
 set hive.merge.smallfiles.avgsize=200;
 set mapred.input.dir.recursive=true;
@@ -8,7 +8,6 @@ set hive.merge.mapfiles=false;
 set hive.merge.mapredfiles=false;
 set hive.merge.rcfile.block.level=true;
 
--- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
 -- SORT_QUERY_RESULTS
 
 -- list bucketing DML : dynamic partition (one level) , merge , one skewed column

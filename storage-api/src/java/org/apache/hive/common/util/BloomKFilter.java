@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -35,24 +35,21 @@ import java.util.Arrays;
  *
  * This implementation has much lesser L1 data cache misses than {@link BloomFilter}.
  */
-public class BloomKFilter {
-  private byte[] BYTE_ARRAY_4 = new byte[4];
-  private byte[] BYTE_ARRAY_8 = new byte[8];
+@SuppressWarnings({ "WeakerAccess", "unused" }) public class BloomKFilter {
   public static final float DEFAULT_FPP = 0.05f;
   private static final int DEFAULT_BLOCK_SIZE = 8;
   private static final int DEFAULT_BLOCK_SIZE_BITS = (int) (Math.log(DEFAULT_BLOCK_SIZE) / Math.log(2));
   private static final int DEFAULT_BLOCK_OFFSET_MASK = DEFAULT_BLOCK_SIZE - 1;
   private static final int DEFAULT_BIT_OFFSET_MASK = Long.SIZE - 1;
-  private final long[] masks = new long[DEFAULT_BLOCK_SIZE];
-  private BitSet bitSet;
-  private final int m;
+  private final BitSet bitSet;
+  private final long m;
   private final int k;
   // spread k-1 bits to adjacent longs, default is 8
   // spreading hash bits within blockSize * longs will make bloom filter L1 cache friendly
   // default block size is set to 8 as most cache line sizes are 64 bytes and also AVX512 friendly
   private final int totalBlockCount;
 
-  static void checkArgument(boolean expression, String message) {
+  private static void checkArgument(boolean expression, String message) {
     if (!expression) {
       throw new IllegalArgumentException(message);
     }
@@ -62,9 +59,9 @@ public class BloomKFilter {
     checkArgument(maxNumEntries > 0, "expectedEntries should be > 0");
     long numBits = optimalNumOfBits(maxNumEntries, DEFAULT_FPP);
     this.k = optimalNumOfHashFunctions(maxNumEntries, numBits);
-    int nLongs = (int) Math.ceil((double) numBits / (double) Long.SIZE);
+    long nLongs = (long) Math.ceil((double) numBits / (double) Long.SIZE);
     // additional bits to pad long array to block size
-    int padLongs = DEFAULT_BLOCK_SIZE - nLongs % DEFAULT_BLOCK_SIZE;
+    long padLongs = DEFAULT_BLOCK_SIZE - nLongs % DEFAULT_BLOCK_SIZE;
     this.m = (nLongs + padLongs) * Long.SIZE;
     this.bitSet = new BitSet(m);
     checkArgument((bitSet.data.length % DEFAULT_BLOCK_SIZE) == 0, "bitSet has to be block aligned");
@@ -73,8 +70,8 @@ public class BloomKFilter {
 
   /**
    * A constructor to support rebuilding the BloomFilter from a serialized representation.
-   * @param bits
-   * @param numFuncs
+   * @param bits BloomK sketch data in form of array of longs.
+   * @param numFuncs  Number of functions called as K.
    */
   public BloomKFilter(long[] bits, int numFuncs) {
     super();
@@ -149,14 +146,13 @@ public class BloomKFilter {
   }
 
   public void addInt(int val) {
-    // puts int in little endian order
-    addBytes(intToByteArrayLE(val));
+    addHash(Murmur3.hash64(val));
   }
 
 
   public void addLong(long val) {
     // puts long in little endian order
-    addBytes(longToByteArrayLE(val));
+    addHash(Murmur3.hash64(val));
   }
 
   public void addFloat(float val) {
@@ -184,6 +180,7 @@ public class BloomKFilter {
   private boolean testHash(long hash64) {
     final int hash1 = (int) hash64;
     final int hash2 = (int) (hash64 >>> 32);
+    final long[] bits = bitSet.data;
 
     int firstHash = hash1 + hash2;
     // hashcode should be positive, flip all the bits if it's negative
@@ -207,23 +204,16 @@ public class BloomKFilter {
       }
       // LSB 3 bits is used to locate offset within the block
       final int wordOffset = combinedHash & DEFAULT_BLOCK_OFFSET_MASK;
+      final int absOffset = blockBaseOffset + wordOffset;
       // Next 6 bits are used to locate offset within a long/word
       final int bitPos = (combinedHash >>> DEFAULT_BLOCK_SIZE_BITS) & DEFAULT_BIT_OFFSET_MASK;
-      masks[wordOffset] |= (1L << bitPos);
+      final long bloomWord = bits[absOffset];
+      if (0 == (bloomWord & (1L << bitPos))) {
+        return false;
+      }
     }
 
-    // traverse data and masks array together, check for set bits
-    long expected = 0;
-    for (int i = 0; i < DEFAULT_BLOCK_SIZE; i++) {
-      final long mask = masks[i];
-      expected |= (bitSet.data[blockBaseOffset + i] & mask) ^ mask;
-    }
-
-    // clear the mask for array reuse (this is to avoid masks array allocation in inner loop)
-    Arrays.fill(masks, 0);
-
-    // if all bits are set, expected should be 0
-    return expected == 0;
+    return true;
   }
 
   public boolean testString(String val) {
@@ -235,11 +225,11 @@ public class BloomKFilter {
   }
 
   public boolean testInt(int val) {
-    return testBytes(intToByteArrayLE(val));
+    return testHash(Murmur3.hash64(val));
   }
 
   public boolean testLong(long val) {
-    return testBytes(longToByteArrayLE(val));
+    return testHash(Murmur3.hash64(val));
   }
 
   public boolean testFloat(float val) {
@@ -248,26 +238,6 @@ public class BloomKFilter {
 
   public boolean testDouble(double val) {
     return testLong(Double.doubleToLongBits(val));
-  }
-
-  private byte[] intToByteArrayLE(int val) {
-    BYTE_ARRAY_4[0] = (byte) (val >> 0);
-    BYTE_ARRAY_4[1] = (byte) (val >> 8);
-    BYTE_ARRAY_4[2] = (byte) (val >> 16);
-    BYTE_ARRAY_4[3] = (byte) (val >> 24);
-    return BYTE_ARRAY_4;
-  }
-
-  private byte[] longToByteArrayLE(long val) {
-    BYTE_ARRAY_8[0] = (byte) (val >> 0);
-    BYTE_ARRAY_8[1] = (byte) (val >> 8);
-    BYTE_ARRAY_8[2] = (byte) (val >> 16);
-    BYTE_ARRAY_8[3] = (byte) (val >> 24);
-    BYTE_ARRAY_8[4] = (byte) (val >> 32);
-    BYTE_ARRAY_8[5] = (byte) (val >> 40);
-    BYTE_ARRAY_8[6] = (byte) (val >> 48);
-    BYTE_ARRAY_8[7] = (byte) (val >> 56);
-    return BYTE_ARRAY_8;
   }
 
   public long sizeInBytes() {
@@ -282,7 +252,7 @@ public class BloomKFilter {
     return k;
   }
 
-  public int getNumBits() {
+  public long getNumBits() {
     return m;
   }
 
@@ -314,18 +284,16 @@ public class BloomKFilter {
   }
 
   /**
-   * Serialize a bloom filter
+   * Serialize a bloom filter:
+   * Serialized BloomKFilter format:
+   * 1 byte for the number of hash functions.
+   * 1 big endian int(That is how OutputStream works) for the number of longs in the bitset
+   * big endian longs in the BloomKFilter bitset
    *
    * @param out         output stream to write to
-   * @param bloomFilter BloomKFilter that needs to be seralized
+   * @param bloomFilter BloomKFilter that needs to be serialized
    */
   public static void serialize(OutputStream out, BloomKFilter bloomFilter) throws IOException {
-    /**
-     * Serialized BloomKFilter format:
-     * 1 byte for the number of hash functions.
-     * 1 big endian int(That is how OutputStream works) for the number of longs in the bitset
-     * big endina longs in the BloomKFilter bitset
-     */
     DataOutputStream dataOutputStream = new DataOutputStream(out);
     dataOutputStream.writeByte(bloomFilter.k);
     dataOutputStream.writeInt(bloomFilter.getBitSet().length);
@@ -357,9 +325,7 @@ public class BloomKFilter {
       }
       return new BloomKFilter(data, numHashFunc);
     } catch (RuntimeException e) {
-      IOException io = new IOException("Unable to deserialize BloomKFilter");
-      io.initCause(e);
-      throw io;
+      throw new IOException("Unable to deserialize BloomKFilter", e);
     }
   }
 
@@ -372,12 +338,12 @@ public class BloomKFilter {
    * Merges BloomKFilter bf2 into bf1.
    * Assumes 2 BloomKFilters with the same size/hash functions are serialized to byte arrays
    *
-   * @param bf1Bytes
-   * @param bf1Start
-   * @param bf1Length
-   * @param bf2Bytes
-   * @param bf2Start
-   * @param bf2Length
+   * @param bf1Bytes Data of bloom filter 1.
+   * @param bf1Start Start index of BF1.
+   * @param bf1Length BF1 length.
+   * @param bf2Bytes Data of bloom filter 1
+   * @param bf2Start Start index of BF2.
+   * @param bf2Length BF2 length.
    */
   public static void mergeBloomFilterBytes(
     byte[] bf1Bytes, int bf1Start, int bf1Length,
@@ -404,7 +370,7 @@ public class BloomKFilter {
    * Bare metal bit set implementation. For performance reasons, this implementation does not check
    * for index bounds nor expand the bit set size if the specified index is greater than the size.
    */
-  public static class BitSet {
+  @SuppressWarnings("unused") public static class BitSet {
     private final long[] data;
 
     public BitSet(long bits) {

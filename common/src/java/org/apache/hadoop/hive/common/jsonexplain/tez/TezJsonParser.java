@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -36,6 +36,8 @@ public class TezJsonParser extends DagJsonParser {
         return "MULTICAST";
       case "ONE_TO_ONE_EDGE":
         return "FORWARD";
+      case "XPROD_EDGE":
+        return "XPROD_EDGE";
       default:
         return "UNKNOWN";
     }

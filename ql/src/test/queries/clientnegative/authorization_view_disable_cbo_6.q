@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.cbo.enable=false;
 set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider;
 

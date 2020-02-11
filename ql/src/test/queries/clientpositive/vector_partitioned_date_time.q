@@ -4,8 +4,7 @@ set hive.fetch.task.conversion=none;
 
 -- Check if vectorization code is handling partitioning on DATE and the other data types.
 
-
-CREATE TABLE flights_tiny (
+CREATE TABLE flights_tiny_n1 (
   origin_city_name STRING,
   dest_city_name STRING,
   fl_date DATE,
@@ -13,11 +12,13 @@ CREATE TABLE flights_tiny (
   fl_num INT
 );
 
-LOAD DATA LOCAL INPATH '../../data/files/flights_tiny.txt.1' OVERWRITE INTO TABLE flights_tiny;
+LOAD DATA LOCAL INPATH '../../data/files/flights_tiny.txt.1' OVERWRITE INTO TABLE flights_tiny_n1;
 
 CREATE TABLE flights_tiny_orc STORED AS ORC AS
 SELECT origin_city_name, dest_city_name, fl_date, to_utc_timestamp(fl_date, 'America/Los_Angeles') as fl_time, arr_delay, fl_num
-FROM flights_tiny;
+FROM flights_tiny_n1;
+
+-- SORT_QUERY_RESULTS
 
 SELECT * FROM flights_tiny_orc;
 
@@ -52,7 +53,6 @@ CREATE TABLE flights_tiny_orc_partitioned_date (
 PARTITIONED BY (fl_date DATE)
 STORED AS ORC;
 
-set hive.exec.dynamic.partition.mode=nonstrict;
 
 INSERT INTO TABLE flights_tiny_orc_partitioned_date
 PARTITION (fl_date)
@@ -96,7 +96,6 @@ CREATE TABLE flights_tiny_orc_partitioned_timestamp (
 PARTITIONED BY (fl_time TIMESTAMP)
 STORED AS ORC;
 
-set hive.exec.dynamic.partition.mode=nonstrict;
 
 INSERT INTO TABLE flights_tiny_orc_partitioned_timestamp
 PARTITION (fl_time)
@@ -130,7 +129,7 @@ select fl_time, count(*) from flights_tiny_orc_partitioned_timestamp group by fl
 -- test for Parquet file format
 CREATE TABLE flights_tiny_parquet STORED AS PARQUET AS
 SELECT origin_city_name, dest_city_name, fl_date, to_utc_timestamp(fl_date, 'America/Los_Angeles') as fl_time, arr_delay, fl_num
-FROM flights_tiny;
+FROM flights_tiny_n1;
 
 SELECT * FROM flights_tiny_parquet;
 
@@ -165,7 +164,6 @@ CREATE TABLE flights_tiny_parquet_partitioned_date (
 PARTITIONED BY (fl_date DATE)
 STORED AS PARQUET;
 
-set hive.exec.dynamic.partition.mode=nonstrict;
 
 INSERT INTO TABLE flights_tiny_parquet_partitioned_date
 PARTITION (fl_date)
@@ -209,7 +207,6 @@ CREATE TABLE flights_tiny_parquet_partitioned_timestamp (
 PARTITIONED BY (fl_time TIMESTAMP)
 STORED AS PARQUET;
 
-set hive.exec.dynamic.partition.mode=nonstrict;
 
 INSERT INTO TABLE flights_tiny_parquet_partitioned_timestamp
 PARTITION (fl_time)

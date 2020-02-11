@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,43 +18,59 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.io.Text;
 import org.apache.hive.common.util.DateParser;
-
-import java.util.Arrays;
-import java.sql.Date;
 
 public class VectorUDFDateAddColCol extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
-  private int colNum1;
-  private int colNum2;
-  private int outputColumn;
+  private final int colNum1;
+  private final int colNum2;
+
   protected boolean isPositive = true;
+
   private transient final Text text = new Text();
-  private transient final Date date = new Date(0);
   private transient final DateParser dateParser = new DateParser();
 
-  public VectorUDFDateAddColCol(int colNum1, int colNum2, int outputColumn) {
-    this();
+  // Transient members initialized by transientInit method.
+  private transient PrimitiveCategory primitiveCategory;
+
+  public VectorUDFDateAddColCol(int colNum1, int colNum2, int outputColumnNum) {
+    super(outputColumnNum);
     this.colNum1 = colNum1;
     this.colNum2 = colNum2;
-    this.outputColumn = outputColumn;
   }
 
   public VectorUDFDateAddColCol() {
     super();
+
+    // Dummy final assignments.
+    colNum1 = -1;
+    colNum2 = -1;
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void transientInit(Configuration conf) throws HiveException {
+    super.transientInit(conf);
+
+    primitiveCategory =
+        ((PrimitiveTypeInfo) inputTypeInfos[0]).getPrimitiveCategory();
+  }
+
+  @Override
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
 
     if (childExpressions != null) {
       super.evaluateChildren(batch);
@@ -66,17 +82,19 @@ public class VectorUDFDateAddColCol extends VectorExpression {
     int n = batch.size;
     long[] vector2 = inputColVector2.vector;
 
-    LongColumnVector outV = (LongColumnVector) batch.cols[outputColumn];
+    LongColumnVector outV = (LongColumnVector) batch.cols[outputColumnNum];
     long[] outputVector = outV.vector;
     if (n <= 0) {
       // Nothing to do
       return;
     }
 
-    // Handle null
+    /*
+     * Propagate null values for a two-input operator and set isRepeating and noNulls appropriately.
+     */
     NullUtil.propagateNullsColCol(inputColVector1, inputColVector2, outV, batch.selected, batch.size, batch.selectedInUse);
 
-    switch (inputTypes[0]) {
+    switch (primitiveCategory) {
       case DATE:
         // Now disregard null in second pass.
         if ((inputColVector1.isRepeating) && (inputColVector2.isRepeating)) {
@@ -84,6 +102,21 @@ public class VectorUDFDateAddColCol extends VectorExpression {
           // Repeating property will not change.
           outV.isRepeating = true;
           outputVector[0] = evaluateDate(inputColVector1, 0, vector2[0]);
+        } else if (inputColVector1.isRepeating) {
+          evaluateRepeatedDate(inputColVector1, vector2, outV,
+              batch.selectedInUse, batch.selected, n);
+        } else if (inputColVector2.isRepeating) {
+          final long repeatedNumDays = vector2[0];
+          if (batch.selectedInUse) {
+            for (int j = 0; j != n; j++) {
+              int i = sel[j];
+              outputVector[i] = evaluateDate(inputColVector1, i, repeatedNumDays);
+            }
+          } else {
+            for (int i = 0; i != n; i++) {
+              outputVector[i] = evaluateDate(inputColVector1, i, repeatedNumDays);
+            }
+          }
         } else if (batch.selectedInUse) {
           for (int j = 0; j != n; j++) {
             int i = sel[j];
@@ -103,6 +136,21 @@ public class VectorUDFDateAddColCol extends VectorExpression {
           // Repeating property will not change.
           outV.isRepeating = true;
           outputVector[0] = evaluateTimestamp(inputColVector1, 0, vector2[0]);
+        } else if (inputColVector1.isRepeating) {
+          evaluateRepeatedTimestamp(inputColVector1, vector2, outV,
+              batch.selectedInUse, batch.selected, n);
+        } else if (inputColVector2.isRepeating) {
+          final long repeatedNumDays = vector2[0];
+          if (batch.selectedInUse) {
+            for (int j = 0; j != n; j++) {
+              int i = sel[j];
+              outputVector[i] = evaluateTimestamp(inputColVector1, i, repeatedNumDays);
+            }
+          } else {
+            for (int i = 0; i != n; i++) {
+              outputVector[i] = evaluateTimestamp(inputColVector1, i, repeatedNumDays);
+            }
+          }
         } else if (batch.selectedInUse) {
           for (int j = 0; j != n; j++) {
             int i = sel[j];
@@ -124,6 +172,21 @@ public class VectorUDFDateAddColCol extends VectorExpression {
           // Repeating property will not change.
           outV.isRepeating = true;
           evaluateString((BytesColumnVector) inputColVector1, outV, 0, vector2[0]);
+        } else if (inputColVector1.isRepeating) {
+          evaluateRepeatedString((BytesColumnVector) inputColVector1, vector2, outV,
+              batch.selectedInUse, batch.selected, n);
+        } else if (inputColVector2.isRepeating) {
+          final long repeatedNumDays = vector2[0];
+          if (batch.selectedInUse) {
+            for (int j = 0; j != n; j++) {
+              int i = sel[j];
+              evaluateString((BytesColumnVector) inputColVector1, outV, i, repeatedNumDays);
+            }
+          } else {
+            for (int i = 0; i != n; i++) {
+              evaluateString((BytesColumnVector) inputColVector1, outV, i, repeatedNumDays);
+            }
+          }
         } else if (batch.selectedInUse) {
           for (int j = 0; j != n; j++) {
             int i = sel[j];
@@ -136,7 +199,34 @@ public class VectorUDFDateAddColCol extends VectorExpression {
         }
         break;
       default:
-        throw new Error("Unsupported input type " + inputTypes[0].name());
+        throw new Error("Unsupported input type " + primitiveCategory.name());
+    }
+  }
+
+  protected void evaluateRepeatedCommon(long days, long[] vector2, LongColumnVector outputVector,
+      boolean selectedInUse, int[] selected, int n) {
+    if (isPositive) {
+      if (selectedInUse) {
+        for (int j = 0; j != n; j++) {
+          int i = selected[j];
+          outputVector.vector[i] = days + vector2[i];
+        }
+      } else {
+        for (int i = 0; i != n; i++) {
+          outputVector.vector[i] = days + vector2[i];
+        }
+      }
+    } else {
+      if (selectedInUse) {
+        for (int j = 0; j != n; j++) {
+          int i = selected[j];
+          outputVector.vector[i] = days - vector2[i];
+        }
+      } else {
+        for (int i = 0; i != n; i++) {
+          outputVector.vector[i] = days - vector2[i];
+        }
+      }
     }
   }
 
@@ -151,10 +241,25 @@ public class VectorUDFDateAddColCol extends VectorExpression {
     return days;
   }
 
+  protected void evaluateRepeatedDate(ColumnVector columnVector,
+      long[] vector2, LongColumnVector outputVector,
+      boolean selectedInUse, int[] selected, int n) {
+    if (columnVector.isNull[0]) {
+      outputVector.noNulls = false;
+      outputVector.isNull[0] = true;
+      outputVector.isRepeating = true;
+      return;
+    }
+    LongColumnVector lcv = (LongColumnVector) columnVector;
+    long days = lcv.vector[0];
+
+    evaluateRepeatedCommon(days, vector2, outputVector, selectedInUse, selected, n);
+  }
+
   protected long evaluateTimestamp(ColumnVector columnVector, int index, long numDays) {
     TimestampColumnVector tcv = (TimestampColumnVector) columnVector;
     // Convert to date value (in days)
-    long days = DateWritable.millisToDays(tcv.getTime(index));
+    long days = DateWritableV2.millisToDays(tcv.getTime(index));
     if (isPositive) {
       days += numDays;
     } else {
@@ -163,19 +268,36 @@ public class VectorUDFDateAddColCol extends VectorExpression {
     return days;
   }
 
+  protected void evaluateRepeatedTimestamp(ColumnVector columnVector,
+      long[] vector2, LongColumnVector outputVector,
+      boolean selectedInUse, int[] selected, int n) {
+    if (columnVector.isNull[0]) {
+      outputVector.noNulls = false;
+      outputVector.isNull[0] = true;
+      outputVector.isRepeating = true;
+      return;
+    }
+    TimestampColumnVector tcv = (TimestampColumnVector) columnVector;
+    // Convert to date value (in days)
+    long days = DateWritableV2.millisToDays(tcv.getTime(0));
+
+    evaluateRepeatedCommon(days, vector2, outputVector, selectedInUse, selected, n);
+  }
+
   protected void evaluateString(BytesColumnVector inputColumnVector1, LongColumnVector outputVector, int index, long numDays) {
     if (inputColumnVector1.isNull[index]) {
       outputVector.noNulls = false;
       outputVector.isNull[index] = true;
     } else {
       text.set(inputColumnVector1.vector[index], inputColumnVector1.start[index], inputColumnVector1.length[index]);
-      boolean parsed = dateParser.parseDate(text.toString(), date);
+      Date hDate = new Date();
+      boolean parsed = dateParser.parseDate(text.toString(), hDate);
       if (!parsed) {
         outputVector.noNulls = false;
         outputVector.isNull[index] = true;
         return;
       }
-      long days = DateWritable.millisToDays(date.getTime());
+      long days = DateWritableV2.millisToDays(hDate.toEpochMilli());
       if (isPositive) {
         days += numDays;
       } else {
@@ -185,39 +307,33 @@ public class VectorUDFDateAddColCol extends VectorExpression {
     }
   }
 
-  @Override
-  public int getOutputColumn() {
-    return this.outputColumn;
-  }
+  protected void evaluateRepeatedString(BytesColumnVector inputColumnVector1,
+      long[] vector2, LongColumnVector outputVector,
+      boolean selectedInUse, int[] selected, int n) {
+    if (inputColumnVector1.isNull[0]) {
+      outputVector.noNulls = false;
+      outputVector.isNull[0] = true;
+      outputVector.isRepeating = true;
+      return;
+    }
+    text.set(
+        inputColumnVector1.vector[0], inputColumnVector1.start[0], inputColumnVector1.length[0]);
+    Date date = new Date();
+    boolean parsed = dateParser.parseDate(text.toString(), date);
+    if (!parsed) {
+      outputVector.noNulls = false;
+      outputVector.isNull[0] = true;
+      outputVector.isRepeating = true;
+      return;
+    }
+    long days = DateWritableV2.millisToDays(date.toEpochMilli());
 
-  @Override
-  public String getOutputType() {
-    return "date";
-  }
-
-  public int getColNum1() {
-    return colNum1;
-  }
-
-  public void setColNum1(int colNum1) {
-    this.colNum1 = colNum1;
-  }
-
-  public int getColNum2() {
-    return colNum2;
-  }
-
-  public void setColNum2(int colNum2) {
-    this.colNum2 = colNum2;
-  }
-
-  public void setOutputColumn(int outputColumn) {
-    this.outputColumn = outputColumn;
+    evaluateRepeatedCommon(days, vector2, outputVector, selectedInUse, selected, n);
   }
 
   @Override
   public String vectorExpressionParameters() {
-    return "col " + colNum1 + ", col " + colNum2;
+    return getColumnParamString(0, colNum1) + ", " + getColumnParamString(1, colNum2);
   }
 
   @Override

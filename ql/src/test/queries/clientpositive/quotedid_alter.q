@@ -1,3 +1,4 @@
+--! qt:dataset:src
 
 set hive.support.quoted.identifiers=column;
 

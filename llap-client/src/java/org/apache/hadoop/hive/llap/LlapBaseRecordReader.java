@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,25 +22,15 @@ import com.google.common.base.Preconditions;
 
 import java.io.BufferedInputStream;
 import java.io.Closeable;
-import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.DataInputStream;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.llap.Schema;
 import org.apache.hadoop.hive.llap.io.ChunkedInputStream;
-import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.mapred.RecordReader;
-import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.JobConf;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -149,52 +139,61 @@ public class LlapBaseRecordReader<V extends WritableComparable> implements Recor
           throw new IOException("Hit end of input, but did not find expected end of data indicator");
         }
 
-        // There should be a reader event available, or coming soon, so okay to be blocking call.
-        ReaderEvent event = getReaderEvent();
-        switch (event.getEventType()) {
-          case DONE:
-            break;
-          default:
-            throw new IOException("Expected reader event with done status, but got "
-                + event.getEventType() + " with message " + event.getMessage());
-        }
+        processReaderEvent();
         return false;
       }
     } catch (IOException io) {
-      try {
-        if (Thread.interrupted()) {
-          // Either we were interrupted by one of:
-          // 1. handleEvent(), in which case there is a reader (error) event waiting for us in the queue
-          // 2. Some other unrelated cause which interrupted us, in which case there may not be a reader event coming.
-          // Either way we should not try to block trying to read the reader events queue.
-          if (readerEvents.isEmpty()) {
-            // Case 2.
-            throw io;
-          } else {
-            // Case 1. Fail the reader, sending back the error we received from the reader event.
-            ReaderEvent event = getReaderEvent();
-            switch (event.getEventType()) {
-              case ERROR:
-                throw new IOException("Received reader event error: " + event.getMessage(), io);
-              default:
-                throw new IOException("Got reader event type " + event.getEventType()
-                    + ", expected error event", io);
-            }
-          }
-        } else {
-          // If we weren't interrupted, just propagate the error
+      failOnInterruption(io);
+      return false;
+    }
+  }
+
+  protected void processReaderEvent() throws IOException {
+    // There should be a reader event available, or coming soon, so okay to be blocking call.
+    ReaderEvent event = getReaderEvent();
+    switch (event.getEventType()) {
+      case DONE:
+        break;
+      default:
+        throw new IOException("Expected reader event with done status, but got "
+            + event.getEventType() + " with message " + event.getMessage());
+    }
+  }
+
+  protected void failOnInterruption(IOException io) throws IOException {
+    try {
+      if (Thread.interrupted()) {
+        // Either we were interrupted by one of:
+        // 1. handleEvent(), in which case there is a reader (error) event waiting for us in the queue
+        // 2. Some other unrelated cause which interrupted us, in which case there may not be a reader event coming.
+        // Either way we should not try to block trying to read the reader events queue.
+        if (readerEvents.isEmpty()) {
+          // Case 2.
           throw io;
+        } else {
+          // Case 1. Fail the reader, sending back the error we received from the reader event.
+          ReaderEvent event = getReaderEvent();
+          switch (event.getEventType()) {
+            case ERROR:
+              throw new IOException("Received reader event error: " + event.getMessage(), io);
+            default:
+              throw new IOException("Got reader event type " + event.getEventType()
+                  + ", expected error event", io);
+          }
         }
-      } finally {
-        // The external client handling umbilical responses and the connection to read the incoming
-        // data are not coupled. Calling close() here to make sure an error in one will cause the
-        // other to be closed as well.
-        try {
-          close();
-        } catch (Exception err) {
-          // Don't propagate errors from close() since this will lose the original error above.
-          LOG.error("Closing RecordReader due to error and hit another error during close()", err);
-        }
+      } else {
+        // If we weren't interrupted, just propagate the error
+        throw io;
+      }
+    } finally {
+      // The external client handling umbilical responses and the connection to read the incoming
+      // data are not coupled. Calling close() here to make sure an error in one will cause the
+      // other to be closed as well.
+      try {
+        close();
+      } catch (Exception err) {
+        // Don't propagate errors from close() since this will lose the original error above.
+        LOG.error("Closing RecordReader due to error and hit another error during close()", err);
       }
     }
   }

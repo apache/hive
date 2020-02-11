@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -177,7 +177,7 @@ public final class LazyPrimitiveObjectInspectorFactory {
       break;
     default:
       throw new RuntimeException(
-          "Primitve type " + typeInfo.getPrimitiveCategory() + " should not take parameters");
+          "Primitive type " + typeInfo.getPrimitiveCategory() + " should not take parameters");
     }
 
     AbstractPrimitiveLazyObjectInspector<?> prev =

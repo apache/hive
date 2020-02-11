@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,16 +20,20 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.common.io.NonSyncByteArrayInputStream;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedUDAFs;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.*;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.Statistics;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
@@ -43,12 +47,12 @@ import org.apache.hive.common.util.BloomKFilter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.sql.Timestamp;
 import java.util.List;
 
 /**
  * Generic UDF to generate Bloom Filter
  */
+@Description(name = "bloom_filter")
 public class GenericUDAFBloomFilter implements GenericUDAFResolver2 {
 
   @Override
@@ -64,6 +68,9 @@ public class GenericUDAFBloomFilter implements GenericUDAFResolver2 {
   /**
    * GenericUDAFBloomFilterEvaluator - Evaluator class for BloomFilter
    */
+  @VectorizedUDAFs({
+    VectorUDAFBloomFilter.class,
+    VectorUDAFBloomFilterMerge.class})
   public static class GenericUDAFBloomFilterEvaluator extends GenericUDAFEvaluator {
     // Source operator to get the number of entries
     private SelectOperator sourceOperator;
@@ -76,7 +83,7 @@ public class GenericUDAFBloomFilter implements GenericUDAFResolver2 {
     private PrimitiveObjectInspector inputOI;
 
     // Bloom filter rest
-    private ByteArrayOutputStream result = new ByteArrayOutputStream();
+    private final ByteArrayOutputStream result = new ByteArrayOutputStream();
 
     private transient byte[] scratchBuffer = new byte[HiveDecimal.SCRATCH_BUFFER_LEN_TO_BYTES];
 
@@ -94,6 +101,16 @@ public class GenericUDAFBloomFilter implements GenericUDAFResolver2 {
       // Output will be same in both partial or full aggregation modes.
       // It will be a BloomFilter in ByteWritable
       return PrimitiveObjectInspectorFactory.writableBinaryObjectInspector;
+    }
+
+    @Override
+    public int estimate() {
+      long entries = Math.min(getExpectedEntries(), maxEntries);
+      long numBits = (long) (-entries * Math.log(BloomKFilter.DEFAULT_FPP) / (Math.log(2) * Math.log(2)));
+      int nLongs = (int) Math.ceil((double) numBits / (double) Long.SIZE);
+      // additional bits to pad long array to block size
+      int padLongs = 8 - nLongs % 8;
+      return (nLongs + padLongs) * Long.SIZE / 8;
     }
 
     /**
@@ -181,14 +198,14 @@ public class GenericUDAFBloomFilter implements GenericUDAFResolver2 {
           bf.addBytes(scratchBuffer, startIdx, scratchBuffer.length - startIdx);
           break;
         case DATE:
-          DateWritable vDate = ((DateObjectInspector)inputOI).
+          DateWritableV2 vDate = ((DateObjectInspector)inputOI).
                   getPrimitiveWritableObject(parameters[0]);
           bf.addLong(vDate.getDays());
           break;
         case TIMESTAMP:
           Timestamp vTimeStamp = ((TimestampObjectInspector)inputOI).
                   getPrimitiveJavaObject(parameters[0]);
-          bf.addLong(vTimeStamp.getTime());
+          bf.addLong(vTimeStamp.toEpochMilli());
           break;
         case CHAR:
           Text vChar = ((HiveCharObjectInspector)inputOI).

@@ -1,58 +1,58 @@
-PREHOOK: query: drop table if exists emptyavro
+PREHOOK: query: drop table if exists emptyavro_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table if exists emptyavro
+POSTHOOK: query: drop table if exists emptyavro_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table emptyavro (a int) stored as avro
+PREHOOK: query: create table emptyavro_n0 (a int) stored as avro
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@emptyavro
-POSTHOOK: query: create table emptyavro (a int) stored as avro
+PREHOOK: Output: default@emptyavro_n0
+POSTHOOK: query: create table emptyavro_n0 (a int) stored as avro
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@emptyavro
-PREHOOK: query: select count(*) from emptyavro
+POSTHOOK: Output: default@emptyavro_n0
+PREHOOK: query: select count(*) from emptyavro_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@emptyavro
+PREHOOK: Input: default@emptyavro_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from emptyavro
+POSTHOOK: query: select count(*) from emptyavro_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@emptyavro
+POSTHOOK: Input: default@emptyavro_n0
 #### A masked pattern was here ####
 0
-PREHOOK: query: insert into emptyavro select count(*) from emptyavro
+PREHOOK: query: insert into emptyavro_n0 select count(*) from emptyavro_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@emptyavro
-PREHOOK: Output: default@emptyavro
-POSTHOOK: query: insert into emptyavro select count(*) from emptyavro
+PREHOOK: Input: default@emptyavro_n0
+PREHOOK: Output: default@emptyavro_n0
+POSTHOOK: query: insert into emptyavro_n0 select count(*) from emptyavro_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@emptyavro
-POSTHOOK: Output: default@emptyavro
-POSTHOOK: Lineage: emptyavro.a EXPRESSION [(emptyavro)emptyavro.null, ]
-PREHOOK: query: select count(*) from emptyavro
+POSTHOOK: Input: default@emptyavro_n0
+POSTHOOK: Output: default@emptyavro_n0
+POSTHOOK: Lineage: emptyavro_n0.a EXPRESSION [(emptyavro_n0)emptyavro_n0.null, ]
+PREHOOK: query: select count(*) from emptyavro_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@emptyavro
+PREHOOK: Input: default@emptyavro_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from emptyavro
+POSTHOOK: query: select count(*) from emptyavro_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@emptyavro
+POSTHOOK: Input: default@emptyavro_n0
 #### A masked pattern was here ####
 1
-PREHOOK: query: insert into emptyavro select key from src where key = 100 limit 1
+PREHOOK: query: insert into emptyavro_n0 select key from src where key = 100 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@emptyavro
-POSTHOOK: query: insert into emptyavro select key from src where key = 100 limit 1
+PREHOOK: Output: default@emptyavro_n0
+POSTHOOK: query: insert into emptyavro_n0 select key from src where key = 100 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@emptyavro
-POSTHOOK: Lineage: emptyavro.a EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: select * from emptyavro
+POSTHOOK: Output: default@emptyavro_n0
+POSTHOOK: Lineage: emptyavro_n0.a EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: select * from emptyavro_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@emptyavro
+PREHOOK: Input: default@emptyavro_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from emptyavro
+POSTHOOK: query: select * from emptyavro_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@emptyavro
+POSTHOOK: Input: default@emptyavro_n0
 #### A masked pattern was here ####
 0
 100

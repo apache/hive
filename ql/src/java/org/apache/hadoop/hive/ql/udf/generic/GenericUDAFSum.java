@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -24,6 +24,9 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.PTFPartition;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedUDAFs;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.*;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.*;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ptf.PTFExpressionDef;
@@ -181,6 +184,9 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
       }
 
       if (isWindowingDistinct()) {
+        if (agg.uniqueObjects == null) {
+          agg.uniqueObjects = new HashSet<ObjectInspectorObject>();
+        }
         HashSet<ObjectInspectorObject> uniqueObjs = agg.uniqueObjects;
         ObjectInspectorObject obj = input instanceof ObjectInspectorObject ?
             (ObjectInspectorObject)input :
@@ -203,6 +209,10 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
    * GenericUDAFSumHiveDecimal.
    *
    */
+  @VectorizedUDAFs({
+      VectorUDAFSumDecimal.class,
+      VectorUDAFSumDecimal64.class,
+      VectorUDAFSumDecimal64ToDecimal.class})
   public static class GenericUDAFSumHiveDecimal extends GenericUDAFSumEvaluator<HiveDecimalWritable> {
 
     @Override
@@ -259,7 +269,7 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
       SumAgg<HiveDecimalWritable> bdAgg = (SumAgg<HiveDecimalWritable>) agg;
       bdAgg.empty = true;
       bdAgg.sum = new HiveDecimalWritable(0);
-      bdAgg.uniqueObjects = new HashSet<ObjectInspectorObject>();
+      bdAgg.uniqueObjects = null;
     }
 
     boolean warned = false;
@@ -297,6 +307,7 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
         if (isWindowingDistinct()) {
           throw new HiveException("Distinct windowing UDAF doesn't support merge and terminatePartial");
         } else {
+          // If partial is NULL, then there was an overflow and myagg.sum will be marked as not set.
           myagg.sum.mutateAdd(PrimitiveObjectInspectorUtils.getHiveDecimal(partial, inputOI));
         }
       }
@@ -359,8 +370,10 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
         WindowFrameDef winFrame,
         PTFPartition partition,
         List<PTFExpressionDef> parameters,
-        ObjectInspector outputOI) {
-      return new BasePartitionEvaluator.SumPartitionHiveDecimalEvaluator(this, winFrame, partition, parameters, outputOI);
+        ObjectInspector outputOI,
+        boolean nullsLast) {
+      return new BasePartitionEvaluator.SumPartitionHiveDecimalEvaluator(this, winFrame,
+          partition, parameters, outputOI, nullsLast);
     }
   }
 
@@ -368,6 +381,9 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
    * GenericUDAFSumDouble.
    *
    */
+  @VectorizedUDAFs({
+    VectorUDAFSumDouble.class,
+    VectorUDAFSumTimestamp.class})
   public static class GenericUDAFSumDouble extends GenericUDAFSumEvaluator<DoubleWritable> {
     @Override
     public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
@@ -399,7 +415,7 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
       SumDoubleAgg myagg = (SumDoubleAgg) agg;
       myagg.empty = true;
       myagg.sum = 0.0;
-      myagg.uniqueObjects = new HashSet<ObjectInspectorObject>();
+      myagg.uniqueObjects = null;
     }
 
     boolean warned = false;
@@ -476,7 +492,7 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
             org.apache.hadoop.hive.ql.udf.generic.GenericUDAFStreamingEvaluator.SumAvgEnhancer<DoubleWritable, Double>.SumAvgStreamingState ss)
             throws HiveException {
           SumDoubleAgg myagg = (SumDoubleAgg) ss.wrappedBuf;
-          return myagg.empty ? null : new Double(myagg.sum);
+          return myagg.empty ? null : myagg.sum;
         }
 
       };
@@ -487,8 +503,10 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
         WindowFrameDef winFrame,
         PTFPartition partition,
         List<PTFExpressionDef> parameters,
-        ObjectInspector outputOI) {
-      return new BasePartitionEvaluator.SumPartitionDoubleEvaluator(this, winFrame, partition, parameters, outputOI);
+        ObjectInspector outputOI,
+        boolean nullsLast) {
+      return new BasePartitionEvaluator.SumPartitionDoubleEvaluator(this, winFrame, partition,
+          parameters, outputOI, nullsLast);
     }
   }
 
@@ -496,6 +514,8 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
    * GenericUDAFSumLong.
    *
    */
+  @VectorizedUDAFs({
+    VectorUDAFSumLong.class})
   public static class GenericUDAFSumLong extends GenericUDAFSumEvaluator<LongWritable> {
     @Override
     public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
@@ -527,7 +547,7 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
       SumLongAgg myagg = (SumLongAgg) agg;
       myagg.empty = true;
       myagg.sum = 0L;
-      myagg.uniqueObjects = new HashSet<ObjectInspectorObject>();
+      myagg.uniqueObjects = null;
     }
 
     private boolean warned = false;
@@ -601,7 +621,7 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
             org.apache.hadoop.hive.ql.udf.generic.GenericUDAFStreamingEvaluator.SumAvgEnhancer<LongWritable, Long>.SumAvgStreamingState ss)
             throws HiveException {
           SumLongAgg myagg = (SumLongAgg) ss.wrappedBuf;
-          return myagg.empty ? null : new Long(myagg.sum);
+          return myagg.empty ? null : myagg.sum;
         }
       };
     }
@@ -611,8 +631,10 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
         WindowFrameDef winFrame,
         PTFPartition partition,
         List<PTFExpressionDef> parameters,
-        ObjectInspector outputOI) {
-      return new BasePartitionEvaluator.SumPartitionLongEvaluator(this, winFrame, partition, parameters, outputOI);
+        ObjectInspector outputOI,
+        boolean nullsLast) {
+      return new BasePartitionEvaluator.SumPartitionLongEvaluator(this, winFrame, partition,
+          parameters, outputOI, nullsLast);
     }
   }
 }

@@ -1,9 +1,13 @@
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT cboolean1, IF (cboolean1, 'first', 'second') FROM alltypesorc WHERE cboolean1 IS NOT NULL AND cboolean1 ORDER BY cboolean1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT cboolean1, IF (cboolean1, 'first', 'second') FROM alltypesorc WHERE cboolean1 IS NOT NULL AND cboolean1 ORDER BY cboolean1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -24,15 +28,15 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: (cboolean1 and cboolean1 is not null) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 36700 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsTrue(col 10) -> boolean, SelectColumnIsNotNull(col 10) -> boolean) -> boolean
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsTrue(col 10:boolean), SelectColumnIsNotNull(col 10:boolean))
                     predicate: (cboolean1 and cboolean1 is not null) (type: boolean)
                     Statistics: Num rows: 4587 Data size: 13704 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -41,11 +45,12 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: [10, 12]
-                          selectExpressions: IfExprStringScalarStringScalar(col 10, val first, val second) -> 12:String
+                          projectedOutputColumnNums: [10, 13]
+                          selectExpressions: IfExprStringScalarStringScalar(col 10:boolean, val first, val second) -> 13:string
                       Statistics: Num rows: 4587 Data size: 857712 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: boolean)
+                        null sort order: z
                         sort order: +
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
@@ -58,7 +63,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -68,7 +74,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -79,7 +84,7 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [0, 1]
+                    projectedOutputColumnNums: [0, 1]
                 Statistics: Num rows: 4587 Data size: 857712 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false

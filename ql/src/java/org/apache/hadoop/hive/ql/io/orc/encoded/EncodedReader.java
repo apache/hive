@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,10 +19,12 @@ package org.apache.hadoop.hive.ql.io.orc.encoded;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.orc.StripeInformation;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.OrcEncodedColumnBatch;
 import org.apache.orc.OrcProto;
+import org.apache.orc.impl.OrcIndex;
 
 public interface EncodedReader {
 
@@ -33,14 +35,14 @@ public interface EncodedReader {
    * @param index Externally provided metadata (from metadata reader or external cache).
    * @param encodings Externally provided metadata (from metadata reader or external cache).
    * @param streams Externally provided metadata (from metadata reader or external cache).
-   * @param included The array of booleans indicating whether each column should be read.
-   * @param colRgs Arrays of rgs, per column set to true in included, that are to be read.
+   * @param physicalFileIncludes The array of booleans indicating whether each column should be read.
+   * @param rgs Arrays of rgs, per column set to true in included, that are to be read.
    *               null in each respective position means all rgs for this column need to be read.
    * @param consumer The sink for data that has been read.
    */
   void readEncodedColumns(int stripeIx, StripeInformation stripe,
       OrcProto.RowIndex[] index, List<OrcProto.ColumnEncoding> encodings,
-      List<OrcProto.Stream> streams, boolean[] included, boolean[] rgs,
+      List<OrcProto.Stream> streams, boolean[] physicalFileIncludes, boolean[] rgs,
       Consumer<OrcEncodedColumnBatch> consumer) throws IOException;
 
   /**
@@ -54,4 +56,19 @@ public interface EncodedReader {
    * to just checking the constant in the first place.
    */
   void setTracing(boolean isEnabled);
+
+  /**
+   * Read the indexes from ORC file.
+   * @param index The destination with pre-allocated arrays to put index data into.
+   * @param stripe Externally provided metadata (from metadata reader or external cache).
+   * @param streams Externally provided metadata (from metadata reader or external cache).
+   * @param included The array of booleans indicating whether each column should be read. 
+   * @param sargColumns The array of booleans indicating whether each column's
+   *                    bloom filters should be read.
+   */
+  void readIndexStreams(OrcIndex index, StripeInformation stripe,
+      List<OrcProto.Stream> streams, boolean[] included, boolean[] sargColumns)
+          throws IOException;
+
+  void setStopped(AtomicBoolean isStopped);
 }

@@ -1,4 +1,4 @@
-create table t (
+create table t_n9 (
 	dp double precision,
 	d double,
 	f float,
@@ -9,5 +9,5 @@ create table t (
         de  dec,
         dc  dec(3,2)
 	);
-describe t;
+describe t_n9;
 

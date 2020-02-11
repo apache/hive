@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -25,11 +25,13 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.common.collect.Maps;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
@@ -57,6 +59,8 @@ import org.slf4j.LoggerFactory;
 /**
  * The HCatTable is a wrapper around org.apache.hadoop.hive.metastore.api.Table.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public class HCatTable {
   private static final Logger LOG = LoggerFactory.getLogger(HCatTable.class);
 
@@ -104,7 +108,7 @@ public class HCatTable {
   public static final String DEFAULT_INPUT_FORMAT_CLASS = org.apache.hadoop.mapred.TextInputFormat.class.getName();
   public static final String DEFAULT_OUTPUT_FORMAT_CLASS = org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat.class.getName();
 
-  private String dbName = MetaStoreUtils.DEFAULT_DATABASE_NAME;
+  private String dbName = Warehouse.DEFAULT_DATABASE_NAME;
   private String tableName;
   private HiveConf conf;
   private String tableType;
@@ -118,7 +122,7 @@ public class HCatTable {
   private String owner;
 
   public HCatTable(String dbName, String tableName) {
-    this.dbName = StringUtils.isBlank(dbName)? MetaStoreUtils.DEFAULT_DATABASE_NAME : dbName;
+    this.dbName = StringUtils.isBlank(dbName)? Warehouse.DEFAULT_DATABASE_NAME : dbName;
     this.tableName = tableName;
     this.sd = new StorageDescriptor();
     this.sd.setInputFormat(DEFAULT_INPUT_FORMAT_CLASS);
@@ -170,6 +174,10 @@ public class HCatTable {
 
     if (StringUtils.isNotBlank(this.comment)) {
       newTable.putToParameters("comment", comment);
+    }
+
+    if (newTable.getParameters().get("bucketing_version") == null) {
+      newTable.putToParameters("bucketing_version", "2");
     }
 
     newTable.setSd(sd);

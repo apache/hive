@@ -1,62 +1,62 @@
-PREHOOK: query: DROP TABLE IF EXISTS base_tab
+PREHOOK: query: DROP TABLE IF EXISTS base_tab_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE IF EXISTS base_tab
+POSTHOOK: query: DROP TABLE IF EXISTS base_tab_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE base_tab(a STRING, b STRING)
+PREHOOK: query: CREATE TABLE base_tab_n0(a STRING, b STRING)
 ROW FORMAT DELIMITED
     FIELDS TERMINATED BY '|'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@base_tab
-POSTHOOK: query: CREATE TABLE base_tab(a STRING, b STRING)
+PREHOOK: Output: default@base_tab_n0
+POSTHOOK: query: CREATE TABLE base_tab_n0(a STRING, b STRING)
 ROW FORMAT DELIMITED
     FIELDS TERMINATED BY '|'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@base_tab
-PREHOOK: query: DESCRIBE EXTENDED base_tab
+POSTHOOK: Output: default@base_tab_n0
+PREHOOK: query: DESCRIBE EXTENDED base_tab_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@base_tab
-POSTHOOK: query: DESCRIBE EXTENDED base_tab
+PREHOOK: Input: default@base_tab_n0
+POSTHOOK: query: DESCRIBE EXTENDED base_tab_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@base_tab
+POSTHOOK: Input: default@base_tab_n0
 a                   	string              	                    
 b                   	string              	                    
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/escape_crlf.txt' OVERWRITE INTO TABLE base_tab
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/escape_crlf.txt' OVERWRITE INTO TABLE base_tab_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@base_tab
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/escape_crlf.txt' OVERWRITE INTO TABLE base_tab
+PREHOOK: Output: default@base_tab_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/escape_crlf.txt' OVERWRITE INTO TABLE base_tab_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@base_tab
-PREHOOK: query: SELECT * FROM base_tab
+POSTHOOK: Output: default@base_tab_n0
+PREHOOK: query: SELECT * FROM base_tab_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@base_tab
+PREHOOK: Input: default@base_tab_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM base_tab
+POSTHOOK: query: SELECT * FROM base_tab_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@base_tab
+POSTHOOK: Input: default@base_tab_n0
 #### A masked pattern was here ####
 This\nis\rthe first\r\nmulti-line field	field1-2
 This\nis\rthe second\r\nmulti-line field	field2-2
-PREHOOK: query: ALTER TABLE base_tab SET SERDEPROPERTIES ('escape.delim'='\\', 'serialization.escape.crlf'='true')
+PREHOOK: query: ALTER TABLE base_tab_n0 SET SERDEPROPERTIES ('escape.delim'='\\', 'serialization.escape.crlf'='true')
 PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
-PREHOOK: Input: default@base_tab
-PREHOOK: Output: default@base_tab
-POSTHOOK: query: ALTER TABLE base_tab SET SERDEPROPERTIES ('escape.delim'='\\', 'serialization.escape.crlf'='true')
+PREHOOK: Input: default@base_tab_n0
+PREHOOK: Output: default@base_tab_n0
+POSTHOOK: query: ALTER TABLE base_tab_n0 SET SERDEPROPERTIES ('escape.delim'='\\', 'serialization.escape.crlf'='true')
 POSTHOOK: type: ALTERTABLE_SERDEPROPERTIES
-POSTHOOK: Input: default@base_tab
-POSTHOOK: Output: default@base_tab
-PREHOOK: query: SELECT * FROM base_tab
+POSTHOOK: Input: default@base_tab_n0
+POSTHOOK: Output: default@base_tab_n0
+PREHOOK: query: SELECT * FROM base_tab_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@base_tab
+PREHOOK: Input: default@base_tab_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM base_tab
+POSTHOOK: query: SELECT * FROM base_tab_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@base_tab
+POSTHOOK: Input: default@base_tab_n0
 #### A masked pattern was here ####
 This
 is
@@ -66,13 +66,13 @@ This
 is
 the second
 multi-line field	field2-2
-PREHOOK: query: SELECT * FROM base_tab
+PREHOOK: query: SELECT * FROM base_tab_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@base_tab
+PREHOOK: Input: default@base_tab_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM base_tab
+POSTHOOK: query: SELECT * FROM base_tab_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@base_tab
+POSTHOOK: Input: default@base_tab_n0
 #### A masked pattern was here ####
 This
 is
@@ -82,11 +82,11 @@ This
 is
 the second
 multi-line field	field2-2
-PREHOOK: query: DROP TABLE base_tab
+PREHOOK: query: DROP TABLE base_tab_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@base_tab
-PREHOOK: Output: default@base_tab
-POSTHOOK: query: DROP TABLE base_tab
+PREHOOK: Input: default@base_tab_n0
+PREHOOK: Output: default@base_tab_n0
+POSTHOOK: query: DROP TABLE base_tab_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@base_tab
-POSTHOOK: Output: default@base_tab
+POSTHOOK: Input: default@base_tab_n0
+POSTHOOK: Output: default@base_tab_n0

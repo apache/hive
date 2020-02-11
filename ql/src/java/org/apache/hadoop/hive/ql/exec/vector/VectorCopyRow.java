@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
@@ -176,9 +177,29 @@ public class VectorCopyRow {
 
     @Override
     void copy(VectorizedRowBatch inBatch, int inBatchIndex, VectorizedRowBatch outBatch, int outBatchIndex) {
-      DecimalColumnVector inColVector = (DecimalColumnVector) inBatch.cols[inColumnIndex];
-      DecimalColumnVector outColVector = (DecimalColumnVector) outBatch.cols[outColumnIndex];
-
+      ColumnVector inColVector = inBatch.cols[inColumnIndex];
+      ColumnVector outColVector = outBatch.cols[outColumnIndex];
+      if (inColVector instanceof DecimalColumnVector) {
+        if (outColVector instanceof DecimalColumnVector) {
+          copyDecimalToDecimal((DecimalColumnVector) inColVector, inBatchIndex,
+              (DecimalColumnVector) outColVector, outBatchIndex);
+        } else {
+          copyDecimalToDecimal64((DecimalColumnVector) inColVector, inBatchIndex,
+              (Decimal64ColumnVector) outColVector, outBatchIndex);
+        }
+      } else {
+        if (outColVector instanceof DecimalColumnVector) {
+          copyDecimal64ToDecimal((Decimal64ColumnVector) inColVector, inBatchIndex,
+              (DecimalColumnVector) outColVector, outBatchIndex);
+        } else {
+          copyDecimal64ToDecimal64((Decimal64ColumnVector) inColVector, inBatchIndex,
+              (Decimal64ColumnVector) outColVector, outBatchIndex);
+        }
+      }
+    }
+    
+    private void copyDecimalToDecimal(DecimalColumnVector inColVector, int inBatchIndex,
+        DecimalColumnVector outColVector, int outBatchIndex) {
       if (inColVector.isRepeating) {
         if (inColVector.noNulls || !inColVector.isNull[0]) {
           outColVector.isNull[outBatchIndex] = false;
@@ -190,6 +211,67 @@ public class VectorCopyRow {
         if (inColVector.noNulls || !inColVector.isNull[inBatchIndex]) {
           outColVector.isNull[outBatchIndex] = false;
           outColVector.set(outBatchIndex, inColVector.vector[inBatchIndex]);
+        } else {
+          VectorizedBatchUtil.setNullColIsNullValue(outColVector, outBatchIndex);
+        }
+      }
+    }
+
+    private void copyDecimalToDecimal64(DecimalColumnVector inColVector, int inBatchIndex,
+        Decimal64ColumnVector outColVector, int outBatchIndex) {
+      if (inColVector.isRepeating) {
+        if (inColVector.noNulls || !inColVector.isNull[0]) {
+          outColVector.isNull[outBatchIndex] = false;
+          outColVector.set(outBatchIndex, inColVector.vector[0]);
+        } else {
+          VectorizedBatchUtil.setNullColIsNullValue(outColVector, outBatchIndex);
+        }
+      } else {
+        if (inColVector.noNulls || !inColVector.isNull[inBatchIndex]) {
+          outColVector.isNull[outBatchIndex] = false;
+          outColVector.set(outBatchIndex, inColVector.vector[inBatchIndex]);
+        } else {
+          VectorizedBatchUtil.setNullColIsNullValue(outColVector, outBatchIndex);
+        }
+      }
+    }
+
+    private void copyDecimal64ToDecimal(Decimal64ColumnVector inColVector, int inBatchIndex,
+        DecimalColumnVector outColVector, int outBatchIndex) {
+      if (inColVector.isRepeating) {
+        if (inColVector.noNulls || !inColVector.isNull[0]) {
+          outColVector.isNull[outBatchIndex] = false;
+          HiveDecimalWritable scratchWritable = inColVector.getScratchWritable();
+          scratchWritable.setFromLongAndScale(inColVector.vector[0], inColVector.scale);
+          outColVector.set(outBatchIndex, scratchWritable);
+        } else {
+          VectorizedBatchUtil.setNullColIsNullValue(outColVector, outBatchIndex);
+        }
+      } else {
+        if (inColVector.noNulls || !inColVector.isNull[inBatchIndex]) {
+          outColVector.isNull[outBatchIndex] = false;
+          HiveDecimalWritable scratchWritable = inColVector.getScratchWritable();
+          scratchWritable.setFromLongAndScale(inColVector.vector[inBatchIndex], inColVector.scale);
+          outColVector.set(outBatchIndex, scratchWritable);
+        } else {
+          VectorizedBatchUtil.setNullColIsNullValue(outColVector, outBatchIndex);
+        }
+      }
+    }
+    
+    private void copyDecimal64ToDecimal64(Decimal64ColumnVector inColVector, int inBatchIndex,
+        Decimal64ColumnVector outColVector, int outBatchIndex) {
+      if (inColVector.isRepeating) {
+        if (inColVector.noNulls || !inColVector.isNull[0]) {
+          outColVector.isNull[outBatchIndex] = false;
+          outColVector.vector[outBatchIndex] = inColVector.vector[0];
+        } else {
+          VectorizedBatchUtil.setNullColIsNullValue(outColVector, outBatchIndex);
+        }
+      } else {
+        if (inColVector.noNulls || !inColVector.isNull[inBatchIndex]) {
+          outColVector.isNull[outBatchIndex] = false;
+          outColVector.vector[outBatchIndex] = inColVector.vector[inBatchIndex];
         } else {
           VectorizedBatchUtil.setNullColIsNullValue(outColVector, outBatchIndex);
         }
@@ -210,12 +292,14 @@ public class VectorCopyRow {
 
       if (inColVector.isRepeating) {
         if (inColVector.noNulls || !inColVector.isNull[0]) {
+          outColVector.isNull[outBatchIndex] = false;
           outColVector.setElement(outBatchIndex, 0, inColVector);
         } else {
           VectorizedBatchUtil.setNullColIsNullValue(outColVector, outBatchIndex);
         }
       } else {
         if (inColVector.noNulls || !inColVector.isNull[inBatchIndex]) {
+          outColVector.isNull[outBatchIndex] = false;
           outColVector.setElement(outBatchIndex, inBatchIndex, inColVector);
         } else {
           VectorizedBatchUtil.setNullColIsNullValue(outColVector, outBatchIndex);
@@ -237,12 +321,14 @@ public class VectorCopyRow {
 
       if (inColVector.isRepeating) {
         if (inColVector.noNulls || !inColVector.isNull[0]) {
+          outColVector.isNull[outBatchIndex] = false;
           outColVector.setElement(outBatchIndex, 0, inColVector);
         } else {
           VectorizedBatchUtil.setNullColIsNullValue(outColVector, outBatchIndex);
         }
       } else {
         if (inColVector.noNulls || !inColVector.isNull[inBatchIndex]) {
+          outColVector.isNull[outBatchIndex] = false;
           outColVector.setElement(outBatchIndex, inBatchIndex, inColVector);
         } else {
           VectorizedBatchUtil.setNullColIsNullValue(outColVector, outBatchIndex);
@@ -255,14 +341,27 @@ public class VectorCopyRow {
   private CopyRow[] subRowToBatchCopiersByReference;
 
   public void init(VectorColumnMapping columnMapping) throws HiveException {
-    int count = columnMapping.getCount();
+    init(
+        columnMapping.getInputColumns(),
+        columnMapping.getOutputColumns(),
+        columnMapping.getTypeInfos());
+  }
+
+  public void init(int[] columnMap, TypeInfo[] typeInfos) throws HiveException {
+    init(columnMap, columnMap, typeInfos);
+  }
+
+  public void init(int[] inputColumnMap, int[] outputColumnMap, TypeInfo[] typeInfos)
+      throws HiveException {
+
+    final int count = inputColumnMap.length;
     subRowToBatchCopiersByValue = new CopyRow[count];
     subRowToBatchCopiersByReference = new CopyRow[count];
 
     for (int i = 0; i < count; i++) {
-      int inputColumn = columnMapping.getInputColumns()[i];
-      int outputColumn = columnMapping.getOutputColumns()[i];
-      TypeInfo typeInfo = columnMapping.getTypeInfos()[i];
+      int inputColumn = inputColumnMap[i];
+      int outputColumn = outputColumnMap[i];
+      TypeInfo typeInfo = typeInfos[i];
       Type columnVectorType = VectorizationContext.getColumnVectorTypeFromTypeInfo(typeInfo);
 
       CopyRow copyRowByValue = null;

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -36,8 +36,7 @@ public class TestHooks {
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     Driver driver = createDriver(conf);
-    int ret = driver.run("create table t1(i int)").getResponseCode();
-    assertEquals("Checking command success", 0, ret);
+    driver.run("create table t1(i int)");
   }
 
   @AfterClass
@@ -77,12 +76,13 @@ public class TestHooks {
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     Driver driver = createDriver(conf);
-    int ret = driver.compile("select 'XXX' from t1");
+    int ret = driver.compile("select 'XXX' from t1", true);
     assertEquals("Checking command success", 0, ret);
     assertEquals("select 'AAA' from t1", conf.getQueryString());
   }
 
   public static class SimpleQueryRedactor extends Redactor {
+    @Override
     public String redactQuery(String query) {
       return query.replaceAll("XXX", "AAA");
     }
@@ -92,7 +92,6 @@ public class TestHooks {
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     SessionState.start(conf);
     Driver driver = new Driver(conf);
-    driver.init();
     return driver;
   }
 

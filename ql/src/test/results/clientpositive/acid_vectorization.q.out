@@ -18,12 +18,14 @@ POSTHOOK: Lineage: acid_vectorized.a SIMPLE [(alltypesorc)alltypesorc.FieldSchem
 POSTHOOK: Lineage: acid_vectorized.b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
 PREHOOK: query: insert into table acid_vectorized values (1, 'bar')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@acid_vectorized
 POSTHOOK: query: insert into table acid_vectorized values (1, 'bar')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@acid_vectorized
-POSTHOOK: Lineage: acid_vectorized.a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: acid_vectorized.b SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: acid_vectorized.a SCRIPT []
+POSTHOOK: Lineage: acid_vectorized.b SCRIPT []
 PREHOOK: query: update acid_vectorized set b = 'foo' where b = 'bar'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_vectorized
@@ -78,12 +80,14 @@ POSTHOOK: Lineage: acid_fast_vectorized.a SIMPLE [(alltypesorc)alltypesorc.Field
 POSTHOOK: Lineage: acid_fast_vectorized.b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
 PREHOOK: query: insert into table acid_fast_vectorized values (1, 'bar')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@acid_fast_vectorized
 POSTHOOK: query: insert into table acid_fast_vectorized values (1, 'bar')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@acid_fast_vectorized
-POSTHOOK: Lineage: acid_fast_vectorized.a EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: acid_fast_vectorized.b SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: acid_fast_vectorized.a SCRIPT []
+POSTHOOK: Lineage: acid_fast_vectorized.b SCRIPT []
 PREHOOK: query: update acid_fast_vectorized set b = 'foo' where b = 'bar'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_fast_vectorized

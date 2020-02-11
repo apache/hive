@@ -1,4 +1,4 @@
-PREHOOK: query: CREATE TABLE orc_create_people_staging (
+PREHOOK: query: CREATE TABLE orc_create_people_staging_n0 (
   id int,
   first_name string,
   last_name string,
@@ -8,8 +8,8 @@ PREHOOK: query: CREATE TABLE orc_create_people_staging (
   state string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@orc_create_people_staging
-POSTHOOK: query: CREATE TABLE orc_create_people_staging (
+PREHOOK: Output: default@orc_create_people_staging_n0
+POSTHOOK: query: CREATE TABLE orc_create_people_staging_n0 (
   id int,
   first_name string,
   last_name string,
@@ -19,16 +19,16 @@ POSTHOOK: query: CREATE TABLE orc_create_people_staging (
   state string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@orc_create_people_staging
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/orc_create_people.txt' OVERWRITE INTO TABLE orc_create_people_staging
+POSTHOOK: Output: default@orc_create_people_staging_n0
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/orc_create_people.txt' OVERWRITE INTO TABLE orc_create_people_staging_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@orc_create_people_staging
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/orc_create_people.txt' OVERWRITE INTO TABLE orc_create_people_staging
+PREHOOK: Output: default@orc_create_people_staging_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/orc_create_people.txt' OVERWRITE INTO TABLE orc_create_people_staging_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@orc_create_people_staging
-PREHOOK: query: CREATE TABLE orc_create_people (
+POSTHOOK: Output: default@orc_create_people_staging_n0
+PREHOOK: query: CREATE TABLE orc_create_people_n0 (
   id int,
   first_name string,
   last_name string,
@@ -39,8 +39,8 @@ PREHOOK: query: CREATE TABLE orc_create_people (
 STORED AS orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@orc_create_people
-POSTHOOK: query: CREATE TABLE orc_create_people (
+PREHOOK: Output: default@orc_create_people_n0
+POSTHOOK: query: CREATE TABLE orc_create_people_n0 (
   id int,
   first_name string,
   last_name string,
@@ -51,38 +51,37 @@ POSTHOOK: query: CREATE TABLE orc_create_people (
 STORED AS orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@orc_create_people
-PREHOOK: query: INSERT OVERWRITE TABLE orc_create_people SELECT * FROM orc_create_people_staging ORDER BY id
+POSTHOOK: Output: default@orc_create_people_n0
+PREHOOK: query: INSERT OVERWRITE TABLE orc_create_people_n0 SELECT * FROM orc_create_people_staging_n0 ORDER BY id
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_create_people_staging
-PREHOOK: Output: default@orc_create_people
-POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_people SELECT * FROM orc_create_people_staging ORDER BY id
+PREHOOK: Input: default@orc_create_people_staging_n0
+PREHOOK: Output: default@orc_create_people_n0
+POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_people_n0 SELECT * FROM orc_create_people_staging_n0 ORDER BY id
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_create_people_staging
-POSTHOOK: Output: default@orc_create_people
-POSTHOOK: Lineage: orc_create_people.address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_create_people.first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_create_people.id SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: orc_create_people.last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_create_people.salary SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_create_people.start_date SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:start_date, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orc_create_people.state SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:state, type:string, comment:null), ]
-PREHOOK: query: analyze table orc_create_people compute statistics
+POSTHOOK: Input: default@orc_create_people_staging_n0
+POSTHOOK: Output: default@orc_create_people_n0
+POSTHOOK: Lineage: orc_create_people_n0.address SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0.first_name SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:first_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0.id SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0.last_name SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:last_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0.salary SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0.start_date SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:start_date, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0.state SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:state, type:string, comment:null), ]
+PREHOOK: query: analyze table orc_create_people_n0 compute statistics
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_create_people
-PREHOOK: Output: default@orc_create_people
-POSTHOOK: query: analyze table orc_create_people compute statistics
+PREHOOK: Input: default@orc_create_people_n0
+PREHOOK: Output: default@orc_create_people_n0
+POSTHOOK: query: analyze table orc_create_people_n0 compute statistics
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_create_people
-POSTHOOK: Output: default@orc_create_people
-PREHOOK: query: desc formatted orc_create_people
+POSTHOOK: Input: default@orc_create_people_n0
+POSTHOOK: Output: default@orc_create_people_n0
+PREHOOK: query: desc formatted orc_create_people_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@orc_create_people
-POSTHOOK: query: desc formatted orc_create_people
+PREHOOK: Input: default@orc_create_people_n0
+POSTHOOK: query: desc formatted orc_create_people_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@orc_create_people
+POSTHOOK: Input: default@orc_create_people_n0
 # col_name            	data_type           	comment             
-	 	 
 id                  	int                 	                    
 first_name          	string              	                    
 last_name           	string              	                    
@@ -99,10 +98,11 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	100                 
 	rawDataSize         	52600               
-	totalSize           	3200                
+	totalSize           	3227                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -115,22 +115,21 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: analyze table orc_create_people compute statistics partialscan
+PREHOOK: query: analyze table orc_create_people_n0 compute statistics noscan
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_create_people
-PREHOOK: Output: default@orc_create_people
-POSTHOOK: query: analyze table orc_create_people compute statistics partialscan
+PREHOOK: Input: default@orc_create_people_n0
+PREHOOK: Output: default@orc_create_people_n0
+POSTHOOK: query: analyze table orc_create_people_n0 compute statistics noscan
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_create_people
-POSTHOOK: Output: default@orc_create_people
-PREHOOK: query: desc formatted orc_create_people
+POSTHOOK: Input: default@orc_create_people_n0
+POSTHOOK: Output: default@orc_create_people_n0
+PREHOOK: query: desc formatted orc_create_people_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@orc_create_people
-POSTHOOK: query: desc formatted orc_create_people
+PREHOOK: Input: default@orc_create_people_n0
+POSTHOOK: query: desc formatted orc_create_people_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@orc_create_people
+POSTHOOK: Input: default@orc_create_people_n0
 # col_name            	data_type           	comment             
-	 	 
 id                  	int                 	                    
 first_name          	string              	                    
 last_name           	string              	                    
@@ -147,10 +146,11 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	100                 
 	rawDataSize         	52600               
-	totalSize           	3200                
+	totalSize           	3227                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -163,63 +163,15 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: analyze table orc_create_people compute statistics noscan
-PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_create_people
-PREHOOK: Output: default@orc_create_people
-POSTHOOK: query: analyze table orc_create_people compute statistics noscan
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_create_people
-POSTHOOK: Output: default@orc_create_people
-PREHOOK: query: desc formatted orc_create_people
-PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@orc_create_people
-POSTHOOK: query: desc formatted orc_create_people
-POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@orc_create_people
-# col_name            	data_type           	comment             
-	 	 
-id                  	int                 	                    
-first_name          	string              	                    
-last_name           	string              	                    
-address             	string              	                    
-salary              	decimal(10,0)       	                    
-start_date          	timestamp           	                    
-state               	string              	                    
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
-#### A masked pattern was here ####
-Retention:          	0                   	 
-#### A masked pattern was here ####
-Table Type:         	MANAGED_TABLE       	 
-Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
-	numFiles            	1                   
-	numRows             	100                 
-	rawDataSize         	52600               
-	totalSize           	3200                
-#### A masked pattern was here ####
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
-InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-PREHOOK: query: drop table orc_create_people
+PREHOOK: query: drop table orc_create_people_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@orc_create_people
-PREHOOK: Output: default@orc_create_people
-POSTHOOK: query: drop table orc_create_people
+PREHOOK: Input: default@orc_create_people_n0
+PREHOOK: Output: default@orc_create_people_n0
+POSTHOOK: query: drop table orc_create_people_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@orc_create_people
-POSTHOOK: Output: default@orc_create_people
-PREHOOK: query: CREATE TABLE orc_create_people (
+POSTHOOK: Input: default@orc_create_people_n0
+POSTHOOK: Output: default@orc_create_people_n0
+PREHOOK: query: CREATE TABLE orc_create_people_n0 (
   id int,
   first_name string,
   last_name string,
@@ -230,8 +182,8 @@ PREHOOK: query: CREATE TABLE orc_create_people (
 STORED AS orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@orc_create_people
-POSTHOOK: query: CREATE TABLE orc_create_people (
+PREHOOK: Output: default@orc_create_people_n0
+POSTHOOK: query: CREATE TABLE orc_create_people_n0 (
   id int,
   first_name string,
   last_name string,
@@ -242,30 +194,29 @@ POSTHOOK: query: CREATE TABLE orc_create_people (
 STORED AS orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@orc_create_people
-PREHOOK: query: INSERT OVERWRITE TABLE orc_create_people SELECT * FROM orc_create_people_staging ORDER BY id
+POSTHOOK: Output: default@orc_create_people_n0
+PREHOOK: query: INSERT OVERWRITE TABLE orc_create_people_n0 SELECT * FROM orc_create_people_staging_n0 ORDER BY id
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_create_people_staging
-PREHOOK: Output: default@orc_create_people
-POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_people SELECT * FROM orc_create_people_staging ORDER BY id
+PREHOOK: Input: default@orc_create_people_staging_n0
+PREHOOK: Output: default@orc_create_people_n0
+POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_people_n0 SELECT * FROM orc_create_people_staging_n0 ORDER BY id
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_create_people_staging
-POSTHOOK: Output: default@orc_create_people
-POSTHOOK: Lineage: orc_create_people.address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_create_people.first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_create_people.id SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: orc_create_people.last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_create_people.salary SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_create_people.start_date SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:start_date, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orc_create_people.state SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:state, type:string, comment:null), ]
-PREHOOK: query: desc formatted orc_create_people
+POSTHOOK: Input: default@orc_create_people_staging_n0
+POSTHOOK: Output: default@orc_create_people_n0
+POSTHOOK: Lineage: orc_create_people_n0.address SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0.first_name SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:first_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0.id SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0.last_name SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:last_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0.salary SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0.start_date SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:start_date, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0.state SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:state, type:string, comment:null), ]
+PREHOOK: query: desc formatted orc_create_people_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@orc_create_people
-POSTHOOK: query: desc formatted orc_create_people
+PREHOOK: Input: default@orc_create_people_n0
+POSTHOOK: query: desc formatted orc_create_people_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@orc_create_people
+POSTHOOK: Input: default@orc_create_people_n0
 # col_name            	data_type           	comment             
-	 	 
 id                  	int                 	                    
 first_name          	string              	                    
 last_name           	string              	                    
@@ -281,11 +232,12 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"address\":\"true\",\"first_name\":\"true\",\"id\":\"true\",\"last_name\":\"true\",\"salary\":\"true\",\"start_date\":\"true\",\"state\":\"true\"}}
+	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	100                 
 	rawDataSize         	52600               
-	totalSize           	3200                
+	totalSize           	3227                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -298,15 +250,15 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: drop table orc_create_people
+PREHOOK: query: drop table orc_create_people_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@orc_create_people
-PREHOOK: Output: default@orc_create_people
-POSTHOOK: query: drop table orc_create_people
+PREHOOK: Input: default@orc_create_people_n0
+PREHOOK: Output: default@orc_create_people_n0
+POSTHOOK: query: drop table orc_create_people_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@orc_create_people
-POSTHOOK: Output: default@orc_create_people
-PREHOOK: query: CREATE TABLE orc_create_people (
+POSTHOOK: Input: default@orc_create_people_n0
+POSTHOOK: Output: default@orc_create_people_n0
+PREHOOK: query: CREATE TABLE orc_create_people_n0 (
   id int,
   first_name string,
   last_name string,
@@ -317,8 +269,8 @@ PARTITIONED BY (state string)
 STORED AS orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@orc_create_people
-POSTHOOK: query: CREATE TABLE orc_create_people (
+PREHOOK: Output: default@orc_create_people_n0
+POSTHOOK: query: CREATE TABLE orc_create_people_n0 (
   id int,
   first_name string,
   last_name string,
@@ -329,50 +281,49 @@ PARTITIONED BY (state string)
 STORED AS orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@orc_create_people
-PREHOOK: query: INSERT OVERWRITE TABLE orc_create_people PARTITION (state)
-  SELECT * FROM orc_create_people_staging ORDER BY id
+POSTHOOK: Output: default@orc_create_people_n0
+PREHOOK: query: INSERT OVERWRITE TABLE orc_create_people_n0 PARTITION (state)
+  SELECT * FROM orc_create_people_staging_n0 ORDER BY id
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_create_people_staging
-PREHOOK: Output: default@orc_create_people
-POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_people PARTITION (state)
-  SELECT * FROM orc_create_people_staging ORDER BY id
+PREHOOK: Input: default@orc_create_people_staging_n0
+PREHOOK: Output: default@orc_create_people_n0
+POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_people_n0 PARTITION (state)
+  SELECT * FROM orc_create_people_staging_n0 ORDER BY id
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_create_people_staging
-POSTHOOK: Output: default@orc_create_people@state=Ca
-POSTHOOK: Output: default@orc_create_people@state=Or
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).id SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).salary SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).start_date SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:start_date, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).id SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).salary SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).start_date SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:start_date, type:timestamp, comment:null), ]
-PREHOOK: query: analyze table orc_create_people partition(state) compute statistics
+POSTHOOK: Input: default@orc_create_people_staging_n0
+POSTHOOK: Output: default@orc_create_people_n0@state=Ca
+POSTHOOK: Output: default@orc_create_people_n0@state=Or
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Ca).address SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Ca).first_name SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:first_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Ca).id SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Ca).last_name SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:last_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Ca).salary SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Ca).start_date SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:start_date, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Or).address SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Or).first_name SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:first_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Or).id SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Or).last_name SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:last_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Or).salary SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Or).start_date SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:start_date, type:timestamp, comment:null), ]
+PREHOOK: query: analyze table orc_create_people_n0 partition(state) compute statistics
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_create_people
-PREHOOK: Output: default@orc_create_people
-PREHOOK: Output: default@orc_create_people@state=Ca
-PREHOOK: Output: default@orc_create_people@state=Or
-POSTHOOK: query: analyze table orc_create_people partition(state) compute statistics
+PREHOOK: Input: default@orc_create_people_n0
+PREHOOK: Output: default@orc_create_people_n0
+PREHOOK: Output: default@orc_create_people_n0@state=Ca
+PREHOOK: Output: default@orc_create_people_n0@state=Or
+POSTHOOK: query: analyze table orc_create_people_n0 partition(state) compute statistics
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_create_people
-POSTHOOK: Output: default@orc_create_people
-POSTHOOK: Output: default@orc_create_people@state=Ca
-POSTHOOK: Output: default@orc_create_people@state=Or
-PREHOOK: query: desc formatted orc_create_people partition(state="Ca")
+POSTHOOK: Input: default@orc_create_people_n0
+POSTHOOK: Output: default@orc_create_people_n0
+POSTHOOK: Output: default@orc_create_people_n0@state=Ca
+POSTHOOK: Output: default@orc_create_people_n0@state=Or
+PREHOOK: query: desc formatted orc_create_people_n0 partition(state="Ca")
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@orc_create_people
-POSTHOOK: query: desc formatted orc_create_people partition(state="Ca")
+PREHOOK: Input: default@orc_create_people_n0
+POSTHOOK: query: desc formatted orc_create_people_n0 partition(state="Ca")
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@orc_create_people
+POSTHOOK: Input: default@orc_create_people_n0
 # col_name            	data_type           	comment             
-	 	 
 id                  	int                 	                    
 first_name          	string              	                    
 last_name           	string              	                    
@@ -382,20 +333,19 @@ start_date          	timestamp
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 state               	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[Ca]                	 
 Database:           	default             	 
-Table:              	orc_create_people   	 
+Table:              	orc_create_people_n0	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	1                   
 	numRows             	50                  
 	rawDataSize         	21950               
-	totalSize           	2099                
+	totalSize           	2129                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -408,14 +358,13 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: desc formatted orc_create_people partition(state="Or")
+PREHOOK: query: desc formatted orc_create_people_n0 partition(state="Or")
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@orc_create_people
-POSTHOOK: query: desc formatted orc_create_people partition(state="Or")
+PREHOOK: Input: default@orc_create_people_n0
+POSTHOOK: query: desc formatted orc_create_people_n0 partition(state="Or")
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@orc_create_people
+POSTHOOK: Input: default@orc_create_people_n0
 # col_name            	data_type           	comment             
-	 	 
 id                  	int                 	                    
 first_name          	string              	                    
 last_name           	string              	                    
@@ -425,20 +374,19 @@ start_date          	timestamp
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 state               	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[Or]                	 
 Database:           	default             	 
-Table:              	orc_create_people   	 
+Table:              	orc_create_people_n0	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	1                   
 	numRows             	50                  
 	rawDataSize         	22050               
-	totalSize           	2114                
+	totalSize           	2142                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -451,26 +399,25 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: analyze table orc_create_people partition(state) compute statistics partialscan
+PREHOOK: query: analyze table orc_create_people_n0 partition(state) compute statistics noscan
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_create_people
-PREHOOK: Output: default@orc_create_people
-PREHOOK: Output: default@orc_create_people@state=Ca
-PREHOOK: Output: default@orc_create_people@state=Or
-POSTHOOK: query: analyze table orc_create_people partition(state) compute statistics partialscan
+PREHOOK: Input: default@orc_create_people_n0
+PREHOOK: Output: default@orc_create_people_n0
+PREHOOK: Output: default@orc_create_people_n0@state=Ca
+PREHOOK: Output: default@orc_create_people_n0@state=Or
+POSTHOOK: query: analyze table orc_create_people_n0 partition(state) compute statistics noscan
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_create_people
-POSTHOOK: Output: default@orc_create_people
-POSTHOOK: Output: default@orc_create_people@state=Ca
-POSTHOOK: Output: default@orc_create_people@state=Or
-PREHOOK: query: desc formatted orc_create_people partition(state="Ca")
+POSTHOOK: Input: default@orc_create_people_n0
+POSTHOOK: Output: default@orc_create_people_n0
+POSTHOOK: Output: default@orc_create_people_n0@state=Ca
+POSTHOOK: Output: default@orc_create_people_n0@state=Or
+PREHOOK: query: desc formatted orc_create_people_n0 partition(state="Ca")
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@orc_create_people
-POSTHOOK: query: desc formatted orc_create_people partition(state="Ca")
+PREHOOK: Input: default@orc_create_people_n0
+POSTHOOK: query: desc formatted orc_create_people_n0 partition(state="Ca")
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@orc_create_people
+POSTHOOK: Input: default@orc_create_people_n0
 # col_name            	data_type           	comment             
-	 	 
 id                  	int                 	                    
 first_name          	string              	                    
 last_name           	string              	                    
@@ -480,20 +427,19 @@ start_date          	timestamp
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 state               	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[Ca]                	 
 Database:           	default             	 
-Table:              	orc_create_people   	 
+Table:              	orc_create_people_n0	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	1                   
 	numRows             	50                  
 	rawDataSize         	21950               
-	totalSize           	2099                
+	totalSize           	2129                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -506,14 +452,13 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: desc formatted orc_create_people partition(state="Or")
+PREHOOK: query: desc formatted orc_create_people_n0 partition(state="Or")
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@orc_create_people
-POSTHOOK: query: desc formatted orc_create_people partition(state="Or")
+PREHOOK: Input: default@orc_create_people_n0
+POSTHOOK: query: desc formatted orc_create_people_n0 partition(state="Or")
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@orc_create_people
+POSTHOOK: Input: default@orc_create_people_n0
 # col_name            	data_type           	comment             
-	 	 
 id                  	int                 	                    
 first_name          	string              	                    
 last_name           	string              	                    
@@ -523,20 +468,19 @@ start_date          	timestamp
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 state               	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[Or]                	 
 Database:           	default             	 
-Table:              	orc_create_people   	 
+Table:              	orc_create_people_n0	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	1                   
 	numRows             	50                  
 	rawDataSize         	22050               
-	totalSize           	2114                
+	totalSize           	2142                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -549,113 +493,15 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: analyze table orc_create_people partition(state) compute statistics noscan
-PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_create_people
-PREHOOK: Output: default@orc_create_people
-PREHOOK: Output: default@orc_create_people@state=Ca
-PREHOOK: Output: default@orc_create_people@state=Or
-POSTHOOK: query: analyze table orc_create_people partition(state) compute statistics noscan
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_create_people
-POSTHOOK: Output: default@orc_create_people
-POSTHOOK: Output: default@orc_create_people@state=Ca
-POSTHOOK: Output: default@orc_create_people@state=Or
-PREHOOK: query: desc formatted orc_create_people partition(state="Ca")
-PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@orc_create_people
-POSTHOOK: query: desc formatted orc_create_people partition(state="Ca")
-POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@orc_create_people
-# col_name            	data_type           	comment             
-	 	 
-id                  	int                 	                    
-first_name          	string              	                    
-last_name           	string              	                    
-address             	string              	                    
-salary              	decimal(10,0)       	                    
-start_date          	timestamp           	                    
-	 	 
-# Partition Information	 	 
-# col_name            	data_type           	comment             
-	 	 
-state               	string              	                    
-	 	 
-# Detailed Partition Information	 	 
-Partition Value:    	[Ca]                	 
-Database:           	default             	 
-Table:              	orc_create_people   	 
-#### A masked pattern was here ####
-Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
-	numFiles            	1                   
-	numRows             	50                  
-	rawDataSize         	21950               
-	totalSize           	2099                
-#### A masked pattern was here ####
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
-InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-PREHOOK: query: desc formatted orc_create_people partition(state="Or")
-PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@orc_create_people
-POSTHOOK: query: desc formatted orc_create_people partition(state="Or")
-POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@orc_create_people
-# col_name            	data_type           	comment             
-	 	 
-id                  	int                 	                    
-first_name          	string              	                    
-last_name           	string              	                    
-address             	string              	                    
-salary              	decimal(10,0)       	                    
-start_date          	timestamp           	                    
-	 	 
-# Partition Information	 	 
-# col_name            	data_type           	comment             
-	 	 
-state               	string              	                    
-	 	 
-# Detailed Partition Information	 	 
-Partition Value:    	[Or]                	 
-Database:           	default             	 
-Table:              	orc_create_people   	 
-#### A masked pattern was here ####
-Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
-	numFiles            	1                   
-	numRows             	50                  
-	rawDataSize         	22050               
-	totalSize           	2114                
-#### A masked pattern was here ####
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
-InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-PREHOOK: query: drop table orc_create_people
+PREHOOK: query: drop table orc_create_people_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@orc_create_people
-PREHOOK: Output: default@orc_create_people
-POSTHOOK: query: drop table orc_create_people
+PREHOOK: Input: default@orc_create_people_n0
+PREHOOK: Output: default@orc_create_people_n0
+POSTHOOK: query: drop table orc_create_people_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@orc_create_people
-POSTHOOK: Output: default@orc_create_people
-PREHOOK: query: CREATE TABLE orc_create_people (
+POSTHOOK: Input: default@orc_create_people_n0
+POSTHOOK: Output: default@orc_create_people_n0
+PREHOOK: query: CREATE TABLE orc_create_people_n0 (
   id int,
   first_name string,
   last_name string,
@@ -666,8 +512,8 @@ PARTITIONED BY (state string)
 STORED AS orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@orc_create_people
-POSTHOOK: query: CREATE TABLE orc_create_people (
+PREHOOK: Output: default@orc_create_people_n0
+POSTHOOK: query: CREATE TABLE orc_create_people_n0 (
   id int,
   first_name string,
   last_name string,
@@ -678,38 +524,37 @@ PARTITIONED BY (state string)
 STORED AS orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@orc_create_people
-PREHOOK: query: INSERT OVERWRITE TABLE orc_create_people PARTITION (state)
-  SELECT * FROM orc_create_people_staging ORDER BY id
+POSTHOOK: Output: default@orc_create_people_n0
+PREHOOK: query: INSERT OVERWRITE TABLE orc_create_people_n0 PARTITION (state)
+  SELECT * FROM orc_create_people_staging_n0 ORDER BY id
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_create_people_staging
-PREHOOK: Output: default@orc_create_people
-POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_people PARTITION (state)
-  SELECT * FROM orc_create_people_staging ORDER BY id
+PREHOOK: Input: default@orc_create_people_staging_n0
+PREHOOK: Output: default@orc_create_people_n0
+POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_people_n0 PARTITION (state)
+  SELECT * FROM orc_create_people_staging_n0 ORDER BY id
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_create_people_staging
-POSTHOOK: Output: default@orc_create_people@state=Ca
-POSTHOOK: Output: default@orc_create_people@state=Or
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).id SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).salary SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).start_date SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:start_date, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).id SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).salary SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).start_date SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:start_date, type:timestamp, comment:null), ]
-PREHOOK: query: desc formatted orc_create_people partition(state="Ca")
+POSTHOOK: Input: default@orc_create_people_staging_n0
+POSTHOOK: Output: default@orc_create_people_n0@state=Ca
+POSTHOOK: Output: default@orc_create_people_n0@state=Or
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Ca).address SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Ca).first_name SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:first_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Ca).id SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Ca).last_name SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:last_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Ca).salary SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Ca).start_date SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:start_date, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Or).address SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Or).first_name SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:first_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Or).id SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Or).last_name SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:last_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Or).salary SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Or).start_date SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:start_date, type:timestamp, comment:null), ]
+PREHOOK: query: desc formatted orc_create_people_n0 partition(state="Ca")
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@orc_create_people
-POSTHOOK: query: desc formatted orc_create_people partition(state="Ca")
+PREHOOK: Input: default@orc_create_people_n0
+POSTHOOK: query: desc formatted orc_create_people_n0 partition(state="Ca")
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@orc_create_people
+POSTHOOK: Input: default@orc_create_people_n0
 # col_name            	data_type           	comment             
-	 	 
 id                  	int                 	                    
 first_name          	string              	                    
 last_name           	string              	                    
@@ -719,20 +564,19 @@ start_date          	timestamp
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 state               	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[Ca]                	 
 Database:           	default             	 
-Table:              	orc_create_people   	 
+Table:              	orc_create_people_n0	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"address\":\"true\",\"first_name\":\"true\",\"id\":\"true\",\"last_name\":\"true\",\"salary\":\"true\",\"start_date\":\"true\"}}
 	numFiles            	1                   
 	numRows             	50                  
 	rawDataSize         	21950               
-	totalSize           	2099                
+	totalSize           	2129                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -745,14 +589,13 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: desc formatted orc_create_people partition(state="Or")
+PREHOOK: query: desc formatted orc_create_people_n0 partition(state="Or")
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@orc_create_people
-POSTHOOK: query: desc formatted orc_create_people partition(state="Or")
+PREHOOK: Input: default@orc_create_people_n0
+POSTHOOK: query: desc formatted orc_create_people_n0 partition(state="Or")
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@orc_create_people
+POSTHOOK: Input: default@orc_create_people_n0
 # col_name            	data_type           	comment             
-	 	 
 id                  	int                 	                    
 first_name          	string              	                    
 last_name           	string              	                    
@@ -762,20 +605,19 @@ start_date          	timestamp
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 state               	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[Or]                	 
 Database:           	default             	 
-Table:              	orc_create_people   	 
+Table:              	orc_create_people_n0	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"address\":\"true\",\"first_name\":\"true\",\"id\":\"true\",\"last_name\":\"true\",\"salary\":\"true\",\"start_date\":\"true\"}}
 	numFiles            	1                   
 	numRows             	50                  
 	rawDataSize         	22050               
-	totalSize           	2114                
+	totalSize           	2142                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -788,15 +630,15 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: drop table orc_create_people
+PREHOOK: query: drop table orc_create_people_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@orc_create_people
-PREHOOK: Output: default@orc_create_people
-POSTHOOK: query: drop table orc_create_people
+PREHOOK: Input: default@orc_create_people_n0
+PREHOOK: Output: default@orc_create_people_n0
+POSTHOOK: query: drop table orc_create_people_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@orc_create_people
-POSTHOOK: Output: default@orc_create_people
-PREHOOK: query: CREATE TABLE orc_create_people (
+POSTHOOK: Input: default@orc_create_people_n0
+POSTHOOK: Output: default@orc_create_people_n0
+PREHOOK: query: CREATE TABLE orc_create_people_n0 (
   id int,
   first_name string,
   last_name string,
@@ -810,8 +652,8 @@ into 4 buckets
 STORED AS orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@orc_create_people
-POSTHOOK: query: CREATE TABLE orc_create_people (
+PREHOOK: Output: default@orc_create_people_n0
+POSTHOOK: query: CREATE TABLE orc_create_people_n0 (
   id int,
   first_name string,
   last_name string,
@@ -825,50 +667,49 @@ into 4 buckets
 STORED AS orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@orc_create_people
-PREHOOK: query: INSERT OVERWRITE TABLE orc_create_people PARTITION (state)
-  SELECT * FROM orc_create_people_staging ORDER BY id
+POSTHOOK: Output: default@orc_create_people_n0
+PREHOOK: query: INSERT OVERWRITE TABLE orc_create_people_n0 PARTITION (state)
+  SELECT * FROM orc_create_people_staging_n0 ORDER BY id
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_create_people_staging
-PREHOOK: Output: default@orc_create_people
-POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_people PARTITION (state)
-  SELECT * FROM orc_create_people_staging ORDER BY id
+PREHOOK: Input: default@orc_create_people_staging_n0
+PREHOOK: Output: default@orc_create_people_n0
+POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_people_n0 PARTITION (state)
+  SELECT * FROM orc_create_people_staging_n0 ORDER BY id
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_create_people_staging
-POSTHOOK: Output: default@orc_create_people@state=Ca
-POSTHOOK: Output: default@orc_create_people@state=Or
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).id SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).salary SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).start_date SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:start_date, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).id SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).salary SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).start_date SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:start_date, type:timestamp, comment:null), ]
-PREHOOK: query: analyze table orc_create_people partition(state) compute statistics
+POSTHOOK: Input: default@orc_create_people_staging_n0
+POSTHOOK: Output: default@orc_create_people_n0@state=Ca
+POSTHOOK: Output: default@orc_create_people_n0@state=Or
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Ca).address SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Ca).first_name SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:first_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Ca).id SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Ca).last_name SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:last_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Ca).salary SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Ca).start_date SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:start_date, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Or).address SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Or).first_name SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:first_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Or).id SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Or).last_name SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:last_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Or).salary SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Or).start_date SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:start_date, type:timestamp, comment:null), ]
+PREHOOK: query: analyze table orc_create_people_n0 partition(state) compute statistics
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_create_people
-PREHOOK: Output: default@orc_create_people
-PREHOOK: Output: default@orc_create_people@state=Ca
-PREHOOK: Output: default@orc_create_people@state=Or
-POSTHOOK: query: analyze table orc_create_people partition(state) compute statistics
+PREHOOK: Input: default@orc_create_people_n0
+PREHOOK: Output: default@orc_create_people_n0
+PREHOOK: Output: default@orc_create_people_n0@state=Ca
+PREHOOK: Output: default@orc_create_people_n0@state=Or
+POSTHOOK: query: analyze table orc_create_people_n0 partition(state) compute statistics
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_create_people
-POSTHOOK: Output: default@orc_create_people
-POSTHOOK: Output: default@orc_create_people@state=Ca
-POSTHOOK: Output: default@orc_create_people@state=Or
-PREHOOK: query: desc formatted orc_create_people partition(state="Ca")
+POSTHOOK: Input: default@orc_create_people_n0
+POSTHOOK: Output: default@orc_create_people_n0
+POSTHOOK: Output: default@orc_create_people_n0@state=Ca
+POSTHOOK: Output: default@orc_create_people_n0@state=Or
+PREHOOK: query: desc formatted orc_create_people_n0 partition(state="Ca")
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@orc_create_people
-POSTHOOK: query: desc formatted orc_create_people partition(state="Ca")
+PREHOOK: Input: default@orc_create_people_n0
+POSTHOOK: query: desc formatted orc_create_people_n0 partition(state="Ca")
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@orc_create_people
+POSTHOOK: Input: default@orc_create_people_n0
 # col_name            	data_type           	comment             
-	 	 
 id                  	int                 	                    
 first_name          	string              	                    
 last_name           	string              	                    
@@ -878,20 +719,19 @@ start_date          	timestamp
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 state               	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[Ca]                	 
 Database:           	default             	 
-Table:              	orc_create_people   	 
+Table:              	orc_create_people_n0	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	4                   
 	numRows             	50                  
-	rawDataSize         	21975               
-	totalSize           	5260                
+	rawDataSize         	21955               
+	totalSize           	5382                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -904,14 +744,13 @@ Bucket Columns:     	[first_name]
 Sort Columns:       	[Order(col:last_name, order:1)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: desc formatted orc_create_people partition(state="Or")
+PREHOOK: query: desc formatted orc_create_people_n0 partition(state="Or")
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@orc_create_people
-POSTHOOK: query: desc formatted orc_create_people partition(state="Or")
+PREHOOK: Input: default@orc_create_people_n0
+POSTHOOK: query: desc formatted orc_create_people_n0 partition(state="Or")
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@orc_create_people
+POSTHOOK: Input: default@orc_create_people_n0
 # col_name            	data_type           	comment             
-	 	 
 id                  	int                 	                    
 first_name          	string              	                    
 last_name           	string              	                    
@@ -921,20 +760,19 @@ start_date          	timestamp
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 state               	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[Or]                	 
 Database:           	default             	 
-Table:              	orc_create_people   	 
+Table:              	orc_create_people_n0	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	4                   
 	numRows             	50                  
 	rawDataSize         	22043               
-	totalSize           	5331                
+	totalSize           	5371                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -947,26 +785,25 @@ Bucket Columns:     	[first_name]
 Sort Columns:       	[Order(col:last_name, order:1)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: analyze table orc_create_people partition(state) compute statistics partialscan
+PREHOOK: query: analyze table orc_create_people_n0 partition(state) compute statistics noscan
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_create_people
-PREHOOK: Output: default@orc_create_people
-PREHOOK: Output: default@orc_create_people@state=Ca
-PREHOOK: Output: default@orc_create_people@state=Or
-POSTHOOK: query: analyze table orc_create_people partition(state) compute statistics partialscan
+PREHOOK: Input: default@orc_create_people_n0
+PREHOOK: Output: default@orc_create_people_n0
+PREHOOK: Output: default@orc_create_people_n0@state=Ca
+PREHOOK: Output: default@orc_create_people_n0@state=Or
+POSTHOOK: query: analyze table orc_create_people_n0 partition(state) compute statistics noscan
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_create_people
-POSTHOOK: Output: default@orc_create_people
-POSTHOOK: Output: default@orc_create_people@state=Ca
-POSTHOOK: Output: default@orc_create_people@state=Or
-PREHOOK: query: desc formatted orc_create_people partition(state="Ca")
+POSTHOOK: Input: default@orc_create_people_n0
+POSTHOOK: Output: default@orc_create_people_n0
+POSTHOOK: Output: default@orc_create_people_n0@state=Ca
+POSTHOOK: Output: default@orc_create_people_n0@state=Or
+PREHOOK: query: desc formatted orc_create_people_n0 partition(state="Ca")
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@orc_create_people
-POSTHOOK: query: desc formatted orc_create_people partition(state="Ca")
+PREHOOK: Input: default@orc_create_people_n0
+POSTHOOK: query: desc formatted orc_create_people_n0 partition(state="Ca")
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@orc_create_people
+POSTHOOK: Input: default@orc_create_people_n0
 # col_name            	data_type           	comment             
-	 	 
 id                  	int                 	                    
 first_name          	string              	                    
 last_name           	string              	                    
@@ -976,20 +813,19 @@ start_date          	timestamp
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 state               	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[Ca]                	 
 Database:           	default             	 
-Table:              	orc_create_people   	 
+Table:              	orc_create_people_n0	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	4                   
 	numRows             	50                  
-	rawDataSize         	21975               
-	totalSize           	5260                
+	rawDataSize         	21955               
+	totalSize           	5382                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1002,14 +838,13 @@ Bucket Columns:     	[first_name]
 Sort Columns:       	[Order(col:last_name, order:1)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: desc formatted orc_create_people partition(state="Or")
+PREHOOK: query: desc formatted orc_create_people_n0 partition(state="Or")
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@orc_create_people
-POSTHOOK: query: desc formatted orc_create_people partition(state="Or")
+PREHOOK: Input: default@orc_create_people_n0
+POSTHOOK: query: desc formatted orc_create_people_n0 partition(state="Or")
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@orc_create_people
+POSTHOOK: Input: default@orc_create_people_n0
 # col_name            	data_type           	comment             
-	 	 
 id                  	int                 	                    
 first_name          	string              	                    
 last_name           	string              	                    
@@ -1019,20 +854,19 @@ start_date          	timestamp
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 state               	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[Or]                	 
 Database:           	default             	 
-Table:              	orc_create_people   	 
+Table:              	orc_create_people_n0	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	4                   
 	numRows             	50                  
 	rawDataSize         	22043               
-	totalSize           	5331                
+	totalSize           	5371                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1045,113 +879,15 @@ Bucket Columns:     	[first_name]
 Sort Columns:       	[Order(col:last_name, order:1)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: analyze table orc_create_people partition(state) compute statistics noscan
-PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_create_people
-PREHOOK: Output: default@orc_create_people
-PREHOOK: Output: default@orc_create_people@state=Ca
-PREHOOK: Output: default@orc_create_people@state=Or
-POSTHOOK: query: analyze table orc_create_people partition(state) compute statistics noscan
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_create_people
-POSTHOOK: Output: default@orc_create_people
-POSTHOOK: Output: default@orc_create_people@state=Ca
-POSTHOOK: Output: default@orc_create_people@state=Or
-PREHOOK: query: desc formatted orc_create_people partition(state="Ca")
-PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@orc_create_people
-POSTHOOK: query: desc formatted orc_create_people partition(state="Ca")
-POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@orc_create_people
-# col_name            	data_type           	comment             
-	 	 
-id                  	int                 	                    
-first_name          	string              	                    
-last_name           	string              	                    
-address             	string              	                    
-salary              	decimal(10,0)       	                    
-start_date          	timestamp           	                    
-	 	 
-# Partition Information	 	 
-# col_name            	data_type           	comment             
-	 	 
-state               	string              	                    
-	 	 
-# Detailed Partition Information	 	 
-Partition Value:    	[Ca]                	 
-Database:           	default             	 
-Table:              	orc_create_people   	 
-#### A masked pattern was here ####
-Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
-	numFiles            	4                   
-	numRows             	50                  
-	rawDataSize         	21975               
-	totalSize           	5260                
-#### A masked pattern was here ####
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
-InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	4                   	 
-Bucket Columns:     	[first_name]        	 
-Sort Columns:       	[Order(col:last_name, order:1)]	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-PREHOOK: query: desc formatted orc_create_people partition(state="Or")
-PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@orc_create_people
-POSTHOOK: query: desc formatted orc_create_people partition(state="Or")
-POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@orc_create_people
-# col_name            	data_type           	comment             
-	 	 
-id                  	int                 	                    
-first_name          	string              	                    
-last_name           	string              	                    
-address             	string              	                    
-salary              	decimal(10,0)       	                    
-start_date          	timestamp           	                    
-	 	 
-# Partition Information	 	 
-# col_name            	data_type           	comment             
-	 	 
-state               	string              	                    
-	 	 
-# Detailed Partition Information	 	 
-Partition Value:    	[Or]                	 
-Database:           	default             	 
-Table:              	orc_create_people   	 
-#### A masked pattern was here ####
-Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
-	numFiles            	4                   
-	numRows             	50                  
-	rawDataSize         	22043               
-	totalSize           	5331                
-#### A masked pattern was here ####
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
-InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	4                   	 
-Bucket Columns:     	[first_name]        	 
-Sort Columns:       	[Order(col:last_name, order:1)]	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-PREHOOK: query: drop table orc_create_people
+PREHOOK: query: drop table orc_create_people_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@orc_create_people
-PREHOOK: Output: default@orc_create_people
-POSTHOOK: query: drop table orc_create_people
+PREHOOK: Input: default@orc_create_people_n0
+PREHOOK: Output: default@orc_create_people_n0
+POSTHOOK: query: drop table orc_create_people_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@orc_create_people
-POSTHOOK: Output: default@orc_create_people
-PREHOOK: query: CREATE TABLE orc_create_people (
+POSTHOOK: Input: default@orc_create_people_n0
+POSTHOOK: Output: default@orc_create_people_n0
+PREHOOK: query: CREATE TABLE orc_create_people_n0 (
   id int,
   first_name string,
   last_name string,
@@ -1165,8 +901,8 @@ into 4 buckets
 STORED AS orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@orc_create_people
-POSTHOOK: query: CREATE TABLE orc_create_people (
+PREHOOK: Output: default@orc_create_people_n0
+POSTHOOK: query: CREATE TABLE orc_create_people_n0 (
   id int,
   first_name string,
   last_name string,
@@ -1180,38 +916,37 @@ into 4 buckets
 STORED AS orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@orc_create_people
-PREHOOK: query: INSERT OVERWRITE TABLE orc_create_people PARTITION (state)
-  SELECT * FROM orc_create_people_staging ORDER BY id
+POSTHOOK: Output: default@orc_create_people_n0
+PREHOOK: query: INSERT OVERWRITE TABLE orc_create_people_n0 PARTITION (state)
+  SELECT * FROM orc_create_people_staging_n0 ORDER BY id
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_create_people_staging
-PREHOOK: Output: default@orc_create_people
-POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_people PARTITION (state)
-  SELECT * FROM orc_create_people_staging ORDER BY id
+PREHOOK: Input: default@orc_create_people_staging_n0
+PREHOOK: Output: default@orc_create_people_n0
+POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_people_n0 PARTITION (state)
+  SELECT * FROM orc_create_people_staging_n0 ORDER BY id
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_create_people_staging
-POSTHOOK: Output: default@orc_create_people@state=Ca
-POSTHOOK: Output: default@orc_create_people@state=Or
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).id SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).salary SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).start_date SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:start_date, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).id SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).salary SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).start_date SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:start_date, type:timestamp, comment:null), ]
-PREHOOK: query: desc formatted orc_create_people partition(state="Ca")
+POSTHOOK: Input: default@orc_create_people_staging_n0
+POSTHOOK: Output: default@orc_create_people_n0@state=Ca
+POSTHOOK: Output: default@orc_create_people_n0@state=Or
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Ca).address SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Ca).first_name SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:first_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Ca).id SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Ca).last_name SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:last_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Ca).salary SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Ca).start_date SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:start_date, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Or).address SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Or).first_name SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:first_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Or).id SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Or).last_name SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:last_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Or).salary SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Or).start_date SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:start_date, type:timestamp, comment:null), ]
+PREHOOK: query: desc formatted orc_create_people_n0 partition(state="Ca")
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@orc_create_people
-POSTHOOK: query: desc formatted orc_create_people partition(state="Ca")
+PREHOOK: Input: default@orc_create_people_n0
+POSTHOOK: query: desc formatted orc_create_people_n0 partition(state="Ca")
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@orc_create_people
+POSTHOOK: Input: default@orc_create_people_n0
 # col_name            	data_type           	comment             
-	 	 
 id                  	int                 	                    
 first_name          	string              	                    
 last_name           	string              	                    
@@ -1221,20 +956,19 @@ start_date          	timestamp
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 state               	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[Ca]                	 
 Database:           	default             	 
-Table:              	orc_create_people   	 
+Table:              	orc_create_people_n0	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"address\":\"true\",\"first_name\":\"true\",\"id\":\"true\",\"last_name\":\"true\",\"salary\":\"true\",\"start_date\":\"true\"}}
 	numFiles            	4                   
 	numRows             	50                  
-	rawDataSize         	21975               
-	totalSize           	5260                
+	rawDataSize         	21955               
+	totalSize           	5382                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1247,14 +981,13 @@ Bucket Columns:     	[first_name]
 Sort Columns:       	[Order(col:last_name, order:1)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: desc formatted orc_create_people partition(state="Or")
+PREHOOK: query: desc formatted orc_create_people_n0 partition(state="Or")
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@orc_create_people
-POSTHOOK: query: desc formatted orc_create_people partition(state="Or")
+PREHOOK: Input: default@orc_create_people_n0
+POSTHOOK: query: desc formatted orc_create_people_n0 partition(state="Or")
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@orc_create_people
+POSTHOOK: Input: default@orc_create_people_n0
 # col_name            	data_type           	comment             
-	 	 
 id                  	int                 	                    
 first_name          	string              	                    
 last_name           	string              	                    
@@ -1264,20 +997,19 @@ start_date          	timestamp
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 state               	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[Or]                	 
 Database:           	default             	 
-Table:              	orc_create_people   	 
+Table:              	orc_create_people_n0	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"address\":\"true\",\"first_name\":\"true\",\"id\":\"true\",\"last_name\":\"true\",\"salary\":\"true\",\"start_date\":\"true\"}}
 	numFiles            	4                   
 	numRows             	50                  
 	rawDataSize         	22043               
-	totalSize           	5331                
+	totalSize           	5371                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1290,15 +1022,15 @@ Bucket Columns:     	[first_name]
 Sort Columns:       	[Order(col:last_name, order:1)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: drop table orc_create_people
+PREHOOK: query: drop table orc_create_people_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@orc_create_people
-PREHOOK: Output: default@orc_create_people
-POSTHOOK: query: drop table orc_create_people
+PREHOOK: Input: default@orc_create_people_n0
+PREHOOK: Output: default@orc_create_people_n0
+POSTHOOK: query: drop table orc_create_people_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@orc_create_people
-POSTHOOK: Output: default@orc_create_people
-PREHOOK: query: CREATE TABLE orc_create_people (
+POSTHOOK: Input: default@orc_create_people_n0
+POSTHOOK: Output: default@orc_create_people_n0
+PREHOOK: query: CREATE TABLE orc_create_people_n0 (
   id int,
   first_name string,
   last_name string,
@@ -1309,8 +1041,8 @@ PARTITIONED BY (state string)
 STORED AS orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@orc_create_people
-POSTHOOK: query: CREATE TABLE orc_create_people (
+PREHOOK: Output: default@orc_create_people_n0
+POSTHOOK: query: CREATE TABLE orc_create_people_n0 (
   id int,
   first_name string,
   last_name string,
@@ -1321,50 +1053,49 @@ PARTITIONED BY (state string)
 STORED AS orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@orc_create_people
-PREHOOK: query: INSERT OVERWRITE TABLE orc_create_people PARTITION (state)
-  SELECT * FROM orc_create_people_staging ORDER BY id
+POSTHOOK: Output: default@orc_create_people_n0
+PREHOOK: query: INSERT OVERWRITE TABLE orc_create_people_n0 PARTITION (state)
+  SELECT * FROM orc_create_people_staging_n0 ORDER BY id
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_create_people_staging
-PREHOOK: Output: default@orc_create_people
-POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_people PARTITION (state)
-  SELECT * FROM orc_create_people_staging ORDER BY id
+PREHOOK: Input: default@orc_create_people_staging_n0
+PREHOOK: Output: default@orc_create_people_n0
+POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_people_n0 PARTITION (state)
+  SELECT * FROM orc_create_people_staging_n0 ORDER BY id
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_create_people_staging
-POSTHOOK: Output: default@orc_create_people@state=Ca
-POSTHOOK: Output: default@orc_create_people@state=Or
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).id SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).salary SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).start_date SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:start_date, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).id SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).salary SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).start_date SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:start_date, type:timestamp, comment:null), ]
-PREHOOK: query: analyze table orc_create_people partition(state) compute statistics
+POSTHOOK: Input: default@orc_create_people_staging_n0
+POSTHOOK: Output: default@orc_create_people_n0@state=Ca
+POSTHOOK: Output: default@orc_create_people_n0@state=Or
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Ca).address SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Ca).first_name SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:first_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Ca).id SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Ca).last_name SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:last_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Ca).salary SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Ca).start_date SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:start_date, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Or).address SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Or).first_name SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:first_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Or).id SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Or).last_name SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:last_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Or).salary SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Or).start_date SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:start_date, type:timestamp, comment:null), ]
+PREHOOK: query: analyze table orc_create_people_n0 partition(state) compute statistics
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_create_people
-PREHOOK: Output: default@orc_create_people
-PREHOOK: Output: default@orc_create_people@state=Ca
-PREHOOK: Output: default@orc_create_people@state=Or
-POSTHOOK: query: analyze table orc_create_people partition(state) compute statistics
+PREHOOK: Input: default@orc_create_people_n0
+PREHOOK: Output: default@orc_create_people_n0
+PREHOOK: Output: default@orc_create_people_n0@state=Ca
+PREHOOK: Output: default@orc_create_people_n0@state=Or
+POSTHOOK: query: analyze table orc_create_people_n0 partition(state) compute statistics
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_create_people
-POSTHOOK: Output: default@orc_create_people
-POSTHOOK: Output: default@orc_create_people@state=Ca
-POSTHOOK: Output: default@orc_create_people@state=Or
-PREHOOK: query: desc formatted orc_create_people partition(state="Ca")
+POSTHOOK: Input: default@orc_create_people_n0
+POSTHOOK: Output: default@orc_create_people_n0
+POSTHOOK: Output: default@orc_create_people_n0@state=Ca
+POSTHOOK: Output: default@orc_create_people_n0@state=Or
+PREHOOK: query: desc formatted orc_create_people_n0 partition(state="Ca")
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@orc_create_people
-POSTHOOK: query: desc formatted orc_create_people partition(state="Ca")
+PREHOOK: Input: default@orc_create_people_n0
+POSTHOOK: query: desc formatted orc_create_people_n0 partition(state="Ca")
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@orc_create_people
+POSTHOOK: Input: default@orc_create_people_n0
 # col_name            	data_type           	comment             
-	 	 
 id                  	int                 	                    
 first_name          	string              	                    
 last_name           	string              	                    
@@ -1374,20 +1105,19 @@ start_date          	timestamp
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 state               	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[Ca]                	 
 Database:           	default             	 
-Table:              	orc_create_people   	 
+Table:              	orc_create_people_n0	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	1                   
 	numRows             	50                  
 	rawDataSize         	21950               
-	totalSize           	2099                
+	totalSize           	2129                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1400,26 +1130,25 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: analyze table orc_create_people partition(state) compute statistics partialscan
+PREHOOK: query: analyze table orc_create_people_n0 partition(state) compute statistics noscan
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_create_people
-PREHOOK: Output: default@orc_create_people
-PREHOOK: Output: default@orc_create_people@state=Ca
-PREHOOK: Output: default@orc_create_people@state=Or
-POSTHOOK: query: analyze table orc_create_people partition(state) compute statistics partialscan
+PREHOOK: Input: default@orc_create_people_n0
+PREHOOK: Output: default@orc_create_people_n0
+PREHOOK: Output: default@orc_create_people_n0@state=Ca
+PREHOOK: Output: default@orc_create_people_n0@state=Or
+POSTHOOK: query: analyze table orc_create_people_n0 partition(state) compute statistics noscan
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_create_people
-POSTHOOK: Output: default@orc_create_people
-POSTHOOK: Output: default@orc_create_people@state=Ca
-POSTHOOK: Output: default@orc_create_people@state=Or
-PREHOOK: query: desc formatted orc_create_people partition(state="Ca")
+POSTHOOK: Input: default@orc_create_people_n0
+POSTHOOK: Output: default@orc_create_people_n0
+POSTHOOK: Output: default@orc_create_people_n0@state=Ca
+POSTHOOK: Output: default@orc_create_people_n0@state=Or
+PREHOOK: query: desc formatted orc_create_people_n0 partition(state="Ca")
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@orc_create_people
-POSTHOOK: query: desc formatted orc_create_people partition(state="Ca")
+PREHOOK: Input: default@orc_create_people_n0
+POSTHOOK: query: desc formatted orc_create_people_n0 partition(state="Ca")
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@orc_create_people
+POSTHOOK: Input: default@orc_create_people_n0
 # col_name            	data_type           	comment             
-	 	 
 id                  	int                 	                    
 first_name          	string              	                    
 last_name           	string              	                    
@@ -1429,20 +1158,19 @@ start_date          	timestamp
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 state               	string              	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[Ca]                	 
 Database:           	default             	 
-Table:              	orc_create_people   	 
+Table:              	orc_create_people_n0	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	1                   
 	numRows             	50                  
 	rawDataSize         	21950               
-	totalSize           	2099                
+	totalSize           	2129                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1455,66 +1183,11 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: analyze table orc_create_people partition(state) compute statistics noscan
-PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_create_people
-PREHOOK: Output: default@orc_create_people
-PREHOOK: Output: default@orc_create_people@state=Ca
-PREHOOK: Output: default@orc_create_people@state=Or
-POSTHOOK: query: analyze table orc_create_people partition(state) compute statistics noscan
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_create_people
-POSTHOOK: Output: default@orc_create_people
-POSTHOOK: Output: default@orc_create_people@state=Ca
-POSTHOOK: Output: default@orc_create_people@state=Or
-PREHOOK: query: desc formatted orc_create_people partition(state="Ca")
-PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@orc_create_people
-POSTHOOK: query: desc formatted orc_create_people partition(state="Ca")
-POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@orc_create_people
-# col_name            	data_type           	comment             
-	 	 
-id                  	int                 	                    
-first_name          	string              	                    
-last_name           	string              	                    
-address             	string              	                    
-salary              	decimal(10,0)       	                    
-start_date          	timestamp           	                    
-	 	 
-# Partition Information	 	 
-# col_name            	data_type           	comment             
-	 	 
-state               	string              	                    
-	 	 
-# Detailed Partition Information	 	 
-Partition Value:    	[Ca]                	 
-Database:           	default             	 
-Table:              	orc_create_people   	 
-#### A masked pattern was here ####
-Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
-	numFiles            	1                   
-	numRows             	50                  
-	rawDataSize         	21950               
-	totalSize           	2099                
-#### A masked pattern was here ####
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
-InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-PREHOOK: query: drop table orc_create_people
+PREHOOK: query: drop table orc_create_people_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@orc_create_people
-PREHOOK: Output: default@orc_create_people
-POSTHOOK: query: drop table orc_create_people
+PREHOOK: Input: default@orc_create_people_n0
+PREHOOK: Output: default@orc_create_people_n0
+POSTHOOK: query: drop table orc_create_people_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@orc_create_people
-POSTHOOK: Output: default@orc_create_people
+POSTHOOK: Input: default@orc_create_people_n0
+POSTHOOK: Output: default@orc_create_people_n0

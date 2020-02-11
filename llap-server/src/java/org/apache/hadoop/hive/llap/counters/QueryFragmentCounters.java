@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -71,7 +71,7 @@ public class QueryFragmentCounters implements LowLevelCacheCounters {
     return (doUseTimeCounters ? System.nanoTime() : 0);
   }
 
-  public void incrTimeCounter(LlapIOCounters counter, long startTime) {
+  public void incrWallClockCounter(LlapIOCounters counter, long startTime) {
     if (!doUseTimeCounters) return;
     long delta = System.nanoTime() - startTime;
     fixedCounters.addAndGet(counter.ordinal(), delta);
@@ -109,7 +109,13 @@ public class QueryFragmentCounters implements LowLevelCacheCounters {
 
   @Override
   public void recordHdfsTime(long startTime) {
-    incrTimeCounter(LlapIOCounters.HDFS_TIME_NS, startTime);
+    incrWallClockCounter(LlapIOCounters.HDFS_TIME_NS, startTime);
+  }
+
+  @Override
+  public void recordThreadTimes(long cpuNs, long userNs) {
+    incrCounter(LlapIOCounters.IO_CPU_NS, cpuNs);
+    incrCounter(LlapIOCounters.IO_USER_NS, userNs);
   }
 
   @Override

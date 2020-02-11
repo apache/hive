@@ -326,6 +326,36 @@ module TCLIService
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'RenewDelegationToken failed: unknown result')
     end
 
+    def GetQueryId(req)
+      send_GetQueryId(req)
+      return recv_GetQueryId()
+    end
+
+    def send_GetQueryId(req)
+      send_message('GetQueryId', GetQueryId_args, :req => req)
+    end
+
+    def recv_GetQueryId()
+      result = receive_message(GetQueryId_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'GetQueryId failed: unknown result')
+    end
+
+    def SetClientInfo(req)
+      send_SetClientInfo(req)
+      return recv_SetClientInfo()
+    end
+
+    def send_SetClientInfo(req)
+      send_message('SetClientInfo', SetClientInfo_args, :req => req)
+    end
+
+    def recv_SetClientInfo()
+      result = receive_message(SetClientInfo_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'SetClientInfo failed: unknown result')
+    end
+
   end
 
   class Processor
@@ -476,6 +506,20 @@ module TCLIService
       result = RenewDelegationToken_result.new()
       result.success = @handler.RenewDelegationToken(args.req)
       write_result(result, oprot, 'RenewDelegationToken', seqid)
+    end
+
+    def process_GetQueryId(seqid, iprot, oprot)
+      args = read_args(iprot, GetQueryId_args)
+      result = GetQueryId_result.new()
+      result.success = @handler.GetQueryId(args.req)
+      write_result(result, oprot, 'GetQueryId', seqid)
+    end
+
+    def process_SetClientInfo(seqid, iprot, oprot)
+      args = read_args(iprot, SetClientInfo_args)
+      result = SetClientInfo_result.new()
+      result.success = @handler.SetClientInfo(args.req)
+      write_result(result, oprot, 'SetClientInfo', seqid)
     end
 
   end
@@ -1144,6 +1188,70 @@ module TCLIService
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::TRenewDelegationTokenResp}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class GetQueryId_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQ = 1
+
+    FIELDS = {
+      REQ => {:type => ::Thrift::Types::STRUCT, :name => 'req', :class => ::TGetQueryIdReq}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class GetQueryId_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::TGetQueryIdResp}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class SetClientInfo_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQ = 1
+
+    FIELDS = {
+      REQ => {:type => ::Thrift::Types::STRUCT, :name => 'req', :class => ::TSetClientInfoReq}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class SetClientInfo_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::TSetClientInfoResp}
     }
 
     def struct_fields; FIELDS; end

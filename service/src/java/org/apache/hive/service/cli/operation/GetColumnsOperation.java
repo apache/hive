@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -35,7 +35,7 @@ import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.PrimaryKeysRequest;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.ql.metadata.TableIterable;
+import org.apache.hadoop.hive.metastore.TableIterable;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
@@ -50,12 +50,16 @@ import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.RowSetFactory;
 import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.cli.session.HiveSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * GetColumnsOperation.
  *
  */
 public class GetColumnsOperation extends MetadataOperation {
+
+  private static final Logger LOG = LoggerFactory.getLogger(GetColumnsOperation.class.getName());
 
   private static final TableSchema RESULT_SET_SCHEMA = new TableSchema()
   .addPrimitiveColumn("TABLE_CAT", Type.STRING_TYPE,
@@ -104,7 +108,7 @@ public class GetColumnsOperation extends MetadataOperation {
       "Schema of table that is the scope of a reference attribute "
       + "(null if the DATA_TYPE isn't REF)")
   .addPrimitiveColumn("SCOPE_TABLE", Type.STRING_TYPE,
-      "Table name that this the scope of a reference attribure "
+      "Table name that this the scope of a reference attribute "
       + "(null if the DATA_TYPE isn't REF)")
   .addPrimitiveColumn("SOURCE_DATA_TYPE", Type.SMALLINT_TYPE,
       "Source type of a distinct type or user-generated Ref type, "
@@ -127,11 +131,15 @@ public class GetColumnsOperation extends MetadataOperation {
     this.tableName = tableName;
     this.columnName = columnName;
     this.rowSet = RowSetFactory.create(RESULT_SET_SCHEMA, getProtocolVersion(), false);
+    LOG.info("Starting GetColumnsOperation with the following parameters: "
+        + "catalogName={}, schemaName={}, tableName={}, columnName={}",
+        catalogName, schemaName, tableName, columnName);
   }
 
   @Override
   public void runInternal() throws HiveSQLException {
     setState(OperationState.RUNNING);
+    LOG.info("Fetching column metadata");
     try {
       IMetaStoreClient metastoreClient = getParentSession().getMetaStoreClient();
       String schemaPattern = convertSchemaPattern(schemaName);
@@ -204,17 +212,24 @@ public class GetColumnsOperation extends MetadataOperation {
                 "NO", // IS_AUTO_INCREMENT
             };
             rowSet.addRow(rowData);
+
+            if (LOG.isDebugEnabled()) {
+              String debugMessage = getDebugMessage("column", RESULT_SET_SCHEMA);
+              LOG.debug(debugMessage, rowData);
+            }
           }
         }
       }
+      if (LOG.isDebugEnabled() && rowSet.numRows() == 0) {
+        LOG.debug("No column metadata has been returned.");
+      }
       setState(OperationState.FINISHED);
+      LOG.info("Fetching column metadata has been successfully finished");
     } catch (Exception e) {
       setState(OperationState.ERROR);
       throw new HiveSQLException(e);
     }
-
   }
-
 
   private List<HivePrivilegeObject> getPrivObjs(Map<String, List<String>> db2Tabs) {
     List<HivePrivilegeObject> privObjs = new ArrayList<>();

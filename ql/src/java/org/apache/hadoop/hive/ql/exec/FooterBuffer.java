@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,8 +20,9 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
-import org.apache.hadoop.hive.common.ObjectPair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.JobConf;
@@ -29,7 +30,7 @@ import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.util.ReflectionUtils;
 
 public class FooterBuffer {
-  private ArrayList<ObjectPair> buffer;
+  private List<Pair<WritableComparable, Writable>> buffer;
   private int cur;
 
   public FooterBuffer() {
@@ -64,15 +65,16 @@ public class FooterBuffer {
       int footerCount, WritableComparable key, Writable value) throws IOException {
 
     // Fill the buffer with key value pairs.
-    this.buffer = new ArrayList<ObjectPair>();
+    this.buffer = new ArrayList<>();
     while (buffer.size() < footerCount) {
       boolean notEOF = recordreader.next(key, value);
       if (!notEOF) {
         return false;
       }
-      ObjectPair tem = new ObjectPair();
-      tem.setFirst(ReflectionUtils.copy(job, key, tem.getFirst()));
-      tem.setSecond(ReflectionUtils.copy(job, value, tem.getSecond()));
+
+      WritableComparable left = ReflectionUtils.copy(job, key, null);
+      Writable right = ReflectionUtils.copy(job, value, null);
+      Pair<WritableComparable, Writable> tem = Pair.of(left, right);
       buffer.add(tem);
     }
     this.cur = 0;
@@ -98,9 +100,9 @@ public class FooterBuffer {
    */
   public boolean updateBuffer(JobConf job, RecordReader recordreader,
       WritableComparable key, Writable value) throws IOException {
-    key = ReflectionUtils.copy(job, (WritableComparable)buffer.get(cur).getFirst(), key);
-    value = ReflectionUtils.copy(job, (Writable)buffer.get(cur).getSecond(), value);
-    boolean notEOF = recordreader.next(buffer.get(cur).getFirst(), buffer.get(cur).getSecond());
+    key = ReflectionUtils.copy(job, buffer.get(cur).getKey(), key);
+    value = ReflectionUtils.copy(job, buffer.get(cur).getValue(), value);
+    boolean notEOF = recordreader.next(buffer.get(cur).getKey(), buffer.get(cur).getValue());
     if (notEOF) {
       cur = (++cur) % buffer.size();
     }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements. See the NOTICE file
  * distributed with this work for additional information
@@ -38,11 +38,11 @@ import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
-import org.apache.hadoop.hive.ql.lib.GraphWalker;
+import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
-import org.apache.hadoop.hive.ql.lib.Rule;
+import org.apache.hadoop.hive.ql.lib.SemanticRule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -55,15 +55,15 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
  *
  *  Without this optimization:
  *
- *  TS -> FIL -> SEL -> RS ->
- *                             JOIN -> SEL -> FS
- *  TS -> FIL -> SEL -> RS ->
+ *  TS -&gt; FIL -&gt; SEL -&gt; RS -&gt;
+ *                             JOIN -&gt; SEL -&gt; FS
+ *  TS -&gt; FIL -&gt; SEL -&gt; RS -&gt;
  *
  *  With this optimization
  *
- *  TS -> FIL -> RS ->
- *                      JOIN -> FS
- *  TS -> FIL -> RS ->
+ *  TS -&gt; FIL -&gt; RS -&gt;
+ *                      JOIN -&gt; FS
+ *  TS -&gt; FIL -&gt; RS -&gt;
  *
  *  Note absence of select operator after filter and after join operator.
  *  Also, see : identity_proj_remove.q
@@ -83,17 +83,17 @@ public class IdentityProjectRemover extends Transform {
     }
 
     // 1. We apply the transformation
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
     opRules.put(new RuleRegExp("R1",
       "(" + SelectOperator.getOperatorName() + "%)"), new ProjectRemover());
-    GraphWalker ogw = new DefaultGraphWalker(new DefaultRuleDispatcher(null, opRules, null));
+    SemanticGraphWalker ogw = new DefaultGraphWalker(new DefaultRuleDispatcher(null, opRules, null));
     ArrayList<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(pctx.getTopOps().values());
     ogw.startWalking(topNodes, null);
     return pctx;
   }
 
-  private static class ProjectRemover implements NodeProcessor {
+  private static class ProjectRemover implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,

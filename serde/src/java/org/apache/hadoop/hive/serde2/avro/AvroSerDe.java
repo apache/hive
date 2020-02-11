@@ -59,6 +59,7 @@ public class AvroSerDe extends AbstractSerDe {
   public static final String VARCHAR_TYPE_NAME = "varchar";
   public static final String DATE_TYPE_NAME = "date";
   public static final String TIMESTAMP_TYPE_NAME = "timestamp-millis";
+  public static final String WRITER_TIME_ZONE = "writer.time.zone";
   public static final String AVRO_PROP_LOGICAL_TYPE = "logicalType";
   public static final String AVRO_PROP_PRECISION = "precision";
   public static final String AVRO_PROP_SCALE = "scale";
@@ -90,6 +91,9 @@ public class AvroSerDe extends AbstractSerDe {
       LOG.debug("Resetting already initialized AvroSerDe");
     }
 
+    LOG.debug("AvroSerde::initialize(): Preset value of avro.schema.literal == "
+        + properties.get(AvroSerdeUtils.AvroTableProperties.SCHEMA_LITERAL.getPropName()));
+
     schema = null;
     oi = null;
     columnNames = null;
@@ -100,11 +104,13 @@ public class AvroSerDe extends AbstractSerDe {
     final String columnCommentProperty = properties.getProperty(LIST_COLUMN_COMMENTS,"");
     final String columnNameDelimiter = properties.containsKey(serdeConstants.COLUMN_NAME_DELIMITER) ? properties
         .getProperty(serdeConstants.COLUMN_NAME_DELIMITER) : String.valueOf(SerDeUtils.COMMA);
-        
+
+    boolean gotColTypesFromColProps = true;
     if (hasExternalSchema(properties)
         || columnNameProperty == null || columnNameProperty.isEmpty()
         || columnTypeProperty == null || columnTypeProperty.isEmpty()) {
       schema = determineSchemaOrReturnErrorSchema(configuration, properties);
+      gotColTypesFromColProps = false;
     } else {
       // Get column names and sort order
       columnNames = StringInternUtils.internStringsInList(
@@ -112,8 +118,9 @@ public class AvroSerDe extends AbstractSerDe {
       columnTypes = TypeInfoUtils.getTypeInfosFromTypeString(columnTypeProperty);
 
       schema = getSchemaFromCols(properties, columnNames, columnTypes, columnCommentProperty);
-      properties.setProperty(AvroSerdeUtils.AvroTableProperties.SCHEMA_LITERAL.getPropName(), schema.toString());
     }
+
+    properties.setProperty(AvroSerdeUtils.AvroTableProperties.SCHEMA_LITERAL.getPropName(), schema.toString());
 
     if (LOG.isDebugEnabled()) {
       LOG.debug("Avro schema is " + schema);
@@ -132,6 +139,18 @@ public class AvroSerDe extends AbstractSerDe {
     this.columnNames = StringInternUtils.internStringsInList(aoig.getColumnNames());
     this.columnTypes = aoig.getColumnTypes();
     this.oi = aoig.getObjectInspector();
+    // HIVE-22595: Update the column/type properties to reflect the  current, since the
+    // these properties may be used
+    if (!gotColTypesFromColProps) {
+      LOG.info("Updating column name/type properties based on current schema");
+      properties.setProperty(serdeConstants.LIST_COLUMNS, String.join(",", columnNames));
+      properties.setProperty(serdeConstants.LIST_COLUMN_TYPES, String.join(",", TypeInfoUtils.getTypeStringsFromTypeInfo(columnTypes)));
+    }
+
+    if(!badSchema) {
+      this.avroSerializer = new AvroSerializer();
+      this.avroDeserializer = new AvroDeserializer(configuration);
+    }
   }
 
   private boolean hasExternalSchema(Properties properties) {
@@ -210,7 +229,7 @@ public class AvroSerDe extends AbstractSerDe {
     if(badSchema) {
       throw new BadSchemaException();
     }
-    return getSerializer().serialize(o, objectInspector, columnNames, columnTypes, schema);
+    return avroSerializer.serialize(o, objectInspector, columnNames, columnTypes, schema);
   }
 
   @Override
@@ -218,7 +237,7 @@ public class AvroSerDe extends AbstractSerDe {
     if(badSchema) {
       throw new BadSchemaException();
     }
-    return getDeserializer().deserialize(columnNames, columnTypes, writable, schema);
+    return avroDeserializer.deserialize(columnNames, columnTypes, writable, schema);
   }
 
   @Override
@@ -230,22 +249,6 @@ public class AvroSerDe extends AbstractSerDe {
   public SerDeStats getSerDeStats() {
     // No support for statistics. That seems to be a popular answer.
     return null;
-  }
-
-  private AvroDeserializer getDeserializer() {
-    if(avroDeserializer == null) {
-      avroDeserializer = new AvroDeserializer();
-    }
-
-    return avroDeserializer;
-  }
-
-  private AvroSerializer getSerializer() {
-    if(avroSerializer == null) {
-      avroSerializer = new AvroSerializer();
-    }
-
-    return avroSerializer;
   }
 
   @Override

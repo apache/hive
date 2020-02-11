@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 create table src_orc_merge_test_part(key int, value string) partitioned by (ds string, ts string) stored as orc;
 

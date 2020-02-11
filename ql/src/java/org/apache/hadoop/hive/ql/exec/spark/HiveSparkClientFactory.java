@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -26,12 +26,13 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.compress.utils.CharsetNames;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.hive.common.LogUtils;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.spark.client.SparkClientUtilities;
+import org.apache.hive.spark.client.rpc.RpcConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hbase.HBaseConfiguration;
@@ -41,7 +42,6 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Writable;
-import org.apache.hive.spark.client.rpc.RpcConfiguration;
 import org.apache.spark.SparkConf;
 
 import com.google.common.base.Joiner;
@@ -60,21 +60,25 @@ public class HiveSparkClientFactory {
   private static final String SPARK_DEFAULT_REFERENCE_TRACKING = "false";
   private static final String SPARK_WAIT_APP_COMPLETE = "spark.yarn.submit.waitAppCompletion";
   private static final String SPARK_DEPLOY_MODE = "spark.submit.deployMode";
+  @VisibleForTesting
+  public static final String SPARK_CLONE_CONFIGURATION = "spark.hadoop.cloneConf";
 
-  public static HiveSparkClient createHiveSparkClient(HiveConf hiveconf) throws Exception {
-    Map<String, String> sparkConf = initiateSparkConf(hiveconf);
+  public static HiveSparkClient createHiveSparkClient(HiveConf hiveconf, String sparkSessionId,
+                                                      String hiveSessionId) throws Exception {
+    Map<String, String> sparkConf = initiateSparkConf(hiveconf, hiveSessionId);
+
     // Submit spark job through local spark context while spark master is local mode, otherwise submit
     // spark job through remote spark context.
     String master = sparkConf.get("spark.master");
     if (master.equals("local") || master.startsWith("local[")) {
       // With local spark context, all user sessions share the same spark context.
-      return LocalHiveSparkClient.getInstance(generateSparkConf(sparkConf));
+      return LocalHiveSparkClient.getInstance(generateSparkConf(sparkConf), hiveconf);
     } else {
-      return new RemoteHiveSparkClient(hiveconf, sparkConf);
+      return new RemoteHiveSparkClient(hiveconf, sparkConf, sparkSessionId);
     }
   }
 
-  public static Map<String, String> initiateSparkConf(HiveConf hiveConf) {
+  public static Map<String, String> initiateSparkConf(HiveConf hiveConf, String hiveSessionId) {
     Map<String, String> sparkConf = new HashMap<String, String>();
     HBaseConfiguration.addHbaseResources(hiveConf);
 
@@ -82,8 +86,15 @@ public class HiveSparkClientFactory {
     sparkConf.put("spark.master", SPARK_DEFAULT_MASTER);
     final String appNameKey = "spark.app.name";
     String appName = hiveConf.get(appNameKey);
+    final String sessionIdString = " (hiveSessionId = " + hiveSessionId + ")";
     if (appName == null) {
-      appName = SPARK_DEFAULT_APP_NAME;
+      if (hiveSessionId == null) {
+        appName = SPARK_DEFAULT_APP_NAME;
+      } else {
+        appName = SPARK_DEFAULT_APP_NAME + sessionIdString;
+      }
+    } else {
+      appName = appName + sessionIdString;
     }
     sparkConf.put(appNameKey, appName);
     sparkConf.put("spark.serializer", SPARK_DEFAULT_SERIALIZER);
@@ -95,21 +106,21 @@ public class HiveSparkClientFactory {
       inputStream = HiveSparkClientFactory.class.getClassLoader()
         .getResourceAsStream(SPARK_DEFAULT_CONF_FILE);
       if (inputStream != null) {
-        LOG.info("loading spark properties from:" + SPARK_DEFAULT_CONF_FILE);
+        LOG.info("Loading Spark properties from: " + SPARK_DEFAULT_CONF_FILE);
         Properties properties = new Properties();
         properties.load(new InputStreamReader(inputStream, CharsetNames.UTF_8));
         for (String propertyName : properties.stringPropertyNames()) {
           if (propertyName.startsWith("spark")) {
             String value = properties.getProperty(propertyName);
             sparkConf.put(propertyName, properties.getProperty(propertyName));
-            LOG.info(String.format(
+            LOG.debug(String.format(
               "load spark property from %s (%s -> %s).",
               SPARK_DEFAULT_CONF_FILE, propertyName, LogUtils.maskIfPassword(propertyName,value)));
           }
         }
       }
     } catch (IOException e) {
-      LOG.info("Failed to open spark configuration file:"
+      LOG.info("Failed to open Spark configuration file: "
         + SPARK_DEFAULT_CONF_FILE, e);
     } finally {
       if (inputStream != null) {
@@ -156,7 +167,7 @@ public class HiveSparkClientFactory {
       if (propertyName.startsWith("spark")) {
         String value = hiveConf.get(propertyName);
         sparkConf.put(propertyName, value);
-        LOG.info(String.format(
+        LOG.debug(String.format(
           "load spark property from hive configuration (%s -> %s).",
           propertyName, LogUtils.maskIfPassword(propertyName,value)));
       } else if (propertyName.startsWith("yarn") &&
@@ -166,7 +177,7 @@ public class HiveSparkClientFactory {
         // started with spark prefix, Spark would remove spark.hadoop prefix lately and add
         // it to its hadoop configuration.
         sparkConf.put("spark.hadoop." + propertyName, value);
-        LOG.info(String.format(
+        LOG.debug(String.format(
           "load yarn property from hive configuration in %s mode (%s -> %s).",
           sparkMaster, propertyName, LogUtils.maskIfPassword(propertyName,value)));
       } else if (propertyName.equals(CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY)) {
@@ -180,31 +191,36 @@ public class HiveSparkClientFactory {
         // Spark problem.
         String value = hiveConf.get(propertyName);
         sparkConf.put("spark.hadoop." + propertyName, value);
-        LOG.info(String.format(
+        LOG.debug(String.format(
           "load HBase configuration (%s -> %s).", propertyName, LogUtils.maskIfPassword(propertyName,value)));
       } else if (propertyName.startsWith("oozie")) {
         String value = hiveConf.get(propertyName);
         sparkConf.put("spark." + propertyName, value);
-        LOG.info(String.format(
+        LOG.debug(String.format(
           "Pass Oozie configuration (%s -> %s).", propertyName, LogUtils.maskIfPassword(propertyName,value)));
       }
-
       if (RpcConfiguration.HIVE_SPARK_RSC_CONFIGS.contains(propertyName)) {
         String value = RpcConfiguration.getValue(hiveConf, propertyName);
         sparkConf.put(propertyName, value);
-        LOG.info(String.format(
-          "load RPC property from hive configuration (%s -> %s).",
-          propertyName, LogUtils.maskIfPassword(propertyName,value)));
+        LOG.debug(String.format("load RPC property from hive configuration (%s -> %s).", propertyName,
+            LogUtils.maskIfPassword(propertyName, value)));
       }
     }
 
+    final boolean optShuffleSerDe = hiveConf.getBoolVar(
+        HiveConf.ConfVars.SPARK_OPTIMIZE_SHUFFLE_SERDE);
+
     Set<String> classes = Sets.newHashSet(
-      Splitter.on(",").trimResults().omitEmptyStrings().split(
-        Strings.nullToEmpty(sparkConf.get("spark.kryo.classesToRegister"))));
+        Splitter.on(",").trimResults().omitEmptyStrings().split(
+            Strings.nullToEmpty(sparkConf.get("spark.kryo.classesToRegister"))));
     classes.add(Writable.class.getName());
     classes.add(VectorizedRowBatch.class.getName());
-    classes.add(BytesWritable.class.getName());
-    classes.add(HiveKey.class.getName());
+    if (!optShuffleSerDe) {
+      classes.add(HiveKey.class.getName());
+      classes.add(BytesWritable.class.getName());
+    } else {
+      sparkConf.put("spark.kryo.registrator", SparkClientUtilities.HIVE_KRYO_REG_NAME);
+    }
     sparkConf.put("spark.kryo.classesToRegister", Joiner.on(",").join(classes));
 
     // set yarn queue name
@@ -221,6 +237,10 @@ public class HiveSparkClientFactory {
         sparkConf.get(SPARK_WAIT_APP_COMPLETE) == null) {
       sparkConf.put(SPARK_WAIT_APP_COMPLETE, "false");
     }
+
+    // Force Spark configs to be cloned by default
+    sparkConf.putIfAbsent(SPARK_CLONE_CONFIGURATION, "true");
+
 
     // Set the credential provider passwords if found, if there is job specific password
     // the credential provider location is set directly in the execute method of LocalSparkClient

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -264,7 +264,7 @@ public class TopNHash {
   /**
    * Get vectorized batch result for particular index.
    * @param batchIndex index of the key in the batch.
-   * @return the result, same as from {@link #tryStoreKey(HiveKey)}
+   * @return the result, same as from {@link TopNHash#tryStoreKey(HiveKey,boolean)}
    */
   public int getVectorizedBatchResult(int batchIndex) {
     int result = batchIndexToResult[batchIndex];
@@ -309,9 +309,8 @@ public class TopNHash {
   /**
    * Stores the value for the key in the heap.
    * @param index The index, either from tryStoreKey or from tryStoreVectorizedKey result.
-   * @param hasCode hashCode of key, used by ptfTopNHash.
+   * @param hashCode hashCode of key, used by ptfTopNHash.
    * @param value The value to store.
-   * @param keyHash The key hash to store.
    * @param vectorized Whether the result is coming from a vectorized batch.
    */
   public void storeValue(int index, int hashCode, BytesWritable value, boolean vectorized) {

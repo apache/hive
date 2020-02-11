@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -104,4 +104,7 @@ public class PrimaryKeyInfo implements Serializable {
     return sb.toString();
   }
 
+  public static boolean isPrimaryKeyInfoNotEmpty(PrimaryKeyInfo info) {
+    return info != null && !info.getColNames().isEmpty();
+  }
 }

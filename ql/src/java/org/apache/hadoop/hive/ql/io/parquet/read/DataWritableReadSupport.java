@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,10 +13,11 @@
  */
 package org.apache.hadoop.hive.ql.io.parquet.read;
 
+import java.time.DateTimeException;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -27,6 +28,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.parquet.convert.DataWritableRecordConverter;
 import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
+import org.apache.hadoop.hive.ql.io.parquet.write.DataWritableWriteSupport;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.FieldNode;
 import org.apache.hadoop.hive.ql.optimizer.NestedColumnFieldPruningUtils;
@@ -44,8 +46,8 @@ import org.apache.parquet.hadoop.api.InitContext;
 import org.apache.parquet.hadoop.api.ReadSupport;
 import org.apache.parquet.io.api.RecordMaterializer;
 import org.apache.parquet.schema.GroupType;
+import org.apache.parquet.schema.LogicalTypeAnnotation;
 import org.apache.parquet.schema.MessageType;
-import org.apache.parquet.schema.OriginalType;
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName;
 import org.apache.parquet.schema.Type;
 import org.apache.parquet.schema.Type.Repetition;
@@ -158,8 +160,8 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
             } else {
               subFieldType = getProjectedType(elemType, subFieldType);
             }
-            return Types.buildGroup(Repetition.OPTIONAL).as(OriginalType.LIST).addFields(
-              subFieldType).named(fieldType.getName());
+          return Types.buildGroup(Repetition.OPTIONAL).as(LogicalTypeAnnotation.listType())
+              .addFields(subFieldType).named(fieldType.getName());
           }
         }
         break;
@@ -264,6 +266,25 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
   }
 
   /**
+   * Get a valid zoneId from some metadata, otherwise return null.
+   */
+  public static ZoneId getWriterTimeZoneId(Map<String, String> metadata) {
+    if (metadata == null) {
+      return null;
+    }
+    String value = metadata.get(DataWritableWriteSupport.WRITER_TIMEZONE);
+    try {
+      if (value != null) {
+        return ZoneId.of(value);
+      }
+    } catch (DateTimeException e) {
+      throw new RuntimeException("Can't parse writer time zone stored in file metadata", e);
+    }
+
+    return null;
+  }
+
+  /**
    * Return the columns which contains required nested attribute level
    * E.g., given struct a:<x:int, y:int> while 'x' is required and 'y' is not, the method will return
    * a pruned struct for 'a' which only contains the attribute 'x'
@@ -354,37 +375,79 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
       String columnTypes = configuration.get(IOConstants.COLUMNS_TYPES);
       List<TypeInfo> columnTypesList = getColumnTypes(columnTypes);
 
-      MessageType tableSchema;
-      if (indexAccess) {
-        List<Integer> indexSequence = new ArrayList<Integer>();
-
-        // Generates a sequence list of indexes
-        for(int i = 0; i < columnNamesList.size(); i++) {
-          indexSequence.add(i);
-        }
-
-        tableSchema = getSchemaByIndex(fileSchema, columnNamesList, indexSequence);
-      } else {
-
-        tableSchema = getSchemaByName(fileSchema, columnNamesList, columnTypesList);
-      }
+      MessageType tableSchema =
+        getRequestedSchemaForIndexAccess(indexAccess, columnNamesList, columnTypesList, fileSchema);
 
       contextMetadata.put(HIVE_TABLE_AS_PARQUET_SCHEMA, tableSchema.toString());
       contextMetadata.put(PARQUET_COLUMN_INDEX_ACCESS, String.valueOf(indexAccess));
       this.hiveTypeInfo = TypeInfoFactory.getStructTypeInfo(columnNamesList, columnTypesList);
 
-      Set<String> groupPaths = ColumnProjectionUtils.getNestedColumnPaths(configuration);
-      List<Integer> indexColumnsWanted = ColumnProjectionUtils.getReadColumnIDs(configuration);
-      if (!ColumnProjectionUtils.isReadAllColumns(configuration) && !indexColumnsWanted.isEmpty()) {
-        MessageType requestedSchemaByUser = getProjectedSchema(tableSchema, columnNamesList,
-          indexColumnsWanted, groupPaths);
-        return new ReadContext(requestedSchemaByUser, contextMetadata);
-      } else {
-        return new ReadContext(tableSchema, contextMetadata);
-      }
+      return new ReadContext(getRequestedPrunedSchema(columnNamesList, tableSchema, configuration),
+        contextMetadata);
     } else {
       contextMetadata.put(HIVE_TABLE_AS_PARQUET_SCHEMA, fileSchema.toString());
       return new ReadContext(fileSchema, contextMetadata);
+    }
+  }
+
+  /**
+   * It's used for vectorized code path.
+   * @param indexAccess
+   * @param columnNamesList
+   * @param columnTypesList
+   * @param fileSchema
+   * @param configuration
+   * @return
+   */
+  public static MessageType getRequestedSchema(
+    boolean indexAccess,
+    List<String> columnNamesList,
+    List<TypeInfo> columnTypesList,
+    MessageType fileSchema,
+    Configuration configuration) {
+    MessageType tableSchema =
+      getRequestedSchemaForIndexAccess(indexAccess, columnNamesList, columnTypesList, fileSchema);
+
+    List<Integer> indexColumnsWanted = ColumnProjectionUtils.getReadColumnIDs(configuration);
+    //TODO Duplicated code for init method since vectorization reader path doesn't support Nested
+    // column pruning so far. See HIVE-15156
+    if (!ColumnProjectionUtils.isReadAllColumns(configuration) && !indexColumnsWanted.isEmpty()) {
+      return DataWritableReadSupport
+        .getSchemaByIndex(tableSchema, columnNamesList, indexColumnsWanted);
+    } else {
+      return tableSchema;
+    }
+  }
+
+  private static MessageType getRequestedSchemaForIndexAccess(
+    boolean indexAccess,
+    List<String> columnNamesList,
+    List<TypeInfo> columnTypesList,
+    MessageType fileSchema) {
+    if (indexAccess) {
+      List<Integer> indexSequence = new ArrayList<Integer>();
+
+      // Generates a sequence list of indexes
+      for (int i = 0; i < columnNamesList.size(); i++) {
+        indexSequence.add(i);
+      }
+
+      return getSchemaByIndex(fileSchema, columnNamesList, indexSequence);
+    } else {
+      return getSchemaByName(fileSchema, columnNamesList, columnTypesList);
+    }
+  }
+
+  private static MessageType getRequestedPrunedSchema(
+    List<String> columnNamesList,
+    MessageType fileSchema,
+    Configuration configuration) {
+    Set<String> groupPaths = ColumnProjectionUtils.getNestedColumnPaths(configuration);
+    List<Integer> indexColumnsWanted = ColumnProjectionUtils.getReadColumnIDs(configuration);
+    if (!ColumnProjectionUtils.isReadAllColumns(configuration) && !indexColumnsWanted.isEmpty()) {
+      return getProjectedSchema(fileSchema, columnNamesList, indexColumnsWanted, groupPaths);
+    } else {
+      return fileSchema;
     }
   }
 
@@ -407,11 +470,23 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
       throw new IllegalStateException("ReadContext not initialized properly. " +
         "Don't know the Hive Schema.");
     }
+
     String key = HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION.varname;
     if (!metadata.containsKey(key)) {
       metadata.put(key, String.valueOf(HiveConf.getBoolVar(
         configuration, HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION)));
     }
+
+    String writerTimezone = DataWritableWriteSupport.WRITER_TIMEZONE;
+    if (!metadata.containsKey(writerTimezone)) {
+      if (keyValueMetaData.containsKey(writerTimezone)) {
+        metadata.put(writerTimezone, keyValueMetaData.get(writerTimezone));
+      }
+    } else if (!metadata.get(writerTimezone).equals(keyValueMetaData.get(writerTimezone))) {
+      throw new IllegalStateException("Metadata contains a writer time zone that does not match "
+          + "file footer's writer time zone.");
+    }
+
     return new DataWritableRecordConverter(readContext.getRequestedSchema(), metadata, hiveTypeInfo);
   }
 }

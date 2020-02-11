@@ -1,19 +1,19 @@
-PREHOOK: query: create table t_cli(i int)
+PREHOOK: query: create table t_cli_n1(i int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t_cli
-POSTHOOK: query: create table t_cli(i int)
+PREHOOK: Output: default@t_cli_n1
+POSTHOOK: query: create table t_cli_n1(i int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t_cli
-PREHOOK: query: create view v_cli (i) as select i from t_cli
+POSTHOOK: Output: default@t_cli_n1
+PREHOOK: query: create view v_cli_n0 (i) as select i from t_cli_n1
 PREHOOK: type: CREATEVIEW
-PREHOOK: Input: default@t_cli
+PREHOOK: Input: default@t_cli_n1
 PREHOOK: Output: database:default
-PREHOOK: Output: default@v_cli
-POSTHOOK: query: create view v_cli (i) as select i from t_cli
+PREHOOK: Output: default@v_cli_n0
+POSTHOOK: query: create view v_cli_n0 (i) as select i from t_cli_n1
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Input: default@t_cli
+POSTHOOK: Input: default@t_cli_n1
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@v_cli
-POSTHOOK: Lineage: v_cli.i SIMPLE [(t_cli)t_cli.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Output: default@v_cli_n0
+POSTHOOK: Lineage: v_cli_n0.i SIMPLE [(t_cli_n1)t_cli_n1.FieldSchema(name:i, type:int, comment:null), ]

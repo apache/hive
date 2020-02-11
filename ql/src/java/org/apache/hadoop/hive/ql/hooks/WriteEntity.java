@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,14 +18,12 @@
 
 package org.apache.hadoop.hive.ql.hooks;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 
 import java.io.Serializable;
 
@@ -34,11 +32,11 @@ import java.io.Serializable;
  * object may be a table, partition, dfs directory or a local directory.
  */
 public class WriteEntity extends Entity implements Serializable {
-
-  private static final Logger LOG = LoggerFactory.getLogger(WriteEntity.class);
+  private static final long serialVersionUID = 1L;
 
   private boolean isTempURI = false;
   private transient boolean isDynamicPartitionWrite = false;
+  private transient boolean isTxnAnalyze = false;
 
   public static enum WriteType {
     DDL_EXCLUSIVE, // for use in DDL statements that require an exclusive lock,
@@ -63,7 +61,7 @@ public class WriteEntity extends Entity implements Serializable {
 
   public WriteEntity(Database database, WriteType type) {
     super(database, true);
-    writeType = type;
+    setWriteTypeInternal(type);
   }
 
   /**
@@ -74,12 +72,12 @@ public class WriteEntity extends Entity implements Serializable {
    */
   public WriteEntity(Table t, WriteType type) {
     super(t, true);
-    writeType = type;
+    setWriteTypeInternal(type);
   }
 
   public WriteEntity(Table t, WriteType type, boolean complete) {
     super(t, complete);
-    writeType = type;
+    setWriteTypeInternal(type);
   }
 
   /**
@@ -87,11 +85,12 @@ public class WriteEntity extends Entity implements Serializable {
    * Currently applicable only for function names.
    * @param db
    * @param objName
+   * @param className
    * @param type
    * @param writeType
    */
-  public WriteEntity(Database db, String objName, Type type, WriteType writeType) {
-    super(db, objName, type);
+  public WriteEntity(Database db, String objName, String className, Type type, WriteType writeType) {
+    super(db, objName, className, type);
     this.writeType = writeType;
   }
 
@@ -103,12 +102,12 @@ public class WriteEntity extends Entity implements Serializable {
    */
   public WriteEntity(Partition p, WriteType type) {
     super(p, true);
-    writeType = type;
+    setWriteTypeInternal(type);
   }
 
   public WriteEntity(DummyPartition p, WriteType type, boolean complete) {
     super(p, complete);
-    writeType = type;
+    setWriteTypeInternal(type);
   }
 
   /**
@@ -139,6 +138,11 @@ public class WriteEntity extends Entity implements Serializable {
     this.writeType = WriteType.PATH_WRITE;
   }
 
+  public WriteEntity(String name, Type t) {
+    super(name, t);
+    this.writeType = WriteType.DDL_NO_LOCK;
+  }
+
   /**
    * Determine which type of write this is.  This is needed by the lock
    * manager so it can understand what kind of lock to acquire.
@@ -155,6 +159,9 @@ public class WriteEntity extends Entity implements Serializable {
    * @param type new operation type
    */
   public void setWriteType(WriteType type) {
+    setWriteTypeInternal(type);
+  }
+  private void setWriteTypeInternal(WriteType type) {
     writeType = type;
   }
 
@@ -188,38 +195,44 @@ public class WriteEntity extends Entity implements Serializable {
    * @param op Operation type from the alter table description
    * @return the write type this should use.
    */
-  public static WriteType determineAlterTableWriteType(AlterTableDesc.AlterTableTypes op) {
+  public static WriteType determineAlterTableWriteType(AlterTableType op) {
     switch (op) {
-      case RENAMECOLUMN:
-      case ADDCLUSTERSORTCOLUMN:
-      case ADDFILEFORMAT:
-      case ADDSERDE:
-      case DROPPROPS:
-      case REPLACECOLS:
-      case ARCHIVE:
-      case UNARCHIVE:
-      case ALTERLOCATION:
-      case DROPPARTITION:
-      case RENAMEPARTITION:
-      case ADDSKEWEDBY:
-      case ALTERSKEWEDLOCATION:
-      case ALTERBUCKETNUM:
-      case ALTERPARTITION:
-      case ADDCOLS:
-      case RENAME:
-      case TRUNCATE:
-      case MERGEFILES:
-      case DROPCONSTRAINT: return WriteType.DDL_EXCLUSIVE;
+    case RENAME_COLUMN:
+    case CLUSTERED_BY:
+    case NOT_SORTED:
+    case NOT_CLUSTERED:
+    case SET_FILE_FORMAT:
+    case SET_SERDE:
+    case DROPPROPS:
+    case REPLACE_COLUMNS:
+    case ARCHIVE:
+    case UNARCHIVE:
+    case ALTERLOCATION:
+    case DROPPARTITION:
+    case RENAMEPARTITION:
+    case SKEWED_BY:
+    case SET_SKEWED_LOCATION:
+    case INTO_BUCKETS:
+    case ALTERPARTITION:
+    case ADDCOLS:
+    case RENAME:
+    case TRUNCATE:
+    case MERGEFILES:
+    case DROP_CONSTRAINT:
+      return WriteType.DDL_EXCLUSIVE;
 
-      case ADDPARTITION:
-      case ADDSERDEPROPS:
-      case ADDPROPS: return WriteType.DDL_SHARED;
+    case ADDPARTITION:
+    case SET_SERDE_PROPS:
+    case ADDPROPS:
+    case UPDATESTATS:
+      return WriteType.DDL_SHARED;
 
-      case COMPACT:
-      case TOUCH: return WriteType.DDL_NO_LOCK;
+    case COMPACT:
+    case TOUCH:
+      return WriteType.DDL_NO_LOCK;
 
-      default:
-        throw new RuntimeException("Unknown operation " + op.toString());
+    default:
+      throw new RuntimeException("Unknown operation " + op.toString());
     }
   }
   public boolean isDynamicPartitionWrite() {
@@ -232,4 +245,11 @@ public class WriteEntity extends Entity implements Serializable {
     return toString() + " Type=" + getTyp() + " WriteType=" + getWriteType() + " isDP=" + isDynamicPartitionWrite();
   }
 
+  public boolean isTxnAnalyze() {
+    return isTxnAnalyze;
+  }
+
+  public void setTxnAnalyze(boolean isTxnAnalyze) {
+    this.isTxnAnalyze = isTxnAnalyze;
+  }
 }

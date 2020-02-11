@@ -60,7 +60,6 @@ emp_country         	string              	two char iso code
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 emp_country         	string              	two char iso code   
 	 	 
 #### A masked pattern was here ####
@@ -145,7 +144,6 @@ emp_country         	string              	two char iso code
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 emp_country         	string              	two char iso code   
 	 	 
 #### A masked pattern was here ####
@@ -191,7 +189,6 @@ emp_country         	string              	two char iso code
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 emp_country         	string              	two char iso code   
 	 	 
 #### A masked pattern was here ####
@@ -245,7 +242,6 @@ emp_country         	string              	two char iso code
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 emp_country         	string              	two char iso code   
 	 	 
 #### A masked pattern was here ####

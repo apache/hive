@@ -22,8 +22,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.sql.Date;
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.Map.Entry;
 
 import org.apache.accumulo.core.client.BatchWriter;
@@ -39,14 +38,16 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.accumulo.AccumuloHiveConstants;
 import org.apache.hadoop.hive.accumulo.AccumuloHiveRow;
 import org.apache.hadoop.hive.accumulo.serde.AccumuloSerDeParameters;
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ByteStream;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.lazy.LazyBoolean;
 import org.apache.hadoop.hive.serde2.lazy.LazyByte;
@@ -234,17 +235,17 @@ public class TestHiveAccumuloTypes {
 
     // date
     baos.reset();
-    Date now = new Date(System.currentTimeMillis());
-    DateWritable dateWritable = new DateWritable(now);
+    Date now = Date.ofEpochMilli(System.currentTimeMillis());
+    DateWritableV2 dateWritable = new DateWritableV2(now);
     Date dateValue = dateWritable.get();
     dateWritable.write(out);
     m.put(cfBytes, "date".getBytes(), baos.toByteArray());
 
     // tiemestamp
     baos.reset();
-    Timestamp timestampValue = new Timestamp(now.getTime());
+    Timestamp timestampValue = Timestamp.ofEpochMilli(System.currentTimeMillis());
     ByteStream.Output output = new ByteStream.Output();
-    TimestampWritable timestampWritable = new TimestampWritable(new Timestamp(now.getTime()));
+    TimestampWritableV2 timestampWritable = new TimestampWritableV2(timestampValue);
     timestampWritable.write(new DataOutputStream(output));
     output.close();
     m.put(cfBytes, "timestamp".getBytes(), output.toByteArray());
@@ -587,8 +588,8 @@ public class TestHiveAccumuloTypes {
     m.put(cfBytes, "decimal".getBytes(), baos.toByteArray());
 
     // date
-    Date now = new Date(System.currentTimeMillis());
-    DateWritable dateWritable = new DateWritable(now);
+    Date now = Date.ofEpochMilli(System.currentTimeMillis());
+    DateWritableV2 dateWritable = new DateWritableV2(now);
     Date dateValue = dateWritable.get();
     baos.reset();
     JavaDateObjectInspector dateOI = (JavaDateObjectInspector) PrimitiveObjectInspectorFactory
@@ -598,7 +599,7 @@ public class TestHiveAccumuloTypes {
     m.put(cfBytes, "date".getBytes(), baos.toByteArray());
 
     // timestamp
-    Timestamp timestampValue = new Timestamp(now.getTime());
+    Timestamp timestampValue = Timestamp.valueOf(LocalDateTime.now().toString());
     baos.reset();
     JavaTimestampObjectInspector timestampOI = (JavaTimestampObjectInspector) PrimitiveObjectInspectorFactory
         .getPrimitiveJavaObjectInspector(TypeInfoFactory

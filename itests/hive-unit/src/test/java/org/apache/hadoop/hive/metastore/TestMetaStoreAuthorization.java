@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,11 +18,7 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import java.io.IOException;
-import java.net.ServerSocket;
 import java.util.concurrent.TimeUnit;
-
-import junit.framework.TestCase;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -32,26 +28,29 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
-import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 
 
-public class TestMetaStoreAuthorization extends TestCase {
+import static org.junit.Assert.assertTrue;
+import org.junit.Test;
+
+
+/**
+ * TestMetaStoreAuthorization.
+ */
+public class TestMetaStoreAuthorization {
   protected HiveConf conf = new HiveConf();
 
   private int port;
 
   public void setup() throws Exception {
-    port = findFreePort();
-    System.setProperty(HiveConf.ConfVars.METASTORE_AUTHORIZATION_STORAGE_AUTH_CHECKS.varname,
-        "true");
-    conf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
+    conf.setBoolVar(HiveConf.ConfVars.METASTORE_AUTHORIZATION_STORAGE_AUTH_CHECKS, true);
     conf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
     conf.setTimeVar(ConfVars.METASTORE_CLIENT_CONNECT_RETRY_DELAY, 60, TimeUnit.SECONDS);
   }
 
+  @Test
   public void testIsWritable() throws Exception {
     setup();
-    conf = new HiveConf(this.getClass());
     String testDir = System.getProperty("test.warehouse.dir", "/tmp");
     Path testDirPath = new Path(testDir);
     FileSystem fs = testDirPath.getFileSystem(conf);
@@ -73,9 +72,10 @@ public class TestMetaStoreAuthorization extends TestCase {
     }
   }
 
+  @Test
   public void testMetaStoreAuthorization() throws Exception {
     setup();
-    MetaStoreUtils.startMetaStore(port, HadoopThriftAuthBridge.getBridge());
+    MetaStoreTestUtils.startMetaStoreWithRetry(conf);
     HiveMetaStoreClient client = new HiveMetaStoreClient(conf);
 
     FileSystem fs = null;
@@ -115,12 +115,5 @@ public class TestMetaStoreAuthorization extends TestCase {
         fs.delete(p, true);
       }
     }
-  }
-
-  private int findFreePort() throws IOException {
-    ServerSocket socket= new ServerSocket(0);
-    int port = socket.getLocalPort();
-    socket.close();
-    return port;
   }
 }

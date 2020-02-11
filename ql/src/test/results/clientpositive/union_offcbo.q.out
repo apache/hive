@@ -146,6 +146,9 @@ PREHOOK: query: explain SELECT
    ) A2
    where a2.flag <> 'RET'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ttest1
+PREHOOK: Input: default@ttest2
+#### A masked pattern was here ####
 POSTHOOK: query: explain SELECT
   A2.id1, A2.sts,A2.at1,
     CASE WHEN FLAG = 'A_INS' THEN cast(date_add('2015-11-20', 1) as string) ELSE '2015-11-20' END dt1
@@ -234,6 +237,9 @@ POSTHOOK: query: explain SELECT
    ) A2
    where a2.flag <> 'RET'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ttest1
+POSTHOOK: Input: default@ttest2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-4
@@ -246,89 +252,90 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: ttest1
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            filterExpr: (ts1 = '2015-11-20') (type: boolean)
+            Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (ts1 = '2015-11-20') (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(id1)) (type: string), reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(at1)) (type: string)
+                expressions: reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(CAST( id1 AS STRING))) (type: string), reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(CAST( at1 AS STRING))) (type: string)
                 outputColumnNames: _col8, _col9
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col8 (type: string)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col8 (type: string)
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col9 (type: string)
           TableScan
             alias: ttest2
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            filterExpr: '2015-11-20' BETWEEN dt1 AND dt2 (type: boolean)
+            Statistics: Num rows: 1 Data size: 936 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: '2015-11-20' BETWEEN dt1 AND dt2 (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 936 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: id1 (type: bigint), dt1 (type: string), dt2 (type: string), sts (type: string), at1 (type: bigint), khash (type: string), rhash (type: string)
                 outputColumnNames: _col0, _col2, _col3, _col6, _col7, _col8, _col9
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 936 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col8 (type: string)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col8 (type: string)
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 936 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: bigint), _col2 (type: string), _col3 (type: string), _col6 (type: string), _col7 (type: bigint), _col9 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Outer Join 0 to 1
+               Full Outer Join 0 to 1
           keys:
             0 _col8 (type: string)
             1 _col8 (type: string)
           outputColumnNames: _col8, _col9, _col10, _col12, _col13, _col16, _col17, _col18, _col19
-          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 1 Data size: 121 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
-            predicate: (((NVL(_col8,-1) <> NVL(_col18,-1)) or (NVL(_col9,-1) <> NVL(_col19,-1))) and _col18 is not null) (type: boolean)
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            predicate: ((CASE WHEN ((_col18 is not null and _col8 is null and (_col12 >= '2016-02-05'))) THEN ('DEL') WHEN ((_col18 is not null and _col8 is null and (_col12 <= '2016-02-05'))) THEN ('RET') WHEN (((_col18 = _col8) and (_col19 <> _col9))) THEN ('A_INS') ELSE ('NA') END <> 'RET') and ((COALESCE(_col8,-1) <> COALESCE(_col18,-1)) or (COALESCE(_col9,-1) <> COALESCE(_col19,-1))) and _col18 is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 121 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col10 (type: bigint), _col16 (type: string), _col17 (type: bigint), _col13 (type: string), _col18 (type: string), _col19 (type: string), CASE WHEN ((_col18 is not null and _col8 is null and (_col12 >= '2016-02-05'))) THEN ('DEL') WHEN ((_col18 is not null and _col8 is null and (_col12 <= '2016-02-05'))) THEN ('RET') WHEN (((_col18 = _col8) and (_col19 <> _col9))) THEN ('A_INS') ELSE ('NA') END (type: string)
               outputColumnNames: _col0, _col1, _col2, _col4, _col5, _col6, _col7
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-              Filter Operator
-                predicate: (_col7 <> 'RET') (type: boolean)
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+              Statistics: Num rows: 1 Data size: 121 Basic stats: COMPLETE Column stats: NONE
+              File Output Operator
+                compressed: false
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-2
     Map Reduce
       Map Operator Tree:
           TableScan
             Union
-              Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 2 Data size: 444 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: _col0 (type: bigint), _col1 (type: string), _col2 (type: bigint), CASE WHEN ((_col7 = 'A_INS')) THEN ('2015-11-21') ELSE ('2015-11-20') END (type: string), _col4 (type: string), _col5 (type: string), _col6 (type: string), _col7 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
-                Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 2 Data size: 444 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 444 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
             Union
-              Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 2 Data size: 444 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: _col0 (type: bigint), _col1 (type: string), _col2 (type: bigint), CASE WHEN ((_col7 = 'A_INS')) THEN ('2015-11-21') ELSE ('2015-11-20') END (type: string), _col4 (type: string), _col5 (type: string), _col6 (type: string), _col7 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
-                Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 2 Data size: 444 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 444 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -339,61 +346,62 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: ttest1
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            filterExpr: (ts1 = '2015-11-20') (type: boolean)
+            Statistics: Num rows: 1 Data size: 294 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (ts1 = '2015-11-20') (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 294 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: id1 (type: bigint), '2015-11-20' (type: string), sts (type: string), at1 (type: bigint), reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(id1)) (type: string), reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(at1)) (type: string)
+                expressions: id1 (type: bigint), '2015-11-20' (type: string), sts (type: string), at1 (type: bigint), reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(CAST( id1 AS STRING))) (type: string), reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(CAST( at1 AS STRING))) (type: string)
                 outputColumnNames: _col0, _col1, _col6, _col7, _col8, _col9
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 294 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col8 (type: string)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col8 (type: string)
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 294 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: bigint), _col1 (type: string), _col6 (type: string), _col7 (type: bigint), _col9 (type: string)
           TableScan
             alias: ttest2
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            filterExpr: '2015-11-20' BETWEEN dt1 AND dt2 (type: boolean)
+            Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: '2015-11-20' BETWEEN dt1 AND dt2 (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ts1 (type: string), khash (type: string), rhash (type: string)
                 outputColumnNames: _col1, _col8, _col9
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col8 (type: string)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col8 (type: string)
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: string), _col9 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Outer Join 0 to 1
+               Full Outer Join 0 to 1
           keys:
             0 _col8 (type: string)
             1 _col8 (type: string)
           outputColumnNames: _col0, _col1, _col6, _col7, _col8, _col9, _col11, _col18, _col19
-          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 1 Data size: 323 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
-            predicate: (((NVL(_col8,-1) <> NVL(_col18,-1)) or (NVL(_col9,-1) <> NVL(_col19,-1))) and _col8 is not null) (type: boolean)
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            predicate: ((CASE WHEN ((_col18 is not null and _col8 is null and (_col11 <= _col1))) THEN ('DEL') WHEN (((_col18 is null and _col8 is not null) or ((_col18 = _col8) and (_col19 <> _col9)))) THEN ('INS') ELSE ('NA') END <> 'RET') and ((COALESCE(_col8,-1) <> COALESCE(_col18,-1)) or (COALESCE(_col9,-1) <> COALESCE(_col19,-1))) and _col8 is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 323 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col0 (type: bigint), _col6 (type: string), _col7 (type: bigint), '2099-12-31' (type: string), _col8 (type: string), _col9 (type: string), CASE WHEN ((_col18 is not null and _col8 is null and (_col11 <= _col1))) THEN ('DEL') WHEN (((_col18 is null and _col8 is not null) or ((_col18 = _col8) and (_col19 <> _col9)))) THEN ('INS') ELSE ('NA') END (type: string)
               outputColumnNames: _col0, _col1, _col2, _col4, _col5, _col6, _col7
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-              Filter Operator
-                predicate: (_col7 <> 'RET') (type: boolean)
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+              Statistics: Num rows: 1 Data size: 323 Basic stats: COMPLETE Column stats: NONE
+              File Output Operator
+                compressed: false
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -489,6 +497,9 @@ PREHOOK: query: explain SELECT
    ) A2
    where a2.flag <> 'RET'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ttest1
+PREHOOK: Input: default@ttest2
+#### A masked pattern was here ####
 POSTHOOK: query: explain SELECT
   A2.id1, A2.sts,A2.at1,
     CASE WHEN FLAG = 'A_INS' THEN cast(date_add('2015-11-20', 1) as string) ELSE '2015-11-20' END dt1
@@ -577,6 +588,9 @@ POSTHOOK: query: explain SELECT
    ) A2
    where a2.flag <> 'RET'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ttest1
+POSTHOOK: Input: default@ttest2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-4
@@ -589,35 +603,42 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: ttest1
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            filterExpr: (ts1 = '2015-11-20') (type: boolean)
+            Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((ts1 = '2015-11-20') and reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(id1)) is not null) (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              predicate: (ts1 = '2015-11-20') (type: boolean)
+              Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(id1)) (type: string), reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(at1)) (type: string)
+                expressions: reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(CAST( id1 AS STRING))) (type: string), reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(CAST( at1 AS STRING))) (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col0 (type: string)
-                  sort order: +
-                  Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                  value expressions: _col1 (type: string)
+                Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                Filter Operator
+                  predicate: _col0 is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string)
+                    null sort order: z
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: string)
+                    Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col1 (type: string)
           TableScan
             alias: ttest2
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            filterExpr: ('2015-11-20' BETWEEN dt1 AND dt2 and khash is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 936 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ('2015-11-20' BETWEEN dt1 AND dt2 and khash is not null) (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 936 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: id1 (type: bigint), dt1 (type: string), dt2 (type: string), sts (type: string), at1 (type: bigint), khash (type: string), rhash (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 936 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col5 (type: string)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col5 (type: string)
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 936 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: bigint), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: bigint), _col6 (type: string)
       Reduce Operator Tree:
         Join Operator
@@ -627,14 +648,14 @@ STAGE PLANS:
             0 _col0 (type: string)
             1 _col5 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 1 Data size: 220 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
-            predicate: (((NVL(_col0,-1) <> NVL(_col7,-1)) or (NVL(_col1,-1) <> NVL(_col8,-1))) and (CASE WHEN ((_col7 is not null and _col0 is null and (_col3 >= '2016-02-05'))) THEN ('DEL') WHEN ((_col7 is not null and _col0 is null and (_col3 <= '2016-02-05'))) THEN ('RET') WHEN (((_col7 = _col0) and (_col8 <> _col1))) THEN ('A_INS') ELSE ('NA') END <> 'RET')) (type: boolean)
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            predicate: (((_col0 is null and (_col3 >= '2016-02-05')) or (_col0 is null and (_col3 <= '2016-02-05')) is not true) and ((COALESCE(_col0,-1) <> COALESCE(_col7,-1)) or (COALESCE(_col1,-1) <> COALESCE(_col8,-1)))) (type: boolean)
+            Statistics: Num rows: 1 Data size: 220 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: _col2 (type: bigint), _col5 (type: string), _col6 (type: bigint), _col4 (type: string), _col7 (type: string), _col8 (type: string), CASE WHEN ((_col7 is not null and _col0 is null and (_col3 >= '2016-02-05'))) THEN ('DEL') WHEN ((_col7 is not null and _col0 is null and (_col3 <= '2016-02-05'))) THEN ('RET') WHEN (((_col7 = _col0) and (_col8 <> _col1))) THEN ('A_INS') ELSE ('NA') END (type: string)
+              expressions: _col2 (type: bigint), _col5 (type: string), _col6 (type: bigint), _col4 (type: string), _col7 (type: string), _col8 (type: string), CASE WHEN ((_col0 is null and (_col3 >= '2016-02-05') and _col7 is not null)) THEN ('DEL') WHEN ((_col0 is null and (_col3 <= '2016-02-05') and _col7 is not null)) THEN ('RET') WHEN (((_col7 = _col0) and (_col8 <> _col1))) THEN ('A_INS') ELSE ('NA') END (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 220 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
                 table:
@@ -647,28 +668,28 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             Union
-              Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 2 Data size: 642 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: _col0 (type: bigint), _col1 (type: string), _col2 (type: bigint), CASE WHEN ((_col6 = 'A_INS')) THEN ('2015-11-21') ELSE ('2015-11-20') END (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string), _col6 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
-                Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 2 Data size: 642 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 642 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
             Union
-              Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 2 Data size: 642 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: _col0 (type: bigint), _col1 (type: string), _col2 (type: bigint), CASE WHEN ((_col6 = 'A_INS')) THEN ('2015-11-21') ELSE ('2015-11-20') END (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string), _col6 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
-                Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 2 Data size: 642 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 642 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -679,35 +700,42 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: ttest1
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            filterExpr: (ts1 = '2015-11-20') (type: boolean)
+            Statistics: Num rows: 1 Data size: 384 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((ts1 = '2015-11-20') and reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(id1)) is not null) (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              predicate: (ts1 = '2015-11-20') (type: boolean)
+              Statistics: Num rows: 1 Data size: 384 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: id1 (type: bigint), sts (type: string), at1 (type: bigint), reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(id1)) (type: string), reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(at1)) (type: string)
+                expressions: id1 (type: bigint), sts (type: string), at1 (type: bigint), reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(CAST( id1 AS STRING))) (type: string), reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(CAST( at1 AS STRING))) (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col3 (type: string)
-                  sort order: +
-                  Map-reduce partition columns: _col3 (type: string)
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                  value expressions: _col0 (type: bigint), _col1 (type: string), _col2 (type: bigint), _col4 (type: string)
+                Statistics: Num rows: 1 Data size: 384 Basic stats: COMPLETE Column stats: NONE
+                Filter Operator
+                  predicate: _col3 is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 384 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col3 (type: string)
+                    null sort order: z
+                    sort order: +
+                    Map-reduce partition columns: _col3 (type: string)
+                    Statistics: Num rows: 1 Data size: 384 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: bigint), _col1 (type: string), _col2 (type: bigint), _col4 (type: string)
           TableScan
             alias: ttest2
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            filterExpr: ('2015-11-20' BETWEEN dt1 AND dt2 and khash is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: '2015-11-20' BETWEEN dt1 AND dt2 (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              predicate: ('2015-11-20' BETWEEN dt1 AND dt2 and khash is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ts1 (type: string), khash (type: string), rhash (type: string)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col1 (type: string)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col1 (type: string)
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: string), _col2 (type: string)
       Reduce Operator Tree:
         Join Operator
@@ -717,14 +745,14 @@ STAGE PLANS:
             0 _col3 (type: string)
             1 _col1 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
-          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 1 Data size: 422 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
-            predicate: (((NVL(_col3,-1) <> NVL(_col6,-1)) or (NVL(_col4,-1) <> NVL(_col7,-1))) and (CASE WHEN ((_col6 is not null and _col3 is null and (_col5 <= '2015-11-20'))) THEN ('DEL') WHEN (((_col6 is null and _col3 is not null) or ((_col6 = _col3) and (_col7 <> _col4)))) THEN ('INS') ELSE ('NA') END <> 'RET')) (type: boolean)
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            predicate: ((COALESCE(_col3,-1) <> COALESCE(_col6,-1)) or (COALESCE(_col4,-1) <> COALESCE(_col7,-1))) (type: boolean)
+            Statistics: Num rows: 1 Data size: 422 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: _col0 (type: bigint), _col1 (type: string), _col2 (type: bigint), '2099-12-31' (type: string), _col3 (type: string), _col4 (type: string), CASE WHEN ((_col6 is not null and _col3 is null and (_col5 <= '2015-11-20'))) THEN ('DEL') WHEN (((_col6 is null and _col3 is not null) or ((_col6 = _col3) and (_col7 <> _col4)))) THEN ('INS') ELSE ('NA') END (type: string)
+              expressions: _col0 (type: bigint), _col1 (type: string), _col2 (type: bigint), '2099-12-31' (type: string), _col3 (type: string), _col4 (type: string), CASE WHEN ((_col3 is null and (_col5 <= '2015-11-20') and _col6 is not null)) THEN ('DEL') WHEN (((_col6 is null and _col3 is not null) or ((_col6 = _col3) and (_col7 <> _col4)))) THEN ('INS') ELSE ('NA') END (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 422 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
                 table:
@@ -826,6 +854,9 @@ PREHOOK: query: explain SELECT
    ) A2
    where a2.flag <> 'RET'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ttest1
+PREHOOK: Input: default@ttest2
+#### A masked pattern was here ####
 POSTHOOK: query: explain SELECT
   A2.id1, A2.sts,A2.at1,
     CASE WHEN FLAG = 'A_INS' THEN cast(date_add('2015-11-20', 1) as string) ELSE '2015-11-20' END dt1
@@ -914,6 +945,9 @@ POSTHOOK: query: explain SELECT
    ) A2
    where a2.flag <> 'RET'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ttest1
+POSTHOOK: Input: default@ttest2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-4
@@ -926,52 +960,56 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: ttest1
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            filterExpr: (ts1 = '2015-11-20') (type: boolean)
+            Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (ts1 = '2015-11-20') (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(id1)) (type: string), reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(at1)) (type: string)
+                expressions: reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(CAST( id1 AS STRING))) (type: string), reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(CAST( at1 AS STRING))) (type: string)
                 outputColumnNames: _col8, _col9
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col8 (type: string)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col8 (type: string)
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col9 (type: string)
           TableScan
             alias: ttest2
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            filterExpr: '2015-11-20' BETWEEN dt1 AND dt2 (type: boolean)
+            Statistics: Num rows: 1 Data size: 936 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: '2015-11-20' BETWEEN dt1 AND dt2 (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 936 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: id1 (type: bigint), dt1 (type: string), dt2 (type: string), sts (type: string), at1 (type: bigint), khash (type: string), rhash (type: string)
                 outputColumnNames: _col0, _col2, _col3, _col6, _col7, _col8, _col9
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 936 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col8 (type: string)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col8 (type: string)
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 936 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: bigint), _col2 (type: string), _col3 (type: string), _col6 (type: string), _col7 (type: bigint), _col9 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Outer Join 0 to 1
+               Full Outer Join 0 to 1
           keys:
             0 _col8 (type: string)
             1 _col8 (type: string)
           outputColumnNames: _col8, _col9, _col10, _col12, _col13, _col16, _col17, _col18, _col19
-          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 1 Data size: 121 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
-            predicate: (((NVL(_col8,-1) <> NVL(_col18,-1)) or (NVL(_col9,-1) <> NVL(_col19,-1))) and _col18 is not null) (type: boolean)
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            predicate: (((COALESCE(_col8,-1) <> COALESCE(_col18,-1)) or (COALESCE(_col9,-1) <> COALESCE(_col19,-1))) and _col18 is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 121 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col10 (type: bigint), _col16 (type: string), _col17 (type: bigint), _col13 (type: string), _col18 (type: string), _col19 (type: string), CASE WHEN ((_col18 is not null and _col8 is null and (_col12 >= '2016-02-05'))) THEN ('DEL') WHEN ((_col18 is not null and _col8 is null and (_col12 <= '2016-02-05'))) THEN ('RET') WHEN (((_col18 = _col8) and (_col19 <> _col9))) THEN ('A_INS') ELSE ('NA') END (type: string)
               outputColumnNames: _col0, _col1, _col2, _col4, _col5, _col6, _col7
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 121 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
                 table:
@@ -984,42 +1022,42 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             Union
-              Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 2 Data size: 444 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: _col0 (type: bigint), _col1 (type: string), _col2 (type: bigint), _col4 (type: string), _col5 (type: string), _col6 (type: string), _col7 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col4, _col5, _col6, _col7
-                Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 2 Data size: 444 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
                   predicate: (_col7 <> 'RET') (type: boolean)
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 444 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col0 (type: bigint), _col1 (type: string), _col2 (type: bigint), CASE WHEN ((_col7 = 'A_INS')) THEN ('2015-11-21') ELSE ('2015-11-20') END (type: string), _col4 (type: string), _col5 (type: string), _col6 (type: string), _col7 (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
-                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 444 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 444 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
             Union
-              Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 2 Data size: 444 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: _col0 (type: bigint), _col1 (type: string), _col2 (type: bigint), _col4 (type: string), _col5 (type: string), _col6 (type: string), _col7 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col4, _col5, _col6, _col7
-                Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 2 Data size: 444 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
                   predicate: (_col7 <> 'RET') (type: boolean)
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 444 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col0 (type: bigint), _col1 (type: string), _col2 (type: bigint), CASE WHEN ((_col7 = 'A_INS')) THEN ('2015-11-21') ELSE ('2015-11-20') END (type: string), _col4 (type: string), _col5 (type: string), _col6 (type: string), _col7 (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
-                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 444 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 444 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1030,52 +1068,56 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: ttest1
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            filterExpr: (ts1 = '2015-11-20') (type: boolean)
+            Statistics: Num rows: 1 Data size: 294 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (ts1 = '2015-11-20') (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 294 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: id1 (type: bigint), '2015-11-20' (type: string), sts (type: string), at1 (type: bigint), reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(id1)) (type: string), reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(at1)) (type: string)
+                expressions: id1 (type: bigint), '2015-11-20' (type: string), sts (type: string), at1 (type: bigint), reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(CAST( id1 AS STRING))) (type: string), reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(CAST( at1 AS STRING))) (type: string)
                 outputColumnNames: _col0, _col1, _col6, _col7, _col8, _col9
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 294 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col8 (type: string)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col8 (type: string)
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 294 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: bigint), _col1 (type: string), _col6 (type: string), _col7 (type: bigint), _col9 (type: string)
           TableScan
             alias: ttest2
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            filterExpr: '2015-11-20' BETWEEN dt1 AND dt2 (type: boolean)
+            Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: '2015-11-20' BETWEEN dt1 AND dt2 (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ts1 (type: string), khash (type: string), rhash (type: string)
                 outputColumnNames: _col1, _col8, _col9
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col8 (type: string)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col8 (type: string)
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: string), _col9 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Outer Join 0 to 1
+               Full Outer Join 0 to 1
           keys:
             0 _col8 (type: string)
             1 _col8 (type: string)
           outputColumnNames: _col0, _col1, _col6, _col7, _col8, _col9, _col11, _col18, _col19
-          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 1 Data size: 323 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
-            predicate: (((NVL(_col8,-1) <> NVL(_col18,-1)) or (NVL(_col9,-1) <> NVL(_col19,-1))) and _col8 is not null) (type: boolean)
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            predicate: (((COALESCE(_col8,-1) <> COALESCE(_col18,-1)) or (COALESCE(_col9,-1) <> COALESCE(_col19,-1))) and _col8 is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 323 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col0 (type: bigint), _col6 (type: string), _col7 (type: bigint), '2099-12-31' (type: string), _col8 (type: string), _col9 (type: string), CASE WHEN ((_col18 is not null and _col8 is null and (_col11 <= _col1))) THEN ('DEL') WHEN (((_col18 is null and _col8 is not null) or ((_col18 = _col8) and (_col19 <> _col9)))) THEN ('INS') ELSE ('NA') END (type: string)
               outputColumnNames: _col0, _col1, _col2, _col4, _col5, _col6, _col7
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 323 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
                 table:
@@ -1177,6 +1219,9 @@ PREHOOK: query: explain SELECT
    ) A2
    where a2.flag <> 'RET'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ttest1
+PREHOOK: Input: default@ttest2
+#### A masked pattern was here ####
 POSTHOOK: query: explain SELECT
   A2.id1, A2.sts,A2.at1,
     CASE WHEN FLAG = 'A_INS' THEN cast(date_add('2015-11-20', 1) as string) ELSE '2015-11-20' END dt1
@@ -1265,6 +1310,9 @@ POSTHOOK: query: explain SELECT
    ) A2
    where a2.flag <> 'RET'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ttest1
+POSTHOOK: Input: default@ttest2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-4
@@ -1277,52 +1325,54 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: ttest1
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (ts1 = '2015-11-20') (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(id1)) (type: string), reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(at1)) (type: string)
+                expressions: reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(CAST( id1 AS STRING))) (type: string), reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(CAST( at1 AS STRING))) (type: string)
                 outputColumnNames: _col8, _col9
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col8 (type: string)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col8 (type: string)
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col9 (type: string)
           TableScan
             alias: ttest2
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 936 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: '2015-11-20' BETWEEN dt1 AND dt2 (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 936 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: id1 (type: bigint), dt1 (type: string), dt2 (type: string), sts (type: string), at1 (type: bigint), khash (type: string), rhash (type: string)
                 outputColumnNames: _col0, _col2, _col3, _col6, _col7, _col8, _col9
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 936 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col8 (type: string)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col8 (type: string)
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 936 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: bigint), _col2 (type: string), _col3 (type: string), _col6 (type: string), _col7 (type: bigint), _col9 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Outer Join 0 to 1
+               Full Outer Join 0 to 1
           keys:
             0 _col8 (type: string)
             1 _col8 (type: string)
           outputColumnNames: _col8, _col9, _col10, _col12, _col13, _col16, _col17, _col18, _col19
-          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 1 Data size: 121 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
-            predicate: (((NVL(_col8,-1) <> NVL(_col18,-1)) or (NVL(_col9,-1) <> NVL(_col19,-1))) and _col18 is not null) (type: boolean)
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            predicate: (((COALESCE(_col8,-1) <> COALESCE(_col18,-1)) or (COALESCE(_col9,-1) <> COALESCE(_col19,-1))) and _col18 is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 121 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col10 (type: bigint), _col16 (type: string), _col17 (type: bigint), _col13 (type: string), _col18 (type: string), _col19 (type: string), CASE WHEN ((_col18 is not null and _col8 is null and (_col12 >= '2016-02-05'))) THEN ('DEL') WHEN ((_col18 is not null and _col8 is null and (_col12 <= '2016-02-05'))) THEN ('RET') WHEN (((_col18 = _col8) and (_col19 <> _col9))) THEN ('A_INS') ELSE ('NA') END (type: string)
               outputColumnNames: _col0, _col1, _col2, _col4, _col5, _col6, _col7
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 121 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
                 table:
@@ -1335,42 +1385,42 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             Union
-              Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 2 Data size: 444 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: _col0 (type: bigint), _col1 (type: string), _col2 (type: bigint), _col4 (type: string), _col5 (type: string), _col6 (type: string), _col7 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col4, _col5, _col6, _col7
-                Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 2 Data size: 444 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
                   predicate: (_col7 <> 'RET') (type: boolean)
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 444 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col0 (type: bigint), _col1 (type: string), _col2 (type: bigint), CASE WHEN ((_col7 = 'A_INS')) THEN ('2015-11-21') ELSE ('2015-11-20') END (type: string), _col4 (type: string), _col5 (type: string), _col6 (type: string), _col7 (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
-                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 444 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 444 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
             Union
-              Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 2 Data size: 444 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: _col0 (type: bigint), _col1 (type: string), _col2 (type: bigint), _col4 (type: string), _col5 (type: string), _col6 (type: string), _col7 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col4, _col5, _col6, _col7
-                Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 2 Data size: 444 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
                   predicate: (_col7 <> 'RET') (type: boolean)
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 444 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col0 (type: bigint), _col1 (type: string), _col2 (type: bigint), CASE WHEN ((_col7 = 'A_INS')) THEN ('2015-11-21') ELSE ('2015-11-20') END (type: string), _col4 (type: string), _col5 (type: string), _col6 (type: string), _col7 (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
-                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 444 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 444 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1381,52 +1431,54 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: ttest1
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 294 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (ts1 = '2015-11-20') (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 294 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: id1 (type: bigint), '2015-11-20' (type: string), sts (type: string), at1 (type: bigint), reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(id1)) (type: string), reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(at1)) (type: string)
+                expressions: id1 (type: bigint), '2015-11-20' (type: string), sts (type: string), at1 (type: bigint), reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(CAST( id1 AS STRING))) (type: string), reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(CAST( at1 AS STRING))) (type: string)
                 outputColumnNames: _col0, _col1, _col6, _col7, _col8, _col9
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 294 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col8 (type: string)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col8 (type: string)
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 294 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: bigint), _col1 (type: string), _col6 (type: string), _col7 (type: bigint), _col9 (type: string)
           TableScan
             alias: ttest2
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: '2015-11-20' BETWEEN dt1 AND dt2 (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ts1 (type: string), khash (type: string), rhash (type: string)
                 outputColumnNames: _col1, _col8, _col9
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col8 (type: string)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col8 (type: string)
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: string), _col9 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Outer Join 0 to 1
+               Full Outer Join 0 to 1
           keys:
             0 _col8 (type: string)
             1 _col8 (type: string)
           outputColumnNames: _col0, _col1, _col6, _col7, _col8, _col9, _col11, _col18, _col19
-          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 1 Data size: 323 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
-            predicate: (((NVL(_col8,-1) <> NVL(_col18,-1)) or (NVL(_col9,-1) <> NVL(_col19,-1))) and _col8 is not null) (type: boolean)
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            predicate: (((COALESCE(_col8,-1) <> COALESCE(_col18,-1)) or (COALESCE(_col9,-1) <> COALESCE(_col19,-1))) and _col8 is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 323 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col0 (type: bigint), _col6 (type: string), _col7 (type: bigint), '2099-12-31' (type: string), _col8 (type: string), _col9 (type: string), CASE WHEN ((_col18 is not null and _col8 is null and (_col11 <= _col1))) THEN ('DEL') WHEN (((_col18 is null and _col8 is not null) or ((_col18 = _col8) and (_col19 <> _col9)))) THEN ('INS') ELSE ('NA') END (type: string)
               outputColumnNames: _col0, _col1, _col2, _col4, _col5, _col6, _col7
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 323 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
                 table:
@@ -1528,6 +1580,9 @@ PREHOOK: query: explain SELECT
    ) A2
    where a2.flag <> 'RET'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ttest1
+PREHOOK: Input: default@ttest2
+#### A masked pattern was here ####
 POSTHOOK: query: explain SELECT
   A2.id1, A2.sts,A2.at1,
     CASE WHEN FLAG = 'A_INS' THEN cast(date_add('2015-11-20', 1) as string) ELSE '2015-11-20' END dt1
@@ -1616,6 +1671,9 @@ POSTHOOK: query: explain SELECT
    ) A2
    where a2.flag <> 'RET'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ttest1
+POSTHOOK: Input: default@ttest2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-4
@@ -1628,35 +1686,40 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: ttest1
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((ts1 = '2015-11-20') and reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(id1)) is not null) (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              predicate: (ts1 = '2015-11-20') (type: boolean)
+              Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(id1)) (type: string), reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(at1)) (type: string)
+                expressions: reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(CAST( id1 AS STRING))) (type: string), reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(CAST( at1 AS STRING))) (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col0 (type: string)
-                  sort order: +
-                  Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                  value expressions: _col1 (type: string)
+                Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                Filter Operator
+                  predicate: _col0 is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string)
+                    null sort order: z
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: string)
+                    Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col1 (type: string)
           TableScan
             alias: ttest2
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 936 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ('2015-11-20' BETWEEN dt1 AND dt2 and khash is not null) (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 936 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: id1 (type: bigint), dt1 (type: string), dt2 (type: string), sts (type: string), at1 (type: bigint), khash (type: string), rhash (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 936 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col5 (type: string)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col5 (type: string)
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 936 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: bigint), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: bigint), _col6 (type: string)
       Reduce Operator Tree:
         Join Operator
@@ -1666,14 +1729,14 @@ STAGE PLANS:
             0 _col0 (type: string)
             1 _col5 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 1 Data size: 220 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
-            predicate: (((NVL(_col0,-1) <> NVL(_col7,-1)) or (NVL(_col1,-1) <> NVL(_col8,-1))) and (CASE WHEN ((_col7 is not null and _col0 is null and (_col3 >= '2016-02-05'))) THEN ('DEL') WHEN ((_col7 is not null and _col0 is null and (_col3 <= '2016-02-05'))) THEN ('RET') WHEN (((_col7 = _col0) and (_col8 <> _col1))) THEN ('A_INS') ELSE ('NA') END <> 'RET')) (type: boolean)
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            predicate: (((_col0 is null and (_col3 >= '2016-02-05')) or (_col0 is null and (_col3 <= '2016-02-05')) is not true) and ((COALESCE(_col0,-1) <> COALESCE(_col7,-1)) or (COALESCE(_col1,-1) <> COALESCE(_col8,-1)))) (type: boolean)
+            Statistics: Num rows: 1 Data size: 220 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: _col2 (type: bigint), _col5 (type: string), _col6 (type: bigint), _col4 (type: string), _col7 (type: string), _col8 (type: string), CASE WHEN ((_col7 is not null and _col0 is null and (_col3 >= '2016-02-05'))) THEN ('DEL') WHEN ((_col7 is not null and _col0 is null and (_col3 <= '2016-02-05'))) THEN ('RET') WHEN (((_col7 = _col0) and (_col8 <> _col1))) THEN ('A_INS') ELSE ('NA') END (type: string)
+              expressions: _col2 (type: bigint), _col5 (type: string), _col6 (type: bigint), _col4 (type: string), _col7 (type: string), _col8 (type: string), CASE WHEN ((_col0 is null and (_col3 >= '2016-02-05') and _col7 is not null)) THEN ('DEL') WHEN ((_col0 is null and (_col3 <= '2016-02-05') and _col7 is not null)) THEN ('RET') WHEN (((_col7 = _col0) and (_col8 <> _col1))) THEN ('A_INS') ELSE ('NA') END (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 220 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
                 table:
@@ -1686,28 +1749,28 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             Union
-              Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 2 Data size: 642 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: _col0 (type: bigint), _col1 (type: string), _col2 (type: bigint), CASE WHEN ((_col6 = 'A_INS')) THEN ('2015-11-21') ELSE ('2015-11-20') END (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string), _col6 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
-                Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 2 Data size: 642 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 642 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
             Union
-              Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 2 Data size: 642 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: _col0 (type: bigint), _col1 (type: string), _col2 (type: bigint), CASE WHEN ((_col6 = 'A_INS')) THEN ('2015-11-21') ELSE ('2015-11-20') END (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string), _col6 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
-                Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 2 Data size: 642 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 642 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1718,35 +1781,40 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: ttest1
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 384 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((ts1 = '2015-11-20') and reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(id1)) is not null) (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              predicate: (ts1 = '2015-11-20') (type: boolean)
+              Statistics: Num rows: 1 Data size: 384 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: id1 (type: bigint), sts (type: string), at1 (type: bigint), reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(id1)) (type: string), reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(at1)) (type: string)
+                expressions: id1 (type: bigint), sts (type: string), at1 (type: bigint), reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(CAST( id1 AS STRING))) (type: string), reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(CAST( at1 AS STRING))) (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col3 (type: string)
-                  sort order: +
-                  Map-reduce partition columns: _col3 (type: string)
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                  value expressions: _col0 (type: bigint), _col1 (type: string), _col2 (type: bigint), _col4 (type: string)
+                Statistics: Num rows: 1 Data size: 384 Basic stats: COMPLETE Column stats: NONE
+                Filter Operator
+                  predicate: _col3 is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 384 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col3 (type: string)
+                    null sort order: z
+                    sort order: +
+                    Map-reduce partition columns: _col3 (type: string)
+                    Statistics: Num rows: 1 Data size: 384 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: bigint), _col1 (type: string), _col2 (type: bigint), _col4 (type: string)
           TableScan
             alias: ttest2
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: '2015-11-20' BETWEEN dt1 AND dt2 (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              predicate: ('2015-11-20' BETWEEN dt1 AND dt2 and khash is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ts1 (type: string), khash (type: string), rhash (type: string)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col1 (type: string)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col1 (type: string)
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: string), _col2 (type: string)
       Reduce Operator Tree:
         Join Operator
@@ -1756,14 +1824,14 @@ STAGE PLANS:
             0 _col3 (type: string)
             1 _col1 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
-          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 1 Data size: 422 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
-            predicate: (((NVL(_col3,-1) <> NVL(_col6,-1)) or (NVL(_col4,-1) <> NVL(_col7,-1))) and (CASE WHEN ((_col6 is not null and _col3 is null and (_col5 <= '2015-11-20'))) THEN ('DEL') WHEN (((_col6 is null and _col3 is not null) or ((_col6 = _col3) and (_col7 <> _col4)))) THEN ('INS') ELSE ('NA') END <> 'RET')) (type: boolean)
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            predicate: ((COALESCE(_col3,-1) <> COALESCE(_col6,-1)) or (COALESCE(_col4,-1) <> COALESCE(_col7,-1))) (type: boolean)
+            Statistics: Num rows: 1 Data size: 422 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: _col0 (type: bigint), _col1 (type: string), _col2 (type: bigint), '2099-12-31' (type: string), _col3 (type: string), _col4 (type: string), CASE WHEN ((_col6 is not null and _col3 is null and (_col5 <= '2015-11-20'))) THEN ('DEL') WHEN (((_col6 is null and _col3 is not null) or ((_col6 = _col3) and (_col7 <> _col4)))) THEN ('INS') ELSE ('NA') END (type: string)
+              expressions: _col0 (type: bigint), _col1 (type: string), _col2 (type: bigint), '2099-12-31' (type: string), _col3 (type: string), _col4 (type: string), CASE WHEN ((_col3 is null and (_col5 <= '2015-11-20') and _col6 is not null)) THEN ('DEL') WHEN (((_col6 is null and _col3 is not null) or ((_col6 = _col3) and (_col7 <> _col4)))) THEN ('INS') ELSE ('NA') END (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 422 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
                 table:

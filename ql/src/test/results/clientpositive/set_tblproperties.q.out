@@ -1,0 +1,102 @@
+PREHOOK: query: CREATE TABLE t (a INT)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t
+POSTHOOK: query: CREATE TABLE t (a INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t
+PREHOOK: query: EXPLAIN ALTER TABLE t SET TBLPROPERTIES('a'='x', 'b'='y')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@t
+PREHOOK: Output: default@t
+POSTHOOK: query: EXPLAIN ALTER TABLE t SET TBLPROPERTIES('a'='x', 'b'='y')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@t
+POSTHOOK: Output: default@t
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Set Properties
+      table name: default.t
+      properties:
+        a x
+        b y
+
+PREHOOK: query: ALTER TABLE t SET TBLPROPERTIES('a'='x', 'b'='y')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@t
+PREHOOK: Output: default@t
+POSTHOOK: query: ALTER TABLE t SET TBLPROPERTIES('a'='x', 'b'='y')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@t
+POSTHOOK: Output: default@t
+PREHOOK: query: SHOW CREATE TABLE t
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@t
+POSTHOOK: query: SHOW CREATE TABLE t
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@t
+CREATE TABLE `t`(
+  `a` int)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'a'='x', 
+  'b'='y', 
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+PREHOOK: query: EXPLAIN ALTER TABLE t UNSET TBLPROPERTIES('a', 'b')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@t
+PREHOOK: Output: default@t
+POSTHOOK: query: EXPLAIN ALTER TABLE t UNSET TBLPROPERTIES('a', 'b')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@t
+POSTHOOK: Output: default@t
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Unset Properties
+      table name: default.t
+      properties:
+        a 
+        b 
+
+PREHOOK: query: ALTER TABLE t UNSET TBLPROPERTIES('a', 'b')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@t
+PREHOOK: Output: default@t
+POSTHOOK: query: ALTER TABLE t UNSET TBLPROPERTIES('a', 'b')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@t
+POSTHOOK: Output: default@t
+PREHOOK: query: SHOW CREATE TABLE t
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@t
+POSTHOOK: query: SHOW CREATE TABLE t
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@t
+CREATE TABLE `t`(
+  `a` int)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####

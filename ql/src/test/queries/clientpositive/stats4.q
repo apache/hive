@@ -1,3 +1,4 @@
+--! qt:dataset:srcpart
 set datanucleus.cache.collections=false;
 set hive.stats.autogather=true;
 
@@ -11,7 +12,6 @@ drop table nzhang_part2;
 create table if not exists nzhang_part1 like srcpart;
 create table if not exists nzhang_part2 like srcpart;
 
-set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.exec.dynamic.partition=true;
 
 explain

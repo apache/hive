@@ -1,6 +1,6 @@
 set hive.mapred.mode=nonstrict;
-DROP TABLE parquet_types_staging;
-DROP TABLE parquet_types;
+DROP TABLE parquet_types_staging_n1;
+DROP TABLE parquet_types_n0;
 
 set hive.vectorized.execution.enabled=true;
 set hive.vectorized.execution.reduce.enabled=true;
@@ -9,7 +9,7 @@ set hive.vectorized.use.vector.serde.deserialize=true;
 set hive.vectorized.execution.reduce.groupby.enabled = true;
 set hive.llap.cache.allow.synthetic.fileid=true;
 
-CREATE TABLE parquet_types_staging (
+CREATE TABLE parquet_types_staging_n1 (
   cint int,
   ctinyint tinyint,
   csmallint smallint,
@@ -29,7 +29,7 @@ FIELDS TERMINATED BY '|'
 COLLECTION ITEMS TERMINATED BY ','
 MAP KEYS TERMINATED BY ':';
 
-CREATE TABLE parquet_types (
+CREATE TABLE parquet_types_n0 (
   cint int,
   ctinyint tinyint,
   csmallint smallint,
@@ -46,13 +46,13 @@ CREATE TABLE parquet_types (
   d date
 ) STORED AS PARQUET;
 
-LOAD DATA LOCAL INPATH '../../data/files/parquet_types.txt' OVERWRITE INTO TABLE parquet_types_staging;
+LOAD DATA LOCAL INPATH '../../data/files/parquet_types.txt' OVERWRITE INTO TABLE parquet_types_staging_n1;
 
-SELECT * FROM parquet_types_staging;
+SELECT * FROM parquet_types_staging_n1;
 
-INSERT OVERWRITE TABLE parquet_types
+INSERT OVERWRITE TABLE parquet_types_n0
 SELECT cint, ctinyint, csmallint, cfloat, cdouble, cstring1, t, cchar, cvarchar,
-unhex(cbinary), m1, l1, st1, d FROM parquet_types_staging;
+unhex(cbinary), m1, l1, st1, d FROM parquet_types_staging_n1;
 
 -- test types in group by
 
@@ -62,7 +62,7 @@ EXPLAIN SELECT ctinyint,
   COUNT(cstring1),
   ROUND(AVG(cfloat), 5),
   ROUND(STDDEV_POP(cdouble),5)
-FROM parquet_types
+FROM parquet_types_n0
 GROUP BY ctinyint
 ORDER BY ctinyint
 ;
@@ -73,25 +73,25 @@ SELECT ctinyint,
   COUNT(cstring1),
   ROUND(AVG(cfloat), 5),
   ROUND(STDDEV_POP(cdouble),5)
-FROM parquet_types
+FROM parquet_types_n0
 GROUP BY ctinyint
 ORDER BY ctinyint
 ;
 
-EXPLAIN SELECT cfloat, count(*) FROM parquet_types GROUP BY cfloat ORDER BY cfloat;
-SELECT cfloat, count(*) FROM parquet_types GROUP BY cfloat ORDER BY cfloat;
+EXPLAIN SELECT cfloat, count(*) FROM parquet_types_n0 GROUP BY cfloat ORDER BY cfloat;
+SELECT cfloat, count(*) FROM parquet_types_n0 GROUP BY cfloat ORDER BY cfloat;
 
-EXPLAIN SELECT cchar, count(*) FROM parquet_types GROUP BY cchar ORDER BY cchar;
-SELECT cchar, count(*) FROM parquet_types GROUP BY cchar ORDER BY cchar;
+EXPLAIN SELECT cchar, count(*) FROM parquet_types_n0 GROUP BY cchar ORDER BY cchar;
+SELECT cchar, count(*) FROM parquet_types_n0 GROUP BY cchar ORDER BY cchar;
 
-EXPLAIN SELECT cvarchar, count(*) FROM parquet_types GROUP BY cvarchar ORDER BY cvarchar;
-SELECT cvarchar, count(*) FROM parquet_types GROUP BY cvarchar ORDER BY cvarchar;
+EXPLAIN SELECT cvarchar, count(*) FROM parquet_types_n0 GROUP BY cvarchar ORDER BY cvarchar;
+SELECT cvarchar, count(*) FROM parquet_types_n0 GROUP BY cvarchar ORDER BY cvarchar;
 
-EXPLAIN SELECT cstring1, count(*) FROM parquet_types GROUP BY cstring1 ORDER BY cstring1;
-SELECT cstring1, count(*) FROM parquet_types GROUP BY cstring1 ORDER BY cstring1;
+EXPLAIN SELECT cstring1, count(*) FROM parquet_types_n0 GROUP BY cstring1 ORDER BY cstring1;
+SELECT cstring1, count(*) FROM parquet_types_n0 GROUP BY cstring1 ORDER BY cstring1;
 
-EXPLAIN SELECT t, count(*) FROM parquet_types GROUP BY t ORDER BY t;
-SELECT t, count(*) FROM parquet_types GROUP BY t ORDER BY t;
+EXPLAIN SELECT t, count(*) FROM parquet_types_n0 GROUP BY t ORDER BY t;
+SELECT t, count(*) FROM parquet_types_n0 GROUP BY t ORDER BY t;
 
-EXPLAIN SELECT hex(cbinary), count(*) FROM parquet_types GROUP BY cbinary;
-SELECT hex(cbinary), count(*) FROM parquet_types GROUP BY cbinary;
+EXPLAIN SELECT hex(cbinary), count(*) FROM parquet_types_n0 GROUP BY cbinary;
+SELECT hex(cbinary), count(*) FROM parquet_types_n0 GROUP BY cbinary;

@@ -5,10 +5,10 @@ set hive.fetch.task.conversion=none;
 
 -- SORT_QUERY_RESULTS
 
-create table count_case_groupby (key string, bool boolean) STORED AS orc;
-insert into table count_case_groupby values ('key1', true),('key2', false),('key3', NULL),('key4', false),('key5',NULL);
+create table count_case_groupby_n0 (key string, bool boolean) STORED AS orc;
+insert into table count_case_groupby_n0 values ('key1', true),('key2', false),('key3', NULL),('key4', false),('key5',NULL);
 
 explain vectorization expression
-SELECT key, COUNT(CASE WHEN bool THEN 1 WHEN NOT bool THEN 0 ELSE NULL END) AS cnt_bool0_ok FROM count_case_groupby GROUP BY key;
+SELECT key, COUNT(CASE WHEN bool THEN 1 WHEN NOT bool THEN 0 ELSE NULL END) AS cnt_bool0_ok FROM count_case_groupby_n0 GROUP BY key;
 
-SELECT key, COUNT(CASE WHEN bool THEN 1 WHEN NOT bool THEN 0 ELSE NULL END) AS cnt_bool0_ok FROM count_case_groupby GROUP BY key;
+SELECT key, COUNT(CASE WHEN bool THEN 1 WHEN NOT bool THEN 0 ELSE NULL END) AS cnt_bool0_ok FROM count_case_groupby_n0 GROUP BY key;

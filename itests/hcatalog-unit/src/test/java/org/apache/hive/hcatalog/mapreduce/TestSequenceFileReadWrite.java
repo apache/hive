@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -25,14 +25,16 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import org.junit.Ignore;
 import java.util.Iterator;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.ql.DriverFactory;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
@@ -47,7 +49,6 @@ import org.apache.hive.hcatalog.common.HCatUtil;
 import org.apache.hive.hcatalog.data.DefaultHCatRecord;
 import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
 import org.apache.hive.hcatalog.data.schema.HCatSchema;
-import org.apache.pig.ExecType;
 import org.apache.pig.PigServer;
 import org.apache.pig.data.Tuple;
 import org.junit.After;
@@ -59,7 +60,7 @@ public class TestSequenceFileReadWrite {
   private File dataDir;
   private String warehouseDir;
   private String inputFileName;
-  private Driver driver;
+  private IDriver driver;
   private PigServer server;
   private String[] input;
   private HiveConf hiveConf;
@@ -79,7 +80,7 @@ public class TestSequenceFileReadWrite {
     hiveConf
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
-    driver = new Driver(hiveConf);
+    driver = DriverFactory.newDriver(hiveConf);
     SessionState.start(new CliSessionState(hiveConf));
 
     if(!(new File(warehouseDir).mkdirs())) {
@@ -94,7 +95,7 @@ public class TestSequenceFileReadWrite {
       input[i] = i + "," + col1 + "," + col2;
     }
     HcatTestUtils.createTestDataFile(inputFileName, input);
-    server = new PigServer(ExecType.LOCAL);
+    server = HCatBaseTest.createPigServer(false);
   }
   @After
   public void teardown() throws IOException {
@@ -107,8 +108,7 @@ public class TestSequenceFileReadWrite {
   public void testSequenceTableWriteRead() throws Exception {
     String createTable = "CREATE TABLE demo_table(a0 int, a1 String, a2 String) STORED AS SEQUENCEFILE";
     driver.run("drop table demo_table");
-    int retCode1 = driver.run(createTable).getResponseCode();
-    assertTrue(retCode1 == 0);
+    driver.run(createTable);
 
     server.setBatchOn();
     server.registerQuery("A = load '"
@@ -135,8 +135,7 @@ public class TestSequenceFileReadWrite {
   public void testTextTableWriteRead() throws Exception {
     String createTable = "CREATE TABLE demo_table_1(a0 int, a1 String, a2 String) STORED AS TEXTFILE";
     driver.run("drop table demo_table_1");
-    int retCode1 = driver.run(createTable).getResponseCode();
-    assertTrue(retCode1 == 0);
+    driver.run(createTable);
 
     server.setBatchOn();
     server.registerQuery("A = load '"
@@ -159,12 +158,12 @@ public class TestSequenceFileReadWrite {
     assertEquals(input.length, numTuplesRead);
   }
 
+  @Ignore("Disabling this test. Check HIVE-19506 for more details")
   @Test
   public void testSequenceTableWriteReadMR() throws Exception {
     String createTable = "CREATE TABLE demo_table_2(a0 int, a1 String, a2 String) STORED AS SEQUENCEFILE";
     driver.run("drop table demo_table_2");
-    int retCode1 = driver.run(createTable).getResponseCode();
-    assertTrue(retCode1 == 0);
+    driver.run(createTable);
 
     Configuration conf = new Configuration();
     conf.set(HCatConstants.HCAT_KEY_HIVE_CONF,
@@ -179,7 +178,7 @@ public class TestSequenceFileReadWrite {
     TextInputFormat.setInputPaths(job, inputFileName);
 
     HCatOutputFormat.setOutput(job, OutputJobInfo.create(
-        MetaStoreUtils.DEFAULT_DATABASE_NAME, "demo_table_2", null));
+        Warehouse.DEFAULT_DATABASE_NAME, "demo_table_2", null));
     job.setOutputFormatClass(HCatOutputFormat.class);
     HCatOutputFormat.setSchema(job, getSchema());
     job.setNumReduceTasks(0);
@@ -205,12 +204,12 @@ public class TestSequenceFileReadWrite {
     assertEquals(input.length, numTuplesRead);
   }
 
+  @Ignore("Disabling this test. Check HIVE-19506 for more details")
   @Test
   public void testTextTableWriteReadMR() throws Exception {
     String createTable = "CREATE TABLE demo_table_3(a0 int, a1 String, a2 String) STORED AS TEXTFILE";
     driver.run("drop table demo_table_3");
-    int retCode1 = driver.run(createTable).getResponseCode();
-    assertTrue(retCode1 == 0);
+    driver.run(createTable);
 
     Configuration conf = new Configuration();
     conf.set(HCatConstants.HCAT_KEY_HIVE_CONF,
@@ -226,7 +225,7 @@ public class TestSequenceFileReadWrite {
     TextInputFormat.setInputPaths(job, inputFileName);
 
     HCatOutputFormat.setOutput(job, OutputJobInfo.create(
-        MetaStoreUtils.DEFAULT_DATABASE_NAME, "demo_table_3", null));
+        Warehouse.DEFAULT_DATABASE_NAME, "demo_table_3", null));
     job.setOutputFormatClass(HCatOutputFormat.class);
     HCatOutputFormat.setSchema(job, getSchema());
     assertTrue(job.waitForCompletion(true));

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,8 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.reloperators;
 
-import java.util.Set;
-
+import com.google.common.collect.Sets;
 import org.apache.calcite.sql.SqlFunction;
 import org.apache.calcite.sql.SqlFunctionCategory;
 import org.apache.calcite.sql.SqlKind;
@@ -26,7 +25,7 @@ import org.apache.calcite.sql.type.OperandTypes;
 import org.apache.calcite.sql.type.ReturnTypes;
 import org.apache.calcite.sql.type.SqlTypeTransforms;
 
-import com.google.common.collect.Sets;
+import java.util.Set;
 
 public class HiveExtractDate extends SqlFunction {
 
@@ -43,7 +42,7 @@ public class HiveExtractDate extends SqlFunction {
           Sets.newHashSet(YEAR, QUARTER, MONTH, WEEK, DAY, HOUR, MINUTE, SECOND);
 
   private HiveExtractDate(String name) {
-    super(name, SqlKind.EXTRACT, 
+    super(name, SqlKind.EXTRACT,
        ReturnTypes.cascade(ReturnTypes.INTEGER, SqlTypeTransforms.FORCE_NULLABLE), null,
        OperandTypes.INTERVALINTERVAL_INTERVALDATETIME,
        SqlFunctionCategory.SYSTEM);

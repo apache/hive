@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -32,6 +32,11 @@ import org.junit.Test;
 public class TestHplsqlOffline {
 
   private final ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+  @Test
+  public void testCreateTable() throws Exception {
+    run("create_table");
+  }
 
   @Test
   public void testCreateTableDb2() throws Exception {

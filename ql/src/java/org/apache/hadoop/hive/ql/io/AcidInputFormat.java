@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.io;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
@@ -56,9 +56,9 @@ import java.util.List;
  * online transactions systems.
  * <p>
  * The design changes the layout of data within a partition from being in files
- * at the top level to having base and delta directories. Each write operation
- * will be assigned a sequential global transaction id and each read operation
- * will request the list of valid transaction ids.
+ * at the top level to having base and delta directories. Each write operation in a table
+ * will be assigned a sequential table write id and each read operation
+ * will request the list of valid transactions/write ids.
  * <ul>
  *   <li>Old format -
  *     <pre>
@@ -66,28 +66,28 @@ import java.util.List;
  *     </pre></li>
  *   <li>New format -
  *     <pre>
- *        $partition/base_$tid/$bucket
- *                   delta_$tid_$tid_$stid/$bucket
+ *        $partition/base_$wid/$bucket
+ *                   delta_$wid_$wid_$stid/$bucket
  *     </pre></li>
  * </ul>
  * <p>
  * With each new write operation a new delta directory is created with events
  * that correspond to inserted, updated, or deleted rows. Each of the files is
- * stored sorted by the original transaction id (ascending), bucket (ascending),
- * row id (ascending), and current transaction id (descending). Thus the files
+ * stored sorted by the original write id (ascending), bucket (ascending),
+ * row id (ascending), and current write id (descending). Thus the files
  * can be merged by advancing through the files in parallel.
  * The stid is unique id (within the transaction) of the statement that created
  * this delta file.
  * <p>
  * The base files include all transactions from the beginning of time
- * (transaction id 0) to the transaction in the directory name. Delta
- * directories include transactions (inclusive) between the two transaction ids.
+ * (write id 0) to the write id in the directory name. Delta
+ * directories include transactions (inclusive) between the two write ids.
  * <p>
- * Because read operations get the list of valid transactions when they start,
+ * Because read operations get the list of valid transactions/write ids when they start,
  * all reads are performed on that snapshot, regardless of any transactions that
  * are committed afterwards.
  * <p>
- * The base and the delta directories have the transaction ids so that major
+ * The base and the delta directories have the write ids so that major
  * (merge all deltas into the base) and minor (merge several deltas together)
  * compactions can happen while readers continue their processing.
  * <p>
@@ -109,57 +109,76 @@ public interface AcidInputFormat<KEY extends WritableComparable, VALUE>
     extends InputFormat<KEY, VALUE>, InputFormatChecker {
 
   static final class DeltaMetaData implements Writable {
-    private long minTxnId;
-    private long maxTxnId;
+    private long minWriteId;
+    private long maxWriteId;
     private List<Integer> stmtIds;
-    //would be useful to have enum for Type: insert/delete/load data
+    /**
+     * {@link AcidUtils#?}
+     */
+    private long visibilityTxnId;
 
     public DeltaMetaData() {
-      this(0,0,new ArrayList<Integer>());
+      this(0,0,new ArrayList<Integer>(), 0);
     }
     /**
      * @param stmtIds delta dir suffixes when a single txn writes > 1 delta in the same partition
+     * @param visibilityTxnId maybe 0, if the dir name didn't have it.  txnid:0 is always visible
      */
-    DeltaMetaData(long minTxnId, long maxTxnId, List<Integer> stmtIds) {
-      this.minTxnId = minTxnId;
-      this.maxTxnId = maxTxnId;
+    DeltaMetaData(long minWriteId, long maxWriteId, List<Integer> stmtIds, long visibilityTxnId) {
+      this.minWriteId = minWriteId;
+      this.maxWriteId = maxWriteId;
       if (stmtIds == null) {
         throw new IllegalArgumentException("stmtIds == null");
       }
       this.stmtIds = stmtIds;
+      this.visibilityTxnId = visibilityTxnId;
     }
-    long getMinTxnId() {
-      return minTxnId;
+    long getMinWriteId() {
+      return minWriteId;
     }
-    long getMaxTxnId() {
-      return maxTxnId;
+    long getMaxWriteId() {
+      return maxWriteId;
     }
     List<Integer> getStmtIds() {
       return stmtIds;
     }
+    long getVisibilityTxnId() {
+      return visibilityTxnId;
+    }
     @Override
     public void write(DataOutput out) throws IOException {
-      out.writeLong(minTxnId);
-      out.writeLong(maxTxnId);
+      out.writeLong(minWriteId);
+      out.writeLong(maxWriteId);
       out.writeInt(stmtIds.size());
       for(Integer id : stmtIds) {
         out.writeInt(id);
       }
+      out.writeLong(visibilityTxnId);
     }
     @Override
     public void readFields(DataInput in) throws IOException {
-      minTxnId = in.readLong();
-      maxTxnId = in.readLong();
+      minWriteId = in.readLong();
+      maxWriteId = in.readLong();
       stmtIds.clear();
       int numStatements = in.readInt();
       for(int i = 0; i < numStatements; i++) {
         stmtIds.add(in.readInt());
       }
+      visibilityTxnId = in.readLong();
+    }
+    String getName() {
+      assert stmtIds.isEmpty() : "use getName(int)";
+      return AcidUtils.addVisibilitySuffix(AcidUtils
+          .deleteDeltaSubdir(minWriteId, maxWriteId), visibilityTxnId);
+    }
+    String getName(int stmtId) {
+      assert !stmtIds.isEmpty() : "use getName()";
+      return AcidUtils.addVisibilitySuffix(AcidUtils
+          .deleteDeltaSubdir(minWriteId, maxWriteId, stmtId), visibilityTxnId);
     }
     @Override
     public String toString() {
-      //? is Type - when implemented
-      return "Delta(?," + minTxnId + "," + maxTxnId + "," + stmtIds + ")";
+      return "Delta(?," + minWriteId + "," + maxWriteId + "," + stmtIds + "," + visibilityTxnId + ")";
     }
   }
   /**
@@ -204,7 +223,7 @@ public interface AcidInputFormat<KEY extends WritableComparable, VALUE>
   /**
    * Get a record reader that provides the user-facing view of the data after
    * it has been merged together. The key provides information about the
-   * record's identifier (transaction, bucket, record id).
+   * record's identifier (write id, bucket, record id).
    * @param split the split to read
    * @param options the options to read with
    * @return a record reader
@@ -227,7 +246,7 @@ public interface AcidInputFormat<KEY extends WritableComparable, VALUE>
    * @param collapseEvents should the ACID events be collapsed so that only
    *                       the last version of the row is kept.
    * @param bucket the bucket to read
-   * @param validTxnList the list of valid transactions to use
+   * @param validWriteIdList the list of valid write ids to use
    * @param baseDirectory the base directory to read or the root directory for
    *                      old style files
    * @param deltaDirectory a list of delta files to include in the merge
@@ -237,7 +256,7 @@ public interface AcidInputFormat<KEY extends WritableComparable, VALUE>
    RawReader<VALUE> getRawReader(Configuration conf,
                              boolean collapseEvents,
                              int bucket,
-                             ValidTxnList validTxnList,
+                             ValidWriteIdList validWriteIdList,
                              Path baseDirectory,
                              Path[] deltaDirectory
                              ) throws IOException;

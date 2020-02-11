@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -41,6 +41,7 @@ class BeeLineCompleter implements Completer {
     this.beeLine = beeLine;
   }
 
+  @Override
   public int complete(String buf, int pos, List cand) {
     if (buf != null && buf.startsWith(BeeLine.COMMAND_PREFIX)
         && !buf.startsWith(BeeLine.COMMAND_PREFIX + "all")

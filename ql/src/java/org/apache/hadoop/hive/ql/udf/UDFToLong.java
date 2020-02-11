@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastDecimalToLong;
@@ -28,7 +29,7 @@ import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.lazy.LazyLong;
 import org.apache.hadoop.hive.serde2.lazy.LazyUtils;
 import org.apache.hadoop.io.BooleanWritable;
@@ -44,6 +45,23 @@ import org.apache.hadoop.io.Text;
  */
 @VectorizedExpressions({CastTimestampToLong.class, CastDoubleToLong.class,
     CastDecimalToLong.class, CastStringToLong.class})
+@Description(
+        name = "bigint",
+        value = "_FUNC_(x) - converts it's parameter to _FUNC_",
+        extended =
+                "- x is NULL -> NULL\n" +
+                "- byte, short, integer, long, timestamp:\n" +
+                "  x fits into the type _FUNC_ -> integer part of x\n" +
+                "  undefined otherwise\n" +
+                "- boolean:\n" +
+                "  true  -> 1\n" +
+                "  false -> 0\n" +
+                "- string:\n" +
+                "  x is a valid integer -> x\n" +
+                "  NULL otherwise\n" +
+                "Example:\n "
+                + "  > SELECT _FUNC_(true);\n"
+                + "  1")
 public class UDFToLong extends UDF {
   private final LongWritable longWritable = new LongWritable();
 
@@ -184,7 +202,7 @@ public class UDFToLong extends UDF {
       }
       try {
         longWritable
-            .set(LazyLong.parseLong(i.getBytes(), 0, i.getLength(), 10));
+            .set(LazyLong.parseLong(i.getBytes(), 0, i.getLength(), 10, true));
         return longWritable;
       } catch (NumberFormatException e) {
         // MySQL returns 0 if the string is not a well-formed numeric value.
@@ -195,7 +213,7 @@ public class UDFToLong extends UDF {
     }
   }
 
-  public LongWritable evaluate(TimestampWritable i) {
+  public LongWritable evaluate(TimestampWritableV2 i) {
     if (i == null) {
       return null;
     } else {

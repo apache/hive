@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.hadoop.hive.common.ObjectPair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
@@ -120,7 +120,7 @@ public class PartitionPruner extends Transform {
 
     // It cannot contain a non-deterministic function
     if ((expr instanceof ExprNodeGenericFuncDesc)
-        && !FunctionRegistry.isDeterministic(((ExprNodeGenericFuncDesc) expr)
+        && !FunctionRegistry.isConsistentWithinQuery(((ExprNodeGenericFuncDesc) expr)
         .getGenericUDF())) {
       return false;
     }
@@ -177,7 +177,7 @@ public class PartitionPruner extends Transform {
       LOG.trace("prune Expression = " + (prunerExpr == null ? "" : prunerExpr));
     }
 
-    String key = tab.getDbName() + "." + tab.getTableName() + ";";
+    String key = tab.getFullyQualifiedName() + ";";
 
     if (!tab.isPartitioned()) {
       // If the table is not partitioned, return empty list.
@@ -203,17 +203,17 @@ public class PartitionPruner extends Transform {
     prunerExpr = removeNonPartCols(prunerExpr, extractPartColNames(tab), partColsUsedInFilter);
     // Remove all parts that are not partition columns. See javadoc for details.
     ExprNodeDesc compactExpr = compactExpr(prunerExpr.clone());
-    String oldFilter = prunerExpr.getExprString();
+    String oldFilter = prunerExpr.getExprString(true);
     if (compactExpr == null || isBooleanExpr(compactExpr)) {
       if (isFalseExpr(compactExpr)) {
-        return new PrunedPartitionList(tab, key + compactExpr.getExprString(),
+        return new PrunedPartitionList(tab, key + compactExpr.getExprString(true),
             new LinkedHashSet<Partition>(0), new ArrayList<String>(0), false);
       }
       // For null and true values, return every partition
       return getAllPartsFromCacheOrServer(tab, key, true, prunedPartitionsMap);
     }
 
-    String compactExprString = compactExpr.getExprString();
+    String compactExprString = compactExpr.getExprString(true);
     if (LOG.isDebugEnabled()) {
       LOG.debug("Filter w/ compacting: " + compactExprString
           + "; filter w/o compacting: " + oldFilter);
@@ -224,8 +224,8 @@ public class PartitionPruner extends Transform {
       return ppList;
     }
 
-    ppList = getPartitionsFromServer(tab, key, (ExprNodeGenericFuncDesc)compactExpr,
-        conf, alias, partColsUsedInFilter, oldFilter.equals(compactExpr.getExprString()));
+    ppList = getPartitionsFromServer(tab, key, (ExprNodeGenericFuncDesc) compactExpr,
+        conf, alias, partColsUsedInFilter, oldFilter.equals(compactExprString));
     prunedPartitionsMap.put(key, ppList);
     return ppList;
   }
@@ -280,11 +280,15 @@ public class PartitionPruner extends Transform {
       return null;
     }
     if (expr instanceof ExprNodeConstantDesc) {
-      if (((ExprNodeConstantDesc)expr).getValue() == null) return null;
+      if (((ExprNodeConstantDesc)expr).getValue() == null) {
+        return null;
+      }
       if (!isBooleanExpr(expr)) {
         throw new IllegalStateException("Unexpected non-boolean ExprNodeConstantDesc: "
-            + expr.getExprString());
+            + expr.getExprString(true));
       }
+      return expr;
+    } else if (expr instanceof ExprNodeColumnDesc) {
       return expr;
     } else if (expr instanceof ExprNodeGenericFuncDesc) {
       GenericUDF udf = ((ExprNodeGenericFuncDesc)expr).getGenericUDF();
@@ -310,7 +314,7 @@ public class PartitionPruner extends Transform {
             allTrue = false;
           }
         }
-        
+
         if (allTrue) {
           return new ExprNodeConstantDesc(Boolean.TRUE);
         }
@@ -359,7 +363,7 @@ public class PartitionPruner extends Transform {
 
       return expr;
     } else {
-      throw new IllegalStateException("Unexpected type of ExprNodeDesc: " + expr.getExprString());
+      throw new IllegalStateException("Unexpected type of ExprNodeDesc: " + expr.getExprString(true));
     }
   }
 
@@ -401,7 +405,7 @@ public class PartitionPruner extends Transform {
             Preconditions.checkArgument(expr.getTypeInfo().accept(TypeInfoFactory.booleanTypeInfo));
             other = new ExprNodeConstantDesc(expr.getTypeInfo(), true);
           } else {
-            // Functions like NVL, COALESCE, CASE can change a 
+            // Functions like NVL, COALESCE, CASE can change a
             // NULL introduced by a nonpart column removal into a non-null
             // and cause overaggressive prunning, missing data (incorrect result)
             return new ExprNodeConstantDesc(expr.getTypeInfo(), null);
@@ -547,7 +551,7 @@ public class PartitionPruner extends Transform {
       List<PrimitiveTypeInfo> partColumnTypeInfos, ExprNodeGenericFuncDesc prunerExpr,
       String defaultPartitionName, List<String> partNames) throws HiveException, MetaException {
     // Prepare the expression to filter on the columns.
-    ObjectPair<PrimitiveObjectInspector, ExprNodeEvaluator> handle =
+    Pair<PrimitiveObjectInspector, ExprNodeEvaluator> handle =
         PartExprEvalUtils.prepareExpr(prunerExpr, partColumnNames, partColumnTypeInfos);
 
     // Filter the name list. Removing elements one by one can be slow on e.g. ArrayList,

@@ -1,18 +1,26 @@
 /*
- * Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
 package org.apache.hadoop.hive.llap.registry.impl;
 
+import com.google.common.annotations.VisibleForTesting;
+import org.apache.curator.framework.recipes.atomic.AtomicValue;
+import org.apache.curator.framework.recipes.atomic.DistributedAtomicLong;
 import org.apache.hadoop.registry.client.binding.RegistryUtils;
 
 import com.google.common.collect.Sets;
@@ -53,7 +61,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class LlapZookeeperRegistryImpl
-    extends ZkRegistryBase<LlapServiceInstance> implements ServiceRegistry {
+    extends ZkRegistryBase<LlapServiceInstance> implements ServiceRegistry<LlapServiceInstance> {
   private static final Logger LOG = LoggerFactory.getLogger(LlapZookeeperRegistryImpl.class);
 
   /**
@@ -65,21 +73,24 @@ public class LlapZookeeperRegistryImpl
   private static final String IPC_LLAP = "llap";
   private static final String IPC_OUTPUTFORMAT = "llapoutputformat";
   private final static String NAMESPACE_PREFIX = "llap-";
-  private final static String USER_SCOPE_PATH_PREFIX = "user-";
-  private static final String WORKER_PREFIX = "worker-";
   private static final String SLOT_PREFIX = "slot-";
   private static final String SASL_LOGIN_CONTEXT_NAME = "LlapZooKeeperClient";
+  private static final String CONFIG_CHANGE_PATH = "config-change";
+  private static final String CONFIG_CHANGE_NODE = "window-end";
 
 
   private SlotZnode slotZnode;
+  private ServiceRecord daemonZkRecord;
 
   // to be used by clients of ServiceRegistry TODO: this is unnecessary
   private DynamicServiceInstanceSet instances;
 
+  private DistributedAtomicLong lockWindowEnd;
+
   public LlapZookeeperRegistryImpl(String instanceName, Configuration conf) {
     super(instanceName, conf,
         HiveConf.getVar(conf, ConfVars.LLAP_ZK_REGISTRY_NAMESPACE), NAMESPACE_PREFIX,
-        USER_SCOPE_PATH_PREFIX, WORKER_PREFIX,
+        USER_SCOPE_PATH_PREFIX, WORKER_PREFIX, WORKER_GROUP,
         LlapProxy.isDaemon() ? SASL_LOGIN_CONTEXT_NAME : null,
         HiveConf.getVar(conf, ConfVars.LLAP_KERBEROS_PRINCIPAL),
         HiveConf.getVar(conf, ConfVars.LLAP_KERBEROS_KEYTAB_FILE),
@@ -126,23 +137,23 @@ public class LlapZookeeperRegistryImpl
 
   @Override
   public String register() throws IOException {
-    ServiceRecord srv = new ServiceRecord();
+    daemonZkRecord = new ServiceRecord();
     Endpoint rpcEndpoint = getRpcEndpoint();
-    srv.addInternalEndpoint(rpcEndpoint);
-    srv.addInternalEndpoint(getMngEndpoint());
-    srv.addInternalEndpoint(getShuffleEndpoint());
-    srv.addExternalEndpoint(getServicesEndpoint());
-    srv.addInternalEndpoint(getOutputFormatEndpoint());
+    daemonZkRecord.addInternalEndpoint(rpcEndpoint);
+    daemonZkRecord.addInternalEndpoint(getMngEndpoint());
+    daemonZkRecord.addInternalEndpoint(getShuffleEndpoint());
+    daemonZkRecord.addExternalEndpoint(getServicesEndpoint());
+    daemonZkRecord.addInternalEndpoint(getOutputFormatEndpoint());
 
-    for (Map.Entry<String, String> kv : this.conf) {
-      if (kv.getKey().startsWith(HiveConf.PREFIX_LLAP)
-          || kv.getKey().startsWith(HiveConf.PREFIX_HIVE_LLAP)) {
-        // TODO: read this somewhere useful, like the task scheduler
-        srv.set(kv.getKey(), kv.getValue());
-      }
-    }
+    populateConfigValues(this.conf);
+    Map<String, String> capacityValues = new HashMap<>(2);
+    capacityValues.put(LlapRegistryService.LLAP_DAEMON_NUM_ENABLED_EXECUTORS,
+            HiveConf.getVarWithoutType(conf, ConfVars.LLAP_DAEMON_NUM_EXECUTORS));
+    capacityValues.put(LlapRegistryService.LLAP_DAEMON_TASK_SCHEDULER_ENABLED_WAIT_QUEUE_SIZE,
+            HiveConf.getVarWithoutType(conf, ConfVars.LLAP_DAEMON_TASK_SCHEDULER_WAIT_QUEUE_SIZE));
+    populateConfigValues(capacityValues.entrySet());
 
-    String uniqueId = registerServiceRecord(srv);
+    String uniqueId = registerServiceRecord(daemonZkRecord);
     long znodeCreationTimeout = 120;
 
     // Create a znode under the rootNamespace parent for this instance of the server
@@ -166,12 +177,33 @@ public class LlapZookeeperRegistryImpl
     return uniqueId;
   }
 
+  private void populateConfigValues(Iterable<Map.Entry<String, String>> attributes) {
+    for (Map.Entry<String, String> kv : attributes) {
+      if (kv.getKey().startsWith(HiveConf.PREFIX_LLAP)
+          || kv.getKey().startsWith(HiveConf.PREFIX_HIVE_LLAP)) {
+        // TODO: read this somewhere useful, like the task scheduler
+        daemonZkRecord.set(kv.getKey(), kv.getValue());
+      }
+    }
+  }
+
+  @Override
+  public void updateRegistration(Iterable<Map.Entry<String, String>> attributes) throws IOException {
+    populateConfigValues(attributes);
+    updateServiceRecord(this.daemonZkRecord, doCheckAcls, true);
+  }
+
   @Override
   public void unregister() throws IOException {
     // Nothing for the zkCreate models
   }
 
-  private class DynamicServiceInstance
+  /**
+   * A dynamically changing instance in an Llap Service. Can become inactive if failing or can be
+   * blacklisted (set to 0 capacity) if too slow (See: BlacklistingLlapMetricsListener).
+   */
+  @VisibleForTesting
+  public class DynamicServiceInstance
       extends ServiceInstanceBase implements LlapServiceInstance {
     private final int mngPort;
     private final int shufflePort;
@@ -199,7 +231,7 @@ public class LlapZookeeperRegistryImpl
       this.serviceAddress =
           RegistryTypeUtils.getAddressField(services.addresses.get(0), AddressTypes.ADDRESS_URI);
       String memStr = srv.get(ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB.varname, "");
-      String coreStr = srv.get(ConfVars.LLAP_DAEMON_NUM_EXECUTORS.varname, "");
+      String coreStr = srv.get(LlapRegistryService.LLAP_DAEMON_NUM_ENABLED_EXECUTORS, "");
       try {
         this.resource = Resource.newInstance(Integer.parseInt(memStr), Integer.parseInt(coreStr));
       } catch (NumberFormatException ex) {
@@ -225,7 +257,7 @@ public class LlapZookeeperRegistryImpl
 
     @Override
     public String toString() {
-      return "DynamicServiceInstance [id=" + getWorkerIdentity() + ", host=" + host + ":" + rpcPort +
+      return "DynamicServiceInstance [id=" + getWorkerIdentity() + ", host=" + getHost() + ":" + getRpcPort() +
           " with resources=" + getResource() + ", shufflePort=" + getShufflePort() +
           ", servicesAddress=" + getServicesAddress() +  ", mgmtPort=" + getManagementPort() + "]";
     }
@@ -327,9 +359,9 @@ public class LlapZookeeperRegistryImpl
       if (data == null) continue;
       String nodeName = extractNodeName(childData);
       if (nodeName.startsWith(WORKER_PREFIX)) {
-        Set<LlapServiceInstance> instances = getInstancesByPath(childData.getPath());
+        LlapServiceInstance instances = getInstanceByPath(childData.getPath());
         if (instances != null) {
-          unsorted.addAll(instances);
+          unsorted.add(instances);
         }
       } else if (nodeName.startsWith(SLOT_PREFIX)) {
         slotByWorker.put(extractWorkerIdFromSlot(childData),
@@ -415,7 +447,77 @@ public class LlapZookeeperRegistryImpl
   @Override
   protected String getZkPathUser(Configuration conf) {
     // External LLAP clients would need to set LLAP_ZK_REGISTRY_USER to the LLAP daemon user (hive),
-    // rather than relying on RegistryUtils.currentUser().
-    return HiveConf.getVar(conf, ConfVars.LLAP_ZK_REGISTRY_USER, RegistryUtils.currentUser());
+    // rather than relying on LlapRegistryService.currentUser().
+    return HiveConf.getVar(conf, ConfVars.LLAP_ZK_REGISTRY_USER, LlapRegistryService.currentUser());
+  }
+
+  /**
+   * Locks the Llap Cluster for configuration change for the given time window.
+   * @param windowStart The beginning of the time window when no other configuration change is allowed.
+   * @param windowEnd The end of the time window when no other configuration change is allowed.
+   * @return The result of the change (success if the lock is succeeded, and the next possible
+   * configuration change time
+   */
+  public ConfigChangeLockResult lockForConfigChange(long windowStart, long windowEnd) {
+    if (windowEnd < windowStart) {
+      throw new IllegalArgumentException(
+          "WindowStart=" + windowStart + " can not be smaller than WindowEnd=" + windowEnd);
+    }
+    try {
+      if (lockWindowEnd == null) {
+        // Create the node with the /llap-sasl/hiveuser/hostname/config-change/next-change path without retry
+        lockWindowEnd = new DistributedAtomicLong(zooKeeperClient,
+            String.join("/", workersPath.substring(0, workersPath.lastIndexOf('/')), CONFIG_CHANGE_PATH,
+                CONFIG_CHANGE_NODE), (i, j, sleeper) -> false);
+        lockWindowEnd.initialize(0L);
+      }
+      AtomicValue<Long> current = lockWindowEnd.get();
+      if (!current.succeeded()) {
+        LOG.debug("Can not get the current configuration lock time");
+        return new ConfigChangeLockResult(false, -1L);
+      }
+      if (current.postValue() > windowStart) {
+        LOG.debug("Can not lock window {}-{}. Current value is {}.", windowStart, windowEnd, current.postValue());
+        return new ConfigChangeLockResult(false, current.postValue());
+      }
+      current = lockWindowEnd.compareAndSet(current.postValue(), windowEnd);
+      if (!current.succeeded()) {
+        LOG.debug("Can not lock window {}-{}. Current value is changed to {}.", windowStart, windowEnd,
+            current.postValue());
+        return new ConfigChangeLockResult(false, current.postValue());
+      }
+      return new ConfigChangeLockResult(true, current.postValue());
+    } catch (Throwable t) {
+      LOG.info("Can not reserve configuration change lock", t);
+      return new ConfigChangeLockResult(false, -1L);
+    }
+  }
+
+  /**
+   * The return data of a config change. Successful or not successful and the next time a config
+   * change can be attempted.
+   */
+  public static class ConfigChangeLockResult {
+    private final boolean success;
+    private final long nextConfigChangeTime;
+
+    @VisibleForTesting
+    public ConfigChangeLockResult(boolean success, long nextConfigChangeTime) {
+      this.success = success;
+      this.nextConfigChangeTime = nextConfigChangeTime;
+    }
+
+    public boolean isSuccess() {
+      return success;
+    }
+
+    public long getNextConfigChangeTime() {
+      return nextConfigChangeTime;
+    }
+
+    @Override
+    public String toString() {
+      return "ConfigChangeLockResult [" + success + "," + nextConfigChangeTime + "]";
+    }
   }
 }

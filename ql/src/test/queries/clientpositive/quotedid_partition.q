@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 
 set hive.support.quoted.identifiers=column;
@@ -11,9 +12,6 @@ show partitions src_p;
 explain select `x+1`, `y&y`, `!@#$%^&*()_q` 
 from src_p where `!@#$%^&*()_q` = 'a' and `x+1`='10'
 group by `x+1`, `y&y`, `!@#$%^&*()_q` having `!@#$%^&*()_q` = 'a'
-;
-
-set hive.exec.dynamic.partition.mode=nonstrict
 ;
 
 create table src_p2(`x+1` string) partitioned by (`!@#$%^&*()_q` string);

@@ -223,6 +223,16 @@ public class CloudExecutionContextProvider implements ExecutionContextProvider {
       LOG.info("Attempting to create " + numRequired + " nodes");
       try {
         result.addAll(mCloudComputeService.createNodes(Math.min(mMaxHostsPerCreateRequest, numRequired)));
+
+        Set<String> newAddresses = new HashSet<String>();
+        for (NodeMetadata node : result) {
+          newAddresses.addAll(node.getPublicAddresses());
+        }
+        synchronized (mTerminatedHosts) {
+          for (String newAddress : newAddresses) {
+            mTerminatedHosts.remove(newAddress);
+          }
+        }
       } catch (RunNodesException e) {
         error = true;
         LOG.warn("Error creating nodes", e);
@@ -332,6 +342,7 @@ public class CloudExecutionContextProvider implements ExecutionContextProvider {
     synchronized (mTerminatedHosts) {
       terminatedHosts.putAll(mTerminatedHosts);
     }
+    LOG.info("Currently tracked terminated hosts: {}", terminatedHosts.keySet().toString());
     for (NodeMetadata node : getRunningNodes()) {
       String ip = publicIpOrHostname(node);
       if (terminatedHosts.containsKey(ip)) {

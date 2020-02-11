@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -47,6 +47,10 @@ public class VectorColumnOutputMapping extends VectorColumnMapping {
 
   @Override
   public void finalize() {
+    if (vectorColumnMapping == null) {
+      return;
+    }
+
     Mapping mapping = vectorColumnMapping.getMapping();
 
     // Ordered columns are the output columns.

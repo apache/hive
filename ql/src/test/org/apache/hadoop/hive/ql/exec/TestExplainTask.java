@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -62,6 +62,10 @@ public class TestExplainTask {
     uut = new ExplainTask();
     uut.conf = mock(HiveConf.class);
     out = mock(PrintStream.class);
+    QueryState qs = mock(QueryState.class);
+    HiveConf hiveConf = new HiveConf();
+    when(qs.getConf()).thenReturn(hiveConf);
+    uut.queryState = qs;
   }
 
   public static class DummyExplainDesc<K, V> extends TableScanDesc {
@@ -160,7 +164,9 @@ public class TestExplainTask {
     work.setParseContext(pCtx);
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     work.setConfig(new ExplainConfiguration());
-    new ExplainTask().getJSONLogicalPlan(new PrintStream(baos), work);
+    ExplainTask newExplainTask = new ExplainTask();
+    newExplainTask.queryState = uut.queryState;
+    newExplainTask.getJSONLogicalPlan(new PrintStream(baos), work);
     baos.close();
     return baos.toString();
   }
@@ -212,8 +218,8 @@ public class TestExplainTask {
 
 
     JsonNode result = objectMapper.readTree(uut.getJSONPlan(null, tasks, null, true,
-            false, false).toString());
-    JsonNode expected = objectMapper.readTree("{\"STAGE DEPENDENCIES\":{\"mockTaskId\":" +
+            false, false, "Plan Optimized by CBO", null, null).toString());
+    JsonNode expected = objectMapper.readTree("{\"cboInfo\":\"Plan Optimized by CBO\", \"STAGE DEPENDENCIES\":{\"mockTaskId\":" +
             "{\"ROOT STAGE\":\"TRUE\",\"BACKUP STAGE\":\"backup-id-mock\"}},\"STAGE PLANS\":" +
             "{\"mockTaskId\":{}}}");
 

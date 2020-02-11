@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
@@ -36,9 +36,8 @@ import org.apache.hadoop.hive.common.io.CachingPrintStream;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.MapRedStats;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -49,8 +48,15 @@ import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.ResourceType;
 import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hive.common.util.HiveStringUtils;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hive.common.util.StreamPrinter;
+import org.apache.hadoop.mapred.RunningJob;
+
+import com.google.common.annotations.VisibleForTesting;
+
+import org.json.JSONException;
+
+import static org.apache.hadoop.security.UserGroupInformation.AuthenticationMethod.PROXY;
 
 /**
  * Extension of ExecDriver:
@@ -70,6 +76,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
   static final String HIVE_MAIN_CLIENT_DEBUG_OPTS = "HIVE_MAIN_CLIENT_DEBUG_OPTS";
   static final String HIVE_CHILD_CLIENT_DEBUG_OPTS = "HIVE_CHILD_CLIENT_DEBUG_OPTS";
   static final String[] HIVE_SYS_PROP = {"build.dir", "build.dir.hive", "hive.query.id"};
+  static final String HADOOP_PROXY_USER = "HADOOP_PROXY_USER";
 
   private transient ContentSummary inputSummary = null;
   private transient boolean runningViaChild = false;
@@ -84,10 +91,10 @@ public class MapRedTask extends ExecDriver implements Serializable {
   }
 
   @Override
-  public int execute(DriverContext driverContext) {
+  public int execute() {
 
-    Context ctx = driverContext.getCtx();
     boolean ctxCreated = false;
+    Context ctx = context;
 
     try {
       if (ctx == null) {
@@ -103,7 +110,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
           conf.getBoolVar(HiveConf.ConfVars.LOCALMODEAUTO)) {
 
         if (inputSummary == null) {
-          inputSummary = Utilities.getInputSummary(driverContext.getCtx(), work.getMapWork(), null);
+          inputSummary = Utilities.getInputSummary(ctx, work.getMapWork(), null);
         }
 
         // set the values of totalInputFileSize and totalInputNumFiles, estimating them
@@ -148,7 +155,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
         }
         // we are not running this mapred task via child jvm
         // so directly invoke ExecDriver
-        int ret = super.execute(driverContext);
+        int ret = super.execute();
 
         // restore the previous properties for framework name, RM address etc.
         if (this.isLocalMode()) {
@@ -266,6 +273,10 @@ public class MapRedTask extends ExecDriver implements Serializable {
         configureDebugVariablesForChildJVM(variables);
       }
 
+      if (PROXY == Utils.getUGI().getAuthenticationMethod()) {
+        variables.put(HADOOP_PROXY_USER, Utils.getUGI().getShortUserName());
+      }
+
       env = new String[variables.size()];
       int pos = 0;
       for (Map.Entry<String, String> entry : variables.entrySet()) {
@@ -274,7 +285,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
         env[pos++] = name + "=" + value;
       }
       // Run ExecDriver in another JVM
-      executor = Runtime.getRuntime().exec(cmdLine, env, new File(workDir));
+      executor = spawn(cmdLine, workDir, env);
 
       CachingPrintStream errPrintStream =
           new CachingPrintStream(SessionState.getConsole().getChildErrStream());
@@ -312,7 +323,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
       try {
         // creating the context can create a bunch of files. So make
         // sure to clear it out
-        if(ctxCreated) {
+        if (ctxCreated) {
           ctx.clear();
         }
 
@@ -320,6 +331,11 @@ public class MapRedTask extends ExecDriver implements Serializable {
         LOG.error("Exception: ", e);
       }
     }
+  }
+
+  @VisibleForTesting
+  Process spawn(String cmdLine, String workDir, String[] env) throws IOException {
+    return Runtime.getRuntime().exec(cmdLine, env, new File(workDir));
   }
 
   static void configureDebugVariablesForChildJVM(Map<String, String> environmentVariables) {
@@ -425,7 +441,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
             + reducers);
       } else {
         if (inputSummary == null) {
-          inputSummary =  Utilities.getInputSummary(driverContext.getCtx(), work.getMapWork(), null);
+          inputSummary = Utilities.getInputSummary(context, work.getMapWork(), null);
         }
         int reducers = Utilities.estimateNumberOfReducers(conf, inputSummary, work.getMapWork(),
                                                           work.isFinalMapRed());
@@ -496,6 +512,19 @@ public class MapRedTask extends ExecDriver implements Serializable {
       return getWork().getReduceWork() == null ? null : getWork().getReduceWork().getReducer();
     }
     return null;
+  }
+
+  public void updateWebUiStats(MapRedStats mapRedStats, RunningJob rj) {
+    if (queryDisplay != null &&
+        conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_SHOW_STATS) &&
+        conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_SHOW_GRAPH) &&
+        conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_EXPLAIN_OUTPUT)) {
+      try {
+        queryDisplay.updateTaskStatistics(mapRedStats, rj, getId());
+      } catch (IOException | JSONException e) {
+        LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e), e);
+      }
+    }
   }
 
   @Override

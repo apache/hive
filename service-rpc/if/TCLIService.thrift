@@ -596,6 +596,15 @@ struct TOpenSessionResp {
   4: optional map<string, string> configuration
 }
 
+struct TSetClientInfoReq {
+  1: required TSessionHandle sessionHandle,
+  2: optional map<string, string> configuration
+}
+
+struct TSetClientInfoResp {
+  1: required TStatus status
+}
+
 
 // CloseSession()
 //
@@ -661,6 +670,7 @@ enum TGetInfoType {
   CLI_CATALOG_NAME =                     10003,
   CLI_COLLATION_SEQ =                    10004,
   CLI_MAX_IDENTIFIER_LEN =               10005,
+  CLI_ODBC_KEYWORDS =                    10006
 }
 
 union TGetInfoValue {
@@ -1060,6 +1070,7 @@ struct TGetOperationStatusResp {
 
   10: optional TProgressUpdateResp progressUpdateResponse
 
+  11: optional i64 numModifiedRows
 }
 
 
@@ -1230,6 +1241,14 @@ struct TProgressUpdateResp {
   6: required i64 startTime
 }
 
+struct TGetQueryIdReq {
+  1: required TOperationHandle operationHandle
+}
+
+struct TGetQueryIdResp {
+  1: required string queryId
+}
+
 service TCLIService {
 
   TOpenSessionResp OpenSession(1:TOpenSessionReq req);
@@ -1273,4 +1292,8 @@ service TCLIService {
   TCancelDelegationTokenResp CancelDelegationToken(1:TCancelDelegationTokenReq req);
 
   TRenewDelegationTokenResp RenewDelegationToken(1:TRenewDelegationTokenReq req);
+
+  TGetQueryIdResp GetQueryId(1:TGetQueryIdReq req);
+
+  TSetClientInfoResp SetClientInfo(1:TSetClientInfoReq req);
 }

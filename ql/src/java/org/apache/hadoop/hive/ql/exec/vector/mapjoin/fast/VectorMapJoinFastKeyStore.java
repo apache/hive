@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.common.MemoryEstimate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.serde2.WriteBuffers;
+import org.apache.hadoop.hive.serde2.WriteBuffers.ByteSegmentRef;
 
 // Optimized for sequential key lookup.
 
@@ -124,13 +125,11 @@ public class VectorMapJoinFastKeyStore implements MemoryEstimate {
   public boolean equalKey(long keyRefWord, byte[] keyBytes, int keyStart, int keyLength,
       WriteBuffers.Position readPos) {
 
-    int storedKeyLengthLength =
+    int storedKeyLength =
         (int) ((keyRefWord & SmallKeyLength.bitMask) >> SmallKeyLength.bitShift);
-    boolean isKeyLengthSmall = (storedKeyLengthLength != SmallKeyLength.allBitsOn);
+    boolean isKeyLengthSmall = (storedKeyLength != SmallKeyLength.allBitsOn);
 
-    // LOG.debug("VectorMapJoinFastKeyStore equalKey keyLength " + keyLength + " isKeyLengthSmall " + isKeyLengthSmall + " storedKeyLengthLength " + storedKeyLengthLength + " keyRefWord " + Long.toHexString(keyRefWord));
-
-    if (isKeyLengthSmall && storedKeyLengthLength != keyLength) {
+    if (isKeyLengthSmall && storedKeyLength != keyLength) {
       return false;
     }
     long absoluteKeyOffset =
@@ -139,16 +138,14 @@ public class VectorMapJoinFastKeyStore implements MemoryEstimate {
     writeBuffers.setReadPoint(absoluteKeyOffset, readPos);
     if (!isKeyLengthSmall) {
       // Read big value length we wrote with the value.
-      storedKeyLengthLength = writeBuffers.readVInt(readPos);
-      if (storedKeyLengthLength != keyLength) {
-        // LOG.debug("VectorMapJoinFastKeyStore equalKey no match big length");
+      storedKeyLength = writeBuffers.readVInt(readPos);
+      if (storedKeyLength != keyLength) {
         return false;
       }
     }
 
     // Our reading is positioned to the key.
     if (!writeBuffers.isEqual(keyBytes, keyStart, readPos, keyLength)) {
-      // LOG.debug("VectorMapJoinFastKeyStore equalKey no match on bytes");
       return false;
     }
 
@@ -165,6 +162,25 @@ public class VectorMapJoinFastKeyStore implements MemoryEstimate {
     // TODO: Check if maximum size compatible with AbsoluteKeyOffset.maxSize.
     this.writeBuffers = writeBuffers;
     unsafeReadPos = new WriteBuffers.Position();
+  }
+
+  public void getKey(long keyRefWord, ByteSegmentRef keyByteSegmentRef,
+      WriteBuffers.Position readPos) {
+
+    int storedKeyLength =
+        (int) ((keyRefWord & SmallKeyLength.bitMask) >> SmallKeyLength.bitShift);
+    boolean isKeyLengthSmall = (storedKeyLength != SmallKeyLength.allBitsOn);
+
+    long absoluteKeyOffset =
+        (keyRefWord & AbsoluteKeyOffset.bitMask);
+
+    writeBuffers.setReadPoint(absoluteKeyOffset, readPos);
+    if (!isKeyLengthSmall) {
+
+      // Read big key length we wrote with the key.
+      storedKeyLength = writeBuffers.readVInt(readPos);
+    }
+    writeBuffers.getByteSegmentRefToCurrent(keyByteSegmentRef, storedKeyLength, readPos);
   }
 
   @Override

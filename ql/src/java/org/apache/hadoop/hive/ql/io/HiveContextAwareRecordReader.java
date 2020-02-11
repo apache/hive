@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.mapred.TextInputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileSystem;
@@ -50,11 +51,12 @@ import org.apache.hadoop.mapred.RecordReader;
   * data.  The binary search can be used by setting the value of inputFormatSorted in the
   * MapreduceWork to true, but it should only be used if the data is going to a FilterOperator,
   * which filters by comparing a value in the data with a constant, using one of the comparisons
-  * =, <, >, <=, >=.  If the RecordReader's underlying format is an RCFile, this object can perform
+  * =, &lt;, &gt;, &lt;=, &gt;=.  If the RecordReader's underlying format is an RCFile, this object can perform
   * a binary search to find the block to begin reading from, and stop reading once it can be
   * determined no other entries will match the filter.
   */
-public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader<K, V> {
+public abstract class HiveContextAwareRecordReader<K extends WritableComparable, V extends Writable>
+    implements RecordReader<K, V> {
 
   private static final Logger LOG = LoggerFactory.getLogger(HiveContextAwareRecordReader.class.getName());
 
@@ -68,7 +70,7 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
   private final List<Comparison> stopComparisons = new ArrayList<Comparison>();
   private Map<Path, PartitionDesc> pathToPartitionInfo;
 
-  protected RecordReader recordReader;
+  protected RecordReader<K, V> recordReader;
   protected JobConf jobConf;
   protected boolean isSorted = false;
 
@@ -76,17 +78,17 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
     this(null, conf);
   }
 
-  public HiveContextAwareRecordReader(RecordReader recordReader) {
+  public HiveContextAwareRecordReader(RecordReader<K, V> recordReader) {
     this.recordReader = recordReader;
   }
 
-  public HiveContextAwareRecordReader(RecordReader recordReader, JobConf conf)
+  public HiveContextAwareRecordReader(RecordReader<K, V> recordReader, JobConf conf)
       throws IOException {
     this.recordReader = recordReader;
     this.jobConf = conf;
   }
 
-  public void setRecordReader(RecordReader recordReader) {
+  public void setRecordReader(RecordReader<K, V> recordReader) {
     this.recordReader = recordReader;
   }
 
@@ -187,8 +189,8 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
     long blockStart = -1;
     FileSplit fileSplit = split;
     Path path = fileSplit.getPath();
-    FileSystem fs = path.getFileSystem(job);
     if (inputFormatClass.getName().contains("SequenceFile")) {
+      FileSystem fs = path.getFileSystem(job);
       SequenceFile.Reader in = new SequenceFile.Reader(fs, path, job);
       blockPointer = in.isBlockCompressed();
       in.sync(fileSplit.getStart());
@@ -198,6 +200,7 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
       blockPointer = true;
       blockStart = ((RCFileRecordReader) recordReader).getStart();
     } else if (inputFormatClass.getName().contains("RCFile")) {
+      FileSystem fs = path.getFileSystem(job);
       blockPointer = true;
       RCFile.Reader in = new RCFile.Reader(fs, path, job);
       in.sync(fileSplit.getStart());
@@ -205,7 +208,7 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
       in.close();
     }
     this.jobConf = job;
-    this.initIOContext(blockStart, blockPointer, path.makeQualified(fs));
+    this.initIOContext(blockStart, blockPointer, path);
 
     this.initIOContextSortedProps(split, recordReader, job);
   }
@@ -326,7 +329,7 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
               .getMapWork(jobConf).getPathToPartitionInfo();
           }
           part = HiveFileFormatUtils
-              .getPartitionDescFromPathRecursively(pathToPartitionInfo,
+              .getFromPathRecursively(pathToPartitionInfo,
                   filePath, IOPrepareCache.get().getPartitionDescMap());
         } catch (AssertionError ae) {
           LOG.info("Cannot get partition description from " + this.ioCxtRef.getInputPath()
@@ -338,18 +341,18 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
           part = null;
         }
         TableDesc table = (part == null) ? null : part.getTableDesc();
-        if (table != null) {
+        if (table != null && !TextInputFormat.class.isAssignableFrom(part.getInputFileFormatClass())) {
           headerCount = Utilities.getHeaderCount(table);
           footerCount = Utilities.getFooterCount(table, jobConf);
         }
 
         // If input contains header, skip header.
-        if (!Utilities.skipHeader(recordReader, headerCount, (WritableComparable)key, (Writable)value)) {
+        if (!Utilities.skipHeader(recordReader, headerCount, key, value)) {
           return false;
         }
         if (footerCount > 0) {
           footerBuffer = new FooterBuffer();
-          if (!footerBuffer.initializeBuffer(jobConf, recordReader, footerCount, (WritableComparable)key, (Writable)value)) {
+          if (!footerBuffer.initializeBuffer(jobConf, recordReader, footerCount, key, value)) {
             return false;
           }
         }
@@ -359,7 +362,7 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
         // Table files don't have footer rows.
         return recordReader.next(key,  value);
       } else {
-        return footerBuffer.updateBuffer(jobConf, recordReader, (WritableComparable)key, (Writable)value);
+        return footerBuffer.updateBuffer(jobConf, recordReader, key, value);
       }
     } catch (Exception e) {
       return HiveIOExceptionHandlerUtil.handleRecordReaderNextException(e, jobConf);

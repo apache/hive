@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -39,6 +39,7 @@ import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -46,6 +47,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.SynchronousQueue;
@@ -56,16 +58,23 @@ import java.util.concurrent.TimeoutException;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.ObjectStore;
+import org.apache.hadoop.hive.metastore.PersistenceManagerProvider;
+import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.hooks.HookContext;
+import org.apache.hadoop.hive.ql.hooks.LineageLogger;
+import org.apache.hadoop.hive.ql.optimizer.lineage.LineageCtx;
 import org.apache.hive.common.util.ReflectionUtil;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
+import org.apache.hive.service.cli.HiveSQLException;
 import org.datanucleus.ClassLoaderResolver;
 import org.datanucleus.NucleusContext;
 import org.datanucleus.api.jdo.JDOPersistenceManagerFactory;
@@ -73,7 +82,9 @@ import org.datanucleus.AbstractNucleusContext;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
+import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 
 public class TestJdbcWithMiniHS2 {
   private static MiniHS2 miniHS2 = null;
@@ -95,6 +106,7 @@ public class TestJdbcWithMiniHS2 {
     HiveConf conf = new HiveConf();
     dataFileDir = conf.get("test.data.files").replace('\\', '/').replace("c:", "");
     kvDataFilePath = new Path(dataFileDir, "kv1.txt");
+
     try {
       startMiniHS2(conf);
     } catch (Exception e) {
@@ -110,7 +122,8 @@ public class TestJdbcWithMiniHS2 {
     }
     Statement stmt = conDefault.createStatement();
     stmt.execute("drop database if exists " + testDbName + " cascade");
-    stmt.execute("create database " + testDbName);
+    stmt.execute("create database " + testDbName + " WITH DBPROPERTIES ( '" +
+            SOURCE_OF_REPLICATION + "' = '1,2,3')");
     stmt.close();
 
     try {
@@ -201,6 +214,10 @@ public class TestJdbcWithMiniHS2 {
   private static void startMiniHS2(HiveConf conf, boolean httpMode) throws Exception {
     conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     conf.setBoolVar(ConfVars.HIVE_SERVER2_LOGGING_OPERATION_ENABLED, false);
+    conf.setBoolVar(ConfVars.HIVESTATSCOLAUTOGATHER, false);
+    // store post-exec hooks calls so we can look at them later
+    conf.setVar(ConfVars.POSTEXECHOOKS, ReadableHook.class.getName() + "," +
+        LineageLogger.class.getName());
     MiniHS2.Builder builder = new MiniHS2.Builder().withConf(conf).cleanupLocalDirOnStartup(false);
     if (httpMode) {
       builder = builder.withHTTPTransport();
@@ -265,21 +282,75 @@ public class TestJdbcWithMiniHS2 {
   }
 
   @Test
+  public void testParallelCompilation3() throws Exception {
+    Statement stmt = conTestDb.createStatement();
+    stmt.execute("set hive.driver.parallel.compilation=true");
+    stmt.execute("set hive.server2.async.exec.async.compile=true");
+    stmt.close();
+    Connection conn = getConnection(testDbName);
+    stmt = conn.createStatement();
+    stmt.execute("set hive.driver.parallel.compilation=true");
+    stmt.execute("set hive.server2.async.exec.async.compile=true");
+    stmt.close();
+    int poolSize = 100;
+    SynchronousQueue<Runnable> executorQueue1 = new SynchronousQueue<Runnable>();
+    ExecutorService workers1 =
+        new ThreadPoolExecutor(1, poolSize, 20, TimeUnit.SECONDS, executorQueue1);
+    SynchronousQueue<Runnable> executorQueue2 = new SynchronousQueue<Runnable>();
+    ExecutorService workers2 =
+        new ThreadPoolExecutor(1, poolSize, 20, TimeUnit.SECONDS, executorQueue2);
+    List<Future<Boolean>> list1 = startTasks(workers1, conTestDb, tableName, 10);
+    List<Future<Boolean>> list2 = startTasks(workers2, conn, tableName, 10);
+    finishTasks(list1, workers1);
+    finishTasks(list2, workers2);
+    conn.close();
+  }
+
+  @Test
+  public void testParallelCompilation4() throws Exception {
+    Statement stmt = conTestDb.createStatement();
+    stmt.execute("set hive.driver.parallel.compilation=true");
+    stmt.execute("set hive.server2.async.exec.async.compile=false");
+    stmt.close();
+    Connection conn = getConnection(testDbName);
+    stmt = conn.createStatement();
+    stmt.execute("set hive.driver.parallel.compilation=true");
+    stmt.execute("set hive.server2.async.exec.async.compile=false");
+    stmt.close();
+    int poolSize = 100;
+    SynchronousQueue<Runnable> executorQueue1 = new SynchronousQueue<Runnable>();
+    ExecutorService workers1 =
+        new ThreadPoolExecutor(1, poolSize, 20, TimeUnit.SECONDS, executorQueue1);
+    SynchronousQueue<Runnable> executorQueue2 = new SynchronousQueue<Runnable>();
+    ExecutorService workers2 =
+        new ThreadPoolExecutor(1, poolSize, 20, TimeUnit.SECONDS, executorQueue2);
+    List<Future<Boolean>> list1 = startTasks(workers1, conTestDb, tableName, 10);
+    List<Future<Boolean>> list2 = startTasks(workers2, conn, tableName, 10);
+    finishTasks(list1, workers1);
+    finishTasks(list2, workers2);
+    conn.close();
+  }
+
+  @Test
   public void testConcurrentStatements() throws Exception {
     startConcurrencyTest(conTestDb, tableName, 50);
   }
 
   private static void startConcurrencyTest(Connection conn, String tableName, int numTasks) {
     // Start concurrent testing
-    int POOL_SIZE = 100;
-    int TASK_COUNT = numTasks;
-
+    int poolSize = 100;
     SynchronousQueue<Runnable> executorQueue = new SynchronousQueue<Runnable>();
     ExecutorService workers =
-        new ThreadPoolExecutor(1, POOL_SIZE, 20, TimeUnit.SECONDS, executorQueue);
+        new ThreadPoolExecutor(1, poolSize, 20, TimeUnit.SECONDS, executorQueue);
+    List<Future<Boolean>> list = startTasks(workers, conn, tableName, numTasks);
+    finishTasks(list, workers);
+  }
+
+  private static List<Future<Boolean>> startTasks(ExecutorService workers, Connection conn,
+      String tableName, int numTasks) {
     List<Future<Boolean>> list = new ArrayList<Future<Boolean>>();
     int i = 0;
-    while (i < TASK_COUNT) {
+    while (i < numTasks) {
       try {
         Future<Boolean> future = workers.submit(new JDBCTask(conn, i, tableName));
         list.add(future);
@@ -292,7 +363,10 @@ public class TestJdbcWithMiniHS2 {
         }
       }
     }
+    return list;
+  }
 
+  private static void finishTasks(List<Future<Boolean>> list, ExecutorService workers) {
     for (Future<Boolean> future : list) {
       try {
         Boolean result = future.get(30, TimeUnit.SECONDS);
@@ -582,6 +656,18 @@ public class TestJdbcWithMiniHS2 {
     stmt.execute("drop table testSelectThriftOrders");
     stmt.execute("drop table testSelectThriftCustomers");
     stmt.close();
+  }
+
+
+  // Test that jdbc does not allow shell commands starting with "!".
+  @Test
+  public void testBangCommand() throws Exception {
+    try (Statement stmt = conTestDb.createStatement()) {
+      stmt.execute("!ls --l");
+      fail("statement should fail, allowing this would be bad security");
+    } catch (HiveSQLException e) {
+      assertTrue(e.getMessage().contains("cannot recognize input near '!'"));
+    }
   }
 
   @Test
@@ -935,12 +1021,14 @@ public class TestJdbcWithMiniHS2 {
     conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_RESPONSE_HEADER_SIZE, 1024);
     startMiniHS2(conf, true);
 
-    // Username is added to the request header
-    String userName = StringUtils.leftPad("*", 100);
+    // Username and password are added to the http request header.
+    // We will test the reconfiguration of the header size by changing the password length.
+    String userName = "userName";
+    String password = StringUtils.leftPad("*", 100);
     Connection conn = null;
     // This should go fine, since header should be less than the configured header size
     try {
-      conn = getConnection(miniHS2.getJdbcURL(testDbName), userName, "password");
+      conn = getConnection(miniHS2.getJdbcURL(testDbName), userName, password);
     } catch (Exception e) {
       fail("Not expecting exception: " + e);
     } finally {
@@ -949,13 +1037,13 @@ public class TestJdbcWithMiniHS2 {
       }
     }
 
-    // This should fail with given HTTP response code 413 in error message, since header is more
+    // This should fail with given HTTP response code 431 in error message, since header is more
     // than the configured the header size
-    userName = StringUtils.leftPad("*", 2000);
+    password = StringUtils.leftPad("*", 2000);
     Exception headerException = null;
     try {
       conn = null;
-      conn = getConnection(miniHS2.getJdbcURL(testDbName), userName, "password");
+      conn = getConnection(miniHS2.getJdbcURL(testDbName), userName, password);
     } catch (Exception e) {
       headerException = e;
     } finally {
@@ -965,7 +1053,7 @@ public class TestJdbcWithMiniHS2 {
 
       assertTrue("Header exception should be thrown", headerException != null);
       assertTrue("Incorrect HTTP Response:" + headerException.getMessage(),
-          headerException.getMessage().contains("HTTP Response code: 413"));
+          headerException.getMessage().contains("HTTP Response code: 431"));
     }
 
     // Stop HiveServer2 to increase header size
@@ -977,7 +1065,7 @@ public class TestJdbcWithMiniHS2 {
     // This should now go fine, since we increased the configured header size
     try {
       conn = null;
-      conn = getConnection(miniHS2.getJdbcURL(testDbName), userName, "password");
+      conn = getConnection(miniHS2.getJdbcURL(testDbName), userName, password);
     } catch (Exception e) {
       fail("Not expecting exception: " + e);
     } finally {
@@ -994,6 +1082,7 @@ public class TestJdbcWithMiniHS2 {
    * Test for jdbc driver retry on NoHttpResponseException
    * @throws Exception
    */
+  @Ignore("Flaky test. Should be re-enabled in HIVE-19706")
   @Test
   public void testHttpRetryOnServerIdleTimeout() throws Exception {
     // Stop HiveServer2
@@ -1060,7 +1149,7 @@ public class TestJdbcWithMiniHS2 {
     NucleusContext nc = null;
     Map<String, ClassLoaderResolver> cMap;
     try {
-      pmf = ObjectStore.class.getDeclaredField("pmf");
+      pmf = PersistenceManagerProvider.class.getDeclaredField("pmf");
       if (pmf != null) {
         pmf.setAccessible(true);
         jdoPmf = (JDOPersistenceManagerFactory) pmf.get(null);
@@ -1224,6 +1313,19 @@ public class TestJdbcWithMiniHS2 {
     assertEquals(3, res.getInt(1));
     assertFalse("no more results", res.next());
 
+    //try creating same function again which should fail with AlreadyExistsException
+    String createSameFunctionAgain =
+            "CREATE FUNCTION example_add AS '" + testUdfClassName + "' USING JAR '" + jarFilePath + "'";
+    try {
+      stmt.execute(createSameFunctionAgain);
+    }catch (Exception e){
+      assertTrue("recreating same function failed with AlreadyExistsException ", e.getMessage().contains("AlreadyExistsException"));
+    }
+
+    // Call describe to see if function still available in registry
+    res = stmt.executeQuery("DESCRIBE FUNCTION " + testDbName + ".example_add");
+    checkForNotExist(res);
+
     // A new connection should be able to call describe/use function without issue
     Connection conn2 = getConnection(testDbName);
     Statement stmt2 = conn2.createStatement();
@@ -1378,6 +1480,21 @@ public class TestJdbcWithMiniHS2 {
     }
   }
 
+  public static class SleepMsUDF extends UDF {
+    public Integer evaluate(final Integer value, final Integer ms) {
+      try {
+        Thread.sleep(ms);
+      } catch (InterruptedException e) {
+        // No-op
+      }
+      return value;
+    }
+  }
+
+  private static class ExceptionHolder {
+    Throwable throwable;
+  }
+
   @Test
   public void testFetchSize() throws Exception {
     // Test setting fetch size below max
@@ -1406,5 +1523,179 @@ public class TestJdbcWithMiniHS2 {
       fetchSize);
     stmt.close();
     fsConn.close();
+  }
+
+  /**
+   * A test that checks that Lineage is correct when a multiple concurrent
+   * requests are make on a connection
+   */
+  @Test
+  public void testConcurrentLineage() throws Exception {
+    // setup to run concurrent operations
+    Statement stmt = conTestDb.createStatement();
+    setSerializeInTasksInConf(stmt);
+    stmt.execute("drop table if exists testConcurrentLineage1");
+    stmt.execute("drop table if exists testConcurrentLineage2");
+    stmt.execute("create table testConcurrentLineage1 (col1 int)");
+    stmt.execute("create table testConcurrentLineage2 (col2 int)");
+
+    // clear vertices list
+    ReadableHook.clear();
+
+    // run 5 sql inserts concurrently
+    int numThreads = 5;        // set to 1 for single threading
+    int concurrentCalls = 5;
+    ExecutorService pool = Executors.newFixedThreadPool(numThreads);
+    try {
+      List<InsertCallable> tasks = new ArrayList<>();
+      for (int i = 0; i < concurrentCalls; i++) {
+        InsertCallable runner = new InsertCallable(conTestDb);
+        tasks.add(runner);
+      }
+      List<Future<Void>> futures = pool.invokeAll(tasks);
+      for (Future<Void> future : futures) {
+        future.get(20, TimeUnit.SECONDS);
+      }
+      // check to see that the vertices are correct
+      checkVertices();
+    } finally {
+      // clean up
+      stmt.execute("drop table testConcurrentLineage1");
+      stmt.execute("drop table testConcurrentLineage2");
+      stmt.close();
+      pool.shutdownNow();
+    }
+  }
+
+  /**
+   * A Callable that does 2 inserts
+   */
+  private class InsertCallable implements Callable<Void> {
+    private Connection connection;
+
+    InsertCallable(Connection conn) {
+      this.connection = conn;
+    }
+
+    @Override public Void call() throws Exception {
+      doLineageInserts(connection);
+      return null;
+    }
+
+    private void doLineageInserts(Connection connection) throws SQLException {
+      Statement stmt = connection.createStatement();
+      stmt.execute("insert into testConcurrentLineage1 values (1)");
+      stmt.execute("insert into testConcurrentLineage2 values (2)");
+    }
+  }
+  /**
+   * check to see that the vertices derived from the HookContexts are correct
+   */
+  private void checkVertices() {
+    List<Set<LineageLogger.Vertex>> verticesLists = getVerticesFromHooks();
+
+    assertEquals("5 runs of 2 inserts makes 10", 10, verticesLists.size());
+    for (Set<LineageLogger.Vertex> vertices : verticesLists) {
+      assertFalse("Each insert affects a column so should be some vertices",
+          vertices.isEmpty());
+      assertEquals("Each insert affects one column so should be one vertex",
+          1, vertices.size());
+      Iterator<LineageLogger.Vertex> iterator = vertices.iterator();
+      assertTrue(iterator.hasNext());
+      LineageLogger.Vertex vertex = iterator.next();
+      assertEquals(0, vertex.getId());
+      assertEquals(LineageLogger.Vertex.Type.COLUMN, vertex.getType());
+      String label = vertex.getLabel();
+      System.out.println("vertex.getLabel() = " + label);
+      assertTrue("did not see one of the 2 expected column names",
+          label.equals("testjdbcminihs2.testconcurrentlineage1.col1") ||
+              label.equals("testjdbcminihs2.testconcurrentlineage2.col2"));
+    }
+  }
+
+  /**
+   * Use the logic in LineageLogger to get vertices from Hook Contexts
+   */
+  private List<Set<LineageLogger.Vertex>>  getVerticesFromHooks() {
+    List<Set<LineageLogger.Vertex>> verticesLists = new ArrayList<>();
+    List<HookContext> hookList = ReadableHook.getHookList();
+    for (HookContext hookContext : hookList) {
+      QueryPlan plan = hookContext.getQueryPlan();
+      LineageCtx.Index index = hookContext.getIndex();
+      assertNotNull(index);
+      List<LineageLogger.Edge> edges = LineageLogger.getEdges(plan, index);
+      Set<LineageLogger.Vertex> vertices = LineageLogger.getVertices(edges);
+      verticesLists.add(vertices);
+    }
+    return verticesLists;
+  }
+
+  /**
+   * Test 'describe extended' on tables that have special white space characters in the row format.
+   */
+  @Test
+  public void testDescribe() throws Exception {
+    try (Statement stmt = conTestDb.createStatement()) {
+      String table = "testDescribe";
+      stmt.execute("drop table if exists " + table);
+      stmt.execute("create table " + table + " (orderid int, orderdate string, customerid int)"
+          + " ROW FORMAT DELIMITED FIELDS terminated by '\\t' LINES terminated by '\\n'");
+      String extendedDescription = getDetailedTableDescription(stmt, table);
+      assertNotNull("could not get Detailed Table Information", extendedDescription);
+      assertTrue("description appears truncated: " + extendedDescription,
+          extendedDescription.endsWith(")"));
+      assertTrue("bad line delimiter: " + extendedDescription,
+          extendedDescription.contains("line.delim=\\n"));
+      assertTrue("bad field delimiter: " + extendedDescription,
+          extendedDescription.contains("field.delim=\\t"));
+
+      String view = "testDescribeView";
+      stmt.execute("create view " + view + " as select * from " + table);
+      String extendedViewDescription = getDetailedTableDescription(stmt, view);
+      assertTrue("bad view text: " + extendedViewDescription,
+          extendedViewDescription.contains("viewOriginalText:select * from " + table));
+      assertTrue("bad expanded view text: " + extendedViewDescription,
+          extendedViewDescription.contains(
+              "viewExpandedText:select `testdescribe`.`orderid`, `testdescribe`.`orderdate`, "
+                  + "`testdescribe`.`customerid` from `testjdbcminihs2`"));
+    }
+  }
+
+  /**
+   * Get Detailed Table Information via jdbc
+   */
+  static String getDetailedTableDescription(Statement stmt, String table) throws SQLException {
+    String extendedDescription = null;
+    try (ResultSet rs = stmt.executeQuery("describe extended " + table)) {
+      while (rs.next()) {
+        String out = rs.getString(1);
+        String tableInfo = rs.getString(2);
+        if ("Detailed Table Information".equals(out)) { // from TextMetaDataFormatter
+          extendedDescription = tableInfo;
+        }
+      }
+    }
+    return extendedDescription;
+  }
+
+  @Test
+  public void testCustomPathsForCTLV() throws Exception {
+    try (Statement stmt = conTestDb.createStatement()) {
+      // Initialize
+      stmt.execute("CREATE TABLE emp_table (id int, name string, salary int)");
+      stmt.execute("insert into emp_table values(1,'aaaaa',20000)");
+      stmt.execute("CREATE VIEW emp_view AS SELECT * FROM emp_table WHERE salary>10000");
+      String customPath = System.getProperty("test.tmp.dir") + "/custom";
+
+      //Test External CTLV
+      String extPath = customPath + "/emp_ext_table";
+      stmt.execute("CREATE EXTERNAL TABLE emp_ext_table like emp_view STORED AS PARQUET LOCATION '" + extPath + "'");
+      assertTrue(getDetailedTableDescription(stmt, "emp_ext_table").contains(extPath));
+
+      //Test Managed CTLV
+      String mndPath = customPath + "/emp_mm_table";
+      stmt.execute("CREATE TABLE emp_mm_table like emp_view STORED AS ORC LOCATION '" + mndPath + "'");
+      assertTrue(getDetailedTableDescription(stmt, "emp_mm_table").contains(mndPath));
+    }
   }
 }

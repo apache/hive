@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.See the NOTICE file
  * distributed with this work for additional information
@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
+import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -39,12 +40,12 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
-import org.apache.hadoop.hive.ql.lib.Dispatcher;
-import org.apache.hadoop.hive.ql.lib.GraphWalker;
+import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
+import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
-import org.apache.hadoop.hive.ql.lib.Rule;
+import org.apache.hadoop.hive.ql.lib.SemanticRule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
@@ -62,14 +63,14 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
 
 /**
  * Queries of form : select max(c), count(distinct c) from T; generates a plan
- * of form TS->mGBy->RS->rGBy->FS This plan suffers from a problem that vertex
- * containing rGBy->FS necessarily need to have 1 task. This limitation results
+ * of form TS-&gt;mGBy-&gt;RS-&gt;rGBy-&gt;FS This plan suffers from a problem that vertex
+ * containing rGBy-&gt;FS necessarily need to have 1 task. This limitation results
  * in slow execution because that task gets all the data. This optimization if
  * successful will rewrite above plan to mGby1-rs1-mGby2-mGby3-rs2-rGby1 This
  * introduces extra vertex of mGby2-mGby3-rs2. Note this vertex can have
  * multiple tasks and since we are doing aggregation, output of this must
  * necessarily be smaller than its input, which results in much less data going
- * in to original rGby->FS vertex, which continues to have single task. Also
+ * in to original rGby-&gt;FS vertex, which continues to have single task. Also
  * note on calcite tree we have HiveExpandDistinctAggregatesRule rule which does
  * similar plan transformation but has different conditions which needs to be
  * satisfied. Additionally, we don't do any costing here but this is possibly
@@ -89,7 +90,7 @@ public class CountDistinctRewriteProc extends Transform {
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
 
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
     // process group-by pattern
     opRules
         .put(
@@ -99,8 +100,8 @@ public class CountDistinctRewriteProc extends Transform {
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
-    Dispatcher disp = new DefaultRuleDispatcher(getDefaultProc(), opRules, null);
-    GraphWalker ogw = new DefaultGraphWalker(disp);
+    SemanticDispatcher disp = new DefaultRuleDispatcher(getDefaultProc(), opRules, null);
+    SemanticGraphWalker ogw = new DefaultGraphWalker(disp);
 
     // Create a list of topop nodes
     List<Node> topNodes = new ArrayList<Node>();
@@ -110,8 +111,8 @@ public class CountDistinctRewriteProc extends Transform {
     return pctx;
   }
 
-  private NodeProcessor getDefaultProc() {
-    return new NodeProcessor() {
+  private SemanticNodeProcessor getDefaultProc() {
+    return new SemanticNodeProcessor() {
       @Override
       public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
           Object... nodeOutputs) throws SemanticException {
@@ -120,7 +121,7 @@ public class CountDistinctRewriteProc extends Transform {
     };
   }
 
-  private NodeProcessor getCountDistinctProc(ParseContext pctx) {
+  private SemanticNodeProcessor getCountDistinctProc(ParseContext pctx) {
     return new CountDistinctProcessor(pctx);
   }
 
@@ -128,7 +129,7 @@ public class CountDistinctRewriteProc extends Transform {
    * CountDistinctProcessor.
    *
    */
-  public class CountDistinctProcessor implements NodeProcessor {
+  public class CountDistinctProcessor implements SemanticNodeProcessor {
 
     protected ParseContext pGraphContext;
 
@@ -142,7 +143,7 @@ public class CountDistinctRewriteProc extends Transform {
         GroupByOperator rGby) {
       // Position of distinct column in aggregator list of map Gby before rewrite.
       int indexOfDist = -1;
-      ArrayList<ExprNodeDesc> keys = mGby.getConf().getKeys();
+      List<ExprNodeDesc> keys = mGby.getConf().getKeys();
       if (!(mGby.getConf().getMode() == GroupByDesc.Mode.HASH
           && !mGby.getConf().isGroupingSetsPresent() && rs.getConf().getKeyCols().size() == 1
           && rs.getConf().getPartitionCols().size() == 0
@@ -286,7 +287,7 @@ public class CountDistinctRewriteProc extends Transform {
       List<List<Integer>> distinctColIndices = new ArrayList<>();
       rs1.setConf(PlanUtils.getReduceSinkDesc(reduceKeys, 1, reduceValues, distinctColIndices,
           outputKeyColumnNames, outputValueColumnNames, true, -1, 1, -1,
-          AcidUtils.Operation.NOT_ACID));
+          AcidUtils.Operation.NOT_ACID, NullOrdering.defaultNullOrder(pGraphContext.getConf())));
       rs1.setColumnExprMap(colExprMap);
       
       rs1.setSchema(new RowSchema(rowSchema));
@@ -449,7 +450,7 @@ public class CountDistinctRewriteProc extends Transform {
       ArrayList<ExprNodeDesc> reduceKeys = new ArrayList<>();
       rs2.setConf(PlanUtils.getReduceSinkDesc(reduceKeys, 0, reduceValues, distinctColIndices,
           outputKeyColumnNames, outputValueColumnNames, false, -1, 0, 1,
-          AcidUtils.Operation.NOT_ACID));
+          AcidUtils.Operation.NOT_ACID, NullOrdering.defaultNullOrder(pGraphContext.getConf())));
       rs2.setColumnExprMap(colExprMap);
       rs2.setSchema(new RowSchema(rowSchema));
       return rs2;

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,7 +17,10 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.load;
 
+import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hive.common.util.HiveStringUtils;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
 
@@ -25,52 +28,127 @@ import java.util.List;
  * Utility class to help track and return the metadata which are updated by repl load
  */
 public class UpdatedMetaDataTracker {
-  private String replState;
-  private String dbName;
-  private String tableName;
-  private List<Map <String, String>> partitionsList;
 
-  public UpdatedMetaDataTracker() {
-    this.replState = null;
-    this.dbName = null;
-    this.tableName = null;
-    this.partitionsList = new ArrayList<>();
-  }
+  /**
+   * Utility class to store replication state of a table.
+   */
+  public static class UpdateMetaData {
+    private String replState;
+    private String dbName;
+    private String tableName;
+    private List<Map <String, String>> partitionsList;
 
-  public void copyUpdatedMetadata(UpdatedMetaDataTracker other) {
-    this.replState = other.replState;
-    this.dbName = other.dbName;
-    this.tableName = other.tableName;
-    this.partitionsList = other.getPartitions();
-  }
+    UpdateMetaData(String replState, String dbName, String tableName, Map <String, String> partSpec) {
+      this.replState = replState;
+      this.dbName = dbName;
+      this.tableName = tableName;
+      this.partitionsList = new ArrayList<>();
+      if (partSpec != null) {
+        this.partitionsList.add(partSpec);
+      }
+    }
 
-  public void set(String replState, String dbName, String tableName, Map <String, String> partSpec) {
-    this.replState = replState;
-    this.dbName = dbName;
-    this.tableName = tableName;
-    if (partSpec != null) {
-      addPartition(partSpec);
+    public String getReplState() {
+      return replState;
+    }
+
+    public String getDbName() {
+      return dbName;
+    }
+
+    public String getTableName() {
+      return tableName;
+    }
+
+    public List<Map <String, String>> getPartitionsList() {
+      return partitionsList;
+    }
+
+    public void addPartition(Map<String, String> partSpec) {
+      this.partitionsList.add(partSpec);
     }
   }
 
-  public void addPartition(Map <String, String> partSpec) {
-    partitionsList.add(partSpec);
+  private List<UpdateMetaData> updateMetaDataList;
+  private Map<String, Integer> updateMetaDataMap;
+  private boolean needCommitTxn = false;
+
+  public UpdatedMetaDataTracker() {
+    updateMetaDataList = new ArrayList<>();
+    updateMetaDataMap = new HashMap<>();
   }
 
-  public String getReplicationState() {
-    return replState;
+  public void setNeedCommitTxn(boolean needCommitTxn) {
+    this.needCommitTxn = needCommitTxn;
   }
 
-  public String getDatabase() {
-    return dbName;
+  public boolean isNeedCommitTxn() {
+    return needCommitTxn;
   }
 
-  public String getTable() {
-    return tableName;
+  public void copyUpdatedMetadata(UpdatedMetaDataTracker other) {
+    int size = updateMetaDataList.size();
+    for (UpdateMetaData updateMetaDataOther : other.updateMetaDataList) {
+      String key = getKey(normalizeIdentifier(updateMetaDataOther.getDbName()),
+              normalizeIdentifier(updateMetaDataOther.getTableName()));
+      Integer idx = updateMetaDataMap.get(key);
+      if (idx == null) {
+        updateMetaDataList.add(updateMetaDataOther);
+        updateMetaDataMap.put(key, size++);
+      } else if (updateMetaDataOther.partitionsList != null && updateMetaDataOther.partitionsList.size() != 0) {
+        UpdateMetaData updateMetaData = updateMetaDataList.get(idx);
+        for (Map<String, String> partSpec : updateMetaDataOther.partitionsList) {
+          updateMetaData.addPartition(partSpec);
+        }
+      }
+    }
+    this.needCommitTxn = other.needCommitTxn;
   }
 
-  public List<Map <String, String>> getPartitions() {
-    return partitionsList;
+  public void set(String replState, String dbName, String tableName, Map <String, String> partSpec)
+          throws SemanticException {
+    if (dbName == null) {
+      throw new SemanticException("db name can not be null");
+    }
+    if (dbName.contains(".") || ((tableName != null)  && tableName.contains("."))) {
+      throw new SemanticException("Invalid DB or table name." + dbName + "::"
+              + ((tableName != null) ? tableName : ""));
+    }
+    String key = getKey(normalizeIdentifier(dbName), normalizeIdentifier(tableName));
+    Integer idx = updateMetaDataMap.get(key);
+    if (idx == null) {
+      updateMetaDataList.add(new UpdateMetaData(replState, dbName, tableName, partSpec));
+      updateMetaDataMap.put(key, updateMetaDataList.size() - 1);
+    } else {
+      updateMetaDataList.get(idx).addPartition(partSpec);
+    }
+  }
+
+  public void addPartition(String dbName, String tableName, Map <String, String> partSpec) throws SemanticException {
+    if (dbName == null) {
+      throw new SemanticException("db name can not be null");
+    }
+    String key = getKey(normalizeIdentifier(dbName), normalizeIdentifier(tableName));
+    Integer idx = updateMetaDataMap.get(key);
+    if (idx == null) {
+      throw new SemanticException("add partition to metadata map failed as list is not yet set for table : " + key);
+    }
+    updateMetaDataList.get(idx).addPartition(partSpec);
+  }
+
+  public List<UpdateMetaData> getUpdateMetaDataList() {
+    return updateMetaDataList;
+  }
+
+  private String getKey(String dbName, String tableName) {
+    if (tableName == null) {
+      return dbName + ".*";
+    }
+    return dbName + "." + tableName;
+  }
+
+  private String normalizeIdentifier(String name) {
+    return name == null ? null : HiveStringUtils.normalizeIdentifier(name);
   }
 
 }

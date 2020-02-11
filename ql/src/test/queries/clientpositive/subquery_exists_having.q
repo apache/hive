@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 set hive.optimize.correlation=false;
 
@@ -48,7 +49,7 @@ having exists
 ;
 
 -- view test
-create view cv1 as 
+create view cv1_n6 as 
 select b.key, count(*) as c
 from src b
 group by b.key
@@ -59,7 +60,7 @@ having exists
   )
 ;
 
-select * from cv1;
+select * from cv1_n6;
 
 -- sq in from
 select *

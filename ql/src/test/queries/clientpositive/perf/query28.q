@@ -55,3 +55,5 @@ from (select avg(ss_list_price) B1_LP
 limit 100;
 
 -- end query 1 in stream 0 using template query28.tpl
+
+set hive.optimize.metadataonly=false;

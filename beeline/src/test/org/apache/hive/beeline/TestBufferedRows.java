@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -87,6 +87,7 @@ public class TestBufferedRows {
     when(mockResultSet.next()).thenAnswer(new Answer<Boolean>() {
       private int mockRowDataIndex = 0;
 
+      @Override
       public Boolean answer(InvocationOnMock invocation) {
         if (mockRowDataIndex < mockRowData.length) {
           mockRow.setCurrentRowData(mockRowData[mockRowDataIndex]);
@@ -99,6 +100,7 @@ public class TestBufferedRows {
     });
 
     when(mockResultSet.getObject(Matchers.anyInt())).thenAnswer(new Answer<String>() {
+      @Override
       public String answer(InvocationOnMock invocation) {
         Object[] args = invocation.getArguments();
         int index = ((Integer) args[0]).intValue();

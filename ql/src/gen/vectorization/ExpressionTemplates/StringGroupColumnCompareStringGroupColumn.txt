@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -15,8 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
+
+import java.util.Arrays;
 
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
@@ -24,6 +26,7 @@ import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
  * Filter the rows in a batch by comparing one string column to another. 
@@ -33,21 +36,31 @@ public class <ClassName> extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private int colNum1;
-  private int colNum2;
-  private int outputColumn;
+  private final int colNum1;
+  private final int colNum2;
 
-  public <ClassName>(int colNum1, int colNum2, int outputColumn) { 
+  public <ClassName>(int colNum1, int colNum2, int outputColumnNum) {
+    super(outputColumnNum);
     this.colNum1 = colNum1;
     this.colNum2 = colNum2;
-    this.outputColumn = outputColumn;
   }
 
   public <ClassName>() {
+    super();
+
+    // Dummy final assignments.
+    colNum1 = -1;
+    colNum2 = -1;
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
+
+    // return immediately if batch is empty
+    final int n = batch.size;
+    if (n == 0) {
+      return;
+    }
 
     if (childExpressions != null) {
       super.evaluateChildren(batch);
@@ -55,13 +68,12 @@ public class <ClassName> extends VectorExpression {
 
     BytesColumnVector inputColVector1 = (BytesColumnVector) batch.cols[colNum1];
     BytesColumnVector inputColVector2 = (BytesColumnVector) batch.cols[colNum2];
-    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumn];
+    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] nullPos1 = inputColVector1.isNull;
     boolean[] nullPos2 = inputColVector2.isNull;
-    boolean[] outNull = outputColVector.isNull;
+    boolean[] outputIsNull = outputColVector.isNull;
 
-    int n = batch.size;
     byte[][] vector1 = inputColVector1.vector;
     byte[][] vector2 = inputColVector2.vector;
     int[] start1 = inputColVector1.start;
@@ -70,20 +82,17 @@ public class <ClassName> extends VectorExpression {
     int[] length2 = inputColVector2.length;
 
     long[] outVector = outputColVector.vector;
-    
-    // return immediately if batch is empty
-    if (n == 0) {
-      return;
-    }
-   
-    outputColVector.noNulls = true;
+
+    // We do not need to do a column reset since we are carefully changing the output.
     outputColVector.isRepeating = false;
+
     // handle case where neither input has nulls
     if (inputColVector1.noNulls && inputColVector2.noNulls) {
-      outputColVector.noNulls = true;
+
       if (inputColVector1.isRepeating && inputColVector2.isRepeating) {
         outputColVector.isRepeating = true;
-        <CompareOrEqualReturnType> ret = <CompareOrEqual>(vector1[0], start1[0], length1[0], 
+        outputIsNull[0] = false;
+        <CompareOrEqualReturnType> ret = <CompareOrEqual>(vector1[0], start1[0], length1[0],
                                          vector2[0], start2[0], length2[0]);
         if (ret<OptionalCompare>) {
           outVector[0] = 1;
@@ -94,7 +103,8 @@ public class <ClassName> extends VectorExpression {
         if (batch.selectedInUse) {
           for(int j = 0; j != n; j++) {
             int i = sel[j];
-            if (<CompareOrEqual>(vector1[0], start1[0], length1[0], 
+            outputIsNull[i] = false;
+            if (<CompareOrEqual>(vector1[0], start1[0], length1[0],
                                    vector2[i], start2[i], length2[i])<OptionalCompare>) {
               outVector[i] = 1;
             } else {
@@ -102,8 +112,9 @@ public class <ClassName> extends VectorExpression {
             }
           }
         } else {
+          Arrays.fill(outputIsNull, 0, n, false);
           for(int i = 0; i != n; i++) {
-            if (<CompareOrEqual>(vector1[0], start1[0], length1[0], 
+            if (<CompareOrEqual>(vector1[0], start1[0], length1[0],
                                    vector2[i], start2[i], length2[i])<OptionalCompare>) {
               outVector[i] = 1;
             } else {
@@ -115,7 +126,8 @@ public class <ClassName> extends VectorExpression {
         if (batch.selectedInUse) {
           for(int j = 0; j != n; j++) {
             int i = sel[j];
-            if (<CompareOrEqual>(vector1[i], start1[i], length1[i], 
+            outputIsNull[i] = false;
+            if (<CompareOrEqual>(vector1[i], start1[i], length1[i],
                                    vector2[0], start2[0], length2[0])<OptionalCompare>) {
               outVector[i] = 1;
             } else {
@@ -123,8 +135,9 @@ public class <ClassName> extends VectorExpression {
             }
           }
         } else {
+          Arrays.fill(outputIsNull, 0, n, false);
           for(int i = 0; i != n; i++) {
-            if (<CompareOrEqual>(vector1[i], start1[i], length1[i], 
+            if (<CompareOrEqual>(vector1[i], start1[i], length1[i],
                                    vector2[0], start2[0], length2[0])<OptionalCompare>) {
               outVector[i] = 1;
             } else {
@@ -135,7 +148,8 @@ public class <ClassName> extends VectorExpression {
       } else if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          if (<CompareOrEqual>(vector1[i], start1[i], length1[i], 
+          outputIsNull[i] = false;
+          if (<CompareOrEqual>(vector1[i], start1[i], length1[i],
                                  vector2[i], start2[i], length2[i])<OptionalCompare>) {
             outVector[i] = 1;
           } else {
@@ -143,8 +157,9 @@ public class <ClassName> extends VectorExpression {
           }
         }
       } else {
+        Arrays.fill(outputIsNull, 0, n, false);
         for(int i = 0; i != n; i++) {
-          if (<CompareOrEqual>(vector1[i], start1[i], length1[i], 
+          if (<CompareOrEqual>(vector1[i], start1[i], length1[i],
                                  vector2[i], start2[i], length2[i])<OptionalCompare>) {
             outVector[i] = 1;
           } else {
@@ -152,15 +167,18 @@ public class <ClassName> extends VectorExpression {
           }
         }
       }
-    
+
     // handle case where only input 2 has nulls
     } else if (inputColVector1.noNulls) {
+
+      // Carefully handle NULLs...
       outputColVector.noNulls = false;
+
       if (inputColVector1.isRepeating && inputColVector2.isRepeating) {
         outputColVector.isRepeating = true;
-        outNull[0] = nullPos2[0];
+        outputIsNull[0] = nullPos2[0];
         if (!nullPos2[0]) {
-          if (<CompareOrEqual>(vector1[0], start1[0], length1[0], 
+          if (<CompareOrEqual>(vector1[0], start1[0], length1[0],
                                vector2[0], start2[0], length2[0])<OptionalCompare>) {
             outVector[0] = 1;
           } else {
@@ -173,21 +191,21 @@ public class <ClassName> extends VectorExpression {
          if (batch.selectedInUse) {
           for(int j = 0; j != n; j++) {
             int i = sel[j];
-            outNull[i] = nullPos2[i];
+            outputIsNull[i] = nullPos2[i];
             if (!nullPos2[i]) {
-              if (<CompareOrEqual>(vector1[0], start1[0], length1[0], 
+              if (<CompareOrEqual>(vector1[0], start1[0], length1[0],
                                      vector2[i], start2[i], length2[i])<OptionalCompare>) {
                 outVector[i] = 1;
               } else {
                 outVector[i] = 0;
               }
-            } 
+            }
           }
         } else {
           for(int i = 0; i != n; i++) {
-            outNull[i] = nullPos2[i];
+            outputIsNull[i] = nullPos2[i];
             if (!nullPos2[i]) {
-              if (<CompareOrEqual>(vector1[0], start1[0], length1[0], 
+              if (<CompareOrEqual>(vector1[0], start1[0], length1[0],
                                      vector2[i], start2[i], length2[i])<OptionalCompare>) {
                 outVector[i] = 1;
               } else {
@@ -200,14 +218,14 @@ public class <ClassName> extends VectorExpression {
         if (nullPos2[0]) {
           // Entire output vector will be null
           outputColVector.isRepeating = true;
-          outNull[0] = true;
+          outputIsNull[0] = true;
           return;
         }
         if (batch.selectedInUse) {
           for(int j = 0; j != n; j++) {
             int i = sel[j];
-            outNull[i] = false;
-            if (<CompareOrEqual>(vector1[i], start1[i], length1[i], 
+            outputIsNull[i] = false;
+            if (<CompareOrEqual>(vector1[i], start1[i], length1[i],
                                    vector2[0], start2[0], length2[0])<OptionalCompare>) {
               outVector[i] = 1;
             } else {
@@ -216,8 +234,8 @@ public class <ClassName> extends VectorExpression {
           }
         } else {
           for(int i = 0; i != n; i++) {
-            outNull[i] = false;
-            if (<CompareOrEqual>(vector1[i], start1[i], length1[i], 
+            outputIsNull[i] = false;
+            if (<CompareOrEqual>(vector1[i], start1[i], length1[i],
                                    vector2[0], start2[0], length2[0])<OptionalCompare>) {
               outVector[i] = 1;
             } else {
@@ -229,21 +247,9 @@ public class <ClassName> extends VectorExpression {
         if (batch.selectedInUse) {
           for(int j = 0; j != n; j++) {
             int i = sel[j];
-            outNull[i] = nullPos2[i];
+            outputIsNull[i] = nullPos2[i];
             if (!nullPos2[i]) {
-              if (<CompareOrEqual>(vector1[i], start1[i], length1[i], 
-                                     vector2[i], start2[i], length2[i])<OptionalCompare>) {
-                outVector[i] = 1;
-              } else {
-                outVector[i] = 0;
-              }
-            } 
-          }
-        } else {
-          for(int i = 0; i != n; i++) {
-            outNull[i] = nullPos2[i];
-            if (!nullPos2[i]) {
-              if (<CompareOrEqual>(vector1[i], start1[i], length1[i], 
+              if (<CompareOrEqual>(vector1[i], start1[i], length1[i],
                                      vector2[i], start2[i], length2[i])<OptionalCompare>) {
                 outVector[i] = 1;
               } else {
@@ -251,17 +257,32 @@ public class <ClassName> extends VectorExpression {
               }
             }
           }
-        }      
+        } else {
+          for(int i = 0; i != n; i++) {
+            outputIsNull[i] = nullPos2[i];
+            if (!nullPos2[i]) {
+              if (<CompareOrEqual>(vector1[i], start1[i], length1[i],
+                                     vector2[i], start2[i], length2[i])<OptionalCompare>) {
+                outVector[i] = 1;
+              } else {
+                outVector[i] = 0;
+              }
+            }
+          }
+        }
       }
-      
+
     // handle case where only input 1 has nulls
     } else if (inputColVector2.noNulls) {
+
+      // Carefully handle NULLs...
       outputColVector.noNulls = false;
+
       if (inputColVector1.isRepeating && inputColVector2.isRepeating) {
         outputColVector.isRepeating = true;
-        outNull[0] = nullPos1[0];
+        outputIsNull[0] = nullPos1[0];
         if (!nullPos1[0]) {
-          if (<CompareOrEqual>(vector1[0], start1[0], length1[0], 
+          if (<CompareOrEqual>(vector1[0], start1[0], length1[0],
                                vector2[0], start2[0], length2[0])<OptionalCompare>) {
             outVector[0] = 1;
           } else {
@@ -272,14 +293,14 @@ public class <ClassName> extends VectorExpression {
         if (nullPos1[0]) {
           // Entire output vector will be null
           outputColVector.isRepeating = true;
-          outNull[0] = true;
+          outputIsNull[0] = true;
           return; 
         }
         if (batch.selectedInUse) {
           for(int j = 0; j != n; j++) {
             int i = sel[j];
-            outNull[i] = false;
-            if (<CompareOrEqual>(vector1[0], start1[0], length1[0], 
+            outputIsNull[i] = false;
+            if (<CompareOrEqual>(vector1[0], start1[0], length1[0],
                                    vector2[i], start2[i], length2[i])<OptionalCompare>) {
               outVector[i] = 1;
             } else {
@@ -288,8 +309,8 @@ public class <ClassName> extends VectorExpression {
           }
         } else {
           for(int i = 0; i != n; i++) {
-            outNull[i] = false;
-            if (<CompareOrEqual>(vector1[0], start1[0], length1[0], 
+            outputIsNull[i] = false;
+            if (<CompareOrEqual>(vector1[0], start1[0], length1[0],
                                    vector2[i], start2[i], length2[i])<OptionalCompare>) {
               outVector[i] = 1;
             } else {
@@ -301,9 +322,9 @@ public class <ClassName> extends VectorExpression {
          if (batch.selectedInUse) {
           for(int j = 0; j != n; j++) {
             int i = sel[j];
-            outNull[i] = nullPos1[i];
+            outputIsNull[i] = nullPos1[i];
             if (!nullPos1[i]) {
-              if (<CompareOrEqual>(vector1[i], start1[i], length1[i], 
+              if (<CompareOrEqual>(vector1[i], start1[i], length1[i],
                                      vector2[0], start2[0], length2[0])<OptionalCompare>) {
                 outVector[i] = 1;
               } else {
@@ -313,9 +334,9 @@ public class <ClassName> extends VectorExpression {
           }
         } else {
           for(int i = 0; i != n; i++) {
-            outNull[i] = nullPos1[i];
+            outputIsNull[i] = nullPos1[i];
             if (!nullPos1[i]) {
-              if (<CompareOrEqual>(vector1[i], start1[i], length1[i], 
+              if (<CompareOrEqual>(vector1[i], start1[i], length1[i],
                                      vector2[0], start2[0], length2[0])<OptionalCompare>) {
                 outVector[i] = 1;
               } else {
@@ -328,9 +349,9 @@ public class <ClassName> extends VectorExpression {
          if (batch.selectedInUse) {
           for(int j = 0; j != n; j++) {
             int i = sel[j];
-            outNull[i] = nullPos1[i];
+            outputIsNull[i] = nullPos1[i];
             if (!nullPos1[i]) {
-              if (<CompareOrEqual>(vector1[i], start1[i], length1[i], 
+              if (<CompareOrEqual>(vector1[i], start1[i], length1[i],
                                      vector2[i], start2[i], length2[i])<OptionalCompare>) {
                 outVector[i] = 1;
               } else {
@@ -340,9 +361,9 @@ public class <ClassName> extends VectorExpression {
           }
         } else {
           for(int i = 0; i != n; i++) {
-            outNull[i] = nullPos1[i];
+            outputIsNull[i] = nullPos1[i];
             if (!nullPos1[i]) {
-              if (<CompareOrEqual>(vector1[i], start1[i], length1[i], 
+              if (<CompareOrEqual>(vector1[i], start1[i], length1[i],
                                      vector2[i], start2[i], length2[i])<OptionalCompare>) {
                 outVector[i] = 1;
               } else {
@@ -350,17 +371,20 @@ public class <ClassName> extends VectorExpression {
               }
             }
           }
-        }      
+        }
       }
-            
+
     // handle case where both inputs have nulls
     } else {
+
+      // Carefully handle NULLs...
       outputColVector.noNulls = false;
+
       if (inputColVector1.isRepeating && inputColVector2.isRepeating) {
         outputColVector.isRepeating = true;
-        outNull[0] = nullPos1[0] || nullPos2[0];
-        if (!outNull[0]) {
-          if (<CompareOrEqual>(vector1[0], start1[0], length1[0], 
+        outputIsNull[0] = nullPos1[0] || nullPos2[0];
+        if (!outputIsNull[0]) {
+          if (<CompareOrEqual>(vector1[0], start1[0], length1[0],
                              vector2[0], start2[0], length2[0])<OptionalCompare>) {
             outVector[0] = 1;
           } else {
@@ -370,15 +394,15 @@ public class <ClassName> extends VectorExpression {
       } else if (inputColVector1.isRepeating) {
          if (nullPos1[0]) {
            outputColVector.isRepeating = true;
-           outNull[0] = true;
+           outputIsNull[0] = true;
            return;
          }
          if (batch.selectedInUse) {
           for(int j = 0; j != n; j++) {
             int i = sel[j];
-            outNull[i] = nullPos2[i];
+            outputIsNull[i] = nullPos2[i];
             if (!nullPos2[i]) {
-              if (<CompareOrEqual>(vector1[0], start1[0], length1[0], 
+              if (<CompareOrEqual>(vector1[0], start1[0], length1[0],
                                      vector2[i], start2[i], length2[i])<OptionalCompare>) {
                 outVector[i] = 1;
               } else {
@@ -388,9 +412,9 @@ public class <ClassName> extends VectorExpression {
           }
         } else {
           for(int i = 0; i != n; i++) {
-            outNull[i] = nullPos2[i];
+            outputIsNull[i] = nullPos2[i];
             if (!nullPos2[i]) {
-              if (<CompareOrEqual>(vector1[0], start1[0], length1[0], 
+              if (<CompareOrEqual>(vector1[0], start1[0], length1[0],
                                      vector2[i], start2[i], length2[i])<OptionalCompare>) {
                 outVector[i] = 1;
               } else {
@@ -402,15 +426,15 @@ public class <ClassName> extends VectorExpression {
       } else if (inputColVector2.isRepeating) {
         if (nullPos2[0]) {
           outputColVector.isRepeating = true;
-          outNull[0] = true;
+          outputIsNull[0] = true;
           return;
         }
         if (batch.selectedInUse) {
           for(int j = 0; j != n; j++) {
             int i = sel[j];
-            outNull[i] = nullPos1[i];
+            outputIsNull[i] = nullPos1[i];
             if (!nullPos1[i]) {
-              if (<CompareOrEqual>(vector1[i], start1[i], length1[i], 
+              if (<CompareOrEqual>(vector1[i], start1[i], length1[i],
                                      vector2[0], start2[0], length2[0])<OptionalCompare>) {
                 outVector[i] = 1;
               } else {
@@ -420,9 +444,9 @@ public class <ClassName> extends VectorExpression {
           }
         } else {
           for(int i = 0; i != n; i++) {
-            outNull[i] = nullPos1[i];
+            outputIsNull[i] = nullPos1[i];
             if (!nullPos1[i]) {
-              if (<CompareOrEqual>(vector1[i], start1[i], length1[i], 
+              if (<CompareOrEqual>(vector1[i], start1[i], length1[i],
                                      vector2[0], start2[0], length2[0])<OptionalCompare>) {
                 outVector[i] = 1;
               } else {
@@ -435,9 +459,9 @@ public class <ClassName> extends VectorExpression {
          if (batch.selectedInUse) {
           for(int j = 0; j != n; j++) {
             int i = sel[j];
-            outNull[i] = nullPos1[i] || nullPos2[i];
-            if (!outNull[i]) {
-              if (<CompareOrEqual>(vector1[i], start1[i], length1[i], 
+            outputIsNull[i] = nullPos1[i] || nullPos2[i];
+            if (!outputIsNull[i]) {
+              if (<CompareOrEqual>(vector1[i], start1[i], length1[i],
                                      vector2[i], start2[i], length2[i])<OptionalCompare>) {
                 outVector[i] = 1;
               } else {
@@ -447,9 +471,9 @@ public class <ClassName> extends VectorExpression {
           }
         } else {
           for(int i = 0; i != n; i++) {
-            outNull[i] = nullPos1[i] || nullPos2[i];
-            if (!outNull[i]) {
-              if (<CompareOrEqual>(vector1[i], start1[i], length1[i], 
+            outputIsNull[i] = nullPos1[i] || nullPos2[i];
+            if (!outputIsNull[i]) {
+              if (<CompareOrEqual>(vector1[i], start1[i], length1[i],
                                      vector2[i], start2[i], length2[i])<OptionalCompare>) {
                 outVector[i] = 1;
               } else {
@@ -457,44 +481,14 @@ public class <ClassName> extends VectorExpression {
               }
             }
           }
-        }      
-      } 
+        }
+      }
     }
   }
 
   @Override
-  public String getOutputType() {
-    return "boolean";
-  }
-
-  @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-  
-  public int getColNum1() {
-    return colNum1;
-  }
-
-  public void setColNum1(int colNum1) {
-    this.colNum1 = colNum1;
-  }
-
-  public int getColNum2() {
-    return colNum2;
-  }
-
-  public void setColNum2(int colNum2) {
-    this.colNum2 = colNum2;
-  }
-
-  public void setOutputColumn(int outputColumn) {
-    this.outputColumn = outputColumn;
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + colNum1 + ", col " + + colNum2;
+    return getColumnParamString(0, colNum1) + ", " + getColumnParamString(1, colNum2);
   }
 
   @Override

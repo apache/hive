@@ -176,13 +176,13 @@ public class TestLock {
     LockComponent expected1 = new LockComponent(LockType.SHARED_READ, LockLevel.TABLE, "DB");
     expected1.setTablename("SOURCE_1");
     expected1.setOperationType(DataOperationType.INSERT);
-    expected1.setIsAcid(true);
+    expected1.setIsTransactional(true);
     assertTrue(components.contains(expected1));
 
     LockComponent expected2 = new LockComponent(LockType.SHARED_READ, LockLevel.TABLE, "DB");
     expected2.setTablename("SOURCE_2");
     expected2.setOperationType(DataOperationType.INSERT);
-    expected2.setIsAcid(true);
+    expected2.setIsTransactional(true);
     assertTrue(components.contains(expected2));
   }
 
@@ -203,19 +203,19 @@ public class TestLock {
     LockComponent expected1 = new LockComponent(LockType.SHARED_READ, LockLevel.TABLE, "DB");
     expected1.setTablename("SOURCE_1");
     expected1.setOperationType(DataOperationType.INSERT);
-    expected1.setIsAcid(true);
+    expected1.setIsTransactional(true);
     assertTrue(components.contains(expected1));
 
     LockComponent expected2 = new LockComponent(LockType.SHARED_READ, LockLevel.TABLE, "DB");
     expected2.setTablename("SOURCE_2");
     expected2.setOperationType(DataOperationType.INSERT);
-    expected2.setIsAcid(true);
+    expected2.setIsTransactional(true);
     assertTrue(components.contains(expected2));
 
     LockComponent expected3 = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, "DB");
     expected3.setTablename("SINK");
     expected3.setOperationType(DataOperationType.UPDATE);
-    expected3.setIsAcid(true);
+    expected3.setIsTransactional(true);
     assertTrue(components.contains(expected3));
   }
 

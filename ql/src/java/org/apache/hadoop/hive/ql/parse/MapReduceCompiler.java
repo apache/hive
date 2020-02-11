@@ -1,4 +1,4 @@
-/**
+/*
  *  Licensed to the Apache Software Foundation (ASF) under one
  *  or more contributor license agreements.  See the NOTICE file
  *  distributed with this work for additional information
@@ -19,9 +19,7 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +32,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
@@ -48,12 +47,13 @@ import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
-import org.apache.hadoop.hive.ql.lib.Dispatcher;
-import org.apache.hadoop.hive.ql.lib.GraphWalker;
+import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
+import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
-import org.apache.hadoop.hive.ql.lib.Rule;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticRule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.optimizer.GenMRFileSink1;
 import org.apache.hadoop.hive.ql.optimizer.GenMROperator;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext;
@@ -70,6 +70,7 @@ import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.shims.ShimLoader;
 
 public class MapReduceCompiler extends TaskCompiler {
@@ -79,30 +80,46 @@ public class MapReduceCompiler extends TaskCompiler {
   public MapReduceCompiler() {
   }
 
+  @Override
+  public void init(QueryState queryState, LogHelper console, Hive db) {
+    super.init(queryState, console, db);
+
+    //It is required the use of recursive input dirs when hive.optimize.union.remove = true
+    if(conf.getBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_UNION_REMOVE)) {
+      conf.setBoolean("mapred.input.dir.recursive", true);
+    }
+  }
+
   // loop over all the tasks recursively
   @Override
-  protected void setInputFormat(Task<? extends Serializable> task) {
+  protected void setInputFormat(Task<?> task) {
     if (task instanceof ExecDriver) {
       MapWork work = ((MapredWork) task.getWork()).getMapWork();
-      HashMap<String, Operator<? extends OperatorDesc>> opMap = work.getAliasToWork();
+      Map<String, Operator<? extends OperatorDesc>> opMap = work.getAliasToWork();
       if (!opMap.isEmpty()) {
         for (Operator<? extends OperatorDesc> op : opMap.values()) {
           setInputFormat(work, op);
         }
       }
     } else if (task instanceof ConditionalTask) {
-      List<Task<? extends Serializable>> listTasks
+      List<Task<?>> listTasks
         = ((ConditionalTask) task).getListTasks();
-      for (Task<? extends Serializable> tsk : listTasks) {
+      for (Task<?> tsk : listTasks) {
         setInputFormat(tsk);
       }
     }
 
     if (task.getChildTasks() != null) {
-      for (Task<? extends Serializable> childTask : task.getChildTasks()) {
+      for (Task<?> childTask : task.getChildTasks()) {
         setInputFormat(childTask);
       }
     }
+  }
+
+  @Override
+  protected void optimizeOperatorPlan(ParseContext pCtx, Set<ReadEntity> inputs,
+      Set<WriteEntity> outputs) throws SemanticException {
+    this.runDynPartitionSortOptimizations(pCtx, conf);
   }
 
   private void setInputFormat(MapWork work, Operator<? extends OperatorDesc> op) {
@@ -119,20 +136,20 @@ public class MapReduceCompiler extends TaskCompiler {
   }
 
   // loop over all the tasks recursively
-  private void breakTaskTree(Task<? extends Serializable> task) {
+  private void breakTaskTree(Task<?> task) {
 
     if (task instanceof ExecDriver) {
-      HashMap<String, Operator<? extends OperatorDesc>> opMap = ((MapredWork) task
-          .getWork()).getMapWork().getAliasToWork();
+      Map<String, Operator<? extends OperatorDesc>> opMap =
+          ((MapredWork) task.getWork()).getMapWork().getAliasToWork();
       if (!opMap.isEmpty()) {
         for (Operator<? extends OperatorDesc> op : opMap.values()) {
           breakOperatorTree(op);
         }
       }
     } else if (task instanceof ConditionalTask) {
-      List<Task<? extends Serializable>> listTasks = ((ConditionalTask) task)
+      List<Task<?>> listTasks = ((ConditionalTask) task)
           .getListTasks();
-      for (Task<? extends Serializable> tsk : listTasks) {
+      for (Task<?> tsk : listTasks) {
         breakTaskTree(tsk);
       }
     }
@@ -141,7 +158,7 @@ public class MapReduceCompiler extends TaskCompiler {
       return;
     }
 
-    for (Task<? extends Serializable> childTask : task.getChildTasks()) {
+    for (Task<?> childTask : task.getChildTasks()) {
       breakTaskTree(childTask);
     }
   }
@@ -173,7 +190,7 @@ public class MapReduceCompiler extends TaskCompiler {
   }
 
   @Override
-  protected void decideExecMode(List<Task<? extends Serializable>> rootTasks, Context ctx,
+  protected void decideExecMode(List<Task<?>> rootTasks, Context ctx,
       GlobalLimitCtx globalLimitCtx)
       throws SemanticException {
 
@@ -253,13 +270,13 @@ public class MapReduceCompiler extends TaskCompiler {
   }
 
   @Override
-  protected void optimizeTaskPlan(List<Task<? extends Serializable>> rootTasks,
+  protected void optimizeTaskPlan(List<Task<?>> rootTasks,
       ParseContext pCtx, Context ctx) throws SemanticException {
     // reduce sink does not have any kids - since the plan by now has been
     // broken up into multiple
     // tasks, iterate over all tasks.
     // For each task, go over all operators recursively
-    for (Task<? extends Serializable> rootTask : rootTasks) {
+    for (Task<?> rootTask : rootTasks) {
       breakTaskTree(rootTask);
     }
 
@@ -273,7 +290,7 @@ public class MapReduceCompiler extends TaskCompiler {
   }
 
   @Override
-  protected void generateTaskTree(List<Task<? extends Serializable>> rootTasks, ParseContext pCtx,
+  protected void generateTaskTree(List<Task<?>> rootTasks, ParseContext pCtx,
       List<Task<MoveWork>> mvTask, Set<ReadEntity> inputs, Set<WriteEntity> outputs) throws SemanticException {
 
     // generate map reduce plans
@@ -281,7 +298,7 @@ public class MapReduceCompiler extends TaskCompiler {
     GenMRProcContext procCtx = new GenMRProcContext(
         conf,
         // Must be deterministic order map for consistent q-test output across Java versions
-        new LinkedHashMap<Operator<? extends OperatorDesc>, Task<? extends Serializable>>(),
+        new LinkedHashMap<Operator<? extends OperatorDesc>, Task<?>>(),
         tempParseContext, mvTask, rootTasks,
         new LinkedHashMap<Operator<? extends OperatorDesc>, GenMapRedCtx>(),
         inputs, outputs);
@@ -289,7 +306,7 @@ public class MapReduceCompiler extends TaskCompiler {
     // create a walker which walks the tree in a DFS manner while maintaining
     // the operator stack.
     // The dispatcher generates the plan from the operator tree
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
     opRules.put(new RuleRegExp(new String("R1"),
         TableScanOperator.getOperatorName() + "%"),
         new GenMRTableScan1());
@@ -314,10 +331,10 @@ public class MapReduceCompiler extends TaskCompiler {
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
-    Dispatcher disp = new DefaultRuleDispatcher(new GenMROperator(), opRules,
+    SemanticDispatcher disp = new DefaultRuleDispatcher(new GenMROperator(), opRules,
         procCtx);
 
-    GraphWalker ogw = new GenMapRedWalker(disp);
+    SemanticGraphWalker ogw = new GenMapRedWalker(disp);
     ArrayList<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(pCtx.getTopOps().values());
     ogw.startWalking(topNodes, null);

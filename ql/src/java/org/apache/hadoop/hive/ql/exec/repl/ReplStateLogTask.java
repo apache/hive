@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.repl;
 
-import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 
@@ -34,7 +33,7 @@ public class ReplStateLogTask extends Task<ReplStateLogWork> implements Serializ
   private static final long serialVersionUID = 1L;
 
   @Override
-  public int execute(DriverContext driverContext) {
+  public int execute() {
     work.replStateLog();
     return 0;
   }
@@ -47,5 +46,12 @@ public class ReplStateLogTask extends Task<ReplStateLogWork> implements Serializ
   @Override
   public String getName() {
     return "REPL_STATE_LOG";
+  }
+
+  @Override
+  public boolean canExecuteInParallel() {
+    // ReplStateLogTask is executed only when all its parents are done with execution. So running it in parallel has no
+    // benefits.
+    return false;
   }
 }

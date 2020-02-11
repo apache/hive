@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,29 +21,21 @@ package org.apache.hadoop.hive.ql.exec.vector.mapjoin.optimized;
 import java.io.IOException;
 
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.optimized.VectorMapJoinOptimizedHashTable.SerializedBytes;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableSerializeWrite;
 
 /*
  * An single byte array value hash map based on the BytesBytesMultiHashMap.
- *
- * Since BytesBytesMultiHashMap does not interpret the key as BinarySortable we optimize
- * this case and just reference the byte array key directly for the lookup instead of serializing
- * the byte array into BinarySortable. We rely on it just doing byte array equality comparisons.
  */
 public class VectorMapJoinOptimizedStringCommon {
-
-  // private boolean isOuterJoin;
-
-  // private BinarySortableDeserializeRead keyBinarySortableDeserializeRead;
-
-  // private ReadStringResults readStringResults;
 
   private BinarySortableSerializeWrite keyBinarySortableSerializeWrite;
 
   private transient Output output;
 
   private transient SerializedBytes serializedBytes;
+  private transient TableDesc tableDesc;
 
   public SerializedBytes serialize(byte[] keyBytes, int keyStart, int keyLength) throws IOException {
 
@@ -55,18 +47,17 @@ public class VectorMapJoinOptimizedStringCommon {
     serializedBytes.length = output.getLength();
 
     return serializedBytes;
-
   }
 
-  public VectorMapJoinOptimizedStringCommon(boolean isOuterJoin) {
-    // this.isOuterJoin = isOuterJoin;
-    // PrimitiveTypeInfo[] primitiveTypeInfos = { TypeInfoFactory.stringTypeInfo };
-    // keyBinarySortableDeserializeRead = new BinarySortableDeserializeRead(primitiveTypeInfos);
-    // readStringResults = keyBinarySortableDeserializeRead.createReadStringResults();
-    // bytesWritable = new BytesWritable();
-    keyBinarySortableSerializeWrite = new BinarySortableSerializeWrite(1);
+  public VectorMapJoinOptimizedStringCommon(boolean isOuterJoin, TableDesc tableDesc) {
+    this.tableDesc = tableDesc;
+    keyBinarySortableSerializeWrite = BinarySortableSerializeWrite.with(tableDesc.getProperties(), 1);
     output = new Output();
     keyBinarySortableSerializeWrite.set(output);
     serializedBytes = new SerializedBytes();
+  }
+
+  public TableDesc getTableDesc() {
+    return tableDesc;
   }
 }

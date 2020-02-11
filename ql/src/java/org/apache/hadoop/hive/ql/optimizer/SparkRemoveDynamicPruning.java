@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -25,7 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.optimizer.spark.SparkPartitionPruningSinkDesc;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -40,7 +40,7 @@ import org.apache.hadoop.hive.ql.parse.spark.SparkPartitionPruningSinkOperator;
  *
  * Cloned from RemoveDynamicPruningBySize
  */
-public class SparkRemoveDynamicPruning implements NodeProcessor {
+public class SparkRemoveDynamicPruning implements SemanticNodeProcessor {
 
   static final private Logger LOG =
       LoggerFactory.getLogger(SparkRemoveDynamicPruning.class.getName());
@@ -58,14 +58,14 @@ public class SparkRemoveDynamicPruning implements NodeProcessor {
 
     if (context.getConf().isSparkDPPOnlyMapjoin() &&
         !op.isWithMapjoin()) {
-      LOG.info("Disabling dynamic partition pruning based on: " + desc.getTableScan().getName()
+      LOG.info("Disabling dynamic partition pruning based on: " + desc.getTableScanNames()
           + ". This is not part of a map join.");
       remove = true;
     }
     else if (desc.getStatistics().getDataSize() > context.getConf()
         .getLongVar(ConfVars.SPARK_DYNAMIC_PARTITION_PRUNING_MAX_DATA_SIZE)) {
       LOG.info("Disabling dynamic partition pruning based on: "
-          + desc.getTableScan().getName()
+          + desc.getTableScanNames()
           + ". Expected data size is too big: " + desc.getStatistics().getDataSize());
       remove = true;
     }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -143,13 +143,13 @@ final class ParquetFooterInputFromCache
     // Simple implementation for now - currently Parquet uses heap buffers.
     int result = -1;
     if (bb.hasArray()) {
-      result = readInternal(bb.array(), bb.arrayOffset(), result);
+      result = readInternal(bb.array(), bb.arrayOffset(), bb.remaining());
       if (result > 0) {
         bb.position(bb.position() + result);
       }
     } else {
       byte[] b = new byte[bb.remaining()];
-      result = readInternal(b, 0, result);
+      result = readInternal(b, 0, bb.remaining());
       bb.put(b, 0, result);
     }
     return result;

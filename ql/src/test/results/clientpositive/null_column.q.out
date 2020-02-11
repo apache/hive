@@ -28,31 +28,31 @@ NULL	NULL
 NULL	NULL
 NULL	NULL
 NULL	NULL
-PREHOOK: query: create table tt(a int, b string)
+PREHOOK: query: create table tt_n1(a int, b string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tt
-POSTHOOK: query: create table tt(a int, b string)
+PREHOOK: Output: default@tt_n1
+POSTHOOK: query: create table tt_n1(a int, b string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tt
-PREHOOK: query: insert overwrite table tt select null, null from temp_null
+POSTHOOK: Output: default@tt_n1
+PREHOOK: query: insert overwrite table tt_n1 select null, null from temp_null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@temp_null
-PREHOOK: Output: default@tt
-POSTHOOK: query: insert overwrite table tt select null, null from temp_null
+PREHOOK: Output: default@tt_n1
+POSTHOOK: query: insert overwrite table tt_n1 select null, null from temp_null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@temp_null
-POSTHOOK: Output: default@tt
-POSTHOOK: Lineage: tt.a EXPRESSION []
-POSTHOOK: Lineage: tt.b EXPRESSION []
-PREHOOK: query: select * from tt
+POSTHOOK: Output: default@tt_n1
+POSTHOOK: Lineage: tt_n1.a EXPRESSION []
+POSTHOOK: Lineage: tt_n1.b EXPRESSION []
+PREHOOK: query: select * from tt_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tt
+PREHOOK: Input: default@tt_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from tt
+POSTHOOK: query: select * from tt_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tt
+POSTHOOK: Input: default@tt_n1
 #### A masked pattern was here ####
 NULL	NULL
 NULL	NULL

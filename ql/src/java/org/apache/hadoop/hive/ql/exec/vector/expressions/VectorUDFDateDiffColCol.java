@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,43 +18,61 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 import java.sql.Date;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 
 public class VectorUDFDateDiffColCol extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
-  private int colNum1;
-  private int colNum2;
-  private int outputColumn;
-  private transient SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-  private transient Date date = new Date(0);
-  private transient LongColumnVector dateVector1 = new LongColumnVector();
-  private transient LongColumnVector dateVector2 = new LongColumnVector();
+  private final int colNum1;
+  private final int colNum2;
 
-  public VectorUDFDateDiffColCol(int colNum1, int colNum2, int outputColumn) {
-    this();
+  private transient final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+  private transient final Date date = new Date(0);
+
+  // Transient members initialized by transientInit method.
+  private transient LongColumnVector dateVector1;
+  private transient LongColumnVector dateVector2;
+
+  public VectorUDFDateDiffColCol(int colNum1, int colNum2, int outputColumnNum) {
+    super(outputColumnNum);
     this.colNum1 = colNum1;
     this.colNum2 = colNum2;
-    this.outputColumn = outputColumn;
   }
 
   public VectorUDFDateDiffColCol() {
     super();
+
+    // Dummy final assignments.
+    colNum1 = -1;
+    colNum2 = -1;
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void transientInit(Configuration conf) throws HiveException {
+    super.transientInit(conf);
+
+    dateVector1 = new LongColumnVector();
+    dateVector2 = new LongColumnVector();
+  }
+
+  @Override
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
 
     if (childExpressions != null) {
       super.evaluateChildren(batch);
@@ -65,17 +83,20 @@ public class VectorUDFDateDiffColCol extends VectorExpression {
     int[] sel = batch.selected;
     int n = batch.size;
 
-    LongColumnVector outV = (LongColumnVector) batch.cols[outputColumn];
+    LongColumnVector outV = (LongColumnVector) batch.cols[outputColumnNum];
     long[] outputVector = outV.vector;
     if (n <= 0) {
       // Nothing to do
       return;
     }
 
+    /*
+     * Propagate null values for a two-input operator and set isRepeating and noNulls appropriately.
+     */
     NullUtil.propagateNullsColCol(inputColVector1, inputColVector2, outV, batch.selected, batch.size, batch.selectedInUse);
 
-    LongColumnVector convertedVector1 = toDateArray(batch, inputTypes[0], inputColVector1, dateVector1);
-    LongColumnVector convertedVector2 = toDateArray(batch, inputTypes[1], inputColVector2, dateVector2);
+    LongColumnVector convertedVector1 = toDateArray(batch, inputTypeInfos[0], inputColVector1, dateVector1);
+    LongColumnVector convertedVector2 = toDateArray(batch, inputTypeInfos[1], inputColVector2, dateVector2);
 
     // Now disregard null in second pass.
     if ((inputColVector1.isRepeating) && (inputColVector2.isRepeating)) {
@@ -147,10 +168,12 @@ public class VectorUDFDateDiffColCol extends VectorExpression {
     }
   }
 
-  private LongColumnVector toDateArray(VectorizedRowBatch batch, Type colType,
+  private LongColumnVector toDateArray(VectorizedRowBatch batch, TypeInfo typeInfo,
                                        ColumnVector inputColVector, LongColumnVector dateVector) {
+    PrimitiveCategory primitiveCategory =
+        ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory();
     int size = batch.size;
-    if (colType == Type.DATE) {
+    if (primitiveCategory == PrimitiveCategory.DATE) {
       return (LongColumnVector) inputColVector;
     }
 
@@ -164,7 +187,7 @@ public class VectorUDFDateDiffColCol extends VectorExpression {
       }
     }
 
-    switch (colType) {
+    switch (primitiveCategory) {
       case TIMESTAMP:
         TimestampColumnVector tcv = (TimestampColumnVector) inputColVector;
         copySelected(tcv, batch.selectedInUse, batch.selected, batch.size, dateVector);
@@ -177,7 +200,7 @@ public class VectorUDFDateDiffColCol extends VectorExpression {
         copySelected(bcv, batch.selectedInUse, batch.selected, batch.size, dateVector);
         return dateVector;
       default:
-        throw new Error("Unsupported input type " + colType.name());
+        throw new Error("Unsupported input type " + primitiveCategory.name());
     }
   }
 
@@ -186,24 +209,25 @@ public class VectorUDFDateDiffColCol extends VectorExpression {
   public void copySelected(
       BytesColumnVector input, boolean selectedInUse, int[] sel, int size, LongColumnVector output) {
 
-    // Output has nulls if and only if input has nulls.
-    output.noNulls = input.noNulls;
     output.isRepeating = false;
 
     // Handle repeating case
     if (input.isRepeating) {
-      output.isNull[0] = input.isNull[0];
-      output.isRepeating = true;
-
-      if (!input.isNull[0]) {
+      if (input.noNulls || !input.isNull[0]) {
         String string = new String(input.vector[0], input.start[0], input.length[0]);
         try {
           date.setTime(formatter.parse(string).getTime());
-          output.vector[0] = DateWritable.dateToDays(date);
+          output.vector[0] = DateWritableV2.dateToDays(date);
+          output.isNull[0] = false;
         } catch (ParseException e) {
           output.isNull[0] = true;
+          output.noNulls = false;
         }
+      } else {
+        output.isNull[0] = true;
+        output.noNulls = false;
       }
+      output.isRepeating = true;
       return;
     }
 
@@ -212,26 +236,45 @@ public class VectorUDFDateDiffColCol extends VectorExpression {
     // Copy data values over
     if (input.noNulls) {
       if (selectedInUse) {
-        for (int j = 0; j < size; j++) {
-          int i = sel[j];
-          setDays(input, output, i);
+        if (!output.noNulls) {
+          for (int j = 0; j < size; j++) {
+            int i = sel[j];
+            output.isNull[i] = false;
+            // setDays resets the isNull[i] to false if there is a parse exception
+            setDays(input, output, i);
+          }
+        } else {
+          for (int j = 0; j < size; j++) {
+            int i = sel[j];
+            // setDays resets the isNull[i] to false if there is a parse exception
+            setDays(input, output, i);
+          }
         }
       } else {
+        if (!output.noNulls) {
+          // Assume it is almost always a performance win to fill all of isNull so we can
+          // safely reset noNulls.
+          Arrays.fill(output.isNull, false);
+          output.noNulls = true;
+        }
         for (int i = 0; i < size; i++) {
           setDays(input, output, i);
         }
       }
-    } else {
+    } else /* there are nulls in our column */ {
+
+      // handle the isNull array first in tight loops
+      output.noNulls = false;
       if (selectedInUse) {
         for (int j = 0; j < size; j++) {
           int i = sel[j];
           output.isNull[i] = input.isNull[i];
         }
-      }
-      else {
+      } else {
         System.arraycopy(input.isNull, 0, output.isNull, 0, size);
       }
 
+      //now copy over the data where isNull[index] is false
       if (selectedInUse) {
         for (int j = 0; j < size; j++) {
           int i = sel[j];
@@ -253,7 +296,7 @@ public class VectorUDFDateDiffColCol extends VectorExpression {
     String string = new String(input.vector[i], input.start[i], input.length[i]);
     try {
       date.setTime(formatter.parse(string).getTime());
-      output.vector[i] = DateWritable.dateToDays(date);
+      output.vector[i] = DateWritableV2.dateToDays(date);
     } catch (ParseException e) {
       output.isNull[i] = true;
       output.noNulls = false;
@@ -265,19 +308,19 @@ public class VectorUDFDateDiffColCol extends VectorExpression {
   public void copySelected(
       TimestampColumnVector input, boolean selectedInUse, int[] sel, int size, LongColumnVector output) {
 
-    // Output has nulls if and only if input has nulls.
-    output.noNulls = input.noNulls;
     output.isRepeating = false;
 
     // Handle repeating case
     if (input.isRepeating) {
-      output.isNull[0] = input.isNull[0];
-      output.isRepeating = true;
-
-      if (!input.isNull[0]) {
+      if (input.noNulls || !input.isNull[0]) {
         date.setTime(input.getTime(0));
-        output.vector[0] = DateWritable.dateToDays(date);
+        output.vector[0] = DateWritableV2.dateToDays(date);
+        output.isNull[0] = false;
+      } else {
+        output.isNull[0] = true;
+        output.noNulls = false;
       }
+      output.isRepeating = true;
       return;
     }
 
@@ -286,41 +329,58 @@ public class VectorUDFDateDiffColCol extends VectorExpression {
     // Copy data values over
     if (input.noNulls) {
       if (selectedInUse) {
-        for (int j = 0; j < size; j++) {
-          int i = sel[j];
-          date.setTime(input.getTime(i));
-          output.vector[i] = DateWritable.dateToDays(date);
+        if (!output.noNulls) {
+          // output has noNulls set to false so set the isNull[] to false carefully
+          for (int j=0; j < size; j++) {
+            int i = sel[j];
+            date.setTime(input.getTime(i));
+            output.vector[i] = DateWritableV2.dateToDays(date);
+            output.isNull[i] = false;
+          }
+        } else {
+          for (int j=0; j < size; j++) {
+            int i = sel[j];
+            date.setTime(input.getTime(i));
+            output.vector[i] = DateWritableV2.dateToDays(date);
+          }
         }
       } else {
+        if (!output.noNulls) {
+          //output noNulls is set to false, we need to reset the isNull array
+          Arrays.fill(output.isNull, false);
+          output.noNulls = true;
+        }
         for (int i = 0; i < size; i++) {
           date.setTime(input.getTime(i));
-          output.vector[i] = DateWritable.dateToDays(date);
+          output.vector[i] = DateWritableV2.dateToDays(date);
         }
       }
-    } else {
+    } else /* there are nulls in our column */ {
+      output.noNulls = false;
+      //handle the isNull array first in tight loops
       if (selectedInUse) {
         for (int j = 0; j < size; j++) {
           int i = sel[j];
           output.isNull[i] = input.isNull[i];
         }
-      }
-      else {
+      } else {
         System.arraycopy(input.isNull, 0, output.isNull, 0, size);
       }
 
+      //now copy over the data when isNull[index] is false
       if (selectedInUse) {
         for (int j = 0; j < size; j++) {
           int i = sel[j];
           if (!input.isNull[i]) {
             date.setTime(input.getTime(i));
-            output.vector[i] = DateWritable.dateToDays(date);
+            output.vector[i] = DateWritableV2.dateToDays(date);
           }
         }
       } else {
         for (int i = 0; i < size; i++) {
           if (!input.isNull[i]) {
             date.setTime(input.getTime(i));
-            output.vector[i] = DateWritable.dateToDays(date);
+            output.vector[i] = DateWritableV2.dateToDays(date);
           }
         }
       }
@@ -328,38 +388,8 @@ public class VectorUDFDateDiffColCol extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return this.outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "long";
-  }
-
-  public int getColNum1() {
-    return colNum1;
-  }
-
-  public void setColNum1(int colNum1) {
-    this.colNum1 = colNum1;
-  }
-
-  public int getColNum2() {
-    return colNum2;
-  }
-
-  public void setColNum2(int colNum2) {
-    this.colNum2 = colNum2;
-  }
-
-  public void setOutputColumn(int outputColumn) {
-    this.outputColumn = outputColumn;
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + colNum1 + ", col " + colNum2;
+    return getColumnParamString(0, colNum1) + ", " + getColumnParamString(1, colNum2);
   }
 
   @Override

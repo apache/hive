@@ -17,16 +17,17 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.load.message;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.messaging.AlterPartitionMessage;
+import org.apache.hadoop.hive.ql.ddl.DDLWork;
+import org.apache.hadoop.hive.ql.ddl.table.misc.TruncateTableDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.DDLWork;
-import org.apache.hadoop.hive.ql.plan.TruncateTableDesc;
 
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -34,14 +35,15 @@ import java.util.Map;
 
 public class TruncatePartitionHandler extends AbstractMessageHandler {
   @Override
-  public List<Task<? extends Serializable>> handle(Context context) throws SemanticException {
+  public List<Task<?>> handle(Context context) throws SemanticException {
     AlterPartitionMessage msg = deserializer.getAlterPartitionMessage(context.dmd.getPayload());
-    String actualDbName = context.isDbNameEmpty() ? msg.getDB() : context.dbName;
-    String actualTblName = context.isTableNameEmpty() ? msg.getTable() : context.tableName;
+    final TableName tName = TableName.fromString(msg.getTable(), null,
+        context.isDbNameEmpty() ? msg.getDB() : context.dbName);
 
     Map<String, String> partSpec = new LinkedHashMap<>();
+    org.apache.hadoop.hive.metastore.api.Table tblObj;
     try {
-      org.apache.hadoop.hive.metastore.api.Table tblObj = msg.getTableObj();
+      tblObj = msg.getTableObj();
       Iterator<String> afterIterator = msg.getPtnObjAfter().getValuesIterator();
       for (FieldSchema fs : tblObj.getPartitionKeys()) {
         partSpec.put(fs.getName(), afterIterator.next());
@@ -55,14 +57,20 @@ public class TruncatePartitionHandler extends AbstractMessageHandler {
     }
 
     TruncateTableDesc truncateTableDesc = new TruncateTableDesc(
-            actualDbName + "." + actualTblName, partSpec,
+            tName, partSpec,
             context.eventOnlyReplicationSpec());
+    truncateTableDesc.setWriteId(msg.getWriteId());
     Task<DDLWork> truncatePtnTask = TaskFactory.get(
-            new DDLWork(readEntitySet, writeEntitySet, truncateTableDesc),
-            context.hiveConf);
-    context.log.debug("Added truncate ptn task : {}:{}", truncatePtnTask.getId(),
-        truncateTableDesc.getTableName());
-    updatedMetadata.set(context.dmd.getEventTo().toString(), actualDbName, actualTblName, partSpec);
-    return Collections.singletonList(truncatePtnTask);
+        new DDLWork(readEntitySet, writeEntitySet, truncateTableDesc), context.hiveConf);
+    context.log.debug("Added truncate ptn task : {}:{}:{}", truncatePtnTask.getId(),
+        truncateTableDesc.getTableName(), truncateTableDesc.getWriteId());
+    updatedMetadata.set(context.dmd.getEventTo().toString(), tName.getDb(), tName.getTable(), partSpec);
+
+    try {
+      return ReplUtils.addOpenTxnTaskForMigration(tName.getDb(), tName.getTable(),
+              context.hiveConf, updatedMetadata, truncatePtnTask, tblObj);
+    } catch (Exception e) {
+      throw new SemanticException(e.getMessage());
+    }
   }
 }

@@ -12,11 +12,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dependtest
 PREHOOK: query: insert into table dependtest partition (b=1) values ("hello")
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@dependtest@b=1
 POSTHOOK: query: insert into table dependtest partition (b=1) values ("hello")
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@dependtest@b=1
-POSTHOOK: Lineage: dependtest PARTITION(b=1).a SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: dependtest PARTITION(b=1).a SCRIPT []
 PREHOOK: query: create view viewtest as select * from dependtest where b = 1
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@dependtest
@@ -31,8 +33,16 @@ POSTHOOK: Lineage: viewtest.a SIMPLE [(dependtest)dependtest.FieldSchema(name:a,
 POSTHOOK: Lineage: viewtest.b SIMPLE []
 PREHOOK: query: explain dependency select count(*) from viewtest
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dependtest
+PREHOOK: Input: default@dependtest@b=1
+PREHOOK: Input: default@viewtest
+#### A masked pattern was here ####
 POSTHOOK: query: explain dependency select count(*) from viewtest
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dependtest
+POSTHOOK: Input: default@dependtest@b=1
+POSTHOOK: Input: default@viewtest
+#### A masked pattern was here ####
 {"input_tables":[{"tablename":"default@viewtest","tabletype":"VIRTUAL_VIEW"},{"tablename":"default@dependtest","tabletype":"MANAGED_TABLE","tableParents":"[default@viewtest]"}],"input_partitions":[{"partitionName":"default@dependtest@b=1","partitionParents":"[default@viewtest]"}]}
 PREHOOK: query: drop view viewtest
 PREHOOK: type: DROPVIEW

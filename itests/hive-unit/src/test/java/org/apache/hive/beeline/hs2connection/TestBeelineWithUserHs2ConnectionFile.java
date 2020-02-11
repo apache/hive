@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -29,7 +29,7 @@ public class TestBeelineWithUserHs2ConnectionFile extends BeelineWithHS2Connecti
   public void testBeelineConnectionHttp() throws Exception {
     setupHttpHs2();
     String path = createHttpHs2ConnectionFile();
-    testBeeLineConnection(path, new String[] { "-e", "show tables;" }, tableName);
+    assertBeelineOutputContains(path, new String[] { "-e", "show tables;" }, tableName);
   }
 
   private void setupHttpHs2() throws Exception {
@@ -64,7 +64,7 @@ public class TestBeelineWithUserHs2ConnectionFile extends BeelineWithHS2Connecti
   public void testBeelineConnectionNoAuth() throws Exception {
     setupNoAuthConfHS2();
     String path = createNoAuthHs2ConnectionFile();
-    testBeeLineConnection(path, new String[] { "-e", "show tables;" }, tableName);
+    assertBeelineOutputContains(path, new String[] { "-e", "show tables;" }, tableName);
   }
 
   private void setupNoAuthConfHS2() throws Exception {
@@ -91,7 +91,7 @@ public class TestBeelineWithUserHs2ConnectionFile extends BeelineWithHS2Connecti
   public void testBeelineConnectionSSL() throws Exception {
     setupSslHs2();
     String path = createSSLHs2ConnectionFile();
-    testBeeLineConnection(path, new String[] { "-e", "show tables;" }, tableName);
+    assertBeelineOutputContains(path, new String[] { "-e", "show tables;" }, tableName);
   }
 
   private String createSSLHs2ConnectionFile() throws Exception {

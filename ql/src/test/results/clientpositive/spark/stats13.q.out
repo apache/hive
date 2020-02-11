@@ -36,9 +36,17 @@ POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [
 PREHOOK: query: explain extended
 analyze table analyze_srcpart PARTITION(ds='2008-04-08',hr=11) compute statistics
 PREHOOK: type: QUERY
+PREHOOK: Input: default@analyze_srcpart
+PREHOOK: Input: default@analyze_srcpart@ds=2008-04-08/hr=11
+PREHOOK: Output: default@analyze_srcpart
+PREHOOK: Output: default@analyze_srcpart@ds=2008-04-08/hr=11
 POSTHOOK: query: explain extended
 analyze table analyze_srcpart PARTITION(ds='2008-04-08',hr=11) compute statistics
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@analyze_srcpart
+POSTHOOK: Input: default@analyze_srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@analyze_srcpart
+POSTHOOK: Output: default@analyze_srcpart@ds=2008-04-08/hr=11
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0
@@ -52,7 +60,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: analyze_srcpart
-                  Statistics: Num rows: 1 Data size: 23248 Basic stats: PARTIAL Column stats: NONE
                   Statistics Aggregation Key Prefix: default.analyze_srcpart/
                   GatherStats: true
             Path -> Alias:
@@ -88,6 +95,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
@@ -107,8 +115,9 @@ STAGE PLANS:
               /analyze_srcpart/ds=2008-04-08/hr=11 [analyze_srcpart]
 
   Stage: Stage-1
-    Stats-Aggr Operator
-      Stats Aggregation Key Prefix: default.analyze_srcpart/
+    Stats Work
+      Basic Stats Work:
+          Stats Aggregation Key Prefix: default.analyze_srcpart/
 
 PREHOOK: query: analyze table analyze_srcpart PARTITION(ds='2008-04-08',hr=11) compute statistics
 PREHOOK: type: QUERY
@@ -129,13 +138,11 @@ POSTHOOK: query: desc formatted analyze_srcpart
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@analyze_srcpart
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -146,6 +153,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 	numFiles            	4                   
 	numPartitions       	4                   
 	numRows             	500                 
@@ -170,13 +178,11 @@ POSTHOOK: query: desc formatted analyze_srcpart partition (ds='2008-04-08', hr=1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@analyze_srcpart
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -210,13 +216,11 @@ POSTHOOK: query: desc formatted analyze_srcpart partition (ds='2008-04-08', hr=1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@analyze_srcpart
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -247,13 +251,11 @@ POSTHOOK: query: desc formatted analyze_srcpart partition (ds='2008-04-09', hr=1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@analyze_srcpart
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -284,13 +286,11 @@ POSTHOOK: query: desc formatted analyze_srcpart partition (ds='2008-04-09', hr=1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@analyze_srcpart
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -329,13 +329,11 @@ POSTHOOK: query: desc formatted analyze_srcpart2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@analyze_srcpart2
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -347,6 +345,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
 	numFiles            	0                   
 	numPartitions       	0                   
 	numRows             	0                   

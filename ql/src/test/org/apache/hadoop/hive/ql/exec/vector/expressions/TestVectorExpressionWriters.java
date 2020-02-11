@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,16 +21,21 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
-import junit.framework.Assert;
+import org.junit.Assert;
+import junit.framework.TestCase;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.ListColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.MapColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.util.VectorizedRowGroupGenUtil;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -41,9 +46,11 @@ import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.SettableListObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.SettableMapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
@@ -84,7 +91,8 @@ public class TestVectorExpressionWriters {
 
 
   private Writable getWritableValue(TypeInfo ti, Timestamp value) {
-    return new TimestampWritable(value);
+    return new TimestampWritableV2(
+        org.apache.hadoop.hive.common.type.Timestamp.ofEpochMilli(value.getTime(), value.getNanos()));
   }
 
   private Writable getWritableValue(TypeInfo ti, HiveDecimal value) {
@@ -116,7 +124,8 @@ public class TestVectorExpressionWriters {
       return new BooleanWritable( value == 0 ? false : true);
     } else if (ti.equals(TypeInfoFactory.timestampTypeInfo)) {
       Timestamp ts = new Timestamp(value);
-      TimestampWritable tw = new TimestampWritable(ts);
+      TimestampWritableV2 tw = new TimestampWritableV2(
+          org.apache.hadoop.hive.common.type.Timestamp.ofEpochMilli(ts.getTime(), ts.getNanos()));
       return tw;
     }
     return null;
@@ -239,8 +248,8 @@ public class TestVectorExpressionWriters {
       Writable w = (Writable) vew.writeValue(tcv, i);
       if (w != null) {
         Writable expected = getWritableValue(type, timestampValues[i]);
-        TimestampWritable t1 = (TimestampWritable) expected;
-        TimestampWritable t2 = (TimestampWritable) w;
+        TimestampWritableV2 t1 = (TimestampWritableV2) expected;
+        TimestampWritableV2 t2 = (TimestampWritableV2) w;
         Assert.assertTrue(t1.equals(t2));
        } else {
         Assert.assertTrue(tcv.isNull[i]);
@@ -263,8 +272,8 @@ public class TestVectorExpressionWriters {
       values[i] = vew.setValue(values[i], tcv, i);
       if (values[i] != null) {
         Writable expected = getWritableValue(type, timestampValues[i]);
-        TimestampWritable t1 = (TimestampWritable) expected;
-        TimestampWritable t2 = (TimestampWritable) values[i];
+        TimestampWritableV2 t1 = (TimestampWritableV2) expected;
+        TimestampWritableV2 t2 = (TimestampWritableV2) values[i];
         Assert.assertTrue(t1.equals(t2));
       } else {
         Assert.assertTrue(tcv.isNull[i]);
@@ -379,6 +388,155 @@ public class TestVectorExpressionWriters {
     }
   }
   
+  @SuppressWarnings("unchecked")
+  private void testListLong() throws HiveException {
+    LongColumnVector icv = VectorizedRowGroupGenUtil.generateLongColumnVector(true, false,
+        5, new Random(10));
+    ListColumnVector cv = new ListColumnVector(3, icv);
+    cv.init();
+
+    // set the offset and length for the two elements
+    cv.offsets[0] = 0;
+    cv.lengths[0] = 2;
+    cv.offsets[1] = 2;
+    cv.lengths[1] = 3;
+
+    // initialize the integer values
+    for (int i = 0; i < 5; i++) {
+      icv.vector[i] = i;
+      icv.isNull[i] = false;
+    }
+    icv.noNulls = true;
+
+    cv.isNull[0] = false;
+    cv.isNull[1] = false;
+    cv.isNull[2] = true;
+    cv.noNulls = false;
+
+    SettableListObjectInspector listOI =
+        ObjectInspectorFactory.getStandardListObjectInspector(
+            PrimitiveObjectInspectorFactory.writableIntObjectInspector);
+
+    VectorExpressionWriter vew = VectorExpressionWriterFactory.genVectorExpressionWritable(listOI);
+
+    List<Object> values1 = (List<Object>) listOI.create(2);
+    vew.setValue(values1, cv, 0);
+
+    List<Object> values2 = (List<Object>) listOI.create(3);
+    vew.setValue(values2, cv, 1);
+
+    TestCase.assertEquals(values1.size(), 2);
+    TestCase.assertEquals(values2.size(), 3);
+
+    for (int i = 0; i < values1.size(); i++) {
+      IntWritable w = (IntWritable) values1.get(i);
+      TestCase.assertEquals(i, w.get());
+    }
+
+    for (int i = 0; i < values2.size(); i++) {
+      IntWritable w = (IntWritable) values2.get(i);
+      TestCase.assertEquals(2 + i, w.get());
+    }
+
+    List<Object> values3 = (List<Object>) vew.writeValue(cv, 0);
+    TestCase.assertEquals(2, values3.size());
+    for (int i = 0; i < values1.size(); i++) {
+      IntWritable w = (IntWritable) values3.get(i);
+      TestCase.assertEquals(i, w.get());
+    }
+
+    List<Object> values4 = (List<Object>) vew.writeValue(cv, 1);
+    TestCase.assertEquals(3, values4.size());
+    for (int i = 0; i < values2.size(); i++) {
+      IntWritable w = (IntWritable) values4.get(i);
+      TestCase.assertEquals(2 + i, w.get());
+    }
+
+    List<Object> values5 = (List<Object>) vew.writeValue(cv, 2);
+    TestCase.assertNull(values5);
+  }
+
+  @SuppressWarnings("unchecked")
+  private void testMapLong() throws HiveException {
+    LongColumnVector kcv = VectorizedRowGroupGenUtil.generateLongColumnVector(true, false,
+        5, new Random(10));
+    LongColumnVector vcv = VectorizedRowGroupGenUtil.generateLongColumnVector(true, false,
+        5, new Random(10));
+    MapColumnVector cv = new MapColumnVector(3, kcv, vcv);
+    cv.init();
+
+    // set the offset and length for the two elements
+    cv.offsets[0] = 0;
+    cv.lengths[0] = 2;
+    cv.offsets[1] = 2;
+    cv.lengths[1] = 3;
+
+    // initialize the keys and values
+    for (int i = 0; i < 5; i++) {
+      kcv.vector[i] = i;
+      kcv.isNull[i] = false;
+    }
+    kcv.noNulls = true;
+
+    for (int i = 0; i < 5; i++) {
+      vcv.vector[i] = 5 + i;
+      vcv.isNull[i] = false;
+    }
+    vcv.noNulls = true;
+
+    cv.isNull[0] = false;
+    cv.isNull[1] = false;
+    cv.isNull[2] = true;
+    cv.noNulls = false;
+
+    SettableMapObjectInspector mapOI =
+        ObjectInspectorFactory.getStandardMapObjectInspector(
+            PrimitiveObjectInspectorFactory.writableIntObjectInspector,
+            PrimitiveObjectInspectorFactory.writableIntObjectInspector);
+
+    VectorExpressionWriter vew = VectorExpressionWriterFactory.genVectorExpressionWritable(mapOI);
+
+    Map<Object, Object> values1 = (Map<Object, Object>) mapOI.create();
+    vew.setValue(values1, cv, 0);
+
+    Map<Object, Object> values2 = (Map<Object, Object>) mapOI.create();
+    vew.setValue(values2, cv, 1);
+
+    TestCase.assertEquals(2, values1.size());
+    TestCase.assertEquals(3, values2.size());
+
+    for (int i = 0; i < values1.size(); i++) {
+      IntWritable key = new IntWritable(i);
+      IntWritable w = (IntWritable) values1.get(key);
+      TestCase.assertEquals(5 + i, w.get());
+    }
+
+    for (int i = 0; i < values2.size(); i++) {
+      IntWritable key = new IntWritable(2 + i);
+      IntWritable w = (IntWritable) values2.get(key);
+      TestCase.assertEquals(5 + 2 + i, w.get());
+    }
+
+    Map<Object, Object> values3 = (Map<Object, Object>) vew.writeValue(cv, 0);
+    TestCase.assertEquals(2, values3.size());
+    for (int i = 0; i < values1.size(); i++) {
+      IntWritable key = new IntWritable(i);
+      IntWritable w = (IntWritable) values1.get(key);
+      TestCase.assertEquals(5 + i, w.get());
+    }
+
+    Map<Object, Object> values4 = (Map<Object, Object>) vew.writeValue(cv, 1);
+    TestCase.assertEquals(3, values4.size());
+    for (int i = 0; i < values2.size(); i++) {
+      IntWritable key = new IntWritable(2 + i);
+      IntWritable w = (IntWritable) values2.get(key);
+      TestCase.assertEquals(5 + 2 + i, w.get());
+    }
+
+    Map<Object, Object> values5 = (Map<Object, Object>) vew.writeValue(cv, 2);
+    TestCase.assertNull(values5);
+  }
+
   @Test
   public void testVectorExpressionWriterDouble() throws HiveException {
     testWriterDouble(TypeInfoFactory.doubleTypeInfo);
@@ -505,5 +663,15 @@ public class TestVectorExpressionWriters {
   @Test
   public void testVectorExpressionSetterBinary() throws HiveException {
     testSetterText(TypeInfoFactory.binaryTypeInfo);
+  }
+
+  @Test
+  public void testVectorExpressionListLong() throws HiveException {
+    testListLong();
+  }
+
+  @Test
+  public void testVectorExpressionMapLong() throws HiveException {
+    testMapLong();
   }
 }

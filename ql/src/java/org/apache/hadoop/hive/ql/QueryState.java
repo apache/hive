@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,9 +19,13 @@
 package org.apache.hadoop.hive.ql;
 
 import java.util.Map;
-
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
+import org.apache.hadoop.hive.ql.session.LineageState;
+import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.mapreduce.MRJobConfig;
+import org.apache.tez.dag.api.TezConfiguration;
 
 /**
  * The class to store query level info such as queryId. Multiple queries can run
@@ -39,13 +43,31 @@ public class QueryState {
   private HiveOperation commandType;
 
   /**
-   * Private constructor, use QueryState.Builder instead
+   * Per-query Lineage state to track what happens in the query
+   */
+  private LineageState lineageState = new LineageState();
+
+  /**
+   * transaction manager used in the query.
+   */
+  private HiveTxnManager txnManager;
+
+  /**
+   * Holds the number of rows affected for insert queries.
+   */
+  private long numModifiedRows = 0;
+
+  static public final String USERID_TAG = "userid";
+
+  /**
+   * Private constructor, use QueryState.Builder instead.
    * @param conf The query specific configuration object
    */
   private QueryState(HiveConf conf) {
     this.queryConf = conf;
   }
 
+  // Get the query id stored in query specific config.
   public String getQueryId() {
     return (queryConf.getVar(HiveConf.ConfVars.HIVEQUERYID));
   }
@@ -73,30 +95,80 @@ public class QueryState {
     return queryConf;
   }
 
+  public LineageState getLineageState() {
+    return lineageState;
+  }
+
+  public void setLineageState(LineageState lineageState) {
+    this.lineageState = lineageState;
+  }
+
+  public HiveTxnManager getTxnManager() {
+    return txnManager;
+  }
+
+  public void setTxnManager(HiveTxnManager txnManager) {
+    this.txnManager = txnManager;
+  }
+
+  public long getNumModifiedRows() {
+    return numModifiedRows;
+  }
+
+  public void setNumModifiedRows(long numModifiedRows) {
+    this.numModifiedRows = numModifiedRows;
+  }
+
+  public String getQueryTag() {
+    return HiveConf.getVar(this.queryConf, HiveConf.ConfVars.HIVEQUERYTAG);
+  }
+
+  public void setQueryTag(String queryTag) {
+    HiveConf.setVar(this.queryConf, HiveConf.ConfVars.HIVEQUERYTAG, queryTag);
+  }
+
+  public static void setApplicationTag(HiveConf queryConf, String queryTag) {
+    String jobTag = HiveConf.getVar(queryConf, HiveConf.ConfVars.HIVEQUERYTAG);
+    if (jobTag == null || jobTag.isEmpty()) {
+      jobTag = queryTag;
+    } else {
+      jobTag = jobTag.concat("," + queryTag);
+    }
+    if (SessionState.get() != null) {
+      jobTag = jobTag.concat("," + USERID_TAG + "=" + SessionState.get().getUserName());
+    }
+    queryConf.set(MRJobConfig.JOB_TAGS, jobTag);
+    queryConf.set(TezConfiguration.TEZ_APPLICATION_TAGS, jobTag);
+  }
+
+  /**
+   * Generating the new QueryState object. Making sure, that the new queryId is generated.
+   * @param conf The HiveConf which should be used
+   * @param lineageState a LineageState to be set in the new QueryState object
+   * @return The new QueryState object
+   */
+  public static QueryState getNewQueryState(HiveConf conf, LineageState lineageState) {
+    return new QueryState.Builder()
+        .withGenerateNewQueryId(true)
+        .withHiveConf(conf)
+        .withLineageState(lineageState)
+        .build();
+  }
+
   /**
    * Builder to instantiate the QueryState object.
    */
   public static class Builder {
     private Map<String, String> confOverlay = null;
-    private boolean runAsync = false;
+    private boolean isolated = true;
     private boolean generateNewQueryId = false;
     private HiveConf hiveConf = null;
+    private LineageState lineageState = null;
 
     /**
-     * Default constructor - use this builder to create a QueryState object
+     * Default constructor - use this builder to create a QueryState object.
      */
     public Builder() {
-    }
-
-    /**
-     * Set this to true if the configuration should be detached from the original config. If not
-     * set the default value is false.
-     * @param runAsync If the configuration should be detached
-     * @return The builder
-     */
-    public Builder withRunAsync(boolean runAsync) {
-      this.runAsync = runAsync;
-      return this;
     }
 
     /**
@@ -108,6 +180,16 @@ public class QueryState {
      */
     public Builder withConfOverlay(Map<String, String> confOverlay) {
       this.confOverlay = confOverlay;
+      return this;
+    }
+
+    /**
+     * Disable configuration isolation.
+     *
+     * For internal use / testing purposes only.
+     */
+    public Builder nonIsolated() {
+      isolated = false;
       return this;
     }
 
@@ -124,8 +206,8 @@ public class QueryState {
 
     /**
      * The source HiveConf object used to create the QueryState. If runAsync is false, and the
-     * confOverLay is empty then we will reuse the hiveConf object as a backing datastore for the
-     * QueryState. We will create a clone of the hiveConf object otherwise.
+     * confOverLay is empty then we will reuse the conf object as a backing datastore for the
+     * QueryState. We will create a clone of the conf object otherwise.
      * @param hiveConf The source HiveConf
      * @return The builder
      */
@@ -135,22 +217,35 @@ public class QueryState {
     }
 
     /**
+     * add a LineageState that will be set in the built QueryState
+     * @param lineageState the source lineageState
+     * @return the builder
+     */
+    public Builder withLineageState(LineageState lineageState) {
+      this.lineageState = lineageState;
+      return this;
+    }
+
+    /**
      * Creates the QueryState object. The default values are:
      * - runAsync false
      * - confOverlay null
      * - generateNewQueryId false
-     * - hiveConf null
+     * - conf null
      * @return The generated QueryState object
      */
     public QueryState build() {
-      HiveConf queryConf = hiveConf;
+      HiveConf queryConf;
 
-      if (queryConf == null) {
-        // Generate a new conf if necessary
-        queryConf = new HiveConf();
-      } else if (runAsync || (confOverlay != null && !confOverlay.isEmpty())) {
-        // Detach the original conf if necessary
-        queryConf = new HiveConf(queryConf);
+      if (isolated) {
+        // isolate query conf
+        if (hiveConf == null) {
+          queryConf = new HiveConf();
+        } else {
+          queryConf = new HiveConf(hiveConf);
+        }
+      } else {
+        queryConf = hiveConf;
       }
 
       // Set the specific parameters if needed
@@ -167,10 +262,22 @@ public class QueryState {
 
       // Generate the new queryId if needed
       if (generateNewQueryId) {
-        queryConf.setVar(HiveConf.ConfVars.HIVEQUERYID, QueryPlan.makeQueryId());
+        String queryId = QueryPlan.makeQueryId();
+        queryConf.setVar(HiveConf.ConfVars.HIVEQUERYID, queryId);
+        setApplicationTag(queryConf, queryId);
+
+        // FIXME: druid storage handler relies on query.id to maintain some staging directories
+        // expose queryid to session level
+        if (hiveConf != null) {
+          hiveConf.setVar(HiveConf.ConfVars.HIVEQUERYID, queryId);
+        }
       }
 
-      return new QueryState(queryConf);
+      QueryState queryState = new QueryState(queryConf);
+      if (lineageState != null) {
+        queryState.setLineageState(lineageState);
+      }
+      return queryState;
     }
   }
 }

@@ -6,7 +6,7 @@ set hive.mapred.mode=nonstrict;
 
 -- SORT_QUERY_RESULTS
 
-create table vectortab2k(
+create table vectortab2k_n6(
             t tinyint,
             si smallint,
             i int,
@@ -23,9 +23,9 @@ create table vectortab2k(
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE;
 
-LOAD DATA LOCAL INPATH '../../data/files/vectortab2k' OVERWRITE INTO TABLE vectortab2k;
+LOAD DATA LOCAL INPATH '../../data/files/vectortab2k' OVERWRITE INTO TABLE vectortab2k_n6;
 
-CREATE TABLE scratch AS SELECT t, si, i, b, f, d, dc FROM vectortab2k;
+CREATE TABLE scratch AS SELECT t, si, i, b, f, d, dc FROM vectortab2k_n6;
 INSERT INTO TABLE scratch VALUES (NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
 CREATE TABLE vectortab2k_orc STORED AS ORC AS SELECT * FROM scratch;
@@ -88,7 +88,7 @@ SELECT sum(hash(*)) FROM
 SET hive.vectorized.execution.enabled=false;
 
 CREATE TABLE scratch_repeat AS SELECT t, si, i, b, bo, 20 as t_repeat,
-     9000 as si_repeat, 9233320 as i_repeat, -823823999339992 as b_repeat, false as bo_repeat_false, true as bo_repeat_true FROM vectortab2k;
+     9000 as si_repeat, 9233320 as i_repeat, -823823999339992 as b_repeat, false as bo_repeat_false, true as bo_repeat_true FROM vectortab2k_n6;
 
 -- The repeated columns ought to create repeated VectorizedRowBatch for those columns.
 -- And then when we do a comparison, we should generate a repeated boolean result.
@@ -141,7 +141,7 @@ SELECT sum(hash(*)) FROM
 SET hive.vectorized.execution.enabled=false;
 
 CREATE TABLE scratch_null AS SELECT t, si, i, b, bo,
-     cast(null as tinyint) as t_null, cast(null as smallint) as si_null, cast(null as int) as i_null, cast(null as bigint) as b_null, cast(null as boolean) as bo_null FROM vectortab2k;
+     cast(null as tinyint) as t_null, cast(null as smallint) as si_null, cast(null as int) as i_null, cast(null as bigint) as b_null, cast(null as boolean) as bo_null FROM vectortab2k_n6;
 
 -- The nulled columns ought to create repeated null VectorizedRowBatch for those columns.
 CREATE TABLE vectortab2k_orc_null STORED AS ORC AS SELECT * FROM scratch_null;

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,7 +18,9 @@
 package org.apache.hive.beeline.hs2connection;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.hive.beeline.hs2connection.BeelineHS2ConnectionFileParseException;
@@ -171,15 +173,27 @@ public class TestUserHS2ConnectionFileParser {
         LOCATION_2.equals(testHS2ConfigManager.getFileLocation()));
   }
 
+  @Test
+  public void testConfigLocationPathInEtc() throws Exception {
+    UserHS2ConnectionFileParser testHS2ConfigManager =
+            new UserHS2ConnectionFileParser();
+    Field locations = testHS2ConfigManager.getClass().getDeclaredField("locations");
+    locations.setAccessible(true);
+    Collection<String> locs = (List<String>)locations.get(testHS2ConfigManager);
+    Assert.assertTrue(locs.contains(
+            UserHS2ConnectionFileParser.ETC_HIVE_CONF_LOCATION +
+            File.separator +
+            UserHS2ConnectionFileParser.DEFAULT_CONNECTION_CONFIG_FILE_NAME));
+
+  }
+
   private String getParsedUrlFromConfigFile(String filename)
       throws BeelineHS2ConnectionFileParseException {
     String path = HiveTestUtils.getFileFromClasspath(filename);
     testLocations.add(path);
     UserHS2ConnectionFileParser testHS2ConfigManager =
         new UserHS2ConnectionFileParser(testLocations);
-
-    String url = HS2ConnectionFileUtils.getUrl(testHS2ConfigManager.getConnectionProperties());
-    return url;
+    return HS2ConnectionFileUtils.getUrl(testHS2ConfigManager.getConnectionProperties());
   }
 
   private void createNewFile(final String path) throws Exception {

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -25,44 +25,55 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
- * This is a generated class to evaluate a <OperatorSymbol> comparison on a vector of strings.
- * Do not edit the generated code directly. 
+ * This is a generated class to evaluate a comparison on a vector of strings.
+ * Do not edit the generated code directly.
  */
 public abstract class <ClassName> extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  protected int colNum;
-  protected byte[] value;
+  protected final byte[] value;
+  protected final int colNum;
+
+  public <ClassName>(byte[] value, int colNum) {
+    super();
+    this.value = value;
+    this.colNum = colNum;
+  }
 
   public <ClassName>() {
+    super();
+
+    // Dummy final assignments.
+    value = null;
+    colNum = -1;
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
+
+    // return immediately if batch is empty
+    final int n = batch.size;
+    if (n == 0) {
+      return;
+    }
+
     if (childExpressions != null) {
       super.evaluateChildren(batch);
     }
     BytesColumnVector inputColVector = (BytesColumnVector) batch.cols[colNum];
     int[] sel = batch.selected;
-    boolean[] nullPos = inputColVector.isNull;
-    int n = batch.size;
+    boolean[] inputIsNull = inputColVector.isNull;
+
     byte[][] vector = inputColVector.vector;
     int[] length = inputColVector.length;
     int[] start = inputColVector.start;
-    
 
-    // return immediately if batch is empty
-    if (n == 0) {
-      return;
-    }
-    
     if (inputColVector.noNulls) {
       if (inputColVector.isRepeating) {
-      
-        // All must be selected otherwise size would be zero. Repeating property will not change.
         if (!(<CompareOrEqual>(value, 0, value.length, vector[0], start[0], length[0])<OptionalCompare>)) {
 
           //Entire batch is filtered out.
@@ -91,9 +102,7 @@ public abstract class <ClassName> extends VectorExpression {
       }
     } else {
       if (inputColVector.isRepeating) {
-      
-        // All must be selected otherwise size would be zero. Repeating property will not change.
-        if (!nullPos[0]) {
+        if (!inputIsNull[0]) {
           if (!(<CompareOrEqual>(value, 0, value.length, vector[0], start[0], length[0])<OptionalCompare>)) {
 
             //Entire batch is filtered out.
@@ -106,19 +115,19 @@ public abstract class <ClassName> extends VectorExpression {
         int newSize = 0;
         for(int j=0; j != n; j++) {
           int i = sel[j];
-          if (!nullPos[i]) {
+          if (!inputIsNull[i]) {
            if (<CompareOrEqual>(value, 0, value.length, vector[i], start[i], length[i])<OptionalCompare>) {
              sel[newSize++] = i;
            }
           }
         }
-        
+
         //Change the selected vector
         batch.size = newSize;
       } else {
         int newSize = 0;
         for(int i = 0; i != n; i++) {
-          if (!nullPos[i]) {
+          if (!inputIsNull[i]) {
             if (<CompareOrEqual>(value, 0, value.length, vector[i], start[i], length[i])<OptionalCompare>) {
               sel[newSize++] = i;
             }
@@ -133,34 +142,8 @@ public abstract class <ClassName> extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return -1;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "boolean";
-  }
-  
-  public int getColNum() {
-    return colNum;
-  }
-
-  public void setColNum(int colNum) {
-    this.colNum = colNum;
-  }
-
-  public byte[] getValue() {
-    return value;
-  }
-
-  public void setValue(byte[] value) {
-    this.value = value;
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "val " + displayUtf8Bytes(value) + ", col " + + colNum;
+    return "val " + displayUtf8Bytes(value) + ", " + getColumnParamString(1, colNum);
   }
 
 }

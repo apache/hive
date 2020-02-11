@@ -1,4 +1,4 @@
-PREHOOK: query: create table unique_1( 
+PREHOOK: query: create table unique_1_n0( 
 i int, 
 d double, 
 s string) 
@@ -7,8 +7,8 @@ fields terminated by '|'
 stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@unique_1
-POSTHOOK: query: create table unique_1( 
+PREHOOK: Output: default@unique_1_n0
+POSTHOOK: query: create table unique_1_n0( 
 i int, 
 d double, 
 s string) 
@@ -17,15 +17,15 @@ fields terminated by '|'
 stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@unique_1
-PREHOOK: query: load data local inpath '../../data/files/unique_1.txt' into table unique_1
+POSTHOOK: Output: default@unique_1_n0
+PREHOOK: query: load data local inpath '../../data/files/unique_1.txt' into table unique_1_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@unique_1
-POSTHOOK: query: load data local inpath '../../data/files/unique_1.txt' into table unique_1
+PREHOOK: Output: default@unique_1_n0
+POSTHOOK: query: load data local inpath '../../data/files/unique_1.txt' into table unique_1_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@unique_1
+POSTHOOK: Output: default@unique_1_n0
 PREHOOK: query: create table unique_2( 
 i int, 
 d double, 
@@ -70,18 +70,18 @@ stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_two_files
-PREHOOK: query: insert into table test_two_files select * from unique_1 where i <= 0
+PREHOOK: query: insert into table test_two_files select * from unique_1_n0 where i <= 0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@unique_1
+PREHOOK: Input: default@unique_1_n0
 PREHOOK: Output: default@test_two_files
-POSTHOOK: query: insert into table test_two_files select * from unique_1 where i <= 0
+POSTHOOK: query: insert into table test_two_files select * from unique_1_n0 where i <= 0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@unique_1
+POSTHOOK: Input: default@unique_1_n0
 POSTHOOK: Output: default@test_two_files
-POSTHOOK: Lineage: test_two_files.d SIMPLE [(unique_1)unique_1.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: test_two_files.i SIMPLE [(unique_1)unique_1.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: test_two_files.s SIMPLE [(unique_1)unique_1.FieldSchema(name:s, type:string, comment:null), ]
-unique_1.i	unique_1.d	unique_1.s
+POSTHOOK: Lineage: test_two_files.d SIMPLE [(unique_1_n0)unique_1_n0.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: test_two_files.i SIMPLE [(unique_1_n0)unique_1_n0.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test_two_files.s SIMPLE [(unique_1_n0)unique_1_n0.FieldSchema(name:s, type:string, comment:null), ]
+unique_1_n0.i	unique_1_n0.d	unique_1_n0.s
 PREHOOK: query: insert into table test_two_files select * from unique_2 where i > 0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@unique_2

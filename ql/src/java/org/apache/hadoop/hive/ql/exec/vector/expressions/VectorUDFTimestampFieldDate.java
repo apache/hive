@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,136 +18,155 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import java.util.Arrays;
 import java.util.Calendar;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.util.DateTimeMath;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hive.common.util.DateUtils;
 
 import com.google.common.base.Preconditions;
-
 
 /**
  * Abstract class to return various fields from a Timestamp or Date.
  */
 public abstract class VectorUDFTimestampFieldDate extends VectorExpression {
-
   private static final long serialVersionUID = 1L;
 
-  protected int colNum;
-  protected int outputColumn;
-  protected int field;
-  protected transient final Calendar calendar = Calendar.getInstance();
+  protected final int colNum;
+  protected final int field;
 
-  public VectorUDFTimestampFieldDate(int field, int colNum, int outputColumn) {
-    this();
+  protected final transient Calendar calendar = DateTimeMath.getProlepticGregorianCalendarUTC();
+
+  public VectorUDFTimestampFieldDate(int field, int colNum, int outputColumnNum) {
+    super(outputColumnNum);
     this.colNum = colNum;
-    this.outputColumn = outputColumn;
     this.field = field;
   }
 
   public VectorUDFTimestampFieldDate() {
     super();
+
+    // Dummy final assignments.
+    colNum = -1;
+    field = -1;
+  }
+
+  public void initCalendar() {
+  }
+
+  @Override
+  public void transientInit(Configuration conf) throws HiveException {
+    super.transientInit(conf);
+    initCalendar();
   }
 
   protected long getDateField(long days) {
-    calendar.setTimeInMillis(DateWritable.daysToMillis((int) days));
+    calendar.setTimeInMillis(DateWritableV2.daysToMillis((int) days));
     return calendar.get(field);
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
 
-    Preconditions.checkState(inputTypes[0] == VectorExpression.Type.DATE);
+    Preconditions.checkState(
+        ((PrimitiveTypeInfo) inputTypeInfos[0]).getPrimitiveCategory() == PrimitiveCategory.DATE);
 
     if (childExpressions != null) {
       super.evaluateChildren(batch);
     }
 
-    LongColumnVector outV = (LongColumnVector) batch.cols[outputColumn];
+    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
     ColumnVector inputColVec = batch.cols[this.colNum];
 
     /* every line below this is identical for evaluateLong & evaluateString */
     final int n = inputColVec.isRepeating ? 1 : batch.size;
     int[] sel = batch.selected;
     final boolean selectedInUse = (inputColVec.isRepeating == false) && batch.selectedInUse;
+    boolean[] outputIsNull = outputColVector.isNull;
 
     if(batch.size == 0) {
       /* n != batch.size when isRepeating */
       return;
     }
 
-    /* true for all algebraic UDFs with no state */
-    outV.isRepeating = inputColVec.isRepeating;
+    // We do not need to do a column reset since we are carefully changing the output.
+    outputColVector.isRepeating = false;
 
     LongColumnVector longColVector = (LongColumnVector) inputColVec;
 
+    if (inputColVec.isRepeating) {
+      if (inputColVec.noNulls || !inputColVec.isNull[0]) {
+        outputColVector.isNull[0] = false;
+        outputColVector.vector[0] = getDateField(longColVector.vector[0]);
+      } else {
+        outputColVector.isNull[0] = true;
+        outputColVector.noNulls = false;
+      }
+      outputColVector.isRepeating = true;
+      return;
+    }
+
     if (inputColVec.noNulls) {
-      outV.noNulls = true;
-      if (selectedInUse) {
-        for(int j=0; j < n; j++) {
-          int i = sel[j];
-          outV.vector[i] = getDateField(longColVector.vector[i]);
+      if (batch.selectedInUse) {
+
+        // CONSIDER: For large n, fill n or all of isNull array and use the tighter ELSE loop.
+
+        if (!outputColVector.noNulls) {
+          for(int j = 0; j != n; j++) {
+           final int i = sel[j];
+           // Set isNull before call in case it changes it mind.
+           outputIsNull[i] = false;
+           outputColVector.vector[i] = getDateField(longColVector.vector[i]);
+         }
+        } else {
+          for(int j = 0; j != n; j++) {
+            final int i = sel[j];
+            outputColVector.vector[i] = getDateField(longColVector.vector[i]);
+          }
         }
       } else {
-        for(int i = 0; i < n; i++) {
-          outV.vector[i] = getDateField(longColVector.vector[i]);
+        if (!outputColVector.noNulls) {
+
+          // Assume it is almost always a performance win to fill all of isNull so we can
+          // safely reset noNulls.
+          Arrays.fill(outputIsNull, false);
+          outputColVector.noNulls = true;
+        }
+        for(int i = 0; i != n; i++) {
+          outputColVector.vector[i] = getDateField(longColVector.vector[i]);
         }
       }
-    } else {
-      // Handle case with nulls. Don't do function if the value is null, to save time,
-      // because calling the function can be expensive.
-      outV.noNulls = false;
+    } else /* there are nulls in the inputColVector */ {
+
+      // Carefully handle NULLs...
+      outputColVector.noNulls = false;
+
       if (selectedInUse) {
         for(int j=0; j < n; j++) {
           int i = sel[j];
-          outV.isNull[i] = inputColVec.isNull[i];
+          outputColVector.isNull[i] = inputColVec.isNull[i];
           if (!inputColVec.isNull[i]) {
-            outV.vector[i] = getDateField(longColVector.vector[i]);
+            outputColVector.vector[i] = getDateField(longColVector.vector[i]);
           }
         }
       } else {
         for(int i = 0; i < n; i++) {
-          outV.isNull[i] = inputColVec.isNull[i];
+          outputColVector.isNull[i] = inputColVec.isNull[i];
           if (!inputColVec.isNull[i]) {
-            outV.vector[i] = getDateField(longColVector.vector[i]);
+            outputColVector.vector[i] = getDateField(longColVector.vector[i]);
           }
         }
       }
     }
-  }
-
-  @Override
-  public int getOutputColumn() {
-    return this.outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "long";
-  }
-
-  public int getColNum() {
-    return colNum;
-  }
-
-  public void setColNum(int colNum) {
-    this.colNum = colNum;
-  }
-
-  public int getField() {
-    return field;
-  }
-
-  public void setField(int field) {
-    this.field = field;
-  }
-
-  public void setOutputColumn(int outputColumn) {
-    this.outputColumn = outputColumn;
   }
 
   @Override

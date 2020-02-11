@@ -1,0 +1,597 @@
+PREHOOK: query: create external table smt_sysdb_src_buck (key int, value string) clustered by(value) into 2 buckets
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@smt_sysdb_src_buck
+POSTHOOK: query: create external table smt_sysdb_src_buck (key int, value string) clustered by(value) into 2 buckets
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@smt_sysdb_src_buck
+PREHOOK: query: create external table smt_sysdb_src_skew (key int) skewed by (key) on (1,2,3)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@smt_sysdb_src_skew
+POSTHOOK: query: create external table smt_sysdb_src_skew (key int) skewed by (key) on (1,2,3)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@smt_sysdb_src_skew
+PREHOOK: query: CREATE TABLE smt_sysdb_scr_txn (key int, value string)
+    CLUSTERED BY (key) INTO 2 BUCKETS STORED AS ORC
+    TBLPROPERTIES (
+      "transactional"="true",
+      "compactor.mapreduce.map.memory.mb"="2048",
+      "compactorthreshold.hive.compactor.delta.num.threshold"="4",
+      "compactorthreshold.hive.compactor.delta.pct.threshold"="0.5")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@smt_sysdb_scr_txn
+POSTHOOK: query: CREATE TABLE smt_sysdb_scr_txn (key int, value string)
+    CLUSTERED BY (key) INTO 2 BUCKETS STORED AS ORC
+    TBLPROPERTIES (
+      "transactional"="true",
+      "compactor.mapreduce.map.memory.mb"="2048",
+      "compactorthreshold.hive.compactor.delta.num.threshold"="4",
+      "compactorthreshold.hive.compactor.delta.pct.threshold"="0.5")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@smt_sysdb_scr_txn
+PREHOOK: query: CREATE TEMPORARY TABLE smt_sysdb_src_tmp (key int, value string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@smt_sysdb_src_tmp
+POSTHOOK: query: CREATE TEMPORARY TABLE smt_sysdb_src_tmp (key int, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@smt_sysdb_src_tmp
+PREHOOK: query: CREATE EXTERNAL TABLE smt_sysdb_moretypes (a decimal(10,2), b tinyint, c smallint, d int, e bigint, f varchar(10), g char(3))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@smt_sysdb_moretypes
+POSTHOOK: query: CREATE EXTERNAL TABLE smt_sysdb_moretypes (a decimal(10,2), b tinyint, c smallint, d int, e bigint, f varchar(10), g char(3))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@smt_sysdb_moretypes
+PREHOOK: query: CREATE VIEW smt_sysdb_view
+    AS select smt_sysdb_src_buck.key, smt_sysdb_scr_txn.value
+       from smt_sysdb_src_buck, smt_sysdb_scr_txn where smt_sysdb_src_buck.key = smt_sysdb_scr_txn.key
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@smt_sysdb_scr_txn
+PREHOOK: Input: default@smt_sysdb_src_buck
+PREHOOK: Output: database:default
+PREHOOK: Output: default@smt_sysdb_view
+POSTHOOK: query: CREATE VIEW smt_sysdb_view
+    AS select smt_sysdb_src_buck.key, smt_sysdb_scr_txn.value
+       from smt_sysdb_src_buck, smt_sysdb_scr_txn where smt_sysdb_src_buck.key = smt_sysdb_scr_txn.key
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@smt_sysdb_scr_txn
+POSTHOOK: Input: default@smt_sysdb_src_buck
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@smt_sysdb_view
+POSTHOOK: Lineage: smt_sysdb_view.key SIMPLE [(smt_sysdb_src_buck)smt_sysdb_src_buck.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smt_sysdb_view.value SIMPLE [(smt_sysdb_scr_txn)smt_sysdb_scr_txn.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: show grant user hive_test_user
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user hive_test_user
+POSTHOOK: type: SHOW_GRANT
+default	alltypesorc			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	alltypesorc			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	alltypesorc			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	alltypesorc			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	alltypesparquet			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	alltypesparquet			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	alltypesparquet			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	alltypesparquet			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	cbo_t1			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	cbo_t1			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	cbo_t1			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	cbo_t1			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	cbo_t2			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	cbo_t2			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	cbo_t2			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	cbo_t2			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	cbo_t3			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	cbo_t3			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	cbo_t3			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	cbo_t3			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	lineitem			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	lineitem			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	lineitem			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	lineitem			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	part			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	part			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	part			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	part			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	smt_sysdb_moretypes			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	smt_sysdb_moretypes			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	smt_sysdb_moretypes			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	smt_sysdb_moretypes			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	smt_sysdb_scr_txn			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	smt_sysdb_scr_txn			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	smt_sysdb_scr_txn			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	smt_sysdb_scr_txn			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	smt_sysdb_src_buck			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	smt_sysdb_src_buck			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	smt_sysdb_src_buck			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	smt_sysdb_src_buck			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	smt_sysdb_src_skew			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	smt_sysdb_src_skew			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	smt_sysdb_src_skew			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	smt_sysdb_src_skew			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	smt_sysdb_view			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	smt_sysdb_view			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	smt_sysdb_view			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	smt_sysdb_view			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	src			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	src			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	src			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	src			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	src1			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	src1			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	src1			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	src1			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	src_cbo			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	src_cbo			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	src_cbo			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	src_cbo			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	src_json			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	src_json			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	src_json			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	src_json			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	src_sequencefile			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	src_sequencefile			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	src_sequencefile			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	src_sequencefile			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	src_thrift			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	src_thrift			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	src_thrift			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	src_thrift			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	srcbucket			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	srcbucket			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	srcbucket			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	srcbucket			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	srcbucket2			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	srcbucket2			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	srcbucket2			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	srcbucket2			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	srcpart			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	srcpart			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	srcpart			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	srcpart			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+information_schema	column_privileges			hive_test_user	USER	DELETE	true	-1	hive_test_user
+information_schema	column_privileges			hive_test_user	USER	INSERT	true	-1	hive_test_user
+information_schema	column_privileges			hive_test_user	USER	SELECT	true	-1	hive_test_user
+information_schema	column_privileges			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+information_schema	columns			hive_test_user	USER	DELETE	true	-1	hive_test_user
+information_schema	columns			hive_test_user	USER	INSERT	true	-1	hive_test_user
+information_schema	columns			hive_test_user	USER	SELECT	true	-1	hive_test_user
+information_schema	columns			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+information_schema	compactions			hive_test_user	USER	DELETE	true	-1	hive_test_user
+information_schema	compactions			hive_test_user	USER	INSERT	true	-1	hive_test_user
+information_schema	compactions			hive_test_user	USER	SELECT	true	-1	hive_test_user
+information_schema	compactions			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+information_schema	scheduled_executions			hive_test_user	USER	DELETE	true	-1	hive_test_user
+information_schema	scheduled_executions			hive_test_user	USER	INSERT	true	-1	hive_test_user
+information_schema	scheduled_executions			hive_test_user	USER	SELECT	true	-1	hive_test_user
+information_schema	scheduled_executions			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+information_schema	scheduled_queries			hive_test_user	USER	DELETE	true	-1	hive_test_user
+information_schema	scheduled_queries			hive_test_user	USER	INSERT	true	-1	hive_test_user
+information_schema	scheduled_queries			hive_test_user	USER	SELECT	true	-1	hive_test_user
+information_schema	scheduled_queries			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+information_schema	schemata			hive_test_user	USER	DELETE	true	-1	hive_test_user
+information_schema	schemata			hive_test_user	USER	INSERT	true	-1	hive_test_user
+information_schema	schemata			hive_test_user	USER	SELECT	true	-1	hive_test_user
+information_schema	schemata			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+information_schema	table_privileges			hive_test_user	USER	DELETE	true	-1	hive_test_user
+information_schema	table_privileges			hive_test_user	USER	INSERT	true	-1	hive_test_user
+information_schema	table_privileges			hive_test_user	USER	SELECT	true	-1	hive_test_user
+information_schema	table_privileges			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+information_schema	tables			hive_test_user	USER	DELETE	true	-1	hive_test_user
+information_schema	tables			hive_test_user	USER	INSERT	true	-1	hive_test_user
+information_schema	tables			hive_test_user	USER	SELECT	true	-1	hive_test_user
+information_schema	tables			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+information_schema	views			hive_test_user	USER	DELETE	true	-1	hive_test_user
+information_schema	views			hive_test_user	USER	INSERT	true	-1	hive_test_user
+information_schema	views			hive_test_user	USER	SELECT	true	-1	hive_test_user
+information_schema	views			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	bucketing_cols			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	bucketing_cols			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	bucketing_cols			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	bucketing_cols			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	cds			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	cds			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	cds			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	cds			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	columns_v2			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	columns_v2			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	columns_v2			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	columns_v2			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	compaction_queue			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	compaction_queue			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	compaction_queue			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	compaction_queue			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	compactions			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	compactions			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	compactions			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	compactions			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	completed_compactions			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	completed_compactions			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	completed_compactions			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	completed_compactions			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	database_params			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	database_params			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	database_params			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	database_params			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	db_privs			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	db_privs			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	db_privs			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	db_privs			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	db_version			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	db_version			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	db_version			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	db_version			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	dbs			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	dbs			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	dbs			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	dbs			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	funcs			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	funcs			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	funcs			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	funcs			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	global_privs			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	global_privs			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	global_privs			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	global_privs			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	hive_locks			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	hive_locks			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	hive_locks			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	hive_locks			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	key_constraints			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	key_constraints			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	key_constraints			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	key_constraints			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	locks			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	locks			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	locks			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	locks			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	mv_creation_metadata			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	mv_creation_metadata			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	mv_creation_metadata			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	mv_creation_metadata			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	mv_tables_used			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	mv_tables_used			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	mv_tables_used			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	mv_tables_used			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	part_col_privs			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	part_col_privs			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	part_col_privs			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	part_col_privs			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	part_col_stats			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	part_col_stats			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	part_col_stats			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	part_col_stats			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	part_privs			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	part_privs			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	part_privs			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	part_privs			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	partition_key_vals			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	partition_key_vals			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	partition_key_vals			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	partition_key_vals			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	partition_keys			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	partition_keys			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	partition_keys			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	partition_keys			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	partition_params			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	partition_params			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	partition_params			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	partition_params			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	partition_stats_view			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	partition_stats_view			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	partition_stats_view			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	partition_stats_view			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	partitions			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	partitions			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	partitions			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	partitions			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	role_map			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	role_map			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	role_map			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	role_map			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	roles			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	roles			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	roles			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	roles			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	scheduled_executions			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	scheduled_executions			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	scheduled_executions			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	scheduled_executions			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	scheduled_queries			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	scheduled_queries			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	scheduled_queries			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	scheduled_queries			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	sd_params			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	sd_params			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	sd_params			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	sd_params			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	sds			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	sds			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	sds			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	sds			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	sequence_table			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	sequence_table			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	sequence_table			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	sequence_table			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	serde_params			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	serde_params			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	serde_params			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	serde_params			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	serdes			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	serdes			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	serdes			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	serdes			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	skewed_col_names			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	skewed_col_names			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	skewed_col_names			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	skewed_col_names			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	skewed_col_value_loc_map			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	skewed_col_value_loc_map			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	skewed_col_value_loc_map			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	skewed_col_value_loc_map			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	skewed_string_list			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	skewed_string_list			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	skewed_string_list			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	skewed_string_list			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	skewed_string_list_values			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	skewed_string_list_values			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	skewed_string_list_values			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	skewed_string_list_values			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	skewed_values			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	skewed_values			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	skewed_values			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	skewed_values			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	sort_cols			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	sort_cols			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	sort_cols			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	sort_cols			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	tab_col_stats			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	tab_col_stats			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	tab_col_stats			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	tab_col_stats			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	table_params			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	table_params			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	table_params			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	table_params			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	table_stats_view			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	table_stats_view			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	table_stats_view			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	table_stats_view			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	tbl_col_privs			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	tbl_col_privs			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	tbl_col_privs			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	tbl_col_privs			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	tbl_privs			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	tbl_privs			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	tbl_privs			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	tbl_privs			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	tbls			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	tbls			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	tbls			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	tbls			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	transactions			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	transactions			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	transactions			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	transactions			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	txn_components			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	txn_components			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	txn_components			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	txn_components			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	txns			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	txns			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	txns			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	txns			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	version			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	version			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	version			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	version			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	wm_mappings			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	wm_mappings			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	wm_mappings			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	wm_mappings			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	wm_pools			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	wm_pools			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	wm_pools			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	wm_pools			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	wm_pools_to_triggers			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	wm_pools_to_triggers			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	wm_pools_to_triggers			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	wm_pools_to_triggers			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	wm_resourceplans			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	wm_resourceplans			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	wm_resourceplans			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	wm_resourceplans			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	wm_triggers			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	wm_triggers			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	wm_triggers			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	wm_triggers			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+PREHOOK: query: use sys
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:sys
+POSTHOOK: query: use sys
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:sys
+PREHOOK: query: select tbl_name, tbl_type from tbls where tbl_name like 'smt_sysdb%' order by tbl_name
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@tbls
+#### A masked pattern was here ####
+POSTHOOK: query: select tbl_name, tbl_type from tbls where tbl_name like 'smt_sysdb%' order by tbl_name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@tbls
+#### A masked pattern was here ####
+smt_sysdb_moretypes	EXTERNAL_TABLE
+smt_sysdb_scr_txn	MANAGED_TABLE
+smt_sysdb_src_buck	EXTERNAL_TABLE
+smt_sysdb_src_skew	EXTERNAL_TABLE
+smt_sysdb_view	VIRTUAL_VIEW
+PREHOOK: query: drop table smt_sysdb_src_buck
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table smt_sysdb_src_buck
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table smt_sysdb_src_skew
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table smt_sysdb_src_skew
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table smt_sysdb_scr_txn
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table smt_sysdb_scr_txn
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table smt_sysdb_src_tmp
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table smt_sysdb_src_tmp
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table smt_sysdb_moretypes
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table smt_sysdb_moretypes
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP DATABASE IF EXISTS SYS CASCADE
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:sys
+PREHOOK: Output: database:sys
+PREHOOK: Output: sys@bucketing_cols
+PREHOOK: Output: sys@cds
+PREHOOK: Output: sys@columns_v2
+PREHOOK: Output: sys@compaction_queue
+PREHOOK: Output: sys@compactions
+PREHOOK: Output: sys@completed_compactions
+PREHOOK: Output: sys@database_params
+PREHOOK: Output: sys@db_privs
+PREHOOK: Output: sys@db_version
+PREHOOK: Output: sys@dbs
+PREHOOK: Output: sys@funcs
+PREHOOK: Output: sys@global_privs
+PREHOOK: Output: sys@hive_locks
+PREHOOK: Output: sys@key_constraints
+PREHOOK: Output: sys@locks
+PREHOOK: Output: sys@mv_creation_metadata
+PREHOOK: Output: sys@mv_tables_used
+PREHOOK: Output: sys@part_col_privs
+PREHOOK: Output: sys@part_col_stats
+PREHOOK: Output: sys@part_privs
+PREHOOK: Output: sys@partition_key_vals
+PREHOOK: Output: sys@partition_keys
+PREHOOK: Output: sys@partition_params
+PREHOOK: Output: sys@partition_stats_view
+PREHOOK: Output: sys@partitions
+PREHOOK: Output: sys@role_map
+PREHOOK: Output: sys@roles
+PREHOOK: Output: sys@scheduled_executions
+PREHOOK: Output: sys@scheduled_queries
+PREHOOK: Output: sys@sd_params
+PREHOOK: Output: sys@sds
+PREHOOK: Output: sys@sequence_table
+PREHOOK: Output: sys@serde_params
+PREHOOK: Output: sys@serdes
+PREHOOK: Output: sys@skewed_col_names
+PREHOOK: Output: sys@skewed_col_value_loc_map
+PREHOOK: Output: sys@skewed_string_list
+PREHOOK: Output: sys@skewed_string_list_values
+PREHOOK: Output: sys@skewed_values
+PREHOOK: Output: sys@sort_cols
+PREHOOK: Output: sys@tab_col_stats
+PREHOOK: Output: sys@table_params
+PREHOOK: Output: sys@table_stats_view
+PREHOOK: Output: sys@tbl_col_privs
+PREHOOK: Output: sys@tbl_privs
+PREHOOK: Output: sys@tbls
+PREHOOK: Output: sys@transactions
+PREHOOK: Output: sys@txn_components
+PREHOOK: Output: sys@txns
+PREHOOK: Output: sys@version
+PREHOOK: Output: sys@wm_mappings
+PREHOOK: Output: sys@wm_pools
+PREHOOK: Output: sys@wm_pools_to_triggers
+PREHOOK: Output: sys@wm_resourceplans
+PREHOOK: Output: sys@wm_triggers
+POSTHOOK: query: DROP DATABASE IF EXISTS SYS CASCADE
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:sys
+POSTHOOK: Output: database:sys
+POSTHOOK: Output: sys@bucketing_cols
+POSTHOOK: Output: sys@cds
+POSTHOOK: Output: sys@columns_v2
+POSTHOOK: Output: sys@compaction_queue
+POSTHOOK: Output: sys@compactions
+POSTHOOK: Output: sys@completed_compactions
+POSTHOOK: Output: sys@database_params
+POSTHOOK: Output: sys@db_privs
+POSTHOOK: Output: sys@db_version
+POSTHOOK: Output: sys@dbs
+POSTHOOK: Output: sys@funcs
+POSTHOOK: Output: sys@global_privs
+POSTHOOK: Output: sys@hive_locks
+POSTHOOK: Output: sys@key_constraints
+POSTHOOK: Output: sys@locks
+POSTHOOK: Output: sys@mv_creation_metadata
+POSTHOOK: Output: sys@mv_tables_used
+POSTHOOK: Output: sys@part_col_privs
+POSTHOOK: Output: sys@part_col_stats
+POSTHOOK: Output: sys@part_privs
+POSTHOOK: Output: sys@partition_key_vals
+POSTHOOK: Output: sys@partition_keys
+POSTHOOK: Output: sys@partition_params
+POSTHOOK: Output: sys@partition_stats_view
+POSTHOOK: Output: sys@partitions
+POSTHOOK: Output: sys@role_map
+POSTHOOK: Output: sys@roles
+POSTHOOK: Output: sys@scheduled_executions
+POSTHOOK: Output: sys@scheduled_queries
+POSTHOOK: Output: sys@sd_params
+POSTHOOK: Output: sys@sds
+POSTHOOK: Output: sys@sequence_table
+POSTHOOK: Output: sys@serde_params
+POSTHOOK: Output: sys@serdes
+POSTHOOK: Output: sys@skewed_col_names
+POSTHOOK: Output: sys@skewed_col_value_loc_map
+POSTHOOK: Output: sys@skewed_string_list
+POSTHOOK: Output: sys@skewed_string_list_values
+POSTHOOK: Output: sys@skewed_values
+POSTHOOK: Output: sys@sort_cols
+POSTHOOK: Output: sys@tab_col_stats
+POSTHOOK: Output: sys@table_params
+POSTHOOK: Output: sys@table_stats_view
+POSTHOOK: Output: sys@tbl_col_privs
+POSTHOOK: Output: sys@tbl_privs
+POSTHOOK: Output: sys@tbls
+POSTHOOK: Output: sys@transactions
+POSTHOOK: Output: sys@txn_components
+POSTHOOK: Output: sys@txns
+POSTHOOK: Output: sys@version
+POSTHOOK: Output: sys@wm_mappings
+POSTHOOK: Output: sys@wm_pools
+POSTHOOK: Output: sys@wm_pools_to_triggers
+POSTHOOK: Output: sys@wm_resourceplans
+POSTHOOK: Output: sys@wm_triggers
+PREHOOK: query: DROP DATABASE IF EXISTS INFORMATION_SCHEMA CASCADE
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:information_schema
+PREHOOK: Output: database:information_schema
+PREHOOK: Output: information_schema@column_privileges
+PREHOOK: Output: information_schema@columns
+PREHOOK: Output: information_schema@compactions
+PREHOOK: Output: information_schema@scheduled_executions
+PREHOOK: Output: information_schema@scheduled_queries
+PREHOOK: Output: information_schema@schemata
+PREHOOK: Output: information_schema@table_privileges
+PREHOOK: Output: information_schema@tables
+PREHOOK: Output: information_schema@views
+POSTHOOK: query: DROP DATABASE IF EXISTS INFORMATION_SCHEMA CASCADE
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:information_schema
+POSTHOOK: Output: database:information_schema
+POSTHOOK: Output: information_schema@column_privileges
+POSTHOOK: Output: information_schema@columns
+POSTHOOK: Output: information_schema@compactions
+POSTHOOK: Output: information_schema@scheduled_executions
+POSTHOOK: Output: information_schema@scheduled_queries
+POSTHOOK: Output: information_schema@schemata
+POSTHOOK: Output: information_schema@table_privileges
+POSTHOOK: Output: information_schema@tables
+POSTHOOK: Output: information_schema@views

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -38,7 +38,7 @@ public enum HiveOperationType {
   SWITCHDATABASE,
   LOCKDB,
   UNLOCKDB,
-  DROPTABLE ,
+  DROPTABLE,
   DESCTABLE,
   DESCFUNCTION,
   MSCK,
@@ -53,6 +53,7 @@ public enum HiveOperationType {
   ALTERTABLE_ARCHIVE,
   ALTERTABLE_UNARCHIVE,
   ALTERTABLE_PROPERTIES,
+  ALTERTABLE_OWNER,
   ALTERTABLE_SERIALIZER,
   ALTERTABLE_PARTCOLTYPE,
   ALTERTABLE_DROPCONSTRAINT,
@@ -75,11 +76,11 @@ public enum HiveOperationType {
   SHOW_CREATEDATABASE,
   SHOW_CREATETABLE,
   SHOWFUNCTIONS,
-  SHOWINDEXES,
   SHOWPARTITIONS,
   SHOWLOCKS,
   SHOWCONF,
   SHOWVIEWS,
+  SHOWMATERIALIZEDVIEWS,
   CREATEFUNCTION,
   DROPFUNCTION,
   RELOADFUNCTION,
@@ -89,11 +90,7 @@ public enum HiveOperationType {
   CREATE_MATERIALIZED_VIEW,
   DROPVIEW,
   DROP_MATERIALIZED_VIEW,
-  CREATEINDEX,
-  DROPINDEX,
-  ALTERINDEX_REBUILD,
   ALTERVIEW_PROPERTIES,
-  DROPVIEW_PROPERTIES,
   LOCKTABLE,
   UNLOCKTABLE,
   CREATEROLE,
@@ -116,7 +113,6 @@ public enum HiveOperationType {
   TRUNCATETABLE,
   CREATETABLE_AS_SELECT,
   QUERY,
-  ALTERINDEX_PROPS,
   ALTERDATABASE,
   ALTERDATABASE_OWNER,
   ALTERDATABASE_LOCATION,
@@ -127,10 +123,32 @@ public enum HiveOperationType {
   ALTERTBLPART_SKEWED_LOCATION,
   ALTERVIEW_RENAME,
   ALTERVIEW_AS,
+  ALTER_MATERIALIZED_VIEW_REWRITE,
   ALTERTABLE_COMPACT,
+  ALTERTABLE_UPDATECOLUMNS,
   SHOW_COMPACTIONS,
   SHOW_TRANSACTIONS,
   ABORT_TRANSACTIONS,
+  KILL_QUERY,
+  CREATE_RESOURCEPLAN,
+  SHOW_RESOURCEPLAN,
+  ALTER_RESOURCEPLAN,
+  DROP_RESOURCEPLAN,
+  CREATE_TRIGGER,
+  ALTER_TRIGGER,
+  DROP_TRIGGER,
+  CREATE_POOL,
+  ALTER_POOL,
+  DROP_POOL,
+  CREATE_MAPPING,
+  ALTER_MAPPING,
+  DROP_MAPPING,
+  LLAP_CLUSTER_INFO,
+  LLAP_CACHE_PURGE,
+  CREATE_SCHEDULED_QUERY,
+  ALTER_SCHEDULED_QUERY,
+  DROP_SCHEDULED_QUERY,
+
   // ==== Hive command operation types starts here ==== //
   SET,
   RESET,
@@ -156,7 +174,7 @@ public enum HiveOperationType {
   GET_FUNCTIONS, // getFunctions(String catalog, String schemaPattern, String functionNamePattern)
   GET_SCHEMAS, // getSchemas()
   GET_TABLES, // getTables(String catalog, String schemaPattern, String tableNamePattern, String[] types)
-  GET_TABLETYPES,// getTableTypes()
+  GET_TABLETYPES, // getTableTypes()
   GET_TYPEINFO // getTypeInfo()
   // ==== HiveServer2 metadata api types ends here ==== //
 

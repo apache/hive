@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -28,6 +28,7 @@ package org.apache.hive.beeline;
  */
 abstract class AbstractOutputFormat implements OutputFormat {
 
+  @Override
   public int print(Rows rows) {
     int count = 0;
     Rows.Row header = (Rows.Row) rows.next();

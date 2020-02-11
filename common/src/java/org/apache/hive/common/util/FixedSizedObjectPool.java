@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -152,6 +152,13 @@ public class FixedSizedObjectPool<T> implements Pool<T> {
     if (t == null || pool.length == 0) return false; // 0 size means no-pooling case - passthru.
     helper.resetBeforeOffer(t);
     return offerImpl(t);
+  }
+
+  @Override public void clear() {
+    T result = takeImpl();
+    while (result != null) {
+      result = takeImpl();
+    }
   }
 
   private T takeImpl() {

@@ -106,7 +106,8 @@ public class LlapOutputFormatService {
     int portFromConf = HiveConf.getIntVar(conf, HiveConf.ConfVars.LLAP_DAEMON_OUTPUT_SERVICE_PORT);
     int sendBufferSize = HiveConf.getIntVar(conf,
         HiveConf.ConfVars.LLAP_DAEMON_OUTPUT_SERVICE_SEND_BUFFER_SIZE);
-    eventLoopGroup = new NioEventLoopGroup(1);
+    // Netty defaults to no of processors * 2. Can be changed via -Dio.netty.eventLoopThreads
+    eventLoopGroup = new NioEventLoopGroup();
     serverBootstrap = new ServerBootstrap();
     serverBootstrap.group(eventLoopGroup);
     serverBootstrap.channel(NioServerSocketChannel.class);
@@ -197,11 +198,16 @@ public class LlapOutputFormatService {
       LOG.debug("registering socket for: " + id);
       int maxPendingWrites = HiveConf.getIntVar(conf,
           HiveConf.ConfVars.LLAP_DAEMON_OUTPUT_SERVICE_MAX_PENDING_WRITES);
+      boolean useArrow = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_OUTPUT_FORMAT_ARROW);
       @SuppressWarnings("rawtypes")
-      LlapRecordWriter writer = new LlapRecordWriter(id,
+      RecordWriter writer = null;
+      if(useArrow) {
+        writer = new LlapArrowRecordWriter(new WritableByteChannelAdapter(ctx, maxPendingWrites, id));
+      } else {
+        writer = new LlapRecordWriter(id,
           new ChunkedOutputStream(
-              new ChannelOutputStream(ctx, id, sendBufferSize, maxPendingWrites),
-              sendBufferSize, id));
+            new ChannelOutputStream(ctx, id, sendBufferSize, maxPendingWrites), sendBufferSize, id));
+      }
       boolean isFailed = true;
       synchronized (lock) {
         if (!writers.containsKey(id)) {

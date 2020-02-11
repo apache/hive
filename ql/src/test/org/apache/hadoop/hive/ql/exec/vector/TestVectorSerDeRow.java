@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,12 +21,15 @@ package org.apache.hadoop.hive.ql.exec.vector;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.common.type.HiveChar;
+import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe;
@@ -47,13 +50,19 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.UnionObject;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.fast.SerializeWrite;
+import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
+import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
+import org.apache.hadoop.io.Text;
 
-import junit.framework.TestCase;
+
+import static org.junit.Assert.fail;
+import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 
 /**
  * Unit test for the vectorized serialize and deserialize row.
  */
-public class TestVectorSerDeRow extends TestCase {
+public class TestVectorSerDeRow {
 
   public static enum SerializationType {
     NONE,
@@ -71,7 +80,7 @@ public class TestVectorSerDeRow extends TestCase {
       Object complexFieldObj = VectorVerifyFast.deserializeReadComplexType(deserializeRead, typeInfo);
       if (expectedObject == null) {
         if (complexFieldObj != null) {
-          TestCase.fail("Field reports not null but object is null (class " + complexFieldObj.getClass().getName() +
+          fail("Field reports not null but object is null (class " + complexFieldObj.getClass().getName() +
               ", " + complexFieldObj.toString() + ")");
         }
       } else {
@@ -83,12 +92,12 @@ public class TestVectorSerDeRow extends TestCase {
               return;
             }
           }
-          TestCase.fail("Field reports null but object is not null (class " + expectedObject.getClass().getName() +
+          fail("Field reports null but object is not null (class " + expectedObject.getClass().getName() +
               ", " + expectedObject.toString() + ")");
         }
       }
       if (!VerifyLazy.lazyCompare(typeInfo, complexFieldObj, expectedObject)) {
-        TestCase.fail("Comparision failed typeInfo " + typeInfo.toString());
+        fail("Comparision failed typeInfo " + typeInfo.toString());
       }
     }
   }
@@ -105,7 +114,7 @@ public class TestVectorSerDeRow extends TestCase {
       TypeInfo typeInfo = typeInfos[i];
       verifyRead(deserializeRead, typeInfo, expected);
     }
-    TestCase.assertTrue(deserializeRead.isEndOfInputReached());
+    assertTrue(deserializeRead.isEndOfInputReached());
   }
 
   void serializeBatch(
@@ -147,7 +156,10 @@ public class TestVectorSerDeRow extends TestCase {
 
     VectorRandomRowSource source = new VectorRandomRowSource();
 
-    source.init(r, VectorRandomRowSource.SupportedTypes.ALL, 4, false);
+    // FUTURE: try NULLs and UNICODE.
+    source.init(
+        r, VectorRandomRowSource.SupportedTypes.ALL, 4,
+        /* allowNulls */ false, /* isUnicodeOk */ false);
 
     VectorizedRowBatchCtx batchContext = new VectorizedRowBatchCtx();
     batchContext.init(source.rowStructObjectInspector(), emptyScratchTypeNames);
@@ -161,7 +173,7 @@ public class TestVectorSerDeRow extends TestCase {
     SerializeWrite serializeWrite;
     switch (serializationType) {
     case BINARY_SORTABLE:
-      deserializeRead = new BinarySortableDeserializeRead(source.typeInfos(), /* useExternalBuffer */ false);
+      deserializeRead = BinarySortableDeserializeRead.ascendingNullsFirst(source.typeInfos(), false);
       serializeWrite = new BinarySortableSerializeWrite(fieldCount);
       break;
     case LAZY_BINARY:
@@ -206,8 +218,100 @@ public class TestVectorSerDeRow extends TestCase {
     }
   }
 
+  private String getDifferenceInfo(Object actualRow, Object expectedRow) {
+    if (actualRow instanceof List && expectedRow instanceof List) {
+      List<Object> actualList = (List) actualRow;
+      final int actualSize = actualList.size();
+      List<Object> expectedList = (List) expectedRow;
+      final int expectedSize = expectedList.size();
+      if (actualSize != expectedSize) {
+        return "Actual size " + actualSize + ", expected size " + expectedSize;
+      }
+      for (int i = 0; i < actualSize; i++) {
+        Object actualObject = actualList.get(i);
+        Object expecedObject = expectedList.get(i);
+        if (!actualObject.equals(expecedObject)) {
+          return "Column " + i + " is different";
+        }
+      }
+    } else {
+      if (!actualRow.equals(expectedRow)) {
+        return "Object is different";
+      }
+    }
+    return "Actual and expected row are the same";
+  }
+
+  private String getObjectDisplayString(Object object) {
+    StringBuilder sb = new StringBuilder();
+
+    if (object == null) {
+      sb.append("NULL");
+    } else if (object instanceof Text ||
+               object instanceof HiveChar || object instanceof HiveCharWritable ||
+               object instanceof HiveVarchar || object instanceof HiveVarcharWritable) {
+        final String string;
+        if (object instanceof Text) {
+          Text text = (Text) object;
+          string = text.toString();
+        } else if (object instanceof HiveChar) {
+          HiveChar hiveChar = (HiveChar) object;
+          string = hiveChar.getStrippedValue();
+        } else if (object instanceof HiveCharWritable) {
+          HiveChar hiveChar = ((HiveCharWritable) object).getHiveChar();
+          string = hiveChar.getStrippedValue();
+        } else if (object instanceof HiveVarchar) {
+          HiveVarchar hiveVarchar = (HiveVarchar) object;
+          string = hiveVarchar.getValue();
+        } else if (object instanceof HiveVarcharWritable) {
+          HiveVarchar hiveVarchar = ((HiveVarcharWritable) object).getHiveVarchar();
+          string = hiveVarchar.getValue();
+        } else {
+          throw new RuntimeException("Unexpected");
+        }
+
+        byte[] bytes = string.getBytes();
+        final int byteLength = bytes.length;
+
+        sb.append("'");
+        sb.append(string);
+        sb.append("' (byte length ");
+        sb.append(bytes.length);
+        sb.append(", string length ");
+        sb.append(string.length());
+        sb.append(", bytes ");
+        sb.append(VectorizedBatchUtil.displayBytes(bytes, 0, byteLength));
+        sb.append(")");
+    } else {
+      sb.append(object.toString());
+    }
+    return sb.toString();
+  }
+
+  private String getRowDisplayString(Object row) {
+    StringBuilder sb = new StringBuilder();
+    if (row instanceof List) {
+      List<Object> list = (List) row;
+      final int size = list.size();
+      boolean isFirst = true;
+      for (int i = 0; i < size; i++) {
+        if (isFirst) {
+          isFirst = false;
+        } else {
+          sb.append(", ");
+        }
+        Object object = list.get(i);
+        sb.append(getObjectDisplayString(object));
+      }
+    } else {
+      sb.append(getObjectDisplayString(row));
+    }
+    return sb.toString();
+  }
+
   void examineBatch(VectorizedRowBatch batch, VectorExtractRow vectorExtractRow,
-      TypeInfo[] typeInfos, Object[][] randomRows, int firstRandomRowIndex ) {
+      TypeInfo[] typeInfos, Object[][] randomRows, int firstRandomRowIndex,
+      String title) {
 
     int rowSize = vectorExtractRow.getCount();
     Object[] row = new Object[rowSize];
@@ -228,9 +332,15 @@ public class TestVectorSerDeRow extends TestCase {
               " batch index " + i + " firstRandomRowIndex " + firstRandomRowIndex);
         }
         if (!rowObj.equals(expectedObj)) {
+          String actualValueString = getRowDisplayString(rowObj);
+          String expectedValueString = getRowDisplayString(expectedObj);
+          String differentInfoString = getDifferenceInfo(row, expectedObj);
           fail("Row " + (firstRandomRowIndex + i) + " and column " + c + " mismatch (" +
-              typeInfos[c].getCategory() + " actual value " + rowObj +
-              " and expected value " + expectedObj + ")");
+              typeInfos[c].getCategory() + " actual value '" + actualValueString + "'" +
+              " and expected value '" + expectedValueString + "')" +
+              " difference info " + differentInfoString +
+              " typeInfos " + Arrays.toString(typeInfos) +
+              " title " + title);
         }
       }
     }
@@ -283,19 +393,27 @@ public class TestVectorSerDeRow extends TestCase {
       throws HiveException, IOException, SerDeException {
 
     for (int i = 0; i < 20; i++) {
-      innerTestVectorDeserializeRow(r, serializationType, alternate1, alternate2, useExternalBuffer);
+      innerTestVectorDeserializeRow(
+          r, i,serializationType, alternate1, alternate2, useExternalBuffer);
     }
   }
 
   void innerTestVectorDeserializeRow(
-      Random r, SerializationType serializationType,
+      Random r, int iteration,
+      SerializationType serializationType,
       boolean alternate1, boolean alternate2, boolean useExternalBuffer)
       throws HiveException, IOException, SerDeException {
+
+    String title = "serializationType: " + serializationType + ", iteration " + iteration;
 
     String[] emptyScratchTypeNames = new String[0];
 
     VectorRandomRowSource source = new VectorRandomRowSource();
-    source.init(r, VectorRandomRowSource.SupportedTypes.ALL, 4, false);
+
+    // FUTURE: try NULLs and UNICODE.
+    source.init(
+        r, VectorRandomRowSource.SupportedTypes.ALL, 4,
+        /* allowNulls */ false, /* isUnicodeOk */ false);
 
     VectorizedRowBatchCtx batchContext = new VectorizedRowBatchCtx();
     batchContext.init(source.rowStructObjectInspector(), emptyScratchTypeNames);
@@ -314,7 +432,7 @@ public class TestVectorSerDeRow extends TestCase {
     case BINARY_SORTABLE:
       boolean useColumnSortOrderIsDesc = alternate1;
       if (!useColumnSortOrderIsDesc) {
-        deserializeRead = new BinarySortableDeserializeRead(source.typeInfos(), useExternalBuffer);
+        deserializeRead = BinarySortableDeserializeRead.ascendingNullsFirst(source.typeInfos(), useExternalBuffer);
         serializeWrite = new BinarySortableSerializeWrite(fieldCount);
       } else {
         boolean[] columnSortOrderIsDesc = new boolean[fieldCount];
@@ -426,31 +544,39 @@ public class TestVectorSerDeRow extends TestCase {
       }
       batch.size++;
       if (batch.size == batch.DEFAULT_SIZE) {
-        examineBatch(batch, vectorExtractRow, typeInfos, randomRows, firstRandomRowIndex);
+        examineBatch(
+            batch, vectorExtractRow, typeInfos, randomRows, firstRandomRowIndex,
+            title);
         firstRandomRowIndex = i + 1;
         batch.reset();
       }
     }
     if (batch.size > 0) {
-      examineBatch(batch, vectorExtractRow, typeInfos, randomRows, firstRandomRowIndex);
+      examineBatch(
+          batch, vectorExtractRow, typeInfos, randomRows, firstRandomRowIndex,
+          title);
     }
   }
 
+  @Test
   public void testVectorBinarySortableSerializeRow() throws Throwable {
     Random r = new Random(8732);
     testVectorSerializeRow(r, SerializationType.BINARY_SORTABLE);
   }
 
+  @Test
   public void testVectorLazyBinarySerializeRow() throws Throwable {
     Random r = new Random(8732);
     testVectorSerializeRow(r, SerializationType.LAZY_BINARY);
   }
 
+  @Test
   public void testVectorLazySimpleSerializeRow() throws Throwable {
     Random r = new Random(8732);
     testVectorSerializeRow(r, SerializationType.LAZY_SIMPLE);
   }
  
+  @Test
   public void testVectorBinarySortableDeserializeRow() throws Throwable {
     Random r = new Random(8732);
     testVectorDeserializeRow(r,
@@ -502,6 +628,7 @@ public class TestVectorSerDeRow extends TestCase {
         /* useExternalBuffer */ true);
   }
 
+  @Test
   public void testVectorLazyBinaryDeserializeRow() throws Throwable {
     Random r = new Random(8732);
     testVectorDeserializeRow(r,
@@ -517,6 +644,7 @@ public class TestVectorSerDeRow extends TestCase {
         /* useExternalBuffer */ true);
   }
 
+  @Test
   public void testVectorLazySimpleDeserializeRow() throws Throwable {
     Random r = new Random(8732);
     testVectorDeserializeRow(r,

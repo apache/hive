@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,9 +21,11 @@ import static org.junit.Assert.fail;
 
 import java.util.List;
 
+import org.apache.hadoop.hive.ql.QFileVersionHandler;
 import org.apache.hadoop.hive.ql.QTestUtil;
 
 public class CoreDummy extends CliAdapter {
+  QFileVersionHandler qvh = new QFileVersionHandler();
 
   public CoreDummy(AbstractCliConfig cliConfig) {
     super(cliConfig);
@@ -42,12 +44,17 @@ public class CoreDummy extends CliAdapter {
   }
 
   @Override
-  public void shutdown() throws Exception {
+  public void shutdown() {
   }
 
   @Override
-  public void runTest(String name, String name2, String absolutePath) throws Exception {
-    List<String> versionFiles = QTestUtil.getVersionFiles(cliConfig.getQueryDirectory(), name);
+  protected QTestUtil getQt() {
+    return null;
+  }
+
+  @Override
+  public void runTest(String name, String name2, String absolutePath) {
+    List<String> versionFiles = qvh.getVersionFiles(cliConfig.getQueryDirectory(), name);
     if (versionFiles.size() < 2) {
       fail("Cannot run " + name2 + " with only " + versionFiles.size() + " versions");
     }

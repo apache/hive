@@ -337,7 +337,7 @@ order by p_name);
 
   
 -- 16. testViewAsTableInputToPTF
-create view IF NOT EXISTS mfgr_price_view as 
+create view IF NOT EXISTS mfgr_price_view_n0 as 
 select p_mfgr, p_brand, 
 round(sum(p_retailprice),2) as s
 from part_orc 
@@ -346,14 +346,14 @@ group by p_mfgr, p_brand;
 explain vectorization detail
 select p_mfgr, p_brand, s, 
 round(sum(s) over w1,2) as s1
-from noop(on mfgr_price_view 
+from noop(on mfgr_price_view_n0 
 partition by p_mfgr 
 order by p_mfgr)  
 window w1 as ( partition by p_mfgr order by p_brand rows between 2 preceding and current row);
 
 select p_mfgr, p_brand, s, 
 round(sum(s) over w1,2) as s1
-from noop(on mfgr_price_view 
+from noop(on mfgr_price_view_n0 
 partition by p_mfgr 
 order by p_mfgr)  
 window w1 as ( partition by p_mfgr order by p_brand rows between 2 preceding and current row);

@@ -75,9 +75,17 @@ POSTHOOK: Lineage: inventory_part_0 PARTITION(par=2).inv_warehouse_sk SIMPLE [(i
 PREHOOK: query: explain vectorization expression
 select sum(inv_quantity_on_hand) from inventory_part_0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@inventory_part_0
+PREHOOK: Input: default@inventory_part_0@par=1
+PREHOOK: Input: default@inventory_part_0@par=2
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select sum(inv_quantity_on_hand) from inventory_part_0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inventory_part_0
+POSTHOOK: Input: default@inventory_part_0@par=1
+POSTHOOK: Input: default@inventory_part_0@par=2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -98,45 +106,46 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: inventory_part_0
-                  Statistics: Num rows: 200 Data size: 3940 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 200 Data size: 780 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4]
                   Select Operator
                     expressions: inv_quantity_on_hand (type: int)
                     outputColumnNames: inv_quantity_on_hand
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [3]
-                    Statistics: Num rows: 200 Data size: 3940 Basic stats: COMPLETE Column stats: NONE
+                        projectedOutputColumnNums: [3]
+                    Statistics: Num rows: 200 Data size: 780 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: sum(inv_quantity_on_hand)
                       Group By Vectorization:
-                          aggregators: VectorUDAFSumLong(col 3) -> bigint
+                          aggregators: VectorUDAFSumLong(col 3:int) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          vectorOutput: true
                           native: false
                           vectorProcessingMode: HASH
-                          projectedOutputColumns: [0]
+                          projectedOutputColumnNums: [0]
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkEmptyKeyOperator
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -146,7 +155,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -154,22 +162,21 @@ STAGE PLANS:
               Group By Operator
                 aggregations: sum(VALUE._col0)
                 Group By Vectorization:
-                    aggregators: VectorUDAFSumLong(col 0) -> bigint
+                    aggregators: VectorUDAFSumLong(col 0:bigint) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    vectorOutput: true
                     native: false
                     vectorProcessingMode: GLOBAL
-                    projectedOutputColumns: [0]
+                    projectedOutputColumnNums: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -248,9 +255,17 @@ POSTHOOK: Lineage: inventory_part_1 PARTITION(par=5cols).inv_warehouse_sk SIMPLE
 PREHOOK: query: explain vectorization expression
 select sum(inv_quantity_on_hand) from inventory_part_1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@inventory_part_1
+PREHOOK: Input: default@inventory_part_1@par=4cols
+PREHOOK: Input: default@inventory_part_1@par=5cols
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select sum(inv_quantity_on_hand) from inventory_part_1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inventory_part_1
+POSTHOOK: Input: default@inventory_part_1@par=4cols
+POSTHOOK: Input: default@inventory_part_1@par=5cols
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -271,45 +286,46 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: inventory_part_1
-                  Statistics: Num rows: 200 Data size: 12640 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 200 Data size: 780 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5]
                   Select Operator
                     expressions: inv_quantity_on_hand (type: int)
                     outputColumnNames: inv_quantity_on_hand
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [3]
-                    Statistics: Num rows: 200 Data size: 12640 Basic stats: COMPLETE Column stats: NONE
+                        projectedOutputColumnNums: [3]
+                    Statistics: Num rows: 200 Data size: 780 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: sum(inv_quantity_on_hand)
                       Group By Vectorization:
-                          aggregators: VectorUDAFSumLong(col 3) -> bigint
+                          aggregators: VectorUDAFSumLong(col 3:int) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          vectorOutput: true
                           native: false
                           vectorProcessingMode: HASH
-                          projectedOutputColumns: [0]
+                          projectedOutputColumnNums: [0]
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkEmptyKeyOperator
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -319,7 +335,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -327,22 +342,21 @@ STAGE PLANS:
               Group By Operator
                 aggregations: sum(VALUE._col0)
                 Group By Vectorization:
-                    aggregators: VectorUDAFSumLong(col 0) -> bigint
+                    aggregators: VectorUDAFSumLong(col 0:bigint) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    vectorOutput: true
                     native: false
                     vectorProcessingMode: GLOBAL
-                    projectedOutputColumns: [0]
+                    projectedOutputColumnNums: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -421,9 +435,17 @@ POSTHOOK: Output: default@inventory_part_2a@par=2
 PREHOOK: query: explain vectorization expression
 select sum(inv_quantity_on_hand) from inventory_part_2a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@inventory_part_2a
+PREHOOK: Input: default@inventory_part_2a@par=1
+PREHOOK: Input: default@inventory_part_2a@par=2
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select sum(inv_quantity_on_hand) from inventory_part_2a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inventory_part_2a
+POSTHOOK: Input: default@inventory_part_2a@par=1
+POSTHOOK: Input: default@inventory_part_2a@par=2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -444,45 +466,46 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: inventory_part_2a
-                  Statistics: Num rows: 200 Data size: 3940 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 200 Data size: 780 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4]
                   Select Operator
                     expressions: inv_quantity_on_hand (type: int)
                     outputColumnNames: inv_quantity_on_hand
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [3]
-                    Statistics: Num rows: 200 Data size: 3940 Basic stats: COMPLETE Column stats: NONE
+                        projectedOutputColumnNums: [3]
+                    Statistics: Num rows: 200 Data size: 780 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: sum(inv_quantity_on_hand)
                       Group By Vectorization:
-                          aggregators: VectorUDAFSumLong(col 3) -> bigint
+                          aggregators: VectorUDAFSumLong(col 3:int) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          vectorOutput: true
                           native: false
                           vectorProcessingMode: HASH
-                          projectedOutputColumns: [0]
+                          projectedOutputColumnNums: [0]
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkEmptyKeyOperator
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -492,7 +515,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -500,22 +522,21 @@ STAGE PLANS:
               Group By Operator
                 aggregations: sum(VALUE._col0)
                 Group By Vectorization:
-                    aggregators: VectorUDAFSumLong(col 0) -> bigint
+                    aggregators: VectorUDAFSumLong(col 0:bigint) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    vectorOutput: true
                     native: false
                     vectorProcessingMode: GLOBAL
-                    projectedOutputColumns: [0]
+                    projectedOutputColumnNums: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -581,9 +602,17 @@ POSTHOOK: Output: default@inventory_part_2b@par1=2/par2=3
 PREHOOK: query: explain vectorization expression
 select sum(inv_quantity_on_hand) from inventory_part_2b
 PREHOOK: type: QUERY
+PREHOOK: Input: default@inventory_part_2b
+PREHOOK: Input: default@inventory_part_2b@par1=1/par2=4
+PREHOOK: Input: default@inventory_part_2b@par1=2/par2=3
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select sum(inv_quantity_on_hand) from inventory_part_2b
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inventory_part_2b
+POSTHOOK: Input: default@inventory_part_2b@par1=1/par2=4
+POSTHOOK: Input: default@inventory_part_2b@par1=2/par2=3
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -604,45 +633,46 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: inventory_part_2b
-                  Statistics: Num rows: 200 Data size: 3940 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 200 Data size: 792 Basic stats: COMPLETE Column stats: PARTIAL
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5]
                   Select Operator
                     expressions: inv_quantity_on_hand (type: int)
                     outputColumnNames: inv_quantity_on_hand
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [3]
-                    Statistics: Num rows: 200 Data size: 3940 Basic stats: COMPLETE Column stats: NONE
+                        projectedOutputColumnNums: [3]
+                    Statistics: Num rows: 200 Data size: 792 Basic stats: COMPLETE Column stats: PARTIAL
                     Group By Operator
                       aggregations: sum(inv_quantity_on_hand)
                       Group By Vectorization:
-                          aggregators: VectorUDAFSumLong(col 3) -> bigint
+                          aggregators: VectorUDAFSumLong(col 3:int) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          vectorOutput: true
                           native: false
                           vectorProcessingMode: HASH
-                          projectedOutputColumns: [0]
+                          projectedOutputColumnNums: [0]
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkEmptyKeyOperator
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
                         value expressions: _col0 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -652,7 +682,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -660,22 +689,21 @@ STAGE PLANS:
               Group By Operator
                 aggregations: sum(VALUE._col0)
                 Group By Vectorization:
-                    aggregators: VectorUDAFSumLong(col 0) -> bigint
+                    aggregators: VectorUDAFSumLong(col 0:bigint) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    vectorOutput: true
                     native: false
                     vectorProcessingMode: GLOBAL
-                    projectedOutputColumns: [0]
+                    projectedOutputColumnNums: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -741,9 +769,17 @@ POSTHOOK: Output: default@inventory_part_3@par=2
 PREHOOK: query: explain vectorization expression
 select sum(inv_quantity_on_hand) from inventory_part_3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@inventory_part_3
+PREHOOK: Input: default@inventory_part_3@par=1
+PREHOOK: Input: default@inventory_part_3@par=2
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select sum(inv_quantity_on_hand) from inventory_part_3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inventory_part_3
+POSTHOOK: Input: default@inventory_part_3@par=1
+POSTHOOK: Input: default@inventory_part_3@par=2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -764,45 +800,46 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: inventory_part_3
-                  Statistics: Num rows: 200 Data size: 3940 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 200 Data size: 780 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4]
                   Select Operator
                     expressions: inv_quantity_on_hand (type: int)
                     outputColumnNames: inv_quantity_on_hand
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [3]
-                    Statistics: Num rows: 200 Data size: 3940 Basic stats: COMPLETE Column stats: NONE
+                        projectedOutputColumnNums: [3]
+                    Statistics: Num rows: 200 Data size: 780 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: sum(inv_quantity_on_hand)
                       Group By Vectorization:
-                          aggregators: VectorUDAFSumLong(col 3) -> bigint
+                          aggregators: VectorUDAFSumLong(col 3:int) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          vectorOutput: true
                           native: false
                           vectorProcessingMode: HASH
-                          projectedOutputColumns: [0]
+                          projectedOutputColumnNums: [0]
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkEmptyKeyOperator
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -812,7 +849,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -820,22 +856,21 @@ STAGE PLANS:
               Group By Operator
                 aggregations: sum(VALUE._col0)
                 Group By Vectorization:
-                    aggregators: VectorUDAFSumLong(col 0) -> bigint
+                    aggregators: VectorUDAFSumLong(col 0:bigint) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    vectorOutput: true
                     native: false
                     vectorProcessingMode: GLOBAL
-                    projectedOutputColumns: [0]
+                    projectedOutputColumnNums: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

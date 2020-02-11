@@ -1,7 +1,13 @@
 PREHOOK: query: EXPLAIN CREATE TEMPORARY TABLE foo AS SELECT * FROM src WHERE key % 2 = 0
 PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@foo
 POSTHOOK: query: EXPLAIN CREATE TEMPORARY TABLE foo AS SELECT * FROM src WHERE key % 2 = 0
 POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@foo
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -17,9 +23,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: ((UDFToDouble(key) % 2.0D) = 0.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((UDFToDouble(key) % 2.0) = 0.0) (type: boolean)
+                    predicate: ((UDFToDouble(key) % 2.0D) = 0.0D) (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -33,6 +40,7 @@ STAGE PLANS:
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.foo
+            Execution mode: vectorized
 
   Stage: Stage-0
     Move Operator
@@ -41,18 +49,18 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
   Stage: Stage-3
-      Create Table Operator:
-        Create Table
-          columns: key string, value string
-          input format: org.apache.hadoop.mapred.TextInputFormat
+    Create Table
+      columns: key string, value string
+      name: default.foo
+      input format: org.apache.hadoop.mapred.TextInputFormat
 #### A masked pattern was here ####
-          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: default.foo
-          isTemporary: true
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      isTemporary: true
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: CREATE TEMPORARY TABLE foo AS SELECT * FROM src WHERE key % 2 = 0
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -66,8 +74,14 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@foo
 PREHOOK: query: EXPLAIN CREATE TEMPORARY TABLE bar AS SELECT * FROM src WHERE key % 2 = 1
 PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@bar
 POSTHOOK: query: EXPLAIN CREATE TEMPORARY TABLE bar AS SELECT * FROM src WHERE key % 2 = 1
 POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@bar
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -83,9 +97,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: ((UDFToDouble(key) % 2.0D) = 1.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((UDFToDouble(key) % 2.0) = 1.0) (type: boolean)
+                    predicate: ((UDFToDouble(key) % 2.0D) = 1.0D) (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -99,6 +114,7 @@ STAGE PLANS:
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.bar
+            Execution mode: vectorized
 
   Stage: Stage-0
     Move Operator
@@ -107,18 +123,18 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
   Stage: Stage-3
-      Create Table Operator:
-        Create Table
-          columns: key string, value string
-          input format: org.apache.hadoop.mapred.TextInputFormat
+    Create Table
+      columns: key string, value string
+      name: default.bar
+      input format: org.apache.hadoop.mapred.TextInputFormat
 #### A masked pattern was here ####
-          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: default.bar
-          isTemporary: true
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      isTemporary: true
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: CREATE TEMPORARY TABLE bar AS SELECT * FROM src WHERE key % 2 = 1
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -138,18 +154,48 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@foo
 key                 	string              	                    
 value               	string              	                    
-PREHOOK: query: DESCRIBE bar
+PREHOOK: query: DESCRIBE FORMATTED bar
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@bar
-POSTHOOK: query: DESCRIBE bar
+POSTHOOK: query: DESCRIBE FORMATTED bar
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@bar
+# col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	numFiles            	1                   
+	numRows             	253                 
+	rawDataSize         	2703                
+	totalSize           	2956                
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: explain select * from foo order by key limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@foo
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from foo order by key limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@foo
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -172,11 +218,14 @@ STAGE PLANS:
                     Statistics: Num rows: 247 Data size: 2609 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
+                      null sort order: z
                       sort order: +
                       Statistics: Num rows: 247 Data size: 2609 Basic stats: COMPLETE Column stats: NONE
                       TopN Hash Memory Usage: 0.1
                       value expressions: _col1 (type: string)
+            Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
@@ -219,8 +268,14 @@ POSTHOOK: Input: default@foo
 116	val_116
 PREHOOK: query: explain select * from (select * from foo union all select * from bar) u order by key limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@bar
+PREHOOK: Input: default@foo
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from (select * from foo union all select * from bar) u order by key limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bar
+POSTHOOK: Input: default@foo
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -243,10 +298,12 @@ STAGE PLANS:
                     Statistics: Num rows: 247 Data size: 2609 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
+                      null sort order: z
                       sort order: +
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       TopN Hash Memory Usage: 0.1
                       value expressions: _col1 (type: string)
+            Execution mode: vectorized
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -258,11 +315,14 @@ STAGE PLANS:
                     Statistics: Num rows: 253 Data size: 2703 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
+                      null sort order: z
                       sort order: +
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       TopN Hash Memory Usage: 0.1
                       value expressions: _col1 (type: string)
+            Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
@@ -367,31 +427,6 @@ POSTHOOK: Input: default@bay
 103	val_103
 104	val_104
 104	val_104
-PREHOOK: query: SHOW TABLES
-PREHOOK: type: SHOWTABLES
-PREHOOK: Input: database:default
-POSTHOOK: query: SHOW TABLES
-POSTHOOK: type: SHOWTABLES
-POSTHOOK: Input: database:default
-alltypesorc
-bar
-bay
-baz
-cbo_t1
-cbo_t2
-cbo_t3
-foo
-lineitem
-part
-src
-src1
-src_cbo
-src_json
-src_sequencefile
-src_thrift
-srcbucket
-srcbucket2
-srcpart
 PREHOOK: query: CREATE DATABASE two
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:two
@@ -451,112 +486,112 @@ POSTHOOK: query: DROP TABLE bay
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@bay
 POSTHOOK: Output: default@bay
-PREHOOK: query: create table s as select * from src limit 10
+PREHOOK: query: create table s_n4 as select * from src limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@s
-POSTHOOK: query: create table s as select * from src limit 10
+PREHOOK: Output: default@s_n4
+POSTHOOK: query: create table s_n4 as select * from src limit 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@s
-POSTHOOK: Lineage: s.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: s.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select count(*) from s
+POSTHOOK: Output: default@s_n4
+POSTHOOK: Lineage: s_n4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: s_n4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select count(*) from s_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@s
+PREHOOK: Input: default@s_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from s
+POSTHOOK: query: select count(*) from s_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@s
+POSTHOOK: Input: default@s_n4
 #### A masked pattern was here ####
 10
-PREHOOK: query: create temporary table s as select * from s limit 2
+PREHOOK: query: create temporary table s_n4 as select * from s_n4 limit 2
 PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: default@s
+PREHOOK: Input: default@s_n4
 PREHOOK: Output: database:default
-PREHOOK: Output: default@s
-POSTHOOK: query: create temporary table s as select * from s limit 2
+PREHOOK: Output: default@s_n4
+POSTHOOK: query: create temporary table s_n4 as select * from s_n4 limit 2
 POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: default@s
+POSTHOOK: Input: default@s_n4
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@s
-PREHOOK: query: select count(*) from s
+POSTHOOK: Output: default@s_n4
+PREHOOK: query: select count(*) from s_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@s
+PREHOOK: Input: default@s_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from s
+POSTHOOK: query: select count(*) from s_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@s
+POSTHOOK: Input: default@s_n4
 #### A masked pattern was here ####
 2
-PREHOOK: query: with s as ( select * from src limit 1)
-select count(*) from s
+PREHOOK: query: with s_n4 as ( select * from src limit 1)
+select count(*) from s_n4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: with s as ( select * from src limit 1)
-select count(*) from s
+POSTHOOK: query: with s_n4 as ( select * from src limit 1)
+select count(*) from s_n4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 1
-PREHOOK: query: with src as ( select * from s)
+PREHOOK: query: with src as ( select * from s_n4)
 select count(*) from src
 PREHOOK: type: QUERY
-PREHOOK: Input: default@s
+PREHOOK: Input: default@s_n4
 #### A masked pattern was here ####
-POSTHOOK: query: with src as ( select * from s)
+POSTHOOK: query: with src as ( select * from s_n4)
 select count(*) from src
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@s
+POSTHOOK: Input: default@s_n4
 #### A masked pattern was here ####
 2
-PREHOOK: query: drop table s
+PREHOOK: query: drop table s_n4
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@s
-PREHOOK: Output: default@s
-POSTHOOK: query: drop table s
+PREHOOK: Input: default@s_n4
+PREHOOK: Output: default@s_n4
+POSTHOOK: query: drop table s_n4
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@s
-POSTHOOK: Output: default@s
-PREHOOK: query: select count(*) from s
+POSTHOOK: Input: default@s_n4
+POSTHOOK: Output: default@s_n4
+PREHOOK: query: select count(*) from s_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@s
+PREHOOK: Input: default@s_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from s
+POSTHOOK: query: select count(*) from s_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@s
+POSTHOOK: Input: default@s_n4
 #### A masked pattern was here ####
 10
-PREHOOK: query: with s as ( select * from src limit 1)
-select count(*) from s
+PREHOOK: query: with s_n4 as ( select * from src limit 1)
+select count(*) from s_n4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: with s as ( select * from src limit 1)
-select count(*) from s
+POSTHOOK: query: with s_n4 as ( select * from src limit 1)
+select count(*) from s_n4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 1
-PREHOOK: query: with src as ( select * from s)
+PREHOOK: query: with src as ( select * from s_n4)
 select count(*) from src
 PREHOOK: type: QUERY
-PREHOOK: Input: default@s
+PREHOOK: Input: default@s_n4
 #### A masked pattern was here ####
-POSTHOOK: query: with src as ( select * from s)
+POSTHOOK: query: with src as ( select * from s_n4)
 select count(*) from src
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@s
+POSTHOOK: Input: default@s_n4
 #### A masked pattern was here ####
 10
-PREHOOK: query: drop table s
+PREHOOK: query: drop table s_n4
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@s
-PREHOOK: Output: default@s
-POSTHOOK: query: drop table s
+PREHOOK: Input: default@s_n4
+PREHOOK: Output: default@s_n4
+POSTHOOK: query: drop table s_n4
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@s
-POSTHOOK: Output: default@s
+POSTHOOK: Input: default@s_n4
+POSTHOOK: Output: default@s_n4

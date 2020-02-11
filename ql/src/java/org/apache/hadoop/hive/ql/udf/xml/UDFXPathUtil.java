@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,6 +23,9 @@ import java.io.Reader;
 import java.io.StringReader;
 
 import javax.xml.namespace.QName;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
@@ -38,9 +41,15 @@ import org.xml.sax.InputSource;
  * of this class.
  */
 public class UDFXPathUtil {
+  public static final String SAX_FEATURE_PREFIX = "http://xml.org/sax/features/";
+  public static final String EXTERNAL_GENERAL_ENTITIES_FEATURE = "external-general-entities";
+  public static final String EXTERNAL_PARAMETER_ENTITIES_FEATURE = "external-parameter-entities";
+  private DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+  private DocumentBuilder builder = null;
   private XPath xpath = XPathFactory.newInstance().newXPath();
   private ReusableStringReader reader = new ReusableStringReader();
   private InputSource inputSource = new InputSource(reader);
+
   private XPathExpression expression = null;
   private String oldPath = null;
 
@@ -66,13 +75,29 @@ public class UDFXPathUtil {
       return null;
     }
 
+    if (builder == null){
+      try {
+        initializeDocumentBuilderFactory();
+        builder = dbf.newDocumentBuilder();
+      } catch (ParserConfigurationException e) {
+        throw new RuntimeException("Error instantiating DocumentBuilder, cannot build xml parser", e);
+      }
+    }
+
     reader.set(xml);
 
     try {
-      return expression.evaluate(inputSource, qname);
+      return expression.evaluate(builder.parse(inputSource), qname);
     } catch (XPathExpressionException e) {
       throw new RuntimeException ("Invalid expression '" + oldPath + "'", e);
+    } catch (Exception e) {
+      throw new RuntimeException("Error loading expression '" + oldPath + "'", e);
     }
+  }
+
+  private void initializeDocumentBuilderFactory() throws ParserConfigurationException {
+    dbf.setFeature(SAX_FEATURE_PREFIX + EXTERNAL_GENERAL_ENTITIES_FEATURE, false);
+    dbf.setFeature(SAX_FEATURE_PREFIX + EXTERNAL_PARAMETER_ENTITIES_FEATURE, false);
   }
 
   public Boolean evalBoolean(String xml, String path) {

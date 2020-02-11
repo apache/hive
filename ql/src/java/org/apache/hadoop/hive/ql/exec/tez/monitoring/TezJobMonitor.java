@@ -18,20 +18,37 @@
 
 package org.apache.hadoop.hive.ql.exec.tez.monitoring;
 
-import com.google.common.base.Preconditions;
+import static org.apache.tez.dag.api.client.DAGStatus.State.RUNNING;
+
+import java.io.IOException;
+import java.io.InterruptedIOException;
+import java.io.StringWriter;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.hadoop.hive.common.log.InPlaceUpdate;
+import org.apache.hadoop.hive.common.log.ProgressMonitor;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
-import org.apache.hadoop.hive.common.log.InPlaceUpdate;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
-import org.apache.hadoop.hive.common.log.ProgressMonitor;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.apache.hadoop.hive.ql.wm.TimeCounterLimit;
+import org.apache.hadoop.hive.ql.wm.VertexCounterLimit;
+import org.apache.hadoop.hive.ql.wm.WmContext;
 import org.apache.hive.common.util.ShutdownHookManager;
+import org.apache.tez.common.counters.CounterGroup;
 import org.apache.tez.common.counters.TezCounter;
 import org.apache.tez.common.counters.TezCounters;
 import org.apache.tez.dag.api.DAG;
@@ -41,17 +58,10 @@ import org.apache.tez.dag.api.client.DAGStatus;
 import org.apache.tez.dag.api.client.Progress;
 import org.apache.tez.dag.api.client.StatusGetOpts;
 import org.apache.tez.util.StopWatch;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.io.InterruptedIOException;
-import java.io.StringWriter;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
-import static org.apache.tez.dag.api.client.DAGStatus.State.RUNNING;
+import com.google.common.base.Preconditions;
 
 /**
  * TezJobMonitor keeps track of a tez job while it's being executed. It will
@@ -59,9 +69,9 @@ import static org.apache.tez.dag.api.client.DAGStatus.State.RUNNING;
  * completion.
  */
 public class TezJobMonitor {
+  private static final Logger LOG = LoggerFactory.getLogger(TezJobMonitor.class);
 
   static final String CLASS_NAME = TezJobMonitor.class.getName();
-  private static final int MIN_CHECK_INTERVAL = 200;
   private static final int MAX_CHECK_INTERVAL = 1000;
   private static final int MAX_RETRY_INTERVAL = 2500;
   private static final int MAX_RETRY_FAILURES = (MAX_RETRY_INTERVAL / MAX_CHECK_INTERVAL) + 1;
@@ -81,7 +91,9 @@ public class TezJobMonitor {
       public void run() {
         TezJobMonitor.killRunningJobs();
         try {
-          TezSessionPoolManager.getInstance().closeNonDefaultSessions(false);
+          // TODO: why does this only kill non-default sessions?
+          // Nothing for workload management since that only deals with default ones.
+          TezSessionPoolManager.getInstance().closeNonDefaultSessions();
         } catch (Exception e) {
           // ignore
         }
@@ -144,7 +156,9 @@ public class TezJobMonitor {
     DAGStatus.State lastState = null;
     boolean running = false;
 
-    int checkInterval = MIN_CHECK_INTERVAL;
+    long checkInterval = HiveConf.getTimeVar(hiveConf, HiveConf.ConfVars.TEZ_DAG_STATUS_CHECK_INTERVAL,
+      TimeUnit.MILLISECONDS);
+    WmContext wmContext = null;
     while (true) {
 
       try {
@@ -152,8 +166,34 @@ public class TezJobMonitor {
           context.checkHeartbeaterLockException();
         }
 
-        status = dagClient.getDAGStatus(new HashSet<StatusGetOpts>(), checkInterval);
+        wmContext = context.getWmContext();
+        EnumSet<StatusGetOpts> opts = null;
+        if (wmContext != null) {
+          Set<String> desiredCounters = wmContext.getSubscribedCounters();
+          if (desiredCounters != null && !desiredCounters.isEmpty()) {
+            opts = EnumSet.of(StatusGetOpts.GET_COUNTERS);
+          }
+        }
+
+        status = dagClient.getDAGStatus(opts, checkInterval);
+
         vertexProgressMap = status.getVertexProgress();
+        List<String> vertexNames = vertexProgressMap.keySet()
+          .stream()
+          .map(k -> k.replaceAll(" ", "_"))
+          .collect(Collectors.toList());
+        if (wmContext != null) {
+          Set<String> desiredCounters = wmContext.getSubscribedCounters();
+          TezCounters dagCounters = status.getDAGCounters();
+          if (dagCounters != null && desiredCounters != null && !desiredCounters.isEmpty()) {
+            Map<String, Long> currentCounters = getCounterValues(dagCounters, vertexNames, vertexProgressMap,
+              desiredCounters, done);
+            if (LOG.isDebugEnabled()) {
+              LOG.debug("Requested DAG status. checkInterval: {}. currentCounters: {}", checkInterval, currentCounters);
+            }
+            wmContext.setCurrentCounters(currentCounters);
+          }
+        }
         DAGStatus.State state = status.getState();
 
         failedCounter = 0; // AM is responsive again (recovery?)
@@ -176,8 +216,6 @@ public class TezJobMonitor {
                 console.printInfo("Status: Running (" + dagClient.getExecutionContext() + ")\n");
                 this.executionStartTime = System.currentTimeMillis();
                 running = true;
-                // from running -> failed/succeeded, the AM breaks out of timeouts
-                checkInterval = MAX_CHECK_INTERVAL;
               }
               updateFunction.update(status, vertexProgressMap);
               break;
@@ -213,6 +251,9 @@ public class TezJobMonitor {
               break;
           }
         }
+        if (wmContext != null && done) {
+          wmContext.setQueryCompleted(true);
+        }
       } catch (Exception e) {
         console.printInfo("Exception: " + e.getMessage());
         boolean isInterrupted = hasInterruptedException(e);
@@ -233,15 +274,20 @@ public class TezJobMonitor {
           } catch (IOException | TezException tezException) {
             // best effort
           }
-          console
-              .printError("Execution has failed. stack trace: " + ExceptionUtils.getStackTrace(e));
+          console.printError("Execution has failed. stack trace: " + ExceptionUtils.getStackTrace(e));
           rc = 1;
           done = true;
         } else {
           console.printInfo("Retrying...");
         }
+        if (wmContext != null && done) {
+          wmContext.setQueryCompleted(true);
+        }
       } finally {
         if (done) {
+          if (wmContext != null && done) {
+            wmContext.setQueryCompleted(true);
+          }
           if (rc != 0 && status != null) {
             for (String diag : status.getDiagnostics()) {
               console.printError(diag);
@@ -261,6 +307,125 @@ public class TezJobMonitor {
     return rc;
   }
 
+  private Map<String, Long> getCounterValues(final TezCounters dagCounters,
+    final List<String> vertexNames, final Map<String, Progress> vertexProgressMap,
+    final Set<String> desiredCounters, final boolean done) {
+    // DAG specific counters
+    Map<String, Long> updatedCounters = new HashMap<>();
+    for (CounterGroup counterGroup : dagCounters) {
+      for (TezCounter tezCounter : counterGroup) {
+        String counterName = tezCounter.getName();
+        for (String desiredCounter : desiredCounters) {
+          if (counterName.equals(desiredCounter)) {
+            updatedCounters.put(counterName, tezCounter.getValue());
+          } else if (isDagLevelCounter(desiredCounter)) {
+            // by default, we aggregate counters across the entire DAG. Example: SHUFFLE_BYTES would mean SHUFFLE_BYTES
+            // of each vertex aggregated together to create DAG level SHUFFLE_BYTES.
+            // Use case: If SHUFFLE_BYTES across the entire DAG is > limit perform action
+            String prefixRemovedCounterName = getCounterFromDagCounter(desiredCounter);
+            aggregateCountersSum(updatedCounters, vertexNames, prefixRemovedCounterName, desiredCounter, tezCounter);
+          } else if (isVertexLevelCounter(desiredCounter)) {
+            // if counter name starts with VERTEX_ then we just return max value across all vertex since trigger
+            // validation is only interested in violation that are greater than limit (*any* vertex violation).
+            // Use case: If SHUFFLE_BYTES for any single vertex is > limit perform action
+            String prefixRemovedCounterName = getCounterFromVertexCounter(desiredCounter);
+            aggregateCountersMax(updatedCounters, vertexNames, prefixRemovedCounterName, desiredCounter, tezCounter);
+          } else if (counterName.startsWith(desiredCounter)) {
+            // Counters with vertex name as suffix
+            // desiredCounter = INPUT_FILES
+            // counters: {INPUT_FILES_Map_1 : 5, INPUT_FILES_Map_4 : 10}
+            // outcome: INPUT_FILE : 15
+            String prefixRemovedCounterName = desiredCounter;
+            aggregateCountersSum(updatedCounters, vertexNames, prefixRemovedCounterName, desiredCounter, tezCounter);
+          }
+        }
+      }
+    }
+
+    // Process per vertex counters that are available only via vertex Progress
+    String counterName = VertexCounterLimit.VertexCounter.VERTEX_TOTAL_TASKS.name();
+    if (desiredCounters.contains(counterName) && vertexProgressMap != null) {
+      for (Map.Entry<String, Progress> entry : vertexProgressMap.entrySet()) {
+        long currentMax = 0;
+        if (updatedCounters.containsKey(counterName)) {
+          currentMax = updatedCounters.get(counterName);
+        }
+        long newMax = Math.max(currentMax, entry.getValue().getTotalTaskCount());
+        updatedCounters.put(counterName, newMax);
+      }
+    }
+
+    counterName = VertexCounterLimit.VertexCounter.DAG_TOTAL_TASKS.name();
+    if (desiredCounters.contains(counterName) && vertexProgressMap != null) {
+      for (Map.Entry<String, Progress> entry : vertexProgressMap.entrySet()) {
+        long currentTotal = 0;
+        if (updatedCounters.containsKey(counterName)) {
+          currentTotal = updatedCounters.get(counterName);
+        }
+        long newTotal = currentTotal + entry.getValue().getTotalTaskCount();
+        updatedCounters.put(counterName, newTotal);
+      }
+    }
+
+    // Time based counters. If DAG is done already don't update these counters.
+    if (!done) {
+      counterName = TimeCounterLimit.TimeCounter.EXECUTION_TIME.name();
+      if (desiredCounters.contains(counterName) && executionStartTime > 0) {
+        updatedCounters.put(counterName, System.currentTimeMillis() - executionStartTime);
+      }
+    }
+
+    return updatedCounters;
+  }
+
+  private void aggregateCountersSum(final Map<String, Long> updatedCounters, final List<String> vertexNames,
+    final String prefixRemovedCounterName, final String desiredCounter, final TezCounter tezCounter) {
+    long counterValue = checkVertexSuffixAndGetValue(vertexNames, prefixRemovedCounterName, tezCounter);
+    long currentTotal = 0;
+    if (updatedCounters.containsKey(desiredCounter)) {
+      currentTotal = updatedCounters.get(desiredCounter);
+    }
+    long newTotal = currentTotal + counterValue;
+    updatedCounters.put(desiredCounter, newTotal);
+  }
+
+  private void aggregateCountersMax(final Map<String, Long> updatedCounters, final List<String> vertexNames,
+    final String prefixRemovedCounterName, final String desiredCounter, final TezCounter tezCounter) {
+    long counterValue = checkVertexSuffixAndGetValue(vertexNames, prefixRemovedCounterName, tezCounter);
+    long currentMax = 0;
+    if (updatedCounters.containsKey(desiredCounter)) {
+      currentMax = updatedCounters.get(desiredCounter);
+    }
+    long newMax = Math.max(currentMax, counterValue);
+    updatedCounters.put(desiredCounter, newMax);
+  }
+
+  private long checkVertexSuffixAndGetValue(final List<String> vertexNames, final String counterName,
+    final TezCounter tezCounter) {
+    for (String vertexName : vertexNames) {
+      if (tezCounter.getName().equalsIgnoreCase(counterName + "_" + vertexName)) {
+        return tezCounter.getValue();
+      }
+    }
+    return 0;
+  }
+
+  private String getCounterFromDagCounter(final String desiredCounter) {
+    return desiredCounter.substring("DAG_".length());
+  }
+
+  private String getCounterFromVertexCounter(final String desiredCounter) {
+    return desiredCounter.substring("VERTEX_".length());
+  }
+
+  private boolean isVertexLevelCounter(final String desiredCounter) {
+    return desiredCounter.startsWith("VERTEX_");
+  }
+
+  private boolean isDagLevelCounter(final String desiredCounter) {
+    return desiredCounter.startsWith("DAG_");
+  }
+
   private void printSummary(boolean success, Map<String, Progress> progressMap) {
     if (isProfilingEnabled() && success && progressMap != null) {
 
@@ -276,6 +441,11 @@ public class TezJobMonitor {
         new LLAPioSummary(progressMap, dagClient).print(console);
         new FSCountersSummary(progressMap, dagClient).print(console);
       }
+      String wmQueue = HiveConf.getVar(hiveConf, ConfVars.HIVE_SERVER2_TEZ_INTERACTIVE_QUEUE);
+      if (wmQueue != null && !wmQueue.isEmpty()) {
+        new LlapWmSummary(progressMap, dagClient).print(console);
+      }
+
       console.printInfo("");
     }
   }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -24,6 +24,7 @@ import java.util.LinkedList;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 
@@ -31,7 +32,6 @@ public class LowLevelFifoCachePolicy implements LowLevelCachePolicy {
   private final Lock lock = new ReentrantLock();
   private final LinkedList<LlapCacheableBuffer> buffers;
   private EvictionListener evictionListener;
-  private LlapOomDebugDump parentDebugDump;
 
   public LowLevelFifoCachePolicy() {
     LlapIoImpl.LOG.info("FIFO cache policy");
@@ -65,8 +65,10 @@ public class LowLevelFifoCachePolicy implements LowLevelCachePolicy {
   }
 
   @Override
-  public void setParentDebugDumper(LlapOomDebugDump dumper) {
-    this.parentDebugDump = dumper;
+  public long purge() {
+    long evicted = evictSomeBlocks(Long.MAX_VALUE);
+    LlapIoImpl.LOG.info("PURGE: evicted {} from FIFO policy", LlapUtil.humanReadableByteCount(evicted));
+    return evicted;
   }
 
   @Override
@@ -97,25 +99,6 @@ public class LowLevelFifoCachePolicy implements LowLevelCachePolicy {
   }
 
   @Override
-  public String debugDumpForOom() {
-    StringBuilder sb = new StringBuilder("FIFO eviction list: ");
-    lock.lock();
-    try {
-      sb.append(buffers.size()).append(" elements): ");
-      Iterator<LlapCacheableBuffer> iter = buffers.iterator();
-      while (iter.hasNext()) {
-        sb.append(iter.next().toStringForCache()).append(",\n");
-      }
-    } finally {
-      lock.unlock();
-    }
-    if (parentDebugDump != null) {
-      sb.append("\n").append(parentDebugDump.debugDumpForOom());
-    }
-    return sb.toString();
-  }
-
-  @Override
   public void debugDumpShort(StringBuilder sb) {
     sb.append("\nFIFO eviction list: ");
     lock.lock();
@@ -123,9 +106,6 @@ public class LowLevelFifoCachePolicy implements LowLevelCachePolicy {
       sb.append(buffers.size()).append(" elements)");
     } finally {
       lock.unlock();
-    }
-    if (parentDebugDump != null) {
-      parentDebugDump.debugDumpShort(sb);
     }
   }
 }

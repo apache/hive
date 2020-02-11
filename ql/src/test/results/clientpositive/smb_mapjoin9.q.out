@@ -20,12 +20,18 @@ FROM hive_test_smb_bucket1 a JOIN
 hive_test_smb_bucket2 b
 ON a.key = b.key WHERE a.ds = '2010-10-15' and b.ds='2010-10-15' and  b.key IS NOT NULL
 PREHOOK: type: QUERY
+PREHOOK: Input: default@hive_test_smb_bucket1
+PREHOOK: Input: default@hive_test_smb_bucket2
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 SELECT /*+ MAPJOIN(b) */ b.key as k1, b.value, b.ds, a.key as k2
 FROM hive_test_smb_bucket1 a JOIN
 hive_test_smb_bucket2 b
 ON a.key = b.key WHERE a.ds = '2010-10-15' and b.ds='2010-10-15' and  b.key IS NOT NULL
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive_test_smb_bucket1
+POSTHOOK: Input: default@hive_test_smb_bucket2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -36,12 +42,13 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            filterExpr: (key is not null and (ds = '2010-10-15')) (type: boolean)
+            Statistics: Num rows: 1 Data size: 98 Basic stats: COMPLETE Column stats: PARTIAL
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: (key is not null and (ds = '2010-10-15')) (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 98 Basic stats: COMPLETE Column stats: PARTIAL
               Sorted Merge Bucket Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -104,12 +111,18 @@ FROM hive_test_smb_bucket1 a JOIN
 hive_test_smb_bucket2 b
 ON a.key = b.key WHERE a.ds = '2010-10-15' and b.ds='2010-10-15' and  b.key IS NOT NULL
 PREHOOK: type: QUERY
+PREHOOK: Input: default@hive_test_smb_bucket1
+PREHOOK: Input: default@hive_test_smb_bucket2
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 SELECT /*+ MAPJOIN(a) */ b.key as k1, b.value, b.ds, a.key as k2
 FROM hive_test_smb_bucket1 a JOIN
 hive_test_smb_bucket2 b
 ON a.key = b.key WHERE a.ds = '2010-10-15' and b.ds='2010-10-15' and  b.key IS NOT NULL
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive_test_smb_bucket1
+POSTHOOK: Input: default@hive_test_smb_bucket2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -120,12 +133,13 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            filterExpr: (key is not null and (ds = '2010-10-15')) (type: boolean)
+            Statistics: Num rows: 1 Data size: 282 Basic stats: COMPLETE Column stats: PARTIAL
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: (key is not null and (ds = '2010-10-15')) (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 282 Basic stats: COMPLETE Column stats: PARTIAL
               Sorted Merge Bucket Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -209,6 +223,12 @@ FROM hive_test_smb_bucket1 a JOIN
 hive_test_smb_bucket2 b
 ON a.key = b.key WHERE a.ds = '2010-10-15' and b.ds='2010-10-15' and  b.key IS NOT NULL
 PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@hive_test_smb_bucket1
+PREHOOK: Input: default@hive_test_smb_bucket1@ds=2010-10-15
+PREHOOK: Input: default@hive_test_smb_bucket2
+PREHOOK: Input: default@hive_test_smb_bucket2@ds=2010-10-15
+PREHOOK: Output: database:default
+PREHOOK: Output: default@smb_mapjoin9_results
 POSTHOOK: query: explain
 create table smb_mapjoin9_results as
 SELECT /*+ MAPJOIN(b) */ b.key as k1, b.value, b.ds, a.key as k2
@@ -216,6 +236,12 @@ FROM hive_test_smb_bucket1 a JOIN
 hive_test_smb_bucket2 b
 ON a.key = b.key WHERE a.ds = '2010-10-15' and b.ds='2010-10-15' and  b.key IS NOT NULL
 POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@hive_test_smb_bucket1
+POSTHOOK: Input: default@hive_test_smb_bucket1@ds=2010-10-15
+POSTHOOK: Input: default@hive_test_smb_bucket2
+POSTHOOK: Input: default@hive_test_smb_bucket2@ds=2010-10-15
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@smb_mapjoin9_results
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -233,10 +259,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: (key is not null and (ds = '2010-10-15')) (type: boolean)
+            Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
               Sorted Merge Bucket Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -254,6 +281,29 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: default.smb_mapjoin9_results
+                  Select Operator
+                    expressions: _col0 (type: int), _col1 (type: string), '2010-10-15' (type: string), _col3 (type: int)
+                    outputColumnNames: col1, col2, col3, col4
+                    Group By Operator
+                      aggregations: compute_stats(col1, 'hll'), compute_stats(col2, 'hll'), compute_stats(col3, 'hll'), compute_stats(col4, 'hll')
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2), compute_stats(VALUE._col3)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2, _col3
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-7
     Conditional Operator
@@ -271,16 +321,20 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
   Stage: Stage-9
-      Create Table Operator:
-        Create Table
-          columns: k1 int, value string, ds string, k2 int
-          input format: org.apache.hadoop.mapred.TextInputFormat
-          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: default.smb_mapjoin9_results
+    Create Table
+      columns: k1 int, value string, ds string, k2 int
+      name: default.smb_mapjoin9_results
+      input format: org.apache.hadoop.mapred.TextInputFormat
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: k1, value, ds, k2
+          Column Types: int, string, string, int
+          Table: default.smb_mapjoin9_results
 
   Stage: Stage-3
     Map Reduce

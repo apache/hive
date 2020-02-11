@@ -1,60 +1,60 @@
-PREHOOK: query: DROP TABLE IF EXISTS `dec`
+PREHOOK: query: DROP TABLE IF EXISTS `dec_n1`
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE IF EXISTS `dec`
+POSTHOOK: query: DROP TABLE IF EXISTS `dec_n1`
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE `dec`(name string, value decimal(8,4))
+PREHOOK: query: CREATE TABLE `dec_n1`(name string, value decimal(8,4))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dec
-POSTHOOK: query: CREATE TABLE `dec`(name string, value decimal(8,4))
+PREHOOK: Output: default@dec_n1
+POSTHOOK: query: CREATE TABLE `dec_n1`(name string, value decimal(8,4))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dec
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dec.txt' INTO TABLE `dec`
+POSTHOOK: Output: default@dec_n1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dec.txt' INTO TABLE `dec_n1`
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@dec
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dec.txt' INTO TABLE `dec`
+PREHOOK: Output: default@dec_n1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dec.txt' INTO TABLE `dec_n1`
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@dec
-PREHOOK: query: DROP TABLE IF EXISTS parq_dec
+POSTHOOK: Output: default@dec_n1
+PREHOOK: query: DROP TABLE IF EXISTS parq_dec_n1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE IF EXISTS parq_dec
+POSTHOOK: query: DROP TABLE IF EXISTS parq_dec_n1
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE parq_dec(name string, value decimal(5,2)) STORED AS PARQUET
+PREHOOK: query: CREATE TABLE parq_dec_n1(name string, value decimal(5,2)) STORED AS PARQUET
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@parq_dec
-POSTHOOK: query: CREATE TABLE parq_dec(name string, value decimal(5,2)) STORED AS PARQUET
+PREHOOK: Output: default@parq_dec_n1
+POSTHOOK: query: CREATE TABLE parq_dec_n1(name string, value decimal(5,2)) STORED AS PARQUET
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@parq_dec
-PREHOOK: query: DESC parq_dec
+POSTHOOK: Output: default@parq_dec_n1
+PREHOOK: query: DESC parq_dec_n1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@parq_dec
-POSTHOOK: query: DESC parq_dec
+PREHOOK: Input: default@parq_dec_n1
+POSTHOOK: query: DESC parq_dec_n1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@parq_dec
+POSTHOOK: Input: default@parq_dec_n1
 name                	string              	                    
 value               	decimal(5,2)        	                    
-PREHOOK: query: INSERT OVERWRITE TABLE parq_dec SELECT name, value FROM `dec`
+PREHOOK: query: INSERT OVERWRITE TABLE parq_dec_n1 SELECT name, value FROM `dec_n1`
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dec
-PREHOOK: Output: default@parq_dec
-POSTHOOK: query: INSERT OVERWRITE TABLE parq_dec SELECT name, value FROM `dec`
+PREHOOK: Input: default@dec_n1
+PREHOOK: Output: default@parq_dec_n1
+POSTHOOK: query: INSERT OVERWRITE TABLE parq_dec_n1 SELECT name, value FROM `dec_n1`
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dec
-POSTHOOK: Output: default@parq_dec
-POSTHOOK: Lineage: parq_dec.name SIMPLE [(dec)dec.FieldSchema(name:name, type:string, comment:null), ]
-POSTHOOK: Lineage: parq_dec.value EXPRESSION [(dec)dec.FieldSchema(name:value, type:decimal(8,4), comment:null), ]
-PREHOOK: query: SELECT * FROM parq_dec
+POSTHOOK: Input: default@dec_n1
+POSTHOOK: Output: default@parq_dec_n1
+POSTHOOK: Lineage: parq_dec_n1.name SIMPLE [(dec_n1)dec_n1.FieldSchema(name:name, type:string, comment:null), ]
+POSTHOOK: Lineage: parq_dec_n1.value EXPRESSION [(dec_n1)dec_n1.FieldSchema(name:value, type:decimal(8,4), comment:null), ]
+PREHOOK: query: SELECT * FROM parq_dec_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@parq_dec
+PREHOOK: Input: default@parq_dec_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM parq_dec
+POSTHOOK: query: SELECT * FROM parq_dec_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@parq_dec
+POSTHOOK: Input: default@parq_dec_n1
 #### A masked pattern was here ####
 Tom	234.79
 Beck	77.34
@@ -66,13 +66,13 @@ Mary	33.33
 Tom	19.00
 Beck	0.00
 Beck	79.90
-PREHOOK: query: SELECT value, count(*) FROM parq_dec GROUP BY value ORDER BY value
+PREHOOK: query: SELECT value, count(*) FROM parq_dec_n1 GROUP BY value ORDER BY value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@parq_dec
+PREHOOK: Input: default@parq_dec_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT value, count(*) FROM parq_dec GROUP BY value ORDER BY value
+POSTHOOK: query: SELECT value, count(*) FROM parq_dec_n1 GROUP BY value ORDER BY value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@parq_dec
+POSTHOOK: Input: default@parq_dec_n1
 #### A masked pattern was here ####
 -12.25	1
 0.00	1
@@ -84,29 +84,29 @@ POSTHOOK: Input: default@parq_dec
 77.34	1
 79.90	1
 234.79	1
-PREHOOK: query: TRUNCATE TABLE parq_dec
+PREHOOK: query: TRUNCATE TABLE parq_dec_n1
 PREHOOK: type: TRUNCATETABLE
-PREHOOK: Output: default@parq_dec
-POSTHOOK: query: TRUNCATE TABLE parq_dec
+PREHOOK: Output: default@parq_dec_n1
+POSTHOOK: query: TRUNCATE TABLE parq_dec_n1
 POSTHOOK: type: TRUNCATETABLE
-POSTHOOK: Output: default@parq_dec
-PREHOOK: query: INSERT OVERWRITE TABLE parq_dec SELECT name, NULL FROM `dec`
+POSTHOOK: Output: default@parq_dec_n1
+PREHOOK: query: INSERT OVERWRITE TABLE parq_dec_n1 SELECT name, NULL FROM `dec_n1`
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dec
-PREHOOK: Output: default@parq_dec
-POSTHOOK: query: INSERT OVERWRITE TABLE parq_dec SELECT name, NULL FROM `dec`
+PREHOOK: Input: default@dec_n1
+PREHOOK: Output: default@parq_dec_n1
+POSTHOOK: query: INSERT OVERWRITE TABLE parq_dec_n1 SELECT name, NULL FROM `dec_n1`
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dec
-POSTHOOK: Output: default@parq_dec
-POSTHOOK: Lineage: parq_dec.name SIMPLE [(dec)dec.FieldSchema(name:name, type:string, comment:null), ]
-POSTHOOK: Lineage: parq_dec.value EXPRESSION []
-PREHOOK: query: SELECT * FROM parq_dec
+POSTHOOK: Input: default@dec_n1
+POSTHOOK: Output: default@parq_dec_n1
+POSTHOOK: Lineage: parq_dec_n1.name SIMPLE [(dec_n1)dec_n1.FieldSchema(name:name, type:string, comment:null), ]
+POSTHOOK: Lineage: parq_dec_n1.value EXPRESSION []
+PREHOOK: query: SELECT * FROM parq_dec_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@parq_dec
+PREHOOK: Input: default@parq_dec_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM parq_dec
+POSTHOOK: query: SELECT * FROM parq_dec_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@parq_dec
+POSTHOOK: Input: default@parq_dec_n1
 #### A masked pattern was here ####
 Tom	NULL
 Beck	NULL
@@ -164,22 +164,22 @@ POSTHOOK: Input: default@parq_dec1
 0.2
 3.2
 8.0
-PREHOOK: query: DROP TABLE `dec`
+PREHOOK: query: DROP TABLE `dec_n1`
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@dec
-PREHOOK: Output: default@dec
-POSTHOOK: query: DROP TABLE `dec`
+PREHOOK: Input: default@dec_n1
+PREHOOK: Output: default@dec_n1
+POSTHOOK: query: DROP TABLE `dec_n1`
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@dec
-POSTHOOK: Output: default@dec
-PREHOOK: query: DROP TABLE parq_dec
+POSTHOOK: Input: default@dec_n1
+POSTHOOK: Output: default@dec_n1
+PREHOOK: query: DROP TABLE parq_dec_n1
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@parq_dec
-PREHOOK: Output: default@parq_dec
-POSTHOOK: query: DROP TABLE parq_dec
+PREHOOK: Input: default@parq_dec_n1
+PREHOOK: Output: default@parq_dec_n1
+POSTHOOK: query: DROP TABLE parq_dec_n1
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@parq_dec
-POSTHOOK: Output: default@parq_dec
+POSTHOOK: Input: default@parq_dec_n1
+POSTHOOK: Output: default@parq_dec_n1
 PREHOOK: query: DROP TABLE parq_dec1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@parq_dec1

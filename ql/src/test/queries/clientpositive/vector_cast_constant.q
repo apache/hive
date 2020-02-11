@@ -3,11 +3,11 @@ set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
 set hive.fetch.task.conversion=none;
 
-DROP TABLE over1k;
-DROP TABLE over1korc;
+DROP TABLE over1k_n0;
+DROP TABLE over1korc_n0;
 
 -- data setup
-CREATE TABLE over1k(t tinyint,
+CREATE TABLE over1k_n0(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -21,9 +21,9 @@ CREATE TABLE over1k(t tinyint,
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE;
 
-LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE over1k;
+LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE over1k_n0;
 
-CREATE TABLE over1korc(t tinyint,
+CREATE TABLE over1korc_n0(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -36,18 +36,18 @@ CREATE TABLE over1korc(t tinyint,
            bin binary)
 STORED AS ORC;
 
-INSERT INTO TABLE over1korc SELECT * FROM over1k;
+INSERT INTO TABLE over1korc_n0 SELECT * FROM over1k_n0;
 
 EXPLAIN VECTORIZATION EXPRESSION SELECT 
   i,
   AVG(CAST(50 AS INT)) AS `avg_int_ok`,
   AVG(CAST(50 AS DOUBLE)) AS `avg_double_ok`,
   AVG(CAST(50 AS DECIMAL)) AS `avg_decimal_ok`
-  FROM over1korc GROUP BY i ORDER BY i LIMIT 10;
+  FROM over1korc_n0 GROUP BY i ORDER BY i LIMIT 10;
 
 SELECT 
   i,
   AVG(CAST(50 AS INT)) AS `avg_int_ok`,
   AVG(CAST(50 AS DOUBLE)) AS `avg_double_ok`,
   AVG(CAST(50 AS DECIMAL)) AS `avg_decimal_ok`
-  FROM over1korc GROUP BY i ORDER BY i LIMIT 10;
+  FROM over1korc_n0 GROUP BY i ORDER BY i LIMIT 10;

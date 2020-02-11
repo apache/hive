@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,12 +23,16 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.hive.llap.counters.LlapWmCounters;
+import org.apache.hadoop.hive.llap.counters.WmFragmentCounters;
 import org.apache.hadoop.hive.llap.daemon.FragmentCompletionHandler;
 import org.apache.hadoop.hive.llap.daemon.HistoryLogger;
 import org.apache.hadoop.hive.llap.daemon.KilledTaskHandler;
 import org.apache.hadoop.hive.llap.daemon.SchedulerFragmentCompletingListener;
+import org.apache.hadoop.hive.llap.daemon.impl.AMReporter.AMNodeInfo;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.IOSpecProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SignableVertexSpec;
@@ -45,7 +49,6 @@ import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
-import org.apache.log4j.MDC;
 import org.apache.log4j.NDC;
 import org.apache.tez.common.CallableWithNdc;
 import org.apache.tez.common.TezCommonUtils;
@@ -68,8 +71,10 @@ import org.apache.tez.runtime.task.TaskRunner2Result;
 import org.apache.tez.runtime.task.TezTaskRunner2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import javax.net.SocketFactory;
+
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.security.PrivilegedExceptionAction;
@@ -114,8 +119,8 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
   private final String queryId;
   private final HadoopShim tezHadoopShim;
   private boolean shouldRunTask = true;
-  final Stopwatch runtimeWatch = new Stopwatch();
-  final Stopwatch killtimerWatch = new Stopwatch();
+  final Stopwatch runtimeWatch = Stopwatch.createUnstarted();
+  final Stopwatch killtimerWatch = Stopwatch.createUnstarted();
   private final AtomicBoolean isStarted = new AtomicBoolean(false);
   private final AtomicBoolean isCompleted = new AtomicBoolean(false);
   private final AtomicBoolean killInvoked = new AtomicBoolean(false);
@@ -125,6 +130,8 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
   private UserGroupInformation fsTaskUgi;
   private final SocketFactory socketFactory;
   private boolean isGuaranteed;
+  private WmFragmentCounters wmCounters;
+  private final AMNodeInfo amNodeInfo;
 
   @VisibleForTesting
   public TaskRunnerCallable(SubmitWorkRequestProto request, QueryFragmentInfo fragmentInfo,
@@ -134,7 +141,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
                             FragmentCompletionHandler fragmentCompleteHandler, HadoopShim tezHadoopShim,
                             TezTaskAttemptID attemptId, SignableVertexSpec vertex, TezEvent initialEvent,
                             UserGroupInformation fsTaskUgi, SchedulerFragmentCompletingListener completionListener,
-                            SocketFactory socketFactory, boolean isGuaranteed) {
+                            SocketFactory socketFactory, boolean isGuaranteed, WmFragmentCounters wmCounters) {
     this.request = request;
     this.fragmentInfo = fragmentInfo;
     this.conf = conf;
@@ -151,8 +158,11 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
     this.amReporter = amReporter;
     // Register with the AMReporter when the callable is setup. Unregister once it starts running.
     if (amReporter != null && jobToken != null) {
-      this.amReporter.registerTask(request.getAmHost(), request.getAmPort(),
-          vertex.getTokenIdentifier(), jobToken, fragmentInfo.getQueryInfo().getQueryIdentifier(), attemptId);
+      this.amNodeInfo = amReporter.registerTask(request.getAmHost(), request.getAmPort(),
+          vertex.getTokenIdentifier(), jobToken, fragmentInfo.getQueryInfo().getQueryIdentifier(),
+          attemptId, isGuaranteed);
+    } else {
+      this.amNodeInfo = null;
     }
     this.metrics = metrics;
     this.requestId = taskSpec.getTaskAttemptID().toString();
@@ -169,6 +179,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
     this.completionListener = completionListener;
     this.socketFactory = socketFactory;
     this.isGuaranteed = isGuaranteed;
+    this.wmCounters = wmCounters;
   }
 
   public long getStartTime() {
@@ -258,7 +269,8 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
           request.getContainerIdString(),
           fragmentId,
           initialEvent,
-          requestId);
+          requestId,
+          wmCounters);
 
       String attemptId = fragmentInfo.getFragmentIdentifierString();
       IOContextMap.setThreadAttemptId(attemptId);
@@ -266,12 +278,9 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
         synchronized (this) {
           if (shouldRunTask) {
             taskRunner = new TezTaskRunner2(conf, fsTaskUgi, fragmentInfo.getLocalDirs(),
-                taskSpec,
-                vertex.getQueryIdentifier().getAppAttemptNumber(),
+                taskSpec, vertex.getQueryIdentifier().getAppAttemptNumber(),
                 serviceConsumerMetadata, envMap, startedInputsMap, taskReporter, executor,
-                objectRegistry,
-                pid,
-                executionContext, memoryAvailable, false, tezHadoopShim);
+                objectRegistry, pid, executionContext, memoryAvailable, false, tezHadoopShim);
           }
         }
         if (taskRunner == null) {
@@ -290,7 +299,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
           FileSystem.closeAllForUGI(fsTaskUgi);
           fragmentInfo.getQueryInfo().returnUmbilicalUgi(taskOwner);
           LOG.info("ExecutionTime for Container: " + request.getContainerIdString() + "=" +
-                  runtimeWatch.stop().elapsedMillis());
+                  runtimeWatch.stop().elapsed(TimeUnit.MILLISECONDS));
           if (LOG.isDebugEnabled()) {
             LOG.debug(
                 "canFinish post completion: " + taskSpec.getTaskAttemptID() + ": " + canFinish());
@@ -335,7 +344,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
   /**
    * Attempt to kill a running task. If the task has not started running, it will not start.
    * If it's already running, a kill request will be sent to it.
-   * <p/>
+   * <br>
    * The AM will be informed about the task kill.
    */
   public void killTask() {
@@ -371,9 +380,16 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
             // If the task hasn't started - inform about fragment completion immediately. It's possible for
             // the callable to never run.
             fragmentCompletionHanler.fragmentComplete(fragmentInfo);
-            this.amReporter
-                .unregisterTask(request.getAmHost(), request.getAmPort(),
-                    fragmentInfo.getQueryInfo().getQueryIdentifier(), ta);
+
+            try {
+              this.amReporter
+                  .unregisterTask(request.getAmHost(), request.getAmPort(),
+                      fragmentInfo.getQueryInfo().getQueryIdentifier(), ta);
+            } catch (Throwable thr) {
+              // unregisterTask can throw a RuntimeException (i.e. if task attempt not found)
+              // this brings down LLAP daemon if exception is not caught here
+              LOG.error("Unregistering task from AMReporter failed", thr);
+            }
           }
         }
       } else {
@@ -517,14 +533,14 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
           LOG.info("Killed task {}", requestId);
           if (killtimerWatch.isRunning()) {
             killtimerWatch.stop();
-            long elapsed = killtimerWatch.elapsedMillis();
+            long elapsed = killtimerWatch.elapsed(TimeUnit.MILLISECONDS);
             LOG.info("Time to die for task {}", elapsed);
             if (metrics != null) {
               metrics.addMetricsPreemptionTimeToKill(elapsed);
             }
           }
           if (metrics != null) {
-            metrics.addMetricsPreemptionTimeLost(runtimeWatch.elapsedMillis());
+            metrics.addMetricsPreemptionTimeLost(runtimeWatch.elapsed(TimeUnit.MILLISECONDS));
             metrics.incrExecutorTotalKilled();
           }
           break;
@@ -559,6 +575,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
     }
 
     protected void logFragmentEnd(boolean success) {
+      LOG.info("WM counters: {}", wmCounters);
       HistoryLogger.logFragmentEnd(vertex.getQueryIdentifier().getApplicationIdString(),
           request.getContainerIdString(), executionContext.getHostName(), queryId,
           fragmentInfo.getQueryInfo().getDagIdentifier(), vertex.getVertexName(),
@@ -607,5 +624,43 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
 
   public void setIsGuaranteed(boolean isGuaranteed) {
     this.isGuaranteed = isGuaranteed;
+    if (amNodeInfo != null) {
+      amNodeInfo.updateTaskAttempt(taskSpec.getTaskAttemptID(), isGuaranteed);
+    }
+    if (wmCounters != null) {
+      wmCounters.changeGuaranteed(isGuaranteed);
+    }
+  }
+
+  public void setWmCountersDone() {
+    if (wmCounters != null) {
+      wmCounters.changeStateDone();
+    }
+  }
+
+  public void setWmCountersQueued() {
+    if (wmCounters != null) {
+      wmCounters.changeStateQueued(isGuaranteed);
+    }
+  }
+
+  public void setWmCountersRunning() {
+    if (wmCounters != null) {
+      wmCounters.changeStateRunning(isGuaranteed);
+    }
+  }
+
+  public long getQueueTime() {
+    if (wmCounters != null) {
+      return wmCounters.getQueueTime();
+    }
+    return 0;
+  }
+
+  public long getRunningTime() {
+    if (wmCounters != null) {
+      return wmCounters.getRunningTime();
+    }
+    return 0;
   }
 }

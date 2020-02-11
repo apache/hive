@@ -93,6 +93,7 @@ public class RSyncCommandExecutor {
         }
       } while (!mShutdown && retry); // an error occurred, re-try
       command.setExitCode(cmd.getExitCode());
+      command.setElapsedTimeInMs(cmd.getElapsedTimeInMs());
     } catch (IOException e) {
       command.setException(e);
     } catch (InterruptedException e) {

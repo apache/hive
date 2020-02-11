@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -63,33 +63,43 @@ public class VectorExpressionDescriptor {
   //    INTERVAL_DAY_TIME
   //
   public enum ArgumentType {
-    NONE                    (0x000),
-    INT_FAMILY              (0x001),
-    FLOAT_FAMILY            (0x002),
-    DECIMAL                 (0x004),
-    STRING                  (0x008),
-    CHAR                    (0x010),
-    VARCHAR                 (0x020),
+    NONE                    (0x000000L),
+    INT_FAMILY              (0x000001L),
+    FLOAT                   (0x000002L),
+    DOUBLE                  (0x000004L),
+    FLOAT_FAMILY            (FLOAT.value | DOUBLE.value),
+    DECIMAL                 (0x000008L),
+    STRING                  (0x000010L),
+    CHAR                    (0x000020L),
+    VARCHAR                 (0x000040L),
     STRING_FAMILY           (STRING.value | CHAR.value | VARCHAR.value),
-    DATE                    (0x040),
-    TIMESTAMP               (0x080),
-    INTERVAL_YEAR_MONTH     (0x100),
-    INTERVAL_DAY_TIME       (0x200),
-    BINARY                  (0x400),
+    DATE                    (0x000080L),
+    TIMESTAMP               (0x000100L),
+    INTERVAL_YEAR_MONTH     (0x000200L),
+    INTERVAL_DAY_TIME       (0x000400L),
+    BINARY                  (0x000800L),
+    STRUCT                  (0x001000L),
+    DECIMAL_64              (0x002000L),
+    LIST                    (0x004000L),
+    MAP                     (0x008000L),
+    VOID                    (0x010000L),
+    INT_DECIMAL_64_FAMILY   (INT_FAMILY.value | DECIMAL_64.value),
     DATETIME_FAMILY         (DATE.value | TIMESTAMP.value),
     INTERVAL_FAMILY         (INTERVAL_YEAR_MONTH.value | INTERVAL_DAY_TIME.value),
     INT_INTERVAL_YEAR_MONTH     (INT_FAMILY.value | INTERVAL_YEAR_MONTH.value),
     INT_DATE_INTERVAL_YEAR_MONTH  (INT_FAMILY.value | DATE.value | INTERVAL_YEAR_MONTH.value),
     STRING_DATETIME_FAMILY  (STRING_FAMILY.value | DATETIME_FAMILY.value),
-    ALL_FAMILY              (0xFFF);
+    STRING_FAMILY_BINARY    (STRING_FAMILY.value | BINARY.value),
+    STRING_BINARY           (STRING.value | BINARY.value),
+    ALL_FAMILY              (0xFFFFFFL);
 
-    private final int value;
+    private final long value;
 
-    ArgumentType(int val) {
+    ArgumentType(long val) {
       this.value = val;
     }
 
-    public int getValue() {
+    public long getValue() {
       return value;
     }
 
@@ -122,9 +132,14 @@ public class VectorExpressionDescriptor {
         return INTERVAL_YEAR_MONTH;
       } else if (lower.equals(serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME)) {
         return INTERVAL_DAY_TIME;
+      } else if (VectorizationContext.structTypePattern.matcher(lower).matches()) {
+        return STRUCT;
+      } else if (VectorizationContext.listTypePattern.matcher(lower).matches()) {
+        return LIST;
+      } else if (VectorizationContext.mapTypePattern.matcher(lower).matches()) {
+        return MAP;
       } else if (lower.equals("void")) {
-        // The old code let void through...
-        return INT_FAMILY;
+        return VOID;
       } else {
         return NONE;
       }
@@ -150,41 +165,14 @@ public class VectorExpressionDescriptor {
     public boolean isSameTypeOrFamily(ArgumentType other) {
       return ((value & other.value) != 0);
     }
-
-    public static String getVectorColumnSimpleName(ArgumentType argType) {
-      if (argType == INT_FAMILY ||
-          argType == DATE ||
-          argType == INTERVAL_YEAR_MONTH
-          ) {
-        return "Long";
-      } else if (argType == TIMESTAMP ||
-                 argType == INTERVAL_DAY_TIME) {
-        return "Timestamp";
-      } else if (argType == FLOAT_FAMILY) {
-        return "Double";
-      } else if (argType == DECIMAL) {
-        return "Decimal";
-      } else if (argType == STRING ||
-                 argType == CHAR ||
-                 argType == VARCHAR ||
-                 argType == BINARY) {
-        return "String";
-      } else {
-        return "None";
-      }
-    }
-
-    public static String getVectorColumnSimpleName(String hiveTypeName) {
-      ArgumentType argType = fromHiveTypeName(hiveTypeName);
-      return getVectorColumnSimpleName(argType);
-    }
   }
 
   public enum InputExpressionType {
     NONE(0),
     COLUMN(1),
     SCALAR(2),
-    DYNAMICVALUE(3);
+    DYNAMICVALUE(3),
+    NULLSCALAR(4);
 
     private final int value;
 
@@ -220,6 +208,7 @@ public class VectorExpressionDescriptor {
     private Mode mode = Mode.PROJECTION;
     ArgumentType [] argTypes = new ArgumentType[MAX_NUM_ARGUMENTS];
     InputExpressionType [] exprTypes = new InputExpressionType[MAX_NUM_ARGUMENTS];
+    private boolean unscaled;
     private int argCount = 0;
 
     public Builder() {
@@ -275,8 +264,13 @@ public class VectorExpressionDescriptor {
       return this;
     }
 
+    public Builder setUnscaled(boolean unscaled) {
+      this.unscaled = unscaled;
+      return this;
+    }
+
     public Descriptor build() {
-      return new Descriptor(mode, argCount, argTypes, exprTypes);
+      return new Descriptor(mode, argCount, argTypes, exprTypes, unscaled);
     }
   }
 
@@ -288,6 +282,9 @@ public class VectorExpressionDescriptor {
 
     public boolean matches(Descriptor other) {
       if (!mode.equals(other.mode) || (argCount != other.argCount) ) {
+        return false;
+      }
+      if (unscaled != other.unscaled) {
         return false;
       }
       for (int i = 0; i < argCount; i++) {
@@ -305,12 +302,15 @@ public class VectorExpressionDescriptor {
     private final ArgumentType [] argTypes;
     private final InputExpressionType [] exprTypes;
     private final int argCount;
+    private final boolean unscaled;
 
-    private Descriptor(Mode mode, int argCount, ArgumentType[] argTypes, InputExpressionType[] exprTypes) {
+    private Descriptor(Mode mode, int argCount, ArgumentType[] argTypes, InputExpressionType[] exprTypes,
+        boolean unscaled) {
       this.mode = mode;
       this.argTypes = argTypes.clone();
       this.exprTypes = exprTypes.clone();
       this.argCount = argCount;
+      this.unscaled = unscaled;
     }
 
     @Override
@@ -340,21 +340,36 @@ public class VectorExpressionDescriptor {
     }
   }
 
-  public Class<?> getVectorExpressionClass(Class<?> udf, Descriptor descriptor) throws HiveException {
+  public Class<?> getVectorExpressionClass(Class<?> udf, Descriptor descriptor,
+      boolean useCheckedExpressionIfAvailable) throws HiveException {
     VectorizedExpressions annotation =
         AnnotationUtils.getAnnotation(udf, VectorizedExpressions.class);
     if (annotation == null || annotation.value() == null) {
       return null;
     }
     Class<? extends VectorExpression>[] list = annotation.value();
+    Class<? extends VectorExpression> matchedVe = null;
     for (Class<? extends VectorExpression> ve : list) {
       try {
-        if (ve.newInstance().getDescriptor().matches(descriptor)) {
-          return ve;
+        VectorExpression candidateVe = ve.newInstance();
+        if (candidateVe.getDescriptor().matches(descriptor)) {
+          if (!useCheckedExpressionIfAvailable) {
+            // no need to look further for a checked variant of this expression
+            return ve;
+          } else if (candidateVe.supportsCheckedExecution()) {
+            return ve;
+          } else {
+            // vector expression doesn't support checked execution
+            // hold on to it in case there is no available checked variant
+            matchedVe = ve;
+          }
         }
       } catch (Exception ex) {
         throw new HiveException("Could not instantiate VectorExpression class " + ve.getSimpleName(), ex);
       }
+    }
+    if (matchedVe != null) {
+      return matchedVe;
     }
     if (LOG.isDebugEnabled()) {
       LOG.debug("getVectorExpressionClass udf " + udf.getSimpleName() + " descriptor: " + descriptor.toString());

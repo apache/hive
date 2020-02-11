@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -40,6 +40,7 @@ import org.apache.hadoop.metrics2.MetricsSource;
 import org.apache.hadoop.metrics2.MetricsSystem;
 import org.apache.hadoop.metrics2.annotation.Metric;
 import org.apache.hadoop.metrics2.annotation.Metrics;
+import org.apache.hadoop.metrics2.impl.MsInfo;
 import org.apache.hadoop.metrics2.lib.MetricsRegistry;
 import org.apache.hadoop.metrics2.lib.MutableCounterInt;
 import org.apache.hadoop.metrics2.lib.MutableGaugeInt;
@@ -50,11 +51,11 @@ import org.apache.hadoop.metrics2.lib.MutableGaugeLong;
  */
 @Metrics(about = "Llap Task Scheduler Metrics", context = "scheduler")
 public class LlapTaskSchedulerMetrics implements MetricsSource {
-
   private final String name;
   private final JvmMetrics jvmMetrics;
   private final String sessionId;
   private final MetricsRegistry registry;
+  private String dagId = null;
   @Metric
   MutableGaugeInt numExecutors;
   @Metric
@@ -79,6 +80,18 @@ public class LlapTaskSchedulerMetrics implements MetricsSource {
   MutableCounterInt completedDagcount;
   @Metric
   MutableCounterInt pendingPreemptionTasksCount;
+  @Metric
+  MutableGaugeInt wmUnusedGuaranteedCount;
+  @Metric
+  MutableGaugeInt wmTotalGuaranteedCount;
+  @Metric
+  MutableCounterInt wmSpeculativePendingCount;
+  @Metric
+  MutableCounterInt wmGuaranteedPendingCount;
+  @Metric
+  MutableCounterInt wmSpeculativeCount;
+  @Metric
+  MutableCounterInt wmGuaranteedCount;
 
   private LlapTaskSchedulerMetrics(String displayName, JvmMetrics jm, String sessionId) {
     this.name = displayName;
@@ -101,7 +114,14 @@ public class LlapTaskSchedulerMetrics implements MetricsSource {
         .setContext("scheduler")
         .tag(ProcessName, "DAGAppMaster")
         .tag(SessionId, sessionId);
+    if (dagId != null) {
+        rb.tag(MsInfo.Context, dagId);
+    }
     getTaskSchedulerStats(rb);
+  }
+
+  public void setDagId(String dagId) {
+    this.dagId = dagId;
   }
 
   public void setNumExecutors(int value) {
@@ -170,6 +190,77 @@ public class LlapTaskSchedulerMetrics implements MetricsSource {
 
   public void decrPendingPreemptionTasksCount() {
     pendingPreemptionTasksCount.incr(-1);
+  }
+
+  public void setWmPendingStarted(boolean isGuaranteed) {
+    if (isGuaranteed) {
+      wmSpeculativeCount.incr(-1);
+      wmGuaranteedPendingCount.incr();
+    } else {
+      wmGuaranteedCount.incr(-1);
+      wmSpeculativePendingCount.incr();
+    }
+  }
+
+  public void setWmPendingDone(boolean isGuaranteed) {
+    if (isGuaranteed) {
+      wmGuaranteedPendingCount.incr(-1);
+      wmGuaranteedCount.incr();
+    } else {
+      wmSpeculativePendingCount.incr(-1);
+      wmSpeculativeCount.incr();
+    }
+  }
+
+  public void setWmPendingFailed(boolean requestedGuaranteed) {
+    if (requestedGuaranteed) {
+      wmGuaranteedPendingCount.incr(-1);
+      wmSpeculativeCount.incr();
+    } else {
+      wmSpeculativePendingCount.incr(-1);
+      wmGuaranteedCount.incr();
+    }
+  }
+
+  public void setWmTaskStarted(boolean isGuaranteed) {
+    if (isGuaranteed) {
+      wmGuaranteedPendingCount.incr();
+    } else {
+      wmSpeculativePendingCount.incr();
+    }
+  }
+
+  public void setWmTaskFinished(boolean isGuaranteed, boolean isPendingUpdate) {
+    if (isPendingUpdate) {
+      if (isGuaranteed) {
+        wmGuaranteedPendingCount.incr(-1);
+      } else {
+        wmSpeculativePendingCount.incr(-1);
+      }
+    } else {
+      if (isGuaranteed) {
+        wmGuaranteedCount.incr(-1);
+      } else {
+        wmSpeculativeCount.incr(-1);
+      }
+    }
+  }
+
+  public void setWmTotalGuaranteed(int totalGuaranteed) {
+    wmTotalGuaranteedCount.set(totalGuaranteed);
+  }
+
+  public void setWmUnusedGuaranteed(int unusedGuaranteed) {
+    wmUnusedGuaranteedCount.set(unusedGuaranteed);
+  }
+
+  public void resetWmMetrics() {
+    wmTotalGuaranteedCount.set(0);
+    wmUnusedGuaranteedCount.set(0);
+    wmGuaranteedCount.incr(-wmGuaranteedCount.value());
+    wmSpeculativeCount.incr(-wmSpeculativeCount.value());
+    wmGuaranteedPendingCount.incr(-wmGuaranteedPendingCount.value());
+    wmSpeculativePendingCount.incr(-wmSpeculativePendingCount.value());
   }
 
   private void getTaskSchedulerStats(MetricsRecordBuilder rb) {

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast;
 import java.io.IOException;
 
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.io.BytesWritable;
 
 /*
@@ -30,18 +31,29 @@ import org.apache.hadoop.io.BytesWritable;
  */
 public class VectorMapJoinFastStringHashMultiSet extends VectorMapJoinFastBytesHashMultiSet {
 
-  private VectorMapJoinFastStringCommon stringCommon;
+  private final VectorMapJoinFastStringCommon stringCommon;
+
+  private long fullOuterNullKeyValueCount;
 
   @Override
   public void putRow(BytesWritable currentKey, BytesWritable currentValue) throws HiveException, IOException {
-    stringCommon.adaptPutRow(this, currentKey, currentValue);
+    if (!stringCommon.adaptPutRow(this, currentKey, currentValue)) {
+
+      // Ignore NULL keys, except for FULL OUTER.
+      if (isFullOuter) {
+        fullOuterNullKeyValueCount++;
+      }
+    }
   }
 
   public VectorMapJoinFastStringHashMultiSet(
-      boolean isOuterJoin,
-      int initialCapacity, float loadFactor, int writeBuffersSize, long estimatedKeyCount) {
-    super(initialCapacity, loadFactor, writeBuffersSize, estimatedKeyCount);
-    stringCommon = new VectorMapJoinFastStringCommon(isOuterJoin);
+      boolean isFullOuter,
+      int initialCapacity, float loadFactor, int writeBuffersSize, long estimatedKeyCount, TableDesc tableDesc) {
+    super(
+        isFullOuter,
+        initialCapacity, loadFactor, writeBuffersSize, estimatedKeyCount);
+    fullOuterNullKeyValueCount = 0;
+    stringCommon = new VectorMapJoinFastStringCommon(tableDesc);
   }
 
   @Override

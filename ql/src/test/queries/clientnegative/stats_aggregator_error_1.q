@@ -1,3 +1,4 @@
+--! qt:dataset:src
 -- In this test, there is a dummy stats aggregator which throws an error when the
 -- method connect is called (as indicated by the parameter hive.test.dummystats.aggregator)
 -- If stats need not be reliable, the statement succeeds. However, if stats are supposed

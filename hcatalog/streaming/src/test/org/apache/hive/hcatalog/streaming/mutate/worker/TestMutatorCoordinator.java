@@ -49,7 +49,7 @@ public class TestMutatorCoordinator {
   private static final List<String> UNPARTITIONED = Collections.<String> emptyList();
   private static final List<String> PARTITION_B = Arrays.asList("B");
   private static final List<String> PARTITION_A = Arrays.asList("A");
-  private static final long TRANSACTION_ID = 2L;
+  private static final long WRITE_ID = 2L;
   private static final int BUCKET_ID = 0;
   private static final Path PATH_A = new Path("X");
   private static final Path PATH_B = new Path("B");
@@ -84,7 +84,7 @@ public class TestMutatorCoordinator {
   public void createCoordinator() throws Exception {
     when(mockAcidTable.getOutputFormatName()).thenReturn(OrcOutputFormat.class.getName());
     when(mockAcidTable.getTotalBuckets()).thenReturn(1);
-    when(mockAcidTable.getTransactionId()).thenReturn(TRANSACTION_ID);
+    when(mockAcidTable.getWriteId()).thenReturn(WRITE_ID);
     when(mockAcidTable.createPartitions()).thenReturn(true);
     when(mockMutatorFactory.newRecordInspector()).thenReturn(mockRecordInspector);
     when(mockMutatorFactory.newBucketIdResolver(anyInt())).thenReturn(mockBucketIdResolver);
@@ -104,7 +104,7 @@ public class TestMutatorCoordinator {
     coordinator.insert(UNPARTITIONED, RECORD);
 
     verify(mockPartitionHelper).createPartitionIfNotExists(UNPARTITIONED);
-    verify(mockMutatorFactory).newMutator(any(OrcOutputFormat.class), eq(TRANSACTION_ID), eq(PATH_A), eq(BUCKET_ID));
+    verify(mockMutatorFactory).newMutator(any(OrcOutputFormat.class), eq(WRITE_ID), eq(PATH_A), eq(BUCKET_ID));
     verify(mockMutator).insert(RECORD);
   }
 
@@ -115,7 +115,7 @@ public class TestMutatorCoordinator {
     coordinator.insert(UNPARTITIONED, RECORD);
 
     verify(mockPartitionHelper).createPartitionIfNotExists(UNPARTITIONED);
-    verify(mockMutatorFactory).newMutator(any(OrcOutputFormat.class), eq(TRANSACTION_ID), eq(PATH_A), eq(BUCKET_ID));
+    verify(mockMutatorFactory).newMutator(any(OrcOutputFormat.class), eq(WRITE_ID), eq(PATH_A), eq(BUCKET_ID));
     verify(mockMutator, times(3)).insert(RECORD);
   }
 
@@ -129,8 +129,8 @@ public class TestMutatorCoordinator {
 
     verify(mockPartitionHelper).createPartitionIfNotExists(PARTITION_A);
     verify(mockPartitionHelper).createPartitionIfNotExists(PARTITION_B);
-    verify(mockMutatorFactory).newMutator(any(OrcOutputFormat.class), eq(TRANSACTION_ID), eq(PATH_A), eq(BUCKET_ID));
-    verify(mockMutatorFactory).newMutator(any(OrcOutputFormat.class), eq(TRANSACTION_ID), eq(PATH_B), eq(BUCKET_ID));
+    verify(mockMutatorFactory).newMutator(any(OrcOutputFormat.class), eq(WRITE_ID), eq(PATH_A), eq(BUCKET_ID));
+    verify(mockMutatorFactory).newMutator(any(OrcOutputFormat.class), eq(WRITE_ID), eq(PATH_B), eq(BUCKET_ID));
     verify(mockMutator, times(2)).insert(RECORD);
   }
 
@@ -143,9 +143,9 @@ public class TestMutatorCoordinator {
     coordinator.update(UNPARTITIONED, RECORD);
     coordinator.delete(UNPARTITIONED, RECORD);
 
-    verify(mockMutatorFactory).newMutator(any(OrcOutputFormat.class), eq(TRANSACTION_ID), eq(PATH_A), eq(BUCKET_ID));
+    verify(mockMutatorFactory).newMutator(any(OrcOutputFormat.class), eq(WRITE_ID), eq(PATH_A), eq(BUCKET_ID));
     verify(mockMutatorFactory)
-        .newMutator(any(OrcOutputFormat.class), eq(TRANSACTION_ID), eq(PATH_A), eq(BUCKET_ID + 1));
+        .newMutator(any(OrcOutputFormat.class), eq(WRITE_ID), eq(PATH_A), eq(BUCKET_ID + 1));
     verify(mockMutator).update(RECORD);
     verify(mockMutator).delete(RECORD);
   }
@@ -166,11 +166,11 @@ public class TestMutatorCoordinator {
     coordinator.update(PARTITION_B, RECORD); /* PbB1 */
 
     verify(mockPartitionHelper).createPartitionIfNotExists(PARTITION_B);
-    verify(mockMutatorFactory).newMutator(any(OrcOutputFormat.class), eq(TRANSACTION_ID), eq(PATH_A), eq(BUCKET_ID));
-    verify(mockMutatorFactory, times(2)).newMutator(any(OrcOutputFormat.class), eq(TRANSACTION_ID), eq(PATH_B),
+    verify(mockMutatorFactory).newMutator(any(OrcOutputFormat.class), eq(WRITE_ID), eq(PATH_A), eq(BUCKET_ID));
+    verify(mockMutatorFactory, times(2)).newMutator(any(OrcOutputFormat.class), eq(WRITE_ID), eq(PATH_B),
         eq(BUCKET_ID));
     verify(mockMutatorFactory)
-        .newMutator(any(OrcOutputFormat.class), eq(TRANSACTION_ID), eq(PATH_B), eq(BUCKET_ID + 1));
+        .newMutator(any(OrcOutputFormat.class), eq(WRITE_ID), eq(PATH_B), eq(BUCKET_ID + 1));
     verify(mockMutator, times(2)).update(RECORD);
     verify(mockMutator).delete(RECORD);
     verify(mockMutator).insert(RECORD);
@@ -197,7 +197,7 @@ public class TestMutatorCoordinator {
     coordinator.delete(UNPARTITIONED, RECORD);
 
     verify(mockPartitionHelper).createPartitionIfNotExists(UNPARTITIONED);
-    verify(mockMutatorFactory).newMutator(any(OrcOutputFormat.class), eq(TRANSACTION_ID), eq(PATH_A), eq(BUCKET_ID));
+    verify(mockMutatorFactory).newMutator(any(OrcOutputFormat.class), eq(WRITE_ID), eq(PATH_A), eq(BUCKET_ID));
     verify(mockMutator).update(RECORD);
     verify(mockMutator).delete(RECORD);
   }
@@ -210,7 +210,7 @@ public class TestMutatorCoordinator {
     coordinator.delete(UNPARTITIONED, RECORD);
 
     verify(mockPartitionHelper).createPartitionIfNotExists(UNPARTITIONED);
-    verify(mockMutatorFactory).newMutator(any(OrcOutputFormat.class), eq(TRANSACTION_ID), eq(PATH_A), eq(BUCKET_ID));
+    verify(mockMutatorFactory).newMutator(any(OrcOutputFormat.class), eq(WRITE_ID), eq(PATH_A), eq(BUCKET_ID));
     verify(mockMutator).update(RECORD);
     verify(mockMutator).delete(RECORD);
   }
