@@ -238,12 +238,8 @@ STAGE PLANS:
                       Reduce Output Operator
                         bucketingVersion: 2
                         key expressions: _col0 (type: string)
-<<<<<<< HEAD
                         null sort order: z
-=======
-                        null sort order: a
                         numBuckets: -1
->>>>>>> remotes/kgyrtkirk/HIVE-21304-show-bucketver
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 181 Basic stats: COMPLETE Column stats: COMPLETE
@@ -327,12 +323,8 @@ STAGE PLANS:
                       Reduce Output Operator
                         bucketingVersion: 2
                         key expressions: _col1 (type: string)
-<<<<<<< HEAD
                         null sort order: z
-=======
-                        null sort order: a
                         numBuckets: -1
->>>>>>> remotes/kgyrtkirk/HIVE-21304-show-bucketver
                         sort order: +
                         Map-reduce partition columns: _col1 (type: string)
                         Statistics: Num rows: 1 Data size: 179 Basic stats: COMPLETE Column stats: COMPLETE
@@ -643,12 +635,8 @@ STAGE PLANS:
                       Reduce Output Operator
                         bucketingVersion: 2
                         key expressions: _col0 (type: string)
-<<<<<<< HEAD
                         null sort order: z
-=======
-                        null sort order: a
                         numBuckets: -1
->>>>>>> remotes/kgyrtkirk/HIVE-21304-show-bucketver
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
@@ -677,12 +665,8 @@ STAGE PLANS:
                       Reduce Output Operator
                         bucketingVersion: 2
                         key expressions: _col1 (type: string)
-<<<<<<< HEAD
                         null sort order: z
-=======
-                        null sort order: a
                         numBuckets: -1
->>>>>>> remotes/kgyrtkirk/HIVE-21304-show-bucketver
                         sort order: +
                         Map-reduce partition columns: _col1 (type: string)
                         Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: PARTIAL
