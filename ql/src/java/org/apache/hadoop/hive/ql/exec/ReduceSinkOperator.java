@@ -233,7 +233,6 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       // incase of ACID updates/deletes.
       boolean acidOp = conf.getWriteType() == AcidUtils.Operation.UPDATE ||
           conf.getWriteType() == AcidUtils.Operation.DELETE;
-      bucketingCheck();
       hashFunc = getConf().getBucketingVersion() == 2 && !acidOp ?
           ObjectInspectorUtils::getBucketHashCode :
           ObjectInspectorUtils::getBucketHashCodeOld;
