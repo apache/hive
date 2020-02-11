@@ -4000,7 +4000,7 @@ public class Vectorizer implements PhysicalPlanResolver {
 
     // Get the bucketing version
     op.bucketingCheck();
-    int bucketingVersion = ((ReduceSinkOperator) op).getBucketingVersion1();
+    int bucketingVersion = ((ReduceSinkOperator) op).getConf().getBucketingVersion();
 
     Operator<? extends OperatorDesc> vectorOp = null;
     try {
