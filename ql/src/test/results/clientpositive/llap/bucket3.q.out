@@ -46,11 +46,20 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
+<<<<<<< HEAD
                       key expressions: _col0 (type: int)
                       null sort order: a
                       sort order: +
                       Map-reduce partition columns: _col0 (type: int)
                       Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                      bucketingVersion: 2
+                      null sort order: 
+                      numBuckets: -1
+                      sort order: 
+                      Map-reduce partition columns: UDFToInteger(_col0) (type: int)
+                      Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+>>>>>>> remotes/kgyrtkirk/HIVE-21304-show-bucketver
                       tag: -1
                       value expressions: _col1 (type: string)
                       auto parallelism: false
@@ -161,8 +170,14 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 1 Data size: 949 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
+                      bucketingVersion: 2
                       key expressions: _col0 (type: string)
+<<<<<<< HEAD
                       null sort order: z
+=======
+                      null sort order: a
+                      numBuckets: -1
+>>>>>>> remotes/kgyrtkirk/HIVE-21304-show-bucketver
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 1 Data size: 949 Basic stats: COMPLETE Column stats: COMPLETE

@@ -43,8 +43,14 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
+<<<<<<< HEAD
                       key expressions: _col0 (type: int)
+=======
+                      bucketingVersion: 2
+                      key expressions: UDFToInteger(_col0) (type: int)
+>>>>>>> remotes/kgyrtkirk/HIVE-21304-show-bucketver
                       null sort order: a
+                      numBuckets: -1
                       sort order: +
                       Map-reduce partition columns: _col0 (type: int)
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
