@@ -102,3 +102,12 @@ PREHOOK: query: alter scheduled query ingest execute
 PREHOOK: type: ALTER SCHEDULED QUERY
 POSTHOOK: query: alter scheduled query ingest execute
 POSTHOOK: type: ALTER SCHEDULED QUERY
+PREHOOK: query: select state,error_message from sys.scheduled_executions
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@scheduled_executions
+#### A masked pattern was here ####
+POSTHOOK: query: select state,error_message from sys.scheduled_executions
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@scheduled_executions
+#### A masked pattern was here ####
+FINISHED	NULL
