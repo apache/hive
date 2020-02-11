@@ -361,9 +361,9 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
          && Boolean.parseBoolean((String)table.getProperty("EXTERNAL"))
          && jobInfo.getLocation() != null && jobInfo.getLocation().length() > 0) {
       // Now, we need to de-scratchify this location - i.e., get rid of any
-      // _SCRATCH[\d]+.?[\d]+[eE]?[-]?[\d]*  from the location.
+      // _SCRATCH[\d].?[\d]+ from the location.
       String jobLocation = jobInfo.getLocation();
-      String finalLocn = jobLocation.replaceAll(Path.SEPARATOR + SCRATCH_DIR_NAME + "\\d+\\.?\\d+[eE]?[-]?\\d*", "");
+      String finalLocn = jobLocation.replaceAll(Path.SEPARATOR + SCRATCH_DIR_NAME + "\\d\\.?\\d+","");
       partPath = new Path(finalLocn);
     } else {
       partPath = new Path(partLocnRoot);
