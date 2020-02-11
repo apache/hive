@@ -97,11 +97,7 @@ Partition Parameters:
 	numFiles            	2                   
 	numRows             	1000                
 	rawDataSize         	0                   
-<<<<<<< HEAD
-	totalSize           	4380                
-=======
-	totalSize           	4508                
->>>>>>> remotes/kgyrtkirk/HIVE-21304-show-bucketver
+	totalSize           	4357                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -188,11 +184,7 @@ Partition Parameters:
 	numFiles            	2                   
 	numRows             	1000                
 	rawDataSize         	0                   
-<<<<<<< HEAD
-	totalSize           	4380                
-=======
-	totalSize           	4508                
->>>>>>> remotes/kgyrtkirk/HIVE-21304-show-bucketver
+	totalSize           	4357                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -243,11 +235,7 @@ Partition Parameters:
 	numFiles            	2                   
 	numRows             	1000                
 	rawDataSize         	0                   
-<<<<<<< HEAD
-	totalSize           	4380                
-=======
-	totalSize           	4508                
->>>>>>> remotes/kgyrtkirk/HIVE-21304-show-bucketver
+	totalSize           	4357                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -343,11 +331,7 @@ Partition Parameters:
 	numFiles            	4                   
 	numRows             	2000                
 	rawDataSize         	0                   
-<<<<<<< HEAD
-	totalSize           	8761                
-=======
-	totalSize           	9015                
->>>>>>> remotes/kgyrtkirk/HIVE-21304-show-bucketver
+	totalSize           	8714                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -396,11 +380,7 @@ Partition Parameters:
 	numFiles            	4                   
 	numRows             	2000                
 	rawDataSize         	0                   
-<<<<<<< HEAD
-	totalSize           	8761                
-=======
-	totalSize           	9015                
->>>>>>> remotes/kgyrtkirk/HIVE-21304-show-bucketver
+	totalSize           	8714                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -613,11 +593,7 @@ Partition Parameters:
 	numFiles            	2                   
 	numRows             	1000                
 	rawDataSize         	176000              
-<<<<<<< HEAD
-	totalSize           	3322                
-=======
-	totalSize           	3475                
->>>>>>> remotes/kgyrtkirk/HIVE-21304-show-bucketver
+	totalSize           	3321                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

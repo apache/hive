@@ -2497,12 +2497,8 @@ STAGE PLANS:
                 Reduce Output Operator
                   bucketingVersion: 2
                   key expressions: _col0 (type: int)
-<<<<<<< HEAD
                   null sort order: z
-=======
-                  null sort order: a
                   numBuckets: -1
->>>>>>> remotes/kgyrtkirk/HIVE-21304-show-bucketver
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 20 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2525,12 +2521,8 @@ STAGE PLANS:
                 Reduce Output Operator
                   bucketingVersion: 2
                   key expressions: _col0 (type: int)
-<<<<<<< HEAD
                   null sort order: z
-=======
-                  null sort order: a
                   numBuckets: -1
->>>>>>> remotes/kgyrtkirk/HIVE-21304-show-bucketver
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 20 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2791,12 +2783,8 @@ STAGE PLANS:
                 Reduce Output Operator
                   bucketingVersion: 2
                   key expressions: _col0 (type: int)
-<<<<<<< HEAD
                   null sort order: z
-=======
-                  null sort order: a
                   numBuckets: -1
->>>>>>> remotes/kgyrtkirk/HIVE-21304-show-bucketver
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 20 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2819,12 +2807,8 @@ STAGE PLANS:
                 Reduce Output Operator
                   bucketingVersion: 2
                   key expressions: _col0 (type: int)
-<<<<<<< HEAD
                   null sort order: z
-=======
-                  null sort order: a
                   numBuckets: -1
->>>>>>> remotes/kgyrtkirk/HIVE-21304-show-bucketver
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 20 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
