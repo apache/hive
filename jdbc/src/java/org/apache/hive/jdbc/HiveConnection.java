@@ -18,7 +18,6 @@
 
 package org.apache.hive.jdbc;
 
-import org.apache.hadoop.hive.metastore.security.DelegationTokenIdentifier;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -29,17 +28,13 @@ import org.apache.hive.service.rpc.thrift.TSetClientInfoResp;
 import org.apache.hive.service.rpc.thrift.TSetClientInfoReq;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.auth.HiveAuthUtils;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
-import org.apache.hive.service.Service;
-import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.auth.HiveAuthConstants;
 import org.apache.hive.service.auth.KerberosSaslHelper;
 import org.apache.hive.service.auth.PlainSaslHelper;
 import org.apache.hive.service.auth.SaslQOP;
 import org.apache.hive.service.cli.session.SessionUtils;
 import org.apache.hive.service.rpc.thrift.TCLIService;
-import org.apache.hive.service.rpc.thrift.TCLIService.Iface;
 import org.apache.hive.service.rpc.thrift.TCancelDelegationTokenReq;
 import org.apache.hive.service.rpc.thrift.TCancelDelegationTokenResp;
 import org.apache.hive.service.rpc.thrift.TCloseSessionReq;
@@ -170,7 +165,7 @@ public class HiveConnection implements java.sql.Connection {
     }
     return ZooKeeperHiveClientHelper.getDirectParamsList(params);
   }
-  
+
   public static List<String> getAllUrlStrings(String zookeeperBasedHS2Url) throws Exception {
     List<String> jdbcUrls = new ArrayList<>();
     List<JdbcConnectionParams> allConnectionParams = getAllUrls(zookeeperBasedHS2Url);
@@ -184,7 +179,7 @@ public class HiveConnection implements java.sql.Connection {
   }
 
   private static String makeDirectJDBCUrlFromConnectionParams(JdbcConnectionParams cp) {
-    // Direct JDBC Url format: 
+    // Direct JDBC Url format:
     // jdbc:hive2://<host1>:<port1>/dbName;sess_var_list?hive_conf_list#hive_var_list
     StringBuilder url = new StringBuilder("");
     if (cp != null) {
@@ -275,7 +270,9 @@ public class HiveConnection implements java.sql.Connection {
     wmPool = sessConfMap.get(JdbcConnectionParams.WM_POOL);
     for (String application : JdbcConnectionParams.APPLICATION) {
       wmApp = sessConfMap.get(application);
-      if (wmApp != null) break;
+      if (wmApp != null) {
+        break;
+      }
     }
 
     // add supported protocols
@@ -291,17 +288,7 @@ public class HiveConnection implements java.sql.Connection {
     supportedProtocols.add(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V10);
 
     if (isEmbeddedMode) {
-      TCLIService.Iface embeddedClient;
-      try {
-        Class<TCLIService.Iface> clazz = (Class<Iface>) Class.forName("org.apache.hive.service.cli.thrift.EmbeddedThriftBinaryCLIService");
-        embeddedClient=clazz.newInstance();
-        ((Service)embeddedClient).init(null, connParams.getHiveConfs());
-      } catch (ClassNotFoundException e) {
-        throw new RuntimeException("Please Load hive-service jar to the classpath to enable embedded mode");
-      } catch (Exception e) {
-        throw new RuntimeException("Error initializing embedded mode", e);
-      }
-      client = embeddedClient;
+      client = EmbeddedCLIServicePortal.get(connParams.getHiveConfs());
       connParams.getHiveConfs().clear();
       // open client session
       openSession();
@@ -1211,7 +1198,9 @@ public class HiveConnection implements java.sql.Connection {
 
   @Override
   public String getClientInfo(String name) throws SQLException {
-    if (clientInfo == null) return null;
+    if (clientInfo == null) {
+      return null;
+    }
     return clientInfo.getProperty(name);
   }
 
@@ -1515,8 +1504,11 @@ public class HiveConnection implements java.sql.Connection {
     if (!autoCommit) {
       LOG.warn("Request to set autoCommit to false; Hive does not support autoCommit=false.");
       SQLWarning warning = new SQLWarning("Hive does not support autoCommit=false");
-      if (warningChain == null) warningChain = warning;
-      else warningChain.setNextWarning(warning);
+      if (warningChain == null) {
+        warningChain = warning;
+      } else {
+        warningChain.setNextWarning(warning);
+      }
     }
   }
 
@@ -1569,7 +1561,9 @@ public class HiveConnection implements java.sql.Connection {
     Map<String, String> map = new HashMap<>();
     if (clientInfo != null) {
       for (Entry<Object, Object> e : clientInfo.entrySet()) {
-        if (e.getKey() == null || e.getValue() == null) continue;
+        if (e.getKey() == null || e.getValue() == null) {
+          continue;
+        }
         map.put(e.getKey().toString(), e.getValue().toString());
       }
     }

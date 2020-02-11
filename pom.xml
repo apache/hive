@@ -1072,7 +1072,7 @@
           <artifactId>maven-eclipse-plugin</artifactId>
           <version>${maven.eclipse.plugin.version}</version>
           <configuration>
-            <downloadJavadocs>true</downloadJavadocs>
+            <downloadJavadocs>false</downloadJavadocs>
             <downloadSources>true</downloadSources>
             <buildOutputDirectory>target/eclipse/classes</buildOutputDirectory>
             <workspaceActiveCodeStyleProfileName>Hive</workspaceActiveCodeStyleProfileName>
