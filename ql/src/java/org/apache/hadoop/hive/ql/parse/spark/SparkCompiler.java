@@ -663,7 +663,7 @@ public class SparkCompiler extends TaskCompiler {
         }
 
         // Found the target RSOp
-        parent.setBucketingVersion(fsOp.getConf().getTableInfo().getBucketingVersion());
+        parent.getConf().setBucketingVersion(fsOp.getConf().getTableInfo().getBucketingVersion());
         break;
       }
     }
