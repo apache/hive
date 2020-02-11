@@ -214,7 +214,7 @@ Table Parameters:
 	numFiles            	2                   
 	numRows             	10                  
 	rawDataSize         	0                   
-	totalSize           	1880                
+	totalSize           	1899                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -256,14 +256,10 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
-	numFiles            	3                   
+	numFiles            	4                   
 	numRows             	8                   
 	rawDataSize         	0                   
-<<<<<<< HEAD
 	totalSize           	3285                
-=======
-	totalSize           	2590                
->>>>>>> remotes/kgyrtkirk/HIVE-21304-show-bucketver
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
