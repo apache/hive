@@ -25,6 +25,7 @@ import javax.security.sasl.SaslException;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge.Server;
 import org.apache.hadoop.security.SecurityUtil;
+import org.apache.hive.service.cli.thrift.ThriftCLIService;
 import org.apache.hive.service.rpc.thrift.TCLIService;
 import org.apache.hive.service.rpc.thrift.TCLIService.Iface;
 import org.apache.thrift.TProcessor;
@@ -35,7 +36,7 @@ import org.apache.thrift.transport.TTransport;
 public final class KerberosSaslHelper {
 
   public static TProcessorFactory getKerberosProcessorFactory(Server saslServer,
-      TCLIService.Iface service) {
+    ThriftCLIService service) {
     return new CLIServiceProcessorFactory(saslServer, service);
   }
 
@@ -107,10 +108,10 @@ public final class KerberosSaslHelper {
 
   private static class CLIServiceProcessorFactory extends TProcessorFactory {
 
-    private final TCLIService.Iface service;
+    private final ThriftCLIService service;
     private final Server saslServer;
 
-    public CLIServiceProcessorFactory(Server saslServer, TCLIService.Iface service) {
+    public CLIServiceProcessorFactory(Server saslServer, ThriftCLIService service) {
       super(null);
       this.service = service;
       this.saslServer = saslServer;
