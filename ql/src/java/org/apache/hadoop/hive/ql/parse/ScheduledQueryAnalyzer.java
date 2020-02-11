@@ -91,6 +91,8 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
           // in case the user will change; we have to run an authorization check beforehand
           checkAuthorization(type, schqStored);
         }
+        // clear the next execution time
+        schqStored.setNextExecutionIsSet(false);
         return composeOverlayObject(schqChanges, schqStored);
       } catch (TException e) {
         throw new SemanticException("unable to get Scheduled query" + e);
@@ -185,6 +187,10 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
       return;
     case HiveParser.TOK_QUERY:
       schq.setQuery(unparseTree(node.getChild(0)));
+      return;
+    case HiveParser.TOK_EXECUTE:
+      int now = (int) (System.currentTimeMillis() / 1000);
+      schq.setNextExecution(now);
       return;
     default:
       throw new SemanticException("Unexpected token: " + node.getType());
