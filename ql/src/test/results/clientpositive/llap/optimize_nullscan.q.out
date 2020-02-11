@@ -75,10 +75,14 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        bucketingVersion: 1
+                        bucketingVersion: 2
                         key expressions: _col0 (type: string)
+<<<<<<< HEAD
                         null sort order: z
+=======
+                        null sort order: a
                         numBuckets: -1
+>>>>>>> remotes/kgyrtkirk/HIVE-21304-show-bucketver
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
@@ -187,8 +191,12 @@ STAGE PLANS:
                       Reduce Output Operator
                         bucketingVersion: 2
                         key expressions: _col0 (type: string)
+<<<<<<< HEAD
                         null sort order: z
+=======
+                        null sort order: a
                         numBuckets: -1
+>>>>>>> remotes/kgyrtkirk/HIVE-21304-show-bucketver
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 87 Basic stats: COMPLETE Column stats: COMPLETE
@@ -262,12 +270,17 @@ STAGE PLANS:
                       Number of rows: 0
                       Statistics: Num rows: 1 Data size: 87 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        bucketingVersion: 2
+<<<<<<< HEAD
                         key expressions: _col0 (type: string)
                         null sort order: z
-                        numBuckets: -1
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
+=======
+                        bucketingVersion: 2
+                        null sort order: 
+                        numBuckets: -1
+                        sort order: 
+>>>>>>> remotes/kgyrtkirk/HIVE-21304-show-bucketver
                         Statistics: Num rows: 1 Data size: 87 Basic stats: COMPLETE Column stats: COMPLETE
                         tag: 1
                         auto parallelism: true
@@ -511,6 +524,30 @@ STAGE PLANS:
                   TotalFiles: 1
                   GatherStats: false
                   MultiFileSpray: false
+<<<<<<< HEAD
+=======
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 87 Basic stats: COMPLETE Column stats: COMPLETE
+                Limit
+                  Number of rows: 0
+                  Statistics: Num rows: 1 Data size: 87 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    bucketingVersion: 2
+                    key expressions: _col0 (type: string)
+                    null sort order: a
+                    numBuckets: -1
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: string)
+                    Statistics: Num rows: 1 Data size: 87 Basic stats: COMPLETE Column stats: COMPLETE
+                    tag: 1
+                    auto parallelism: true
+>>>>>>> remotes/kgyrtkirk/HIVE-21304-show-bucketver
 
   Stage: Stage-0
     Fetch Operator
@@ -1342,6 +1379,29 @@ STAGE PLANS:
                   TotalFiles: 1
                   GatherStats: false
                   MultiFileSpray: false
+<<<<<<< HEAD
+=======
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 91 Basic stats: COMPLETE Column stats: COMPLETE
+                Limit
+                  Number of rows: 0
+                  Statistics: Num rows: 1 Data size: 91 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    bucketingVersion: 2
+                    null sort order: 
+                    numBuckets: -1
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 91 Basic stats: COMPLETE Column stats: COMPLETE
+                    tag: 1
+                    value expressions: _col0 (type: string)
+                    auto parallelism: false
+>>>>>>> remotes/kgyrtkirk/HIVE-21304-show-bucketver
 
   Stage: Stage-0
     Fetch Operator
@@ -1497,8 +1557,12 @@ STAGE PLANS:
                     Reduce Output Operator
                       bucketingVersion: 2
                       key expressions: key (type: string)
+<<<<<<< HEAD
                       null sort order: z
+=======
+                      null sort order: a
                       numBuckets: -1
+>>>>>>> remotes/kgyrtkirk/HIVE-21304-show-bucketver
                       sort order: +
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 1 Data size: 87 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1571,8 +1635,12 @@ STAGE PLANS:
                     Reduce Output Operator
                       bucketingVersion: 2
                       key expressions: key (type: string)
+<<<<<<< HEAD
                       null sort order: z
+=======
+                      null sort order: a
                       numBuckets: -1
+>>>>>>> remotes/kgyrtkirk/HIVE-21304-show-bucketver
                       sort order: +
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
@@ -1669,8 +1737,12 @@ STAGE PLANS:
                     Reduce Output Operator
                       bucketingVersion: 2
                       key expressions: value (type: string)
+<<<<<<< HEAD
                       null sort order: z
+=======
+                      null sort order: a
                       numBuckets: -1
+>>>>>>> remotes/kgyrtkirk/HIVE-21304-show-bucketver
                       sort order: +
                       Map-reduce partition columns: value (type: string)
                       Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1744,8 +1816,12 @@ STAGE PLANS:
                     Reduce Output Operator
                       bucketingVersion: 2
                       key expressions: value (type: string)
+<<<<<<< HEAD
                       null sort order: z
+=======
+                      null sort order: a
                       numBuckets: -1
+>>>>>>> remotes/kgyrtkirk/HIVE-21304-show-bucketver
                       sort order: +
                       Map-reduce partition columns: value (type: string)
                       Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1899,7 +1975,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        bucketingVersion: 1
+                        bucketingVersion: 2
                         null sort order: 
                         numBuckets: -1
                         sort order: 

@@ -259,7 +259,11 @@ Table Parameters:
 	numFiles            	3                   
 	numRows             	8                   
 	rawDataSize         	0                   
+<<<<<<< HEAD
+	totalSize           	3285                
+=======
 	totalSize           	2590                
+>>>>>>> remotes/kgyrtkirk/HIVE-21304-show-bucketver
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
