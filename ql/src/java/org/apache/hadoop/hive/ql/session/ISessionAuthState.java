@@ -16,16 +16,21 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.security;
+package org.apache.hadoop.hive.ql.session;
 
-import org.apache.hadoop.hive.metastore.IHMSHandler;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 
-public class HadoopDefaultMetastoreAuthenticator extends HadoopDefaultAuthenticator
-  implements HiveMetastoreAuthenticationProvider {
+/**
+ * Exposes the authentication related methods of SessionState
+ *
+ * intended for internal usage only
+ */
+@InterfaceAudience.Private
+public interface ISessionAuthState {
 
-  @Override
-  public void setMetaStoreHandler(IHMSHandler handler) {
-    setConf(handler.getConf());
-  }
+  Configuration getConf();
+
+  String getUserName();
 
 }

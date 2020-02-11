@@ -102,7 +102,7 @@ import com.google.common.collect.Maps;
  * from any point in the code to interact with the user and to retrieve
  * configuration information
  */
-public class SessionState {
+public class SessionState implements ISessionAuthState{
   private static final Logger LOG = LoggerFactory.getLogger(SessionState.class);
 
   private static final String TMP_PREFIX = "_tmp_space.db";

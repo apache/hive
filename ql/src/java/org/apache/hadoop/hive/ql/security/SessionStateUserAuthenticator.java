@@ -23,7 +23,7 @@ import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.session.ISessionAuthState;
 
 /**
  * Authenticator that returns the userName set in SessionState. For use when authorizing with HS2
@@ -34,7 +34,7 @@ public class SessionStateUserAuthenticator implements HiveAuthenticationProvider
   private final List<String> groupNames = new ArrayList<String>();
 
   protected Configuration conf;
-  private SessionState sessionState;
+  private ISessionAuthState sessionState;
 
   @Override
   public List<String> getGroupNames() {
@@ -61,7 +61,7 @@ public class SessionStateUserAuthenticator implements HiveAuthenticationProvider
   }
 
   @Override
-  public void setSessionState(SessionState sessionState) {
+  public void setSessionState(ISessionAuthState sessionState) {
     this.sessionState = sessionState;
   }
 
