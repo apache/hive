@@ -117,7 +117,7 @@ public class ScheduledQueryExecutionService implements Closeable {
         reportQueryProgress();
         try (
           IDriver driver = DriverFactory.newDriver(DriverFactory.getNewQueryState(conf), null)) {
-          info.setExecutorQueryId(driver.getQueryState().getQueryId());
+          info.setExecutorQueryId(buildExecutorQueryId(driver));
           reportQueryProgress();
           driver.run(q.getQuery());
           info.setState(QueryState.FINISHED);
@@ -132,9 +132,12 @@ public class ScheduledQueryExecutionService implements Closeable {
           } catch (Throwable e) {
           }
         }
-
         reportQueryProgress();
       }
+    }
+
+    private String buildExecutorQueryId(IDriver driver) {
+      return String.format("%s/%s", context.getExecutorHostName(), driver.getQueryState().getQueryId());
     }
 
     private String lockNameFor(ScheduledQueryKey scheduleKey) {
