@@ -18,14 +18,17 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.storage;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
+import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableOperation;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -49,8 +52,12 @@ public class AlterTableSetLocationOperation extends AbstractAlterTableOperation<
       if (!new Path(locUri).isAbsolute()) {
         throw new HiveException(ErrorMsg.BAD_LOCATION_VALUE, newLocation);
       }
+      if (table.getTableType().equals(TableType.MANAGED_TABLE)
+              && DDLUtils.isEncryptionZoneRoot(new Path(newLocation), context.getConf())) {
+        throw new HiveException("Table Location cannot be set to encryption zone root dir");
+      }
       sd.setLocation(newLocation);
-    } catch (URISyntaxException e) {
+    } catch (URISyntaxException | IOException e) {
       throw new HiveException(e);
     }
     environmentContext.getProperties().remove(StatsSetupConst.DO_NOT_UPDATE_STATS);

@@ -29,6 +29,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -45,6 +46,8 @@ import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.Deserializer;
+import org.apache.hadoop.hive.shims.HadoopShims;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.ReflectionUtil;
 import org.slf4j.Logger;
@@ -218,5 +221,20 @@ public final class DDLUtils {
     }
 
     throw new SemanticException("Kill query is only supported in HiveServer2 (not hive cli)");
+  }
+
+  public static boolean isEncryptionZoneRoot(Path path, Configuration conf) throws IOException {
+    HadoopShims hadoopShims = ShimLoader.getHadoopShims();
+    HadoopShims.HdfsEncryptionShim pathEncryptionShim
+            = hadoopShims.createHdfsEncryptionShim(
+            path.getFileSystem(conf), conf);
+    if (pathEncryptionShim.isPathEncrypted(path)) {
+      Path encryptionZoneRoot = new Path(path.getFileSystem(conf).getUri()
+              + pathEncryptionShim.getEncryptionZoneForPath(path).getPath());
+      if (encryptionZoneRoot.equals(path)) {
+        return true;
+      }
+    }
+    return false;
   }
 }

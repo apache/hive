@@ -91,8 +91,8 @@ public class WarehouseInstance implements Closeable {
 
   private final static String LISTENER_CLASS = DbNotificationListener.class.getCanonicalName();
 
-  WarehouseInstance(Logger logger, MiniDFSCluster cluster, Map<String, String> overridesForHiveConf,
-      String keyNameForEncryptedZone) throws Exception {
+  public WarehouseInstance(Logger logger, MiniDFSCluster cluster, Map<String, String> overridesForHiveConf,
+                           String keyNameForEncryptedZone) throws Exception {
     this.logger = logger;
     this.miniDFSCluster = cluster;
     assert miniDFSCluster.isClusterUp();
@@ -638,6 +638,10 @@ public class WarehouseInstance implements Closeable {
     List<FileStatus> fileStatuses =
         Arrays.asList(fs.globStatus(new Path(destinationBasePath, "*")));
     return fileStatuses.stream().map(FileStatus::getPath).collect(Collectors.toList());
+  }
+
+  public Path getWarehouseRoot() {
+    return warehouseRoot;
   }
 
   static class Tuple {
