@@ -269,15 +269,15 @@ PREHOOK: type: CREATE SCHEDULED QUERY
 POSTHOOK: query: create scheduled query d cron '0 0 * * * ? *' defined as 
   alter materialized view mv1 rebuild
 POSTHOOK: type: CREATE SCHEDULED QUERY
-PREHOOK: query: select `(NEXT_EXECUTION)?+.+` from sys.scheduled_queries
+PREHOOK: query: select `(NEXT_EXECUTION|SCHEDULED_QUERY_ID)?+.+` from sys.scheduled_queries
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@scheduled_queries
 #### A masked pattern was here ####
-POSTHOOK: query: select `(NEXT_EXECUTION)?+.+` from sys.scheduled_queries
+POSTHOOK: query: select `(NEXT_EXECUTION|SCHEDULED_QUERY_ID)?+.+` from sys.scheduled_queries
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@scheduled_queries
 #### A masked pattern was here ####
-2	d	true	hive	0 0 * * * ? *	hive_admin_user	alter materialized view `default`.`mv1` rebuild
+d	true	hive	0 0 * * * ? *	hive_admin_user	alter materialized view `default`.`mv1` rebuild
 PREHOOK: query: alter scheduled query d execute
 PREHOOK: type: ALTER SCHEDULED QUERY
 POSTHOOK: query: alter scheduled query d execute
