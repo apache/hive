@@ -43,6 +43,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.ConvertDecimal64ToDecimal;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorCoalesce;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColDivideDecimalScalar;
 import org.apache.hadoop.hive.ql.exec.vector.reducesink.*;
 import org.apache.hadoop.hive.ql.exec.vector.udf.VectorUDFArgDesc;
@@ -4742,12 +4743,20 @@ public class Vectorizer implements PhysicalPlanResolver {
           if (parent instanceof DecimalColDivideDecimalScalar) {
             arguments = new Object[argumentCount + 1];
             arguments[children.length] = ((DecimalColDivideDecimalScalar) parent).getValue();
+          } else if(parent instanceof VectorCoalesce) {
+            arguments = new Object[2];
+            arguments[0] = new int[children.length];
+            for (int i = 0; i < children.length; i++) {
+              VectorExpression vce = children[i];
+              ((int[])arguments[0])[i] = vce.getOutputColumnNum();
+            }
+            arguments[1] = parent.getOutputColumnNum();
           } else {
             arguments = new Object[argumentCount];
-          }
-          for (int i = 0; i < children.length; i++) {
-            VectorExpression vce = children[i];
-            arguments[i] = vce.getOutputColumnNum();
+            for (int i = 0; i < children.length; i++) {
+              VectorExpression vce = children[i];
+              arguments[i] = vce.getOutputColumnNum();
+            }
           }
           // retain output column number from parent
           if (parent.getOutputColumnNum() != -1) {
