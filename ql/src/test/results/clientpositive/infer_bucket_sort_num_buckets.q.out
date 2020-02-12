@@ -57,11 +57,11 @@ STAGE PLANS:
       Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
-          expressions: VALUE._col0 (type: int), VALUE._col1 (type: string), VALUE._col2 (type: int)
+          expressions: VALUE._col0 (type: int), VALUE._col1 (type: string), CAST( VALUE._col2 AS STRING) (type: string)
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 1000 Data size: 99000 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 1000 Data size: 279000 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions: _col0 (type: int), _col1 (type: string), CAST( _col2 AS STRING) (type: string)
+            expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
             outputColumnNames: key, value, hr
             Statistics: Num rows: 1000 Data size: 373000 Basic stats: COMPLETE Column stats: COMPLETE
             Group By Operator
@@ -128,21 +128,21 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             Reduce Output Operator
-              key expressions: _col2 (type: int)
+              key expressions: _col2 (type: string)
               null sort order: a
               sort order: +
-              Map-reduce partition columns: _col2 (type: int)
-              Statistics: Num rows: 1000 Data size: 99000 Basic stats: COMPLETE Column stats: COMPLETE
+              Map-reduce partition columns: _col2 (type: string)
+              Statistics: Num rows: 1000 Data size: 279000 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col0 (type: int), _col1 (type: string)
       Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
-          expressions: VALUE._col0 (type: int), VALUE._col1 (type: string), KEY._col2 (type: int)
+          expressions: VALUE._col0 (type: int), VALUE._col1 (type: string), KEY._col2 (type: string)
           outputColumnNames: _col0, _col1, _col2
           File Output Operator
             compressed: false
             Dp Sort State: PARTITION_SORTED
-            Statistics: Num rows: 1000 Data size: 99000 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 1000 Data size: 279000 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

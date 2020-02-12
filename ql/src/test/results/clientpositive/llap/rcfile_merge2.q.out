@@ -48,11 +48,11 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: UDFToInteger(key) (type: int), value (type: string), (hash(key) pmod 10) (type: int), (hash(value) pmod 10) (type: int)
+                    expressions: UDFToInteger(key) (type: int), value (type: string), CAST( (hash(key) pmod 10) AS STRING) (type: string), CAST( (hash(value) pmod 10) AS STRING) (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3
-                    Statistics: Num rows: 500 Data size: 51500 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 500 Data size: 231500 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: _col0 (type: int), _col1 (type: string), '1' (type: string), CAST( _col2 AS STRING) (type: string), CAST( _col3 AS STRING) (type: string)
+                      expressions: _col0 (type: int), _col1 (type: string), '1' (type: string), _col2 (type: string), _col3 (type: string)
                       outputColumnNames: key, value, one, two, three
                       Statistics: Num rows: 500 Data size: 274000 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
@@ -70,11 +70,11 @@ STAGE PLANS:
                           Statistics: Num rows: 500 Data size: 658500 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col3 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col4 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
                     Reduce Output Operator
-                      key expressions: _col2 (type: int), _col3 (type: int)
+                      key expressions: _col2 (type: string), _col3 (type: string)
                       null sort order: aa
                       sort order: ++
-                      Map-reduce partition columns: _col2 (type: int), _col3 (type: int)
-                      Statistics: Num rows: 500 Data size: 51500 Basic stats: COMPLETE Column stats: COMPLETE
+                      Map-reduce partition columns: _col2 (type: string), _col3 (type: string)
+                      Statistics: Num rows: 500 Data size: 231500 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: int), _col1 (type: string)
             Execution mode: llap
             LLAP IO: no inputs
@@ -102,12 +102,12 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE._col0 (type: int), VALUE._col1 (type: string), KEY._col2 (type: int), KEY._col3 (type: int)
+                expressions: VALUE._col0 (type: int), VALUE._col1 (type: string), KEY._col2 (type: string), KEY._col3 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
                 File Output Operator
                   compressed: false
                   Dp Sort State: PARTITION_SORTED
-                  Statistics: Num rows: 500 Data size: 51500 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 500 Data size: 231500 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
