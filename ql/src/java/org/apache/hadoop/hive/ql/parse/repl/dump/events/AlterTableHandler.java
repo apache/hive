@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
@@ -230,9 +229,7 @@ class AlterTableHandler extends AbstractEventHandler<AlterTableMessage> {
       // If we are not dumping metadata about a table, we shouldn't be dumping basic statistics
       // as well, since that won't be accurate. So reset them to what they would look like for an
       // empty table.
-      if (withinContext.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY) ||
-              (qlMdTableAfter.getTableType().equals(TableType.EXTERNAL_TABLE)
-              && withinContext.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY_FOR_EXTERNAL_TABLE))) {
+      if (Utils.shouldDumpMetaDataOnly(qlMdTableAfter, withinContext.hiveConf)) {
         qlMdTableAfter.setStatsStateLikeNewTable();
       }
 

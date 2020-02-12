@@ -30,7 +30,6 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
 import org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables;
 import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.*;
@@ -81,8 +80,7 @@ public class TestMetadataReplicationScenariosExternalTables extends BaseReplicat
   public void replicationWithoutExternalTables() throws Throwable {
     List<String> loadWithClause = externalTableBasePathWithClause();
     List<String> dumpWithClause
-            = Arrays.asList("'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='false'",
-            "'" + HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY_FOR_EXTERNAL_TABLE.varname + "'='false'");
+            = Arrays.asList("'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='false'");
 
 
 
@@ -143,7 +141,7 @@ public class TestMetadataReplicationScenariosExternalTables extends BaseReplicat
         .dump("repl dump " + primaryDbName);
 
     // verify that the external table info is not written as metadata only replication
-    assertExternalFileInfo(new Path(new Path(tuple.dumpLocation, primaryDbName.toLowerCase()), FILE_NAME));
+    assertFalseExternalFileInfo(new Path(new Path(tuple.dumpLocation, primaryDbName.toLowerCase()), FILE_NAME));
 
     List<String> withClauseOptions = externalTableBasePathWithClause();
 
@@ -170,7 +168,7 @@ public class TestMetadataReplicationScenariosExternalTables extends BaseReplicat
         .dump("repl dump " + primaryDbName + " from " + tuple.lastReplicationId);
 
     // verify that the external table info is written correctly for incremental
-    assertExternalFileInfo(new Path(tuple.dumpLocation, FILE_NAME));
+    assertFalseExternalFileInfo(new Path(tuple.dumpLocation, FILE_NAME));
 
     replica.load(replicatedDbName, tuple.dumpLocation, withClauseOptions)
         .run("use " + replicatedDbName)
@@ -186,7 +184,7 @@ public class TestMetadataReplicationScenariosExternalTables extends BaseReplicat
         .dump("repl dump " + primaryDbName + " from " + tuple.lastReplicationId);
 
     // verify that the external table info is written correctly for incremental
-    assertExternalFileInfo(new Path(tuple.dumpLocation, FILE_NAME));
+    assertFalseExternalFileInfo(new Path(tuple.dumpLocation, FILE_NAME));
   }
 
   @Test
@@ -262,7 +260,7 @@ public class TestMetadataReplicationScenariosExternalTables extends BaseReplicat
         .run("insert into t2 partition(country='india') values ('bangalore')")
         .dump("repl dump " + primaryDbName);
 
-    assertExternalFileInfo(new Path(new Path(tuple.dumpLocation, primaryDbName.toLowerCase()), FILE_NAME));
+    assertFalseExternalFileInfo(new Path(new Path(tuple.dumpLocation, primaryDbName.toLowerCase()), FILE_NAME));
 
     replica.load(replicatedDbName, tuple.dumpLocation, loadWithClause)
         .run("use " + replicatedDbName)
@@ -283,7 +281,7 @@ public class TestMetadataReplicationScenariosExternalTables extends BaseReplicat
         .run("insert into t2 partition(country='australia') values ('sydney')")
         .dump(primaryDbName, tuple.lastReplicationId);
 
-    assertExternalFileInfo(new Path(tuple.dumpLocation, FILE_NAME));
+    assertFalseExternalFileInfo(new Path(tuple.dumpLocation, FILE_NAME));
 
     replica.load(replicatedDbName, tuple.dumpLocation, loadWithClause)
         .run("use " + replicatedDbName)
@@ -361,7 +359,7 @@ public class TestMetadataReplicationScenariosExternalTables extends BaseReplicat
         .run("alter table t1 add partition(country='us')")
         .dump(primaryDbName, tuple.lastReplicationId);
 
-    assertExternalFileInfo(new Path(tuple.dumpLocation, FILE_NAME));
+    assertFalseExternalFileInfo(new Path(tuple.dumpLocation, FILE_NAME));
 
     // Add new data externally, to a partition, but under the partition level top directory
     // Also, it is added after dumping the events but data should be seen at target after REPL LOAD.
@@ -395,7 +393,7 @@ public class TestMetadataReplicationScenariosExternalTables extends BaseReplicat
 
     // Repl load with zero events but external tables location info should present.
     tuple = primary.dump(primaryDbName, tuple.lastReplicationId);
-    assertExternalFileInfo(new Path(tuple.dumpLocation, FILE_NAME));
+    assertFalseExternalFileInfo(new Path(tuple.dumpLocation, FILE_NAME));
 
     replica.load(replicatedDbName, tuple.dumpLocation, loadWithClause)
             .run("use " + replicatedDbName)
@@ -432,8 +430,7 @@ public class TestMetadataReplicationScenariosExternalTables extends BaseReplicat
   public void bootstrapExternalTablesDuringIncrementalPhase() throws Throwable {
     List<String> loadWithClause = externalTableBasePathWithClause();
     List<String> dumpWithClause
-            = Arrays.asList("'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='false'",
-            "'" + HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY_FOR_EXTERNAL_TABLE.varname + "'='false'");
+            = Arrays.asList("'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='false'");
 
     WarehouseInstance.Tuple tuple = primary
             .run("use " + primaryDbName)
@@ -461,7 +458,8 @@ public class TestMetadataReplicationScenariosExternalTables extends BaseReplicat
             .verifyReplTargetProperty(replicatedDbName);
 
     dumpWithClause = Arrays.asList("'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='true'",
-                                   "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES.varname + "'='true'");
+                                   "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES.varname + "'='true'",
+            "'" + HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY_FOR_EXTERNAL_TABLE.varname + "'='false'");
     tuple = primary.run("use " + primaryDbName)
             .run("drop table t1")
             .run("create external table t3 (id int)")
@@ -475,7 +473,8 @@ public class TestMetadataReplicationScenariosExternalTables extends BaseReplicat
             .exists(new Path(tuple.dumpLocation, FILE_NAME)));
 
     // verify that the external table info is written correctly for incremental
-    assertExternalFileInfo(new Path(tuple.dumpLocation, FILE_NAME));
+    assertExternalFileInfo(Arrays.asList("t2", "t3"),
+            new Path(tuple.dumpLocation, FILE_NAME));
 
     // _bootstrap directory should be created as bootstrap enabled on external tables.
     Path dumpPath = new Path(tuple.dumpLocation, INC_BOOTSTRAP_ROOT_DIR_NAME);
@@ -525,132 +524,6 @@ public class TestMetadataReplicationScenariosExternalTables extends BaseReplicat
   }
 
   @Test
-  public void retryBootstrapExternalTablesFromDifferentDump() throws Throwable {
-    List<String> loadWithClause = new ArrayList<>();
-    loadWithClause.addAll(externalTableBasePathWithClause());
-
-    List<String> dumpWithClause
-            = Arrays.asList("'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='false'",
-            "'" + HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY_FOR_EXTERNAL_TABLE.varname + "'='false'");
-
-    WarehouseInstance.Tuple tupleBootstrapWithoutExternal = primary
-            .run("use " + primaryDbName)
-            .run("create external table t1 (id int)")
-            .run("insert into table t1 values (1)")
-            .run("create external table t2 (place string) partitioned by (country string)")
-            .run("insert into table t2 partition(country='india') values ('bangalore')")
-            .run("insert into table t2 partition(country='us') values ('austin')")
-            .run("create table t3 as select * from t1")
-            .dump(primaryDbName, null, dumpWithClause);
-
-    replica.load(replicatedDbName, tupleBootstrapWithoutExternal.dumpLocation, loadWithClause)
-            .status(replicatedDbName)
-            .verifyResult(tupleBootstrapWithoutExternal.lastReplicationId)
-            .run("use " + replicatedDbName)
-            .run("show tables")
-            .verifyResult("t3")
-            .run("select id from t3")
-            .verifyResult("1")
-            .verifyReplTargetProperty(replicatedDbName);
-
-    dumpWithClause = Arrays.asList("'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='true'",
-            "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES.varname + "'='true'");
-    WarehouseInstance.Tuple tupleIncWithExternalBootstrap = primary.run("use " + primaryDbName)
-            .run("drop table t1")
-            .run("create external table t4 (id int)")
-            .run("insert into table t4 values (10)")
-            .run("create table t5 as select * from t4")
-            .dump(primaryDbName, tupleBootstrapWithoutExternal.lastReplicationId, dumpWithClause);
-
-    // Fail setting ckpt property for table t4 but success for t2.
-    BehaviourInjection<CallerArguments, Boolean> callerVerifier
-            = new BehaviourInjection<CallerArguments, Boolean>() {
-      @Nullable
-      @Override
-      public Boolean apply(@Nullable CallerArguments args) {
-        if (args.tblName.equalsIgnoreCase("t4") && args.dbName.equalsIgnoreCase(replicatedDbName)) {
-          injectionPathCalled = true;
-          LOG.warn("Verifier - DB : " + args.dbName + " TABLE : " + args.tblName);
-          return false;
-        }
-        return true;
-      }
-    };
-
-    // Fail repl load before the ckpt property is set for t4 and after it is set for t2.
-    // In the retry, these half baked tables should be dropped and bootstrap should be successful.
-    InjectableBehaviourObjectStore.setAlterTableModifier(callerVerifier);
-    try {
-      replica.loadFailure(replicatedDbName, tupleIncWithExternalBootstrap.dumpLocation, loadWithClause);
-      callerVerifier.assertInjectionsPerformed(true, false);
-    } finally {
-      InjectableBehaviourObjectStore.resetAlterTableModifier();
-    }
-
-    // Insert into existing external table and then Drop it, add another managed table with same name
-    // and dump another bootstrap dump for external tables.
-    WarehouseInstance.Tuple tupleNewIncWithExternalBootstrap = primary.run("use " + primaryDbName)
-            .run("insert into table t2 partition(country='india') values ('chennai')")
-            .run("drop table t2")
-            .run("create table t2 as select * from t4")
-            .run("insert into table t4 values (20)")
-            .dump(primaryDbName, tupleIncWithExternalBootstrap.lastReplicationId, dumpWithClause);
-
-    // Set incorrect bootstrap dump to clean tables. Here, used the full bootstrap dump which is invalid.
-    // So, REPL LOAD fails.
-    loadWithClause.add("'" + REPL_CLEAN_TABLES_FROM_BOOTSTRAP_CONFIG + "'='"
-            + tupleBootstrapWithoutExternal.dumpLocation + "'");
-    replica.loadFailure(replicatedDbName, tupleNewIncWithExternalBootstrap.dumpLocation, loadWithClause);
-    loadWithClause.remove("'" + REPL_CLEAN_TABLES_FROM_BOOTSTRAP_CONFIG + "'='"
-            + tupleBootstrapWithoutExternal.dumpLocation + "'");
-
-    // Set previously failed bootstrap dump to clean-up. Now, new bootstrap should overwrite the old one.
-    loadWithClause.add("'" + REPL_CLEAN_TABLES_FROM_BOOTSTRAP_CONFIG + "'='"
-            + tupleIncWithExternalBootstrap.dumpLocation + "'");
-
-    // Verify if bootstrapping with same dump is idempotent and return same result
-    for (int i = 0; i < 2; i++) {
-      replica.load(replicatedDbName, tupleNewIncWithExternalBootstrap.dumpLocation, loadWithClause)
-              .run("use " + replicatedDbName)
-              .run("show tables like 't1'")
-              .verifyFailure(new String[]{"t1"})
-              .run("select id from t2")
-              .verifyResult("10")
-              .run("select id from t4")
-              .verifyResults(Arrays.asList("10", "20"))
-              .run("select id from t5")
-              .verifyResult("10")
-              .verifyReplTargetProperty(replicatedDbName);
-
-      // Once the REPL LOAD is successful, the this config should be unset or else, the subsequent REPL LOAD
-      // will also drop those tables which will cause data loss.
-      loadWithClause.remove("'" + REPL_CLEAN_TABLES_FROM_BOOTSTRAP_CONFIG + "'='"
-              + tupleIncWithExternalBootstrap.dumpLocation + "'");
-    }
-  }
-
-  @Test
-  public void testExternalTableDataPath() throws Exception {
-    HiveConf conf = primary.getConf();
-    Path basePath = new Path("/");
-    Path sourcePath = new Path("/abc/xyz");
-    Path dataPath = ReplExternalTables.externalTableDataPath(conf, basePath, sourcePath);
-    assertTrue(dataPath.toUri().getPath().equalsIgnoreCase("/abc/xyz"));
-
-    basePath = new Path("/tmp");
-    dataPath = ReplExternalTables.externalTableDataPath(conf, basePath, sourcePath);
-    assertTrue(dataPath.toUri().getPath().equalsIgnoreCase("/tmp/abc/xyz"));
-
-    basePath = new Path("/tmp/");
-    dataPath = ReplExternalTables.externalTableDataPath(conf, basePath, sourcePath);
-    assertTrue(dataPath.toUri().getPath().equalsIgnoreCase("/tmp/abc/xyz"));
-
-    basePath = new Path("/tmp/tmp1//");
-    dataPath = ReplExternalTables.externalTableDataPath(conf, basePath, sourcePath);
-    assertTrue(dataPath.toUri().getPath().equalsIgnoreCase("/tmp/tmp1/abc/xyz"));
-  }
-
-  @Test
   public void testExternalTablesIncReplicationWithConcurrentDropTable() throws Throwable {
     List<String> dumpWithClause = Collections.singletonList(
             "'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='true'"
@@ -695,7 +568,7 @@ public class TestMetadataReplicationScenariosExternalTables extends BaseReplicat
     }
 
     // Only table t2 should exist in the data location list file.
-    assertExternalFileInfo(new Path(tupleInc.dumpLocation, FILE_NAME));
+    assertFalseExternalFileInfo(new Path(tupleInc.dumpLocation, FILE_NAME));
 
     // The newly inserted data "2" should be missing in table "t1". But, table t2 should exist and have
     // inserted data.
@@ -746,62 +619,18 @@ public class TestMetadataReplicationScenariosExternalTables extends BaseReplicat
             .verifyResult(inc2Tuple.lastReplicationId);
   }
 
-  @Test
-  public void testExtTableBootstrapDuringIncrementalWithoutAnyEvents() throws Throwable {
-    List<String> loadWithClause = externalTableBasePathWithClause();
-    List<String> dumpWithClause
-            = Arrays.asList("'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='false'",
-            "'" + HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY_FOR_EXTERNAL_TABLE.varname + "'='false'");
-
-    WarehouseInstance.Tuple bootstrapDump = primary
-            .run("use " + primaryDbName)
-            .run("create external table t1 (id int)")
-            .run("insert into table t1 values (1)")
-            .run("create table t2 (id int)")
-            .run("insert into table t2 values (1)")
-            .dump(primaryDbName, null, dumpWithClause);
-
-    replica.load(replicatedDbName, bootstrapDump.dumpLocation, loadWithClause)
-            .status(replicatedDbName)
-            .verifyResult(bootstrapDump.lastReplicationId)
-            .run("use " + replicatedDbName)
-            .run("show tables like 't1'")
-            .verifyFailure(new String[] {"t1" })
-            .run("show tables like 't2'")
-            .verifyResult("t2")
-            .verifyReplTargetProperty(replicatedDbName);
-
-    // This looks like an empty dump but it has the ALTER TABLE event created by the previous
-    // dump. We need it here so that the next dump won't have any events.
-    WarehouseInstance.Tuple incTuple = primary.dump(primaryDbName, bootstrapDump.lastReplicationId);
-    replica.load(replicatedDbName, incTuple.dumpLocation)
-            .status(replicatedDbName)
-            .verifyResult(incTuple.lastReplicationId);
-
-    // Take a dump with external tables bootstrapped and load it
-    dumpWithClause = Arrays.asList("'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='true'",
-            "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES.varname + "'='true'");
-    WarehouseInstance.Tuple inc2Tuple = primary.run("use " + primaryDbName)
-            .dump(primaryDbName, incTuple.lastReplicationId, dumpWithClause);
-
-    replica.load(replicatedDbName, inc2Tuple.dumpLocation, loadWithClause)
-            .status(replicatedDbName)
-            .verifyResult(inc2Tuple.lastReplicationId)
-            .run("use " + replicatedDbName)
-            .run("show tables like 't1'")
-            .verifyResult("t1")
-            .run("show tables like 't2'")
-            .verifyResult("t2")
-            .verifyReplTargetProperty(replicatedDbName);
-  }
-
   private List<String> externalTableBasePathWithClause() throws IOException, SemanticException {
     return ReplicationTestUtils.externalTableBasePathWithClause(REPLICA_EXTERNAL_BASE, replica);
   }
 
-  private void assertExternalFileInfo(Path externalTableInfoFile)
+  private void assertFalseExternalFileInfo(Path externalTableInfoFile)
       throws IOException {
     DistributedFileSystem fileSystem = primary.miniDFSCluster.getFileSystem();
     Assert.assertFalse(fileSystem.exists(externalTableInfoFile));
+  }
+
+  private void assertExternalFileInfo(List<String> expected, Path externalTableInfoFile)
+          throws IOException {
+    ReplicationTestUtils.assertExternalFileInfo(primary, expected, externalTableInfoFile);
   }
 }

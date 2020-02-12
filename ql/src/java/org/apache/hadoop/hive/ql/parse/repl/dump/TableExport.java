@@ -73,10 +73,8 @@ public class TableExport {
         ? null
         : tableSpec;
     this.replicationSpec = replicationSpec;
-    if (conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY) ||
-            (this.tableSpec != null && this.tableSpec.tableHandle.isView()) ||
-            (tableSpec.tableHandle.getTableType().equals(TableType.EXTERNAL_TABLE) &&
-                    conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY_FOR_EXTERNAL_TABLE))) {
+    if (this.tableSpec != null && this.tableSpec.tableHandle.isView() ||
+            Utils.shouldDumpMetaDataOnly(tableSpec.tableHandle, conf)) {
       this.replicationSpec.setIsMetadataOnly(true);
 
       this.tableSpec.tableHandle.setStatsStateLikeNewTable();
