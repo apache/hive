@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
+import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryExecutionService;
 import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryMaintenanceWork;
 import org.apache.thrift.TException;
 
@@ -45,6 +46,9 @@ public class ScheduledQueryMaintenanceTask extends Task<ScheduledQueryMaintenanc
     ScheduledQueryMaintenanceRequest request = buildScheduledQueryRequest();
     try {
       Hive.get().getMSC().scheduledQueryMaintenance(request);
+      if (work.getScheduledQuery().isSetNextExecution()) {
+        ScheduledQueryExecutionService.forceScheduleCheck();
+      }
     } catch (TException | HiveException e) {
       setException(e);
       LOG.error("Failed", e);
