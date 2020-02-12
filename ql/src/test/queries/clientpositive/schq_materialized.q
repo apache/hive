@@ -67,7 +67,7 @@ create scheduled query d cron '0 0 * * * ? *' defined as
   alter materialized view mv1 rebuild;
 
 set hive.support.quoted.identifiers=none;
-select `(NEXT_EXECUTION)?+.+` from sys.scheduled_queries;
+select `(NEXT_EXECUTION|SCHEDULED_QUERY_ID)?+.+` from sys.scheduled_queries;
 
 alter scheduled query d execute;
 
