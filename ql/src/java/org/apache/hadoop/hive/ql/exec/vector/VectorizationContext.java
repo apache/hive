@@ -3095,7 +3095,7 @@ public class VectorizationContext {
       try {
         Object constantValue = ((ExprNodeConstantDesc) child).getValue();
         if (tryDecimal64Cast) {
-          if (((DecimalTypeInfo)returnType).precision() + ((DecimalTypeInfo)returnType).scale() <= 18) {
+          if (((DecimalTypeInfo)returnType).precision() <= 18) {
             Long longValue = castConstantToLong(constantValue, child.getTypeInfo(), PrimitiveCategory.LONG);
             return getConstantVectorExpression(longValue, TypeInfoFactory.longTypeInfo,
                 VectorExpressionDescriptor.Mode.PROJECTION);
@@ -3112,7 +3112,7 @@ public class VectorizationContext {
     }
     if (isIntFamily(inputType)) {
       if (tryDecimal64Cast) {
-        if (((DecimalTypeInfo)returnType).precision() + ((DecimalTypeInfo)returnType).scale() <= 18) {
+        if (((DecimalTypeInfo)returnType).precision() <= 18) {
           return createVectorExpression(CastLongToDecimal64.class, childExpr,
               VectorExpressionDescriptor.Mode.PROJECTION, returnType, DataTypePhysicalVariation.DECIMAL_64);
         }
