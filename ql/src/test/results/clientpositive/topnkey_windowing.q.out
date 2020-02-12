@@ -246,8 +246,10 @@ STAGE PLANS:
             Statistics: Num rows: 26 Data size: 1969 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Reduce Output Operator
+              bucketingVersion: 2
               key expressions: 0 (type: int), tw_value (type: double)
               null sort order: az
+              numBuckets: -1
               sort order: ++
               Map-reduce partition columns: 0 (type: int)
               Statistics: Num rows: 26 Data size: 1969 Basic stats: COMPLETE Column stats: COMPLETE
