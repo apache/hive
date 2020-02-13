@@ -51,23 +51,27 @@ public class ScheduledQueryExecutionService implements Closeable {
   private ScheduledQueryExecutor worker;
   private AtomicInteger forcedScheduleCheckCounter = new AtomicInteger();
 
-  public static ScheduledQueryExecutionService startScheduledQueryExecutorService(HiveConf conf0) {
+  public static ScheduledQueryExecutionService startScheduledQueryExecutorService(HiveConf inputConf) {
+    HiveConf conf = new HiveConf(inputConf);
+    MetastoreBasedScheduledQueryService qService = new MetastoreBasedScheduledQueryService(conf);
+    ExecutorService executor = Executors.newCachedThreadPool(
+        new ThreadFactoryBuilder().setDaemon(true).setNameFormat("Scheduled Query Thread %d").build());
+    ScheduledQueryExecutionContext ctx = new ScheduledQueryExecutionContext(executor, conf, qService);
+    return startScheduledQueryExecutorService(ctx);
+  }
+
+  public static ScheduledQueryExecutionService startScheduledQueryExecutorService(ScheduledQueryExecutionContext ctx) {
     synchronized (ScheduledQueryExecutionService.class) {
       if (INSTANCE != null) {
         throw new IllegalStateException(
             "There is already a ScheduledQueryExecutionService in service; check it and close it explicitly if neccessary");
       }
-      HiveConf conf = new HiveConf(conf0);
-      MetastoreBasedScheduledQueryService qService = new MetastoreBasedScheduledQueryService(conf);
-      ExecutorService executor = Executors.newCachedThreadPool(
-          new ThreadFactoryBuilder().setDaemon(true).setNameFormat("Scheduled Query Thread %d").build());
-      ScheduledQueryExecutionContext ctx = new ScheduledQueryExecutionContext(executor, conf, qService);
       INSTANCE = new ScheduledQueryExecutionService(ctx);
       return INSTANCE;
     }
   }
 
-  public ScheduledQueryExecutionService(ScheduledQueryExecutionContext ctx) {
+  private ScheduledQueryExecutionService(ScheduledQueryExecutionContext ctx) {
     context = ctx;
     ctx.executor.submit(worker = new ScheduledQueryExecutor());
     ctx.executor.submit(new ProgressReporter());

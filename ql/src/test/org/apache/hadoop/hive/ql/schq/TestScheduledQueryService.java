@@ -153,7 +153,7 @@ public class TestScheduledQueryService {
     HiveConf conf = env_setup.getTestCtx().hiveConf;
     MockScheduledQueryService qService = new MockScheduledQueryService("insert into tu values(1),(2),(3),(4),(5)");
     ScheduledQueryExecutionContext ctx = new ScheduledQueryExecutionContext(executor, conf, qService);
-    try (ScheduledQueryExecutionService sQ = new ScheduledQueryExecutionService(ctx)) {
+    try (ScheduledQueryExecutionService sQ = ScheduledQueryExecutionService.startScheduledQueryExecutorService(ctx)) {
 
       executor.shutdown();
       // Wait for the scheduled query to finish. Hopefully 30 seconds should be more than enough.
