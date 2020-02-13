@@ -73,7 +73,7 @@ public class TableExport {
         ? null
         : tableSpec;
     this.replicationSpec = replicationSpec;
-    if (this.tableSpec != null && this.tableSpec.tableHandle.isView() ||
+    if (this.tableSpec != null && this.tableSpec.tableHandle!=null && this.tableSpec.tableHandle.isView() ||
             Utils.shouldDumpMetaDataOnly(tableSpec.tableHandle, conf)) {
       this.replicationSpec.setIsMetadataOnly(true);
 
@@ -94,7 +94,7 @@ public class TableExport {
       PartitionIterable withPartitions = getPartitions();
       writeMetaData(withPartitions);
       if (!replicationSpec.isMetadataOnly()
-              && !tableSpec.tableHandle.getTableType().equals(TableType.EXTERNAL_TABLE)) {
+              && !(replicationSpec.isRepl() && tableSpec.tableHandle.getTableType().equals(TableType.EXTERNAL_TABLE))) {
         writeData(withPartitions);
       }
       return true;

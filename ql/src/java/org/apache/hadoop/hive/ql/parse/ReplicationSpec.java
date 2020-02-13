@@ -51,6 +51,8 @@ public class ReplicationSpec {
   private boolean isMigratingToTxnTable = false;
   private boolean isMigratingToExternalTable = false;
   private boolean needDupCopyCheck = false;
+  //Determine if replication is done using repl or export-import
+  private boolean isRepl = false;
 
   // Key definitions related to replication.
   public enum KEY {
@@ -437,5 +439,13 @@ public class ReplicationSpec {
     // Duplicate file check during copy is required until after first successful incremental load.
     // Check HIVE-21197 for more detail.
     this.needDupCopyCheck = isFirstIncPending;
+  }
+
+  public boolean isRepl() {
+    return isRepl;
+  }
+
+  public void setRepl(boolean repl) {
+    isRepl = repl;
   }
 }

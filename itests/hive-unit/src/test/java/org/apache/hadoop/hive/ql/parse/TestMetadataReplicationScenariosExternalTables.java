@@ -24,27 +24,38 @@ import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.BehaviourInjection;
-import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.CallerArguments;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
-import org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.FILE_NAME;
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME;
-import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.REPL_CLEAN_TABLES_FROM_BOOTSTRAP_CONFIG;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
+/**
+ * TestMetadataReplicationScenariosExternalTables - Test metadata only replication.
+ * for external tables.
+ */
 public class TestMetadataReplicationScenariosExternalTables extends BaseReplicationAcrossInstances {
 
   private static final String REPLICA_EXTERNAL_BASE = "/replica_external_base";
@@ -52,7 +63,7 @@ public class TestMetadataReplicationScenariosExternalTables extends BaseReplicat
 
   @BeforeClass
   public static void classLevelSetup() throws Exception {
-    HashMap<String, String> overrides = new HashMap<>();
+    Map<String, String> overrides = new HashMap<>();
     overrides.put(MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY.getHiveName(),
         GzipJSONMessageEncoder.class.getCanonicalName());
     overrides.put(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY.varname, "false");
@@ -104,9 +115,9 @@ public class TestMetadataReplicationScenariosExternalTables extends BaseReplicat
         .verifyResult(tuple.lastReplicationId)
         .run("use " + replicatedDbName)
         .run("show tables like 't1'")
-        .verifyFailure(new String[] { "t1" })
+        .verifyFailure(new String[] {"t1"})
         .run("show tables like 't2'")
-        .verifyFailure(new String[] { "t2" })
+        .verifyFailure(new String[] {"t2"})
         .verifyReplTargetProperty(replicatedDbName);
 
     tuple = primary.run("use " + primaryDbName)
@@ -122,7 +133,7 @@ public class TestMetadataReplicationScenariosExternalTables extends BaseReplicat
     replica.load(replicatedDbName, tuple.dumpLocation, loadWithClause)
         .run("use " + replicatedDbName)
         .run("show tables like 't3'")
-        .verifyFailure(new String[] { "t3" })
+        .verifyFailure(new String[] {"t3"})
         .verifyReplTargetProperty(replicatedDbName);
   }
 
@@ -265,7 +276,7 @@ public class TestMetadataReplicationScenariosExternalTables extends BaseReplicat
     replica.load(replicatedDbName, tuple.dumpLocation, loadWithClause)
         .run("use " + replicatedDbName)
         .run("show tables like 't2'")
-        .verifyResults(new String[] { "t2" })
+        .verifyResults(new String[] {"t2"})
         .run("select place from t2")
         .verifyResults(new String[] {})
         .verifyReplTargetProperty(replicatedDbName);
@@ -379,7 +390,7 @@ public class TestMetadataReplicationScenariosExternalTables extends BaseReplicat
         .run("show tables like 't1'")
         .verifyResult("t1")
         .run("show partitions t1")
-        .verifyResults(new String[] { "country=india", "country=us" })
+        .verifyResults(new String[] {"country=india", "country=us"})
         .run("select place from t1 order by place")
         .verifyResults(new String[] {})
         .verifyReplTargetProperty(replicatedDbName);
@@ -400,7 +411,7 @@ public class TestMetadataReplicationScenariosExternalTables extends BaseReplicat
             .run("show tables like 't1'")
             .verifyResult("t1")
             .run("show partitions t1")
-            .verifyResults(new String[] { "country=india", "country=us" })
+            .verifyResults(new String[] {"country=india", "country=us"})
             .run("select place from t1 order by place")
             .verifyResults(new String[] {})
             .verifyReplTargetProperty(replicatedDbName);
