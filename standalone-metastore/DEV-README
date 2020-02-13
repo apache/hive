@@ -51,6 +51,8 @@ Supported databases for testing:
 -Dit.test=ITestPostgres
 -Dit.test=ITestSqlServer
 
+By adding -Dverbose.schematool the Schema Tool output becomes more detailed.
+
 You can download the Oracle driver at 
 http://www.oracle.com/technetwork/database/features/jdbc/index-091264.html
 You should download Oracle 11g Release 1, ojdbc6.jar

@@ -455,6 +455,7 @@ TOK_INPUTFORMAT;
 TOK_WITHIN_GROUP;
 TOK_CRON;
 TOK_EXECUTED_AS;
+TOK_EXECUTE;
 TOK_SCHEDULE;
 TOK_EVERY;
 }
@@ -2128,6 +2129,7 @@ alterScheduledQueryChange
     | executedAsSpec
     | enableSpecification
     | definedAsSpec
+    | KW_EXECUTE -> ^(TOK_EXECUTE)
     ;
 
 scheduleSpec

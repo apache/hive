@@ -1,0 +1,165 @@
+PREHOOK: query: drop table dynpart_cast
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table dynpart_cast
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table dynpart_cast (i int) PARTITIONED BY (`static_part` int, `dyn_part` int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dynpart_cast
+POSTHOOK: query: create table dynpart_cast (i int) PARTITIONED BY (`static_part` int, `dyn_part` int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dynpart_cast
+PREHOOK: query: EXPLAIN
+INSERT INTO TABLE dynpart_cast PARTITION (static_part=03, dyn_part)
+SELECT 1,
+'002'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@dynpart_cast@static_part=3
+POSTHOOK: query: EXPLAIN
+INSERT INTO TABLE dynpart_cast PARTITION (static_part=03, dyn_part)
+SELECT 1,
+'002'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
+  Stage-4
+  Stage-0 depends on stages: Stage-4, Stage-3, Stage-6
+  Stage-2 depends on stages: Stage-0
+  Stage-3
+  Stage-5
+  Stage-6 depends on stages: Stage-5
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: _dummy_table
+            Row Limit Per Split: 1
+            Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              expressions: 1 (type: int), 2 (type: int)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.dynpart_cast
+              Select Operator
+                expressions: _col0 (type: int), UDFToInteger('3') (type: int), _col1 (type: int)
+                outputColumnNames: i, static_part, dyn_part
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  aggregations: compute_stats(i, 'hll')
+                  keys: static_part (type: int), dyn_part (type: int)
+                  minReductionHashAggr: 0.99
+                  mode: hash
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 1 Data size: 432 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int), _col1 (type: int)
+                    null sort order: zz
+                    sort order: ++
+                    Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
+                    Statistics: Num rows: 1 Data size: 432 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: compute_stats(VALUE._col0)
+          keys: KEY._col0 (type: int), KEY._col1 (type: int)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2
+          Statistics: Num rows: 1 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
+          Select Operator
+            expressions: _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: int), _col1 (type: int)
+            outputColumnNames: _col0, _col1, _col2
+            Statistics: Num rows: 1 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-7
+    Conditional Operator
+
+  Stage: Stage-4
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            dyn_part 
+            static_part 3
+          replace: false
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.dynpart_cast
+
+  Stage: Stage-2
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: i
+          Column Types: int
+          Table: default.dynpart_cast
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.dynpart_cast
+
+  Stage: Stage-5
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.dynpart_cast
+
+  Stage: Stage-6
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+PREHOOK: query: INSERT INTO TABLE dynpart_cast PARTITION (static_part=03, dyn_part)
+SELECT 1,
+'002'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@dynpart_cast@static_part=3
+POSTHOOK: query: INSERT INTO TABLE dynpart_cast PARTITION (static_part=03, dyn_part)
+SELECT 1,
+'002'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@dynpart_cast@static_part=3/dyn_part=2
+POSTHOOK: Lineage: dynpart_cast PARTITION(static_part=3,dyn_part=2).i SIMPLE []
