@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Analyzer for create trigger commands.
  */
-@DDLType(type=HiveParser.TOK_CREATE_TRIGGER)
+@DDLType(types = HiveParser.TOK_CREATE_TRIGGER)
 public class CreateWMTriggerAnalyzer extends BaseSemanticAnalyzer {
   public CreateWMTriggerAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

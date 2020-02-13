@@ -32,7 +32,7 @@ import com.google.common.annotations.VisibleForTesting;
 /**
  * Analyzer for setting a role commands.
  */
-@DDLType(type=HiveParser.TOK_SET_ROLE)
+@DDLType(types = HiveParser.TOK_SET_ROLE)
 public class SetRoleAnalyzer extends AbstractPrivilegeAnalyzer {
   public SetRoleAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

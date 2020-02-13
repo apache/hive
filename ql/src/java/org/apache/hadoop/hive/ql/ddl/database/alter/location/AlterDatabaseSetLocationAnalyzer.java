@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Analyzer for database set location commands.
  */
-@DDLType(type=HiveParser.TOK_ALTERDATABASE_LOCATION)
+@DDLType(types = HiveParser.TOK_ALTERDATABASE_LOCATION)
 public class AlterDatabaseSetLocationAnalyzer extends AbstractAlterDatabaseAnalyzer {
   public AlterDatabaseSetLocationAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

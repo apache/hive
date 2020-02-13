@@ -33,7 +33,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 /**
  * Analyzer for show materialized views commands.
  */
-@DDLType(type=HiveParser.TOK_SHOWMATERIALIZEDVIEWS)
+@DDLType(types = HiveParser.TOK_SHOWMATERIALIZEDVIEWS)
 public class ShowMaterializedViewsAnalyzer extends BaseSemanticAnalyzer {
   public ShowMaterializedViewsAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

@@ -50,7 +50,7 @@ import com.google.common.collect.ImmutableList;
 /**
  * Analyzer for change columns commands.
  */
-@DDLType(type=HiveParser.TOK_ALTERTABLE_RENAMECOL)
+@DDLType(types = HiveParser.TOK_ALTERTABLE_RENAMECOL)
 public class AlterTableChangeColumnAnalyzer extends AbstractAlterTableAnalyzer {
   public AlterTableChangeColumnAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

@@ -37,7 +37,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Analyzer for cache metadata commands.
  */
-@DDLType(type=HiveParser.TOK_CACHE_METADATA)
+@DDLType(types = HiveParser.TOK_CACHE_METADATA)
 public class CacheMetadataAnalyzer extends AbstractFunctionAnalyzer {
   public CacheMetadataAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
