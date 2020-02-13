@@ -34,7 +34,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Analyzer for alter resource plan set commands.
  */
-@DDLType(type=HiveParser.TOK_ALTER_RP_SET)
+@DDLType(types = HiveParser.TOK_ALTER_RP_SET)
 public class AlterResourcePlanSetAnalyzer extends BaseSemanticAnalyzer {
   public AlterResourcePlanSetAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

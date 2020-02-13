@@ -32,7 +32,7 @@ import com.google.common.annotations.VisibleForTesting;
 /**
  * Analyzer for role creation commands.
  */
-@DDLType(type=HiveParser.TOK_CREATEROLE)
+@DDLType(types = HiveParser.TOK_CREATEROLE)
 public class CreateRoleAnalyzer extends AbstractPrivilegeAnalyzer {
   public CreateRoleAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Analyzer for show transactions commands.
  */
-@DDLType(type=HiveParser.TOK_SHOW_TRANSACTIONS)
+@DDLType(types = HiveParser.TOK_SHOW_TRANSACTIONS)
 public class ShowTransactionsAnalyzer extends BaseSemanticAnalyzer {
   public ShowTransactionsAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

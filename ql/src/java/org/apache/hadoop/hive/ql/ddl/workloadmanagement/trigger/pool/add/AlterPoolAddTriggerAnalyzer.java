@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Analyzer for alter pool add trigger commands.
  */
-@DDLType(type=HiveParser.TOK_ALTER_POOL_ADD_TRIGGER)
+@DDLType(types = HiveParser.TOK_ALTER_POOL_ADD_TRIGGER)
 public class AlterPoolAddTriggerAnalyzer extends BaseSemanticAnalyzer {
   public AlterPoolAddTriggerAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

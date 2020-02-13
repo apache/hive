@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.ql.parse.HiveParser;
  * Alter Table category helper. It derives the actual type of the command from the root element, by selecting the type
  * of the second child, as the Alter Table commands have this structure: tableName command partitionSpec?
  */
-@DDLType(type=HiveParser.TOK_ALTERTABLE)
+@DDLType(types = HiveParser.TOK_ALTERTABLE)
 public class AlterTableAnalyzerCategory implements DDLSemanticAnalyzerCategory {
   @Override
   public int getType(ASTNode root) {

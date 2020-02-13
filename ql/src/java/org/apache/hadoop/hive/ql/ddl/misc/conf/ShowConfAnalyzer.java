@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Analyzer for show conf commands.
  */
-@DDLType(type=HiveParser.TOK_SHOWCONF)
+@DDLType(types = HiveParser.TOK_SHOWCONF)
 public class ShowConfAnalyzer extends AbstractFunctionAnalyzer {
   public ShowConfAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

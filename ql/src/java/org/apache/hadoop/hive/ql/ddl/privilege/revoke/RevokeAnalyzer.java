@@ -32,7 +32,7 @@ import com.google.common.annotations.VisibleForTesting;
 /**
  * Analyzer for revoke commands.
  */
-@DDLType(type=HiveParser.TOK_REVOKE)
+@DDLType(types = HiveParser.TOK_REVOKE)
 public class RevokeAnalyzer extends AbstractPrivilegeAnalyzer {
   public RevokeAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

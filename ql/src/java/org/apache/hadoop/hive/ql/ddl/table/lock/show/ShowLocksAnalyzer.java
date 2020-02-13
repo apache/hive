@@ -37,7 +37,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Analyzer for show locks commands.
  */
-@DDLType(type=HiveParser.TOK_SHOWLOCKS)
+@DDLType(types = HiveParser.TOK_SHOWLOCKS)
 public class ShowLocksAnalyzer extends BaseSemanticAnalyzer {
   public ShowLocksAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

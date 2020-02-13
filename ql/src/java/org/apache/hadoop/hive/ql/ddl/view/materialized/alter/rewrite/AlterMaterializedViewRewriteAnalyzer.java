@@ -38,7 +38,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Analyzer for alter materialized view rewrite commands.
  */
-@DDLType(type=HiveParser.TOK_ALTER_MATERIALIZED_VIEW_REWRITE)
+@DDLType(types = HiveParser.TOK_ALTER_MATERIALIZED_VIEW_REWRITE)
 public class AlterMaterializedViewRewriteAnalyzer extends BaseSemanticAnalyzer {
   public AlterMaterializedViewRewriteAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

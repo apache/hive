@@ -38,7 +38,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Analyzer for database dropping commands.
  */
-@DDLType(type=HiveParser.TOK_DROPDATABASE)
+@DDLType(types = HiveParser.TOK_DROPDATABASE)
 public class DropDatabaseAnalyzer extends BaseSemanticAnalyzer {
   public DropDatabaseAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

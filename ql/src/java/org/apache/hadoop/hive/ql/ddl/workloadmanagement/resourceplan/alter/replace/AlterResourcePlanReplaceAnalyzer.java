@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Analyzer for replace resource plan commands.
  */
-@DDLType(type=HiveParser.TOK_ALTER_RP_REPLACE)
+@DDLType(types = HiveParser.TOK_ALTER_RP_REPLACE)
 public class AlterResourcePlanReplaceAnalyzer extends BaseSemanticAnalyzer {
   public AlterResourcePlanReplaceAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

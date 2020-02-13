@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils;
 /**
  * Analyzer for drop mapping commands.
  */
-@DDLType(type=HiveParser.TOK_DROP_MAPPING)
+@DDLType(types = HiveParser.TOK_DROP_MAPPING)
 public class DropWMMappingAnalyzer extends BaseSemanticAnalyzer {
   public DropWMMappingAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

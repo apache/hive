@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Analyzer for show table properties commands.
  */
-@DDLType(type=HiveParser.TOK_SHOW_TBLPROPERTIES)
+@DDLType(types = HiveParser.TOK_SHOW_TBLPROPERTIES)
 public class ShowTablePropertiesAnalyzer extends BaseSemanticAnalyzer {
   public ShowTablePropertiesAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.ql.parse.HiveParser;
  * Alter View category helper. It derives the actual type of the command from the root element, by selecting the type
  * of the second child, as the Alter View commands have this structure: viewName command partitionSpec?
  */
-@DDLType(type=HiveParser.TOK_ALTERVIEW)
+@DDLType(types = HiveParser.TOK_ALTERVIEW)
 public class AlterViewAnalyzerCategory implements DDLSemanticAnalyzerCategory {
   @Override
   public int getType(ASTNode root) {
