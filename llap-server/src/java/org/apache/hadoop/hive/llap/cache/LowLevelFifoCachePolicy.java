@@ -23,9 +23,9 @@ import java.util.LinkedList;
 
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Predicate;
 
 import org.apache.hadoop.hive.llap.LlapUtil;
-import org.apache.hadoop.hive.llap.ProactiveEviction;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 
@@ -73,7 +73,7 @@ public class LowLevelFifoCachePolicy implements LowLevelCachePolicy {
   }
 
   @Override
-  public long evictEntity(ProactiveEviction.Request request) {
+  public long evictEntity(Predicate<LlapCacheableBuffer> predicate) {
     return 0;
   }
 

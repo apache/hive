@@ -37,10 +37,10 @@ public interface LlapIo<T> {
 
   /**
    * Handles request to evict entities specified in the request object.
-   * @param request lists Hive entities (DB, table, etc..) whose LLAP buffers should be evicted.
+   * @param protoRequest lists Hive entities (DB, table, etc..) whose LLAP buffers should be evicted.
    * @return true if request was acknowledged (execution might be async), false if not.
    */
-  boolean evictEntity(LlapDaemonProtocolProtos.EvictEntityRequestProto request);
+  boolean evictEntity(LlapDaemonProtocolProtos.EvictEntityRequestProto protoRequest);
 
   void initCacheOnlyInputFormat(InputFormat<?, ?> inputFormat);
 }

@@ -33,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 import javax.net.SocketFactory;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.impl.LlapManagementProtocolClientImpl;
@@ -195,6 +196,16 @@ public final class ProactiveEviction {
         protoRequests.add(requestBuilder.build());
       }
       return protoRequests;
+    }
+
+    /**
+     * Match a CacheTag to this eviction request.
+     * @param cacheTag
+     * @return true if cacheTag matches and the related buffer is eligible for proactive eviction, false otherwise.
+     */
+    public boolean isTagMatch(CacheTag cacheTag) {
+      // TODO: implement this
+      return false;
     }
 
     /**

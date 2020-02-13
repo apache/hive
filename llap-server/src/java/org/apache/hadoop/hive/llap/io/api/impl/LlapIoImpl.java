@@ -26,11 +26,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 
 import javax.management.ObjectName;
 
 import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.llap.ProactiveEviction;
+import org.apache.hadoop.hive.llap.cache.LlapCacheableBuffer;
 import org.apache.hadoop.hive.llap.daemon.impl.StatsRecordingThreadPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -253,16 +255,16 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
   }
 
   public boolean evictEntity(LlapDaemonProtocolProtos.EvictEntityRequestProto protoRequest) {
-    if (memoryManager == null ||
-        !HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_IO_PROACTIVE_EVICTION_ENABLED)) {
+    if (memoryManager == null || !HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_IO_PROACTIVE_EVICTION_ENABLED)) {
       return false;
     }
     final ProactiveEviction.Request request = ProactiveEviction.Request.Builder.create()
         .fromProtoRequest(protoRequest).build();
+    Predicate<LlapCacheableBuffer> predicate = buffer -> request.isTagMatch(buffer.getTag());
     Runnable evictionTask = new Runnable() {
       @Override
       public void run() {
-        long evictedBytes = memoryManager.evictEntity(request);
+        long evictedBytes = memoryManager.evictEntity(predicate);
         StringBuilder sb = new StringBuilder();
         sb.append("Evicted ").append(evictedBytes).append(" bytes from LLAP cache buffers that " +
             "belong to table(s): ");

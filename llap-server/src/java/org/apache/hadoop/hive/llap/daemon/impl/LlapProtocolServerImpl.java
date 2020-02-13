@@ -335,14 +335,14 @@ public class LlapProtocolServerImpl extends AbstractService
 
   @Override
   public LlapDaemonProtocolProtos.EvictEntityResponseProto evictEntity(
-      RpcController controller, LlapDaemonProtocolProtos.EvictEntityRequestProto request)
+      RpcController controller, LlapDaemonProtocolProtos.EvictEntityRequestProto protoRequest)
       throws ServiceException {
     LlapDaemonProtocolProtos.EvictEntityResponseProto.Builder responseProtoBuilder =
         LlapDaemonProtocolProtos.EvictEntityResponseProto.newBuilder();
 
     LlapIo<?> llapIo = LlapProxy.getIo();
     if (llapIo != null) {
-      llapIo.evictEntity(request);
+      llapIo.evictEntity(protoRequest);
       responseProtoBuilder.setAck(true);
     } else {
       responseProtoBuilder.setAck(false);

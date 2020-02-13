@@ -20,12 +20,12 @@ package org.apache.hadoop.hive.llap.cache;
 
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Predicate;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.LlapUtil;
-import org.apache.hadoop.hive.llap.ProactiveEviction;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.io.metadata.MetadataCache.LlapMetadataBuffer;
@@ -242,7 +242,7 @@ public final class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
   }
 
   @Override
-  public long evictEntity(ProactiveEviction.Request request) {
+  public long evictEntity(Predicate<LlapCacheableBuffer> predicate) {
     return 0;
   }
 
