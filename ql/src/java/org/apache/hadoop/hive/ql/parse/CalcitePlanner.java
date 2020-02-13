@@ -5293,24 +5293,19 @@ public class CalcitePlanner extends SemanticAnalyzer {
   }
 
   @Override
-  protected Table getTableObjectByName(String tableName, boolean throwException) throws HiveException {
-    if (!tabNameToTabObject.containsKey(tableName)) {
-      // TODO: The code below should be a single HMS call and possibly unified with method in SemanticAnalyzer
-      Table table = db.getTable(tableName, throwException);
+  protected Table getTableObjectByName(String tabName, boolean throwException) throws HiveException {
+    String[] names = Utilities.getDbTableName(tabName);
+    final String  tableName = names[1];
+    final String  dbName = names[0];
+    final String fullyQualName = dbName + "." + tableName;
+    if (!tabNameToTabObject.containsKey(fullyQualName)) {
+      Table table = db.getTable(dbName, tableName, throwException);
       if (table != null) {
-        table.setPrimaryKeyInfo(db.getReliablePrimaryKeys(
-            table.getDbName(), table.getTableName()));
-        table.setForeignKeyInfo(db.getReliableForeignKeys(
-            table.getDbName(), table.getTableName()));
-        table.setUniqueKeyInfo(db.getReliableUniqueConstraints(
-            table.getDbName(), table.getTableName()));
-        table.setNotNullConstraint(db.getReliableNotNullConstraints(
-            table.getDbName(), table.getTableName()));
-        tabNameToTabObject.put(tableName, table);
+        tabNameToTabObject.put(fullyQualName, table);
       }
       return table;
     }
-    return tabNameToTabObject.get(tableName);
+    return tabNameToTabObject.get(fullyQualName);
   }
 
   /**
