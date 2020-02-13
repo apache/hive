@@ -35,7 +35,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Analyzer for drop view commands.
  */
-@DDLType(type=HiveParser.TOK_DROPVIEW)
+@DDLType(types = HiveParser.TOK_DROPVIEW)
 public class DropViewAnalyzer extends BaseSemanticAnalyzer {
   public DropViewAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

@@ -110,6 +110,7 @@ import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.create.like.CreateTableLikeDesc;
 import org.apache.hadoop.hive.ql.ddl.table.misc.AlterTableUnsetPropertiesDesc;
 import org.apache.hadoop.hive.ql.ddl.table.misc.PreInsertTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.storage.skewed.SkewedTableUtils;
 import org.apache.hadoop.hive.ql.ddl.view.create.CreateViewDesc;
 import org.apache.hadoop.hive.ql.ddl.view.materialized.update.MaterializedViewUpdateDesc;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
@@ -13567,9 +13568,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         HiveConf hiveConf = SessionState.get().getConf();
 
         // skewed column names
-        skewedColNames = analyzeSkewedTablDDLColNames(skewedColNames, child);
+        skewedColNames = SkewedTableUtils.analyzeSkewedTableDDLColNames(child);
         // skewed value
-        analyzeDDLSkewedValues(skewedValues, child);
+        skewedValues = SkewedTableUtils.analyzeDDLSkewedValues(child);
         // stored as directories
         storedAsDirs = analyzeStoredAdDirs(child);
 

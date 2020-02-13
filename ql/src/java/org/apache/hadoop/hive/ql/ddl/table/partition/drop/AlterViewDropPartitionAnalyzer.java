@@ -26,7 +26,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Analyzer for drop partition commands for views.
  */
-@DDLType(type=HiveParser.TOK_ALTERVIEW_DROPPARTS)
+@DDLType(types = HiveParser.TOK_ALTERVIEW_DROPPARTS)
 public class AlterViewDropPartitionAnalyzer extends AbstractDropPartitionAnalyzer {
   public AlterViewDropPartitionAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
