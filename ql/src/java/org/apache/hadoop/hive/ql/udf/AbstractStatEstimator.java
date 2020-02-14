@@ -1,8 +1,8 @@
 package org.apache.hadoop.hive.ql.udf;
 
-import org.apache.hadoop.hive.ql.stats.StatEstimator;
+import org.apache.hadoop.hive.ql.stats.IStatEstimator;
 
-public abstract class AbstractStatEstimator implements StatEstimator {
+public abstract class AbstractStatEstimator implements IStatEstimator {
 
 
 }

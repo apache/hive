@@ -7,7 +7,7 @@ import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 
 // FIXME missing apidoc
-public interface StatEstimator {
+public interface IStatEstimator {
 
   // FIXME missing apidoc
   public Optional<ColStatistics> estimate(GenericUDF genericUDF, List<ColStatistics> csList);

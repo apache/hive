@@ -1561,7 +1561,7 @@ public class StatsUtils {
           return newStats;
         }
       }
-      Optional<StatEstimator> se = engfd.getGenericUDF().getStatEstimator();
+      Optional<IStatEstimator> se = engfd.getGenericUDF().getStatEstimator();
       if (se.isPresent()) {
         List<ColStatistics> csList = new ArrayList<ColStatistics>();
         for (ExprNodeDesc child : engfd.getChildren()) {

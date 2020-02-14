@@ -29,7 +29,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.StringSubstrColStart;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringSubstrColStartLen;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.ColStatistics.Range;
-import org.apache.hadoop.hive.ql.stats.StatEstimator;
+import org.apache.hadoop.hive.ql.stats.IStatEstimator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.IStatEstimatorProvider;
 import org.apache.hadoop.io.BytesWritable;
@@ -140,7 +140,7 @@ public class UDFSubstr extends UDF implements IStatEstimatorProvider {
   }
 
   @Override
-  public Optional<StatEstimator> getStatEstimator() {
+  public Optional<IStatEstimator> getStatEstimator() {
     return Optional.of(new SubStrStatEstimator());
   }
 
