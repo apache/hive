@@ -233,9 +233,6 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
   public static InputFormat<WritableComparable, Writable> wrapForLlap(
       InputFormat<WritableComparable, Writable> inputFormat, Configuration conf,
       PartitionDesc part) throws HiveException {
-    if (!HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_ENABLED, LlapProxy.isDaemon())) {
-      return inputFormat; // LLAP not enabled, no-op.
-    }
     String ifName = inputFormat.getClass().getCanonicalName();
     boolean isSupported = inputFormat instanceof LlapWrappableInputFormatInterface;
     boolean isCacheOnly = inputFormat instanceof LlapCacheOnlyInputFormatInterface;
@@ -406,10 +403,12 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     pushProjectionsAndFilters(job, inputFormatClass, splitPath, nonNative);
 
     InputFormat inputFormat = getInputFormatFromCache(inputFormatClass, job);
-    try {
-      inputFormat = HiveInputFormat.wrapForLlap(inputFormat, job, part);
-    } catch (HiveException e) {
-      throw new IOException(e);
+    if (HiveConf.getBoolVar(job, ConfVars.LLAP_IO_ENABLED, LlapProxy.isDaemon())) {
+      try {
+        inputFormat = HiveInputFormat.wrapForLlap(inputFormat, job, part);
+      } catch (HiveException e) {
+        throw new IOException(e);
+      }
     }
     RecordReader innerReader = null;
     try {
