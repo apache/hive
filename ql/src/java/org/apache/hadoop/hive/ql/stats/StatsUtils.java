@@ -75,6 +75,7 @@ import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.Statistics.State;
 import org.apache.hadoop.hive.ql.stats.BasicStats.Factory;
 import org.apache.hadoop.hive.ql.stats.estimator.IStatEstimator;
+import org.apache.hadoop.hive.ql.stats.estimator.IStatEstimatorProvider;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFSum;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
@@ -1554,20 +1555,23 @@ public class StatsUtils {
       }
 
       if (conf.getBoolVar(ConfVars.HIVE_STATS_USE_UDF_ESTIMATORS)) {
-        Optional<IStatEstimator> se = engfd.getGenericUDF().getStatEstimator();
-        if (se.isPresent()) {
-          List<ColStatistics> csList = new ArrayList<ColStatistics>();
-          for (ExprNodeDesc child : engfd.getChildren()) {
-            ColStatistics cs = getColStatisticsFromExpression(conf, parentStats, child);
-            csList.add(cs);
-          }
-          Optional<ColStatistics> res = se.get().estimate(csList);
-          if (res.isPresent()) {
-            ColStatistics newStats = res.get();
-            colType = colType.toLowerCase();
-            newStats.setColumnType(colType);
-            newStats.setColumnName(colName);
-            return newStats;
+        Optional<IStatEstimatorProvider> sep = engfd.getGenericUDF().adapt(IStatEstimatorProvider.class);
+        if (sep.isPresent()) {
+          Optional<IStatEstimator> se = sep.get().getStatEstimator();
+          if (se.isPresent()) {
+            List<ColStatistics> csList = new ArrayList<ColStatistics>();
+            for (ExprNodeDesc child : engfd.getChildren()) {
+              ColStatistics cs = getColStatisticsFromExpression(conf, parentStats, child);
+              csList.add(cs);
+            }
+            Optional<ColStatistics> res = se.get().estimate(csList);
+            if (res.isPresent()) {
+              ColStatistics newStats = res.get();
+              colType = colType.toLowerCase();
+              newStats.setColumnType(colType);
+              newStats.setColumnName(colName);
+              return newStats;
+            }
           }
         }
       }

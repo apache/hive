@@ -34,7 +34,6 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.stats.estimator.IStatEstimator;
 import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
@@ -641,12 +640,10 @@ public abstract class GenericUDF implements Closeable {
     }
   }
 
-  /**
-   * Returns the {@link IStatEstimator} which is capable of supplying stat calculations for the UDF.
-   *
-   * @return
-   */
-  public Optional<IStatEstimator> getStatEstimator() {
+  public <T> Optional<T> adapt(Class<T> clazz) {
+    if (clazz.isInstance(this)) {
+      Optional.of(this);
+    }
     return Optional.empty();
   }
 }

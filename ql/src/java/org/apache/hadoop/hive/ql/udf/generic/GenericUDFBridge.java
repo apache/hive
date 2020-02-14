@@ -47,7 +47,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
  * UDF class needs to be serialized with the plan.
  *
  */
-public class GenericUDFBridge extends GenericUDF implements Serializable {
+public class GenericUDFBridge extends GenericUDF implements Serializable, IStatEstimatorProvider {
   private static final long serialVersionUID = 4994861742809511113L;
 
   /**
@@ -254,11 +254,19 @@ public class GenericUDFBridge extends GenericUDF implements Serializable {
   }
 
   @Override
+  public <T> Optional<T> adapt(Class<T> clazz) {
+    if (clazz.isInstance(udf)) {
+      return Optional.of((T) udf);
+    }
+    return super.adapt(clazz);
+  }
+
+  @Override
   public Optional<IStatEstimator> getStatEstimator() {
     if (IStatEstimatorProvider.class.isInstance(udf)) {
       IStatEstimatorProvider sep = (IStatEstimatorProvider) udf;
       return sep.getStatEstimator();
     }
-    return super.getStatEstimator();
+    return Optional.empty();
   }
 }

@@ -18,9 +18,13 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import java.util.Optional;
+
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.stats.estimator.IStatEstimator;
+import org.apache.hadoop.hive.ql.stats.estimator.IStatEstimatorProvider;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
 /**
@@ -33,7 +37,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
     value = "_FUNC_(a1, a2, ...) - Returns the first non-null argument",
     extended = "Example:\n"
     + "  > SELECT _FUNC_(NULL, 1, NULL) FROM src LIMIT 1;\n" + "  1")
-public class GenericUDFCoalesce extends GenericUDF {
+public class GenericUDFCoalesce extends GenericUDF implements IStatEstimatorProvider {
   private transient ObjectInspector[] argumentOIs;
   private transient GenericUDFUtils.ReturnObjectInspectorResolver returnOIResolver;
 
@@ -70,6 +74,12 @@ public class GenericUDFCoalesce extends GenericUDF {
   @Override
   public String getDisplayString(String[] children) {
     return getStandardDisplayString("COALESCE", children, ",");
+  }
+
+  @Override
+  public Optional<IStatEstimator> getStatEstimator() {
+    // TODO Auto-generated method stub
+    return null;
   }
 
 }
