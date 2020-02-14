@@ -1570,7 +1570,12 @@ public class StatsUtils {
         }
         Optional<ColStatistics> res = se.get().estimate(engfd.getGenericUDF(), csList);
         if (res.isPresent()) {
-          return res.get();
+          ColStatistics newStats = res.get();
+          ColStatistics x = newStats;
+          colType = colType.toLowerCase();
+          newStats.setColumnType(colType);
+          x.setColumnName(colName);
+          return x;
         }
       }
       // fallback to default

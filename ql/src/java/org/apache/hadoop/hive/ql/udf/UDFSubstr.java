@@ -148,13 +148,13 @@ public class UDFSubstr extends UDF implements IStatEstimatorProvider {
 
     @Override
     public Optional<ColStatistics> estimate(GenericUDF genericUDF, List<ColStatistics> csList) {
-      ColStatistics cs = csList.get(0);
+      ColStatistics cs = csList.get(0).clone();
 
-      Optional<Range> subRange = computeFromToRange(      csList.get(1).getRange(),      csList.get(2).getRange());
-      if (!subRange.isPresent()) {
-        return Optional.of(cs);
-      }
-      return Optional.empty();
+      //      Optional<Range> subRange = computeFromToRange(      csList.get(1).getRange(),      csList.get(2).getRange());
+      //      if (!subRange.isPresent()) {
+      //      }
+      return Optional.of(cs);
+      //      return Optional.empty();
 
 
     }
