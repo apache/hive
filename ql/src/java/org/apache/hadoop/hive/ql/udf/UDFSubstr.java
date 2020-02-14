@@ -152,9 +152,22 @@ public class UDFSubstr extends UDF implements IStatEstimatorProvider {
 
       Optional<Range> subRange = computeFromToRange(csList.get(1).getRange(), csList.get(2).getRange());
       if (subRange.isPresent()) {
-
+        Optional<Double> width = getRangeWidth(subRange.get());
+        if (width.isPresent()) {
+          Double w = width.get();
+          if (cs.getAvgColLen() > w) {
+            cs.setAvgColLen(w);
+          }
+        }
       }
       return Optional.of(cs);
+    }
+
+    private Optional<Double> getRangeWidth(Range range) {
+      if (range.minValue != null && range.maxValue != null) {
+        return Optional.of(range.maxValue.doubleValue() - range.minValue.doubleValue());
+      }
+      return Optional.empty();
     }
 
     private Optional<Range> computeFromToRange(Range uRange, Range vRange) {
