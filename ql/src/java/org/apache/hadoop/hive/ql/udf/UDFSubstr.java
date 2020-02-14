@@ -149,29 +149,37 @@ public class UDFSubstr extends UDF implements IStatEstimatorProvider {
     public Optional<ColStatistics> estimate(List<ColStatistics> csList) {
       ColStatistics cs = csList.get(0).clone();
 
-      Optional<Range> subRange = computeFromToRange(csList.get(1).getRange(), csList.get(2).getRange());
-      if (subRange.isPresent()) {
-        Optional<Double> width = getRangeWidth(subRange.get());
-        if (width.isPresent()) {
-          Double w = width.get();
+      // this might bad in a skewed case; consider:
+      // 1 row with 1000 long string
+      // 99 rows with 0 length
+      // orig avg is 10
+      // new avg is 5 (if substr(5)) ; but in reality it will stay ~10
+      Optional<Double> start = getRangeWidth(csList.get(1).getRange());
+      Range startRange = csList.get(1).getRange();
+      if (startRange != null && startRange.minValue != null) {
+        double newAvgColLen = cs.getAvgColLen() - startRange.minValue.doubleValue();
+        if (newAvgColLen > 0) {
+          cs.setAvgColLen(newAvgColLen);
+        }
+
+      }
+
+      if (csList.size() >= 2) {
+        Range lengthRange = csList.get(2).getRange();
+        if (lengthRange != null && lengthRange.maxValue != null) {
+          Double w = lengthRange.maxValue.doubleValue();
           if (cs.getAvgColLen() > w) {
             cs.setAvgColLen(w);
           }
         }
       }
+
       return Optional.of(cs);
     }
 
     private Optional<Double> getRangeWidth(Range range) {
       if (range.minValue != null && range.maxValue != null) {
         return Optional.of(range.maxValue.doubleValue() - range.minValue.doubleValue());
-      }
-      return Optional.empty();
-    }
-
-    private Optional<Range> computeFromToRange(Range uRange, Range vRange) {
-      if (uRange != null && vRange != null) {
-        return Optional.of(new Range(uRange.minValue, vRange.maxValue));
       }
       return Optional.empty();
     }
