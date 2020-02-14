@@ -1,4 +1,4 @@
-package org.apache.hadoop.hive.ql.stats;
+package org.apache.hadoop.hive.ql.stats.estimator;
 
 import java.util.List;
 import java.util.Optional;
