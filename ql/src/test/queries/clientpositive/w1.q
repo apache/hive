@@ -2,7 +2,10 @@ set hive.fetch.task.conversion=none;
 
 create table t (a string);
 
-insert into t values ('a'),('b'),('c');
+insert into t values 
+('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'),
+('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'),
+('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
 
 explain analyze
 select a from t;

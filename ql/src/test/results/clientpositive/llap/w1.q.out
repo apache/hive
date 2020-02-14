@@ -6,11 +6,17 @@ POSTHOOK: query: create table t (a string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t
-PREHOOK: query: insert into t values ('a'),('b'),('c')
+PREHOOK: query: insert into t values 
+('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'),
+('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'),
+('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values ('a'),('b'),('c')
+POSTHOOK: query: insert into t values 
+('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'),
+('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'),
+('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
@@ -46,14 +52,14 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t
-                  Statistics: Num rows: 3/3 Data size: 255 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 3/3 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: a (type: string)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 3/3 Data size: 255 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 3/3 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 3/3 Data size: 255 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 3/3 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -98,14 +104,14 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t
-                  Statistics: Num rows: 3/3 Data size: 255 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 3/3 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: substr(a, 1, 4) (type: string)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 3/3 Data size: 255 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 3/3 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 3/3 Data size: 255 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 3/3 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
