@@ -61,6 +61,10 @@ public abstract class DatabaseRule extends ExternalResource {
 
   private boolean verbose;
 
+  public DatabaseRule() {
+    verbose = System.getProperty("verbose.schematool") != null;
+  }
+
   public DatabaseRule setVerbose(boolean verbose) {
     this.verbose = verbose;
     return this;
