@@ -1561,7 +1561,7 @@ public class StatsUtils {
             ColStatistics cs = getColStatisticsFromExpression(conf, parentStats, child);
             csList.add(cs);
           }
-          Optional<ColStatistics> res = se.get().estimate(engfd.getGenericUDF(), csList);
+          Optional<ColStatistics> res = se.get().estimate(csList);
           if (res.isPresent()) {
             ColStatistics newStats = res.get();
             colType = colType.toLowerCase();

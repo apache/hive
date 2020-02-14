@@ -29,10 +29,8 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.StringSubstrColStart;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringSubstrColStartLen;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.ColStatistics.Range;
-import org.apache.hadoop.hive.ql.stats.estimator.AbstractStatEstimator;
 import org.apache.hadoop.hive.ql.stats.estimator.IStatEstimator;
 import org.apache.hadoop.hive.ql.stats.estimator.IStatEstimatorProvider;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
@@ -145,10 +143,10 @@ public class UDFSubstr extends UDF implements IStatEstimatorProvider {
     return Optional.of(new SubStrStatEstimator());
   }
 
-  private static class SubStrStatEstimator extends AbstractStatEstimator {
+  private static class SubStrStatEstimator implements IStatEstimator {
 
     @Override
-    public Optional<ColStatistics> estimate(GenericUDF genericUDF, List<ColStatistics> csList) {
+    public Optional<ColStatistics> estimate(List<ColStatistics> csList) {
       ColStatistics cs = csList.get(0).clone();
 
       Optional<Range> subRange = computeFromToRange(csList.get(1).getRange(), csList.get(2).getRange());
