@@ -1551,20 +1551,23 @@ public class StatsUtils {
           return newStats;
         }
       }
-      Optional<IStatEstimator> se = engfd.getGenericUDF().getStatEstimator();
-      if (se.isPresent()) {
-        List<ColStatistics> csList = new ArrayList<ColStatistics>();
-        for (ExprNodeDesc child : engfd.getChildren()) {
-          ColStatistics cs = getColStatisticsFromExpression(conf, parentStats, child);
-          csList.add(cs);
-        }
-        Optional<ColStatistics> res = se.get().estimate(engfd.getGenericUDF(), csList);
-        if (res.isPresent()) {
-          ColStatistics newStats = res.get();
-          colType = colType.toLowerCase();
-          newStats.setColumnType(colType);
-          newStats.setColumnName(colName);
-          return newStats;
+
+      if (conf.getBoolVar(ConfVars.HIVE_STATS_USE_UDF_ESTIMATORS)) {
+        Optional<IStatEstimator> se = engfd.getGenericUDF().getStatEstimator();
+        if (se.isPresent()) {
+          List<ColStatistics> csList = new ArrayList<ColStatistics>();
+          for (ExprNodeDesc child : engfd.getChildren()) {
+            ColStatistics cs = getColStatisticsFromExpression(conf, parentStats, child);
+            csList.add(cs);
+          }
+          Optional<ColStatistics> res = se.get().estimate(engfd.getGenericUDF(), csList);
+          if (res.isPresent()) {
+            ColStatistics newStats = res.get();
+            colType = colType.toLowerCase();
+            newStats.setColumnType(colType);
+            newStats.setColumnName(colName);
+            return newStats;
+          }
         }
       }
       // fallback to default
