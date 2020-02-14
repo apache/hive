@@ -18,16 +18,24 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.ColStatistics;
+import org.apache.hadoop.hive.ql.stats.estimator.IStatEstimator;
+import org.apache.hadoop.hive.ql.stats.estimator.IStatEstimatorProvider;
+import org.apache.hadoop.hive.ql.stats.estimator.StatEstimators;
+import org.apache.hadoop.hive.ql.stats.estimator.StatEstimators.WorstStatCombiner;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 
 /**
  * GenericUDF Class for SQL construct "CASE a WHEN b THEN c [ELSE f] END".
- * 
+ *
  * NOTES: 1. a and b should be compatible, or an exception will be
  * thrown. 2. c and f should be compatible types, or an exception will be
  * thrown.
@@ -49,7 +57,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
     + " END\n"
     + " FROM emp_details")
 
-public class GenericUDFCase extends GenericUDF {
+public class GenericUDFCase extends GenericUDF implements IStatEstimatorProvider {
   private transient ObjectInspector[] argumentOIs;
   private transient GenericUDFUtils.ReturnObjectInspectorResolver returnOIResolver;
   private transient GenericUDFUtils.ReturnObjectInspectorResolver caseOIResolver;
@@ -137,5 +145,24 @@ public class GenericUDFCase extends GenericUDF {
     sb.append(" END");
     return sb.toString();
   }
+
+  @Override
+  public Optional<IStatEstimator> getStatEstimator() {
+    return Optional.of(new CaseStatEstimator());
+  }
+
+  static class CaseStatEstimator implements IStatEstimator {
+
+    @Override
+    public Optional<ColStatistics> estimate(List<ColStatistics> argStats) {
+      WorstStatCombiner combiner = new StatEstimators.WorstStatCombiner();
+      for (int i = 1; i < argStats.size(); i += 2) {
+        combiner.add(argStats.get(i));
+      }
+      combiner.add(argStats.get(argStats.size() - 1));
+      return combiner.getResult();
+    }
+  }
+
 
 }

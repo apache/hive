@@ -253,6 +253,7 @@ public class GenericUDFBridge extends GenericUDF implements Serializable, IStatE
     boolean isUdfAllowed(Class<?> clazz);
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public <T> Optional<T> adapt(Class<T> clazz) {
     if (clazz.isInstance(udf)) {

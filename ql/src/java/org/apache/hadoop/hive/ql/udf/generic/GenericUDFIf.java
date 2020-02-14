@@ -18,6 +18,9 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
@@ -25,6 +28,11 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressionsSupportDecimal64;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.ColStatistics;
+import org.apache.hadoop.hive.ql.stats.estimator.IStatEstimator;
+import org.apache.hadoop.hive.ql.stats.estimator.IStatEstimatorProvider;
+import org.apache.hadoop.hive.ql.stats.estimator.StatEstimators;
+import org.apache.hadoop.hive.ql.stats.estimator.StatEstimators.WorstStatCombiner;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
@@ -115,7 +123,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprVarCharScalarStri
   IfExprTimestampScalarColumn.class, IfExprTimestampScalarScalar.class,
 })
 @VectorizedExpressionsSupportDecimal64()
-public class GenericUDFIf extends GenericUDF {
+public class GenericUDFIf extends GenericUDF implements IStatEstimatorProvider {
   private transient ObjectInspector[] argumentOIs;
   private transient GenericUDFUtils.ReturnObjectInspectorResolver returnOIResolver;
 
@@ -171,4 +179,22 @@ public class GenericUDFIf extends GenericUDF {
     assert (children.length == 3);
     return getStandardDisplayString("if", children);
   }
+
+  @Override
+  public Optional<IStatEstimator> getStatEstimator() {
+    return Optional.of(new IfStatEstimator());
+  }
+
+  static class IfStatEstimator implements IStatEstimator {
+
+    @Override
+    public Optional<ColStatistics> estimate(List<ColStatistics> argStats) {
+      WorstStatCombiner combiner = new StatEstimators.WorstStatCombiner();
+      combiner.add(argStats.get(1));
+      combiner.add(argStats.get(2));
+      return combiner.getResult();
+    }
+
+  }
+
 }

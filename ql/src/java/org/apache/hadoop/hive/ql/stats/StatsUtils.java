@@ -1632,11 +1632,12 @@ public class StatsUtils {
   }
 
   private static Optional<Long> getLongConstValue(ExprNodeConstantDesc encd) {
-    String constant = encd.getValue().toString();
-    //    encd.getTypeInfo().
-    PrimitiveCategory category = GenericUDAFSum.getReturnType(encd.getTypeInfo());
-    if (category == PrimitiveCategory.LONG) {
-      return Optional.of(Long.parseLong(constant));
+    if (encd.getValue() != null) {
+      String constant = encd.getValue().toString();
+      PrimitiveCategory category = GenericUDAFSum.getReturnType(encd.getTypeInfo());
+      if (category == PrimitiveCategory.LONG) {
+        return Optional.of(Long.parseLong(constant));
+      }
     }
     return Optional.empty();
   }

@@ -640,9 +640,10 @@ public abstract class GenericUDF implements Closeable {
     }
   }
 
+  @SuppressWarnings("unchecked")
   public <T> Optional<T> adapt(Class<T> clazz) {
     if (clazz.isInstance(this)) {
-      Optional.of(this);
+      return Optional.of((T) this);
     }
     return Optional.empty();
   }

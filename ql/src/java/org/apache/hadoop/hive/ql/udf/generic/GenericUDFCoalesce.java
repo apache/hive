@@ -18,13 +18,17 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.stats.estimator.IStatEstimator;
 import org.apache.hadoop.hive.ql.stats.estimator.IStatEstimatorProvider;
+import org.apache.hadoop.hive.ql.stats.estimator.StatEstimators;
+import org.apache.hadoop.hive.ql.stats.estimator.StatEstimators.WorstStatCombiner;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
 /**
@@ -78,8 +82,18 @@ public class GenericUDFCoalesce extends GenericUDF implements IStatEstimatorProv
 
   @Override
   public Optional<IStatEstimator> getStatEstimator() {
-    // TODO Auto-generated method stub
-    return null;
+    return Optional.of(new CoalesceStatEstimator());
   }
 
+  static class CoalesceStatEstimator implements IStatEstimator {
+
+    @Override
+    public Optional<ColStatistics> estimate(List<ColStatistics> argStats) {
+      WorstStatCombiner combiner = new StatEstimators.WorstStatCombiner();
+      for (int i = 0; i < argStats.size(); i++) {
+        combiner.add(argStats.get(i));
+      }
+      return combiner.getResult();
+    }
+  }
 }
