@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -1534,6 +1535,7 @@ public class StatsUtils {
 
       colName = encd.getName();
       colType = encd.getTypeString();
+      // TODO: add range for the constant
       if (encd.getValue() == null) {
         // null projection
         numNulls = numRows;
@@ -1559,7 +1561,18 @@ public class StatsUtils {
           return newStats;
         }
       }
-
+      Optional<StatEstimator> se = engfd.getGenericUDF().getStatEstimator();
+      if (se.isPresent()) {
+        List<ColStatistics> csList = new ArrayList<ColStatistics>();
+        for (ExprNodeDesc child : engfd.getChildren()) {
+          ColStatistics cs = getColStatisticsFromExpression(conf, parentStats, child);
+          csList.add(cs);
+        }
+        Optional<ColStatistics> res = se.get().estimate(engfd.getGenericUDF(), csList);
+        if (res.isPresent()) {
+          return res.get();
+        }
+      }
       // fallback to default
       countDistincts = getNDVFor(engfd, numRows, parentStats);
     } else if (end instanceof ExprNodeColumnListDesc) {

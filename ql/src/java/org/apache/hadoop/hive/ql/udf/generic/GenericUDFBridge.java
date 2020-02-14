@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Optional;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -28,6 +29,7 @@ import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.stats.StatEstimator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFUtils.ConversionHelper;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -97,7 +99,7 @@ public class GenericUDFBridge extends GenericUDF implements Serializable {
     this.isOperator = isOperator;
     this.udfClassName = udfClassName;
   }
- 
+
   // For Java serialization only
   public GenericUDFBridge() {
   }
@@ -151,7 +153,7 @@ public class GenericUDFBridge extends GenericUDF implements Serializable {
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
 
     try {
-      udf = (UDF)getUdfClassInternal().newInstance();
+      udf = getUdfClassInternal().newInstance();
     } catch (Exception e) {
       throw new UDFArgumentException(
           "Unable to instantiate UDF implementation class " + udfClassName + ": " + e);
@@ -248,5 +250,14 @@ public class GenericUDFBridge extends GenericUDF implements Serializable {
 
   public interface UdfWhitelistChecker {
     boolean isUdfAllowed(Class<?> clazz);
+  }
+
+  @Override
+  public Optional<StatEstimator> getStatEstimator() {
+    if (IStatEstimatorProvider.class.isInstance(udf)) {
+      IStatEstimatorProvider sep = (IStatEstimatorProvider) udf;
+      return sep.getStatEstimator();
+    }
+    return super.getStatEstimator();
   }
 }

@@ -19,12 +19,19 @@
 package org.apache.hadoop.hive.ql.udf;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringSubstrColStart;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringSubstrColStartLen;
+import org.apache.hadoop.hive.ql.plan.ColStatistics;
+import org.apache.hadoop.hive.ql.plan.ColStatistics.Range;
+import org.apache.hadoop.hive.ql.stats.StatEstimator;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
+import org.apache.hadoop.hive.ql.udf.generic.IStatEstimatorProvider;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
@@ -48,7 +55,7 @@ import org.apache.hadoop.io.Text;
     + "  > SELECT _FUNC_('Facebook', 5, 1) FROM src LIMIT 1;\n"
     + "  'b'")
 @VectorizedExpressions({StringSubstrColStart.class, StringSubstrColStartLen.class})
-public class UDFSubstr extends UDF {
+public class UDFSubstr extends UDF implements IStatEstimatorProvider {
 
   private final int[] index;
   private final Text r;
@@ -130,5 +137,34 @@ public class UDFSubstr extends UDF {
 
   public BytesWritable evaluate(BytesWritable bw, IntWritable pos){
     return evaluate(bw, pos, maxValue);
+  }
+
+  @Override
+  public Optional<StatEstimator> getStatEstimator() {
+    return Optional.of(new SubStrStatEstimator());
+  }
+
+  private static class SubStrStatEstimator extends AbstractStatEstimator {
+
+    @Override
+    public Optional<ColStatistics> estimate(GenericUDF genericUDF, List<ColStatistics> csList) {
+      ColStatistics cs = csList.get(0);
+
+      Optional<Range> subRange = computeFromToRange(      csList.get(1).getRange(),      csList.get(2).getRange());
+      if (!subRange.isPresent()) {
+        return Optional.of(cs);
+      }
+      return Optional.empty();
+
+
+    }
+
+    private Optional<Range> computeFromToRange(Range uRange, Range vRange) {
+      if (uRange != null && vRange != null) {
+        return Optional.of(new Range(uRange.minValue, vRange.maxValue));
+      }
+      return Optional.empty();
+    }
+
   }
 }
