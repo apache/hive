@@ -74,6 +74,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.Statistics.State;
 import org.apache.hadoop.hive.ql.stats.BasicStats.Factory;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFSum;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.NDV;
@@ -82,6 +83,7 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardConstantListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardConstantMapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardConstantStructObjectInspector;
@@ -1529,19 +1531,7 @@ public class StatsUtils {
         return null;
       }
     } else if (end instanceof ExprNodeConstantDesc) {
-
-      // constant projection
-      ExprNodeConstantDesc encd = (ExprNodeConstantDesc) end;
-
-      colName = encd.getName();
-      colType = encd.getTypeString();
-      // TODO: add range for the constant
-      if (encd.getValue() == null) {
-        // null projection
-        numNulls = numRows;
-      } else {
-        countDistincts = 1;
-      }
+      return buildColStatForConstant(conf, numRows, (ExprNodeConstantDesc) end);
     } else if (end instanceof ExprNodeGenericFuncDesc) {
       ExprNodeGenericFuncDesc engfd = (ExprNodeGenericFuncDesc) end;
       colName = engfd.getName();
@@ -1571,11 +1561,10 @@ public class StatsUtils {
         Optional<ColStatistics> res = se.get().estimate(engfd.getGenericUDF(), csList);
         if (res.isPresent()) {
           ColStatistics newStats = res.get();
-          ColStatistics x = newStats;
           colType = colType.toLowerCase();
           newStats.setColumnType(colType);
-          x.setColumnName(colName);
-          return x;
+          newStats.setColumnName(colName);
+          return newStats;
         }
       }
       // fallback to default
@@ -1606,6 +1595,42 @@ public class StatsUtils {
     colStats.setNumNulls(numNulls);
 
     return colStats;
+  }
+
+  private static ColStatistics buildColStatForConstant(HiveConf conf, long numRows, ExprNodeConstantDesc encd) {
+
+    long numNulls = 0;
+    long countDistincts = 0;
+    if (encd.getValue() == null) {
+      // null projection
+      numNulls = numRows;
+    } else {
+      countDistincts = 1;
+    }
+    String colType = encd.getTypeString();
+    colType = colType.toLowerCase();
+    ObjectInspector oi = encd.getWritableObjectInspector();
+    double avgColSize = getAvgColLenOf(conf, oi, colType);
+    ColStatistics colStats = new ColStatistics(encd.getName(), colType);
+    colStats.setAvgColLen(avgColSize);
+    colStats.setCountDistint(countDistincts);
+    colStats.setNumNulls(numNulls);
+
+    Optional<Long> value = getLongConstValue(encd);
+    if (value.isPresent()) {
+      colStats.setRange(value.get(), value.get());
+    }
+    return colStats;
+  }
+
+  private static Optional<Long> getLongConstValue(ExprNodeConstantDesc encd) {
+    String constant = encd.getValue().toString();
+    //    encd.getTypeInfo().
+    PrimitiveCategory category = GenericUDAFSum.getReturnType(encd.getTypeInfo());
+    if (category == PrimitiveCategory.LONG) {
+      return Optional.of(Long.parseLong(constant));
+    }
+    return Optional.empty();
   }
 
   private static boolean isWideningCast(ExprNodeGenericFuncDesc engfd) {
