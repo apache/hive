@@ -36,7 +36,6 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexSimplify;
 import org.apache.calcite.rex.RexUnknownAs;
 import org.apache.calcite.rex.RexUtil;
-import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.tools.RelBuilderFactory;
 import org.apache.calcite.util.Util;
@@ -118,7 +117,7 @@ public class HiveFilterSetOpTransposeRule extends FilterSetOpTransposeRule {
           RexExecutor executor =
               Util.first(filterRel.getCluster().getPlanner().getExecutor(), RexUtil.EXECUTOR);
           final RexSimplify simplify = new RexSimplify(rexBuilder, RelOptPredicateList.EMPTY, executor);
-          final RexNode cond = rexBuilder.makeCall(SqlStdOperatorTable.AND, listBuilder.build());
+          final RexNode cond = RexUtil.composeConjunction(rexBuilder, listBuilder.build());
           final RexNode x = simplify.simplifyUnknownAs(cond, RexUnknownAs.FALSE);
           if (x.isAlwaysFalse()) {
             // this is the last branch, and it is always false
