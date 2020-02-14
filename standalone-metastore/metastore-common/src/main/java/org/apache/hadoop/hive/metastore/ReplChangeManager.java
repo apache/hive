@@ -161,10 +161,6 @@ public class ReplChangeManager {
           if (cmRootEncrypted.isAbsolute()) {
             throw new MetaException(ConfVars.REPLCMENCRYPTEDDIR.getHiveName() + " should be a relative path");
           }
-          Path cmRootFallback = new Path(fallbackNonEncryptedCmRootDir);
-          if (!cmRootFallback.isAbsolute()) {
-            throw new MetaException(ConfVars.REPLCMENCRYPTEDDIR.getHiveName() + " should be absolute path");
-          }
           //Create default cm root
           Path cmroot = new Path(cmRootDir);
           createCmRoot(cmroot);
@@ -179,8 +175,15 @@ public class ReplChangeManager {
           } else {
             encryptionZoneToCmrootMapping.put(NO_ENCRYPTION, cmRootDir);
           }
-          if (cmRootFs.exists(cmRootFallback) && pathEncryptionShim.isPathEncrypted(cmRootFallback)) {
-            throw new MetaException(ConfVars.REPLCMFALLBACKNONENCRYPTEDDIR.getHiveName() + " should not be encrypted");
+          if (!StringUtils.isEmpty(fallbackNonEncryptedCmRootDir)) {
+            Path cmRootFallback = new Path(fallbackNonEncryptedCmRootDir);
+            if (!cmRootFallback.isAbsolute()) {
+              throw new MetaException(ConfVars.REPLCMENCRYPTEDDIR.getHiveName() + " should be absolute path");
+            }
+            if (cmRootFs.exists(cmRootFallback) && pathEncryptionShim.isPathEncrypted(cmRootFallback)) {
+              throw new MetaException(ConfVars.REPLCMFALLBACKNONENCRYPTEDDIR.getHiveName()
+                      + " should not be encrypted");
+            }
           }
           UserGroupInformation usergroupInfo = UserGroupInformation.getCurrentUser();
           msUser = usergroupInfo.getShortUserName();
@@ -609,8 +612,10 @@ public class ReplChangeManager {
     public boolean accept(Path p) {
       if (enabled) {
         String name = p.getName();
-        return !name.contains(cmRootDir) && !name.contains(encryptedCmRootDir)
-                && !name.contains(fallbackNonEncryptedCmRootDir);
+        return StringUtils.isEmpty(fallbackNonEncryptedCmRootDir)
+                ? (!name.contains(cmRootDir) && !name.contains(encryptedCmRootDir))
+                : (!name.contains(cmRootDir) && !name.contains(encryptedCmRootDir)
+                && !name.contains(fallbackNonEncryptedCmRootDir));
       }
       return true;
     }
