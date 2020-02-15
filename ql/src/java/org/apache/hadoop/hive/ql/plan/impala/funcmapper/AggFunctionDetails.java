@@ -34,7 +34,13 @@ import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.impala.thrift.TPrimitiveType;
 
-public class AggFunctionDetails {
+/**
+ * Contains details for Aggregation functions.  These functions are currently
+ * stored in a resource file.
+ * Implements FunctionDetails because ImpalaFunctionSignature can be used
+ * as a key for both AggFunctionDetails and ScalarFunctionDetails.
+ */
+public class AggFunctionDetails implements FunctionDetails {
 
   // Map containing an Impala signature to the details associated with the signature.
   // A signature consists of the function name, the operand types and the return type.
@@ -50,12 +56,11 @@ public class AggFunctionDetails {
 
     try {
       for (AggFunctionDetails afd : aggDetails) {
-        List<SqlTypeName> argTypes = Lists.newArrayList();
-        if (afd.argTypes != null) {
-          argTypes = ImpalaTypeConverter.getSqlTypeNames(afd.argTypes);
-        }
+        List<SqlTypeName> argTypes = (afd.argTypes == null)
+            ? Lists.newArrayList()
+            : ImpalaTypeConverter.getSqlTypeNames(afd.argTypes);
         SqlTypeName retType = ImpalaTypeConverter.getSqlTypeName(afd.retType);
-        ImpalaFunctionSignature ifs = new ImpalaFunctionSignature(afd.impalaFnName, argTypes, retType,
+        ImpalaFunctionSignature ifs = new ImpalaFunctionSignature(afd.fnName, argTypes, retType,
             false);
         AGG_BUILTINS_INSTANCE.put(ifs, afd);
       }

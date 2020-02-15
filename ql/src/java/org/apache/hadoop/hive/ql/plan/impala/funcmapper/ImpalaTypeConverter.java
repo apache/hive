@@ -20,10 +20,14 @@ package org.apache.hadoop.hive.ql.plan.impala.funcmapper;
 
 import java.util.List;
 
+import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.impala.catalog.PrimitiveType;
+import org.apache.impala.catalog.ScalarType;
+import org.apache.impala.catalog.Type;
 import org.apache.impala.thrift.TPrimitiveType;
 
 import com.google.common.collect.Lists;
@@ -35,45 +39,6 @@ import com.google.common.collect.Lists;
  * restructure this code.
  */
 public class ImpalaTypeConverter {
-  static public TPrimitiveType getTPrimitiveType(String stringTypeName) throws HiveException {
-    if (stringTypeName.equals("tinyint")) {
-      return TPrimitiveType.TINYINT;
-    }
-    if (stringTypeName.equals("smallint")) {
-      return TPrimitiveType.SMALLINT;
-    }
-    if (stringTypeName.equals("int")) {
-      return TPrimitiveType.INT;
-    }
-    if (stringTypeName.equals("bigint")) {
-      return TPrimitiveType.BIGINT;
-    }
-    if (stringTypeName.equals("string")) {
-      return TPrimitiveType.STRING;
-    }
-    if (stringTypeName.equals("float")) {
-      return TPrimitiveType.FLOAT;
-    }
-    if (stringTypeName.equals("double")) {
-      return TPrimitiveType.DOUBLE;
-    }
-    if (stringTypeName.startsWith("decimal")) {
-      return TPrimitiveType.DECIMAL;
-    }
-    if (stringTypeName.equals("char")) {
-      return TPrimitiveType.CHAR;
-    }
-    if (stringTypeName.equals("varchar")) {
-      return TPrimitiveType.VARCHAR;
-    }
-    if (stringTypeName.equals("timestamp")) {
-      return TPrimitiveType.TIMESTAMP;
-    }
-    if (stringTypeName.equals("date")) {
-      return TPrimitiveType.DATE;
-    }
-    throw new HiveException("Current type name " + stringTypeName + " not supported yet.");
-  }
 
   static public SqlTypeName getSqlTypeName(TPrimitiveType primitiveType) throws HiveException {
     switch (primitiveType) {
@@ -142,6 +107,9 @@ public class ImpalaTypeConverter {
   static public List<SqlTypeName> getSqlTypeNames(TPrimitiveType[] primitiveTypes)
       throws HiveException  {
     List<SqlTypeName> result = Lists.newArrayList();
+    if (primitiveTypes == null) {
+      return result;
+    }
     for (TPrimitiveType primitiveType : primitiveTypes) {
       result.add(getSqlTypeName(primitiveType));
     }
@@ -151,9 +119,69 @@ public class ImpalaTypeConverter {
   static public List<SqlTypeName> getSqlTypeNamesFromNodes(List<RexNode> rexNodes) {
     List<SqlTypeName> result = Lists.newArrayList();
     for (RexNode r : rexNodes) {
+      SqlTypeName sqlTypeName = r.getType().getSqlTypeName();
       result.add(r.getType().getSqlTypeName());
     }
     return result;
   }
+
+  static public List<Type> getImpalaTypesList(TPrimitiveType[] argTypes) {
+    List<Type> types = Lists.newArrayList();
+    if (argTypes == null) {
+      return types;
+    }
+    for (TPrimitiveType argType : argTypes) {
+      types.add(getImpalaType(argType));
+    }
+    return types;
+  }
+
+  static public Type getImpalaType(TPrimitiveType argType, int precision, int scale) {
+    // Char, varchar, and decimal contain precisions and need to be treated separately
+    if (argType == TPrimitiveType.CHAR) {
+      return ScalarType.createCharType(precision);
+    } else if (argType == TPrimitiveType.VARCHAR) {
+      return ScalarType.createVarcharType(precision);
+    } else if (argType == TPrimitiveType.DECIMAL) {
+      return ScalarType.createDecimalType(precision, scale);
+    }
+    return ScalarType.createType(PrimitiveType.fromThrift(argType));
+  }
+
+  static public Type getImpalaType(TPrimitiveType argType) {
+    // Char and decimal contain precisions and need to be treated separately from
+    // the rest. The precisions for this case are unknown though, as we are only given
+    // a "primitivetype'.
+    if (argType == TPrimitiveType.CHAR) {
+      // -1 is just a placeholder. This is only called for Impala function signatures
+      return ScalarType.createCharType(-1);
+    } else if (argType == TPrimitiveType.VARCHAR) {
+      // -1 is just a placeholder. This is only called for Impala function signatures
+      return ScalarType.createVarcharType(-1);
+    } else if (argType == TPrimitiveType.DECIMAL) {
+      // Unknown precision and scale, just create the wild card.  This is only for
+      // Impala Function signatures.
+      return ScalarType.createWildCardDecimalType();
+    }
+    return ScalarType.createType(PrimitiveType.fromThrift(argType));
+  }
+
+  static public Type[] getImpalaTypes(TPrimitiveType[] argTypes) {
+    if (argTypes == null) {
+      return null;
+    }
+    return getImpalaTypesList(argTypes).toArray(new Type[1]);
+  }
+
+  static public Type getImpalaType(RelDataType relDataType) throws HiveException {
+    if (relDataType.getSqlTypeName().equals(SqlTypeName.DECIMAL)) {
+      return ScalarType.createDecimalType(relDataType.getPrecision(),
+          relDataType.getScale());
+    }
+    TPrimitiveType tPrimitiveType = getTPrimitiveType(relDataType.getSqlTypeName());
+    PrimitiveType primitiveType = PrimitiveType.fromThrift(tPrimitiveType);
+    return ScalarType.getDefaultScalarType(primitiveType);
+  }
+
 
 }

@@ -27,18 +27,25 @@ import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.sql.type.SqlTypeName;
+import org.apache.calcite.sql.type.SqlTypeUtil;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
 import org.apache.calcite.util.mapping.Mapping;
 import org.apache.calcite.util.mapping.Mappings;
 import org.apache.calcite.util.mapping.MappingType;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
+import org.apache.hadoop.hive.ql.plan.impala.funcmapper.AggFunctionDetails;
+import org.apache.hadoop.hive.ql.plan.impala.funcmapper.Calcite2302;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaFunctionMapper;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -79,7 +86,7 @@ public class ImpalaAggCastRule extends RelOptRule {
   }
 
   public ImpalaAggCastRule() {
-    super(operand(HiveAggregate.class, any()));
+    super(operand(HiveAggregate.class, any()), HiveRelFactories.HIVE_BUILDER, null);
   }
 
   @Override
@@ -138,7 +145,7 @@ public class ImpalaAggCastRule extends RelOptRule {
     boolean isChanged = false;
     for (AggregateCall aggCall : aggregate.getAggCallList()) {
       // need to get the operand types into the "SqlTypeName" structure for comparison purposes.
-      List<RelDataType> currentOperandTypes = getOperandTypes(aggCall, aggregateInput);
+      List<RelDataType> currentOperandTypes = getRelDataTypeOperands(aggCall, aggregateInput);
       // retrieve mapped operand types.  If no mapping is needed (i.e. the signature of the
       // operands in the function match the existing operands without casting, then the
       // getMappedOperandTypes method returns null.  If no matching function signature is found,
@@ -170,13 +177,24 @@ public class ImpalaAggCastRule extends RelOptRule {
   }
 
   /**
-   * Translation function to get the SqlTypeNames from the relnode rowtype.
+   * Translation function to get the RelDataType operands from the relnode rowtype.
    */
-  private List<RelDataType> getOperandTypes(AggregateCall aggCall, RelNode inputNode) {
+  private List<RelDataType> getRelDataTypeOperands(AggregateCall aggCall, RelNode inputNode) {
     List<RelDataType> result = Lists.newArrayList();
     List<RelDataTypeField> fields = inputNode.getRowType().getFieldList();
     for (Integer i : aggCall.getArgList()) {
       result.add(fields.get(i).getType());
+    }
+    return result;
+  }
+
+  /**
+   * Helper function to get the corresponding SqlTypeName array from the RelDataType array
+   */
+  private List<SqlTypeName> getSqlTypeNameOperands(List<RelDataType> relDataTypes) {
+    List<SqlTypeName> result = Lists.newArrayList();
+    for (RelDataType relDataType : relDataTypes) {
+      result.add(relDataType.getSqlTypeName());
     }
     return result;
   }
@@ -188,29 +206,60 @@ public class ImpalaAggCastRule extends RelOptRule {
   private List<RelDataType> getMappedOperandTypes(AggregateCall aggCall, RelNode inputNode,
       List<RelDataType> currentOperandTypes) {
     String opName = aggCall.getAggregation().getName();
-    RelDataType currentRetType = aggCall.getType();
+    SqlTypeName currentSqlRetType = aggCall.getType().getSqlTypeName();
+
+    List<SqlTypeName> currentSqlOperandTypes = getSqlTypeNameOperands(currentOperandTypes);
+
     // create the signature as/is to see if it needs casting.
     ImpalaFunctionMapper ifs =
-        new ImpalaFunctionMapper(opName, currentOperandTypes, currentRetType);
+        new ImpalaFunctionMapper(opName, currentSqlOperandTypes, currentSqlRetType);
 
     // The main call to check if this AggCall maps to a known Impala function signature.
-    Pair<RelDataType, List<RelDataType>> pair =
-        ifs.mapOperands(inputNode.getCluster().getTypeFactory());
+    Pair<SqlTypeName, List<SqlTypeName>> pair =
+        ifs.mapOperands(AggFunctionDetails.AGG_BUILTINS_INSTANCE);
 
-    RelDataType mappedRetType = pair.left;
-    List<RelDataType> mappedOperandTypes = pair.right;
-    if (!mappedRetType.equals(currentRetType)) {
-      throw new RuntimeException("No support for casting of agg return types for impala.");
+    SqlTypeName mappedSqlRetType = pair.left;
+    List<SqlTypeName> mappedSqlOperandTypes = pair.right;
+
+    // Only the SqlTypeNames have to match.  Decimal values don't need to be recast, and the
+    // type will be determined by Calcite.
+    if (!mappedSqlRetType.equals(currentSqlRetType)) {
+      throw new RuntimeException("Casting of aggregate return types is not supported for Impala");
     }
 
-    if (mappedOperandTypes.equals(currentOperandTypes)) {
+    // if the mapped oeprands are the same as the current ones, no cast is needed.
+    if (mappedSqlOperandTypes.equals(currentSqlOperandTypes)) {
       return null;
     }
-    return mappedOperandTypes;
+
+    return getCastedRelDataTypes(inputNode.getCluster().getTypeFactory(),
+        mappedSqlOperandTypes, currentOperandTypes);
   }
 
   /**
-    * A translation function that takes all our new projects and creats the relNode.
+   * Walk through all the SqlTypeNames to be casted, and return the corresponding
+   * RelDataType.
+   */
+  private List<RelDataType> getCastedRelDataTypes(RelDataTypeFactory dtFactory,
+      List<SqlTypeName> postCastSqlTypeNames, List<RelDataType> preCastRelDataTypes) {
+    List<RelDataType> result = Lists.newArrayList();
+    // walk through all operands and get the RelData
+    for (int i = 0; i < preCastRelDataTypes.size(); ++i) {
+      // In the case where we are casting to Decimal, we need to provide a precision
+      // and scale.  The Calcite method provides the DecimalRelDataType with the
+      // appropriate precision and scale with the provided datatype that will be casted.
+      if (postCastSqlTypeNames.get(i) == SqlTypeName.DECIMAL) {
+        //TODO: CDPD-8258, remove once we upgrade to Calcite 1.21
+        result.add(Calcite2302.decimalOf(dtFactory, preCastRelDataTypes.get(i)));
+      } else {
+        result.add(dtFactory.createSqlType(postCastSqlTypeNames.get(i)));
+      }
+    }
+    return result;
+  }
+
+  /**
+    * A translation function that takes all our new projects and creates the relNode.
     * The values of the map contain all the projection RexNodes. We need to sort the
     * values by the "newPosition" number.
     */
@@ -230,7 +279,7 @@ public class ImpalaAggCastRule extends RelOptRule {
    * Create the transformed AggList by using the list of new argLists.
    */
   private List<AggregateCall> createNewAggregateCalls(Aggregate aggregate, List<List<Integer>> newArgList) {
-    assert newArgList.size() == aggregate.getAggCallList().size();
+    Preconditions.checkState(newArgList.size() == aggregate.getAggCallList().size());
     List<AggregateCall> result = Lists.newArrayList();
     for (int i = 0; i < newArgList.size(); ++i) {
       AggregateCall aggCall = aggregate.getAggCallList().get(i);

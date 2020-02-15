@@ -18,67 +18,47 @@
 
 package org.apache.hadoop.hive.ql.plan.impala.funcmapper;
 
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
-import org.apache.calcite.plan.RelOptCluster;
-import org.apache.calcite.rel.core.AggregateCall;
-import org.apache.calcite.rel.type.RelDataType;
-import org.apache.calcite.rel.type.RelDataTypeFactory;
-import org.apache.calcite.rex.RexBuilder;
-import org.apache.calcite.rex.RexCall;
-import org.apache.calcite.rex.RexNode;
-import org.apache.calcite.sql.type.SqlTypeFactoryImpl;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.Pair;
-import org.apache.impala.thrift.TFunctionBinaryType;
-import org.apache.impala.thrift.TPrimitiveType;
 
 public class ImpalaFunctionMapper{
 
   private final String func;
 
-  private final List<RelDataType> argTypes;
+  private final List<SqlTypeName> argTypes;
 
-  private final RelDataType retType;
+  private final SqlTypeName retType;
 
   private final ImpalaFunctionSignature funcSig;
 
-  public ImpalaFunctionMapper(String func, List<RelDataType> argTypes, RelDataType retType) {
+  public ImpalaFunctionMapper(String func, List<SqlTypeName> argTypes, SqlTypeName retType) {
     assert func != null;
     this.func = func.toLowerCase();
     this.argTypes = ImmutableList.copyOf(argTypes);
     this.retType = retType;
-    this.funcSig = getFuncSignature(func, argTypes, retType);
+    this.funcSig = new ImpalaFunctionSignature(func, argTypes, retType);
   }
 
   /*
    * For "this" signature, check if there exists a function signature which is compatible.
    * Returns a pair of the return type and the operand types.
    */
-  public Pair<RelDataType, List<RelDataType>> mapOperands(RelDataTypeFactory dtFactory) {
+  public Pair<SqlTypeName, List<SqlTypeName>> mapOperands(
+      Map<ImpalaFunctionSignature, ? extends FunctionDetails> functionDetailsMap) {
     // if there is an exact match of name, args, ans return type existing in the builtins, we can
     // use the rexCall as/is.
-    if (ScalarFunctionDetails.SCALAR_BUILTINS_INSTANCE.containsKey(this.funcSig)) {
-      return new Pair<RelDataType, List<RelDataType>>(this.retType, this.argTypes);
+    if (functionDetailsMap.containsKey(this.funcSig)) {
+      return new Pair<SqlTypeName, List<SqlTypeName>>(this.retType, this.argTypes);
     }
 
     // Skip over "cast".  We don't want to do a "cast" within a "cast".
     if (this.func.equals("cast")) {
-      return new Pair<RelDataType, List<RelDataType>>(this.retType, this.argTypes);
+      return new Pair<SqlTypeName, List<SqlTypeName>>(this.retType, this.argTypes);
     }
 
     // castCandidates contains a list of potential functions that can match "this" signature.
@@ -87,17 +67,17 @@ public class ImpalaFunctionMapper{
         ImpalaFunctionSignature.CAST_CHECK_BUILTINS_INSTANCE.get(this.func);
     if (castCandidates == null) {
       throw new RuntimeException("Could not find function name " +
-          func + " in Impala.");
+          func + " in resource file");
     }
 
     // iterate through list of potential functions which we could cast.  These functions should be
     // in a pre-determined optimal order.
     // For instance:  we have sum(BIGINT), sum(DOUBLE), and sum(DECIMAL) in that order.  If the arg
-    // is a TINYINT, we shoudl return a RexNode of "sum(CAST arg AS BIGINT)"
+    // is a TINYINT, we should return a RexNode of "sum(CAST arg AS BIGINT)"
     for (ImpalaFunctionSignature castCandidate : castCandidates) {
       if (canCastToCandidate(castCandidate, this.argTypes)) {
-        return new Pair<RelDataType, List<RelDataType>>(castCandidate.getRelRetType(dtFactory),
-            getAllVarArgs(castCandidate.getRelArgTypes(dtFactory), this.argTypes.size()));
+        return new Pair<SqlTypeName, List<SqlTypeName>>(castCandidate.getRetType(),
+            getAllVarArgs(castCandidate.getArgTypes(), castCandidate.getArgTypes().size()));
       }
     }
     throw new RuntimeException("Could not cast for function name " + func);
@@ -108,13 +88,13 @@ public class ImpalaFunctionMapper{
    * needed and we immediately pass back the args structure.  If there are varargs,
    * we repeat the last args until we have the exact number of args that we need.
    */
-  private List<RelDataType> getAllVarArgs(List<RelDataType> currArgTypes, int numArgs) {
+  private List<SqlTypeName> getAllVarArgs(List<SqlTypeName> currArgTypes, int numArgs) {
     // if the function didn't have var args, we expect it to return right away.
     if (currArgTypes.size() == numArgs) {
       return currArgTypes;
     }
-    List<RelDataType> result = Lists.newArrayList(currArgTypes);
-    RelDataType lastArg = result.get(result.size() - 1);
+    List<SqlTypeName> result = Lists.newArrayList(currArgTypes);
+    SqlTypeName lastArg = result.get(result.size() - 1);
     while (result.size() < numArgs) {
       result.add(lastArg);
     }
@@ -126,10 +106,10 @@ public class ImpalaFunctionMapper{
    * prototype
    */
   private boolean canCastToCandidate(
-      ImpalaFunctionSignature castCandidate, List<RelDataType> operandTypes) {
+      ImpalaFunctionSignature castCandidate, List<SqlTypeName> operandTypes) {
     SqlTypeName castTo = null;
     for (int i = 0; i < operandTypes.size(); ++i) {
-      SqlTypeName castFrom = operandTypes.get(i).getSqlTypeName();
+      SqlTypeName castFrom = operandTypes.get(i);
       // if we have var args, the last arg will be repeating, so we don't have to
       // get the last one.
       if (!castCandidate.hasVarArgs() || i < castCandidate.getArgTypes().size()) {
@@ -148,14 +128,5 @@ public class ImpalaFunctionMapper{
       }
     }
     return true;
-  }
-
-  private ImpalaFunctionSignature getFuncSignature(String func,
-      List<RelDataType> argTypes, RelDataType retType) {
-    List<SqlTypeName> sqlArgTypes = Lists.newArrayList();
-    for (RelDataType argType : argTypes) {
-      sqlArgTypes.add(argType.getSqlTypeName());
-    }
-    return new ImpalaFunctionSignature(func, sqlArgTypes, retType.getSqlTypeName());
   }
 }

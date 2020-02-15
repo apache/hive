@@ -71,34 +71,34 @@ public class ImpalaFunctionSignature {
           argTypes = ImpalaTypeConverter.getSqlTypeNames(sfd.argTypes);
         }
         SqlTypeName retType = ImpalaTypeConverter.getSqlTypeName(sfd.retType);
-        ImpalaFunctionSignature ifs = new ImpalaFunctionSignature(sfd.impalaFnName, argTypes, retType,
+        ImpalaFunctionSignature ifs = new ImpalaFunctionSignature(sfd.fnName, argTypes, retType,
             sfd.hasVarArgs);
-        List<ImpalaFunctionSignature> castIfsList = CAST_CHECK_BUILTINS_INSTANCE.get(sfd.impalaFnName);
+        List<ImpalaFunctionSignature> castIfsList = CAST_CHECK_BUILTINS_INSTANCE.get(sfd.fnName);
         if (castIfsList == null) {
           // first time we've seen this function so put an entry into the map.
           castIfsList = Lists.newArrayList();
-          CAST_CHECK_BUILTINS_INSTANCE.put(sfd.impalaFnName, castIfsList);
+          CAST_CHECK_BUILTINS_INSTANCE.put(sfd.fnName, castIfsList);
         }
         castIfsList.add(ifs);
- 
+
         if (sfd.castUp) {
           UPCAST_BUILTINS_INSTANCE.add(ifs);
         }
       }
- 
+
       for (AggFunctionDetails afd : aggDetails) {
         List<SqlTypeName> argTypes = Lists.newArrayList();
         if (afd.argTypes != null) {
           argTypes = ImpalaTypeConverter.getSqlTypeNames(afd.argTypes);
         }
         SqlTypeName retType = ImpalaTypeConverter.getSqlTypeName(afd.retType);
-        ImpalaFunctionSignature ifs = new ImpalaFunctionSignature(afd.impalaFnName, argTypes, retType,
+        ImpalaFunctionSignature ifs = new ImpalaFunctionSignature(afd.fnName, argTypes, retType,
             false);
-        List<ImpalaFunctionSignature> castIfsList = CAST_CHECK_BUILTINS_INSTANCE.get(afd.impalaFnName);
+        List<ImpalaFunctionSignature> castIfsList = CAST_CHECK_BUILTINS_INSTANCE.get(afd.fnName);
         if (castIfsList == null) {
           // first time we've seen this function so put an entry into the map.
           castIfsList = Lists.newArrayList();
-          CAST_CHECK_BUILTINS_INSTANCE.put(afd.impalaFnName, castIfsList);
+          CAST_CHECK_BUILTINS_INSTANCE.put(afd.fnName, castIfsList);
         }
         castIfsList.add(ifs);
       }
@@ -155,17 +155,5 @@ public class ImpalaFunctionSignature {
 
   public boolean hasVarArgs() {
     return hasVarArgs;
-  }
-
-  public RelDataType getRelRetType(RelDataTypeFactory dtFactory) {
-    return dtFactory.createSqlType(this.retType);
-  }
-
-  public List<RelDataType> getRelArgTypes(RelDataTypeFactory dtFactory) {
-    List<RelDataType> result = Lists.newArrayList();
-    for (SqlTypeName argType : this.argTypes) {
-      result.add(dtFactory.createSqlType(argType));
-    }
-    return result;
   }
 }

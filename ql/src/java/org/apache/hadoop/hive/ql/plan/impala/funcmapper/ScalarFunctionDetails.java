@@ -32,10 +32,18 @@ import com.google.gson.reflect.TypeToken;
 
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.impala.analysis.HdfsUri;
+import org.apache.impala.catalog.BuiltinsDb;
 import org.apache.impala.thrift.TFunctionBinaryType;
 import org.apache.impala.thrift.TPrimitiveType;
 
-public class ScalarFunctionDetails {
+/**
+ * Contains details for Scalar functions.  These functions are currently
+ * stored in a resource file.
+ * Implements FunctionDetails because ImpalaFunctionSignature can be used
+ * as a key for both AggFunctionDetails and ScalarFunctionDetails.
+ */
+public class ScalarFunctionDetails implements FunctionDetails {
 
   // Map containing an Impala signature to the details associated with the signature.
   // A signature consists of the function name, the operand types and the return type.
@@ -51,14 +59,15 @@ public class ScalarFunctionDetails {
 
     try {
       for (ScalarFunctionDetails sfd : scalarDetails) {
-        List<SqlTypeName> argTypes = Lists.newArrayList();
-        if (sfd.argTypes != null) {
-          argTypes = ImpalaTypeConverter.getSqlTypeNames(sfd.argTypes);
-        }
+        sfd.setDbName(BuiltinsDb.NAME);
+        List<SqlTypeName> argTypes = (sfd.argTypes == null)
+            ? Lists.newArrayList()
+            : ImpalaTypeConverter.getSqlTypeNames(sfd.argTypes);
         SqlTypeName retType = ImpalaTypeConverter.getSqlTypeName(sfd.retType);
-        ImpalaFunctionSignature ifs = new ImpalaFunctionSignature(sfd.impalaFnName, argTypes, retType,
+        ImpalaFunctionSignature ifs = new ImpalaFunctionSignature(sfd.fnName, argTypes, retType,
             sfd.hasVarArgs);
         SCALAR_BUILTINS_INSTANCE.put(ifs, sfd);
+        BuiltinsDb.getInstance(true).addFunction(ScalarFunctionUtil.create(sfd));
       }
     } catch (HiveException e) {
       // if an exception is hit here, we have a problem in our resource file.
@@ -66,6 +75,7 @@ public class ScalarFunctionDetails {
     }
   }
 
+  public String dbName;
   public String fnName;
   public String impalaFnName;
   public TPrimitiveType retType;
@@ -79,6 +89,11 @@ public class ScalarFunctionDetails {
   public boolean isPersistent;
   public boolean castUp;
   public TFunctionBinaryType binaryType;
+  public String hdfsUriLoc;
+  public HdfsUri hdfsUri;
+
+  public ScalarFunctionDetails() {
+  }
 
   public void setFnName(String fnName) {
     this.fnName = fnName;
@@ -132,9 +147,18 @@ public class ScalarFunctionDetails {
     this.binaryType = binaryType;
   }
 
+  public void setDbName(String dbName) {
+    this.dbName = dbName;
+  }
+
+  public void setHdfsUriLoc(String hdfsUriLoc) {
+    this.hdfsUriLoc = hdfsUriLoc;
+    this.hdfsUri = new HdfsUri(hdfsUriLoc);
+  }
+
   static public ScalarFunctionDetails get(String name, SqlTypeName retType,
       List<SqlTypeName> operandTypes) {
     ImpalaFunctionSignature sig = new ImpalaFunctionSignature(name, operandTypes, retType);
-    return SCALAR_BUILTINS_INSTANCE.get(sig);
+    return (ScalarFunctionDetails) SCALAR_BUILTINS_INSTANCE.get(sig);
   }
 }

@@ -25,19 +25,26 @@ import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelOptRuleOperand;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
+import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.tools.RelBuilder;
+import org.apache.calcite.tools.RelBuilderFactory;
 import org.apache.calcite.util.Pair;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
+import org.apache.hadoop.hive.ql.plan.impala.funcmapper.Calcite2302;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaFunctionMapper;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
+import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ScalarFunctionDetails;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,8 +70,8 @@ public abstract class ImpalaRexCastRule extends RelOptRule {
      "upcasting of return types for function ";
   public static class ImpalaProjectRexCastRule extends ImpalaRexCastRule {
 
-    public ImpalaProjectRexCastRule() {
-      super(operand(HiveProject.class, any()));
+    private ImpalaProjectRexCastRule() {
+      super(operand(HiveProject.class, any()), HiveRelFactories.HIVE_BUILDER);
     }
 
     @Override
@@ -85,8 +92,8 @@ public abstract class ImpalaRexCastRule extends RelOptRule {
 
   public static class ImpalaFilterRexCastRule extends ImpalaRexCastRule {
 
-    public ImpalaFilterRexCastRule() {
-      super(operand(HiveFilter.class, any()));
+    private ImpalaFilterRexCastRule() {
+      super(operand(HiveFilter.class, any()), HiveRelFactories.HIVE_BUILDER);
     }
 
     @Override
@@ -107,8 +114,8 @@ public abstract class ImpalaRexCastRule extends RelOptRule {
 
   public static class ImpalaJoinRexCastRule extends ImpalaRexCastRule {
 
-    public ImpalaJoinRexCastRule() {
-      super(operand(HiveJoin.class, any()));
+    private ImpalaJoinRexCastRule() {
+      super(operand(HiveJoin.class, any()), HiveRelFactories.HIVE_BUILDER);
     }
 
     @Override
@@ -155,60 +162,93 @@ public abstract class ImpalaRexCastRule extends RelOptRule {
 
     @Override
     public RexNode visitCall(RexCall rexCall) {
-      // call that translates the array from RexNode types to Impala types.
+      // the list of RelDataType operands for current call
       List<RelDataType> currentOperandTypes =
-          getRelDataTypeNamesFromNodes(rexCall.getOperands());
-      RelDataType currentRetType = rexCall.getType();
+          getRelDataTypesFromNodes(rexCall.getOperands());
+      // the list of SqlTypeName operands for current call
+      List<SqlTypeName> currentSqlOperandTypes =
+          getSqlTypeNamesFromNodes(rexCall.getOperands());
+      // The return SqlTypeName for the current call.
+      SqlTypeName currentRetSqlType = rexCall.getType().getSqlTypeName();
 
       // apply the rex casting to all of the operand first, then apply to this RexNode.
       List<RexNode> newOperands = apply(rexCall.getOperands());
 
       String opName = rexCall.getOperator().getName();
       ImpalaFunctionMapper ifs = new ImpalaFunctionMapper(opName,
-          getRelDataTypeNamesFromNodes(newOperands), currentRetType);
+          getSqlTypeNamesFromNodes(newOperands), currentRetSqlType);
 
       // The main call to check if this RexCall maps to a known Impala function signature.
-      Pair<RelDataType, List<RelDataType>> pair = ifs.mapOperands(cluster.getTypeFactory());
+      Pair<SqlTypeName, List<SqlTypeName>> pair =
+          ifs.mapOperands(ScalarFunctionDetails.SCALAR_BUILTINS_INSTANCE);
 
-      RelDataType mappedRetType = pair.left;
-      List<RelDataType> mappedOperandTypes = pair.right;
+      SqlTypeName mappedRetType = pair.left;
+      List<SqlTypeName> mappedOperandTypes = pair.right;
 
       // It involves a bit more work to make sure the return type casting matches.  This would involve
       // making sure that propagation happens across RelNodes.  For now, we will punt this.
-      if (!mappedRetType.equals(currentRetType)) {
+      // Only the SqlTypeNames have to match.  Decimal values don't need to be recast, and the
+      // type will be determined by Calcite.
+      if (!mappedRetType.equals(currentRetSqlType)) {
         throw new RuntimeException(UPCAST_NOT_ALLOWED + opName);
       }
 
-      RexCall returnRexCall = rexCall;
-      if (mappedOperandTypes.equals(currentOperandTypes)) {
+      if (mappedOperandTypes.equals(currentSqlOperandTypes)) {
         // no casting needed, just return original rexCall
         return rexCall;
       }
 
-      List<RexNode> newCastedOperands = createRexNodes(newOperands, currentOperandTypes, mappedOperandTypes);
+      // create the new RexNode operands.  These new operands will either have a cast of the
+      // old operand or remain the same as the old operand.
+      List<RexNode> newCastedOperands =
+          createRexNodes(newOperands, currentOperandTypes, mappedOperandTypes);
+
       return cluster.getRexBuilder().makeCall(rexCall.getType(),
-          rexCall.getOperator(), newCastedOperands);
+           rexCall.getOperator(), newCastedOperands);
     }
 
+    /**
+     * Create rex nodes for the operands.  Either it will be the original operand or a cast
+     * operand.
+     */
     private List<RexNode> createRexNodes(List<RexNode> operands,
-       List<RelDataType> currentOperandTypes,  List<RelDataType> mappedOperandTypes) {
-      assert operands.size() == mappedOperandTypes.size();
+       List<RelDataType> currentOperandTypes,  List<SqlTypeName> mappedOperandSqlTypes) {
+      Preconditions.checkState(operands.size() == mappedOperandSqlTypes.size());
       List<RexNode> result = Lists.newArrayList();
       for (int i = 0; i < operands.size(); ++i) {
-        if (currentOperandTypes.get(i).equals(mappedOperandTypes.get(i))) {
+        List<RexNode> currRexNode = Lists.newArrayList(operands.get(i));
+        RelDataType currentOperandType = currentOperandTypes.get(i);
+        SqlTypeName mappedOperandSqlType = mappedOperandSqlTypes.get(i);
+        if (currentOperandType.getSqlTypeName().equals(mappedOperandSqlType)) {
           // no casting needed if the operand type matches what exists
-          result.add(operands.get(i));
+          result.add(currRexNode.get(0));
         } else {
+          RelDataType castedRelDataType =
+              getCastedDataType(cluster.getTypeFactory(), mappedOperandSqlType, currentOperandType);
           // cast to appropriate type
-          result.add(cluster.getRexBuilder().makeCall(mappedOperandTypes.get(i),
-              SqlStdOperatorTable.CAST, Lists.newArrayList(operands.get(i))));
+          result.add(cluster.getRexBuilder().makeCast(castedRelDataType, operands.get(i), true));
         }
       }
       return result;
     }
+
+
+    /**
+     * Return the casted RelDatatype of the provided postCastSqlTypeName
+     */
+    private RelDataType getCastedDataType(RelDataTypeFactory dtFactory,
+        SqlTypeName postCastSqlTypeName, RelDataType preCastRelDataType) {
+      // In the case where we are casting to Decimal, we need to provide a precision
+      // and scale.  The Calcite method provides the DecimalRelDataType with the
+      // appropriate precision and scale with the provided datatype that will be casted.
+      if (postCastSqlTypeName == SqlTypeName.DECIMAL) {
+        return Calcite2302.decimalOf(dtFactory, preCastRelDataType);
+      }
+      return dtFactory.createSqlType(postCastSqlTypeName);
+    }
   }
 
-  private static List<RelDataType> getRelDataTypeNamesFromNodes(List<RexNode> rexNodes) {
+  private static List<RelDataType> getRelDataTypesFromNodes(List<RexNode> rexNodes) {
     List<RelDataType> result = Lists.newArrayList();
     for (RexNode rexNode : rexNodes) {
       result.add(rexNode.getType());
@@ -216,8 +256,17 @@ public abstract class ImpalaRexCastRule extends RelOptRule {
     return result;
   }
 
-  protected ImpalaRexCastRule(RelOptRuleOperand operand) {
-    super(operand);
+  private static List<SqlTypeName> getSqlTypeNamesFromNodes(List<RexNode> rexNodes) {
+    List<SqlTypeName> result = Lists.newArrayList();
+    for (RexNode rexNode : rexNodes) {
+      result.add(rexNode.getType().getSqlTypeName());
+    }
+    return result;
+  }
+
+  protected ImpalaRexCastRule(RelOptRuleOperand operand,
+      RelBuilderFactory relBuilderFactory) {
+    super(operand, relBuilderFactory, null);
   }
 
   @Override
