@@ -79,7 +79,7 @@ public class TopNKeyOperator extends Operator<TopNKeyDesc> implements Serializab
             partitionKeyObjectInspectors, partitionCurrentKeyObjectInspectors);
 
     keyWrapperComparator = new KeyWrapperComparator(
-            keyObjectInspectors, currentKeyObjectInspectors, columnSortOrder.toString(), nullSortOrder.toString());
+            keyObjectInspectors, currentKeyObjectInspectors, columnSortOrder, nullSortOrder);
 
     this.topNKeyFilters = new HashMap<>();
   }
