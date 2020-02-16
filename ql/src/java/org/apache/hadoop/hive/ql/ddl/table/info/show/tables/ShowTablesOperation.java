@@ -16,9 +16,10 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.table.info;
+package org.apache.hadoop.hive.ql.ddl.table.info.show.tables;
 
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
+import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 
 import java.io.DataOutputStream;
 import java.util.ArrayList;
@@ -28,14 +29,12 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.io.IOUtils;
 
 /**
  * Operation process showing the tables.
@@ -47,7 +46,6 @@ public class ShowTablesOperation extends DDLOperation<ShowTablesDesc> {
 
   @Override
   public int execute() throws HiveException {
-    TableType type       = desc.getType(); // null for tables, VIRTUAL_VIEW for views, MATERIALIZED_VIEW for MVs
     String dbName        = desc.getDbName();
     String pattern       = desc.getPattern(); // if null, all tables/views are returned
     TableType typeFilter = desc.getTypeFilter();
@@ -58,55 +56,33 @@ public class ShowTablesOperation extends DDLOperation<ShowTablesDesc> {
       throw new HiveException(ErrorMsg.DATABASE_NOT_EXISTS, dbName);
     }
 
-    LOG.debug("pattern: {}", pattern);
-    LOG.debug("typeFilter: {}", typeFilter);
-
     List<String> tableNames  = null;
     List<Table> tableObjects = null;
-    if (type == null) {
-      if (isExtended) {
-        tableObjects = new ArrayList<>();
-        tableObjects.addAll(context.getDb().getTableObjectsByType(dbName, pattern, typeFilter));
-        LOG.debug("Found {} table(s) matching the SHOW EXTENDED TABLES statement.", tableObjects.size());
-      } else {
-        tableNames = context.getDb().getTablesByType(dbName, pattern, typeFilter);
-        LOG.debug("Found {} table(s) matching the SHOW TABLES statement.", tableNames.size());
-      }
-    } else if (type == TableType.MATERIALIZED_VIEW) {
+    if (isExtended) {
       tableObjects = new ArrayList<>();
-      tableObjects.addAll(context.getDb().getMaterializedViewObjectsByPattern(dbName, pattern));
-      LOG.debug("Found {} materialized view(s) matching the SHOW MATERIALIZED VIEWS statement.", tableObjects.size());
-    } else if (type == TableType.VIRTUAL_VIEW) {
-      tableNames = context.getDb().getTablesByType(dbName, pattern, type);
-      LOG.debug("Found {} view(s) matching the SHOW VIEWS statement.", tableNames.size());
+      tableObjects.addAll(context.getDb().getTableObjectsByType(dbName, pattern, typeFilter));
+      LOG.debug("Found {} table(s) matching the SHOW EXTENDED TABLES statement.", tableObjects.size());
     } else {
-      throw new HiveException("Option not recognized in SHOW TABLES/VIEWS/MATERIALIZED VIEWS");
+      tableNames = context.getDb().getTablesByType(dbName, pattern, typeFilter);
+      LOG.debug("Found {} table(s) matching the SHOW TABLES statement.", tableNames.size());
     }
 
-    // write the results in the file
-    DataOutputStream outStream = null;
-    try {
-      Path resFile = new Path(resultsFile);
-      FileSystem fs = resFile.getFileSystem(context.getConf());
-      outStream = fs.create(resFile);
-      // Sort by name and print
+    try (DataOutputStream os = DDLUtils.getOutputStream(new Path(resultsFile), context)) {
       if (tableNames != null) {
         SortedSet<String> sortedSet = new TreeSet<String>(tableNames);
-        context.getFormatter().showTables(outStream, sortedSet);
+        context.getFormatter().showTables(os, sortedSet);
       } else {
         Collections.sort(tableObjects, Comparator.comparing(Table::getTableName));
         if (isExtended) {
-          context.getFormatter().showTablesExtended(outStream, tableObjects);
+          context.getFormatter().showTablesExtended(os, tableObjects);
         } else {
-          context.getFormatter().showMaterializedViews(outStream, tableObjects);
+          context.getFormatter().showMaterializedViews(os, tableObjects);
         }
       }
-      outStream.close();
     } catch (Exception e) {
       throw new HiveException(e, ErrorMsg.GENERIC_ERROR, "in database" + dbName);
-    } finally {
-      IOUtils.closeStream(outStream);
     }
+
     return 0;
   }
 }

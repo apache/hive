@@ -1090,7 +1090,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     private void endFunction(String function, MetaStoreEndFunctionContext context) {
       com.codahale.metrics.Timer.Context timerContext = timerContexts.get().remove(function);
       if (timerContext != null) {
-        timerContext.close();
+        long timeTaken = timerContext.stop();
+        LOG.debug((getThreadLocalIpAddress() == null ? "" : "source:" + getThreadLocalIpAddress() + " ") +
+            function + "time taken(ns): " + timeTaken);
       }
       Counter counter = Metrics.getOrCreateCounter(MetricsConstants.ACTIVE_CALLS + function);
       if (counter != null) {
