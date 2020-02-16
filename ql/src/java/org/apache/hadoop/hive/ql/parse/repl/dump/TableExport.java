@@ -73,8 +73,8 @@ public class TableExport {
         ? null
         : tableSpec;
     this.replicationSpec = replicationSpec;
-    if (this.tableSpec != null && this.tableSpec.tableHandle!=null && this.tableSpec.tableHandle.isView() ||
-            Utils.shouldDumpMetaDataOnly(tableSpec.tableHandle, conf)) {
+    if (this.tableSpec != null && this.tableSpec.tableHandle!=null && (this.tableSpec.tableHandle.isView() ||
+            Utils.shouldDumpMetaDataOnly(this.tableSpec.tableHandle, conf))) {
       this.replicationSpec.setIsMetadataOnly(true);
 
       this.tableSpec.tableHandle.setStatsStateLikeNewTable();
