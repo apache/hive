@@ -56,7 +56,7 @@ POSTHOOK: Lineage: s.id SCRIPT []
 Warning: Shuffle Join MERGEJOIN[37][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: from (select id==offset as first,* from s
 join t_offset on id>=offset) s1
-insert into t select id,cnt where first = false
+insert into t select id,cnt where not first
 insert overwrite table t_offset select max(s1.id)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@s
@@ -65,7 +65,7 @@ PREHOOK: Output: default@t
 PREHOOK: Output: default@t_offset
 POSTHOOK: query: from (select id==offset as first,* from s
 join t_offset on id>=offset) s1
-insert into t select id,cnt where first = false
+insert into t select id,cnt where not first
 insert overwrite table t_offset select max(s1.id)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@s
@@ -79,13 +79,13 @@ Warning: Shuffle Join MERGEJOIN[34][tables = [s, t_offset]] in Stage 'Reducer 2'
 PREHOOK: query: create scheduled query ingest every 10 minutes defined as
 from (select id==offset as first,* from s
 join t_offset on id>=offset) s1
-insert into t select id,cnt where first = false
+insert into t select id,cnt where not first
 insert overwrite table t_offset select max(s1.id)
 PREHOOK: type: CREATE SCHEDULED QUERY
 POSTHOOK: query: create scheduled query ingest every 10 minutes defined as
 from (select id==offset as first,* from s
 join t_offset on id>=offset) s1
-insert into t select id,cnt where first = false
+insert into t select id,cnt where not first
 insert overwrite table t_offset select max(s1.id)
 POSTHOOK: type: CREATE SCHEDULED QUERY
 PREHOOK: query: insert into s values(2,2),(3,3)
@@ -111,3 +111,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@scheduled_executions
 #### A masked pattern was here ####
 FINISHED	NULL
+PREHOOK: query: select * from t order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+1	1
+2	2
+3	3
