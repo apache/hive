@@ -180,7 +180,8 @@ public class ReplChangeManager {
             if (!cmRootFallback.isAbsolute()) {
               throw new MetaException(ConfVars.REPLCMENCRYPTEDDIR.getHiveName() + " should be absolute path");
             }
-            if (cmRootFs.exists(cmRootFallback) && pathEncryptionShim.isPathEncrypted(cmRootFallback)) {
+            createCmRoot(cmRootFallback);
+            if (pathEncryptionShim.isPathEncrypted(cmRootFallback)) {
               throw new MetaException(ConfVars.REPLCMFALLBACKNONENCRYPTEDDIR.getHiveName()
                       + " should not be encrypted");
             }
