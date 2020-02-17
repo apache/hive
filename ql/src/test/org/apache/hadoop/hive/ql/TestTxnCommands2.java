@@ -1978,43 +1978,6 @@ public class TestTxnCommands2 {
   }
 
   /**
-   * Test compaction for Micro-managed table
-   * 1. Regular compaction shouldn't impact any valid subdirectories of MM tables
-   * 2. Compactions will only remove subdirectories for aborted transactions of MM tables, if any
-   * @throws Exception
-   */
-  @Test
-  public void testMmTableCompaction() throws Exception {
-    // 1. Insert some rows into MM table
-    runStatementOnDriver("insert into " + Table.MMTBL + "(a,b) values(1,2)");
-    runStatementOnDriver("insert into " + Table.MMTBL + "(a,b) values(3,4)");
-    // There should be 2 delta directories
-    verifyDirAndResult(2);
-
-    // 2. Perform a MINOR compaction. Since nothing was aborted, subdirs should stay.
-    runStatementOnDriver("alter table "+ Table.MMTBL + " compact 'MINOR'");
-    runWorker(hiveConf);
-    verifyDirAndResult(2);
-
-    // 3. Let a transaction be aborted
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, true);
-    runStatementOnDriver("insert into " + Table.MMTBL + "(a,b) values(5,6)");
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, false);
-    // There should be 3 delta directories. The new one is the aborted one.
-    verifyDirAndResult(3);
-
-    // 4. Perform a MINOR compaction again. This time it will remove the subdir for aborted transaction.
-    runStatementOnDriver("alter table "+ Table.MMTBL + " compact 'MINOR'");
-    runWorker(hiveConf);
-    // The worker should remove the subdir for aborted transaction
-    verifyDirAndResult(2);
-
-    // 5. Run Cleaner. Shouldn't impact anything.
-    runCleaner(hiveConf);
-    verifyDirAndResult(2);
-  }
-
-  /**
    * Test cleaner for TXN_TO_WRITE_ID table.
    * @throws Exception
    */
