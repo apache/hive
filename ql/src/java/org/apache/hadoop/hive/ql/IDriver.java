@@ -41,6 +41,8 @@ public interface IDriver extends CommandProcessor {
 
   QueryPlan getPlan();
 
+  QueryState getQueryState();
+
   QueryDisplay getQueryDisplay();
 
   void setOperationId(String guid64);
