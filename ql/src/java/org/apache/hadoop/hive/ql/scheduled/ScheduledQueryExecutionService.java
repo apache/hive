@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.metastore.api.ScheduledQueryProgressInfo;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
+import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryExecutionService.ScheduledQueryExecutor;
 import org.apache.hadoop.hive.ql.security.SessionStateUserAuthenticator;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
@@ -94,7 +95,7 @@ public class ScheduledQueryExecutionService implements Closeable {
         ScheduledQueryPollResponse q = context.schedulerService.scheduledQueryPoll();
         if (q.isSetExecutionId()) {
           try{
-            processQuery(q);
+            context.executor.submit(new ScheduledQueryExecutor(q));
           } catch (Throwable t) {
             LOG.error("Unexpected exception during scheduled query processing", t);
           }
@@ -106,11 +107,6 @@ public class ScheduledQueryExecutionService implements Closeable {
           }
         }
       }
-    }
-
-    private void processQuery(ScheduledQueryPollResponse q) {
-      context.executor.submit(new ScheduledQueryExecutor(q));
-
     }
 
     private void sleep(long idleSleepTime) throws InterruptedException {
