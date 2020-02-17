@@ -56,7 +56,7 @@ import static org.junit.Assert.assertTrue;
  * TestMetadataReplicationScenariosExternalTables - Test metadata only replication.
  * for external tables.
  */
-public class TestMetadataReplicationScenariosExternalTables extends BaseReplicationAcrossInstances {
+public class TestReplicationScenariosExternalTablesMetaDataOnly extends BaseReplicationAcrossInstances {
 
   private static final String REPLICA_EXTERNAL_BASE = "/replica_external_base";
   String extraPrimaryDb;
@@ -90,11 +90,8 @@ public class TestMetadataReplicationScenariosExternalTables extends BaseReplicat
   @Test
   public void replicationWithoutExternalTables() throws Throwable {
     List<String> loadWithClause = externalTableBasePathWithClause();
-    List<String> dumpWithClause
-            = Arrays.asList("'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='false'");
-
-
-
+    List<String> dumpWithClause = Arrays.asList("'"
+            + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='false'");
     WarehouseInstance.Tuple tuple = primary
         .run("use " + primaryDbName)
         .run("create external table t1 (id int)")
@@ -126,7 +123,7 @@ public class TestMetadataReplicationScenariosExternalTables extends BaseReplicat
         .run("insert into table t3 values (20)")
         .dump(primaryDbName, tuple.lastReplicationId, dumpWithClause);
 
-    // the _external_tables_file info only should be created if external tables are to be replicated not otherwise
+    // the _external_tables_file data only should be created if external tables are to be replicated not otherwise
     assertFalse(primary.miniDFSCluster.getFileSystem()
         .exists(new Path(tuple.dumpLocation, FILE_NAME)));
 
