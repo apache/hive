@@ -51,6 +51,8 @@ public class ScheduledQueryExecutionService implements Closeable {
   private ScheduledQueryExecutor worker;
   private AtomicInteger forcedScheduleCheckCounter = new AtomicInteger();
 
+  private ScheduledQueryPoller poller;
+
   public static ScheduledQueryExecutionService startScheduledQueryExecutorService(HiveConf inputConf) {
     HiveConf conf = new HiveConf(inputConf);
     MetastoreBasedScheduledQueryService qService = new MetastoreBasedScheduledQueryService(conf);
@@ -73,7 +75,7 @@ public class ScheduledQueryExecutionService implements Closeable {
 
   private ScheduledQueryExecutionService(ScheduledQueryExecutionContext ctx) {
     context = ctx;
-    ctx.executor.submit(worker = new ScheduledQueryExecutor());
+    ctx.executor.submit(poller = new ScheduledQueryPoller());
     ctx.executor.submit(new ProgressReporter());
   }
 
@@ -81,9 +83,7 @@ public class ScheduledQueryExecutionService implements Closeable {
     return state == QueryState.FINISHED || state == QueryState.FAILED;
   }
 
-  class ScheduledQueryExecutor implements Runnable {
-
-    private ScheduledQueryProgressInfo info;
+  class ScheduledQueryPoller implements Runnable {
 
     @Override
     public void run() {
@@ -105,6 +105,11 @@ public class ScheduledQueryExecutionService implements Closeable {
       }
     }
 
+    private void processQuery(ScheduledQueryPollResponse q) {
+      context.executor.submit(new ScheduledQueryExecutor(q));
+
+    }
+
     private void sleep(long idleSleepTime) throws InterruptedException {
       long checkIntrvalMs = 1000;
       int origResets = forcedScheduleCheckCounter.get();
@@ -114,6 +119,21 @@ public class ScheduledQueryExecutionService implements Closeable {
           return;
         }
       }
+    }
+
+  }
+
+  class ScheduledQueryExecutor implements Runnable {
+
+    private ScheduledQueryProgressInfo info;
+    final ScheduledQueryPollResponse q;
+
+    public ScheduledQueryExecutor(ScheduledQueryPollResponse q2) {
+      q = q2;
+    }
+
+    public void run() {
+      processQuery(q);
     }
 
     public synchronized void reportQueryProgress() {
