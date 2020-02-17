@@ -601,6 +601,10 @@ public class HiveConf extends Configuration {
         "Maximum number of dynamic partitions allowed to be created in total."),
     DYNAMICPARTITIONMAXPARTSPERNODE("hive.exec.max.dynamic.partitions.pernode", 100,
         "Maximum number of dynamic partitions allowed to be created in each mapper/reducer node."),
+    DYNAMICPARTITIONCONVERT("hive.exec.dynamic.partition.type.conversion", true,
+        "Whether to check and cast a dynamic partition column before creating the partition " +
+        "directory. For example, if partition p is type int and we insert string '001', then if " +
+        "this value is true, directory p=1 will be created; if false, p=001"),
     MAXCREATEDFILES("hive.exec.max.created.files", 100000L,
         "Maximum number of HDFS files created by all mappers/reducers in a MapReduce job."),
     DEFAULTPARTITIONNAME("hive.exec.default.partition.name", "__HIVE_DEFAULT_PARTITION__",

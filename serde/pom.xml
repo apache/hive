@@ -70,8 +70,8 @@
       <version>${hppc.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.vlkan</groupId>
-      <artifactId>flatbuffers</artifactId>
+      <groupId>com.github.davidmoten</groupId>
+      <artifactId>flatbuffers-java</artifactId>
       <version>${flatbuffers.version}</version>
     </dependency>
     <dependency>

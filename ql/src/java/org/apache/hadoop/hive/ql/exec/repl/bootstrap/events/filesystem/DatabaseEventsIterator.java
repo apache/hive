@@ -170,7 +170,7 @@ class DatabaseEventsIterator implements Iterator<BootstrapEvent> {
     }
 
     String currentPath = next.toString();
-    if (currentPath.contains(FUNCTIONS_ROOT_DIR_NAME)) {
+    if (currentPath.contains(Path.SEPARATOR + FUNCTIONS_ROOT_DIR_NAME + Path.SEPARATOR)) {
       LOG.debug("functions directory: {}", next.toString());
       return postProcessing(new FSFunctionEvent(next));
     }
