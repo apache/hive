@@ -4782,18 +4782,19 @@ public class ObjectStore implements RawStore, Configurable {
     return -1;
   }
 
-  private  boolean constraintNameAlreadyExists(String name) {
+  private  boolean constraintNameAlreadyExists(MTable table, String constraintName) {
     boolean commited = false;
-    Query constraintExistsQuery = null;
+    Query<MConstraint> constraintExistsQuery = null;
     String constraintNameIfExists = null;
     try {
       openTransaction();
-      name = normalizeIdentifier(name);
-      constraintExistsQuery = pm.newQuery(MConstraint.class, "constraintName == name");
-      constraintExistsQuery.declareParameters("java.lang.String name");
+      constraintName = normalizeIdentifier(constraintName);
+      constraintExistsQuery = pm.newQuery(MConstraint.class,
+          "parentTable == parentTableP && constraintName == constraintNameP");
+      constraintExistsQuery.declareParameters("java.lang.Long parentTableP, java.lang.String constraintNameP");
       constraintExistsQuery.setUnique(true);
-      constraintExistsQuery.setResult("name");
-      constraintNameIfExists = (String) constraintExistsQuery.execute(name);
+      constraintExistsQuery.setResult("constraintName");
+      constraintNameIfExists = (String) constraintExistsQuery.executeWithArray(table.getId(), constraintName);
       commited = commitTransaction();
     } finally {
       rollbackAndCleanup(commited, constraintExistsQuery);
@@ -4801,14 +4802,14 @@ public class ObjectStore implements RawStore, Configurable {
     return constraintNameIfExists != null && !constraintNameIfExists.isEmpty();
   }
 
-  private String generateConstraintName(String... parameters) throws MetaException {
+  private String generateConstraintName(MTable table, String... parameters) throws MetaException {
     int hashcode = ArrayUtils.toString(parameters).hashCode() & 0xfffffff;
     int counter = 0;
     final int MAX_RETRIES = 10;
     while (counter < MAX_RETRIES) {
       String currName = (parameters.length == 0 ? "constraint_" : parameters[parameters.length-1]) +
         "_" + hashcode + "_" + System.currentTimeMillis() + "_" + (counter++);
-      if (!constraintNameAlreadyExists(currName)) {
+      if (!constraintNameAlreadyExists(table, currName)) {
         return currName;
       }
     }
@@ -5014,13 +5015,15 @@ public class ObjectStore implements RawStore, Configurable {
             // However, this scenario can be ignored for practical purposes because of
             // the uniqueness of the generated constraint name.
             if (foreignKey.getKey_seq() == 1) {
-              currentConstraintName = generateConstraintName(
-                fkTableDB, fkTableName, pkTableDB, pkTableName, pkColumnName, fkColumnName, "fk");
+              currentConstraintName = generateConstraintName(parentTable, fkTableDB, fkTableName, pkTableDB,
+                  pkTableName, pkColumnName, fkColumnName, "fk");
             }
           } else {
             currentConstraintName = normalizeIdentifier(foreignKey.getFk_name());
-            if(constraintNameAlreadyExists(currentConstraintName)) {
-              throw new InvalidObjectException("Constraint name already exists: " + currentConstraintName);
+            if (constraintNameAlreadyExists(parentTable, currentConstraintName)) {
+              String fqConstraintName = String.format("%s.%s.%s", parentTable.getDatabase().getName(),
+                  parentTable.getTableName(), currentConstraintName);
+              throw new InvalidObjectException("Constraint name already exists: " + fqConstraintName);
             }
           }
           fkNames.add(currentConstraintName);
@@ -5028,19 +5031,20 @@ public class ObjectStore implements RawStore, Configurable {
           Integer deleteRule = foreignKey.getDelete_rule();
           int enableValidateRely = (foreignKey.isEnable_cstr() ? 4 : 0) +
                   (foreignKey.isValidate_cstr() ? 2 : 0) + (foreignKey.isRely_cstr() ? 1 : 0);
+
           MConstraint mpkfk = new MConstraint(
-            currentConstraintName,
-            MConstraint.FOREIGN_KEY_CONSTRAINT,
-            foreignKey.getKey_seq(),
-            deleteRule,
-            updateRule,
-            enableValidateRely,
-            parentTable,
-            childTable,
-            parentCD,
-            childCD,
-            childIntegerIndex,
-            parentIntegerIndex
+              currentConstraintName,
+              foreignKey.getKey_seq(),
+              MConstraint.FOREIGN_KEY_CONSTRAINT,
+              deleteRule,
+              updateRule,
+              enableValidateRely,
+              parentTable,
+              childTable,
+              parentCD,
+              childCD,
+              childIntegerIndex,
+              parentIntegerIndex
           );
           mpkfks.add(mpkfk);
 
@@ -5170,29 +5174,31 @@ public class ObjectStore implements RawStore, Configurable {
       }
       if (pks.get(i).getPk_name() == null) {
         if (pks.get(i).getKey_seq() == 1) {
-          constraintName = generateConstraintName(tableDB, tableName, columnName, "pk");
+          constraintName = generateConstraintName(parentTable, tableDB, tableName, columnName, "pk");
         }
       } else {
         constraintName = normalizeIdentifier(pks.get(i).getPk_name());
-        if(constraintNameAlreadyExists(constraintName)) {
-          throw new InvalidObjectException("Constraint name already exists: " + constraintName);
+        if (constraintNameAlreadyExists(parentTable, constraintName)) {
+          String fqConstraintName = String.format("%s.%s.%s", parentTable.getDatabase().getName(),
+              parentTable.getTableName(), constraintName);
+          throw new InvalidObjectException("Constraint name already exists: " + fqConstraintName);
         }
       }
       pkNames.add(constraintName);
       int enableValidateRely = (pks.get(i).isEnable_cstr() ? 4 : 0) +
       (pks.get(i).isValidate_cstr() ? 2 : 0) + (pks.get(i).isRely_cstr() ? 1 : 0);
       MConstraint mpk = new MConstraint(
-        constraintName,
-        MConstraint.PRIMARY_KEY_CONSTRAINT,
-        pks.get(i).getKey_seq(),
-        null,
-        null,
-        enableValidateRely,
-        parentTable,
-        null,
-        parentCD,
-        null,
-        null,
+          constraintName,
+          pks.get(i).getKey_seq(),
+          MConstraint.PRIMARY_KEY_CONSTRAINT,
+          null,
+          null,
+          enableValidateRely,
+          parentTable,
+          null,
+          parentCD,
+          null,
+          null,
         parentIntegerIndex);
       mpks.add(mpk);
     }
@@ -5239,12 +5245,14 @@ public class ObjectStore implements RawStore, Configurable {
       }
       if (uks.get(i).getUk_name() == null) {
         if (uks.get(i).getKey_seq() == 1) {
-            constraintName = generateConstraintName(tableDB, tableName, columnName, "uk");
+          constraintName = generateConstraintName(parentTable, tableDB, tableName, columnName, "uk");
         }
       } else {
         constraintName = normalizeIdentifier(uks.get(i).getUk_name());
-        if(constraintNameAlreadyExists(constraintName)) {
-          throw new InvalidObjectException("Constraint name already exists: " + constraintName);
+        if (constraintNameAlreadyExists(parentTable, constraintName)) {
+          String fqConstraintName = String.format("%s.%s.%s", parentTable.getDatabase().getName(),
+              parentTable.getTableName(), constraintName);
+          throw new InvalidObjectException("Constraint name already exists: " + fqConstraintName);
         }
       }
       ukNames.add(constraintName);
@@ -5252,18 +5260,18 @@ public class ObjectStore implements RawStore, Configurable {
       int enableValidateRely = (uks.get(i).isEnable_cstr() ? 4 : 0) +
           (uks.get(i).isValidate_cstr() ? 2 : 0) + (uks.get(i).isRely_cstr() ? 1 : 0);
       MConstraint muk = new MConstraint(
-        constraintName,
-        MConstraint.UNIQUE_CONSTRAINT,
-        uks.get(i).getKey_seq(),
-        null,
-        null,
-        enableValidateRely,
-        parentTable,
-        null,
-        parentCD,
-        null,
-        null,
-        parentIntegerIndex);
+          constraintName,
+          uks.get(i).getKey_seq(),
+          MConstraint.UNIQUE_CONSTRAINT,
+          null,
+          null,
+          enableValidateRely,
+          parentTable,
+          null,
+          parentCD,
+          null,
+          null,
+          parentIntegerIndex);
       cstrs.add(muk);
     }
     pm.makePersistentAll(cstrs);
@@ -5335,11 +5343,13 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
     if (ccName == null) {
-      constraintName = generateConstraintName(tableDB, tableName, columnName, "dc");
+      constraintName = generateConstraintName(parentTable, tableDB, tableName, columnName, "dc");
     } else {
       constraintName = normalizeIdentifier(ccName);
-      if(constraintNameAlreadyExists(constraintName)) {
-        throw new InvalidObjectException("Constraint name already exists: " + constraintName);
+      if (constraintNameAlreadyExists(parentTable, constraintName)) {
+        String fqConstraintName = String.format("%s.%s.%s", parentTable.getDatabase().getName(),
+            parentTable.getTableName(), constraintName);
+        throw new InvalidObjectException("Constraint name already exists: " + fqConstraintName);
       }
     }
     nnNames.add(constraintName);
@@ -5348,8 +5358,8 @@ public class ObjectStore implements RawStore, Configurable {
         (isValidate ? 2 : 0) + (isRely ? 1 : 0);
     MConstraint muk = new MConstraint(
         constraintName,
-        constraintType,
-        1, // Not null constraint should reference a single column
+        1,
+        constraintType, // Not null constraint should reference a single column
         null,
         null,
         enableValidateRely,
@@ -5418,11 +5428,13 @@ public class ObjectStore implements RawStore, Configurable {
         }
       }
       if (nns.get(i).getNn_name() == null) {
-        constraintName = generateConstraintName(tableDB, tableName, columnName, "nn");
+        constraintName = generateConstraintName(parentTable, tableDB, tableName, columnName, "nn");
       } else {
         constraintName = normalizeIdentifier(nns.get(i).getNn_name());
-        if(constraintNameAlreadyExists(constraintName)) {
-          throw new InvalidObjectException("Constraint name already exists: " + constraintName);
+        if (constraintNameAlreadyExists(parentTable, constraintName)) {
+          String fqConstraintName = String.format("%s.%s.%s", parentTable.getDatabase().getName(),
+              parentTable.getTableName(), constraintName);
+          throw new InvalidObjectException("Constraint name already exists: " + fqConstraintName);
         }
       }
       nnNames.add(constraintName);
@@ -5430,18 +5442,18 @@ public class ObjectStore implements RawStore, Configurable {
       int enableValidateRely = (nns.get(i).isEnable_cstr() ? 4 : 0) +
           (nns.get(i).isValidate_cstr() ? 2 : 0) + (nns.get(i).isRely_cstr() ? 1 : 0);
       MConstraint muk = new MConstraint(
-        constraintName,
-        MConstraint.NOT_NULL_CONSTRAINT,
-        1, // Not null constraint should reference a single column
-        null,
-        null,
-        enableValidateRely,
-        parentTable,
-        null,
-        parentCD,
-        null,
-        null,
-        parentIntegerIndex);
+          constraintName,
+          1,
+          MConstraint.NOT_NULL_CONSTRAINT, // Not null constraint should reference a single column
+          null,
+          null,
+          enableValidateRely,
+          parentTable,
+          null,
+          parentCD,
+          null,
+          null,
+          parentIntegerIndex);
       cstrs.add(muk);
     }
     pm.makePersistentAll(cstrs);
@@ -11134,7 +11146,7 @@ public class ObjectStore implements RawStore, Configurable {
         boolean rely = (enableValidateRely & 1) != 0;
         checkConstraints.add(new SQLCheckConstraint(catName, db_name, tbl_name,
                                                         cols.get(currConstraint.getParentIntegerIndex()).getName(),
-                                                        currConstraint.getDefaultOrCheckValue(),
+                                                        currConstraint.getDefaultValue(),
                                                     currConstraint.getConstraintName(), enable, validate, rely));
       }
       commited = commitTransaction();
@@ -11176,7 +11188,7 @@ public class ObjectStore implements RawStore, Configurable {
         defaultConstraints.add(new SQLDefaultConstraint(catName, db_name,
          tbl_name,
          cols.get(currConstraint.getParentIntegerIndex()).getName(),
-         currConstraint.getDefaultOrCheckValue(), currConstraint.getConstraintName(), enable, validate, rely));
+         currConstraint.getDefaultValue(), currConstraint.getConstraintName(), enable, validate, rely));
       }
       commited = commitTransaction();
     } finally {
