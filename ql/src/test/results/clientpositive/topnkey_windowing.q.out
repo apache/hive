@@ -547,8 +547,10 @@ PREHOOK: Input: default@topnkey_windowing
 POSTHOOK: query: SELECT tw_code, ranking
 FROM (
   SELECT tw_code AS tw_code,
+              bucketingVersion: 2
     dense_rank() OVER (PARTITION BY tw_code ORDER BY tw_value) AS ranking
   FROM topnkey_windowing) tmp1
+              numBuckets: -1
   WHERE ranking <= 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@topnkey_windowing
