@@ -66,4 +66,9 @@ public class ScheduledQueryExecutionContext {
     return conf.getTimeVar(ConfVars.HIVE_SCHEDULED_QUERIES_EXECUTOR_PROGRESS_REPORT_INTERVAL, TimeUnit.MILLISECONDS);
   }
 
+  public int getNumberOfExecutors() {
+    // TODO Auto-generated method stub
+    return 3;
+  }
+
 }

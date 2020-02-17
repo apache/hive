@@ -21,6 +21,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -50,6 +51,7 @@ public class ScheduledQueryExecutionService implements Closeable {
   private ScheduledQueryExecutionContext context;
   private ScheduledQueryExecutor worker;
   private AtomicInteger forcedScheduleCheckCounter = new AtomicInteger();
+  private final Semaphore concurrencyLimit;
 
   private ScheduledQueryPoller poller;
 
@@ -77,6 +79,7 @@ public class ScheduledQueryExecutionService implements Closeable {
     context = ctx;
     ctx.executor.submit(poller = new ScheduledQueryPoller());
     ctx.executor.submit(new ProgressReporter());
+    concurrencyLimit = new Semaphore(ctx.getNumberOfExecutors());
   }
 
   static boolean isTerminalState(QueryState state) {
@@ -123,6 +126,20 @@ public class ScheduledQueryExecutionService implements Closeable {
 
   }
 
+  //FIXME  SemaphoreTokenHolder
+  /*static */class ExecutorThreadToken implements AutoCloseable {
+
+    public ExecutorThreadToken() throws InterruptedException {
+      concurrencyLimit.acquire();
+    }
+
+    @Override
+    public void close() {
+      concurrencyLimit.release();
+    }
+
+  }
+
   class ScheduledQueryExecutor implements Runnable {
 
     private ScheduledQueryProgressInfo info;
@@ -133,7 +150,13 @@ public class ScheduledQueryExecutionService implements Closeable {
     }
 
     public void run() {
-      processQuery(q);
+      try (ExecutorThreadToken x = new ExecutorThreadToken()) {
+        processQuery(q);
+      } catch (InterruptedException e) {
+        LOG.info("Executor thread interrupted");
+      } finally {
+        forceScheduleCheck();
+      }
     }
 
     public synchronized void reportQueryProgress() {
