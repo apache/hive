@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,31 +16,21 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.security;
+package org.apache.hadoop.hive.ql.session;
 
-import java.util.List;
-
-import org.apache.hadoop.conf.Configurable;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.session.ISessionAuthState;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 
 /**
- * HiveAuthenticationProvider is an interface for authentication. The
- * implementation should return userNames and groupNames.
+ * Exposes the authentication related methods of SessionState
+ *
+ * intended for internal usage only
  */
-public interface HiveAuthenticationProvider extends Configurable{
+@InterfaceAudience.Private
+public interface ISessionAuthState {
 
-  public String getUserName();
+  Configuration getConf();
 
-  public List<String> getGroupNames();
-
-  public void destroy() throws HiveException;
-
-  /**
-   * This function is meant to be used only for hive internal implementations of this interface.
-   * SessionState is not a public interface.
-   * @param ss SessionState that created this instance
-   */
-  public void setSessionState(ISessionAuthState ss);
+  String getUserName();
 
 }
