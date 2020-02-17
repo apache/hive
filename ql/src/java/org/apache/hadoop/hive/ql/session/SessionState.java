@@ -325,6 +325,7 @@ public class SessionState implements ISessionAuthState{
 
   private final AtomicLong sparkSessionId = new AtomicLong();
 
+  @Override
   public HiveConf getConf() {
     return sessionConf;
   }
@@ -1909,6 +1910,7 @@ public class SessionState implements ISessionAuthState{
     }
   }
 
+  @Override
   public String getUserName() {
     return userName;
   }
