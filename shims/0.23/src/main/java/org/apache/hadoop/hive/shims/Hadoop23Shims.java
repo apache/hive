@@ -870,15 +870,6 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       return super.openFile(swizzleParamPath(path));
     }
 
-    @Override
-    protected CompletableFuture<FSDataInputStream> openFileWithOptions(
-        final Path path,
-        final Set<String> mandatoryKeys,
-        final Configuration options,
-        final int bufferSize) throws IOException {
-      return super.openFileWithOptions(swizzleParamPath(path),
-          mandatoryKeys, options, bufferSize);
-    }
   }
 
   @Override
