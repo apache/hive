@@ -562,6 +562,8 @@ struct Table {
   23: optional byte accessType,
   24: optional list<string> requiredReadCapabilities,
   25: optional list<string> requiredWriteCapabilities
+  26: optional i64 id,                 // id of the table. It will be ignored if set. It's only for
+                                       // read purposed
 }
 
 struct Partition {

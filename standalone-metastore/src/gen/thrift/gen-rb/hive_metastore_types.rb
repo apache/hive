@@ -1532,6 +1532,7 @@ class Table
   ACCESSTYPE = 23
   REQUIREDREADCAPABILITIES = 24
   REQUIREDWRITECAPABILITIES = 25
+  ID = 26
 
   FIELDS = {
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
@@ -1557,7 +1558,8 @@ class Table
     COLSTATS => {:type => ::Thrift::Types::STRUCT, :name => 'colStats', :class => ::ColumnStatistics, :optional => true},
     ACCESSTYPE => {:type => ::Thrift::Types::BYTE, :name => 'accessType', :optional => true},
     REQUIREDREADCAPABILITIES => {:type => ::Thrift::Types::LIST, :name => 'requiredReadCapabilities', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
-    REQUIREDWRITECAPABILITIES => {:type => ::Thrift::Types::LIST, :name => 'requiredWriteCapabilities', :element => {:type => ::Thrift::Types::STRING}, :optional => true}
+    REQUIREDWRITECAPABILITIES => {:type => ::Thrift::Types::LIST, :name => 'requiredWriteCapabilities', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
+    ID => {:type => ::Thrift::Types::I64, :name => 'id', :optional => true}
   }
 
   def struct_fields; FIELDS; end

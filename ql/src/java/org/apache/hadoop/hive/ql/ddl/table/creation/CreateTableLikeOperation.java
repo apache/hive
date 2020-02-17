@@ -125,6 +125,7 @@ public class CreateTableLikeOperation extends DDLOperation<CreateTableLikeDesc> 
     }
 
     table.getTTable().setTemporary(desc.isTemporary());
+    table.getTTable().unsetId();
 
     if (desc.isExternal()) {
       setExternalProperties(table);

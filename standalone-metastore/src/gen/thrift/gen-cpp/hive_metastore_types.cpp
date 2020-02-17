@@ -9162,6 +9162,11 @@ void Table::__set_requiredWriteCapabilities(const std::vector<std::string> & val
 __isset.requiredWriteCapabilities = true;
 }
 
+void Table::__set_id(const int64_t val) {
+  this->id = val;
+__isset.id = true;
+}
+
 uint32_t Table::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
@@ -9428,6 +9433,14 @@ uint32_t Table::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 26:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->id);
+          this->__isset.id = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -9586,6 +9599,11 @@ uint32_t Table::write(::apache::thrift::protocol::TProtocol* oprot) const {
     }
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.id) {
+    xfer += oprot->writeFieldBegin("id", ::apache::thrift::protocol::T_I64, 26);
+    xfer += oprot->writeI64(this->id);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -9617,6 +9635,7 @@ void swap(Table &a, Table &b) {
   swap(a.accessType, b.accessType);
   swap(a.requiredReadCapabilities, b.requiredReadCapabilities);
   swap(a.requiredWriteCapabilities, b.requiredWriteCapabilities);
+  swap(a.id, b.id);
   swap(a.__isset, b.__isset);
 }
 
@@ -9645,6 +9664,7 @@ Table::Table(const Table& other314) {
   accessType = other314.accessType;
   requiredReadCapabilities = other314.requiredReadCapabilities;
   requiredWriteCapabilities = other314.requiredWriteCapabilities;
+  id = other314.id;
   __isset = other314.__isset;
 }
 Table& Table::operator=(const Table& other315) {
@@ -9672,6 +9692,7 @@ Table& Table::operator=(const Table& other315) {
   accessType = other315.accessType;
   requiredReadCapabilities = other315.requiredReadCapabilities;
   requiredWriteCapabilities = other315.requiredWriteCapabilities;
+  id = other315.id;
   __isset = other315.__isset;
   return *this;
 }
@@ -9702,6 +9723,7 @@ void Table::printTo(std::ostream& out) const {
   out << ", " << "accessType="; (__isset.accessType ? (out << to_string(accessType)) : (out << "<null>"));
   out << ", " << "requiredReadCapabilities="; (__isset.requiredReadCapabilities ? (out << to_string(requiredReadCapabilities)) : (out << "<null>"));
   out << ", " << "requiredWriteCapabilities="; (__isset.requiredWriteCapabilities ? (out << to_string(requiredWriteCapabilities)) : (out << "<null>"));
+  out << ", " << "id="; (__isset.id ? (out << to_string(id)) : (out << "<null>"));
   out << ")";
 }
 

@@ -2194,6 +2194,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           throw new InvalidObjectException("Invalid partition column " + validate);
         }
       }
+      if (tbl.isSetId()) {
+        throw new InvalidObjectException("Id shouldn't be set but table "
+            + tbl.getDbName() + "." + tbl.getTableName() + "has the Id set to "
+            + tbl.getId() + ". It's a read-only option");
+      }
       SkewedInfo skew = tbl.getSd().getSkewedInfo();
       if (skew != null) {
         validate = MetaStoreUtils.validateSkewedColNames(skew.getSkewedColNames());

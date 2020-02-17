@@ -6465,6 +6465,7 @@ class Table:
    - accessType
    - requiredReadCapabilities
    - requiredWriteCapabilities
+   - id
   """
 
   thrift_spec = (
@@ -6494,9 +6495,10 @@ class Table:
     (23, TType.BYTE, 'accessType', None, None, ), # 23
     (24, TType.LIST, 'requiredReadCapabilities', (TType.STRING,None), None, ), # 24
     (25, TType.LIST, 'requiredWriteCapabilities', (TType.STRING,None), None, ), # 25
+    (26, TType.I64, 'id', None, None, ), # 26
   )
 
-  def __init__(self, tableName=None, dbName=None, owner=None, createTime=None, lastAccessTime=None, retention=None, sd=None, partitionKeys=None, parameters=None, viewOriginalText=None, viewExpandedText=None, tableType=None, privileges=None, temporary=thrift_spec[14][4], rewriteEnabled=None, creationMetadata=None, catName=None, ownerType=thrift_spec[18][4], writeId=thrift_spec[19][4], isStatsCompliant=None, colStats=None, accessType=None, requiredReadCapabilities=None, requiredWriteCapabilities=None,):
+  def __init__(self, tableName=None, dbName=None, owner=None, createTime=None, lastAccessTime=None, retention=None, sd=None, partitionKeys=None, parameters=None, viewOriginalText=None, viewExpandedText=None, tableType=None, privileges=None, temporary=thrift_spec[14][4], rewriteEnabled=None, creationMetadata=None, catName=None, ownerType=thrift_spec[18][4], writeId=thrift_spec[19][4], isStatsCompliant=None, colStats=None, accessType=None, requiredReadCapabilities=None, requiredWriteCapabilities=None, id=None,):
     self.tableName = tableName
     self.dbName = dbName
     self.owner = owner
@@ -6521,6 +6523,7 @@ class Table:
     self.accessType = accessType
     self.requiredReadCapabilities = requiredReadCapabilities
     self.requiredWriteCapabilities = requiredWriteCapabilities
+    self.id = id
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -6677,6 +6680,11 @@ class Table:
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
+      elif fid == 26:
+        if ftype == TType.I64:
+          self.id = iprot.readI64()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -6796,6 +6804,10 @@ class Table:
         oprot.writeString(iter225)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
+    if self.id is not None:
+      oprot.writeFieldBegin('id', TType.I64, 26)
+      oprot.writeI64(self.id)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -6829,6 +6841,7 @@ class Table:
     value = (value * 31) ^ hash(self.accessType)
     value = (value * 31) ^ hash(self.requiredReadCapabilities)
     value = (value * 31) ^ hash(self.requiredWriteCapabilities)
+    value = (value * 31) ^ hash(self.id)
     return value
 
   def __repr__(self):

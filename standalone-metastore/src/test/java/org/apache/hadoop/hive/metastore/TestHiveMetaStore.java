@@ -232,6 +232,9 @@ public abstract class TestHiveMetaStore {
         tbl = client.getTable(dbName, tblName);
       }
 
+      Assert.assertTrue(tbl.isSetId());
+      tbl.unsetId();
+
       Partition part = makePartitionObject(dbName, tblName, vals, tbl, "/part1");
       Partition part2 = makePartitionObject(dbName, tblName, vals2, tbl, "/part2");
       Partition part3 = makePartitionObject(dbName, tblName, vals3, tbl, "/part3");
@@ -1326,6 +1329,7 @@ public abstract class TestHiveMetaStore {
 
       Table tbl2 = client.getTable(dbName, tblName);
       assertNotNull(tbl2);
+      Assert.assertTrue(tbl2.isSetId());
       assertEquals(tbl2.getDbName(), dbName);
       assertEquals(tbl2.getTableName(), tblName);
       assertEquals(tbl2.getSd().getCols().size(), typ1.getFields().size());
@@ -1359,6 +1363,7 @@ public abstract class TestHiveMetaStore {
         assertTrue(fieldSchemasFull.contains(fs));
       }
 
+      tbl2.unsetId();
       client.createTable(tbl2);
       if (isThriftClient) {
         tbl2 = client.getTable(tbl2.getDbName(), tbl2.getTableName());
@@ -1717,6 +1722,56 @@ public abstract class TestHiveMetaStore {
         .create(client, conf);
 
     client.getSchema(dbName, tblName);
+  }
+
+  @Test
+  public void testCreateAndGetTableWithDriver() throws Exception {
+    String dbName = "createDb";
+    String tblName = "createTbl";
+
+    client.dropTable(dbName, tblName);
+    silentDropDatabase(dbName);
+    new DatabaseBuilder()
+        .setName(dbName)
+        .create(client, conf);
+
+    createTable(dbName, tblName);
+    Table tblRead = client.getTable(dbName, tblName);
+    Assert.assertTrue(tblRead.isSetId());
+    long firstTableId = tblRead.getId();
+
+    createTable(dbName, tblName + "_2");
+    Table tblRead2 = client.getTable(dbName, tblName + "_2");
+    Assert.assertTrue(tblRead2.isSetId());
+    Assert.assertNotEquals(firstTableId, tblRead2.getId());
+  }
+
+  @Test
+  public void testCreateTableSettingId() throws Exception {
+    String dbName = "createDb";
+    String tblName = "createTbl";
+
+    client.dropTable(dbName, tblName);
+    silentDropDatabase(dbName);
+    new DatabaseBuilder()
+        .setName(dbName)
+        .create(client, conf);
+
+    Table table = new TableBuilder()
+        .setDbName(dbName)
+        .setTableName(tblName)
+        .addCol("foo", "string")
+        .addCol("bar", "string")
+        .build(conf);
+    table.setId(1);
+    try {
+      client.createTable(table);
+      Assert.fail("An error should happen when setting the id"
+          + " to create a table");
+    } catch (InvalidObjectException e) {
+      Assert.assertTrue(e.getMessage().contains("Id shouldn't be set"));
+      Assert.assertTrue(e.getMessage().contains(tblName));
+    }
   }
 
   @Test
