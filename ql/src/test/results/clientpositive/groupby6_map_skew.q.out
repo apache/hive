@@ -41,20 +41,20 @@ STAGE PLANS:
                 minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0
-                Statistics: Num rows: 250 Data size: 46000 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 250 Data size: 21250 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   null sort order: z
                   sort order: +
                   Map-reduce partition columns: rand() (type: double)
-                  Statistics: Num rows: 250 Data size: 46000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 250 Data size: 21250 Basic stats: COMPLETE Column stats: COMPLETE
       Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: string)
           mode: partials
           outputColumnNames: _col0
-          Statistics: Num rows: 250 Data size: 46000 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 250 Data size: 21250 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
             table:
@@ -71,17 +71,17 @@ STAGE PLANS:
               null sort order: z
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 250 Data size: 46000 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 250 Data size: 21250 Basic stats: COMPLETE Column stats: COMPLETE
       Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: string)
           mode: final
           outputColumnNames: _col0
-          Statistics: Num rows: 250 Data size: 46000 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 250 Data size: 21250 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 250 Data size: 46000 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 250 Data size: 21250 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -90,7 +90,7 @@ STAGE PLANS:
           Select Operator
             expressions: _col0 (type: string)
             outputColumnNames: c1
-            Statistics: Num rows: 250 Data size: 46000 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 250 Data size: 21250 Basic stats: COMPLETE Column stats: COMPLETE
             Group By Operator
               aggregations: compute_stats(c1, 'hll')
               minReductionHashAggr: 0.99

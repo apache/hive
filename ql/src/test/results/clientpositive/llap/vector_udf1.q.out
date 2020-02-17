@@ -2585,19 +2585,19 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [9, 10, 13]
                         selectExpressions: StringSubstrColStartLen(col 1:string, start 0, length 3) -> 9:string, StringSubstrColStartLen(col 3:varchar(20), start 0, length 3) -> 10:string, StringGroupColEqualStringGroupColumn(col 11:string, col 12:string)(children: StringSubstrColStartLen(col 1:string, start 0, length 3) -> 11:string, StringSubstrColStartLen(col 3:varchar(20), start 0, length 3) -> 12:string) -> 13:boolean
-                    Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
                     Limit
                       Number of rows: 1
                       Limit Vectorization:
                           className: VectorLimitOperator
                           native: true
-                      Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
                         File Sink Vectorization:
                             className: VectorFileSinkOperator
                             native: false
-                        Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

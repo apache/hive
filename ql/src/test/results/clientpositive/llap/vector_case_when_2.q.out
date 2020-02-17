@@ -151,7 +151,7 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [1, 3, 9, 14, 18, 22, 24, 27, 32, 38, 2]
                         selectExpressions: VectorUDFAdaptor(CASE WHEN ((ctimestamp2 <= TIMESTAMP'1800-12-31 00:00:00')) THEN ('1800s or Earlier') WHEN ((ctimestamp2 < TIMESTAMP'1900-01-01 00:00:00')) THEN ('1900s') WHEN (ctimestamp2 BETWEEN TIMESTAMP'2006-01-01 00:00:00' AND TIMESTAMP'2010-12-31 23:59:59.999999999') THEN ('Late 2000s') WHEN ((ctimestamp2 <= TIMESTAMP'2015-12-31 23:59:59.999999999')) THEN ('Early 2010s') ELSE ('Unknown') END)(children: TimestampColLessEqualTimestampScalar(col 3:timestamp, val 1800-12-31 00:00:00) -> 5:boolean, TimestampColLessTimestampScalar(col 3:timestamp, val 1900-01-01 00:00:00) -> 6:boolean, TimestampColumnBetween(col 3:timestamp, left 2005-12-31 16:00:00.0, right 2010-12-31 15:59:59.999999999) -> 7:boolean, TimestampColLessEqualTimestampScalar(col 3:timestamp, val 2015-12-31 23:59:59.999999999) -> 8:boolean) -> 9:string, VectorUDFAdaptor(CASE WHEN ((ctimestamp2 <= TIMESTAMP'2000-12-31 23:59:59.999999999')) THEN ('Old') WHEN ((ctimestamp2 < TIMESTAMP'2006-01-01 00:00:00')) THEN ('Early 2000s') WHEN (ctimestamp2 BETWEEN TIMESTAMP'2006-01-01 00:00:00' AND TIMESTAMP'2010-12-31 23:59:59.999999999') THEN ('Late 2000s') WHEN ((ctimestamp2 <= TIMESTAMP'2015-12-31 23:59:59.999999999')) THEN ('Early 2010s') ELSE (null) END)(children: TimestampColLessEqualTimestampScalar(col 3:timestamp, val 2000-12-31 23:59:59.999999999) -> 10:boolean, TimestampColLessTimestampScalar(col 3:timestamp, val 2006-01-01 00:00:00) -> 11:boolean, TimestampColumnBetween(col 3:timestamp, left 2005-12-31 16:00:00.0, right 2010-12-31 15:59:59.999999999) -> 12:boolean, TimestampColLessEqualTimestampScalar(col 3:timestamp, val 2015-12-31 23:59:59.999999999) -> 13:boolean) -> 14:string, VectorUDFAdaptor(CASE WHEN ((ctimestamp2 <= TIMESTAMP'2000-12-31 23:59:59.999999999')) THEN ('Old') WHEN ((ctimestamp2 < TIMESTAMP'2006-01-01 00:00:00')) THEN ('Early 2000s') WHEN (ctimestamp2 BETWEEN TIMESTAMP'2006-01-01 00:00:00' AND TIMESTAMP'2010-12-31 23:59:59.999999999') THEN ('Late 2000s') ELSE (null) END)(children: TimestampColLessEqualTimestampScalar(col 3:timestamp, val 2000-12-31 23:59:59.999999999) -> 15:boolean, TimestampColLessTimestampScalar(col 3:timestamp, val 2006-01-01 00:00:00) -> 16:boolean, TimestampColumnBetween(col 3:timestamp, left 2005-12-31 16:00:00.0, right 2010-12-31 15:59:59.999999999) -> 17:boolean) -> 18:string, IfExprLongColumnLongColumn(col 19:boolean, col 20:int, col 21:int)(children: TimestampColLessTimestampScalar(col 1:timestamp, val 1974-10-04 17:21:03.989) -> 19:boolean, VectorUDFYearTimestamp(col 1:timestamp, field YEAR) -> 20:int, VectorUDFYearTimestamp(col 3:timestamp, field YEAR) -> 21:int) -> 22:int, VectorUDFAdaptor(CASE WHEN ((stimestamp1 like '%19%')) THEN (stimestamp1) ELSE ('2018-03-08 23:04:59') END)(children: SelectStringColLikeStringScalar(col 2:string) -> 23:boolean) -> 24:string, VectorUDFAdaptor(if((ctimestamp1 = TIMESTAMP'2021-09-24 03:18:32.413655165'), null, minute(ctimestamp1)))(children: TimestampColEqualTimestampScalar(col 1:timestamp, val 2021-09-24 03:18:32.413655165) -> 25:boolean, VectorUDFMinuteTimestamp(col 1:timestamp, field MINUTE) -> 26:int) -> 27:int, VectorUDFAdaptor(if(((ctimestamp2 >= TIMESTAMP'5344-10-04 18:40:08.165') and (ctimestamp2 < TIMESTAMP'6631-11-13 16:31:29.702202248')), minute(ctimestamp1), null))(children: ColAndCol(col 28:boolean, col 29:boolean)(children: TimestampColGreaterEqualTimestampScalar(col 3:timestamp, val 5344-10-04 18:40:08.165) -> 28:boolean, TimestampColLessTimestampScalar(col 3:timestamp, val 6631-11-13 16:31:29.702202248) -> 29:boolean) -> 30:boolean, VectorUDFMinuteTimestamp(col 1:timestamp, field MINUTE) -> 31:int) -> 32:int, IfExprLongColumnLongColumn(col 35:boolean, col 36:date, col 37:date)(children: DoubleColGreaterDoubleScalar(col 34:double, val 100.0)(children: DoubleColModuloDoubleScalar(col 33:double, val 500.0)(children: CastTimestampToDouble(col 1:timestamp) -> 33:double) -> 34:double) -> 35:boolean, VectorUDFDateAddColScalar(col 0:date, val 1) -> 36:date, VectorUDFDateAddColScalar(col 0:date, val 365) -> 37:date) -> 38:date
-                    Statistics: Num rows: 51 Data size: 50745 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 51 Data size: 50345 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: timestamp), _col10 (type: string), _col1 (type: timestamp)
                       null sort order: zzz
@@ -162,7 +162,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumns: 9:string, 14:string, 18:string, 22:int, 24:string, 27:int, 32:int, 38:date
-                      Statistics: Num rows: 51 Data size: 50745 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 51 Data size: 50345 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: int), _col8 (type: int), _col9 (type: date)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -204,13 +204,13 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-                Statistics: Num rows: 51 Data size: 45084 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 51 Data size: 44684 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 51 Data size: 45084 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 51 Data size: 44684 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -441,7 +441,7 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [1, 3, 12, 21, 28, 32, 34, 37, 42, 48, 2]
                         selectExpressions: IfExprStringScalarStringGroupColumn(col 5:boolean, val 1800s or Earliercol 11:string)(children: TimestampColLessEqualTimestampScalar(col 3:timestamp, val 1800-12-31 00:00:00) -> 5:boolean, IfExprStringScalarStringGroupColumn(col 6:boolean, val 1900scol 10:string)(children: TimestampColLessTimestampScalar(col 3:timestamp, val 1900-01-01 00:00:00) -> 6:boolean, IfExprStringScalarStringGroupColumn(col 7:boolean, val Late 2000scol 9:string)(children: TimestampColumnBetween(col 3:timestamp, left 2005-12-31 16:00:00.0, right 2010-12-31 15:59:59.999999999) -> 7:boolean, IfExprStringScalarStringScalar(col 8:boolean, val Early 2010s, val Unknown)(children: TimestampColLessEqualTimestampScalar(col 3:timestamp, val 2015-12-31 23:59:59.999999999) -> 8:boolean) -> 9:string) -> 10:string) -> 11:string) -> 12:string, IfExprStringScalarStringGroupColumn(col 13:boolean, val Oldcol 20:string)(children: TimestampColLessEqualTimestampScalar(col 3:timestamp, val 2000-12-31 23:59:59.999999999) -> 13:boolean, IfExprStringScalarStringGroupColumn(col 14:boolean, val Early 2000scol 19:string)(children: TimestampColLessTimestampScalar(col 3:timestamp, val 2006-01-01 00:00:00) -> 14:boolean, IfExprStringScalarStringGroupColumn(col 15:boolean, val Late 2000scol 18:string)(children: TimestampColumnBetween(col 3:timestamp, left 2005-12-31 16:00:00.0, right 2010-12-31 15:59:59.999999999) -> 15:boolean, IfExprColumnNull(col 16:boolean, col 17:string, null)(children: TimestampColLessEqualTimestampScalar(col 3:timestamp, val 2015-12-31 23:59:59.999999999) -> 16:boolean, ConstantVectorExpression(val Early 2010s) -> 17:string) -> 18:string) -> 19:string) -> 20:string) -> 21:string, IfExprStringScalarStringGroupColumn(col 22:boolean, val Oldcol 27:string)(children: TimestampColLessEqualTimestampScalar(col 3:timestamp, val 2000-12-31 23:59:59.999999999) -> 22:boolean, IfExprStringScalarStringGroupColumn(col 23:boolean, val Early 2000scol 26:string)(children: TimestampColLessTimestampScalar(col 3:timestamp, val 2006-01-01 00:00:00) -> 23:boolean, IfExprColumnNull(col 24:boolean, col 25:string, null)(children: TimestampColumnBetween(col 3:timestamp, left 2005-12-31 16:00:00.0, right 2010-12-31 15:59:59.999999999) -> 24:boolean, ConstantVectorExpression(val Late 2000s) -> 25:string) -> 26:string) -> 27:string) -> 28:string, IfExprLongColumnLongColumn(col 29:boolean, col 30:int, col 31:int)(children: TimestampColLessTimestampScalar(col 1:timestamp, val 1974-10-04 17:21:03.989) -> 29:boolean, VectorUDFYearTimestamp(col 1:timestamp, field YEAR) -> 30:int, VectorUDFYearTimestamp(col 3:timestamp, field YEAR) -> 31:int) -> 32:int, IfExprStringGroupColumnStringScalar(col 33:boolean, col 2:string, val 2018-03-08 23:04:59)(children: SelectStringColLikeStringScalar(col 2:string) -> 33:boolean) -> 34:string, IfExprNullColumn(col 35:boolean, null, col 36)(children: TimestampColEqualTimestampScalar(col 1:timestamp, val 2021-09-24 03:18:32.413655165) -> 35:boolean, VectorUDFMinuteTimestamp(col 1:timestamp, field MINUTE) -> 36:int) -> 37:int, IfExprColumnNull(col 40:boolean, col 41:int, null)(children: ColAndCol(col 38:boolean, col 39:boolean)(children: TimestampColGreaterEqualTimestampScalar(col 3:timestamp, val 5344-10-04 18:40:08.165) -> 38:boolean, TimestampColLessTimestampScalar(col 3:timestamp, val 6631-11-13 16:31:29.702202248) -> 39:boolean) -> 40:boolean, VectorUDFMinuteTimestamp(col 1:timestamp, field MINUTE) -> 41:int) -> 42:int, IfExprLongColumnLongColumn(col 45:boolean, col 46:date, col 47:date)(children: DoubleColGreaterDoubleScalar(col 44:double, val 100.0)(children: DoubleColModuloDoubleScalar(col 43:double, val 500.0)(children: CastTimestampToDouble(col 1:timestamp) -> 43:double) -> 44:double) -> 45:boolean, VectorUDFDateAddColScalar(col 0:date, val 1) -> 46:date, VectorUDFDateAddColScalar(col 0:date, val 365) -> 47:date) -> 48:date
-                    Statistics: Num rows: 51 Data size: 50745 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 51 Data size: 50345 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: timestamp), _col10 (type: string), _col1 (type: timestamp)
                       null sort order: zzz
@@ -452,7 +452,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumns: 12:string, 21:string, 28:string, 32:int, 34:string, 37:int, 42:int, 48:date
-                      Statistics: Num rows: 51 Data size: 50745 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 51 Data size: 50345 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: int), _col8 (type: int), _col9 (type: date)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -494,13 +494,13 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-                Statistics: Num rows: 51 Data size: 45084 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 51 Data size: 44684 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 51 Data size: 45084 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 51 Data size: 44684 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -731,7 +731,7 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [1, 3, 15, 27, 36, 40, 42, 45, 50, 56, 2]
                         selectExpressions: IfExprColumnCondExpr(col 5:boolean, col 6:stringcol 14:string)(children: TimestampColLessEqualTimestampScalar(col 3:timestamp, val 1800-12-31 00:00:00) -> 5:boolean, ConstantVectorExpression(val 1800s or Earlier) -> 6:string, IfExprColumnCondExpr(col 7:boolean, col 8:stringcol 13:string)(children: TimestampColLessTimestampScalar(col 3:timestamp, val 1900-01-01 00:00:00) -> 7:boolean, ConstantVectorExpression(val 1900s) -> 8:string, IfExprColumnCondExpr(col 9:boolean, col 10:stringcol 12:string)(children: TimestampColumnBetween(col 3:timestamp, left 2005-12-31 16:00:00.0, right 2010-12-31 15:59:59.999999999) -> 9:boolean, ConstantVectorExpression(val Late 2000s) -> 10:string, IfExprStringScalarStringScalar(col 11:boolean, val Early 2010s, val Unknown)(children: TimestampColLessEqualTimestampScalar(col 3:timestamp, val 2015-12-31 23:59:59.999999999) -> 11:boolean) -> 12:string) -> 13:string) -> 14:string) -> 15:string, IfExprColumnCondExpr(col 16:boolean, col 17:stringcol 26:string)(children: TimestampColLessEqualTimestampScalar(col 3:timestamp, val 2000-12-31 23:59:59.999999999) -> 16:boolean, ConstantVectorExpression(val Old) -> 17:string, IfExprColumnCondExpr(col 18:boolean, col 19:stringcol 25:string)(children: TimestampColLessTimestampScalar(col 3:timestamp, val 2006-01-01 00:00:00) -> 18:boolean, ConstantVectorExpression(val Early 2000s) -> 19:string, IfExprColumnCondExpr(col 20:boolean, col 21:stringcol 24:string)(children: TimestampColumnBetween(col 3:timestamp, left 2005-12-31 16:00:00.0, right 2010-12-31 15:59:59.999999999) -> 20:boolean, ConstantVectorExpression(val Late 2000s) -> 21:string, IfExprColumnNull(col 22:boolean, col 23:string, null)(children: TimestampColLessEqualTimestampScalar(col 3:timestamp, val 2015-12-31 23:59:59.999999999) -> 22:boolean, ConstantVectorExpression(val Early 2010s) -> 23:string) -> 24:string) -> 25:string) -> 26:string) -> 27:string, IfExprColumnCondExpr(col 28:boolean, col 29:stringcol 35:string)(children: TimestampColLessEqualTimestampScalar(col 3:timestamp, val 2000-12-31 23:59:59.999999999) -> 28:boolean, ConstantVectorExpression(val Old) -> 29:string, IfExprColumnCondExpr(col 30:boolean, col 31:stringcol 34:string)(children: TimestampColLessTimestampScalar(col 3:timestamp, val 2006-01-01 00:00:00) -> 30:boolean, ConstantVectorExpression(val Early 2000s) -> 31:string, IfExprColumnNull(col 32:boolean, col 33:string, null)(children: TimestampColumnBetween(col 3:timestamp, left 2005-12-31 16:00:00.0, right 2010-12-31 15:59:59.999999999) -> 32:boolean, ConstantVectorExpression(val Late 2000s) -> 33:string) -> 34:string) -> 35:string) -> 36:string, IfExprCondExprCondExpr(col 37:boolean, col 38:intcol 39:int)(children: TimestampColLessTimestampScalar(col 1:timestamp, val 1974-10-04 17:21:03.989) -> 37:boolean, VectorUDFYearTimestamp(col 1:timestamp, field YEAR) -> 38:int, VectorUDFYearTimestamp(col 3:timestamp, field YEAR) -> 39:int) -> 40:int, IfExprStringGroupColumnStringScalar(col 41:boolean, col 2:string, val 2018-03-08 23:04:59)(children: SelectStringColLikeStringScalar(col 2:string) -> 41:boolean) -> 42:string, IfExprNullCondExpr(col 43:boolean, null, col 44:int)(children: TimestampColEqualTimestampScalar(col 1:timestamp, val 2021-09-24 03:18:32.413655165) -> 43:boolean, VectorUDFMinuteTimestamp(col 1:timestamp, field MINUTE) -> 44:int) -> 45:int, IfExprCondExprNull(col 48:boolean, col 49:int, null)(children: ColAndCol(col 46:boolean, col 47:boolean)(children: TimestampColGreaterEqualTimestampScalar(col 3:timestamp, val 5344-10-04 18:40:08.165) -> 46:boolean, TimestampColLessTimestampScalar(col 3:timestamp, val 6631-11-13 16:31:29.702202248) -> 47:boolean) -> 48:boolean, VectorUDFMinuteTimestamp(col 1:timestamp, field MINUTE) -> 49:int) -> 50:int, IfExprCondExprCondExpr(col 53:boolean, col 54:datecol 55:date)(children: DoubleColGreaterDoubleScalar(col 52:double, val 100.0)(children: DoubleColModuloDoubleScalar(col 51:double, val 500.0)(children: CastTimestampToDouble(col 1:timestamp) -> 51:double) -> 52:double) -> 53:boolean, VectorUDFDateAddColScalar(col 0:date, val 1) -> 54:date, VectorUDFDateAddColScalar(col 0:date, val 365) -> 55:date) -> 56:date
-                    Statistics: Num rows: 51 Data size: 50745 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 51 Data size: 50345 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: timestamp), _col10 (type: string), _col1 (type: timestamp)
                       null sort order: zzz
@@ -742,7 +742,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumns: 15:string, 27:string, 36:string, 40:int, 42:string, 45:int, 50:int, 56:date
-                      Statistics: Num rows: 51 Data size: 50745 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 51 Data size: 50345 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: int), _col8 (type: int), _col9 (type: date)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -784,13 +784,13 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-                Statistics: Num rows: 51 Data size: 45084 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 51 Data size: 44684 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 51 Data size: 45084 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 51 Data size: 44684 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

@@ -63,20 +63,20 @@ STAGE PLANS:
           Statistics: Num rows: 332 Data size: 59096 Basic stats: COMPLETE Column stats: COMPLETE
           Filter Operator
             predicate: (KEY._col0 >= 5) (type: boolean)
-            Statistics: Num rows: 110 Data size: 30250 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 110 Data size: 19360 Basic stats: COMPLETE Column stats: COMPLETE
             Group By Operator
               aggregations: count(DISTINCT KEY._col1:0._col0)
               keys: KEY._col0 (type: string)
               mode: complete
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 105 Data size: 20160 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 105 Data size: 9765 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: _col0 (type: string), UDFToInteger(_col1) (type: int)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 105 Data size: 19740 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 105 Data size: 9345 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 105 Data size: 19740 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 105 Data size: 9345 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -85,7 +85,7 @@ STAGE PLANS:
                 Select Operator
                   expressions: _col0 (type: string), _col1 (type: int)
                   outputColumnNames: key, c1
-                  Statistics: Num rows: 105 Data size: 19740 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 105 Data size: 9345 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: compute_stats(key, 'hll'), compute_stats(c1, 'hll')
                     minReductionHashAggr: 0.99
@@ -100,20 +100,20 @@ STAGE PLANS:
                           serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
           Filter Operator
             predicate: (KEY._col0 < 5) (type: boolean)
-            Statistics: Num rows: 110 Data size: 30250 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 110 Data size: 19360 Basic stats: COMPLETE Column stats: COMPLETE
             Group By Operator
               aggregations: count(DISTINCT KEY._col1:0._col0), count(VALUE._col0)
               keys: KEY._col0 (type: string)
               mode: complete
               outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 105 Data size: 21000 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 105 Data size: 10605 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: _col0 (type: string), UDFToInteger(_col1) (type: int), UDFToInteger(_col2) (type: int)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 105 Data size: 20160 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 105 Data size: 9765 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 105 Data size: 20160 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 105 Data size: 9765 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -122,7 +122,7 @@ STAGE PLANS:
                 Select Operator
                   expressions: _col0 (type: string), _col1 (type: int), _col2 (type: int)
                   outputColumnNames: key, c1, c2
-                  Statistics: Num rows: 105 Data size: 20160 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 105 Data size: 9765 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: compute_stats(key, 'hll'), compute_stats(c1, 'hll'), compute_stats(c2, 'hll')
                     minReductionHashAggr: 0.99
