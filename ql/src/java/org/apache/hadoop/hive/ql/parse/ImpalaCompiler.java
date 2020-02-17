@@ -17,16 +17,23 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import com.google.common.collect.Lists;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.exec.ImpalaQueryOperator;
+import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
+import org.apache.hadoop.hive.ql.plan.impala.ImpalaCompiledPlan;
 import org.apache.hadoop.hive.ql.plan.impala.work.ImpalaWork;
+import org.apache.impala.thrift.TExecRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -53,11 +60,9 @@ public class ImpalaCompiler extends TaskCompiler {
         // CDPD-6976: Add Perf logging for Impala Execution
         ImpalaWork work = null;
         if (isPlanned) {
-            // CDPD-6977: Enable planned mode for Impala execution
-            /*
-            work = new ImpalaWork(pCtx.getContext().getImpalaContext().getExecRequest(),
-                    pCtx.getQueryState().getQueryString(), pCtx.getFetchTask(), pCtx.getContext().getImpalaContext());
-            */
+            TExecRequest execRequest = getExecRequest(pCtx);
+            work = new ImpalaWork(execRequest, pCtx.getQueryState().getQueryString(),
+                pCtx.getFetchTask(), requestedFetchSize);
         } else {
             // CDPD-7172: Investigate security implications of Impala query execution mode
             work = new ImpalaWork(pCtx.getQueryState().getQueryString(), pCtx.getFetchTask(), requestedFetchSize);
@@ -81,5 +86,17 @@ public class ImpalaCompiler extends TaskCompiler {
 
     @Override
     protected void setInputFormat(Task<?> rootTask) {
+    }
+
+    private TExecRequest getExecRequest(ParseContext pCtx) {
+      Collection<Operator<?>> tableScanOps =
+          Lists.<Operator<?>>newArrayList(pCtx.getTopOps().values());
+      Set<ImpalaQueryOperator> fsOps = OperatorUtils.findOperators(tableScanOps, ImpalaQueryOperator.class);
+      if (fsOps.isEmpty()) {
+        throw new RuntimeException("No ImpalaQueryOperator found in the ImpalaCompiler");
+      }
+      ImpalaCompiledPlan compiledPlan = fsOps.iterator().next().getCompiledPlan();
+      return ((ImpalaCompiledPlan) compiledPlan).getExecRequest();
+
     }
 }

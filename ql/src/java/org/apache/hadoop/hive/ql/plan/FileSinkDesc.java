@@ -164,6 +164,13 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
     this.dpSortState = DPSortState.NONE;
   }
 
+  public FileSinkDesc(FileSinkDesc other) {
+    this(other.dirName, other.tableInfo, other.compressed, other.destTableId, other.multiFileSpray,
+        other.canBeMerged, other.numFiles, other.totalFiles, other.partitionCols, other.dpCtx,
+        other.destPath, other.mmWriteId, other.isMmCtas, other.isInsertOverwrite, other.isQuery,
+        other.isCTASorCM, other.isDirectInsert);
+  }
+
   @Override
   public Object clone() throws CloneNotSupportedException {
     FileSinkDesc ret = new FileSinkDesc(dirName, tableInfo, compressed, destTableId, multiFileSpray, canBeMerged,

@@ -85,6 +85,17 @@ public abstract class ImpalaPlanRel extends AbstractRelNode implements Referrabl
     }
   }
 
+  @Override
+  public void replaceInput(int ordinalInParent, RelNode rel) {
+    Preconditions.checkState(ordinalInParent < inputs.size());
+    List<RelNode> newList = Lists.newArrayList();
+    for (int i = 0; i < inputs.size(); ++i) {
+      RelNode relNodeToAdd = (i == ordinalInParent) ? rel : inputs.get(i);
+      newList.add(relNodeToAdd);
+    }
+    inputs = ImmutableList.copyOf(newList);
+  }
+
   public RelWriter explainTerms(RelWriter pw) {
     RelWriter ret = super.explainTerms(pw);
     for (RelNode input : inputs) {
@@ -106,6 +117,12 @@ public abstract class ImpalaPlanRel extends AbstractRelNode implements Referrabl
   public Expr getExpr(int index) {
     Preconditions.checkState(this.outputExprs.containsKey(index));
     return this.outputExprs.get(index);
+  }
+
+  public PlanNode getRootPlanNode(ImpalaPlannerContext ctx) throws ImpalaException, HiveException, MetaException {
+    PlanNode rootPlanNode = getPlanNode(ctx);
+    ctx.setResultExprs(getOutputExprs());
+    return rootPlanNode;
   }
 
   /**

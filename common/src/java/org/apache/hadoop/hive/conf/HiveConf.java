@@ -4046,7 +4046,7 @@ public class HiveConf extends Configuration {
 
     // Impala specific configuration properties
     HIVE_IMPALA_ADDRESS("hive.impala.address", "localhost:21050", "Address for Impala execution engine."),
-    HIVE_IMPALA_EXECUTION_MODE("hive.impala.execution.mode", "query", new StringSet("query"),
+    HIVE_IMPALA_EXECUTION_MODE("hive.impala.execution.mode", "plan", new StringSet("plan", "query"),
             "Chooses whether Impala will execute a provided plan or a query string"),
     HIVE_IMPALA_FETCH_SIZE("hive.impala.fetch.size", 1024, "Determines the number of rows per fetch " +
             "when streaming results from an Impala coordinator"),

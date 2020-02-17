@@ -241,6 +241,7 @@ import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PTFDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
+import org.apache.hadoop.hive.ql.plan.ImpalaQueryDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ScriptDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
@@ -248,6 +249,8 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.UDTFDesc;
 import org.apache.hadoop.hive.ql.plan.UnionDesc;
+import org.apache.hadoop.hive.ql.plan.impala.ImpalaCompiledPlan;
+import org.apache.hadoop.hive.ql.plan.impala.ImpalaHelper;
 import org.apache.hadoop.hive.ql.plan.ptf.OrderExpressionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.PTFExpressionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.PartitionedTableFunctionDef;
@@ -377,6 +380,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   protected volatile boolean disableJoinMerge = false;
   protected final boolean defaultJoinMerge;
+  protected final ImpalaHelper impalaHelper;
 
   /*
    * Capture the CTE definitions in a Query.
@@ -470,6 +474,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     tabNameToTabObject = new HashMap<>();
     defaultJoinMerge = false == HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MERGE_NWAY_JOINS);
     disableJoinMerge = defaultJoinMerge;
+    impalaHelper = (conf.getExecutionEngine() == HiveConf.ExecutionEngine.IMPALA)
+        ? new ImpalaHelper()
+        : null;
   }
 
   @Override
@@ -7364,6 +7371,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   @SuppressWarnings("nls")
   protected Operator genFileSinkPlan(String dest, QB qb, Operator input)
       throws SemanticException {
+    return genFileSinkPlan(dest, qb, input, null);
+  }
+
+  @SuppressWarnings("nls")
+  protected Operator genFileSinkPlan(String dest, QB qb, Operator input,
+      ImpalaCompiledPlan impalaCompiledPlan)
+      throws SemanticException {
 
     RowResolver inputRR = opParseCtx.get(input).getRowResolver();
     QBMetaData qbm = qb.getMetaData();
@@ -7974,7 +7988,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     FileSinkDesc fileSinkDesc = createFileSinkDesc(dest, tableDescriptor, destinationPartition,
         destinationPath, currentTableId, destTableIsFullAcid, destTableIsTemporary,//this was 1/4 acid
         destTableIsMaterialization, queryTmpdir, rsCtx, dpCtx, lbCtx, fsRS,
-        canBeMerged, destinationTable, writeId, isMmCreate, destType, qb, isDirectInsert);
+        canBeMerged, destinationTable, writeId, isMmCreate, destType, qb, isDirectInsert,
+        impalaCompiledPlan);
     if (isMmCreate) {
       // Add FSD so that the LoadTask compilation could fix up its path to avoid the move.
       if (tableDesc != null) {
@@ -8216,7 +8231,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                                           boolean destTableIsMaterialization, Path queryTmpdir,
                                           SortBucketRSCtx rsCtx, DynamicPartitionCtx dpCtx, ListBucketingCtx lbCtx,
                                           RowSchema fsRS, boolean canBeMerged, Table dest_tab, Long mmWriteId, boolean isMmCtas,
-                                          Integer dest_type, QB qb, boolean isDirectInsert) throws SemanticException {
+                                          Integer dest_type, QB qb, boolean isDirectInsert,
+                                          ImpalaCompiledPlan compiledPlan) throws SemanticException {
     boolean isInsertOverwrite = false;
     switch (dest_type) {
     case QBMetaData.DEST_PARTITION:
@@ -8242,6 +8258,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         canBeMerged, rsCtx.getNumFiles(), rsCtx.getTotalFiles(), rsCtx.getPartnCols(), dpCtx,
         dest_path, mmWriteId, isMmCtas, isInsertOverwrite, qb.getIsQuery(),
         qb.isCTAS() || qb.isMaterializedView(), isDirectInsert);
+
+    if (compiledPlan != null) {
+      fileSinkDesc = new ImpalaQueryDesc(fileSinkDesc, compiledPlan);
+    }
 
     boolean isHiveServerQuery = SessionState.get().isHiveServerQuery();
     fileSinkDesc.setHiveServerQuery(isHiveServerQuery);
@@ -12835,7 +12855,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       setTableAccessInfo(tableAccessAnalyzer.analyzeTableAccess());
     }
 
-    if (conf.getExecutionEngine() != HiveConf.ExecutionEngine.IMPALA) {
+    if (impalaHelper == null) {
       // 7. Perform Logical optimization
       if (LOG.isDebugEnabled()) {
         LOG.debug("Before logical optimization\n" + Operator.toString(pCtx.getTopOps().values()));

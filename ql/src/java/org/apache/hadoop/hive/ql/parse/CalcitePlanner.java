@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
@@ -125,6 +126,7 @@ import org.apache.calcite.tools.Frameworks;
 import org.apache.calcite.util.CompositeList;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -138,11 +140,14 @@ import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.DummyScanOperator;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.exec.ImpalaQueryOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
@@ -283,6 +288,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
+import org.apache.hadoop.hive.ql.plan.impala.ImpalaCompiledPlan;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
@@ -537,7 +543,15 @@ public class CalcitePlanner extends SemanticAnalyzer {
           // 0. Gen Optimized Plan
           RelNode newPlan = logicalPlan();
 
-          if (this.conf.getBoolVar(HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP)) {
+          if (impalaHelper != null) {
+            sinkOp = getImpalaSinkOperator(newPlan);
+            if (this.ctx.isExplainPlan()) {
+              doExplainPlan(newPlan);
+            }
+            this.ctx.setCboInfo("Plan optimized by CBO.");
+            this.ctx.setCboSucceeded(true);
+            LOG.info("CBO Succeeded; optimized logical plan.");
+          } else if (this.conf.getBoolVar(HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP)) {
             if (cboCtx.type == PreCboCtx.Type.VIEW && !materializedView) {
               throw new SemanticException("Create view is not supported in cbo return path.");
             }
@@ -603,28 +617,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
             this.ctx.setCboInfo("Plan optimized by CBO.");
             this.ctx.setCboSucceeded(true);
             if (this.ctx.isExplainPlan()) {
-              // Enrich explain with information derived from CBO
-              ExplainConfiguration explainConfig = this.ctx.getExplainConfig();
-              if (explainConfig.isCbo()) {
-                if (!explainConfig.isCboJoinCost()) {
-                  // Include cost as provided by Calcite
-                  newPlan.getCluster().invalidateMetadataQuery();
-                  RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.DEFAULT);
-                }
-                if (explainConfig.isFormatted()) {
-                  this.ctx.setCalcitePlan(HiveRelOptUtil.toJsonString(newPlan));
-                } else if (explainConfig.isCboCost() || explainConfig.isCboJoinCost()) {
-                  this.ctx.setCalcitePlan(RelOptUtil.toString(newPlan, SqlExplainLevel.ALL_ATTRIBUTES));
-                } else {
-                  // Do not include join cost
-                  this.ctx.setCalcitePlan(RelOptUtil.toString(newPlan));
-                }
-              } else if (explainConfig.isFormatted()) {
-                this.ctx.setCalcitePlan(HiveRelOptUtil.toJsonString(newPlan));
-                this.ctx.setOptimizedSql(getOptimizedSql(newPlan));
-              } else if (explainConfig.isExtended()) {
-                this.ctx.setOptimizedSql(getOptimizedSql(newPlan));
-              }
+              doExplainPlan(newPlan);
             }
             if (LOG.isTraceEnabled()) {
               LOG.trace(getOptimizedSql(newPlan));
@@ -1653,6 +1646,40 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
   }
 
+  /**
+   * Get Impala Sink Operator containing an Impala Compiled Plan
+   *
+   * @return Operator
+   * @throws SemanticException
+   */
+  Operator getImpalaSinkOperator(RelNode impalaRel) throws SemanticException {
+    try {
+      Preconditions.checkNotNull(this.impalaHelper);
+      final String dbname = SessionState.get().getCurrentDatabase();
+      final String username = StringUtils.defaultString(SessionState.get().getUserName());
+      ImpalaCompiledPlan compiledPlan = this.impalaHelper.compilePlan(impalaRel, dbname, username);
+
+      // CDPD-8391: Refactor and get rid of this at some point, the DummyScanOperator
+      // isn't really needed.
+      TableScanOperator tableScanOp = new DummyScanOperator(getOpContext(),
+          TypeConverter.createRowSchema(impalaRel));
+      // topOps needs to have a TableScanOperator for a plan to compile.
+      topOps.put(DUMMY_TABLE, tableScanOp);
+      RowResolver impalaRootRR = genRowResolver(tableScanOp, getQB());
+      // opParseCtx needs to have the input inside or else genFileSinkPlan crashes
+      opParseCtx.put(tableScanOp, new OpParseContext(impalaRootRR));
+
+      String dest = getQB().getParseInfo().getClauseNames().iterator().next();
+      if (getQB().getParseInfo().getDestSchemaForClause(dest) != null
+          && this.getQB().getTableDesc() == null) {
+        throw new RuntimeException("Insert operations not handled yet.");
+      }
+      return genFileSinkPlan(dest, getQB(), tableScanOp, compiledPlan);
+    } catch (HiveException e) {
+      throw new RuntimeException("Encountered Hive exception generating an Impala plan: ", e);
+    }
+  }
+
   // This function serves as the wrapper of handleInsertStatementSpec in
   // SemanticAnalyzer
   Operator<?> handleInsertStatement(String dest, Operator<?> input, RowResolver inputRR, QB qb)
@@ -1786,6 +1813,31 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     return rr;
+  }
+
+  private void doExplainPlan(RelNode newPlan) {
+    // Enrich explain with information derived from CBO
+    ExplainConfiguration explainConfig = this.ctx.getExplainConfig();
+    if (explainConfig.isCbo()) {
+      if (!explainConfig.isCboJoinCost()) {
+        // Include cost as provided by Calcite
+        newPlan.getCluster().invalidateMetadataQuery();
+        RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.DEFAULT);
+      }
+      if (explainConfig.isFormatted()) {
+        this.ctx.setCalcitePlan(HiveRelOptUtil.toJsonString(newPlan));
+      } else if (explainConfig.isCboCost() || explainConfig.isCboJoinCost()) {
+        this.ctx.setCalcitePlan(RelOptUtil.toString(newPlan, SqlExplainLevel.ALL_ATTRIBUTES));
+      } else {
+        // Do not include join cost
+        this.ctx.setCalcitePlan(RelOptUtil.toString(newPlan));
+      }
+    } else if (explainConfig.isFormatted()) {
+      this.ctx.setCalcitePlan(HiveRelOptUtil.toJsonString(newPlan));
+      this.ctx.setOptimizedSql(getOptimizedSql(newPlan));
+    } else if (explainConfig.isExtended()) {
+      this.ctx.setOptimizedSql(getOptimizedSql(newPlan));
+    }
   }
 
   private enum ExtendedCBOProfile {
@@ -1927,6 +1979,15 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // 5. Apply post-join order optimizations
       calciteOptimizedPlan = applyPostJoinOrderingTransform(calciteOptimizedPlan,
           mdProvider.getMetadataProvider(), executorProvider);
+
+      if (impalaHelper != null) {
+        perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
+        HepProgram hepProgram = impalaHelper.getHepProgram(getDb());
+        calciteOptimizedPlan =
+            executeProgram(calciteOptimizedPlan, hepProgram, mdProvider.getMetadataProvider(),
+                executorProvider);
+        perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Impala transformation rules");
+      }
 
       if (LOG.isDebugEnabled() && !conf.getBoolVar(ConfVars.HIVE_IN_TEST)) {
         LOG.debug("CBO Planning details:\n");
