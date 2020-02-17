@@ -72,7 +72,7 @@ public class CombineHiveRecordReader<K extends WritableComparable, V extends Wri
     InputFormat inputFormat = HiveInputFormat.getInputFormatFromCache(inputFormatClass, jobConf);
     if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_IO_ENABLED, LlapProxy.isDaemon())) {
       try {
-        // TODO: refactor this out
+        // TODO : refactor this out
         if (pathToPartInfo == null) {
           MapWork mrwork = (MapWork) Utilities.getMergeWork(jobConf);
           if (mrwork == null) {
