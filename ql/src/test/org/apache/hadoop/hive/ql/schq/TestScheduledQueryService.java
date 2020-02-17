@@ -167,7 +167,7 @@ public class TestScheduledQueryService {
 
     assertThat(qService.lastProgressInfo.isSetExecutorQueryId(), is(true));
     assertThat(qService.lastProgressInfo.getExecutorQueryId(),
-        Matchers.containsString(ctx.getExecutorHostName() + "/"));
+        Matchers.containsString(ctx.executorHostName + "/"));
     int nr = getNumRowsReturned(driver, "select 1 from tu");
     assertThat(nr, Matchers.equalTo(5));
 

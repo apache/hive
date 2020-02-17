@@ -66,8 +66,4 @@ public class ScheduledQueryExecutionContext {
     return conf.getTimeVar(ConfVars.HIVE_SCHEDULED_QUERIES_EXECUTOR_PROGRESS_REPORT_INTERVAL, TimeUnit.MILLISECONDS);
   }
 
-  public String getExecutorHostName() {
-    return executorHostName;
-  }
-
 }

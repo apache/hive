@@ -162,7 +162,7 @@ public class ScheduledQueryExecutionService implements Closeable {
     }
 
     private String buildExecutorQueryId(IDriver driver) {
-      return String.format("%s/%s", context.getExecutorHostName(), driver.getQueryState().getQueryId());
+      return String.format("%s/%s", context.executorHostName, driver.getQueryState().getQueryId());
     }
 
     private String lockNameFor(ScheduledQueryKey scheduleKey) {
