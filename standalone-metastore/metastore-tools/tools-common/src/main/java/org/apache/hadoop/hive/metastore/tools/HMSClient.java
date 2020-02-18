@@ -20,19 +20,22 @@ package org.apache.hadoop.hive.metastore.tools;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DropPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.DropPartitionsResult;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
+import org.apache.hadoop.hive.metastore.api.LockRequest;
+import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
+import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.RequestPartsSpec;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore;
+import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -53,9 +56,11 @@ import org.slf4j.LoggerFactory;
 import javax.security.auth.login.LoginException;
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -326,11 +331,6 @@ final class HMSClient implements AutoCloseable {
     client.append_partition_with_environment_context(dbName, tableName, partitionValues, null);
   }
 
-  boolean openTxn(int numTxns) throws TException {
-    client.open_txns(new OpenTxnRequest(numTxns, "Test", "Host"));
-    return true;
-  }
-
   List<Long> getOpenTxns() throws TException {
     GetOpenTxnsResponse txns = client.get_open_txns();
     List<Long> openTxns = new ArrayList<>();
@@ -350,47 +350,18 @@ final class HMSClient implements AutoCloseable {
     return true;
   }
 
-  boolean abortTxn(long txnId) throws TException {
-    client.abort_txn(new AbortTxnRequest(txnId));
-    return true;
-  }
-
   boolean abortTxns(List<Long> txnIds) throws TException {
     client.abort_txns(new AbortTxnsRequest(txnIds));
     return true;
   }
-
 
   LockResponse lock(@NotNull LockRequest rqst) throws TException {
     return client.lock(rqst);
   }
 
-  LockResponse checkLock(@NotNull CheckLockRequest rqst) throws TException {
-    return client.check_lock(rqst);
-  }
-
-  boolean unlock(@NotNull UnlockRequest rqst) throws TException {
-    client.unlock(rqst);
-    return true;
-  }
-
-  GetOpenTxnsResponse getOpenTxns() throws TException {
-    return client.get_open_txns();
-  }
-
-  boolean commitTxn(long txnId) throws TException {
-    client.commit_txn(new CommitTxnRequest(txnId));
-    return true;
-  }
-
-  boolean abortTxns(List<Long> txnIds) throws TException {
-    client.abort_txns(new AbortTxnsRequest(txnIds));
-    return true;
-  }
-
-  long openTxn(String user) throws TException {
-    OpenTxnsResponse txns = openTxnsIntr(user, 1, null, null, null);
-    return txns.getTxn_ids().get(0);
+  List<Long> openTxn(int howMany) throws TException {
+    OpenTxnsResponse txns = openTxnsIntr("", howMany, null);
+    return txns.getTxn_ids();
   }
 
   private TTransport open(Configuration conf, @NotNull URI uri) throws
@@ -492,8 +463,7 @@ final class HMSClient implements AutoCloseable {
     return transport;
   }
 
-  private OpenTxnsResponse openTxnsIntr(String user, int numTxns, String replPolicy,
-                       List<Long> srcTxnIds, TxnType txnType) throws TException {
+  private OpenTxnsResponse openTxnsIntr(String user, int numTxns, TxnType txnType) throws TException {
     String hostname;
     try {
       hostname = InetAddress.getLocalHost().getHostName();
@@ -502,15 +472,6 @@ final class HMSClient implements AutoCloseable {
       throw new RuntimeException(e);
     }
     OpenTxnRequest rqst = new OpenTxnRequest(numTxns, user, hostname);
-    if (replPolicy != null) {
-      assert srcTxnIds != null;
-      assert numTxns == srcTxnIds.size();
-      // need to set this only for replication tasks
-      rqst.setReplPolicy(replPolicy);
-      rqst.setReplSrcTxnIds(srcTxnIds);
-    } else {
-      assert srcTxnIds == null;
-    }
     if (txnType != null) {
       rqst.setTxn_type(txnType);
     }
