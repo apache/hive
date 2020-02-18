@@ -62,7 +62,7 @@ import org.junit.Test;
  * TestBeeLineWithArgs - executes tests of the command-line arguments to BeeLine
  *
  */
-public class TestBeeLineWithArgs {
+  public class TestBeeLineWithArgs {
   private enum OutStream {
     ERR, OUT
   }
@@ -1153,6 +1153,15 @@ public class TestBeeLineWithArgs {
     List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
     argList.add("--outputformat=tsv2");
     testScriptFile(SCRIPT_TEXT, argList, EXPECTED_PATTERN, true);
+  }
+
+  @Test
+  public void testRowsAffected() throws Throwable {
+    final String SCRIPT_TEXT = "drop table if exists new_table;\n create table new_table(foo int);\n "
+      + "insert into new_table values (1);\n";
+    final String EXPECTED_PATTERN = "1 row affected";
+    List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
+    testScriptFile(SCRIPT_TEXT, argList, OutStream.ERR, EXPECTED_PATTERN, true);
   }
 
   /**
