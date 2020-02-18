@@ -53,7 +53,6 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
-import org.apache.hadoop.hive.ql.parse.DDLSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.security.authorization.Privilege;
@@ -262,7 +261,7 @@ public class HiveAuthorizationTaskFactoryImpl implements HiveAuthorizationTaskFa
     for (int i = 1; i < child.getChildCount(); i++) {
       gchild = (ASTNode) child.getChild(i);
       if (gchild.getType() == HiveParser.TOK_PARTSPEC) {
-        partSpec = DDLSemanticAnalyzer.getPartSpec(gchild);
+        partSpec = BaseSemanticAnalyzer.getPartSpec(gchild);
       } else if (gchild.getType() == HiveParser.TOK_TABCOLNAME) {
         columns = BaseSemanticAnalyzer.getColumnNames(gchild);
       }

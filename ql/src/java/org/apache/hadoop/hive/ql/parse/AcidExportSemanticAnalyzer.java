@@ -40,7 +40,7 @@ import org.apache.hadoop.hive.ql.ddl.DDLTask;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.table.create.like.CreateTableLikeDesc;
 import org.apache.hadoop.hive.ql.ddl.table.drop.DropTableDesc;
-import org.apache.hadoop.hive.ql.ddl.table.misc.AlterTableSetPropertiesDesc;
+import org.apache.hadoop.hive.ql.ddl.table.misc.properties.AlterTableSetPropertiesDesc;
 import org.apache.hadoop.hive.ql.exec.StatsTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -204,7 +204,7 @@ public class AcidExportSemanticAnalyzer extends RewriteSemanticAnalyzer {
     DAGTraversal.traverse(rootTasks, new AddDependencyToLeaves(alterTableTask));
 
     // Now make a task to drop temp table
-    // {@link DDLSemanticAnalyzer#analyzeDropTable(ASTNode ast, TableType expectedType)
+    // {@link DropTableAnalyzer#analyzeInternal(ASTNode ast)
     ReplicationSpec replicationSpec = new ReplicationSpec();
     DropTableDesc dropTblDesc = new DropTableDesc(newTableName, false, true, replicationSpec);
     Task<DDLWork> dropTask = TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), dropTblDesc), conf);

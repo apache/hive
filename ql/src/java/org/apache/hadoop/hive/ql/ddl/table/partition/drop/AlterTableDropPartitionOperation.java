@@ -100,7 +100,7 @@ public class AlterTableDropPartitionOperation extends DDLOperation<AlterTableDro
   }
 
   private void dropPartitions() throws HiveException {
-    // ifExists is currently verified in DDLSemanticAnalyzer
+    // ifExists is currently verified in AlterTableDropPartitionAnalyzer
     PartitionDropOptions options =
         PartitionDropOptions.instance().deleteData(true).ifExists(true).purgeData(desc.getIfPurge());
     List<Partition> droppedParts = context.getDb().dropPartitions(desc.getTableName(), desc.getPartSpecs(),
