@@ -1,0 +1,258 @@
+PREHOOK: query: CREATE TABLE test_tbl (a int) PARTITIONED BY (b string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_tbl
+POSTHOOK: query: CREATE TABLE test_tbl (a int) PARTITIONED BY (b string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_tbl
+PREHOOK: query: INSERT INTO test_tbl PARTITION(b="abc") VALUES (1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_tbl@b=abc
+POSTHOOK: query: INSERT INTO test_tbl PARTITION(b="abc") VALUES (1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_tbl@b=abc
+POSTHOOK: Lineage: test_tbl PARTITION(b=abc).a SCRIPT []
+PREHOOK: query: INSERT INTO test_tbl PARTITION(b="d_\\%ae") VALUES (1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_tbl@b=d_%5C%25ae
+POSTHOOK: query: INSERT INTO test_tbl PARTITION(b="d_\\%ae") VALUES (1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_tbl@b=d_%5C%25ae
+POSTHOOK: Lineage: test_tbl PARTITION(b=d_\%ae).a SCRIPT []
+PREHOOK: query: INSERT INTO test_tbl PARTITION(b="af%") VALUES (1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_tbl@b=af%25
+POSTHOOK: query: INSERT INTO test_tbl PARTITION(b="af%") VALUES (1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_tbl@b=af%25
+POSTHOOK: Lineage: test_tbl PARTITION(b=af%).a SCRIPT []
+PREHOOK: query: select * from test_tbl where b like 'a%'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_tbl
+PREHOOK: Input: default@test_tbl@b=abc
+PREHOOK: Input: default@test_tbl@b=af%25
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_tbl where b like 'a%'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_tbl
+POSTHOOK: Input: default@test_tbl@b=abc
+POSTHOOK: Input: default@test_tbl@b=af%25
+#### A masked pattern was here ####
+1	abc
+1	af%
+PREHOOK: query: select * from test_tbl where b like '%a%'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_tbl
+PREHOOK: Input: default@test_tbl@b=abc
+PREHOOK: Input: default@test_tbl@b=af%25
+PREHOOK: Input: default@test_tbl@b=d_%5C%25ae
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_tbl where b like '%a%'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_tbl
+POSTHOOK: Input: default@test_tbl@b=abc
+POSTHOOK: Input: default@test_tbl@b=af%25
+POSTHOOK: Input: default@test_tbl@b=d_%5C%25ae
+#### A masked pattern was here ####
+1	abc
+1	af%
+1	d_\%ae
+PREHOOK: query: select * from test_tbl where b like '%a'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_tbl
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_tbl where b like '%a'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_tbl
+#### A masked pattern was here ####
+PREHOOK: query: select * from test_tbl where b like '%a'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_tbl
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_tbl where b like '%a'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_tbl
+#### A masked pattern was here ####
+PREHOOK: query: select * from test_tbl where b like 'a%c'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_tbl
+PREHOOK: Input: default@test_tbl@b=abc
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_tbl where b like 'a%c'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_tbl
+POSTHOOK: Input: default@test_tbl@b=abc
+#### A masked pattern was here ####
+1	abc
+PREHOOK: query: select * from test_tbl where b like '%a%c%'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_tbl
+PREHOOK: Input: default@test_tbl@b=abc
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_tbl where b like '%a%c%'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_tbl
+POSTHOOK: Input: default@test_tbl@b=abc
+#### A masked pattern was here ####
+1	abc
+PREHOOK: query: select * from test_tbl where b like '%_b%'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_tbl
+PREHOOK: Input: default@test_tbl@b=abc
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_tbl where b like '%_b%'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_tbl
+POSTHOOK: Input: default@test_tbl@b=abc
+#### A masked pattern was here ####
+1	abc
+PREHOOK: query: select * from test_tbl where b like '%b_'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_tbl
+PREHOOK: Input: default@test_tbl@b=abc
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_tbl where b like '%b_'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_tbl
+POSTHOOK: Input: default@test_tbl@b=abc
+#### A masked pattern was here ####
+1	abc
+PREHOOK: query: select * from test_tbl where b like '%c'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_tbl
+PREHOOK: Input: default@test_tbl@b=abc
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_tbl where b like '%c'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_tbl
+POSTHOOK: Input: default@test_tbl@b=abc
+#### A masked pattern was here ####
+1	abc
+PREHOOK: query: select * from test_tbl where b like '%c%'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_tbl
+PREHOOK: Input: default@test_tbl@b=abc
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_tbl where b like '%c%'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_tbl
+POSTHOOK: Input: default@test_tbl@b=abc
+#### A masked pattern was here ####
+1	abc
+PREHOOK: query: select * from test_tbl where b like 'c%'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_tbl
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_tbl where b like 'c%'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_tbl
+#### A masked pattern was here ####
+PREHOOK: query: select * from test_tbl where b like '%\_%'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_tbl
+PREHOOK: Input: default@test_tbl@b=d_%5C%25ae
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_tbl where b like '%\_%'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_tbl
+POSTHOOK: Input: default@test_tbl@b=d_%5C%25ae
+#### A masked pattern was here ####
+1	d_\%ae
+PREHOOK: query: select * from test_tbl where b like '%\\%%'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_tbl
+PREHOOK: Input: default@test_tbl@b=af%25
+PREHOOK: Input: default@test_tbl@b=d_%5C%25ae
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_tbl where b like '%\\%%'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_tbl
+POSTHOOK: Input: default@test_tbl@b=af%25
+POSTHOOK: Input: default@test_tbl@b=d_%5C%25ae
+#### A masked pattern was here ####
+1	af%
+1	d_\%ae
+PREHOOK: query: select * from test_tbl where b like 'abc'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_tbl
+PREHOOK: Input: default@test_tbl@b=abc
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_tbl where b like 'abc'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_tbl
+POSTHOOK: Input: default@test_tbl@b=abc
+#### A masked pattern was here ####
+1	abc
+PREHOOK: query: select * from test_tbl where b like '%'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_tbl
+PREHOOK: Input: default@test_tbl@b=abc
+PREHOOK: Input: default@test_tbl@b=af%25
+PREHOOK: Input: default@test_tbl@b=d_%5C%25ae
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_tbl where b like '%'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_tbl
+POSTHOOK: Input: default@test_tbl@b=abc
+POSTHOOK: Input: default@test_tbl@b=af%25
+POSTHOOK: Input: default@test_tbl@b=d_%5C%25ae
+#### A masked pattern was here ####
+1	abc
+1	af%
+1	d_\%ae
+PREHOOK: query: select * from test_tbl where b like '_'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_tbl
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_tbl where b like '_'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_tbl
+#### A masked pattern was here ####
+PREHOOK: query: select * from test_tbl where b like '___'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_tbl
+PREHOOK: Input: default@test_tbl@b=abc
+PREHOOK: Input: default@test_tbl@b=af%25
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_tbl where b like '___'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_tbl
+POSTHOOK: Input: default@test_tbl@b=abc
+POSTHOOK: Input: default@test_tbl@b=af%25
+#### A masked pattern was here ####
+1	abc
+1	af%
+PREHOOK: query: select * from test_tbl where b like '%%%'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_tbl
+PREHOOK: Input: default@test_tbl@b=abc
+PREHOOK: Input: default@test_tbl@b=af%25
+PREHOOK: Input: default@test_tbl@b=d_%5C%25ae
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_tbl where b like '%%%'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_tbl
+POSTHOOK: Input: default@test_tbl@b=abc
+POSTHOOK: Input: default@test_tbl@b=af%25
+POSTHOOK: Input: default@test_tbl@b=d_%5C%25ae
+#### A masked pattern was here ####
+1	abc
+1	af%
+1	d_\%ae
+PREHOOK: query: select * from test_tbl where b like '%\\\\%'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_tbl
+PREHOOK: Input: default@test_tbl@b=d_%5C%25ae
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_tbl where b like '%\\\\%'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_tbl
+POSTHOOK: Input: default@test_tbl@b=d_%5C%25ae
+#### A masked pattern was here ####

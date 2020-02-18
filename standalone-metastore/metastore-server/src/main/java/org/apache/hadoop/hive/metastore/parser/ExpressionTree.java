@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import java.util.regex.Pattern;
 
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CharStream;
@@ -357,7 +358,11 @@ public class ExpressionTree {
       if (filterBuilder.hasError()) return;
 
       String paramName = PARAM_PREFIX + params.size();
-      params.put(paramName, valueAsString);
+      if (operator == Operator.LIKE) {
+        params.put(paramName, makeJdoFilterForLike(valueAsString));
+      } else {
+        params.put(paramName, valueAsString);
+      }
 
       boolean isOpEquals = operator == Operator.EQUALS;
       if (isOpEquals || operator == Operator.NOTEQUALS || operator == Operator.NOTEQUALS2) {
@@ -382,6 +387,30 @@ public class ExpressionTree {
             ? paramName + " " + operator.getJdoOp() + " " + valString
             : " " + valString + " " + operator.getJdoOp() + " " + paramName);
       }
+    }
+
+    private static String makeJdoFilterForLike(String likePattern) {
+      StringBuilder sb = new StringBuilder();
+      for (int i = 0; i < likePattern.length(); i++) {
+        // Make a special case for "\\_" and "\\%"
+        char n = likePattern.charAt(i);
+        if (n == '\\'
+            && i + 1 < likePattern.length()
+            && (likePattern.charAt(i + 1) == '_' || likePattern.charAt(i + 1) == '%')) {
+          sb.append(likePattern.charAt(i + 1));
+          i++;
+          continue;
+        }
+
+        if (n == '_') {
+          sb.append(".");
+        } else if (n == '%') {
+          sb.append(".*");
+        } else {
+          sb.append(likePattern.charAt(i));
+        }
+      }
+      return sb.toString();
     }
 
     /**
