@@ -1,0 +1,12 @@
+set hive.cbo.enable=false;
+set hive.explain.user=false;
+create external table vector_decimal64_case_when(ss_ext_list_price decimal(7,2), ss_ext_wholesale_cost decimal(19,1), ss_ext_discount_amt int, ss_ext_sales_price double) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n' STORED AS TEXTFILE;
+LOAD DATA LOCAL INPATH '../../data/files/decimal64table1.csv' OVERWRITE INTO TABLE vector_decimal64_case_when;
+create table vector_decimal64_case_when_tmp(ss_ext_list_price decimal(7,2), ss_ext_wholesale_cost decimal(19,1), ss_ext_discount_amt int, ss_ext_sales_price decimal(7,2)) stored as ORC;
+insert into table vector_decimal64_case_when_tmp select * from vector_decimal64_case_when;
+explain vectorization detail select sum(case when (ss_ext_discount_amt=101) then ss_ext_list_price else null end) from vector_decimal64_case_when_tmp;
+select sum(case when (ss_ext_discount_amt=101) then ss_ext_list_price else null end) from vector_decimal64_case_when_tmp;
+explain vectorization detail select sum(NVL(ss_ext_list_price, 1.1)) from vector_decimal64_case_when_tmp;
+select sum(NVL(ss_ext_list_price, 1.1)) from vector_decimal64_case_when_tmp;
+explain vectorization detail select sum(NVL(ss_ext_list_price, 1.1BD)) from vector_decimal64_case_when_tmp;
+select sum(NVL(ss_ext_list_price, 1.1BD)) from vector_decimal64_case_when_tmp;
