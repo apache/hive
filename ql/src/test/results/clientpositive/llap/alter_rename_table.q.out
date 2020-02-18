@@ -131,7 +131,7 @@ STAGE PLANS:
   Stage: Stage-0
     Rename Table
       table name: source.src
-      new table name: target.src
+      new table name: hive.target.src
 
 PREHOOK: query: ALTER TABLE source.src RENAME TO target.src
 PREHOOK: type: ALTERTABLE_RENAME
@@ -177,7 +177,7 @@ STAGE PLANS:
   Stage: Stage-0
     Rename Table
       table name: source.srcpart
-      new table name: target.srcpart
+      new table name: hive.target.srcpart
 
 PREHOOK: query: ALTER TABLE source.srcpart RENAME TO target.srcpart
 PREHOOK: type: ALTERTABLE_RENAME

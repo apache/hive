@@ -93,7 +93,7 @@ STAGE PLANS:
   Stage: Stage-0
     Rename Table
       table name: default.TEST3b
-      new table name: default.TEST3c
+      new table name: hive.default.TEST3c
 
 PREHOOK: query: ALTER TABLE TEST3b RENAME TO TEST3c
 PREHOOK: type: ALTERTABLE_RENAME

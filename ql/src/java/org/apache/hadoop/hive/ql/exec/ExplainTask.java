@@ -42,6 +42,7 @@ import java.util.TreeMap;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.jsonexplain.JsonParser;
 import org.apache.hadoop.hive.common.jsonexplain.JsonParserFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -744,7 +745,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
   private boolean isPrintable(Object val) {
     if (val instanceof Boolean || val instanceof String
         || val instanceof Integer || val instanceof Long || val instanceof Byte
-        || val instanceof Float || val instanceof Double || val instanceof Path) {
+        || val instanceof Float || val instanceof Double || val instanceof Path || val instanceof TableName) {
       return true;
     }
 
