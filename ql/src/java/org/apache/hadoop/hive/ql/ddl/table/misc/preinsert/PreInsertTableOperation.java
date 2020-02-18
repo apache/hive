@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.table.misc;
+package org.apache.hadoop.hive.ql.ddl.table.misc.preinsert;
 
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.metastore.DefaultHiveMetaHook;

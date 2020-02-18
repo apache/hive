@@ -283,9 +283,9 @@ public class AlterTableUnarchiveOperation extends DDLOperation<AlterTableUnarchi
 
   private void deleteIntermediateArchivedDir(Table table, Path intermediateArchivedDir) throws HiveException {
     if (HdfsUtils.pathExists(intermediateArchivedDir, context.getConf())) {
-      AlterTableArchiveUtils.deleteDir(intermediateArchivedDir,
-              ReplChangeManager.shouldEnableCm(context.getDb().getDatabase(table.getDbName()), table.getTTable()),
-              context.getConf());
+      boolean shouldEnableCm = ReplChangeManager.shouldEnableCm(context.getDb().getDatabase(table.getDbName()),
+          table.getTTable());
+      AlterTableArchiveUtils.deleteDir(intermediateArchivedDir, shouldEnableCm, context.getConf());
     }
   }
 }

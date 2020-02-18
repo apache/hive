@@ -16,27 +16,31 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.table.misc;
+package org.apache.hadoop.hive.ql.ddl.table.misc.preinsert;
 
-import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
-import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableOperation;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.plan.Explain;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
- * Operation process of setting the owner of a table.
+ * DDL task description for PRE INSERT commands.
  */
-public class AlterTableSetOwnerOperation extends AbstractAlterTableOperation<AlterTableSetOwnerDesc> {
-  public AlterTableSetOwnerOperation(DDLOperationContext context, AlterTableSetOwnerDesc desc) {
-    super(context, desc);
+@Explain(displayName = "Pre-Insert task", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class PreInsertTableDesc implements DDLDesc {
+  private final Table table;
+  private final boolean isOverwrite;
+
+  public PreInsertTableDesc(Table table, boolean overwrite) {
+    this.table = table;
+    this.isOverwrite = overwrite;
   }
 
-  @Override
-  protected void doAlteration(Table table, Partition partition) throws HiveException {
-    if (desc.getOwnerPrincipal() != null) {
-      table.setOwner(desc.getOwnerPrincipal().getName());
-      table.setOwnerType(desc.getOwnerPrincipal().getType());
-    }
+  public Table getTable() {
+    return table;
+  }
+
+  public boolean isOverwrite() {
+    return isOverwrite;
   }
 }

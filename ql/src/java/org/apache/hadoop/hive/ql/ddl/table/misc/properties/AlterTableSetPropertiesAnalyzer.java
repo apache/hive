@@ -16,31 +16,26 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.table.misc;
+package org.apache.hadoop.hive.ql.ddl.table.misc.properties;
 
-import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.plan.Explain;
-import org.apache.hadoop.hive.ql.plan.Explain.Level;
+import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
+import org.apache.hadoop.hive.ql.parse.HiveParser;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 /**
- * DDL task description for PRE INSERT commands.
+ * Analyzer for alter table set properties commands.
  */
-@Explain(displayName = "Pre-Insert task", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class PreInsertTableDesc implements DDLDesc {
-  private final Table table;
-  private final boolean isOverwrite;
+@DDLType(types = {HiveParser.TOK_ALTERTABLE_PROPERTIES, HiveParser.TOK_ALTERTABLE_UPDATESTATS,
+    HiveParser.TOK_ALTERPARTITION_UPDATESTATS})
+public class AlterTableSetPropertiesAnalyzer extends AbstractAlterTableSetPropertiesAnalyzer {
 
-  public PreInsertTableDesc(Table table, boolean overwrite) {
-    this.table = table;
-    this.isOverwrite = overwrite;
+  public AlterTableSetPropertiesAnalyzer(QueryState queryState) throws SemanticException {
+    super(queryState);
   }
 
-  public Table getTable() {
-    return table;
-  }
-
-  public boolean isOverwrite() {
-    return isOverwrite;
+  @Override
+  protected boolean isView() {
+    return false;
   }
 }
