@@ -104,7 +104,7 @@ public class AlterTableDropPartitionOperation extends DDLOperation<AlterTableDro
   }
 
   private void dropPartitions() throws HiveException {
-    // ifExists is currently verified in DDLSemanticAnalyzer
+    // ifExists is currently verified in AlterTableDropPartitionAnalyzer
     TableName tablenName = HiveTableName.of(desc.getTableName());
 
     List<Pair<Integer, byte[]>> partitionExpressions = new ArrayList<>(desc.getPartSpecs().size());

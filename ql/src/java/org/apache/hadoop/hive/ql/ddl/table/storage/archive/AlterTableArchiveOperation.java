@@ -309,9 +309,9 @@ public class AlterTableArchiveOperation extends DDLOperation<AlterTableArchiveDe
 
   private void deleteIntermediateOriginalDir(Table table, Path intermediateOriginalDir) throws HiveException {
     if (HdfsUtils.pathExists(intermediateOriginalDir, context.getConf())) {
-      AlterTableArchiveUtils.deleteDir(intermediateOriginalDir,
-              ReplChangeManager.shouldEnableCm(context.getDb().getDatabase(table.getDbName()), table.getTTable()),
-          context.getConf());
+      boolean shouldEnableCm = ReplChangeManager.shouldEnableCm(context.getDb().getDatabase(table.getDbName()),
+          table.getTTable());
+      AlterTableArchiveUtils.deleteDir(intermediateOriginalDir, shouldEnableCm, context.getConf());
     }
   }
 }

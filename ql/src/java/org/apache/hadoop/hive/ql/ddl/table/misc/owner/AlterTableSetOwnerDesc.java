@@ -16,38 +16,37 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.table.misc;
+package org.apache.hadoop.hive.ql.ddl.table.misc.owner;
 
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.ql.ddl.privilege.PrincipalDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
-import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
- * DDL task description for ALTER TABLE ... RENAME TO ... commands.
+ * DDL task description for ALTER TABLE ... SET OWNER ... commands.
  */
-@Explain(displayName = "Rename Table", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class AlterTableRenameDesc extends AbstractAlterTableDesc {
+@Explain(displayName = "Set Owner", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class AlterTableSetOwnerDesc extends AbstractAlterTableDesc {
   private static final long serialVersionUID = 1L;
 
-  private final String newName;
+  private final PrincipalDesc ownerPrincipal;
 
-  public AlterTableRenameDesc(TableName tableName, ReplicationSpec replicationSpec, boolean expectView, String newName)
-      throws SemanticException {
-    super(AlterTableType.RENAME, tableName, null, replicationSpec, false, expectView, null);
-    this.newName = newName;
+  public AlterTableSetOwnerDesc(TableName tableName, PrincipalDesc ownerPrincipal) throws SemanticException {
+    super(AlterTableType.OWNER, tableName, null, null, false, false, null);
+    this.ownerPrincipal = ownerPrincipal;
   }
 
-  @Explain(displayName = "new table name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public String getNewName() {
-    return newName;
+  @Explain(displayName = "owner principal", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public PrincipalDesc getOwnerPrincipal() {
+    return ownerPrincipal;
   }
 
   @Override
   public boolean mayNeedWriteId() {
-    return true;
+    return false;
   }
 }
