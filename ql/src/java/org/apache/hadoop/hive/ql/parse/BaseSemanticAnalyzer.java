@@ -461,12 +461,26 @@ public abstract class BaseSemanticAnalyzer {
    */
   public static String getUnescapedUnqualifiedTableName(ASTNode node) throws SemanticException {
     assert node.getChildCount() <= 2;
+    assert node.getType() == HiveParser.TOK_TABNAME;
 
     if (node.getChildCount() == 2) {
       node = (ASTNode) node.getChild(1);
     }
 
     return getUnescapedName(node);
+  }
+
+  public static String getTableAlias(ASTNode node) throws SemanticException {
+    // ptf node form is: ^(TOK_PTBLFUNCTION $name $alias?
+    // partitionTableFunctionSource partitioningSpec? expression*)
+    // guranteed to have an alias here: check done in processJoin
+    if (node.getToken().getType() == HiveParser.TOK_PTBLFUNCTION) {
+      return unescapeIdentifier(node.getChild(1).getText().toLowerCase());
+    }
+    if (node.getChildCount() == 1) {
+      return getUnescapedUnqualifiedTableName((ASTNode) node.getChild(0)).toLowerCase();
+    }
+    return unescapeIdentifier(node.getChild(node.getChildCount() - 1).getText().toLowerCase());
   }
 
 

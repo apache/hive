@@ -9977,9 +9977,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     if (isValidLeftToken) {
-      String tableName = getUnescapedUnqualifiedTableName((ASTNode) left.getChild(0))
-          .toLowerCase();
-      String alias = extractJoinAlias(left, tableName);
+      String alias = extractJoinAlias(left);
       joinTree.setLeftAlias(alias);
       String[] leftAliases = new String[1];
       leftAliases[0] = alias;
@@ -10005,9 +10003,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     if (isValidRightToken) {
-      String tableName = getUnescapedUnqualifiedTableName((ASTNode) right.getChild(0))
-          .toLowerCase();
-      String alias = extractJoinAlias(right, tableName);
+      String alias = extractJoinAlias(right);
       String[] rightAliases = new String[1];
       rightAliases[0] = alias;
       joinTree.setRightAliases(rightAliases);
@@ -10099,7 +10095,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         || (right.getToken().getType() == HiveParser.TOK_PTBLFUNCTION);
   }
 
-  private String extractJoinAlias(ASTNode node, String tableName) {
+  private String extractJoinAlias(ASTNode node) throws SemanticException {
     // ptf node form is:
     // ^(TOK_PTBLFUNCTION $name $alias? partitionTableFunctionSource partitioningSpec? expression*)
     // guaranteed to have an alias here: check done in processJoin
@@ -10107,14 +10103,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       return unescapeIdentifier(node.getChild(1).getText().toLowerCase());
     }
     if (node.getChildCount() == 1) {
-      return tableName;
+      return getUnescapedUnqualifiedTableName((ASTNode) node.getChild(0)).toLowerCase();
     }
     for (int i = node.getChildCount() - 1; i >= 1; i--) {
       if (node.getChild(i).getType() == HiveParser.Identifier) {
         return unescapeIdentifier(node.getChild(i).getText().toLowerCase());
       }
     }
-    return tableName;
+    throw new SemanticException("Unable to get join alias.");
   }
 
   private void parseStreamTables(QBJoinTree joinTree, QB qb) {
