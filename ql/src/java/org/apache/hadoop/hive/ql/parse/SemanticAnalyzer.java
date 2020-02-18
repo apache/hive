@@ -7105,7 +7105,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private void setStatsForNonNativeTable(String dbName, String tableName) throws SemanticException {
-    TableName qTableName = HiveTableName.ofNullable(tableName, dbName);
+    TableName qTableName = TableName.fromString(tableName, null, dbName);
     Map<String, String> mapProp = new HashMap<>();
     mapProp.put(StatsSetupConst.COLUMN_STATS_ACCURATE, null);
     AlterTableUnsetPropertiesDesc alterTblDesc = new AlterTableUnsetPropertiesDesc(qTableName, null, null, false,
@@ -7687,7 +7687,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         fileSinkColInfos = new ArrayList<>();
         destTableIsTemporary = tblDesc.isTemporary();
         destTableIsMaterialization = tblDesc.isMaterialization();
-        tableName = TableName.fromString(tblDesc.getDbTableName(), null, tblDesc.getDatabaseName());
+        tableName = tblDesc.getTableName();
         tblProps = tblDesc.getTblProps();
       } else if (viewDesc != null) {
         fieldSchemas = new ArrayList<>();
@@ -15460,9 +15460,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   protected String getFullTableNameForSQL(ASTNode n) throws SemanticException {
     switch (n.getType()) {
     case HiveParser.TOK_TABNAME:
-      TableName tableName = getQualifiedTableName(n);
-      return HiveTableName.ofNullable(HiveUtils.unparseIdentifier(tableName.getTable(), this.conf),
-          HiveUtils.unparseIdentifier(tableName.getDb(), this.conf)).getNotEmptyDbTable();
+      return getQualifiedTableName(n).getNotEmptyDbTable();
     case HiveParser.TOK_TABREF:
       return getFullTableNameForSQL((ASTNode) n.getChild(0));
     default:

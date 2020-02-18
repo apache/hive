@@ -38,7 +38,7 @@ public final class HiveTableName extends TableName {
    * @throws SemanticException
    */
   public static TableName of(Table table) throws SemanticException {
-    return ofNullable(table.getTableName(), table.getDbName());
+    return ofNullable(table.getTableName(), table.getDbName()); // todo: this shouldn't call nullable
   }
 
   /**
@@ -52,20 +52,6 @@ public final class HiveTableName extends TableName {
     table.setTableName(tableName.getTable());
     table.setDbName(tableName.getDb());
     return table;
-  }
-
-  /**
-   * Accepts qualified name which is in the form of table, dbname.tablename or catalog.dbname.tablename and returns a
-   * {@link TableName}. All parts can be null.
-   *
-   * @param dbTableName
-   * @return a {@link TableName}
-   * @throws SemanticException
-   * @deprecated use {@link #of(String)} or {@link #fromString(String, String, String)}
-   */
-  // to be @Deprecated
-  public static TableName ofNullable(String dbTableName) throws SemanticException {
-    return ofNullable(dbTableName, SessionState.get().getCurrentDatabase());
   }
 
   /**
@@ -93,7 +79,7 @@ public final class HiveTableName extends TableName {
    * @deprecated use {@link #of(String)} or {@link #fromString(String, String, String)}
    */
   // to be @Deprecated
-  public static TableName ofNullable(String dbTableName, String defaultDb) throws SemanticException {
+  private static TableName ofNullable(String dbTableName, String defaultDb) throws SemanticException { // todo: decommission
     if (dbTableName == null) {
       return new TableName(null, null, null);
     } else {

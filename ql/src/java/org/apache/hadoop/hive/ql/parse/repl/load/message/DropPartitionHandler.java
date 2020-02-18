@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.load.message;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.messaging.DropPartitionMessage;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.table.partition.drop.AlterTableDropPartitionDesc;
@@ -45,7 +46,7 @@ public class DropPartitionHandler extends AbstractMessageHandler {
           ReplUtils.genPartSpecs(new Table(msg.getTableObj()), msg.getPartitions());
       if (partSpecs.size() > 0) {
         AlterTableDropPartitionDesc dropPtnDesc =
-            new AlterTableDropPartitionDesc(HiveTableName.ofNullable(actualTblName, actualDbName), partSpecs, true,
+            new AlterTableDropPartitionDesc(TableName.fromString(actualTblName, null,  actualDbName), partSpecs, true,
                 context.eventOnlyReplicationSpec());
         Task<DDLWork> dropPtnTask = TaskFactory.get(
             new DDLWork(readEntitySet, writeEntitySet, dropPtnDesc), context.hiveConf

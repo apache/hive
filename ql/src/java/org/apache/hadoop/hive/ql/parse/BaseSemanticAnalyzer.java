@@ -440,14 +440,14 @@ public abstract class BaseSemanticAnalyzer {
         throw new SemanticException(ASTErrorUtils.getMsg(
             ErrorMsg.OBJECTNAME_CONTAINS_DOT.getMsg(), tabNameNode));
       }
-      return HiveTableName.ofNullable(tableName, dbName);
+      return TableName.fromString(tableName, null, dbName);
     }
     final String tableName = unescapeIdentifier(tabNameNode.getChild(0).getText());
     if (tableName.contains(".")) {
       throw new SemanticException(ASTErrorUtils.getMsg(
           ErrorMsg.OBJECTNAME_CONTAINS_DOT.getMsg(), tabNameNode));
     }
-    return HiveTableName.ofNullable(tableName);
+    return HiveTableName.of(tableName);
   }
 
   /**

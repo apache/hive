@@ -340,7 +340,7 @@ public class Driver implements IDriver {
           fsd1.getDirName().compareTo(fsd2.getDirName()));
         for (FileSinkDesc desc : acidSinks) {
           TableDesc tableInfo = desc.getTableInfo();
-          final TableName tn = HiveTableName.ofNullable(tableInfo.getTableName());
+          final TableName tn = HiveTableName.of(tableInfo.getTableName());
           long writeId = driverContext.getTxnManager().getTableWriteId(tn.getDb(), tn.getTable());
           desc.setTableWriteId(writeId);
 
