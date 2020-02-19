@@ -37,7 +37,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Analyzer for show partition commands.
  */
-@DDLType(type=HiveParser.TOK_SHOWPARTITIONS)
+@DDLType(types = HiveParser.TOK_SHOWPARTITIONS)
 public  class ShowPartitionAnalyzer extends BaseSemanticAnalyzer {
   public ShowPartitionAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

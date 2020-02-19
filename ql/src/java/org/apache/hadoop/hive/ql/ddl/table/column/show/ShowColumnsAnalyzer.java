@@ -34,7 +34,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Analyzer for show columns commands.
  */
-@DDLType(type=HiveParser.TOK_SHOWCOLUMNS)
+@DDLType(types = HiveParser.TOK_SHOWCOLUMNS)
 public class ShowColumnsAnalyzer extends BaseSemanticAnalyzer {
   public ShowColumnsAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

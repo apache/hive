@@ -35,7 +35,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 /**
  * Analyzer for show tables commands.
  */
-@DDLType(type=HiveParser.TOK_SHOWTABLES)
+@DDLType(types = HiveParser.TOK_SHOWTABLES)
 public class ShowTablesAnalyzer extends BaseSemanticAnalyzer {
   public ShowTablesAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

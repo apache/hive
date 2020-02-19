@@ -44,7 +44,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Analyzer for exchange partition commands.
  */
-@DDLType(type=HiveParser.TOK_ALTERTABLE_EXCHANGEPARTITION)
+@DDLType(types = HiveParser.TOK_ALTERTABLE_EXCHANGEPARTITION)
 public  class AlterTableExchangePartitionAnalyzer extends AbstractAlterTableAnalyzer {
   public AlterTableExchangePartitionAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

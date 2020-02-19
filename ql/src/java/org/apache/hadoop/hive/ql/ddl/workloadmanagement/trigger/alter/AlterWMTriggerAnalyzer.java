@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Analyzer for alter trigger commands.
  */
-@DDLType(type=HiveParser.TOK_ALTER_TRIGGER)
+@DDLType(types = HiveParser.TOK_ALTER_TRIGGER)
 public class AlterWMTriggerAnalyzer extends BaseSemanticAnalyzer {
   public AlterWMTriggerAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

@@ -33,7 +33,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 /**
  * Analyzer for show views commands.
  */
-@DDLType(type=HiveParser.TOK_SHOWVIEWS)
+@DDLType(types = HiveParser.TOK_SHOWVIEWS)
 public class ShowViewsAnalyzer extends BaseSemanticAnalyzer {
   public ShowViewsAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

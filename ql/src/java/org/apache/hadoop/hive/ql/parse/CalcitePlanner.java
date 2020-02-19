@@ -2867,14 +2867,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       if ((left.getToken().getType() == HiveParser.TOK_TABREF)
           || (left.getToken().getType() == HiveParser.TOK_SUBQUERY)
           || (left.getToken().getType() == HiveParser.TOK_PTBLFUNCTION)) {
-        String tableName = getUnescapedUnqualifiedTableName((ASTNode) left.getChild(0)).toLowerCase();
-        leftTableAlias = left.getChildCount() == 1 ? tableName : 
-            unescapeIdentifier(left.getChild(left.getChildCount() - 1).getText().toLowerCase());
-        // ptf node form is: ^(TOK_PTBLFUNCTION $name $alias?
-        // partitionTableFunctionSource partitioningSpec? expression*)
-        // guranteed to have an lias here: check done in processJoin
-        leftTableAlias = (left.getToken().getType() == HiveParser.TOK_PTBLFUNCTION) ? 
-            unescapeIdentifier(left.getChild(1).getText().toLowerCase()) : leftTableAlias;
+        leftTableAlias = getTableAlias(left);
         leftRel = aliasToRel.get(leftTableAlias);
       } else if (SemanticAnalyzer.isJoinToken(left)) {
         leftRel = genJoinLogicalPlan(left, aliasToRel);
@@ -2890,14 +2883,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       if ((right.getToken().getType() == HiveParser.TOK_TABREF)
           || (right.getToken().getType() == HiveParser.TOK_SUBQUERY)
           || (right.getToken().getType() == HiveParser.TOK_PTBLFUNCTION)) {
-        String tableName = getUnescapedUnqualifiedTableName((ASTNode) right.getChild(0)).toLowerCase();
-        rightTableAlias = right.getChildCount() == 1 ? tableName : 
-            unescapeIdentifier(right.getChild(right.getChildCount() - 1).getText().toLowerCase());
-        // ptf node form is: ^(TOK_PTBLFUNCTION $name $alias?
-        // partitionTableFunctionSource partitioningSpec? expression*)
-        // guranteed to have an lias here: check done in processJoin
-        rightTableAlias = (right.getToken().getType() == HiveParser.TOK_PTBLFUNCTION) ? 
-            unescapeIdentifier(right.getChild(1).getText().toLowerCase()) : rightTableAlias;
+        rightTableAlias = getTableAlias(right);
         rightRel = aliasToRel.get(rightTableAlias);
       } else if (right.getToken().getType() == HiveParser.TOK_LATERAL_VIEW) {
         rightRel = genLateralViewPlans(right, aliasToRel);
@@ -3258,17 +3244,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         case HiveParser.TOK_TABREF:
         case HiveParser.TOK_SUBQUERY:
         case HiveParser.TOK_PTBLFUNCTION:
-          String inputTableName = getUnescapedUnqualifiedTableName((ASTNode) next.getChild(0)).toLowerCase();
-          String inputTableAlias;
-          if (next.getToken().getType() == HiveParser.TOK_PTBLFUNCTION) {
-            // ptf node form is: ^(TOK_PTBLFUNCTION $name $alias?
-            // partitionTableFunctionSource partitioningSpec? expression*)
-            // ptf node guaranteed to have an alias here
-            inputTableAlias = unescapeIdentifier(next.getChild(1).getText().toLowerCase());
-          } else {
-            inputTableAlias = next.getChildCount() == 1 ? inputTableName :
-                unescapeIdentifier(next.getChild(next.getChildCount() - 1).getText().toLowerCase());
-          }
+          String inputTableAlias = getTableAlias(next);
           inputRel = aliasToRel.get(inputTableAlias);
           break;
         case HiveParser.TOK_LATERAL_VIEW:

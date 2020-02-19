@@ -34,7 +34,7 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils;
 /**
  * Analyzer for create pool commands.
  */
-@DDLType(type=HiveParser.TOK_CREATE_POOL)
+@DDLType(types = HiveParser.TOK_CREATE_POOL)
 public class CreateWMPoolAnalyzer extends BaseSemanticAnalyzer {
   public CreateWMPoolAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

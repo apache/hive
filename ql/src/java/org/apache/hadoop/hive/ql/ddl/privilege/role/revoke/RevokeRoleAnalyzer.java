@@ -32,7 +32,7 @@ import com.google.common.annotations.VisibleForTesting;
 /**
  * Analyzer for revoking from role commands.
  */
-@DDLType(type=HiveParser.TOK_REVOKE_ROLE)
+@DDLType(types = HiveParser.TOK_REVOKE_ROLE)
 public class RevokeRoleAnalyzer extends AbstractPrivilegeAnalyzer {
   public RevokeRoleAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

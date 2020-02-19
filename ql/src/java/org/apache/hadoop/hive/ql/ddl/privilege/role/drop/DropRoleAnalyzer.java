@@ -32,7 +32,7 @@ import com.google.common.annotations.VisibleForTesting;
 /**
  * Analyzer for role dropping commands.
  */
-@DDLType(type=HiveParser.TOK_DROPROLE)
+@DDLType(types = HiveParser.TOK_DROPROLE)
 public class DropRoleAnalyzer extends AbstractPrivilegeAnalyzer {
   public DropRoleAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

@@ -33,7 +33,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Analyzer for database unlocking commands.
  */
-@DDLType(type=HiveParser.TOK_UNLOCKDB)
+@DDLType(types = HiveParser.TOK_UNLOCKDB)
 public class UnlockDatabaseAnalyzer extends BaseSemanticAnalyzer {
   public UnlockDatabaseAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

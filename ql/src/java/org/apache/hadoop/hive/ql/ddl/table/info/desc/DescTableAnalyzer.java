@@ -56,7 +56,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
  *   id           --> root node for columnName
  * formatted
  */
-@DDLType(type=HiveParser.TOK_DESCTABLE)
+@DDLType(types = HiveParser.TOK_DESCTABLE)
 public class DescTableAnalyzer extends BaseSemanticAnalyzer {
   public DescTableAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
