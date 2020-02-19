@@ -22,6 +22,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -72,8 +73,8 @@ public class TableExport {
         ? null
         : tableSpec;
     this.replicationSpec = replicationSpec;
-    if (conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY) ||
-            (this.tableSpec != null && this.tableSpec.tableHandle.isView())) {
+    if (this.tableSpec != null && this.tableSpec.tableHandle!=null && (this.tableSpec.tableHandle.isView() ||
+            Utils.shouldDumpMetaDataOnly(this.tableSpec.tableHandle, conf))) {
       this.replicationSpec.setIsMetadataOnly(true);
 
       this.tableSpec.tableHandle.setStatsStateLikeNewTable();
@@ -92,7 +93,8 @@ public class TableExport {
     } else if (shouldExport()) {
       PartitionIterable withPartitions = getPartitions();
       writeMetaData(withPartitions);
-      if (!replicationSpec.isMetadataOnly()) {
+      if (!replicationSpec.isMetadataOnly()
+              && !(replicationSpec.isRepl() && tableSpec.tableHandle.getTableType().equals(TableType.EXTERNAL_TABLE))) {
         writeData(withPartitions);
       }
       return true;
@@ -158,10 +160,8 @@ public class TableExport {
       } else {
         List<Path> dataPathList = Utils.getDataPathList(tableSpec.tableHandle.getDataLocation(),
                 replicationSpec, conf);
-
-        // this is the data copy
         new FileOperations(dataPathList, paths.dataExportDir(), distCpDoAsUser, conf, mmCtx)
-            .export(replicationSpec);
+                .export(replicationSpec);
       }
     } catch (Exception e) {
       throw new SemanticException(e.getMessage(), e);
