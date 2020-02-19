@@ -16,5 +16,5 @@ insert into sketch_intermediate select category, datatosketch(id) from sketch_in
 select category, SketchToEstimate(sketch) from sketch_intermediate;
 
 -- union sketches across categories and get overall unique count estimate
-select estimate(unionSketch(sketch)) from sketch_intermediate;
+select SketchToEstimate(unionSketch(sketch)) from sketch_intermediate;
 

@@ -1,8 +1,8 @@
 package org.apache.hadoop.hive.ql.exec;
 
-import org.apache.datasketches.hive.cpc.DataToSketchUDAF;
-import org.apache.datasketches.hive.cpc.SketchToStringUDF;
-import org.apache.datasketches.hive.cpc.UnionSketchUDF;
+import org.apache.datasketches.hive.hll.DataToSketchUDAF;
+import org.apache.datasketches.hive.hll.SketchToStringUDF;
+import org.apache.datasketches.hive.hll.UnionSketchUDF;
 import org.apache.datasketches.hive.hll.SketchToEstimateAndErrorBoundsUDF;
 import org.apache.datasketches.hive.hll.SketchToEstimateUDF;
 import org.apache.datasketches.hive.hll.UnionSketchUDAF;
