@@ -2463,7 +2463,7 @@ public abstract class TestHiveMetaStore {
   }
 
   /**
-   * Test "like" filtering on table with single partition
+   * Test "like" filtering on table with single partition.
    */
   @Test
   public void testPartitionFilterLike() throws Exception {
