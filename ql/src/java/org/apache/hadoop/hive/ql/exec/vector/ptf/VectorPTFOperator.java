@@ -24,6 +24,7 @@ import java.util.Arrays;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
@@ -44,6 +45,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PTFDesc;
 import org.apache.hadoop.hive.ql.plan.VectorDesc;
@@ -130,6 +132,8 @@ public class VectorPTFOperator extends Operator<PTFDesc>
   private transient boolean allEvaluatorsAreStreaming;
 
   private transient boolean isFirstPartition;
+
+  private transient boolean skipResetEvaluatorsForRowNumber;
 
   private transient boolean[] currentPartitionIsNull;
   private transient long[] currentPartitionLongs;
@@ -327,6 +331,7 @@ public class VectorPTFOperator extends Operator<PTFDesc>
     isFirstPartition = true;
 
     batchCounter = 0;
+    skipResetEvaluatorsForRowNumber = skipResetEvaluatorsForRowNumberFunction();
   }
 
   @Override
@@ -404,9 +409,17 @@ public class VectorPTFOperator extends Operator<PTFDesc>
     }
 
     // If we are only processing a PARTITION BY, reset our evaluators.
-    if (!isPartitionOrderBy) {
+    // skipResetEvaluatorsForRowNumber - when partition by is the only clause and it contains only constant expressions
+    // i.e. row_number() over(partition by 1,2)
+    // then we should not resetEvaluators(reset row number) for row_number() function
+    if (!isPartitionOrderBy && !skipResetEvaluatorsForRowNumber) {
       groupBatches.resetEvaluators();
     }
+  }
+
+  private boolean skipResetEvaluatorsForRowNumberFunction() {
+    return evaluatorFunctionNames.length == 1 && FunctionRegistry.ROW_NUMBER_FUNCTION_NAME
+        .equals(evaluatorFunctionNames[0]) && ExprNodeDescUtils.isAllConstants(Arrays.asList(partitionExprNodeDescs));
   }
 
   private boolean isPartitionChanged(VectorizedRowBatch batch) {
