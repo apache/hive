@@ -547,8 +547,10 @@ STAGE PLANS:
             Statistics: Num rows: 26 Data size: 1969 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Reduce Output Operator
+              bucketingVersion: 2
               key expressions: 0 (type: int), tw_value (type: double)
               null sort order: az
+              numBuckets: -1
               sort order: ++
               Map-reduce partition columns: 0 (type: int)
               Statistics: Num rows: 26 Data size: 1969 Basic stats: COMPLETE Column stats: COMPLETE
@@ -848,10 +850,8 @@ PREHOOK: Input: default@topnkey_windowing
 POSTHOOK: query: SELECT tw_code, ranking
 FROM (
   SELECT tw_code AS tw_code,
-              bucketingVersion: 2
     dense_rank() OVER (PARTITION BY tw_code ORDER BY tw_value) AS ranking
   FROM topnkey_windowing) tmp1
-              numBuckets: -1
   WHERE ranking <= 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@topnkey_windowing
