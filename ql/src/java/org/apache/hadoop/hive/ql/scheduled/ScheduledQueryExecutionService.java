@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -44,20 +45,33 @@ public class ScheduledQueryExecutionService implements Closeable {
 
   private static final Logger LOG = LoggerFactory.getLogger(ScheduledQueryExecutionService.class);
 
+  private static ScheduledQueryExecutionService INSTANCE = null;
+
   private ScheduledQueryExecutionContext context;
   private ScheduledQueryExecutor worker;
+  private AtomicInteger forcedScheduleCheckCounter = new AtomicInteger();
 
-  public static ScheduledQueryExecutionService startScheduledQueryExecutorService(HiveConf conf0) {
-    HiveConf conf = new HiveConf(conf0);
+  public static ScheduledQueryExecutionService startScheduledQueryExecutorService(HiveConf inputConf) {
+    HiveConf conf = new HiveConf(inputConf);
     MetastoreBasedScheduledQueryService qService = new MetastoreBasedScheduledQueryService(conf);
-    ExecutorService executor =
-        Executors.newCachedThreadPool(
-            new ThreadFactoryBuilder().setDaemon(true).setNameFormat("Scheduled Query Thread %d").build());
+    ExecutorService executor = Executors.newCachedThreadPool(
+        new ThreadFactoryBuilder().setDaemon(true).setNameFormat("Scheduled Query Thread %d").build());
     ScheduledQueryExecutionContext ctx = new ScheduledQueryExecutionContext(executor, conf, qService);
-    return new ScheduledQueryExecutionService(ctx);
+    return startScheduledQueryExecutorService(ctx);
   }
 
-  public ScheduledQueryExecutionService(ScheduledQueryExecutionContext ctx) {
+  public static ScheduledQueryExecutionService startScheduledQueryExecutorService(ScheduledQueryExecutionContext ctx) {
+    synchronized (ScheduledQueryExecutionService.class) {
+      if (INSTANCE != null) {
+        throw new IllegalStateException(
+            "There is already a ScheduledQueryExecutionService in service; check it and close it explicitly if neccessary");
+      }
+      INSTANCE = new ScheduledQueryExecutionService(ctx);
+      return INSTANCE;
+    }
+  }
+
+  private ScheduledQueryExecutionService(ScheduledQueryExecutionContext ctx) {
     context = ctx;
     ctx.executor.submit(worker = new ScheduledQueryExecutor());
     ctx.executor.submit(new ProgressReporter());
@@ -83,10 +97,21 @@ public class ScheduledQueryExecutionService implements Closeable {
           }
         } else {
           try {
-            Thread.sleep(context.getIdleSleepTime());
+            sleep(context.getIdleSleepTime());
           } catch (InterruptedException e) {
             LOG.warn("interrupt discarded");
           }
+        }
+      }
+    }
+
+    private void sleep(long idleSleepTime) throws InterruptedException {
+      long checkIntrvalMs = 1000;
+      int origResets = forcedScheduleCheckCounter.get();
+      for (long i = 0; i < idleSleepTime; i += checkIntrvalMs) {
+        Thread.sleep(checkIntrvalMs);
+        if (forcedScheduleCheckCounter.get() != origResets) {
+          return;
         }
       }
     }
@@ -117,7 +142,7 @@ public class ScheduledQueryExecutionService implements Closeable {
         reportQueryProgress();
         try (
           IDriver driver = DriverFactory.newDriver(DriverFactory.getNewQueryState(conf), null)) {
-          info.setExecutorQueryId(driver.getQueryState().getQueryId());
+          info.setExecutorQueryId(buildExecutorQueryId(driver));
           reportQueryProgress();
           driver.run(q.getQuery());
           info.setState(QueryState.FINISHED);
@@ -132,9 +157,12 @@ public class ScheduledQueryExecutionService implements Closeable {
           } catch (Throwable e) {
           }
         }
-
         reportQueryProgress();
       }
+    }
+
+    private String buildExecutorQueryId(IDriver driver) {
+      return String.format("%s/%s", context.executorHostName, driver.getQueryState().getQueryId());
     }
 
     private String lockNameFor(ScheduledQueryKey scheduleKey) {
@@ -173,15 +201,27 @@ public class ScheduledQueryExecutionService implements Closeable {
   @VisibleForTesting
   @Override
   public void close() throws IOException {
-    context.executor.shutdown();
-    try {
-      context.executor.awaitTermination(1, TimeUnit.SECONDS);
-      context.executor.shutdownNow();
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
+    synchronized (ScheduledQueryExecutionService.class) {
+      if (INSTANCE == null || INSTANCE != this) {
+        throw new IllegalStateException("The current ScheduledQueryExecutionService INSTANCE is invalid");
+      }
+      INSTANCE = null;
+      context.executor.shutdown();
+      try {
+        context.executor.awaitTermination(1, TimeUnit.SECONDS);
+        context.executor.shutdownNow();
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+      }
     }
-
-
   }
 
+  public static void forceScheduleCheck() {
+    INSTANCE.forcedScheduleCheckCounter.incrementAndGet();
+  }
+
+  @VisibleForTesting
+  public static int getForcedScheduleCheckCount() {
+    return INSTANCE.forcedScheduleCheckCounter.get();
+  }
 }

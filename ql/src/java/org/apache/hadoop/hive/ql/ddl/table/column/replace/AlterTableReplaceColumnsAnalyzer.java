@@ -37,7 +37,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Analyzer for replace columns commands.
  */
-@DDLType(type=HiveParser.TOK_ALTERTABLE_REPLACECOLS)
+@DDLType(types = HiveParser.TOK_ALTERTABLE_REPLACECOLS)
 public class AlterTableReplaceColumnsAnalyzer extends AbstractAlterTableAnalyzer {
   public AlterTableReplaceColumnsAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

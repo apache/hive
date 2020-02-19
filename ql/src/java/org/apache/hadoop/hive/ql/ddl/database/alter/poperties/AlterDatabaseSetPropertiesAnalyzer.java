@@ -30,7 +30,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Analyzer for database set properties commands.
  */
-@DDLType(type=HiveParser.TOK_ALTERDATABASE_PROPERTIES)
+@DDLType(types = HiveParser.TOK_ALTERDATABASE_PROPERTIES)
 public class AlterDatabaseSetPropertiesAnalyzer extends AbstractAlterDatabaseAnalyzer {
   public AlterDatabaseSetPropertiesAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

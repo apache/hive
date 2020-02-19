@@ -36,7 +36,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Analyzer for kill query commands.
  */
-@DDLType(type=HiveParser.TOK_KILL_QUERY)
+@DDLType(types = HiveParser.TOK_KILL_QUERY)
 public class KillQueriesAnalyzer extends BaseSemanticAnalyzer {
   public KillQueriesAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

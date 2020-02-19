@@ -1,0 +1,169 @@
+PREHOOK: query: drop database if exists count_distinct cascade
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: drop database if exists count_distinct cascade
+POSTHOOK: type: DROPDATABASE
+PREHOOK: query: create database count_distinct
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:count_distinct
+POSTHOOK: query: create database count_distinct
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:count_distinct
+PREHOOK: query: use count_distinct
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:count_distinct
+POSTHOOK: query: use count_distinct
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:count_distinct
+PREHOOK: query: create table base (c1 int, c2 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: count_distinct@base
+PREHOOK: Output: database:count_distinct
+POSTHOOK: query: create table base (c1 int, c2 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: count_distinct@base
+POSTHOOK: Output: database:count_distinct
+PREHOOK: query: insert into base values (1,2),(1,1),(3,null),(2,2),(2,1),(null,3),(null,null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: count_distinct@base
+POSTHOOK: query: insert into base values (1,2),(1,1),(3,null),(2,2),(2,1),(null,3),(null,null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: count_distinct@base
+POSTHOOK: Lineage: base.c1 SCRIPT []
+POSTHOOK: Lineage: base.c2 SCRIPT []
+PREHOOK: query: explain cbo
+select count(distinct c1) from base group by c2
+PREHOOK: type: QUERY
+PREHOOK: Input: count_distinct@base
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select count(distinct c1) from base group by c2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: count_distinct@base
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(_o__c0=[$1])
+  HiveAggregate(group=[{1}], agg#0=[count($0)])
+    HiveProject(c1=[$0], c2=[$1])
+      HiveAggregate(group=[{0, 1}])
+        HiveTableScan(table=[[count_distinct, base]], table:alias=[base])
+
+PREHOOK: query: select count(distinct c1) from base group by c2
+PREHOOK: type: QUERY
+PREHOOK: Input: count_distinct@base
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct c1) from base group by c2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: count_distinct@base
+#### A masked pattern was here ####
+2
+2
+0
+1
+PREHOOK: query: create materialized view base_mview1 stored as orc as select distinct c1 c1, c2 c2 from base
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: count_distinct@base
+PREHOOK: Output: count_distinct@base_mview1
+PREHOOK: Output: database:count_distinct
+POSTHOOK: query: create materialized view base_mview1 stored as orc as select distinct c1 c1, c2 c2 from base
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: count_distinct@base
+POSTHOOK: Output: count_distinct@base_mview1
+POSTHOOK: Output: database:count_distinct
+PREHOOK: query: explain cbo
+select count(distinct c1) from base group by c2
+PREHOOK: type: QUERY
+PREHOOK: Input: count_distinct@base
+PREHOOK: Input: count_distinct@base_mview1
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select count(distinct c1) from base group by c2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: count_distinct@base
+POSTHOOK: Input: count_distinct@base_mview1
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(_o__c0=[$1])
+  HiveAggregate(group=[{1}], agg#0=[count($0)])
+    HiveTableScan(table=[[count_distinct, base_mview1]], table:alias=[count_distinct.base_mview1])
+
+PREHOOK: query: select count(distinct c1) from base group by c2
+PREHOOK: type: QUERY
+PREHOOK: Input: count_distinct@base
+PREHOOK: Input: count_distinct@base_mview1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct c1) from base group by c2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: count_distinct@base
+POSTHOOK: Input: count_distinct@base_mview1
+#### A masked pattern was here ####
+0
+2
+2
+1
+PREHOOK: query: drop materialized view base_mview1
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: count_distinct@base_mview1
+PREHOOK: Output: count_distinct@base_mview1
+POSTHOOK: query: drop materialized view base_mview1
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: count_distinct@base_mview1
+POSTHOOK: Output: count_distinct@base_mview1
+PREHOOK: query: create materialized view base_mview2 stored as orc as SELECT c1 c1, c2 c2, sum(c2) FROM base group by c1, c2
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: count_distinct@base
+PREHOOK: Output: count_distinct@base_mview2
+PREHOOK: Output: database:count_distinct
+POSTHOOK: query: create materialized view base_mview2 stored as orc as SELECT c1 c1, c2 c2, sum(c2) FROM base group by c1, c2
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: count_distinct@base
+POSTHOOK: Output: count_distinct@base_mview2
+POSTHOOK: Output: database:count_distinct
+PREHOOK: query: explain cbo
+select count(distinct c1) from base group by c2
+PREHOOK: type: QUERY
+PREHOOK: Input: count_distinct@base
+PREHOOK: Input: count_distinct@base_mview2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select count(distinct c1) from base group by c2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: count_distinct@base
+POSTHOOK: Input: count_distinct@base_mview2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(_o__c0=[$1])
+  HiveAggregate(group=[{1}], agg#0=[count($0)])
+    HiveTableScan(table=[[count_distinct, base_mview2]], table:alias=[count_distinct.base_mview2])
+
+PREHOOK: query: select count(distinct c1) from base group by c2
+PREHOOK: type: QUERY
+PREHOOK: Input: count_distinct@base
+PREHOOK: Input: count_distinct@base_mview2
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct c1) from base group by c2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: count_distinct@base
+POSTHOOK: Input: count_distinct@base_mview2
+#### A masked pattern was here ####
+0
+2
+2
+1
+PREHOOK: query: drop materialized view base_mview2
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: count_distinct@base_mview2
+PREHOOK: Output: count_distinct@base_mview2
+POSTHOOK: query: drop materialized view base_mview2
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: count_distinct@base_mview2
+POSTHOOK: Output: count_distinct@base_mview2
+PREHOOK: query: drop table base
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: count_distinct@base
+PREHOOK: Output: count_distinct@base
+POSTHOOK: query: drop table base
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: count_distinct@base
+POSTHOOK: Output: count_distinct@base

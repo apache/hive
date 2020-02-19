@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Analyzer for drop resource plan commands.
  */
-@DDLType(type=HiveParser.TOK_DROP_RP)
+@DDLType(types = HiveParser.TOK_DROP_RP)
 public class DropResourcePlanAnalyzer extends BaseSemanticAnalyzer {
   public DropResourcePlanAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

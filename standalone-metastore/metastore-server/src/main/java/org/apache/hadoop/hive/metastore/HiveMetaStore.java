@@ -1090,7 +1090,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     private void endFunction(String function, MetaStoreEndFunctionContext context) {
       com.codahale.metrics.Timer.Context timerContext = timerContexts.get().remove(function);
       if (timerContext != null) {
-        timerContext.close();
+        long timeTaken = timerContext.stop();
+        LOG.debug((getThreadLocalIpAddress() == null ? "" : "source:" + getThreadLocalIpAddress() + " ") +
+            function + "time taken(ns): " + timeTaken);
       }
       Counter counter = Metrics.getOrCreateCounter(MetricsConstants.ACTIVE_CALLS + function);
       if (counter != null) {
@@ -2039,7 +2041,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
       if (tbl.isSetId()) {
         throw new InvalidObjectException("Id shouldn't be set but table "
-            + tbl.getDbName() + "." + tbl.getTableName() + "has the Id set to "
+            + tbl.getDbName() + "." + tbl.getTableName() + " has the Id set to "
             + tbl.getId() + ". It's a read-only option");
       }
       SkewedInfo skew = tbl.getSd().getSkewedInfo();
@@ -2840,27 +2842,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
      */
     private void deleteTableData(Path tablePath, boolean ifPurge, boolean shouldEnableCm) {
       if (tablePath != null) {
-        try {
-          if (shouldEnableCm) {
-            //Don't delete cmdir if its inside the table path
-            FileStatus[] statuses = tablePath.getFileSystem(conf).listStatus(tablePath,
-                    ReplChangeManager.CMROOT_PATH_FILTER);
-            for (final FileStatus status : statuses) {
-              wh.deleteDir(status.getPath(), true, ifPurge, shouldEnableCm);
-            }
-            //Check if table directory is empty, delete it
-            FileStatus[] statusWithoutFilter = tablePath.getFileSystem(conf).listStatus(tablePath);
-            if (statusWithoutFilter.length == 0) {
-              wh.deleteDir(tablePath, true, ifPurge, shouldEnableCm);
-            }
-          } else {
-            //If no cm delete the complete table directory
-            wh.deleteDir(tablePath, true, ifPurge, shouldEnableCm);
-          }
-        } catch (Exception e) {
-          LOG.error("Failed to delete table directory: " + tablePath +
-                  " " + e.getMessage());
-        }
+        deleteDataExcludeCmroot(tablePath, ifPurge, shouldEnableCm);
       }
     }
 
@@ -2895,27 +2877,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     private void deletePartitionData(List<Path> partPaths, boolean ifPurge, boolean shouldEnableCm) {
       if (partPaths != null && !partPaths.isEmpty()) {
         for (Path partPath : partPaths) {
-          try {
-            if (shouldEnableCm) {
-              //Don't delete cmdir if its inside the partition path
-              FileStatus[] statuses = partPath.getFileSystem(conf).listStatus(partPath,
-                      ReplChangeManager.CMROOT_PATH_FILTER);
-              for (final FileStatus status : statuses) {
-                wh.deleteDir(status.getPath(), true, ifPurge, shouldEnableCm);
-              }
-              //Check if table directory is empty, delete it
-              FileStatus[] statusWithoutFilter = partPath.getFileSystem(conf).listStatus(partPath);
-              if (statusWithoutFilter.length == 0) {
-                wh.deleteDir(partPath, true, ifPurge, shouldEnableCm);
-              }
-            } else {
-              //If no cm delete the complete table directory
-              wh.deleteDir(partPath, true, ifPurge, shouldEnableCm);
-            }
-          } catch (Exception e) {
-            LOG.error("Failed to delete partition directory: " + partPath +
-                " " + e.getMessage());
-          }
+          deleteDataExcludeCmroot(partPath, ifPurge, shouldEnableCm);
         }
       }
     }
@@ -2939,6 +2901,39 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                     " " + e.getMessage());
           }
         }
+      }
+    }
+
+    /**
+     * Delete data from path excluding cmdir
+     * and for each that fails logs an error.
+     *
+     * @param path
+     * @param ifPurge completely purge the partition (skipping trash) while
+     *                removing data from warehouse
+     * @param shouldEnableCm If cm should be enabled
+     */
+    private void deleteDataExcludeCmroot(Path path, boolean ifPurge, boolean shouldEnableCm) {
+      try {
+        if (shouldEnableCm) {
+          //Don't delete cmdir if its inside the partition path
+          FileStatus[] statuses = path.getFileSystem(conf).listStatus(path,
+                  ReplChangeManager.CMROOT_PATH_FILTER);
+          for (final FileStatus status : statuses) {
+            wh.deleteDir(status.getPath(), true, ifPurge, shouldEnableCm);
+          }
+          //Check if table directory is empty, delete it
+          FileStatus[] statusWithoutFilter = path.getFileSystem(conf).listStatus(path);
+          if (statusWithoutFilter.length == 0) {
+            wh.deleteDir(path, true, ifPurge, shouldEnableCm);
+          }
+        } else {
+          //If no cm delete the complete table directory
+          wh.deleteDir(path, true, ifPurge, shouldEnableCm);
+        }
+      } catch (Exception e) {
+        LOG.error("Failed to delete directory: " + path +
+                " " + e.getMessage());
       }
     }
 

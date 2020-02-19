@@ -17,21 +17,16 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Random;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.collect.Lists;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -44,20 +39,14 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
-import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.DriverFactory;
-import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.streaming.HiveStreamingConnection;
 import org.apache.hive.streaming.StreamingConnection;
 import org.apache.hive.streaming.StrictDelimitedInputWriter;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactor.executeStatementOnDriver;
@@ -66,68 +55,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 
 @SuppressWarnings("deprecation")
-public class TestCrudCompactorOnTez {
-  private static final AtomicInteger salt = new AtomicInteger(new Random().nextInt());
-  private static final String TEST_DATA_DIR = new File(System.getProperty("java.io.tmpdir") + File.separator
-      + TestCrudCompactorOnTez.class.getCanonicalName() + "-" + System.currentTimeMillis() + "_" + salt
-          .getAndIncrement()).getPath().replaceAll("\\\\", "/");
-  private static final String TEST_WAREHOUSE_DIR = TEST_DATA_DIR + "/warehouse";
-  private HiveConf conf;
-  private IMetaStoreClient msClient;
-  private IDriver driver;
-
-  @Before
-  // Note: we create a new conf and driver object before every test
-  public void setup() throws Exception {
-    File f = new File(TEST_WAREHOUSE_DIR);
-    if (f.exists()) {
-      FileUtil.fullyDelete(f);
-    }
-    if (!(new File(TEST_WAREHOUSE_DIR).mkdirs())) {
-      throw new RuntimeException("Could not create " + TEST_WAREHOUSE_DIR);
-    }
-    HiveConf hiveConf = new HiveConf(this.getClass());
-    hiveConf.setVar(HiveConf.ConfVars.PREEXECHOOKS, "");
-    hiveConf.setVar(HiveConf.ConfVars.POSTEXECHOOKS, "");
-    hiveConf.setVar(HiveConf.ConfVars.METASTOREWAREHOUSE, TEST_WAREHOUSE_DIR);
-    hiveConf.setVar(HiveConf.ConfVars.HIVEINPUTFORMAT, HiveInputFormat.class.getName());
-    hiveConf.setVar(HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "none");
-    TxnDbUtil.setConfValues(hiveConf);
-    TxnDbUtil.cleanDb(hiveConf);
-    TxnDbUtil.prepDb(hiveConf);
-    conf = hiveConf;
-    // Use tez as execution engine for this test class
-    setupTez(conf);
-    msClient = new HiveMetaStoreClient(conf);
-    driver = DriverFactory.newDriver(conf);
-    SessionState.start(new CliSessionState(conf));
-  }
-
-  private void setupTez(HiveConf conf) {
-    conf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "tez");
-    conf.setVar(HiveConf.ConfVars.HIVE_USER_INSTALL_DIR, TEST_DATA_DIR);
-    conf.set("tez.am.resource.memory.mb", "128");
-    conf.set("tez.am.dag.scheduler.class", "org.apache.tez.dag.app.dag.impl.DAGSchedulerNaturalOrderControlled");
-    conf.setBoolean("tez.local.mode", true);
-    conf.set("fs.defaultFS", "file:///");
-    conf.setBoolean("tez.runtime.optimize.local.fetch", true);
-    conf.set("tez.staging-dir", TEST_DATA_DIR);
-    conf.setBoolean("tez.ignore.lib.uris", true);
-    conf.set("hive.tez.container.size", "128");
-    conf.setBoolean("hive.merge.tezfiles", false);
-    conf.setBoolean("hive.in.tez.test", true);
-  }
-
-  @After
-  public void tearDown() {
-    if (msClient != null) {
-      msClient.close();
-    }
-    if (driver != null) {
-      driver.close();
-    }
-    conf = null;
-  }
+public class TestCrudCompactorOnTez extends CompactorOnTezTest {
 
   @Test
   public void testMajorCompaction() throws Exception {
@@ -217,7 +145,7 @@ public class TestCrudCompactorOnTez {
     String tableName = "testMinorCompaction";
     // Create test table
     TestDataProvider dataProvider = new TestDataProvider();
-    dataProvider.createTable(tableName, false, false);
+    dataProvider.createFullAcidTable(tableName, false, false);
     // Find the location of the table
     IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
     Table table = msClient.getTable(dbName, tableName);
@@ -287,7 +215,7 @@ public class TestCrudCompactorOnTez {
     String tableName = "testMinorCompaction";
     // Create test table
     TestDataProvider dataProvider = new TestDataProvider();
-    dataProvider.createTable(tableName, false, true);
+    dataProvider.createFullAcidTable(tableName, false, true);
     // Find the location of the table
     IMetaStoreClient metaStoreClient = new HiveMetaStoreClient(conf);
     Table table = metaStoreClient.getTable(dbName, tableName);
@@ -360,7 +288,7 @@ public class TestCrudCompactorOnTez {
     String tableName = "testMinorCompaction";
     // Create test table
     TestDataProvider dataProvider = new TestDataProvider();
-    dataProvider.createTable(tableName, true, false);
+    dataProvider.createFullAcidTable(tableName, true, false);
     // Find the location of the table
     IMetaStoreClient metaStoreClient = new HiveMetaStoreClient(conf);
     Table table = metaStoreClient.getTable(dbName, tableName);
@@ -440,7 +368,7 @@ public class TestCrudCompactorOnTez {
     String tableName = "testMinorCompaction";
     // Create test table
     TestDataProvider dataProvider = new TestDataProvider();
-    dataProvider.createTable(tableName, true, true);
+    dataProvider.createFullAcidTable(tableName, true, true);
     // Find the location of the table
     IMetaStoreClient metaStoreClient = new HiveMetaStoreClient(conf);
     Table table = metaStoreClient.getTable(dbName, tableName);
@@ -522,7 +450,7 @@ public class TestCrudCompactorOnTez {
     String tableName = "testMinorCompaction";
     // Create test table
     TestDataProvider dataProvider = new TestDataProvider();
-    dataProvider.createTable(tableName, false, false);
+    dataProvider.createFullAcidTable(tableName, false, false);
     // Find the location of the table
     IMetaStoreClient metaStoreClient = new HiveMetaStoreClient(conf);
     Table table = metaStoreClient.getTable(dbName, tableName);
@@ -577,7 +505,7 @@ public class TestCrudCompactorOnTez {
     String tableName = "testMinorCompaction";
     // Create test table
     TestDataProvider dataProvider = new TestDataProvider();
-    dataProvider.createTable(tableName, false, true);
+    dataProvider.createFullAcidTable(tableName, false, true);
     // Find the location of the table
     IMetaStoreClient metaStoreClient = new HiveMetaStoreClient(conf);
     Table table = metaStoreClient.getTable(dbName, tableName);
@@ -757,7 +685,7 @@ public class TestCrudCompactorOnTez {
     String tableName = "testMinorCompaction";
     // Create test table
     TestDataProvider dataProvider = new TestDataProvider();
-    dataProvider.createTable(tableName, false, false);
+    dataProvider.createFullAcidTable(tableName, false, false);
     // Find the location of the table
     IMetaStoreClient metaStoreClient = new HiveMetaStoreClient(conf);
     Table table = metaStoreClient.getTable(dbName, tableName);
@@ -786,6 +714,10 @@ public class TestCrudCompactorOnTez {
     // Verify all contents
     List<String> actualData = dataProvider.getAllData(tableName);
     Assert.assertEquals(expectedData, actualData);
+    // Insert another round of test data
+    dataProvider.insertTestData(tableName);
+    expectedData = dataProvider.getAllData(tableName);
+    Collections.sort(expectedData);
     // Run a compaction
     CompactorTestUtil.runCompaction(conf, dbName, tableName, CompactionType.MAJOR, true);
     // Clean up resources
@@ -796,8 +728,64 @@ public class TestCrudCompactorOnTez {
     Assert.assertEquals("Compaction state is not succeeded", "succeeded", compacts.get(1).getState());
     // Verify base directory after compaction
     Assert.assertEquals("Base directory does not match after major compaction",
-        Collections.singletonList("base_0000005_v0000023"),
+        Collections.singletonList("base_0000010_v0000029"),
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.baseFileFilter, table, null));
+    // Verify all contents
+    actualData = dataProvider.getAllData(tableName);
+    Assert.assertEquals(expectedData, actualData);
+  }
+
+  @Test
+  public void testMinorCompactionAfterMajor() throws Exception {
+    String dbName = "default";
+    String tableName = "testMinorCompaction";
+    // Create test table
+    TestDataProvider dataProvider = new TestDataProvider();
+    dataProvider.createFullAcidTable(tableName, false, false);
+    // Find the location of the table
+    IMetaStoreClient metaStoreClient = new HiveMetaStoreClient(conf);
+    Table table = metaStoreClient.getTable(dbName, tableName);
+    FileSystem fs = FileSystem.get(conf);
+    // Insert test data into test table
+    dataProvider.insertTestData(tableName);
+    // Get all data before compaction is run
+    List<String> expectedData = dataProvider.getAllData(tableName);
+    Collections.sort(expectedData);
+    // Run a compaction
+    CompactorTestUtil.runCompaction(conf, dbName, tableName, CompactionType.MAJOR, true);
+    // Clean up resources
+    CompactorTestUtil.runCleaner(conf);
+    // Only 1 compaction should be in the response queue with succeeded state
+    List<ShowCompactResponseElement> compacts =
+        TxnUtils.getTxnStore(conf).showCompact(new ShowCompactRequest()).getCompacts();
+    Assert.assertEquals("Completed compaction queue must contain one element", 1, compacts.size());
+    Assert.assertEquals("Compaction state is not succeeded", "succeeded", compacts.get(0).getState());
+    // Verify base directory after compaction
+    Assert.assertEquals("Base directory does not match after major compaction",
+        Collections.singletonList("base_0000005_v0000009"),
+        CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.baseFileFilter, table, null));
+    // Verify all contents
+    List<String> actualData = dataProvider.getAllData(tableName);
+    Assert.assertEquals(expectedData, actualData);
+    // Insert another round of test data
+    dataProvider.insertTestData(tableName);
+    expectedData = dataProvider.getAllData(tableName);
+    Collections.sort(expectedData);
+    // Run a compaction
+    CompactorTestUtil.runCompaction(conf, dbName, tableName, CompactionType.MINOR, true);
+    // Clean up resources
+    CompactorTestUtil.runCleaner(conf);
+    // 2 compaction should be in the response queue with succeeded state
+    compacts = TxnUtils.getTxnStore(conf).showCompact(new ShowCompactRequest()).getCompacts();
+    Assert.assertEquals("Completed compaction queue must contain one element", 2, compacts.size());
+    Assert.assertEquals("Compaction state is not succeeded", "succeeded", compacts.get(1).getState());
+    // Verify base directory after compaction
+    Assert.assertEquals("Base directory does not match after major compaction",
+        Collections.singletonList("base_0000005_v0000009"),
+        CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.baseFileFilter, table, null));
+    Assert.assertEquals("Delta directories do not match after major compaction",
+        Collections.singletonList("delta_0000001_0000010_v0000020"),
+        CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deltaFileFilter, table, null));
     // Verify all contents
     actualData = dataProvider.getAllData(tableName);
     Assert.assertEquals(expectedData, actualData);
@@ -967,71 +955,5 @@ public class TestCrudCompactorOnTez {
     hiveConf.setVar(HiveConf.ConfVars.LLAP_IO_ETL_SKIP_FORMAT, "none");
     qc.runCompactionQueries(hiveConf, null, sdMock, null, null, emptyQueries, emptyQueries, emptyQueries);
     Assert.assertEquals("none", hiveConf.getVar(HiveConf.ConfVars.LLAP_IO_ETL_SKIP_FORMAT));
-
-  }
-
-  private class TestDataProvider {
-
-    private void createTable(String tblName, boolean isPartitioned, boolean isBucketed) throws Exception {
-      executeStatementOnDriver("drop table if exists " + tblName, driver);
-      StringBuilder query = new StringBuilder();
-      query.append("create table ").append(tblName).append(" (a string, b int)");
-      if (isPartitioned) {
-        query.append(" partitioned by (ds string)");
-      }
-      if (isBucketed) {
-        query.append(" clustered by (a) into 2 buckets");
-      }
-      query.append(" stored as ORC TBLPROPERTIES('transactional'='true'," + " 'transactional_properties'='default')");
-      executeStatementOnDriver(query.toString(), driver);
-    }
-
-    private void insertTestDataPartitioned(String tblName) throws Exception {
-      executeStatementOnDriver("insert into " + tblName
-          + " values('1',2, 'today'),('1',3, 'today'),('1',4, 'yesterday'),('2',2, 'tomorrow'),"
-          + "('2',3, 'yesterday'),('2',4, 'today')", driver);
-      executeStatementOnDriver("insert into " + tblName
-          + " values('3',2, 'tomorrow'),('3',3, 'today'),('3',4, 'yesterday'),('4',2, 'today'),"
-          + "('4',3, 'tomorrow'),('4',4, 'today')", driver);
-      executeStatementOnDriver("delete from " + tblName + " where b = 2", driver);
-      executeStatementOnDriver("insert into " + tblName + " values('5',2, 'yesterday'),('5',3, 'yesterday'),"
-          + "('5',4, 'today'),('6',2, 'today'),('6',3, 'today'),('6',4, 'today')", driver);
-      executeStatementOnDriver("delete from " + tblName + " where a = '1'", driver);
-    }
-
-    private void insertTestData(String tblName) throws Exception {
-      executeStatementOnDriver("insert into " + tblName + " values('1',2),('1',3),('1',4),('2',2),('2',3),('2',4)",
-          driver);
-      executeStatementOnDriver("insert into " + tblName + " values('3',2),('3',3),('3',4),('4',2),('4',3),('4',4)",
-          driver);
-      executeStatementOnDriver("delete from " + tblName + " where b = 2", driver);
-      executeStatementOnDriver("insert into " + tblName + " values('5',2),('5',3),('5',4),('6',2),('6',3),('6',4)",
-          driver);
-      executeStatementOnDriver("delete from " + tblName + " where a = '1'", driver);
-    }
-
-    private void insertTestData(String tblName, int iterations) throws Exception {
-      for (int i = 0; i < iterations; i++) {
-        executeStatementOnDriver("insert into " + tblName + " values('" + i + "'," + i + ")", driver);
-      }
-      for (int i = 0; i < iterations; i += 2) {
-        executeStatementOnDriver("delete from " + tblName + " where b = " + i, driver);
-      }
-    }
-
-    private List<String> getAllData(String tblName) throws Exception {
-      List<String> result = executeStatementOnDriverAndReturnResults("select * from " + tblName, driver);
-      Collections.sort(result);
-      return result;
-    }
-
-    private List<String> getBucketData(String tblName, String bucketId) throws Exception {
-      return executeStatementOnDriverAndReturnResults(
-          "select ROW__ID, * from " + tblName + " where ROW__ID.bucketid = " + bucketId + " order by ROW__ID", driver);
-    }
-
-    private void dropTable(String tblName) throws Exception {
-      executeStatementOnDriver("drop table " + tblName, driver);
-    }
   }
 }

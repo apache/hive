@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import static java.util.Objects.nonNull;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.DYNAMICPARTITIONCONVERT;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVESTATSDBCLASS;
 
 import java.io.FileNotFoundException;
@@ -109,6 +110,7 @@ import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.create.like.CreateTableLikeDesc;
 import org.apache.hadoop.hive.ql.ddl.table.misc.AlterTableUnsetPropertiesDesc;
 import org.apache.hadoop.hive.ql.ddl.table.misc.PreInsertTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.storage.skewed.SkewedTableUtils;
 import org.apache.hadoop.hive.ql.ddl.view.create.CreateViewDesc;
 import org.apache.hadoop.hive.ql.ddl.view.materialized.update.MaterializedViewUpdateDesc;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
@@ -7406,7 +7408,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       input = genConstraintsPlan(dest, qb, input);
 
       if (!qb.getIsQuery()) {
-        input = genConversionSelectOperator(dest, qb, input, tableDescriptor, dpCtx);
+        input = genConversionSelectOperator(dest, qb, input, tableDescriptor, dpCtx, parts);
       }
 
       if (destinationTable.isMaterializedView() &&
@@ -7535,7 +7537,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       input = genConstraintsPlan(dest, qb, input);
 
       if (!qb.getIsQuery()) {
-        input = genConversionSelectOperator(dest, qb, input, tableDescriptor, dpCtx);
+        input = genConversionSelectOperator(dest, qb, input, tableDescriptor, dpCtx, null);
       }
 
       if (destinationTable.isMaterializedView() &&
@@ -8401,7 +8403,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * types that are expected by the table_desc.
    */
   private Operator genConversionSelectOperator(String dest, QB qb, Operator input,
-                                       TableDesc table_desc, DynamicPartitionCtx dpCtx) throws SemanticException {
+      TableDesc table_desc, DynamicPartitionCtx dpCtx, List<FieldSchema> parts)
+      throws SemanticException {
     StructObjectInspector oi = null;
     try {
       Deserializer deserializer = table_desc.getDeserializerClass()
@@ -8483,18 +8486,51 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         expressions.add(column);
       }
-    }
 
-    // deal with dynamic partition columns: convert ExprNodeDesc type to String??
-    if (dynPart && dpCtx != null && dpCtx.getNumDPCols() > 0) {
-      // DP columns starts with tableFields.size()
-      for (int i = tableFields.size() + (updating(dest) ? 1 : 0); i < rowFields.size(); ++i) {
-        TypeInfo rowFieldTypeInfo = rowFields.get(i).getType();
-        ExprNodeDesc column = new ExprNodeColumnDesc(
-            rowFieldTypeInfo, rowFields.get(i).getInternalName(), "", true);
-        expressions.add(column);
+      // deal with dynamic partition columns
+      if (dynPart && dpCtx != null && dpCtx.getNumDPCols() > 0) {
+        // rowFields contains non-partitioned columns (tableFields) followed by DP columns
+        int rowFieldsOffset = tableFields.size() + (updating(dest) ? 1 : 0);
+        for (int dpColIdx = 0; dpColIdx < rowFields.size() - rowFieldsOffset; ++dpColIdx) {
+
+          // create ExprNodeDesc
+          ColumnInfo inputColumn = rowFields.get(dpColIdx + rowFieldsOffset);
+          TypeInfo inputTypeInfo = inputColumn.getType();
+          ExprNodeDesc column =
+              new ExprNodeColumnDesc(inputTypeInfo, inputColumn.getInternalName(), "", true);
+
+          // Cast input column to destination column type if necessary.
+          if (conf.getBoolVar(DYNAMICPARTITIONCONVERT)) {
+            if (parts != null && !parts.isEmpty()) {
+              String destPartitionName = dpCtx.getDPColNames().get(dpColIdx);
+              FieldSchema destPartitionFieldSchema = parts.stream()
+                  .filter(dynamicPartition -> dynamicPartition.getName().equals(destPartitionName))
+                  .findFirst().orElse(null);
+              if (destPartitionFieldSchema == null) {
+                throw new IllegalStateException("Partition schema for dynamic partition " +
+                    destPartitionName + " not found in DynamicPartitionCtx.");
+              }
+              String partitionType = destPartitionFieldSchema.getType();
+              if (partitionType == null) {
+                throw new IllegalStateException("Couldn't get FieldSchema for partition" +
+                    destPartitionFieldSchema.getName());
+              }
+              PrimitiveTypeInfo partitionTypeInfo =
+                  TypeInfoFactory.getPrimitiveTypeInfo(partitionType);
+              if (!partitionTypeInfo.equals(inputTypeInfo)) {
+                column = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
+                    .createConversionCast(column, partitionTypeInfo);
+                converted = true;
+              }
+            } else {
+              LOG.warn("Partition schema for dynamic partition " + inputColumn.getAlias() + " ("
+                  + inputColumn.getInternalName() + ") not found in DynamicPartitionCtx. "
+                  + "This is expected with a CTAS.");
+            }
+          }
+          expressions.add(column);
+        }
       }
-      // converted = true; // [TODO]: should we check & convert type to String and set it to true?
     }
 
     if (converted) {
@@ -9942,9 +9978,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     if (isValidLeftToken) {
-      String tableName = getUnescapedUnqualifiedTableName((ASTNode) left.getChild(0))
-          .toLowerCase();
-      String alias = extractJoinAlias(left, tableName);
+      String alias = extractJoinAlias(left);
       joinTree.setLeftAlias(alias);
       String[] leftAliases = new String[1];
       leftAliases[0] = alias;
@@ -9970,9 +10004,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     if (isValidRightToken) {
-      String tableName = getUnescapedUnqualifiedTableName((ASTNode) right.getChild(0))
-          .toLowerCase();
-      String alias = extractJoinAlias(right, tableName);
+      String alias = extractJoinAlias(right);
       String[] rightAliases = new String[1];
       rightAliases[0] = alias;
       joinTree.setRightAliases(rightAliases);
@@ -10064,7 +10096,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         || (right.getToken().getType() == HiveParser.TOK_PTBLFUNCTION);
   }
 
-  private String extractJoinAlias(ASTNode node, String tableName) {
+  private String extractJoinAlias(ASTNode node) throws SemanticException {
     // ptf node form is:
     // ^(TOK_PTBLFUNCTION $name $alias? partitionTableFunctionSource partitioningSpec? expression*)
     // guaranteed to have an alias here: check done in processJoin
@@ -10072,14 +10104,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       return unescapeIdentifier(node.getChild(1).getText().toLowerCase());
     }
     if (node.getChildCount() == 1) {
-      return tableName;
+      return getUnescapedUnqualifiedTableName((ASTNode) node.getChild(0)).toLowerCase();
     }
     for (int i = node.getChildCount() - 1; i >= 1; i--) {
       if (node.getChild(i).getType() == HiveParser.Identifier) {
         return unescapeIdentifier(node.getChild(i).getText().toLowerCase());
       }
     }
-    return tableName;
+    throw new SemanticException("Unable to get join alias.");
   }
 
   private void parseStreamTables(QBJoinTree joinTree, QB qb) {
@@ -13536,9 +13568,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         HiveConf hiveConf = SessionState.get().getConf();
 
         // skewed column names
-        skewedColNames = analyzeSkewedTablDDLColNames(skewedColNames, child);
+        skewedColNames = SkewedTableUtils.analyzeSkewedTableDDLColNames(child);
         // skewed value
-        analyzeDDLSkewedValues(skewedValues, child);
+        skewedValues = SkewedTableUtils.analyzeDDLSkewedValues(child);
         // stored as directories
         storedAsDirs = analyzeStoredAdDirs(child);
 

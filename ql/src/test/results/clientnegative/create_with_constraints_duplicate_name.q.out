@@ -1,13 +1,51 @@
-PREHOOK: query: create table t1(x int, constraint pk1 primary key (x) disable)
+PREHOOK: query: create database db1
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:db1
+POSTHOOK: query: create database db1
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:db1
+PREHOOK: query: use db1
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:db1
+POSTHOOK: query: use db1
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:db1
+PREHOOK: query: create table t1(x int, constraint constraint_name primary key (x) disable)
 PREHOOK: type: CREATETABLE
-PREHOOK: Output: database:default
-PREHOOK: Output: default@t1
-POSTHOOK: query: create table t1(x int, constraint pk1 primary key (x) disable)
+PREHOOK: Output: database:db1
+PREHOOK: Output: db1@t1
+POSTHOOK: query: create table t1(x int, constraint constraint_name primary key (x) disable)
 POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t1
-PREHOOK: query: create table t2(x int, constraint pk1 primary key (x) disable)
+POSTHOOK: Output: database:db1
+POSTHOOK: Output: db1@t1
+PREHOOK: query: create database db2
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:db2
+POSTHOOK: query: create database db2
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:db2
+PREHOOK: query: use db2
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:db2
+POSTHOOK: query: use db2
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:db2
+PREHOOK: query: create table t1(x int, constraint constraint_name primary key (x) disable)
 PREHOOK: type: CREATETABLE
-PREHOOK: Output: database:default
-PREHOOK: Output: default@t2
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. InvalidObjectException(message:Constraint name already exists: pk1)
+PREHOOK: Output: database:db2
+PREHOOK: Output: db2@t1
+POSTHOOK: query: create table t1(x int, constraint constraint_name primary key (x) disable)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:db2
+POSTHOOK: Output: db2@t1
+PREHOOK: query: create table t2(x int, constraint constraint_name primary key (x) disable)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:db2
+PREHOOK: Output: db2@t2
+POSTHOOK: query: create table t2(x int, constraint constraint_name primary key (x) disable)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:db2
+POSTHOOK: Output: db2@t2
+PREHOOK: query: alter table t1 add constraint constraint_name foreign key (x) references t2(x) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. InvalidObjectException(message:Constraint name already exists: db2.t2.constraint_name)

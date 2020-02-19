@@ -34,7 +34,7 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils;
 /**
  * Analyzer for alter pool commands.
  */
-@DDLType(type=HiveParser.TOK_ALTER_POOL)
+@DDLType(types = HiveParser.TOK_ALTER_POOL)
 public class AlterWMPoolAnalyzer extends BaseSemanticAnalyzer {
   public AlterWMPoolAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

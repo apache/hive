@@ -41,7 +41,7 @@ import org.apache.hadoop.hive.ql.plan.MoveWork;
 /**
  * Analyzer for add partition commands for tables.
  */
-@DDLType(type=HiveParser.TOK_ALTERTABLE_ADDPARTS)
+@DDLType(types = HiveParser.TOK_ALTERTABLE_ADDPARTS)
 public class AlterTableAddPartitionAnalyzer extends AbstractAddPartitionAnalyzer {
   public AlterTableAddPartitionAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

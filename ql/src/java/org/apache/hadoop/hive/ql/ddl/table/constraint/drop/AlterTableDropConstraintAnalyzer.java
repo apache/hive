@@ -33,7 +33,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Analyzer for drop constraint commands.
  */
-@DDLType(type=HiveParser.TOK_ALTERTABLE_DROPCONSTRAINT)
+@DDLType(types = HiveParser.TOK_ALTERTABLE_DROPCONSTRAINT)
 public class AlterTableDropConstraintAnalyzer extends AbstractAlterTableAnalyzer {
   public AlterTableDropConstraintAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

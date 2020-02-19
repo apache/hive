@@ -285,6 +285,7 @@ public class TezTask extends Task<TezWork> {
           }
         }
       }
+      updateNumRows();
     } catch (Exception e) {
       LOG.error("Failed to execute tez graph.", e);
       setException(e);
@@ -323,6 +324,16 @@ public class TezTask extends Task<TezWork> {
       }
     }
     return rc;
+  }
+
+  private void updateNumRows() {
+    if (counters != null) {
+      TezCounter counter = counters.findCounter(
+        conf.getVar(HiveConf.ConfVars.HIVECOUNTERGROUP), FileSinkOperator.TOTAL_TABLE_ROWS_WRITTEN);
+      if (counter != null) {
+        queryState.setNumModifiedRows(counter.getValue());
+      }
+    }
   }
 
   private String getUserNameForGroups(SessionState ss) {

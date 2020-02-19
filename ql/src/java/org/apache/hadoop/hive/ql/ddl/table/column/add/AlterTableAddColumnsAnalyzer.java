@@ -37,7 +37,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Analyzer for add columns commands.
  */
-@DDLType(type=HiveParser.TOK_ALTERTABLE_ADDCOLS)
+@DDLType(types = HiveParser.TOK_ALTERTABLE_ADDCOLS)
 public class AlterTableAddColumnsAnalyzer extends AbstractAlterTableAnalyzer {
   public AlterTableAddColumnsAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

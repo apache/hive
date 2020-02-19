@@ -106,7 +106,8 @@ public final class ReplExternalTables {
       this.hiveConf = hiveConf;
       writePath = new Path(dbRoot, FILE_NAME);
       includeExternalTables = hiveConf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES);
-      dumpMetadataOnly = hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY);
+      dumpMetadataOnly = hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY) ||
+              hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY_FOR_EXTERNAL_TABLE);
       if (shouldWrite()) {
         this.writer = FileSystem.get(hiveConf).create(writePath);
       }
