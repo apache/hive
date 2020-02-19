@@ -9,7 +9,7 @@ set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.strict.checks.cartesian.product=false;
 set hive.stats.fetch.column.stats=true;
 set hive.materializedview.rewriting=true;
-
+set hive.fetch.task.conversion=none;
 
 create table sketch_input (id int, category char(1))
 STORED AS ORC
