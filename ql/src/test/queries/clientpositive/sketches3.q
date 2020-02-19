@@ -38,7 +38,8 @@ select category, SketchToEstimate(datatosketch(id)) from sketch_input group by c
 select category, SketchToEstimate(datatosketch(id)) from sketch_input group by category;
 
 -- union sketches across categories and get overall unique count estimate
-explain
-select SketchToEstimate(unionSketch(datatosketch(id))) from sketch_input group by category;
-select SketchToEstimate(unionSketch(datatosketch(id))) from sketch_input group by category;
+-- FIXME: this is currently not supported UDF(UDAF(UDAF(x)))
+--explain
+--select SketchToEstimate(unionSketch(datatosketch(id))) from sketch_input group by category;
+--select SketchToEstimate(unionSketch(datatosketch(id))) from sketch_input group by category;
 
