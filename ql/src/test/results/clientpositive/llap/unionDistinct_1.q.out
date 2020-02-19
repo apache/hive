@@ -3918,8 +3918,10 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1, _col2, _col3
                         Statistics: Num rows: 387 Data size: 108402 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
+                          bucketingVersion: 2
                           key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
                           null sort order: zzzz
+                          numBuckets: -1
                           sort order: ++++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
                           Statistics: Num rows: 387 Data size: 108402 Basic stats: COMPLETE Column stats: COMPLETE
@@ -4024,8 +4026,10 @@ STAGE PLANS:
                             outputColumnNames: _col0, _col1, _col2, _col3
                             Statistics: Num rows: 387 Data size: 108402 Basic stats: COMPLETE Column stats: COMPLETE
                             Reduce Output Operator
+                              bucketingVersion: 2
                               key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
                               null sort order: zzzz
+                              numBuckets: -1
                               sort order: ++++
                               Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
                               Statistics: Num rows: 387 Data size: 108402 Basic stats: COMPLETE Column stats: COMPLETE
@@ -4103,8 +4107,10 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 55 Data size: 14575 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
+                        bucketingVersion: 2
                         key expressions: _col0 (type: string)
                         null sort order: z
+                        numBuckets: -1
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 55 Data size: 14575 Basic stats: COMPLETE Column stats: COMPLETE
@@ -4220,8 +4226,10 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4
                     Statistics: Num rows: 1 Data size: 1845 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
+                      bucketingVersion: 1
                       key expressions: _col0 (type: string)
                       null sort order: z
+                      numBuckets: -1
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 1 Data size: 1845 Basic stats: COMPLETE Column stats: COMPLETE
@@ -5257,8 +5265,10 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 103 Data size: 9785 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
+                          bucketingVersion: 2
                           key expressions: _col0 (type: string), _col1 (type: bigint)
                           null sort order: zz
+                          numBuckets: -1
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
                           Statistics: Num rows: 103 Data size: 9785 Basic stats: COMPLETE Column stats: COMPLETE
@@ -5339,8 +5349,10 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 51 Data size: 4845 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
+                        bucketingVersion: 2
                         key expressions: _col0 (type: string)
                         null sort order: z
+                        numBuckets: -1
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 51 Data size: 4845 Basic stats: COMPLETE Column stats: COMPLETE
@@ -5425,8 +5437,10 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 103 Data size: 9785 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
+                          bucketingVersion: 2
                           key expressions: _col0 (type: string), _col1 (type: bigint)
                           null sort order: zz
+                          numBuckets: -1
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
                           Statistics: Num rows: 103 Data size: 9785 Basic stats: COMPLETE Column stats: COMPLETE
@@ -5510,8 +5524,10 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 103 Data size: 9785 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
+                          bucketingVersion: 2
                           key expressions: _col0 (type: string), _col1 (type: bigint)
                           null sort order: zz
+                          numBuckets: -1
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
                           Statistics: Num rows: 103 Data size: 9785 Basic stats: COMPLETE Column stats: COMPLETE
@@ -5590,8 +5606,10 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 77 Data size: 7315 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
+                    bucketingVersion: 1
                     key expressions: _col0 (type: string), _col1 (type: bigint)
                     null sort order: zz
+                    numBuckets: -1
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
                     Statistics: Num rows: 77 Data size: 7315 Basic stats: COMPLETE Column stats: COMPLETE
@@ -5613,8 +5631,10 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 103 Data size: 9785 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
+                    bucketingVersion: 2
                     key expressions: _col0 (type: string), _col1 (type: bigint)
                     null sort order: zz
+                    numBuckets: -1
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
                     Statistics: Num rows: 103 Data size: 9785 Basic stats: COMPLETE Column stats: COMPLETE
@@ -5636,8 +5656,10 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 77 Data size: 7315 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
+                    bucketingVersion: 1
                     key expressions: _col0 (type: string), _col1 (type: bigint)
                     null sort order: zz
+                    numBuckets: -1
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
                     Statistics: Num rows: 77 Data size: 7315 Basic stats: COMPLETE Column stats: COMPLETE
@@ -5810,8 +5832,10 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 103 Data size: 9785 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
+                          bucketingVersion: 2
                           key expressions: _col0 (type: string), _col1 (type: bigint)
                           null sort order: zz
+                          numBuckets: -1
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
                           Statistics: Num rows: 103 Data size: 9785 Basic stats: COMPLETE Column stats: COMPLETE
@@ -5895,8 +5919,10 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 103 Data size: 9785 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
+                          bucketingVersion: 2
                           key expressions: _col0 (type: string), _col1 (type: bigint)
                           null sort order: zz
+                          numBuckets: -1
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
                           Statistics: Num rows: 103 Data size: 9785 Basic stats: COMPLETE Column stats: COMPLETE
@@ -5974,8 +6000,10 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 103 Data size: 8961 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
+                        bucketingVersion: 2
                         key expressions: _col0 (type: string)
                         null sort order: z
+                        numBuckets: -1
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 103 Data size: 8961 Basic stats: COMPLETE Column stats: COMPLETE
@@ -6075,8 +6103,10 @@ STAGE PLANS:
                             outputColumnNames: _col0, _col1
                             Statistics: Num rows: 103 Data size: 9785 Basic stats: COMPLETE Column stats: COMPLETE
                             Reduce Output Operator
+                              bucketingVersion: 1
                               key expressions: _col0 (type: string), _col1 (type: bigint)
                               null sort order: zz
+                              numBuckets: -1
                               sort order: ++
                               Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
                               Statistics: Num rows: 103 Data size: 9785 Basic stats: COMPLETE Column stats: COMPLETE
@@ -6154,8 +6184,10 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 103 Data size: 9785 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
+                    bucketingVersion: 1
                     key expressions: _col0 (type: string), _col1 (type: bigint)
                     null sort order: zz
+                    numBuckets: -1
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
                     Statistics: Num rows: 103 Data size: 9785 Basic stats: COMPLETE Column stats: COMPLETE
@@ -6322,8 +6354,10 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 103 Data size: 9785 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
+                          bucketingVersion: 2
                           key expressions: _col0 (type: string), _col1 (type: bigint)
                           null sort order: zz
+                          numBuckets: -1
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
                           Statistics: Num rows: 103 Data size: 9785 Basic stats: COMPLETE Column stats: COMPLETE
@@ -6407,8 +6441,10 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 103 Data size: 9785 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
+                          bucketingVersion: 2
                           key expressions: _col0 (type: string), _col1 (type: bigint)
                           null sort order: zz
+                          numBuckets: -1
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
                           Statistics: Num rows: 103 Data size: 9785 Basic stats: COMPLETE Column stats: COMPLETE
@@ -6505,8 +6541,10 @@ STAGE PLANS:
                           outputColumnNames: _col0, _col1
                           Statistics: Num rows: 51 Data size: 4845 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
+                            bucketingVersion: 2
                             key expressions: _col0 (type: string)
                             null sort order: z
+                            numBuckets: -1
                             sort order: +
                             Map-reduce partition columns: _col0 (type: string)
                             Statistics: Num rows: 51 Data size: 4845 Basic stats: COMPLETE Column stats: COMPLETE
@@ -6585,8 +6623,10 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 103 Data size: 8961 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
+                        bucketingVersion: 2
                         key expressions: _col0 (type: string)
                         null sort order: z
+                        numBuckets: -1
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 103 Data size: 8961 Basic stats: COMPLETE Column stats: COMPLETE
@@ -6664,8 +6704,10 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 77 Data size: 7315 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
+                    bucketingVersion: 1
                     key expressions: _col0 (type: string), _col1 (type: bigint)
                     null sort order: zz
+                    numBuckets: -1
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
                     Statistics: Num rows: 77 Data size: 7315 Basic stats: COMPLETE Column stats: COMPLETE
@@ -6719,8 +6761,10 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 77 Data size: 7315 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
+                    bucketingVersion: 1
                     key expressions: _col0 (type: string), _col1 (type: bigint)
                     null sort order: zz
+                    numBuckets: -1
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
                     Statistics: Num rows: 77 Data size: 7315 Basic stats: COMPLETE Column stats: COMPLETE

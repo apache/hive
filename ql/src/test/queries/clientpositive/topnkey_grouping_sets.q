@@ -21,7 +21,7 @@ INSERT INTO t_test_grouping_sets VALUES
 set hive.optimize.topnkey=true;
 EXPLAIN
 SELECT a, b, grouping(a), grouping(b), grouping(a, b) FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY a,b LIMIT 3;
-SELECT a, b, grouping(a), grouping(b), grouping(a, b) FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY a, LIMIT 3;
+SELECT a, b, grouping(a), grouping(b), grouping(a, b) FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY a,b LIMIT 3;
 
 set hive.optimize.topnkey=false;
 SELECT a, b, grouping(a), grouping(b), grouping(a, b) FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY a,b LIMIT 3;
