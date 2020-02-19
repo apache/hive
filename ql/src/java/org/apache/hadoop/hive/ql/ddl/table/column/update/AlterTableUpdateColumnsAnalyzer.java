@@ -35,7 +35,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Analyzer for update columns commands.
  */
-@DDLType(type=HiveParser.TOK_ALTERTABLE_UPDATECOLUMNS)
+@DDLType(types = HiveParser.TOK_ALTERTABLE_UPDATECOLUMNS)
 public class AlterTableUpdateColumnsAnalyzer extends AbstractAlterTableAnalyzer {
   public AlterTableUpdateColumnsAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

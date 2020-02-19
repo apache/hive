@@ -35,7 +35,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Analyzer for abort transactions commands.
  */
-@DDLType(type=HiveParser.TOK_ABORT_TRANSACTIONS)
+@DDLType(types = HiveParser.TOK_ABORT_TRANSACTIONS)
 public class AbortTransactionsAnalyzer extends BaseSemanticAnalyzer {
   public AbortTransactionsAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

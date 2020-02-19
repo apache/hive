@@ -17,9 +17,15 @@
  */
 package org.apache.hadoop.hive.ql.exec.vector;
 
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
+
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
+import org.apache.hadoop.hive.ql.exec.KeyWrapper;
+import org.apache.hadoop.hive.ql.exec.KeyWrapperComparator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TopNKeyFilter;
 import org.apache.hadoop.hive.ql.exec.TopNKeyOperator;
@@ -45,8 +51,11 @@ public class VectorTopNKeyOperator extends Operator<TopNKeyDesc> implements Vect
 
   // Batch processing
   private transient int[] temporarySelected;
+  private transient VectorHashKeyWrapperBatch partitionKeyWrapperBatch;
   private transient VectorHashKeyWrapperBatch keyWrappersBatch;
-  private transient TopNKeyFilter topNKeyFilter;
+  private transient Map<KeyWrapper, TopNKeyFilter> topNKeyFilters;
+  private transient Comparator<VectorHashKeyWrapperBase> keyWrapperComparator;
+
 
   public VectorTopNKeyOperator(CompilationOpContext ctx, OperatorDesc conf,
       VectorizationContext vContext, VectorDesc vectorDesc) {
@@ -72,17 +81,24 @@ public class VectorTopNKeyOperator extends Operator<TopNKeyDesc> implements Vect
     super.initializeOp(hconf);
 
     VectorExpression[] keyExpressions = vectorDesc.getKeyExpressions();
-    VectorExpression.doTransientInit(keyExpressions, hconf);
-    for (VectorExpression keyExpression : keyExpressions) {
-      keyExpression.init(hconf);
-    }
+    initKeyExpressions(hconf, keyExpressions);
+
+    VectorExpression[] partitionKeyExpressions = vectorDesc.getPartitionKeyColumns();
+    initKeyExpressions(hconf, partitionKeyExpressions);
 
     temporarySelected = new int [VectorizedRowBatch.DEFAULT_SIZE];
 
     keyWrappersBatch = VectorHashKeyWrapperBatch.compileKeyWrapperBatch(keyExpressions);
-    this.topNKeyFilter = new TopNKeyFilter(conf.getTopN(), keyWrappersBatch.getComparator(
-            conf.getColumnSortOrder(),
-            conf.getNullOrder()));
+    keyWrapperComparator = keyWrappersBatch.getComparator(conf.getColumnSortOrder(), conf.getNullOrder());
+    partitionKeyWrapperBatch = VectorHashKeyWrapperBatch.compileKeyWrapperBatch(partitionKeyExpressions);
+    topNKeyFilters = new HashMap<>();
+  }
+
+  private void initKeyExpressions(Configuration hconf, VectorExpression[] keyExpressions) throws HiveException {
+    VectorExpression.doTransientInit(keyExpressions, hconf);
+    for (VectorExpression keyExpression : keyExpressions) {
+      keyExpression.init(hconf);
+    }
   }
 
   @Override
@@ -101,6 +117,9 @@ public class VectorTopNKeyOperator extends Operator<TopNKeyDesc> implements Vect
       keyExpression.evaluate(batch);
     }
 
+    partitionKeyWrapperBatch.evaluateBatch(batch);
+    VectorHashKeyWrapperBase[] partitionKeyWrappers = partitionKeyWrapperBatch.getVectorHashKeyWrappers();
+
     keyWrappersBatch.evaluateBatch(batch);
     VectorHashKeyWrapperBase[] keyWrappers = keyWrappersBatch.getVectorHashKeyWrappers();
 
@@ -116,6 +135,12 @@ public class VectorTopNKeyOperator extends Operator<TopNKeyDesc> implements Vect
       }
 
       // Select a row in the priority queue
+      TopNKeyFilter topNKeyFilter = topNKeyFilters.get(partitionKeyWrappers[i]);
+      if (topNKeyFilter == null) {
+        topNKeyFilter = new TopNKeyFilter(conf.getTopN(), keyWrapperComparator);
+        topNKeyFilters.put(partitionKeyWrappers[i].copyKey(), topNKeyFilter);
+      }
+
       if (topNKeyFilter.canForward(keyWrappers[i])) {
         selected[size++] = j;
       }
@@ -169,8 +194,10 @@ public class VectorTopNKeyOperator extends Operator<TopNKeyDesc> implements Vect
 
   @Override
   protected void closeOp(boolean abort) throws HiveException {
-    LOG.info("Closing TopNKeyFilter: {}.", topNKeyFilter);
-    topNKeyFilter.clear();
+//    LOG.info("Closing TopNKeyFilter: {}.", topNKeyFilter);
+    for (TopNKeyFilter topNKeyFilter : topNKeyFilters.values()) {
+      topNKeyFilter.clear();
+    }
     super.closeOp(abort);
   }
 

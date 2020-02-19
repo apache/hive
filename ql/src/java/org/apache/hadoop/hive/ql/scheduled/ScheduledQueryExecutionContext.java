@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.scheduled;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -33,6 +35,7 @@ public class ScheduledQueryExecutionContext {
   public final ExecutorService executor;
   public final IScheduledQueryMaintenanceService schedulerService;
   public final HiveConf conf;
+  public final String executorHostName;
 
   public ScheduledQueryExecutionContext(
       ExecutorService executor,
@@ -41,6 +44,14 @@ public class ScheduledQueryExecutionContext {
     this.executor = executor;
     this.conf = conf;
     this.schedulerService = service;
+    try {
+      this.executorHostName = InetAddress.getLocalHost().getHostName();
+      if (executorHostName == null) {
+        throw new RuntimeException("Hostname is null; Can't function without a valid hostname!");
+      }
+    } catch (UnknownHostException e) {
+      throw new RuntimeException("Can't function without a valid hostname!", e);
+    }
   }
 
   /**

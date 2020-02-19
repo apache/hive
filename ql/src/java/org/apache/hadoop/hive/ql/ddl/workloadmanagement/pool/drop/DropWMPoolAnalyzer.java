@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Analyzer for drop pool commands.
  */
-@DDLType(type=HiveParser.TOK_DROP_POOL)
+@DDLType(types = HiveParser.TOK_DROP_POOL)
 public class DropWMPoolAnalyzer extends BaseSemanticAnalyzer {
   public DropWMPoolAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

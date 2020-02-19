@@ -62,7 +62,11 @@ final class QueryCompactorFactory {
 
     if (AcidUtils.isInsertOnlyTable(table.getParameters()) && HiveConf
         .getBoolVar(configuration, HiveConf.ConfVars.HIVE_COMPACTOR_COMPACT_MM)) {
-      return new MmMajorQueryCompactor();
+      if (compactionInfo.isMajorCompaction()) {
+        return new MmMajorQueryCompactor();
+      } else {
+        return new MmMinorQueryCompactor();
+      }
     }
 
     return null;

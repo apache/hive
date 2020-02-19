@@ -30,7 +30,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Analyzer for reloading functions commands.
  */
-@DDLType(type=HiveParser.TOK_RELOADFUNCTIONS)
+@DDLType(types = HiveParser.TOK_RELOADFUNCTIONS)
 public class ReloadFunctionsAnalyzer extends BaseSemanticAnalyzer {
   public ReloadFunctionsAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

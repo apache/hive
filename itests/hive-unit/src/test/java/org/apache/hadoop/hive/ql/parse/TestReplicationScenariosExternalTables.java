@@ -28,7 +28,6 @@ import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.CallerArg
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
-import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -854,6 +853,52 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
             .verifyResult("t2")
             .verifyReplTargetProperty(replicatedDbName);
   }
+
+  @Test
+  public void replicationWithTableNameContainsKeywords() throws Throwable {
+    List<String> loadWithClause = externalTableBasePathWithClause();
+
+    WarehouseInstance.Tuple tuple = primary
+            .run("use " + primaryDbName)
+            .run("create external table t1_functions (id int)")
+            .run("insert into table t1_functions values (1)")
+            .run("insert into table t1_functions values (2)")
+            .run("create external table t2_constraints (place string) partitioned by (country string)")
+            .run("insert into table t2_constraints partition(country='india') values ('bangalore')")
+            .run("insert into table t2_constraints partition(country='us') values ('austin')")
+            .run("insert into table t2_constraints partition(country='france') values ('paris')")
+            .dump(primaryDbName, null);
+
+    replica.load(replicatedDbName, tuple.dumpLocation, loadWithClause)
+            .run("repl status " + replicatedDbName)
+            .verifyResult(tuple.lastReplicationId)
+            .run("use " + replicatedDbName)
+            .run("show tables like 't1_functions'")
+            .verifyResults(new String[] {"t1_functions"})
+            .run("show tables like 't2_constraints'")
+            .verifyResults(new String[] {"t2_constraints"})
+            .run("select id from t1_functions")
+            .verifyResults(new String[] {"1", "2"})
+            .verifyReplTargetProperty(replicatedDbName);
+
+    tuple = primary.run("use " + primaryDbName)
+            .run("create external table t3_bootstrap (id int)")
+            .run("insert into table t3_bootstrap values (10)")
+            .run("insert into table t3_bootstrap values (20)")
+            .run("create table t4_tables (id int)")
+            .run("insert into table t4_tables values (10)")
+            .run("insert into table t4_tables values (20)")
+            .dump(primaryDbName, tuple.lastReplicationId);
+
+    replica.load(replicatedDbName, tuple.dumpLocation, loadWithClause)
+            .run("use " + replicatedDbName)
+            .run("show tables like 't3_bootstrap'")
+            .verifyResults(new String[] {"t3_bootstrap"})
+            .run("show tables like 't4_tables'")
+            .verifyResults(new String[] {"t4_tables"})
+            .verifyReplTargetProperty(replicatedDbName);
+  }
+
 
   private List<String> externalTableBasePathWithClause() throws IOException, SemanticException {
     return ReplicationTestUtils.externalTableBasePathWithClause(REPLICA_EXTERNAL_BASE, replica);

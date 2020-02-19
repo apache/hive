@@ -54,7 +54,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 /**
  * Analyzer for macro creation commands.
  */
-@DDLType(type=HiveParser.TOK_CREATEMACRO)
+@DDLType(types = HiveParser.TOK_CREATEMACRO)
 public class CreateMacroAnalyzer extends BaseSemanticAnalyzer {
   public CreateMacroAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

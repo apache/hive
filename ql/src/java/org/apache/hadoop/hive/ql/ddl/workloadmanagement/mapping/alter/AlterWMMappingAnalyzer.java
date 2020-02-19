@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Analyzer for alter mapping commands.
  */
-@DDLType(type=HiveParser.TOK_ALTER_MAPPING)
+@DDLType(types = HiveParser.TOK_ALTER_MAPPING)
 public class AlterWMMappingAnalyzer extends AbstractVMMappingAnalyzer {
   public AlterWMMappingAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

@@ -4332,21 +4332,26 @@ public class Vectorizer implements PhysicalPlanResolver {
       VectorTopNKeyDesc vectorTopNKeyDesc) throws HiveException {
 
     TopNKeyDesc topNKeyDesc = (TopNKeyDesc) topNKeyOperator.getConf();
+    VectorExpression[] keyExpressions = getVectorExpressions(vContext, topNKeyDesc.getKeyColumns());
+    VectorExpression[] partitionKeyExpressions = getVectorExpressions(vContext, topNKeyDesc.getPartitionKeyColumns());
+
+    vectorTopNKeyDesc.setKeyExpressions(keyExpressions);
+    vectorTopNKeyDesc.setPartitionKeyColumns(partitionKeyExpressions);
+    return OperatorFactory.getVectorOperator(
+        topNKeyOperator.getCompilationOpContext(), topNKeyDesc,
+        vContext, vectorTopNKeyDesc);
+  }
+
+  private static VectorExpression[] getVectorExpressions(VectorizationContext vContext, List<ExprNodeDesc> keyColumns) throws HiveException {
     VectorExpression[] keyExpressions;
-    // this will mark all actual computed columns
     vContext.markActualScratchColumns();
     try {
-      List<ExprNodeDesc> keyColumns = topNKeyDesc.getKeyColumns();
       keyExpressions = vContext.getVectorExpressionsUpConvertDecimal64(keyColumns);
       fixDecimalDataTypePhysicalVariations(vContext, keyExpressions);
     } finally {
       vContext.freeMarkedScratchColumns();
     }
-
-    vectorTopNKeyDesc.setKeyExpressions(keyExpressions);
-    return OperatorFactory.getVectorOperator(
-        topNKeyOperator.getCompilationOpContext(), topNKeyDesc,
-        vContext, vectorTopNKeyDesc);
+    return keyExpressions;
   }
 
   private static Class<? extends VectorAggregateExpression> findVecAggrClass(

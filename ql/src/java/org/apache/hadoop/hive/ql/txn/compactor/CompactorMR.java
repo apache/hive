@@ -394,21 +394,6 @@ public class CompactorMR {
     HiveConf.setVar(job, HiveConf.ConfVars.HIVEINPUTFORMAT, HiveInputFormat.class.getName());
   }
 
-  // Remove the directories for aborted transactions only
-  private void removeFilesForMmTable(HiveConf conf, Directory dir) throws IOException {
-    // For MM table, we only want to delete delta dirs for aborted txns.
-    List<Path> filesToDelete = dir.getAbortedDirectories();
-    if (filesToDelete.size() < 1) {
-      return;
-    }
-    LOG.info("About to remove " + filesToDelete.size() + " aborted directories from " + dir);
-    FileSystem fs = filesToDelete.get(0).getFileSystem(conf);
-    for (Path dead : filesToDelete) {
-      LOG.debug("Going to delete path " + dead.toString());
-      fs.delete(dead, true);
-    }
-  }
-
   public JobConf getMrJob() {
     return mrJob;
   }

@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Analyzer for show compactions commands.
  */
-@DDLType(type=HiveParser.TOK_SHOW_COMPACTIONS)
+@DDLType(types = HiveParser.TOK_SHOW_COMPACTIONS)
 public class ShowCompactionsAnalyzer extends BaseSemanticAnalyzer {
   public ShowCompactionsAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

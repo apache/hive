@@ -49,7 +49,7 @@ public final class DDLSemanticAnalyzerFactory {
    */
   @Retention(RetentionPolicy.RUNTIME)
   public @interface DDLType {
-    int type();
+    int[] types() default {};
   }
 
   /**
@@ -76,7 +76,13 @@ public final class DDLSemanticAnalyzerFactory {
       }
 
       DDLType ddlType = analyzerClass.getAnnotation(DDLType.class);
-      TYPE_TO_ANALYZER.put(ddlType.type(), analyzerClass);
+      for (int type : ddlType.types()) {
+        if (TYPE_TO_ANALYZER.containsKey(type)) {
+          throw new IllegalStateException(
+              "Type " + type + " is declared more than once in different DDLType annotations.");
+        }
+        TYPE_TO_ANALYZER.put(type, analyzerClass);
+      }
     }
 
     Set<Class<? extends DDLSemanticAnalyzerCategory>> analyzerCategoryClasses =
@@ -87,7 +93,13 @@ public final class DDLSemanticAnalyzerFactory {
       }
 
       DDLType ddlType = analyzerCategoryClass.getAnnotation(DDLType.class);
-      TYPE_TO_ANALYZERCATEGORY.put(ddlType.type(), analyzerCategoryClass);
+      for (int type : ddlType.types()) {
+        if (TYPE_TO_ANALYZERCATEGORY.containsKey(type)) {
+          throw new IllegalStateException(
+              "Type " + type + " is declared more than once in different DDLType annotations for categories.");
+        }
+        TYPE_TO_ANALYZERCATEGORY.put(type, analyzerCategoryClass);
+      }
     }
   }
 

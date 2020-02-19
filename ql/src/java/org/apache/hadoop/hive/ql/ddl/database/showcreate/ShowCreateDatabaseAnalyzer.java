@@ -33,7 +33,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Analyzer for show create database commands.
  */
-@DDLType(type=HiveParser.TOK_SHOW_CREATEDATABASE)
+@DDLType(types = HiveParser.TOK_SHOW_CREATEDATABASE)
 public class ShowCreateDatabaseAnalyzer extends BaseSemanticAnalyzer {
   public ShowCreateDatabaseAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

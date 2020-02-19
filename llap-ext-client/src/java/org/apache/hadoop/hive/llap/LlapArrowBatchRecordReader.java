@@ -65,10 +65,8 @@ public class LlapArrowBatchRecordReader extends LlapBaseRecordReader<ArrowWrappe
         VectorSchemaRoot vectorSchemaRoot = arrowStreamReader.getVectorSchemaRoot();
         //There must be at least one column vector
         Preconditions.checkState(vectorSchemaRoot.getFieldVectors().size() > 0);
-        if(vectorSchemaRoot.getFieldVectors().get(0).getValueCount() == 0) {
-          //An empty batch will appear at the end of the stream
-          return false;
-        }
+        // We should continue even if FieldVectors are empty. The next read might have the
+        // data. We should stop only when loadNextBatch returns false.
         value.setVectorSchemaRoot(arrowStreamReader.getVectorSchemaRoot());
         return true;
       } else {

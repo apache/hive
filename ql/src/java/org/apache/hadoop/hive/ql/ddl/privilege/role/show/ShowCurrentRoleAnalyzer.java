@@ -34,7 +34,7 @@ import com.google.common.annotations.VisibleForTesting;
 /**
  * Analyzer for showing the current role command.
  */
-@DDLType(type=HiveParser.TOK_SHOW_CURRENT_ROLE)
+@DDLType(types = HiveParser.TOK_SHOW_CURRENT_ROLE)
 public class ShowCurrentRoleAnalyzer extends AbstractPrivilegeAnalyzer {
   public ShowCurrentRoleAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

@@ -455,7 +455,7 @@ public class HiveConf extends Configuration {
     REPLCMENCRYPTEDDIR("hive.repl.cm.encryptionzone.rootdir", ".cmroot",
             "Root dir for ChangeManager if encryption zones are enabled, used for deleted files."),
     REPLCMFALLBACKNONENCRYPTEDDIR("hive.repl.cm.nonencryptionzone.rootdir",
-            "/user/${system:user.name}/cmroot/",
+            "",
             "Root dir for ChangeManager for non encrypted paths if hive.repl.cmrootdir is encrypted."),
     REPLCMINTERVAL("hive.repl.cm.interval","3600s",
         new TimeValidator(TimeUnit.SECONDS),
@@ -478,6 +478,9 @@ public class HiveConf extends Configuration {
     REPL_DUMP_METADATA_ONLY("hive.repl.dump.metadata.only", false,
         "Indicates whether replication dump only metadata information or data + metadata. \n"
           + "This config makes hive.repl.include.external.tables config ineffective."),
+    REPL_DUMP_METADATA_ONLY_FOR_EXTERNAL_TABLE("hive.repl.dump.metadata.only.for.external.table",
+            false,
+            "Indicates whether external table replication dump only metadata information or data + metadata"),
     REPL_BOOTSTRAP_ACID_TABLES("hive.repl.bootstrap.acid.tables", false,
         "Indicates if repl dump should bootstrap the information about ACID tables along with \n"
             + "incremental dump for replication. It is recommended to keep this config parameter \n"
