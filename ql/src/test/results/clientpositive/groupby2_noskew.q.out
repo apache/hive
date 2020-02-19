@@ -48,14 +48,14 @@ STAGE PLANS:
           keys: KEY._col0 (type: string)
           mode: complete
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 316 Data size: 63200 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 316 Data size: 31916 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: _col0 (type: string), UDFToInteger(_col1) (type: int), concat(_col0, _col2) (type: string)
             outputColumnNames: _col0, _col1, _col2
-            Statistics: Num rows: 316 Data size: 117552 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 316 Data size: 86268 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 316 Data size: 117552 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 316 Data size: 86268 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -64,7 +64,7 @@ STAGE PLANS:
             Select Operator
               expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string)
               outputColumnNames: key, c1, c2
-              Statistics: Num rows: 316 Data size: 117552 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 316 Data size: 86268 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
                 table:
@@ -97,7 +97,7 @@ STAGE PLANS:
             Reduce Output Operator
               null sort order: 
               sort order: 
-              Statistics: Num rows: 316 Data size: 117552 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 316 Data size: 86268 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: key (type: string), c1 (type: int), c2 (type: string)
       Execution mode: vectorized
       Reduce Operator Tree:
