@@ -164,7 +164,7 @@ public class UDFSubstr extends UDF implements IStatEstimatorProvider {
 
       }
 
-      if (csList.size() >= 2) {
+      if (csList.size() > 2) {
         Range lengthRange = csList.get(2).getRange();
         if (lengthRange != null && lengthRange.maxValue != null) {
           Double w = lengthRange.maxValue.doubleValue();
