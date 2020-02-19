@@ -593,6 +593,15 @@ public class SqlFunctionConverter {
             udfInfo.operandTypeInference,
                 udfInfo.operandTypeChecker);
         break;
+      case "datatosketch":
+        calciteAggFn =
+            new HiveSqlX(
+                "datatosketch",
+                SqlKind.REGR_SYY,
+            udfInfo.returnTypeInference,
+            udfInfo.operandTypeInference,
+                udfInfo.operandTypeChecker);
+        break;
       case "sum":
         calciteAggFn = new HiveSqlSumAggFunction(
             isDistinct,
