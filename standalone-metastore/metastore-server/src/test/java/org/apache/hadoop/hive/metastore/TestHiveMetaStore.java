@@ -2278,8 +2278,8 @@ public abstract class TestHiveMetaStore {
     checkFilter(client, dbName, tblName, "p1 >= \"p12\"", 4);
     checkFilter(client, dbName, tblName, "p1 < \"p12\"", 2);
     checkFilter(client, dbName, tblName, "p1 <= \"p12\"", 4);
-    checkFilter(client, dbName, tblName, "p1 like \"p1.*\"", 6);
-    checkFilter(client, dbName, tblName, "p2 like \"p.*3\"", 1);
+    checkFilter(client, dbName, tblName, "p1 like \"p1%\"", 6);
+    checkFilter(client, dbName, tblName, "p2 like \"p%3\"", 1);
 
     // Test gt/lt/lte/gte for numbers.
     checkFilter(client, dbName, tblName, "p3 < 0", 1);
@@ -2400,8 +2400,8 @@ public abstract class TestHiveMetaStore {
       checkFilter(client, dbName, tblName, "p1 >= \"p12\"", 2);
       checkFilter(client, dbName, tblName, "p1 <= \"p12\"", 2);
       checkFilter(client, dbName, tblName, "p1 <> \"p12\"", 2);
-      checkFilter(client, dbName, tblName, "p1 like \"p1.*\"", 3);
-      checkFilter(client, dbName, tblName, "p1 like \"p.*2\"", 1);
+      checkFilter(client, dbName, tblName, "p1 like \"p1%\"", 3);
+      checkFilter(client, dbName, tblName, "p1 like \"p%2\"", 1);
 
       client.dropTable(dbName, tblName);
       client.dropDatabase(dbName);
