@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlCountAggFunc
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlMinMaxAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlSumAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlVarianceAggFunction;
+import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlX;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveBetween;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveConcat;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveDateAddSqlOperator;
@@ -583,6 +584,15 @@ public class SqlFunctionConverter {
       CalciteUDFInfo udfInfo = getUDFInfo(hiveUdfName, calciteArgTypes, calciteRetType);
 
       switch (hiveUdfName.toLowerCase()) {
+      case "sketchtoestimate":
+        calciteAggFn =
+            new HiveSqlX(
+                "sketchtoestimate",
+                SqlKind.REGR_SXX,
+            udfInfo.returnTypeInference,
+            udfInfo.operandTypeInference,
+                udfInfo.operandTypeChecker);
+        break;
       case "sum":
         calciteAggFn = new HiveSqlSumAggFunction(
             isDistinct,
