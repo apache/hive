@@ -10,6 +10,7 @@ import org.apache.datasketches.hive.hll.UnionSketchUDAF;
 public class SketchesX {
 
   public static void register(Registry system) {
+    // FIXME: consider prefixing the functions?
     system.registerGenericUDAF("dataToSketch", new DataToSketchUDAF());
     system.registerUDF("SketchToEstimateAndErrorBounds", SketchToEstimateAndErrorBoundsUDF.class, false);
     system.registerUDF("SketchToEstimate", SketchToEstimateUDF.class, false);
