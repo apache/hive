@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
@@ -157,17 +158,21 @@ public class DataToSketchUDAF2 extends AbstractGenericUDAFResolver {
 
       if ((mode == Mode.PARTIAL1) || (mode == Mode.PARTIAL2)) {
         // intermediate results need to include the lgK and the target HLL type
-        return ObjectInspectorFactory.getStandardStructObjectInspector(
-          Arrays.asList(LG_K_FIELD, HLL_TYPE_FIELD, SKETCH_FIELD),
-          Arrays.asList(
-            PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(PrimitiveCategory.INT),
-            PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(PrimitiveCategory.STRING),
-            PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(PrimitiveCategory.BINARY)
-          )
-        );
+        return getSketchType();
       }
       // final results include just the sketch
-      return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(PrimitiveCategory.BINARY);
+      return getSketchType();
+    }
+
+    private StandardStructObjectInspector getSketchType() {
+      return ObjectInspectorFactory.getStandardStructObjectInspector(
+        Arrays.asList(LG_K_FIELD, HLL_TYPE_FIELD, SKETCH_FIELD),
+        Arrays.asList(
+          PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(PrimitiveCategory.INT),
+          PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(PrimitiveCategory.STRING),
+          PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(PrimitiveCategory.BINARY)
+        )
+      );
     }
 
     /*

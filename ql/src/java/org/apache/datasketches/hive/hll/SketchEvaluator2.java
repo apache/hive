@@ -86,6 +86,13 @@ abstract class SketchEvaluator2 extends GenericUDAFEvaluator {
   @Override
   public Object terminate(final @SuppressWarnings("deprecation") AggregationBuffer buf)
       throws HiveException {
+    if (true) {
+      return terminatePartial(buf);
+    }
+    return realTerminate(buf);
+  }
+
+  Object realTerminate(final AggregationBuffer buf) {
     final State state = (State) buf;
     if (state == null) { return null; }
     final HllSketch result = state.getResult();

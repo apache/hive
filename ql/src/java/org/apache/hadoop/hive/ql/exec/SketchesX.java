@@ -3,7 +3,7 @@ package org.apache.hadoop.hive.ql.exec;
 import org.apache.datasketches.hive.hll.*;
 import org.apache.datasketches.hive.hll.UnionSketchUDF;
 import org.apache.datasketches.hive.hll.SketchToEstimateAndErrorBoundsUDF;
-import org.apache.datasketches.hive.hll.SketchToEstimateUDF;
+import org.apache.datasketches.hive.hll.SketchToEstimateUDF2;
 import org.apache.datasketches.hive.hll.UnionSketchUDAF;
 
 public class SketchesX {
@@ -18,6 +18,8 @@ public class SketchesX {
 
     system.registerGenericUDAF("unionSketch", new UnionSketchUDAF());
 
+    system.registerGenericUDAF("dataToSketch2", new DataToSketchUDAF2());
+    system.registerGenericUDF("SketchToEstimate2", SketchToEstimateUDF2.class);
 
   }
 
