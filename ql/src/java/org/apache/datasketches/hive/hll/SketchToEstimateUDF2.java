@@ -96,9 +96,9 @@ public class SketchToEstimateUDF2 extends GenericUDF {
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
     AggregationBuffer buf = x.getNewAggregationBuffer();
     Object data = arguments[0];
-    if (data instanceof DeferredJavaObject) {
+    if (data instanceof DeferredObject) {
       try {
-        data = ((DeferredJavaObject) data).get();
+        data = ((DeferredObject) data).get();
       } catch (HiveException e) {
         throw new RuntimeException(e);
       }
@@ -107,7 +107,7 @@ public class SketchToEstimateUDF2 extends GenericUDF {
     x.merge(buf, data);
     final HllSketch result = ((State) buf).getResult();
 
-    return result.getEstimate();
+    return new org.apache.hadoop.hive.serde2.io.DoubleWritable(result.getEstimate());
   }
 
   @Override
