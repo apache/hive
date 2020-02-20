@@ -51,6 +51,9 @@ select SketchToEstimate(unionSketch(sketch)) from
 	(select datatosketch(id) as sketch from sketch_input group by category) s;
 
 
+
+
+
 select category,count(distinct id),count(id) from sketch_input group by category;
 
 explain
