@@ -51,7 +51,7 @@ public class AlterTableDropConstraintDesc implements DDLDesc, Serializable {
 
   @Explain(displayName = "table name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getDbTableName() {
-    return tableName.getNotEmptyDbTable();
+    return tableName.toString();
   }
 
   public ReplicationSpec getReplicationSpec() {

@@ -33,17 +33,17 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 public class AlterTableRenameDesc extends AbstractAlterTableDesc {
   private static final long serialVersionUID = 1L;
 
-  private final TableName newName;
+  private final TableName newTableName;
 
-  public AlterTableRenameDesc(TableName tableName, ReplicationSpec replicationSpec, boolean expectView, TableName newName)
+  public AlterTableRenameDesc(TableName tableName, ReplicationSpec replicationSpec, boolean expectView, TableName newTableName)
       throws SemanticException {
     super(AlterTableType.RENAME, tableName, null, replicationSpec, false, expectView, null);
-    this.newName = newName;
+    this.newTableName = newTableName;
   }
 
   @Explain(displayName = "new table name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public TableName getNewName() {
-    return newName;
+  public TableName getNewTableName() {
+    return newTableName;
   }
 
   @Override

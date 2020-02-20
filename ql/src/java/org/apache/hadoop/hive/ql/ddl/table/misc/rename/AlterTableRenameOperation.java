@@ -48,6 +48,6 @@ public class AlterTableRenameOperation extends AbstractAlterTableOperation<Alter
 
   @Override
   protected void doAlteration(Table table, Partition partition) throws HiveException {
-    HiveTableName.setFrom(desc.getNewName(), table);
+    HiveTableName.setFrom(desc.getNewTableName(), table);
   }
 }

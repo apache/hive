@@ -36,8 +36,11 @@ public class TableName implements Serializable {
   private final String cat;
   private final String db;
   private final String table;
+  private final boolean catIsBlank;
+  private final boolean dbIsBlank;
 
   /**
+   * Creates a TableName object, after applying lowercase to all params.
    *
    * @param catName catalog name.  Cannot be null.  If you do not know it you can get it from
    *            SessionState.getCurrentCatalog() if you want to use the catalog from the current
@@ -48,14 +51,38 @@ public class TableName implements Serializable {
    * @param tableName  table name, cannot be null
    */
   public TableName(final String catName, final String dbName, final String tableName) {
-    this.cat = catName;
-    this.db = dbName;
-    this.table = tableName;
+    if (tableName == null || tableName.trim().isEmpty()) {
+      throw new IllegalArgumentException(String.join("", "Table value was blank. ", ILL_ARG_EXCEPTION_MSG));
+    }
+
+    this.dbIsBlank = dbName == null || dbName.trim().isEmpty();
+    this.catIsBlank = catName == null || catName.trim().isEmpty();
+    if (dbIsBlank && !catIsBlank) {
+      throw new IllegalArgumentException(String.join("", "Invalid values: database was blank, while category wasn't. ", ILL_ARG_EXCEPTION_MSG));
+    }
+
+    this.cat = this.catIsBlank ? catName : catName.toLowerCase();
+    this.db = this.dbIsBlank ? dbName : dbName.toLowerCase();
+    this.table = tableName.toLowerCase();
+  }
+
+  /**
+   * Build a TableName from a string of the form [database.]table.
+   * @param name name in string form, not null of the form [[catalog.]database.]table.
+   * @param defaultDatabase default database to use if database is not in the name.  If you do
+   *                        not now it you can get it from SessionState.getCurrentDatabase() or
+   *                        use Warehouse.DEFAULT_DATABASE_NAME.
+   * @return TableName
+   * @throws IllegalArgumentException if a non-null name is given
+   */
+  public static TableName fromString(final String name, final String defaultDatabase)
+      throws IllegalArgumentException {
+    return fromString(name, null, defaultDatabase);
   }
 
   /**
    * Build a TableName from a string of the form [[catalog.]database.]table.
-   * @param name name in string form, not null
+   * @param name name in string form, not null of the form [[catalog.]database.]table.
    * @param defaultCatalog default catalog to use if catalog is not in the name.  If you do not
    *                       know it you can get it from SessionState.getCurrentCatalog() if you
    *                       want to use the catalog from the current session, or from
@@ -102,9 +129,9 @@ public class TableName implements Serializable {
   /**
    * Get the name in db.table format, for use with stuff not yet converted to use the catalog.
    * Fair warning, that if the db is null, this will return null.tableName
-   * @deprecated use {@link #getNotEmptyDbTable()} instead.
+   * @deprecated use {@link #toString()} instead.
    */
-  // to be @Deprecated
+  // todo: remove, refactor
   public String getDbTable() {
     return db + DatabaseName.CAT_DB_TABLE_SEPARATOR + table;
   }
@@ -114,7 +141,7 @@ public class TableName implements Serializable {
    */
   public String getEscapedNotEmptyDbTable() {
     return
-        db == null || db.trim().isEmpty() ?
+        dbIsBlank ?
             "`" + table + "`" : "`" + db + "`" + DatabaseName.CAT_DB_TABLE_SEPARATOR + "`" + table + "`";
   }
 
@@ -128,10 +155,12 @@ public class TableName implements Serializable {
   /**
    * Get the name in db.table format, for use with stuff not yet converted to use the catalog.
    */
+  // todo: this can be quite unsafe
   public static String getDbTable(String dbName, String tableName) {
     return dbName + DatabaseName.CAT_DB_TABLE_SEPARATOR + tableName;
   }
 
+  // todo: this can be quite unsafe
   public static String getQualified(String catName, String dbName, String tableName) {
     return catName + DatabaseName.CAT_DB_TABLE_SEPARATOR + dbName + DatabaseName.CAT_DB_TABLE_SEPARATOR + tableName;
   }
@@ -154,6 +183,10 @@ public class TableName implements Serializable {
 
   @Override
   public String toString() {
-    return cat + DatabaseName.CAT_DB_TABLE_SEPARATOR + db + DatabaseName.CAT_DB_TABLE_SEPARATOR + table;
+    if (catIsBlank) {
+      return dbIsBlank ? table : db + DatabaseName.CAT_DB_TABLE_SEPARATOR + table;
+    } else {
+      return cat + DatabaseName.CAT_DB_TABLE_SEPARATOR + db + DatabaseName.CAT_DB_TABLE_SEPARATOR + table;
+    }
   }
 }

@@ -633,12 +633,12 @@ public final class QueryResultsCache {
   }
 
   public void notifyTableChanged(TableName tableName, long updateTime) {
-    LOG.debug("Table changed: {}, at {}", tableName.getNotEmptyDbTable(), updateTime);
+    LOG.debug("Table changed: {}, at {}", tableName, updateTime);
     // Invalidate all cache entries using this table.
     List<CacheEntry> entriesToInvalidate = null;
     rwLock.writeLock().lock();
     try {
-      String key = (tableName.getNotEmptyDbTable().toLowerCase());
+      String key = (tableName.toString());
       Set<CacheEntry> entriesForTable = tableToEntryMap.get(key);
       if (entriesForTable != null) {
         // Possible concurrent modification issues if we try to remove cache entries while

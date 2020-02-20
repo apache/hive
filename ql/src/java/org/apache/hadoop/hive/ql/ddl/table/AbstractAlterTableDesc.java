@@ -63,7 +63,7 @@ public abstract class AbstractAlterTableDesc implements DDLDescWithWriteId, Seri
 
   @Explain(displayName = "table name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getDbTableName() {
-    return tableName.getNotEmptyDbTable();
+    return tableName.toString();
   }
 
   @Explain(displayName = "partition", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
@@ -96,7 +96,7 @@ public abstract class AbstractAlterTableDesc implements DDLDescWithWriteId, Seri
 
   @Override
   public String getFullTableName() {
-    return tableName.getNotEmptyDbTable();
+    return tableName.toString();
   }
 
   @Override
