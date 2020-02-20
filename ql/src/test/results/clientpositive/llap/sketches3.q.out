@@ -116,3 +116,90 @@ POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 a	10.000000223517425
 b	10.000000223517425
+PREHOOK: query: explain
+select SketchToEstimate(unionSketch(sketch)) from 
+	(select datatosketch(id) as sketch from sketch_input group by category) s
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mv_1
+PREHOOK: Input: default@sketch_input
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select SketchToEstimate(unionSketch(sketch)) from 
+	(select datatosketch(id) as sketch from sketch_input group by category) s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mv_1
+POSTHOOK: Input: default@sketch_input
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: default.mv_1
+                  Statistics: Num rows: 2 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _c1 (type: binary)
+                    outputColumnNames: _c1
+                    Statistics: Num rows: 2 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: unionsketch(_c1)
+                      minReductionHashAggr: 0.5
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 388 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 388 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: struct<lgk:int,type:string,sketch:binary>)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: unionsketch(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 144 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: sketchtoestimate(_col0) (type: double)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select SketchToEstimate(unionSketch(sketch)) from 
+	(select datatosketch(id) as sketch from sketch_input group by category) s
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mv_1
+PREHOOK: Input: default@sketch_input
+#### A masked pattern was here ####
+POSTHOOK: query: select SketchToEstimate(unionSketch(sketch)) from 
+	(select datatosketch(id) as sketch from sketch_input group by category) s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mv_1
+POSTHOOK: Input: default@sketch_input
+#### A masked pattern was here ####
+15.000000521540663

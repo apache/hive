@@ -43,3 +43,11 @@ select category, SketchToEstimate(datatosketch(id)) from sketch_input group by c
 --select SketchToEstimate(unionSketch(datatosketch(id))) from sketch_input group by category;
 --select SketchToEstimate(unionSketch(datatosketch(id))) from sketch_input group by category;
 
+explain
+select SketchToEstimate(unionSketch(sketch)) from 
+	(select datatosketch(id) as sketch from sketch_input group by category) s;
+
+select SketchToEstimate(unionSketch(sketch)) from 
+	(select datatosketch(id) as sketch from sketch_input group by category) s;
+
+
