@@ -5062,10 +5062,14 @@ STAGE PLANS:
                 Statistics: Num rows: 14 Data size: 1730 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
 <<<<<<< HEAD
+<<<<<<< HEAD
                   predicate: (((_col11 < _col10) is not true or ((_col10 = 0L) or _col10 is null) is true or _col14 is not null or _col5 is null) and (_col14 is null or ((_col10 = 0L) or _col10 is null) is true) and (_col5 is not null or ((_col10 = 0L) or _col10 is null) is true or _col14 is not null)) (type: boolean)
 =======
                   predicate: ((_col14 is null or (_col10 = 0L) or _col10 is null) and ((_col11 < _col10) is not true or (_col10 = 0L) or _col10 is null or _col14 is not null or _col5 is null) and (_col5 is not null or (_col10 = 0L) or _col10 is null or _col14 is not null)) (type: boolean)
 >>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
+=======
+                  predicate: (_col10 is null or (_col10 = 0L) or (_col13 is not null or _col5 is null or (_col11 < _col10)) is not true) (type: boolean)
+>>>>>>> fd082395ee1... HIVE-22881: Revise non-recommended Calcite api calls (Zoltan Haindrich reviewed by Jesus Camacho Rodriguez)
                   Statistics: Num rows: 14 Data size: 1730 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
@@ -5318,10 +5322,14 @@ STAGE PLANS:
                 Statistics: Num rows: 14 Data size: 1730 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
 <<<<<<< HEAD
+<<<<<<< HEAD
                   predicate: (((_col11 < _col10) is not true or ((_col10 = 0L) or _col10 is null) is true or _col14 is not null or _col5 is null) and (_col14 is null or ((_col10 = 0L) or _col10 is null) is true) and (_col5 is not null or ((_col10 = 0L) or _col10 is null) is true or _col14 is not null)) (type: boolean)
 =======
                   predicate: ((_col14 is null or (_col10 = 0L) or _col10 is null) and ((_col11 < _col10) is not true or (_col10 = 0L) or _col10 is null or _col14 is not null or _col5 is null) and (_col5 is not null or (_col10 = 0L) or _col10 is null or _col14 is not null)) (type: boolean)
 >>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
+=======
+                  predicate: (_col10 is null or (_col10 = 0L) or (_col13 is not null or _col5 is null or (_col11 < _col10)) is not true) (type: boolean)
+>>>>>>> fd082395ee1... HIVE-22881: Revise non-recommended Calcite api calls (Zoltan Haindrich reviewed by Jesus Camacho Rodriguez)
                   Statistics: Num rows: 14 Data size: 1730 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)

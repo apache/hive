@@ -506,7 +506,7 @@ public class HiveSubQRemoveRelBuilder {
    * {@code e AND TRUE} becomes {@code e};
    * {@code e AND e2 AND NOT e} becomes {@code e2}. */
   public RexNode and(Iterable<? extends RexNode> operands) {
-    return RexUtil.simplifyAnds(cluster.getRexBuilder(), operands);
+    return RexUtil.composeConjunction(cluster.getRexBuilder(), operands);
   }
 
   /** Creates an OR. */

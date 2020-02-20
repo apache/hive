@@ -329,6 +329,8 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
           populateEquivalence(equivalence, ref1.getIndex(), ref0.getIndex());
         }
       }
+    default:
+      break;
     }
   }
 

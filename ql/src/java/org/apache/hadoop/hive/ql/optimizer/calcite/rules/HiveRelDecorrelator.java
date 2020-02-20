@@ -1916,7 +1916,7 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
             o1 = decorrFieldAccess((RexFieldAccess) o1);
             isCorrelated = true;
           }
-          if (isCorrelated && RexUtil.eq(o0, o1)) {
+          if (isCorrelated && o0.equals(o1)) {
             return rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_NULL, o0);
           }
 
