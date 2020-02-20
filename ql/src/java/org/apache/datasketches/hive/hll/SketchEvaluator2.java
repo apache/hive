@@ -26,6 +26,8 @@ import org.apache.datasketches.hll.TgtHllType;
 import org.apache.datasketches.memory.Memory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
@@ -63,9 +65,11 @@ abstract class SketchEvaluator2 extends GenericUDAFEvaluator {
   }
 
   @Override
-  public void merge(final @SuppressWarnings("deprecation") AggregationBuffer buf, final Object data)
+  public void merge(final @SuppressWarnings("deprecation") AggregationBuffer buf, final Object data0)
       throws HiveException {
+    Object data = data0;
     if (data == null) { return; }
+
     final UnionState state = (UnionState) buf;
     if (!state.isInitialized()) {
       initializeState(state, data);
@@ -75,9 +79,13 @@ abstract class SketchEvaluator2 extends GenericUDAFEvaluator {
     state.update(HllSketch.wrap(Memory.wrap(serializedSketch.getBytes())));
   }
 
-  private void initializeState(final UnionState state, final Object data) {
-    final int lgK = ((IntWritable) intermediateInspector_.getStructFieldData(
-        data, intermediateInspector_.getStructFieldRef(LG_K_FIELD))).get();
+  private void initializeState(final UnionState state, final Object data0) {
+    Object data = data0;
+    Object structFieldData = intermediateInspector_.getStructFieldData(
+        data, intermediateInspector_.getStructFieldRef(LG_K_FIELD));
+    ObjectInspector oi = intermediateInspector_.getStructFieldRef(LG_K_FIELD).getFieldObjectInspector();
+    Object val = ObjectInspectorUtils.copyToStandardJavaObject(structFieldData, oi);
+    final int lgK = ((IntWritable) structFieldData).get();
     final TgtHllType type = TgtHllType.valueOf(((Text) intermediateInspector_.getStructFieldData(
         data, intermediateInspector_.getStructFieldRef(HLL_TYPE_FIELD))).toString());
     state.init(lgK, type);

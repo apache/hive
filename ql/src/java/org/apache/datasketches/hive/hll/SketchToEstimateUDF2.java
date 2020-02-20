@@ -19,6 +19,7 @@
 
 package org.apache.datasketches.hive.hll;
 
+import org.apache.datasketches.hll.HllSketch;
 import org.apache.datasketches.hll.TgtHllType;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
@@ -94,8 +95,19 @@ public class SketchToEstimateUDF2 extends GenericUDF {
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
     AggregationBuffer buf = x.getNewAggregationBuffer();
-    x.merge(buf, arguments);
-    return x.realTerminate(buf);
+    Object data = arguments[0];
+    if (data instanceof DeferredJavaObject) {
+      try {
+        data = ((DeferredJavaObject) data).get();
+      } catch (HiveException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
+    x.merge(buf, data);
+    final HllSketch result = ((State) buf).getResult();
+
+    return result.getEstimate();
   }
 
   @Override
