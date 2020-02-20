@@ -12667,7 +12667,7 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
       Query q = pm.newQuery(MScheduledQuery.class,
-          "nextExecution <= now && enabled && clusterNamespace == ns");
+          "nextExecution <= now && enabled && clusterNamespace == ns && activeExecution == null");
       q.setSerializeRead(true);
       q.declareParameters("java.lang.Integer now, java.lang.String ns");
       q.setOrdering("nextExecution");
@@ -12685,6 +12685,7 @@ public class ObjectStore implements RawStore, Configurable {
       execution.setState(QueryState.INITED);
       execution.setStartTime(now);
       execution.setLastUpdateTime(now);
+      schq.setActiveExecution(execution);
       pm.makePersistent(execution);
       pm.makePersistent(schq);
       ObjectStoreTestHook.onScheduledQueryPoll();
@@ -12735,6 +12736,7 @@ public class ObjectStore implements RawStore, Configurable {
       case TIMED_OUT:
         execution.setEndTime((int) (System.currentTimeMillis() / 1000));
         execution.setLastUpdateTime(null);
+        //execution.getScheduledQuery().setActiveExecution(null);
         break;
       default:
         throw new InvalidOperationException("invalid state: " + info.getState());

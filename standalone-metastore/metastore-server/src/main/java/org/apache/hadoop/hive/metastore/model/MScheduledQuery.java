@@ -35,6 +35,7 @@ public class MScheduledQuery {
   private String user;
   private String query;
   private Integer nextExecution;
+  private MScheduledExecution activeExecution;
   private Set<MScheduledExecution> executions;
 
   public MScheduledQuery(ScheduledQuery s) {
@@ -110,6 +111,10 @@ public class MScheduledQuery {
 
   public String getUser() {
     return user;
+  }
+
+  public void setActiveExecution(MScheduledExecution execution) {
+    activeExecution = execution;
   }
 
 }
