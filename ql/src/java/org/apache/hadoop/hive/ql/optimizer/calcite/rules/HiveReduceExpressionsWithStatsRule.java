@@ -22,6 +22,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.calcite.plan.RelOptPredicateList;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.rel.RelNode;
@@ -34,10 +35,11 @@ import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexShuttle;
+import org.apache.calcite.rex.RexSimplify;
+import org.apache.calcite.rex.RexUnknownAs;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.util.Pair;
-import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
@@ -272,7 +274,11 @@ public class HiveReduceExpressionsWithStatsRule extends RelOptRule {
       // If we did not reduce, check the children nodes
       RexNode node = super.visitCall(call);
       if (node != call) {
-        node = RexUtil.simplify(rexBuilder, node);
+        // FIXME if this rule will make some changes; then it will invoke simplify on all subtrees during exiting the recursion
+        RexSimplify simplify =
+            new RexSimplify(rexBuilder, RelOptPredicateList.EMPTY, filterOp.getCluster().getPlanner().getExecutor());
+        node = simplify.simplifyUnknownAs(node,RexUnknownAs.UNKNOWN);
+
       }
       return node;
     }
