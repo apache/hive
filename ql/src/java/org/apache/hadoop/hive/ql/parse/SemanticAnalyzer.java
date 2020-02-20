@@ -15460,7 +15460,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   protected String getFullTableNameForSQL(ASTNode n) throws SemanticException {
     switch (n.getType()) {
     case HiveParser.TOK_TABNAME:
-      return getQualifiedTableName(n).getNotEmptyDbTable();
+      TableName tableName = getQualifiedTableName(n);
+      return TableName.fromString(HiveUtils.unparseIdentifier(tableName.getTable(), this.conf), null,
+          HiveUtils.unparseIdentifier(tableName.getDb(), this.conf)).getNotEmptyDbTable();
     case HiveParser.TOK_TABREF:
       return getFullTableNameForSQL((ASTNode) n.getChild(0));
     default:
