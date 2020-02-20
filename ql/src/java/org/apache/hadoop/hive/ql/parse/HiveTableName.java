@@ -84,7 +84,8 @@ public final class HiveTableName extends TableName {
       return new TableName(null, null, null);
     } else {
       try {
-        return fromString(dbTableName, SessionState.get().getCurrentCatalog(), defaultDb);
+        final String cat = defaultDb == null || defaultDb.trim().isEmpty() ? null : SessionState.get().getCurrentCatalog(); // if a db is null, so should the catalog be
+        return fromString(dbTableName, cat, defaultDb);
       } catch (IllegalArgumentException e) {
         throw new SemanticException(e);
       }
