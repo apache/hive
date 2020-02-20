@@ -29,7 +29,7 @@ insert into sketch_intermediate select category, datatosketch(id) from sketch_in
 
 -- create an mv for the intermediate results
 create  materialized view mv_1 as
-  select category, datatosketch(id) from sketch_input group by category;
+  select category, datatosketch(id),count(id) from sketch_input group by category;
 
 -- see if we use the mv
 explain
@@ -52,3 +52,6 @@ select SketchToEstimate(unionSketch(sketch)) from
 
 
 select category,count(distinct id),count(id) from sketch_input group by category;
+
+explain
+select category,count(id) from sketch_input group by category;
