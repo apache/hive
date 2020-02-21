@@ -39,7 +39,7 @@
     <test.dfs.mkdir>-mkdir -p</test.dfs.mkdir>
 
     <!-- Required by Calcite Avatica -->
-    <protobuf.version>3.3.0</protobuf.version>
+    <protobuf.version>3.11.4</protobuf.version>
   </properties>
 
   <dependencies>

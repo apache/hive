@@ -92,7 +92,7 @@
     <log4j2.version>2.12.1</log4j2.version>
     <mockito-core.version>1.10.19</mockito-core.version>
     <orc.version>1.5.1</orc.version>
-    <protobuf.version>2.5.0</protobuf.version>
+    <protobuf.version>3.11.4</protobuf.version>
     <sqlline.version>1.9.0</sqlline.version>
     <jline.version>2.14.6</jline.version>
     <ST4.version>4.0.4</ST4.version>
