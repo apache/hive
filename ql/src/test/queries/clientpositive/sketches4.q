@@ -40,6 +40,10 @@ explain
 select SketchToEstimate2(datatosketch2(id)) from sketch_input group by category;
 select SketchToEstimate2(datatosketch2(id)) from sketch_input group by category;
 
+-- see how well mv/count works
+explain
+select count(id) from sketch_input;
+
 explain
 select SketchToEstimate2(datatosketch2(id)) from sketch_input;
 select SketchToEstimate2(datatosketch2(id)) from sketch_input;

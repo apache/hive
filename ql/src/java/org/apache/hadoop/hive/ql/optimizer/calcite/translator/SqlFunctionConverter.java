@@ -593,10 +593,10 @@ public class SqlFunctionConverter {
             udfInfo.operandTypeInference,
                 udfInfo.operandTypeChecker);
         break;
-      case "datatosketch":
+      case "datatosketch2":
         calciteAggFn =
             new HiveSqlX(
-                "datatosketch",
+                "datatosketch2",
                 SqlKind.REGR_SYY,
             udfInfo.returnTypeInference,
             udfInfo.operandTypeInference,
