@@ -611,13 +611,25 @@ POSTHOOK: Input: default@srcpart_acid@ds=2008-04-09/hr=12
 POSTHOOK: Output: default@merge_tmp_table
 POSTHOOK: Output: default@srcpart_acid@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@srcpart_acid@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@srcpart_acid@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@srcpart_acid@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@srcpart_acid@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@srcpart_acid@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@srcpart_acid@ds=2008-04-09/hr=11
 POSTHOOK: Output: default@srcpart_acid@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@srcpart_acid@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@srcpart_acid@ds=2008-04-09/hr=12
 POSTHOOK: Output: default@srcpart_acid@ds=2008-04-09/hr=12
 POSTHOOK: Output: default@srcpart_acid@ds=2008-04-09/hr=12
 POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(srcpart_acid)t.FieldSchema(name:ROW__ID, type:struct<writeId:bigint,bucketId:int,rowId:bigint>, comment:), (srcpart_acid)t.FieldSchema(name:ds, type:string, comment:null), (srcpart_acid)t.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: srcpart_acid PARTITION(ds=2008-04-08,hr=11).key SIMPLE []
+POSTHOOK: Lineage: srcpart_acid PARTITION(ds=2008-04-08,hr=11).value SIMPLE []
+POSTHOOK: Lineage: srcpart_acid PARTITION(ds=2008-04-08,hr=12).key SIMPLE []
+POSTHOOK: Lineage: srcpart_acid PARTITION(ds=2008-04-08,hr=12).value SIMPLE []
+POSTHOOK: Lineage: srcpart_acid PARTITION(ds=2008-04-09,hr=11).key SIMPLE []
+POSTHOOK: Lineage: srcpart_acid PARTITION(ds=2008-04-09,hr=11).value SIMPLE []
+POSTHOOK: Lineage: srcpart_acid PARTITION(ds=2008-04-09,hr=12).key SIMPLE []
+POSTHOOK: Lineage: srcpart_acid PARTITION(ds=2008-04-09,hr=12).value SIMPLE []
 PREHOOK: query: select count(*) from srcpart_acid where ds='2008-04-08' and hr=='12'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart_acid
@@ -626,7 +638,7 @@ POSTHOOK: query: select count(*) from srcpart_acid where ds='2008-04-08' and hr=
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart_acid
 #### A masked pattern was here ####
-0
+497
 PREHOOK: query: select ds, hr, key, value from srcpart_acid where value like '%updated by merge'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart_acid
@@ -1150,13 +1162,25 @@ POSTHOOK: Input: default@srcpart_acidb@ds=2008-04-09/hr=12
 POSTHOOK: Output: default@merge_tmp_table
 POSTHOOK: Output: default@srcpart_acidb@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@srcpart_acidb@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@srcpart_acidb@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@srcpart_acidb@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@srcpart_acidb@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@srcpart_acidb@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@srcpart_acidb@ds=2008-04-09/hr=11
 POSTHOOK: Output: default@srcpart_acidb@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@srcpart_acidb@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@srcpart_acidb@ds=2008-04-09/hr=12
 POSTHOOK: Output: default@srcpart_acidb@ds=2008-04-09/hr=12
 POSTHOOK: Output: default@srcpart_acidb@ds=2008-04-09/hr=12
 POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(srcpart_acidb)t.FieldSchema(name:ROW__ID, type:struct<writeId:bigint,bucketId:int,rowId:bigint>, comment:), (srcpart_acidb)t.FieldSchema(name:ds, type:string, comment:null), (srcpart_acidb)t.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: srcpart_acidb PARTITION(ds=2008-04-08,hr=11).key SIMPLE []
+POSTHOOK: Lineage: srcpart_acidb PARTITION(ds=2008-04-08,hr=11).value SIMPLE []
+POSTHOOK: Lineage: srcpart_acidb PARTITION(ds=2008-04-08,hr=12).key SIMPLE []
+POSTHOOK: Lineage: srcpart_acidb PARTITION(ds=2008-04-08,hr=12).value SIMPLE []
+POSTHOOK: Lineage: srcpart_acidb PARTITION(ds=2008-04-09,hr=11).key SIMPLE []
+POSTHOOK: Lineage: srcpart_acidb PARTITION(ds=2008-04-09,hr=11).value SIMPLE []
+POSTHOOK: Lineage: srcpart_acidb PARTITION(ds=2008-04-09,hr=12).key SIMPLE []
+POSTHOOK: Lineage: srcpart_acidb PARTITION(ds=2008-04-09,hr=12).value SIMPLE []
 PREHOOK: query: select count(*) from srcpart_acidb where ds='2008-04-08' and hr=='12'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart_acidb
@@ -1165,7 +1189,7 @@ POSTHOOK: query: select count(*) from srcpart_acidb where ds='2008-04-08' and hr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart_acidb
 #### A masked pattern was here ####
-0
+497
 PREHOOK: query: select ds, hr, key, value from srcpart_acidb where value like '%updated by merge'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart_acidb
@@ -1997,13 +2021,25 @@ POSTHOOK: Input: default@srcpart_acidv@ds=2008-04-09/hr=12
 POSTHOOK: Output: default@merge_tmp_table
 POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=11
 POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=12
 POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=12
 POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=12
 POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(srcpart_acidv)t.FieldSchema(name:ROW__ID, type:struct<writeId:bigint,bucketId:int,rowId:bigint>, comment:), (srcpart_acidv)t.FieldSchema(name:ds, type:string, comment:null), (srcpart_acidv)t.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: srcpart_acidv PARTITION(ds=2008-04-08,hr=11).key SIMPLE []
+POSTHOOK: Lineage: srcpart_acidv PARTITION(ds=2008-04-08,hr=11).value SIMPLE []
+POSTHOOK: Lineage: srcpart_acidv PARTITION(ds=2008-04-08,hr=12).key SIMPLE []
+POSTHOOK: Lineage: srcpart_acidv PARTITION(ds=2008-04-08,hr=12).value SIMPLE []
+POSTHOOK: Lineage: srcpart_acidv PARTITION(ds=2008-04-09,hr=11).key SIMPLE []
+POSTHOOK: Lineage: srcpart_acidv PARTITION(ds=2008-04-09,hr=11).value SIMPLE []
+POSTHOOK: Lineage: srcpart_acidv PARTITION(ds=2008-04-09,hr=12).key SIMPLE []
+POSTHOOK: Lineage: srcpart_acidv PARTITION(ds=2008-04-09,hr=12).value SIMPLE []
 PREHOOK: query: select count(*) from srcpart_acidv where ds='2008-04-08' and hr=='12'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart_acidv
@@ -2012,7 +2048,7 @@ POSTHOOK: query: select count(*) from srcpart_acidv where ds='2008-04-08' and hr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart_acidv
 #### A masked pattern was here ####
-0
+497
 PREHOOK: query: select ds, hr, key, value from srcpart_acidv where value like '%updated by merge'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart_acidv
@@ -2853,13 +2889,25 @@ POSTHOOK: Input: default@srcpart_acidvb@ds=2008-04-09/hr=12
 POSTHOOK: Output: default@merge_tmp_table
 POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=11
 POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=12
 POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=12
 POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=12
 POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(srcpart_acidvb)t.FieldSchema(name:ROW__ID, type:struct<writeId:bigint,bucketId:int,rowId:bigint>, comment:), (srcpart_acidvb)t.FieldSchema(name:ds, type:string, comment:null), (srcpart_acidvb)t.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: srcpart_acidvb PARTITION(ds=2008-04-08,hr=11).key SIMPLE []
+POSTHOOK: Lineage: srcpart_acidvb PARTITION(ds=2008-04-08,hr=11).value SIMPLE []
+POSTHOOK: Lineage: srcpart_acidvb PARTITION(ds=2008-04-08,hr=12).key SIMPLE []
+POSTHOOK: Lineage: srcpart_acidvb PARTITION(ds=2008-04-08,hr=12).value SIMPLE []
+POSTHOOK: Lineage: srcpart_acidvb PARTITION(ds=2008-04-09,hr=11).key SIMPLE []
+POSTHOOK: Lineage: srcpart_acidvb PARTITION(ds=2008-04-09,hr=11).value SIMPLE []
+POSTHOOK: Lineage: srcpart_acidvb PARTITION(ds=2008-04-09,hr=12).key SIMPLE []
+POSTHOOK: Lineage: srcpart_acidvb PARTITION(ds=2008-04-09,hr=12).value SIMPLE []
 PREHOOK: query: select count(*) from srcpart_acidvb where ds='2008-04-08' and hr=='12'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart_acidvb
@@ -2868,7 +2916,7 @@ POSTHOOK: query: select count(*) from srcpart_acidvb where ds='2008-04-08' and h
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart_acidvb
 #### A masked pattern was here ####
-0
+497
 PREHOOK: query: select ds, hr, key, value from srcpart_acidvb where value like '%updated by merge'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart_acidvb

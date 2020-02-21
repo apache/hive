@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
 
-import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -928,6 +927,20 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
       }
     }
   }
+
+  OrcRawRecordMerger(Configuration conf,
+      boolean collapseEvents,
+      Reader reader,
+      boolean isOriginal,
+      int bucket,
+      ValidWriteIdList validWriteIdList,
+      Reader.Options options,
+      Path[] deltaDirectory,
+      Options mergerOptions) throws IOException {
+    this(conf, collapseEvents, reader, isOriginal, bucket, validWriteIdList, options, deltaDirectory, mergerOptions,
+        null);
+  }
+
   /**
    * Create a reader that merge sorts the ACID events together.  This handles
    * 1. 'normal' reads on behalf of a query (non vectorized)
@@ -952,7 +965,9 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
                      int bucket,
                      ValidWriteIdList validWriteIdList,
                      Reader.Options options,
-                     Path[] deltaDirectory, Options mergerOptions) throws IOException {
+                     Path[] deltaDirectory,
+                     Options mergerOptions,
+                     Map<String, String> deltasToAttemptId) throws IOException {
     this.collapse = collapseEvents;
     this.offset = options.getOffset();
     this.length = options.getLength();
@@ -1126,7 +1141,13 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
           }
           continue;
         }
-        for (Path deltaFile : getDeltaFiles(delta, bucket, mergerOptions)) {
+
+        String attemptId = null;
+        if (deltasToAttemptId != null) {
+          attemptId = deltasToAttemptId.get(delta.toString());
+        }
+
+        for (Path deltaFile : getDeltaFiles(delta, bucket, mergerOptions, attemptId)) {
           FileSystem fs = deltaFile.getFileSystem(conf);
           if(!fs.exists(deltaFile)) {
             /**
@@ -1264,12 +1285,12 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
    * This determines the set of {@link ReaderPairAcid} to create for a given delta/.
    * For unbucketed tables {@code bucket} can be thought of as a write tranche.
    */
-  static Path[] getDeltaFiles(Path deltaDirectory, int bucket, Options mergerOptions) {
+  static Path[] getDeltaFiles(Path deltaDirectory, int bucket, Options mergerOptions, String attemptId) {
     assert (!mergerOptions.isCompacting &&
         deltaDirectory.getName().startsWith(AcidUtils.DELETE_DELTA_PREFIX)
     ) || mergerOptions.isCompacting : "Unexpected delta: " + deltaDirectory +
         "(isCompacting=" + mergerOptions.isCompacting() + ")";
-    return new Path[] {AcidUtils.createBucketFile(deltaDirectory, bucket)};
+    return new Path[] {AcidUtils.createBucketFile(deltaDirectory, bucket, attemptId)};
   }
   
   @VisibleForTesting
