@@ -23,6 +23,8 @@ import static org.apache.hadoop.hive.ql.io.parquet.HiveParquetSchemaTestUtils.te
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.parquet.convert.HiveSchemaConverter;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -36,6 +38,8 @@ import org.junit.Test;
 
 
 public class TestHiveSchemaConverter {
+
+  Configuration conf = new Configuration();
 
   @Test
   public void testSimpleType() throws Exception {
@@ -117,12 +121,14 @@ public class TestHiveSchemaConverter {
 
   @Test
   public void testTimestampType() throws Exception {
+    conf.setBoolean(HiveConf.ConfVars.HIVE_PARQUET_WRITE_INT64_TIMESTAMP.varname, false);
     testConversion(
         "a",
         "timestamp",
         "message hive_schema {\n"
             + "  optional int96 a;\n"
-            + "}\n");
+            + "}\n",
+            conf);
   }
 
   @Test
@@ -192,6 +198,7 @@ public class TestHiveSchemaConverter {
 
   @Test
   public void testArrayTimestamp() throws Exception {
+    conf.setBoolean(HiveConf.ConfVars.HIVE_PARQUET_WRITE_INT64_TIMESTAMP.varname, false);
     testConversion("arrayCol",
             "array<timestamp>",
             "message hive_schema {\n"
@@ -200,7 +207,8 @@ public class TestHiveSchemaConverter {
             + "      optional int96 array_element;\n"
             + "    }\n"
             + "  }\n"
-            + "}\n");
+            + "}\n",
+            conf);
   }
 
   @Test
@@ -287,13 +295,15 @@ public class TestHiveSchemaConverter {
 
   @Test
   public void testStructTimestamp() throws Exception {
+    conf.setBoolean(HiveConf.ConfVars.HIVE_PARQUET_WRITE_INT64_TIMESTAMP.varname, false);
     testConversion("structCol",
             "struct<a:timestamp>",
             "message hive_schema {\n"
             + "  optional group structCol {\n"
             + "    optional int96 a;\n"
             + "  }\n"
-            + "}\n");
+            + "}\n",
+            conf);
   }
 
   @Test
@@ -392,19 +402,21 @@ public class TestHiveSchemaConverter {
 
   @Test
   public void testLogicalTypes() throws Exception {
-    testLogicalTypeAnnotation("string", "a", LogicalTypeAnnotation.stringType());
-    testLogicalTypeAnnotation("int", "a", null);
-    testLogicalTypeAnnotation("smallint", "a", LogicalTypeAnnotation.intType(16, true));
-    testLogicalTypeAnnotation("tinyint", "a", LogicalTypeAnnotation.intType(8, true));
-    testLogicalTypeAnnotation("bigint", "a", null);
-    testLogicalTypeAnnotation("double", "a", null);
-    testLogicalTypeAnnotation("float", "a", null);
-    testLogicalTypeAnnotation("boolean", "a", null);
-    testLogicalTypeAnnotation("binary", "a", null);
-    testLogicalTypeAnnotation("timestamp", "a", null);
-    testLogicalTypeAnnotation("char(3)", "a", LogicalTypeAnnotation.stringType());
-    testLogicalTypeAnnotation("varchar(30)", "a", LogicalTypeAnnotation.stringType());
-    testLogicalTypeAnnotation("decimal(7,2)", "a", LogicalTypeAnnotation.decimalType(2, 7));
+    conf.setBoolean(HiveConf.ConfVars.HIVE_PARQUET_WRITE_INT64_TIMESTAMP.varname, true);
+    testLogicalTypeAnnotation("string", "a", LogicalTypeAnnotation.stringType(), conf);
+    testLogicalTypeAnnotation("int", "a", null, conf);
+    testLogicalTypeAnnotation("smallint", "a", LogicalTypeAnnotation.intType(16, true), conf);
+    testLogicalTypeAnnotation("tinyint", "a", LogicalTypeAnnotation.intType(8, true), conf);
+    testLogicalTypeAnnotation("bigint", "a", null, conf);
+    testLogicalTypeAnnotation("double", "a", null, conf);
+    testLogicalTypeAnnotation("float", "a", null, conf);
+    testLogicalTypeAnnotation("boolean", "a", null, conf);
+    testLogicalTypeAnnotation("binary", "a", null, conf);
+    testLogicalTypeAnnotation("timestamp", "a",
+        LogicalTypeAnnotation.timestampType(false, LogicalTypeAnnotation.TimeUnit.MILLIS), conf);
+    testLogicalTypeAnnotation("char(3)", "a", LogicalTypeAnnotation.stringType(), conf);
+    testLogicalTypeAnnotation("varchar(30)", "a", LogicalTypeAnnotation.stringType(), conf);
+    testLogicalTypeAnnotation("decimal(7,2)", "a", LogicalTypeAnnotation.decimalType(2, 7), conf);
   }
 
   @Test

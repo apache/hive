@@ -121,7 +121,7 @@ public class MapredParquetOutputFormat extends FileOutputFormat<NullWritable, Pa
       columnTypes = TypeInfoUtils.getTypeInfosFromTypeString(columnTypeProperty);
     }
 
-    DataWritableWriteSupport.setSchema(HiveSchemaConverter.convert(columnNames, columnTypes), jobConf);
+    DataWritableWriteSupport.setSchema(HiveSchemaConverter.convert(columnNames, columnTypes, jobConf), jobConf);
 
     return getParquerRecordWriterWrapper(realOutputFormat, jobConf, finalOutPath.toString(),
             progress,tableProperties);
