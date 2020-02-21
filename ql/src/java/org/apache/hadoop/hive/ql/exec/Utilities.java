@@ -2333,6 +2333,8 @@ public final class Utilities {
     }
     String[] names =  dbtable.split("\\.");
     switch (names.length) {
+      case 3:
+        return new String [] {names[1], names[2]};
       case 2:
         return names;
       case 1:
