@@ -38,9 +38,11 @@ import org.apache.calcite.sql.type.SqlOperandTypeInference;
 import org.apache.calcite.sql.type.SqlReturnTypeInference;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.ImmutableIntList;
+import org.apache.hadoop.hive.ql.optimizer.calcite.IRollupableAggregate;
+
 import com.google.common.collect.ImmutableList;
 
-public class HiveSqlX extends SqlAggFunction {
+public class HiveSqlX extends SqlAggFunction implements IRollupableAggregate {
 
   public HiveSqlX(String string, SqlKind kind, SqlReturnTypeInference returnTypeInference,
       SqlOperandTypeInference operandTypeInference,
@@ -114,5 +116,10 @@ public class HiveSqlX extends SqlAggFunction {
                   getOperandTypeChecker()),
           false, ImmutableList.of(ordinal), -1, aggregateCall.type, aggregateCall.name);
     }
+  }
+
+  @Override
+  public SqlAggFunction getAggregate() {
+    return this;
   }
 }
