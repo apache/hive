@@ -431,3 +431,119 @@ POSTHOOK: query: select * from newtypestbl_n2 where da between '1970-02-18' and 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypestbl_n2
 #### A masked pattern was here ####
+PREHOOK: query: insert overwrite table newtypestbl_n2 select * from (select cast("apple" as char(10)), cast("bee" as varchar(10)), 0.22, cast("999-02-20" as date) from src src1 union all select cast("hello" as char(10)), cast("world" as varchar(10)), 11.22, cast("1820-02-27" as date) from src src2 limit 10) uniontbl
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@newtypestbl_n2
+POSTHOOK: query: insert overwrite table newtypestbl_n2 select * from (select cast("apple" as char(10)), cast("bee" as varchar(10)), 0.22, cast("999-02-20" as date) from src src1 union all select cast("hello" as char(10)), cast("world" as varchar(10)), 11.22, cast("1820-02-27" as date) from src src2 limit 10) uniontbl
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@newtypestbl_n2
+POSTHOOK: Lineage: newtypestbl_n2.c EXPRESSION []
+POSTHOOK: Lineage: newtypestbl_n2.d EXPRESSION []
+POSTHOOK: Lineage: newtypestbl_n2.da EXPRESSION []
+POSTHOOK: Lineage: newtypestbl_n2.v EXPRESSION []
+PREHOOK: query: select * from newtypestbl_n2 where da='999-02-20'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@newtypestbl_n2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from newtypestbl_n2 where da='999-02-20'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@newtypestbl_n2
+#### A masked pattern was here ####
+apple     	bee	0.220	0999-02-20
+apple     	bee	0.220	0999-02-20
+apple     	bee	0.220	0999-02-20
+apple     	bee	0.220	0999-02-20
+apple     	bee	0.220	0999-02-20
+PREHOOK: query: select * from newtypestbl_n2 where da='999-02-20'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@newtypestbl_n2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from newtypestbl_n2 where da='999-02-20'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@newtypestbl_n2
+#### A masked pattern was here ####
+apple     	bee	0.220	0999-02-20
+apple     	bee	0.220	0999-02-20
+apple     	bee	0.220	0999-02-20
+apple     	bee	0.220	0999-02-20
+apple     	bee	0.220	0999-02-20
+PREHOOK: query: select * from newtypestbl_n2 where da=cast('999-02-20' as date)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@newtypestbl_n2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from newtypestbl_n2 where da=cast('999-02-20' as date)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@newtypestbl_n2
+#### A masked pattern was here ####
+apple     	bee	0.220	0999-02-20
+apple     	bee	0.220	0999-02-20
+apple     	bee	0.220	0999-02-20
+apple     	bee	0.220	0999-02-20
+apple     	bee	0.220	0999-02-20
+PREHOOK: query: select * from newtypestbl_n2 where da=cast('999-02-20' as date)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@newtypestbl_n2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from newtypestbl_n2 where da=cast('999-02-20' as date)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@newtypestbl_n2
+#### A masked pattern was here ####
+apple     	bee	0.220	0999-02-20
+apple     	bee	0.220	0999-02-20
+apple     	bee	0.220	0999-02-20
+apple     	bee	0.220	0999-02-20
+apple     	bee	0.220	0999-02-20
+PREHOOK: query: select * from newtypestbl_n2 where da='999-02-20'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@newtypestbl_n2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from newtypestbl_n2 where da='999-02-20'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@newtypestbl_n2
+#### A masked pattern was here ####
+apple     	bee	0.220	0999-02-20
+apple     	bee	0.220	0999-02-20
+apple     	bee	0.220	0999-02-20
+apple     	bee	0.220	0999-02-20
+apple     	bee	0.220	0999-02-20
+PREHOOK: query: select * from newtypestbl_n2 where da='999-02-20'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@newtypestbl_n2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from newtypestbl_n2 where da='999-02-20'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@newtypestbl_n2
+#### A masked pattern was here ####
+apple     	bee	0.220	0999-02-20
+apple     	bee	0.220	0999-02-20
+apple     	bee	0.220	0999-02-20
+apple     	bee	0.220	0999-02-20
+apple     	bee	0.220	0999-02-20
+PREHOOK: query: select * from newtypestbl_n2 where da=cast('999-02-20' as date)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@newtypestbl_n2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from newtypestbl_n2 where da=cast('999-02-20' as date)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@newtypestbl_n2
+#### A masked pattern was here ####
+apple     	bee	0.220	0999-02-20
+apple     	bee	0.220	0999-02-20
+apple     	bee	0.220	0999-02-20
+apple     	bee	0.220	0999-02-20
+apple     	bee	0.220	0999-02-20
+PREHOOK: query: select * from newtypestbl_n2 where da=cast('999-02-20' as date)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@newtypestbl_n2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from newtypestbl_n2 where da=cast('999-02-20' as date)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@newtypestbl_n2
+#### A masked pattern was here ####
+apple     	bee	0.220	0999-02-20
+apple     	bee	0.220	0999-02-20
+apple     	bee	0.220	0999-02-20
+apple     	bee	0.220	0999-02-20
+apple     	bee	0.220	0999-02-20

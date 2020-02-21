@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.google.common.base.Strings;
@@ -160,8 +161,8 @@ public class AcidUtils {
    * This must be in sync with {@link #STATEMENT_DIGITS}
    */
   public static final int MAX_STATEMENTS_PER_TXN = 10000;
-  public static final Pattern BUCKET_DIGIT_PATTERN = Pattern.compile("[0-9]{5}$");
-  public static final Pattern   LEGACY_BUCKET_DIGIT_PATTERN = Pattern.compile("^[0-9]{6}");
+  public static final Pattern LEGACY_BUCKET_DIGIT_PATTERN = Pattern.compile("^[0-9]{6}");
+  public static final Pattern BUCKET_PATTERN = Pattern.compile("bucket_([0-9]+)(_[0-9]+)?$");
 
   /**
    * A write into a non-aicd table produces files like 0000_0 or 0000_0_copy_1
@@ -180,7 +181,6 @@ public class AcidUtils {
   }
   private static final Logger LOG = LoggerFactory.getLogger(AcidUtils.class);
 
-  public static final Pattern BUCKET_PATTERN = Pattern.compile(BUCKET_PREFIX + "_[0-9]{5}$");
   public static final Pattern ORIGINAL_PATTERN =
       Pattern.compile("[0-9]+_[0-9]+");
   /**
@@ -241,7 +241,11 @@ public class AcidUtils {
    * @return the filename
    */
   public static Path createBucketFile(Path subdir, int bucket) {
-    return createBucketFile(subdir, bucket, true);
+    return createBucketFile(subdir, bucket, null, true);
+  }
+
+  public static Path createBucketFile(Path subdir, int bucket, String attemptId) {
+    return createBucketFile(subdir, bucket, attemptId, true);
   }
 
   /**
@@ -250,10 +254,13 @@ public class AcidUtils {
    * @param bucket the bucket number
    * @return the filename
    */
-  private static Path createBucketFile(Path subdir, int bucket, boolean isAcidSchema) {
+  private static Path createBucketFile(Path subdir, int bucket, String attemptId, boolean isAcidSchema) {
     if(isAcidSchema) {
-      return new Path(subdir,
-        BUCKET_PREFIX + String.format(BUCKET_DIGITS, bucket));
+      String fileName = BUCKET_PREFIX + String.format(BUCKET_DIGITS, bucket);
+      if (attemptId != null) {
+        fileName = fileName + "_" + attemptId;
+      }
+      return new Path(subdir, fileName);
     }
     else {
       return new Path(subdir,
@@ -353,7 +360,7 @@ public class AcidUtils {
       return new Path(directory, String.format(LEGACY_FILE_BUCKET_DIGITS,
           options.getBucketId()) + "_0");
     } else {
-      return createBucketFile(baseOrDeltaSubdirPath(directory, options), options.getBucketId());
+      return createBucketFile(baseOrDeltaSubdirPath(directory, options), options.getBucketId(), options.getAttemptId());
     }
   }
 
@@ -421,9 +428,30 @@ public class AcidUtils {
     if (ORIGINAL_PATTERN.matcher(filename).matches() || ORIGINAL_PATTERN_COPY.matcher(filename).matches()) {
       return Integer.parseInt(filename.substring(0, filename.indexOf('_')));
     } else if (filename.startsWith(BUCKET_PREFIX)) {
-      return Integer.parseInt(filename.substring(filename.indexOf('_') + 1));
+      Matcher matcher = BUCKET_PATTERN.matcher(filename);
+      if (matcher.matches()) {
+        String bucketId = matcher.group(1);
+        filename = filename.substring(0,matcher.end(1));
+        if (Utilities.FILE_OP_LOGGER.isDebugEnabled()) {
+          Utilities.FILE_OP_LOGGER.debug("Parsing bucket ID = " + bucketId + " from file name '" + filename + "'");
+        }
+        return Integer.parseInt(bucketId);
+      }
     }
     return -1;
+  }
+
+  public static String parseAttemptId(Path bucketFile) {
+    String filename = bucketFile.getName();
+    Matcher matcher = BUCKET_PATTERN.matcher(filename);
+    String attemptId = null;
+    if (matcher.matches()) {
+      attemptId = matcher.group(2) != null ? matcher.group(2).substring(1) : null;
+    }
+    if (Utilities.FILE_OP_LOGGER.isDebugEnabled()) {
+      Utilities.FILE_OP_LOGGER.debug("Parsing attempt ID = " + attemptId + " from file name '" + bucketFile + "'");
+    }
+    return attemptId;
   }
 
   /**
@@ -460,6 +488,7 @@ public class AcidUtils {
     AcidOutputFormat.Options result = new AcidOutputFormat.Options(conf);
     String filename = bucketFile.getName();
     int bucket = parseBucketId(bucketFile);
+    String attemptId = parseAttemptId(bucketFile);
     if (ORIGINAL_PATTERN.matcher(filename).matches()) {
       result
           .setOldStyle(true)
@@ -494,7 +523,8 @@ public class AcidUtils {
             .setOldStyle(false)
             .minimumWriteId(parsedDelta.minWriteId)
             .maximumWriteId(parsedDelta.maxWriteId)
-            .bucket(bucket);
+            .bucket(bucket)
+            .attemptId(attemptId);
       } else if (bucketFile.getParent().getName().startsWith(DELETE_DELTA_PREFIX)) {
         ParsedDelta parsedDelta = parsedDelta(bucketFile.getParent(), DELETE_DELTA_PREFIX,
           bucketFile.getFileSystem(conf), null);
@@ -2559,7 +2589,7 @@ public class AcidUtils {
    */
   public static final class OrcAcidVersion {
     private static final String ACID_VERSION_KEY = "hive.acid.version";
-    private static final String ACID_FORMAT = "_orc_acid_version";
+    public static final String ACID_FORMAT = "_orc_acid_version";
     private static final Charset UTF8 = Charset.forName("UTF-8");
     public static final int ORC_ACID_VERSION_DEFAULT = 0;
     /**

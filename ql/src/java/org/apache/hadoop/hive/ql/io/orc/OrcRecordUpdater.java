@@ -621,7 +621,14 @@ public class OrcRecordUpdater implements RecordUpdater {
     if (writer == null) {
       writer = OrcFile.createWriter(path, writerOptions);
       AcidUtils.OrcAcidVersion.setAcidVersionInDataFile(writer);
-      AcidUtils.OrcAcidVersion.writeVersionFile(path.getParent(), fs);
+      try {
+        AcidUtils.OrcAcidVersion.writeVersionFile(path.getParent(), fs);
+      } catch (Exception e) {
+        e.printStackTrace();
+        // Ignore; might have been created by another concurrent writer, writing to a different bucket
+        // within this delta/base directory
+        LOG.trace(e.fillInStackTrace().toString());
+      }
     }
   }
 
@@ -805,5 +812,10 @@ public class OrcRecordUpdater implements RecordUpdater {
     int currentBucketProperty = bucket.get();
     bucket.set(bucketProperty);
     return currentBucketProperty;
+  }
+
+  @Override
+  public Path getUpdatedFilePath() {
+    return path;
   }
 }

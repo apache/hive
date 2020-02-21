@@ -1243,6 +1243,7 @@ public class TestDbTxnManager2 {
 
     //================
     //test with predicates such that partition pruning doesn't kick in
+    driver.run("drop table if exists tab1");
     driver.run("create table if not exists tab1 (a int, b int) partitioned by (p string) " +
       "clustered by (a) into 2  buckets stored as orc TBLPROPERTIES ('transactional'='true')");
     driver.run("insert into tab1 partition(p)(a,b,p) values(1,1,'one'),(2,2,'two')"); //txnid:4

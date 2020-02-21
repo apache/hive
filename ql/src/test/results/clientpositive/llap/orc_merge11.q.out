@@ -76,6 +76,7 @@ File Version: 0.12 with ORC_517
 Rows: 50000
 Compression: ZLIB
 Compression size: 4096
+Calendar: Julian/Gregorian
 Type: struct<userid:bigint,string1:string,subtype:double,decimal1:decimal(38,0),ts:timestamp>
 
 Stripe Statistics:
@@ -155,7 +156,7 @@ Stripes:
       Entry 3: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 positions: 0,506,294,0,232,304
       Entry 4: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 positions: 0,666,54,0,312,64
 
-File length: 6672 bytes
+File length: 6674 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________
@@ -167,6 +168,7 @@ File Version: 0.12 with ORC_517
 Rows: 50000
 Compression: ZLIB
 Compression size: 4096
+Calendar: Julian/Gregorian
 Type: struct<userid:bigint,string1:string,subtype:double,decimal1:decimal(38,0),ts:timestamp>
 
 Stripe Statistics:
@@ -246,7 +248,7 @@ Stripes:
       Entry 3: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 positions: 0,506,294,0,232,304
       Entry 4: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 positions: 0,666,54,0,312,64
 
-File length: 6672 bytes
+File length: 6674 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________
@@ -279,6 +281,7 @@ File Version: 0.12 with ORC_517
 Rows: 100000
 Compression: ZLIB
 Compression size: 4096
+Calendar: Julian/Gregorian
 Type: struct<userid:bigint,string1:string,subtype:double,decimal1:decimal(38,0),ts:timestamp>
 
 Stripe Statistics:
@@ -423,7 +426,7 @@ Stripes:
       Entry 3: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 positions: 0,506,294,0,232,304
       Entry 4: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 positions: 0,666,54,0,312,64
 
-File length: 12978 bytes
+File length: 12980 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________

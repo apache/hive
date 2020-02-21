@@ -1963,9 +1963,9 @@ public final class Utilities {
     // This can happen in ACID cases when we have splits on delta files, where the filenames
     // are of the form delta_x_y/bucket_a.
     if (bucketName.startsWith(AcidUtils.BUCKET_PREFIX)) {
-      m = AcidUtils.BUCKET_DIGIT_PATTERN.matcher(bucketName);
+      m = AcidUtils.BUCKET_PATTERN.matcher(bucketName);
       if (m.find()) {
-          return Integer.parseInt(m.group());
+        return Integer.parseInt(m.group(1));
       }
       // Note that legacy bucket digit pattern are being ignored here.
     }
@@ -3694,8 +3694,9 @@ public final class Utilities {
 
       if (op instanceof FileSinkOperator) {
         FileSinkDesc fdesc = ((FileSinkOperator) op).getConf();
-        if (fdesc.isMmTable()) {
-          continue; // No need to create for MM tables
+        if (fdesc.isMmTable() || fdesc.isDirectInsert()) {
+          // No need to create for MM tables, or ACID insert
+          continue;
         }
         Path tempDir = fdesc.getDirName();
         if (tempDir != null) {
@@ -4108,7 +4109,7 @@ public final class Utilities {
     }
   }
 
-  public static Path[] getMmDirectoryCandidates(FileSystem fs, Path path, int dpLevels,
+  public static Path[] getDirectInsertDirectoryCandidates(FileSystem fs, Path path, int dpLevels,
       PathFilter filter, long writeId, int stmtId, Configuration conf,
       Boolean isBaseDir) throws IOException {
     int skipLevels = dpLevels;
@@ -4124,9 +4125,9 @@ public final class Utilities {
     //       /want/ to know isBaseDir because that is error prone; so, it ends up never being used.
     if (stmtId < 0 || isBaseDir == null
         || (HiveConf.getBoolVar(conf, ConfVars.HIVE_MM_AVOID_GLOBSTATUS_ON_S3) && isS3(fs))) {
-      return getMmDirectoryCandidatesRecursive(fs, path, skipLevels, filter);
+      return getDirectInsertDirectoryCandidatesRecursive(fs, path, skipLevels, filter);
     }
-    return getMmDirectoryCandidatesGlobStatus(fs, path, skipLevels, filter, writeId, stmtId, isBaseDir);
+    return getDirectInsertDirectoryCandidatesGlobStatus(fs, path, skipLevels, filter, writeId, stmtId, isBaseDir);
   }
 
   private static boolean isS3(FileSystem fs) {
@@ -4149,7 +4150,7 @@ public final class Utilities {
     return paths;
   }
 
-  private static Path[] getMmDirectoryCandidatesRecursive(FileSystem fs,
+  private static Path[] getDirectInsertDirectoryCandidatesRecursive(FileSystem fs,
       Path path, int skipLevels, PathFilter filter) throws IOException {
     String lastRelDir = null;
     HashSet<Path> results = new HashSet<Path>();
@@ -4202,7 +4203,7 @@ public final class Utilities {
     return results.toArray(new Path[results.size()]);
   }
 
-  private static Path[] getMmDirectoryCandidatesGlobStatus(FileSystem fs, Path path, int skipLevels,
+  private static Path[] getDirectInsertDirectoryCandidatesGlobStatus(FileSystem fs, Path path, int skipLevels,
       PathFilter filter, long writeId, int stmtId, boolean isBaseDir) throws IOException {
     StringBuilder sb = new StringBuilder(path.toUri().getPath());
     for (int i = 0; i < skipLevels; i++) {
@@ -4219,10 +4220,10 @@ public final class Utilities {
     return statusToPath(fs.globStatus(pathPattern, filter));
   }
 
-  private static void tryDeleteAllMmFiles(FileSystem fs, Path specPath, Path manifestDir,
+  private static void tryDeleteAllDirectInsertFiles(FileSystem fs, Path specPath, Path manifestDir,
       int dpLevels, int lbLevels, AcidUtils.IdPathFilter filter, long writeId, int stmtId,
       Configuration conf) throws IOException {
-    Path[] files = getMmDirectoryCandidates(
+    Path[] files = getDirectInsertDirectoryCandidates(
         fs, specPath, dpLevels, filter, writeId, stmtId, conf, null);
     if (files != null) {
       for (Path path : files) {
@@ -4235,7 +4236,7 @@ public final class Utilities {
   }
 
 
-  public static void writeMmCommitManifest(List<Path> commitPaths, Path specPath, FileSystem fs,
+  public static void writeCommitManifest(List<Path> commitPaths, Path specPath, FileSystem fs,
       String taskId, Long writeId, int stmtId, String unionSuffix, boolean isInsertOverwrite) throws HiveException {
     if (commitPaths.isEmpty()) {
       return;
@@ -4280,15 +4281,15 @@ public final class Utilities {
     }
   }
 
-  public static void handleMmTableFinalPath(Path specPath, String unionSuffix, Configuration hconf,
+  public static void handleDirectInsertTableFinalPath(Path specPath, String unionSuffix, Configuration hconf,
       boolean success, int dpLevels, int lbLevels, MissingBucketsContext mbc, long writeId, int stmtId,
-      Reporter reporter, boolean isMmTable, boolean isMmCtas, boolean isInsertOverwrite)
-          throws IOException, HiveException {
+      Reporter reporter, boolean isMmTable, boolean isMmCtas, boolean isInsertOverwrite, boolean isDirectInsert)
+      throws IOException, HiveException {
     FileSystem fs = specPath.getFileSystem(hconf);
     Path manifestDir = getManifestDir(specPath, writeId, stmtId, unionSuffix, isInsertOverwrite);
     if (!success) {
       AcidUtils.IdPathFilter filter = new AcidUtils.IdPathFilter(writeId, stmtId);
-      tryDeleteAllMmFiles(fs, specPath, manifestDir, dpLevels, lbLevels,
+      tryDeleteAllDirectInsertFiles(fs, specPath, manifestDir, dpLevels, lbLevels,
           filter, writeId, stmtId, hconf);
       return;
     }
@@ -4317,13 +4318,13 @@ public final class Utilities {
       Utilities.FILE_OP_LOGGER.info("Creating directory with no output at {}", specPath);
       FileUtils.mkdir(fs, specPath, hconf);
     }
-    Path[] files = getMmDirectoryCandidates(
+    Path[] files = getDirectInsertDirectoryCandidates(
         fs, specPath, dpLevels, filter, writeId, stmtId, hconf, isInsertOverwrite);
-    ArrayList<Path> mmDirectories = new ArrayList<>();
+    ArrayList<Path> directInsertDirectories = new ArrayList<>();
     if (files != null) {
       for (Path path : files) {
         Utilities.FILE_OP_LOGGER.trace("Looking at path: {}", path);
-        mmDirectories.add(path);
+        directInsertDirectories.add(path);
       }
     }
 
@@ -4356,15 +4357,15 @@ public final class Utilities {
       }
     }
 
-    for (Path path : mmDirectories) {
-      cleanMmDirectory(path, fs, unionSuffix, lbLevels, committed);
+    for (Path path : directInsertDirectories) {
+      cleanDirectInsertDirectory(path, fs, unionSuffix, lbLevels, committed);
     }
 
     if (!committed.isEmpty()) {
       throw new HiveException("The following files were committed but not found: " + committed);
     }
 
-    if (mmDirectories.isEmpty()) {
+    if (directInsertDirectories.isEmpty()) {
       return;
     }
 
@@ -4373,19 +4374,22 @@ public final class Utilities {
     if (lbLevels != 0) {
       return;
     }
-    // Create fake file statuses to avoid querying the file system. removeTempOrDuplicateFiles
-    // doesn't need tocheck anything except path and directory status for MM directories.
-    FileStatus[] finalResults = new FileStatus[mmDirectories.size()];
-    for (int i = 0; i < mmDirectories.size(); ++i) {
-      finalResults[i] = new PathOnlyFileStatus(mmDirectories.get(i));
-    }
-    List<Path> emptyBuckets = Utilities.removeTempOrDuplicateFiles(fs, finalResults,
-        unionSuffix, dpLevels, mbc == null ? 0 : mbc.numBuckets, hconf, writeId, stmtId,
+
+    if (!isDirectInsert) {
+      // Create fake file statuses to avoid querying the file system. removeTempOrDuplicateFiles
+      // doesn't need to check anything except path and directory status for MM directories.
+      FileStatus[] finalResults = new FileStatus[directInsertDirectories.size()];
+      for (int i = 0; i < directInsertDirectories.size(); ++i) {
+        finalResults[i] = new PathOnlyFileStatus(directInsertDirectories.get(i));
+      }
+      List<Path> emptyBuckets = Utilities.removeTempOrDuplicateFiles(fs, finalResults,
+          unionSuffix, dpLevels, mbc == null ? 0 : mbc.numBuckets, hconf, writeId, stmtId,
             isMmTable, null, isInsertOverwrite);
-    // create empty buckets if necessary
-    if (!emptyBuckets.isEmpty()) {
-      assert mbc != null;
-      Utilities.createEmptyBuckets(hconf, emptyBuckets, mbc.isCompressed, mbc.tableInfo, reporter);
+      // create empty buckets if necessary
+      if (!emptyBuckets.isEmpty()) {
+        assert mbc != null;
+        Utilities.createEmptyBuckets(hconf, emptyBuckets, mbc.isCompressed, mbc.tableInfo, reporter);
+      }
     }
   }
 
@@ -4395,7 +4399,7 @@ public final class Utilities {
     }
   }
 
-  private static void cleanMmDirectory(Path dir, FileSystem fs, String unionSuffix,
+  private static void cleanDirectInsertDirectory(Path dir, FileSystem fs, String unionSuffix,
       int lbLevels, HashSet<Path> committed) throws IOException, HiveException {
     for (FileStatus child : fs.listStatus(dir)) {
       Path childPath = child.getPath();
@@ -4406,7 +4410,7 @@ public final class Utilities {
         if (child.isDirectory()) {
           Utilities.FILE_OP_LOGGER.trace(
               "Recursion into LB directory {}; levels remaining ", childPath, lbLevels - 1);
-          cleanMmDirectory(childPath, fs, unionSuffix, lbLevels - 1, committed);
+          cleanDirectInsertDirectory(childPath, fs, unionSuffix, lbLevels - 1, committed);
         } else {
           if (committed.contains(childPath)) {
             throw new HiveException("LB FSOP has commited "
@@ -4421,7 +4425,9 @@ public final class Utilities {
         if (committed.remove(childPath)) {
           continue; // A good file.
         }
-        deleteUncommitedFile(childPath, fs);
+        if (!childPath.getName().equals(AcidUtils.OrcAcidVersion.ACID_FORMAT)) {
+          deleteUncommitedFile(childPath, fs);
+        }
       } else if (!child.isDirectory()) {
         if (committed.contains(childPath)) {
           throw new HiveException("Union FSOP has commited "
@@ -4429,8 +4435,8 @@ public final class Utilities {
         }
         deleteUncommitedFile(childPath, fs);
       } else if (childPath.getName().equals(unionSuffix)) {
-        // Found the right union directory; treat it as "our" MM directory.
-        cleanMmDirectory(childPath, fs, null, 0, committed);
+        // Found the right union directory; treat it as "our" directory.
+        cleanDirectInsertDirectory(childPath, fs, null, 0, committed);
       } else {
         String childName = childPath.getName();
         if (!childName.startsWith(AbstractFileMergeOperator.UNION_SUDBIR_PREFIX)

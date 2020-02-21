@@ -404,6 +404,7 @@ public class CompactorMR {
     private int bucketNum;
     private Path base;
     private Path[] deltas;
+    private Map<String, String> deltasToAttemptId;
 
     public CompactorInputSplit() {
     }
@@ -420,12 +421,13 @@ public class CompactorMR {
      * @throws IOException
      */
     CompactorInputSplit(Configuration hadoopConf, int bucket, List<Path> files, Path base,
-                               Path[] deltas)
+                               Path[] deltas, Map<String, String> deltasToAttemptId)
         throws IOException {
       bucketNum = bucket;
       this.base = base;
       this.deltas = deltas;
       locations = new ArrayList<String>();
+      this.deltasToAttemptId = deltasToAttemptId;
 
       for (Path path : files) {
         FileSystem fs = path.getFileSystem(hadoopConf);
@@ -470,6 +472,13 @@ public class CompactorMR {
       for (int i = 0; i < deltas.length; i++) {
         dataOutput.writeInt(deltas[i].toString().length());
         dataOutput.writeBytes(deltas[i].toString());
+        String attemptId = deltasToAttemptId.get(deltas[i].toString());
+        if (attemptId == null) {
+          dataOutput.writeInt(0);
+        } else {
+          dataOutput.writeInt(attemptId.length());
+          dataOutput.writeBytes(attemptId.toString());
+        }
       }
 
     }
@@ -502,11 +511,20 @@ public class CompactorMR {
       }
       numElements = dataInput.readInt();
       deltas = new Path[numElements];
+      deltasToAttemptId = new HashMap<>();
       for (int i = 0; i < numElements; i++) {
         len = dataInput.readInt();
         buf = new byte[len];
         dataInput.readFully(buf);
         deltas[i] = new Path(new String(buf));
+        len = dataInput.readInt();
+        String attemptId = null;
+        if (len > 0) {
+          buf = new byte[len];
+          dataInput.readFully(buf);
+          attemptId = new String(buf);
+        }
+        deltasToAttemptId.put(deltas[i].toString(), attemptId);
       }
     }
 
@@ -516,6 +534,7 @@ public class CompactorMR {
       bucketNum = other.bucketNum;
       base = other.base;
       deltas = other.deltas;
+      deltasToAttemptId = other.deltasToAttemptId;
     }
 
     int getBucket() {
@@ -528,6 +547,10 @@ public class CompactorMR {
 
     Path[] getDeltaDirs() {
       return deltas;
+    }
+
+    Map<String, String> getDeltasToAttemptId() {
+      return deltasToAttemptId;
     }
 
     @Override
@@ -587,7 +610,7 @@ public class CompactorMR {
             // For each file, figure out which bucket it is.
             Matcher matcher = isRawFormat ?
               AcidUtils.LEGACY_BUCKET_DIGIT_PATTERN.matcher(f.getPath().getName())
-              : AcidUtils.BUCKET_DIGIT_PATTERN.matcher(f.getPath().getName());
+              : AcidUtils.BUCKET_PATTERN.matcher(f.getPath().getName());
             addFileToMap(matcher, f.getPath(), sawBase, splitToBucketMap);
           }
         } else {
@@ -606,7 +629,7 @@ public class CompactorMR {
         // multiple ingestions of various sizes.
         Path[] deltasForSplit = isTableBucketed ? deltaDirs : getDeltaDirsFromBucketTracker(bt);
         splits.add(new CompactorInputSplit(entries, e.getKey(), bt.buckets,
-            bt.sawBase ? baseDir : null, deltasForSplit));
+            bt.sawBase ? baseDir : null, deltasForSplit, bt.deltasToAttemptId));
       }
 
       LOG.debug("Returning " + splits.size() + " splits");
@@ -643,7 +666,15 @@ public class CompactorMR {
         //may be a data loss scenario
         throw new IllegalArgumentException(msg);
       }
-      int bucketNum = Integer.parseInt(matcher.group());
+      int bucketNum = -1;
+      String attemptId = null;
+      if (matcher.groupCount() > 0) {
+        bucketNum = Integer.parseInt(matcher.group(1));
+        attemptId = matcher.group(2) != null ? matcher.group(2).substring(1) : null;
+      } else {
+        bucketNum = Integer.parseInt(matcher.group());
+      }
+
       BucketTracker bt = splitToBucketMap.get(bucketNum);
       if (bt == null) {
         bt = new BucketTracker();
@@ -652,16 +683,19 @@ public class CompactorMR {
       LOG.debug("Adding " + file.toString() + " to list of files for splits");
       bt.buckets.add(file);
       bt.sawBase |= sawBase;
+      bt.deltasToAttemptId.put(file.getParent().toString(), attemptId);
     }
 
     private static class BucketTracker {
       BucketTracker() {
         sawBase = false;
         buckets = new ArrayList<Path>();
+        deltasToAttemptId = new HashMap<>();
       }
 
       boolean sawBase;
       List<Path> buckets;
+      Map<String, String> deltasToAttemptId;
     }
   }
 
@@ -734,7 +768,7 @@ public class CompactorMR {
       boolean isMajor = jobConf.getBoolean(IS_MAJOR, false);
       AcidInputFormat.RawReader<V> reader =
           aif.getRawReader(jobConf, isMajor, split.getBucket(),
-                  writeIdList, split.getBaseDir(), split.getDeltaDirs());
+                  writeIdList, split.getBaseDir(), split.getDeltaDirs(), split.getDeltasToAttemptId());
       RecordIdentifier identifier = reader.createKey();
       V value = reader.createValue();
       getWriter(reporter, reader.getObjectInspector(), split.getBucket());
