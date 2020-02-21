@@ -21,7 +21,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -34,7 +33,6 @@ import org.apache.hadoop.hive.metastore.api.ScheduledQueryProgressInfo;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
-import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryExecutionService.ScheduledQueryExecutor;
 import org.apache.hadoop.hive.ql.security.SessionStateUserAuthenticator;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
@@ -52,9 +50,8 @@ public class ScheduledQueryExecutionService implements Closeable {
   private ScheduledQueryExecutionContext context;
   private ScheduledQueryExecutor worker;
   private AtomicInteger forcedScheduleCheckCounter = new AtomicInteger();
-  private final Semaphore concurrencyLimit;
-
   private ScheduledQueryPoller poller;
+  AtomicInteger usedExecutors = new AtomicInteger();
 
   public static ScheduledQueryExecutionService startScheduledQueryExecutorService(HiveConf inputConf) {
     HiveConf conf = new HiveConf(inputConf);
@@ -80,7 +77,6 @@ public class ScheduledQueryExecutionService implements Closeable {
     context = ctx;
     ctx.executor.submit(poller = new ScheduledQueryPoller());
     ctx.executor.submit(new ProgressReporter());
-    concurrencyLimit = new Semaphore(ctx.getNumberOfExecutors());
   }
 
   static boolean isTerminalState(QueryState state) {
@@ -92,19 +88,20 @@ public class ScheduledQueryExecutionService implements Closeable {
     @Override
     public void run() {
       while (true) {
-        ScheduledQueryPollResponse q = context.schedulerService.scheduledQueryPoll();
-        if (q.isSetExecutionId()) {
-          try{
-            context.executor.submit(new ScheduledQueryExecutor(q));
-          } catch (Throwable t) {
-            LOG.error("Unexpected exception during scheduled query processing", t);
-          }
-        } else {
+        if (usedExecutors.get() < context.getNumberOfExecutors()) {
           try {
-            sleep(context.getIdleSleepTime());
-          } catch (InterruptedException e) {
-            LOG.warn("interrupt discarded");
+            ScheduledQueryPollResponse q = context.schedulerService.scheduledQueryPoll();
+            if (q.isSetExecutionId()) {
+                context.executor.submit(new ScheduledQueryExecutor(q));
           }
+          } catch (Throwable t) {
+            LOG.error("Unexpected exception during scheduled query submission", t);
+          }
+        }
+        try {
+          sleep(context.getIdleSleepTime());
+        } catch (InterruptedException e) {
+          LOG.warn("interrupt discarded");
         }
       }
     }
@@ -122,20 +119,6 @@ public class ScheduledQueryExecutionService implements Closeable {
 
   }
 
-  //FIXME  SemaphoreTokenHolder
-  /*static */class ExecutorThreadToken implements AutoCloseable {
-
-    public ExecutorThreadToken() throws InterruptedException {
-      concurrencyLimit.acquire();
-    }
-
-    @Override
-    public void close() {
-      concurrencyLimit.release();
-    }
-
-  }
-
   class ScheduledQueryExecutor implements Runnable {
 
     private ScheduledQueryProgressInfo info;
@@ -145,13 +128,13 @@ public class ScheduledQueryExecutionService implements Closeable {
       q = q2;
     }
 
+
     public void run() {
-      try (ExecutorThreadToken x = new ExecutorThreadToken()) {
+      try {
+        usedExecutors.incrementAndGet();
         processQuery(q);
-      } catch (InterruptedException e) {
-        LOG.info("Executor thread interrupted");
       } finally {
-        forceScheduleCheck();
+        usedExecutors.decrementAndGet();
       }
     }
 
