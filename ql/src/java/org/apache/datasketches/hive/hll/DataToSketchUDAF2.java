@@ -91,7 +91,7 @@ public class DataToSketchUDAF2 extends AbstractGenericUDAFResolver {
     }
 
     // Validate first parameter type
-    ObjectInspectorValidator.validateCategoryPrimitive(inspectors[0], 0);
+    //    ObjectInspectorValidator.validateCategoryPrimitive(inspectors[0], 0);
 
     // Validate second argument if present
     if (inspectors.length > 1) {
@@ -115,6 +115,7 @@ public class DataToSketchUDAF2 extends AbstractGenericUDAFResolver {
   public static class DataToSketchEvaluator extends SketchEvaluator2 {
 
     private Mode mode_;
+    private boolean primititve;
 
     @SuppressWarnings("deprecation")
     @Override
@@ -124,7 +125,7 @@ public class DataToSketchUDAF2 extends AbstractGenericUDAFResolver {
       // so the mode_ was null. A solution was implemented to have UnionState, which can work
       // in both cases, but SketchState is more space-efficient.
       // HLL sketch is about compactness, so let's use SketchState if possible.
-      if ((mode_ == Mode.PARTIAL1) || (mode_ == Mode.COMPLETE)) { // iterate() will be used
+      if (primititve && (mode_ == Mode.PARTIAL1) || (mode_ == Mode.COMPLETE)) { // iterate() will be used
         return new SketchState();
       }
       return new UnionState();
@@ -140,9 +141,10 @@ public class DataToSketchUDAF2 extends AbstractGenericUDAFResolver {
      */
     @Override
     public ObjectInspector init(final Mode mode, final ObjectInspector[] parameters) throws HiveException {
+      primititve = parameters[0].getCategory() == ObjectInspector.Category.PRIMITIVE;
       super.init(mode, parameters);
       mode_ = mode;
-      if ((mode == Mode.PARTIAL1) || (mode == Mode.COMPLETE)) {
+      if (primititve && (mode == Mode.PARTIAL1) || (mode == Mode.COMPLETE)) {
         // input is original data
         inputInspector_ = (PrimitiveObjectInspector) parameters[0];
         if (parameters.length > 1) {
@@ -156,7 +158,7 @@ public class DataToSketchUDAF2 extends AbstractGenericUDAFResolver {
         intermediateInspector_ = (StructObjectInspector) parameters[0];
       }
 
-      if ((mode == Mode.PARTIAL1) || (mode == Mode.PARTIAL2)) {
+      if (primititve && (mode == Mode.PARTIAL1) || (mode == Mode.PARTIAL2)) {
         // intermediate results need to include the lgK and the target HLL type
         return getSketchType();
       }
@@ -187,12 +189,16 @@ public class DataToSketchUDAF2 extends AbstractGenericUDAFResolver {
     @Override
     public void iterate(final @SuppressWarnings("deprecation") AggregationBuffer agg,
         final Object[] parameters) throws HiveException {
+      if (primititve) {
       if (parameters[0] == null) { return; }
       final State state = (State) agg;
       if (!state.isInitialized()) {
         initializeState(state, parameters);
       }
       state.update(parameters[0], inputInspector_);
+      } else {
+        merge(agg, parameters[0]);
+      }
     }
 
     private void initializeState(final State state, final Object[] parameters) {

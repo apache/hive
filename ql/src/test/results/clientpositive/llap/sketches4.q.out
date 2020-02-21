@@ -239,11 +239,13 @@ STAGE PLANS:
 PREHOOK: query: explain
 select SketchToEstimate2(datatosketch2(id)) from sketch_input
 PREHOOK: type: QUERY
+PREHOOK: Input: default@mv_1
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select SketchToEstimate2(datatosketch2(id)) from sketch_input
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mv_1
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -261,25 +263,25 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: sketch_input
-                  Statistics: Num rows: 22 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
+                  alias: default.mv_1
+                  Statistics: Num rows: 2 Data size: 776 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: id (type: int)
-                    outputColumnNames: id
-                    Statistics: Num rows: 22 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
+                    expressions: _c1 (type: struct<lgk:int,type:string,sketch:binary>)
+                    outputColumnNames: _c1
+                    Statistics: Num rows: 2 Data size: 776 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: datatosketch2(id)
-                      minReductionHashAggr: 0.95454544
+                      aggregations: datatosketch2(_c1)
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 388 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 776 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         null sort order: 
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 388 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 776 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: struct<lgk:int,type:string,sketch:binary>)
             Execution mode: llap
-            LLAP IO: may be used (ACID table)
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -287,14 +289,14 @@ STAGE PLANS:
                 aggregations: datatosketch2(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 388 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 776 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: sketchTOEstimate2xxxxFIXME (type: double)
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 776 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1 Data size: 776 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -308,10 +310,12 @@ STAGE PLANS:
 
 PREHOOK: query: select SketchToEstimate2(datatosketch2(id)) from sketch_input
 PREHOOK: type: QUERY
+PREHOOK: Input: default@mv_1
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 POSTHOOK: query: select SketchToEstimate2(datatosketch2(id)) from sketch_input
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mv_1
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 15.000000521540663
