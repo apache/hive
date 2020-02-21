@@ -26,6 +26,7 @@ import org.apache.hive.common.util.MockFileSystem;
 import org.apache.orc.CompressionKind;
 import org.apache.orc.FileMetadata;
 import org.apache.orc.OrcProto;
+import org.apache.orc.OrcProto.Footer;
 import org.apache.orc.impl.OrcTail;
 import org.junit.Test;
 
@@ -50,16 +51,16 @@ public class TestEncodedOrcFile {
     conf.set("fs.defaultFS", "fmock:///");
     conf.set("fs.mock.impl", FailingMockFileSystem.class.getName());
 
-    List<OrcProto.Type> types = new ArrayList<>();
-    types.add(OrcProto.Type.newBuilder().setKind(OrcProto.Type.Kind.BINARY).build());
-    FileMetadata dummyMetadata = mock(FileMetadata.class);
-    when(dummyMetadata.getTypes()).thenReturn(types);
-    when(dummyMetadata.getCompressionKind()).thenReturn(CompressionKind.NONE);
+    OrcProto.FileTail tail = OrcProto.FileTail.newBuilder()
+        .setFooter(Footer.newBuilder()
+            .addTypes(OrcProto.Type.newBuilder().setKind(OrcProto.Type.Kind.BINARY).build())
+            .build())
+        .build();
     OrcFile.ReaderOptions readerOptions = EncodedOrcFile.readerOptions(conf)
         .filesystem(() -> {
           throw new RuntimeException("Filesystem should not have been initialized");
-        }).orcTail(new OrcTail(OrcProto.FileTail.getDefaultInstance(), null))
-        .fileMetadata(dummyMetadata);
+        })
+        .orcTail(new OrcTail(tail, null));
 
     // an orc reader is created, this should not cause filesystem initialization
     // because orc tail is already provided and we are not making any real reads.

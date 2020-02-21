@@ -60,6 +60,7 @@ public class AvroSerDe extends AbstractSerDe {
   public static final String DATE_TYPE_NAME = "date";
   public static final String TIMESTAMP_TYPE_NAME = "timestamp-millis";
   public static final String WRITER_TIME_ZONE = "writer.time.zone";
+  public static final String WRITER_PROLEPTIC = "writer.proleptic";
   public static final String AVRO_PROP_LOGICAL_TYPE = "logicalType";
   public static final String AVRO_PROP_PRECISION = "precision";
   public static final String AVRO_PROP_SCALE = "scale";
@@ -148,7 +149,7 @@ public class AvroSerDe extends AbstractSerDe {
     }
 
     if(!badSchema) {
-      this.avroSerializer = new AvroSerializer();
+      this.avroSerializer = new AvroSerializer(configuration);
       this.avroDeserializer = new AvroDeserializer(configuration);
     }
   }

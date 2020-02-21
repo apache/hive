@@ -372,6 +372,12 @@ PREHOOK: Output: default@int_part
 POSTHOOK: query: INSERT OVERWRITE TABLE int_part PARTITION (par) SELECT * FROM b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@b
+POSTHOOK: Output: default@int_part@par=1
+POSTHOOK: Output: default@int_part@par=2
+POSTHOOK: Output: default@int_part@par=3
+POSTHOOK: Lineage: int_part PARTITION(par=1).col SIMPLE [(b)b.FieldSchema(name:par, type:string, comment:null), ]
+POSTHOOK: Lineage: int_part PARTITION(par=2).col SIMPLE [(b)b.FieldSchema(name:par, type:string, comment:null), ]
+POSTHOOK: Lineage: int_part PARTITION(par=3).col SIMPLE [(b)b.FieldSchema(name:par, type:string, comment:null), ]
 PREHOOK: query: SELECT count(*) FROM int_part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@int_part
@@ -429,7 +435,11 @@ POSTHOOK: query: INSERT OVERWRITE TABLE int_part PARTITION (par) SELECT * FROM b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@b
 POSTHOOK: Output: default@int_part@par=1
+POSTHOOK: Output: default@int_part@par=2
+POSTHOOK: Output: default@int_part@par=3
 POSTHOOK: Lineage: int_part PARTITION(par=1).col SIMPLE [(b)b.FieldSchema(name:par, type:string, comment:null), ]
+POSTHOOK: Lineage: int_part PARTITION(par=2).col SIMPLE [(b)b.FieldSchema(name:par, type:string, comment:null), ]
+POSTHOOK: Lineage: int_part PARTITION(par=3).col SIMPLE [(b)b.FieldSchema(name:par, type:string, comment:null), ]
 PREHOOK: query: SELECT count(*) FROM int_part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@int_part

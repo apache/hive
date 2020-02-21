@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 public abstract class FileMetadataHandler {
   protected static final Logger LOG = LoggerFactory.getLogger(FileMetadataHandler.class);
 
-  private Configuration conf;
+  protected Configuration conf;
   private PartitionExpressionProxy expressionProxy;
   private FileFormatProxy fileFormatProxy;
   private MetadataStore store;

@@ -29,8 +29,8 @@ import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinNonM
 public abstract class VectorMapJoinFastHashTable implements VectorMapJoinHashTable {
   public static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinFastHashTable.class);
 
-  // when rehashing, jump directly to 4k items
-  public static final int FIRST_SIZE_UP = 4096;
+  // when rehashing, jump directly to 1M items
+  public static final int FIRST_SIZE_UP = 1048576;
 
   protected final boolean isFullOuter;
 

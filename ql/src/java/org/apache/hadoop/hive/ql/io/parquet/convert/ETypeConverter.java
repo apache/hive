@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.ql.io.parquet.read.DataWritableReadSupport;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTime;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTimeUtils;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.ParquetTimestampUtils;
+import org.apache.hadoop.hive.common.type.CalendarUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -706,7 +707,14 @@ public enum ETypeConverter {
       return new PrimitiveConverter() {
         @Override
         public void addInt(final int value) {
-          parent.set(index, new DateWritableV2(value));
+          Map<String, String> metadata = parent.getMetadata();
+          Boolean skipProlepticConversion = DataWritableReadSupport.getWriterDateProleptic(metadata);
+          if (skipProlepticConversion == null) {
+            skipProlepticConversion = Boolean.parseBoolean(
+                metadata.get(HiveConf.ConfVars.HIVE_PARQUET_DATE_PROLEPTIC_GREGORIAN_DEFAULT.varname));
+          }
+          parent.set(index,
+              new DateWritableV2(skipProlepticConversion ? value : CalendarUtils.convertDateToProleptic(value)));
         }
       };
     }

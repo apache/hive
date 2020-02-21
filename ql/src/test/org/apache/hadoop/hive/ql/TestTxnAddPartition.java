@@ -294,6 +294,6 @@ public class TestTxnAddPartition extends TxnCommandsBaseForTests {
     runStatementOnDriver("insert into Tstage partition(p=1) values(0,2),(1,4)");
 
     runStatementOnDriver("ALTER TABLE T ADD PARTITION (p=0) location '"
-        + getWarehouseDir() + "/tstage/p=1/delta_0000001_0000001_0000/bucket_00001'");
+        + getWarehouseDir() + "/tstage/p=1/delta_0000001_0000001_0000/bucket_00001_0'");
   }
 }

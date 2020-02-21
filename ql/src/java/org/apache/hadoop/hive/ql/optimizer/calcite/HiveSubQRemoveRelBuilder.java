@@ -505,7 +505,7 @@ public class HiveSubQRemoveRelBuilder {
    * {@code e AND TRUE} becomes {@code e};
    * {@code e AND e2 AND NOT e} becomes {@code e2}. */
   public RexNode and(Iterable<? extends RexNode> operands) {
-    return RexUtil.simplifyAnds(cluster.getRexBuilder(), operands);
+    return RexUtil.composeConjunction(cluster.getRexBuilder(), operands);
   }
 
   /** Creates an OR. */
@@ -756,13 +756,13 @@ public class HiveSubQRemoveRelBuilder {
    * and optimized in a similar way to the {@link #and} method.
    * If the result is TRUE no filter is created. */
   public HiveSubQRemoveRelBuilder filter(Iterable<? extends RexNode> predicates) {
-    final RexNode x = RexUtil.simplifyAnds(cluster.getRexBuilder(), predicates, true);
+    final RexNode x = RexUtil.composeConjunction(cluster.getRexBuilder(), predicates);
     if (x.isAlwaysFalse()) {
       return empty();
     }
     if (!x.isAlwaysTrue()) {
       final Frame frame = stack.pop();
-      final RelNode filter = filterFactory.createFilter(frame.rel, x);
+      final RelNode filter = filterFactory.createFilter(frame.rel, x, ImmutableSet.of());
       stack.push(new Frame(filter, frame.right));
     }
     return this;
