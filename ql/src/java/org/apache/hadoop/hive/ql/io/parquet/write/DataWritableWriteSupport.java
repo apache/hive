@@ -41,6 +41,7 @@ public class DataWritableWriteSupport extends WriteSupport<ParquetHiveRecord> {
   private DataWritableWriter writer;
   private MessageType schema;
   private boolean defaultDateProleptic;
+  private Configuration conf;
 
   public static void setSchema(final MessageType schema, final Configuration configuration) {
     configuration.set(PARQUET_HIVE_SCHEMA, schema.toString());
@@ -52,6 +53,7 @@ public class DataWritableWriteSupport extends WriteSupport<ParquetHiveRecord> {
 
   @Override
   public WriteContext init(final Configuration configuration) {
+    conf = configuration;
     schema = getSchema(configuration);
     Map<String, String> metaData = new HashMap<>();
     metaData.put(WRITER_TIMEZONE, TimeZone.getDefault().toZoneId().toString());
@@ -63,7 +65,7 @@ public class DataWritableWriteSupport extends WriteSupport<ParquetHiveRecord> {
 
   @Override
   public void prepareForWrite(final RecordConsumer recordConsumer) {
-    writer = new DataWritableWriter(recordConsumer, schema, defaultDateProleptic);
+    writer = new DataWritableWriter(recordConsumer, schema, defaultDateProleptic, conf);
   }
 
   @Override

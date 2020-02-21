@@ -14,15 +14,18 @@
 package org.apache.hadoop.hive.ql.io.parquet;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.parquet.serde.ArrayWritableObjectInspector;
 import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
 import org.apache.hadoop.hive.ql.io.parquet.write.DataWritableWriter;
-import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.io.ParquetHiveRecord;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
+import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.ParquetHiveRecord;
+import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -56,11 +59,13 @@ import static org.mockito.Mockito.*;
 public class TestDataWritableWriter {
   @Mock private RecordConsumer mockRecordConsumer;
   private InOrder inOrder;
+  private Configuration conf;
 
   @Before
   public void initMocks() {
     MockitoAnnotations.initMocks(this);
     inOrder = inOrder(mockRecordConsumer);
+    conf = new Configuration();
   }
 
   private void startMessage() {
@@ -84,7 +89,7 @@ public class TestDataWritableWriter {
     inOrder.verify(mockRecordConsumer).addInteger(value);
   }
 
-  private void addLong(int value) {
+  private void addLong(long value) {
     inOrder.verify(mockRecordConsumer).addLong(value);
   }
 
@@ -140,6 +145,10 @@ public class TestDataWritableWriter {
     return new BytesWritable(value.getBytes(StandardCharsets.UTF_8));
   }
 
+  private TimestampWritableV2 createTimestamp(String s) {
+    return new TimestampWritableV2(Timestamp.valueOf(s));
+  }
+
   private ArrayWritable createGroup(Writable...values) {
     return new ArrayWritable(Writable.class, values);
   }
@@ -185,14 +194,14 @@ public class TestDataWritableWriter {
     recordProperties.setProperty("columns.types", columnTypes);
 
     ParquetHiveSerDe serDe = new ParquetHiveSerDe();
-    SerDeUtils.initializeSerDe(serDe, new Configuration(), recordProperties, null);
+    SerDeUtils.initializeSerDe(serDe, conf, recordProperties, null);
 
     return new ParquetHiveRecord(serDe.deserialize(record), getObjectInspector(columnNames, columnTypes));
   }
 
   private void writeParquetRecord(String schema, ParquetHiveRecord record) throws SerDeException {
     MessageType fileSchema = MessageTypeParser.parseMessageType(schema);
-    DataWritableWriter hiveParquetWriter = new DataWritableWriter(mockRecordConsumer, fileSchema, false);
+    DataWritableWriter hiveParquetWriter = new DataWritableWriter(mockRecordConsumer, fileSchema, false, conf);
     hiveParquetWriter.write(record);
   }
 
@@ -252,6 +261,38 @@ public class TestDataWritableWriter {
       startField("bigint", 7);
         addLong(1);
       endField("bigint", 7);
+    endMessage();
+  }
+
+  @Test
+  public void testInt64Timestamp() throws Exception {
+    conf.setBoolean(HiveConf.ConfVars.HIVE_PARQUET_WRITE_INT64_TIMESTAMP.varname, true);
+    verifyInt64Timestamp("nan", "1970-01-01 00:00:00.000000001", "nanos");
+    verifyInt64Timestamp("mic", "1970-01-01 00:00:00.000001", "micros");
+    verifyInt64Timestamp("mil", "1970-01-01 00:00:00.001", "millis");
+  }
+
+  private void verifyInt64Timestamp(String columnName, String timestampString, String timeUnit)
+      throws Exception {
+    conf.set(HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_TIME_UNIT.varname, timeUnit);
+    String columnTypes = "timestamp";
+
+    String fileSchema = "message hive_schema {\n"
+        + "  optional int64 " + columnName + " (TIMESTAMP(" + timeUnit.toUpperCase() + ",false));\n"
+        + "}\n";
+
+    ArrayWritable hiveRecord = createGroup(
+        createTimestamp(timestampString)
+    );
+
+    // Write record to Parquet format
+    writeParquetRecord(fileSchema, getParquetWritable(columnName, columnTypes, hiveRecord));
+
+    // Verify record was written correctly to Parquet
+    startMessage();
+    startField(columnName, 0);
+    addLong(1L);
+    endField(columnName, 0);
     endMessage();
   }
 
