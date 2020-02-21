@@ -19,6 +19,8 @@ package org.apache.hadoop.hive.ql.scheduled;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -48,10 +50,10 @@ public class ScheduledQueryExecutionService implements Closeable {
   private static ScheduledQueryExecutionService INSTANCE = null;
 
   private ScheduledQueryExecutionContext context;
-  private ScheduledQueryExecutor worker;
   private AtomicInteger forcedScheduleCheckCounter = new AtomicInteger();
   private ScheduledQueryPoller poller;
   AtomicInteger usedExecutors = new AtomicInteger();
+  List<ScheduledQueryExecutor> runningWorkers = new LinkedList<>();
 
   public static ScheduledQueryExecutionService startScheduledQueryExecutorService(HiveConf inputConf) {
     HiveConf conf = new HiveConf(inputConf);
@@ -92,8 +94,8 @@ public class ScheduledQueryExecutionService implements Closeable {
           try {
             ScheduledQueryPollResponse q = context.schedulerService.scheduledQueryPoll();
             if (q.isSetExecutionId()) {
-                context.executor.submit(new ScheduledQueryExecutor(q));
-          }
+              context.executor.submit(new ScheduledQueryExecutor(q));
+            }
           } catch (Throwable t) {
             LOG.error("Unexpected exception during scheduled query submission", t);
           }
@@ -119,22 +121,32 @@ public class ScheduledQueryExecutionService implements Closeable {
 
   }
 
+  private void workerStarted(ScheduledQueryExecutor executor) {
+    runningWorkers.add(executor);
+    usedExecutors.incrementAndGet();
+  }
+
+  private void workerStopped(ScheduledQueryExecutor executor) {
+    usedExecutors.decrementAndGet();
+    runningWorkers.remove(executor);
+  }
+
   class ScheduledQueryExecutor implements Runnable {
 
     private ScheduledQueryProgressInfo info;
-    final ScheduledQueryPollResponse q;
+    final ScheduledQueryPollResponse pollResponse;
 
-    public ScheduledQueryExecutor(ScheduledQueryPollResponse q2) {
-      q = q2;
+    //FIXME
+    public ScheduledQueryExecutor(ScheduledQueryPollResponse pollResponse) {
+      workerStarted(this);
+      this.pollResponse = pollResponse;
     }
-
 
     public void run() {
       try {
-        usedExecutors.incrementAndGet();
-        processQuery(q);
+        processQuery(pollResponse);
       } finally {
-        usedExecutors.decrementAndGet();
+        workerStopped(this);
       }
     }
 
@@ -212,7 +224,9 @@ public class ScheduledQueryExecutionService implements Closeable {
           LOG.warn("interrupt discarded");
         }
         try {
-          worker.reportQueryProgress();
+          for (ScheduledQueryExecutor worker : runningWorkers) {
+            worker.reportQueryProgress();
+          }
         } catch (Exception e) {
           LOG.error("ProgressReporter encountered exception ", e);
         }
