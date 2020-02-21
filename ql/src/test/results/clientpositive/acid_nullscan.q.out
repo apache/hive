@@ -98,7 +98,11 @@ STAGE PLANS:
               serialization.ddl struct acid_vectorized_n1 { i32 a, string b}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
+<<<<<<< HEAD
               totalSize 2577
+=======
+              totalSize 2602
+>>>>>>> apache/master
               transactional true
               transactional_properties default
 #### A masked pattern was here ####
@@ -123,7 +127,11 @@ STAGE PLANS:
                 serialization.ddl struct acid_vectorized_n1 { i32 a, string b}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+<<<<<<< HEAD
                 totalSize 2577
+=======
+                totalSize 2602
+>>>>>>> apache/master
                 transactional true
                 transactional_properties default
 #### A masked pattern was here ####

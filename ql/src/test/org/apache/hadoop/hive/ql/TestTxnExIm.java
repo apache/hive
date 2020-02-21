@@ -379,7 +379,7 @@ target/tmp/org.apache.hadoop.hive.ql.TestTxnCommands-1521148657811/
         "select ROW__ID, a, b, INPUT__FILE__NAME from T order by ROW__ID";
     String[][] expected = new String[][] {
         {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t0\t0",
-            "t/p=10/delta_0000001_0000001_0000/bucket_00000"},
+            "t/p=10/delta_0000001_0000001_0000/bucket_00000_0"},
         {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t3\t4",
             "t/p=11/delta_0000002_0000002_0000/000000_0"},
         {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\t5\t6",

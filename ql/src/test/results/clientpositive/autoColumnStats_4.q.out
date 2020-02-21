@@ -214,7 +214,11 @@ Table Parameters:
 	numFiles            	2                   
 	numRows             	10                  
 	rawDataSize         	0                   
+<<<<<<< HEAD
 	totalSize           	1880                
+=======
+	totalSize           	1903                
+>>>>>>> apache/master
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -259,7 +263,11 @@ Table Parameters:
 	numFiles            	3                   
 	numRows             	8                   
 	rawDataSize         	0                   
+<<<<<<< HEAD
 	totalSize           	2590                
+=======
+	totalSize           	3293                
+>>>>>>> apache/master
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####

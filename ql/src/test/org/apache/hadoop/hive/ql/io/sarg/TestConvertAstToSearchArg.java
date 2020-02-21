@@ -2753,7 +2753,7 @@ public class TestConvertAstToSearchArg {
     assertEquals(1, sarg.getLeaves().size());
     PredicateLeaf leaf = sarg.getLeaves().get(0);
     assertEquals(PredicateLeaf.Type.TIMESTAMP, leaf.getType());
-    assertEquals("(EQUALS ts 2015-03-17 12:34:56.0)", leaf.toString());
+    assertEquals("(EQUALS ts 2015-03-17 05:34:56.0)", leaf.toString());
   }
 
   @Test

@@ -61,9 +61,9 @@ public class TestTxnConcatenate extends TxnCommandsBaseForTests {
         {"{\"writeid\":2,\"bucketid\":536936448,\"rowid\":1}\t4\t4",
             "acidtbl/delta_0000002_0000002_0000/bucket_00001"},
         {"{\"writeid\":3,\"bucketid\":536936448,\"rowid\":0}\t5\t6",
-            "acidtbl/delta_0000003_0000003_0000/bucket_00001"},
+            "acidtbl/delta_0000003_0000003_0000/bucket_00001_0"},
         {"{\"writeid\":3,\"bucketid\":536936448,\"rowid\":1}\t8\t8",
-            "acidtbl/delta_0000003_0000003_0000/bucket_00001"}};
+            "acidtbl/delta_0000003_0000003_0000/bucket_00001_0"}};
     checkResult(expected, testQuery, false, "check data", LOG);
 
     /*in UTs, there is no standalone HMS running to kick off compaction so it's done via runWorker()
@@ -100,11 +100,11 @@ public class TestTxnConcatenate extends TxnCommandsBaseForTests {
         {"{\"writeid\":2,\"bucketid\":536936448,\"rowid\":0}\t1\t4",
             "acidtblpart/p=p1/delta_0000002_0000002_0000/bucket_00001"},
         {"{\"writeid\":1,\"bucketid\":536936448,\"rowid\":0}\t4\t5",
-            "acidtblpart/p=p2/delta_0000001_0000001_0000/bucket_00001"},
+            "acidtblpart/p=p2/delta_0000001_0000001_0000/bucket_00001_0"},
         {"{\"writeid\":3,\"bucketid\":536936448,\"rowid\":0}\t5\t6",
-            "acidtblpart/p=p1/delta_0000003_0000003_0000/bucket_00001"},
+            "acidtblpart/p=p1/delta_0000003_0000003_0000/bucket_00001_0"},
         {"{\"writeid\":3,\"bucketid\":536936448,\"rowid\":0}\t8\t8",
-            "acidtblpart/p=p2/delta_0000003_0000003_0000/bucket_00001"}};
+            "acidtblpart/p=p2/delta_0000003_0000003_0000/bucket_00001_0"}};
     checkResult(expected, testQuery, false, "check data", LOG);
 
     /*in UTs, there is no standalone HMS running to kick off compaction so it's done via runWorker()
@@ -124,11 +124,11 @@ public class TestTxnConcatenate extends TxnCommandsBaseForTests {
         {"{\"writeid\":2,\"bucketid\":536936448,\"rowid\":0}\t1\t4",
             "acidtblpart/p=p1/base_0000003_v0000019/bucket_00001"},
         {"{\"writeid\":1,\"bucketid\":536936448,\"rowid\":0}\t4\t5",
-            "acidtblpart/p=p2/delta_0000001_0000001_0000/bucket_00001"},
+            "acidtblpart/p=p2/delta_0000001_0000001_0000/bucket_00001_0"},
         {"{\"writeid\":3,\"bucketid\":536936448,\"rowid\":0}\t5\t6",
             "acidtblpart/p=p1/base_0000003_v0000019/bucket_00001"},
         {"{\"writeid\":3,\"bucketid\":536936448,\"rowid\":0}\t8\t8",
-            "acidtblpart/p=p2/delta_0000003_0000003_0000/bucket_00001"}};
+            "acidtblpart/p=p2/delta_0000003_0000003_0000/bucket_00001_0"}};
 
     checkResult(expected2, testQuery, false, "check data after concatenate", LOG);
   }
