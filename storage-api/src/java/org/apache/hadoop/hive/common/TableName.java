@@ -58,7 +58,8 @@ public class TableName implements Serializable {
     this.dbIsBlank = dbName == null || dbName.trim().isEmpty();
     this.catIsBlank = catName == null || catName.trim().isEmpty();
     if (dbIsBlank && !catIsBlank) {
-      throw new IllegalArgumentException(String.join("", "Invalid values: database was blank, while category wasn't. ", ILL_ARG_EXCEPTION_MSG));
+      throw new IllegalArgumentException(
+          String.join("", "Invalid values: database was blank, while category wasn't. ", ILL_ARG_EXCEPTION_MSG));
     }
 
     this.cat = this.catIsBlank ? catName : catName.toLowerCase();

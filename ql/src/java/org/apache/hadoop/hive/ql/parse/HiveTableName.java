@@ -84,7 +84,8 @@ public final class HiveTableName extends TableName {
       return new TableName(null, null, null);
     } else {
       try {
-        final String cat = defaultDb == null || defaultDb.trim().isEmpty() ? null : SessionState.get().getCurrentCatalog(); // if a db is null, so should the catalog be
+        // if a db is null, so should the catalog be. A workaround, while ofNullable exists at all
+        final String cat = defaultDb == null || defaultDb.trim().isEmpty() ? null : SessionState.get().getCurrentCatalog();
         return fromString(dbTableName, cat, defaultDb);
       } catch (IllegalArgumentException e) {
         throw new SemanticException(e);

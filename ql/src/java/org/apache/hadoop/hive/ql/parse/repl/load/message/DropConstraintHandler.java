@@ -23,10 +23,8 @@ import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.table.constraint.drop.AlterTableDropConstraintDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
-import org.apache.hadoop.hive.ql.parse.HiveTableName;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
-import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 

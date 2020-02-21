@@ -35,8 +35,8 @@ public class AlterTableRenameDesc extends AbstractAlterTableDesc {
 
   private final TableName newTableName;
 
-  public AlterTableRenameDesc(TableName tableName, ReplicationSpec replicationSpec, boolean expectView, TableName newTableName)
-      throws SemanticException {
+  public AlterTableRenameDesc(TableName tableName, ReplicationSpec replicationSpec, boolean expectView,
+      TableName newTableName) throws SemanticException {
     super(AlterTableType.RENAME, tableName, null, replicationSpec, false, expectView, null);
     this.newTableName = newTableName;
   }
