@@ -15279,8 +15279,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private List<Table> getNonTransactionalTables() {
+    // views have been expanded by CBO already and can be ignored
     return tablesFromReadEntities(inputs)
         .stream()
+        .filter(table -> !table.isView())
         .filter(table -> !AcidUtils.isTransactionalTable(table))
         .collect(Collectors.toList());
   }
