@@ -52,7 +52,7 @@ public class ScheduledQueryExecutionService implements Closeable {
   private ScheduledQueryExecutionContext context;
   private AtomicInteger forcedScheduleCheckCounter = new AtomicInteger();
   private ScheduledQueryPoller poller;
-  AtomicInteger usedExecutors = new AtomicInteger();
+  AtomicInteger usedExecutors = new AtomicInteger(0);
   List<ScheduledQueryExecutor> runningWorkers = new LinkedList<>();
 
   public static ScheduledQueryExecutionService startScheduledQueryExecutorService(HiveConf inputConf) {
@@ -129,6 +129,7 @@ public class ScheduledQueryExecutionService implements Closeable {
   private void workerStopped(ScheduledQueryExecutor executor) {
     usedExecutors.decrementAndGet();
     runningWorkers.remove(executor);
+    forceScheduleCheck();
   }
 
   class ScheduledQueryExecutor implements Runnable {

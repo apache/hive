@@ -12736,7 +12736,7 @@ public class ObjectStore implements RawStore, Configurable {
       case TIMED_OUT:
         execution.setEndTime((int) (System.currentTimeMillis() / 1000));
         execution.setLastUpdateTime(null);
-        //execution.getScheduledQuery().setActiveExecution(null);
+        execution.getScheduledQuery().setActiveExecution(null);
         break;
       default:
         throw new InvalidOperationException("invalid state: " + info.getState());
