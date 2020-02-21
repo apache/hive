@@ -73,8 +73,12 @@ insert into table encryptedTable_n0 partition (key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@encryptedtable_n0@key=238
+POSTHOOK: Output: default@encryptedtable_n0@key=501
+POSTHOOK: Output: default@encryptedtable_n0@key=502
 POSTHOOK: Output: default@encryptedtable_n0@key=86
 POSTHOOK: Lineage: encryptedtable_n0 PARTITION(key=238).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: encryptedtable_n0 PARTITION(key=501).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: encryptedtable_n0 PARTITION(key=502).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: encryptedtable_n0 PARTITION(key=86).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select * from encryptedTable_n0 order by key
 PREHOOK: type: QUERY

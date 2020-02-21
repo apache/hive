@@ -2459,7 +2459,8 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
                                            int bucket,
                                            ValidWriteIdList validWriteIdList,
                                            Path baseDirectory,
-                                           Path[] deltaDirectory
+                                           Path[] deltaDirectory,
+                                           Map<String, String> deltasToAttemptId
                                            ) throws IOException {
     boolean isOriginal = false;
     OrcRawRecordMerger.Options mergerOptions = new OrcRawRecordMerger.Options().isCompacting(true)
@@ -2481,7 +2482,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       mergerOptions.rootPath(deltaDirectory[0].getParent());
     }
     return new OrcRawRecordMerger(conf, collapseEvents, null, isOriginal,
-        bucket, validWriteIdList, new Reader.Options(conf), deltaDirectory, mergerOptions);
+        bucket, validWriteIdList, new Reader.Options(conf), deltaDirectory, mergerOptions, deltasToAttemptId);
   }
 
   /**

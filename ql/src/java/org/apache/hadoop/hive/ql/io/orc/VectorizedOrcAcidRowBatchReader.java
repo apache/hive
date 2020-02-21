@@ -1134,7 +1134,7 @@ public class VectorizedOrcAcidRowBatchReader
         assert !orcSplit.isOriginal() : "If this now supports Original splits, set up mergeOptions properly";
         this.deleteRecords = new OrcRawRecordMerger(conf, true, null, false, bucket,
                                                     validWriteIdList, readerOptions, deleteDeltas,
-                                                    mergerOptions);
+                                                    mergerOptions, null);
         this.deleteRecordKey = new OrcRawRecordMerger.ReaderKey();
         this.deleteRecordValue = this.deleteRecords.createValue();
         // Initialize the first value in the delete reader.
@@ -1565,7 +1565,7 @@ public class VectorizedOrcAcidRowBatchReader
           for (Path deleteDeltaDir : deleteDeltaDirs) {
             FileSystem fs = deleteDeltaDir.getFileSystem(conf);
             Path[] deleteDeltaFiles = OrcRawRecordMerger.getDeltaFiles(deleteDeltaDir, bucket,
-                new OrcRawRecordMerger.Options().isCompacting(false));
+                new OrcRawRecordMerger.Options().isCompacting(false), null);
             for (Path deleteDeltaFile : deleteDeltaFiles) {
               // NOTE: Calling last flush length below is more for future-proofing when we have
               // streaming deletes. But currently we don't support streaming deletes, and this can

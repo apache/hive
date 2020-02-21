@@ -112,7 +112,7 @@ public class TestHiveHistory {
         db.createTable(src, cols, null, TextInputFormat.class,
             IgnoreKeyTextOutputFormat.class);
         db.loadTable(hadoopDataFile[i], src,
-          LoadFileType.KEEP_EXISTING, false, false, false, false, null, 0, false);
+          LoadFileType.KEEP_EXISTING, false, false, false, false, null, 0, false, false);
         i++;
       }
 
