@@ -12969,11 +12969,29 @@ public class ObjectStore implements RawStore, Configurable {
         //        info.set
         scheduledQueryProgress(info);
       }
+
+      recoverInvalidScheduledQueryState(timeoutSecs);
       committed = commitTransaction();
       return results.size();
     } finally {
       if (!committed) {
         rollbackTransaction();
+      }
+    }
+  }
+
+  private void recoverInvalidScheduledQueryState(int timeoutSecs) {
+    int maxLastUpdateTime = (int) (System.currentTimeMillis() / 1000) - timeoutSecs;
+    Query q = pm.newQuery(MScheduledQuery.class);
+    q.setFilter("activeExecution <> null");
+
+    List<MScheduledQuery> results = (List<MScheduledQuery>) q.execute();
+    for (MScheduledQuery e : results) {
+      if (e.getActiveExecution().getLastUpdateTime() < maxLastUpdateTime) {
+        LOG.error("Scheduled query: {} stuck with an activeExecution - clearing",
+            scheduledQueryKeyRef(e.getScheduleKey()));
+        e.setActiveExecution(null);
+        pm.makePersistent(e);
       }
     }
   }

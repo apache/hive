@@ -117,4 +117,8 @@ public class MScheduledQuery {
     activeExecution = execution;
   }
 
+  public MScheduledExecution getActiveExecution() {
+    return activeExecution;
+  }
+
 }
