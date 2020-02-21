@@ -2286,7 +2286,7 @@ public class HiveConf extends Configuration {
         "When enabled dynamic partitioning column will be globally sorted.\n" +
         "This way we can keep only one record writer open for each partition value\n" +
         "in the reducer thereby reducing the memory pressure on reducers."),
-    HIVEOPTSORTDYNAMICPARTITIONTHRESHOLD("hive.optimize.sort.dynamic.partition.threshold", 0,
+    HIVEOPTSORTDYNAMICPARTITIONTHRESHOLD("hive.optimize.sort.dynamic.partition.threshold", -1,
                                 "When enabled dynamic partitioning column will be globally sorted.\n" +
                                     "This way we can keep only one record writer open for each partition value\n" +
                                     "in the reducer thereby reducing the memory pressure on reducers.\n" +
