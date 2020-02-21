@@ -267,6 +267,11 @@ public class OrcOutputFormat extends FileOutputFormat<NullWritable, OrcSerdeRow>
       stringifyObject(buffer, obj, inspector);
       return buffer.toString();
     }
+
+    @Override
+    public Path getUpdatedFilePath() {
+      return null;
+    }
   }
 
   @Override

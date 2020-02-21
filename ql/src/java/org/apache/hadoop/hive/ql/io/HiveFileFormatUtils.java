@@ -314,10 +314,15 @@ public final class HiveFileFormatUtils {
     return (HiveOutputFormat<?, ?>) outputFormat;
   }
 
+  public static RecordUpdater getAcidRecordUpdater(JobConf jc, TableDesc tableInfo, int bucket, FileSinkDesc conf,
+      Path outPath, ObjectInspector inspector, Reporter reporter, int rowIdColNum) throws HiveException, IOException {
+    return getAcidRecordUpdater(jc, tableInfo, bucket, conf, outPath, inspector, reporter, rowIdColNum, null);
+  }
+
   public static RecordUpdater getAcidRecordUpdater(JobConf jc, TableDesc tableInfo, int bucket,
                                                    FileSinkDesc conf, Path outPath,
                                                    ObjectInspector inspector,
-                                                   Reporter reporter, int rowIdColNum)
+                                                   Reporter reporter, int rowIdColNum, String attemptId)
       throws HiveException, IOException {
     HiveOutputFormat<?, ?> hiveOutputFormat = getHiveOutputFormat(jc, tableInfo);
     AcidOutputFormat<?, ?> acidOutputFormat = null;
@@ -331,9 +336,8 @@ public final class HiveFileFormatUtils {
     // file the way getHiveRecordWriter does, as ORC appears to read the value for itself.  Not
     // sure if this is correct or not.
     return getRecordUpdater(jc, acidOutputFormat,
-        bucket, inspector, tableInfo.getProperties(), outPath, reporter, rowIdColNum, conf);
+        bucket, inspector, tableInfo.getProperties(), outPath, reporter, rowIdColNum, conf, attemptId);
   }
-
 
   private static RecordUpdater getRecordUpdater(JobConf jc,
                                                 AcidOutputFormat<?, ?> acidOutputFormat,
@@ -343,7 +347,8 @@ public final class HiveFileFormatUtils {
                                                 Path outPath,
                                                 Reporter reporter,
                                                 int rowIdColNum,
-                                                FileSinkDesc conf) throws IOException {
+                                                FileSinkDesc conf,
+                                                String attemptId) throws IOException {
     return acidOutputFormat.getRecordUpdater(outPath, new AcidOutputFormat.Options(jc)
         .isCompressed(conf.getCompressed())
         .tableProperties(tableProp)
@@ -355,7 +360,8 @@ public final class HiveFileFormatUtils {
         .inspector(inspector)
         .recordIdColumn(rowIdColNum)
         .statementId(conf.getStatementId())
-        .finalDestination(conf.getDestPath()));
+        .finalDestination(conf.getDestPath())
+        .attemptId(attemptId));
   }
 
   public static <T> T getFromPathRecursively(Map<Path, T> pathToPartitionInfo, Path dir,
