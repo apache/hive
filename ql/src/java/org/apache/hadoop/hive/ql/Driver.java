@@ -1103,7 +1103,10 @@ public class Driver implements IDriver {
     } finally {
       driverState.unlock();
     }
-    if (!hiveLocks.isEmpty()) {
+    boolean isTxnOpen = driverContext != null
+        && driverContext.getTxnManager() != null
+        && driverContext.getTxnManager().isTxnOpen();
+    if (!hiveLocks.isEmpty() || isTxnOpen) {
       try {
         releaseLocksAndCommitOrRollback(false);
       } catch (LockException e) {
