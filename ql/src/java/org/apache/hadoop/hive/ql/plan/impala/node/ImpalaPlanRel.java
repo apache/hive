@@ -25,6 +25,7 @@ import org.apache.calcite.rel.AbstractRelNode;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelVisitor;
 import org.apache.calcite.rel.RelWriter;
+import org.apache.calcite.rel.type.RelDataType;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -61,14 +62,19 @@ public abstract class ImpalaPlanRel extends AbstractRelNode implements Referrabl
    * @param inputs  Input relational expressions, if any
    */
   protected ImpalaPlanRel(RelOptCluster cluster, RelTraitSet traits,
-      List<RelNode> inputs) {
+      List<RelNode> inputs, RelDataType rowType) {
     super(cluster, traits);
+    this.rowType = rowType;
     this.inputs = ImmutableList.copyOf(inputs);
   }
 
   @Override
   public RelNode getInput(int i) {
     return inputs.get(i);
+  }
+
+  public ImpalaPlanRel getImpalaRelInput(int i) {
+    return (ImpalaPlanRel) getInput(i);
   }
 
   @Override

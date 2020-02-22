@@ -60,13 +60,17 @@ import org.apache.impala.planner.PlanNodeId;
 public class ImpalaHdfsScanRel extends ImpalaPlanRel {
 
   private ImpalaHdfsScanNode hdfsScanNode = null;
-  private HiveTableScan scan;
-  private HiveFilter filter;
-  private Hive db;
+  private final HiveTableScan scan;
+  private final HiveFilter filter;
+  private final Hive db;
+
+  public ImpalaHdfsScanRel(HiveTableScan scan, Hive db) {
+    this(scan, null, db);
+  }
 
   public ImpalaHdfsScanRel(HiveTableScan scan, HiveFilter filter, Hive db) {
-    super(scan.getCluster(), scan.getTraitSet(), scan.getInputs());
-    this.rowType = filter != null ? filter.getRowType() : scan.getRowType();
+    super(scan.getCluster(), scan.getTraitSet(), scan.getInputs(),
+        filter != null ? filter.getRowType() : scan.getRowType());
     this.scan = scan;
     this.filter = filter;
     this.db = db;

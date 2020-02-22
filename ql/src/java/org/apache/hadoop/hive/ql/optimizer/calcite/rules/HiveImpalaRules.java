@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 
 import org.apache.hadoop.hive.ql.plan.impala.node.ImpalaHdfsScanRel;
+import org.apache.hadoop.hive.ql.plan.impala.node.ImpalaProjectRel;
 
 /**
  * Impala specific transformation rules.
@@ -71,9 +72,25 @@ public class HiveImpalaRules {
       final HiveTableScan scan = call.rel(0);
 
       // Only support HDFS for now.
-      ImpalaHdfsScanRel newScan = new ImpalaHdfsScanRel(scan, null, db);
+      ImpalaHdfsScanRel newScan = new ImpalaHdfsScanRel(scan, db);
 
       call.transformTo(newScan);
+    }
+  }
+
+  public static class ImpalaProjectRule extends RelOptRule {
+    public ImpalaProjectRule(RelBuilderFactory relBuilderFactory) {
+      super(operand(HiveProject.class, any()),
+          relBuilderFactory, null);
+    }
+
+    @Override
+    public void onMatch(RelOptRuleCall call) {
+      final HiveProject project = call.rel(0);
+
+      ImpalaProjectRel newProject = new ImpalaProjectRel(project);
+
+      call.transformTo(newProject);
     }
   }
 }
