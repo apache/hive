@@ -4305,6 +4305,9 @@ public class HiveConf extends Configuration {
       "considering the AM to be dead.", "llap.am.liveness.connection.timeout-millis"),
     LLAP_DAEMON_AM_USE_FQDN("hive.llap.am.use.fqdn", true,
         "Whether to use FQDN of the AM machine when submitting work to LLAP."),
+    LLAP_DAEMON_EXEC_USE_FQDN("hive.llap.exec.use.fqdn", true,
+      "On non-kerberized clusters, where the hostnames are stable but ip address changes, setting this config\n" +
+        " to false will use ip address of llap daemon in execution context instead of FQDN"),
     // Not used yet - since the Writable RPC engine does not support this policy.
     LLAP_DAEMON_AM_LIVENESS_CONNECTION_SLEEP_BETWEEN_RETRIES_MS(
       "hive.llap.am.liveness.connection.sleep.between.retries.ms", "2000ms",
