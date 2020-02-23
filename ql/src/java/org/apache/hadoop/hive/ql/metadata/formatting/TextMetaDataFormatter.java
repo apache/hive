@@ -149,7 +149,6 @@ class TextMetaDataFormatter implements MetaDataFormatter {
       // In case the query is served by HiveServer2, don't pad it with spaces,
       // as HiveServer2 output is consumed by JDBC/ODBC clients.
       out.write(mdt.renderTable(!SessionState.get().isHiveServerQuery()).getBytes("UTF-8"));
-      out.write(terminator);
     } catch (IOException e) {
       throw new HiveException(e);
     }
@@ -198,7 +197,6 @@ class TextMetaDataFormatter implements MetaDataFormatter {
       // In case the query is served by HiveServer2, don't pad it with spaces,
       // as HiveServer2 output is consumed by JDBC/ODBC clients.
       out.write(mdt.renderTable(!SessionState.get().isHiveServerQuery()).getBytes("UTF-8"));
-      out.write(terminator);
     } catch (IOException e) {
       throw new HiveException(e);
     }
