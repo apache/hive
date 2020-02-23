@@ -1562,15 +1562,20 @@ public class StatsUtils {
             List<ColStatistics> csList = new ArrayList<ColStatistics>();
             for (ExprNodeDesc child : engfd.getChildren()) {
               ColStatistics cs = getColStatisticsFromExpression(conf, parentStats, child);
+              if (cs == null) {
+                break;
+              }
               csList.add(cs);
             }
-            Optional<ColStatistics> res = se.get().estimate(csList);
-            if (res.isPresent()) {
-              ColStatistics newStats = res.get();
-              colType = colType.toLowerCase();
-              newStats.setColumnType(colType);
-              newStats.setColumnName(colName);
-              return newStats;
+            if(csList.size() == engfd.getChildren().size()) {
+              Optional<ColStatistics> res = se.get().estimate(csList);
+              if (res.isPresent()) {
+                ColStatistics newStats = res.get();
+                colType = colType.toLowerCase();
+                newStats.setColumnType(colType);
+                newStats.setColumnName(colName);
+                return newStats;
+              }
             }
           }
         }
