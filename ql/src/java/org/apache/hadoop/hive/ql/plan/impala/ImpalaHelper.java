@@ -66,6 +66,8 @@ public class ImpalaHelper {
     programBuilder.addRuleInstance(
         new HiveImpalaRules.ImpalaFilterScanRule(HiveRelFactories.HIVE_BUILDER, db));
     programBuilder.addRuleInstance(
+        new HiveImpalaRules.ImpalaFilterAggRule(HiveRelFactories.HIVE_BUILDER));
+    programBuilder.addRuleInstance(
         new HiveImpalaRules.ImpalaScanRule(HiveRelFactories.HIVE_BUILDER, db));
     programBuilder.addRuleInstance(
         new HiveImpalaRules.ImpalaProjectRule(HiveRelFactories.HIVE_BUILDER));

@@ -63,6 +63,9 @@ public class ImpalaBasicAnalyzer extends Analyzer {
 
   private StmtMetadataLoader.StmtTableCache stmtTableCache;
 
+  // List of temporary filter expressions while initializing an Impala plan node.
+  private List<Expr> unassignedConjuncts = Lists.newArrayList();
+
   public ImpalaBasicAnalyzer(StmtMetadataLoader.StmtTableCache stmtTableCache,
       TQueryCtx queryCtx,
         AuthorizationFactory authzFactory,
@@ -102,13 +105,30 @@ public class ImpalaBasicAnalyzer extends Analyzer {
   }
 
   /**
-   * No need to worry about unassigned conjuncts because Calcite takes
-   * care of this.
+   * Return unassigned conjuncts. Within the Calcite flow, these unassigned
+   * conjuncts will always be in the Filter RelNode on top of the Aggregation
+   * node. Before the "init" for Agg is called, the unassigned conjuncts will
+   * be assigned all the Exprs in the Filter. After the init is called, the
+   * unassigned conjuncts should be set back to an empty list.
    */
   @Override
   public List<Expr> getUnassignedConjuncts(
       List<TupleId> tupleIds, boolean inclOjConjuncts) {
-    return Lists.newArrayList();
+    return unassignedConjuncts;
+  }
+
+  /**
+   * See comment for getUnassignedConjuncts.
+   */
+  public void setUnassignedConjuncts(List<Expr> unassignedConjuncts) {
+    this.unassignedConjuncts = unassignedConjuncts;
+  }
+
+  /**
+   * See comment for getUnassignedConjuncts.
+   */
+  public void clearUnassignedConjuncts() {
+    this.unassignedConjuncts = Lists.newArrayList();
   }
 
   /**

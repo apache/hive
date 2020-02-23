@@ -86,6 +86,24 @@ public class HiveImpalaRules {
     }
   }
 
+  public static class ImpalaFilterAggRule extends RelOptRule {
+
+    public ImpalaFilterAggRule(RelBuilderFactory relBuilderFactory) {
+      super(operand(HiveFilter.class, operand(HiveAggregate.class, none())),
+              relBuilderFactory, null);
+    }
+
+    @Override
+    public void onMatch(RelOptRuleCall call) {
+      final HiveFilter filter = call.rel(0);
+      final HiveAggregate agg = call.rel(1);
+
+      ImpalaAggregateRel newAgg = new ImpalaAggregateRel(agg, filter);
+
+      call.transformTo(newAgg);
+    }
+  }
+
   public static class ImpalaAggRule extends RelOptRule {
 
     public ImpalaAggRule(RelBuilderFactory relBuilderFactory) {

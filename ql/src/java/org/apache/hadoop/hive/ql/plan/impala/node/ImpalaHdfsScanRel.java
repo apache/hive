@@ -77,19 +77,6 @@ public class ImpalaHdfsScanRel extends ImpalaPlanRel {
     this.db = db;
   }
 
-  private List<Expr> getConjuncts(HiveFilter filter, Analyzer analyzer) {
-    List<Expr> conjuncts = Lists.newArrayList();
-    if (filter == null) {
-      return conjuncts;
-    }
-    ImpalaRexVisitor visitor = new ImpalaRexVisitor(analyzer, this);
-    List<RexNode> andOperands = getAndOperands(filter.getCondition());
-    for (RexNode andOperand : andOperands) {
-      conjuncts.add(andOperand.accept(visitor));
-    }
-    return conjuncts;
-  }
-
   @Override
   public PlanNode getPlanNode(ImpalaPlannerContext ctx) throws ImpalaException, HiveException,
       MetaException {
@@ -141,7 +128,7 @@ public class ImpalaHdfsScanRel extends ImpalaPlanRel {
     this.outputExprs = createOutputExprs(tupleDesc.getSlots());
 
     // get the list of conjuncts from the filter
-    List<Expr> assignedConjuncts = getConjuncts(filter, ctx.getRootAnalyzer());
+    List<Expr> assignedConjuncts = getConjuncts(filter, ctx.getRootAnalyzer(), this);
     this.nodeInfo = new ImpalaNodeInfo(assignedConjuncts, tupleDesc);
 
     hdfsScanNode = new ImpalaHdfsScanNode(nodeId, feFsPartitions, baseTblRef, aggInfo, partitionConjuncts, nodeInfo);
@@ -172,21 +159,6 @@ public class ImpalaHdfsScanRel extends ImpalaPlanRel {
     }
 
     return tupleDesc;
-  }
-
-  private List<RexNode> getAndOperands(RexNode conjuncts) {
-    if (conjuncts == null) {
-      return ImmutableList.of();
-    }
-
-    if (!(conjuncts instanceof RexCall)) {
-      return ImmutableList.of(conjuncts);
-    }
-    RexCall rexCallConjuncts = (RexCall) conjuncts;
-    if (rexCallConjuncts.getKind() != SqlKind.AND) {
-      return ImmutableList.of(conjuncts);
-    }
-    return rexCallConjuncts.getOperands();
   }
 
   @Override

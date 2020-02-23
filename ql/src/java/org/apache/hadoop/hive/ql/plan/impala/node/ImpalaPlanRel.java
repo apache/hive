@@ -26,13 +26,19 @@ import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelVisitor;
 import org.apache.calcite.rel.RelWriter;
 import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rex.RexCall;
+import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.sql.SqlKind;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaPlannerContext;
 import org.apache.hadoop.hive.ql.plan.impala.rex.ReferrableNode;
+import org.apache.hadoop.hive.ql.plan.impala.rex.ImpalaRexVisitor;
+import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.Expr;
 import org.apache.impala.analysis.SlotDescriptor;
 import org.apache.impala.analysis.SlotRef;
@@ -154,5 +160,33 @@ public abstract class ImpalaPlanRel extends AbstractRelNode implements Referrabl
       index++;
     }
     return ImmutableMap.copyOf(exprs);
+  }
+
+  protected List<Expr> getConjuncts(HiveFilter filter, Analyzer analyzer, ReferrableNode relNode) {
+    List<Expr> conjuncts = Lists.newArrayList();
+    if (filter == null) {
+      return conjuncts;
+    }
+    ImpalaRexVisitor visitor = new ImpalaRexVisitor(analyzer, relNode);
+    List<RexNode> andOperands = getAndOperands(filter.getCondition());
+    for (RexNode andOperand : andOperands) {
+      conjuncts.add(andOperand.accept(visitor));
+    }
+    return conjuncts;
+  }
+
+  private List<RexNode> getAndOperands(RexNode conjuncts) {
+    if (conjuncts == null) {
+      return ImmutableList.of();
+    }
+
+    if (!(conjuncts instanceof RexCall)) {
+      return ImmutableList.of(conjuncts);
+    }
+    RexCall rexCallConjuncts = (RexCall) conjuncts;
+    if (rexCallConjuncts.getKind() != SqlKind.AND) {
+      return ImmutableList.of(conjuncts);
+    }
+    return rexCallConjuncts.getOperands();
   }
 }

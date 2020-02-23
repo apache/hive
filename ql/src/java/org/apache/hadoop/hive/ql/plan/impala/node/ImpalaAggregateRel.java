@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaBasicAnalyzer;
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaPlannerContext;
+import org.apache.hadoop.hive.ql.plan.impala.ImpalaBasicAnalyzer;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaFunctionCallExpr;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.AggFunctionDetails;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaFunctionSignature;
@@ -57,12 +58,19 @@ import org.apache.impala.planner.PlanNodeId;
 public class ImpalaAggregateRel extends ImpalaPlanRel {
   public final HiveAggregate aggregate;
 
+  public final HiveFilter filter;
+
   public PlanNode aggNode;
 
   public ImpalaAggregateRel(HiveAggregate aggregate) {
+    this(aggregate, null);
+  }
+
+  public ImpalaAggregateRel(HiveAggregate aggregate, HiveFilter filter) {
     super(aggregate.getCluster(), aggregate.getTraitSet(), aggregate.getInputs(),
-        aggregate.getRowType());
+        filter != null ? filter.getRowType() : aggregate.getRowType());
     this.aggregate = aggregate;
+    this.filter = filter;
   }
 
   /**
@@ -77,9 +85,10 @@ public class ImpalaAggregateRel extends ImpalaPlanRel {
     PlanNodeId nodeId = ctx.getNextNodeId();
 
     Preconditions.checkState(getInputs().size() == 1);
-    PlanNode input = getImpalaRelInput(0).getPlanNode(ctx);
+    ImpalaPlanRel relInput = getImpalaRelInput(0);
+    PlanNode input = relInput.getPlanNode(ctx);
 
-    Analyzer analyzer = ctx.getRootAnalyzer();
+    ImpalaBasicAnalyzer analyzer = (ImpalaBasicAnalyzer) ctx.getRootAnalyzer();
 
     // MultiAggregateInfo class is the Impala class that holds all the analyzed aggregate
     // information that needs to be passed into the planner. One exaple of a complexitiy it
@@ -99,7 +108,12 @@ public class ImpalaAggregateRel extends ImpalaPlanRel {
     this.nodeInfo = new ImpalaNodeInfo();
     aggNode =
         new ImpalaAggNode(nodeId, input, multiAggInfo, MultiAggregateInfo.AggPhase.FIRST, nodeInfo, ctx);
+    // This is the only way to shove in the "having" filter into the aggregate node.
+    // In the init clause, the aggregate node calls into the analyzer to get all remaining
+    // unassigned conjuncts.
+    analyzer.setUnassignedConjuncts(getConjuncts(filter, analyzer, relInput));
     aggNode.init(analyzer);
+    analyzer.clearUnassignedConjuncts();
     AggregateInfo aggInfo = multiAggInfo.getAggClasses().get(0);
     this.outputExprs = createOutputExprs(aggInfo.getOutputTupleDesc().getSlots());
 
