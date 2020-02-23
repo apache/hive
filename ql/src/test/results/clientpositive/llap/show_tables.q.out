@@ -195,7 +195,6 @@ bar_n0              	MANAGED_TABLE
 baz                 	MANAGED_TABLE       
 foo_n4              	MANAGED_TABLE       
 test_view_n100      	VIRTUAL_VIEW        
-	 
 PREHOOK: query: EXPLAIN SHOW TABLES IN test_db
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:test_db
@@ -260,7 +259,6 @@ bar_n0              	MANAGED_TABLE
 baz                 	MANAGED_TABLE       
 foo_n4              	MANAGED_TABLE       
 test_view_n100      	VIRTUAL_VIEW        
-	 
 PREHOOK: query: EXPLAIN SHOW TABLES IN test_db "test*"
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:test_db
@@ -380,7 +378,6 @@ POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:test_db
 # Table Name        	Table Type          
 test_view_n100      	VIRTUAL_VIEW        
-	 
 PREHOOK: query: SHOW TABLE EXTENDED IN test_db LIKE foo_n4
 PREHOOK: type: SHOW_TABLESTATUS
 POSTHOOK: query: SHOW TABLE EXTENDED IN test_db LIKE foo_n4

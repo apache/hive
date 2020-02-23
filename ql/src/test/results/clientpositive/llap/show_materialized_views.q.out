@@ -149,7 +149,6 @@ POSTHOOK: type: SHOWMATERIALIZEDVIEWS
 shtb_full_view2     	Yes                 	Manual refresh (Valid for 5min)
 shtb_test1_view1    	No                  	Manual refresh      
 shtb_test1_view2    	Yes                 	Manual refresh (Valid always)
-	 	 
 PREHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS '*test*'
 PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS '*test*'
@@ -177,7 +176,6 @@ POSTHOOK: type: SHOWMATERIALIZEDVIEWS
 # MV Name           	Rewriting Enabled   	Mode                
 shtb_test1_view1    	No                  	Manual refresh      
 shtb_test1_view2    	Yes                 	Manual refresh (Valid always)
-	 	 
 PREHOOK: query: SHOW MATERIALIZED VIEWS '*view2'
 PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS '*view2'
@@ -185,7 +183,6 @@ POSTHOOK: type: SHOWMATERIALIZEDVIEWS
 # MV Name           	Rewriting Enabled   	Mode                
 shtb_full_view2     	Yes                 	Manual refresh (Valid for 5min)
 shtb_test1_view2    	Yes                 	Manual refresh (Valid always)
-	 	 
 PREHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS LIKE 'shtb_test1_view1|shtb_test1_view2'
 PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS LIKE 'shtb_test1_view1|shtb_test1_view2'
@@ -213,7 +210,6 @@ POSTHOOK: type: SHOWMATERIALIZEDVIEWS
 # MV Name           	Rewriting Enabled   	Mode                
 shtb_test1_view1    	No                  	Manual refresh      
 shtb_test1_view2    	Yes                 	Manual refresh (Valid always)
-	 	 
 PREHOOK: query: USE test2
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:test2
@@ -227,7 +223,6 @@ POSTHOOK: type: SHOWMATERIALIZEDVIEWS
 # MV Name           	Rewriting Enabled   	Mode                
 shtb_test1_view1    	No                  	Manual refresh      
 shtb_test2_view2    	No                  	Manual refresh      
-	 	 
 PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:default
@@ -261,7 +256,6 @@ POSTHOOK: type: SHOWMATERIALIZEDVIEWS
 shtb_full_view2     	Yes                 	Manual refresh (Valid for 5min)
 shtb_test1_view1    	No                  	Manual refresh      
 shtb_test1_view2    	Yes                 	Manual refresh (Valid always)
-	 	 
 PREHOOK: query: SHOW MATERIALIZED VIEWS FROM test2
 PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS FROM test2
@@ -269,7 +263,6 @@ POSTHOOK: type: SHOWMATERIALIZEDVIEWS
 # MV Name           	Rewriting Enabled   	Mode                
 shtb_test1_view1    	No                  	Manual refresh      
 shtb_test2_view2    	No                  	Manual refresh      
-	 	 
 PREHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS IN test1
 PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS IN test1
@@ -297,7 +290,6 @@ POSTHOOK: type: SHOWMATERIALIZEDVIEWS
 shtb_full_view2     	Yes                 	Manual refresh (Valid for 5min)
 shtb_test1_view1    	No                  	Manual refresh      
 shtb_test1_view2    	Yes                 	Manual refresh (Valid always)
-	 	 
 PREHOOK: query: SHOW MATERIALIZED VIEWS IN default
 PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS IN default
@@ -329,7 +321,6 @@ POSTHOOK: type: SHOWMATERIALIZEDVIEWS
 # MV Name           	Rewriting Enabled   	Mode                
 shtb_test1_view1    	No                  	Manual refresh      
 shtb_test1_view2    	Yes                 	Manual refresh (Valid always)
-	 	 
 PREHOOK: query: DESCRIBE FORMATTED test1.shtb_full_view2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: test1@shtb_full_view2
@@ -504,7 +495,6 @@ POSTHOOK: query: SHOW MATERIALIZED VIEWS FROM `database` LIKE "fooview"
 POSTHOOK: type: SHOWMATERIALIZEDVIEWS
 # MV Name           	Rewriting Enabled   	Mode                
 fooview             	Yes                 	Manual refresh (Valid until source tables modified)
-	 	 
 PREHOOK: query: DESCRIBE FORMATTED `database`.`fooview`
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: database@fooview
