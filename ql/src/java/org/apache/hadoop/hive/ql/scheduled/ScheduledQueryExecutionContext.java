@@ -67,8 +67,7 @@ public class ScheduledQueryExecutionContext {
   }
 
   public int getNumberOfExecutors() {
-    // TODO Auto-generated method stub
-    return 3;
+    return conf.getIntVar(ConfVars.HIVE_SCHEDULED_QUERIES_MAX_EXECUTORS);
   }
 
 }
