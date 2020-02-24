@@ -36,8 +36,6 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 @InterfaceStability.Unstable
 public interface IDriver extends CommandProcessor {
 
-  int compile(String string);
-
   CommandProcessorResponse compileAndRespond(String statement);
 
   QueryPlan getPlan();

@@ -87,7 +87,7 @@ public class ReExecDriver implements IDriver {
 
   private static final Logger LOG = LoggerFactory.getLogger(ReExecDriver.class);
   private boolean explainReOptimization;
-  protected Driver coreDriver;
+  private Driver coreDriver;
   private QueryState queryState;
   private String currentQuery;
   private int executionIndex;
@@ -99,7 +99,7 @@ public class ReExecDriver implements IDriver {
     return queryState.getConf();
   }
 
-  public boolean firstExecution() {
+  private boolean firstExecution() {
     return executionIndex == 0;
   }
 
@@ -115,9 +115,8 @@ public class ReExecDriver implements IDriver {
     }
   }
 
-  @Override
-  public int compile(String string) {
-    return coreDriver.compile(string);
+  public int compile(String command, boolean resetTaskIds) {
+    return coreDriver.compile(command, resetTaskIds);
   }
 
   @Override
@@ -218,7 +217,7 @@ public class ReExecDriver implements IDriver {
     return run();
   }
 
-  protected void prepareToReExecute() {
+  private void prepareToReExecute() {
     for (IReExecutionPlugin p : plugins) {
       p.prepareToReExecute();
     }
