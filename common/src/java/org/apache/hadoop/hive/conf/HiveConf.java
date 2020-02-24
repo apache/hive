@@ -4834,6 +4834,8 @@ public class HiveConf extends Configuration {
     HIVE_SECURITY_AUTHORIZATION_SCHEDULED_QUERIES_SUPPORTED("hive.security.authorization.scheduled.queries.supported",
         false,
         "Enable this if the configured authorizer is able to handle scheduled query related calls."),
+    HIVE_SCHEDULED_QUERIES_MAX_EXECUTORS("hive.scheduled.queries.max.executors", "3",
+        "Maximal number of scheduled query executors."),
 
     HIVE_QUERY_RESULTS_CACHE_ENABLED("hive.query.results.cache.enabled", true,
         "If the query results cache is enabled. This will keep results of previously executed queries " +
