@@ -24,6 +24,7 @@ import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -556,6 +557,12 @@ public final class ObjectInspectorUtils {
    */
   public static Field[] getDeclaredNonStaticFields(Class<?> c) {
     Field[] f = c.getDeclaredFields();
+    Arrays.sort(f, new Comparator<Field>() {
+              @Override
+              public int compare(Field a, Field b) {
+                return a.getName().compareTo(b.getName());
+              }
+            });
     ArrayList<Field> af = new ArrayList<Field>();
     for (int i = 0; i < f.length; ++i) {
       if (!Modifier.isStatic(f[i].getModifiers())) {
