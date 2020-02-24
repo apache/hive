@@ -159,6 +159,10 @@ public class ScalarFunctionDetails implements FunctionDetails {
   static public ScalarFunctionDetails get(String name, SqlTypeName retType,
       List<SqlTypeName> operandTypes) {
     ImpalaFunctionSignature sig = new ImpalaFunctionSignature(name, operandTypes, retType);
+    return get(sig);
+  }
+
+  static public ScalarFunctionDetails get(ImpalaFunctionSignature sig) {
     return (ScalarFunctionDetails) SCALAR_BUILTINS_INSTANCE.get(sig);
   }
 }

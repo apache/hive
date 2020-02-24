@@ -37,6 +37,7 @@ import com.google.gson.reflect.TypeToken;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.sql.type.SqlTypeName;
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 public class ImpalaFunctionSignature {
@@ -155,5 +156,10 @@ public class ImpalaFunctionSignature {
 
   public boolean hasVarArgs() {
     return hasVarArgs;
+  }
+
+  @Override
+  public String toString() {
+    return retType + " " + func + "(" + StringUtils.join(argTypes, ", ") + ")";
   }
 }

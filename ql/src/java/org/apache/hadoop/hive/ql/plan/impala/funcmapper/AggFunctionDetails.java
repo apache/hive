@@ -147,4 +147,8 @@ public class AggFunctionDetails implements FunctionDetails {
     ImpalaFunctionSignature sig = new ImpalaFunctionSignature(name, operandTypes, retType);
     return AGG_BUILTINS_INSTANCE.get(sig);
   }
+
+  static public AggFunctionDetails get(ImpalaFunctionSignature sig) {
+    return (AggFunctionDetails) AGG_BUILTINS_INSTANCE.get(sig);
+  }
 }

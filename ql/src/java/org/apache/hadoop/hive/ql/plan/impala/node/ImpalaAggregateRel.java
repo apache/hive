@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.plan.impala.node;
 import java.util.List;
 
 import com.google.common.base.Preconditions;
-import org.apache.calcite.rel.RelWriter;
 import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.sql.SqlAggFunction;
@@ -29,11 +28,25 @@ import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.impala.ImpalaBasicAnalyzer;
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaPlannerContext;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaFunctionCallExpr;
-import org.apache.hadoop.hive.ql.plan.impala.funcmapper.*;
-import org.apache.impala.analysis.*;
-import org.apache.impala.catalog.*;
+import org.apache.hadoop.hive.ql.plan.impala.funcmapper.AggFunctionDetails;
+import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaFunctionSignature;
+import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaTypeConverter;
+import org.apache.impala.analysis.AggregateInfo;
+import org.apache.impala.analysis.Analyzer;
+import org.apache.impala.analysis.Expr;
+import org.apache.impala.analysis.ExprSubstitutionMap;
+import org.apache.impala.analysis.FunctionCallExpr;
+import org.apache.impala.analysis.FunctionName;
+import org.apache.impala.analysis.MultiAggregateInfo;
+import org.apache.impala.catalog.AggregateFunction;
+import org.apache.impala.catalog.BuiltinsDb;
+import org.apache.impala.catalog.Function;
+import org.apache.impala.catalog.Type;
 import org.apache.impala.common.ImpalaException;
 import org.apache.impala.planner.PlanNode;
 import org.apache.impala.thrift.TPrimitiveType;
@@ -123,7 +136,7 @@ public class ImpalaAggregateRel extends ImpalaPlanRel {
     return exprs;
   }
 
-  private Function getFunction(AggregateCall aggCall) {
+  private Function getFunction(AggregateCall aggCall) throws HiveException {
     RelDataType retType = aggCall.getType();
     SqlAggFunction aggFunction = aggCall.getAggregation();
     List<SqlTypeName> operandTypes = Lists.newArrayList();
@@ -132,8 +145,14 @@ public class ImpalaAggregateRel extends ImpalaPlanRel {
       RelDataType relDataType = input.getRowType().getFieldList().get(i).getType();
       operandTypes.add(relDataType.getSqlTypeName());
     }
-    AggFunctionDetails funcDetails =
-        AggFunctionDetails.get(aggFunction.getName(), retType.getSqlTypeName(), operandTypes);
+
+    ImpalaFunctionSignature ifs =
+        new ImpalaFunctionSignature(aggFunction.getName(), operandTypes, retType.getSqlTypeName());
+    AggFunctionDetails funcDetails = AggFunctionDetails.get(ifs);
+
+    if (funcDetails == null) {
+      throw new SemanticException("Could not find function \"" + ifs + "\"");
+    }
 
     FunctionName impalaFuncName = new FunctionName(BuiltinsDb.NAME, aggFunction.getName());
     List<Type> argTypes = ImpalaTypeConverter.getImpalaTypesList(funcDetails.argTypes);
