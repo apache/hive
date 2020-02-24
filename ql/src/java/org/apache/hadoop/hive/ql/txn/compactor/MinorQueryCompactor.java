@@ -56,9 +56,6 @@ final class MinorQueryCompactor extends QueryCompactor {
     AcidUtils.Directory dir = AcidUtils
         .getAcidState(null, new Path(storageDescriptor.getLocation()), hiveConf, writeIds, Ref.from(false), false,
             table.getParameters(), false);
-    if (!Util.isEnoughToCompact(compactionInfo.isMajorCompaction(), dir, storageDescriptor)) {
-      return;
-    }
     // Set up the session for driver.
     HiveConf conf = new HiveConf(hiveConf);
     conf.set(HiveConf.ConfVars.HIVE_QUOTEDID_SUPPORT.varname, "column");
