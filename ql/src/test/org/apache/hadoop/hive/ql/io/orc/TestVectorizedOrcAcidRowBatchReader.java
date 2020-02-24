@@ -1086,7 +1086,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
         AcidUtils.AcidOperationalProperties.getDefault().toInt());
     OrcInputFormat.Context context = new OrcInputFormat.Context(conf);
     OrcInputFormat.FileGenerator gen = new OrcInputFormat.FileGenerator(
-        context, fs, root, false, null);
+        context, () -> fs, root, false, null);
     OrcInputFormat.AcidDirInfo adi = gen.call();
     return OrcInputFormat.determineSplitStrategies(
         null, context, adi.fs, adi.splitPath, adi.baseFiles, adi.deleteEvents,
