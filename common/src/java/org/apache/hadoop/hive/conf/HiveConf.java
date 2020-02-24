@@ -2689,6 +2689,9 @@ public class HiveConf extends Configuration {
         "are not hidden by the INSERT OVERWRITE."),
     HIVE_TXN_STATS_ENABLED("hive.txn.stats.enabled", true,
         "Whether Hive supports transactional stats (accurate stats for transactional tables)"),
+    HIVE_TXN_ACID_DIR_CACHE_DURATION("hive.txn.acid.dir.cache.duration",
+        120, "Enable dir cache for ACID tables specified in minutes."
+        + "0 indicates cache is disabled. "),
 
     HIVE_TXN_READONLY_ENABLED("hive.txn.readonly.enabled", false,
       "Enables read-only transaction classification and related optimizations"),

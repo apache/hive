@@ -35,11 +35,16 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.google.common.base.Strings;
 import com.google.common.base.Preconditions;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -163,6 +168,9 @@ public class AcidUtils {
   public static final int MAX_STATEMENTS_PER_TXN = 10000;
   public static final Pattern LEGACY_BUCKET_DIGIT_PATTERN = Pattern.compile("^[0-9]{6}");
   public static final Pattern BUCKET_PATTERN = Pattern.compile("bucket_([0-9]+)(_[0-9]+)?$");
+
+  private static Cache<String, DirInfoValue> dirCache;
+  private static AtomicBoolean dirCacheInited = new AtomicBoolean();
 
   /**
    * A write into a non-aicd table produces files like 0000_0 or 0000_0_copy_1
@@ -548,6 +556,7 @@ public class AcidUtils {
     private final List<Path> obsolete;
     private final List<ParsedDelta> deltas;
     private final Path base;
+    private List<HdfsFileStatusWithId> baseFiles;
 
     public DirectoryImpl(List<Path> abortedDirectories,
         boolean isBaseInRawFormat, List<HdfsFileStatusWithId> original,
@@ -564,6 +573,14 @@ public class AcidUtils {
     @Override
     public Path getBaseDirectory() {
       return base;
+    }
+
+    public List<HdfsFileStatusWithId> getBaseFiles() {
+      return baseFiles;
+    }
+
+    void setBaseFiles(List<HdfsFileStatusWithId> baseFiles) {
+      this.baseFiles = baseFiles;
     }
 
     @Override
@@ -845,6 +862,9 @@ public class AcidUtils {
      * @return the base directory to read
      */
     Path getBaseDirectory();
+
+    List<HdfsFileStatusWithId> getBaseFiles();
+
     boolean isBaseInRawFormat();
 
     /**
@@ -3104,5 +3124,153 @@ public class AcidUtils {
         .noneMatch(pattern ->
             astSearcher.simpleBreadthFirstSearch(tree, pattern) != null)) ?
       TxnType.READ_ONLY : TxnType.DEFAULT;
+  }
+
+  public static List<HdfsFileStatusWithId> findBaseFiles(
+      Path base, Ref<Boolean> useFileIds, Supplier<FileSystem> fs) throws IOException {
+    Boolean val = useFileIds.value;
+    if (val == null || val) {
+      try {
+        List<HdfsFileStatusWithId> result = SHIMS.listLocatedHdfsStatus(
+            fs.get(), base, AcidUtils.hiddenFileFilter);
+        if (val == null) {
+          useFileIds.value = true; // The call succeeded, so presumably the API is there.
+        }
+        return result;
+      } catch (Throwable t) {
+        LOG.error("Failed to get files with ID; using regular API: " + t.getMessage());
+        if (val == null && t instanceof UnsupportedOperationException) {
+          useFileIds.value = false;
+        }
+      }
+    }
+
+    // Fall back to regular API and create states without ID.
+    List<FileStatus> children = HdfsUtils.listLocatedStatus(fs.get(), base, AcidUtils.hiddenFileFilter);
+    List<HdfsFileStatusWithId> result = new ArrayList<>(children.size());
+    for (FileStatus child : children) {
+      result.add(AcidUtils.createOriginalObj(null, child));
+    }
+    return result;
+  }
+
+  private static void initDirCache(int durationInMts) {
+    if (dirCacheInited.get()) {
+      LOG.debug("DirCache got initialized already");
+      return;
+    }
+    dirCache = CacheBuilder.newBuilder()
+        .expireAfterWrite(durationInMts, TimeUnit.MINUTES)
+        .softValues()
+        .build();
+    dirCacheInited.set(true);
+  }
+
+  /**
+   * Tries to get directory details from cache. For now, cache is valid only
+   * when base directory is available and no deltas are present. This should
+   * be used only in BI strategy and for ACID tables.
+   *
+   * @param fileSystem file system supplier
+   * @param candidateDirectory the partition directory to analyze
+   * @param conf the configuration
+   * @param writeIdList the list of write ids that we are reading
+   * @param useFileIds
+   * @param ignoreEmptyFiles
+   * @param tblproperties
+   * @param generateDirSnapshots
+   * @return directory state
+   * @throws IOException on errors
+   */
+  public static Directory getAcidStateFromCache(Supplier<FileSystem> fileSystem,
+      Path candidateDirectory, Configuration conf,
+      ValidWriteIdList writeIdList, Ref<Boolean> useFileIds, boolean ignoreEmptyFiles,
+      Map<String, String> tblproperties, boolean generateDirSnapshots) throws IOException {
+
+    int dirCacheDuration = HiveConf.getIntVar(conf,
+        ConfVars.HIVE_TXN_ACID_DIR_CACHE_DURATION);
+
+    if (dirCacheDuration <= 0) {
+      LOG.debug("dirCache is not enabled");
+      return getAcidState(fileSystem.get(), candidateDirectory, conf, writeIdList,
+          useFileIds, ignoreEmptyFiles, tblproperties, generateDirSnapshots);
+    } else {
+      initDirCache(dirCacheDuration);
+    }
+
+    /*
+     * Cache for single case, where base directory is there without deltas.
+     * In case of changes, cache would get invalidated based on
+     * open/aborted list
+     */
+    //dbName + tableName + dir
+    String key = writeIdList.getTableName() + "_" + candidateDirectory.toString();
+    DirInfoValue value = dirCache.getIfPresent(key);
+
+    // in case of open/aborted txns, recompute dirInfo
+    long[] exceptions = writeIdList.getInvalidWriteIds();
+    boolean recompute = (exceptions != null && exceptions.length > 0);
+
+    if (recompute) {
+      LOG.info("invalidating cache entry for key: {}", key);
+      dirCache.invalidate(key);
+      value = null;
+    }
+
+    if (value != null) {
+      // double check writeIds
+      if (!value.getTxnString().equalsIgnoreCase(writeIdList.writeToString())) {
+        if (LOG.isDebugEnabled()) {
+          LOG.info("writeIdList: {} from cache: {} is not matching "
+              + "for key: {}", writeIdList.writeToString(),
+              value.getTxnString(), key);
+        }
+        recompute = true;
+      }
+    }
+
+    // compute and add to cache
+    if (recompute || (value == null)) {
+      Directory dirInfo = getAcidState(fileSystem.get(), candidateDirectory, conf,
+          writeIdList, useFileIds, ignoreEmptyFiles, tblproperties,
+          generateDirSnapshots);
+      value = new DirInfoValue(writeIdList.writeToString(), dirInfo);
+
+      if (value.dirInfo != null && value.dirInfo.getBaseDirectory() != null
+          && value.dirInfo.getCurrentDirectories().isEmpty()) {
+        populateBaseFiles(dirInfo, useFileIds, fileSystem);
+        dirCache.put(key, value);
+      }
+    } else {
+      LOG.info("Got {} from cache, cache size: {}", key, dirCache.size());
+    }
+    return value.getDirInfo();
+  }
+
+  private static void populateBaseFiles(Directory dirInfo,
+      Ref<Boolean> useFileIds, Supplier<FileSystem> fileSystem) throws IOException {
+    if (dirInfo.getBaseDirectory() != null) {
+      // Cache base directory contents
+      List<HdfsFileStatusWithId> children = findBaseFiles(dirInfo.getBaseDirectory(), useFileIds, fileSystem);
+      ((DirectoryImpl) dirInfo).setBaseFiles(children);
+    }
+  }
+
+  static class DirInfoValue {
+    private String txnString;
+    private AcidUtils.Directory dirInfo;
+
+    DirInfoValue(String txnString, AcidUtils.Directory dirInfo) {
+      this.txnString = txnString;
+      this.dirInfo = dirInfo;
+    }
+
+    String getTxnString() {
+      return txnString;
+    }
+
+    AcidUtils.Directory getDirInfo() {
+      return dirInfo;
+    }
   }
 }
