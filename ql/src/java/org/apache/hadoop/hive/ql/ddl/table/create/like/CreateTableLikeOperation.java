@@ -27,6 +27,7 @@ import java.util.Set;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.PartitionManagementTask;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -39,6 +40,7 @@ import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableOperation;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.HiveTableName;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -112,9 +114,8 @@ public class CreateTableLikeOperation extends DDLOperation<CreateTableLikeDesc> 
   }
 
   private Table createTableLikeTable(Table table) throws SemanticException, HiveException {
-    String[] names = Utilities.getDbTableName(desc.getTableName());
-    table.setDbName(names[0]);
-    table.setTableName(names[1]);
+    TableName tName = HiveTableName.of(desc.getTableName());
+    HiveTableName.setFrom(tName, table);
     table.setOwner(SessionState.getUserFromAuthenticator());
 
     setUserSpecifiedLocation(table);

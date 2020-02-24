@@ -37,6 +37,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
@@ -783,6 +784,17 @@ public class Table implements Serializable {
 
   public void setFields(List<FieldSchema> fields) {
     tTable.getSd().setCols(fields);
+  }
+
+  /**
+   * Set the table metadata based on a {@link TableName} object.
+   * @param tableName the tableName object
+   * @return this
+   */
+  public Table setFrom(TableName tableName) {
+    this.setDbName(tableName.getDb());
+    this.setTableName(tableName.getTable());
+    return this;
   }
 
   public void setNumBuckets(int nb) {

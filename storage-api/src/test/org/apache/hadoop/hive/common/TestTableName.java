@@ -21,14 +21,51 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public class TestTableName {
+
   @Test
-  public void fullName() {
-    TableName name = new TableName("cat", "db", "t");
+  public void testFullName() {
+    TableName name = new TableName("CaT", "dB", "TbL");
     Assert.assertEquals("cat", name.getCat());
     Assert.assertEquals("db", name.getDb());
-    Assert.assertEquals("t", name.getTable());
-    Assert.assertEquals("cat.db.t", name.toString());
-    Assert.assertEquals("db.t", name.getDbTable());
+    Assert.assertEquals("tbl", name.getTable());
+    Assert.assertEquals("cat.db.tbl", name.toString());
+    Assert.assertEquals("db.tbl", name.getDbTable());
+  }
+
+  @Test
+  public void testPartialName() {
+    TableName name = new TableName(null, "db", "t");
+    Assert.assertEquals("db.t", name.toString());
+
+    name = new TableName(null, null, "t");
+    Assert.assertEquals("t", name.toString());
+  }
+
+  @Test
+  public void testIllegalNames() {
+    try {
+      new TableName("cat", null, "t");
+      Assert.fail();
+    } catch (IllegalArgumentException e) {
+    }
+
+    try {
+      new TableName("cat", "",  "t");
+      Assert.fail();
+    } catch (IllegalArgumentException e) {
+    }
+
+    try {
+      new TableName("cat", "db", null);
+      Assert.fail();
+    } catch (IllegalArgumentException e) {
+    }
+
+    try {
+      new TableName("cat", "db", "");
+      Assert.fail();
+    } catch (IllegalArgumentException e) {
+    }
   }
 
   @Test
@@ -54,17 +91,5 @@ public class TestTableName {
     } catch (IllegalArgumentException e) {
       Assert.assertTrue(true);
     }
-  }
-
-  @Test
-  public void testNotEmptyDbTable() {
-    TableName name = new TableName("cat", "db", "t");
-    Assert.assertEquals("db.t", name.getNotEmptyDbTable());
-
-    name = new TableName("cat", null, "t");
-    Assert.assertEquals("t", name.getNotEmptyDbTable());
-
-    name = new TableName("cat", "", "t");
-    Assert.assertEquals("t", name.getNotEmptyDbTable());
   }
 }
