@@ -12987,7 +12987,8 @@ public class ObjectStore implements RawStore, Configurable {
 
     List<MScheduledQuery> results = (List<MScheduledQuery>) q.execute();
     for (MScheduledQuery e : results) {
-      if (e.getActiveExecution().getLastUpdateTime() < maxLastUpdateTime) {
+      Integer lastUpdateTime = e.getActiveExecution().getLastUpdateTime();
+      if (lastUpdateTime == null || lastUpdateTime < maxLastUpdateTime) {
         LOG.error("Scheduled query: {} stuck with an activeExecution - clearing",
             scheduledQueryKeyRef(e.getScheduleKey()));
         e.setActiveExecution(null);
