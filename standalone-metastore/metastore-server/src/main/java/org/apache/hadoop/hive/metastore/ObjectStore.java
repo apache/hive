@@ -12983,7 +12983,7 @@ public class ObjectStore implements RawStore, Configurable {
   private void recoverInvalidScheduledQueryState(int timeoutSecs) {
     int maxLastUpdateTime = (int) (System.currentTimeMillis() / 1000) - timeoutSecs;
     Query q = pm.newQuery(MScheduledQuery.class);
-    q.setFilter("activeExecution <> null");
+    q.setFilter("activeExecution != null");
 
     List<MScheduledQuery> results = (List<MScheduledQuery>) q.execute();
     for (MScheduledQuery e : results) {

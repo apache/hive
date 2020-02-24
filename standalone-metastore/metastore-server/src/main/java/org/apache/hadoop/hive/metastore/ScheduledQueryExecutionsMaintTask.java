@@ -35,6 +35,13 @@ public class ScheduledQueryExecutionsMaintTask implements MetastoreTaskThread {
   private Configuration conf;
 
   @Override
+  public long initialDelay(TimeUnit unit) {
+    // no delay before the first execution;
+    // after an ungracefull shutdown it might take time to notice that in-flight scheduled queries are not running anymore
+    return 0;
+  }
+
+  @Override
   public long runFrequency(TimeUnit unit) {
     return MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.SCHEDULED_QUERIES_EXECUTION_MAINT_TASK_FREQUENCY,
         unit);
