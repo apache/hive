@@ -54,10 +54,6 @@ final class MmMajorQueryCompactor extends QueryCompactor {
             table.getParameters(), false);
     MmQueryCompactorUtils.removeFilesForMmTable(hiveConf, dir);
 
-    if (!Util.isEnoughToCompact(compactionInfo.isMajorCompaction(), dir, storageDescriptor)) {
-      return;
-    }
-
     String tmpLocation = Util.generateTmpPath(storageDescriptor);
     Path baseLocation = new Path(tmpLocation, "_base");
 

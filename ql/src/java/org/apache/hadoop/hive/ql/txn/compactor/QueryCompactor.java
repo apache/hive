@@ -40,10 +40,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * Common interface for query based compactions.
@@ -143,61 +141,6 @@ abstract class QueryCompactor {
    * Collection of some helper functions.
    */
   static class Util {
-    /**
-     * Determine if compaction can run in a specified directory.
-     * @param isMajorCompaction type of compaction.
-     * @param dir the delta directory
-     * @param sd resolved storage descriptor
-     * @return true, if compaction can run.
-     */
-    static boolean isEnoughToCompact(boolean isMajorCompaction, AcidUtils.Directory dir, StorageDescriptor sd) {
-      int deltaCount = dir.getCurrentDirectories().size();
-      int origCount = dir.getOriginalFiles().size();
-
-      StringBuilder deltaInfo = new StringBuilder().append(deltaCount);
-      boolean isEnoughToCompact;
-
-      if (isMajorCompaction) {
-        isEnoughToCompact = (origCount > 0 || deltaCount + (dir.getBaseDirectory() == null ? 0 : 1) > 1);
-
-      } else {
-        isEnoughToCompact = (deltaCount > 1);
-
-        if (deltaCount == 2) {
-          Map<String, Long> deltaByType = dir.getCurrentDirectories().stream().collect(Collectors
-              .groupingBy(delta -> (delta.isDeleteDelta() ? AcidUtils.DELETE_DELTA_PREFIX : AcidUtils.DELTA_PREFIX),
-                  Collectors.counting()));
-
-          isEnoughToCompact = (deltaByType.size() != deltaCount);
-          deltaInfo.append(" ").append(deltaByType);
-        }
-      }
-
-      if (!isEnoughToCompact) {
-        LOG.debug("Not compacting {}; current base: {}, delta files: {}, originals: {}", sd.getLocation(),
-            dir.getBaseDirectory(), deltaInfo, origCount);
-      }
-      return isEnoughToCompact;
-    }
-
-    /**
-     * Check for obsolete directories, and return true if any exist and Cleaner should be
-     * run. For example if we insert overwrite into a table with only deltas, a new base file with
-     * the highest writeId is created so there will be no live delta directories, only obsolete
-     * ones. Compaction is not needed, but the cleaner should still be run.
-     *
-     * @return true if cleaning is needed
-     */
-    public static boolean needsCleaning(AcidUtils.Directory dir, StorageDescriptor sd) {
-      int numObsoleteDirs = dir.getObsolete().size();
-      boolean needsJustCleaning = numObsoleteDirs > 0;
-      if (needsJustCleaning) {
-        LOG.debug("{} obsolete directories in {} found; marked for cleaning.",
-            numObsoleteDirs, sd.getLocation());
-      }
-      return needsJustCleaning;
-    }
-
     /**
      * Generate a random tmp path, under the provided storage.
      * @param sd storage descriptor, must be not null.
