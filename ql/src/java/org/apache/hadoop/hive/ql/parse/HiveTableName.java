@@ -100,9 +100,7 @@ public final class HiveTableName extends TableName {
    * @param dbTableName not null
    * @return a {@link TableName}
    * @throws SemanticException if dbTableName is null
-   * @deprecated use {@link #of(String)} instead and use the default db/catalog.
    */
-  // to be @Deprecated
   public static TableName withNoDefault(String dbTableName) throws SemanticException {
     try {
       return fromString(dbTableName, null, null);

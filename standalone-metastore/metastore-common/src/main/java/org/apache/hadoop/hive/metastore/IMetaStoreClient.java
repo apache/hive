@@ -29,6 +29,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
@@ -680,6 +681,22 @@ public interface IMetaStoreClient {
    * @throws TException general thrift error.
    */
   Table getTable(String catName, String dbName, String tableName) throws MetaException, TException;
+
+  /**
+   * Get a table object in the default catalog.
+   *
+   * @param tableName
+   *          The {@link org.apache.hadoop.hive.common.TableName} to fetch.
+   * @return An object representing the table.
+   * @throws MetaException
+   *           Could not fetch the table
+   * @throws TException
+   *           A thrift communication error occurred
+   * @throws NoSuchObjectException
+   *           In case the table wasn't found.
+   */
+  Table getTable(TableName tableName) throws MetaException,
+      TException, NoSuchObjectException;
 
   /**
    * Get a table object.

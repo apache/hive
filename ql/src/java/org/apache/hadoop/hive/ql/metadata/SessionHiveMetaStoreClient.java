@@ -40,6 +40,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.io.HdfsUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
@@ -231,6 +232,11 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     } else {
       return getTable(dbName, tableName, getColStats, engine);
     }
+  }
+
+  @Override
+  public org.apache.hadoop.hive.metastore.api.Table getTable(TableName tableName) throws TException {
+    return getTable(tableName.getCat(), tableName.getDb(), tableName.getTable());
   }
 
   @Override

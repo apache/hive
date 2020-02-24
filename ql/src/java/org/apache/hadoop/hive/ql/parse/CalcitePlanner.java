@@ -132,6 +132,7 @@ import org.apache.calcite.util.CompositeList;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -5321,18 +5322,15 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
   @Override
   protected Table getTableObjectByName(String tabName, boolean throwException) throws HiveException {
-    String[] names = Utilities.getDbTableName(tabName);
-    final String  tableName = names[1];
-    final String  dbName = names[0];
-    final String fullyQualName = dbName + "." + tableName;
-    if (!tabNameToTabObject.containsKey(fullyQualName)) {
-      Table table = db.getTable(dbName, tableName, throwException);
+    final TableName tName = HiveTableName.withNoDefault(tabName);
+    if (!tabNameToTabObject.containsKey(tName.toString())) {
+      Table table = db.getTable(tName, throwException);
       if (table != null) {
-        tabNameToTabObject.put(fullyQualName, table);
+        tabNameToTabObject.put(tName.toString(), table);
       }
       return table;
     }
-    return tabNameToTabObject.get(fullyQualName);
+    return tabNameToTabObject.get(tName.toString());
   }
 
   RexNode genRexNode(ASTNode expr, RowResolver input,

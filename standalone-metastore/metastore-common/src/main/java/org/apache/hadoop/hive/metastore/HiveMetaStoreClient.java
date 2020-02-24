@@ -57,6 +57,7 @@ import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.api.*;
@@ -2105,6 +2106,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
     Table t = client.get_table_req(req).getTable();
     return deepCopy(FilterUtils.filterTableIfEnabled(isClientFilterEnabled, filterHook, t));
+  }
+
+  @Override public Table getTable(TableName tableName) throws MetaException, TException, NoSuchObjectException {
+    return getTable(tableName.getCat(), tableName.getDb(), tableName.getTable());
   }
 
   @Override

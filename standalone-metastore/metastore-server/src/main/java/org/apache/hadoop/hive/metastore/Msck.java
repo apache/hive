@@ -110,15 +110,15 @@ public class Msck {
     int ret = 0;
     long partitionExpirySeconds = msckInfo.getPartitionExpirySeconds();
     try {
-      Table table = getMsc().getTable(msckInfo.getCatalogName(), msckInfo.getDbName(), msckInfo.getTableName());
+      Table table = getMsc().getTable(msckInfo.getTableName());
       qualifiedTableName = Warehouse.getCatalogQualifiedTableName(table);
       HiveMetaStoreChecker checker = new HiveMetaStoreChecker(getMsc(), getConf(), partitionExpirySeconds);
       // checkMetastore call will fill in result with partitions that are present in filesystem
       // and missing in metastore - accessed through getPartitionsNotInMs
       // And partitions that are not present in filesystem and metadata exists in metastore -
       // accessed through getPartitionNotOnFS
-      checker.checkMetastore(msckInfo.getCatalogName(), msckInfo.getDbName(), msckInfo.getTableName(),
-        msckInfo.getPartSpecs(), result);
+      checker.checkMetastore(msckInfo.getTableName().getCat(), msckInfo.getTableName().getDb(),
+          msckInfo.getTableName().getTable(), msckInfo.getPartSpecs(), result);
       Set<CheckResult.PartitionResult> partsNotInMs = result.getPartitionsNotInMs();
       Set<CheckResult.PartitionResult> partsNotInFs = result.getPartitionsNotOnFs();
       Set<CheckResult.PartitionResult> expiredPartitions = result.getExpiredPartitions();
@@ -138,7 +138,8 @@ public class Msck {
           MetaStoreServerUtils.isTransactionalTable(table.getParameters())) {
           // Running MSCK from beeline/cli will make DDL task acquire X lock when repair is enabled, since we are directly
           // invoking msck.repair() without SQL statement, we need to do the same and acquire X lock (repair is default)
-          LockRequest lockRequest = createLockRequest(msckInfo.getDbName(), msckInfo.getTableName());
+          LockRequest lockRequest =
+              createLockRequest(msckInfo.getTableName().getDb(), msckInfo.getTableName().getTable());
           txnId = lockRequest.getTxnid();
           try {
             LockResponse res = getMsc().lock(lockRequest);

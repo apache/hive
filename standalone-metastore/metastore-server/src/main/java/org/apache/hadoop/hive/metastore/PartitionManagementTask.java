@@ -31,6 +31,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
@@ -148,14 +149,14 @@ public class PartitionManagementTask implements MetastoreTaskThread {
         LOG.info("Found {} candidate tables for partition discovery", candidateTables.size());
         setupMsckConf();
         for (Table table : candidateTables) {
-          qualifiedTableName = Warehouse.getCatalogQualifiedTableName(table);
+          TableName tableName = TableName.fromString(table.getTableName(), table.getCatName(), table.getDbName());
           long retentionSeconds = getRetentionPeriodInSeconds(table);
           LOG.info("Running partition discovery for table {} retentionPeriod: {}s", qualifiedTableName,
             retentionSeconds);
           // this always runs in 'sync' mode where partitions can be added and dropped
-          MsckInfo msckInfo = new MsckInfo(table.getCatName(), table.getDbName(), table.getTableName(),
+          MsckInfo msckInfo = new MsckInfo(tableName,
             null, null, true, true, true, retentionSeconds);
-          executorService.submit(new MsckThread(msckInfo, conf, qualifiedTableName, countDownLatch));
+          executorService.submit(new MsckThread(msckInfo, conf, tableName.toString(), countDownLatch));
         }
         countDownLatch.await();
         executorService.shutdownNow();

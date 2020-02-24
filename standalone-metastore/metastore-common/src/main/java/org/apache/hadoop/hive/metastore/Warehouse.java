@@ -356,7 +356,7 @@ public class Warehouse {
    * @param table table object
    * @return fully qualified name.
    */
-  public static String getCatalogQualifiedTableName(Table table) {
+  public static String getCatalogQualifiedTableName(Table table) { // TODO: deprecate/remove
     return TableName.getQualified(table.getCatName(), table.getDbName(), table.getTableName());
   }
 

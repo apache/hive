@@ -1336,8 +1336,23 @@ public class Hive {
    *              if there's an internal error or if the table doesn't exist
    */
   public Table getTable(TableName tableName) throws HiveException {
+    return getTable(tableName, true);
+  }
+
+  /**
+   * Returns metadata of the table
+   *
+   * @param tableName
+   *          the tableName object
+   * @param throwException
+   *          controls whether an exception is thrown or a returns a null
+   * @return the table
+   * @exception HiveException
+   *              if there's an internal error or if the table doesn't exist
+   */
+  public Table getTable(TableName tableName, boolean throwException) throws HiveException {
     return this.getTable(ObjectUtils.firstNonNull(tableName.getDb(), SessionState.get().getCurrentDatabase()),
-        tableName.getTable(), true);
+        tableName.getTable(), throwException);
   }
 
   /**

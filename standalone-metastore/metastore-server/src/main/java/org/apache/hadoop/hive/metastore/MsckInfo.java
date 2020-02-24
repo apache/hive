@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.metastore;
 
+import org.apache.hadoop.hive.common.TableName;
+
 import java.util.List;
 import java.util.Map;
 
@@ -25,9 +27,7 @@ import java.util.Map;
  */
 public class MsckInfo {
 
-  private final String catalogName;
-  private final String dbName;
-  private final String tableName;
+  private final TableName tableName;
   private final List<Map<String, String>> partSpecs;
   private final String resFile;
   private final boolean repairPartitions;
@@ -35,11 +35,9 @@ public class MsckInfo {
   private final boolean dropPartitions;
   private final long partitionExpirySeconds;
 
-  public MsckInfo(String catalogName, String dbName, String tableName, List<Map<String, String>> partSpecs,
+  public MsckInfo(TableName tableName, List<Map<String, String>> partSpecs,
       String resFile, boolean repairPartitions, boolean addPartitions, boolean dropPartitions,
       long partitionExpirySeconds) {
-    this.catalogName = catalogName;
-    this.dbName = dbName;
     this.tableName = tableName;
     this.partSpecs = partSpecs;
     this.resFile = resFile;
@@ -49,15 +47,7 @@ public class MsckInfo {
     this.partitionExpirySeconds = partitionExpirySeconds;
   }
 
-  public String getCatalogName() {
-    return catalogName;
-  }
-
-  public String getDbName() {
-    return dbName;
-  }
-
-  public String getTableName() {
+  public TableName getTableName() {
     return tableName;
   }
 
