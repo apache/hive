@@ -95,6 +95,8 @@ public class ScheduledQueryExecutionService implements Closeable {
             ScheduledQueryPollResponse q = context.schedulerService.scheduledQueryPoll();
             if (q.isSetExecutionId()) {
               context.executor.submit(new ScheduledQueryExecutor(q));
+              // skip sleep and poll again if there are available executor
+              continue;
             }
           } catch (Throwable t) {
             LOG.error("Unexpected exception during scheduled query submission", t);
@@ -137,7 +139,6 @@ public class ScheduledQueryExecutionService implements Closeable {
     private ScheduledQueryProgressInfo info;
     final ScheduledQueryPollResponse pollResponse;
 
-    //FIXME
     public ScheduledQueryExecutor(ScheduledQueryPollResponse pollResponse) {
       workerStarted(this);
       this.pollResponse = pollResponse;
