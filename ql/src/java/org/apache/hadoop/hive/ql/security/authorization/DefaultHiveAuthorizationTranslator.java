@@ -20,11 +20,13 @@ package org.apache.hadoop.hive.ql.security.authorization;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.ql.ddl.privilege.PrincipalDesc;
 import org.apache.hadoop.hive.ql.ddl.privilege.PrivilegeDesc;
 import org.apache.hadoop.hive.ql.ddl.privilege.PrivilegeObjectDesc;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.parse.HiveTableName;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizationTranslator;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrincipal;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilege;
@@ -64,7 +66,8 @@ public class DefaultHiveAuthorizationTranslator implements HiveAuthorizationTran
       dbTable = new String[] {null, null};
     } else {
       if (privSubjectDesc.getTable()) {
-        dbTable = Utilities.getDbTableName(privSubjectDesc.getObject());
+        final TableName tn = HiveTableName.of(privSubjectDesc.getObject());
+        dbTable = new String[] {tn.getDb(), tn.getTable()};
       } else {
         dbTable = new String[] {privSubjectDesc.getObject(), null};
       }

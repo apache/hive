@@ -63,6 +63,7 @@ public abstract class AbstractAlterTableDesc implements DDLDescWithWriteId, Seri
 
   @Explain(displayName = "table name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getDbTableName() {
+    // TODO: use explain for tablename instead
     return tableName.toString();
   }
 

@@ -26,6 +26,7 @@ import java.util.Set;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -36,6 +37,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.HiveTableName;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
@@ -363,11 +365,9 @@ public class CreateViewDesc implements DDLDesc, Serializable {
   }
 
   public Table toTable(HiveConf conf) throws HiveException {
-    String[] names = Utilities.getDbTableName(getViewName());
-    String databaseName = names[0];
-    String tableName = names[1];
+    TableName tableName = HiveTableName.of(getViewName());
 
-    Table tbl = new Table(databaseName, tableName);
+    Table tbl = new Table(tableName);
     tbl.setViewOriginalText(getViewOriginalText());
     tbl.setViewExpandedText(getViewExpandedText());
     if (isMaterialized()) {

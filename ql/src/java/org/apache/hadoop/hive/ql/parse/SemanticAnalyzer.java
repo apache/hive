@@ -2350,14 +2350,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               location = new Path(qb.getTableDesc().getLocation());
             } else {
               // allocate a temporary output dir on the location of the table
-              String tableName = getUnescapedName((ASTNode) ast.getChild(0));
-              String[] names = Utilities.getDbTableName(tableName);
+              TableName tableName = HiveTableName.of(getUnescapedName((ASTNode) ast.getChild(0)));
               try {
                 Warehouse wh = new Warehouse(conf);
                 //Use destination table's db location.
                 String destTableDb = qb.getTableDesc() != null ? qb.getTableDesc().getDatabaseName() : null;
                 if (destTableDb == null) {
-                  destTableDb = names[0];
+                  destTableDb = tableName.getDb();
                 }
                 location = wh.getDatabasePath(db.getDatabase(destTableDb));
               } catch (MetaException e) {
@@ -8287,7 +8286,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     } else if ( queryState.getCommandType().equals(HiveOperation.CREATETABLE_AS_SELECT.getOperationName())) {
 
       Path tlocation = null;
-      String tName = Utilities.getDbTableName(tableDesc.getDbTableName())[1];
+      String tName = HiveTableName.of(tableDesc.getDbTableName()).getTable();
       try {
         Warehouse wh = new Warehouse(conf);
         tlocation = wh.getDefaultTablePath(db.getDatabase(tableDesc.getDatabaseName()),
@@ -12919,7 +12918,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         sb.append(" FROM (");
         sb.append(expandedText);
         sb.append(") ");
-        sb.append(HiveUtils.unparseIdentifier(Utilities.getDbTableName(createVwDesc.getViewName())[1], conf));
+        final String viewName = HiveTableName.of(createVwDesc.getViewName()).getTable();
+        sb.append(HiveUtils.unparseIdentifier(viewName, conf));
         expandedText = sb.toString();
       }
     } else {
@@ -12953,7 +12953,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         sb.append(" FROM (");
         sb.append(expandedText);
         sb.append(") ");
-        sb.append(HiveUtils.unparseIdentifier(Utilities.getDbTableName(createVwDesc.getViewName())[1], conf));
+        final String viewName = HiveTableName.of(createVwDesc.getViewName()).getTable();
+        sb.append(HiveUtils.unparseIdentifier(viewName, conf));
         expandedText = sb.toString();
       }
 
@@ -13467,7 +13468,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   ASTNode analyzeCreateTable(
       ASTNode ast, QB qb, PlannerContext plannerCtx) throws SemanticException {
     TableName qualifiedTabName = getQualifiedTableName((ASTNode) ast.getChild(0));
-    final String dbDotTab = qualifiedTabName.getNotEmptyDbTable();
 
     String likeTableName = null;
     List<FieldSchema> cols = new ArrayList<FieldSchema>();
@@ -13505,7 +13505,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     RowFormatParams rowFormatParams = new RowFormatParams();
     StorageFormat storageFormat = new StorageFormat(conf);
 
-    LOG.info("Creating table " + dbDotTab + " position=" + ast.getCharPositionInLine());
+    LOG.info("Creating table " + qualifiedTabName + " position=" + ast.getCharPositionInLine());
     int numCh = ast.getChildCount();
 
     /*
@@ -13703,10 +13703,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         throw new SemanticException(
             "Partition columns can only declared using their name and types in regular CREATE TABLE statements");
       }
-      tblProps = validateAndAddDefaultProperties(
-          tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization, isTemporary, isTransactional);
-      addDbAndTabToOutputs(new String[] {qualifiedTabName.getDb(), qualifiedTabName.getTable()},
-          TableType.MANAGED_TABLE, isTemporary, tblProps);
+      tblProps = validateAndAddDefaultProperties(tblProps, isExt, storageFormat, qualifiedTabName.toString(), sortCols,
+          isMaterialization, isTemporary, isTransactional);
+      addDbAndTabToOutputs(qualifiedTabName, TableType.MANAGED_TABLE, isTemporary, tblProps);
 
       CreateTableDesc crtTblDesc = new CreateTableDesc(qualifiedTabName,
           isExt, isTemporary, cols, partCols,
@@ -13731,10 +13730,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         throw new SemanticException(
             qualifiedTabName.getNotEmptyDbTable() + " cannot be declared transactional because it's an external table");
       }
-      tblProps = validateAndAddDefaultProperties(tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization,
-          isTemporary, isTransactional);
-      addDbAndTabToOutputs(new String[] {qualifiedTabName.getDb(), qualifiedTabName.getTable()},
-          TableType.MANAGED_TABLE, false, tblProps);
+      tblProps = validateAndAddDefaultProperties(tblProps, isExt, storageFormat, qualifiedTabName.toString(), sortCols,
+          isMaterialization, isTemporary, isTransactional);
+      addDbAndTabToOutputs(qualifiedTabName, TableType.MANAGED_TABLE, false, tblProps);
 
       CreateTableDesc crtTranTblDesc =
           new CreateTableDesc(qualifiedTabName, isExt, isTemporary, cols, partCols, bucketCols, sortCols, numBuckets,
@@ -13755,9 +13753,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     case CTLT: // create table like <tbl_name>
 
       tblProps = validateAndAddDefaultProperties(
-          tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization, isTemporary, isTransactional);
-      addDbAndTabToOutputs(new String[] {qualifiedTabName.getDb(), qualifiedTabName.getTable()},
-          TableType.MANAGED_TABLE, isTemporary, tblProps);
+          tblProps, isExt, storageFormat, qualifiedTabName.toString(), sortCols, isMaterialization, isTemporary, isTransactional);
+      addDbAndTabToOutputs(qualifiedTabName, TableType.MANAGED_TABLE, isTemporary, tblProps);
 
       Table likeTable = getTable(likeTableName, false);
       if (likeTable != null) {
@@ -13769,7 +13766,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           updateDefaultTblProps(likeTable.getParameters(), tblProps, null);
         }
       }
-      CreateTableLikeDesc crtTblLikeDesc = new CreateTableLikeDesc(dbDotTab, isExt, isTemporary,
+      CreateTableLikeDesc crtTblLikeDesc = new CreateTableLikeDesc(qualifiedTabName.toString(), isExt, isTemporary,
           storageFormat.getInputFormat(), storageFormat.getOutputFormat(), location,
           storageFormat.getSerde(), storageFormat.getSerdeProps(), tblProps, ifNotExists,
           likeTableName, isUserStorageFormat);
@@ -13796,9 +13793,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // Verify that the table does not already exist
         // dumpTable is only used to check the conflict for non-temporary tables
         try {
-          Table dumpTable = db.newTable(dbDotTab);
+          Table dumpTable = new Table(qualifiedTabName);
           if (null != db.getTable(dumpTable.getDbName(), dumpTable.getTableName(), false) && !ctx.isExplainSkipExecution()) {
-            throw new SemanticException(ErrorMsg.TABLE_ALREADY_EXISTS.getMsg(dbDotTab));
+            throw new SemanticException(ErrorMsg.TABLE_ALREADY_EXISTS.getMsg(qualifiedTabName.toString()));
           }
         } catch (HiveException e) {
           throw new SemanticException(e);
@@ -13840,9 +13837,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       tblProps = validateAndAddDefaultProperties(
-          tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization, isTemporary, isTransactional);
-      addDbAndTabToOutputs(new String[] {qualifiedTabName.getDb(), qualifiedTabName.getTable()},
-          TableType.MANAGED_TABLE, isTemporary, tblProps);
+          tblProps, isExt, storageFormat, qualifiedTabName.toString(), sortCols, isMaterialization, isTemporary, isTransactional);
+      addDbAndTabToOutputs(qualifiedTabName, TableType.MANAGED_TABLE, isTemporary, tblProps);
       tableDesc = new CreateTableDesc(qualifiedTabName, isExt, isTemporary, cols,
           partColNames, bucketCols, sortCols, numBuckets, rowFormatParams.fieldDelim,
           rowFormatParams.fieldEscape, rowFormatParams.collItemDelim, rowFormatParams.mapKeyDelim,
@@ -13865,12 +13861,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   /** Adds entities for create table/create view. */
-  private void addDbAndTabToOutputs(String[] qualifiedTabName, TableType type,
+  private void addDbAndTabToOutputs(TableName tableName, TableType type,
       boolean isTemporary, Map<String, String> tblProps) throws SemanticException {
-    Database database  = getDatabase(qualifiedTabName[0]);
+    Database database  = getDatabase(tableName.getDb());
     outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_SHARED));
 
-    Table t = new Table(qualifiedTabName[0], qualifiedTabName[1]);
+    Table t = new Table(tableName);
     t.setParameters(tblProps);
     t.setTableType(type);
     t.setTemporary(isTemporary);
@@ -13879,7 +13875,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   protected ASTNode analyzeCreateView(ASTNode ast, QB qb, PlannerContext plannerCtx) throws SemanticException {
     TableName qualTabName = getQualifiedTableName((ASTNode) ast.getChild(0));
-    final String dbDotTable = qualTabName.getNotEmptyDbTable();
     List<FieldSchema> cols = null;
     boolean ifNotExists = false;
     boolean rewriteEnabled = true;
@@ -13897,7 +13892,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     RowFormatParams rowFormatParams = new RowFormatParams();
     StorageFormat storageFormat = new StorageFormat(conf);
 
-    LOG.info("Creating view " + dbDotTable + " position="
+    LOG.info("Creating view " + qualTabName + " position="
         + ast.getCharPositionInLine());
     int numCh = ast.getChildCount();
     for (int num = 1; num < numCh; num++) {
@@ -13979,9 +13974,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // Verify that the table does not already exist
         // dumpTable is only used to check the conflict for non-temporary tables
         try {
-          Table dumpTable = db.newTable(dbDotTable);
+          Table dumpTable = new Table(qualTabName);
           if (null != db.getTable(dumpTable.getDbName(), dumpTable.getTableName(), false) && !ctx.isExplainSkipExecution()) {
-            throw new SemanticException(ErrorMsg.TABLE_ALREADY_EXISTS.getMsg(dbDotTable));
+            throw new SemanticException(ErrorMsg.TABLE_ALREADY_EXISTS.getMsg(qualTabName.toString()));
           }
         } catch (HiveException e) {
           throw new SemanticException(e);
@@ -14022,26 +14017,24 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (tblProps == null) {
           tblProps = new HashMap<>();
         }
-        tblProps = convertToAcidByDefault(storageFormat, dbDotTable, null, tblProps);
+        tblProps = convertToAcidByDefault(storageFormat, qualTabName.toString(), null, tblProps);
       }
 
       createVwDesc = new CreateViewDesc(
-          dbDotTable, cols, comment, tblProps, partColNames, sortColNames, distributeColNames,
+          qualTabName.toString(), cols, comment, tblProps, partColNames, sortColNames, distributeColNames,
           ifNotExists, isRebuild, rewriteEnabled, isAlterViewAs,
           storageFormat.getInputFormat(), storageFormat.getOutputFormat(),
           location, storageFormat.getSerde(), storageFormat.getStorageHandler(),
           storageFormat.getSerdeProps());
-      addDbAndTabToOutputs(new String[] {qualTabName.getDb(), qualTabName.getTable()}, TableType.MATERIALIZED_VIEW,
-          false, tblProps);
+      addDbAndTabToOutputs(qualTabName, TableType.MATERIALIZED_VIEW, false, tblProps);
       queryState.setCommandType(HiveOperation.CREATE_MATERIALIZED_VIEW);
     } else {
       createVwDesc = new CreateViewDesc(
-          dbDotTable, cols, comment, tblProps, partColNames,
+          qualTabName.toString(), cols, comment, tblProps, partColNames,
           ifNotExists, orReplace, isAlterViewAs, storageFormat.getInputFormat(),
           storageFormat.getOutputFormat(), storageFormat.getSerde());
       rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), createVwDesc)));
-      addDbAndTabToOutputs(new String[] {qualTabName.getDb(), qualTabName.getTable()},
-          TableType.VIRTUAL_VIEW, false, tblProps);
+      addDbAndTabToOutputs(qualTabName, TableType.VIRTUAL_VIEW, false, tblProps);
       queryState.setCommandType(HiveOperation.CREATEVIEW);
     }
     qb.setViewDesc(createVwDesc);

@@ -31,6 +31,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
@@ -46,6 +47,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
+import org.apache.hadoop.hive.ql.parse.HiveTableName;
 import org.apache.hadoop.hive.ql.plan.BasicStatsNoJobWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
@@ -314,7 +316,7 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
 
   private int updatePartitions(Hive db, List<FooterStatCollector> scs, Table table) throws InvalidOperationException, HiveException {
 
-    String tableFullName = table.getFullyQualifiedName();
+    TableName tableName = HiveTableName.of(table);
 
     if (scs.isEmpty()) {
       return 0;
@@ -342,13 +344,13 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
     LOG.debug("Collectors.size(): {}", collectorsByTable.keySet());
 
     if (collectorsByTable.keySet().size() < 1) {
-      LOG.warn("Collectors are empty! ; {}", tableFullName);
+      LOG.warn("Collectors are empty! ; {}", tableName);
     }
 
     // for now this should be true...
     assert (collectorsByTable.keySet().size() <= 1);
 
-    LOG.debug("Updating stats for: {}", tableFullName);
+    LOG.debug("Updating stats for: {}", tableName);
 
     for (String partName : collectorsByTable.keySet()) {
       ImmutableList<FooterStatCollector> values = collectorsByTable.get(partName);
@@ -358,19 +360,19 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
       }
 
       if (values.get(0).result instanceof Table) {
-        db.alterTable(tableFullName, (Table) values.get(0).result, environmentContext, true);
-        LOG.debug("Updated stats for {}.", tableFullName);
+        db.alterTable(tableName, (Table) values.get(0).result, environmentContext, true);
+        LOG.debug("Updated stats for {}.", tableName);
       } else {
         if (values.get(0).result instanceof Partition) {
           List<Partition> results = Lists.transform(values, FooterStatCollector.EXTRACT_RESULT_FUNCTION);
-          db.alterPartitions(tableFullName, results, environmentContext, true);
-          LOG.debug("Bulk updated {} partitions of {}.", results.size(), tableFullName);
+          db.alterPartitions(tableName, results, environmentContext, true);
+          LOG.debug("Bulk updated {} partitions of {}.", results.size(), tableName);
         } else {
           throw new RuntimeException("inconsistent");
         }
       }
     }
-    LOG.debug("Updated stats for: {}", tableFullName);
+    LOG.debug("Updated stats for: {}", tableName);
     return 0;
   }
 

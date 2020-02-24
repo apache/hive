@@ -126,35 +126,6 @@ public class TestUtilities {
   }
 
   @Test
-  public void testgetDbTableName() throws HiveException{
-    String tablename;
-    String [] dbtab;
-    SessionState.start(new HiveConf(this.getClass()));
-    String curDefaultdb = SessionState.get().getCurrentDatabase();
-
-    //test table without db portion
-    tablename = "tab1";
-    dbtab = Utilities.getDbTableName(tablename);
-    assertEquals("db name", curDefaultdb, dbtab[0]);
-    assertEquals("table name", tablename, dbtab[1]);
-
-    //test table with db portion
-    tablename = "dab1.tab1";
-    dbtab = Utilities.getDbTableName(tablename);
-    assertEquals("db name", "dab1", dbtab[0]);
-    assertEquals("table name", "tab1", dbtab[1]);
-
-    //test invalid table name
-    tablename = "dab1.tab1.x1";
-    try {
-      dbtab = Utilities.getDbTableName(tablename);
-      fail("exception was expected for invalid table name");
-    } catch(HiveException ex){
-      assertEquals("Invalid table name " + tablename, ex.getMessage());
-    }
-  }
-
-  @Test
   public void testReplaceTaskId() {
     String taskID = "000000";
     int bucketNum = 1;

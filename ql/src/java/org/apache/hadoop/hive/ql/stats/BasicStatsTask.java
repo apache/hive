@@ -33,6 +33,7 @@ import java.util.concurrent.Future;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -50,6 +51,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
+import org.apache.hadoop.hive.ql.parse.HiveTableName;
 import org.apache.hadoop.hive.ql.plan.BasicStatsWork;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
@@ -250,7 +252,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
 
       List<Partition> partitions = getPartitionsList(db);
 
-      String tableFullName = table.getDbName() + "." + table.getTableName();
+      TableName tableName = HiveTableName.of(table);
 
       List<Partish> partishes = new ArrayList<>();
 
@@ -264,12 +266,12 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
         if (res == null) {
           return 0;
         }
-        db.alterTable(tableFullName, res, environmentContext, true);
+        db.alterTable(tableName, res, environmentContext, true);
 
         if (conf.getBoolVar(ConfVars.TEZ_EXEC_SUMMARY)) {
-          console.printInfo("Table " + tableFullName + " stats: [" + toString(p.getPartParameters()) + ']');
+          console.printInfo("Table " + tableName + " stats: [" + toString(p.getPartParameters()) + ']');
         }
-        LOG.info("Table " + tableFullName + " stats: [" + toString(p.getPartParameters()) + ']');
+        LOG.info("Table " + tableName + " stats: [" + toString(p.getPartParameters()) + ']');
 
       } else {
         // Partitioned table:
@@ -332,7 +334,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
         }
 
         if (!updates.isEmpty()) {
-          db.alterPartitions(tableFullName, updates, environmentContext, true);
+          db.alterPartitions(tableName, updates, environmentContext, true);
         }
         if (work.isStatsReliable() && updates.size() != processors.size()) {
           LOG.info("Stats should be reliadble...however seems like there were some issue.. => ret 1");

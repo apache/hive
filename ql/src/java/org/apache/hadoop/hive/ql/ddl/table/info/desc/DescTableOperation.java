@@ -29,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
@@ -53,6 +54,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.HiveTableName;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -199,7 +201,7 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
     String colName = desc.getColumnPath().split("\\.")[2];
     List<String> colNames = Lists.newArrayList(colName.toLowerCase());
 
-    String[] dbTab = Utilities.getDbTableName(desc.getDbTableName());
+    TableName tName = HiveTableName.of(desc.getDbTableName());
     if (null == part) {
       if (table.isPartitioned()) {
         Map<String, String> tableProps = table.getParameters() == null ?
@@ -207,20 +209,20 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
         if (table.isPartitionKey(colNames.get(0))) {
           getColumnDataForPartitionKeyColumn(table, cols, colStats, colNames, tableProps);
         } else {
-          getColumnsForNotPartitionKeyColumn(cols, colStats, deserializer, colNames, dbTab, tableProps);
+          getColumnsForNotPartitionKeyColumn(cols, colStats, deserializer, colNames, tName, tableProps);
         }
         table.setParameters(tableProps);
       } else {
         cols.addAll(Hive.getFieldsFromDeserializer(desc.getColumnPath(), deserializer));
         colStats.addAll(
-            context.getDb().getTableColumnStatistics(dbTab[0].toLowerCase(), dbTab[1].toLowerCase(), colNames, false));
+            context.getDb().getTableColumnStatistics(tName.getDb(), tName.getTable(), colNames, false));
       }
     } else {
       List<String> partitions = new ArrayList<String>();
       partitions.add(part.getName());
       cols.addAll(Hive.getFieldsFromDeserializer(desc.getColumnPath(), deserializer));
-      List<ColumnStatisticsObj> partitionColStat = context.getDb().getPartitionColumnStatistics(dbTab[0].toLowerCase(),
-          dbTab[1].toLowerCase(), partitions, colNames, false).get(part.getName());
+      List<ColumnStatisticsObj> partitionColStat = context.getDb().getPartitionColumnStatistics(tName.getDb(),
+          tName.getTable(), partitions, colNames, false).get(part.getName());
       if (partitionColStat != null) {
         colStats.addAll(partitionColStat);
       }
@@ -250,13 +252,13 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
   }
 
   private void getColumnsForNotPartitionKeyColumn(List<FieldSchema> cols, List<ColumnStatisticsObj> colStats,
-      Deserializer deserializer, List<String> colNames, String[] dbTab, Map<String, String> tableProps)
+      Deserializer deserializer, List<String> colNames, TableName tName, Map<String, String> tableProps)
       throws HiveException {
     cols.addAll(Hive.getFieldsFromDeserializer(desc.getColumnPath(), deserializer));
-    List<String> parts = context.getDb().getPartitionNames(dbTab[0].toLowerCase(), dbTab[1].toLowerCase(),
+    List<String> parts = context.getDb().getPartitionNames(tName.getDb(), tName.getTable(),
         (short) -1);
     AggrStats aggrStats = context.getDb().getAggrColStatsFor(
-        dbTab[0].toLowerCase(), dbTab[1].toLowerCase(), colNames, parts, false);
+        tName.getDb(), tName.getTable(), colNames, parts, false);
     colStats.addAll(aggrStats.getColStats());
     if (parts.size() == aggrStats.getPartsFound()) {
       StatsSetupConst.setColumnStatsState(tableProps, colNames);

@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.HiveTableName;
 
 /**
  * Implementation of a pre execute hook that updates the access
@@ -76,7 +77,7 @@ public class UpdateInputAccessTimeHook {
           Table t = db.getTable(dbName, tblName);
           p = db.getPartition(t, p.getSpec(), false);
           p.setLastAccessTime(lastAccessTime);
-          db.alterPartition(null, dbName, tblName, p, null, false);
+          db.alterPartition(HiveTableName.of(t), p, null, false);
           t.setLastAccessTime(lastAccessTime);
           db.alterTable(dbName + "." + tblName, t, false, null, false);
           break;

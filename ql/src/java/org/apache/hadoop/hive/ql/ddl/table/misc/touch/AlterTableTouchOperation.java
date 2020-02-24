@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.HiveTableName;
 
 /**
  * Operation process of touching a table.
@@ -55,7 +56,7 @@ public class AlterTableTouchOperation extends DDLOperation<AlterTableTouchDesc> 
         throw new HiveException("Specified partition does not exist");
       }
       try {
-        context.getDb().alterPartition(table.getCatalogName(), table.getDbName(), table.getTableName(), part,
+        context.getDb().alterPartition(HiveTableName.of(table), part,
             environmentContext, true);
       } catch (InvalidOperationException e) {
         throw new HiveException(e);

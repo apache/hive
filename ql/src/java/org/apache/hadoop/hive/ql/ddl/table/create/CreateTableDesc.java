@@ -242,7 +242,7 @@ public class CreateTableDesc implements DDLDesc, Serializable {
   }
 
   @Explain(displayName = "name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public String getDbTableName() {
+  public String getDbTableName() { // FIXME: This is used now in all the wrong ways
     return tableName.getNotEmptyDbTable();
   }
 

@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.HiveTableName;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
@@ -146,8 +147,8 @@ public abstract class AbstractAlterTableOperation<T extends AbstractAlterTableDe
           }
           writeId = tmpWriteId;
         }
-        context.getDb().alterTable(alterTable.getDbTableName(), table, alterTable.isCascade(), environmentContext, true,
-            writeId);
+        context.getDb().alterTable(HiveTableName.of(alterTable.getDbTableName()), table, alterTable.isCascade(),
+            environmentContext, true, writeId);
       } else {
         // Note: this is necessary for UPDATE_STATISTICS command, that operates via ADDPROPS (why?).
         //       For any other updates, we don't want to do txn check on partitions when altering table.
@@ -163,8 +164,7 @@ public abstract class AbstractAlterTableOperation<T extends AbstractAlterTableDe
             isTxn = true;
           }
         }
-        String qualifiedName = TableName.getDbTable(table.getTTable().getDbName(), table.getTTable().getTableName());
-        context.getDb().alterPartitions(qualifiedName, partitions, environmentContext, isTxn);
+        context.getDb().alterPartitions(HiveTableName.of(table), partitions, environmentContext, isTxn);
       }
       // Add constraints if necessary
       if (alterTable instanceof AbstractAlterTableWithConstraintsDesc) {

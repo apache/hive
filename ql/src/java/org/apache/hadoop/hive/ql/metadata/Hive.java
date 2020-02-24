@@ -192,6 +192,7 @@ import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveAugmentMaterializationRule;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
+import org.apache.hadoop.hive.ql.parse.HiveTableName;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc.LoadFileType;
@@ -733,37 +734,28 @@ public class Hive {
         newTbl.getTableName(), newTbl, cascade, environmentContext, transactional);
   }
 
-  /**
-   * Updates the existing table metadata with the new metadata.
-   *
-   * @param fullyQlfdTblName
-   *          name of the existing table
-   * @param newTbl
-   *          new name of the table. could be the old name
-   * @param transactional
-   *          Need to generate and save a table snapshot into the metastore?
-   * @throws HiveException
-   */
-  public void alterTable(String fullyQlfdTblName, Table newTbl, EnvironmentContext environmentContext,
+  public void alterTable(TableName tableName, Table newTbl, EnvironmentContext environmentContext,
                          boolean transactional)
       throws HiveException {
-    String[] names = Utilities.getDbTableName(fullyQlfdTblName);
-    alterTable(null, names[0], names[1], newTbl, false, environmentContext, transactional);
+    alterTable(tableName.getCat(), tableName.getDb(), tableName.getTable(), newTbl, false, environmentContext, transactional);
+  }
+
+  public void alterTable(TableName tableName, Table newTbl, boolean cascade,
+      EnvironmentContext environmentContext, boolean transactional)
+      throws HiveException {
+    alterTable(tableName.getCat(), tableName.getDb(), tableName.getTable(), newTbl, cascade, environmentContext, transactional);
   }
 
   public void alterTable(String fullyQlfdTblName, Table newTbl, boolean cascade,
       EnvironmentContext environmentContext, boolean transactional)
       throws HiveException {
-    String[] names = Utilities.getDbTableName(fullyQlfdTblName);
-    alterTable(null, names[0], names[1], newTbl, cascade, environmentContext, transactional);
+    TableName tableName = HiveTableName.of(fullyQlfdTblName);
+    alterTable(tableName, newTbl, cascade, environmentContext, transactional);
   }
 
-  public void alterTable(String fullyQlfdTblName, Table newTbl, boolean cascade,
-                         EnvironmentContext environmentContext, boolean transactional, long writeId)
-          throws HiveException {
-    String[] names = Utilities.getDbTableName(fullyQlfdTblName);
-    alterTable(null, names[0], names[1], newTbl, cascade, environmentContext, transactional,
-                writeId);
+  public void alterTable(TableName tableName, Table newTbl, boolean cascade,
+      EnvironmentContext environmentContext, boolean transactional, long writeId) throws HiveException {
+    alterTable(tableName.getCat(), tableName.getDb(), tableName.getTable(), newTbl, cascade, environmentContext, transactional, writeId);
   }
 
   public void alterTable(String catName, String dbName, String tblName, Table newTbl, boolean cascade,
@@ -850,16 +842,13 @@ public class Hive {
   public void alterPartition(String tblName, Partition newPart,
       EnvironmentContext environmentContext, boolean transactional)
       throws InvalidOperationException, HiveException {
-    String[] names = Utilities.getDbTableName(tblName);
-    alterPartition(null, names[0], names[1], newPart, environmentContext, transactional);
+    alterPartition(HiveTableName.of(tblName), newPart, environmentContext, transactional);
   }
 
   /**
    * Updates the existing partition metadata with the new metadata.
    *
-   * @param dbName
-   *          name of the exiting table's database
-   * @param tblName
+   * @param tableName
    *          name of the existing table
    * @param newPart
    *          new partition
@@ -871,12 +860,12 @@ public class Hive {
    *           if the changes in metadata is not acceptable
    * @throws HiveException
    */
-  public void alterPartition(String catName, String dbName, String tblName, Partition newPart,
+  public void alterPartition(TableName tableName, Partition newPart,
                              EnvironmentContext environmentContext, boolean transactional)
       throws InvalidOperationException, HiveException {
     try {
-      if (catName == null) {
-        catName = getDefaultCatalog(conf);
+      if (tableName.getCat() == null) {
+        tableName = HiveTableName.of(tableName.toString());
       }
       validatePartition(newPart);
       String location = newPart.getLocation();
@@ -893,11 +882,11 @@ public class Hive {
         if (tableSnapshot != null) {
           newPart.getTPartition().setWriteId(tableSnapshot.getWriteId());
         } else {
-          LOG.warn("Cannot get a table snapshot for " + tblName);
+          LOG.warn("Cannot get a table snapshot for " + tableName.getTable());
         }
       }
-      getSynchronizedMSC().alter_partition(catName,
-          dbName, tblName, newPart.getTPartition(), environmentContext,
+      getSynchronizedMSC().alter_partition(tableName.getCat(),
+          tableName.getDb(), tableName.getTable(), newPart.getTPartition(), environmentContext,
           tableSnapshot == null ? null : tableSnapshot.getValidWriteIdList());
 
     } catch (MetaException e) {
@@ -928,10 +917,9 @@ public class Hive {
    *           if the changes in metadata is not acceptable
    * @throws HiveException
    */
-  public void alterPartitions(String tblName, List<Partition> newParts,
+  public void alterPartitions(TableName tblName, List<Partition> newParts,
                               EnvironmentContext environmentContext, boolean transactional)
       throws InvalidOperationException, HiveException {
-    String[] names = Utilities.getDbTableName(tblName);
     List<org.apache.hadoop.hive.metastore.api.Partition> newTParts =
       new ArrayList<org.apache.hadoop.hive.metastore.api.Partition>();
     try {
@@ -951,7 +939,7 @@ public class Hive {
         }
         newTParts.add(tmpPart.getTPartition());
       }
-      getMSC().alter_partitions(names[0], names[1], newTParts, environmentContext,
+      getMSC().alter_partitions(tblName.getDb(), tblName.getTable(), newTParts, environmentContext,
           tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null,
           tableSnapshot != null ? tableSnapshot.getWriteId() : -1);
     } catch (MetaException e) {
@@ -1166,8 +1154,8 @@ public class Hive {
    *           thrown if the drop fails
    */
   public void dropTable(String tableName, boolean ifPurge) throws HiveException {
-    String[] names = Utilities.getDbTableName(tableName);
-    dropTable(names[0], names[1], true, true, ifPurge);
+    TableName tn = HiveTableName.of(tableName);
+    dropTable(tn.getDb(), tn.getTable(), true, true, ifPurge);
   }
 
   /**
@@ -1301,8 +1289,7 @@ public class Hive {
    * table doesn't exist
    */
   public Table getTable(final String tableName, boolean throwException) throws HiveException {
-    String[] names = Utilities.getDbTableName(tableName);
-    return this.getTable(names[0], names[1], throwException);
+    return this.getTable(HiveTableName.of(tableName), throwException);
   }
 
   /**
@@ -1317,13 +1304,7 @@ public class Hive {
    *              if there's an internal error or if the table doesn't exist
    */
   public Table getTable(final String dbName, final String tableName) throws HiveException {
-     // TODO: catalog... etc everywhere
-    if (tableName.contains(".")) {
-      String[] names = Utilities.getDbTableName(tableName);
-      return this.getTable(names[0], names[1], true);
-    } else {
-      return this.getTable(dbName, tableName, true);
-    }
+     return this.getTable(TableName.fromString(tableName, dbName));
   }
 
   /**
@@ -3370,7 +3351,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
                                   String partPath) throws HiveException, InvalidOperationException {
 
     alterPartitionSpecInMemory(tbl, partSpec, tpart, inheritTableSpecs, partPath);
-    alterPartition(tbl.getCatalogName(), tbl.getDbName(), tbl.getTableName(),
+    alterPartition(HiveTableName.of(tbl),
         new Partition(tbl, tpart), null, true);
   }
 
@@ -3570,11 +3551,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
     } catch (Exception e) {
       throw new HiveException(e.getMessage(), e);
     }
-  }
-
-  public List<String> getPartitionNames(String tblName, short max) throws HiveException {
-    String[] names = Utilities.getDbTableName(tblName);
-    return getPartitionNames(names[0], names[1], max);
   }
 
   public List<String> getPartitionNames(String dbName, String tblName, short max)
@@ -5250,8 +5226,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
 
   public Table newTable(String tableName) throws HiveException {
-    String[] names = Utilities.getDbTableName(tableName);
-    return new Table(names[0], names[1]);
+    return new Table(HiveTableName.of(tableName));
   }
 
   public String getDelegationToken(String owner, String renewer)

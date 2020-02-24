@@ -26,6 +26,7 @@ import org.apache.commons.collections.*;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -485,12 +486,12 @@ public abstract class TaskCompiler {
       } else if (pCtx.getQueryProperties().isMaterializedView()) {
         protoName = pCtx.getCreateViewDesc().getViewName();
       }
-      String[] names = Utilities.getDbTableName(protoName);
-      if (!db.databaseExists(names[0])) {
-        throw new SemanticException("ERROR: The database " + names[0] + " does not exist.");
+      TableName tableName = HiveTableName.of(protoName);
+      if (!db.databaseExists(tableName.getDb())) {
+        throw new SemanticException("ERROR: The database " + tableName.getDb() + " does not exist.");
       }
       Warehouse wh = new Warehouse(conf);
-      return wh.getDefaultTablePath(db.getDatabase(names[0]), names[1], isExternal);
+      return wh.getDefaultTablePath(db.getDatabase(tableName.getDb()), tableName.getTable(), isExternal);
     } catch (HiveException e) {
       throw new SemanticException(e);
     } catch (MetaException e) {

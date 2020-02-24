@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.AbstractSemanticAnalyzerHook;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
+import org.apache.hadoop.hive.ql.parse.HiveTableName;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.security.authorization.Privilege;
@@ -336,7 +337,7 @@ public class HCatSemanticAnalyzer extends HCatSemanticAnalyzerBase {
     } else if (ddlDesc instanceof AlterTableSetLocationDesc) {
       AlterTableSetLocationDesc alterTable = (AlterTableSetLocationDesc)ddlDesc;
       Table table = hive.getTable(SessionState.get().getCurrentDatabase(),
-          Utilities.getDbTableName(alterTable.getDbTableName())[1], false);
+          HiveTableName.of(alterTable.getDbTableName()).getTable(), false);
 
       Partition part = null;
       if (alterTable.getPartitionSpec() != null) {

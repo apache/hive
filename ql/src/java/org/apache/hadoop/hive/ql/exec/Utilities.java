@@ -2305,45 +2305,6 @@ public final class Utilities {
     return names;
   }
 
-  /**
-   * Extract db and table name from dbtable string, where db and table are separated by "."
-   * If there is no db name part, set the current sessions default db
-   * @param dbtable
-   * @return String array with two elements, first is db name, second is table name
-   * @throws SemanticException
-   * @deprecated use {@link TableName} or {@link org.apache.hadoop.hive.ql.parse.HiveTableName} instead
-   */
-  @Deprecated
-  public static String[] getDbTableName(String dbtable) throws SemanticException {
-    return getDbTableName(SessionState.get().getCurrentDatabase(), dbtable);
-  }
-
-  /**
-   * Extract db and table name from dbtable string.
-   * @param defaultDb
-   * @param dbtable
-   * @return String array with two elements, first is db name, second is table name
-   * @throws SemanticException
-   * @deprecated use {@link TableName} or {@link org.apache.hadoop.hive.ql.parse.HiveTableName} instead
-   */
-  @Deprecated
-  public static String[] getDbTableName(String defaultDb, String dbtable) throws SemanticException {
-    if (dbtable == null) {
-      return new String[2];
-    }
-    String[] names =  dbtable.split("\\.");
-    switch (names.length) {
-      case 3:
-        return new String [] {names[1], names[2]};
-      case 2:
-        return names;
-      case 1:
-        return new String [] {defaultDb, dbtable};
-      default:
-        throw new SemanticException(ErrorMsg.INVALID_TABLE_NAME, dbtable);
-    }
-  }
-
   public static void validateColumnNames(List<String> colNames, List<String> checkCols)
       throws SemanticException {
     Iterator<String> checkColsIter = checkCols.iterator();

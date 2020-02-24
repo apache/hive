@@ -37,8 +37,7 @@ public class AlterTableRenameOperation extends AbstractAlterTableOperation<Alter
 
   @Override
   public int execute() throws HiveException {
-    TableName tableName = HiveTableName.of(desc.getDbTableName());
-    if (Utils.isBootstrapDumpInProgress(context.getDb(), tableName.getDb())) {
+    if (Utils.isBootstrapDumpInProgress(context.getDb(), HiveTableName.of(desc.getDbTableName()).getDb())) {
       LOG.error("DDLTask: Rename Table not allowed as bootstrap dump in progress");
       throw new HiveException("Rename Table: Not allowed as bootstrap dump in progress");
     }
