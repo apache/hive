@@ -17,8 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.utils;
 
-import java.util.Collections;
-import java.util.List;
+
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.CATALOG_DB_SEPARATOR;
 
@@ -31,6 +30,13 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionSpec;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
+import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Utilities common to Filtering operations.
@@ -371,4 +377,69 @@ public class FilterUtils {
     }
   }
 
+  /**
+   * Filter the list of compactions if filtering is enabled. Otherwise, return original list
+   *
+   * @param isFilterEnabled true: filtering is enabled; false: filtering is disabled.
+   * @param filterHook      the object that does filtering
+   * @param compactions     the list of compactions
+   * @return the list of compactions that user has access or original list if filtering is disabled;
+   * @throws MetaException
+   */
+  public static List<ShowCompactResponseElement> filterCompactionsIfEnabled(
+          boolean isFilterEnabled,
+          MetaStoreFilterHook filterHook, String catName, List<ShowCompactResponseElement> compactions)
+          throws MetaException {
+
+    if (isFilterEnabled) {
+      List<ShowCompactResponseElement> result = new ArrayList<>(compactions.size());
+
+      // DBName -> List of TableNames map used for checking access rights for non partitioned tables
+      Map<String, List<String>> nonPartTables = new HashMap<>();
+      // DBName -> TableName -> List of PartitionNames map used for checking access rights for
+      // partitioned tables
+      Map<String, Map<String, List<String>>> partTables = new HashMap<>();
+      for (ShowCompactResponseElement c : compactions) {
+        if (c.getPartitionname() == null) {
+          nonPartTables.computeIfAbsent(c.getDbname(), k -> new ArrayList<>());
+          if (!nonPartTables.get(c.getDbname()).contains(c.getTablename())) {
+            nonPartTables.get(c.getDbname()).add(c.getTablename());
+          }
+        } else {
+          partTables.computeIfAbsent(c.getDbname(), k -> new HashMap<>());
+          partTables.get(c.getDbname()).computeIfAbsent(c.getTablename(), k -> new ArrayList<>());
+          if (!partTables.get(c.getDbname()).get(c.getTablename()).contains(c.getPartitionname())) {
+            partTables.get(c.getDbname()).get(c.getTablename()).add(c.getPartitionname());
+          }
+        }
+      }
+      // Checking non partitioned table access rights
+      for (Map.Entry<String, List<String>> e : nonPartTables.entrySet()) {
+        nonPartTables.put(e.getKey(), filterHook.filterTableNames(catName, e.getKey(), e.getValue()));
+      }
+      // Checking partitioned table access rights
+      for (Map.Entry<String, Map<String, List<String>>> dbName : partTables.entrySet()) {
+        for (Map.Entry<String, List<String>> tableName : dbName.getValue().entrySet()) {
+          dbName.getValue().put(tableName.getKey(),
+              filterHook.filterPartitionNames(catName, dbName.getKey(), tableName.getKey(), tableName.getValue()));
+        }
+      }
+
+      // Add the compactions to the response only we have access right
+      for (ShowCompactResponseElement c : compactions) {
+        if (c.getPartitionname() == null) {
+          if (nonPartTables.get(c.getDbname()).contains(c.getTablename())) {
+            result.add(c);
+          }
+        } else {
+          if (partTables.get(c.getDbname()).get(c.getTablename()).contains(c.getPartitionname())) {
+            result.add(c);
+          }
+        }
+      }
+      return result;
+    } else {
+      return compactions;
+    }
+  }
 }
