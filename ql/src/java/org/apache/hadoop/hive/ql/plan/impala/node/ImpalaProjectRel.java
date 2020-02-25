@@ -78,4 +78,9 @@ public class ImpalaProjectRel extends ImpalaPlanRel {
     }
     return ImmutableMap.copyOf(projectExprs);
   }
+
+  @Override
+  public RelWriter explainTerms(RelWriter pw) {
+    return hiveProject.explainTerms(pw);
+  }
 }

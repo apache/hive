@@ -23,6 +23,7 @@ import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import org.apache.calcite.rel.RelWriter;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
@@ -188,4 +189,12 @@ public class ImpalaHdfsScanRel extends ImpalaPlanRel {
     return rexCallConjuncts.getOperands();
   }
 
+  @Override
+  public RelWriter explainTerms(RelWriter pw) {
+    RelWriter rw = scan.explainTerms(pw);
+    if (filter != null) {
+      rw = filter.explainTerms(rw);
+    }
+    return rw;
+  }
 }
