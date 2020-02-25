@@ -139,7 +139,7 @@
       </field>
     </class>
 
-    <class name="MTable" table="TBLS" identity-type="application" detachable="true">
+    <class name="MTable" table="TBLS" identity-type="application" detachable="true" objectid-class="MTable$PK">
       <field name="id" primary-key="true" value-strategy="native">
         <column name="TBL_ID" jdbc-type="BIGINT" />
       </field>
@@ -273,9 +273,9 @@
         <column name="PARENT_CD_ID"/>
       </field>
       <field name="parentIntegerIndex">
-    <column name="PARENT_INTEGER_IDX"/>
+        <column name="PARENT_INTEGER_IDX"/>
       </field>
-      <field name="parentTable">
+      <field name="parentTable" primary-key="true">
         <column name="PARENT_TBL_ID"/>
       </field>
       <field name="constraintType">
