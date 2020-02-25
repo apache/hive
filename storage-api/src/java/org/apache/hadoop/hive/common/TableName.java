@@ -149,6 +149,7 @@ public class TableName implements Serializable {
   /**
    * Get the name in db.table format, if db is not empty, otherwise pass only the table name.
    */
+  @Deprecated
   public String getNotEmptyDbTable() {
     return db == null || db.trim().isEmpty() ? table : db + DatabaseName.CAT_DB_TABLE_SEPARATOR + table;
   }

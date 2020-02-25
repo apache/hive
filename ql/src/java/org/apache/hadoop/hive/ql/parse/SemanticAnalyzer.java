@@ -8286,7 +8286,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     } else if ( queryState.getCommandType().equals(HiveOperation.CREATETABLE_AS_SELECT.getOperationName())) {
 
       Path tlocation = null;
-      String tName = HiveTableName.of(tableDesc.getDbTableName()).getTable();
+      String tName = tableDesc.getTableName().getTable();
       try {
         Warehouse wh = new Warehouse(conf);
         tlocation = wh.getDefaultTablePath(db.getDatabase(tableDesc.getDatabaseName()),

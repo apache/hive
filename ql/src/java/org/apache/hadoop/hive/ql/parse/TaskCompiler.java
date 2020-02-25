@@ -480,13 +480,14 @@ public abstract class TaskCompiler {
     try {
       String protoName = null;
       boolean isExternal = false;
+      TableName tableName = null;
       if (pCtx.getQueryProperties().isCTAS()) {
-        protoName = pCtx.getCreateTable().getDbTableName();
+        tableName = pCtx.getCreateTable().getTableName();
         isExternal = pCtx.getCreateTable().isExternal();
       } else if (pCtx.getQueryProperties().isMaterializedView()) {
         protoName = pCtx.getCreateViewDesc().getViewName();
+        tableName = HiveTableName.of(protoName);
       }
-      TableName tableName = HiveTableName.of(protoName);
       if (!db.databaseExists(tableName.getDb())) {
         throw new SemanticException("ERROR: The database " + tableName.getDb() + " does not exist.");
       }

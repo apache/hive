@@ -197,7 +197,7 @@ public class BasicStatsWork implements Serializable {
     } else if (work.getTableSpecs() != null) {
       return work.getTableSpecs().getTableName().getTable();
     } else if (getLoadFileDesc().getCtasCreateTableDesc() != null) {
-      return getLoadFileDesc().getCtasCreateTableDesc().getDbTableName();
+      return getLoadFileDesc().getCtasCreateTableDesc().getTableName().toString();
     } else {
       return getLoadFileDesc().getCreateViewDesc().getViewName();
     }
