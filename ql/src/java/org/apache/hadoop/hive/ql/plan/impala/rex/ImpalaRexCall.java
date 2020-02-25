@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.plan.impala.rex;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
-
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
@@ -32,10 +31,10 @@ import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaCaseExpr;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaFunctionCallExpr;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaInExpr;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaIsNullExpr;
-import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ScalarFunctionDetails;
-import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ScalarFunctionUtil;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaFunctionSignature;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaTypeConverter;
+import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ScalarFunctionDetails;
+import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ScalarFunctionUtil;
 import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.BinaryPredicate;
 import org.apache.impala.analysis.CaseWhenClause;

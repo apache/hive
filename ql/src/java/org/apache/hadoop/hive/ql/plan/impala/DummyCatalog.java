@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.plan.impala;
 
 import org.apache.impala.analysis.TableName;
 import org.apache.impala.authorization.AuthorizationPolicy;
+import org.apache.impala.catalog.BuiltinsDb;
 import org.apache.impala.catalog.CatalogException;
 import org.apache.impala.catalog.DatabaseNotFoundException;
 import org.apache.impala.catalog.FeCatalog;
@@ -102,7 +103,7 @@ public class DummyCatalog implements FeCatalog {
 
   @Override
   public Function getFunction(Function desc, Function.CompareMode mode) {
-    throw new RuntimeException("not implemented");
+    return BuiltinsDb.getInstance(true).getFunction(desc, mode);
   }
 
   @Override

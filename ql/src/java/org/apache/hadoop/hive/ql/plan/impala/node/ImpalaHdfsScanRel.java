@@ -18,9 +18,6 @@
 
 package org.apache.hadoop.hive.ql.plan.impala.node;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import org.apache.calcite.rel.RelWriter;
@@ -29,18 +26,17 @@ import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
-
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaBasicAnalyzer;
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaPlannerContext;
 import org.apache.hadoop.hive.ql.plan.impala.rex.ImpalaRexVisitor;
 import org.apache.impala.analysis.AggregateInfo;
+import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.BaseTableRef;
 import org.apache.impala.analysis.Expr;
 import org.apache.impala.analysis.Path;
@@ -48,7 +44,6 @@ import org.apache.impala.analysis.SlotDescriptor;
 import org.apache.impala.analysis.SlotRef;
 import org.apache.impala.analysis.TableName;
 import org.apache.impala.analysis.TableRef;
-import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.TupleDescriptor;
 import org.apache.impala.catalog.Db;
 import org.apache.impala.catalog.FeFsPartition;
@@ -57,6 +52,9 @@ import org.apache.impala.catalog.PrunablePartition;
 import org.apache.impala.common.ImpalaException;
 import org.apache.impala.planner.PlanNode;
 import org.apache.impala.planner.PlanNodeId;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ImpalaHdfsScanRel extends ImpalaPlanRel {
 
@@ -77,6 +75,19 @@ public class ImpalaHdfsScanRel extends ImpalaPlanRel {
     this.db = db;
   }
 
+  private List<Expr> getConjuncts(HiveFilter filter, Analyzer analyzer) {
+    List<Expr> conjuncts = Lists.newArrayList();
+    if (filter == null) {
+      return conjuncts;
+    }
+    ImpalaRexVisitor visitor = new ImpalaRexVisitor(analyzer, ImmutableList.of(this));
+    List<RexNode> andOperands = getAndOperands(filter.getCondition());
+    for (RexNode andOperand : andOperands) {
+      conjuncts.add(andOperand.accept(visitor));
+    }
+    return conjuncts;
+  }
+
   @Override
   public PlanNode getPlanNode(ImpalaPlannerContext ctx) throws ImpalaException, HiveException,
       MetaException {
@@ -92,10 +103,13 @@ public class ImpalaHdfsScanRel extends ImpalaPlanRel {
     org.apache.hadoop.hive.metastore.api.Table msTbl = table.getTTable();
     // TODO: CDPD-8324: ideally we should cache the metastore DB object at query level
     org.apache.hadoop.hive.metastore.api.Database msDb = db.getDatabase(table.getDbName());
-    StorageDescriptor sd = msTbl.getSd();
-    org.apache.impala.catalog.Db impalaDb = new Db(table.getDbName(), msDb);
-    HdfsTable hdfsTable = new HdfsTable(msTbl, impalaDb, tableName, table.getOwner());
-    hdfsTable.load(false, db.getMSC(), msTbl, "");
+    HdfsTable hdfsTable = ctx.getHdfsTable(msTbl);
+    if (hdfsTable == null) {
+      org.apache.impala.catalog.Db impalaDb = new Db(table.getDbName(), msDb);
+      hdfsTable = new HdfsTable(msTbl, impalaDb, tableName, table.getOwner());
+      ctx.addHdfsTable(msTbl, hdfsTable);
+      hdfsTable.load(false, db.getMSC(), msTbl, "");
+    }
 
     List<FeFsPartition> feFsPartitions = Lists.newArrayList();
     // TODO: CDPD-8313: supply the actual pruned partition list
@@ -115,6 +129,14 @@ public class ImpalaHdfsScanRel extends ImpalaPlanRel {
 
     TableName impalaTblName = TableName.parse(tableName);
     String alias = null;
+    // Impala assumes that if an alias was supplied it is an explicit alias.
+    // Since Hive scan's getTableAlias() always returns a non-null value (it returns
+    // the table name if there was no alias), we add an additional check here before
+    // setting it in Impala. Comparing with the table name is still not a foolproof way.
+    // TODO: find a better way to identify explicit vs implicit alias
+    if (!scan.getTableAlias().equalsIgnoreCase(tableName)) {
+      alias = scan.getTableAlias();
+    }
     TableRef tblRef = new TableRef(impalaTblName.toPath(), alias);
     ImpalaBasicAnalyzer basicAnalyzer = (ImpalaBasicAnalyzer) ctx.getRootAnalyzer();
     // save the mapping from table name to hdfsTable
@@ -142,22 +164,18 @@ public class ImpalaHdfsScanRel extends ImpalaPlanRel {
       ImpalaPlannerContext ctx) throws ImpalaException {
     // create the tuple descriptor via the analyzer
     baseTblRef.analyze(ctx.getRootAnalyzer());
-    TupleDescriptor tupleDesc = baseTblRef.getDesc();
 
     // create the slot descriptors corresponding to this tuple descriptor
     // by supplying the field names from Calcite's output schema for this node
     RelDataType relDataType = scan.getPrunedRowType();
     List<String> fieldNames = relDataType.getFieldNames();
     for (int i = 0; i < fieldNames.size(); i++) {
-      List<String> pathList = new ArrayList<>();
-      pathList.add(tupleDesc.getPath().toString());
-      pathList.add(fieldNames.get(i));
-      SlotRef slotref = new SlotRef(pathList);
+      SlotRef slotref = new SlotRef(Path.createRawPath(baseTblRef.getUniqueAlias(), fieldNames.get(i)));
       slotref.analyze(ctx.getRootAnalyzer());
       SlotDescriptor slotDesc = slotref.getDesc();
       slotDesc.setIsMaterialized(true);
     }
-
+    TupleDescriptor tupleDesc = baseTblRef.getDesc();
     return tupleDesc;
   }
 

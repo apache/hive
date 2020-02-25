@@ -55,8 +55,7 @@ public class ImpalaWork implements Serializable {
 
     @Explain(displayName = "Impala Plan")
     public String getImpalaExplain() {
-        // CDPD-6978: Handle population of Impala explain
-        return "IMPALA QUERY: " + query;
+        return "\n" + execRequest.getQuery_exec_request().getQuery_plan();
     }
 
     public TExecRequest getExecRequest() {

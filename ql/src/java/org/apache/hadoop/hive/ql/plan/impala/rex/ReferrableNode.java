@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.plan.impala.rex;
 
+import org.apache.calcite.util.Pair;
 import org.apache.impala.analysis.Expr;
 
 /**
@@ -37,4 +38,18 @@ public interface ReferrableNode {
    * associated with the projection.
    */
   public Expr getExpr(int index);
+
+  /**
+   * Return number of output expressions of this plan node
+   */
+  public int numOutputExprs();
+
+  /**
+   * Returns a pair where first item is the max index of the output
+   * expression (e.g if there are 3 RexInputRefs: $2, $5, $7, this
+   * value will be '7'.  The second item is the total number of
+   * output exprs.  In the above example it will be 3
+   */
+  public Pair<Integer, Integer> getMaxIndexInfo();
+ 
 }

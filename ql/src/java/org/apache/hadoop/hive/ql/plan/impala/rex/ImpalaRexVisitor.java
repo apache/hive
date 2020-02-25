@@ -18,8 +18,9 @@
 
 package org.apache.hadoop.hive.ql.plan.impala.rex;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexCorrelVariable;
 import org.apache.calcite.rex.RexDynamicParam;
@@ -28,12 +29,13 @@ import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexLocalRef;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.rex.RexOver;
 import org.apache.calcite.rex.RexPatternFieldRef;
 import org.apache.calcite.rex.RexRangeRef;
-import org.apache.calcite.rex.RexOver;
 import org.apache.calcite.rex.RexSubQuery;
 import org.apache.calcite.rex.RexTableInputRef;
 import org.apache.calcite.rex.RexVisitorImpl;
+import org.apache.calcite.util.Pair;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.Expr;
@@ -46,12 +48,13 @@ import java.util.List;
 public class ImpalaRexVisitor extends RexVisitorImpl<Expr> {
 
   private final Analyzer analyzer;
-  private final ReferrableNode impalaPlanNode;
+  private final ImmutableList<ReferrableNode> impalaPlanNodes;
 
-  public ImpalaRexVisitor(Analyzer analyzer, ReferrableNode impalaPlanNode) {
+  public ImpalaRexVisitor(Analyzer analyzer, List<ReferrableNode> impalaPlanNodes) {
     super(false);
     this.analyzer = analyzer;
-    this.impalaPlanNode = impalaPlanNode;
+
+    this.impalaPlanNodes = ImmutableList.copyOf(impalaPlanNodes);
   }
 
   @Override
@@ -75,8 +78,27 @@ public class ImpalaRexVisitor extends RexVisitorImpl<Expr> {
 
   @Override
   public Expr visitInputRef(RexInputRef rexInputRef) {
-    /* The input ref calls back out to plan node holding the RexNode. */
-    return impalaPlanNode.getExpr(rexInputRef.getIndex());
+    // first compute the index relative to the input
+    int inputNum = 0;
+    int numOutputExprs = 0;
+    // Suppose the rexInputRef's index is $4 and there are 2
+    // input relnodes r0 and r1 with their respective output exprs.
+    // We want to map the $4 (a total index) into a local index which
+    // is relative to either r0 or r1
+    // So, the local_index = total_index - current_total_output_exprs
+    // Note that the index ordinals are increasing but not necessarily consecutive.
+    for (; inputNum < impalaPlanNodes.size(); inputNum++) {
+      Pair<Integer, Integer> maxIndexInfo = impalaPlanNodes.get(inputNum).getMaxIndexInfo();
+      if (rexInputRef.getIndex() <= numOutputExprs + maxIndexInfo.left) {
+        break;
+      }
+      numOutputExprs += maxIndexInfo.right;
+    }
+
+    int localIndex = rexInputRef.getIndex() - numOutputExprs;
+    Preconditions.checkState(inputNum < impalaPlanNodes.size());
+    Expr e = impalaPlanNodes.get(inputNum).getExpr(localIndex);
+    return e;
   }
 
   @Override

@@ -16,11 +16,13 @@
  */
 package org.apache.hadoop.hive.ql.plan.impala.node;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelTraitSet;
-import org.apache.calcite.plan.hep.HepRelVertex;
 import org.apache.calcite.rel.AbstractRelNode;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelVisitor;
@@ -29,15 +31,13 @@ import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlKind;
-
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import org.apache.calcite.util.Pair;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaPlannerContext;
-import org.apache.hadoop.hive.ql.plan.impala.rex.ReferrableNode;
 import org.apache.hadoop.hive.ql.plan.impala.rex.ImpalaRexVisitor;
+import org.apache.hadoop.hive.ql.plan.impala.rex.ReferrableNode;
 import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.Expr;
 import org.apache.impala.analysis.SlotDescriptor;
@@ -45,9 +45,6 @@ import org.apache.impala.analysis.SlotRef;
 import org.apache.impala.common.ImpalaException;
 import org.apache.impala.planner.PlanNode;
 
-import com.google.common.base.Preconditions;
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -59,6 +56,7 @@ public abstract class ImpalaPlanRel extends AbstractRelNode implements Referrabl
   protected ImmutableList<RelNode> inputs;
   protected ImpalaNodeInfo nodeInfo; // initialized in concrete derived classes
   protected ImmutableMap<Integer, Expr> outputExprs;
+  protected Pair<Integer, Integer> maxIndexInfo = null;
 
   /**
    * Creates a <code>ImpalaPlanRel</code>.
@@ -126,9 +124,31 @@ public abstract class ImpalaPlanRel extends AbstractRelNode implements Referrabl
     return this.outputExprs;
   }
 
+  @Override
   public Expr getExpr(int index) {
     Preconditions.checkState(this.outputExprs.containsKey(index));
     return this.outputExprs.get(index);
+  }
+
+  @Override
+  public int numOutputExprs() {
+    Preconditions.checkNotNull(this.outputExprs);
+    return this.outputExprs.values().size();
+  }
+
+  @Override
+  public Pair<Integer, Integer> getMaxIndexInfo() {
+    if (maxIndexInfo != null) {
+      return maxIndexInfo;
+    }
+
+    Preconditions.checkNotNull(this.outputExprs);
+    int maxIndex = Integer.MIN_VALUE;
+    for (Map.Entry<Integer, Expr> e : outputExprs.entrySet()) {
+      maxIndex = Math.max(maxIndex, e.getKey());
+    }
+    maxIndexInfo = Pair.of(maxIndex, outputExprs.size());
+    return maxIndexInfo;
   }
 
   public PlanNode getRootPlanNode(ImpalaPlannerContext ctx) throws ImpalaException, HiveException, MetaException {
@@ -167,7 +187,7 @@ public abstract class ImpalaPlanRel extends AbstractRelNode implements Referrabl
     if (filter == null) {
       return conjuncts;
     }
-    ImpalaRexVisitor visitor = new ImpalaRexVisitor(analyzer, relNode);
+    ImpalaRexVisitor visitor = new ImpalaRexVisitor(analyzer, ImmutableList.of(relNode));
     List<RexNode> andOperands = getAndOperands(filter.getCondition());
     for (RexNode andOperand : andOperands) {
       conjuncts.add(andOperand.accept(visitor));
@@ -175,7 +195,7 @@ public abstract class ImpalaPlanRel extends AbstractRelNode implements Referrabl
     return conjuncts;
   }
 
-  private List<RexNode> getAndOperands(RexNode conjuncts) {
+  protected List<RexNode> getAndOperands(RexNode conjuncts) {
     if (conjuncts == null) {
       return ImmutableList.of();
     }

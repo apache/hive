@@ -18,28 +18,24 @@
 
 package org.apache.hadoop.hive.ql.plan.impala.node;
 
-import java.util.Map;
-
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-
 import org.apache.calcite.rel.RelWriter;
-import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexNode;
-
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaPlannerContext;
 import org.apache.hadoop.hive.ql.plan.impala.rex.ImpalaRexVisitor;
-import org.apache.hadoop.hive.ql.plan.impala.rex.ReferrableNode;
 import org.apache.impala.analysis.Expr;
 import org.apache.impala.common.ImpalaException;
 import org.apache.impala.planner.PlanNode;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Map;
 
 /**
  * Impala project rel.  There is no actual physical project node on
@@ -55,6 +51,7 @@ public class ImpalaProjectRel extends ImpalaPlanRel {
   private final static Logger LOG = LoggerFactory.getLogger(ImpalaProjectRel.class);
 
   private final HiveProject hiveProject;
+  private PlanNode planNode = null;
 
   public ImpalaProjectRel(HiveProject project) {
     super(project.getCluster(), project.getTraitSet(), project.getInputs(), project.getRowType());
@@ -63,15 +60,18 @@ public class ImpalaProjectRel extends ImpalaPlanRel {
 
   @Override
   public PlanNode getPlanNode(ImpalaPlannerContext ctx) throws ImpalaException, HiveException, MetaException {
-    PlanNode retNode = getImpalaRelInput(0).getPlanNode(ctx);
+    if (planNode != null) {
+      return planNode;
+    }
+    planNode = getImpalaRelInput(0).getPlanNode(ctx);
     Preconditions.checkState(this.outputExprs == null);
     this.outputExprs = createProjectExprs(ctx);
-    return retNode;
+    return planNode;
   }
 
   private ImmutableMap<Integer, Expr> createProjectExprs(ImpalaPlannerContext ctx) {
     Map<Integer, Expr> projectExprs = Maps.newLinkedHashMap();
-    ImpalaRexVisitor visitor = new ImpalaRexVisitor(ctx.getRootAnalyzer(), getImpalaRelInput(0));
+    ImpalaRexVisitor visitor = new ImpalaRexVisitor(ctx.getRootAnalyzer(), ImmutableList.of(getImpalaRelInput(0)));
     int index = 0;
     for (RexNode rexNode : hiveProject.getProjects()) {
       projectExprs.put(index++, rexNode.accept(visitor));
