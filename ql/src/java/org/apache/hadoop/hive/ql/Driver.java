@@ -34,8 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringUtils;
@@ -201,61 +199,6 @@ public class Driver implements IDriver {
   private Context backupContext = null;
   private boolean retrial = false;
 
-  private enum DriverState {
-    INITIALIZED,
-    COMPILING,
-    COMPILED,
-    EXECUTING,
-    EXECUTED,
-    // a state that the driver enters after close() has been called to clean the query results
-    // and release the resources after the query has been executed
-    CLOSED,
-    // a state that the driver enters after destroy() is called and it is the end of driver life cycle
-    DESTROYED,
-    ERROR
-  }
-
-  public static class LockedDriverState {
-    // a lock is used for synchronizing the state transition and its associated
-    // resource releases
-    public final ReentrantLock stateLock = new ReentrantLock();
-    public DriverState driverState = DriverState.INITIALIZED;
-    public AtomicBoolean aborted = new AtomicBoolean();
-    private static ThreadLocal<LockedDriverState> lds = new ThreadLocal<LockedDriverState>() {
-      @Override
-      protected LockedDriverState initialValue() {
-        return new LockedDriverState();
-      }
-    };
-
-    public static void setLockedDriverState(LockedDriverState lDrv) {
-      lds.set(lDrv);
-    }
-
-    public static LockedDriverState getLockedDriverState() {
-      return lds.get();
-    }
-
-    public static void removeLockedDriverState() {
-      if (lds != null) {
-        lds.remove();
-      }
-    }
-
-    public boolean isAborted() {
-      return aborted.get();
-    }
-
-    public void abort() {
-      aborted.set(true);
-    }
-
-    @Override
-    public String toString() {
-      return String.format("%s(aborted:%s)", driverState, aborted.get());
-    }
-  }
-
   private boolean checkConcurrency() {
     boolean supportConcurrency = conf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY);
     if (!supportConcurrency) {
@@ -415,11 +358,11 @@ public class Driver implements IDriver {
     PerfLogger perfLogger = SessionState.getPerfLogger(true);
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.DRIVER_RUN);
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.COMPILE);
-    lDrvState.stateLock.lock();
+    lDrvState.lock();
     try {
-      lDrvState.driverState = DriverState.COMPILING;
+      lDrvState.compiling();;
     } finally {
-      lDrvState.stateLock.unlock();
+      lDrvState.unlock();
     }
 
     command = new VariableSubstitution(new HiveVariableSource() {
@@ -691,15 +634,15 @@ public class Driver implements IDriver {
       if (isInterrupted && !deferClose) {
         closeInProcess(true);
       }
-      lDrvState.stateLock.lock();
+      lDrvState.lock();
       try {
         if (isInterrupted) {
-          lDrvState.driverState = deferClose ? DriverState.EXECUTING : DriverState.ERROR;
+          lDrvState.compilationInterrupted(deferClose);
         } else {
-          lDrvState.driverState = compileError ? DriverState.ERROR : DriverState.COMPILED;
+          lDrvState.compilationFinished(compileError);
         }
       } finally {
-        lDrvState.stateLock.unlock();
+        lDrvState.unlock();
       }
 
       if (isInterrupted) {
@@ -1443,21 +1386,21 @@ public class Driver implements IDriver {
     downstreamError = null;
     LockedDriverState.setLockedDriverState(lDrvState);
 
-    lDrvState.stateLock.lock();
+    lDrvState.lock();
     try {
       if (alreadyCompiled) {
-        if (lDrvState.driverState == DriverState.COMPILED) {
-          lDrvState.driverState = DriverState.EXECUTING;
+        if (lDrvState.isCompiled()) {
+          lDrvState.executing();
         } else {
           errorMessage = "FAILED: Precompiled query has been cancelled or closed.";
           console.printError(errorMessage);
           throw createProcessorResponse(12);
         }
       } else {
-        lDrvState.driverState = DriverState.COMPILING;
+        lDrvState.compiling();
       }
     } finally {
-      lDrvState.stateLock.unlock();
+      lDrvState.unlock();
     }
 
     // a flag that helps to set the correct driver state in finally block by tracking if
@@ -1594,11 +1537,11 @@ public class Driver implements IDriver {
         releaseResources();
       }
 
-      lDrvState.stateLock.lock();
+      lDrvState.lock();
       try {
-        lDrvState.driverState = isFinishedWithError ? DriverState.ERROR : DriverState.EXECUTED;
+        lDrvState.executionFinished(isFinishedWithError);
       } finally {
-        lDrvState.stateLock.unlock();
+        lDrvState.unlock();
       }
     }
   }
@@ -1770,21 +1713,20 @@ public class Driver implements IDriver {
     // hide sensitive information during query redaction.
     String queryStr = conf.getQueryString();
 
-    lDrvState.stateLock.lock();
+    lDrvState.lock();
     try {
       // if query is not in compiled state, or executing state which is carried over from
       // a combined compile/execute in runInternal, throws the error
-      if (lDrvState.driverState != DriverState.COMPILED &&
-          lDrvState.driverState != DriverState.EXECUTING) {
+      if (lDrvState.isCompiled() && lDrvState.isExecuting()) {
         SQLState = "HY008";
         errorMessage = "FAILED: unexpected driverstate: " + lDrvState + ", for query " + queryStr;
         console.printError(errorMessage);
         throw createProcessorResponse(1000);
       } else {
-        lDrvState.driverState = DriverState.EXECUTING;
+        lDrvState.executing();
       }
     } finally {
-      lDrvState.stateLock.unlock();
+      lDrvState.unlock();
     }
 
     maxthreads = HiveConf.getIntVar(conf, HiveConf.ConfVars.EXECPARALLETHREADNUMBER);
@@ -2069,11 +2011,11 @@ public class Driver implements IDriver {
         queryState.setNumModifiedRows(numModifiedRows);
         console.printInfo("Total MapReduce CPU Time Spent: " + Utilities.formatMsecToStr(totalCpu));
       }
-      lDrvState.stateLock.lock();
+      lDrvState.lock();
       try {
-        lDrvState.driverState = executionError ? DriverState.ERROR : DriverState.EXECUTED;
+        lDrvState.executionFinished(executionError);
       } finally {
-        lDrvState.stateLock.unlock();
+        lDrvState.unlock();
       }
       if (lDrvState.isAborted()) {
         LOG.info("Executing command(queryId=" + queryId + ") has been interrupted after " + duration + " seconds");
@@ -2097,7 +2039,7 @@ public class Driver implements IDriver {
 
   private void releasePlan(QueryPlan plan) {
     // Plan maybe null if Driver.close is called in another thread for the same Driver object
-    lDrvState.stateLock.lock();
+    lDrvState.lock();
     try {
       if (plan != null) {
         plan.setDone();
@@ -2111,7 +2053,7 @@ public class Driver implements IDriver {
         }
       }
     } finally {
-      lDrvState.stateLock.unlock();
+      lDrvState.unlock();
     }
   }
 
@@ -2236,7 +2178,7 @@ public class Driver implements IDriver {
   @SuppressWarnings("unchecked")
   @Override
   public boolean getResults(List res) throws IOException {
-    if (lDrvState.driverState == DriverState.DESTROYED || lDrvState.driverState == DriverState.CLOSED) {
+    if (lDrvState.isDestroyed() || lDrvState.isClosed()) {
       throw new IOException("FAILED: query has been cancelled, closed, or destroyed.");
     }
 
@@ -2301,7 +2243,7 @@ public class Driver implements IDriver {
 
   @Override
   public void resetFetch() throws IOException {
-    if (lDrvState.driverState == DriverState.DESTROYED || lDrvState.driverState == DriverState.CLOSED) {
+    if (lDrvState.isDestroyed() || lDrvState.isClosed()) {
       throw new IOException("FAILED: driver has been cancelled, closed or destroyed.");
     }
     if (isFetchingTable()) {
@@ -2321,7 +2263,7 @@ public class Driver implements IDriver {
   // DriverContext could be released in the query and close processes at same
   // time, which needs to be thread protected.
   private void releaseDriverContext() {
-    lDrvState.stateLock.lock();
+    lDrvState.lock();
     try {
       if (driverCxt != null) {
         driverCxt.shutdown();
@@ -2330,7 +2272,7 @@ public class Driver implements IDriver {
     } catch (Exception e) {
       LOG.debug("Exception while shutting down the task runner", e);
     } finally {
-      lDrvState.stateLock.unlock();
+      lDrvState.unlock();
     }
   }
 
@@ -2440,11 +2382,10 @@ public class Driver implements IDriver {
   // is called to stop the query if it is running, clean query results, and release resources.
   @Override
   public void close() {
-    lDrvState.stateLock.lock();
+    lDrvState.lock();
     try {
       releaseDriverContext();
-      if (lDrvState.driverState == DriverState.COMPILING ||
-          lDrvState.driverState == DriverState.EXECUTING) {
+      if (lDrvState.isCompiling() || lDrvState.isExecuting()) {
         lDrvState.abort();
       }
       releasePlan();
@@ -2452,9 +2393,9 @@ public class Driver implements IDriver {
       releaseFetchTask();
       releaseResStream();
       releaseContext();
-      lDrvState.driverState = DriverState.CLOSED;
+      lDrvState.closed();
     } finally {
-      lDrvState.stateLock.unlock();
+      lDrvState.unlock();
       LockedDriverState.removeLockedDriverState();
     }
     destroy();
@@ -2464,17 +2405,17 @@ public class Driver implements IDriver {
   // do not understand why it is needed and wonder if it could be combined with close.
   @Override
   public void destroy() {
-    lDrvState.stateLock.lock();
+    lDrvState.lock();
     try {
       // in the cancel case where the driver state is INTERRUPTED, destroy will be deferred to
       // the query process
-      if (lDrvState.driverState == DriverState.DESTROYED) {
+      if (lDrvState.isDestroyed()) {
         return;
       } else {
-        lDrvState.driverState = DriverState.DESTROYED;
+        lDrvState.descroyed();
       }
     } finally {
-      lDrvState.stateLock.unlock();
+      lDrvState.unlock();
     }
     if (!hiveLocks.isEmpty()) {
       try {

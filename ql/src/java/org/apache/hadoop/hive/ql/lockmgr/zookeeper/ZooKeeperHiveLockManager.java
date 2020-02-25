@@ -24,8 +24,8 @@ import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.Driver.LockedDriverState;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.LockedDriverState;
 import org.apache.hadoop.hive.ql.lockmgr.*;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject.HiveLockObjectData;
 import org.apache.hadoop.hive.ql.metadata.*;
@@ -196,11 +196,11 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
       HiveLock lock = null;
       boolean isInterrupted = false;
       if (lDrvState != null) {
-        lDrvState.stateLock.lock();
+        lDrvState.lock();
         if (lDrvState.isAborted()) {
           isInterrupted = true;
         }
-        lDrvState.stateLock.unlock();
+        lDrvState.unlock();
       }
       if (!isInterrupted) {
         try {

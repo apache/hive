@@ -24,7 +24,7 @@ import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.Driver.LockedDriverState;
+import org.apache.hadoop.hive.ql.LockedDriverState;
 import org.apache.hadoop.hive.ql.ddl.database.LockDatabaseDesc;
 import org.apache.hadoop.hive.ql.ddl.database.UnlockDatabaseDesc;
 import org.apache.hadoop.hive.ql.ddl.table.lock.LockTableDesc;
