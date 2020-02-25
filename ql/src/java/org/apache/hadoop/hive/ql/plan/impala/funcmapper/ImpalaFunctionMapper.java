@@ -41,7 +41,7 @@ public class ImpalaFunctionMapper{
     this.func = func.toLowerCase();
     this.argTypes = ImmutableList.copyOf(argTypes);
     this.retType = retType;
-    this.funcSig = new ImpalaFunctionSignature(func, argTypes, retType);
+    this.funcSig = new ImpalaFunctionSignature(this.func, argTypes, retType);
   }
 
   /*

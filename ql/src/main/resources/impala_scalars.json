@@ -5029,7 +5029,7 @@
     },
     {
         "impalaFnName": "is_null_pred",
-        "fnName": "is_null_pred",
+        "fnName": "is null",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -5044,7 +5044,7 @@
     },
     {
         "impalaFnName": "is_not_null_pred",
-        "fnName": "is_not_null_pred",
+        "fnName": "is not null",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -5059,7 +5059,7 @@
     },
     {
         "impalaFnName": "is_null_pred",
-        "fnName": "is_null_pred",
+        "fnName": "is null",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -5074,7 +5074,7 @@
     },
     {
         "impalaFnName": "is_not_null_pred",
-        "fnName": "is_not_null_pred",
+        "fnName": "is not null",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -5089,7 +5089,7 @@
     },
     {
         "impalaFnName": "is_null_pred",
-        "fnName": "is_null_pred",
+        "fnName": "is null",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -5104,7 +5104,7 @@
     },
     {
         "impalaFnName": "is_not_null_pred",
-        "fnName": "is_not_null_pred",
+        "fnName": "is not null",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -5119,7 +5119,7 @@
     },
     {
         "impalaFnName": "is_null_pred",
-        "fnName": "is_null_pred",
+        "fnName": "is null",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -5134,7 +5134,7 @@
     },
     {
         "impalaFnName": "is_not_null_pred",
-        "fnName": "is_not_null_pred",
+        "fnName": "is not null",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -5149,7 +5149,7 @@
     },
     {
         "impalaFnName": "is_null_pred",
-        "fnName": "is_null_pred",
+        "fnName": "is null",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -5164,7 +5164,7 @@
     },
     {
         "impalaFnName": "is_not_null_pred",
-        "fnName": "is_not_null_pred",
+        "fnName": "is not null",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -5179,7 +5179,7 @@
     },
     {
         "impalaFnName": "is_null_pred",
-        "fnName": "is_null_pred",
+        "fnName": "is null",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -5194,7 +5194,7 @@
     },
     {
         "impalaFnName": "is_not_null_pred",
-        "fnName": "is_not_null_pred",
+        "fnName": "is not null",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -5209,7 +5209,7 @@
     },
     {
         "impalaFnName": "is_null_pred",
-        "fnName": "is_null_pred",
+        "fnName": "is null",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -5224,7 +5224,7 @@
     },
     {
         "impalaFnName": "is_not_null_pred",
-        "fnName": "is_not_null_pred",
+        "fnName": "is not null",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -5239,7 +5239,7 @@
     },
     {
         "impalaFnName": "is_null_pred",
-        "fnName": "is_null_pred",
+        "fnName": "is null",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -5254,7 +5254,7 @@
     },
     {
         "impalaFnName": "is_not_null_pred",
-        "fnName": "is_not_null_pred",
+        "fnName": "is not null",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -5269,7 +5269,7 @@
     },
     {
         "impalaFnName": "is_null_pred",
-        "fnName": "is_null_pred",
+        "fnName": "is null",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -5284,7 +5284,7 @@
     },
     {
         "impalaFnName": "is_not_null_pred",
-        "fnName": "is_not_null_pred",
+        "fnName": "is not null",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -5299,7 +5299,7 @@
     },
     {
         "impalaFnName": "is_null_pred",
-        "fnName": "is_null_pred",
+        "fnName": "is null",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -5314,7 +5314,7 @@
     },
     {
         "impalaFnName": "is_not_null_pred",
-        "fnName": "is_not_null_pred",
+        "fnName": "is not null",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -5329,7 +5329,7 @@
     },
     {
         "impalaFnName": "is_null_pred",
-        "fnName": "is_null_pred",
+        "fnName": "is null",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -5344,7 +5344,7 @@
     },
     {
         "impalaFnName": "is_not_null_pred",
-        "fnName": "is_not_null_pred",
+        "fnName": "is not null",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -5359,7 +5359,7 @@
     },
     {
         "impalaFnName": "is_null_pred",
-        "fnName": "is_null_pred",
+        "fnName": "is null",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -5374,7 +5374,7 @@
     },
     {
         "impalaFnName": "is_not_null_pred",
-        "fnName": "is_not_null_pred",
+        "fnName": "is not null",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -5389,7 +5389,7 @@
     },
     {
         "impalaFnName": "is_null_pred",
-        "fnName": "is_null_pred",
+        "fnName": "is null",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -5404,7 +5404,7 @@
     },
     {
         "impalaFnName": "is_not_null_pred",
-        "fnName": "is_not_null_pred",
+        "fnName": "is not null",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
