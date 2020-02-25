@@ -76,7 +76,7 @@ class CompactionTxnHandler extends TxnHandler {
         stmt = dbConn.createStatement();
         // Check for completed transactions
         String s = "SELECT DISTINCT \"TC\".\"CTC_DATABASE\", \"TC\".\"CTC_TABLE\", \"TC\".\"CTC_PARTITION\" " +
-          "FROM \"COMPLETED_TXN_COMPONENTS\" TC " + (checkInterval > 0 ?
+          "FROM \"COMPLETED_TXN_COMPONENTS\" \"TC\" " + (checkInterval > 0 ?
           "LEFT JOIN ( " +
           "  SELECT \"C1\".* FROM \"COMPLETED_COMPACTIONS\" \"C1\" " +
           "  INNER JOIN ( " +
@@ -382,7 +382,7 @@ class CompactionTxnHandler extends TxnHandler {
           throw new IllegalStateException("No record with CQ_ID=" + info.id + " found in COMPACTION_QUEUE");
         }
         close(rs);
-        String s = "delete from COMPACTION_QUEUE where cq_id = ?";
+        String s = "delete from \"COMPACTION_QUEUE\" where \"CQ_ID\" = ?";
         pStmt = dbConn.prepareStatement(s);
         pStmt.setLong(1, info.id);
         LOG.debug("Going to execute update <" + s + ">");
