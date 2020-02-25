@@ -54,7 +54,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveVariableSource;
 import org.apache.hadoop.hive.conf.VariableSubstitution;
-import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
@@ -120,9 +119,6 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.wm.WmContext;
 import org.apache.hadoop.hive.serde2.ByteStream;
-import org.apache.hadoop.mapred.ClusterStatus;
-import org.apache.hadoop.mapred.JobClient;
-import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.apache.hive.common.util.ShutdownHookManager;
 import org.apache.hive.common.util.TxnIdUtils;
@@ -140,12 +136,12 @@ public class Driver implements IDriver {
   static final private String CLASS_NAME = Driver.class.getName();
   private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   static final private LogHelper console = new LogHelper(LOG);
-  static final int SHUTDOWN_HOOK_PRIORITY = 0;
+  private static final int SHUTDOWN_HOOK_PRIORITY = 0;
   private final QueryInfo queryInfo;
   private Runnable shutdownRunner = null;
 
   private int maxRows = 100;
-  ByteStream.Output bos = new ByteStream.Output();
+  private ByteStream.Output bos = new ByteStream.Output();
 
   private final HiveConf conf;
   private DataInput resStream;
@@ -158,7 +154,7 @@ public class Driver implements IDriver {
   private Throwable downstreamError;
 
   private FetchTask fetchTask;
-  List<HiveLock> hiveLocks = new ArrayList<HiveLock>();
+  private List<HiveLock> hiveLocks = new ArrayList<HiveLock>();
 
   // A limit on the number of threads that can be launched
   private int maxthreads;
@@ -269,24 +265,6 @@ public class Driver implements IDriver {
     return true;
   }
 
-  /**
-   * Return the status information about the Map-Reduce cluster
-   */
-  public ClusterStatus getClusterStatus() throws Exception {
-    ClusterStatus cs;
-    try {
-      JobConf job = new JobConf(conf);
-      JobClient jc = new JobClient(job);
-      cs = jc.getClusterStatus();
-    } catch (Exception e) {
-      e.printStackTrace();
-      throw e;
-    }
-    LOG.info("Returning cluster status: " + cs.toString());
-    return cs;
-  }
-
-
   @Override
   public Schema getSchema() {
     return schema;
@@ -357,37 +335,6 @@ public class Driver implements IDriver {
   }
 
   /**
-   * Get a Schema with fields represented with Thrift DDL types
-   */
-  public Schema getThriftSchema() throws Exception {
-    Schema schema;
-    try {
-      schema = getSchema();
-      if (schema != null) {
-        List<FieldSchema> lst = schema.getFieldSchemas();
-        // Go over the schema and convert type to thrift type
-        if (lst != null) {
-          for (FieldSchema f : lst) {
-            f.setType(ColumnType.typeToThriftType(f.getType()));
-          }
-        }
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
-      throw e;
-    }
-    LOG.info("Returning Thrift schema: " + schema);
-    return schema;
-  }
-
-  /**
-   * Return the maximum number of rows returned by getResults
-   */
-  public int getMaxRows() {
-    return maxRows;
-  }
-
-  /**
    * Set the maximum number of rows returned by getResults
    */
   @Override
@@ -395,15 +342,9 @@ public class Driver implements IDriver {
     this.maxRows = maxRows;
   }
 
+  @VisibleForTesting
   public Driver(HiveConf conf) {
     this(new QueryState.Builder().withGenerateNewQueryId(true).withHiveConf(conf).build(), null);
-  }
-
-  // Pass lineageState when a driver instantiates another Driver to run
-  // or compile another query
-  // NOTE: only used from index related classes
-  public Driver(HiveConf conf, LineageState lineageState) {
-    this(getNewQueryState(conf, lineageState), null);
   }
 
   // Pass lineageState when a driver instantiates another Driver to run
@@ -448,18 +389,6 @@ public class Driver implements IDriver {
         .withHiveConf(conf)
         .withLineageState(lineageState)
         .build();
-  }
-
-  /**
-   * Compile a new query. Any currently-planned query associated with this Driver is discarded.
-   * Do not reset id for inner queries(index, etc). Task ids are used for task identity check.
-   *
-   * @param command
-   *          The SQL query to compile.
-   */
-  @Override
-  public int compile(String command) {
-    return compile(command, true);
   }
 
   /**
@@ -2558,11 +2487,6 @@ public class Driver implements IDriver {
     ShutdownHookManager.removeShutdownHook(shutdownRunner);
   }
 
-
-  public org.apache.hadoop.hive.ql.plan.api.Query getQueryPlan() throws IOException {
-    return plan.getQueryPlan();
-  }
-
   public String getErrorMsg() {
     return errorMessage;
   }
@@ -2614,7 +2538,7 @@ public class Driver implements IDriver {
     }
   }
 
-  public void setCompactionWriteIds(ValidWriteIdList val, long compactorTxnId) {
+  void setCompactionWriteIds(ValidWriteIdList val, long compactorTxnId) {
     this.compactionWriteIds = val;
     this.compactorTxnId = compactorTxnId;
   }

@@ -57,7 +57,7 @@ public class TestHiveDecimalParse {
     String query = "create table `dec` (d decimal(66,7))";
 
     Driver driver = createDriver();
-    int rc = driver.compile(query);
+    int rc = driver.compile(query, true);
     Assert.assertTrue("Got " + rc + ", expected not zero", rc != 0);
     Assert.assertTrue(driver.getErrorMsg(),
         driver.getErrorMsg().contains("Decimal precision out of allowed range [1,38]"));
@@ -68,7 +68,7 @@ public class TestHiveDecimalParse {
     String query = "create table `dec` (d decimal(0,7))";
 
     Driver driver = createDriver();
-    int rc = driver.compile(query);
+    int rc = driver.compile(query, true);
     Assert.assertTrue("Got " + rc + ", expected not zero", rc != 0);
     Assert.assertTrue(driver.getErrorMsg(),
         driver.getErrorMsg().contains("Decimal precision out of allowed range [1,38]"));
@@ -79,7 +79,7 @@ public class TestHiveDecimalParse {
     String query = "create table `dec` (d decimal(7,33))";
 
     Driver driver = createDriver();
-    int rc = driver.compile(query);
+    int rc = driver.compile(query, true);
     Assert.assertTrue("Got " + rc + ", expected not zero", rc != 0);
     Assert.assertTrue(driver.getErrorMsg(),
         driver.getErrorMsg().contains("Decimal scale must be less than or equal to precision"));
@@ -90,7 +90,7 @@ public class TestHiveDecimalParse {
     String query = "create table `dec` (d decimal(7,-1))";
 
     Driver driver = createDriver();
-    int rc = driver.compile(query);
+    int rc = driver.compile(query, true);
     Assert.assertTrue("Got " + rc + ", expected not zero", rc != 0);
     Assert.assertTrue(driver.getErrorMsg(),
         driver.getErrorMsg().contains("extraneous input '-' expecting Number"));
@@ -101,7 +101,7 @@ public class TestHiveDecimalParse {
     String query = "create table `dec` (d decimal(7,33,4))";
 
     Driver driver = createDriver();
-    int rc = driver.compile(query);
+    int rc = driver.compile(query, true);
     Assert.assertTrue("Got " + rc + ", expected not zero", rc != 0);
     Assert.assertTrue(driver.getErrorMsg(),
       driver.getErrorMsg().contains("missing ) at ',' near ',' in column name or constraint"));
@@ -112,7 +112,7 @@ public class TestHiveDecimalParse {
     String query = "create table `dec` (d decimal(7a))";
 
     Driver driver = createDriver();
-    int rc = driver.compile(query);
+    int rc = driver.compile(query, true);
     Assert.assertTrue("Got " + rc + ", expected not zero", rc != 0);
     Assert.assertTrue(driver.getErrorMsg(),
         driver.getErrorMsg().contains("mismatched input '7a' expecting Number near '('"));
@@ -123,7 +123,7 @@ public class TestHiveDecimalParse {
     String query = "create table `dec` (d decimal(20,23))";
 
     Driver driver = createDriver();
-    int rc = driver.compile(query);
+    int rc = driver.compile(query, true);
     Assert.assertTrue("Got " + rc + ", expected not zero", rc != 0);
     Assert.assertTrue(driver.getErrorMsg(),
         driver.getErrorMsg().contains("Decimal scale must be less than or equal to precision"));
@@ -142,7 +142,7 @@ public class TestHiveDecimalParse {
 
   private String getColumnType(String query) {
     Driver driver = createDriver();
-    int rc = driver.compile(query);
+    int rc = driver.compile(query, true);
 
     if (rc != 0) {
       return null;
