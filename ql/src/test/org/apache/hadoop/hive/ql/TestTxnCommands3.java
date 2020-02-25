@@ -469,4 +469,47 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     //now the aborted compactor txn is gone
     Assert.assertEquals(openResp.toString(), 0, openResp.getOpen_txnsSize());
   }
+
+  /**
+   * Not enough deltas to compact, no need to clean: there is absolutely nothing to do.
+   */
+  @Test public void testNotEnoughToCompact() throws Exception {
+    int[][] tableData = {{1, 2}, {3, 4}};
+    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) " + makeValuesClause(tableData));
+    runStatementOnDriver("alter table " + TestTxnCommands2.Table.ACIDTBL + " compact 'MAJOR'");
+
+    runWorker(hiveConf);
+    assertTableIsEmpty("TXNS");
+    assertTableIsEmpty("TXN_COMPONENTS");
+
+    runCleaner(hiveConf);
+    assertTableIsEmpty("TXNS");
+    assertTableIsEmpty("TXN_COMPONENTS");
+  }
+
+  /**
+   * There aren't enough deltas to compact, but cleaning is needed because an insert overwrite
+   * was executed.
+   */
+  @Test public void testNotEnoughToCompactNeedsCleaning() throws Exception {
+    int[][] tableData = {{1, 2}, {3, 4}};
+    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) " + makeValuesClause(tableData));
+    runStatementOnDriver(
+        "insert overwrite table " + Table.ACIDTBL + " " + makeValuesClause(tableData));
+
+    runStatementOnDriver("alter table " + TestTxnCommands2.Table.ACIDTBL + " compact 'MAJOR'");
+
+    runWorker(hiveConf);
+    assertTableIsEmpty("TXNS");
+    assertTableIsEmpty("TXN_COMPONENTS");
+
+    runCleaner(hiveConf);
+    assertTableIsEmpty("TXNS");
+    assertTableIsEmpty("TXN_COMPONENTS");
+  }
+
+  private void assertTableIsEmpty(String table) throws Exception {
+    Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from " + table), 0,
+        TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from " + table));
+  }
 }
