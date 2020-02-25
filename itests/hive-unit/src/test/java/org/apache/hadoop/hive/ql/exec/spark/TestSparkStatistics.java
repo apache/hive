@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatistic;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatisticsNames;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 import org.junit.Assert;
@@ -60,7 +61,7 @@ public class TestSparkStatistics {
               null, null);
 
       Assert.assertEquals(0, driver.run("create table test (col int)").getResponseCode());
-      Assert.assertEquals(0, driver.compile("select * from test order by col", true));
+      Assert.assertEquals(0, driver.compile("select * from test order by col"));
 
       List<SparkTask> sparkTasks = Utilities.getSparkTasks(driver.getPlan().getRootTasks());
       Assert.assertEquals(1, sparkTasks.size());
