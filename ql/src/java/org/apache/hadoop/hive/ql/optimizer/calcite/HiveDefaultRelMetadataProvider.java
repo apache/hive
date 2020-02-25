@@ -56,6 +56,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.HiveJdbcCon
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.JdbcHiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdColumnUniqueness;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdCollation;
+import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdCumulativeCost;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdDistinctRowCount;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdDistribution;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdMemory;
@@ -80,6 +81,7 @@ public class HiveDefaultRelMetadataProvider {
           ChainedRelMetadataProvider.of(
               ImmutableList.of(
                   HiveRelMdDistinctRowCount.SOURCE,
+                  HiveRelMdCumulativeCost.SOURCE,
                   new HiveRelMdCost(HiveDefaultCostModel.getCostModel()).getMetadataProvider(),
                   HiveRelMdSelectivity.SOURCE,
                   HiveRelMdRuntimeRowCount.SOURCE,
@@ -151,6 +153,7 @@ public class HiveDefaultRelMetadataProvider {
           ChainedRelMetadataProvider.of(
               ImmutableList.of(
                   HiveRelMdDistinctRowCount.SOURCE,
+                  HiveRelMdCumulativeCost.SOURCE,
                   new HiveRelMdCost(HiveOnTezCostModel.getCostModel(hiveConf)).getMetadataProvider(),
                   HiveRelMdSelectivity.SOURCE,
                   HiveRelMdRowCount.SOURCE,
