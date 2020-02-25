@@ -155,5 +155,4 @@ public abstract class ImpalaPlanRel extends AbstractRelNode implements Referrabl
     }
     return ImmutableMap.copyOf(exprs);
   }
-
 }

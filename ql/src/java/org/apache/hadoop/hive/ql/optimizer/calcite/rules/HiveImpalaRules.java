@@ -25,10 +25,12 @@ import org.apache.calcite.tools.RelBuilderFactory;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 
 import org.apache.hadoop.hive.ql.plan.impala.node.ImpalaHdfsScanRel;
 import org.apache.hadoop.hive.ql.plan.impala.node.ImpalaProjectRel;
+import org.apache.hadoop.hive.ql.plan.impala.node.ImpalaSortRel;
 
 /**
  * Impala specific transformation rules.
@@ -48,7 +50,9 @@ public class HiveImpalaRules {
               relBuilderFactory, null);
       this.db = db;
     }
-    @Override public void onMatch(RelOptRuleCall call) {
+
+    @Override
+    public void onMatch(RelOptRuleCall call) {
       final HiveFilter filter = call.rel(0);
       final HiveTableScan scan = call.rel(1);
 
@@ -68,7 +72,9 @@ public class HiveImpalaRules {
           relBuilderFactory, null);
       this.db = db;
     }
-    @Override public void onMatch(RelOptRuleCall call) {
+
+    @Override
+    public void onMatch(RelOptRuleCall call) {
       final HiveTableScan scan = call.rel(0);
 
       // Only support HDFS for now.
@@ -91,6 +97,23 @@ public class HiveImpalaRules {
       ImpalaProjectRel newProject = new ImpalaProjectRel(project);
 
       call.transformTo(newProject);
+    }
+  }
+
+  public static class ImpalaSortLimitRule extends RelOptRule {
+
+    public ImpalaSortLimitRule(RelBuilderFactory relBuilderFactory) {
+      super(operand(HiveSortLimit.class, any()),
+          relBuilderFactory, "ImpalaSortLimitRule");
+    }
+
+    @Override
+    public void onMatch(RelOptRuleCall call) {
+      final HiveSortLimit sort = call.rel(0);
+
+      ImpalaSortRel newSort = new ImpalaSortRel(sort);
+
+      call.transformTo(newSort);
     }
   }
 }

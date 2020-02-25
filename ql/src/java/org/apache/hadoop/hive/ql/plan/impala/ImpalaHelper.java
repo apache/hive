@@ -69,6 +69,8 @@ public class ImpalaHelper {
         new HiveImpalaRules.ImpalaScanRule(HiveRelFactories.HIVE_BUILDER, db));
     programBuilder.addRuleInstance(
         new HiveImpalaRules.ImpalaProjectRule(HiveRelFactories.HIVE_BUILDER));
+    programBuilder.addRuleInstance(
+        new HiveImpalaRules.ImpalaSortLimitRule(HiveRelFactories.HIVE_BUILDER));
     return programBuilder.build();
   }
 
