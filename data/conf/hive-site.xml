@@ -365,7 +365,12 @@
 </property>
 
 <property>
-  <name> metastore.hmshandler.retry.attempts</name>
+  <name>metastore.hmshandler.retry.attempts</name>
+  <value>2</value>
+</property>
+
+<property>
+  <name>hive.hmshandler.retry.attempts</name>
   <value>3</value>
 </property>
 
