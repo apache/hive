@@ -32,7 +32,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -75,7 +74,6 @@ import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcRecordUpdater;
 import org.apache.hadoop.hive.ql.io.orc.Reader;
-import org.apache.hadoop.hive.ql.io.orc.RecordReader;
 import org.apache.hadoop.hive.ql.io.orc.Writer;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
@@ -87,11 +85,9 @@ import org.apache.hadoop.hive.ql.parse.LoadSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatusWithId;
 import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hive.common.util.Ref;
 import org.apache.orc.FileFormatException;
 import org.apache.orc.impl.OrcAcidUtils;
@@ -113,6 +109,7 @@ public class AcidUtils {
   // This key will be put in the conf file when planning an acid operation
   public static final String CONF_ACID_KEY = "hive.doing.acid";
   public static final String BASE_PREFIX = "base_";
+  public static final String COMPACTOR_TABLE_PROPERTY = "compactiontable";
   public static final PathFilter baseFileFilter = new PathFilter() {
     @Override
     public boolean accept(Path path) {
@@ -383,6 +380,7 @@ public class AcidUtils {
     return baseOrDeltaDir + VISIBILITY_PREFIX
         + String.format(DELTA_DIGITS, visibilityTxnId);
   }
+
   /**
    * Represents bucketId and copy_N suffix
    */
@@ -426,6 +424,29 @@ public class AcidUtils {
       this.copyNumber = copyNumber;
     }
   }
+
+  /**
+   * Determine if a table is used during query based compaction.
+   * @param tblProperties table properties
+   * @return true, if the tblProperties contains {@link AcidUtils#COMPACTOR_TABLE_PROPERTY}
+   */
+  public static boolean isCompactionTable(Properties tblProperties) {
+    if (tblProperties != null && tblProperties.containsKey(COMPACTOR_TABLE_PROPERTY) && tblProperties
+        .getProperty(COMPACTOR_TABLE_PROPERTY).equalsIgnoreCase("true")) {
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Determine if a table is used during query based compaction.
+   * @param parameters table properties map
+   * @return true, if the parameters contains {@link AcidUtils#COMPACTOR_TABLE_PROPERTY}
+   */
+  public static boolean isCompactionTable(Map<String, String> parameters) {
+    return Boolean.valueOf(parameters.getOrDefault(COMPACTOR_TABLE_PROPERTY, "false"));
+  }
+
   /**
    * Get the bucket id from the file path
    * @param bucketFile - bucket file path
@@ -460,27 +481,6 @@ public class AcidUtils {
       Utilities.FILE_OP_LOGGER.debug("Parsing attempt ID = " + attemptId + " from file name '" + bucketFile + "'");
     }
     return attemptId;
-  }
-
-  /**
-   * Read the first row of an ORC file and determine the bucket ID based on the bucket column. This only works with
-   * files with ACID schema.
-   * @param fs the resolved file system
-   * @param orcFile path to ORC file
-   * @return resolved bucket number
-   * @throws IOException during the parsing of the ORC file
-   */
-  public static Optional<Integer> parseBucketIdFromRow(FileSystem fs, Path orcFile) throws IOException {
-    Reader reader = OrcFile.createReader(fs, orcFile);
-    StructObjectInspector objectInspector = (StructObjectInspector)reader.getObjectInspector();
-    RecordReader records = reader.rows();
-    while(records.hasNext()) {
-      Object row = records.next(null);
-      List<Object> fields = objectInspector.getStructFieldsDataAsList(row);
-      int bucketProperty = ((IntWritable) fields.get(2)).get();
-      return Optional.of(BucketCodec.determineVersion(bucketProperty).decodeWriterId(bucketProperty));
-    }
-    return Optional.empty();
   }
 
   /**

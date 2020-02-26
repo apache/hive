@@ -29,9 +29,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -191,7 +191,7 @@ public class SplitGrouper {
           if ((op != null) && (op instanceof TableScanOperator)) {
             TableScanOperator tableScan = (TableScanOperator) op;
             PartitionDesc partitionDesc = mapWork.getAliasToPartnInfo().get(aliases.get(0));
-            isMinorCompaction &= isQueryBasedMinorComp(partitionDesc);
+            isMinorCompaction &= AcidUtils.isCompactionTable(partitionDesc.getTableDesc().getProperties());
             if (!tableScan.getConf().isTranscationalTable() && !isMinorCompaction) {
               String splitPath = getFirstSplitPath(splits);
               String errorMessage =
@@ -232,25 +232,6 @@ public class SplitGrouper {
     Multimap<Integer, InputSplit> groupedSplits =
         this.group(jobConf, schemaGroupedSplitMultiMap, availableSlots, waves, locationProvider);
     return groupedSplits;
-  }
-
-  /**
-   * Determines from the partition description, whether the table is used is used as compaction helper table. It looks
-   * for a table property 'queryminorcomp', which is set in
-   * {@link org.apache.hadoop.hive.ql.txn.compactor.MinorQueryCompactor}
-   * @param desc partition description of the table, must be not null
-   * @return true, if the table is a query based minor compaction helper table
-   */
-  private boolean isQueryBasedMinorComp(PartitionDesc desc) {
-    if (desc != null) {
-      Properties tblProperties = desc.getTableDesc().getProperties();
-      final String minorCompProperty = "queryminorcomp";
-      if (tblProperties != null && tblProperties.containsKey(minorCompProperty) && tblProperties
-          .getProperty(minorCompProperty).equalsIgnoreCase("true")) {
-        return true;
-      }
-    }
-    return false;
   }
   
   // Returns the path of the first split in this list for logging purposes
