@@ -75,7 +75,12 @@ public class SymbolicInputFormat implements ReworkMapredInputFormat {
             while ((line = reader.readLine()) != null) {
               // no check for the line? How to check?
               // if the line is invalid for any reason, the job will fail.
-              FileStatus[] matches = fileSystem.globStatus(new Path(line));
+              Path linePath = new Path(line);
+              FileStatus[] matches = linePath.getFileSystem(job).globStatus(linePath);
+              if (matches == null) {
+                throw new IOException("failed to glob for patten " + line +
+                  ", filesystem: " + linePath.getFileSystem(job).getScheme());
+              }
               for (FileStatus fileStatus : matches) {
                 Path schemaLessPath = Path.getPathWithoutSchemeAndAuthority(fileStatus.getPath());
                 StringInternUtils.internUriStringsInPath(schemaLessPath);
