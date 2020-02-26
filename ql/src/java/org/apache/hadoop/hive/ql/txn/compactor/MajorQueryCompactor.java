@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
+import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -37,8 +38,9 @@ import java.util.List;
  */
 final class MajorQueryCompactor extends QueryCompactor {
 
-  @Override void runCompaction(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
-      ValidWriteIdList writeIds, CompactionInfo compactionInfo) throws IOException {
+  @Override
+  void runCompaction(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
+      ValidWriteIdList writeIds, CompactionInfo compactionInfo) throws IOException, HiveException {
     AcidUtils
         .setAcidOperationalProperties(hiveConf, true, AcidUtils.getAcidOperationalProperties(table.getParameters()));
 
@@ -53,25 +55,26 @@ final class MajorQueryCompactor extends QueryCompactor {
 
     String tmpPrefix = table.getDbName() + "_tmp_compactor_" + table.getTableName() + "_";
     String tmpTableName = tmpPrefix + System.currentTimeMillis();
-    List<String> createQueries = getCreateQueries(tmpTableName, table);
+
+    long minOpenWriteId = writeIds.getMinOpenWriteId() == null ? 1 : writeIds.getMinOpenWriteId();
+    long highWaterMark = writeIds.getHighWatermark();
+    long compactorTxnId = CompactorMR.CompactorMap.getCompactorTxnId(conf);
+    AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf).writingBase(true)
+        .writingDeleteDelta(false).isCompressed(false).minimumWriteId(minOpenWriteId)
+        .maximumWriteId(highWaterMark).statementId(-1).visibilityTxnId(compactorTxnId);
+    Path tmpTablePath = AcidUtils.baseOrDeltaSubdirPath(new Path(storageDescriptor.getLocation()), options);
+
+    List<String> createQueries = getCreateQueries(tmpTableName, table, tmpTablePath.toString());
     List<String> compactionQueries = getCompactionQueries(table, partition, tmpTableName);
     List<String> dropQueries = getDropQueries(tmpTableName);
     runCompactionQueries(conf, tmpTableName, storageDescriptor, writeIds, compactionInfo, createQueries,
         compactionQueries, dropQueries);
   }
 
-  /**
-   * Move and rename bucket files from the temp table (tmpTableName), to the new base path under the source table/ptn.
-   * Since the temp table is a non-transactional table, it has file names in the "original" format.
-   * Also, due to split grouping in
-   * {@link org.apache.hadoop.hive.ql.exec.tez.SplitGrouper#getCompactorSplitGroups(InputSplit[],
-   * Configuration, boolean)}, we will end up with one file per bucket.
-   */
-  @Override protected void commitCompaction(String dest, String tmpTableName, HiveConf conf,
+  @Override
+  protected void commitCompaction(String dest, String tmpTableName, HiveConf conf,
       ValidWriteIdList actualWriteIds, long compactorTxnId) throws IOException, HiveException {
-    org.apache.hadoop.hive.ql.metadata.Table tempTable = Hive.get().getTable(tmpTableName);
-    Util.moveContents(new Path(tempTable.getSd().getLocation()), new Path(dest), true, false, conf, actualWriteIds,
-        compactorTxnId);
+    Util.cleanupEmptyDir(conf, tmpTableName);
   }
 
   /**
@@ -83,25 +86,26 @@ final class MajorQueryCompactor extends QueryCompactor {
    * See {@link org.apache.hadoop.hive.ql.exec.tez.SplitGrouper#getCompactorSplitGroups(InputSplit[], Configuration)}
    *  for details on the mechanism.
    */
-  private List<String> getCreateQueries(String fullName, Table t) {
-    StringBuilder query = new StringBuilder("create temporary table ").append(fullName).append(" (");
-    // Acid virtual columns
-    query.append(
-        "`operation` int, `originalTransaction` bigint, `bucket` int, `rowId` bigint, `currentTransaction` bigint, "
-            + "`row` struct<");
-    List<FieldSchema> cols = t.getSd().getCols();
-    boolean isFirst = true;
-    // Actual columns
-    for (FieldSchema col : cols) {
-      if (!isFirst) {
-        query.append(", ");
-      }
-      isFirst = false;
-      query.append("`").append(col.getName()).append("` ").append(":").append(col.getType());
+  private List<String> getCreateQueries(String fullName, Table t, String tmpTableLocation) throws HiveException {
+    StringBuilder query = new StringBuilder(Util.getCreateTempTableQueryWithAcidColumns(fullName, t));
+    org.apache.hadoop.hive.ql.metadata.Table table = Hive.get().getTable(t.getDbName(), t.getTableName(), false);
+    int numBuckets = 1;
+    int bucketingVersion = 0;
+    if (table != null) {
+      numBuckets = Math.max(table.getNumBuckets(), numBuckets);
+      bucketingVersion = table.getBucketingVersion();
     }
-    query.append(">)");
+    query.append(" clustered by (`bucket`) into ").append(numBuckets).append(" buckets");
     query.append(" stored as orc");
-    query.append(" tblproperties ('transactional'='false')");
+    query.append(" location '");
+    query.append(tmpTableLocation);
+    query.append("' tblproperties ('transactional'='false',");
+    query.append(" 'bucketing_version'='");
+    query.append(bucketingVersion);
+    query.append("','");
+    query.append(AcidUtils.COMPACTOR_TABLE_PROPERTY);
+    query.append("'='true'");
+    query.append(")");
     return Lists.newArrayList(query.toString());
   }
 
