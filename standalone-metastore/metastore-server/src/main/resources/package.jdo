@@ -1473,7 +1473,6 @@
       </field>
       <field name="activeExecution">
         <column name="ACTIVE_EXECUTION_ID" allows-null="true"/>
-        <foreign-key name="SCHEDULED_EXECUTIONS_SCHQ_ACTIVE" delete-action="cascade"/>
       </field>
       <field name="executions" mapped-by="scheduledQuery" dependent-element="true">
         <collection element-type="MScheduledExecution" dependent-element="true" />
