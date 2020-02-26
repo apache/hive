@@ -363,4 +363,10 @@
   <name>hive.scheduled.queries.executor.enabled</name>
   <value>false</value>
 </property>
+
+<property>
+  <name> metastore.hmshandler.retry.attempts</name>
+  <value>3</value>
+</property>
+
 </configuration>
