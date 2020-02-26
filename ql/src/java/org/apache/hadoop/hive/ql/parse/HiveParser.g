@@ -444,6 +444,8 @@ TOK_UNMANAGED;
 TOK_INPUTFORMAT;
 TOK_CRON;
 TOK_EXECUTED_AS;
+TOK_SCHEDULE;
+TOK_EVERY;
 }
 
 
@@ -2119,6 +2121,8 @@ scheduleSpec
 @init { pushMsg("schedule specification", state); }
 @after { popMsg(state); }
         : KW_CRON cronString=StringLiteral -> ^(TOK_CRON $cronString)
+        | KW_EVERY value=Number? qualifier=intervalQualifiers
+        ((KW_AT|KW_OFFSET KW_BY) offsetTs=StringLiteral)? -> ^(TOK_SCHEDULE ^(TOK_EVERY $value?) $qualifier $offsetTs?) 
         ;
 
 executedAsSpec

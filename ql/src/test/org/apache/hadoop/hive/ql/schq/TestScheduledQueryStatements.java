@@ -84,11 +84,62 @@ public class TestScheduledQueryStatements {
     }
   }
 
-  @Test
-  public void testSimpleCreate() throws ParseException, Exception {
+
+  private void checkScheduleCreation(String schqName, String schedule, String expectedSchedule)
+      throws CommandProcessorException, Exception {
     IDriver driver = createDriver();
     driverrun(driver,"set role admin");
-    driverrun(driver,"create scheduled query simplecreate cron '* * * * * ? *' as select 1 from tu");
+    driverrun(driver,"create scheduled query " + schqName + " " + schedule + " as select 1 from tu");
+    try (CloseableObjectStore os = new CloseableObjectStore(env_setup.getTestCtx().hiveConf)) {
+      Optional<MScheduledQuery> sq = os.getMScheduledQuery(new ScheduledQueryKey(schqName, "hive"));
+      assertTrue(sq.isPresent());
+      assertEquals(expectedSchedule, sq.get().getSchedule());
+    }
+  }
+
+  @Test
+  public void testSimpleCreate() throws ParseException, Exception {
+    checkScheduleCreation(getMethodName(), "cron '* * * * * ? *'", "* * * * * ? *");
+  }
+
+  private String getMethodName() {
+    StackTraceElement[] stackTrace = new Throwable().getStackTrace();
+    return stackTrace[1].getMethodName();
+  }
+
+  @Test
+  public void testMinutes() throws ParseException, Exception {
+    checkScheduleCreation(getMethodName(), "every minute", "0 * * * * ? *");
+  }
+
+  @Test
+  public void test10Minutes() throws ParseException, Exception {
+    checkScheduleCreation(getMethodName(), "every 10 minutes", "0 */10 * * * ? *");
+  }
+
+  @Test
+  public void test10Seconds() throws ParseException, Exception {
+    checkScheduleCreation(getMethodName(), "every 10 seconds", "*/10 * * * * ? *");
+  }
+
+  @Test
+  public void test4Hours() throws ParseException, Exception {
+    checkScheduleCreation(getMethodName(), "every 4 hours", "0 0 */4 * * ? *");
+  }
+
+  @Test
+  public void test4Hours2() throws ParseException, Exception {
+    checkScheduleCreation(getMethodName(), "every 4 hours offset by '2:03:04'", "4 3 2/4 * * ? *");
+  }
+
+  @Test
+  public void testDay() throws ParseException, Exception {
+    checkScheduleCreation(getMethodName(), "every day offset by '2:03:04'", "4 3 2 * * ? *");
+  }
+
+  @Test
+  public void testDay2() throws ParseException, Exception {
+    checkScheduleCreation(getMethodName(), "every day at '2:03:04'", "4 3 2 * * ? *");
   }
 
   @Test(expected = CommandProcessorException.class)
@@ -163,12 +214,16 @@ public class TestScheduledQueryStatements {
   private static void driverrun(IDriver driver, String string) throws CommandProcessorException {
     CommandProcessorResponse ret = driver.run(string);
     if (ret.getResponseCode() != 0) {
-      throw new CommandProcessorException();
+      throw new CommandProcessorException(ret.getMessage());
     }
 
   }
 
   static class CommandProcessorException extends Exception {
+
+    public CommandProcessorException(String message) {
+      super(message);
+    }
   }
 
   private void setupAuthorization() {
