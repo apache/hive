@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast;
 
 import java.io.IOException;
 
+import org.apache.hadoop.hive.ql.exec.vector.expressions.CuckooSetLong;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hive.common.util.HashCodeUtil;
 import org.slf4j.Logger;
@@ -52,6 +53,11 @@ public abstract class VectorMapJoinFastBytesHashTable
     byte[] keyBytes = currentKey.getBytes();
     int keyLength = currentKey.getLength();
     add(keyBytes, 0, keyLength, currentValue);
+  }
+
+  @Override
+  public CuckooSetLong getHashTableKeySet() {
+    throw new RuntimeException("Not supported yet!");
   }
 
   // Same method can be used for all Bytes-Hash implementations (hash map, hash multi-set, or hash set)

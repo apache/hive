@@ -22,6 +22,7 @@ import java.io.IOException;
 
 import org.apache.hadoop.hive.common.MemoryEstimate;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.CuckooSetLong;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 // import org.slf4j.Logger;
 // import org.slf4j.LoggerFactory;
@@ -153,6 +154,11 @@ public class VectorMapJoinFastLongHashMap
       }
 
     }
+  }
+
+  @Override
+  public CuckooSetLong getHashTableKeySet() {
+    return getHashTablekeys();
   }
 
   @Override

@@ -23,7 +23,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import com.google.common.primitives.Longs;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch;
@@ -31,7 +30,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
 import org.apache.hadoop.hive.llap.counters.LlapIOCounters;
 import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
-import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer.Includes;
 import org.apache.hadoop.hive.llap.io.metadata.ConsumerFileMetadata;
@@ -54,6 +52,7 @@ import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.UnionColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.CuckooSetLong;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashTable;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinTableContainer;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -91,11 +90,10 @@ public class OrcEncodedDataConsumer
   private boolean useDecimal64ColumnVectors;
   // ProbeDecode extra variables
   private Boolean mapJoinProbeDecodeEnabled = false;
-  private VectorMapJoinHashTable smallMapJoinTable = null;
+  private CuckooSetLong smallMapJoinTable = null;
   private ObjectCache cache = null;
   private String probeDecodeColName = null;
   private int probeDecodeColIdx = -1;
-  private short skippedRowCount = 0;
 //  private FilterLongColumnInList probeFilterVectorExpr = null;
 
 
@@ -113,12 +111,7 @@ public class OrcEncodedDataConsumer
           getIntVar(includes.getJobConf(), HiveConf.ConfVars.HIVE_MAPJOIN_PROBEDECODE_COLID));
       this.probeDecodeColName = HiveConf.getVar(includes.getJobConf(), HiveConf.ConfVars.HIVE_MAPJOIN_PROBEDECODE_COLNAME);
       this.cache = ObjectCacheFactory.getCache(conf, HiveConf.getVar(includes.getJobConf(), HiveConf.ConfVars.HIVEQUERYID), false);
-    }
-    LlapIoImpl.LOG.info("OrcEncodedDataConsumer probeDecode enabled is {} with cacheKey {} colIndex {} and colName {}", mapJoinProbeDecodeEnabled,
-        this.includes.getProbeDecodeCacheKey(), this.probeDecodeColIdx, this.probeDecodeColName);
-
-    if (this.mapJoinProbeDecodeEnabled) {
-      // Start periodic checker of hashTable
+      // Start periodic MapJoinTable checker
       ExecutorService executorService = Executors.newFixedThreadPool(1);
       executorService.execute(()->{
         while (smallMapJoinTable == null) {
@@ -126,11 +119,10 @@ public class OrcEncodedDataConsumer
             // TODO: Check if we can get directly from operator
             Pair<MapJoinTableContainer[], MapJoinTableContainerSerDe[]> smallTablePair = cache.retrieve(includes.getProbeDecodeCacheKey());
             if (smallTablePair != null ) {
-              smallMapJoinTable = ((VectorMapJoinTableContainer) smallTablePair.getLeft()[smallTablePair.getLeft().length-1]).vectorMapJoinHashTable();
-              LlapIoImpl.LOG.info("ProbeDecode finally got HashTable of size {}", smallMapJoinTable.size());
-//              probeFilterVectorExpr = new FilterLongColumnInList(0);
-//              probeFilterVectorExpr.setInListValues(inList);
-//              probeFilterVectorExpr.setInputTypeInfos(new TypeInfo[] { TypeInfoFactory.longTypeInfo});
+              VectorMapJoinHashTable ht = ((VectorMapJoinTableContainer) smallTablePair.getLeft()[smallTablePair.getLeft().length-1]).vectorMapJoinHashTable();
+              this.smallMapJoinTable = ht.getHashTableKeySet();
+              LlapIoImpl.LOG.info("ProbeDecode finally got HashTable of size {}", ht.size());
+              // probeFilterVectorExpr = new FilterLongColumnInList(0);
             } else {
               Thread.sleep(50);
             }
@@ -142,6 +134,8 @@ public class OrcEncodedDataConsumer
         }
       });
     }
+    LlapIoImpl.LOG.info("OrcEncodedDataConsumer probeDecode enabled is {} with cacheKey {} colIndex {} and colName {}", mapJoinProbeDecodeEnabled,
+        this.includes.getProbeDecodeCacheKey(), this.probeDecodeColIdx, this.probeDecodeColName);
   }
 
   public OrcEncodedDataConsumer(
@@ -187,6 +181,7 @@ public class OrcEncodedDataConsumer
       // Get non null row count from root column, to get max vector batches
       int rgIdx = batch.getBatchKey().rgIx;
       long nonNullRowCount;
+      long nonSkippedRowCount = 0;
       boolean noIndex = false;
       if (rgIdx == OrcEncodedColumnBatch.ALL_RGS) {
         nonNullRowCount = stripeMetadata.getRowCount();
@@ -280,18 +275,22 @@ public class OrcEncodedDataConsumer
           // if this is the probeKey Col and all rows are skipped -> skip decoding for the remaining batch columns
           if ((idx == this.probeDecodeColIdx)) {
             reader.nextVector(cv, null, batchSize);
-            HashTableRowFilterCallback(cvbw, idx, batchSize);
+            if (smallMapJoinTable != null)
+              HashTableRowFilterCallback(cvbw, idx, batchSize);
           } else {
             reader.getFilterContext().copyFilterContextFromOther(cvbw.getFilterContext());
             reader.nextVector(cv, null, batchSize);
           }
         }
-        downstreamConsumer.consumeData(cvbw);
-        counters.incrCounter(LlapIOCounters.ROWS_EMITTED, batchSize);
-        counters.incrCounter(LlapIOCounters.NUM_DECODED_ROWS, cvbw.isSelectedInUse() ? cvbw.getSelectedSize() : batchSize);
+        if (cvbw.getCvb().size > 0) {
+          downstreamConsumer.consumeData(cvbw);
+          counters.incrCounter(LlapIOCounters.ROWS_EMITTED, batchSize);
+        }
+        nonSkippedRowCount += cvbw.getSelectedSize();
       }
-      LlapIoImpl.ORC_LOGGER.debug("Done with decode, skippedRows {} out of {} on {} Cols", skippedRowCount,
+      LlapIoImpl.ORC_LOGGER.debug("Done with decode, skippedRows {} out of {} on {} Cols", nonNullRowCount - nonSkippedRowCount,
           nonNullRowCount, columnReaders.length);
+      counters.incrCounter(LlapIOCounters.NUM_DECODED_ROWS, nonSkippedRowCount);
       counters.incrWallClockCounter(LlapIOCounters.DECODE_TIME_NS, startTime);
       counters.incrCounter(LlapIOCounters.NUM_VECTOR_BATCHES, maxBatchesRG);
       counters.incrCounter(LlapIOCounters.NUM_DECODED_BATCHES);
@@ -304,25 +303,37 @@ public class OrcEncodedDataConsumer
   // Filter out rows in a round-robbin fashion starting with a pass
   public void HashTableRowFilterCallback(ColumnVectorBatchWrapper cvbw, int colIdx, int batchSize) {
     long startDecodeTime = counters.startTimeCounter();
+    TreeReaderFactory.FilterContext cntx = cvbw.getFilterContext();
     int[] selected = null;
     int newSize = 0;
     boolean selectedInUse = false;
-    if (this.smallMapJoinTable != null && cvbw.getCvb().cols[colIdx] instanceof LongColumnVector) {
+    if (cvbw.getCvb().cols[colIdx] instanceof LongColumnVector) {
       LongColumnVector probeCol = (LongColumnVector) cvbw.getCvb().cols[colIdx];
-      selected = new int[batchSize];
-      for (int row = 0; row < batchSize; ++row) {
-        // Pass ony Valid key
-        if (this.smallMapJoinTable.containsKey(Longs.toByteArray(probeCol.vector[row]))) {
-          selected[newSize++] = row;
+      // NoNulls case
+      if (probeCol.isRepeating) {
+        // All must be selected otherwise size would be zero
+        // Repeating property will not change.
+        if (!(smallMapJoinTable.lookup(probeCol.vector[0]))) {
+          // Entire batch is filtered out.
+          cvbw.getCvb().size = 0;
+        }
+      } else {
+        selected = new int[batchSize];
+        for (int row = 0; row < batchSize; ++row) {
+          // Pass ony Valid key
+          if (smallMapJoinTable.lookup(probeCol.vector[row])) {
+            selected[newSize++] = row;
+          }
+        }
+        // skip only if < 10% match
+        if (newSize <= (0.1 * batchSize)) {
+          selectedInUse = true;
+          if (newSize == 0) cvbw.getCvb().size = 0;
         }
       }
-      // skip only if < 90% match
-      if (newSize <= (0.95 * batchSize)) {
-        selectedInUse = true;
-      }
     }
-//    LlapIoImpl.ORC_LOGGER.info("PANOS Matched: {}", tmp.toString() +"["+ newSize +"] selectedInUse "+ selectedInUse);
-    cvbw.setFilterContext(new TreeReaderFactory.FilterContext(selectedInUse, selected, newSize));
+//    LlapIoImpl.ORC_LOGGER.info("PANOS Matched: {} selectedInUse {} batchSize {} newCV size: {}", newSize, selectedInUse, batchSize, cvbw.getCvb().size);
+    cntx.updateFilterContext(selectedInUse, selected, newSize);
     counters.incrWallClockCounter(LlapIOCounters.PROBE_DECODE_TIME_NS, startDecodeTime);
   }
 

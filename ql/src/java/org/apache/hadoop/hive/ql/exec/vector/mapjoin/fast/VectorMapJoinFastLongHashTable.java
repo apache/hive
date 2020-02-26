@@ -19,10 +19,10 @@
 package org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import com.google.common.primitives.Longs;
 
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.CuckooSetLong;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -230,14 +230,14 @@ public abstract class VectorMapJoinFastLongHashTable
     }
   }
 
-  public ArrayList<Long> getHashTablekeys(){
-    ArrayList<Long> toReturn = new ArrayList<>(keysAssigned);
+  public CuckooSetLong getHashTablekeys(){
+    CuckooSetLong toReturn = new CuckooSetLong(keysAssigned);
     for (int slot = 0; slot < logicalHashBucketCount; slot++) {
       int pairIndex = slot * 2;
       long valueRef = slotPairs[pairIndex];
       if (valueRef != 0) {
         long tableKey = slotPairs[pairIndex + 1];
-        toReturn.add(tableKey);
+        toReturn.insert(tableKey);
       }
     }
     return toReturn;

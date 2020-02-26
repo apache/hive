@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast;
 import java.io.IOException;
 
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.CuckooSetLong;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
@@ -54,6 +55,11 @@ public class VectorMapJoinFastLongHashSet
 
     // Ignore NULL keys (HashSet not used for FULL OUTER).
     adaptPutRow(currentKey, currentValue);
+  }
+
+  @Override
+  public CuckooSetLong getHashTableKeySet() {
+    return getHashTablekeys();
   }
 
   @Override

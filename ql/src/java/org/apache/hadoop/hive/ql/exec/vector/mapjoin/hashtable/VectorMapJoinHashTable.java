@@ -22,6 +22,7 @@ import java.io.IOException;
 
 import org.apache.hadoop.hive.common.MemoryEstimate;
 import org.apache.hadoop.hive.ql.exec.persistence.MatchTracker;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.CuckooSetLong;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.io.BytesWritable;
@@ -47,6 +48,8 @@ public interface VectorMapJoinHashTable extends MemoryEstimate {
    * @return true if HashTable contains the given key
    */
   boolean containsKey(byte [] currentKey);
+
+  CuckooSetLong getHashTableKeySet();
 
   /**
    * Get hash table size

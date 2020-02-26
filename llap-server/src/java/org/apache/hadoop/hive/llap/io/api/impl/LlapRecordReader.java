@@ -183,9 +183,6 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     LOG.info("Queue limit for LlapRecordReader is " + limit);
     this.queue = new ArrayBlockingQueue<>(limit);
 
-    this.probeDecodeEnabled = HiveConf.getBoolVar(jobConf, HiveConf.ConfVars.HIVE_MAPJOIN_PROBEDECODE_ENABLED);
-    LOG.info("LlapRecordReader ProbeDecode enabled is {}", this.probeDecodeEnabled);
-
 
     int partitionColumnCount = rbCtx.getPartitionColumnCount();
     if (partitionColumnCount > 0) {
@@ -208,9 +205,11 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     this.includes = new IncludesImpl(tableIncludedCols, isAcidFormat, rbCtx,
         schema, job, isAcidScan && acidReader.includeAcidColumns());
 
+    this.probeDecodeEnabled = HiveConf.getBoolVar(jobConf, HiveConf.ConfVars.HIVE_MAPJOIN_PROBEDECODE_ENABLED);
     if (this.probeDecodeEnabled) {
       this.includes.setProbeDecodeCacheKey(getProbeDecodeHashTable(mapWork, job));
     }
+    LOG.info("LlapRecordReader ProbeDecode enabled is {}", this.probeDecodeEnabled);
 
     // Create the consumer of encoded data; it will coordinate decoding to CVBs.
     feedback = rp = cvp.createReadPipeline(this, split, includes, sarg, counters, includes,
@@ -248,11 +247,14 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     return mjCacheKey;
   }
 
-  // Is Single Key MapJoin
+  // Is Single Key MapJoin of Long type
   private static boolean validProbeDecodeMapJoin(Operator mapJoinOp) {
-    return mapJoinOp instanceof VectorMapJoinCommonOperator &&
-        ((VectorMapJoinDesc)((VectorMapJoinCommonOperator) mapJoinOp).getVectorDesc()).getVectorMapJoinInfo().getBigTableKeyColumnMap().length == 1;
-
+    if (mapJoinOp instanceof VectorMapJoinCommonOperator) {
+      VectorMapJoinDesc vectorMapJoinDesc = (VectorMapJoinDesc) ((VectorMapJoinCommonOperator) mapJoinOp).getVectorDesc();
+      return (vectorMapJoinDesc.getHashTableKeyType() == VectorMapJoinDesc.HashTableKeyType.LONG) &&
+          (vectorMapJoinDesc.getVectorMapJoinInfo().getBigTableKeyColumnMap().length == 1);
+    }
+    return false;
   }
   // Is NOT a MapJoin with Dynamic Pruning
   private static boolean noDynamicPruningMapJoin(Operator mapJoinOp) {
@@ -441,8 +443,8 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
       counters.incrWallClockCounter(LlapIOCounters.CONSUMER_TIME_NS, firstReturnTime);
       return false;
     }
+    vrb.selectedInUse = true;//why?
     if (isAcidFormat) {
-      vrb.selectedInUse = true;//why?
       if (isVectorized) {
         // TODO: relying everywhere on the magical constants and columns being together means ACID
         //       columns are going to be super hard to change in a backward compat manner. I can
@@ -470,7 +472,6 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
           inputVrb.size = cvb.getSelectedSize();
           inputVrb.selected = cvb.getSelected();
         } else {
-//          vrb.selectedInUse = false;
           inputVrb.size = cvb.getCvb().size;
         }
         acidReader.setBaseAndInnerReader(new AcidWrapper(inputVrb));
@@ -495,8 +496,8 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
         vrb.size = cvb.getSelectedSize();
         vrb.selected = cvb.getSelected();
       } else {
-        vrb.selectedInUse = false; //why?
         vrb.size = cvb.getCvb().size;
+        vrb.selectedInUse = false;
       }
     }
 

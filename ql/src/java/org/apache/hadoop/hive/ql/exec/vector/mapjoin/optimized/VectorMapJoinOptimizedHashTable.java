@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.vector.mapjoin.optimized;
 
 import java.io.IOException;
 
+import org.apache.hadoop.hive.ql.exec.vector.expressions.CuckooSetLong;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,6 +74,11 @@ public abstract class VectorMapJoinOptimizedHashTable
       throws SerDeException, HiveException, IOException {
 
     putRowInternal(currentKey, currentValue);
+  }
+
+  @Override
+  public CuckooSetLong getHashTableKeySet() {
+    throw new RuntimeException("Not supported yet!");
   }
 
   @Override
