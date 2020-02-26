@@ -418,7 +418,18 @@ public class GenSparkUtils {
       // it must be on the same file system as the current destination
       Context baseCtx = parseCtx.getContext();
 
-      Path tmpDir = baseCtx.getExternalTmpPath(dest);
+      Path tmpDir = null;
+
+      // The dest path (output location of the final job) may be an -mr-1000X dir, in case all below are true:
+      // -target table location FS is not HDFS but either blob storage or local FS
+      // -HIVE_BLOBSTORE_USE_BLOBSTORE_AS_SCRATCHDIR is set to false (default)
+      // -HIVE_BLOBSTORE_OPTIMIZATIONS_ENABLED is false
+      // In such case we shouldn't request an external tmp dir as it will end up inside the mr temp dir
+      if (baseCtx.isMRTmpFileURI(dest.toUri().getPath())) {
+        tmpDir = baseCtx.getMRTmpPath();
+      } else {
+        tmpDir = baseCtx.getExternalTmpPath(dest);
+      }
 
       // Change all the linked file sink descriptors
       if (fileSinkDesc.getLinkedFileSinkDesc() != null) {
