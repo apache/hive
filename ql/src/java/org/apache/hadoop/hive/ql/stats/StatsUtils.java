@@ -1557,25 +1557,23 @@ public class StatsUtils {
       if (conf.getBoolVar(ConfVars.HIVE_STATS_ESTIMATORS_ENABLE)) {
         Optional<IStatEstimatorProvider> sep = engfd.getGenericUDF().adapt(IStatEstimatorProvider.class);
         if (sep.isPresent()) {
-          Optional<IStatEstimator> se = sep.get().getStatEstimator();
-          if (se.isPresent()) {
-            List<ColStatistics> csList = new ArrayList<ColStatistics>();
-            for (ExprNodeDesc child : engfd.getChildren()) {
-              ColStatistics cs = getColStatisticsFromExpression(conf, parentStats, child);
-              if (cs == null) {
-                break;
-              }
-              csList.add(cs);
+          IStatEstimator se = sep.get().getStatEstimator();
+          List<ColStatistics> csList = new ArrayList<ColStatistics>();
+          for (ExprNodeDesc child : engfd.getChildren()) {
+            ColStatistics cs = getColStatisticsFromExpression(conf, parentStats, child);
+            if (cs == null) {
+              break;
             }
-            if(csList.size() == engfd.getChildren().size()) {
-              Optional<ColStatistics> res = se.get().estimate(csList);
-              if (res.isPresent()) {
-                ColStatistics newStats = res.get();
-                colType = colType.toLowerCase();
-                newStats.setColumnType(colType);
-                newStats.setColumnName(colName);
-                return newStats;
-              }
+            csList.add(cs);
+          }
+          if (csList.size() == engfd.getChildren().size()) {
+            Optional<ColStatistics> res = se.estimate(csList);
+            if (res.isPresent()) {
+              ColStatistics newStats = res.get();
+              colType = colType.toLowerCase();
+              newStats.setColumnType(colType);
+              newStats.setColumnName(colName);
+              return newStats;
             }
           }
         }

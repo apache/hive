@@ -17,8 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.stats.estimator;
 
-import java.util.Optional;
-
 /**
  * Marker interface for UDFs to communicate that the usage of StatEstimators is supported by the UDF.
  */
@@ -27,5 +25,5 @@ public interface IStatEstimatorProvider {
   /**
    * Returns the stat estimator for the given UDF instance.
    */
-  public Optional<IStatEstimator> getStatEstimator();
+  public IStatEstimator getStatEstimator();
 }

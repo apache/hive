@@ -80,8 +80,8 @@ public class GenericUDFCoalesce extends GenericUDF implements IStatEstimatorProv
   }
 
   @Override
-  public Optional<IStatEstimator> getStatEstimator() {
-    return Optional.of(new CoalesceStatEstimator());
+  public IStatEstimator getStatEstimator() {
+    return new CoalesceStatEstimator();
   }
 
   static class CoalesceStatEstimator implements IStatEstimator {

@@ -29,8 +29,6 @@ import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.stats.estimator.IStatEstimator;
-import org.apache.hadoop.hive.ql.stats.estimator.IStatEstimatorProvider;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFUtils.ConversionHelper;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -47,7 +45,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
  * UDF class needs to be serialized with the plan.
  *
  */
-public class GenericUDFBridge extends GenericUDF implements Serializable, IStatEstimatorProvider {
+public class GenericUDFBridge extends GenericUDF implements Serializable {
   private static final long serialVersionUID = 4994861742809511113L;
 
   /**
@@ -260,14 +258,5 @@ public class GenericUDFBridge extends GenericUDF implements Serializable, IStatE
       return Optional.of((T) udf);
     }
     return super.adapt(clazz);
-  }
-
-  @Override
-  public Optional<IStatEstimator> getStatEstimator() {
-    if (IStatEstimatorProvider.class.isInstance(udf)) {
-      IStatEstimatorProvider sep = (IStatEstimatorProvider) udf;
-      return sep.getStatEstimator();
-    }
-    return Optional.empty();
   }
 }

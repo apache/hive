@@ -146,8 +146,8 @@ public class GenericUDFCase extends GenericUDF implements IStatEstimatorProvider
   }
 
   @Override
-  public Optional<IStatEstimator> getStatEstimator() {
-    return Optional.of(new CaseStatEstimator());
+  public IStatEstimator getStatEstimator() {
+    return new CaseStatEstimator();
   }
 
   static class CaseStatEstimator implements IStatEstimator {

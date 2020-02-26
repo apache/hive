@@ -180,8 +180,8 @@ public class GenericUDFIf extends GenericUDF implements IStatEstimatorProvider {
   }
 
   @Override
-  public Optional<IStatEstimator> getStatEstimator() {
-    return Optional.of(new IfStatEstimator());
+  public IStatEstimator getStatEstimator() {
+    return new IfStatEstimator();
   }
 
   static class IfStatEstimator implements IStatEstimator {

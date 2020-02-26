@@ -139,8 +139,8 @@ public class UDFSubstr extends UDF implements IStatEstimatorProvider {
   }
 
   @Override
-  public Optional<IStatEstimator> getStatEstimator() {
-    return Optional.of(new SubStrStatEstimator());
+  public IStatEstimator getStatEstimator() {
+    return new SubStrStatEstimator();
   }
 
   private static class SubStrStatEstimator implements IStatEstimator {
