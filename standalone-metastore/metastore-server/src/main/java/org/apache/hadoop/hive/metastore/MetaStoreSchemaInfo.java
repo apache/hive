@@ -135,7 +135,7 @@ public class MetaStoreSchemaInfo implements IMetaStoreSchemaInfo {
     // check if the file exists
     File file = new File(getMetaStoreScriptDir() + File.separatorChar +
           initScriptName);
-    if (!(file.exists())) {
+    if (!file.exists()) {
       throw new HiveMetaException("Unknown version specified for initialization: " + toVersion,
           new NoSuchFileException(file.getAbsolutePath()));
     }
