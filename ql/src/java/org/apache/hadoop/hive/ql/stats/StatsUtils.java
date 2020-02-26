@@ -1554,7 +1554,7 @@ public class StatsUtils {
         }
       }
 
-      if (conf.getBoolVar(ConfVars.HIVE_STATS_USE_UDF_ESTIMATORS)) {
+      if (conf.getBoolVar(ConfVars.HIVE_STATS_ESTIMATORS_ENABLE)) {
         Optional<IStatEstimatorProvider> sep = engfd.getGenericUDF().adapt(IStatEstimatorProvider.class);
         if (sep.isPresent()) {
           Optional<IStatEstimator> se = sep.get().getStatEstimator();
