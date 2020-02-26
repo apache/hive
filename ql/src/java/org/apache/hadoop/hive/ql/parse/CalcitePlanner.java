@@ -5322,7 +5322,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
   @Override
   protected Table getTableObjectByName(String tabName, boolean throwException) throws HiveException {
-    final TableName tName = HiveTableName.withNoDefault(tabName);
+    final TableName tName = TableName.fromString(tabName, null);
     if (!tabNameToTabObject.containsKey(tName.toString())) {
       Table table = db.getTable(tName, throwException);
       if (table != null) {

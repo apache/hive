@@ -56,7 +56,7 @@ public class AddForeignKeyHandler extends AbstractMessageHandler {
 
     final String actualDbName = context.isDbNameEmpty() ? fks.get(0).getFktable_db() : context.dbName;
     final String actualTblName = fks.get(0).getFktable_name();
-    final TableName tName = TableName.fromString(actualTblName, null, actualDbName);
+    final TableName tName = TableName.fromString(actualTblName, actualDbName);
 
     for (SQLForeignKey fk : fks) {
       // If parent table is in the same database, change it to the actual db on destination

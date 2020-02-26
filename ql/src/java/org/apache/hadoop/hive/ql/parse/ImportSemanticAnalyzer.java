@@ -323,7 +323,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     if (StringUtils.isNotBlank(parsedTableName)) {
-      tblDesc.setTableName(TableName.fromString(parsedTableName, null, dbname));
+      tblDesc.setTableName(TableName.fromString(parsedTableName, dbname));
     }
 
     if (tblDesc.getTableName() == null) {

@@ -56,7 +56,7 @@ public class AddUniqueConstraintHandler extends AbstractMessageHandler {
 
     final String actualDbName = context.isDbNameEmpty() ? uks.get(0).getTable_db() : context.dbName;
     final String actualTblName = uks.get(0).getTable_name();
-    final TableName tName = TableName.fromString(actualTblName, null, actualDbName);
+    final TableName tName = TableName.fromString(actualTblName, actualDbName);
 
     for (SQLUniqueConstraint uk : uks) {
       uk.setTable_db(actualDbName);

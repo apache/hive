@@ -56,7 +56,7 @@ public class AddPrimaryKeyHandler extends AbstractMessageHandler {
 
     final String actualDbName = context.isDbNameEmpty() ? pks.get(0).getTable_db() : context.dbName;
     final String actualTblName = pks.get(0).getTable_name();
-    final TableName tName = TableName.fromString(actualTblName, null, actualDbName);
+    final TableName tName = TableName.fromString(actualTblName, actualDbName);
 
     for (SQLPrimaryKey pk : pks) {
       pk.setTable_db(actualDbName);

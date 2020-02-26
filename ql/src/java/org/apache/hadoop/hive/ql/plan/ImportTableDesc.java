@@ -50,7 +50,7 @@ public class ImportTableDesc {
       throw new IllegalStateException("Trying to import view or materialized view: " + table.getTableName());
     this.dbName = dbName;
     this.table = table;
-    final TableName tableName = TableName.fromString(table.getTableName(), null, dbName);
+    final TableName tableName = TableName.fromString(table.getTableName(), dbName);
 
     switch (getDescType()) {
     case TABLE:

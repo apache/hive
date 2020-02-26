@@ -37,7 +37,7 @@ public class TruncatePartitionHandler extends AbstractMessageHandler {
   @Override
   public List<Task<?>> handle(Context context) throws SemanticException {
     AlterPartitionMessage msg = deserializer.getAlterPartitionMessage(context.dmd.getPayload());
-    final TableName tName = TableName.fromString(msg.getTable(), null,
+    final TableName tName = TableName.fromString(msg.getTable(),
         context.isDbNameEmpty() ? msg.getDB() : context.dbName);
 
     Map<String, String> partSpec = new LinkedHashMap<>();

@@ -33,7 +33,7 @@ public class TruncateTableHandler extends AbstractMessageHandler {
   @Override
   public List<Task<?>> handle(Context context) throws SemanticException {
     AlterTableMessage msg = deserializer.getAlterTableMessage(context.dmd.getPayload());
-    final TableName tName = TableName.fromString(msg.getTable(), null,
+    final TableName tName = TableName.fromString(msg.getTable(),
         context.isDbNameEmpty() ? msg.getDB() : context.dbName);
 
     TruncateTableDesc truncateTableDesc = new TruncateTableDesc(tName, null, context.eventOnlyReplicationSpec());

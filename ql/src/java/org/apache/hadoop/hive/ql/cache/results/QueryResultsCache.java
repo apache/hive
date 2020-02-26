@@ -990,7 +990,7 @@ public final class QueryResultsCache {
       QueryResultsCache cache = QueryResultsCache.getInstance();
       if (cache != null) {
         long eventTime = event.getEventTime() * 1000L;
-        cache.notifyTableChanged(TableName.fromString(tableName, null, dbName), eventTime);
+        cache.notifyTableChanged(TableName.fromString(tableName, dbName), eventTime);
       } else {
         LOG.debug("Cache not instantiated, skipping event on {}.{}", dbName, tableName);
       }

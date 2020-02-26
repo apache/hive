@@ -35,7 +35,7 @@ public class DropConstraintHandler extends AbstractMessageHandler {
     DropConstraintMessage msg = deserializer.getDropConstraintMessage(context.dmd.getPayload());
     final String actualDbName = context.isDbNameEmpty() ? msg.getDB() : context.dbName;
     final String actualTblName = msg.getTable();
-    final TableName tName = TableName.fromString(actualTblName, null, actualDbName);
+    final TableName tName = TableName.fromString(actualTblName, actualDbName);
     String constraintName = msg.getConstraint();
 
     AlterTableDropConstraintDesc dropConstraintsDesc =

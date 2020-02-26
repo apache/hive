@@ -55,8 +55,8 @@ public class RenameTableHandler extends AbstractMessageHandler {
         }
       }
 
-      TableName oldName = TableName.fromString(tableObjBefore.getTableName(), null, oldDbName);
-      TableName newName = TableName.fromString(tableObjAfter.getTableName(), null, newDbName);
+      TableName oldName = TableName.fromString(tableObjBefore.getTableName(), oldDbName);
+      TableName newName = TableName.fromString(tableObjAfter.getTableName(), newDbName);
       ReplicationSpec replicationSpec = context.eventOnlyReplicationSpec();
       if (ReplUtils.isTableMigratingToTransactional(context.hiveConf, tableObjAfter)) {
         replicationSpec.setMigratingToTxnTable();

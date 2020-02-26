@@ -399,7 +399,6 @@ public abstract class BaseSemanticAnalyzer {
       // table node
       Map.Entry<String,String> dbTablePair = getDbTableNamePair(tableOrColumnNode);
       return TableName.fromString(dbTablePair.getValue(),
-          null,
           dbTablePair.getKey() == null ? currentDatabase : dbTablePair.getKey())
           .getNotEmptyDbTable();
     } else if (tokenType == HiveParser.StringLiteral) {
@@ -440,7 +439,7 @@ public abstract class BaseSemanticAnalyzer {
         throw new SemanticException(ASTErrorUtils.getMsg(
             ErrorMsg.OBJECTNAME_CONTAINS_DOT.getMsg(), tabNameNode));
       }
-      return TableName.fromString(tableName, null, dbName);
+      return TableName.fromString(tableName, dbName);
     }
     final String tableName = unescapeIdentifier(tabNameNode.getChild(0).getText());
     if (tableName.contains(".")) {
@@ -1078,7 +1077,7 @@ public abstract class BaseSemanticAnalyzer {
 
       try {
         // get table metadata
-        tableName = HiveTableName.withNoDefault(getUnescapedName((ASTNode)ast.getChild(0)));
+        tableName = TableName.fromString(getUnescapedName((ASTNode)ast.getChild(0)), null);
         boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODE);
         if (testMode) {
           tableName = TableName.fromString(String.join("", conf.getVar(HiveConf.ConfVars.HIVETESTMODEPREFIX),
@@ -1715,14 +1714,14 @@ public abstract class BaseSemanticAnalyzer {
           : db.getTable(database, tblName, false);
     }
     catch (InvalidTableException e) {
-      throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(TableName.fromString(tblName, null, database).getNotEmptyDbTable()), e);
+      throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(TableName.fromString(tblName, database).getNotEmptyDbTable()), e);
     }
     catch (Exception e) {
       throw new SemanticException(e.getMessage(), e);
     }
     if (tab == null && throwException) {
       // getTable needs a refactor with all ~50 occurences
-      throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(TableName.fromString(tblName, null, database).getNotEmptyDbTable()));
+      throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(TableName.fromString(tblName, database).getNotEmptyDbTable()));
     }
     return tab;
   }

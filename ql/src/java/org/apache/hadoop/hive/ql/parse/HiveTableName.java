@@ -38,7 +38,7 @@ public final class HiveTableName extends TableName {
    * @throws SemanticException
    */
   public static TableName of(Table table) throws SemanticException {
-    return ofNullable(table.getTableName(), table.getDbName()); // todo: this shouldn't call nullable
+    return ofNullable(table.getTableName(), table.getDbName()); // FIXME: this shouldn't call nullable
   }
 
   /**
@@ -78,8 +78,8 @@ public final class HiveTableName extends TableName {
    * @throws SemanticException
    * @deprecated use {@link #of(String)} or {@link #fromString(String, String, String)}
    */
-  // to be @Deprecated
-  private static TableName ofNullable(String dbTableName, String defaultDb) throws SemanticException { // todo: decommission
+  @Deprecated
+  private static TableName ofNullable(String dbTableName, String defaultDb) throws SemanticException { // TODO: remove
     if (dbTableName == null) {
       return new TableName(null, null, null);
     } else {
@@ -90,22 +90,6 @@ public final class HiveTableName extends TableName {
       } catch (IllegalArgumentException e) {
         throw new SemanticException(e);
       }
-    }
-  }
-
-  /**
-   * Accepts qualified name which is in the form of table, dbname.tablename or catalog.dbname.tablename and returns a
-   * {@link TableName}. This method won't try to find the default db/catalog based on the session state.
-   *
-   * @param dbTableName not null
-   * @return a {@link TableName}
-   * @throws SemanticException if dbTableName is null
-   */
-  public static TableName withNoDefault(String dbTableName) throws SemanticException {
-    try {
-      return fromString(dbTableName, null, null);
-    } catch (IllegalArgumentException e) {
-      throw new SemanticException(e);
     }
   }
 

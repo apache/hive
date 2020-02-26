@@ -250,7 +250,7 @@ public class IncrementalLoadTasksBuilder {
     HashMap<String, String> mapProp = new HashMap<>();
     mapProp.put(ReplicationSpec.KEY.CURR_STATE_ID.toString(), replState);
 
-    TableName tName = TableName.fromString(tableName, null, dbName);
+    TableName tName = TableName.fromString(tableName, dbName);
     AlterTableSetPropertiesDesc alterTblDesc = new AlterTableSetPropertiesDesc(tName, partSpec,
         new ReplicationSpec(replState, replState), false, mapProp, false, false, null);
 

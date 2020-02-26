@@ -2326,44 +2326,6 @@ public final class Utilities {
   }
 
   /**
-   * Accepts qualified name which is in the form of table, dbname.tablename or catalog.dbname.tablename and returns a
-   * {@link TableName}. All parts can be null.
-   *
-   * @param dbTableName
-   * @return a {@link TableName}
-   * @throws SemanticException
-   * @deprecated handle null values and use {@link TableName#fromString(String, String, String)}
-   */
-  @Deprecated
-  public static TableName getNullableTableName(String dbTableName) throws SemanticException {
-    return getNullableTableName(dbTableName, SessionState.get().getCurrentDatabase());
-  }
-
-  /**
-   * Accepts qualified name which is in the form of table, dbname.tablename or catalog.dbname.tablename and returns a
-   * {@link TableName}. All parts can be null.
-   *
-   * @param dbTableName
-   * @param defaultDb
-   * @return a {@link TableName}
-   * @throws SemanticException
-   * @deprecated handle null values and use {@link TableName#fromString(String, String, String)}
-   */
-  @Deprecated
-  public static TableName getNullableTableName(String dbTableName, String defaultDb) throws SemanticException {
-    if (dbTableName == null) {
-      return new TableName(null, null, null);
-    } else {
-      try {
-        return TableName
-            .fromString(dbTableName, SessionState.get().getCurrentCatalog(), defaultDb);
-      } catch (IllegalArgumentException e) {
-        throw new SemanticException(e.getCause());
-      }
-    }
-  }
-
-  /**
    * Gets the default notification interval to send progress updates to the tracker. Useful for
    * operators that may not output data for a while.
    *

@@ -146,7 +146,7 @@ public class ReplUtils {
     HashMap<String, String> mapProp = new HashMap<>();
     mapProp.put(REPL_CHECKPOINT_KEY, dumpRoot);
 
-    final TableName tName = TableName.fromString(tableDesc.getTableName(), null, tableDesc.getDatabaseName());
+    final TableName tName = TableName.fromString(tableDesc.getTableName(), tableDesc.getDatabaseName());
     AlterTableSetPropertiesDesc alterTblDesc =  new AlterTableSetPropertiesDesc(tName, partSpec, null, false,
         mapProp, false, false, null);
     return TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), alterTblDesc), conf);
