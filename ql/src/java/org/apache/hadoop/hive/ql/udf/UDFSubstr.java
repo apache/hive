@@ -148,7 +148,6 @@ public class UDFSubstr extends UDF implements IStatEstimatorProvider {
     @Override
     public Optional<ColStatistics> estimate(List<ColStatistics> csList) {
       ColStatistics cs = csList.get(0).clone();
-
       // this might bad in a skewed case; consider:
       // 1 row with 1000 long string
       // 99 rows with 0 length
@@ -161,7 +160,6 @@ public class UDFSubstr extends UDF implements IStatEstimatorProvider {
         if (newAvgColLen > 0) {
           cs.setAvgColLen(newAvgColLen);
         }
-
       }
       if (csList.size() > 2) {
         Range lengthRange = csList.get(2).getRange();
