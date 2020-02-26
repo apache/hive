@@ -78,7 +78,6 @@ import org.apache.hadoop.hive.ql.exec.spark.session.SparkSession;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManagerImpl;
 import org.apache.hadoop.hive.ql.exec.tez.ExternalSessionsRegistry;
 import org.apache.hadoop.hive.ql.exec.tez.TezExternalSessionState;
-import org.apache.hadoop.hive.ql.exec.tez.TezExternalSessionsRegistryClient;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
 import org.apache.hadoop.hive.ql.exec.tez.TezSession;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionState;

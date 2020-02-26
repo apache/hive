@@ -37,6 +37,15 @@ public interface ExternalSessionsRegistry {
   String getSession() throws Exception;
 
   /**
+   * Returns application of id of the external session that is dedicate for specified query id. The tez session should
+   * be tagged with hive query id.
+   * @param hiveQueryId hive query id
+   * @return application id
+   * @throws Exception in case of any exceptions
+   */
+  String getSession(String hiveQueryId) throws Exception;
+
+  /**
    * Returns external session back to registry.
    * @param appId application id
    */

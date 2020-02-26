@@ -190,7 +190,11 @@ public class TezTask extends Task<TezWork> {
 
       try {
         perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_GET_SESSION);
-        ss.setWaitingTezSession();
+        boolean emitTezSessionWaitMetric =
+          conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_EMIT_TEZ_SESSION_WAIT_METRICS);
+        if (emitTezSessionWaitMetric) {
+          ss.setWaitingTezSession();
+        }
         try {
           session = sessionRef.value = WorkloadManagerFederation.getSession(
                   sessionRef.value, conf, mi, getWork().getLlapMode(), wmContext);
@@ -203,7 +207,9 @@ public class TezTask extends Task<TezWork> {
           // This would refresh any conf resources and also local resources.
           ensureSessionHasResources(session, allNonConfFiles);
         } finally {
-          ss.resetWaitingTezSession();
+          if (emitTezSessionWaitMetric) {
+            ss.resetWaitingTezSession();
+          }
           perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_GET_SESSION);
         }
 

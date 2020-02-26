@@ -30,6 +30,11 @@ public class DummyExternalSessionsRegistry implements ExternalSessionsRegistry {
   }
 
   @Override
+  public String getSession(final String preferredAMHostPrefix) throws Exception {
+    throw new UnsupportedOperationException("not supported in dummy external session registry");
+  }
+
+  @Override
   public void returnSession(final String appId) {
     throw new UnsupportedOperationException("not supported in dummy external session registry");
   }

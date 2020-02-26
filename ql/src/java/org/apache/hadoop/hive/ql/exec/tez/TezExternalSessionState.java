@@ -101,8 +101,15 @@ public class TezExternalSessionState extends TezSessionState {
     if (isAsync) {
       LOG.info("Ignoring the async argument for an external session {}", getSessionId());
     }
+    final boolean perQuerySession = conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_USE_PER_QUERY_TEZ_EXTERNAL_SESSION);
+    final String hiveQueryId = conf.getVar(HiveConf.ConfVars.HIVEQUERYID);
     try {
-      externalAppId = registry.getSession();
+      if (perQuerySession) {
+        LOG.info("Requesting tez session corresponding to queryId: {}", hiveQueryId);
+        externalAppId = registry.getSession(hiveQueryId);
+      } else {
+        externalAppId = registry.getSession();
+      }
     } catch (TezException | LoginException | IOException e) {
       throw e;
     } catch (Exception e) {
@@ -110,8 +117,8 @@ public class TezExternalSessionState extends TezSessionState {
     }
 
     session.getClient(ApplicationId.fromString(externalAppId));
-    LOG.info("Started an external session; client name {}, app ID {}",
-        session.getClientName(), externalAppId);
+    LOG.info("Started an external session; client name {}, app ID {}, perQuerySession: {} hiveQueryId: {}",
+        session.getClientName(), externalAppId, perQuerySession, hiveQueryId);
     setTezClient(session);
 
     // If we are picking up this external session for the first time, check whether the AM is

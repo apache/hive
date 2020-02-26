@@ -3387,6 +3387,15 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_TEZ_EXTERNAL_SESSIONS_REGISTRY_CLASS("hive.server2.tez.external.sessions.registry.class",
       "org.apache.hadoop.hive.ql.exec.tez.DummyExternalSessionsRegistry", "Tez external sessions\n" +
       "registry implementation to use"),
+    HIVE_SERVER2_EMIT_TEZ_SESSION_WAIT_METRICS("hive.server2.emit.tez.session.wait.metrics", true,
+      "When set to true, the hiveserver2 background thread will emit metrics about tez session wait time"),
+    HIVE_SERVER2_USE_PER_QUERY_TEZ_EXTERNAL_SESSION("hive.server2.use.per.query.tez.external.session",
+      false, "When set to true the tez external session should be tagged with hive query id\n" +
+      "for it to be used only for that query"),
+    HIVE_SERVER2_USE_PER_QUERY_LLAP_TOTAL_AVAILABLE_SLOTS("hive.server2.use.per.query.llap.total.available.slots",
+      -1, "When set to non-zero positive value, hive split generator will this value for total\n" +
+      "available LLAP slots instead of discovering it from ZK registry"),
+
 
     // Operation log configuration
     HIVE_SERVER2_LOGGING_OPERATION_ENABLED("hive.server2.logging.operation.enabled", true,

@@ -38,6 +38,10 @@ public class QueryProperties {
   boolean noScanAnalyzeCommand;
   boolean analyzeRewrite;
   boolean ctas;
+  boolean isInsert;
+
+  // INSERT INTO, INSERT OVERWRITE and CTAS
+  boolean isETL;
   int outerQueryLimit;
 
   boolean hasJoin = false;
@@ -264,6 +268,23 @@ public class QueryProperties {
     return this.filterWithSubQuery;
   }
 
+
+  public boolean isInsert() {
+    return isInsert;
+  }
+
+  public void setInsert(final boolean insert) {
+    isInsert = insert;
+  }
+
+  public boolean isETL() {
+    return isETL;
+  }
+
+  public void setETL(final boolean ETL) {
+    isETL = ETL;
+  }
+
   /**
    * True indicates this statement create or replaces a materialized view, not that it is a query
    * against a materialized view.
@@ -283,6 +304,8 @@ public class QueryProperties {
     noScanAnalyzeCommand = false;
     analyzeRewrite = false;
     ctas = false;
+    isInsert = false;
+    isETL = false;
     outerQueryLimit = -1;
     isMaterializedView = false;
 
