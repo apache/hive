@@ -80,12 +80,12 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspecto
 import org.apache.hadoop.hive.shims.HadoopShims.StoragePolicyShim;
 import org.apache.hadoop.hive.shims.HadoopShims.StoragePolicyValue;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hive.common.util.HiveStringUtils;
-import org.apache.hive.common.util.Murmur3;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -426,6 +426,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   protected transient boolean multiFileSpray;
   protected transient final Map<Integer, Integer> bucketMap = new HashMap<Integer, Integer>();
   private transient boolean isBucketed = false;
+  private transient int bucketId;
 
   private transient ObjectInspector[] partitionObjectInspectors;
   protected transient HivePartitioner<HiveKey, Object> prtner;
@@ -751,7 +752,12 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   protected void createBucketForFileIdx(FSPaths fsp, int filesIdx)
       throws HiveException {
     try {
-      fsp.initializeBucketPaths(filesIdx, taskId, isNativeTable(), isSkewedStoredAsSubDirectories);
+      if (conf.isCompactionTable()) {
+        fsp.initializeBucketPaths(filesIdx, AcidUtils.BUCKET_PREFIX + String.format(AcidUtils.BUCKET_DIGITS, bucketId),
+            isNativeTable(), isSkewedStoredAsSubDirectories);
+      } else {
+        fsp.initializeBucketPaths(filesIdx, taskId, isNativeTable(), isSkewedStoredAsSubDirectories);
+      }
       if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
         Utilities.FILE_OP_LOGGER.trace("createBucketForFileIdx " + filesIdx + ": final path " + fsp.finalPaths[filesIdx]
           + "; out path " + fsp.outPaths[filesIdx] +" (spec path " + specPath + ", tmp path "
@@ -774,7 +780,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       //todo IOW integration. Full Acid uses the else if block to create Acid's RecordUpdater (HiveFileFormatUtils)
       // and that will set writingBase(conf.getInsertOverwrite())
       // If MM wants to create a new base for IOW (instead of delta dir), it should specify it here
-      if (conf.getWriteType() == AcidUtils.Operation.NOT_ACID || conf.isMmTable()) {
+      if (conf.getWriteType() == AcidUtils.Operation.NOT_ACID || conf.isMmTable() || conf.isCompactionTable()) {
         Path outPath = fsp.outPaths[filesIdx];
         if (conf.isMmTable()
             && !FileUtils.mkdir(fs, outPath.getParent(), hconf)) {
@@ -897,6 +903,10 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           createNewPaths(null, lbDirName);
         }
       } else {
+        if (conf.isCompactionTable()) {
+          int bucketProperty = ((IntWritable)((Object[])row)[2]).get();
+          bucketId = BucketCodec.determineVersion(bucketProperty).decodeWriterId(bucketProperty);
+        }
         createBucketFiles(fsp);
       }
     }
@@ -986,7 +996,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       // for a given operator branch prediction should work quite nicely on it.
       // RecordUpdater expects to get the actual row, not a serialized version of it.  Thus we
       // pass the row rather than recordValue.
-      if (conf.getWriteType() == AcidUtils.Operation.NOT_ACID || conf.isMmTable()) {
+      if (conf.getWriteType() == AcidUtils.Operation.NOT_ACID || conf.isMmTable() || conf.isCompactionTable()) {
         rowOutWriters[findWriterOffset(row)].write(recordValue);
       } else if (conf.getWriteType() == AcidUtils.Operation.INSERT) {
         fpaths.updaters[findWriterOffset(row)].insert(conf.getTableWriteId(), row);
@@ -1044,7 +1054,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   protected boolean areAllTrue(boolean[] statsFromRW) {
     // If we are doing an acid operation they will always all be true as RecordUpdaters always
     // collect stats
-    if (conf.getWriteType() != AcidUtils.Operation.NOT_ACID && !conf.isMmTable()) {
+    if (conf.getWriteType() != AcidUtils.Operation.NOT_ACID && !conf.isMmTable() && !conf.isCompactionTable()) {
       return true;
     }
     for(boolean b : statsFromRW) {
@@ -1299,7 +1309,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         // record writer already gathers the statistics, it can simply return the
         // accumulated statistics which will be aggregated in case of spray writers
         if (conf.isGatherStats() && isCollectRWStats) {
-          if (conf.getWriteType() == AcidUtils.Operation.NOT_ACID || conf.isMmTable()) {
+          if (conf.getWriteType() == AcidUtils.Operation.NOT_ACID || conf.isMmTable() || conf.isCompactionTable()) {
             for (int idx = 0; idx < fsp.outWriters.length; idx++) {
               RecordWriter outWriter = fsp.outWriters[idx];
               if (outWriter != null) {
