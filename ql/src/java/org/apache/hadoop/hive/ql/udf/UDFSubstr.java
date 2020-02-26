@@ -163,7 +163,6 @@ public class UDFSubstr extends UDF implements IStatEstimatorProvider {
         }
 
       }
-
       if (csList.size() > 2) {
         Range lengthRange = csList.get(2).getRange();
         if (lengthRange != null && lengthRange.maxValue != null) {
@@ -173,7 +172,6 @@ public class UDFSubstr extends UDF implements IStatEstimatorProvider {
           }
         }
       }
-
       return Optional.of(cs);
     }
 

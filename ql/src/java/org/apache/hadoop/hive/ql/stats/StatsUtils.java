@@ -1629,19 +1629,32 @@ public class StatsUtils {
     colStats.setCountDistint(countDistincts);
     colStats.setNumNulls(numNulls);
 
-    Optional<Long> value = getLongConstValue(encd);
+    Optional<Number> value = getConstValue(encd);
     if (value.isPresent()) {
       colStats.setRange(value.get(), value.get());
     }
     return colStats;
   }
 
-  private static Optional<Long> getLongConstValue(ExprNodeConstantDesc encd) {
+  private static Optional<Number> getConstValue(ExprNodeConstantDesc encd) {
     if (encd.getValue() != null) {
       String constant = encd.getValue().toString();
       PrimitiveCategory category = GenericUDAFSum.getReturnType(encd.getTypeInfo());
-      if (category == PrimitiveCategory.LONG) {
-        return Optional.of(Long.parseLong(constant));
+      try {
+        switch (category) {
+        case INT:
+        case BYTE:
+        case SHORT:
+        case LONG:
+          return Optional.of(Long.parseLong(constant));
+        case FLOAT:
+        case DOUBLE:
+        case DECIMAL:
+          return Optional.of(Double.parseDouble(constant));
+        default:
+        }
+      } catch (Exception e) {
+        LOG.debug("Interpreting constant (" + constant + ")  resulted in exception", e);
       }
     }
     return Optional.empty();

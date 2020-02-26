@@ -27,8 +27,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.stats.estimator.IStatEstimator;
 import org.apache.hadoop.hive.ql.stats.estimator.IStatEstimatorProvider;
-import org.apache.hadoop.hive.ql.stats.estimator.StatEstimators;
-import org.apache.hadoop.hive.ql.stats.estimator.StatEstimators.WorstStatCombiner;
+import org.apache.hadoop.hive.ql.stats.estimator.PessimisticStatCombiner;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
 /**
@@ -89,7 +88,7 @@ public class GenericUDFCoalesce extends GenericUDF implements IStatEstimatorProv
 
     @Override
     public Optional<ColStatistics> estimate(List<ColStatistics> argStats) {
-      WorstStatCombiner combiner = new StatEstimators.WorstStatCombiner();
+      PessimisticStatCombiner combiner = new PessimisticStatCombiner();
       for (int i = 0; i < argStats.size(); i++) {
         combiner.add(argStats.get(i));
       }

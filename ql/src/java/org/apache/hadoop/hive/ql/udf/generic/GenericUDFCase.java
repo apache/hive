@@ -27,8 +27,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.stats.estimator.IStatEstimator;
 import org.apache.hadoop.hive.ql.stats.estimator.IStatEstimatorProvider;
-import org.apache.hadoop.hive.ql.stats.estimator.StatEstimators;
-import org.apache.hadoop.hive.ql.stats.estimator.StatEstimators.WorstStatCombiner;
+import org.apache.hadoop.hive.ql.stats.estimator.PessimisticStatCombiner;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
@@ -155,7 +154,7 @@ public class GenericUDFCase extends GenericUDF implements IStatEstimatorProvider
 
     @Override
     public Optional<ColStatistics> estimate(List<ColStatistics> argStats) {
-      WorstStatCombiner combiner = new StatEstimators.WorstStatCombiner();
+      PessimisticStatCombiner combiner = new PessimisticStatCombiner();
       for (int i = 1; i < argStats.size(); i += 2) {
         combiner.add(argStats.get(i));
       }
