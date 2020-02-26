@@ -125,11 +125,11 @@ NULL	NULL	NULL	0	NULL
 PREHOOK: query: CREATE table columnShortcutTable (key STRING, value STRING) STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@columnShortcutTable
+PREHOOK: Output: default@columnshortcuttable
 POSTHOOK: query: CREATE table columnShortcutTable (key STRING, value STRING) STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@columnShortcutTable
+POSTHOOK: Output: default@columnshortcuttable
 PREHOOK: query: FROM src
 INSERT OVERWRITE TABLE columnShortcutTable SELECT src.key, src.value LIMIT 10
 PREHOOK: type: QUERY

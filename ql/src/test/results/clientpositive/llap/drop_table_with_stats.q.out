@@ -39,11 +39,11 @@ POSTHOOK: Output: tblstatsdb1@testtable
 PREHOOK: query: CREATE TABLE IF NOT EXISTS TestTable1_n0 (key STRING, value STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:tblstatsdb1
-PREHOOK: Output: tblstatsdb1@TestTable1_n0
+PREHOOK: Output: tblstatsdb1@testtable1_n0
 POSTHOOK: query: CREATE TABLE IF NOT EXISTS TestTable1_n0 (key STRING, value STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:tblstatsdb1
-POSTHOOK: Output: tblstatsdb1@TestTable1_n0
+POSTHOOK: Output: tblstatsdb1@testtable1_n0
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE TestTable1_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -65,11 +65,11 @@ POSTHOOK: Output: tblstatsdb1@testtable1_n0
 PREHOOK: query: CREATE TABLE IF NOT EXISTS TESTTABLE2_n0 (key STRING, value STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:tblstatsdb1
-PREHOOK: Output: tblstatsdb1@TESTTABLE2_n0
+PREHOOK: Output: tblstatsdb1@testtable2_n0
 POSTHOOK: query: CREATE TABLE IF NOT EXISTS TESTTABLE2_n0 (key STRING, value STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:tblstatsdb1
-POSTHOOK: Output: tblstatsdb1@TESTTABLE2_n0
+POSTHOOK: Output: tblstatsdb1@testtable2_n0
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE TESTTABLE2_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -134,12 +134,12 @@ POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:tblstatsdb2
 PREHOOK: query: CREATE TABLE IF NOT EXISTS testtable (key STRING, value STRING)
 PREHOOK: type: CREATETABLE
-PREHOOK: Output: TBLSTATSDB2@testtable
 PREHOOK: Output: database:tblstatsdb2
+PREHOOK: Output: tblstatsdb2@testtable
 POSTHOOK: query: CREATE TABLE IF NOT EXISTS testtable (key STRING, value STRING)
 POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: TBLSTATSDB2@testtable
 POSTHOOK: Output: database:tblstatsdb2
+POSTHOOK: Output: tblstatsdb2@testtable
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE testtable
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -160,12 +160,12 @@ POSTHOOK: Input: tblstatsdb2@testtable
 POSTHOOK: Output: tblstatsdb2@testtable
 PREHOOK: query: CREATE TABLE IF NOT EXISTS TestTable1_n0 (key STRING, value STRING)
 PREHOOK: type: CREATETABLE
-PREHOOK: Output: TBLSTATSDB2@TestTable1_n0
 PREHOOK: Output: database:tblstatsdb2
+PREHOOK: Output: tblstatsdb2@testtable1_n0
 POSTHOOK: query: CREATE TABLE IF NOT EXISTS TestTable1_n0 (key STRING, value STRING)
 POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: TBLSTATSDB2@TestTable1_n0
 POSTHOOK: Output: database:tblstatsdb2
+POSTHOOK: Output: tblstatsdb2@testtable1_n0
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE TestTable1_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -186,12 +186,12 @@ POSTHOOK: Input: tblstatsdb2@testtable1_n0
 POSTHOOK: Output: tblstatsdb2@testtable1_n0
 PREHOOK: query: CREATE TABLE IF NOT EXISTS TESTTABLE2_n0 (key STRING, value STRING)
 PREHOOK: type: CREATETABLE
-PREHOOK: Output: TBLSTATSDB2@TESTTABLE2_n0
 PREHOOK: Output: database:tblstatsdb2
+PREHOOK: Output: tblstatsdb2@testtable2_n0
 POSTHOOK: query: CREATE TABLE IF NOT EXISTS TESTTABLE2_n0 (key STRING, value STRING)
 POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: TBLSTATSDB2@TESTTABLE2_n0
 POSTHOOK: Output: database:tblstatsdb2
+POSTHOOK: Output: tblstatsdb2@testtable2_n0
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE TESTTABLE2_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####

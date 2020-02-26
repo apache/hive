@@ -1,11 +1,11 @@
 PREHOOK: query: CREATE TABLE TEST1_n6(A INT, B DOUBLE) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@TEST1_n6
+PREHOOK: Output: default@test1_n6
 POSTHOOK: query: CREATE TABLE TEST1_n6(A INT, B DOUBLE) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@TEST1_n6
+POSTHOOK: Output: default@test1_n6
 PREHOOK: query: EXPLAIN
 DESCRIBE TEST1_n6
 PREHOOK: type: DESCTABLE
@@ -21,7 +21,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Describe Table
-      table: default.TEST1_n6
+      table: default.test1_n6
 
   Stage: Stage-1
     Fetch Operator

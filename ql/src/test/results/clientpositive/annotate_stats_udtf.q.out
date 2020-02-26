@@ -5,11 +5,11 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table HIVE_20262 (a array<int>)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@HIVE_20262
+PREHOOK: Output: default@hive_20262
 POSTHOOK: query: create table HIVE_20262 (a array<int>)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@HIVE_20262
+POSTHOOK: Output: default@hive_20262
 PREHOOK: query: insert into HIVE_20262 select array(1)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table

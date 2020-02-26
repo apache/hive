@@ -1,11 +1,11 @@
 PREHOOK: query: CREATE TABLE DEST1_n129(Key INT, VALUE STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEST1_n129
+PREHOOK: Output: default@dest1_n129
 POSTHOOK: query: CREATE TABLE DEST1_n129(Key INT, VALUE STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST1_n129
+POSTHOOK: Output: default@dest1_n129
 PREHOOK: query: EXPLAIN
 FROM SRC_THRIFT
 INSERT OVERWRITE TABLE dest1_n129 SELECT src_Thrift.LINT[1], src_thrift.lintstring[0].MYSTRING where src_thrift.liNT[0] > 0

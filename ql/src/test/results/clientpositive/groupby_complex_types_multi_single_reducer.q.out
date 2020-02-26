@@ -1,19 +1,19 @@
 PREHOOK: query: CREATE TABLE DEST1_n47(key ARRAY<STRING>, value BIGINT) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEST1_n47
+PREHOOK: Output: default@dest1_n47
 POSTHOOK: query: CREATE TABLE DEST1_n47(key ARRAY<STRING>, value BIGINT) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST1_n47
+POSTHOOK: Output: default@dest1_n47
 PREHOOK: query: CREATE TABLE DEST2_n8(key MAP<STRING, STRING>, value BIGINT) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEST2_n8
+PREHOOK: Output: default@dest2_n8
 POSTHOOK: query: CREATE TABLE DEST2_n8(key MAP<STRING, STRING>, value BIGINT) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST2_n8
+POSTHOOK: Output: default@dest2_n8
 PREHOOK: query: EXPLAIN
 FROM SRC
 INSERT OVERWRITE TABLE DEST1_n47 SELECT ARRAY(SRC.key) as keyarray, COUNT(1) GROUP BY ARRAY(SRC.key) ORDER BY keyarray limit 10

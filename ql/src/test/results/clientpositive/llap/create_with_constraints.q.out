@@ -2293,12 +2293,12 @@ POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:dbconstraint
 PREHOOK: query: CREATE TABLE Table2 (a STRING, b STRING NOT NULL DISABLE, CONSTRAINT Pk1 PRIMARY KEY (a) DISABLE)
 PREHOOK: type: CREATETABLE
-PREHOOK: Output: DbConstraint@Table2
 PREHOOK: Output: database:dbconstraint
+PREHOOK: Output: dbconstraint@table2
 POSTHOOK: query: CREATE TABLE Table2 (a STRING, b STRING NOT NULL DISABLE, CONSTRAINT Pk1 PRIMARY KEY (a) DISABLE)
 POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: DbConstraint@Table2
 POSTHOOK: Output: database:dbconstraint
+POSTHOOK: Output: dbconstraint@table2
 PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:default
@@ -2599,12 +2599,12 @@ PREHOOK: query: CREATE TABLE numericDataType_n0(a TINYINT, b SMALLINT NOT NULL E
  d BIGINT , e DOUBLE , f DECIMAL(9,2))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@numericDataType_n0
+PREHOOK: Output: default@numericdatatype_n0
 POSTHOOK: query: CREATE TABLE numericDataType_n0(a TINYINT, b SMALLINT NOT NULL ENABLE, c INT,
  d BIGINT , e DOUBLE , f DECIMAL(9,2))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@numericDataType_n0
+POSTHOOK: Output: default@numericdatatype_n0
 PREHOOK: query: INSERT INTO numericDataType_n0 values(2,45,5667,67890,5.6,678.5)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table

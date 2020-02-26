@@ -1,11 +1,11 @@
 PREHOOK: query: CREATE TABLE T1_n19(key INT, val STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1_n19
+PREHOOK: Output: default@t1_n19
 POSTHOOK: query: CREATE TABLE T1_n19(key INT, val STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1_n19
+POSTHOOK: Output: default@t1_n19
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE T1_n19
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -17,11 +17,11 @@ POSTHOOK: Output: default@t1_n19
 PREHOOK: query: CREATE TABLE T2_n11(key INT, val STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T2_n11
+PREHOOK: Output: default@t2_n11
 POSTHOOK: query: CREATE TABLE T2_n11(key INT, val STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T2_n11
+POSTHOOK: Output: default@t2_n11
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv2.txt' INTO TABLE T2_n11
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -33,11 +33,11 @@ POSTHOOK: Output: default@t2_n11
 PREHOOK: query: CREATE TABLE T3_n5(key INT, val STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T3_n5
+PREHOOK: Output: default@t3_n5
 POSTHOOK: query: CREATE TABLE T3_n5(key INT, val STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T3_n5
+POSTHOOK: Output: default@t3_n5
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv3.txt' INTO TABLE T3_n5
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -49,11 +49,11 @@ POSTHOOK: Output: default@t3_n5
 PREHOOK: query: CREATE TABLE T4_n1(key INT, val STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T4_n1
+PREHOOK: Output: default@t4_n1
 POSTHOOK: query: CREATE TABLE T4_n1(key INT, val STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T4_n1
+POSTHOOK: Output: default@t4_n1
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv5.txt' INTO TABLE T4_n1
 PREHOOK: type: LOAD
 #### A masked pattern was here ####

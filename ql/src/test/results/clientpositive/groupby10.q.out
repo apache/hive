@@ -17,11 +17,11 @@ POSTHOOK: Output: default@dest2
 PREHOOK: query: CREATE TABLE INPUT(key INT, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@INPUT
+PREHOOK: Output: default@input
 POSTHOOK: query: CREATE TABLE INPUT(key INT, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@INPUT
+POSTHOOK: Output: default@input
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv5.txt' INTO TABLE INPUT
 PREHOOK: type: LOAD
 #### A masked pattern was here ####

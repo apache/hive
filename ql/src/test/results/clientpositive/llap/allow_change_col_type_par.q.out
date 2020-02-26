@@ -24,7 +24,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Change Column
-      table name: default.t1_n14
+      table name: hive.default.t1_n14
       new column name: c1
       new column type: smallint
       old column name: c1

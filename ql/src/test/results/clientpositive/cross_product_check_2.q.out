@@ -1,55 +1,43 @@
-PREHOOK: query: create table A_n18 (key string, value string)
-PREHOOK: type: CREATETABLE
-PREHOOK: Output: database:default
-PREHOOK: Output: default@a_n18
-POSTHOOK: query: create table A_n18 (key string, value string)
-POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: database:default
-POSTHOOK: Output: default@a_n18
-PREHOOK: query: insert into A_n18
+PREHOOK: query: create table A_n2 as
 select * from src
-PREHOOK: type: QUERY
+PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
-PREHOOK: Output: default@a_n18
-POSTHOOK: query: insert into A_n18
-select * from src
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
-POSTHOOK: Output: default@a_n18
-POSTHOOK: Lineage: a_n18.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: a_n18.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: create table B_n14 (key string, value string)
-PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@b_n14
-POSTHOOK: query: create table B_n14 (key string, value string)
-POSTHOOK: type: CREATETABLE
+PREHOOK: Output: default@a_n2
+POSTHOOK: query: create table A_n2 as
+select * from src
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@b_n14
-PREHOOK: query: insert into B_n14
+POSTHOOK: Output: default@a_n2
+POSTHOOK: Lineage: a_n2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: a_n2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create table B_n2 as
 select * from src order by key
 limit 10
-PREHOOK: type: QUERY
+PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
-PREHOOK: Output: default@b_n14
-POSTHOOK: query: insert into B_n14
+PREHOOK: Output: database:default
+PREHOOK: Output: default@b_n2
+POSTHOOK: query: create table B_n2 as
 select * from src order by key
 limit 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@b_n14
-POSTHOOK: Lineage: b_n14.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: b_n14.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-Warning: Map Join MAPJOIN[8][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
-PREHOOK: query: explain select * from A_n18 join B_n14
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@b_n2
+POSTHOOK: Lineage: b_n2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: b_n2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
+PREHOOK: query: explain select * from A_n2 join B_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@a_n18
-PREHOOK: Input: default@b_n14
+PREHOOK: Input: default@a_n2
+PREHOOK: Input: default@b_n2
 #### A masked pattern was here ####
-POSTHOOK: query: explain select * from A_n18 join B_n14
+POSTHOOK: query: explain select * from A_n2 join B_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@a_n18
-POSTHOOK: Input: default@b_n14
+POSTHOOK: Input: default@a_n2
+POSTHOOK: Input: default@b_n2
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
@@ -60,17 +48,17 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        b_n14 
+        $hdt$_1:b_n2 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        b_n14 
+        $hdt$_1:b_n2 
           TableScan
-            alias: b_n14
+            alias: b_n2
             Statistics: Num rows: 10 Data size: 1760 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: key (type: string), value (type: string)
-              outputColumnNames: key, value
+              outputColumnNames: _col0, _col1
               Statistics: Num rows: 10 Data size: 1760 Basic stats: COMPLETE Column stats: COMPLETE
               HashTable Sink Operator
                 keys:
@@ -81,11 +69,11 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: a_n18
+            alias: a_n2
             Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: key (type: string), value (type: string)
-              outputColumnNames: key, value
+              outputColumnNames: _col0, _col1
               Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
               Map Join Operator
                 condition map:
@@ -93,7 +81,7 @@ STAGE PLANS:
                 keys:
                   0 
                   1 
-                outputColumnNames: key, value, key0, value0
+                outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 5000 Data size: 1770000 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
@@ -112,16 +100,16 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[19][bigTable=?] in task 'Stage-5:MAPRED' is a cross product
-PREHOOK: query: explain select * from B_n14 d1 join B_n14 d2 on d1.key = d2.key join A_n18
+Warning: Map Join MAPJOIN[20][bigTable=?] in task 'Stage-5:MAPRED' is a cross product
+PREHOOK: query: explain select * from B_n2 d1 join B_n2 d2 on d1.key = d2.key join A_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@a_n18
-PREHOOK: Input: default@b_n14
+PREHOOK: Input: default@a_n2
+PREHOOK: Input: default@b_n2
 #### A masked pattern was here ####
-POSTHOOK: query: explain select * from B_n14 d1 join B_n14 d2 on d1.key = d2.key join A_n18
+POSTHOOK: query: explain select * from B_n2 d1 join B_n2 d2 on d1.key = d2.key join A_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@a_n18
-POSTHOOK: Input: default@b_n14
+POSTHOOK: Input: default@a_n2
+POSTHOOK: Input: default@b_n2
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-7 is a root stage
@@ -132,26 +120,14 @@ STAGE PLANS:
   Stage: Stage-7
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        a_n18 
+        $hdt$_0:d1 
           Fetch Operator
             limit: -1
-        d1 
+        $hdt$_2:a_n2 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        a_n18 
-          TableScan
-            alias: a_n18
-            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-            Select Operator
-              expressions: key (type: string), value (type: string)
-              outputColumnNames: key, value
-              Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-              HashTable Sink Operator
-                keys:
-                  0 
-                  1 
-        d1 
+        $hdt$_0:d1 
           TableScan
             alias: d1
             filterExpr: key is not null (type: boolean)
@@ -161,12 +137,24 @@ STAGE PLANS:
               Statistics: Num rows: 10 Data size: 1760 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string), value (type: string)
-                outputColumnNames: key, value
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 10 Data size: 1760 Basic stats: COMPLETE Column stats: COMPLETE
                 HashTable Sink Operator
                   keys:
-                    0 key (type: string)
-                    1 key (type: string)
+                    0 _col0 (type: string)
+                    1 _col0 (type: string)
+        $hdt$_2:a_n2 
+          TableScan
+            alias: a_n2
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              expressions: key (type: string), value (type: string)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+              HashTable Sink Operator
+                keys:
+                  0 
+                  1 
 
   Stage: Stage-5
     Map Reduce
@@ -180,15 +168,15 @@ STAGE PLANS:
               Statistics: Num rows: 10 Data size: 1760 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string), value (type: string)
-                outputColumnNames: key, value
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 10 Data size: 1760 Basic stats: COMPLETE Column stats: COMPLETE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
                   keys:
-                    0 key (type: string)
-                    1 key (type: string)
-                  outputColumnNames: key, value, key0, value0
+                    0 _col0 (type: string)
+                    1 _col0 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3
                   Statistics: Num rows: 20 Data size: 7040 Basic stats: COMPLETE Column stats: COMPLETE
                   Map Join Operator
                     condition map:
@@ -196,7 +184,7 @@ STAGE PLANS:
                     keys:
                       0 
                       1 
-                    outputColumnNames: key, value, key0, value0, key1, value1
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                     Statistics: Num rows: 10000 Data size: 5300000 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -215,22 +203,22 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[25][bigTable=?] in task 'Stage-5:MAPRED' is a cross product
-PREHOOK: query: explain select * from A_n18 join 
+Warning: Map Join MAPJOIN[27][bigTable=?] in task 'Stage-5:MAPRED' is a cross product
+PREHOOK: query: explain select * from A_n2 join 
          (select d1.key 
-          from B_n14 d1 join B_n14 d2 on d1.key = d2.key 
+          from B_n2 d1 join B_n2 d2 on d1.key = d2.key 
           where 1 = 1 group by d1.key) od1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@a_n18
-PREHOOK: Input: default@b_n14
+PREHOOK: Input: default@a_n2
+PREHOOK: Input: default@b_n2
 #### A masked pattern was here ####
-POSTHOOK: query: explain select * from A_n18 join 
+POSTHOOK: query: explain select * from A_n2 join 
          (select d1.key 
-          from B_n14 d1 join B_n14 d2 on d1.key = d2.key 
+          from B_n2 d1 join B_n2 d2 on d1.key = d2.key 
           where 1 = 1 group by d1.key) od1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@a_n18
-POSTHOOK: Input: default@b_n14
+POSTHOOK: Input: default@a_n2
+POSTHOOK: Input: default@b_n2
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-8 is a root stage
@@ -243,13 +231,13 @@ STAGE PLANS:
   Stage: Stage-8
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        od1:d1 
+        $hdt$_1:$hdt$_1:d1 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        od1:d1 
+        $hdt$_1:$hdt$_1:d1 
           TableScan
-            alias: od1:d1
+            alias: d1
             filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 10 Data size: 860 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
@@ -257,18 +245,18 @@ STAGE PLANS:
               Statistics: Num rows: 10 Data size: 860 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 10 Data size: 860 Basic stats: COMPLETE Column stats: COMPLETE
                 HashTable Sink Operator
                   keys:
-                    0 key (type: string)
-                    1 key (type: string)
+                    0 _col0 (type: string)
+                    1 _col0 (type: string)
 
   Stage: Stage-3
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: od1:d2
+            alias: d2
             filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 10 Data size: 860 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
@@ -276,159 +264,18 @@ STAGE PLANS:
               Statistics: Num rows: 10 Data size: 860 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 10 Data size: 860 Basic stats: COMPLETE Column stats: COMPLETE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
                   keys:
-                    0 key (type: string)
-                    1 key (type: string)
-                  outputColumnNames: key
+                    0 _col0 (type: string)
+                    1 _col0 (type: string)
+                  outputColumnNames: _col0
                   Statistics: Num rows: 20 Data size: 1720 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: key (type: string)
-                    outputColumnNames: key
-                    Statistics: Num rows: 20 Data size: 1720 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      keys: key (type: string)
-                      minReductionHashAggr: 0.99
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 5 Data size: 430 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        null sort order: z
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 5 Data size: 430 Basic stats: COMPLETE Column stats: COMPLETE
-      Execution mode: vectorized
-      Local Work:
-        Map Reduce Local Work
-      Reduce Operator Tree:
-        Group By Operator
-          keys: KEY._col0 (type: string)
-          mode: mergepartial
-          outputColumnNames: key
-          Statistics: Num rows: 5 Data size: 430 Basic stats: COMPLETE Column stats: COMPLETE
-          File Output Operator
-            compressed: false
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-
-  Stage: Stage-7
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        a_n18 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        a_n18 
-          TableScan
-            alias: a_n18
-            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-            Select Operator
-              expressions: key (type: string), value (type: string)
-              outputColumnNames: key, value
-              Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-              HashTable Sink Operator
-                keys:
-                  0 
-                  1 
-
-  Stage: Stage-5
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-              keys:
-                0 
-                1 
-              outputColumnNames: key, value, key0
-              Statistics: Num rows: 2500 Data size: 660000 Basic stats: COMPLETE Column stats: COMPLETE
-              File Output Operator
-                compressed: false
-                Statistics: Num rows: 2500 Data size: 660000 Basic stats: COMPLETE Column stats: COMPLETE
-                table:
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-      Execution mode: vectorized
-      Local Work:
-        Map Reduce Local Work
-
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        ListSink
-
-Warning: Map Join MAPJOIN[21][bigTable=?] in task 'Stage-5:MAPRED' is a cross product
-Warning: Map Join MAPJOIN[22][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
-PREHOOK: query: explain select * from A_n18 join (select d1.key from B_n14 d1 join B_n14 d2 where 1 = 1 group by d1.key) od1
-PREHOOK: type: QUERY
-PREHOOK: Input: default@a_n18
-PREHOOK: Input: default@b_n14
-#### A masked pattern was here ####
-POSTHOOK: query: explain select * from A_n18 join (select d1.key from B_n14 d1 join B_n14 d2 where 1 = 1 group by d1.key) od1
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@a_n18
-POSTHOOK: Input: default@b_n14
-#### A masked pattern was here ####
-STAGE DEPENDENCIES:
-  Stage-8 is a root stage
-  Stage-3 depends on stages: Stage-8
-  Stage-7 depends on stages: Stage-3
-  Stage-5 depends on stages: Stage-7
-  Stage-0 depends on stages: Stage-5
-
-STAGE PLANS:
-  Stage: Stage-8
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        od1:d1 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        od1:d1 
-          TableScan
-            alias: od1:d1
-            Statistics: Num rows: 10 Data size: 860 Basic stats: COMPLETE Column stats: COMPLETE
-            Select Operator
-              expressions: key (type: string)
-              outputColumnNames: key
-              Statistics: Num rows: 10 Data size: 860 Basic stats: COMPLETE Column stats: COMPLETE
-              HashTable Sink Operator
-                keys:
-                  0 
-                  1 
-
-  Stage: Stage-3
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            alias: od1:d2
-            Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
-            Select Operator
-              Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
-              Map Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                keys:
-                  0 
-                  1 
-                outputColumnNames: key
-                Statistics: Num rows: 100 Data size: 8600 Basic stats: COMPLETE Column stats: COMPLETE
-                Select Operator
-                  expressions: key (type: string)
-                  outputColumnNames: key
-                  Statistics: Num rows: 100 Data size: 8600 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
-                    keys: key (type: string)
+                    keys: _col0 (type: string)
                     minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0
@@ -446,7 +293,7 @@ STAGE PLANS:
         Group By Operator
           keys: KEY._col0 (type: string)
           mode: mergepartial
-          outputColumnNames: key
+          outputColumnNames: _col0
           Statistics: Num rows: 5 Data size: 430 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
@@ -458,17 +305,17 @@ STAGE PLANS:
   Stage: Stage-7
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        a_n18 
+        $hdt$_0:a_n2 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        a_n18 
+        $hdt$_0:a_n2 
           TableScan
-            alias: a_n18
+            alias: a_n2
             Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: key (type: string), value (type: string)
-              outputColumnNames: key, value
+              outputColumnNames: _col0, _col1
               Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
               HashTable Sink Operator
                 keys:
@@ -485,7 +332,7 @@ STAGE PLANS:
               keys:
                 0 
                 1 
-              outputColumnNames: key, value, key0
+              outputColumnNames: _col0, _col1, _col2
               Statistics: Num rows: 2500 Data size: 660000 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
@@ -504,22 +351,155 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[43][bigTable=?] in task 'Stage-7:MAPRED' is a cross product
-Warning: Map Join MAPJOIN[36][bigTable=?] in task 'Stage-6:MAPRED' is a cross product
-Warning: Shuffle Join JOIN[20][tables = [, ]] in Stage 'Stage-2:MAPRED' is a cross product
-PREHOOK: query: explain select * from 
-(select A_n18.key from A_n18 group by key) ss join 
-(select d1.key from B_n14 d1 join B_n14 d2 on d1.key = d2.key where 1 = 1 group by d1.key) od1
+Warning: Map Join MAPJOIN[23][bigTable=?] in task 'Stage-5:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[24][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
+PREHOOK: query: explain select * from A_n2 join (select d1.key from B_n2 d1 join B_n2 d2 where 1 = 1 group by d1.key) od1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@a_n18
-PREHOOK: Input: default@b_n14
+PREHOOK: Input: default@a_n2
+PREHOOK: Input: default@b_n2
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from A_n2 join (select d1.key from B_n2 d1 join B_n2 d2 where 1 = 1 group by d1.key) od1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n2
+POSTHOOK: Input: default@b_n2
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-8 is a root stage
+  Stage-3 depends on stages: Stage-8
+  Stage-7 depends on stages: Stage-3
+  Stage-5 depends on stages: Stage-7
+  Stage-0 depends on stages: Stage-5
+
+STAGE PLANS:
+  Stage: Stage-8
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $hdt$_1:$hdt$_1:d1 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $hdt$_1:$hdt$_1:d1 
+          TableScan
+            alias: d1
+            Statistics: Num rows: 10 Data size: 860 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              expressions: key (type: string)
+              outputColumnNames: _col0
+              Statistics: Num rows: 10 Data size: 860 Basic stats: COMPLETE Column stats: COMPLETE
+              HashTable Sink Operator
+                keys:
+                  0 
+                  1 
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: d2
+            Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col0
+                Statistics: Num rows: 100 Data size: 8600 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  keys: _col0 (type: string)
+                  minReductionHashAggr: 0.99
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 5 Data size: 430 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string)
+                    null sort order: z
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: string)
+                    Statistics: Num rows: 5 Data size: 430 Basic stats: COMPLETE Column stats: COMPLETE
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: string)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 5 Data size: 430 Basic stats: COMPLETE Column stats: COMPLETE
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-7
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $hdt$_0:a_n2 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $hdt$_0:a_n2 
+          TableScan
+            alias: a_n2
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              expressions: key (type: string), value (type: string)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+              HashTable Sink Operator
+                keys:
+                  0 
+                  1 
+
+  Stage: Stage-5
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Map Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              keys:
+                0 
+                1 
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 2500 Data size: 660000 Basic stats: COMPLETE Column stats: COMPLETE
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 2500 Data size: 660000 Basic stats: COMPLETE Column stats: COMPLETE
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+Warning: Map Join MAPJOIN[46][bigTable=?] in task 'Stage-7:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[39][bigTable=?] in task 'Stage-6:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[22][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-2:MAPRED' is a cross product
+PREHOOK: query: explain select * from 
+(select A_n2.key from A_n2 group by key) ss join 
+(select d1.key from B_n2 d1 join B_n2 d2 on d1.key = d2.key where 1 = 1 group by d1.key) od1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@a_n2
+PREHOOK: Input: default@b_n2
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from 
-(select A_n18.key from A_n18 group by key) ss join 
-(select d1.key from B_n14 d1 join B_n14 d2 on d1.key = d2.key where 1 = 1 group by d1.key) od1
+(select A_n2.key from A_n2 group by key) ss join 
+(select d1.key from B_n2 d1 join B_n2 d2 on d1.key = d2.key where 1 = 1 group by d1.key) od1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@a_n18
-POSTHOOK: Input: default@b_n14
+POSTHOOK: Input: default@a_n2
+POSTHOOK: Input: default@b_n2
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -538,7 +518,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: ss:a_n18
+            alias: a_n2
             Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: key (type: string)
@@ -561,7 +541,7 @@ STAGE PLANS:
         Group By Operator
           keys: KEY._col0 (type: string)
           mode: mergepartial
-          outputColumnNames: key
+          outputColumnNames: _col0
           Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
@@ -597,7 +577,7 @@ STAGE PLANS:
               keys:
                 0 
                 1 
-              outputColumnNames: key, key0
+              outputColumnNames: _col0, _col1
               Statistics: Num rows: 1250 Data size: 216250 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
@@ -634,7 +614,7 @@ STAGE PLANS:
               keys:
                 0 
                 1 
-              outputColumnNames: key, key0
+              outputColumnNames: _col0, _col1
               Statistics: Num rows: 1250 Data size: 216250 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
@@ -655,13 +635,13 @@ STAGE PLANS:
               null sort order: 
               sort order: 
               Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
-              value expressions: key (type: string)
+              value expressions: _col0 (type: string)
           TableScan
             Reduce Output Operator
               null sort order: 
               sort order: 
               Statistics: Num rows: 5 Data size: 430 Basic stats: COMPLETE Column stats: COMPLETE
-              value expressions: key (type: string)
+              value expressions: _col0 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -669,7 +649,7 @@ STAGE PLANS:
           keys:
             0 
             1 
-          outputColumnNames: key, key0
+          outputColumnNames: _col0, _col1
           Statistics: Num rows: 1250 Data size: 216250 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
@@ -682,13 +662,13 @@ STAGE PLANS:
   Stage: Stage-12
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        od1:d1 
+        $hdt$_1:$hdt$_1:d1 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        od1:d1 
+        $hdt$_1:$hdt$_1:d1 
           TableScan
-            alias: od1:d1
+            alias: d1
             filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 10 Data size: 860 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
@@ -696,18 +676,18 @@ STAGE PLANS:
               Statistics: Num rows: 10 Data size: 860 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 10 Data size: 860 Basic stats: COMPLETE Column stats: COMPLETE
                 HashTable Sink Operator
                   keys:
-                    0 key (type: string)
-                    1 key (type: string)
+                    0 _col0 (type: string)
+                    1 _col0 (type: string)
 
   Stage: Stage-4
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: od1:d2
+            alias: d2
             filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 10 Data size: 860 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
@@ -715,32 +695,28 @@ STAGE PLANS:
               Statistics: Num rows: 10 Data size: 860 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 10 Data size: 860 Basic stats: COMPLETE Column stats: COMPLETE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
                   keys:
-                    0 key (type: string)
-                    1 key (type: string)
-                  outputColumnNames: key
+                    0 _col0 (type: string)
+                    1 _col0 (type: string)
+                  outputColumnNames: _col0
                   Statistics: Num rows: 20 Data size: 1720 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: key (type: string)
-                    outputColumnNames: key
-                    Statistics: Num rows: 20 Data size: 1720 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      keys: key (type: string)
-                      minReductionHashAggr: 0.99
-                      mode: hash
-                      outputColumnNames: _col0
+                  Group By Operator
+                    keys: _col0 (type: string)
+                    minReductionHashAggr: 0.99
+                    mode: hash
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 5 Data size: 430 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 5 Data size: 430 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        null sort order: z
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 5 Data size: 430 Basic stats: COMPLETE Column stats: COMPLETE
       Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
@@ -748,7 +724,7 @@ STAGE PLANS:
         Group By Operator
           keys: KEY._col0 (type: string)
           mode: mergepartial
-          outputColumnNames: key
+          outputColumnNames: _col0
           Statistics: Num rows: 5 Data size: 430 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false

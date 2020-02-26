@@ -465,19 +465,19 @@ Storage Desc Params:
 PREHOOK: query: CREATE TABLE PropertiedParquetTable(a INT, b STRING) STORED AS PARQUET TBLPROPERTIES("parquet.compression"="LZO")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@PropertiedParquetTable
+PREHOOK: Output: default@propertiedparquettable
 POSTHOOK: query: CREATE TABLE PropertiedParquetTable(a INT, b STRING) STORED AS PARQUET TBLPROPERTIES("parquet.compression"="LZO")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@PropertiedParquetTable
+POSTHOOK: Output: default@propertiedparquettable
 PREHOOK: query: CREATE TABLE LikePropertiedParquetTable LIKE PropertiedParquetTable
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@LikePropertiedParquetTable
+PREHOOK: Output: default@likepropertiedparquettable
 POSTHOOK: query: CREATE TABLE LikePropertiedParquetTable LIKE PropertiedParquetTable
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@LikePropertiedParquetTable
+POSTHOOK: Output: default@likepropertiedparquettable
 PREHOOK: query: DESCRIBE FORMATTED LikePropertiedParquetTable
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@likepropertiedparquettable

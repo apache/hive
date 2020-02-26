@@ -2,14 +2,14 @@ PREHOOK: query: CREATE VIEW V1_n0 AS SELECT key, value from src
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@V1_n0
+PREHOOK: Output: default@v1_n0
 POSTHOOK: query: CREATE VIEW V1_n0 AS SELECT key, value from src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@V1_n0
-POSTHOOK: Lineage: V1_n0.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: V1_n0.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@v1_n0
+POSTHOOK: Lineage: v1_n0.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: v1_n0.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select count(*) from V1_n0 where key > 0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -25,12 +25,12 @@ PREHOOK: query: CREATE TABLE M1 AS SELECT key, value from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@M1
+PREHOOK: Output: default@m1
 POSTHOOK: query: CREATE TABLE M1 AS SELECT key, value from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@M1
+POSTHOOK: Output: default@m1
 POSTHOOK: Lineage: m1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: m1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select count(*) from M1 where key > 0
@@ -46,12 +46,12 @@ PREHOOK: query: EXPLAIN CREATE TABLE M1 AS select * from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@M1
+PREHOOK: Output: default@m1
 POSTHOOK: query: EXPLAIN CREATE TABLE M1 AS select * from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@M1
+POSTHOOK: Output: default@m1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -81,7 +81,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.M1
+                    name: default.m1
               Select Operator
                 expressions: _col0 (type: string), _col1 (type: string)
                 outputColumnNames: col1, col2
@@ -129,10 +129,10 @@ STAGE PLANS:
   Stage: Stage-8
     Create Table
       columns: key string, value string
-      name: default.M1
       input format: org.apache.hadoop.mapred.TextInputFormat
       output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
       serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      name: hive.default.m1
 
   Stage: Stage-2
     Stats Work
@@ -140,7 +140,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: string, string
-          Table: default.M1
+          Table: default.m1
 
   Stage: Stage-3
     Map Reduce
@@ -152,7 +152,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.M1
+                  name: default.m1
 
   Stage: Stage-5
     Map Reduce
@@ -164,7 +164,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.M1
+                  name: default.m1
 
   Stage: Stage-6
     Move Operator
@@ -176,12 +176,12 @@ PREHOOK: query: EXPLAIN CREATE TABLE M1 AS select * from M1
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@m1
 PREHOOK: Output: database:default
-PREHOOK: Output: default@M1
+PREHOOK: Output: default@m1
 POSTHOOK: query: EXPLAIN CREATE TABLE M1 AS select * from M1
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@m1
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@M1
+POSTHOOK: Output: default@m1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -211,7 +211,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.M1
+                    name: default.m1
               Select Operator
                 expressions: _col0 (type: string), _col1 (type: string)
                 outputColumnNames: col1, col2
@@ -259,10 +259,10 @@ STAGE PLANS:
   Stage: Stage-8
     Create Table
       columns: key string, value string
-      name: default.M1
       input format: org.apache.hadoop.mapred.TextInputFormat
       output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
       serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      name: hive.default.m1
 
   Stage: Stage-2
     Stats Work
@@ -270,7 +270,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: string, string
-          Table: default.M1
+          Table: default.m1
 
   Stage: Stage-3
     Map Reduce
@@ -282,7 +282,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.M1
+                  name: default.m1
 
   Stage: Stage-5
     Map Reduce
@@ -294,7 +294,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.M1
+                  name: default.m1
 
   Stage: Stage-6
     Move Operator
@@ -307,13 +307,13 @@ PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Input: default@v1_n0
 PREHOOK: Output: database:default
-PREHOOK: Output: default@M1
+PREHOOK: Output: default@m1
 POSTHOOK: query: EXPLAIN CREATE TABLE M1 AS select * from V1_n0
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@v1_n0
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@M1
+POSTHOOK: Output: default@m1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -345,7 +345,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.M1
+                    name: default.m1
               Select Operator
                 expressions: _col0 (type: string), _col1 (type: string)
                 outputColumnNames: col1, col2
@@ -393,10 +393,10 @@ STAGE PLANS:
   Stage: Stage-8
     Create Table
       columns: key string, value string
-      name: default.M1
       input format: org.apache.hadoop.mapred.TextInputFormat
       output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
       serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      name: hive.default.m1
 
   Stage: Stage-2
     Stats Work
@@ -404,7 +404,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: string, string
-          Table: default.M1
+          Table: default.m1
 
   Stage: Stage-3
     Map Reduce
@@ -416,7 +416,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.M1
+                  name: default.m1
 
   Stage: Stage-5
     Map Reduce
@@ -428,7 +428,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.M1
+                  name: default.m1
 
   Stage: Stage-6
     Move Operator
@@ -440,12 +440,12 @@ PREHOOK: query: EXPLAIN CREATE TABLE V1_n0 AS select * from M1
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@m1
 PREHOOK: Output: database:default
-PREHOOK: Output: default@V1_n0
+PREHOOK: Output: default@v1_n0
 POSTHOOK: query: EXPLAIN CREATE TABLE V1_n0 AS select * from M1
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@m1
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@V1_n0
+POSTHOOK: Output: default@v1_n0
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -475,7 +475,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.V1_n0
+                    name: default.v1_n0
               Select Operator
                 expressions: _col0 (type: string), _col1 (type: string)
                 outputColumnNames: col1, col2
@@ -523,10 +523,10 @@ STAGE PLANS:
   Stage: Stage-8
     Create Table
       columns: key string, value string
-      name: default.V1_n0
       input format: org.apache.hadoop.mapred.TextInputFormat
       output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
       serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      name: hive.default.v1_n0
 
   Stage: Stage-2
     Stats Work
@@ -534,7 +534,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: string, string
-          Table: default.V1_n0
+          Table: default.v1_n0
 
   Stage: Stage-3
     Map Reduce
@@ -546,7 +546,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.V1_n0
+                  name: default.v1_n0
 
   Stage: Stage-5
     Map Reduce
@@ -558,7 +558,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.V1_n0
+                  name: default.v1_n0
 
   Stage: Stage-6
     Move Operator
@@ -570,12 +570,12 @@ PREHOOK: query: EXPLAIN CREATE VIEW V1_n0 AS select * from M1
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@m1
 PREHOOK: Output: database:default
-PREHOOK: Output: default@V1_n0
+PREHOOK: Output: default@v1_n0
 POSTHOOK: query: EXPLAIN CREATE VIEW V1_n0 AS select * from M1
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@m1
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@V1_n0
+POSTHOOK: Output: default@v1_n0
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
 
@@ -584,17 +584,17 @@ STAGE PLANS:
     Create View
       columns: key string, value string
       expanded text: select `m1`.`key`, `m1`.`value` from `default`.`M1`
-      name: default.V1_n0
+      name: hive.default.v1_n0
       original text: select * from M1
 
 PREHOOK: query: EXPLAIN CREATE TABLE M1 LIKE src
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@M1
+PREHOOK: Output: default@m1
 POSTHOOK: query: EXPLAIN CREATE TABLE M1 LIKE src
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@M1
+POSTHOOK: Output: default@m1
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -605,18 +605,18 @@ STAGE PLANS:
       default output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
       default serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       like: src
-      name: default.M1
+      name: hive.default.m1
       table properties:
         bucketing_version 2
 
 PREHOOK: query: EXPLAIN CREATE TABLE M1 LIKE M1
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@M1
+PREHOOK: Output: default@m1
 POSTHOOK: query: EXPLAIN CREATE TABLE M1 LIKE M1
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@M1
+POSTHOOK: Output: default@m1
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -626,8 +626,8 @@ STAGE PLANS:
       default input format: org.apache.hadoop.mapred.TextInputFormat
       default output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
       default serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-      like: M1
-      name: default.M1
+      like: m1
+      name: hive.default.m1
       table properties:
         bucketing_version 2
 
@@ -645,7 +645,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Drop Table
-      table: M1
+      table: m1
 
 PREHOOK: query: select count(*) from M1 where key > 0
 PREHOOK: type: QUERY

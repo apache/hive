@@ -8,14 +8,14 @@ ROW FORMAT DELIMITED
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DECIMAL_PRECISION_n0
+PREHOOK: Output: default@decimal_precision_n0
 POSTHOOK: query: CREATE TABLE DECIMAL_PRECISION_n0(`dec` decimal(20,10))
 ROW FORMAT DELIMITED
    FIELDS TERMINATED BY ' '
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DECIMAL_PRECISION_n0
+POSTHOOK: Output: default@decimal_precision_n0
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv8.txt' INTO TABLE DECIMAL_PRECISION_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -645,11 +645,11 @@ POSTHOOK: Output: default@decimal_precision_n0
 PREHOOK: query: CREATE TABLE DECIMAL_PRECISION_n0(`dec` decimal(38,18))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DECIMAL_PRECISION_n0
+PREHOOK: Output: default@decimal_precision_n0
 POSTHOOK: query: CREATE TABLE DECIMAL_PRECISION_n0(`dec` decimal(38,18))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DECIMAL_PRECISION_n0
+POSTHOOK: Output: default@decimal_precision_n0
 PREHOOK: query: INSERT INTO DECIMAL_PRECISION_n0 VALUES(98765432109876543210.12345), (98765432109876543210.12345)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table

@@ -94,11 +94,11 @@ STAGE PLANS:
 PREHOOK: query: create table aGBY (i int, j string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@aGBY
+PREHOOK: Output: default@agby
 POSTHOOK: query: create table aGBY (i int, j string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@aGBY
+POSTHOOK: Output: default@agby
 PREHOOK: query: insert into aGBY values ( 1, 'a'),(2,'b')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table

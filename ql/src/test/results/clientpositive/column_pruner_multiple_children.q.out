@@ -1,11 +1,11 @@
 PREHOOK: query: CREATE TABLE DEST1_n52(key INT, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEST1_n52
+PREHOOK: Output: default@dest1_n52
 POSTHOOK: query: CREATE TABLE DEST1_n52(key INT, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST1_n52
+POSTHOOK: Output: default@dest1_n52
 PREHOOK: query: create table s_n129 as select * from src where key='10'
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src

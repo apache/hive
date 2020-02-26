@@ -12,7 +12,7 @@ ROW FORMAT DELIMITED
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DECIMAL_TRAILING_n0
+PREHOOK: Output: default@decimal_trailing_n0
 POSTHOOK: query: CREATE TABLE DECIMAL_TRAILING_n0 (
   id int,
   a decimal(10,4),
@@ -23,7 +23,7 @@ ROW FORMAT DELIMITED
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DECIMAL_TRAILING_n0
+POSTHOOK: Output: default@decimal_trailing_n0
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv10.txt' INTO TABLE DECIMAL_TRAILING_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####

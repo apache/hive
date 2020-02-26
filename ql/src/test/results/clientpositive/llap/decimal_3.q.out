@@ -8,14 +8,14 @@ ROW FORMAT DELIMITED
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DECIMAL_3
+PREHOOK: Output: default@decimal_3
 POSTHOOK: query: CREATE TABLE DECIMAL_3(key decimal(38,18), value int)
 ROW FORMAT DELIMITED
    FIELDS TERMINATED BY ' '
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DECIMAL_3
+POSTHOOK: Output: default@decimal_3
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv7.txt' INTO TABLE DECIMAL_3
 PREHOOK: type: LOAD
 #### A masked pattern was here ####

@@ -23,7 +23,7 @@ TBLPROPERTIES (
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@bloomTest
+PREHOOK: Output: default@bloomtest
 POSTHOOK: query: CREATE TABLE bloomTest(
   msisdn  STRING,
   imsi    VARCHAR(20),
@@ -45,7 +45,7 @@ TBLPROPERTIES (
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@bloomTest
+POSTHOOK: Output: default@bloomtest
 PREHOOK: query: INSERT INTO bloomTest VALUES ('12345', '12345', 12345, 12345)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table

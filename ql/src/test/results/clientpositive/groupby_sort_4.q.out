@@ -2,12 +2,12 @@ PREHOOK: query: CREATE TABLE T1_n133(key STRING, val STRING)
 CLUSTERED BY (key, val) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1_n133
+PREHOOK: Output: default@t1_n133
 POSTHOOK: query: CREATE TABLE T1_n133(key STRING, val STRING)
 CLUSTERED BY (key, val) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1_n133
+POSTHOOK: Output: default@t1_n133
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bucket_files/000000_0' INTO TABLE T1_n133
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -29,11 +29,11 @@ POSTHOOK: Lineage: t1_n133.val SIMPLE [(t1_n133)t1_n133.FieldSchema(name:val, ty
 PREHOOK: query: CREATE TABLE outputTbl1_n31(key STRING, cnt INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@outputTbl1_n31
+PREHOOK: Output: default@outputtbl1_n31
 POSTHOOK: query: CREATE TABLE outputTbl1_n31(key STRING, cnt INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@outputTbl1_n31
+POSTHOOK: Output: default@outputtbl1_n31
 PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE outputTbl1_n31
 SELECT key, count(1) FROM T1_n133 GROUP BY key
@@ -185,11 +185,11 @@ POSTHOOK: Input: default@outputtbl1_n31
 PREHOOK: query: CREATE TABLE outputTbl2_n8(key STRING, val STRING, cnt INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@outputTbl2_n8
+PREHOOK: Output: default@outputtbl2_n8
 POSTHOOK: query: CREATE TABLE outputTbl2_n8(key STRING, val STRING, cnt INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@outputTbl2_n8
+POSTHOOK: Output: default@outputtbl2_n8
 PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE outputTbl2_n8
 SELECT key, val, count(1) FROM T1_n133 GROUP BY key, val

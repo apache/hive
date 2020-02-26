@@ -15,7 +15,7 @@ PREHOOK: query: CREATE TABLE UserVisits_web_text_none_n0 (
 row format delimited fields terminated by '|'  stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@UserVisits_web_text_none_n0
+PREHOOK: Output: default@uservisits_web_text_none_n0
 POSTHOOK: query: CREATE TABLE UserVisits_web_text_none_n0 (
   sourceIP string,
   destURL string,
@@ -29,7 +29,7 @@ POSTHOOK: query: CREATE TABLE UserVisits_web_text_none_n0 (
 row format delimited fields terminated by '|'  stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@UserVisits_web_text_none_n0
+POSTHOOK: Output: default@uservisits_web_text_none_n0
 PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/UserVisits.dat" INTO TABLE UserVisits_web_text_none_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -497,7 +497,7 @@ PREHOOK: query: CREATE TABLE UserVisits_web_text_none_n0 (
 row format delimited fields terminated by '|'  stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:test
-PREHOOK: Output: test@UserVisits_web_text_none_n0
+PREHOOK: Output: test@uservisits_web_text_none_n0
 POSTHOOK: query: CREATE TABLE UserVisits_web_text_none_n0 (
   sourceIP string,
   destURL string,
@@ -511,7 +511,7 @@ POSTHOOK: query: CREATE TABLE UserVisits_web_text_none_n0 (
 row format delimited fields terminated by '|'  stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:test
-POSTHOOK: Output: test@UserVisits_web_text_none_n0
+POSTHOOK: Output: test@uservisits_web_text_none_n0
 PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/UserVisits.dat" INTO TABLE UserVisits_web_text_none_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####

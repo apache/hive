@@ -1,11 +1,11 @@
 PREHOOK: query: create table T1_n20(key string, val string) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1_n20
+PREHOOK: Output: default@t1_n20
 POSTHOOK: query: create table T1_n20(key string, val string) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1_n20
+POSTHOOK: Output: default@t1_n20
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_n20
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -31,11 +31,11 @@ POSTHOOK: Input: default@t1_n20
 PREHOOK: query: create table T2_n12(key string, val string) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T2_n12
+PREHOOK: Output: default@t2_n12
 POSTHOOK: query: create table T2_n12(key string, val string) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T2_n12
+POSTHOOK: Output: default@t2_n12
 PREHOOK: query: insert into table T2_n12 select * from T1_n20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1_n20

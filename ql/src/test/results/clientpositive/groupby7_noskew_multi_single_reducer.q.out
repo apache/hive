@@ -1,19 +1,19 @@
 PREHOOK: query: CREATE TABLE DEST1_n170(key INT, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEST1_n170
+PREHOOK: Output: default@dest1_n170
 POSTHOOK: query: CREATE TABLE DEST1_n170(key INT, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST1_n170
+POSTHOOK: Output: default@dest1_n170
 PREHOOK: query: CREATE TABLE DEST2_n42(key INT, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEST2_n42
+PREHOOK: Output: default@dest2_n42
 POSTHOOK: query: CREATE TABLE DEST2_n42(key INT, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST2_n42
+POSTHOOK: Output: default@dest2_n42
 PREHOOK: query: EXPLAIN
 FROM SRC
 INSERT OVERWRITE TABLE DEST1_n170 SELECT SRC.key, sum(SUBSTR(SRC.value,5)) GROUP BY SRC.key ORDER BY SRC.key limit 10

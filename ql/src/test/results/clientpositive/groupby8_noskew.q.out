@@ -1,19 +1,19 @@
 PREHOOK: query: CREATE TABLE DEST1_n48(key INT, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEST1_n48
+PREHOOK: Output: default@dest1_n48
 POSTHOOK: query: CREATE TABLE DEST1_n48(key INT, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST1_n48
+POSTHOOK: Output: default@dest1_n48
 PREHOOK: query: CREATE TABLE DEST2_n9(key INT, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEST2_n9
+PREHOOK: Output: default@dest2_n9
 POSTHOOK: query: CREATE TABLE DEST2_n9(key INT, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST2_n9
+POSTHOOK: Output: default@dest2_n9
 PREHOOK: query: EXPLAIN
 FROM SRC
 INSERT OVERWRITE TABLE DEST1_n48 SELECT SRC.key, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key

@@ -1,19 +1,19 @@
 PREHOOK: query: CREATE TABLE sales_HIVE_15647 (store_id INTEGER, store_number INTEGER, customer_id INTEGER)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@sales_HIVE_15647
+PREHOOK: Output: default@sales_hive_15647
 POSTHOOK: query: CREATE TABLE sales_HIVE_15647 (store_id INTEGER, store_number INTEGER, customer_id INTEGER)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@sales_HIVE_15647
+POSTHOOK: Output: default@sales_hive_15647
 PREHOOK: query: CREATE TABLE store_HIVE_15647 (store_id INTEGER, salad_bar BOOLEAN)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@store_HIVE_15647
+PREHOOK: Output: default@store_hive_15647
 POSTHOOK: query: CREATE TABLE store_HIVE_15647 (store_id INTEGER, salad_bar BOOLEAN)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@store_HIVE_15647
+POSTHOOK: Output: default@store_hive_15647
 PREHOOK: query: explain select count(*) from
 sales_HIVE_15647 as sales 
 join store_HIVE_15647 as store on sales.store_id = store.store_id

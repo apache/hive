@@ -38,7 +38,7 @@ TBLPROPERTIES ('avro.schema.literal'='{
 }')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@testAvroComments1
+PREHOOK: Output: default@testavrocomments1
 POSTHOOK: query: CREATE TABLE testAvroComments1
 ROW FORMAT
 SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
@@ -75,7 +75,7 @@ TBLPROPERTIES ('avro.schema.literal'='{
 }')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@testAvroComments1
+POSTHOOK: Output: default@testavrocomments1
 PREHOOK: query: DESCRIBE testAvroComments1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@testavrocomments1
@@ -132,7 +132,7 @@ TBLPROPERTIES ('avro.schema.literal'='{
 }')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@testAvroComments2
+PREHOOK: Output: default@testavrocomments2
 POSTHOOK: query: CREATE TABLE testAvroComments2
 ROW FORMAT
 SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
@@ -167,7 +167,7 @@ TBLPROPERTIES ('avro.schema.literal'='{
 }')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@testAvroComments2
+POSTHOOK: Output: default@testavrocomments2
 PREHOOK: query: DESCRIBE testAvroComments2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@testavrocomments2
@@ -222,7 +222,7 @@ TBLPROPERTIES ('avro.schema.literal'='{
 }')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@testAvroComments3
+PREHOOK: Output: default@testavrocomments3
 POSTHOOK: query: CREATE TABLE testAvroComments3
 ROW FORMAT
 SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
@@ -255,7 +255,7 @@ TBLPROPERTIES ('avro.schema.literal'='{
 }')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@testAvroComments3
+POSTHOOK: Output: default@testavrocomments3
 PREHOOK: query: DESCRIBE testAvroComments3
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@testavrocomments3
@@ -286,7 +286,7 @@ PREHOOK: query: CREATE TABLE testAvroComments4 (
 STORED AS AVRO
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@testAvroComments4
+PREHOOK: Output: default@testavrocomments4
 POSTHOOK: query: CREATE TABLE testAvroComments4 (
   number int COMMENT "Order of playing the role",
   first_name string COMMENT "first name of actor playing role",
@@ -295,7 +295,7 @@ POSTHOOK: query: CREATE TABLE testAvroComments4 (
 STORED AS AVRO
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@testAvroComments4
+POSTHOOK: Output: default@testavrocomments4
 PREHOOK: query: DESCRIBE testAvroComments4
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@testavrocomments4
@@ -326,7 +326,7 @@ PREHOOK: query: CREATE TABLE testAvroComments5 (
 STORED AS AVRO
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@testAvroComments5
+PREHOOK: Output: default@testavrocomments5
 POSTHOOK: query: CREATE TABLE testAvroComments5 (
   number int COMMENT "Order of playing the role",
   first_name string,
@@ -335,7 +335,7 @@ POSTHOOK: query: CREATE TABLE testAvroComments5 (
 STORED AS AVRO
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@testAvroComments5
+POSTHOOK: Output: default@testavrocomments5
 PREHOOK: query: DESCRIBE testAvroComments5
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@testavrocomments5
@@ -366,7 +366,7 @@ PREHOOK: query: CREATE TABLE testAvroComments6 (
 STORED AS AVRO
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@testAvroComments6
+PREHOOK: Output: default@testavrocomments6
 POSTHOOK: query: CREATE TABLE testAvroComments6 (
   number int,
   first_name string,
@@ -375,7 +375,7 @@ POSTHOOK: query: CREATE TABLE testAvroComments6 (
 STORED AS AVRO
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@testAvroComments6
+POSTHOOK: Output: default@testavrocomments6
 PREHOOK: query: DESCRIBE testAvroComments6
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@testavrocomments6
