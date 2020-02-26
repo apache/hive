@@ -29,8 +29,8 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.StringSubstrColStart;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringSubstrColStartLen;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.ColStatistics.Range;
-import org.apache.hadoop.hive.ql.stats.estimator.IStatEstimator;
-import org.apache.hadoop.hive.ql.stats.estimator.IStatEstimatorProvider;
+import org.apache.hadoop.hive.ql.stats.estimator.StatEstimator;
+import org.apache.hadoop.hive.ql.stats.estimator.StatEstimatorProvider;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
@@ -54,7 +54,7 @@ import org.apache.hadoop.io.Text;
     + "  > SELECT _FUNC_('Facebook', 5, 1) FROM src LIMIT 1;\n"
     + "  'b'")
 @VectorizedExpressions({StringSubstrColStart.class, StringSubstrColStartLen.class})
-public class UDFSubstr extends UDF implements IStatEstimatorProvider {
+public class UDFSubstr extends UDF implements StatEstimatorProvider {
 
   private final int[] index;
   private final Text r;
@@ -139,11 +139,11 @@ public class UDFSubstr extends UDF implements IStatEstimatorProvider {
   }
 
   @Override
-  public IStatEstimator getStatEstimator() {
+  public StatEstimator getStatEstimator() {
     return new SubStrStatEstimator();
   }
 
-  private static class SubStrStatEstimator implements IStatEstimator {
+  private static class SubStrStatEstimator implements StatEstimator {
 
     @Override
     public Optional<ColStatistics> estimate(List<ColStatistics> csList) {

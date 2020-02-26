@@ -29,8 +29,8 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressionsSupportDecimal64;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
-import org.apache.hadoop.hive.ql.stats.estimator.IStatEstimator;
-import org.apache.hadoop.hive.ql.stats.estimator.IStatEstimatorProvider;
+import org.apache.hadoop.hive.ql.stats.estimator.StatEstimator;
+import org.apache.hadoop.hive.ql.stats.estimator.StatEstimatorProvider;
 import org.apache.hadoop.hive.ql.stats.estimator.PessimisticStatCombiner;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -122,7 +122,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprVarCharScalarStri
   IfExprTimestampScalarColumn.class, IfExprTimestampScalarScalar.class,
 })
 @VectorizedExpressionsSupportDecimal64()
-public class GenericUDFIf extends GenericUDF implements IStatEstimatorProvider {
+public class GenericUDFIf extends GenericUDF implements StatEstimatorProvider {
   private transient ObjectInspector[] argumentOIs;
   private transient GenericUDFUtils.ReturnObjectInspectorResolver returnOIResolver;
 
@@ -180,11 +180,11 @@ public class GenericUDFIf extends GenericUDF implements IStatEstimatorProvider {
   }
 
   @Override
-  public IStatEstimator getStatEstimator() {
+  public StatEstimator getStatEstimator() {
     return new IfStatEstimator();
   }
 
-  static class IfStatEstimator implements IStatEstimator {
+  static class IfStatEstimator implements StatEstimator {
 
     @Override
     public Optional<ColStatistics> estimate(List<ColStatistics> argStats) {

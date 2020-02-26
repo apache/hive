@@ -15,23 +15,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.hadoop.hive.ql.stats.estimator;
 
-import java.util.List;
-import java.util.Optional;
-
-import org.apache.hadoop.hive.ql.plan.ColStatistics;
-
 /**
- * Enables statistics related computation on UDFs
+ * Marker interface for UDFs to communicate that the usage of StatEstimators is supported by the UDF.
  */
-public interface IStatEstimator {
+public interface StatEstimatorProvider {
 
   /**
-   * Computes the output statistics of the actual UDF.
-   *
-   * @param argStats the statistics for every argument of the UDF.
+   * Returns the {@link StatEstimator} for the given UDF instance.
    */
-  public Optional<ColStatistics> estimate(List<ColStatistics> argStats);
+  public StatEstimator getStatEstimator();
 }

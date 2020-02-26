@@ -25,8 +25,8 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
-import org.apache.hadoop.hive.ql.stats.estimator.IStatEstimator;
-import org.apache.hadoop.hive.ql.stats.estimator.IStatEstimatorProvider;
+import org.apache.hadoop.hive.ql.stats.estimator.StatEstimator;
+import org.apache.hadoop.hive.ql.stats.estimator.StatEstimatorProvider;
 import org.apache.hadoop.hive.ql.stats.estimator.PessimisticStatCombiner;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
@@ -40,7 +40,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
     value = "_FUNC_(a1, a2, ...) - Returns the first non-null argument",
     extended = "Example:\n"
     + "  > SELECT _FUNC_(NULL, 1, NULL) FROM src LIMIT 1;\n" + "  1")
-public class GenericUDFCoalesce extends GenericUDF implements IStatEstimatorProvider {
+public class GenericUDFCoalesce extends GenericUDF implements StatEstimatorProvider {
   private transient ObjectInspector[] argumentOIs;
   private transient GenericUDFUtils.ReturnObjectInspectorResolver returnOIResolver;
 
@@ -80,11 +80,11 @@ public class GenericUDFCoalesce extends GenericUDF implements IStatEstimatorProv
   }
 
   @Override
-  public IStatEstimator getStatEstimator() {
+  public StatEstimator getStatEstimator() {
     return new CoalesceStatEstimator();
   }
 
-  static class CoalesceStatEstimator implements IStatEstimator {
+  static class CoalesceStatEstimator implements StatEstimator {
 
     @Override
     public Optional<ColStatistics> estimate(List<ColStatistics> argStats) {

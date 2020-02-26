@@ -25,8 +25,8 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
-import org.apache.hadoop.hive.ql.stats.estimator.IStatEstimator;
-import org.apache.hadoop.hive.ql.stats.estimator.IStatEstimatorProvider;
+import org.apache.hadoop.hive.ql.stats.estimator.StatEstimator;
+import org.apache.hadoop.hive.ql.stats.estimator.StatEstimatorProvider;
 import org.apache.hadoop.hive.ql.stats.estimator.PessimisticStatCombiner;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
@@ -56,7 +56,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
     + " END\n"
     + " FROM emp_details")
 
-public class GenericUDFCase extends GenericUDF implements IStatEstimatorProvider {
+public class GenericUDFCase extends GenericUDF implements StatEstimatorProvider {
   private transient ObjectInspector[] argumentOIs;
   private transient GenericUDFUtils.ReturnObjectInspectorResolver returnOIResolver;
   private transient GenericUDFUtils.ReturnObjectInspectorResolver caseOIResolver;
@@ -146,11 +146,11 @@ public class GenericUDFCase extends GenericUDF implements IStatEstimatorProvider
   }
 
   @Override
-  public IStatEstimator getStatEstimator() {
+  public StatEstimator getStatEstimator() {
     return new CaseStatEstimator();
   }
 
-  static class CaseStatEstimator implements IStatEstimator {
+  static class CaseStatEstimator implements StatEstimator {
 
     @Override
     public Optional<ColStatistics> estimate(List<ColStatistics> argStats) {

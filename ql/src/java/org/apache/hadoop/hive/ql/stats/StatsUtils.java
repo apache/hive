@@ -74,8 +74,8 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.Statistics.State;
 import org.apache.hadoop.hive.ql.stats.BasicStats.Factory;
-import org.apache.hadoop.hive.ql.stats.estimator.IStatEstimator;
-import org.apache.hadoop.hive.ql.stats.estimator.IStatEstimatorProvider;
+import org.apache.hadoop.hive.ql.stats.estimator.StatEstimator;
+import org.apache.hadoop.hive.ql.stats.estimator.StatEstimatorProvider;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFSum;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
@@ -1555,9 +1555,9 @@ public class StatsUtils {
       }
 
       if (conf.getBoolVar(ConfVars.HIVE_STATS_ESTIMATORS_ENABLE)) {
-        Optional<IStatEstimatorProvider> sep = engfd.getGenericUDF().adapt(IStatEstimatorProvider.class);
+        Optional<StatEstimatorProvider> sep = engfd.getGenericUDF().adapt(StatEstimatorProvider.class);
         if (sep.isPresent()) {
-          IStatEstimator se = sep.get().getStatEstimator();
+          StatEstimator se = sep.get().getStatEstimator();
           List<ColStatistics> csList = new ArrayList<ColStatistics>();
           for (ExprNodeDesc child : engfd.getChildren()) {
             ColStatistics cs = getColStatisticsFromExpression(conf, parentStats, child);
