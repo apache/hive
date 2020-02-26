@@ -85,6 +85,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.StorageHandlerInfo;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
@@ -772,7 +773,8 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
   }
 
   @Override public void configureJobConf(TableDesc tableDesc, JobConf jobConf) {
-    if (UserGroupInformation.isSecurityEnabled()) {
+    final boolean kerberosEnabled = HiveConf.getBoolVar(getConf(), HiveConf.ConfVars.HIVE_DRUID_KERBEROS_ENABLE);
+    if (kerberosEnabled && UserGroupInformation.isSecurityEnabled()) {
       // AM can not do Kerberos Auth so will do the input split generation in the HS2
       LOG.debug("Setting {} to {} to enable split generation on HS2",
           HiveConf.ConfVars.HIVE_AM_SPLIT_GENERATION.toString(),
@@ -941,7 +943,9 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
             .withNumConnections(numConnection)
             .withReadTimeout(new Period(readTimeout).toStandardDuration())
             .build(), lifecycle);
-    if (UserGroupInformation.isSecurityEnabled()) {
+    final boolean kerberosEnabled =
+        HiveConf.getBoolVar(SessionState.getSessionConf(), HiveConf.ConfVars.HIVE_DRUID_KERBEROS_ENABLE);
+    if (kerberosEnabled && UserGroupInformation.isSecurityEnabled()) {
       LOG.info("building Kerberos Http Client");
       return new KerberosHttpClient(httpClient);
     }
