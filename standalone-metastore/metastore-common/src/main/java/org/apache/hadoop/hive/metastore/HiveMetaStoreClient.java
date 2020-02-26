@@ -3346,7 +3346,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   @Override
   public ShowCompactResponse showCompactions() throws TException {
-    return client.show_compact(new ShowCompactRequest());
+    ShowCompactResponse response = client.show_compact(new ShowCompactRequest());
+    response.setCompacts(FilterUtils.filterCompactionsIfEnabled(isClientFilterEnabled,
+            filterHook, getDefaultCatalog(conf), response.getCompacts()));
+    return response;
   }
 
   @Deprecated

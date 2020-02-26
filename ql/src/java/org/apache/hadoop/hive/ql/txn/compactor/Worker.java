@@ -58,6 +58,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 /**
  * A class to do compactions.  This will run in a separate thread.  It will spin on the
@@ -67,6 +68,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
   static final private String CLASS_NAME = Worker.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   static final private long SLEEP_TIME = 10000;
+  private static final int NOT_SET = -1;
 
   private String workerName;
   private JobConf mrJob; // the MR job for compaction
@@ -95,6 +97,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       // so wrap it in a big catch Throwable statement.
       CompactionHeartbeater heartbeater = null;
       CompactionInfo ci = null;
+      long compactorTxnId = NOT_SET;
       try {
         if (msc == null) {
           msc = HiveMetaStoreUtils.getHiveMetastoreClient(conf);
@@ -164,7 +167,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
          * multiple statements in it (for query based compactor) which is not supported (and since
          * this case some of the statements are DDL, even in the future will not be allowed in a
          * multi-stmt txn. {@link Driver#setCompactionWriteIds(ValidWriteIdList, long)} */
-        long compactorTxnId = msc.openTxn(ci.runAs, TxnType.COMPACTION);
+        compactorTxnId = msc.openTxn(ci.runAs, TxnType.COMPACTION);
 
         heartbeater = new CompactionHeartbeater(compactorTxnId, fullTableName, conf);
         heartbeater.start();
@@ -188,8 +191,8 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         // Don't start compaction or cleaning if not necessary
         AcidUtils.Directory dir = AcidUtils.getAcidState(null, new Path(sd.getLocation()), conf,
             tblValidWriteIds, Ref.from(false), true, null, false);
-        if (!QueryCompactor.Util.isEnoughToCompact(ci.isMajorCompaction(), dir, sd)) {
-          if (QueryCompactor.Util.needsCleaning(dir, sd)) {
+        if (!isEnoughToCompact(ci.isMajorCompaction(), dir, sd)) {
+          if (needsCleaning(dir, sd)) {
             msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci));
           } else {
             // do nothing
@@ -228,7 +231,6 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
           }
           heartbeater.cancel();
           msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci));
-          msc.commitTxn(compactorTxnId);
           if (conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST)) {
             mrJob = mr.getMrJob();
           }
@@ -264,7 +266,8 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         LOG.error("Caught an exception in the main loop of compactor worker " + workerName + ", " +
             StringUtils.stringifyException(t));
       } finally {
-        if(heartbeater != null) {
+        commitTxn(compactorTxnId);
+        if (heartbeater != null) {
           heartbeater.cancel();
         }
       }
@@ -279,6 +282,20 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         }
       }
     } while (!stop.get());
+  }
+
+  private void commitTxn(long compactorTxnId) {
+    if (compactorTxnId != NOT_SET) {
+      try {
+        if (msc != null) {
+          msc.commitTxn(compactorTxnId);
+        }
+      } catch (TException e) {
+        LOG.error(
+            "Caught an exception while committing compaction in worker " + workerName + ", "
+                + StringUtils.stringifyException(e));
+      }
+    }
   }
 
   @Override
@@ -435,5 +452,63 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         this.stop.set(true);
       }
     }
+  }
+
+  /**
+   * Determine if compaction can run in a specified directory.
+   * @param isMajorCompaction type of compaction.
+   * @param dir the delta directory
+   * @param sd resolved storage descriptor
+   * @return true, if compaction can run.
+   */
+  static boolean isEnoughToCompact(boolean isMajorCompaction, AcidUtils.Directory dir,
+      StorageDescriptor sd) {
+    int deltaCount = dir.getCurrentDirectories().size();
+    int origCount = dir.getOriginalFiles().size();
+
+    StringBuilder deltaInfo = new StringBuilder().append(deltaCount);
+    boolean isEnoughToCompact;
+
+    if (isMajorCompaction) {
+      isEnoughToCompact =
+          (origCount > 0 || deltaCount + (dir.getBaseDirectory() == null ? 0 : 1) > 1);
+
+    } else {
+      isEnoughToCompact = (deltaCount > 1);
+
+      if (deltaCount == 2) {
+        Map<String, Long> deltaByType = dir.getCurrentDirectories().stream().collect(Collectors
+            .groupingBy(delta -> (delta
+                    .isDeleteDelta() ? AcidUtils.DELETE_DELTA_PREFIX : AcidUtils.DELTA_PREFIX),
+                Collectors.counting()));
+
+        isEnoughToCompact = (deltaByType.size() != deltaCount);
+        deltaInfo.append(" ").append(deltaByType);
+      }
+    }
+
+    if (!isEnoughToCompact) {
+      LOG.debug("Not compacting {}; current base: {}, delta files: {}, originals: {}",
+          sd.getLocation(), dir.getBaseDirectory(), deltaInfo, origCount);
+    }
+    return isEnoughToCompact;
+  }
+
+  /**
+   * Check for obsolete directories, and return true if any exist and Cleaner should be
+   * run. For example if we insert overwrite into a table with only deltas, a new base file with
+   * the highest writeId is created so there will be no live delta directories, only obsolete
+   * ones. Compaction is not needed, but the cleaner should still be run.
+   *
+   * @return true if cleaning is needed
+   */
+  public static boolean needsCleaning(AcidUtils.Directory dir, StorageDescriptor sd) {
+    int numObsoleteDirs = dir.getObsolete().size();
+    boolean needsJustCleaning = numObsoleteDirs > 0;
+    if (needsJustCleaning) {
+      LOG.debug("{} obsolete directories in {} found; marked for cleaning.", numObsoleteDirs,
+          sd.getLocation());
+    }
+    return needsJustCleaning;
   }
 }

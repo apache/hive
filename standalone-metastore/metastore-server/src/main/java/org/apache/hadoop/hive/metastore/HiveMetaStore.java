@@ -8242,7 +8242,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     @Override
     public ShowCompactResponse show_compact(ShowCompactRequest rqst) throws TException {
-      return getTxnHandler().showCompact(rqst);
+      ShowCompactResponse response = getTxnHandler().showCompact(rqst);
+      response.setCompacts(FilterUtils.filterCompactionsIfEnabled(isServerFilterEnabled,
+              filterHook, getDefaultCatalog(conf), response.getCompacts()));
+      return response;
     }
 
     @Override

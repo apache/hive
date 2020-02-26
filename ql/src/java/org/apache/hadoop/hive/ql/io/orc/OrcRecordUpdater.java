@@ -107,7 +107,6 @@ public class OrcRecordUpdater implements RecordUpdater {
   final static long DELTA_STRIPE_SIZE = 16 * 1024 * 1024;
 
   private static final Charset UTF8 = Charset.forName("UTF-8");
-  private static final CharsetDecoder utf8Decoder = UTF8.newDecoder();
 
   private final AcidOutputFormat.Options options;
   private final AcidUtils.AcidOperationalProperties acidOperationalProperties;
@@ -656,6 +655,7 @@ public class OrcRecordUpdater implements RecordUpdater {
       ByteBuffer val =
           reader.getMetadataValue(OrcRecordUpdater.ACID_KEY_INDEX_NAME)
               .duplicate();
+      CharsetDecoder utf8Decoder = UTF8.newDecoder();
       stripes = utf8Decoder.decode(val).toString().split(";");
     } catch (CharacterCodingException e) {
       throw new IllegalArgumentException("Bad string encoding for " +
