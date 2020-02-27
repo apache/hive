@@ -2519,7 +2519,6 @@ public class HiveConf extends Configuration {
                     "higher compute cost. (NDV means the number of distinct values.). It only affects the FM-Sketch \n" +
                     "(not the HLL algorithm which is the default), where it computes the number of necessary\n" +
                     " bitvectors to achieve the accuracy."),
-    //FIXME
     HIVE_STATS_ESTIMATORS_ENABLE("hive.stats.estimators.enable", true,
         "Estimators are able to provide more accurate column statistic infos for UDF results."),
 
