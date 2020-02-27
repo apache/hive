@@ -49,7 +49,7 @@ STAGE PLANS:
           keys: KEY._col0 (type: string)
           mode: partial1
           outputColumnNames: _col0
-          Statistics: Num rows: 500 Data size: 92000 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 500 Data size: 42500 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
             table:
@@ -66,17 +66,17 @@ STAGE PLANS:
               null sort order: z
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 500 Data size: 92000 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 500 Data size: 42500 Basic stats: COMPLETE Column stats: COMPLETE
       Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: string)
           mode: final
           outputColumnNames: _col0
-          Statistics: Num rows: 307 Data size: 56488 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 307 Data size: 26095 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 307 Data size: 56488 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 307 Data size: 26095 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -85,7 +85,7 @@ STAGE PLANS:
           Select Operator
             expressions: _col0 (type: string)
             outputColumnNames: c1
-            Statistics: Num rows: 307 Data size: 56488 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 307 Data size: 26095 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
               table:
@@ -119,7 +119,7 @@ STAGE PLANS:
               null sort order: 
               sort order: 
               Map-reduce partition columns: rand() (type: double)
-              Statistics: Num rows: 307 Data size: 56488 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 307 Data size: 26095 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: c1 (type: string)
       Execution mode: vectorized
       Reduce Operator Tree:

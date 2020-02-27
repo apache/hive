@@ -55,12 +55,12 @@ STAGE PLANS:
             Select Operator
               expressions: substr(value, 5) (type: string), UDFToDouble(substr(value, 5)) (type: double), (UDFToDouble(substr(value, 5)) * UDFToDouble(substr(value, 5))) (type: double)
               outputColumnNames: $f0, $f00, $f2
-              Statistics: Num rows: 500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 500 Data size: 51000 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: $f0 (type: string)
                 null sort order: z
                 sort order: +
-                Statistics: Num rows: 500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 500 Data size: 51000 Basic stats: COMPLETE Column stats: COMPLETE
                 value expressions: $f2 (type: double), $f00 (type: double)
       Execution mode: vectorized
       Reduce Operator Tree:
