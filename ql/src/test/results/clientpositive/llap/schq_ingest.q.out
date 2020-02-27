@@ -110,7 +110,6 @@ POSTHOOK: query: select state,error_message from sys.scheduled_executions
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@scheduled_executions
 #### A masked pattern was here ####
-FINISHED	NULL
 PREHOOK: query: select * from t order by id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t
@@ -120,5 +119,3 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t
 #### A masked pattern was here ####
 1	1
-2	2
-3	3

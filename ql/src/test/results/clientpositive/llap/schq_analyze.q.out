@@ -89,12 +89,11 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	EXTERNAL_TABLE      	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\"}}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
 	numFiles            	1                   
-	numRows             	3                   
-	rawDataSize         	3                   
+	numRows             	0                   
+	rawDataSize         	0                   
 	totalSize           	6                   
 #### A masked pattern was here ####
 	 	 

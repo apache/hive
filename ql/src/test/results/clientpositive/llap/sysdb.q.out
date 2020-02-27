@@ -813,6 +813,8 @@ scheduled_executions	start_time
 scheduled_executions	start_time
 scheduled_executions	state
 scheduled_executions	state
+scheduled_queries	active_execution_id
+scheduled_queries	active_execution_id
 scheduled_queries	cluster_namespace
 scheduled_queries	cluster_namespace
 scheduled_queries	enabled
@@ -1069,8 +1071,8 @@ POSTHOOK: Input: sys@columns_v2
 a	decimal(10,2)	0
 acquired_at	string	9
 action_expression	string	4
-add_time	int	1
-agent_info	string	6
+active_execution_id	bigint	8
+active_execution_id	bigint	8
 PREHOOK: query: select param_key, param_value from database_params order by param_key, param_value limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@database_params
@@ -1419,9 +1421,9 @@ POSTHOOK: Input: sys@table_params
 #### A masked pattern was here ####
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true","c":"true","d":"true","e":"true","f":"true","g":"true"}}
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"action_expression":"true","name":"true","ns":"true","rp_name":"true","trigger_expression":"true"}}
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"active_execution_id":"true","cluster_namespace":"true","enabled":"true","next_execution":"true","query":"true","schedule":"true","schedule_name":"true","scheduled_query_id":"true","user":"true"}}
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"add_time":"true","grant_option":"true","grantor":"true","grantor_type":"true","principal_name":"true","principal_type":"true","role_grant_id":"true","role_id":"true"}}
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"alloc_fraction":"true","ns":"true","path":"true","query_parallelism":"true","rp_name":"true","scheduling_policy":"true"}}
-COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"authorizer":"true","column_name":"true","create_time":"true","grant_option":"true","grantor":"true","grantor_type":"true","part_col_priv":"true","part_column_grant_id":"true","part_id":"true","principal_name":"true","principal_type":"true"}}
 PREHOOK: query: select tbl_name from tbls order by tbl_name limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@tbls
@@ -1536,9 +1538,9 @@ POSTHOOK: Input: sys@table_stats_view
 #### A masked pattern was here ####
 {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true","c":"true","d":"true","e":"true","f":"true","g":"true"}}	0	0	0	0
 {"BASIC_STATS":"true","COLUMN_STATS":{"action_expression":"true","name":"true","ns":"true","rp_name":"true","trigger_expression":"true"}}	0	0	0	0
+{"BASIC_STATS":"true","COLUMN_STATS":{"active_execution_id":"true","cluster_namespace":"true","enabled":"true","next_execution":"true","query":"true","schedule":"true","schedule_name":"true","scheduled_query_id":"true","user":"true"}}	0	0	0	0
 {"BASIC_STATS":"true","COLUMN_STATS":{"add_time":"true","grant_option":"true","grantor":"true","grantor_type":"true","principal_name":"true","principal_type":"true","role_grant_id":"true","role_id":"true"}}	0	0	0	0
 {"BASIC_STATS":"true","COLUMN_STATS":{"alloc_fraction":"true","ns":"true","path":"true","query_parallelism":"true","rp_name":"true","scheduling_policy":"true"}}	0	0	0	0
-{"BASIC_STATS":"true","COLUMN_STATS":{"authorizer":"true","column_name":"true","create_time":"true","grant_option":"true","grantor":"true","grantor_type":"true","part_col_priv":"true","part_column_grant_id":"true","part_id":"true","principal_name":"true","principal_type":"true"}}	0	0	0	0
 PREHOOK: query: select COLUMN_STATS_ACCURATE, NUM_FILES, NUM_ROWS, RAW_DATA_SIZE, TOTAL_SIZE FROM PARTITION_STATS_VIEW where COLUMN_STATS_ACCURATE is not null order by NUM_FILES, NUM_ROWS, RAW_DATA_SIZE limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@partition_params
