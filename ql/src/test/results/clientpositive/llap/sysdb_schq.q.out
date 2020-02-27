@@ -125,7 +125,7 @@ POSTHOOK: query: select	scheduled_execution_id,
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@scheduled_executions
 #### A masked pattern was here ####
-1	1	INITED	true	NULL	NULL	true
+1	1	FINISHED	true	true	NULL	NULL
 PREHOOK: query: alter scheduled query asd disable
 PREHOOK: type: ALTER SCHEDULED QUERY
 POSTHOOK: query: alter scheduled query asd disable
