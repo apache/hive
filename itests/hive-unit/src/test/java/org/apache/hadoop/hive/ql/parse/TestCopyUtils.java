@@ -126,7 +126,7 @@ public class TestCopyUtils {
         .run("create table t1 (id int)")
         .run("insert into t1 values (1),(2),(3)")
         .run("insert into t1 values (11),(12),(13)")
-        .dump(primaryDbName, null);
+        .dump(primaryDbName);
 
     /*
       We have to do a comparision on the data of table t1 in replicated database because even though the file

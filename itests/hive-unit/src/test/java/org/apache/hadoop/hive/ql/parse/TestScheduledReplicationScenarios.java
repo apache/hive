@@ -22,12 +22,17 @@ import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
+import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
 import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryExecutionService;
 import org.apache.hadoop.hive.shims.Utils;
-import org.junit.*;
+import org.apache.hadoop.security.UserGroupInformation;
+import org.junit.Before;
+import org.junit.After;
+import org.junit.Test;
+import org.junit.BeforeClass;
 
-import java.io.IOException;
-import java.util.*;
+import java.util.Map;
+import java.util.HashMap;
 
 
 /**
@@ -43,6 +48,9 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
     overrides.put(HiveConf.ConfVars.HIVE_SCHEDULED_QUERIES_EXECUTOR_IDLE_SLEEP_TIME.varname, "1s");
     overrides.put(HiveConf.ConfVars.HIVE_SCHEDULED_QUERIES_EXECUTOR_PROGRESS_REPORT_INTERVAL.varname,
             "1s");
+    overrides.put(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname, "true");
+    overrides.put(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname,
+            UserGroupInformation.getCurrentUser().getUserName());
     internalBeforeClassSetup(overrides, TestScheduledReplicationScenarios.class);
   }
 
@@ -103,83 +111,41 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
             .run("insert into t1 values(2)");
     try (ScheduledQueryExecutionService schqS =
                  ScheduledQueryExecutionService.startScheduledQueryExecutorService(primary.hiveConf)) {
-
-    primary.run("create scheduled query s1 every 2 seconds as repl dump " + primaryDbName);
-
-    Thread.sleep(6000);
-    Path dumpRoot = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPLDIR), "next");
-    replica.load(replicatedDbName, dumpRoot.toString());
-    replica.run("use " + replicatedDbName)
-            .run("show tables like 't1'")
-            .verifyResult("t1")
-            .run("select id from t1 order by id")
-            .verifyResults(new String[]{"1", "2"});
+      int next = 0;
+      ReplDumpWork.injectNextDumpDirForTest(String.valueOf(next));
+      primary.run("create scheduled query s1 every 10 minutes as repl dump " + primaryDbName);
+      primary.run("alter scheduled query s1 execute");
+      Thread.sleep(6000);
+      Path dumpRoot = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPLDIR), primaryDbName.toLowerCase());
+      Path currdumpRoot = new Path(dumpRoot, String.valueOf(next));
+      replica.load(replicatedDbName, currdumpRoot.toString());
+      replica.run("use " + replicatedDbName)
+              .run("show tables like 't1'")
+              .verifyResult("t1")
+              .run("select id from t1 order by id")
+              .verifyResults(new String[]{"1", "2"});
 
     // First incremental, after bootstrap
 
-//    primary.run("use " + primaryDbName)
-//            .run("insert into t1 values(3)")
-//            .run("insert into t1 values(4)");
-//    Thread.sleep(4000);
-//
-//    dumpRoot = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPLDIR), "next");
-//    replica.load(replicatedDbName, dumpRoot.toString());
-//    replica.run("use " + replicatedDbName)
-//            .run("show tables like 't1'")
-//            .verifyResult("t1")
-//            .run("select id from t1 order by id")
-//            .verifyResults(new String[]{"1", "2", "3", "4"});
+      primary.run("use " + primaryDbName)
+            .run("insert into t1 values(3)")
+            .run("insert into t1 values(4)");
+      next++;
+      ReplDumpWork.injectNextDumpDirForTest(String.valueOf(next));
+      primary.run("alter scheduled query s1 execute");
+      Thread.sleep(20000);
+      Path incrdumpRoot = new Path(dumpRoot, String.valueOf(next));
+      replica.load(replicatedDbName, incrdumpRoot.toString());
+      replica.run("use " + replicatedDbName)
+              .run("show tables like 't1'")
+              .verifyResult("t1")
+              .run("select id from t1 order by id")
+              .verifyResults(new String[]{"1", "2", "3", "4"})
+              .run("drop table t1");
 
 
-    } catch (IOException | InterruptedException e) {
-      e.printStackTrace();
     } finally {
       primary.run("drop scheduled query s1");
-    }
-  }
-
-  @Test
-  public void testExternalTablesBootstrapIncr() throws Throwable {
-        // Bootstrap
-     primary.run("use " + primaryDbName)
-             .run("create external table extt1 (id int)")
-             .run("insert into extt1 values(1)")
-             .run("insert into extt1 values(2)");
-     try (ScheduledQueryExecutionService schqS =
-                     ScheduledQueryExecutionService.startScheduledQueryExecutorService(primary.hiveConf)) {
-
-        primary.run("create scheduled query s1 every 2 seconds as repl dump " + primaryDbName);
-
-        Thread.sleep(6000);
-        Path dumpRoot = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPLDIR), "next");
-        replica.load(replicatedDbName, dumpRoot.toString());
-        replica.run("use " + replicatedDbName)
-                .run("show tables like 'extt1'")
-                .verifyResult("extt1")
-                .run("select id from extt1 order by id")
-                .verifyResults(new String[]{"1", "2"});
-
-        // First incremental, after bootstrap
-
-//        primary.run("use " + primaryDbName)
-//                .run("insert into t1 values(3)")
-//                .run("insert into t1 values(4)");
-//        Thread.sleep(4000);
-//
-//        dumpRoot = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPLDIR), "next");
-//        replica.load(replicatedDbName, dumpRoot.toString());
-//        replica.run("use " + replicatedDbName)
-//                .run("show tables like 't1'")
-//                .verifyResult("t1")
-//                .run("select id from t1 order by id")
-//                .verifyResults(new String[]{"1", "2", "3", "4"});
-
-
-
-    } catch (IOException | InterruptedException e) {
-        e.printStackTrace();
-    } finally {
-        primary.run("drop scheduled query s1");
     }
   }
 }

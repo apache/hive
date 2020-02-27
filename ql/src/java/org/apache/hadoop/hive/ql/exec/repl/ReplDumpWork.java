@@ -32,30 +32,23 @@ public class ReplDumpWork implements Serializable {
   final ReplScope replScope;
   final ReplScope oldReplScope;
   final String dbNameOrPattern, astRepresentationForErrorMsg, resultTempPath;
-  final Long eventFrom;
   Long eventTo;
-  private Integer maxEventLimit;
+  Long eventFrom;
   static String testInjectDumpDir = null;
+  private Integer maxEventLimit;
 
   public static void injectNextDumpDirForTest(String dumpDir) {
     testInjectDumpDir = dumpDir;
   }
 
   public ReplDumpWork(ReplScope replScope, ReplScope oldReplScope,
-                      Long eventFrom, Long eventTo, String astRepresentationForErrorMsg, Integer maxEventLimit,
+                      String astRepresentationForErrorMsg,
                       String resultTempPath) {
     this.replScope = replScope;
     this.oldReplScope = oldReplScope;
     this.dbNameOrPattern = replScope.getDbName();
-    this.eventFrom = eventFrom;
-    this.eventTo = eventTo;
     this.astRepresentationForErrorMsg = astRepresentationForErrorMsg;
-    this.maxEventLimit = maxEventLimit;
     this.resultTempPath = resultTempPath;
-  }
-
-  boolean isBootStrapDump() {
-    return eventFrom == null;
   }
 
   int maxEventLimit() throws Exception {
@@ -69,6 +62,10 @@ public class ReplDumpWork implements Serializable {
     return maxEventLimit;
   }
 
+  void setEventFrom(long eventId) {
+    eventFrom = eventId;
+  }
+
   // Override any user specification that changes the last event to be dumped.
   void overrideLastEventToDump(Hive fromDb, long bootstrapLastId) throws Exception {
     // If we are bootstrapping ACID tables, we need to dump all the events upto the event id at
@@ -77,7 +74,6 @@ public class ReplDumpWork implements Serializable {
     // bootstrampDump() for more details.
     if (bootstrapLastId > 0) {
       eventTo = bootstrapLastId;
-      maxEventLimit = null;
       LoggerFactory.getLogger(this.getClass())
               .debug("eventTo restricted to event id : {} because of bootstrap of ACID tables",
                       eventTo);
