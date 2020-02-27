@@ -102,7 +102,7 @@ POSTHOOK: query: select
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@scheduled_queries
 #### A masked pattern was here ####
-4	asd	true	hive	* * * * * ? *	hive_admin_user	select 1	true
+1	asd	true	hive	* * * * * ? *	hive_admin_user	select 1	true
 PREHOOK: query: select	scheduled_execution_id,
 	scheduled_query_id,
 	state,
@@ -125,7 +125,7 @@ POSTHOOK: query: select	scheduled_execution_id,
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@scheduled_executions
 #### A masked pattern was here ####
-4	4	INITED	true	NULL	NULL	true
+1	1	INITED	true	NULL	NULL	true
 PREHOOK: query: alter scheduled query asd disable
 PREHOOK: type: ALTER SCHEDULED QUERY
 POSTHOOK: query: alter scheduled query asd disable
