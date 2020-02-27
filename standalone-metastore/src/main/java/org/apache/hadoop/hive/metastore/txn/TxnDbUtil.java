@@ -175,6 +175,9 @@ public final class TxnDbUtil {
           " CC_META_INFO varchar(2048) for bit data," +
           " CC_HADOOP_JOB_ID varchar(32))");
 
+      stmt.execute("CREATE INDEX COMPLETED_COMPACTIONS_RES ON COMPLETED_COMPACTIONS ("
+          + "CC_DATABASE,CC_TABLE,CC_PARTITION)");
+
       stmt.execute("CREATE TABLE AUX_TABLE (" +
         " MT_KEY1 varchar(128) NOT NULL," +
         " MT_KEY2 bigint NOT NULL," +
