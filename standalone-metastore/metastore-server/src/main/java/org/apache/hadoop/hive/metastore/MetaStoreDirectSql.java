@@ -1217,6 +1217,7 @@ class MetaStoreDirectSql {
         params.add(nodeValue);
       }
 
+      // The following syntax is required for using LIKE clause wildcards '_' and '%' as literals.
       if (node.operator == Operator.LIKE) {
         nodeValue0 = nodeValue0 + " ESCAPE '\\' ";
       }
