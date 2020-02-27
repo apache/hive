@@ -274,7 +274,7 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [5, 6, 7, 8, 9, 10, 11, 12, 0, 1, 3, 13, 14, 15, 16, 17]
                         selectExpressions: VectorUDFUnixTimeStampTimestamp(col 1:timestamp) -> 5:bigint, VectorUDFYearTimestamp(col 1:timestamp, field YEAR) -> 6:int, VectorUDFMonthTimestamp(col 1:timestamp, field MONTH) -> 7:int, VectorUDFDayOfMonthTimestamp(col 1:timestamp, field DAY_OF_MONTH) -> 8:int, VectorUDFWeekOfYearTimestamp(col 1:timestamp, field WEEK_OF_YEAR) -> 9:int, VectorUDFHourTimestamp(col 1:timestamp, field HOUR_OF_DAY) -> 10:int, VectorUDFMinuteTimestamp(col 1:timestamp, field MINUTE) -> 11:int, VectorUDFSecondTimestamp(col 1:timestamp, field SECOND) -> 12:int, IfExprTimestampColumnScalar(col 0:boolean, col 1:timestamp, val 1319-01-25 08:31:57.778) -> 13:timestamp, IfExprTimestampScalarColumn(col 0:boolean, val 2000-12-18 00:42:30.0005, col 1:timestamp) -> 14:timestamp, IfExprTimestampColumnColumn(col 0:boolean, col 1:timestampcol 3:timestamp) -> 15:timestamp, IfExprColumnNull(col 0:boolean, col 1:timestamp, null)(children: col 0:boolean, col 1:timestamp) -> 16:timestamp, IfExprNullColumn(col 0:boolean, null, col 3)(children: col 0:boolean, col 3:timestamp) -> 17:timestamp
-                    Statistics: Num rows: 52 Data size: 16436 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 52 Data size: 11916 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: bigint)
                       null sort order: z
@@ -283,7 +283,7 @@ STAGE PLANS:
                           className: VectorReduceSinkObjectHashOperator
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      Statistics: Num rows: 52 Data size: 16436 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 52 Data size: 11916 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: int), _col2 (type: int), _col3 (type: int), _col5 (type: int), _col6 (type: int), _col7 (type: int), _col8 (type: int), _col9 (type: boolean), _col10 (type: timestamp), _col11 (type: timestamp), _col12 (type: timestamp), _col13 (type: timestamp), _col14 (type: timestamp), _col15 (type: timestamp), _col16 (type: timestamp)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -312,13 +312,13 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0, 1, 2, 3, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
-                Statistics: Num rows: 52 Data size: 16436 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 52 Data size: 11916 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 52 Data size: 16436 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 52 Data size: 11916 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

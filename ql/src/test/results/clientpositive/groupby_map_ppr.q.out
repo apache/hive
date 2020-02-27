@@ -57,13 +57,13 @@ STAGE PLANS:
                 minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 500 Data size: 192000 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 500 Data size: 93500 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: string)
                   null sort order: zz
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 500 Data size: 192000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 500 Data size: 93500 Basic stats: COMPLETE Column stats: COMPLETE
                   tag: -1
                   value expressions: _col3 (type: double)
                   auto parallelism: false
@@ -178,17 +178,17 @@ STAGE PLANS:
           keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 316 Data size: 63200 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 316 Data size: 31916 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: _col0 (type: string), UDFToInteger(_col1) (type: int), concat(_col0, _col2) (type: string)
             outputColumnNames: _col0, _col1, _col2
-            Statistics: Num rows: 316 Data size: 117552 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 316 Data size: 86268 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
               GlobalTableId: 1
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
-              Statistics: Num rows: 316 Data size: 117552 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 316 Data size: 86268 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -219,7 +219,7 @@ STAGE PLANS:
             Select Operator
               expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string)
               outputColumnNames: key, c1, c2
-              Statistics: Num rows: 316 Data size: 117552 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 316 Data size: 86268 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
                 aggregations: compute_stats(key, 'hll'), compute_stats(c1, 'hll'), compute_stats(c2, 'hll')
                 minReductionHashAggr: 0.99
