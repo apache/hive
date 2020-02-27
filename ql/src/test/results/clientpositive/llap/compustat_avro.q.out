@@ -12,7 +12,7 @@ PREHOOK: query: create table testAvro
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@testAvro
+PREHOOK: Output: default@testavro
 POSTHOOK: query: create table testAvro
    ROW FORMAT SERDE
      'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
@@ -23,7 +23,7 @@ POSTHOOK: query: create table testAvro
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@testAvro
+POSTHOOK: Output: default@testavro
 PREHOOK: query: describe formatted testAvro col1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@testavro

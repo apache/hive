@@ -20,14 +20,14 @@ PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Input: hdfs://### HDFS PATH ###
 PREHOOK: Output: database:testct
-PREHOOK: Output: testCT@encrypted_tablectas
+PREHOOK: Output: testct@encrypted_tablectas
 #### A masked pattern was here ####
 AS SELECT * from src where key = 100 limit 1
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Input: hdfs://### HDFS PATH ###
 POSTHOOK: Output: database:testct
-POSTHOOK: Output: testCT@encrypted_tablectas
+POSTHOOK: Output: testct@encrypted_tablectas
 PREHOOK: query: select * from testCT.encrypted_tablectas
 PREHOOK: type: QUERY
 PREHOOK: Input: testct@encrypted_tablectas

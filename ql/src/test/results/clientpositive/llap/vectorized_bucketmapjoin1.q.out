@@ -32,28 +32,28 @@ PREHOOK: query: create table vsmb_bucket_RC(key int, value string)
   STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@vsmb_bucket_RC
+PREHOOK: Output: default@vsmb_bucket_rc
 POSTHOOK: query: create table vsmb_bucket_RC(key int, value string) 
   CLUSTERED BY (key) 
   SORTED BY (key) INTO 1 BUCKETS 
   STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@vsmb_bucket_RC
+POSTHOOK: Output: default@vsmb_bucket_rc
 PREHOOK: query: create table vsmb_bucket_TXT(key int, value string) 
   CLUSTERED BY (key) 
   SORTED BY (key) INTO 1 BUCKETS 
   STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@vsmb_bucket_TXT
+PREHOOK: Output: default@vsmb_bucket_txt
 POSTHOOK: query: create table vsmb_bucket_TXT(key int, value string) 
   CLUSTERED BY (key) 
   SORTED BY (key) INTO 1 BUCKETS 
   STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@vsmb_bucket_TXT
+POSTHOOK: Output: default@vsmb_bucket_txt
 PREHOOK: query: insert into table vsmb_bucket_1 select cint, cstring1 from alltypesorc limit 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc

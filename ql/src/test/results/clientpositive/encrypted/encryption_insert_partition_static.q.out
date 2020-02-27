@@ -12,26 +12,26 @@ PREHOOK: query: create table encryptedTable(key string,
 PREHOOK: type: CREATETABLE
 PREHOOK: Input: hdfs://### HDFS PATH ###
 PREHOOK: Output: database:default
-PREHOOK: Output: default@encryptedTable
+PREHOOK: Output: default@encryptedtable
 POSTHOOK: query: create table encryptedTable(key string,
     value string) partitioned by (ds string) clustered by (key) into 2 buckets stored as orc
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Input: hdfs://### HDFS PATH ###
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@encryptedTable
+POSTHOOK: Output: default@encryptedtable
 Encryption key created: 'key_1'
 Encryption zone created: '/build/ql/test/data/warehouse/encryptedTable' using key: 'key_1'
 PREHOOK: query: create table unencryptedTable(key string,
     value string) partitioned by (ds string) clustered by (key) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@unencryptedTable
+PREHOOK: Output: default@unencryptedtable
 POSTHOOK: query: create table unencryptedTable(key string,
     value string) partitioned by (ds string) clustered by (key) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@unencryptedTable
+POSTHOOK: Output: default@unencryptedtable
 PREHOOK: query: insert into table encryptedTable partition
     (ds='today') values
     ('501', 'val_501'),

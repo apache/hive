@@ -8,12 +8,12 @@ ROW FORMAT DELIMITED
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DECIMAL_PRECISION
+PREHOOK: Output: default@decimal_precision
 POSTHOOK: query: CREATE TABLE DECIMAL_PRECISION(`dec` decimal) 
 ROW FORMAT DELIMITED
    FIELDS TERMINATED BY ' '
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DECIMAL_PRECISION
+POSTHOOK: Output: default@decimal_precision
 FAILED: SemanticException [Error 10029]: Line 3:15 Invalid numerical constant '123456789012345678901234567890.123456789bd'

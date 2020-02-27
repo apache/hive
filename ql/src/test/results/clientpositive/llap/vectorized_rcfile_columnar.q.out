@@ -6,7 +6,7 @@ STORED AS
   OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileOutputFormat'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@columnTable_n0
+PREHOOK: Output: default@columntable_n0
 POSTHOOK: query: CREATE table columnTable_n0 (key STRING, value STRING)
 ROW FORMAT SERDE
   'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
@@ -15,7 +15,7 @@ STORED AS
   OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileOutputFormat'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@columnTable_n0
+POSTHOOK: Output: default@columntable_n0
 PREHOOK: query: FROM src
 INSERT OVERWRITE TABLE columnTable_n0 SELECT src.key, src.value ORDER BY src.key, src.value LIMIT 10
 PREHOOK: type: QUERY

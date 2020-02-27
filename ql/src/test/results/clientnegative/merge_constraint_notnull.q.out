@@ -22,13 +22,13 @@ clustered by (value) into 2 buckets stored as orc
 tblproperties ("transactional"="true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@testT
+PREHOOK: Output: default@testt
 POSTHOOK: query: create table testT (key int NOT NULL enable, a1 string NOT NULL enforced, value string)
 clustered by (value) into 2 buckets stored as orc
 tblproperties ("transactional"="true")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@testT
+POSTHOOK: Output: default@testt
 PREHOOK: query: insert into testT values(2,'a1masking', 'valuemasking')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table

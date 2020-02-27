@@ -1,11 +1,11 @@
 PREHOOK: query: CREATE TABLE testTable(col1 INT, col2 INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@testTable
+PREHOOK: Output: default@testtable
 POSTHOOK: query: CREATE TABLE testTable(col1 INT, col2 INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@testTable
+POSTHOOK: Output: default@testtable
 PREHOOK: query: ALTER TABLE testTable SET TBLPROPERTIES ('a'='1', 'c'='3')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@testtable

@@ -1,11 +1,11 @@
 PREHOOK: query: create table Part1 (PNum int, OrderOnHand int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@Part1
+PREHOOK: Output: default@part1
 POSTHOOK: query: create table Part1 (PNum int, OrderOnHand int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@Part1
+POSTHOOK: Output: default@part1
 PREHOOK: query: insert into Part1 values (3,6),(10,1),(8,0)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -19,11 +19,11 @@ POSTHOOK: Lineage: part1.pnum SCRIPT []
 PREHOOK: query: create table Supply (PNum int, Qty int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@Supply
+PREHOOK: Output: default@supply
 POSTHOOK: query: create table Supply (PNum int, Qty int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@Supply
+POSTHOOK: Output: default@supply
 PREHOOK: query: insert into Supply values (3,4),(3,2),(10,1)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
