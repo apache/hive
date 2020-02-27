@@ -290,3 +290,4 @@ POSTHOOK: query: select state,error_message from sys.scheduled_executions
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@scheduled_executions
 #### A masked pattern was here ####
+INITED	NULL

@@ -1384,7 +1384,7 @@ POSTHOOK: query: select count(*) from skewed_string_list
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@skewed_string_list
 #### A masked pattern was here ####
-3
+6
 PREHOOK: query: select count(*) from skewed_string_list_values
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@skewed_string_list_values
@@ -1393,7 +1393,7 @@ POSTHOOK: query: select count(*) from skewed_string_list_values
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@skewed_string_list_values
 #### A masked pattern was here ####
-3
+6
 PREHOOK: query: select count(*) from skewed_values
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@skewed_values
