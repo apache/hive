@@ -120,9 +120,5 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t
 #### A masked pattern was here ####
 1	1
-1	1
-1	1
 2	2
-2	2
-3	3
 3	3

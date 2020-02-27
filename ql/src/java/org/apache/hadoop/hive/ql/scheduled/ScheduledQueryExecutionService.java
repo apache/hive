@@ -164,6 +164,7 @@ public class ScheduledQueryExecutionService implements Closeable {
     }
 
     private void processQuery(ScheduledQueryPollResponse q) {
+      LOG.info("Executing schq:{}, executionId: {}", q.getScheduleKey().getScheduleName(), q.getExecutionId());
       SessionState state = null;
       info = new ScheduledQueryProgressInfo();
       info.setScheduledExecutionId(q.getExecutionId());
