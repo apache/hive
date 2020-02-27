@@ -247,12 +247,14 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     return mjCacheKey;
   }
 
-  // Is Single Key MapJoin of Long type
+  // Is Single Key MapJoin of Number(Long/Int/Short) type
   private static boolean validProbeDecodeMapJoin(Operator mapJoinOp) {
     if (mapJoinOp instanceof VectorMapJoinCommonOperator) {
       VectorMapJoinDesc vectorMapJoinDesc = (VectorMapJoinDesc) ((VectorMapJoinCommonOperator) mapJoinOp).getVectorDesc();
-      return (vectorMapJoinDesc.getHashTableKeyType() == VectorMapJoinDesc.HashTableKeyType.LONG) &&
-          (vectorMapJoinDesc.getVectorMapJoinInfo().getBigTableKeyColumnMap().length == 1);
+      return (vectorMapJoinDesc.getVectorMapJoinInfo().getBigTableKeyColumnMap().length == 1) &&
+          (vectorMapJoinDesc.getHashTableKeyType() == VectorMapJoinDesc.HashTableKeyType.LONG  ||
+           vectorMapJoinDesc.getHashTableKeyType() == VectorMapJoinDesc.HashTableKeyType.SHORT ||
+           vectorMapJoinDesc.getHashTableKeyType() == VectorMapJoinDesc.HashTableKeyType.INT);
     }
     return false;
   }
