@@ -102,6 +102,7 @@ public class TestScheduledQueryService {
   public static class MockScheduledQueryService implements IScheduledQueryMaintenanceService {
     // Use notify/wait on this object to indicate when the scheduled query has finished executing.
     Object notifier = new Object();
+    Object polled = new Object();
 
     int id = 0;
     private String stmt;
@@ -113,6 +114,9 @@ public class TestScheduledQueryService {
 
     @Override
     public ScheduledQueryPollResponse scheduledQueryPoll() {
+      synchronized (polled) {
+        polled.notifyAll();
+      }
 
       ScheduledQueryPollResponse r = new ScheduledQueryPollResponse();
       r.setExecutionId(id++);
@@ -154,6 +158,9 @@ public class TestScheduledQueryService {
     MockScheduledQueryService qService = new MockScheduledQueryService("insert into tu values(1),(2),(3),(4),(5)");
     ScheduledQueryExecutionContext ctx = new ScheduledQueryExecutionContext(executor, conf, qService);
     try (ScheduledQueryExecutionService sQ = ScheduledQueryExecutionService.startScheduledQueryExecutorService(ctx)) {
+      synchronized (qService.polled) {
+        qService.polled.wait(1000);
+      }
 
       executor.shutdown();
       // Wait for the scheduled query to finish. Hopefully 30 seconds should be more than enough.
