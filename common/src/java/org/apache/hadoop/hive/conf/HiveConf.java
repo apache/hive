@@ -2468,6 +2468,9 @@ public class HiveConf extends Configuration {
     HIVE_STATS_NDV_ERROR("hive.stats.ndv.error", (float)20.0,
         "Standard error expressed in percentage. Provides a tradeoff between accuracy and compute cost. \n" +
         "A lower value for error indicates higher accuracy and a higher compute cost."),
+    HIVE_STATS_ESTIMATORS_ENABLE("hive.stats.estimators.enable", true,
+        "Estimators are able to provide more accurate column statistic infos for UDF results."),
+
     /**
      * @deprecated Use MetastoreConf.STATS_NDV_TUNER
      */
