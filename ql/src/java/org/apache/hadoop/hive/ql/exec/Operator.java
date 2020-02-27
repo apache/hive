@@ -904,6 +904,9 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     if (getDone()) {
       return;
     }
+    // Investigate why selectedInUse is not propagated!!
+    if (batch.size != 0 && batch.selected != null && (batch.selected[batch.size - 1] != 0 || (batch.size == 1 && (batch.selected[0] == 0))))
+      batch.selectedInUse = true;
 
     // Data structures to store original values
     final int size = batch.size;

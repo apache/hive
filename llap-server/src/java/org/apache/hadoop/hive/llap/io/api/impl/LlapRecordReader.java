@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.llap.counters.FragmentCountersMap;
 import org.apache.hadoop.hive.llap.counters.LlapIOCounters;
 import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
 import org.apache.hadoop.hive.llap.daemon.impl.StatsRecordingThreadPool;
+import org.apache.hadoop.hive.llap.io.decode.ColumnVectorBatchWrapper;
 import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer;
 import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer.Includes;
 import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer.SchemaEvolutionFactory;
@@ -80,7 +81,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
-class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>, Consumer<ColumnVectorBatch> {
+class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>, Consumer<ColumnVectorBatchWrapper> {
 
   private static final Logger LOG = LoggerFactory.getLogger(LlapRecordReader.class);
   private static final Object DONE_OBJECT = new Object();
@@ -97,13 +98,13 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
   private final AtomicReference<Throwable> pendingError = new AtomicReference<>(null);
 
   /** Vector that is currently being processed by our user. */
-  private ColumnVectorBatch lastCvb = null;
+  private ColumnVectorBatchWrapper lastCvb = null;
   private boolean isFirst = true;
   private int maxQueueSize = 0;
 
   private volatile boolean isClosed = false;
   private volatile boolean isInterrupted = false;
-  private final ConsumerFeedback<ColumnVectorBatch> feedback;
+  private final ConsumerFeedback<ColumnVectorBatchWrapper> feedback;
   private final QueryFragmentCounters counters;
   private long firstReturnTime;
 
@@ -223,6 +224,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     VectorMapJoinCommonOperator vop = null;
     String mjCacheKey = null;
     int colIndex = 0;
+    String colName = null;
     while (!opStack.empty()) {
       Operator<?> op = opStack.pop();
       if (op instanceof MapJoinOperator && noDynamicPruningMapJoin(op) && validProbeDecodeMapJoin(op)) {
@@ -231,7 +233,9 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
         mjCacheKey = vop.getCacheKey() != null ? vop.getCacheKey(): MapJoinDesc.generateCacheKey(op.getOperatorId());
         ((VectorMapJoinCommonOperator) op).getVectorMapJoinHashTable();
         colIndex = ((VectorMapJoinDesc)((VectorMapJoinCommonOperator) op).getVectorDesc()).getVectorMapJoinInfo().getBigTableKeyColumnMap()[0];
-        job.setInt(ConfVars.HIVE_MAPJOIN_PROBEDECODE_COLKEY.varname, colIndex);
+        job.setInt(ConfVars.HIVE_MAPJOIN_PROBEDECODE_COLID.varname, colIndex);
+        colName = vop.getInputVectorizationContext().getInitialColumnNames().get(colIndex);
+        job.set(ConfVars.HIVE_MAPJOIN_PROBEDECODE_COLNAME.varname, colName);
       }
       if (op.getChildOperators() != null) {
         opStack.addAll(op.getChildOperators());
@@ -239,7 +243,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     }
     if (mjCacheKey != null) {
       LOG.info("ProbeDecode found MapJoin op {}  with CacheKey {} MapJoin ColID {} and ColName {}", vop.getName(), mjCacheKey,
-          colIndex, vop.getInputVectorizationContext().getInitialColumnNames().get(colIndex));
+          colIndex, colName);
     }
     return mjCacheKey;
   }
@@ -421,7 +425,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
       }
       isFirst = false;
     }
-    ColumnVectorBatch cvb;
+    ColumnVectorBatchWrapper cvb;
     try {
       cvb = nextCvb();
     } catch (InterruptedException e) {
@@ -455,14 +459,20 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
             //so +1 is the OrcRecordUpdater.ROW?
             acidColCount + 1 + vrb.getDataColumnCount());
         // By assumption, ACID columns are currently always in the beginning of the arrays.
-        System.arraycopy(cvb.cols, 0, inputVrb.cols, 0, acidColCount);
-        for (int ixInReadSet = acidColCount; ixInReadSet < cvb.cols.length; ++ixInReadSet) {
+        System.arraycopy(cvb.getCvb().cols, 0, inputVrb.cols, 0, acidColCount);
+        for (int ixInReadSet = acidColCount; ixInReadSet < cvb.getCvb().cols.length; ++ixInReadSet) {
           int ixInVrb = includes.getPhysicalColumnIds().get(ixInReadSet) -
               (acidReader.includeAcidColumns() ? 0 : OrcRecordUpdater.ROW);
           // TODO: should we create the batch from vrbctx, and reuse the vectors, like below? Future work.
-          inputVrb.cols[ixInVrb] = cvb.cols[ixInReadSet];
+          inputVrb.cols[ixInVrb] = cvb.getCvb().cols[ixInReadSet];
         }
-        inputVrb.size = cvb.size;
+        if (cvb.isSelectedInUse()) {
+          inputVrb.size = cvb.getSelectedSize();
+          inputVrb.selected = cvb.getSelected();
+        } else {
+//          vrb.selectedInUse = false;
+          inputVrb.size = cvb.getCvb().size;
+        }
         acidReader.setBaseAndInnerReader(new AcidWrapper(inputVrb));
         acidReader.next(NullWritable.get(), vrb);
       } else {
@@ -470,19 +480,24 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
         throw new AssertionError("Unsupported mode");
       }
     } else {
-      if (includes.getPhysicalColumnIds().size() != cvb.cols.length) {
+      if (includes.getPhysicalColumnIds().size() != cvb.getCvb().cols.length) {
         throw new RuntimeException("Unexpected number of columns, VRB has "
             + includes.getPhysicalColumnIds().size() + " included, but the reader returned "
-            + cvb.cols.length);
+            + cvb.getCvb().cols.length);
       }
       // VRB was created from VrbCtx, so we already have pre-allocated column vectors.
       // Return old CVs (if any) to caller. We assume these things all have the same schema.
-      for (int ixInReadSet = 0; ixInReadSet < cvb.cols.length; ++ixInReadSet) {
+      for (int ixInReadSet = 0; ixInReadSet < cvb.getCvb().cols.length; ++ixInReadSet) {
         int ixInVrb = includes.getPhysicalColumnIds().get(ixInReadSet);
-        cvb.swapColumnVector(ixInReadSet, vrb.cols, ixInVrb);
+        cvb.getCvb().swapColumnVector(ixInReadSet, vrb.cols, ixInVrb);
       }
-      vrb.selectedInUse = false;//why?
-      vrb.size = cvb.size;
+      if (cvb.isSelectedInUse()) {
+        vrb.size = cvb.getSelectedSize();
+        vrb.selected = cvb.getSelected();
+      } else {
+        vrb.selectedInUse = false; //why?
+        vrb.size = cvb.getCvb().size;
+      }
     }
 
     if (wasFirst) {
@@ -546,7 +561,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     }
   }
 
-  ColumnVectorBatch nextCvb() throws InterruptedException, IOException {
+  ColumnVectorBatchWrapper nextCvb() throws InterruptedException, IOException {
     boolean isFirst = (lastCvb == null);
     if (!isFirst) {
       feedback.returnData(lastCvb);
@@ -578,7 +593,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
       rethrowErrorIfAny((Throwable) next);
       throw new AssertionError("Unreachable");
     }
-    lastCvb = (ColumnVectorBatch) next;
+    lastCvb = (ColumnVectorBatchWrapper) next;
     if (LlapIoImpl.LOG.isTraceEnabled()) {
       LlapIoImpl.LOG.trace("Processing will receive vector {}", lastCvb);
     }
@@ -635,7 +650,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
   }
 
   @Override
-  public void consumeData(ColumnVectorBatch data) throws InterruptedException {
+  public void consumeData(ColumnVectorBatchWrapper data) throws InterruptedException {
     if (LlapIoImpl.LOG.isTraceEnabled()) {
       LlapIoImpl.LOG.trace("consume called; closed {}, interrupted {}, err {}, pending {}",
           isClosed, isInterrupted, pendingError.get(), queue.size());

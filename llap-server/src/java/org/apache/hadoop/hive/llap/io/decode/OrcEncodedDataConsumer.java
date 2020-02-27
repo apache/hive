@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import com.google.common.primitives.Longs;
 import org.apache.commons.lang3.tuple.Pair;
@@ -91,11 +93,13 @@ public class OrcEncodedDataConsumer
   private Boolean mapJoinProbeDecodeEnabled = false;
   private VectorMapJoinHashTable smallMapJoinTable = null;
   private ObjectCache cache = null;
-  private int probeDecodeColId = 0;
+  private String probeDecodeColName = null;
+  private int probeDecodeColIdx = -1;
   private short skippedRowCount = 0;
+//  private FilterLongColumnInList probeFilterVectorExpr = null;
 
 
-  public OrcEncodedDataConsumer(Consumer<ColumnVectorBatch> consumer, Includes includes, boolean skipCorrupt,
+  public OrcEncodedDataConsumer(Consumer<ColumnVectorBatchWrapper> consumer, Includes includes, boolean skipCorrupt,
       QueryFragmentCounters counters, LlapDaemonIOMetrics ioMetrics, Configuration conf) {
     super(consumer, includes.getPhysicalColumnIds().size(), ioMetrics, counters);
     this.includes = includes;
@@ -105,16 +109,43 @@ public class OrcEncodedDataConsumer
         this.includes.getProbeDecodeCacheKey() != null;
     if (this.mapJoinProbeDecodeEnabled) {
       // ColId to col index mapping
-      this.probeDecodeColId = includes.getReaderLogicalColumnIds().indexOf(HiveConf.
-          getIntVar(includes.getJobConf(), HiveConf.ConfVars.HIVE_MAPJOIN_PROBEDECODE_COLKEY));
+      this.probeDecodeColIdx = includes.getReaderLogicalColumnIds().indexOf(HiveConf.
+          getIntVar(includes.getJobConf(), HiveConf.ConfVars.HIVE_MAPJOIN_PROBEDECODE_COLID));
+      this.probeDecodeColName = HiveConf.getVar(includes.getJobConf(), HiveConf.ConfVars.HIVE_MAPJOIN_PROBEDECODE_COLNAME);
       this.cache = ObjectCacheFactory.getCache(conf, HiveConf.getVar(includes.getJobConf(), HiveConf.ConfVars.HIVEQUERYID), false);
     }
-    LlapIoImpl.LOG.info("OrcEncodedDataConsumer probeDecode enabled is {} with cacheKey {} and colIndex {}", mapJoinProbeDecodeEnabled,
-        this.includes.getProbeDecodeCacheKey(), this.probeDecodeColId);
+    LlapIoImpl.LOG.info("OrcEncodedDataConsumer probeDecode enabled is {} with cacheKey {} colIndex {} and colName {}", mapJoinProbeDecodeEnabled,
+        this.includes.getProbeDecodeCacheKey(), this.probeDecodeColIdx, this.probeDecodeColName);
+
+    if (this.mapJoinProbeDecodeEnabled) {
+      // Start periodic checker of hashTable
+      ExecutorService executorService = Executors.newFixedThreadPool(1);
+      executorService.execute(()->{
+        while (smallMapJoinTable == null) {
+          try {
+            // TODO: Check if we can get directly from operator
+            Pair<MapJoinTableContainer[], MapJoinTableContainerSerDe[]> smallTablePair = cache.retrieve(includes.getProbeDecodeCacheKey());
+            if (smallTablePair != null ) {
+              smallMapJoinTable = ((VectorMapJoinTableContainer) smallTablePair.getLeft()[smallTablePair.getLeft().length-1]).vectorMapJoinHashTable();
+              LlapIoImpl.LOG.info("ProbeDecode finally got HashTable of size {}", smallMapJoinTable.size());
+//              probeFilterVectorExpr = new FilterLongColumnInList(0);
+//              probeFilterVectorExpr.setInListValues(inList);
+//              probeFilterVectorExpr.setInputTypeInfos(new TypeInfo[] { TypeInfoFactory.longTypeInfo});
+            } else {
+              Thread.sleep(50);
+            }
+          } catch (HiveException e) {
+            e.printStackTrace();
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+          }
+        }
+      });
+    }
   }
 
   public OrcEncodedDataConsumer(
-    Consumer<ColumnVectorBatch> consumer, Includes includes, boolean skipCorrupt,
+    Consumer<ColumnVectorBatchWrapper> consumer, Includes includes, boolean skipCorrupt,
     QueryFragmentCounters counters, LlapDaemonIOMetrics ioMetrics) {
     super(consumer, includes.getPhysicalColumnIds().size(), ioMetrics, counters);
     this.includes = includes;
@@ -145,9 +176,8 @@ public class OrcEncodedDataConsumer
 
   @Override
   protected void decodeBatch(OrcEncodedColumnBatch batch,
-      Consumer<ColumnVectorBatch> downstreamConsumer) throws InterruptedException {
+      Consumer<ColumnVectorBatchWrapper> downstreamConsumer) throws InterruptedException {
     long startTime = counters.startTimeCounter();
-    long startDecodeTime = 0l;
     int currentStripeIndex = batch.getBatchKey().stripeIx;
 
     boolean sameStripe = currentStripeIndex == previousStripeIndex;
@@ -157,7 +187,6 @@ public class OrcEncodedDataConsumer
       // Get non null row count from root column, to get max vector batches
       int rgIdx = batch.getBatchKey().rgIx;
       long nonNullRowCount;
-      this.skippedRowCount = 0;
       boolean noIndex = false;
       if (rgIdx == OrcEncodedColumnBatch.ALL_RGS) {
         nonNullRowCount = stripeMetadata.getRowCount();
@@ -182,25 +211,11 @@ public class OrcEncodedDataConsumer
       }
       previousStripeIndex = currentStripeIndex;
 
-//      if (this.mapJoinProbeDecodeEnabled && columnReaders.length == 20) {
-//        LlapIoImpl.LOG.info("PANOS HERE Waiting...");
-//        Thread.sleep(300);
-//        LlapIoImpl.LOG.info("PANOS HERE Waiting...DONE!");
-//      }
-
-      // Check once per call
-      if (this.mapJoinProbeDecodeEnabled && smallMapJoinTable == null) {
-        try {
-          // TODO: Check if we can get directly from operator
-          Pair<MapJoinTableContainer[], MapJoinTableContainerSerDe[]> smallTablePair = cache.retrieve(includes.getProbeDecodeCacheKey());
-          if (smallTablePair != null ) {
-            smallMapJoinTable = ((VectorMapJoinTableContainer) smallTablePair.getLeft()[smallTablePair.getLeft().length-1]).vectorMapJoinHashTable();
-            LlapIoImpl.LOG.info("ProbeDecode finally got HashTable of size {}", smallMapJoinTable.size());
-          }
-        } catch (HiveException e) {
-          e.printStackTrace();
-        }
-      }
+//       if (this.mapJoinProbeDecodeEnabled && columnReaders.length == 20) {
+//         LlapIoImpl.LOG.info("PANOS HERE Waiting...");
+//         Thread.sleep(300);
+//         LlapIoImpl.LOG.info("PANOS HERE Waiting...DONE!");
+//       }
 
       // For every row group
       for (int i = 0; i < maxBatchesRG; i++) {
@@ -210,17 +225,17 @@ public class OrcEncodedDataConsumer
           if (batchSize == 0) break;
         }
 
-        ColumnVectorBatch cvb = cvbPool.take();
-        boolean [] skipRows = new boolean[batchSize];
+        ColumnVectorBatchWrapper cvbw = cvbPool.take();
+        cvbw.resetCnx();
         // assert cvb.cols.length == batch.getColumnIxs().length; // Must be constant per split.
-        cvb.size = batchSize;
+        cvbw.getCvb().size = batchSize;
         // for every column of the row group
         for (int idx = 0; idx < columnReaders.length; ++idx) {
           TreeReader reader = columnReaders[idx];
-          if (cvb.cols[idx] == null) {
+          if (cvbw.getCvb().cols[idx] == null) {
             // Orc store rows inside a root struct (hive writes it this way).
             // When we populate column vectors we skip over the root struct.
-            cvb.cols[idx] = createColumn(batchSchemas[idx], VectorizedRowBatch.DEFAULT_SIZE, useDecimal64ColumnVectors);
+            cvbw.getCvb().cols[idx] = createColumn(batchSchemas[idx], VectorizedRowBatch.DEFAULT_SIZE, useDecimal64ColumnVectors);
           }
           trace.logTreeReaderNextVector(idx);
 
@@ -259,57 +274,56 @@ public class OrcEncodedDataConsumer
            *     it doesn't get confused.
            *
            */
-          ColumnVector cv = cvb.cols[idx];
+          ColumnVector cv = cvbw.getCvb().cols[idx];
           cv.reset();
           cv.ensureSize(batchSize, false);
-          // EncodedTreeReader - not just TreeReader
-          reader.nextVector(cv, null, skipRows, batchSize);
           // if this is the probeKey Col and all rows are skipped -> skip decoding for the remaining batch columns
-          if ((idx == this.probeDecodeColId)) {
-            startDecodeTime = counters.startTimeCounter();
-            checkProbeDecode(cv, batchSize, Arrays.copyOf(skipRows, skipRows.length));
+          if ((idx == this.probeDecodeColIdx)) {
+            reader.nextVector(cv, null, batchSize);
+            HashTableRowFilterCallback(cvbw, idx, batchSize);
+          } else {
+            reader.getFilterContext().copyFilterContextFromOther(cvbw.getFilterContext());
+            reader.nextVector(cv, null, batchSize);
           }
         }
-        // we are done reading a batch, send it downstream for processing if not all Nulls!
-        if (skippedRowCount != batchSize) {
-          downstreamConsumer.consumeData(cvb);
-          counters.incrCounter(LlapIOCounters.ROWS_EMITTED, batchSize);
-        }
+        downstreamConsumer.consumeData(cvbw);
+        counters.incrCounter(LlapIOCounters.ROWS_EMITTED, batchSize);
+        counters.incrCounter(LlapIOCounters.NUM_DECODED_ROWS, cvbw.isSelectedInUse() ? cvbw.getSelectedSize() : batchSize);
       }
       LlapIoImpl.ORC_LOGGER.debug("Done with decode, skippedRows {} out of {} on {} Cols", skippedRowCount,
           nonNullRowCount, columnReaders.length);
       counters.incrWallClockCounter(LlapIOCounters.DECODE_TIME_NS, startTime);
-      counters.incrWallClockCounter(LlapIOCounters.PROBE_DECODE_TIME_NS, startDecodeTime);
       counters.incrCounter(LlapIOCounters.NUM_VECTOR_BATCHES, maxBatchesRG);
       counters.incrCounter(LlapIOCounters.NUM_DECODED_BATCHES);
-      counters.incrCounter(LlapIOCounters.NUM_DECODED_ROWS, (nonNullRowCount - skippedRowCount));
     } catch (IOException e) {
       // Caller will return the batch.
       downstreamConsumer.setError(e);
     }
   }
 
-  private boolean checkProbeDecode(ColumnVector cv, int batchSize, boolean[] skipRows) {
-    short skippedCount = 0;
-    if (this.mapJoinProbeDecodeEnabled && columnReaders.length > 1 && cv instanceof LongColumnVector
-        && this.smallMapJoinTable != null) {
-      // TODO: What about other ColumnVector types
-      LongColumnVector dcv = (LongColumnVector) cv;
-      for (int row = 0; row < batchSize; row++) {
-        // if dcv.vector[row] is in HashTable
-        if (!this.smallMapJoinTable.containsKey(Longs.toByteArray(dcv.vector[row]))) {
-          skipRows[row] = true;
-          this.skippedRowCount++;
+  // Filter out rows in a round-robbin fashion starting with a pass
+  public void HashTableRowFilterCallback(ColumnVectorBatchWrapper cvbw, int colIdx, int batchSize) {
+    long startDecodeTime = counters.startTimeCounter();
+    int[] selected = null;
+    int newSize = 0;
+    boolean selectedInUse = false;
+    if (this.smallMapJoinTable != null && cvbw.getCvb().cols[colIdx] instanceof LongColumnVector) {
+      LongColumnVector probeCol = (LongColumnVector) cvbw.getCvb().cols[colIdx];
+      selected = new int[batchSize];
+      for (int row = 0; row < batchSize; ++row) {
+        // Pass ony Valid key
+        if (this.smallMapJoinTable.containsKey(Longs.toByteArray(probeCol.vector[row]))) {
+          selected[newSize++] = row;
         }
       }
-      // Now done in the ORC level
-//      // Propagate skipRows values -> isNull to avoid probing again on the Join Side: i.e: used by the VectorMapJoinInnerLongOperator
-//      if (skippedCount > 0) {
-//        dcv.noNulls = false;
-//        System.arraycopy(skipRows, 0, dcv.isNull, 0, batchSize);
-//      }
+      // skip only if < 90% match
+      if (newSize <= (0.95 * batchSize)) {
+        selectedInUse = true;
+      }
     }
-    return (skippedCount == batchSize);
+//    LlapIoImpl.ORC_LOGGER.info("PANOS Matched: {}", tmp.toString() +"["+ newSize +"] selectedInUse "+ selectedInUse);
+    cvbw.setFilterContext(new TreeReaderFactory.FilterContext(selectedInUse, selected, newSize));
+    counters.incrWallClockCounter(LlapIOCounters.PROBE_DECODE_TIME_NS, startDecodeTime);
   }
 
   private void createColumnReaders(OrcEncodedColumnBatch batch,

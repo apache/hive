@@ -80,7 +80,7 @@ public class GenericColumnVectorProducer implements ColumnVectorProducer {
   }
 
   @Override
-  public ReadPipeline createReadPipeline(Consumer<ColumnVectorBatch> consumer, FileSplit split,
+  public ReadPipeline createReadPipeline(Consumer<ColumnVectorBatchWrapper> consumer, FileSplit split,
       Includes includes, SearchArgument sarg, QueryFragmentCounters counters,
       SchemaEvolutionFactory sef, InputFormat<?, ?> sourceInputFormat, Deserializer sourceSerDe,
       Reporter reporter, JobConf job, Map<Path, PartitionDesc> parts) throws IOException {

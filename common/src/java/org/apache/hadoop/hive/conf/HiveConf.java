@@ -1771,7 +1771,9 @@ public class HiveConf extends Configuration {
     HIVE_MAPJOIN_PROBEDECODE_ENABLED("hive.mapjoin.probedecode.enabled", false,
         "Use cached MapJoin hashtable created on the small table side to filter out row columns that are not going\n "+
             "to be used when reading the large table data. This will result less CPU cycles spent for decoding unused data. "),
-    HIVE_MAPJOIN_PROBEDECODE_COLKEY("hive.mapjoin.probedecode.cachekey", 0, ""
+    HIVE_MAPJOIN_PROBEDECODE_COLID("hive.mapjoin.probedecode.colid", 0, ""
+        + "The Column Key the RecordReader will use to read the hastTable. Operator specific."),
+    HIVE_MAPJOIN_PROBEDECODE_COLNAME("hive.mapjoin.probedecode.colname", "", ""
         + "The Column Key the RecordReader will use to read the hastTable. Operator specific."),
     HIVE_TEST_MAPJOINFULLOUTER_OVERRIDE(
         "hive.test.mapjoin.full.outer.override",

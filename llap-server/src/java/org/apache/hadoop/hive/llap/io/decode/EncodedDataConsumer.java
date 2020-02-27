@@ -43,26 +43,26 @@ public abstract class EncodedDataConsumer<BatchKey, BatchType extends EncodedCol
   implements Consumer<BatchType>, ReadPipeline {
   private volatile boolean isStopped = false;
   private ConsumerFeedback<BatchType> upstreamFeedback;
-  private final Consumer<ColumnVectorBatch> downstreamConsumer;
+  private final Consumer<ColumnVectorBatchWrapper> downstreamConsumer;
   private Callable<Void> readCallable;
   private final LlapDaemonIOMetrics ioMetrics;
   // Note that the pool is per EDC - within EDC, CVBs are expected to have the same schema.
   private static final int CVB_POOL_SIZE = 128;
-  protected final FixedSizedObjectPool<ColumnVectorBatch> cvbPool;
+  protected final FixedSizedObjectPool<ColumnVectorBatchWrapper> cvbPool;
   protected final QueryFragmentCounters counters;
   private final ThreadMXBean mxBean;
 
-  public EncodedDataConsumer(Consumer<ColumnVectorBatch> consumer, final int colCount,
+  public EncodedDataConsumer(Consumer<ColumnVectorBatchWrapper> consumer, final int colCount,
       LlapDaemonIOMetrics ioMetrics, QueryFragmentCounters counters) {
     this.downstreamConsumer = consumer;
     this.ioMetrics = ioMetrics;
     this.mxBean = LlapUtil.initThreadMxBean();
-    cvbPool = new FixedSizedObjectPool<>(CVB_POOL_SIZE, new Pool.PoolObjectHelper<ColumnVectorBatch>() {
-      @Override public ColumnVectorBatch create() {
-        return new ColumnVectorBatch(colCount);
+    cvbPool = new FixedSizedObjectPool<>(CVB_POOL_SIZE, new Pool.PoolObjectHelper<ColumnVectorBatchWrapper>() {
+      @Override public ColumnVectorBatchWrapper create() {
+        return new ColumnVectorBatchWrapper(colCount);
       }
 
-      @Override public void resetBeforeOffer(ColumnVectorBatch t) {
+      @Override public void resetBeforeOffer(ColumnVectorBatchWrapper t) {
         // Don't reset anything, we are reusing column vectors.
       }
     });
@@ -141,7 +141,7 @@ public abstract class EncodedDataConsumer<BatchKey, BatchType extends EncodedCol
   }
 
   protected abstract void decodeBatch(BatchType batch,
-      Consumer<ColumnVectorBatch> downstreamConsumer) throws InterruptedException;
+      Consumer<ColumnVectorBatchWrapper> downstreamConsumer) throws InterruptedException;
 
   @Override
   public void setDone() throws InterruptedException {
@@ -155,9 +155,9 @@ public abstract class EncodedDataConsumer<BatchKey, BatchType extends EncodedCol
   }
 
   @Override
-  public void returnData(ColumnVectorBatch data) {
+  public void returnData(ColumnVectorBatchWrapper data) {
     //In case a writer has a lock on any of the vectors we don't return it to the pool.
-    for (ColumnVector cv : data.cols) {
+    for (ColumnVector cv : data.getCvb().cols) {
       if (cv != null && cv.getRef() > 0) {
         return;
       }

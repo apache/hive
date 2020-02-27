@@ -85,7 +85,7 @@ public class OrcColumnVectorProducer implements ColumnVectorProducer {
 
   @Override
   public ReadPipeline createReadPipeline(
-      Consumer<ColumnVectorBatch> consumer, FileSplit split, Includes includes,
+      Consumer<ColumnVectorBatchWrapper> consumer, FileSplit split, Includes includes,
       SearchArgument sarg, QueryFragmentCounters counters, SchemaEvolutionFactory sef,
       InputFormat<?, ?> unused0, Deserializer unused1, Reporter reporter, JobConf job,
       Map<Path, PartitionDesc> parts) throws IOException {

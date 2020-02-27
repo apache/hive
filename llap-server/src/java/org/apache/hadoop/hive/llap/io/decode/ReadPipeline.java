@@ -24,7 +24,7 @@ import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
 import org.apache.orc.TypeDescription;
 import org.apache.orc.impl.SchemaEvolution;
 
-public interface ReadPipeline extends ConsumerFeedback<ColumnVectorBatch> {
+public interface ReadPipeline extends ConsumerFeedback<ColumnVectorBatchWrapper> {
   public Callable<Void> getReadCallable();
   SchemaEvolution getSchemaEvolution();
 }
