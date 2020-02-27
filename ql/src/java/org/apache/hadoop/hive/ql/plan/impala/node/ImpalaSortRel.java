@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.plan.impala.node;
 
 import com.google.common.base.Preconditions;
+import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.plan.hep.HepRelVertex;
 import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelNode;
@@ -47,9 +48,8 @@ public class ImpalaSortRel extends ImpalaPlanRel {
   private ImpalaSortNode sortNode = null;
   private final HiveSortLimit sortLimit;
 
-  public ImpalaSortRel(HiveSortLimit sortLimit) {
-    super(sortLimit.getCluster(), sortLimit.getTraitSet(), sortLimit.getInputs(),
-      sortLimit.getRowType());
+  public ImpalaSortRel(HiveSortLimit sortLimit, List<RelNode> inputs) {
+    super(sortLimit.getCluster(), sortLimit.getTraitSet(), inputs, sortLimit.getRowType());
     this.sortLimit = sortLimit;
   }
 
@@ -97,6 +97,11 @@ public class ImpalaSortRel extends ImpalaPlanRel {
     sortNode.init(ctx.getRootAnalyzer());
 
     return sortNode;
+  }
+
+  @Override
+  public ImpalaSortRel copy(RelTraitSet traitSet, List<RelNode> inputs) {
+    return new ImpalaSortRel(sortLimit, inputs);
   }
 
 }

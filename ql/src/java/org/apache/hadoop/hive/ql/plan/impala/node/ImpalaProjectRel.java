@@ -19,68 +19,82 @@
 package org.apache.hadoop.hive.ql.plan.impala.node;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
+import com.google.common.collect.Lists;
+import org.apache.calcite.plan.hep.HepRelVertex;
+import org.apache.calcite.rel.RelFieldCollation;
+import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelWriter;
-import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rel.type.RelDataTypeField;
+import org.apache.calcite.rex.RexLiteral;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
+
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaPlannerContext;
-import org.apache.hadoop.hive.ql.plan.impala.rex.ImpalaRexVisitor;
+import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaTypeConverter;
+
+import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.Expr;
+import org.apache.impala.analysis.SlotDescriptor;
+import org.apache.impala.analysis.TupleDescriptor;
+import org.apache.impala.catalog.ColumnStats;
 import org.apache.impala.common.ImpalaException;
 import org.apache.impala.planner.PlanNode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.impala.planner.PlanNodeId;
+import org.apache.impala.planner.UnionNode;
 
-import java.util.Map;
+import java.util.List;
 
 /**
- * Impala project rel.  There is no actual physical project node on
- * the Impala side.  However, this class is useful because it keeps
- * the abstraction layer and it allows us to attach these projections to
- * the RelNode below as an output expression. For instance, if we had an
- * aggregation in our query like select sum(c1 + c2) from tbl, the projection
- * will handle the "c1 + c2" part. This will be part of the output expression
- * of the table scan node.
+ * Impala project relnode. This is the Impala Calcite intermediary representation
+ * from the Calcite Project node to the Impala Union node. Impala does not have
+ * a concept of a Project node, but the Union node where there is only one input
+ * node essentially handles this concept.
  */
 
-public class ImpalaProjectRel extends ImpalaPlanRel {
-  private final static Logger LOG = LoggerFactory.getLogger(ImpalaProjectRel.class);
+public class ImpalaProjectRel extends ImpalaProjectRelBase {
 
-  private final HiveProject hiveProject;
-  private PlanNode planNode = null;
+  private UnionNode unionNode = null;
 
   public ImpalaProjectRel(HiveProject project) {
-    super(project.getCluster(), project.getTraitSet(), project.getInputs(), project.getRowType());
-    this.hiveProject = project;
+    super(project);
   }
 
   @Override
   public PlanNode getPlanNode(ImpalaPlannerContext ctx) throws ImpalaException, HiveException, MetaException {
-    if (planNode != null) {
-      return planNode;
+    if (unionNode != null) {
+      return unionNode;
     }
-    planNode = getImpalaRelInput(0).getPlanNode(ctx);
-    Preconditions.checkState(this.outputExprs == null);
-    this.outputExprs = createProjectExprs(ctx);
-    return planNode;
+    PlanNodeId nodeId = ctx.getNextNodeId();
+
+    ImpalaPlanRel unionInputRel = getImpalaRelInput(0);
+
+    PlanNode unionInputNode = unionInputRel.getPlanNode(ctx);
+    Preconditions.checkArgument(getInputs().size() == 1);
+    Preconditions.checkArgument(getInput(0) instanceof ImpalaPlanRel);
+    TupleDescriptor tupleDesc = createTupleDescriptor(ctx.getRootAnalyzer());
+    // The outputexprs are the SlotRef exprs passed to the parent node.
+    this.outputExprs = createOutputExprs(tupleDesc.getSlots());
+    // The project exprs are the Calcite RexNode exprs that are passed into the
+    // Impala Union Node.
+    List<Expr> projectExprs = createProjectExprs(ctx).values().asList();
+    unionNode = new ImpalaUnionNode(nodeId, tupleDesc.getId(), unionInputNode,
+        projectExprs);
+    unionNode.init(ctx.getRootAnalyzer());
+    return unionNode;
   }
 
-  private ImmutableMap<Integer, Expr> createProjectExprs(ImpalaPlannerContext ctx) {
-    Map<Integer, Expr> projectExprs = Maps.newLinkedHashMap();
-    ImpalaRexVisitor visitor = new ImpalaRexVisitor(ctx.getRootAnalyzer(), ImmutableList.of(getImpalaRelInput(0)));
-    int index = 0;
-    for (RexNode rexNode : hiveProject.getProjects()) {
-      projectExprs.put(index++, rexNode.accept(visitor));
-    }
-    return ImmutableMap.copyOf(projectExprs);
-  }
+  private TupleDescriptor createTupleDescriptor(Analyzer analyzer) throws HiveException {
+    TupleDescriptor tupleDesc = analyzer.getDescTbl().createTupleDescriptor("single input union");
+    tupleDesc.setIsMaterialized(true);
 
-  @Override
-  public RelWriter explainTerms(RelWriter pw) {
-    return hiveProject.explainTerms(pw);
+    for (RelDataTypeField relDataTypeField : hiveProject.getRowType().getFieldList()) {
+      SlotDescriptor slotDesc = analyzer.addSlotDescriptor(tupleDesc);
+      slotDesc.setType(ImpalaTypeConverter.getImpalaType(relDataTypeField.getType()));
+      slotDesc.setIsMaterialized(true);
+    }
+    tupleDesc.computeMemLayout();
+    return tupleDesc;
   }
 }

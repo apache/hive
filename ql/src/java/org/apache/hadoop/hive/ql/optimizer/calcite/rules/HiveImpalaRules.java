@@ -17,8 +17,12 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
+import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.tools.RelBuilderFactory;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
@@ -31,6 +35,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.plan.impala.node.ImpalaAggregateRel;
 import org.apache.hadoop.hive.ql.plan.impala.node.ImpalaHdfsScanRel;
 import org.apache.hadoop.hive.ql.plan.impala.node.ImpalaJoinRel;
+import org.apache.hadoop.hive.ql.plan.impala.node.ImpalaProjectPassthroughRel;
 import org.apache.hadoop.hive.ql.plan.impala.node.ImpalaProjectRel;
 import org.apache.hadoop.hive.ql.plan.impala.node.ImpalaSortRel;
 
@@ -130,9 +135,28 @@ public class HiveImpalaRules {
     public void onMatch(RelOptRuleCall call) {
       final HiveProject project = call.rel(0);
 
-      ImpalaProjectRel newProject = new ImpalaProjectRel(project);
+      ImpalaProjectPassthroughRel newProject = new ImpalaProjectPassthroughRel(project);
 
       call.transformTo(newProject);
+    }
+  }
+
+  public static class ImpalaSortLimitProjectRule extends RelOptRule {
+
+    public ImpalaSortLimitProjectRule(RelBuilderFactory relBuilderFactory) {
+      super(operand(HiveSortLimit.class, operand(HiveProject.class, any())),
+              relBuilderFactory, "ImpalaSortLimitProjectRule");
+    }
+
+    @Override
+    public void onMatch(RelOptRuleCall call) {
+      final HiveSortLimit sort = call.rel(0);
+      final HiveProject project = call.rel(1);
+
+      ImpalaProjectRel newProject = new ImpalaProjectRel(project);
+      ImpalaSortRel newSort = new ImpalaSortRel(sort, ImmutableList.of(newProject));
+
+      call.transformTo(newSort);
     }
   }
 
@@ -147,7 +171,7 @@ public class HiveImpalaRules {
     public void onMatch(RelOptRuleCall call) {
       final HiveSortLimit sort = call.rel(0);
 
-      ImpalaSortRel newSort = new ImpalaSortRel(sort);
+      ImpalaSortRel newSort = new ImpalaSortRel(sort, sort.getInputs());
 
       call.transformTo(newSort);
     }
