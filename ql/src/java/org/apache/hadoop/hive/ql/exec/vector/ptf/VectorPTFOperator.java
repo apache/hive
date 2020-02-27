@@ -133,8 +133,6 @@ public class VectorPTFOperator extends Operator<PTFDesc>
 
   private transient boolean isFirstPartition;
 
-  private transient boolean skipResetEvaluatorsForRowNumber;
-
   private transient boolean[] currentPartitionIsNull;
   private transient long[] currentPartitionLongs;
   private transient double[] currentPartitionDoubles;
@@ -331,7 +329,6 @@ public class VectorPTFOperator extends Operator<PTFDesc>
     isFirstPartition = true;
 
     batchCounter = 0;
-    skipResetEvaluatorsForRowNumber = skipResetEvaluatorsForRowNumberFunction();
   }
 
   @Override
@@ -409,17 +406,18 @@ public class VectorPTFOperator extends Operator<PTFDesc>
     }
 
     // If we are only processing a PARTITION BY, reset our evaluators.
-    // skipResetEvaluatorsForRowNumber - when partition by is the only clause and it contains only constant expressions
-    // i.e. row_number() over(partition by 1,2)
-    // then we should not resetEvaluators(reset row number) for row_number() function
-    if (!isPartitionOrderBy && !skipResetEvaluatorsForRowNumber) {
+    if (!isPartitionOrderBy) {
+      // To keep the row counting correct, don't reset for row_number evaluator if it's not a isLastGroupBatch
+      if (!isLastGroupBatch && isRowNumberFunction()) {
+        return;
+      }
       groupBatches.resetEvaluators();
     }
   }
 
-  private boolean skipResetEvaluatorsForRowNumberFunction() {
+  private boolean isRowNumberFunction() {
     return evaluatorFunctionNames.length == 1 && FunctionRegistry.ROW_NUMBER_FUNCTION_NAME
-        .equals(evaluatorFunctionNames[0]) && ExprNodeDescUtils.isAllConstants(Arrays.asList(partitionExprNodeDescs));
+        .equals(evaluatorFunctionNames[0]);
   }
 
   private boolean isPartitionChanged(VectorizedRowBatch batch) {
