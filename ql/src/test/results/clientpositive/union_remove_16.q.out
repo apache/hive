@@ -1,19 +1,19 @@
 PREHOOK: query: create table inputTbl1_n23(key string, val string) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@inputTbl1_n23
+PREHOOK: Output: default@inputtbl1_n23
 POSTHOOK: query: create table inputTbl1_n23(key string, val string) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@inputTbl1_n23
+POSTHOOK: Output: default@inputtbl1_n23
 PREHOOK: query: create table outputTbl1_n32(key string, `values` bigint) partitioned by (ds string) stored as rcfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@outputTbl1_n32
+PREHOOK: Output: default@outputtbl1_n32
 POSTHOOK: query: create table outputTbl1_n32(key string, `values` bigint) partitioned by (ds string) stored as rcfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@outputTbl1_n32
+POSTHOOK: Output: default@outputtbl1_n32
 PREHOOK: query: load data local inpath '../../data/files/T1.txt' into table inputTbl1_n23
 PREHOOK: type: LOAD
 #### A masked pattern was here ####

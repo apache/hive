@@ -1,11 +1,11 @@
 PREHOOK: query: CREATE TABLE TEST3a(A INT, B DOUBLE) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@TEST3a
+PREHOOK: Output: default@test3a
 POSTHOOK: query: CREATE TABLE TEST3a(A INT, B DOUBLE) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@TEST3a
+POSTHOOK: Output: default@test3a
 PREHOOK: query: DESCRIBE TEST3a
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@test3a
@@ -17,11 +17,11 @@ b                   	double
 PREHOOK: query: CREATE TABLE TEST3b(A ARRAY<INT>, B DOUBLE, C MAP<DOUBLE, INT>) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@TEST3b
+PREHOOK: Output: default@test3b
 POSTHOOK: query: CREATE TABLE TEST3b(A ARRAY<INT>, B DOUBLE, C MAP<DOUBLE, INT>) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@TEST3b
+POSTHOOK: Output: default@test3b
 PREHOOK: query: DESCRIBE TEST3b
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@test3b
@@ -55,7 +55,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Add Columns
-      table name: default.TEST3b
+      table name: hive.default.test3b
       new columns: x double
 
 PREHOOK: query: ALTER TABLE TEST3b ADD COLUMNS (X DOUBLE)
@@ -92,8 +92,8 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Rename Table
-      table name: default.TEST3b
-      new table name: hive.default.TEST3c
+      table name: hive.default.test3b
+      new table name: hive.default.test3c
 
 PREHOOK: query: ALTER TABLE TEST3b RENAME TO TEST3c
 PREHOOK: type: ALTERTABLE_RENAME
@@ -102,8 +102,8 @@ PREHOOK: Output: default@test3b
 POSTHOOK: query: ALTER TABLE TEST3b RENAME TO TEST3c
 POSTHOOK: type: ALTERTABLE_RENAME
 POSTHOOK: Input: default@test3b
-POSTHOOK: Output: default@TEST3c
 POSTHOOK: Output: default@test3b
+POSTHOOK: Output: default@test3c
 PREHOOK: query: DESCRIBE TEST3c
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@test3c
@@ -138,7 +138,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Replace Columns
-      table name: default.TEST3c
+      table name: hive.default.test3c
       new columns: r1 int, r2 double
 
 PREHOOK: query: ALTER TABLE TEST3c REPLACE COLUMNS (R1 INT, R2 DOUBLE)

@@ -113,7 +113,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Update Columns
-      table name: default.avro_extschema_literal_n1
+      table name: hive.default.avro_extschema_literal_n1
       cascade: true
 
 PREHOOK: query: ALTER TABLE avro_extschema_literal_n1 UPDATE COLUMNS CASCADE
@@ -329,7 +329,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Update Columns
-      table name: default.avro_extschema_url_parted
+      table name: hive.default.avro_extschema_url_parted
       partition:
         p1 2018
 

@@ -15,7 +15,7 @@ PREHOOK: query: create table testAltCol_n0
  cBoolean   BOOLEAN)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@testAltCol_n0
+PREHOOK: Output: default@testaltcol_n0
 POSTHOOK: query: create table testAltCol_n0
 (cId        TINYINT,
  cTimeStamp TIMESTAMP,
@@ -29,7 +29,7 @@ POSTHOOK: query: create table testAltCol_n0
  cBoolean   BOOLEAN)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@testAltCol_n0
+POSTHOOK: Output: default@testaltcol_n0
 PREHOOK: query: insert into testAltCol_n0 values
 (1,
  '2017-11-07 09:02:49.999999999',
@@ -238,12 +238,12 @@ PREHOOK: query: create table testAltColT_n0 stored as textfile as select * from 
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@testaltcol_n0
 PREHOOK: Output: database:default
-PREHOOK: Output: default@testAltColT_n0
+PREHOOK: Output: default@testaltcolt_n0
 POSTHOOK: query: create table testAltColT_n0 stored as textfile as select * from testAltCol_n0
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@testaltcol_n0
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@testAltColT_n0
+POSTHOOK: Output: default@testaltcolt_n0
 POSTHOOK: Lineage: testaltcolt_n0.cbigint SIMPLE [(testaltcol_n0)testaltcol_n0.FieldSchema(name:cbigint, type:bigint, comment:null), ]
 POSTHOOK: Lineage: testaltcolt_n0.cboolean SIMPLE [(testaltcol_n0)testaltcol_n0.FieldSchema(name:cboolean, type:boolean, comment:null), ]
 POSTHOOK: Lineage: testaltcolt_n0.cdecimal SIMPLE [(testaltcol_n0)testaltcol_n0.FieldSchema(name:cdecimal, type:decimal(38,18), comment:null), ]
@@ -698,12 +698,12 @@ PREHOOK: query: create table testAltColSF_n0 stored as sequencefile as select * 
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@testaltcol_n0
 PREHOOK: Output: database:default
-PREHOOK: Output: default@testAltColSF_n0
+PREHOOK: Output: default@testaltcolsf_n0
 POSTHOOK: query: create table testAltColSF_n0 stored as sequencefile as select * from testAltCol_n0
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@testaltcol_n0
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@testAltColSF_n0
+POSTHOOK: Output: default@testaltcolsf_n0
 POSTHOOK: Lineage: testaltcolsf_n0.cbigint SIMPLE [(testaltcol_n0)testaltcol_n0.FieldSchema(name:cbigint, type:bigint, comment:null), ]
 POSTHOOK: Lineage: testaltcolsf_n0.cboolean SIMPLE [(testaltcol_n0)testaltcol_n0.FieldSchema(name:cboolean, type:boolean, comment:null), ]
 POSTHOOK: Lineage: testaltcolsf_n0.cdecimal SIMPLE [(testaltcol_n0)testaltcol_n0.FieldSchema(name:cdecimal, type:decimal(38,18), comment:null), ]
@@ -1158,12 +1158,12 @@ PREHOOK: query: create table testAltColORC_n0 stored as orc as select * from tes
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@testaltcol_n0
 PREHOOK: Output: database:default
-PREHOOK: Output: default@testAltColORC_n0
+PREHOOK: Output: default@testaltcolorc_n0
 POSTHOOK: query: create table testAltColORC_n0 stored as orc as select * from testAltCol_n0
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@testaltcol_n0
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@testAltColORC_n0
+POSTHOOK: Output: default@testaltcolorc_n0
 POSTHOOK: Lineage: testaltcolorc_n0.cbigint SIMPLE [(testaltcol_n0)testaltcol_n0.FieldSchema(name:cbigint, type:bigint, comment:null), ]
 POSTHOOK: Lineage: testaltcolorc_n0.cboolean SIMPLE [(testaltcol_n0)testaltcol_n0.FieldSchema(name:cboolean, type:boolean, comment:null), ]
 POSTHOOK: Lineage: testaltcolorc_n0.cdecimal SIMPLE [(testaltcol_n0)testaltcol_n0.FieldSchema(name:cdecimal, type:decimal(38,18), comment:null), ]
@@ -1618,12 +1618,12 @@ PREHOOK: query: create table testAltColRCF_n0 stored as rcfile as select * from 
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@testaltcol_n0
 PREHOOK: Output: database:default
-PREHOOK: Output: default@testAltColRCF_n0
+PREHOOK: Output: default@testaltcolrcf_n0
 POSTHOOK: query: create table testAltColRCF_n0 stored as rcfile as select * from testAltCol_n0
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@testaltcol_n0
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@testAltColRCF_n0
+POSTHOOK: Output: default@testaltcolrcf_n0
 POSTHOOK: Lineage: testaltcolrcf_n0.cbigint SIMPLE [(testaltcol_n0)testaltcol_n0.FieldSchema(name:cbigint, type:bigint, comment:null), ]
 POSTHOOK: Lineage: testaltcolrcf_n0.cboolean SIMPLE [(testaltcol_n0)testaltcol_n0.FieldSchema(name:cboolean, type:boolean, comment:null), ]
 POSTHOOK: Lineage: testaltcolrcf_n0.cdecimal SIMPLE [(testaltcol_n0)testaltcol_n0.FieldSchema(name:cdecimal, type:decimal(38,18), comment:null), ]
@@ -2078,12 +2078,12 @@ PREHOOK: query: create table testAltColP stored as parquet as select * from test
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@testaltcol_n0
 PREHOOK: Output: database:default
-PREHOOK: Output: default@testAltColP
+PREHOOK: Output: default@testaltcolp
 POSTHOOK: query: create table testAltColP stored as parquet as select * from testAltCol_n0
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@testaltcol_n0
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@testAltColP
+POSTHOOK: Output: default@testaltcolp
 POSTHOOK: Lineage: testaltcolp.cbigint SIMPLE [(testaltcol_n0)testaltcol_n0.FieldSchema(name:cbigint, type:bigint, comment:null), ]
 POSTHOOK: Lineage: testaltcolp.cboolean SIMPLE [(testaltcol_n0)testaltcol_n0.FieldSchema(name:cboolean, type:boolean, comment:null), ]
 POSTHOOK: Lineage: testaltcolp.cdecimal SIMPLE [(testaltcol_n0)testaltcol_n0.FieldSchema(name:cdecimal, type:decimal(38,18), comment:null), ]

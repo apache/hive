@@ -16,14 +16,14 @@ ROW FORMAT DELIMITED
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DECIMAL_PRECISION_txt
+PREHOOK: Output: default@decimal_precision_txt
 POSTHOOK: query: CREATE TABLE DECIMAL_PRECISION_txt(`dec` decimal(20,10))
 ROW FORMAT DELIMITED
    FIELDS TERMINATED BY ' '
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DECIMAL_PRECISION_txt
+POSTHOOK: Output: default@decimal_precision_txt
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv8.txt' INTO TABLE DECIMAL_PRECISION_txt
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -36,12 +36,12 @@ PREHOOK: query: CREATE TABLE DECIMAL_PRECISION(`dec` decimal(20,10))
 STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DECIMAL_PRECISION
+PREHOOK: Output: default@decimal_precision
 POSTHOOK: query: CREATE TABLE DECIMAL_PRECISION(`dec` decimal(20,10))
 STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DECIMAL_PRECISION
+POSTHOOK: Output: default@decimal_precision
 PREHOOK: query: INSERT OVERWRITE TABLE DECIMAL_PRECISION SELECT * FROM DECIMAL_PRECISION_txt
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_precision_txt
@@ -742,14 +742,14 @@ ROW FORMAT DELIMITED
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DECIMAL_PRECISION_txt_small
+PREHOOK: Output: default@decimal_precision_txt_small
 POSTHOOK: query: CREATE TABLE DECIMAL_PRECISION_txt_small(`dec` decimal(20,10))
 ROW FORMAT DELIMITED
    FIELDS TERMINATED BY ' '
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DECIMAL_PRECISION_txt_small
+POSTHOOK: Output: default@decimal_precision_txt_small
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv8.txt' INTO TABLE DECIMAL_PRECISION_txt_small
 PREHOOK: type: LOAD
 #### A masked pattern was here ####

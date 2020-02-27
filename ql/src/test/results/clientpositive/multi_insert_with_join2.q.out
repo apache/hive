@@ -1,19 +1,19 @@
 PREHOOK: query: CREATE TABLE T_A ( id STRING, val STRING )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T_A
+PREHOOK: Output: default@t_a
 POSTHOOK: query: CREATE TABLE T_A ( id STRING, val STRING )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T_A
+POSTHOOK: Output: default@t_a
 PREHOOK: query: CREATE TABLE T_B ( id STRING, val STRING )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T_B
+PREHOOK: Output: default@t_b
 POSTHOOK: query: CREATE TABLE T_B ( id STRING, val STRING )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T_B
+POSTHOOK: Output: default@t_b
 PREHOOK: query: CREATE TABLE join_result_1 ( ida STRING, vala STRING, idb STRING, valb STRING )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

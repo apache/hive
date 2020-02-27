@@ -1,11 +1,11 @@
 PREHOOK: query: CREATE table rcfileTableLazyDecompress (key STRING, value STRING) STORED AS RCFile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@rcfileTableLazyDecompress
+PREHOOK: Output: default@rcfiletablelazydecompress
 POSTHOOK: query: CREATE table rcfileTableLazyDecompress (key STRING, value STRING) STORED AS RCFile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@rcfileTableLazyDecompress
+POSTHOOK: Output: default@rcfiletablelazydecompress
 PREHOOK: query: FROM src
 INSERT OVERWRITE TABLE rcfileTableLazyDecompress SELECT src.key, src.value LIMIT 10
 PREHOOK: type: QUERY

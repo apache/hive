@@ -5,11 +5,11 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table testDate(id int, dt date)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@testDate
+PREHOOK: Output: default@testdate
 POSTHOOK: query: create table testDate(id int, dt date)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@testDate
+POSTHOOK: Output: default@testdate
 PREHOOK: query: insert into table testDate select 1, '2014-04-07' from src where key=100 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src

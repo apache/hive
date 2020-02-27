@@ -5,11 +5,11 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE INPUT16(KEY STRING, VALUE STRING) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.TestSerDe' STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@INPUT16
+PREHOOK: Output: default@input16
 POSTHOOK: query: CREATE TABLE INPUT16(KEY STRING, VALUE STRING) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.TestSerDe' STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@INPUT16
+POSTHOOK: Output: default@input16
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1_cb.txt' INTO TABLE INPUT16
 PREHOOK: type: LOAD
 #### A masked pattern was here ####

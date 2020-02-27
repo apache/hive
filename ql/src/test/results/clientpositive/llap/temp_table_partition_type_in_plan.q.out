@@ -1,11 +1,11 @@
 PREHOOK: query: CREATE TEMPORARY TABLE datePartTbl_temp(col1 string) PARTITIONED BY (date_prt date)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@datePartTbl_temp
+PREHOOK: Output: default@dateparttbl_temp
 POSTHOOK: query: CREATE TEMPORARY TABLE datePartTbl_temp(col1 string) PARTITIONED BY (date_prt date)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@datePartTbl_temp
+POSTHOOK: Output: default@dateparttbl_temp
 PREHOOK: query: INSERT OVERWRITE TABLE datePartTbl_temp PARTITION(date_prt='2014-08-09')
   SELECT 'col1-2014-08-09' FROM src LIMIT 1
 PREHOOK: type: QUERY

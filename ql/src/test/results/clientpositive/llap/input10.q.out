@@ -1,11 +1,11 @@
 PREHOOK: query: CREATE TABLE TEST10(key INT, value STRING) PARTITIONED BY(ds STRING, hr STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@TEST10
+PREHOOK: Output: default@test10
 POSTHOOK: query: CREATE TABLE TEST10(key INT, value STRING) PARTITIONED BY(ds STRING, hr STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@TEST10
+POSTHOOK: Output: default@test10
 PREHOOK: query: EXPLAIN
 DESCRIBE TEST10
 PREHOOK: type: DESCTABLE
@@ -21,7 +21,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Describe Table
-      table: default.TEST10
+      table: default.test10
 
   Stage: Stage-1
     Fetch Operator

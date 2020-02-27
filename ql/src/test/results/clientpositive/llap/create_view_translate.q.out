@@ -142,7 +142,7 @@ STAGE PLANS:
     Create View
       columns: id int, _c1 string
       expanded text: SELECT `items`.`id`, `items`.`info`['price'] FROM `default`.`items`
-      name: default.priceview
+      name: hive.default.priceview
       original text: SELECT items.id, items.info['price'] FROM items
 
 PREHOOK: query: CREATE VIEW priceview AS SELECT items.id, items.info['price'] FROM items

@@ -86,7 +86,7 @@ WHERE
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@orOutput
+PREHOOK: Output: default@oroutput
 POSTHOOK: query: create table orOutput as
 SELECT key
 FROM src
@@ -105,7 +105,7 @@ WHERE
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@orOutput
+POSTHOOK: Output: default@oroutput
 POSTHOOK: Lineage: oroutput.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: explain
 SELECT key
@@ -195,7 +195,7 @@ WHERE
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@inOutput
+PREHOOK: Output: default@inoutput
 POSTHOOK: query: create table inOutput as
 SELECT key
 FROM src
@@ -214,7 +214,7 @@ WHERE
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@inOutput
+POSTHOOK: Output: default@inoutput
 POSTHOOK: Lineage: inoutput.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: explain
 SELECT key
@@ -304,7 +304,7 @@ WHERE
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@inOutputOpt
+PREHOOK: Output: default@inoutputopt
 POSTHOOK: query: create table inOutputOpt as
 SELECT key
 FROM src
@@ -323,7 +323,7 @@ WHERE
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@inOutputOpt
+POSTHOOK: Output: default@inoutputopt
 POSTHOOK: Lineage: inoutputopt.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: select count(*) from orOutput
 PREHOOK: type: QUERY

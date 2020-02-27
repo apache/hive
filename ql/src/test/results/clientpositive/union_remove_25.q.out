@@ -1,35 +1,35 @@
 PREHOOK: query: create table inputTbl1_n13(key string, val string) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@inputTbl1_n13
+PREHOOK: Output: default@inputtbl1_n13
 POSTHOOK: query: create table inputTbl1_n13(key string, val string) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@inputTbl1_n13
+POSTHOOK: Output: default@inputtbl1_n13
 PREHOOK: query: create table outputTbl1_n19(key string, `values` bigint) partitioned by (ds string) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@outputTbl1_n19
+PREHOOK: Output: default@outputtbl1_n19
 POSTHOOK: query: create table outputTbl1_n19(key string, `values` bigint) partitioned by (ds string) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@outputTbl1_n19
+POSTHOOK: Output: default@outputtbl1_n19
 PREHOOK: query: create table outputTbl2_n6(key string, `values` bigint) partitioned by (ds string) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@outputTbl2_n6
+PREHOOK: Output: default@outputtbl2_n6
 POSTHOOK: query: create table outputTbl2_n6(key string, `values` bigint) partitioned by (ds string) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@outputTbl2_n6
+POSTHOOK: Output: default@outputtbl2_n6
 PREHOOK: query: create table outputTbl3_n3(key string, `values` bigint) partitioned by (ds string,hr string) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@outputTbl3_n3
+PREHOOK: Output: default@outputtbl3_n3
 POSTHOOK: query: create table outputTbl3_n3(key string, `values` bigint) partitioned by (ds string,hr string) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@outputTbl3_n3
+POSTHOOK: Output: default@outputtbl3_n3
 PREHOOK: query: load data local inpath '../../data/files/T1.txt' into table inputTbl1_n13
 PREHOOK: type: LOAD
 #### A masked pattern was here ####

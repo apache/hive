@@ -1,19 +1,19 @@
 PREHOOK: query: create table tinyA(a bigint, b bigint) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tinyA
+PREHOOK: Output: default@tinya
 POSTHOOK: query: create table tinyA(a bigint, b bigint) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tinyA
+POSTHOOK: Output: default@tinya
 PREHOOK: query: create table tinyB(a bigint, bList array<int>) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tinyB
+PREHOOK: Output: default@tinyb
 POSTHOOK: query: create table tinyB(a bigint, bList array<int>) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tinyB
+POSTHOOK: Output: default@tinyb
 PREHOOK: query: load data local inpath '../../data/files/tiny_a.txt' into table tinyA
 PREHOOK: type: LOAD
 #### A masked pattern was here ####

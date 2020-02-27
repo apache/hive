@@ -1,11 +1,11 @@
 PREHOOK: query: create temporary table Default.Temp_Table_Names (C1 string, c2 string)
 PREHOOK: type: CREATETABLE
-PREHOOK: Output: Default@Temp_Table_Names
 PREHOOK: Output: database:default
+PREHOOK: Output: default@temp_table_names
 POSTHOOK: query: create temporary table Default.Temp_Table_Names (C1 string, c2 string)
 POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: Default@Temp_Table_Names
 POSTHOOK: Output: database:default
+POSTHOOK: Output: default@temp_table_names
 PREHOOK: query: show tables 'Temp_Table*'
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:default

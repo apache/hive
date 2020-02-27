@@ -87,11 +87,11 @@ true	true	false	true	false
 PREHOOK: query: CREATE TEMPORARY TABLE SplitLines(`id` string) STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@SplitLines
+PREHOOK: Output: default@splitlines
 POSTHOOK: query: CREATE TEMPORARY TABLE SplitLines(`id` string) STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@SplitLines
+POSTHOOK: Output: default@splitlines
 PREHOOK: query: INSERT INTO SplitLines SELECT 'withdraw\ncash'
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table

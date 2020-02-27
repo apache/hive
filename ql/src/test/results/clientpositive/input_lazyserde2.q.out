@@ -228,11 +228,11 @@ NULL
 PREHOOK: query: CREATE TABLE destBin_n0(a UNIONTYPE<int, double, array<string>, struct<col1:int,col2:string>>) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe2' STORED AS SEQUENCEFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@destBin_n0
+PREHOOK: Output: default@destbin_n0
 POSTHOOK: query: CREATE TABLE destBin_n0(a UNIONTYPE<int, double, array<string>, struct<col1:int,col2:string>>) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe2' STORED AS SEQUENCEFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@destBin_n0
+POSTHOOK: Output: default@destbin_n0
 PREHOOK: query: INSERT OVERWRITE TABLE destBin_n0 SELECT create_union( CASE WHEN key < 100 THEN 0 WHEN key < 200 THEN 1 WHEN key < 300 THEN 2 WHEN key < 400 THEN 3 ELSE 0 END, key, 2.0D, array("one","two"), struct(5,"five")) FROM srcbucket2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcbucket2

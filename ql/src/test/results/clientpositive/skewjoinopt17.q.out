@@ -2,12 +2,12 @@ PREHOOK: query: CREATE TABLE T1_n27(key STRING, val STRING)
 SKEWED BY (key, val) ON ((2, 12)) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1_n27
+PREHOOK: Output: default@t1_n27
 POSTHOOK: query: CREATE TABLE T1_n27(key STRING, val STRING)
 SKEWED BY (key, val) ON ((2, 12)) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1_n27
+POSTHOOK: Output: default@t1_n27
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_n27
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -20,12 +20,12 @@ PREHOOK: query: CREATE TABLE T2_n18(key STRING, val STRING)
 SKEWED BY (key) ON ((2)) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T2_n18
+PREHOOK: Output: default@t2_n18
 POSTHOOK: query: CREATE TABLE T2_n18(key STRING, val STRING)
 SKEWED BY (key) ON ((2)) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T2_n18
+POSTHOOK: Output: default@t2_n18
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2_n18
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -229,12 +229,12 @@ PREHOOK: query: CREATE TABLE T1_n27(key STRING, val STRING)
 SKEWED BY (key, val) ON ((2, 12)) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1_n27
+PREHOOK: Output: default@t1_n27
 POSTHOOK: query: CREATE TABLE T1_n27(key STRING, val STRING)
 SKEWED BY (key, val) ON ((2, 12)) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1_n27
+POSTHOOK: Output: default@t1_n27
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_n27
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -247,12 +247,12 @@ PREHOOK: query: CREATE TABLE T2_n18(key STRING, val STRING)
 SKEWED BY (key) ON ((2)) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T2_n18
+PREHOOK: Output: default@t2_n18
 POSTHOOK: query: CREATE TABLE T2_n18(key STRING, val STRING)
 SKEWED BY (key) ON ((2)) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T2_n18
+POSTHOOK: Output: default@t2_n18
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2_n18
 PREHOOK: type: LOAD
 #### A masked pattern was here ####

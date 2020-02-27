@@ -16,7 +16,7 @@ PREHOOK: query: create table testAltCol_n3
  cNumeric3_2    NUMERIC(3,2))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@testAltCol_n3
+PREHOOK: Output: default@testaltcol_n3
 POSTHOOK: query: create table testAltCol_n3
 (cId            TINYINT,
  cFloat         FLOAT,
@@ -31,7 +31,7 @@ POSTHOOK: query: create table testAltCol_n3
  cNumeric3_2    NUMERIC(3,2))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@testAltCol_n3
+POSTHOOK: Output: default@testaltcol_n3
 PREHOOK: query: insert into testAltCol_n3 values
 (1,
  1.234e5,
@@ -558,12 +558,12 @@ PREHOOK: query: create table testAltColT_n3 stored as textfile as select * from 
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@testaltcol_n3
 PREHOOK: Output: database:default
-PREHOOK: Output: default@testAltColT_n3
+PREHOOK: Output: default@testaltcolt_n3
 POSTHOOK: query: create table testAltColT_n3 stored as textfile as select * from testAltCol_n3
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@testaltcol_n3
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@testAltColT_n3
+POSTHOOK: Output: default@testaltcolt_n3
 POSTHOOK: Lineage: testaltcolt_n3.cdecimal16_8 SIMPLE [(testaltcol_n3)testaltcol_n3.FieldSchema(name:cdecimal16_8, type:decimal(16,8), comment:null), ]
 POSTHOOK: Lineage: testaltcolt_n3.cdecimal38_18 SIMPLE [(testaltcol_n3)testaltcol_n3.FieldSchema(name:cdecimal38_18, type:decimal(38,18), comment:null), ]
 POSTHOOK: Lineage: testaltcolt_n3.cdecimal38_37 SIMPLE [(testaltcol_n3)testaltcol_n3.FieldSchema(name:cdecimal38_37, type:decimal(38,37), comment:null), ]
@@ -2286,12 +2286,12 @@ PREHOOK: query: create table testAltColSF_n3 stored as sequencefile as select * 
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@testaltcol_n3
 PREHOOK: Output: database:default
-PREHOOK: Output: default@testAltColSF_n3
+PREHOOK: Output: default@testaltcolsf_n3
 POSTHOOK: query: create table testAltColSF_n3 stored as sequencefile as select * from testAltCol_n3
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@testaltcol_n3
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@testAltColSF_n3
+POSTHOOK: Output: default@testaltcolsf_n3
 POSTHOOK: Lineage: testaltcolsf_n3.cdecimal16_8 SIMPLE [(testaltcol_n3)testaltcol_n3.FieldSchema(name:cdecimal16_8, type:decimal(16,8), comment:null), ]
 POSTHOOK: Lineage: testaltcolsf_n3.cdecimal38_18 SIMPLE [(testaltcol_n3)testaltcol_n3.FieldSchema(name:cdecimal38_18, type:decimal(38,18), comment:null), ]
 POSTHOOK: Lineage: testaltcolsf_n3.cdecimal38_37 SIMPLE [(testaltcol_n3)testaltcol_n3.FieldSchema(name:cdecimal38_37, type:decimal(38,37), comment:null), ]
@@ -4014,12 +4014,12 @@ PREHOOK: query: create table testAltColRCF_n3 stored as rcfile as select * from 
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@testaltcol_n3
 PREHOOK: Output: database:default
-PREHOOK: Output: default@testAltColRCF_n3
+PREHOOK: Output: default@testaltcolrcf_n3
 POSTHOOK: query: create table testAltColRCF_n3 stored as rcfile as select * from testAltCol_n3
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@testaltcol_n3
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@testAltColRCF_n3
+POSTHOOK: Output: default@testaltcolrcf_n3
 POSTHOOK: Lineage: testaltcolrcf_n3.cdecimal16_8 SIMPLE [(testaltcol_n3)testaltcol_n3.FieldSchema(name:cdecimal16_8, type:decimal(16,8), comment:null), ]
 POSTHOOK: Lineage: testaltcolrcf_n3.cdecimal38_18 SIMPLE [(testaltcol_n3)testaltcol_n3.FieldSchema(name:cdecimal38_18, type:decimal(38,18), comment:null), ]
 POSTHOOK: Lineage: testaltcolrcf_n3.cdecimal38_37 SIMPLE [(testaltcol_n3)testaltcol_n3.FieldSchema(name:cdecimal38_37, type:decimal(38,37), comment:null), ]
@@ -5742,12 +5742,12 @@ PREHOOK: query: create table testAltColORC_n3 stored as orc as select * from tes
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@testaltcol_n3
 PREHOOK: Output: database:default
-PREHOOK: Output: default@testAltColORC_n3
+PREHOOK: Output: default@testaltcolorc_n3
 POSTHOOK: query: create table testAltColORC_n3 stored as orc as select * from testAltCol_n3
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@testaltcol_n3
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@testAltColORC_n3
+POSTHOOK: Output: default@testaltcolorc_n3
 POSTHOOK: Lineage: testaltcolorc_n3.cdecimal16_8 SIMPLE [(testaltcol_n3)testaltcol_n3.FieldSchema(name:cdecimal16_8, type:decimal(16,8), comment:null), ]
 POSTHOOK: Lineage: testaltcolorc_n3.cdecimal38_18 SIMPLE [(testaltcol_n3)testaltcol_n3.FieldSchema(name:cdecimal38_18, type:decimal(38,18), comment:null), ]
 POSTHOOK: Lineage: testaltcolorc_n3.cdecimal38_37 SIMPLE [(testaltcol_n3)testaltcol_n3.FieldSchema(name:cdecimal38_37, type:decimal(38,37), comment:null), ]
@@ -7010,12 +7010,12 @@ PREHOOK: query: create table testAltColPDE_n3 stored as parquet as select * from
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@testaltcol_n3
 PREHOOK: Output: database:default
-PREHOOK: Output: default@testAltColPDE_n3
+PREHOOK: Output: default@testaltcolpde_n3
 POSTHOOK: query: create table testAltColPDE_n3 stored as parquet as select * from testAltCol_n3
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@testaltcol_n3
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@testAltColPDE_n3
+POSTHOOK: Output: default@testaltcolpde_n3
 POSTHOOK: Lineage: testaltcolpde_n3.cdecimal16_8 SIMPLE [(testaltcol_n3)testaltcol_n3.FieldSchema(name:cdecimal16_8, type:decimal(16,8), comment:null), ]
 POSTHOOK: Lineage: testaltcolpde_n3.cdecimal38_18 SIMPLE [(testaltcol_n3)testaltcol_n3.FieldSchema(name:cdecimal38_18, type:decimal(38,18), comment:null), ]
 POSTHOOK: Lineage: testaltcolpde_n3.cdecimal38_37 SIMPLE [(testaltcol_n3)testaltcol_n3.FieldSchema(name:cdecimal38_37, type:decimal(38,37), comment:null), ]
@@ -8739,13 +8739,13 @@ select * from testAltCol_n3
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@testaltcol_n3
 PREHOOK: Output: database:default
-PREHOOK: Output: default@testAltColPDD_n3
+PREHOOK: Output: default@testaltcolpdd_n3
 POSTHOOK: query: create table testAltColPDD_n3 stored as parquet tblproperties ("parquet.enable.dictionary"="false") as
 select * from testAltCol_n3
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@testaltcol_n3
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@testAltColPDD_n3
+POSTHOOK: Output: default@testaltcolpdd_n3
 POSTHOOK: Lineage: testaltcolpdd_n3.cdecimal16_8 SIMPLE [(testaltcol_n3)testaltcol_n3.FieldSchema(name:cdecimal16_8, type:decimal(16,8), comment:null), ]
 POSTHOOK: Lineage: testaltcolpdd_n3.cdecimal38_18 SIMPLE [(testaltcol_n3)testaltcol_n3.FieldSchema(name:cdecimal38_18, type:decimal(38,18), comment:null), ]
 POSTHOOK: Lineage: testaltcolpdd_n3.cdecimal38_37 SIMPLE [(testaltcol_n3)testaltcol_n3.FieldSchema(name:cdecimal38_37, type:decimal(38,37), comment:null), ]

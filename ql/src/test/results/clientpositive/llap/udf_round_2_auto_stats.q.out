@@ -1,11 +1,11 @@
 PREHOOK: query: create table tstTbl1(n double)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tstTbl1
+PREHOOK: Output: default@tsttbl1
 POSTHOOK: query: create table tstTbl1(n double)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tstTbl1
+POSTHOOK: Output: default@tsttbl1
 PREHOOK: query: insert overwrite table tstTbl1
 select 'NaN' from src tablesample (1 rows)
 PREHOOK: type: QUERY

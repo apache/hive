@@ -7,7 +7,7 @@ PREHOOK: query: CREATE TABLE INPUTDDL4(viewTime STRING, userid INT,
     CLUSTERED BY(userid) SORTED BY(viewTime) INTO 32 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@INPUTDDL4
+PREHOOK: Output: default@inputddl4
 POSTHOOK: query: CREATE TABLE INPUTDDL4(viewTime STRING, userid INT,
                        page_url STRING, referrer_url STRING, 
                        friends ARRAY<BIGINT>, properties MAP<STRING, STRING>,
@@ -17,7 +17,7 @@ POSTHOOK: query: CREATE TABLE INPUTDDL4(viewTime STRING, userid INT,
     CLUSTERED BY(userid) SORTED BY(viewTime) INTO 32 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@INPUTDDL4
+POSTHOOK: Output: default@inputddl4
 PREHOOK: query: DESCRIBE INPUTDDL4
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@inputddl4

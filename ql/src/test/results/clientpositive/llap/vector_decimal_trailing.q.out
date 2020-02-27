@@ -16,7 +16,7 @@ ROW FORMAT DELIMITED
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DECIMAL_TRAILING_txt
+PREHOOK: Output: default@decimal_trailing_txt
 POSTHOOK: query: CREATE TABLE DECIMAL_TRAILING_txt (
   id int,
   a decimal(10,4),
@@ -27,7 +27,7 @@ ROW FORMAT DELIMITED
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DECIMAL_TRAILING_txt
+POSTHOOK: Output: default@decimal_trailing_txt
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv10.txt' INTO TABLE DECIMAL_TRAILING_txt
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -44,7 +44,7 @@ PREHOOK: query: CREATE TABLE DECIMAL_TRAILING (
 STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DECIMAL_TRAILING
+PREHOOK: Output: default@decimal_trailing
 POSTHOOK: query: CREATE TABLE DECIMAL_TRAILING (
   id int,
   a decimal(10,4),
@@ -53,7 +53,7 @@ POSTHOOK: query: CREATE TABLE DECIMAL_TRAILING (
 STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DECIMAL_TRAILING
+POSTHOOK: Output: default@decimal_trailing
 PREHOOK: query: INSERT OVERWRITE TABLE DECIMAL_TRAILING SELECT * FROM DECIMAL_TRAILING_txt
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_trailing_txt

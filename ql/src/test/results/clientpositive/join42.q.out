@@ -2,23 +2,23 @@ PREHOOK: query: create table L as select 4436 id
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: database:default
-PREHOOK: Output: default@L
+PREHOOK: Output: default@l
 POSTHOOK: query: create table L as select 4436 id
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@L
+POSTHOOK: Output: default@l
 POSTHOOK: Lineage: l.id SIMPLE []
 PREHOOK: query: create table LA_n11 as select 4436 loan_id, 4748 aid, 4415 pi_id
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: database:default
-PREHOOK: Output: default@LA_n11
+PREHOOK: Output: default@la_n11
 POSTHOOK: query: create table LA_n11 as select 4436 loan_id, 4748 aid, 4415 pi_id
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@LA_n11
+POSTHOOK: Output: default@la_n11
 POSTHOOK: Lineage: la_n11.aid SIMPLE []
 POSTHOOK: Lineage: la_n11.loan_id SIMPLE []
 POSTHOOK: Lineage: la_n11.pi_id SIMPLE []
@@ -26,34 +26,34 @@ PREHOOK: query: create table FR as select 4436 loan_id
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: database:default
-PREHOOK: Output: default@FR
+PREHOOK: Output: default@fr
 POSTHOOK: query: create table FR as select 4436 loan_id
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@FR
+POSTHOOK: Output: default@fr
 POSTHOOK: Lineage: fr.loan_id SIMPLE []
 PREHOOK: query: create table A_n11 as select 4748 id
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: database:default
-PREHOOK: Output: default@A_n11
+PREHOOK: Output: default@a_n11
 POSTHOOK: query: create table A_n11 as select 4748 id
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@A_n11
+POSTHOOK: Output: default@a_n11
 POSTHOOK: Lineage: a_n11.id SIMPLE []
 PREHOOK: query: create table PI as select 4415 id
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: database:default
-PREHOOK: Output: default@PI
+PREHOOK: Output: default@pi
 POSTHOOK: query: create table PI as select 4415 id
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@PI
+POSTHOOK: Output: default@pi
 POSTHOOK: Lineage: pi.id SIMPLE []
 PREHOOK: query: create table acct as select 4748 aid, 10 acc_n, 122 brn
 PREHOOK: type: CREATETABLE_AS_SELECT

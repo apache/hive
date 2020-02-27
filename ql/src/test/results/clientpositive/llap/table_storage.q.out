@@ -41,7 +41,7 @@ STAGE PLANS:
   Stage: Stage-0
     Clustered By
       bucket columns: key
-      table name: default.t
+      table name: hive.default.t
       number of buckets: 2
       sort columns: key ASC
 
@@ -90,7 +90,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Into Buckets
-      table name: default.t
+      table name: hive.default.t
       number of buckets: 3
 
 PREHOOK: query: ALTER TABLE t INTO 3 BUCKETS
@@ -139,7 +139,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Not Sorted
-      table name: default.t
+      table name: hive.default.t
 
 PREHOOK: query: ALTER TABLE t NOT SORTED
 PREHOOK: type: ALTERTABLE_CLUSTER_SORT
@@ -186,7 +186,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Not Clustered
-      table name: default.t
+      table name: hive.default.t
 
 PREHOOK: query: ALTER TABLE t NOT CLUSTERED
 PREHOOK: type: ALTERTABLE_CLUSTER_SORT
@@ -230,7 +230,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Skewed By
-      table name: default.t
+      table name: hive.default.t
       skewedColumnNames: key
       skewedColumnValues: [a], [b]
       isStoredAsDirectories: true
@@ -280,7 +280,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
 #### A masked pattern was here ####
-      table name: default.t
+      table name: hive.default.t
 #### A masked pattern was here ####
 
 #### A masked pattern was here ####
@@ -329,7 +329,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Not Skewed
-      table name: default.t
+      table name: hive.default.t
 
 PREHOOK: query: ALTER TABLE t NOT SKEWED
 PREHOOK: type: ALTERTABLE_SKEWED
@@ -373,7 +373,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Set File Format
-      table name: default.t
+      table name: hive.default.t
       input format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
       output format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat
       serde name: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
@@ -420,7 +420,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
 #### A masked pattern was here ####
-      table name: default.t
+      table name: hive.default.t
 #### A masked pattern was here ####
 
 #### A masked pattern was here ####
@@ -466,7 +466,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Set Serde
-      table name: default.t
+      table name: hive.default.t
       serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
 
 PREHOOK: query: ALTER TABLE t SET SERDE "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe"
@@ -511,7 +511,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Set Serde Props
-      table name: default.t
+      table name: hive.default.t
       properties:
         property1 value1
         property2 value2

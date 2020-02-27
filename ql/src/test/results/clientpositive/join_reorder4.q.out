@@ -1,27 +1,27 @@
 PREHOOK: query: CREATE TABLE T1_n134(key1 STRING, val1 STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1_n134
+PREHOOK: Output: default@t1_n134
 POSTHOOK: query: CREATE TABLE T1_n134(key1 STRING, val1 STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1_n134
+POSTHOOK: Output: default@t1_n134
 PREHOOK: query: CREATE TABLE T2_n80(key2 STRING, val2 STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T2_n80
+PREHOOK: Output: default@t2_n80
 POSTHOOK: query: CREATE TABLE T2_n80(key2 STRING, val2 STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T2_n80
+POSTHOOK: Output: default@t2_n80
 PREHOOK: query: CREATE TABLE T3_n32(key3 STRING, val3 STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T3_n32
+PREHOOK: Output: default@t3_n32
 POSTHOOK: query: CREATE TABLE T3_n32(key3 STRING, val3 STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T3_n32
+POSTHOOK: Output: default@t3_n32
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_n134
 PREHOOK: type: LOAD
 #### A masked pattern was here ####

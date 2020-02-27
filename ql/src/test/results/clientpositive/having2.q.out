@@ -52,7 +52,7 @@ PREHOOK: query: CREATE TABLE TestV1_Staples (
       )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@TestV1_Staples
+PREHOOK: Output: default@testv1_staples
 POSTHOOK: query: CREATE TABLE TestV1_Staples (
       Item_Count INT,
       Ship_Priority STRING,
@@ -107,7 +107,7 @@ POSTHOOK: query: CREATE TABLE TestV1_Staples (
       )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@TestV1_Staples
+POSTHOOK: Output: default@testv1_staples
 PREHOOK: query: explain
 SELECT customer_name, SUM(customer_balance), SUM(order_quantity) FROM default.testv1_staples s1 GROUP BY customer_name HAVING (
 (COUNT(s1.discount) <= 822) AND

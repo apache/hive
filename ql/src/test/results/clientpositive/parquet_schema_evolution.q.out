@@ -9,11 +9,11 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE NewStructField(a struct<a1:map<string,string>, a2:struct<e1:int>>) STORED AS PARQUET
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@NewStructField
+PREHOOK: Output: default@newstructfield
 POSTHOOK: query: CREATE TABLE NewStructField(a struct<a1:map<string,string>, a2:struct<e1:int>>) STORED AS PARQUET
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@NewStructField
+POSTHOOK: Output: default@newstructfield
 PREHOOK: query: INSERT OVERWRITE TABLE NewStructField SELECT named_struct('a1', map('k1','v1'), 'a2', named_struct('e1',5)) FROM srcpart LIMIT 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
@@ -84,12 +84,12 @@ PREHOOK: query: CREATE TABLE NewStructFieldTable STORED AS PARQUET AS SELECT * F
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@newstructfield
 PREHOOK: Output: database:default
-PREHOOK: Output: default@NewStructFieldTable
+PREHOOK: Output: default@newstructfieldtable
 POSTHOOK: query: CREATE TABLE NewStructFieldTable STORED AS PARQUET AS SELECT * FROM NewStructField
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@newstructfield
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@NewStructFieldTable
+POSTHOOK: Output: default@newstructfieldtable
 POSTHOOK: Lineage: newstructfieldtable.a SIMPLE [(newstructfield)newstructfield.FieldSchema(name:a, type:struct<a1:map<string,string>,a2:struct<e1:int,e2:string>,a3:int>, comment:null), ]
 POSTHOOK: Lineage: newstructfieldtable.b SIMPLE [(newstructfield)newstructfield.FieldSchema(name:b, type:int, comment:null), ]
 PREHOOK: query: DESCRIBE NewStructFieldTable

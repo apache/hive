@@ -1,11 +1,11 @@
 PREHOOK: query: CREATE TEMPORARY TABLE sourceTable_temp (one string,two string) PARTITIONED BY (ds string,hr string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@sourceTable_temp
+PREHOOK: Output: default@sourcetable_temp
 POSTHOOK: query: CREATE TEMPORARY TABLE sourceTable_temp (one string,two string) PARTITIONED BY (ds string,hr string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@sourceTable_temp
+POSTHOOK: Output: default@sourcetable_temp
 PREHOOK: query: load data local inpath '../../data/files/kv1.txt' INTO TABLE sourceTable_temp partition(ds='2011-11-11', hr='11')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -27,11 +27,11 @@ POSTHOOK: Output: default@sourcetable_temp@ds=2011-11-11/hr=12
 PREHOOK: query: CREATE TEMPORARY TABLE destinTable_temp (one string,two string) PARTITIONED BY (ds string,hr string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@destinTable_temp
+PREHOOK: Output: default@destintable_temp
 POSTHOOK: query: CREATE TEMPORARY TABLE destinTable_temp (one string,two string) PARTITIONED BY (ds string,hr string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@destinTable_temp
+POSTHOOK: Output: default@destintable_temp
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE destinTable_temp PARTITION (ds='2011-11-11', hr='11') if not exists
   SELECT one,two FROM sourceTable_temp WHERE ds='2011-11-11' AND hr='11' order by one desc, two desc limit 5
 PREHOOK: type: QUERY
@@ -225,11 +225,11 @@ POSTHOOK: Output: default@destintable_temp
 PREHOOK: query: CREATE TEMPORARY TABLE destinTable_temp (one string,two string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@destinTable_temp
+PREHOOK: Output: default@destintable_temp
 POSTHOOK: query: CREATE TEMPORARY TABLE destinTable_temp (one string,two string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@destinTable_temp
+POSTHOOK: Output: default@destintable_temp
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE destinTable_temp SELECT one,two FROM sourceTable_temp WHERE ds='2011-11-11' AND hr='11' order by one desc, two desc limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sourcetable_temp
@@ -326,11 +326,11 @@ POSTHOOK: Output: default@sourcetable_temp
 PREHOOK: query: CREATE TEMPORARY TABLE sourceTable_temp (one string,two string) PARTITIONED BY (ds string,hr string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@sourceTable_temp
+PREHOOK: Output: default@sourcetable_temp
 POSTHOOK: query: CREATE TEMPORARY TABLE sourceTable_temp (one string,two string) PARTITIONED BY (ds string,hr string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@sourceTable_temp
+POSTHOOK: Output: default@sourcetable_temp
 PREHOOK: query: load data local inpath '../../data/files/kv1.txt' INTO TABLE sourceTable_temp partition(ds='2011-11-11', hr='11')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -343,11 +343,11 @@ POSTHOOK: Output: default@sourcetable_temp@ds=2011-11-11/hr=11
 PREHOOK: query: CREATE TEMPORARY TABLE destinTable_temp (one string,two string) PARTITIONED BY (ds string,hr string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@destinTable_temp
+PREHOOK: Output: default@destintable_temp
 POSTHOOK: query: CREATE TEMPORARY TABLE destinTable_temp (one string,two string) PARTITIONED BY (ds string,hr string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@destinTable_temp
+POSTHOOK: Output: default@destintable_temp
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE destinTable_temp PARTITION (ds='2011-11-11', hr='11') if not exists
   SELECT one,two FROM sourceTable_temp WHERE ds='2011-11-11' AND hr='11' order by one desc, two desc limit 5
 PREHOOK: type: QUERY

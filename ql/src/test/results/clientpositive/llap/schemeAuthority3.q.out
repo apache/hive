@@ -1,11 +1,11 @@
 PREHOOK: query: create table noschemeTable(key string) partitioned by (value string, value2 string) row format delimited fields terminated by '\\t' stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@noschemeTable
+PREHOOK: Output: default@noschemetable
 POSTHOOK: query: create table noschemeTable(key string) partitioned by (value string, value2 string) row format delimited fields terminated by '\\t' stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@noschemeTable
+POSTHOOK: Output: default@noschemetable
 PREHOOK: query: insert into noschemeTable partition(value='0', value2='clusterA') select key from src where (key = 10) order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src

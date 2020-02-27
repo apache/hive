@@ -1,43 +1,43 @@
 PREHOOK: query: CREATE TABLE TBL_n0(C1 INT, C2 INT, C3 INT, C4 INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@TBL_n0
+PREHOOK: Output: default@tbl_n0
 POSTHOOK: query: CREATE TABLE TBL_n0(C1 INT, C2 INT, C3 INT, C4 INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@TBL_n0
+POSTHOOK: Output: default@tbl_n0
 PREHOOK: query: CREATE TABLE DEST1_n116(d1 INT, d2 INT) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEST1_n116
+PREHOOK: Output: default@dest1_n116
 POSTHOOK: query: CREATE TABLE DEST1_n116(d1 INT, d2 INT) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST1_n116
+POSTHOOK: Output: default@dest1_n116
 PREHOOK: query: CREATE TABLE DEST2_n30(d1 INT, d2 INT, d3 INT) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEST2_n30
+PREHOOK: Output: default@dest2_n30
 POSTHOOK: query: CREATE TABLE DEST2_n30(d1 INT, d2 INT, d3 INT) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST2_n30
+POSTHOOK: Output: default@dest2_n30
 PREHOOK: query: CREATE TABLE DEST3_n4(d1 INT, d2 INT, d3 INT, d4 INT) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEST3_n4
+PREHOOK: Output: default@dest3_n4
 POSTHOOK: query: CREATE TABLE DEST3_n4(d1 INT, d2 INT, d3 INT, d4 INT) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST3_n4
+POSTHOOK: Output: default@dest3_n4
 PREHOOK: query: CREATE TABLE DEST4(d1 INT, d2 INT, d3 INT, d4 INT) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEST4
+PREHOOK: Output: default@dest4
 POSTHOOK: query: CREATE TABLE DEST4(d1 INT, d2 INT, d3 INT, d4 INT) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST4
+POSTHOOK: Output: default@dest4
 PREHOOK: query: EXPLAIN
 FROM TBL_n0
 INSERT OVERWRITE TABLE DEST1_n116 SELECT TBL_n0.C1, COUNT(TBL_n0.C2) GROUP BY TBL_n0.C1

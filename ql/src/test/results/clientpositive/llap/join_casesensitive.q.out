@@ -17,11 +17,11 @@ POSTHOOK: Output: default@joinone
 PREHOOK: query: CREATE TABLE joinTwo(key1 int, key2 int, value int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@joinTwo
+PREHOOK: Output: default@jointwo
 POSTHOOK: query: CREATE TABLE joinTwo(key1 int, key2 int, value int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@joinTwo
+POSTHOOK: Output: default@jointwo
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in6.txt' INTO TABLE joinTwo
 PREHOOK: type: LOAD
 #### A masked pattern was here ####

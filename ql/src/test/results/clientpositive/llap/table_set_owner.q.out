@@ -16,7 +16,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
 #### A masked pattern was here ####
-      table name: default.t
+      table name: hive.default.t
 #### A masked pattern was here ####
         Principal
           name: user1

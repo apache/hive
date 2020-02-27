@@ -13,7 +13,7 @@ mapValues map<string,string>)
 stored as parquet
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@testSets
+PREHOOK: Output: default@testsets
 POSTHOOK: query: create table testSets (
 key string,
 arrayValues array<string>,
@@ -21,7 +21,7 @@ mapValues map<string,string>)
 stored as parquet
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@testSets
+POSTHOOK: Output: default@testsets
 PREHOOK: query: insert into table testSets select 'abcd', array(), map() from src limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -40,7 +40,7 @@ mapValues map<string,string>)
 stored as parquet
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@testSets2
+PREHOOK: Output: default@testsets2
 POSTHOOK: query: create table testSets2 (
 key string,
 arrayValues array<string>,
@@ -48,7 +48,7 @@ mapValues map<string,string>)
 stored as parquet
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@testSets2
+POSTHOOK: Output: default@testsets2
 PREHOOK: query: insert into table testSets2 select * from testSets
 PREHOOK: type: QUERY
 PREHOOK: Input: default@testsets

@@ -20,7 +20,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Set Properties
-      table name: default.t
+      table name: hive.default.t
       properties:
         a x
         b y
@@ -68,7 +68,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Unset Properties
-      table name: default.t
+      table name: hive.default.t
       properties:
         a 
         b 

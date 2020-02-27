@@ -10,7 +10,7 @@ PREHOOK: query: create table testAltCol_n1
  cTinyint   TINYINT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@testAltCol_n1
+PREHOOK: Output: default@testaltcol_n1
 POSTHOOK: query: create table testAltCol_n1
 (cId        TINYINT,
  cBigInt    BIGINT,
@@ -19,7 +19,7 @@ POSTHOOK: query: create table testAltCol_n1
  cTinyint   TINYINT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@testAltCol_n1
+POSTHOOK: Output: default@testaltcol_n1
 PREHOOK: query: insert into testAltCol_n1 values
 (1,
  1234567890123456789,
@@ -132,12 +132,12 @@ PREHOOK: query: create table testAltColT_n1 stored as textfile as select * from 
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@testaltcol_n1
 PREHOOK: Output: database:default
-PREHOOK: Output: default@testAltColT_n1
+PREHOOK: Output: default@testaltcolt_n1
 POSTHOOK: query: create table testAltColT_n1 stored as textfile as select * from testAltCol_n1
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@testaltcol_n1
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@testAltColT_n1
+POSTHOOK: Output: default@testaltcolt_n1
 POSTHOOK: Lineage: testaltcolt_n1.cbigint SIMPLE [(testaltcol_n1)testaltcol_n1.FieldSchema(name:cbigint, type:bigint, comment:null), ]
 POSTHOOK: Lineage: testaltcolt_n1.cid SIMPLE [(testaltcol_n1)testaltcol_n1.FieldSchema(name:cid, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: testaltcolt_n1.cint SIMPLE [(testaltcol_n1)testaltcol_n1.FieldSchema(name:cint, type:int, comment:null), ]
@@ -501,12 +501,12 @@ PREHOOK: query: create table testAltColSF_n1 stored as sequencefile as select * 
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@testaltcol_n1
 PREHOOK: Output: database:default
-PREHOOK: Output: default@testAltColSF_n1
+PREHOOK: Output: default@testaltcolsf_n1
 POSTHOOK: query: create table testAltColSF_n1 stored as sequencefile as select * from testAltCol_n1
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@testaltcol_n1
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@testAltColSF_n1
+POSTHOOK: Output: default@testaltcolsf_n1
 POSTHOOK: Lineage: testaltcolsf_n1.cbigint SIMPLE [(testaltcol_n1)testaltcol_n1.FieldSchema(name:cbigint, type:bigint, comment:null), ]
 POSTHOOK: Lineage: testaltcolsf_n1.cid SIMPLE [(testaltcol_n1)testaltcol_n1.FieldSchema(name:cid, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: testaltcolsf_n1.cint SIMPLE [(testaltcol_n1)testaltcol_n1.FieldSchema(name:cint, type:int, comment:null), ]
@@ -870,12 +870,12 @@ PREHOOK: query: create table testAltColRCF_n1 stored as rcfile as select * from 
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@testaltcol_n1
 PREHOOK: Output: database:default
-PREHOOK: Output: default@testAltColRCF_n1
+PREHOOK: Output: default@testaltcolrcf_n1
 POSTHOOK: query: create table testAltColRCF_n1 stored as rcfile as select * from testAltCol_n1
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@testaltcol_n1
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@testAltColRCF_n1
+POSTHOOK: Output: default@testaltcolrcf_n1
 POSTHOOK: Lineage: testaltcolrcf_n1.cbigint SIMPLE [(testaltcol_n1)testaltcol_n1.FieldSchema(name:cbigint, type:bigint, comment:null), ]
 POSTHOOK: Lineage: testaltcolrcf_n1.cid SIMPLE [(testaltcol_n1)testaltcol_n1.FieldSchema(name:cid, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: testaltcolrcf_n1.cint SIMPLE [(testaltcol_n1)testaltcol_n1.FieldSchema(name:cint, type:int, comment:null), ]
@@ -1239,12 +1239,12 @@ PREHOOK: query: create table testAltColORC_n1 stored as orc as select * from tes
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@testaltcol_n1
 PREHOOK: Output: database:default
-PREHOOK: Output: default@testAltColORC_n1
+PREHOOK: Output: default@testaltcolorc_n1
 POSTHOOK: query: create table testAltColORC_n1 stored as orc as select * from testAltCol_n1
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@testaltcol_n1
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@testAltColORC_n1
+POSTHOOK: Output: default@testaltcolorc_n1
 POSTHOOK: Lineage: testaltcolorc_n1.cbigint SIMPLE [(testaltcol_n1)testaltcol_n1.FieldSchema(name:cbigint, type:bigint, comment:null), ]
 POSTHOOK: Lineage: testaltcolorc_n1.cid SIMPLE [(testaltcol_n1)testaltcol_n1.FieldSchema(name:cid, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: testaltcolorc_n1.cint SIMPLE [(testaltcol_n1)testaltcol_n1.FieldSchema(name:cint, type:int, comment:null), ]
@@ -1608,12 +1608,12 @@ PREHOOK: query: create table testAltColPDE_n0 stored as parquet as select * from
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@testaltcol_n1
 PREHOOK: Output: database:default
-PREHOOK: Output: default@testAltColPDE_n0
+PREHOOK: Output: default@testaltcolpde_n0
 POSTHOOK: query: create table testAltColPDE_n0 stored as parquet as select * from testAltCol_n1
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@testaltcol_n1
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@testAltColPDE_n0
+POSTHOOK: Output: default@testaltcolpde_n0
 POSTHOOK: Lineage: testaltcolpde_n0.cbigint SIMPLE [(testaltcol_n1)testaltcol_n1.FieldSchema(name:cbigint, type:bigint, comment:null), ]
 POSTHOOK: Lineage: testaltcolpde_n0.cid SIMPLE [(testaltcol_n1)testaltcol_n1.FieldSchema(name:cid, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: testaltcolpde_n0.cint SIMPLE [(testaltcol_n1)testaltcol_n1.FieldSchema(name:cint, type:int, comment:null), ]
@@ -1978,13 +1978,13 @@ select * from testAltCol_n1
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@testaltcol_n1
 PREHOOK: Output: database:default
-PREHOOK: Output: default@testAltColPDD_n0
+PREHOOK: Output: default@testaltcolpdd_n0
 POSTHOOK: query: create table testAltColPDD_n0 stored as parquet tblproperties ("parquet.enable.dictionary"="false") as
 select * from testAltCol_n1
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@testaltcol_n1
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@testAltColPDD_n0
+POSTHOOK: Output: default@testaltcolpdd_n0
 POSTHOOK: Lineage: testaltcolpdd_n0.cbigint SIMPLE [(testaltcol_n1)testaltcol_n1.FieldSchema(name:cbigint, type:bigint, comment:null), ]
 POSTHOOK: Lineage: testaltcolpdd_n0.cid SIMPLE [(testaltcol_n1)testaltcol_n1.FieldSchema(name:cid, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: testaltcolpdd_n0.cint SIMPLE [(testaltcol_n1)testaltcol_n1.FieldSchema(name:cint, type:int, comment:null), ]

@@ -1,11 +1,11 @@
 PREHOOK: query: CREATE TABLE T1_n39(key STRING, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1_n39
+PREHOOK: Output: default@t1_n39
 POSTHOOK: query: CREATE TABLE T1_n39(key STRING, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1_n39
+POSTHOOK: Output: default@t1_n39
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_n39
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -21,11 +21,11 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table array_valued_T1_n39 (key string, value array<string>) SKEWED BY (key) ON ((8))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@array_valued_T1_n39
+PREHOOK: Output: default@array_valued_t1_n39
 POSTHOOK: query: create table array_valued_T1_n39 (key string, value array<string>) SKEWED BY (key) ON ((8))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@array_valued_T1_n39
+POSTHOOK: Output: default@array_valued_t1_n39
 PREHOOK: query: insert overwrite table array_valued_T1_n39 select key, array(value) from T1_n39
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1_n39

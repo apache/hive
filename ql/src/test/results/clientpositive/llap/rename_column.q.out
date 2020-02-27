@@ -63,7 +63,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Change Column
-      table name: default.kv_rename_test
+      table name: hive.default.kv_rename_test
       new column name: a2
       new column type: int
       old column name: a1
@@ -101,7 +101,7 @@ STAGE PLANS:
   Stage: Stage-0
     Change Column
       after column: b
-      table name: default.kv_rename_test
+      table name: hive.default.kv_rename_test
       new column name: a
       new column type: int
       old column name: a2
@@ -154,7 +154,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Change Column
-      table name: default.kv_rename_test
+      table name: hive.default.kv_rename_test
       new column comment: test comment2
       new column name: a2
       new column type: int

@@ -1,11 +1,11 @@
 PREHOOK: query: CREATE TABLE INPUTDDL5(name STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@INPUTDDL5
+PREHOOK: Output: default@inputddl5
 POSTHOOK: query: CREATE TABLE INPUTDDL5(name STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@INPUTDDL5
+POSTHOOK: Output: default@inputddl5
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv4.txt' INTO TABLE INPUTDDL5
 PREHOOK: type: LOAD
 #### A masked pattern was here ####

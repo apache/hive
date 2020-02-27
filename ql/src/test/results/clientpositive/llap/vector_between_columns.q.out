@@ -2,22 +2,22 @@ PREHOOK: query: create table if not exists TSINT_txt ( RNUM int , CSINT smallint
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' LINES TERMINATED BY '\n'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@TSINT_txt
+PREHOOK: Output: default@tsint_txt
 POSTHOOK: query: create table if not exists TSINT_txt ( RNUM int , CSINT smallint )
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' LINES TERMINATED BY '\n'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@TSINT_txt
+POSTHOOK: Output: default@tsint_txt
 PREHOOK: query: create table if not exists TINT_txt ( RNUM int , CINT int )
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' LINES TERMINATED BY '\n'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@TINT_txt
+PREHOOK: Output: default@tint_txt
 POSTHOOK: query: create table if not exists TINT_txt ( RNUM int , CINT int )
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' LINES TERMINATED BY '\n'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@TINT_txt
+POSTHOOK: Output: default@tint_txt
 PREHOOK: query: load data local inpath '../../data/files/TSINT' into table TSINT_txt
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -38,12 +38,12 @@ PREHOOK: query: create table TSINT stored as orc AS SELECT * FROM TSINT_txt
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@tsint_txt
 PREHOOK: Output: database:default
-PREHOOK: Output: default@TSINT
+PREHOOK: Output: default@tsint
 POSTHOOK: query: create table TSINT stored as orc AS SELECT * FROM TSINT_txt
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@tsint_txt
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@TSINT
+POSTHOOK: Output: default@tsint
 POSTHOOK: Lineage: tsint.csint SIMPLE [(tsint_txt)tsint_txt.FieldSchema(name:csint, type:smallint, comment:null), ]
 POSTHOOK: Lineage: tsint.rnum SIMPLE [(tsint_txt)tsint_txt.FieldSchema(name:rnum, type:int, comment:null), ]
 tsint_txt.rnum	tsint_txt.csint
@@ -62,12 +62,12 @@ PREHOOK: query: create table TINT stored as orc AS SELECT * FROM TINT_txt
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@tint_txt
 PREHOOK: Output: database:default
-PREHOOK: Output: default@TINT
+PREHOOK: Output: default@tint
 POSTHOOK: query: create table TINT stored as orc AS SELECT * FROM TINT_txt
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@tint_txt
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@TINT
+POSTHOOK: Output: default@tint
 POSTHOOK: Lineage: tint.cint SIMPLE [(tint_txt)tint_txt.FieldSchema(name:cint, type:int, comment:null), ]
 POSTHOOK: Lineage: tint.rnum SIMPLE [(tint_txt)tint_txt.FieldSchema(name:rnum, type:int, comment:null), ]
 tint_txt.rnum	tint_txt.cint
