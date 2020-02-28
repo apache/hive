@@ -249,7 +249,6 @@ public class ScheduledQueryExecutionService implements Closeable {
     }
   }
 
-  @VisibleForTesting
   @Override
   public void close() throws IOException {
     synchronized (ScheduledQueryExecutionService.class) {
