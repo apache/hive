@@ -66,8 +66,12 @@ public class DefaultHiveAuthorizationTranslator implements HiveAuthorizationTran
       dbTable = new String[] {null, null};
     } else {
       if (privSubjectDesc.getTable()) {
-        final TableName tn = HiveTableName.of(privSubjectDesc.getObject());
-        dbTable = new String[] {tn.getDb(), tn.getTable()};
+        if (privSubjectDesc.getObject() == null) {
+          dbTable = new String[] {null, null};
+        } else {
+          final TableName tn = HiveTableName.of(privSubjectDesc.getObject());
+          dbTable = new String[] {tn.getDb(), tn.getTable()};
+        }
       } else {
         dbTable = new String[] {privSubjectDesc.getObject(), null};
       }
