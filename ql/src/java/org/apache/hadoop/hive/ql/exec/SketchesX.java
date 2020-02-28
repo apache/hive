@@ -1,32 +1,57 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import org.apache.datasketches.hive.hll.*;
-import org.apache.datasketches.hive.hll.UnionSketchUDF;
-import org.apache.datasketches.hive.hll.SketchToEstimateAndErrorBoundsUDF;
-import org.apache.datasketches.hive.hll.SketchToEstimateUDF2;
-import org.apache.datasketches.hive.hll.UnionSketchUDAF;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver2;
 
 public class SketchesX {
 
+  private final Registry system;
+
+  public SketchesX(Registry system) {
+    this.system = system;
+  }
+
   public static void register(Registry system) {
-    // FIXME: consider prefixing the functions?
-    system.registerGenericUDAF("dataToSketch", new DataToSketchUDAF());
-    system.registerUDF("SketchToEstimateAndErrorBounds", SketchToEstimateAndErrorBoundsUDF.class, false);
-    system.registerUDF("SketchToEstimate", SketchToEstimateUDF.class, false);
-    system.registerUDF("SketchToString", SketchToStringUDF.class, false);
-    system.registerUDF("unionSketch_u", UnionSketchUDF.class, false);
+    new SketchesX(system).registerHll("hll");
+  }
 
-    system.registerGenericUDAF("unionSketch", new UnionSketchUDAF());
+  private void registerHll(String prefix) {
 
-    system.registerGenericUDAF("dataToSketch2", new DataToSketchUDAF2());
-    system.registerGenericUDF("SketchToEstimate2", SketchToEstimateUDF2.class);
+    register(new DataToSketchUDAF(), prefix);
+    system.registerUDF(prefix + "SketchToEstimateAndErrorBounds", SketchToEstimateAndErrorBoundsUDF.class, false);
+    system.registerUDF(prefix + "SketchToEstimate", SketchToEstimateUDF.class, false);
+    system.registerUDF(prefix + "SketchToString", SketchToStringUDF.class, false);
+    system.registerUDF(prefix + "unionSketch_u", UnionSketchUDF.class, false);
+
+    system.registerGenericUDAF(prefix + "unionSketch", new UnionSketchUDAF());
+
+    system.registerGenericUDAF(prefix + "dataToSketch2", new DataToSketchUDAF());
+    system.registerUDF(prefix + "SketchToEstimate2", SketchToEstimateUDF.class, false);
+
 
   }
 
+  private void register(GenericUDAFResolver2 udaf, String prefix) {
+    String name = getUDFName(udaf.getClass());
+    system.registerGenericUDAF(prefix + name, new DataToSketchUDAF());
+
+  }
+
+  private String getUDFName(Class<?> clazz) {
+    Description desc = getDescription(clazz);
+    String name = desc.name().toLowerCase();
+    if (name == null || name == "") {
+      throw new RuntimeException("The UDF class (" + clazz.getName() + ") doesn't have a valid name");
+    }
+    return name;
+  }
+
+  private Description getDescription(Class<?> clazz) {
+    Description desc = clazz.getAnnotation(Description.class);
+    if (desc == null) {
+      throw new RuntimeException("no Description annotation on class: " + clazz.getName());
+    }
+    return desc;
+  }
+
 }
-/*
-add jar /home/dev/hive/packaging/target/apache-hive-4.0.0-SNAPSHOT-bin/apache-hive-4.0.0-SNAPSHOT-bin/lib/datasketches-hive-1.1.0-incubating-SNAPSHOT.jar;
-add jar /home/dev/hive/packaging/target/apache-hive-4.0.0-SNAPSHOT-bin/apache-hive-4.0.0-SNAPSHOT-bin/lib/sketches-core-0.9.0.jar;
-add jar /home/dev/hive/packaging/target/apache-hive-4.0.0-SNAPSHOT-bin/apache-hive-4.0.0-SNAPSHOT-bin/lib/datasketches-java-1.2.0-incubating.jar;
-add jar /home/dev/hive/packaging/target/apache-hive-4.0.0-SNAPSHOT-bin/apache-hive-4.0.0-SNAPSHOT-bin/lib/datasketches-memory-1.2.0-incubating.jar
-*/
