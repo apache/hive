@@ -102,6 +102,7 @@ public class ScheduledQueryExecutionService implements Closeable {
     @Override
     public void run() {
       while (true) {
+        int origResets = forcedScheduleCheckCounter.get();
         if (usedExecutors.get() < context.getNumberOfExecutors()) {
           try {
             ScheduledQueryPollResponse q = context.schedulerService.scheduledQueryPoll();
@@ -115,16 +116,15 @@ public class ScheduledQueryExecutionService implements Closeable {
           }
         }
         try {
-          sleep(context.getIdleSleepTime());
+          sleep(context.getIdleSleepTime(), origResets);
         } catch (InterruptedException e) {
           LOG.warn("interrupt discarded");
         }
       }
     }
 
-    private void sleep(long idleSleepTime) throws InterruptedException {
+    private void sleep(long idleSleepTime, int origResets) throws InterruptedException {
       long checkIntrvalMs = 1000;
-      int origResets = forcedScheduleCheckCounter.get();
       for (long i = 0; i < idleSleepTime; i += checkIntrvalMs) {
         Thread.sleep(checkIntrvalMs);
         if (forcedScheduleCheckCounter.get() != origResets) {

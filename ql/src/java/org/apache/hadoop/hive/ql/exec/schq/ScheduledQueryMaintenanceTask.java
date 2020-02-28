@@ -70,5 +70,4 @@ public class ScheduledQueryMaintenanceTask extends Task<ScheduledQueryMaintenanc
   public StageType getType() {
     return StageType.SCHEDULED_QUERY_MAINT;
   }
-
 }
