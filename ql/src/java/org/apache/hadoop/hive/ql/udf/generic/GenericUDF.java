@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.Optional;
 
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
@@ -637,5 +638,13 @@ public abstract class GenericUDF implements Closeable {
     default:
       return i + ORDINAL_SUFFIXES[i % 10];
     }
+  }
+
+  @SuppressWarnings("unchecked")
+  public <T> Optional<T> adapt(Class<T> clazz) {
+    if (clazz.isInstance(this)) {
+      return Optional.of((T) this);
+    }
+    return Optional.empty();
   }
 }

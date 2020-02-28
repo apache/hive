@@ -68,6 +68,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
   static final private String CLASS_NAME = Worker.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   static final private long SLEEP_TIME = 10000;
+  private static final int NOT_SET = -1;
 
   private String workerName;
   private JobConf mrJob; // the MR job for compaction
@@ -96,6 +97,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       // so wrap it in a big catch Throwable statement.
       CompactionHeartbeater heartbeater = null;
       CompactionInfo ci = null;
+      long compactorTxnId = NOT_SET;
       try {
         if (msc == null) {
           msc = HiveMetaStoreUtils.getHiveMetastoreClient(conf);
@@ -165,7 +167,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
          * multiple statements in it (for query based compactor) which is not supported (and since
          * this case some of the statements are DDL, even in the future will not be allowed in a
          * multi-stmt txn. {@link Driver#setCompactionWriteIds(ValidWriteIdList, long)} */
-        long compactorTxnId = msc.openTxn(ci.runAs, TxnType.COMPACTION);
+        compactorTxnId = msc.openTxn(ci.runAs, TxnType.COMPACTION);
 
         heartbeater = new CompactionHeartbeater(compactorTxnId, fullTableName, conf);
         heartbeater.start();
@@ -229,7 +231,6 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
           }
           heartbeater.cancel();
           msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci));
-          msc.commitTxn(compactorTxnId);
           if (conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST)) {
             mrJob = mr.getMrJob();
           }
@@ -265,7 +266,8 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         LOG.error("Caught an exception in the main loop of compactor worker " + workerName + ", " +
             StringUtils.stringifyException(t));
       } finally {
-        if(heartbeater != null) {
+        commitTxn(compactorTxnId);
+        if (heartbeater != null) {
           heartbeater.cancel();
         }
       }
@@ -280,6 +282,20 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         }
       }
     } while (!stop.get());
+  }
+
+  private void commitTxn(long compactorTxnId) {
+    if (compactorTxnId != NOT_SET) {
+      try {
+        if (msc != null) {
+          msc.commitTxn(compactorTxnId);
+        }
+      } catch (TException e) {
+        LOG.error(
+            "Caught an exception while committing compaction in worker " + workerName + ", "
+                + StringUtils.stringifyException(e));
+      }
+    }
   }
 
   @Override

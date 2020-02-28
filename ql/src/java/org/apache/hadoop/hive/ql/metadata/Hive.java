@@ -2617,18 +2617,13 @@ public class Hive {
     Path acidDir = new Path(loadPath, AcidUtils.baseOrDeltaSubdir(isInsertOverwrite, writeId, writeId, stmtId));
     try {
       FileSystem srcFs = loadPath.getFileSystem(conf);
-      if (srcFs.exists(acidDir) && srcFs.isDirectory(acidDir)){
-        // list out all the files in the path
-        listFilesInsideAcidDirectory(acidDir, srcFs, newFiles);
-      } else {
-        LOG.info("directory does not exist: " + acidDir);
-        return;
-      }
+      listFilesInsideAcidDirectory(acidDir, srcFs, newFiles);
+    } catch (FileNotFoundException e) {
+      LOG.info("directory does not exist: " + acidDir);
     } catch (IOException e) {
       LOG.error("Error listing files", e);
       throw new HiveException(e);
     }
-    return;
   }
 
   private void setStatsPropAndAlterPartition(boolean resetStatistics, Table tbl,

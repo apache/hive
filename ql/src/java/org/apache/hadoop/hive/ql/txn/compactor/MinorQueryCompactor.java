@@ -22,11 +22,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
+import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -45,11 +45,11 @@ import java.util.stream.Collectors;
  */
 final class MinorQueryCompactor extends QueryCompactor {
 
-  public static final String MINOR_COMP_TBL_PROP = "queryminorcomp";
   private static final Logger LOG = LoggerFactory.getLogger(MinorQueryCompactor.class.getName());
 
-  @Override void runCompaction(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
-      ValidWriteIdList writeIds, CompactionInfo compactionInfo) throws IOException {
+  @Override
+  void runCompaction(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
+      ValidWriteIdList writeIds, CompactionInfo compactionInfo) throws IOException, HiveException {
     LOG.info("Running query based minor compaction");
     AcidUtils
         .setAcidOperationalProperties(hiveConf, true, AcidUtils.getAcidOperationalProperties(table.getParameters()));
@@ -64,7 +64,8 @@ final class MinorQueryCompactor extends QueryCompactor {
     conf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_ESTIMATE_STATS, false);
     String tmpTableName =
         table.getDbName() + "_tmp_compactor_" + table.getTableName() + "_" + System.currentTimeMillis();
-    List<String> createQueries = getCreateQueries(table, tmpTableName, dir, writeIds);
+
+    List<String> createQueries = getCreateQueries(table, tmpTableName, dir, writeIds, conf, storageDescriptor);
     List<String> compactionQueries = getCompactionQueries(tmpTableName, writeIds.getInvalidWriteIds());
     List<String> dropQueries = getDropQueries(tmpTableName);
 
@@ -72,14 +73,11 @@ final class MinorQueryCompactor extends QueryCompactor {
         compactionQueries, dropQueries);
   }
 
-  @Override protected void commitCompaction(String dest, String tmpTableName, HiveConf conf,
+  @Override
+  protected void commitCompaction(String dest, String tmpTableName, HiveConf conf,
       ValidWriteIdList actualWriteIds, long compactorTxnId) throws IOException, HiveException {
-    // get result temp tables;
-    String deltaTableName = AcidUtils.DELTA_PREFIX + tmpTableName + "_result";
-    commitCompaction(deltaTableName, dest, false, conf, actualWriteIds, compactorTxnId);
-
-    String deleteDeltaTableName = AcidUtils.DELETE_DELTA_PREFIX + tmpTableName + "_result";
-    commitCompaction(deleteDeltaTableName, dest, true, conf, actualWriteIds, compactorTxnId);
+    Util.cleanupEmptyDir(conf, AcidUtils.DELTA_PREFIX + tmpTableName + "_result");
+    Util.cleanupEmptyDir(conf, AcidUtils.DELETE_DELTA_PREFIX + tmpTableName + "_result");
   }
 
   /**
@@ -95,24 +93,41 @@ final class MinorQueryCompactor extends QueryCompactor {
    * @param tempTableBase an unique identifier which is used to create delta/delete-delta temp tables
    * @param dir the directory, where the delta directories resides
    * @param writeIds list of valid write ids, used to filter out delta directories which are not relevant for compaction
+   * @param conf hive configuration
+   * @param storageDescriptor this is the resolved storage descriptor
    * @return list of create/alter queries, always non-null
    */
   private List<String> getCreateQueries(Table table, String tempTableBase, AcidUtils.Directory dir,
-      ValidWriteIdList writeIds) {
+      ValidWriteIdList writeIds, HiveConf conf, StorageDescriptor storageDescriptor) throws HiveException {
     List<String> queries = new ArrayList<>();
+    long minOpenWriteId = writeIds.getMinOpenWriteId() == null ? 1 : writeIds.getMinOpenWriteId();
+    long highWatermark = writeIds.getHighWatermark();
+    long compactorTxnId = CompactorMR.CompactorMap.getCompactorTxnId(conf);
     // create delta temp table
     String tmpTableName = AcidUtils.DELTA_PREFIX + tempTableBase;
-    queries.add(buildCreateTableQuery(table, tmpTableName, true, true, false));
+    queries.add(buildCreateTableQuery(table, tmpTableName, true, false, null));
     buildAlterTableQuery(tmpTableName, dir, writeIds, false).ifPresent(queries::add);
+    AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf).writingBase(false)
+        .writingDeleteDelta(false).isCompressed(false).minimumWriteId(minOpenWriteId)
+        .maximumWriteId(highWatermark).statementId(-1).visibilityTxnId(compactorTxnId);
+    Path location = new Path(storageDescriptor.getLocation());
+    String tmpTableResultLocation = AcidUtils.baseOrDeltaSubdirPath(location,
+        options).toString();
     // create delta result temp table
-    queries.add(buildCreateTableQuery(table, tmpTableName + "_result", false, false, true));
+    queries.add(buildCreateTableQuery(table, tmpTableName + "_result", false, true,
+        tmpTableResultLocation));
 
     // create delete delta temp tables
     String tmpDeleteTableName = AcidUtils.DELETE_DELTA_PREFIX + tempTableBase;
-    queries.add(buildCreateTableQuery(table, tmpDeleteTableName, true, true, false));
+    queries.add(buildCreateTableQuery(table, tmpDeleteTableName,  true, false, null));
     buildAlterTableQuery(tmpDeleteTableName, dir, writeIds, true).ifPresent(queries::add);
+    options = new AcidOutputFormat.Options(conf).writingBase(false).writingDeleteDelta(true).isCompressed(false)
+        .minimumWriteId(minOpenWriteId).maximumWriteId(highWatermark).statementId(-1).visibilityTxnId(compactorTxnId);
+    String tmpTableDeleteResultLocation = AcidUtils.baseOrDeltaSubdirPath(location,
+        options).toString();
     // create delete delta result temp table
-    queries.add(buildCreateTableQuery(table, tmpDeleteTableName + "_result", false, false, true));
+    queries.add(buildCreateTableQuery(table, tmpDeleteTableName + "_result",  false, true,
+        tmpTableDeleteResultLocation));
     return queries;
   }
 
@@ -121,9 +136,9 @@ final class MinorQueryCompactor extends QueryCompactor {
    * the schema of the table is the same as an ORC ACID file schema.
    * @param table he source table, where the compaction is running on
    * @param newTableName name of the table to be created
-   * @param isExternal true, if new table should be external
    * @param isPartitioned true, if new table should be partitioned
    * @param isBucketed true, if the new table should be bucketed
+   * @param location location of the table, can be null
    * @return a create table statement, always non-null. Example:
    * <p>
    *   if source table schema is: (a:int, b:int)
@@ -135,50 +150,32 @@ final class MinorQueryCompactor extends QueryCompactor {
    *   STORED AS ORC TBLPROPERTIES ('transactional'='false','queryminorcomp'='true');
    * </p>
    */
-  private String buildCreateTableQuery(Table table, String newTableName, boolean isExternal, boolean isPartitioned,
-      boolean isBucketed) {
-    StringBuilder query = new StringBuilder("create temporary ");
-    if (isExternal) {
-      query.append("external ");
-    }
-    query.append("table ").append(newTableName).append(" (");
-    // Acid virtual columns
-    query.append(
-        "`operation` int, `originalTransaction` bigint, `bucket` int, `rowId` bigint, `currentTransaction` bigint, "
-            + "`row` struct<");
-    List<FieldSchema> cols = table.getSd().getCols();
-    boolean isFirst = true;
-    // Actual columns
-    for (FieldSchema col : cols) {
-      if (!isFirst) {
-        query.append(", ");
-      }
-      isFirst = false;
-      query.append("`").append(col.getName()).append("` ").append(":").append(col.getType());
-    }
-    query.append(">)");
+  private String buildCreateTableQuery(Table table, String newTableName, boolean isPartitioned,
+      boolean isBucketed, String location) throws HiveException {
+    StringBuilder query = new StringBuilder(Util.getCreateTempTableQueryWithAcidColumns(newTableName, table));
     if (isPartitioned) {
       query.append(" partitioned by (`file_name` string)");
     }
     int bucketingVersion = 0;
     if (isBucketed) {
       int numBuckets = 1;
-      try {
-        org.apache.hadoop.hive.ql.metadata.Table t = Hive.get().getTable(table.getDbName(), table.getTableName());
+      org.apache.hadoop.hive.ql.metadata.Table t = Hive.get().getTable(table.getDbName(), table.getTableName(), false);
+      if (t != null) {
         numBuckets = Math.max(t.getNumBuckets(), numBuckets);
         bucketingVersion = t.getBucketingVersion();
-      } catch (HiveException e) {
-        LOG.info("Error finding table {}. Minor compaction result will use 0 buckets.", table.getTableName());
-      } finally {
-        query.append(" clustered by (`bucket`)").append(" sorted by (`bucket`, `originalTransaction`, `rowId`)")
-            .append(" into ").append(numBuckets).append(" buckets");
       }
+      query.append(" clustered by (`bucket`)").append(" sorted by (`bucket`, `originalTransaction`, `rowId`)")
+              .append(" into ").append(numBuckets).append(" buckets");
     }
-
     query.append(" stored as orc");
+    if (location != null && !location.isEmpty()) {
+      query.append(" location '");
+      query.append(location);
+      query.append("'");
+    }
     query.append(" tblproperties ('transactional'='false'");
     query.append(", '");
-    query.append(MINOR_COMP_TBL_PROP);
+    query.append(AcidUtils.COMPACTOR_TABLE_PROPERTY);
     query.append("'='true'");
     if (isBucketed) {
       query.append(", 'bucketing_version'='")
@@ -272,23 +269,4 @@ final class MinorQueryCompactor extends QueryCompactor {
     queries.add(dropStm + AcidUtils.DELETE_DELTA_PREFIX + tmpTableBase + "_result");
     return queries;
   }
-
-  /**
-   * Creates the delta directory and moves the result files.
-   * @param deltaTableName name of the temporary table, where the results are stored
-   * @param dest destination path, where the result should be moved
-   * @param isDeleteDelta is the destination a delete delta directory
-   * @param conf hive configuration
-   * @param actualWriteIds list of valid write Ids
-   * @param compactorTxnId transaction Id of the compaction
-   * @throws HiveException the result files cannot be moved
-   * @throws IOException the destination delta directory cannot be created
-   */
-  private void commitCompaction(String deltaTableName, String dest, boolean isDeleteDelta, HiveConf conf,
-      ValidWriteIdList actualWriteIds, long compactorTxnId) throws HiveException, IOException {
-    org.apache.hadoop.hive.ql.metadata.Table deltaTable = Hive.get().getTable(deltaTableName);
-    Util.moveContents(new Path(deltaTable.getSd().getLocation()), new Path(dest), false, isDeleteDelta, conf,
-        actualWriteIds, compactorTxnId);
-  }
-
 }
