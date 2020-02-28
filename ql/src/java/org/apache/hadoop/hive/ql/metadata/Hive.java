@@ -1332,8 +1332,7 @@ public class Hive {
    *              if there's an internal error or if the table doesn't exist
    */
   public Table getTable(TableName tableName, boolean throwException) throws HiveException {
-    return this.getTable(ObjectUtils.firstNonNull(tableName.getDb(), SessionState.get().getCurrentDatabase()),
-        tableName.getTable(), throwException);
+    return this.getTable(tableName.getDb(), tableName.getTable(), throwException);
   }
 
   /**
