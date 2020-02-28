@@ -18,23 +18,22 @@ public class SketchesX {
   private void registerHll(String prefix) {
 
     register(new DataToSketchUDAF(), prefix);
-    system.registerUDF(prefix + "SketchToEstimateAndErrorBounds", SketchToEstimateAndErrorBoundsUDF.class, false);
-    system.registerUDF(prefix + "SketchToEstimate", SketchToEstimateUDF.class, false);
-    system.registerUDF(prefix + "SketchToString", SketchToStringUDF.class, false);
-    system.registerUDF(prefix + "unionSketch_u", UnionSketchUDF.class, false);
+    register(SketchToEstimateAndErrorBoundsUDF.class, prefix);
+    register(SketchToEstimateUDF.class, prefix);
+    register(SketchToStringUDF.class, prefix);
+    register(UnionSketchUDF.class, prefix);
+    register(new UnionSketchUDAF(), prefix);
 
-    system.registerGenericUDAF(prefix + "unionSketch", new UnionSketchUDAF());
+  }
 
-    system.registerGenericUDAF(prefix + "dataToSketch2", new DataToSketchUDAF());
-    system.registerUDF(prefix + "SketchToEstimate2", SketchToEstimateUDF.class, false);
-
-
+  private void register(Class<? extends UDF> udfClass, String prefix) {
+    String name = getUDFName(udfClass);
+    system.registerUDF(prefix + name, udfClass, false);
   }
 
   private void register(GenericUDAFResolver2 udaf, String prefix) {
     String name = getUDFName(udaf.getClass());
     system.registerGenericUDAF(prefix + name, new DataToSketchUDAF());
-
   }
 
   private String getUDFName(Class<?> clazz) {
