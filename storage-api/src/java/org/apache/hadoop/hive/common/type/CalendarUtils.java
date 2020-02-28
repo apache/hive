@@ -37,9 +37,15 @@ import java.util.concurrent.TimeUnit;
  */
 public class CalendarUtils {
 
-  private static SimpleDateFormat createFormatter(String fmt,
-                                                  GregorianCalendar calendar) {
+  public static final long SWITCHOVER_MILLIS;
+  public static final long SWITCHOVER_DAYS;
+
+  private static SimpleDateFormat createFormatter(String fmt, boolean proleptic) {
     SimpleDateFormat result = new SimpleDateFormat(fmt);
+    GregorianCalendar calendar = new GregorianCalendar(UTC);
+    if (proleptic) {
+      calendar.setGregorianChange(new Date(Long.MIN_VALUE));
+    }
     result.setCalendar(calendar);
     return result;
   }
@@ -47,24 +53,17 @@ public class CalendarUtils {
   private static final String DATE = "yyyy-MM-dd";
   private static final String TIME = DATE + " HH:mm:ss.SSS";
   private static final TimeZone UTC = TimeZone.getTimeZone("UTC");
-  private static final GregorianCalendar HYBRID = new GregorianCalendar();
   private static final ThreadLocal<SimpleDateFormat> HYBRID_DATE_FORMAT =
-      ThreadLocal.withInitial(() -> createFormatter(DATE, HYBRID));
+      ThreadLocal.withInitial(() -> createFormatter(DATE, false));
   private static final ThreadLocal<SimpleDateFormat> HYBRID_TIME_FORMAT =
-      ThreadLocal.withInitial(() -> createFormatter(TIME, HYBRID));
-  private static final long SWITCHOVER_MILLIS;
-  private static final long SWITCHOVER_DAYS;
-  private static final GregorianCalendar PROLEPTIC = new GregorianCalendar();
+      ThreadLocal.withInitial(() -> createFormatter(TIME, false));
+
   private static final ThreadLocal<SimpleDateFormat> PROLEPTIC_DATE_FORMAT =
-      ThreadLocal.withInitial(() -> createFormatter(DATE, PROLEPTIC));
+      ThreadLocal.withInitial(() -> createFormatter(DATE, true));
   private static final ThreadLocal<SimpleDateFormat> PROLEPTIC_TIME_FORMAT =
-      ThreadLocal.withInitial(() -> createFormatter(TIME, PROLEPTIC));
+      ThreadLocal.withInitial(() -> createFormatter(TIME, true));
 
   static {
-    HYBRID.setTimeZone(UTC);
-    PROLEPTIC.setTimeZone(UTC);
-    PROLEPTIC.setGregorianChange(new Date(Long.MIN_VALUE));
-
     // Get the last day where the two calendars agree with each other.
     try {
       SWITCHOVER_MILLIS = HYBRID_DATE_FORMAT.get().parse("1582-10-15").getTime();
@@ -175,6 +174,20 @@ public class CalendarUtils {
       }
     }
     return hybrid;
+  }
+
+  /**
+   *
+   * Formats epoch day to date according to proleptic or hybrid calendar
+   *
+   * @param epochDay  epoch day
+   * @param useProleptic if true - uses proleptic formatter, else uses hybrid formatter
+   * @return formatted date
+   */
+  public static String formatDate(long epochDay, boolean useProleptic) {
+    long millis = TimeUnit.DAYS.toMillis(epochDay);
+    return useProleptic ? PROLEPTIC_DATE_FORMAT.get().format(millis)
+        : HYBRID_DATE_FORMAT.get().format(millis);
   }
 
   private CalendarUtils() {
