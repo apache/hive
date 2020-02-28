@@ -177,8 +177,6 @@ public final class FunctionRegistry {
   private static final String NOOP_STREAMING_MAP_TABLE_FUNCTION = "noopwithmapstreaming";
   private static final String MATCH_PATH_TABLE_FUNCTION = "matchpath";
 
-  public static final String ROW_NUMBER_FUNCTION_NAME = "row_number";
-
   public static final Set<String> HIVE_OPERATORS = new HashSet<String>();
 
   static {
@@ -549,7 +547,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF(LEAD_FUNC_NAME, GenericUDFLead.class);
     system.registerGenericUDF(LAG_FUNC_NAME, GenericUDFLag.class);
 
-    system.registerGenericUDAF(ROW_NUMBER_FUNCTION_NAME, new GenericUDAFRowNumber());
+    system.registerGenericUDAF("row_number", new GenericUDAFRowNumber());
     system.registerGenericUDAF("rank", new GenericUDAFRank());
     system.registerGenericUDAF("dense_rank", new GenericUDAFDenseRank());
     system.registerGenericUDAF("percent_rank", new GenericUDAFPercentRank());

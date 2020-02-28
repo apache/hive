@@ -24,7 +24,6 @@ import java.util.Arrays;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
-import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
@@ -45,7 +44,6 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PTFDesc;
 import org.apache.hadoop.hive.ql.plan.VectorDesc;
@@ -405,19 +403,10 @@ public class VectorPTFOperator extends Operator<PTFDesc>
       groupBatches.fillGroupResultsAndForward(this, batch);
     }
 
-    // If we are only processing a PARTITION BY, reset our evaluators.
-    if (!isPartitionOrderBy) {
-      // To keep the row counting correct, don't reset for row_number evaluator if it's not a isLastGroupBatch
-      if (!isLastGroupBatch && isRowNumberFunction()) {
-        return;
-      }
+    // If we are only processing a PARTITION BY and isLastGroupBatch, reset our evaluators.
+    if (!isPartitionOrderBy && isLastGroupBatch) {
       groupBatches.resetEvaluators();
     }
-  }
-
-  private boolean isRowNumberFunction() {
-    return evaluatorFunctionNames.length == 1 && FunctionRegistry.ROW_NUMBER_FUNCTION_NAME
-        .equals(evaluatorFunctionNames[0]);
   }
 
   private boolean isPartitionChanged(VectorizedRowBatch batch) {

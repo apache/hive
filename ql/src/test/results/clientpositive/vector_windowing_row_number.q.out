@@ -900,6 +900,22 @@ POSTHOOK: Input: default@row_numbers_vectorized
 #### A masked pattern was here ####
 diff_exists
 false
+PREHOOK: query: drop table row_numbers_non_vectorized
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@row_numbers_non_vectorized
+PREHOOK: Output: default@row_numbers_non_vectorized
+POSTHOOK: query: drop table row_numbers_non_vectorized
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@row_numbers_non_vectorized
+POSTHOOK: Output: default@row_numbers_non_vectorized
+PREHOOK: query: drop table row_numbers_vectorized
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@row_numbers_vectorized
+PREHOOK: Output: default@row_numbers_vectorized
+POSTHOOK: query: drop table row_numbers_vectorized
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@row_numbers_vectorized
+POSTHOOK: Output: default@row_numbers_vectorized
 PREHOOK: query: drop table row_number_test
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@row_number_test
