@@ -17,21 +17,30 @@
  */
 package org.apache.hadoop.hive.ql.exec;
 
+import static org.apache.hadoop.hive.ql.exec.vector.VectorTopNKeyOperator.checkTopNFilterEfficiency;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Unit test of TopNKeyFilter.
  */
 public class TestTopNKeyFilter {
-
+  private static final Logger LOG = LoggerFactory.getLogger(TestTopNKeyFilter.class.getName());
   public static final Comparator<TestKeyWrapper> TEST_KEY_WRAPPER_COMPARATOR = Comparator.comparingInt(o -> o.keyValue);
 
   @Test
@@ -67,6 +76,51 @@ public class TestTopNKeyFilter {
     assertThat(topNKeyFilter.canForward(new TestKeyWrapper(5)), is(false));
     assertThat(topNKeyFilter.canForward(new TestKeyWrapper(3)), is(true));
     assertThat(topNKeyFilter.canForward(new TestKeyWrapper(1)), is(true));
+  }
+
+  @Test
+  public void testEfficiencyWhenEverythingIsForwarded() {
+    TopNKeyFilter topNKeyFilter = new TopNKeyFilter(2, TEST_KEY_WRAPPER_COMPARATOR);
+    assertThat(topNKeyFilter.canForward(new TestKeyWrapper(5)), is(true));
+    assertThat(topNKeyFilter.canForward(new TestKeyWrapper(4)), is(true));
+    assertThat(topNKeyFilter.canForward(new TestKeyWrapper(3)), is(true));
+    assertThat(topNKeyFilter.canForward(new TestKeyWrapper(2)), is(true));
+    assertThat(topNKeyFilter.canForward(new TestKeyWrapper(1)), is(true));
+    assertThat(topNKeyFilter.forwardingRatio(), is(1.0f));
+  }
+
+  @Test
+  public void testEfficiencyWhenOnlyOneIsForwarded() {
+    TopNKeyFilter topNKeyFilter = new TopNKeyFilter(1, TEST_KEY_WRAPPER_COMPARATOR);
+    assertThat(topNKeyFilter.canForward(new TestKeyWrapper(1)), is(true));
+    assertThat(topNKeyFilter.canForward(new TestKeyWrapper(2)), is(false));
+    assertThat(topNKeyFilter.canForward(new TestKeyWrapper(3)), is(false));
+    assertThat(topNKeyFilter.canForward(new TestKeyWrapper(4)), is(false));
+    assertThat(topNKeyFilter.canForward(new TestKeyWrapper(5)), is(false));
+    assertThat(topNKeyFilter.forwardingRatio(), is(1/5f));
+  }
+
+  @Test
+  public void testDisabling() {
+    TopNKeyFilter efficientFilter = new TopNKeyFilter(1, TEST_KEY_WRAPPER_COMPARATOR);
+    efficientFilter.canForward(new TestKeyWrapper(1));
+    efficientFilter.canForward(new TestKeyWrapper(2));
+    efficientFilter.canForward(new TestKeyWrapper(3));
+
+    TopNKeyFilter inefficientFilter = new TopNKeyFilter(1, TEST_KEY_WRAPPER_COMPARATOR);
+    inefficientFilter.canForward(new TestKeyWrapper(3));
+    inefficientFilter.canForward(new TestKeyWrapper(2));
+    inefficientFilter.canForward(new TestKeyWrapper(1));
+
+    Map<KeyWrapper, TopNKeyFilter> filters = new HashMap<KeyWrapper, TopNKeyFilter>() {{
+      put(new TestKeyWrapper(100), efficientFilter);
+      put(new TestKeyWrapper(200), inefficientFilter);
+    }};
+
+    Set<KeyWrapper> disabled = new HashSet<>();
+    checkTopNFilterEfficiency(filters, disabled, 0.6f, LOG);
+    assertThat(disabled, hasSize(1));
+    assertThat(disabled, hasItem(new TestKeyWrapper(200)));
   }
 
   /**
