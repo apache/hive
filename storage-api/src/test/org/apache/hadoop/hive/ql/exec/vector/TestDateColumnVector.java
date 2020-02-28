@@ -17,6 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.exec.vector;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -77,4 +80,44 @@ public class TestDateColumnVector {
                         " new = " + newUseProleptic,
                         expectedDateString, dateColumnVector.formatDate(0));
   }
+
+  @Test(timeout = 300_000)
+  public void testMultiThreaded() throws Exception {
+
+    //when java DateTimeFormatter/GregorianCalendar race was not handled, used to throw exceptions like -
+
+    // 1) java.lang.NumberFormatException: For input string: "" OR java.lang.NumberFormatException: For input string: ".821582E.821582E44"
+
+    // 2) Caused by: java.lang.ArrayIndexOutOfBoundsException: -5325980
+    //	at sun.util.calendar.BaseCalendar.getCalendarDateFromFixedDate(BaseCalendar.java:453)
+    //	at java.util.GregorianCalendar.computeFields(GregorianCalendar.java:2397)
+
+    // create 5 threads and start manipulating vectors, should not throw any exceptions now.
+
+    List<Thread> threads = new ArrayList<>();
+
+    threads.add(startVectorManipulationThread(50000, -141428));
+    threads.add(startVectorManipulationThread(50000, -141430));
+    threads.add(startVectorManipulationThread(50000, -16768));
+    threads.add(startVectorManipulationThread(50000, -499952));
+    threads.add(startVectorManipulationThread(50000, -499955));
+
+    for (Thread thread : threads) {
+      thread.join();
+    }
+
+  }
+
+  private Thread startVectorManipulationThread(final int vectorLength, final int epochDay) {
+    Thread thread = new Thread(() -> {
+      DateColumnVector columnVector = new DateColumnVector(vectorLength).setUsingProlepticCalendar(true);
+      for (int i = 0; i < vectorLength; i++) {
+        columnVector.vector[i] = epochDay;
+      }
+      columnVector.changeCalendar(false, true);
+    });
+    thread.start();
+    return thread;
+  }
+
 }
