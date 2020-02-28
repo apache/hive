@@ -383,12 +383,11 @@ public final class ExprWalkerProcFactory {
       // For the children, we populate the NewToOldExprMap to keep track of
       // the original condition before rewriting it for this operator
       assert ctx.getNewToOldExprMap().containsKey(expr);
+      List<ExprNodeDesc> exprChildren = expr.getChildren();
+      List<ExprNodeDesc> newToOldList = ctx.getNewToOldExprMap().get(expr).getChildren();
       for (int i = 0; i < expr.getChildren().size(); i++) {
-        ctx.getNewToOldExprMap().put(
-            expr.getChildren().get(i),
-            ctx.getNewToOldExprMap().get(expr).getChildren().get(i));
-        extractFinalCandidates(expr.getChildren().get(i),
-            ctx, conf);
+        ctx.getNewToOldExprMap().put(exprChildren.get(i), newToOldList.get(i));
+        extractFinalCandidates(exprChildren.get(i), ctx, conf);
       }
       return;
     }
