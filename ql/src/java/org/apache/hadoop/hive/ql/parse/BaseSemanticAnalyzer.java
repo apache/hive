@@ -1077,7 +1077,7 @@ public abstract class BaseSemanticAnalyzer {
 
       try {
         // get table metadata
-        tableName = TableName.fromString(getUnescapedName((ASTNode)ast.getChild(0)), null);
+        tableName = HiveTableName.of(getUnescapedName((ASTNode)ast.getChild(0)));
         boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODE);
         if (testMode) {
           tableName = TableName.fromString(String.join("", conf.getVar(HiveConf.ConfVars.HIVETESTMODEPREFIX),

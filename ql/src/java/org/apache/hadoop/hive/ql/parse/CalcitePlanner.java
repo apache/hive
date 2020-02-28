@@ -5322,7 +5322,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
   @Override
   protected Table getTableObjectByName(String tabName, boolean throwException) throws HiveException {
-    final TableName tName = TableName.fromString(tabName, null);
+    // tabNameToTabObject is populated by org.apache.hadoop.hive.ql.metadata.Table, which doesn't yet use cats
+    final TableName tName = TableName.fromString(tabName, SessionState.get().getCurrentDatabase());
     if (!tabNameToTabObject.containsKey(tName.toString())) {
       Table table = db.getTable(tName, throwException);
       if (table != null) {
