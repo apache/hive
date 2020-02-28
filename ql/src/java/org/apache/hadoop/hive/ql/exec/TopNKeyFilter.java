@@ -73,11 +73,30 @@ public final class TopNKeyFilter {
   @Override
   public String toString() {
     final StringBuilder sb = new StringBuilder("TopNKeyFilter{");
-    sb.append("topN=").append(topN);
+    sb.append("id=").append(super.toString());
+    sb.append(", topN=").append(topN);
     sb.append(", repeated=").append(repeated);
     sb.append(", added=").append(added);
     sb.append(", total=").append(total);
+    sb.append(", forwardingRatio=").append(forwardingRatio());
     sb.append('}');
     return sb.toString();
+  }
+
+  /**
+   * Ratio between the forwarded rows and the total incoming rows.
+   * The higher the number is, the less is the efficiency of the filter.
+   * 1 means all rows should be forwarded.
+   * @return
+   */
+  public float forwardingRatio() {
+    if (total == 0) {
+      return 0;
+    }
+    return ((repeated + added) / (float)total);
+  }
+
+  public long getTotal() {
+    return total;
   }
 }
