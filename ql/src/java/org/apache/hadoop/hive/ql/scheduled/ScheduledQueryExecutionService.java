@@ -101,7 +101,7 @@ public class ScheduledQueryExecutionService implements Closeable {
 
     @Override
     public void run() {
-      while (true) {
+      while (!context.executor.isShutdown()) {
         int origResets = forcedScheduleCheckCounter.get();
         if (usedExecutors.get() < context.getNumberOfExecutors()) {
           try {
@@ -232,7 +232,7 @@ public class ScheduledQueryExecutionService implements Closeable {
 
     @Override
     public void run() {
-      while (true) {
+      while (!context.executor.isShutdown()) {
         try {
           Thread.sleep(context.getProgressReporterSleepTime());
         } catch (InterruptedException e) {
@@ -256,11 +256,11 @@ public class ScheduledQueryExecutionService implements Closeable {
       if (INSTANCE == null || INSTANCE != this) {
         throw new IllegalStateException("The current ScheduledQueryExecutionService INSTANCE is invalid");
       }
-      INSTANCE = null;
       context.executor.shutdown();
       try {
         context.executor.awaitTermination(1, TimeUnit.SECONDS);
         context.executor.shutdownNow();
+        INSTANCE = null;
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
       }
