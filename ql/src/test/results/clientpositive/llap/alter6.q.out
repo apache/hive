@@ -1,0 +1,71 @@
+PREHOOK: query: CREATE TABLE t3_br_eod_custody(data_publication_date_time string COMMENT 'from deserializer', booking_entity_name string COMMENT 'from deserializer', booking_entity_country_iso_code string COMMENT 'from deserializer', booking_entity_trade_portfolio_name string COMMENT 'from deserializer', isin string COMMENT 'from deserializer', coupon_rate string COMMENT 'from deserializer', instrument_description string COMMENT 'from deserializer', maturity_date string COMMENT 'from deserializer', source_system_instrument_type string COMMENT 'from deserializer', source_system_instrument_sub_type string COMMENT 'from deserializer', settlement_currency string COMMENT 'from deserializer', quantity string COMMENT 'from deserializer', parvalue string COMMENT 'from deserializer', ifrs9_instrument_classification string COMMENT 'from deserializer', outstanding_amount string COMMENT 'from deserializer', principal_repayment_factor string COMMENT 'from deserializer', day_count_fraction string COMMENT 'from deserializer', cusip string COMMENT 'from deserializer', figi string COMMENT 'from deserializer', issuer_name string COMMENT 'from deserializer', notional_amount_currency string COMMENT 'from deserializer', settlement_date_of_near_transaction string COMMENT 'from deserializer', custodian_account_id string COMMENT 'from deserializer') PARTITIONED BY (reporttype string, source string, eodlevel string, currentbpd string) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde' STORED AS INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat' OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t3_br_eod_custody
+POSTHOOK: query: CREATE TABLE t3_br_eod_custody(data_publication_date_time string COMMENT 'from deserializer', booking_entity_name string COMMENT 'from deserializer', booking_entity_country_iso_code string COMMENT 'from deserializer', booking_entity_trade_portfolio_name string COMMENT 'from deserializer', isin string COMMENT 'from deserializer', coupon_rate string COMMENT 'from deserializer', instrument_description string COMMENT 'from deserializer', maturity_date string COMMENT 'from deserializer', source_system_instrument_type string COMMENT 'from deserializer', source_system_instrument_sub_type string COMMENT 'from deserializer', settlement_currency string COMMENT 'from deserializer', quantity string COMMENT 'from deserializer', parvalue string COMMENT 'from deserializer', ifrs9_instrument_classification string COMMENT 'from deserializer', outstanding_amount string COMMENT 'from deserializer', principal_repayment_factor string COMMENT 'from deserializer', day_count_fraction string COMMENT 'from deserializer', cusip string COMMENT 'from deserializer', figi string COMMENT 'from deserializer', issuer_name string COMMENT 'from deserializer', notional_amount_currency string COMMENT 'from deserializer', settlement_date_of_near_transaction string COMMENT 'from deserializer', custodian_account_id string COMMENT 'from deserializer') PARTITIONED BY (reporttype string, source string, eodlevel string, currentbpd string) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde' STORED AS INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat' OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t3_br_eod_custody
+PREHOOK: query: alter table t3_br_eod_custody add columns (HKMA_Instrument_Id string) CASCADE
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: default@t3_br_eod_custody
+PREHOOK: Output: default@t3_br_eod_custody
+POSTHOOK: query: alter table t3_br_eod_custody add columns (HKMA_Instrument_Id string) CASCADE
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: default@t3_br_eod_custody
+POSTHOOK: Output: default@t3_br_eod_custody
+PREHOOK: query: select * from t3_br_eod_custody
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3_br_eod_custody
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t3_br_eod_custody
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3_br_eod_custody
+#### A masked pattern was here ####
+PREHOOK: query: show create table t3_br_eod_custody
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@t3_br_eod_custody
+POSTHOOK: query: show create table t3_br_eod_custody
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@t3_br_eod_custody
+CREATE TABLE `t3_br_eod_custody`(
+  `data_publication_date_time` string COMMENT 'from deserializer', 
+  `booking_entity_name` string COMMENT 'from deserializer', 
+  `booking_entity_country_iso_code` string COMMENT 'from deserializer', 
+  `booking_entity_trade_portfolio_name` string COMMENT 'from deserializer', 
+  `isin` string COMMENT 'from deserializer', 
+  `coupon_rate` string COMMENT 'from deserializer', 
+  `instrument_description` string COMMENT 'from deserializer', 
+  `maturity_date` string COMMENT 'from deserializer', 
+  `source_system_instrument_type` string COMMENT 'from deserializer', 
+  `source_system_instrument_sub_type` string COMMENT 'from deserializer', 
+  `settlement_currency` string COMMENT 'from deserializer', 
+  `quantity` string COMMENT 'from deserializer', 
+  `parvalue` string COMMENT 'from deserializer', 
+  `ifrs9_instrument_classification` string COMMENT 'from deserializer', 
+  `outstanding_amount` string COMMENT 'from deserializer', 
+  `principal_repayment_factor` string COMMENT 'from deserializer', 
+  `day_count_fraction` string COMMENT 'from deserializer', 
+  `cusip` string COMMENT 'from deserializer', 
+  `figi` string COMMENT 'from deserializer', 
+  `issuer_name` string COMMENT 'from deserializer', 
+  `notional_amount_currency` string COMMENT 'from deserializer', 
+  `settlement_date_of_near_transaction` string COMMENT 'from deserializer', 
+  `custodian_account_id` string COMMENT 'from deserializer', 
+  `hkma_instrument_id` string)
+PARTITIONED BY ( 
+  `reporttype` string, 
+  `source` string, 
+  `eodlevel` string, 
+  `currentbpd` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.OpenCSVSerde' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
