@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.serde2.objectinspector;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 
@@ -529,7 +530,7 @@ public class TestStandardObjectInspectors {
       assertTrue(ObjectInspectorUtils.copyToStandardObject(
           union, uoi1).equals(iList));
 
-      HashMap<Integer, String> map = new HashMap<Integer, String>();
+      HashMap<Integer, String> map = new LinkedHashMap<Integer, String>();
       map.put(6, "six");
       map.put(7, "seven");
       map.put(8, "eight");
