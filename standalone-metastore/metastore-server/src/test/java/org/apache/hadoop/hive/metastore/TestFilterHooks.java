@@ -19,23 +19,26 @@
 package org.apache.hadoop.hive.metastore;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
+import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionSpec;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.util.StringUtils;
 import org.junit.Test;
 
@@ -235,6 +238,11 @@ public class TestFilterHooks {
         .inTable(tab2)
         .addValue("value2")
         .addToTable(client, conf);
+
+    TxnDbUtil.cleanDb(conf);
+    TxnDbUtil.prepDb(conf);
+    client.compact2(DBNAME1, TAB1, null, CompactionType.MAJOR, new HashMap<>());
+    client.compact2(DBNAME1, TAB2, "name=value1", CompactionType.MINOR, new HashMap<>());
   }
 
   /**
@@ -261,6 +269,8 @@ public class TestFilterHooks {
 
     assertNotNull(client.getPartition(DBNAME1, TAB2, "name=value1"));
     assertEquals(1, client.getPartitionsByNames(DBNAME1, TAB2, Lists.newArrayList("name=value1")).size());
+
+    assertEquals(2, client.showCompactions().getCompacts().size());
   }
 
   /**
@@ -279,11 +289,12 @@ public class TestFilterHooks {
     testFilterForDb(true);
     testFilterForTables(true);
     testFilterForPartition(true);
+    testFilterForCompaction();
   }
 
   /**
    * Disable filtering at HMS client
-   * By default, the HMS server side filtering is diabled, so we can see HMS client filtering behavior
+   * By default, the HMS server side filtering is disabled, so we can see HMS client filtering behavior
    * @throws Exception
    */
   @Test
@@ -305,6 +316,8 @@ public class TestFilterHooks {
 
     assertNotNull(client.getPartition(DBNAME1, TAB2, "name=value1"));
     assertEquals(1, client.getPartitionsByNames(DBNAME1, TAB2, Lists.newArrayList("name=value1")).size());
+
+    assertEquals(2, client.showCompactions().getCompacts().size());
   }
 
   /**
@@ -322,6 +335,7 @@ public class TestFilterHooks {
     testFilterForDb(false);
     testFilterForTables(false);
     testFilterForPartition(false);
+    testFilterForCompaction();
   }
 
   protected void testFilterForDb(boolean filterAtServer) throws Exception {
@@ -385,5 +399,9 @@ public class TestFilterHooks {
       assertEquals(0, client.getPartitionsByNames(DBNAME1, TAB2,
           Lists.newArrayList("name=value1")).size());
     }
+  }
+
+  protected void testFilterForCompaction() throws Exception {
+    assertEquals(0, client.showCompactions().getCompacts().size());
   }
 }

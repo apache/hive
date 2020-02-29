@@ -82,6 +82,7 @@ import org.apache.orc.DataReader;
 import org.apache.orc.OrcConf;
 import org.apache.orc.OrcProto;
 import org.apache.orc.OrcProto.BloomFilterIndex;
+import org.apache.orc.OrcProto.CalendarKind;
 import org.apache.orc.OrcProto.FileTail;
 import org.apache.orc.OrcProto.RowIndex;
 import org.apache.orc.OrcProto.Stream;
@@ -104,6 +105,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
+
+import static org.apache.hadoop.hive.llap.LlapHiveUtils.throwIfCacheOnlyRead;
 
 /**
  * This produces EncodedColumnBatch via ORC EncodedDataImpl.
@@ -172,6 +175,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   private Object fileKey;
   private final CacheTag cacheTag;
   private final Map<Path, PartitionDesc> parts;
+  private final boolean isReadCacheOnly;
 
   private Supplier<FileSystem> fsSupplier;
 
@@ -246,6 +250,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED).equalsIgnoreCase("decimal_64"));
     consumer.setFileMetadata(fileMetadata);
     consumer.setSchemaEvolution(evolution);
+    isReadCacheOnly = HiveConf.getBoolVar(jobConf, ConfVars.LLAP_IO_CACHE_ONLY);
   }
 
   @Override
@@ -462,7 +467,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     // Reader creation updates HDFS counters, don't do it here.
     DataWrapperForOrc dw = new DataWrapperForOrc();
     stripeReader = orcReader.encodedReader(
-        fileKey, dw, dw, useObjectPools ? POOL_FACTORY : null, trace, useCodecPool, cacheTag);
+        fileKey, dw, dw, useObjectPools ? POOL_FACTORY : null, trace, useCodecPool, cacheTag, isReadCacheOnly);
     stripeReader.setTracing(LlapIoImpl.ORC_LOGGER.isTraceEnabled());
     stripeReader.setStopped(isStopped);
   }
@@ -610,6 +615,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
         }
       }
       counters.incrCounter(LlapIOCounters.METADATA_CACHE_MISS);
+      throwIfCacheOnlyRead(isReadCacheOnly);
     }
     ensureOrcReader();
     ByteBuffer tailBufferBb = orcReader.getSerializedFileFooter();
@@ -691,6 +697,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
         }
       }
       counters.incrCounter(LlapIOCounters.METADATA_CACHE_MISS);
+      throwIfCacheOnlyRead(isReadCacheOnly);
     }
     long offset = si.getOffset() + si.getIndexLength() + si.getDataLength();
     long startTime = counters.startTimeCounter();
@@ -798,7 +805,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       sargApp = new RecordReaderImpl.SargApplier(sarg,
           rowIndexStride, evolution,
           OrcFile.WriterVersion.from(OrcFile.WriterImplementation.ORC_JAVA, fileMetadata.getWriterVersionNum()),
-          true);
+          true, fileMetadata.getCalendar() == CalendarKind.PROLEPTIC_GREGORIAN, true);
     }
     boolean hasAnyData = false;
     // stripeRgs should have been initialized by this time with an empty array.

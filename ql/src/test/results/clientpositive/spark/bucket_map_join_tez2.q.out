@@ -2527,7 +2527,7 @@ STAGE PLANS:
                     serialization.ddl struct my_dim { string join_col, string filter_col}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 338
+                    totalSize 340
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -2549,7 +2549,7 @@ STAGE PLANS:
                       serialization.ddl struct my_dim { string join_col, string filter_col}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 338
+                      totalSize 340
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.my_dim

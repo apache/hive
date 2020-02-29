@@ -474,7 +474,7 @@ public class TestTxnCommands2 {
         sawNewDelta = true;
         FileStatus[] buckets = fs.listStatus(status[i].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
         Assert.assertEquals(1, buckets.length); // only one bucket file
-        Assert.assertTrue(buckets[0].getPath().getName().matches("bucket_00000"));
+        Assert.assertTrue(buckets[0].getPath().getName().matches("bucket_00000_0"));
       } else {
         Assert.assertTrue(status[i].getPath().getName().matches("00000[01]_0"));
       }
@@ -776,7 +776,7 @@ public class TestTxnCommands2 {
         } else if (numDelta == 2) {
           Assert.assertEquals("delta_10000002_10000002_0000", status[i].getPath().getName());
           Assert.assertEquals(1, buckets.length);
-          Assert.assertEquals("bucket_00000", buckets[0].getPath().getName());
+          Assert.assertEquals("bucket_00000_0", buckets[0].getPath().getName());
         }
       } else if (status[i].getPath().getName().matches("delete_delta_.*")) {
         numDeleteDelta++;

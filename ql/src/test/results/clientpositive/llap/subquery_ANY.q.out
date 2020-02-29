@@ -308,7 +308,7 @@ POSTHOOK: Input: default@part
 POSTHOOK: Input: default@part_null_n0
 #### A masked pattern was here ####
 26
-Warning: Shuffle Join MERGEJOIN[37][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[39][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: select count(*) from part where (p_size= ANY (select p_partkey from part_null_n0)) is null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
@@ -320,8 +320,8 @@ POSTHOOK: Input: default@part
 POSTHOOK: Input: default@part_null_n0
 #### A masked pattern was here ####
 26
-Warning: Shuffle Join MERGEJOIN[37][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
-Warning: Shuffle Join MERGEJOIN[38][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Stage 'Reducer 4' is a cross product
+Warning: Shuffle Join MERGEJOIN[39][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[40][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: select count(*) from part where (p_partkey = ANY (select p_partkey from part_null_n0 where p_partkey is null)) is null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part

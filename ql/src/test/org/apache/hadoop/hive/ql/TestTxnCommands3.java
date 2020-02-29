@@ -76,7 +76,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     String testQuery = "select ROW__ID, a, b, INPUT__FILE__NAME from mydb1.S";
     String[][] expected = new String[][] {
         {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t1\t2",
-            "s/delta_0000001_0000001_0000/bucket_00000"},
+            "s/delta_0000001_0000001_0000/bucket_00000_0"},
         {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t4\t6",
             "s/delta_0000002_0000002_0000/bucket_00000"}};
     checkResult(expected, testQuery, false, "check data", LOG);
@@ -273,14 +273,14 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
         "select ROW__ID, a, b, ds, INPUT__FILE__NAME from acid_uap order by ds, a, b";
     String[][] expected = new String[][]{
         {"{\"writeid\":2,\"bucketid\":536936448,\"rowid\":0}\t1\tbah\ttoday",
-            "warehouse/acid_uap/ds=today/delta_0000002_0000002_0000/bucket_00001"},
+            "warehouse/acid_uap/ds=today/delta_0000002_0000002_0000/bucket_00001_0"},
         {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t2\tyah\ttoday",
-            "warehouse/acid_uap/ds=today/delta_0000002_0000002_0000/bucket_00000"},
+            "warehouse/acid_uap/ds=today/delta_0000002_0000002_0000/bucket_00000_0"},
 
         {"{\"writeid\":1,\"bucketid\":536936448,\"rowid\":0}\t1\tbah\ttomorrow",
-            "warehouse/acid_uap/ds=tomorrow/delta_0000001_0000001_0000/bucket_00001"},
+            "warehouse/acid_uap/ds=tomorrow/delta_0000001_0000001_0000/bucket_00001_0"},
         {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t2\tyah\ttomorrow",
-            "warehouse/acid_uap/ds=tomorrow/delta_0000001_0000001_0000/bucket_00000"}};
+            "warehouse/acid_uap/ds=tomorrow/delta_0000001_0000001_0000/bucket_00000_0"}};
     checkResult(expected, testQuery, isVectorized, "after insert", LOG);
 
     runStatementOnDriver("update acid_uap set b = 'fred'");
@@ -324,9 +324,9 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     String testQuery = "select ROW__ID, a, b, INPUT__FILE__NAME from T";
     String[][] expected = new String[][] {
         {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t0\t2",
-            "t/delta_0000001_0000001_0000/bucket_00000"},
+            "t/delta_0000001_0000001_0000/bucket_00000_0"},
         {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t1\t4",
-            "t/delta_0000002_0000002_0000/bucket_00000"}};
+            "t/delta_0000002_0000002_0000/bucket_00000_0"}};
     checkResult(expected, testQuery, false, "check data", LOG);
 
 
@@ -468,5 +468,48 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     openResp =  txnHandler.getOpenTxns();
     //now the aborted compactor txn is gone
     Assert.assertEquals(openResp.toString(), 0, openResp.getOpen_txnsSize());
+  }
+
+  /**
+   * Not enough deltas to compact, no need to clean: there is absolutely nothing to do.
+   */
+  @Test public void testNotEnoughToCompact() throws Exception {
+    int[][] tableData = {{1, 2}, {3, 4}};
+    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) " + makeValuesClause(tableData));
+    runStatementOnDriver("alter table " + TestTxnCommands2.Table.ACIDTBL + " compact 'MAJOR'");
+
+    runWorker(hiveConf);
+    assertTableIsEmpty("TXNS");
+    assertTableIsEmpty("TXN_COMPONENTS");
+
+    runCleaner(hiveConf);
+    assertTableIsEmpty("TXNS");
+    assertTableIsEmpty("TXN_COMPONENTS");
+  }
+
+  /**
+   * There aren't enough deltas to compact, but cleaning is needed because an insert overwrite
+   * was executed.
+   */
+  @Test public void testNotEnoughToCompactNeedsCleaning() throws Exception {
+    int[][] tableData = {{1, 2}, {3, 4}};
+    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) " + makeValuesClause(tableData));
+    runStatementOnDriver(
+        "insert overwrite table " + Table.ACIDTBL + " " + makeValuesClause(tableData));
+
+    runStatementOnDriver("alter table " + TestTxnCommands2.Table.ACIDTBL + " compact 'MAJOR'");
+
+    runWorker(hiveConf);
+    assertTableIsEmpty("TXNS");
+    assertTableIsEmpty("TXN_COMPONENTS");
+
+    runCleaner(hiveConf);
+    assertTableIsEmpty("TXNS");
+    assertTableIsEmpty("TXN_COMPONENTS");
+  }
+
+  private void assertTableIsEmpty(String table) throws Exception {
+    Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from " + table), 0,
+        TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from " + table));
   }
 }

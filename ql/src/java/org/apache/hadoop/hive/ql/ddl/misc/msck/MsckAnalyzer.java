@@ -37,7 +37,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Analyzer for metastore check commands.
  */
-@DDLType(type=HiveParser.TOK_MSCK)
+@DDLType(types = HiveParser.TOK_MSCK)
 public class MsckAnalyzer extends AbstractFunctionAnalyzer {
   public MsckAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

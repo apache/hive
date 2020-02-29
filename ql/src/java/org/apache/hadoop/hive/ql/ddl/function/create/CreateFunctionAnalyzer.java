@@ -42,7 +42,7 @@ import com.google.common.collect.ImmutableMap;
 /**
  * Analyzer for function creation commands.
  */
-@DDLType(type=HiveParser.TOK_CREATEFUNCTION)
+@DDLType(types = HiveParser.TOK_CREATEFUNCTION)
 public class CreateFunctionAnalyzer extends AbstractFunctionAnalyzer {
   private static final Logger SESSION_STATE_LOG = LoggerFactory.getLogger("SessionState");
 

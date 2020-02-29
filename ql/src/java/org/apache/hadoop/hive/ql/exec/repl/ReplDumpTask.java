@@ -172,7 +172,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
    */
   private boolean shouldDumpExternalTableLocation() {
     return conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES)
-            && !conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY);
+            && (!conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY) &&
+            !conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY_FOR_EXTERNAL_TABLE));
   }
 
   /**
@@ -491,9 +492,6 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
 
       String uniqueKey = Utils.setDbBootstrapDumpState(hiveDb, dbName);
       Exception caught = null;
-      boolean shouldWriteExternalTableLocationInfo =
-              conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES)
-                      && !conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY);
       try (Writer writer = new Writer(dbRoot, conf)) {
         for (String tblName : Utils.matchesTbl(hiveDb, dbName, work.replScope)) {
           LOG.debug("Dumping table: " + tblName + " to db root " + dbRoot.toUri());
@@ -502,7 +500,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           try {
             HiveWrapper.Tuple<Table> tableTuple = new HiveWrapper(hiveDb, dbName).table(tblName, conf);
             table = tableTuple != null ? tableTuple.object : null;
-            if (shouldWriteExternalTableLocationInfo
+            if (shouldDumpExternalTableLocation()
                     && TableType.EXTERNAL_TABLE.equals(tableTuple.object.getTableType())) {
               LOG.debug("Adding table {} to external tables list", tblName);
               writer.dataLocationDump(tableTuple.object);
@@ -583,6 +581,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       tuple.replicationSpec.setCurrentReplicationState(String.valueOf(lastReplId));
     }
     MmContext mmCtx = MmContext.createIfNeeded(tableSpec.tableHandle);
+    tuple.replicationSpec.setRepl(true);
     new TableExport(
         exportPaths, tableSpec, tuple.replicationSpec, hiveDb, distCpDoAsUser, conf, mmCtx).write();
 

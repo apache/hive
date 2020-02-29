@@ -48,17 +48,9 @@ import com.google.common.collect.ImmutableList;
 
 public class HiveRelMdDistinctRowCount extends RelMdDistinctRowCount {
 
-  private static final HiveRelMdDistinctRowCount INSTANCE =
-      new HiveRelMdDistinctRowCount();
-
-  public static final RelMetadataProvider SOURCE = ChainedRelMetadataProvider
-      .of(ImmutableList.of(
-
+  public static final RelMetadataProvider SOURCE =
       ReflectiveRelMetadataProvider.reflectiveSource(
-          BuiltInMethod.DISTINCT_ROW_COUNT.method, INSTANCE),
-
-      ReflectiveRelMetadataProvider.reflectiveSource(
-          BuiltInMethod.CUMULATIVE_COST.method, INSTANCE)));
+          BuiltInMethod.DISTINCT_ROW_COUNT.method, new HiveRelMdDistinctRowCount());
 
   private HiveRelMdDistinctRowCount() {
   }
@@ -165,19 +157,4 @@ public class HiveRelMdDistinctRowCount extends RelMdDistinctRowCount {
     return RelMdUtil.numDistinctVals(distRowCount, mq.getRowCount(joinRel));
   }
 
-  /*
-   * Favor Broad Plans over Deep Plans.
-   */
-  public RelOptCost getCumulativeCost(HiveJoin rel, RelMetadataQuery mq) {
-    RelOptCost cost = mq.getNonCumulativeCost(rel);
-    List<RelNode> inputs = rel.getInputs();
-    RelOptCost maxICost = HiveCost.ZERO;
-    for (RelNode input : inputs) {
-      RelOptCost iCost = mq.getCumulativeCost(input);
-      if (maxICost.isLt(iCost)) {
-        maxICost = iCost;
-      }
-    }
-    return cost.plus(maxICost);
-  }
 }

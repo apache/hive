@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Analyzer for function describing commands.
  */
-@DDLType(type=HiveParser.TOK_DESCFUNCTION)
+@DDLType(types = HiveParser.TOK_DESCFUNCTION)
 public class DescFunctionAnalyzer extends AbstractFunctionAnalyzer {
   public DescFunctionAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

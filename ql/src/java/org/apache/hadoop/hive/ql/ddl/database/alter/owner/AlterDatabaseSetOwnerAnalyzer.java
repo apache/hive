@@ -30,7 +30,7 @@ import org.apache.hadoop.hive.ql.parse.authorization.AuthorizationParseUtils;
 /**
  * Analyzer for database set owner commands.
  */
-@DDLType(type=HiveParser.TOK_ALTERDATABASE_OWNER)
+@DDLType(types = HiveParser.TOK_ALTERDATABASE_OWNER)
 public class AlterDatabaseSetOwnerAnalyzer extends AbstractAlterDatabaseAnalyzer {
   public AlterDatabaseSetOwnerAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

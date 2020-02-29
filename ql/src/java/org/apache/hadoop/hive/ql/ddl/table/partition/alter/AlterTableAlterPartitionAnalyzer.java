@@ -39,7 +39,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Analyzer for alter partition commands.
  */
-@DDLType(type=HiveParser.TOK_ALTERTABLE_PARTCOLTYPE)
+@DDLType(types = HiveParser.TOK_ALTERTABLE_PARTCOLTYPE)
 public  class AlterTableAlterPartitionAnalyzer extends AbstractAlterTableAnalyzer {
   public AlterTableAlterPartitionAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

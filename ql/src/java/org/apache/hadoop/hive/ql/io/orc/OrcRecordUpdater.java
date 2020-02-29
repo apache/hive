@@ -107,7 +107,6 @@ public class OrcRecordUpdater implements RecordUpdater {
   final static long DELTA_STRIPE_SIZE = 16 * 1024 * 1024;
 
   private static final Charset UTF8 = Charset.forName("UTF-8");
-  private static final CharsetDecoder utf8Decoder = UTF8.newDecoder();
 
   private final AcidOutputFormat.Options options;
   private final AcidUtils.AcidOperationalProperties acidOperationalProperties;
@@ -621,7 +620,14 @@ public class OrcRecordUpdater implements RecordUpdater {
     if (writer == null) {
       writer = OrcFile.createWriter(path, writerOptions);
       AcidUtils.OrcAcidVersion.setAcidVersionInDataFile(writer);
-      AcidUtils.OrcAcidVersion.writeVersionFile(path.getParent(), fs);
+      try {
+        AcidUtils.OrcAcidVersion.writeVersionFile(path.getParent(), fs);
+      } catch (Exception e) {
+        e.printStackTrace();
+        // Ignore; might have been created by another concurrent writer, writing to a different bucket
+        // within this delta/base directory
+        LOG.trace(e.fillInStackTrace().toString());
+      }
     }
   }
 
@@ -649,6 +655,7 @@ public class OrcRecordUpdater implements RecordUpdater {
       ByteBuffer val =
           reader.getMetadataValue(OrcRecordUpdater.ACID_KEY_INDEX_NAME)
               .duplicate();
+      CharsetDecoder utf8Decoder = UTF8.newDecoder();
       stripes = utf8Decoder.decode(val).toString().split(";");
     } catch (CharacterCodingException e) {
       throw new IllegalArgumentException("Bad string encoding for " +
@@ -805,5 +812,10 @@ public class OrcRecordUpdater implements RecordUpdater {
     int currentBucketProperty = bucket.get();
     bucket.set(bucketProperty);
     return currentBucketProperty;
+  }
+
+  @Override
+  public Path getUpdatedFilePath() {
+    return path;
   }
 }

@@ -419,7 +419,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           db.loadTable(tbd.getSourcePath(), tbd.getTable().getTableName(), tbd.getLoadFileType(),
                   work.isSrcLocal(), isSkewedStoredAsDirs(tbd), isFullAcidOp,
                   resetStatisticsProps(table), tbd.getWriteId(), tbd.getStmtId(),
-                  tbd.isInsertOverwrite());
+                  tbd.isInsertOverwrite(), tbd.isDirectInsert());
           if (work.getOutputs() != null) {
             DDLUtils.addIfAbsentByName(new WriteEntity(table,
               getWriteType(tbd, work.getLoadTableWork().getWriteType())), work.getOutputs());
@@ -521,7 +521,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID &&
                     !tbd.isMmTable(),
             resetStatisticsProps(table), tbd.getWriteId(), tbd.getStmtId(),
-            tbd.isInsertOverwrite());
+            tbd.isInsertOverwrite(), tbd.isDirectInsert());
     Partition partn = db.getPartition(table, tbd.getPartitionSpec(), false);
 
     // See the comment inside updatePartitionBucketSortColumns.
@@ -568,7 +568,9 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         tbd.getStmtId(),
         resetStatisticsProps(table),
         work.getLoadTableWork().getWriteType(),
-        tbd.isInsertOverwrite());
+        tbd.isInsertOverwrite(),
+        tbd.isDirectInsert()
+        );
 
     // publish DP columns to its subscribers
     if (dps != null && dps.size() > 0) {

@@ -25,6 +25,7 @@ import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.parquet.convert.DataWritableRecordConverter;
 import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
@@ -285,6 +286,25 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
   }
 
   /**
+   * Get the proleptic from some metadata, otherwise return null.
+   */
+  public static Boolean getWriterDateProleptic(Map<String, String> metadata) {
+    if (metadata == null) {
+      return null;
+    }
+    String value = metadata.get(DataWritableWriteSupport.WRITER_DATE_PROLEPTIC);
+    try {
+      if (value != null) {
+        return Boolean.valueOf(value);
+      }
+    } catch (DateTimeException e) {
+      throw new RuntimeException("Can't parse writer proleptic property stored in file metadata", e);
+    }
+
+    return null;
+  }
+
+  /**
    * Return the columns which contains required nested attribute level
    * E.g., given struct a:<x:int, y:int> while 'x' is required and 'y' is not, the method will return
    * a pruned struct for 'a' which only contains the attribute 'x'
@@ -485,6 +505,22 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
     } else if (!metadata.get(writerTimezone).equals(keyValueMetaData.get(writerTimezone))) {
       throw new IllegalStateException("Metadata contains a writer time zone that does not match "
           + "file footer's writer time zone.");
+    }
+
+    String writerProleptic = DataWritableWriteSupport.WRITER_DATE_PROLEPTIC;
+    if (!metadata.containsKey(writerProleptic)) {
+      if (keyValueMetaData.containsKey(writerProleptic)) {
+        metadata.put(writerProleptic, keyValueMetaData.get(writerProleptic));
+      }
+    } else if (!metadata.get(writerProleptic).equals(keyValueMetaData.get(writerProleptic))) {
+      throw new IllegalStateException("Metadata contains a writer proleptic property value that does not match "
+          + "file footer's value.");
+    }
+
+    String prolepticDefault = ConfVars.HIVE_PARQUET_DATE_PROLEPTIC_GREGORIAN_DEFAULT.varname;
+    if (!metadata.containsKey(prolepticDefault)) {
+      metadata.put(prolepticDefault, String.valueOf(HiveConf.getBoolVar(
+          configuration, HiveConf.ConfVars.HIVE_PARQUET_DATE_PROLEPTIC_GREGORIAN_DEFAULT)));
     }
 
     return new DataWritableRecordConverter(readContext.getRequestedSchema(), metadata, hiveTypeInfo);

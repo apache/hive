@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
@@ -251,7 +252,9 @@ public class FixedBucketPruningOptimizer extends Transform {
       // This is a bit hackish to fix mismatch between SARG and Hive types
       // for Timestamp and Date. TODO: Move those types to storage-api.
       if (o instanceof java.sql.Date) {
-        return Date.valueOf(o.toString());
+        java.sql.Date sqlDate = (java.sql.Date)o;
+        return Date.ofEpochDay(
+            DateWritable.millisToDays(sqlDate.getTime()));
       } else if (o instanceof java.sql.Timestamp) {
         java.sql.Timestamp sqlTimestamp = (java.sql.Timestamp)o;
         return Timestamp.ofEpochMilli(sqlTimestamp.getTime(), sqlTimestamp.getNanos());

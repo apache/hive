@@ -176,6 +176,9 @@ public final class TxnDbUtil {
           " CC_HADOOP_JOB_ID varchar(32)," +
           " CC_ERROR_MESSAGE clob)");
 
+      stmt.execute("CREATE INDEX COMPLETED_COMPACTIONS_RES ON COMPLETED_COMPACTIONS ("
+          + "CC_DATABASE,CC_TABLE,CC_PARTITION)");
+
       stmt.execute("CREATE TABLE AUX_TABLE (" +
         " MT_KEY1 varchar(128) NOT NULL," +
         " MT_KEY2 bigint NOT NULL," +

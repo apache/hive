@@ -406,10 +406,12 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     pushProjectionsAndFilters(job, inputFormatClass, splitPath, nonNative);
 
     InputFormat inputFormat = getInputFormatFromCache(inputFormatClass, job);
-    try {
-      inputFormat = HiveInputFormat.wrapForLlap(inputFormat, job, part);
-    } catch (HiveException e) {
-      throw new IOException(e);
+    if (HiveConf.getBoolVar(job, ConfVars.LLAP_IO_ENABLED, LlapProxy.isDaemon())) {
+      try {
+        inputFormat = HiveInputFormat.wrapForLlap(inputFormat, job, part);
+      } catch (HiveException e) {
+        throw new IOException(e);
+      }
     }
     RecordReader innerReader = null;
     try {

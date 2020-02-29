@@ -80,6 +80,7 @@ File Version: 0.12 with ORC_517
 Rows: 1
 Compression: ZLIB
 Compression size: 32768
+Calendar: Julian/Gregorian
 Type: struct<operation:int,originalTransaction:bigint,bucket:int,rowId:bigint,currentTransaction:bigint,row:struct<msisdn:string,imsi:varchar(20),imei:bigint,cell_id:bigint>>
 
 Stripe Statistics:
@@ -179,7 +180,7 @@ Stripes:
       Entry 0: numHashFunctions: 6 bitCount: 81472 popCount: 6 loadFactor: 0.0001 expectedFpp: 1.5953551E-25
       Stripe level merge: numHashFunctions: 6 bitCount: 81472 popCount: 6 loadFactor: 0.0001 expectedFpp: 1.5953551E-25
 
-File length: 1203 bytes
+File length: 1205 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
 
@@ -196,6 +197,7 @@ File Version: 0.12 with ORC_517
 Rows: 1
 Compression: ZLIB
 Compression size: 32768
+Calendar: Julian/Gregorian
 Type: struct<operation:int,originalTransaction:bigint,bucket:int,rowId:bigint,currentTransaction:bigint,row:struct<msisdn:string,imsi:varchar(20),imei:bigint,cell_id:bigint>>
 
 Stripe Statistics:
@@ -295,7 +297,7 @@ Stripes:
       Entry 0: numHashFunctions: 6 bitCount: 81472 popCount: 6 loadFactor: 0.0001 expectedFpp: 1.5953551E-25
       Stripe level merge: numHashFunctions: 6 bitCount: 81472 popCount: 6 loadFactor: 0.0001 expectedFpp: 1.5953551E-25
 
-File length: 1211 bytes
+File length: 1212 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
 

@@ -234,7 +234,7 @@ STAGE PLANS:
           keys: KEY._col0 (type: string)
           mode: partial1
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 500 Data size: 51000 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
             table:
@@ -251,7 +251,7 @@ STAGE PLANS:
               null sort order: z
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 500 Data size: 51000 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col1 (type: bigint), _col2 (type: bigint)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -260,14 +260,14 @@ STAGE PLANS:
           keys: KEY._col0 (type: string)
           mode: final
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 307 Data size: 61400 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 307 Data size: 31314 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: _col0 (type: string), UDFToInteger(_col1) (type: int), UDFToInteger(_col2) (type: int)
             outputColumnNames: _col0, _col1, _col2
-            Statistics: Num rows: 307 Data size: 58944 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 307 Data size: 28858 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 307 Data size: 58944 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 307 Data size: 28858 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -276,7 +276,7 @@ STAGE PLANS:
             Select Operator
               expressions: _col0 (type: string), _col1 (type: int), _col2 (type: int)
               outputColumnNames: key, val1, val2
-              Statistics: Num rows: 307 Data size: 85653 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 307 Data size: 55567 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
                 table:
@@ -305,7 +305,7 @@ STAGE PLANS:
               null sort order: z
               sort order: +
               Map-reduce partition columns: rand() (type: double)
-              Statistics: Num rows: 307 Data size: 85653 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 307 Data size: 55567 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: key (type: string), val1 (type: int), val2 (type: int)
       Execution mode: vectorized
       Reduce Operator Tree:

@@ -98,6 +98,10 @@
       <artifactId>hive-spark-client</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-storage-api</artifactId>
+    </dependency>
     <!-- inter-project -->
     <dependency>
       <groupId>com.esotericsoftware</groupId>
@@ -977,6 +981,7 @@
                   <include>net.sf.opencsv:opencsv</include>
                   <include>org.apache.hive:hive-spark-client</include>
                   <include>org.apache.hive:hive-storage-api</include>
+                  <include>org.threeten:threeten-extra</include>
                   <include>org.apache.orc:orc-core</include>
                   <include>org.apache.orc:orc-shims</include>
                   <include>org.apache.orc:orc-tools</include>

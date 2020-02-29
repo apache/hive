@@ -35,7 +35,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Analyzer for lock table commands.
  */
-@DDLType(type=HiveParser.TOK_LOCKTABLE)
+@DDLType(types = HiveParser.TOK_LOCKTABLE)
 public class LockTableAnalyzer extends BaseSemanticAnalyzer {
   public LockTableAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

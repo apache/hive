@@ -87,7 +87,6 @@ import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.Bug;
 import org.apache.calcite.util.Holder;
 import org.apache.calcite.util.ImmutableBitSet;
-import org.apache.calcite.util.ImmutableIntList;
 import org.apache.calcite.util.Litmus;
 import org.apache.calcite.util.Pair;
 import org.apache.calcite.util.ReflectUtil;
@@ -1907,7 +1906,7 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
             o1 = decorrFieldAccess((RexFieldAccess) o1);
             isCorrelated = true;
           }
-          if (isCorrelated && RexUtil.eq(o0, o1)) {
+          if (isCorrelated && o0.equals(o1)) {
             return rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_NULL, o0);
           }
 

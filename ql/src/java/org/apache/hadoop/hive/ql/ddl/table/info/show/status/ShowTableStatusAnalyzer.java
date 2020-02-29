@@ -37,7 +37,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 /**
  * Analyzer for show table status commands.
  */
-@DDLType(type=HiveParser.TOK_SHOW_TABLESTATUS)
+@DDLType(types = HiveParser.TOK_SHOW_TABLESTATUS)
 public class ShowTableStatusAnalyzer extends BaseSemanticAnalyzer {
   public ShowTableStatusAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

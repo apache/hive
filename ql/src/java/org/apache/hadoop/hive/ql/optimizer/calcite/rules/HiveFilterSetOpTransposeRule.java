@@ -34,6 +34,7 @@ import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexExecutor;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexSimplify;
+import org.apache.calcite.rex.RexUnknownAs;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.tools.RelBuilderFactory;
@@ -49,22 +50,22 @@ public class HiveFilterSetOpTransposeRule extends FilterSetOpTransposeRule {
           new HiveFilterSetOpTransposeRule(HiveRelFactories.HIVE_BUILDER);
 
   /**
-   * Creates a HiveFilterSetOpTransposeRule. 
-   * This rule rewrites 
-   *       Fil 
-   *        | 
-   *      Union 
+   * Creates a HiveFilterSetOpTransposeRule.
+   * This rule rewrites
+   *       Fil
+   *        |
+   *      Union
    *       / \
    *     Op1 Op2
-   * 
-   * to 
-   *       Union 
-   *         /\ 
-   *         FIL 
-   *         | | 
+   *
+   * to
+   *       Union
+   *         /\
+   *         FIL
+   *         | |
    *       Op1 Op2
-   * 
-   * 
+   *
+   *
    * It additionally can remove branch(es) of filter if its able to determine
    * that they are going to generate empty result set.
    */
@@ -115,9 +116,9 @@ public class HiveFilterSetOpTransposeRule extends FilterSetOpTransposeRule {
           listBuilder.add(newCondition);
           RexExecutor executor =
               Util.first(filterRel.getCluster().getPlanner().getExecutor(), RexUtil.EXECUTOR);
-          final RexSimplify simplify =
-              new RexSimplify(rexBuilder, true, executor);
-          final RexNode x = simplify.simplifyAnds(listBuilder.build());
+          final RexSimplify simplify = new RexSimplify(rexBuilder, RelOptPredicateList.EMPTY, executor);
+          final RexNode cond = RexUtil.composeConjunction(rexBuilder, listBuilder.build());
+          final RexNode x = simplify.simplifyUnknownAs(cond, RexUnknownAs.FALSE);
           if (x.isAlwaysFalse()) {
             // this is the last branch, and it is always false
             // We assume alwaysFalse filter will get pushed down to TS so this

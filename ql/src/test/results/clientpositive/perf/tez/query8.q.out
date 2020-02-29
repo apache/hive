@@ -271,7 +271,7 @@ Stage-0
                           <-Map 18 [SIMPLE_EDGE] vectorized
                             SHUFFLE [RS_149]
                               PartitionCols:_col2
-                              Select Operator [SEL_148] (rows=1704 width=276)
+                              Select Operator [SEL_148] (rows=1704 width=178)
                                 Output:["_col0","_col1","_col2"]
                                 Filter Operator [FIL_147] (rows=1704 width=181)
                                   predicate:(s_store_sk is not null and substr(s_zip, 1, 2) is not null)
@@ -280,24 +280,24 @@ Stage-0
                           <-Reducer 11 [SIMPLE_EDGE] vectorized
                             SHUFFLE [RS_146]
                               PartitionCols:_col0
-                              Select Operator [SEL_145] (rows=1 width=184)
+                              Select Operator [SEL_145] (rows=1 width=86)
                                 Output:["_col0"]
-                                Filter Operator [FIL_144] (rows=1 width=192)
+                                Filter Operator [FIL_144] (rows=1 width=96)
                                   predicate:(_col1 = 2L)
-                                  Group By Operator [GBY_143] (rows=5633 width=192)
+                                  Group By Operator [GBY_143] (rows=5633 width=96)
                                     Output:["_col0","_col1"],aggregations:["count(VALUE._col0)"],keys:KEY._col0
                                   <-Union 10 [SIMPLE_EDGE]
                                     <-Reducer 16 [CONTAINS] vectorized
                                       Reduce Output Operator [RS_175]
                                         PartitionCols:_col0
-                                        Group By Operator [GBY_174] (rows=5633 width=192)
+                                        Group By Operator [GBY_174] (rows=5633 width=96)
                                           Output:["_col0","_col1"],aggregations:["count(_col1)"],keys:_col0
-                                          Group By Operator [GBY_173] (rows=1126 width=192)
+                                          Group By Operator [GBY_173] (rows=1126 width=96)
                                             Output:["_col0","_col1"],aggregations:["count(VALUE._col0)"],keys:KEY._col0
                                           <-Reducer 15 [SIMPLE_EDGE] vectorized
                                             SHUFFLE [RS_172]
                                               PartitionCols:_col0
-                                              Group By Operator [GBY_171] (rows=1126 width=192)
+                                              Group By Operator [GBY_171] (rows=1126 width=96)
                                                 Output:["_col0","_col1"],aggregations:["count()"],keys:_col0
                                                 Select Operator [SEL_170] (rows=2253 width=97)
                                                   Output:["_col0"]
@@ -333,14 +333,14 @@ Stage-0
                                     <-Reducer 9 [CONTAINS] vectorized
                                       Reduce Output Operator [RS_161]
                                         PartitionCols:_col0
-                                        Group By Operator [GBY_160] (rows=5633 width=192)
+                                        Group By Operator [GBY_160] (rows=5633 width=96)
                                           Output:["_col0","_col1"],aggregations:["count(_col1)"],keys:_col0
-                                          Group By Operator [GBY_159] (rows=10141 width=192)
+                                          Group By Operator [GBY_159] (rows=10141 width=96)
                                             Output:["_col0","_col1"],aggregations:["count(VALUE._col0)"],keys:KEY._col0
                                           <-Map 8 [SIMPLE_EDGE] vectorized
                                             SHUFFLE [RS_158]
                                               PartitionCols:_col0
-                                              Group By Operator [GBY_157] (rows=141974 width=192)
+                                              Group By Operator [GBY_157] (rows=141974 width=96)
                                                 Output:["_col0","_col1"],aggregations:["count()"],keys:_col0
                                                 Select Operator [SEL_156] (rows=20000000 width=89)
                                                   Output:["_col0"]

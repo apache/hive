@@ -1364,8 +1364,10 @@ public class TestMetaStoreMultipleEncryptionZones {
             "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort()
                     + HiveConf.ConfVars.METASTOREWAREHOUSE.defaultStrVal);
 
-    String cmrootdirEncrypted = "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort() + "/cmroot";
+    String cmrootdirEncrypted = "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort() + "/cmrootDirEncrypted";
     encryptedHiveConf.set(HiveConf.ConfVars.REPLCMDIR.varname, cmrootdirEncrypted);
+    FileSystem cmrootdirEncryptedFs = new Path(cmrootdirEncrypted).getFileSystem(hiveConf);
+    cmrootdirEncryptedFs.mkdirs(new Path(cmrootdirEncrypted));
     encryptedHiveConf.set(HiveConf.ConfVars.REPLCMFALLBACKNONENCRYPTEDDIR.varname, cmrootFallBack);
 
     //Create cm in encrypted zone
@@ -1410,9 +1412,88 @@ public class TestMetaStoreMultipleEncryptionZones {
       exceptionThrown = true;
     }
     assertFalse(exceptionThrown);
+    cmrootdirEncryptedFs.delete(new Path(cmrootdirEncrypted), true);
     ReplChangeManager.resetReplChangeManagerInstance();
     initReplChangeManager();
   }
+
+  @Test
+  public void testCmrootFallbackEncrypted() throws Exception {
+    HiveConf encryptedHiveConf = new HiveConf(TestReplChangeManager.class);
+    encryptedHiveConf.setBoolean(HiveConf.ConfVars.REPLCMENABLED.varname, true);
+    encryptedHiveConf.setInt(CommonConfigurationKeysPublic.FS_TRASH_INTERVAL_KEY, 60);
+    encryptedHiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname,
+            "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort()
+                    + HiveConf.ConfVars.METASTOREWAREHOUSE.defaultStrVal);
+    String cmrootdirEncrypted = "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort() + "/cmrootIsEncrypted";
+    String cmRootFallbackEncrypted = "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort()
+            + "/cmrootFallbackEncrypted";
+    FileSystem cmrootdirEncryptedFs = new Path(cmrootdirEncrypted).getFileSystem(encryptedHiveConf);
+    try {
+      cmrootdirEncryptedFs.mkdirs(new Path(cmrootdirEncrypted));
+      cmrootdirEncryptedFs.mkdirs(new Path(cmRootFallbackEncrypted));
+      encryptedHiveConf.set(HiveConf.ConfVars.REPLCMDIR.varname, cmrootdirEncrypted);
+      encryptedHiveConf.set(HiveConf.ConfVars.REPLCMFALLBACKNONENCRYPTEDDIR.varname, cmRootFallbackEncrypted);
+
+      //Create cm in encrypted zone
+      HadoopShims.HdfsEncryptionShim shimCmEncrypted = ShimLoader.getHadoopShims().createHdfsEncryptionShim(fs, conf);
+      shimCmEncrypted.createEncryptionZone(new Path(cmrootdirEncrypted), "test_key_db");
+      shimCmEncrypted.createEncryptionZone(new Path(cmRootFallbackEncrypted), "test_key_db");
+      ReplChangeManager.resetReplChangeManagerInstance();
+      boolean exceptionThrown = false;
+      try {
+        new Warehouse(encryptedHiveConf);
+      } catch (MetaException e) {
+        exceptionThrown = true;
+        assertTrue(e.getMessage().contains("should not be encrypted"));
+      }
+      assertTrue(exceptionThrown);
+    } finally {
+      cmrootdirEncryptedFs.delete(new Path(cmrootdirEncrypted), true);
+      cmrootdirEncryptedFs.delete(new Path(cmRootFallbackEncrypted), true);
+      ReplChangeManager.resetReplChangeManagerInstance();
+      initReplChangeManager();
+    }
+  }
+
+  @Test
+  public void testCmrootFallbackRelative() throws Exception {
+    HiveConf encryptedHiveConf = new HiveConf(TestReplChangeManager.class);
+    encryptedHiveConf.setBoolean(HiveConf.ConfVars.REPLCMENABLED.varname, true);
+    encryptedHiveConf.setInt(CommonConfigurationKeysPublic.FS_TRASH_INTERVAL_KEY, 60);
+    encryptedHiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname,
+            "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort()
+                    + HiveConf.ConfVars.METASTOREWAREHOUSE.defaultStrVal);
+    String cmrootdirEncrypted = "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort() + "/cmrootIsEncrypted";
+    String cmRootFallbackEncrypted = "cmrootFallbackEncrypted";
+    FileSystem cmrootdirEncryptedFs = new Path(cmrootdirEncrypted).getFileSystem(encryptedHiveConf);
+    try {
+      cmrootdirEncryptedFs.mkdirs(new Path(cmrootdirEncrypted));
+      cmrootdirEncryptedFs.mkdirs(new Path(cmRootFallbackEncrypted));
+      encryptedHiveConf.set(HiveConf.ConfVars.REPLCMDIR.varname, cmrootdirEncrypted);
+      encryptedHiveConf.set(HiveConf.ConfVars.REPLCMFALLBACKNONENCRYPTEDDIR.varname, cmRootFallbackEncrypted);
+
+      //Create cm in encrypted zone
+      HadoopShims.HdfsEncryptionShim shimCmEncrypted = ShimLoader.getHadoopShims().createHdfsEncryptionShim(fs, conf);
+      shimCmEncrypted.createEncryptionZone(new Path(cmrootdirEncrypted), "test_key_db");
+
+      ReplChangeManager.resetReplChangeManagerInstance();
+      boolean exceptionThrown = false;
+      try {
+        new Warehouse(encryptedHiveConf);
+      } catch (MetaException e) {
+        exceptionThrown = true;
+        assertTrue(e.getMessage().contains("should be absolute"));
+      }
+      assertTrue(exceptionThrown);
+    } finally {
+      cmrootdirEncryptedFs.delete(new Path(cmrootdirEncrypted), true);
+      cmrootdirEncryptedFs.delete(new Path(cmRootFallbackEncrypted), true);
+      ReplChangeManager.resetReplChangeManagerInstance();
+      initReplChangeManager();
+    }
+  }
+
 
 
   private void createFile(Path path, String content) throws IOException {

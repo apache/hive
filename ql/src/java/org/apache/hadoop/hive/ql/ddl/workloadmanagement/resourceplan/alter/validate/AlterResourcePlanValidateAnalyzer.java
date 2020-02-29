@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Analyzer for alter resource plan validate commands.
  */
-@DDLType(type=HiveParser.TOK_ALTER_RP_VALIDATE)
+@DDLType(types = HiveParser.TOK_ALTER_RP_VALIDATE)
 public class AlterResourcePlanValidateAnalyzer extends BaseSemanticAnalyzer {
   public AlterResourcePlanValidateAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.messaging.CreateTableMessage;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -66,7 +65,7 @@ class CreateTableHandler extends AbstractEventHandler<CreateTableMessage> {
     // If we are not dumping data about a table, we shouldn't be dumping basic statistics
     // as well, since that won't be accurate. So reset them to what they would look like for an
     // empty table.
-    if (withinContext.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY)) {
+    if (Utils.shouldDumpMetaDataOnly(qlMdTable, withinContext.hiveConf)) {
       qlMdTable.setStatsStateLikeNewTable();
     }
 

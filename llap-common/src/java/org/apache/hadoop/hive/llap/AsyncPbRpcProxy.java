@@ -15,6 +15,8 @@
 package org.apache.hadoop.hive.llap;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.security.PrivilegedAction;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -430,6 +432,9 @@ public abstract class AsyncPbRpcProxy<ProtocolType, TokenType extends TokenIdent
   protected final ProtocolType getProxy(
       final LlapNodeId nodeId, final Token<TokenType> nodeToken) {
     String hostId = getHostIdentifier(nodeId.getHostname(), nodeId.getPort());
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Getting host proxies for {}", hostId);
+    }
     try {
       return hostProxies.get(hostId, new Callable<ProtocolType>() {
         @Override
@@ -481,7 +486,16 @@ public abstract class AsyncPbRpcProxy<ProtocolType, TokenType extends TokenIdent
   }
 
   private String getHostIdentifier(String hostname, int port) {
-    return hostname + ":" + port;
+    StringBuilder sb = new StringBuilder();
+    try {
+      InetAddress inetAddress = InetAddress.getByName(hostname);
+      sb.append(inetAddress.getHostAddress()).append(":");
+    } catch (UnknownHostException e) {
+      // ignore
+      LOG.warn("Unable to determine IP address for host: {}.. Ignoring..", hostname, e);
+    }
+    sb.append(hostname).append(":").append(port);
+    return sb.toString();
   }
 
   protected abstract ProtocolType createProtocolImpl(Configuration config, String hostname, int port,

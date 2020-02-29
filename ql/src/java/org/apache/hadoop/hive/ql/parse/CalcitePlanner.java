@@ -375,8 +375,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     PreCboCtx cboCtx = new PreCboCtx();
     //change the location of position alias process here
     processPositionAlias(ast);
-    this.setAST(ast);
-    if (!genResolvedParseTree(cboCtx)) {
+    if (!genResolvedParseTree(ast, cboCtx)) {
       return null;
     }
     ASTNode queryForCbo = ast;
@@ -428,12 +427,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
   @Override
   @SuppressWarnings("rawtypes")
-  Operator genOPTree(PlannerContext plannerCtx) throws SemanticException {
+  Operator genOPTree(ASTNode ast, PlannerContext plannerCtx) throws SemanticException {
     Operator sinkOp = null;
     boolean skipCalcitePlan = false;
-
-    // Save original AST in case CBO tampers with the contents of ast to guarantee fail-safe behavior.
-    final ASTNode originalAst = (ASTNode) ParseDriver.adaptor.dupTree(this.getAST());
 
     if (!runCBO) {
       skipCalcitePlan = true;
@@ -449,14 +445,14 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // SA. We rely on the fact that CBO ignores the unknown tokens (create
       // table, destination), so if the query is otherwise ok, it is as if we
       // did remove those and gave CBO the proper AST. That is kinda hacky.
-      ASTNode queryForCbo = this.getAST();
+      ASTNode queryForCbo = ast;
       if (cboCtx.type == PreCboCtx.Type.CTAS || cboCtx.type == PreCboCtx.Type.VIEW) {
         queryForCbo = cboCtx.nodeOfInterest; // nodeOfInterest is the query
       }
       Pair<Boolean, String> canCBOHandleReason = canCBOHandleAst(queryForCbo, getQB(), cboCtx);
       runCBO = canCBOHandleReason.left;
       if (queryProperties.hasMultiDestQuery()) {
-        handleMultiDestQuery(this.getAST(), cboCtx);
+        handleMultiDestQuery(ast, cboCtx);
       }
 
       if (runCBO) {
@@ -487,7 +483,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
             ASTNode newAST = getOptimizedAST(newPlan);
 
             // 1.1. Fix up the query for insert/ctas/materialized views
-            newAST = fixUpAfterCbo(this.getAST(), newAST, cboCtx);
+            newAST = fixUpAfterCbo(ast, newAST, cboCtx);
 
             // 1.2. Fix up the query for materialization rebuild
             if (mvRebuildMode == MaterializationRebuildMode.AGGREGATE_REBUILD) {
@@ -617,14 +613,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
           runCBO = false;
           disableJoinMerge = defaultJoinMerge;
           disableSemJoinReordering = false;
-          // Make sure originalAst is used from here on.
           if (reAnalyzeAST) {
             init(true);
             prunedPartitions.clear();
             // Assumption: At this point Parse Tree gen & resolution will always
             // be true (since we started out that way).
-            this.setAST(originalAst);
-            super.genResolvedParseTree(new PlannerContext());
+            super.genResolvedParseTree(ast, new PlannerContext());
             skipCalcitePlan = true;
           }
         }
@@ -641,7 +635,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     if (skipCalcitePlan) {
-      sinkOp = super.genOPTree();
+      sinkOp = super.genOPTree(ast, plannerCtx);
     }
 
     return sinkOp;
@@ -2867,14 +2861,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       if ((left.getToken().getType() == HiveParser.TOK_TABREF)
           || (left.getToken().getType() == HiveParser.TOK_SUBQUERY)
           || (left.getToken().getType() == HiveParser.TOK_PTBLFUNCTION)) {
-        String tableName = getUnescapedUnqualifiedTableName((ASTNode) left.getChild(0)).toLowerCase();
-        leftTableAlias = left.getChildCount() == 1 ? tableName : 
-            unescapeIdentifier(left.getChild(left.getChildCount() - 1).getText().toLowerCase());
-        // ptf node form is: ^(TOK_PTBLFUNCTION $name $alias?
-        // partitionTableFunctionSource partitioningSpec? expression*)
-        // guranteed to have an lias here: check done in processJoin
-        leftTableAlias = (left.getToken().getType() == HiveParser.TOK_PTBLFUNCTION) ? 
-            unescapeIdentifier(left.getChild(1).getText().toLowerCase()) : leftTableAlias;
+        leftTableAlias = getTableAlias(left);
         leftRel = aliasToRel.get(leftTableAlias);
       } else if (SemanticAnalyzer.isJoinToken(left)) {
         leftRel = genJoinLogicalPlan(left, aliasToRel);
@@ -2890,14 +2877,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       if ((right.getToken().getType() == HiveParser.TOK_TABREF)
           || (right.getToken().getType() == HiveParser.TOK_SUBQUERY)
           || (right.getToken().getType() == HiveParser.TOK_PTBLFUNCTION)) {
-        String tableName = getUnescapedUnqualifiedTableName((ASTNode) right.getChild(0)).toLowerCase();
-        rightTableAlias = right.getChildCount() == 1 ? tableName : 
-            unescapeIdentifier(right.getChild(right.getChildCount() - 1).getText().toLowerCase());
-        // ptf node form is: ^(TOK_PTBLFUNCTION $name $alias?
-        // partitionTableFunctionSource partitioningSpec? expression*)
-        // guranteed to have an lias here: check done in processJoin
-        rightTableAlias = (right.getToken().getType() == HiveParser.TOK_PTBLFUNCTION) ? 
-            unescapeIdentifier(right.getChild(1).getText().toLowerCase()) : rightTableAlias;
+        rightTableAlias = getTableAlias(right);
         rightRel = aliasToRel.get(rightTableAlias);
       } else if (right.getToken().getType() == HiveParser.TOK_LATERAL_VIEW) {
         rightRel = genLateralViewPlans(right, aliasToRel);
@@ -3258,17 +3238,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         case HiveParser.TOK_TABREF:
         case HiveParser.TOK_SUBQUERY:
         case HiveParser.TOK_PTBLFUNCTION:
-          String inputTableName = getUnescapedUnqualifiedTableName((ASTNode) next.getChild(0)).toLowerCase();
-          String inputTableAlias;
-          if (next.getToken().getType() == HiveParser.TOK_PTBLFUNCTION) {
-            // ptf node form is: ^(TOK_PTBLFUNCTION $name $alias?
-            // partitionTableFunctionSource partitioningSpec? expression*)
-            // ptf node guaranteed to have an alias here
-            inputTableAlias = unescapeIdentifier(next.getChild(1).getText().toLowerCase());
-          } else {
-            inputTableAlias = next.getChildCount() == 1 ? inputTableName :
-                unescapeIdentifier(next.getChild(next.getChildCount() - 1).getText().toLowerCase());
-          }
+          String inputTableAlias = getTableAlias(next);
           inputRel = aliasToRel.get(inputTableAlias);
           break;
         case HiveParser.TOK_LATERAL_VIEW:

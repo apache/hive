@@ -383,7 +383,7 @@ public abstract class CompactorTest {
     @Override
     public RawReader<Text> getRawReader(Configuration conf, boolean collapseEvents, int bucket,
                                         ValidWriteIdList validWriteIdList,
-                                        Path baseDirectory, Path... deltaDirectory) throws IOException {
+                                        Path baseDirectory, Path[] deltaDirectory, Map<String, String> deltaToAttemptId) throws IOException {
 
       List<Path> filesToRead = new ArrayList<Path>();
       if (baseDirectory != null) {

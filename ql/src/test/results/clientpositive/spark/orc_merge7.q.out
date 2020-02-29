@@ -171,9 +171,9 @@ POSTHOOK: Input: default@orc_merge5a_n0
 POSTHOOK: Output: default@orc_merge5a_n0
 POSTHOOK: Output: default@orc_merge5a_n0@st=0.8
 Found 1 items
--rw-r--r--   3 ### USER ### ### GROUP ###        603 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###        604 ### HDFS DATE ### hdfs://### HDFS PATH ###
 Found 1 items
--rw-r--r--   3 ### USER ### ### GROUP ###        645 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###        647 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: show partitions orc_merge5a_n0
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@orc_merge5a_n0
@@ -394,9 +394,9 @@ POSTHOOK: Input: default@orc_merge5a_n0
 POSTHOOK: Output: default@orc_merge5a_n0
 POSTHOOK: Output: default@orc_merge5a_n0@st=0.8
 Found 1 items
--rw-r--r--   3 ### USER ### ### GROUP ###        603 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###        604 ### HDFS DATE ### hdfs://### HDFS PATH ###
 Found 1 items
--rw-r--r--   3 ### USER ### ### GROUP ###        645 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###        647 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: show partitions orc_merge5a_n0
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@orc_merge5a_n0
@@ -509,9 +509,9 @@ POSTHOOK: Input: default@orc_merge5a_n0
 POSTHOOK: Output: default@orc_merge5a_n0
 POSTHOOK: Output: default@orc_merge5a_n0@st=0.8
 Found 1 items
--rw-r--r--   3 ### USER ### ### GROUP ###        603 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###        604 ### HDFS DATE ### hdfs://### HDFS PATH ###
 Found 1 items
--rw-r--r--   3 ### USER ### ### GROUP ###        645 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###        647 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: show partitions orc_merge5a_n0
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@orc_merge5a_n0
@@ -614,9 +614,9 @@ POSTHOOK: Input: default@orc_merge5a_n0
 POSTHOOK: Output: default@orc_merge5a_n0
 POSTHOOK: Output: default@orc_merge5a_n0@st=0.8
 Found 1 items
--rw-r--r--   3 ### USER ### ### GROUP ###        603 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###        604 ### HDFS DATE ### hdfs://### HDFS PATH ###
 Found 1 items
--rw-r--r--   3 ### USER ### ### GROUP ###        645 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###        647 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: show partitions orc_merge5a_n0
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@orc_merge5a_n0

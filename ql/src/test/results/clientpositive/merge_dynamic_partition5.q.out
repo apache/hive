@@ -116,14 +116,13 @@ POSTHOOK: Input: default@srcpart_merge_dp_rc@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart_merge_dp_rc@ds=2008-04-08/hr=12
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-8 depends on stages: Stage-2 , consists of Stage-5, Stage-4, Stage-6
-  Stage-5
-  Stage-0 depends on stages: Stage-5, Stage-4, Stage-7
-  Stage-3 depends on stages: Stage-0
+  Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
   Stage-4
-  Stage-6
-  Stage-7 depends on stages: Stage-6
+  Stage-0 depends on stages: Stage-4, Stage-3, Stage-6
+  Stage-2 depends on stages: Stage-0
+  Stage-3
+  Stage-5
+  Stage-6 depends on stages: Stage-5
 
 STAGE PLANS:
   Stage: Stage-1
@@ -136,79 +135,56 @@ STAGE PLANS:
             Select Operator
               expressions: key (type: string), value (type: string), if(((UDFToDouble(key) % 100.0D) = 0.0D), 'a1', 'b1') (type: string)
               outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 618 Data size: 223716 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 618 Data size: 163152 Basic stats: COMPLETE Column stats: COMPLETE
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 618 Data size: 163152 Basic stats: COMPLETE Column stats: COMPLETE
+                table:
+                    input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
+                    name: default.merge_dynamic_part
               Select Operator
                 expressions: _col0 (type: string), _col1 (type: string), '2008-04-08' (type: string), _col2 (type: string)
                 outputColumnNames: key, value, ds, hr
-                Statistics: Num rows: 618 Data size: 281808 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 618 Data size: 221244 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
                   keys: ds (type: string), hr (type: string)
                   minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics: Num rows: 309 Data size: 357822 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 1060 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: string), _col1 (type: string)
                     null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                    Statistics: Num rows: 309 Data size: 357822 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1 Data size: 1060 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
-              File Output Operator
-                compressed: false
-                table:
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
           keys: KEY._col0 (type: string), KEY._col1 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2, _col3
-          Statistics: Num rows: 309 Data size: 357822 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 1 Data size: 1060 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: string), _col1 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 309 Data size: 357822 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 1 Data size: 1060 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 309 Data size: 357822 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 1 Data size: 1060 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
-  Stage: Stage-2
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col2 (type: string)
-              null sort order: a
-              sort order: +
-              Map-reduce partition columns: _col2 (type: string)
-              Statistics: Num rows: 618 Data size: 223716 Basic stats: COMPLETE Column stats: COMPLETE
-              value expressions: _col0 (type: string), _col1 (type: string)
-      Reduce Operator Tree:
-        Select Operator
-          expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), KEY._col2 (type: string)
-          outputColumnNames: _col0, _col1, _col2
-          File Output Operator
-            compressed: false
-            Dp Sort State: PARTITION_SORTED
-            Statistics: Num rows: 618 Data size: 223716 Basic stats: COMPLETE Column stats: COMPLETE
-            table:
-                input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-                name: default.merge_dynamic_part
-
-  Stage: Stage-8
+  Stage: Stage-7
     Conditional Operator
 
-  Stage: Stage-5
+  Stage: Stage-4
     Move Operator
       files:
           hdfs directory: true
@@ -227,7 +203,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
               name: default.merge_dynamic_part
 
-  Stage: Stage-3
+  Stage: Stage-2
     Stats Work
       Basic Stats Work:
       Column Stats Desc:
@@ -235,7 +211,14 @@ STAGE PLANS:
           Column Types: string, string
           Table: default.merge_dynamic_part
 
-  Stage: Stage-4
+  Stage: Stage-3
+    Merge File Operator
+      Map Operator Tree:
+          RCFile Merge Operator
+      merge level: block
+      input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
+
+  Stage: Stage-5
     Merge File Operator
       Map Operator Tree:
           RCFile Merge Operator
@@ -243,13 +226,6 @@ STAGE PLANS:
       input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
 
   Stage: Stage-6
-    Merge File Operator
-      Map Operator Tree:
-          RCFile Merge Operator
-      merge level: block
-      input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
-
-  Stage: Stage-7
     Move Operator
       files:
           hdfs directory: true

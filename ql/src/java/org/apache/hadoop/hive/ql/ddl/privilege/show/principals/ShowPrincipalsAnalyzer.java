@@ -32,7 +32,7 @@ import com.google.common.annotations.VisibleForTesting;
 /**
  * Analyzer for showing principals commands.
  */
-@DDLType(type=HiveParser.TOK_SHOW_ROLE_PRINCIPALS)
+@DDLType(types = HiveParser.TOK_SHOW_ROLE_PRINCIPALS)
 public class ShowPrincipalsAnalyzer extends AbstractPrivilegeAnalyzer {
   public ShowPrincipalsAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

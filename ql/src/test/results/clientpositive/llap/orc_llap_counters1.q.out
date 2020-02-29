@@ -237,7 +237,7 @@ Table Parameters:
 	orc.bloom.filter.columns	*                   
 	orc.row.index.stride	1000                
 	rawDataSize         	1139514             
-	totalSize           	55694               
+	totalSize           	55696               
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -274,6 +274,7 @@ Stage-1 HIVE COUNTERS:
    RECORDS_OUT_OPERATOR_RS_10: 2094
    RECORDS_OUT_OPERATOR_SEL_9: 2094
    RECORDS_OUT_OPERATOR_TS_0: 2100
+   TOTAL_TABLE_ROWS_WRITTEN: 0
 Stage-1 LLAP IO COUNTERS:
    ALLOCATED_BYTES: 1310720
    ALLOCATED_USED_BYTES: 2757
@@ -314,6 +315,7 @@ Stage-1 HIVE COUNTERS:
    RECORDS_OUT_OPERATOR_RS_10: 2094
    RECORDS_OUT_OPERATOR_SEL_9: 2094
    RECORDS_OUT_OPERATOR_TS_0: 2100
+   TOTAL_TABLE_ROWS_WRITTEN: 0
 Stage-1 LLAP IO COUNTERS:
    CACHE_HIT_BYTES: 1071
    CACHE_MISS_BYTES: 0

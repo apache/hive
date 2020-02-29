@@ -530,7 +530,7 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
 
   private void updateSessions() {
     if (sessionTriggerProvider != null) {
-      sessionTriggerProvider.setSessions(Collections.unmodifiableList(openSessions));
+      sessionTriggerProvider.setSessions(new LinkedList<>(openSessions));
     }
   }
 

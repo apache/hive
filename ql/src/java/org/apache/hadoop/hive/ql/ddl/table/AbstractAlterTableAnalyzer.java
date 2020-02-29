@@ -150,13 +150,13 @@ public abstract class AbstractAlterTableAnalyzer extends BaseSemanticAnalyzer {
   }
 
   // For the time while all the alter table operations are getting migrated there is a duplication of this method here
-  private WriteType determineAlterTableWriteType(Table tab, AbstractAlterTableDesc desc, AlterTableType op) {
+  private WriteType determineAlterTableWriteType(Table table, AbstractAlterTableDesc desc, AlterTableType op) {
     boolean convertingToAcid = false;
     if (desc != null && desc.getProps() != null &&
         Boolean.parseBoolean(desc.getProps().get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL))) {
       convertingToAcid = true;
     }
-    if (!AcidUtils.isTransactionalTable(tab) && convertingToAcid) {
+    if (!AcidUtils.isTransactionalTable(table) && convertingToAcid) {
       // non-acid to transactional conversion (property itself) must be mutexed to prevent concurrent writes.
       // See HIVE-16688 for use cases.
       return WriteType.DDL_EXCLUSIVE;
@@ -164,9 +164,9 @@ public abstract class AbstractAlterTableAnalyzer extends BaseSemanticAnalyzer {
     return WriteEntity.determineAlterTableWriteType(op);
   }
 
-  protected void validateAlterTableType(Table tbl, AlterTableType op, boolean expectView)
+  protected void validateAlterTableType(Table table, AlterTableType op, boolean expectView)
       throws SemanticException {
-    if (tbl.isView()) {
+    if (table.isView()) {
       if (!expectView) {
         throw new SemanticException(ErrorMsg.ALTER_COMMAND_FOR_VIEWS.getMsg());
       }
@@ -188,9 +188,9 @@ public abstract class AbstractAlterTableAnalyzer extends BaseSemanticAnalyzer {
         throw new SemanticException(ErrorMsg.ALTER_COMMAND_FOR_TABLES.getMsg());
       }
     }
-    if (tbl.isNonNative() && !AlterTableType.NON_NATIVE_TABLE_ALLOWED.contains(op)) {
+    if (table.isNonNative() && !AlterTableType.NON_NATIVE_TABLE_ALLOWED.contains(op)) {
       throw new SemanticException(ErrorMsg.ALTER_TABLE_NON_NATIVE.format(
-          AlterTableType.NON_NATIVE_TABLE_ALLOWED.toString(), tbl.getTableName()));
+          AlterTableType.NON_NATIVE_TABLE_ALLOWED.toString(), table.getTableName()));
     }
   }
 }

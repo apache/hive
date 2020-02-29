@@ -15,6 +15,7 @@
 package org.apache.hadoop.hive.llap.daemon.impl;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -27,6 +28,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.UgiFactory;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.DaemonId;
 import org.apache.hadoop.hive.llap.LlapNodeId;
@@ -117,6 +119,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
   private final DaemonId daemonId;
   private final UgiFactory fsUgiFactory;
   private final SocketFactory socketFactory;
+  private final boolean execUseFQDN;
 
   public ContainerRunnerImpl(Configuration conf, int numExecutors, AtomicReference<Integer> localShufflePort,
       AtomicReference<InetSocketAddress> localAddress,
@@ -140,6 +143,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
     this.queryTracker = queryTracker;
     this.executorService = executorService;
     completionListener = (SchedulerFragmentCompletingListener) executorService;
+    this.execUseFQDN = conf.getBoolean(HiveConf.ConfVars.LLAP_DAEMON_EXEC_USE_FQDN.varname, true);
 
     // Distribute the available memory between the tasks.
     this.memoryPerExecutor = (long)(totalMemoryAvailableBytes / (float) numExecutors);
@@ -285,10 +289,23 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
       boolean addTaskTimes = callableConf.getBoolean(tezSummary.varname, tezSummary.defaultBoolVal)
                              && callableConf.getBoolean(llapTasks.varname, llapTasks.defaultBoolVal);
 
+      final String llapHost;
+      if (UserGroupInformation.isSecurityEnabled()) {
+        // when kerberos is enabled always use FQDN
+        llapHost = localAddress.get().getHostName();
+      } else if (execUseFQDN) {
+        // when FQDN is explicitly requested (default)
+        llapHost = localAddress.get().getHostName();
+      } else {
+        // when FQDN is not requested, use ip address
+        llapHost = localAddress.get().getAddress().getHostAddress();
+      }
+      LOG.info("Using llap host: {} for execution context. hostName: {} hostAddress: {}", llapHost,
+        localAddress.get().getHostName(), localAddress.get().getAddress().getHostAddress());
       // TODO: ideally we'd register TezCounters here, but it seems impossible before registerTask.
       WmFragmentCounters wmCounters = new WmFragmentCounters(addTaskTimes);
       TaskRunnerCallable callable = new TaskRunnerCallable(request, fragmentInfo, callableConf,
-          new ExecutionContextImpl(localAddress.get().getHostName()), env,
+          new ExecutionContextImpl(llapHost), env,
           credentials, memoryPerExecutor, amReporter, confParams, metrics, killedTaskHandler,
           this, tezHadoopShim, attemptId, vertex, initialEvent, fsTaskUgi,
           completionListener, socketFactory, isGuaranteed, wmCounters);

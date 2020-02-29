@@ -920,7 +920,7 @@ public class MetastoreConf {
     REPLCMENCRYPTEDDIR("metastore.repl.cm.encryptionzone.rootdir", "hive.repl.cm.encryptionzone.rootdir", ".cmroot",
             "Root dir for ChangeManager if encryption zones are enabled, used for deleted files."),
     REPLCMFALLBACKNONENCRYPTEDDIR("metastore.repl.cm.nonencryptionzone.rootdir",
-            "hive.repl.cm.nonencryptionzone.rootdir", "/user/${system:user.name}/cmroot/",
+            "hive.repl.cm.nonencryptionzone.rootdir", "",
             "Root dir for ChangeManager for non encrypted paths if hive.repl.cmrootdir is encrypted."),
     REPLCMRETIAN("metastore.repl.cm.retain", "hive.repl.cm.retain",  24, TimeUnit.HOURS,
         "Time to retain removed files in cmrootdir."),
@@ -962,7 +962,8 @@ public class MetastoreConf {
             "org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe," +
             "org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe," +
             "org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe," +
-            "org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe",
+            "org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe," +
+            "org.apache.hadoop.hive.serde2.OpenCSVSerde",
         "SerDes retrieving schema from metastore. This is an internal parameter."),
     SERVER_MAX_MESSAGE_SIZE("metastore.server.max.message.size",
         "hive.metastore.server.max.message.size", 100*1024*1024L,

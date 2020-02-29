@@ -18,12 +18,15 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import static org.apache.hadoop.hive.ql.exec.vector.VectorTopNKeyOperator.checkTopNFilterEfficiency;
 import static org.apache.hadoop.hive.ql.plan.api.OperatorType.TOPNKEY;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
@@ -47,6 +50,7 @@ public class TopNKeyOperator extends Operator<TopNKeyDesc> implements Serializab
   private transient KeyWrapper keyWrapper;
 
   private transient KeyWrapperComparator keyWrapperComparator;
+  private transient Set<KeyWrapper> disabledPartitions;
 
   /** Kryo ctor. */
   public TopNKeyOperator() {
@@ -82,6 +86,7 @@ public class TopNKeyOperator extends Operator<TopNKeyDesc> implements Serializab
             keyObjectInspectors, currentKeyObjectInspectors, columnSortOrder, nullSortOrder);
 
     this.topNKeyFilters = new HashMap<>();
+    this.disabledPartitions = new HashSet<>();
   }
 
   private KeyWrapper initObjectInspectors(Configuration hconf,
@@ -105,29 +110,54 @@ public class TopNKeyOperator extends Operator<TopNKeyDesc> implements Serializab
 
   @Override
   public void process(Object row, int tag) throws HiveException {
+    if (!disabledPartitions.isEmpty() && disabledPartitions.size() == topNKeyFilters.size()) { // all filters are disabled due to efficiency check
+      forward(row, outputObjInspector);
+      return;
+    }
+
     partitionKeyWrapper.getNewKey(row, inputObjInspectors[tag]);
     partitionKeyWrapper.setHashKey();
 
+    if (disabledPartitions.contains(partitionKeyWrapper)) { // filter for this partition is disabled
+      forward(row, outputObjInspector);
+      return;
+    }
+
     TopNKeyFilter topNKeyFilter = topNKeyFilters.get(partitionKeyWrapper);
-    if (topNKeyFilter == null) {
+    if (topNKeyFilter == null && topNKeyFilters.size() < conf.getMaxNumberOfPartitions()) {
       topNKeyFilter = new TopNKeyFilter(conf.getTopN(), keyWrapperComparator);
       topNKeyFilters.put(partitionKeyWrapper.copyKey(), topNKeyFilter);
     }
-
-    keyWrapper.getNewKey(row, inputObjInspectors[tag]);
-    keyWrapper.setHashKey();
-
-    if (topNKeyFilter.canForward(keyWrapper)) {
+    if (topNKeyFilter == null) {
       forward(row, outputObjInspector);
+    } else {
+      keyWrapper.getNewKey(row, inputObjInspectors[tag]);
+      keyWrapper.setHashKey();
+      if (topNKeyFilter.canForward(keyWrapper)) {
+        forward(row, outputObjInspector);
+      }
+    }
+
+    if (runTimeNumRows % conf.getCheckEfficiencyNumRows() == 0) { // check the efficiency at every nth rows
+      checkTopNFilterEfficiency(topNKeyFilters, disabledPartitions, conf.getEfficiencyThreshold(), LOG);
     }
   }
 
   @Override
   protected final void closeOp(boolean abort) throws HiveException {
-    for (TopNKeyFilter each : topNKeyFilters.values()) {
-      each.clear();
+    if (topNKeyFilters.size() == 1) {
+      TopNKeyFilter filter = topNKeyFilters.values().iterator().next();
+      LOG.info("Closing TopNKeyFilter: {}", filter);
+      filter.clear();
+    } else {
+      LOG.info("Closing {} TopNKeyFilters", topNKeyFilters.size());
+      for (TopNKeyFilter each : topNKeyFilters.values()) {
+        LOG.debug("Closing TopNKeyFilter: {}", each);
+        each.clear();
+      }
     }
     topNKeyFilters.clear();
+    disabledPartitions.clear();
     super.closeOp(abort);
   }
 

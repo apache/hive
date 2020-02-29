@@ -93,7 +93,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	1                   
 	rawDataSize         	0                   
-	totalSize           	657                 
+	totalSize           	659                 
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -426,7 +426,7 @@ Table Parameters:
 	numFiles            	4                   
 	numRows             	2                   
 	rawDataSize         	0                   
-	totalSize           	2690                
+	totalSize           	2698                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -492,7 +492,7 @@ Table Parameters:
 	numFiles            	6                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	4052                
+	totalSize           	4063                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####

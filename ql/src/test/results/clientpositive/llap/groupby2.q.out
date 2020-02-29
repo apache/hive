@@ -60,13 +60,13 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: partial1
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 500 Data size: 50500 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 500 Data size: 50500 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col1 (type: bigint), _col2 (type: double)
         Reducer 3 
             Execution mode: llap
@@ -76,14 +76,14 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 316 Data size: 63200 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 316 Data size: 31916 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: string), UDFToInteger(_col1) (type: int), concat(_col0, _col2) (type: string)
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 316 Data size: 117552 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 316 Data size: 86268 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 316 Data size: 117552 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 316 Data size: 86268 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -92,12 +92,12 @@ STAGE PLANS:
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string)
                     outputColumnNames: key, c1, c2
-                    Statistics: Num rows: 316 Data size: 117552 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 316 Data size: 86268 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       null sort order: 
                       sort order: 
                       Map-reduce partition columns: rand() (type: double)
-                      Statistics: Num rows: 316 Data size: 117552 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 316 Data size: 86268 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: key (type: string), c1 (type: int), c2 (type: string)
         Reducer 4 
             Execution mode: llap

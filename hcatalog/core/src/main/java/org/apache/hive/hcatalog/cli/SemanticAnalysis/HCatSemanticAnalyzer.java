@@ -30,7 +30,7 @@ import org.apache.hadoop.hive.ql.ddl.table.info.show.status.ShowTableStatusDesc;
 import org.apache.hadoop.hive.ql.ddl.table.info.show.tables.ShowTablesDesc;
 import org.apache.hadoop.hive.ql.ddl.table.partition.drop.AlterTableDropPartitionDesc;
 import org.apache.hadoop.hive.ql.ddl.table.partition.show.ShowPartitionsDesc;
-import org.apache.hadoop.hive.ql.ddl.table.storage.AlterTableSetLocationDesc;
+import org.apache.hadoop.hive.ql.ddl.table.storage.set.location.AlterTableSetLocationDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.Hive;

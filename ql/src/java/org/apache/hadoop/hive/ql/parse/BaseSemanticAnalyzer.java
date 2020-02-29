@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -83,7 +82,6 @@ import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
 import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
 import org.apache.hadoop.hive.ql.parse.type.TypeCheckCtx;
-import org.apache.hadoop.hive.ql.parse.type.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
@@ -461,12 +459,26 @@ public abstract class BaseSemanticAnalyzer {
    */
   public static String getUnescapedUnqualifiedTableName(ASTNode node) throws SemanticException {
     assert node.getChildCount() <= 2;
+    assert node.getType() == HiveParser.TOK_TABNAME;
 
     if (node.getChildCount() == 2) {
       node = (ASTNode) node.getChild(1);
     }
 
     return getUnescapedName(node);
+  }
+
+  public static String getTableAlias(ASTNode node) throws SemanticException {
+    // ptf node form is: ^(TOK_PTBLFUNCTION $name $alias?
+    // partitionTableFunctionSource partitioningSpec? expression*)
+    // guranteed to have an alias here: check done in processJoin
+    if (node.getToken().getType() == HiveParser.TOK_PTBLFUNCTION) {
+      return unescapeIdentifier(node.getChild(1).getText().toLowerCase());
+    }
+    if (node.getChildCount() == 1) {
+      return getUnescapedUnqualifiedTableName((ASTNode) node.getChild(0)).toLowerCase();
+    }
+    return unescapeIdentifier(node.getChild(node.getChildCount() - 1).getText().toLowerCase());
   }
 
 
@@ -1355,113 +1367,6 @@ public abstract class BaseSemanticAnalyzer {
     lbCtx.setDefaultKey(ListBucketingPrunerUtils.HIVE_LIST_BUCKETING_DEFAULT_KEY);
     lbCtx.setDefaultDirName(ListBucketingPrunerUtils.HIVE_LIST_BUCKETING_DEFAULT_DIR_NAME);
     return lbCtx;
-  }
-
-  /**
-   * Given a ASTNode, return list of values.
-   *
-   * use case:
-   *   create table xyz list bucketed (col1) with skew (1,2,5)
-   *   AST Node is for (1,2,5)
-   * @param ast
-   * @return
-   */
-  protected List<String> getSkewedValueFromASTNode(ASTNode ast) {
-    List<String> colList = new ArrayList<String>();
-    int numCh = ast.getChildCount();
-    for (int i = 0; i < numCh; i++) {
-      ASTNode child = (ASTNode) ast.getChild(i);
-      colList.add(stripQuotes(child.getText()).toLowerCase());
-    }
-    return colList;
-  }
-
-  /**
-   * Retrieve skewed values from ASTNode.
-   *
-   * @param node
-   * @return
-   * @throws SemanticException
-   */
-  protected List<String> getSkewedValuesFromASTNode(Node node) throws SemanticException {
-    List<String> result = null;
-    Tree leafVNode = ((ASTNode) node).getChild(0);
-    if (leafVNode == null) {
-      throw new SemanticException(
-          ErrorMsg.SKEWED_TABLE_NO_COLUMN_VALUE.getMsg());
-    } else {
-      ASTNode lVAstNode = (ASTNode) leafVNode;
-      if (lVAstNode.getToken().getType() != HiveParser.TOK_TABCOLVALUE) {
-        throw new SemanticException(
-            ErrorMsg.SKEWED_TABLE_NO_COLUMN_VALUE.getMsg());
-      } else {
-        result = new ArrayList<String>(getSkewedValueFromASTNode(lVAstNode));
-      }
-    }
-    return result;
-  }
-
-  /**
-   * Analyze list bucket column names
-   *
-   * @param skewedColNames
-   * @param child
-   * @return
-   * @throws SemanticException
-   */
-  protected List<String> analyzeSkewedTablDDLColNames(List<String> skewedColNames, ASTNode child)
-      throws SemanticException {
-  Tree nNode = child.getChild(0);
-    if (nNode == null) {
-      throw new SemanticException(ErrorMsg.SKEWED_TABLE_NO_COLUMN_NAME.getMsg());
-    } else {
-      ASTNode nAstNode = (ASTNode) nNode;
-      if (nAstNode.getToken().getType() != HiveParser.TOK_TABCOLNAME) {
-        throw new SemanticException(ErrorMsg.SKEWED_TABLE_NO_COLUMN_NAME.getMsg());
-      } else {
-        skewedColNames = getColumnNames(nAstNode);
-      }
-    }
-    return skewedColNames;
-  }
-
-  /**
-   * Handle skewed values in DDL.
-   *
-   * It can be used by both skewed by ... on () and set skewed location ().
-   *
-   * @param skewedValues
-   * @param child
-   * @throws SemanticException
-   */
-  protected void analyzeDDLSkewedValues(List<List<String>> skewedValues, ASTNode child)
-      throws SemanticException {
-  Tree vNode = child.getChild(1);
-    if (vNode == null) {
-      throw new SemanticException(ErrorMsg.SKEWED_TABLE_NO_COLUMN_VALUE.getMsg());
-    }
-    ASTNode vAstNode = (ASTNode) vNode;
-    switch (vAstNode.getToken().getType()) {
-      case HiveParser.TOK_TABCOLVALUE:
-        for (String str : getSkewedValueFromASTNode(vAstNode)) {
-          List<String> sList = new ArrayList<String>(Arrays.asList(str));
-          skewedValues.add(sList);
-        }
-        break;
-      case HiveParser.TOK_TABCOLVALUE_PAIR:
-        List<Node> vLNodes = vAstNode.getChildren();
-        for (Node node : vLNodes) {
-          if ( ((ASTNode) node).getToken().getType() != HiveParser.TOK_TABCOLVALUES) {
-            throw new SemanticException(
-                ErrorMsg.SKEWED_TABLE_NO_COLUMN_VALUE.getMsg());
-          } else {
-            skewedValues.add(getSkewedValuesFromASTNode(node));
-          }
-        }
-        break;
-      default:
-        break;
-    }
   }
 
   /**

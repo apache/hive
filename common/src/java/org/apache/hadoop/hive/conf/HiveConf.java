@@ -455,7 +455,7 @@ public class HiveConf extends Configuration {
     REPLCMENCRYPTEDDIR("hive.repl.cm.encryptionzone.rootdir", ".cmroot",
             "Root dir for ChangeManager if encryption zones are enabled, used for deleted files."),
     REPLCMFALLBACKNONENCRYPTEDDIR("hive.repl.cm.nonencryptionzone.rootdir",
-            "/user/${system:user.name}/cmroot/",
+            "",
             "Root dir for ChangeManager for non encrypted paths if hive.repl.cmrootdir is encrypted."),
     REPLCMINTERVAL("hive.repl.cm.interval","3600s",
         new TimeValidator(TimeUnit.SECONDS),
@@ -478,6 +478,9 @@ public class HiveConf extends Configuration {
     REPL_DUMP_METADATA_ONLY("hive.repl.dump.metadata.only", false,
         "Indicates whether replication dump only metadata information or data + metadata. \n"
           + "This config makes hive.repl.include.external.tables config ineffective."),
+    REPL_DUMP_METADATA_ONLY_FOR_EXTERNAL_TABLE("hive.repl.dump.metadata.only.for.external.table",
+            false,
+            "Indicates whether external table replication dump only metadata information or data + metadata"),
     REPL_BOOTSTRAP_ACID_TABLES("hive.repl.bootstrap.acid.tables", false,
         "Indicates if repl dump should bootstrap the information about ACID tables along with \n"
             + "incremental dump for replication. It is recommended to keep this config parameter \n"
@@ -1866,7 +1869,8 @@ public class HiveConf extends Configuration {
         "org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe," +
         "org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe," +
         "org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe," +
-        "org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe",
+        "org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe," +
+        "org.apache.hadoop.hive.serde2.OpenCSVSerde",
         "SerDes retrieving schema from metastore. This is an internal parameter."),
 
     @Deprecated
@@ -2008,15 +2012,33 @@ public class HiveConf extends Configuration {
     HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION("hive.parquet.timestamp.skip.conversion", true,
       "Current Hive implementation of parquet stores timestamps to UTC, this flag allows skipping of the conversion" +
       "on reading parquet files from other tools"),
+    HIVE_PARQUET_DATE_PROLEPTIC_GREGORIAN("hive.parquet.date.proleptic.gregorian", false,
+        "Should we write date using the proleptic Gregorian calendar instead of the hybrid Julian Gregorian?\n" +
+        "Hybrid is the default."),
+    HIVE_PARQUET_DATE_PROLEPTIC_GREGORIAN_DEFAULT("hive.parquet.date.proleptic.gregorian.default", false,
+      "This value controls whether date type in Parquet files was written using the hybrid or proleptic\n" +
+      "calendar. Hybrid is the default."),
     HIVE_AVRO_TIMESTAMP_SKIP_CONVERSION("hive.avro.timestamp.skip.conversion", false,
         "Some older Hive implementations (pre-3.1) wrote Avro timestamps in a UTC-normalized" +
         "manner, while from version 3.1 until now Hive wrote time zone agnostic timestamps. " +
         "Setting this flag to true will treat legacy timestamps as time zone agnostic. Setting " +
         "it to false will treat legacy timestamps as UTC-normalized. This flag will not affect " +
         "timestamps written after this change."),
+    HIVE_AVRO_PROLEPTIC_GREGORIAN("hive.avro.proleptic.gregorian", false,
+        "Should we write date and timestamp using the proleptic Gregorian calendar instead of the hybrid Julian Gregorian?\n" +
+        "Hybrid is the default."),
+    HIVE_AVRO_PROLEPTIC_GREGORIAN_DEFAULT("hive.avro.proleptic.gregorian.default", false,
+        "This value controls whether date and timestamp type in Avro files was written using the hybrid or proleptic\n" +
+        "calendar. Hybrid is the default."),
     HIVE_INT_TIMESTAMP_CONVERSION_IN_SECONDS("hive.int.timestamp.conversion.in.seconds", false,
         "Boolean/tinyint/smallint/int/bigint value is interpreted as milliseconds during the timestamp conversion.\n" +
         "Set this flag to true to interpret the value as seconds to be consistent with float/double." ),
+    HIVE_PARQUET_WRITE_INT64_TIMESTAMP("hive.parquet.write.int64.timestamp", false,
+        "Write parquet timestamps as int64/LogicalTypes instead of int96/OriginalTypes. Note:" +
+        "Timestamps will be time zone agnostic (NEVER converted to a different time zone)."),
+    HIVE_PARQUET_TIMESTAMP_TIME_UNIT("hive.parquet.timestamp.time.unit", "millis",
+        new StringSet("nanos", "micros", "millis"),
+        "Store parquet int64/LogicalTypes timestamps in this time unit."),
 
     HIVE_ORC_BASE_DELTA_RATIO("hive.exec.orc.base.delta.ratio", 8, "The ratio of base writer and\n" +
         "delta writer in terms of STRIPE_SIZE and BUFFER_SIZE."),
@@ -2395,6 +2417,9 @@ public class HiveConf extends Configuration {
     HIVE_OPTIMIZE_TOPNKEY("hive.optimize.topnkey", true, "Whether to enable top n key optimizer."),
     HIVE_MAX_TOPN_ALLOWED("hive.optimize.topnkey.max", 128, "Maximum topN value allowed by top n key optimizer.\n" +
       "If the LIMIT is greater than this value then top n key optimization won't be used."),
+    HIVE_TOPN_EFFICIENCY_THRESHOLD("hive.optimize.topnkey.efficiency.threshold", 0.6f, "Disable topN key filter if the ratio between forwarded and total rows reaches this limit."),
+    HIVE_TOPN_EFFICIENCY_CHECK_BATCHES("hive.optimize.topnkey.efficiency.check.nbatches", 8, "Check topN key filter efficiency after a specific number of batches."),
+    HIVE_TOPN_MAX_NUMBER_OF_PARTITIONS("hive.optimize.topnkey.partitions.max", 64, "Limit the maximum number of partitions used by the top N key operator."),
 
     HIVE_SHARED_WORK_OPTIMIZATION("hive.optimize.shared.work", true,
         "Whether to enable shared work optimizer. The optimizer finds scan operator over the same table\n" +
@@ -2498,6 +2523,9 @@ public class HiveConf extends Configuration {
                     "higher compute cost. (NDV means the number of distinct values.). It only affects the FM-Sketch \n" +
                     "(not the HLL algorithm which is the default), where it computes the number of necessary\n" +
                     " bitvectors to achieve the accuracy."),
+    HIVE_STATS_ESTIMATORS_ENABLE("hive.stats.estimators.enable", true,
+        "Estimators are able to provide more accurate column statistic infos for UDF results."),
+
     /**
      * @deprecated Use MetastoreConf.STATS_NDV_TUNER
      */
@@ -2668,6 +2696,9 @@ public class HiveConf extends Configuration {
         "are not hidden by the INSERT OVERWRITE."),
     HIVE_TXN_STATS_ENABLED("hive.txn.stats.enabled", true,
         "Whether Hive supports transactional stats (accurate stats for transactional tables)"),
+    HIVE_TXN_ACID_DIR_CACHE_DURATION("hive.txn.acid.dir.cache.duration",
+        120, "Enable dir cache for ACID tables specified in minutes."
+        + "0 indicates cache is disabled. "),
 
     HIVE_TXN_READONLY_ENABLED("hive.txn.readonly.enabled", false,
       "Enables read-only transaction classification and related optimizations"),
@@ -3981,6 +4012,9 @@ public class HiveConf extends Configuration {
     HIVE_CREATE_TABLES_AS_INSERT_ONLY("hive.create.as.insert.only", false,
         "Whether the eligible tables should be created as ACID insert-only by default. Does \n" +
         "not apply to external tables, the ones using storage handlers, etc."),
+    HIVE_ACID_DIRECT_INSERT_ENABLED("hive.acid.direct.insert.enabled", true,
+        "Enable writing the data files directly to the table's final destination instead of the staging directory."
+        + "This optimization only applies on INSERT operations on ACID tables."),
     // role names are case-insensitive
     USERS_IN_ADMIN_ROLE("hive.users.in.admin.role", "", false,
         "Comma separated list of users who are in admin role for bootstrapping.\n" +
@@ -4096,6 +4130,8 @@ public class HiveConf extends Configuration {
         "Value is an integer. Default value is -1, which means that we will estimate this value from operators in the plan."),
     // The default is different on the client and server, so it's null here.
     LLAP_IO_ENABLED("hive.llap.io.enabled", null, "Whether the LLAP IO layer is enabled."),
+    LLAP_IO_CACHE_ONLY("hive.llap.io.cache.only", false, "Whether the query should read from cache only. If set to " +
+        "true and a cache miss happens during the read an exception will occur. Primarily used for testing."),
     LLAP_IO_ROW_WRAPPER_ENABLED("hive.llap.io.row.wrapper.enabled", true, "Whether the LLAP IO row wrapper is enabled for non-vectorized queries."),
     LLAP_IO_ACID_ENABLED("hive.llap.io.acid", true, "Whether the LLAP IO layer is enabled for ACID."),
     LLAP_IO_TRACE_SIZE("hive.llap.io.trace.size", "2Mb",
@@ -4351,6 +4387,9 @@ public class HiveConf extends Configuration {
       "considering the AM to be dead.", "llap.am.liveness.connection.timeout-millis"),
     LLAP_DAEMON_AM_USE_FQDN("hive.llap.am.use.fqdn", true,
         "Whether to use FQDN of the AM machine when submitting work to LLAP."),
+    LLAP_DAEMON_EXEC_USE_FQDN("hive.llap.exec.use.fqdn", true,
+      "On non-kerberized clusters, where the hostnames are stable but ip address changes, setting this config\n" +
+        " to false will use ip address of llap daemon in execution context instead of FQDN"),
     // Not used yet - since the Writable RPC engine does not support this policy.
     LLAP_DAEMON_AM_LIVENESS_CONNECTION_SLEEP_BETWEEN_RETRIES_MS(
       "hive.llap.am.liveness.connection.sleep.between.retries.ms", "2000ms",

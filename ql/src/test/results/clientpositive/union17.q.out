@@ -95,20 +95,20 @@ STAGE PLANS:
                 minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 250 Data size: 70000 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 250 Data size: 68750 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: string)
                   null sort order: zz
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 250 Data size: 70000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 250 Data size: 68750 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
                 aggregations: count(DISTINCT substr(_col1, 5))
                 keys: _col0 (type: string), _col1 (type: string), substr(_col1, 5) (type: string)
                 minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 501 Data size: 232464 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 501 Data size: 229959 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   table:
@@ -130,20 +130,20 @@ STAGE PLANS:
                   minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 250 Data size: 70000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 250 Data size: 68750 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: string), _col1 (type: string)
                     null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 250 Data size: 70000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 250 Data size: 68750 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count(DISTINCT substr(_col1, 5))
                   keys: _col0 (type: string), _col1 (type: string), substr(_col1, 5) (type: string)
                   minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics: Num rows: 501 Data size: 232464 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 501 Data size: 229959 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
                     table:
@@ -245,7 +245,7 @@ STAGE PLANS:
               null sort order: zzz
               sort order: +++
               Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-              Statistics: Num rows: 501 Data size: 232464 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 501 Data size: 229959 Basic stats: COMPLETE Column stats: COMPLETE
       Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator

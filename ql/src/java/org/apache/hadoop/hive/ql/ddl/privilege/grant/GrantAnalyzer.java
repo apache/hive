@@ -32,7 +32,7 @@ import com.google.common.annotations.VisibleForTesting;
 /**
  * Analyzer for granting commands.
  */
-@DDLType(type=HiveParser.TOK_GRANT)
+@DDLType(types = HiveParser.TOK_GRANT)
 public class GrantAnalyzer extends AbstractPrivilegeAnalyzer {
   public GrantAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

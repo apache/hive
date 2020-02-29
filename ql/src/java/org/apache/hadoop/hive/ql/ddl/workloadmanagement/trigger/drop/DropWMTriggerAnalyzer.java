@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Analyzer for drop trigger commands.
  */
-@DDLType(type=HiveParser.TOK_DROP_TRIGGER)
+@DDLType(types = HiveParser.TOK_DROP_TRIGGER)
 public class DropWMTriggerAnalyzer extends BaseSemanticAnalyzer {
   public DropWMTriggerAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);

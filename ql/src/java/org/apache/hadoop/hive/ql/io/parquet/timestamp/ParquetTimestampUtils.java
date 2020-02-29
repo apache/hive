@@ -13,6 +13,7 @@
  */
 package org.apache.hadoop.hive.ql.io.parquet.timestamp;
 
+import java.math.BigInteger;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 
@@ -52,5 +53,31 @@ public class ParquetTimestampUtils {
       break;
     }
     return Timestamp.ofEpochSecond(seconds, nanoseconds, zone);
+  }
+
+  /**
+   * Convert Timestamp to Long, interpreted by TimeUnit.
+   * Returns null if nanoseconds outside of range 1677-09-21 00:12:43.145224192 -
+   * 2262-04-11 23:47:16.854775807 as this would cause overflow.
+   */
+  public static Long getInt64(Timestamp timestamp, TimeUnit timeUnit) {
+    switch (timeUnit) {
+    case NANOS:
+      try {
+        BigInteger nanos = BigInteger.valueOf(timestamp.toEpochSecond())
+            .multiply(BigInteger.valueOf(NANO))
+            .add(BigInteger.valueOf(timestamp.getNanos()));
+        return nanos.longValueExact();
+      } catch (ArithmeticException e) {
+        return null;
+      }
+    case MICROS:
+      long secondsInMilli = timestamp.toEpochSecond() * MICRO;
+      return secondsInMilli + timestamp.getNanos() / MILLI;
+    case MILLIS:
+      return timestamp.toEpochMilli();
+    default:
+      throw new IllegalArgumentException("Time unit not recognized");
+    }
   }
 }

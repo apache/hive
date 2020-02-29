@@ -42,7 +42,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Analyzer for add constraint commands.
  */
-@DDLType(type=HiveParser.TOK_ALTERTABLE_ADDCONSTRAINT)
+@DDLType(types = HiveParser.TOK_ALTERTABLE_ADDCONSTRAINT)
 public class AlterTableAddConstraintAnalyzer extends AbstractAlterTableAnalyzer {
   public AlterTableAddConstraintAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
