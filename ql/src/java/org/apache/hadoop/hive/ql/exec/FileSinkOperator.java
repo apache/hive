@@ -1336,7 +1336,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       Class<?> clazz = conf.getTableInfo().getOutputFileFormatClass();
       boolean isStreaming = StreamingOutputFormat.class.isAssignableFrom(clazz);
 
-      if (!isTez || isStreaming || this.isInsertOverwrite) {
+      // let empty file generation for mm/acid table as a quick and dirty workaround for HIVE-22941
+      if (!isTez || isStreaming || (this.isInsertOverwrite && (conf.isMmTable() || conf.isFullAcidTable()))) {
         createBucketFiles(fsp);
       }
     }
