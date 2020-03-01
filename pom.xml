@@ -240,8 +240,8 @@
       </releases>
     </repository>
     <repository>
-       <id>druid-apache-rc-testing</id>
-       <url>https://repository.apache.org/content/repositories/orgapachedruid-1001/</url>
+       <id>repository-release</id>
+       <url>https://repository.apache.org/content/repositories/releases/</url>
        <releases>
          <enabled>true</enabled>
        </releases>
