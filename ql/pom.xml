@@ -42,15 +42,6 @@
       <artifactId>hive-vector-code-gen</artifactId>
       <version>${project.version}</version>
     </dependency>
-
-    <dependency>
-       <groupId>org.apache.datasketches</groupId>
-       <artifactId>datasketches-hive</artifactId>
-       <version>1.0.0-incubating</version>
-    </dependency>
-
-
-
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-common</artifactId>
@@ -316,6 +307,11 @@
       <artifactId>curator-test</artifactId>
       <version>${curator.version}</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+       <groupId>org.apache.datasketches</groupId>
+       <artifactId>datasketches-hive</artifactId>
+       <version>${datasketches.version}</version>
     </dependency>
     <dependency>
       <groupId>com.lmax</groupId>
@@ -996,6 +992,7 @@
                   <include>io.dropwizard.metrics:metrics-jvm</include>
                   <include>io.dropwizard.metrics:metrics-json</include>
                   <include>com.zaxxer:HikariCP</include>
+                  <include>org.apache.datasketches:*</include>
                 </includes>
               </artifactSet>
               <relocations>
@@ -1022,6 +1019,10 @@
                 <relocation>
                   <pattern>com.google.guava</pattern>
                   <shadedPattern>org.apache.hive.com.google.guava</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>org.apache.datasketches</pattern>
+                  <shadedPattern>org.apache.hive.org.apache.datasketches</shadedPattern>
                 </relocation>
               </relocations>
             </configuration>
