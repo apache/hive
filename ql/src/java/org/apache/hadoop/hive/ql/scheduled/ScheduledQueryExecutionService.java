@@ -98,6 +98,25 @@ public class ScheduledQueryExecutionService implements Closeable {
   }
 
   /**
+   * Renames the {@link Thread} to make it more clear what it is working on.
+   */
+  static class NamedThread implements Closeable {
+    private final String oldName;
+
+    public NamedThread(String newName) {
+      LOG.info("Starting {} thread - renaming accordingly.", newName);
+      oldName = Thread.currentThread().getName();
+      Thread.currentThread().setName(newName);
+    }
+
+    @Override
+    public void close() {
+      LOG.info("Thread finished; renaming back to: {}", oldName);
+      Thread.currentThread().setName(oldName);
+    }
+  }
+
+  /**
    * The poller is responsible for checking for available scheduled queries.
    *
    * It also handles forced wakeup calls to reduce the impact that the default check period might be minutes.
@@ -107,24 +126,26 @@ public class ScheduledQueryExecutionService implements Closeable {
 
     @Override
     public void run() {
-      while (!context.executor.isShutdown()) {
-        int origResets = forcedScheduleCheckCounter.get();
-        if (usedExecutors.get() < context.getNumberOfExecutors()) {
-          try {
-            ScheduledQueryPollResponse q = context.schedulerService.scheduledQueryPoll();
-            if (q.isSetExecutionId()) {
-              context.executor.submit(new ScheduledQueryExecutor(q));
-              // skip sleep and poll again if there are available executor
-              continue;
+      try (NamedThread namedThread = new NamedThread("Scheduled Query Poller")) {
+        while (!context.executor.isShutdown()) {
+          int origResets = forcedScheduleCheckCounter.get();
+          if (usedExecutors.get() < context.getNumberOfExecutors()) {
+            try {
+              ScheduledQueryPollResponse q = context.schedulerService.scheduledQueryPoll();
+              if (q.isSetExecutionId()) {
+                context.executor.submit(new ScheduledQueryExecutor(q));
+                // skip sleep and poll again if there are available executor
+                continue;
+              }
+            } catch (Throwable t) {
+              LOG.error("Unexpected exception during scheduled query submission", t);
             }
-          } catch (Throwable t) {
-            LOG.error("Unexpected exception during scheduled query submission", t);
           }
-        }
-        try {
-          sleep(context.getIdleSleepTime(), origResets);
-        } catch (InterruptedException e) {
-          LOG.warn("interrupt discarded");
+          try {
+            sleep(context.getIdleSleepTime(), origResets);
+          } catch (InterruptedException e) {
+            LOG.warn("interrupt discarded");
+          }
         }
       }
     }
@@ -168,11 +189,16 @@ public class ScheduledQueryExecutionService implements Closeable {
     }
 
     public void run() {
-      try {
+      try (NamedThread namedThread = new NamedThread(getThreadName())) {
         processQuery(pollResponse);
       } finally {
         executorStopped(this);
       }
+    }
+
+    private String getThreadName() {
+      return String.format("Scheduled Query Executor(schedule:%s, execution_id:%d)",
+          pollResponse.getScheduleKey().getScheduleName(), pollResponse.getExecutionId());
     }
 
     public synchronized void reportQueryProgress() {
@@ -254,18 +280,20 @@ public class ScheduledQueryExecutionService implements Closeable {
 
     @Override
     public void run() {
-      while (!context.executor.isShutdown()) {
-        try {
-          Thread.sleep(context.getProgressReporterSleepTime());
-        } catch (InterruptedException e) {
-          LOG.warn("interrupt discarded");
-        }
-        try {
-          for (ScheduledQueryExecutor worker : runningExecutors) {
-            worker.reportQueryProgress();
+      try (NamedThread namedThread = new NamedThread("Scheduled Query Progress Reporter")) {
+        while (!context.executor.isShutdown()) {
+          try {
+            Thread.sleep(context.getProgressReporterSleepTime());
+          } catch (InterruptedException e) {
+            LOG.warn("interrupt discarded");
           }
-        } catch (Exception e) {
-          LOG.error("ProgressReporter encountered exception ", e);
+          try {
+            for (ScheduledQueryExecutor worker : runningExecutors) {
+              worker.reportQueryProgress();
+            }
+          } catch (Exception e) {
+            LOG.error("ProgressReporter encountered exception ", e);
+          }
         }
       }
     }
