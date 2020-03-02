@@ -11,6 +11,7 @@ public class SketchesX {
     this.system = system;
   }
 
+  // FIXME: consider using the Reflection api to (auto)register things w/o physically importing
   public static void register(Registry system) {
     new SketchesX(system).registerHll("hll");
   }
