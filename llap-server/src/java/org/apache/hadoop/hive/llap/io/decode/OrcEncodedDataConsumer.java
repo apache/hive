@@ -89,12 +89,10 @@ public class OrcEncodedDataConsumer
   private TypeDescription[] batchSchemas;
   private boolean useDecimal64ColumnVectors;
   // ProbeDecode extra variables
-  private Boolean mapJoinProbeDecodeEnabled = false;
-  private CuckooSetLong smallMapJoinTable = null;
-  private ObjectCache cache = null;
-  private String probeDecodeColName = null;
-  private int probeDecodeColIdx = -1;
-//  private FilterLongColumnInList probeFilterVectorExpr = null;
+  private Boolean probeDecodeEnabled = false;
+  private float probeDecodeFilterThresPerc;
+  private CuckooSetLong probeDecodeMapJoinTable = null;
+  private ObjectCache probeDecodeCache = null;
 
 
   public OrcEncodedDataConsumer(Consumer<ColumnVectorBatchWrapper> consumer, Includes includes, boolean skipCorrupt,
@@ -103,26 +101,22 @@ public class OrcEncodedDataConsumer
     this.includes = includes;
     // TODO: get rid of this
     this.skipCorrupt = skipCorrupt;
-    this.mapJoinProbeDecodeEnabled = HiveConf.getBoolVar(includes.getJobConf(), HiveConf.ConfVars.HIVE_MAPJOIN_PROBEDECODE_ENABLED) &&
+    this.probeDecodeEnabled = HiveConf.getBoolVar(includes.getJobConf(), HiveConf.ConfVars.HIVE_MAPJOIN_PROBEDECODE_ENABLED) &&
         this.includes.getProbeDecodeCacheKey() != null;
-    if (this.mapJoinProbeDecodeEnabled) {
-      // ColId to col index mapping
-      this.probeDecodeColIdx = includes.getReaderLogicalColumnIds().indexOf(HiveConf.
-          getIntVar(includes.getJobConf(), HiveConf.ConfVars.HIVE_MAPJOIN_PROBEDECODE_COLID));
-      this.probeDecodeColName = HiveConf.getVar(includes.getJobConf(), HiveConf.ConfVars.HIVE_MAPJOIN_PROBEDECODE_COLNAME);
-      this.cache = ObjectCacheFactory.getCache(conf, HiveConf.getVar(includes.getJobConf(), HiveConf.ConfVars.HIVEQUERYID), false);
+    this.probeDecodeFilterThresPerc = HiveConf.getFloatVar(includes.getJobConf(), HiveConf.ConfVars.HIVE_MAPJOIN_PROBEDECODE_FILTER_PERC);
+    if (this.probeDecodeEnabled) {
+      this.probeDecodeCache = ObjectCacheFactory.getCache(conf, HiveConf.getVar(includes.getJobConf(), HiveConf.ConfVars.HIVEQUERYID), false);
       // Start periodic MapJoinTable checker
       ExecutorService executorService = Executors.newFixedThreadPool(1);
       executorService.execute(()->{
-        while (smallMapJoinTable == null) {
+        while (probeDecodeMapJoinTable == null) {
           try {
             // TODO: Check if we can get directly from operator
-            Pair<MapJoinTableContainer[], MapJoinTableContainerSerDe[]> smallTablePair = cache.retrieve(includes.getProbeDecodeCacheKey());
+            Pair<MapJoinTableContainer[], MapJoinTableContainerSerDe[]> smallTablePair = probeDecodeCache.retrieve(includes.getProbeDecodeCacheKey());
             if (smallTablePair != null ) {
               VectorMapJoinHashTable ht = ((VectorMapJoinTableContainer) smallTablePair.getLeft()[smallTablePair.getLeft().length-1]).vectorMapJoinHashTable();
-              this.smallMapJoinTable = ht.getHashTableKeySet();
+              this.probeDecodeMapJoinTable = ht.getHashTableKeySet();
               LlapIoImpl.LOG.info("ProbeDecode finally got HashTable of size {}", ht.size());
-              // probeFilterVectorExpr = new FilterLongColumnInList(0);
             } else {
               Thread.sleep(50);
             }
@@ -134,8 +128,8 @@ public class OrcEncodedDataConsumer
         }
       });
     }
-    LlapIoImpl.LOG.info("OrcEncodedDataConsumer probeDecode enabled is {} with cacheKey {} colIndex {} and colName {}", mapJoinProbeDecodeEnabled,
-        this.includes.getProbeDecodeCacheKey(), this.probeDecodeColIdx, this.probeDecodeColName);
+    LlapIoImpl.LOG.info("OrcEncodedDataConsumer probeDecode enabled is {} with cacheKey {} colIndex {} and colName {}",
+        probeDecodeEnabled, this.includes.getProbeDecodeCacheKey(), this.includes.getProbeDecodeColIdx(), this.includes.getProbeDecodeColName());
   }
 
   public OrcEncodedDataConsumer(
@@ -206,7 +200,7 @@ public class OrcEncodedDataConsumer
       }
       previousStripeIndex = currentStripeIndex;
 
-//       if (this.mapJoinProbeDecodeEnabled && columnReaders.length == 20) {
+//       if (this.probeDecodeEnabled && columnReaders.length == 20) {
 //         LlapIoImpl.LOG.info("PANOS HERE Waiting...");
 //         Thread.sleep(300);
 //         LlapIoImpl.LOG.info("PANOS HERE Waiting...DONE!");
@@ -273,9 +267,9 @@ public class OrcEncodedDataConsumer
           cv.reset();
           cv.ensureSize(batchSize, false);
           // if this is the probeKey Col and all rows are skipped -> skip decoding for the remaining batch columns
-          if ((idx == this.probeDecodeColIdx)) {
+          if ((idx == this.includes.getProbeDecodeColIdx())) {
             reader.nextVector(cv, null, batchSize);
-            if (smallMapJoinTable != null)
+            if (probeDecodeMapJoinTable != null)
               HashTableRowFilterCallback(cvbw, idx, batchSize);
           } else {
             reader.getFilterContext().copyFilterContextFromOther(cvbw.getFilterContext());
@@ -313,7 +307,7 @@ public class OrcEncodedDataConsumer
       if (probeCol.isRepeating) {
         // All must be selected otherwise size would be zero
         // Repeating property will not change.
-        if (!(smallMapJoinTable.lookup(probeCol.vector[0]))) {
+        if (!(probeDecodeMapJoinTable.lookup(probeCol.vector[0]))) {
           // Entire batch is filtered out.
           cvbw.getCvb().size = 0;
         }
@@ -321,14 +315,14 @@ public class OrcEncodedDataConsumer
         selected = new int[batchSize];
         for (int row = 0; row < batchSize; ++row) {
           // Pass ony Valid key
-          if (smallMapJoinTable.lookup(probeCol.vector[row])) {
+          if (probeDecodeMapJoinTable.lookup(probeCol.vector[row])) {
             selected[newSize++] = row;
           }
         }
-        // skip only if < 10% match
-        if (newSize <= (0.1 * batchSize)) {
+        if (newSize == 0) cvbw.getCvb().size = 0;
+        // skip only if <= Threshold % match
+        if (newSize <= (probeDecodeFilterThresPerc * batchSize)) {
           selectedInUse = true;
-          if (newSize == 0) cvbw.getCvb().size = 0;
         }
       }
     }

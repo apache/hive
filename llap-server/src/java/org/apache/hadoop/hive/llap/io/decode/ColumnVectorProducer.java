@@ -50,6 +50,8 @@ public interface ColumnVectorProducer {
     List<Integer> getReaderLogicalColumnIds();
     TypeDescription[] getBatchReaderTypes(TypeDescription fileSchema);
     String getProbeDecodeCacheKey();
+    int getProbeDecodeColIdx();
+    String getProbeDecodeColName();
     JobConf getJobConf();
   }
 

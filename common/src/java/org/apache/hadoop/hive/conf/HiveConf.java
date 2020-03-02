@@ -1771,10 +1771,10 @@ public class HiveConf extends Configuration {
     HIVE_MAPJOIN_PROBEDECODE_ENABLED("hive.mapjoin.probedecode.enabled", false,
         "Use cached MapJoin hashtable created on the small table side to filter out row columns that are not going\n "+
             "to be used when reading the large table data. This will result less CPU cycles spent for decoding unused data. "),
-    HIVE_MAPJOIN_PROBEDECODE_COLID("hive.mapjoin.probedecode.colid", 0, ""
-        + "The Column Key the RecordReader will use to read the hastTable. Operator specific."),
-    HIVE_MAPJOIN_PROBEDECODE_COLNAME("hive.mapjoin.probedecode.colname", "", ""
-        + "The Column Key the RecordReader will use to read the hastTable. Operator specific."),
+    HIVE_MAPJOIN_PROBEDECODE_FILTER_PERC("hive.mapjoin.probedecode.filterperc", (float) 0.6,
+        "The percentage of matching rows per VectorColumnBatch BELOW which the filter is going to be applied."
+        + "Applying a filter when all or the most rows match (0.9 - 1.0) can be more time consuming than just reading the whole batch"
+        + "Filterperc value acts as an upper limit (as percentage) for the matching rows under which filtering applies."),
     HIVE_TEST_MAPJOINFULLOUTER_OVERRIDE(
         "hive.test.mapjoin.full.outer.override",
         "none", new StringSet("none", "enable", "disable"),

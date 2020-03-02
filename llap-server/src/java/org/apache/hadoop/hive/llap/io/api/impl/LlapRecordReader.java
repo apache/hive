@@ -207,7 +207,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
 
     this.probeDecodeEnabled = HiveConf.getBoolVar(jobConf, HiveConf.ConfVars.HIVE_MAPJOIN_PROBEDECODE_ENABLED);
     if (this.probeDecodeEnabled) {
-      this.includes.setProbeDecodeCacheKey(getProbeDecodeHashTable(mapWork, job));
+      findProbeDecodeSettings(mapWork, includes);
     }
     LOG.info("LlapRecordReader ProbeDecode enabled is {}", this.probeDecodeEnabled);
 
@@ -216,13 +216,13 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
         sourceInputFormat, sourceSerDe, reporter, job, mapWork.getPathToPartitionInfo());
   }
 
-  private static String getProbeDecodeHashTable(MapWork mapWork, JobConf job) {
+  private static void findProbeDecodeSettings(MapWork mapWork, IncludesImpl includes) {
     Stack<Operator<?>> opStack = new Stack<>();
     // Children BFS
     opStack.addAll(mapWork.getWorks());
     VectorMapJoinCommonOperator vop = null;
     String mjCacheKey = null;
-    int colIndex = 0;
+    int colId = 0;
     String colName = null;
     while (!opStack.empty()) {
       Operator<?> op = opStack.pop();
@@ -231,10 +231,11 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
         // Following MapJoinOperator cache key definition
         mjCacheKey = vop.getCacheKey() != null ? vop.getCacheKey(): MapJoinDesc.generateCacheKey(op.getOperatorId());
         ((VectorMapJoinCommonOperator) op).getVectorMapJoinHashTable();
-        colIndex = ((VectorMapJoinDesc)((VectorMapJoinCommonOperator) op).getVectorDesc()).getVectorMapJoinInfo().getBigTableKeyColumnMap()[0];
-        job.setInt(ConfVars.HIVE_MAPJOIN_PROBEDECODE_COLID.varname, colIndex);
-        colName = vop.getInputVectorizationContext().getInitialColumnNames().get(colIndex);
-        job.set(ConfVars.HIVE_MAPJOIN_PROBEDECODE_COLNAME.varname, colName);
+        colId = ((VectorMapJoinDesc)((VectorMapJoinCommonOperator) op).getVectorDesc()).getVectorMapJoinInfo().getBigTableKeyColumnMap()[0];
+        colName = vop.getInputVectorizationContext().getInitialColumnNames().get(colId);
+        // ColId to ColIdx mapping
+        includes.setProbeDecodeColIdx(includes.getReaderLogicalColumnIds().indexOf(colId));
+        includes.setProbeDecodeColName(colName);
       }
       if (op.getChildOperators() != null) {
         opStack.addAll(op.getChildOperators());
@@ -242,9 +243,9 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     }
     if (mjCacheKey != null) {
       LOG.info("ProbeDecode found MapJoin op {}  with CacheKey {} MapJoin ColID {} and ColName {}", vop.getName(), mjCacheKey,
-          colIndex, colName);
+          colId, colName);
     }
-    return mjCacheKey;
+    includes.setProbeDecodeCacheKey(mjCacheKey);
   }
 
   // Is Single Key MapJoin of Number(Long/Int/Short) type
@@ -445,8 +446,8 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
       counters.incrWallClockCounter(LlapIOCounters.CONSUMER_TIME_NS, firstReturnTime);
       return false;
     }
-    vrb.selectedInUse = true;//why?
     if (isAcidFormat) {
+      vrb.selectedInUse = true;//why?
       if (isVectorized) {
         // TODO: relying everywhere on the magical constants and columns being together means ACID
         //       columns are going to be super hard to change in a backward compat manner. I can
@@ -471,6 +472,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
           inputVrb.cols[ixInVrb] = cvb.getCvb().cols[ixInReadSet];
         }
         if (cvb.isSelectedInUse()) {
+          inputVrb.selectedInUse = true;
           inputVrb.size = cvb.getSelectedSize();
           inputVrb.selected = cvb.getSelected();
         } else {
@@ -495,11 +497,12 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
         cvb.getCvb().swapColumnVector(ixInReadSet, vrb.cols, ixInVrb);
       }
       if (cvb.isSelectedInUse()) {
+        vrb.selectedInUse = true;
         vrb.size = cvb.getSelectedSize();
         vrb.selected = cvb.getSelected();
       } else {
-        vrb.size = cvb.getCvb().size;
         vrb.selectedInUse = false;
+        vrb.size = cvb.getCvb().size;
       }
     }
 
@@ -714,8 +717,10 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     private TypeDescription readerSchema;
     private JobConf jobConf;
 
-    // ProbeDecode HashTable ref
+    // ProbeDecode settings
     private String probeDecodeOpCacheKey;
+    private int probeDecodeColIdx = -1;
+    private String probeDecodeColName = null;
 
     public IncludesImpl(List<Integer> tableIncludedCols, boolean isAcidScan,
         VectorizedRowBatchCtx rbCtx, TypeDescription readerSchema,
@@ -779,6 +784,24 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     @Override
     public String getProbeDecodeCacheKey() {
       return this.probeDecodeOpCacheKey;
+    }
+
+    public void setProbeDecodeColIdx(int probeDecodeColIdx) {
+      this.probeDecodeColIdx = probeDecodeColIdx;
+    }
+
+    @Override
+    public int getProbeDecodeColIdx() {
+      return probeDecodeColIdx;
+    }
+
+    public void setProbeDecodeColName(String probeDecodeColName) {
+      this.probeDecodeColName = probeDecodeColName;
+    }
+
+    @Override
+    public String getProbeDecodeColName() {
+      return probeDecodeColName;
     }
 
     @Override
