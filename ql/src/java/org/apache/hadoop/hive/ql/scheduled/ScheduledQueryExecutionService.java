@@ -164,10 +164,6 @@ public class ScheduledQueryExecutionService implements Closeable {
     private final ScheduledQueryPollResponse pollResponse;
 
     public ScheduledQueryWorker(ScheduledQueryPollResponse pollResponse) {
-      info = new ScheduledQueryProgressInfo();
-      info.setScheduledExecutionId(pollResponse.getExecutionId());
-      info.setState(QueryState.EXECUTING);
-      info.setExecutorQueryId(buildExecutorQueryId(""));
       this.pollResponse = pollResponse;
       workerStarted(this);
     }
@@ -193,6 +189,10 @@ public class ScheduledQueryExecutionService implements Closeable {
 
     private void processQuery(ScheduledQueryPollResponse q) {
       LOG.info("Executing schq:{}, executionId: {}", q.getScheduleKey().getScheduleName(), q.getExecutionId());
+      info = new ScheduledQueryProgressInfo();
+      info.setScheduledExecutionId(pollResponse.getExecutionId());
+      info.setState(QueryState.EXECUTING);
+      info.setExecutorQueryId(buildExecutorQueryId(""));
       SessionState state = null;
       try {
         HiveConf conf = new HiveConf(context.conf);
