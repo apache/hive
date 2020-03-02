@@ -1,3 +1,4 @@
+-- see here: https://datasketches.apache.org/docs/Theta/ThetaHiveUDFs.html
 
 create temporary table theta_input (id int, category char(1));
 insert into table theta_input values
@@ -10,4 +11,23 @@ insert into sketch_intermediate select category, ds_theta_datatosketch(id) from 
 select category, ds_theta_sketchtoestimate(sketch) from sketch_intermediate;
 
 select ds_theta_sketchtoestimate(ds_theta_unionSketch(sketch)) from sketch_intermediate;
+
+
+
+create temporary table sketch_input (id1 int, id2 int);
+insert into table sketch_input values
+  (1, 2), (2, 4), (3, 6), (4, 8), (5, 10), (6, 12), (7, 14), (8, 16), (9, 18), (10, 20);
+
+create temporary table sketch_intermediate2 (sketch1 binary, sketch2 binary);
+
+insert into sketch_intermediate2 select ds_theta_datatosketch(id1), ds_theta_datatosketch(id2) from sketch_input;
+
+select
+  ds_theta_sketchtoestimate(sketch1),
+  ds_theta_sketchtoestimate(sketch2),
+  ds_theta_sketchtoestimate(ds_theta_unionSketch1(sketch1, sketch2)),
+  ds_theta_sketchtoestimate(ds_theta_intersect(sketch1, sketch2)),
+  ds_theta_sketchtoestimate(ds_theta_exclude(sketch1, sketch2)),
+  ds_theta_sketchtoestimate(ds_theta_exclude(sketch2, sketch1))
+from sketch_intermediate2;
 

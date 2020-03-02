@@ -10,7 +10,7 @@ public class DataSketchesFunctions {
   // FIXME: consider to rename it to simply "estimate" or "evaluate" - in case of the counting sketches the "sketchto..." doesnt add value
   private static final String SKETCH_TO_ESTIMATE = "sketchToEstimate";
   private static final String SKETCH_TO_STRING = "sketchToString";
-  // FIXME: probably use simply "union"?
+  // FIXME: probably use simply "union" instead unionSketch?
   private static final String UNION_SKETCH = "unionSketch";
   private static final String GET_N = "getN";
   private static final String GET_CDF = "getCdf";
@@ -18,8 +18,8 @@ public class DataSketchesFunctions {
   private static final String GET_QUANTILES = "GetQuantiles";
   private static final String GET_QUANTILE = "GetQuantile";
   private static final String GET_RANK = "getRank";
-  private static final String INTERSECT_SKETCH = "intersectSketch";
-  private static final String EXCLUDE_SKETCH = "excludeSketch";
+  private static final String INTERSECT_SKETCH = "intersection";
+  private static final String EXCLUDE_SKETCH = "exclude";
   private static final String GET_K = "getK";
   private static final String GET_FREQUENT_ITEMS = "getFrequentItems";
   private static final String T_TEST = "TTest";
@@ -30,7 +30,7 @@ public class DataSketchesFunctions {
   private static final String SKETCH_TO_VARIANCES = "sketchToVariances";
   private static final String SKETCH_TO_PERCENTILE = "sketchToPercentile";
   private static final String UNION_SKETCH1 = "unionSketch1";
-  private static final String INTERSECT_SKETCH1 = "inter1";
+  private static final String INTERSECT_SKETCH1 = "intersect";
 
   private final Registry system;
 
