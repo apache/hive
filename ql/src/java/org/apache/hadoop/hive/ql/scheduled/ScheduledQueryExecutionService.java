@@ -19,8 +19,8 @@ package org.apache.hadoop.hive.ql.scheduled;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
@@ -56,7 +56,7 @@ public class ScheduledQueryExecutionService implements Closeable {
   private AtomicInteger forcedScheduleCheckCounter = new AtomicInteger();
   private ScheduledQueryPoller poller;
   private AtomicInteger usedExecutors = new AtomicInteger(0);
-  private List<ScheduledQueryWorker> runningWorkers = new LinkedList<>();
+  private Queue<ScheduledQueryExecutor> runningExecutors = new ConcurrentLinkedQueue<>();
 
   public static ScheduledQueryExecutionService startScheduledQueryExecutorService(HiveConf inputConf) {
     HiveConf conf = new HiveConf(inputConf);
@@ -114,7 +114,7 @@ public class ScheduledQueryExecutionService implements Closeable {
           try {
             ScheduledQueryPollResponse q = context.schedulerService.scheduledQueryPoll();
             if (q.isSetExecutionId()) {
-              context.executor.submit(new ScheduledQueryWorker(q));
+              context.executor.submit(new ScheduledQueryExecutor(q));
               // skip sleep and poll again if there are available executor
               continue;
             }
@@ -142,14 +142,14 @@ public class ScheduledQueryExecutionService implements Closeable {
 
   }
 
-  private void workerStarted(ScheduledQueryWorker executor) {
-    runningWorkers.add(executor);
+  private void executorStarted(ScheduledQueryExecutor executor) {
+    runningExecutors.add(executor);
     usedExecutors.incrementAndGet();
   }
 
-  private void workerStopped(ScheduledQueryWorker executor) {
+  private void executorStopped(ScheduledQueryExecutor executor) {
     usedExecutors.decrementAndGet();
-    runningWorkers.remove(executor);
+    runningExecutors.remove(executor);
     forceScheduleCheck();
   }
 
@@ -158,21 +158,21 @@ public class ScheduledQueryExecutionService implements Closeable {
    *
    * The execution happens in a separate thread.
    */
-  class ScheduledQueryWorker implements Runnable {
+  class ScheduledQueryExecutor implements Runnable {
 
     private ScheduledQueryProgressInfo info;
     private final ScheduledQueryPollResponse pollResponse;
 
-    public ScheduledQueryWorker(ScheduledQueryPollResponse pollResponse) {
+    public ScheduledQueryExecutor(ScheduledQueryPollResponse pollResponse) {
       this.pollResponse = pollResponse;
-      workerStarted(this);
+      executorStarted(this);
     }
 
     public void run() {
       try {
         processQuery(pollResponse);
       } finally {
-        workerStopped(this);
+        executorStopped(this);
       }
     }
 
@@ -262,7 +262,7 @@ public class ScheduledQueryExecutionService implements Closeable {
           LOG.warn("interrupt discarded");
         }
         try {
-          for (ScheduledQueryWorker worker : runningWorkers) {
+          for (ScheduledQueryExecutor worker : runningExecutors) {
             worker.reportQueryProgress();
           }
         } catch (Exception e) {
