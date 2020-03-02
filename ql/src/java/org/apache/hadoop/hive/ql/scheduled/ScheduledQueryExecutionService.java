@@ -54,7 +54,6 @@ public class ScheduledQueryExecutionService implements Closeable {
 
   private ScheduledQueryExecutionContext context;
   private AtomicInteger forcedScheduleCheckCounter = new AtomicInteger();
-  private ScheduledQueryPoller poller;
   private AtomicInteger usedExecutors = new AtomicInteger(0);
   private Queue<ScheduledQueryExecutor> runningExecutors = new ConcurrentLinkedQueue<>();
 
@@ -90,7 +89,7 @@ public class ScheduledQueryExecutionService implements Closeable {
 
   private ScheduledQueryExecutionService(ScheduledQueryExecutionContext ctx) {
     context = ctx;
-    ctx.executor.submit(poller = new ScheduledQueryPoller());
+    ctx.executor.submit(new ScheduledQueryPoller());
     ctx.executor.submit(new ProgressReporter());
   }
 
