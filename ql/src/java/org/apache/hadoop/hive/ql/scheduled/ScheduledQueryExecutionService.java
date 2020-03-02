@@ -245,6 +245,12 @@ public class ScheduledQueryExecutionService implements Closeable {
     }
   }
 
+  /**
+   * Reports progress periodically.
+   *
+   * To retain the running state of all the in-flight scheduled query executions;
+   * this class initiates a reporting round periodically.
+   */
   class ProgressReporter implements Runnable {
 
     @Override
@@ -273,6 +279,7 @@ public class ScheduledQueryExecutionService implements Closeable {
         throw new IllegalStateException("The current ScheduledQueryExecutionService INSTANCE is invalid");
       }
       context.executor.shutdown();
+      forceScheduleCheck();
       try {
         context.executor.awaitTermination(1, TimeUnit.SECONDS);
         context.executor.shutdownNow();
