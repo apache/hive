@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.plan.impala.expr;
 
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.impala.analysis.Analyzer;
+import org.apache.impala.analysis.Expr;
 import org.apache.impala.analysis.NullLiteral;
 import org.apache.impala.common.AnalysisException;
 
@@ -36,7 +37,24 @@ public class ImpalaNullLiteral extends NullLiteral {
     }
   }
 
+  public ImpalaNullLiteral(ImpalaNullLiteral other) {
+    super(other);
+  }
+
+  @Override
+  public Expr clone() {
+    return new ImpalaNullLiteral(this);
+  }
+
   @Override
   protected void analyzeImpl(Analyzer analyzer) throws AnalysisException {
+  }
+
+  /**
+   * We need to override resetAnalysisState so that Impala Analyzer doesn't
+   * attempt to reanalyze this.
+   */
+  @Override
+  protected void resetAnalysisState() {
   }
 }

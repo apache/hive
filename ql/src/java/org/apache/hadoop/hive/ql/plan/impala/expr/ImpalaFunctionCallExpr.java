@@ -88,7 +88,7 @@ public class ImpalaFunctionCallExpr extends FunctionCallExpr {
   public Expr clone() { return new ImpalaFunctionCallExpr(this); }
 
   /**
-   * We need to override the resetAnalysisState so that Impala Analyzer doesn't
+   * We need to override resetAnalysisState so that Impala Analyzer doesn't
    * attempt to reanalyze this.
    */
   @Override

@@ -46,7 +46,26 @@ public class ImpalaCaseExpr extends CaseExpr {
     }
   }
 
+  public ImpalaCaseExpr(ImpalaCaseExpr other) {
+    super(other);
+    this.fn_ = other.fn_;
+    this.type_ = other.type_;
+  }
+
+  @Override
+  public Expr clone() {
+    return new ImpalaCaseExpr(this);
+  }
+
   @Override
   protected void analyzeImpl(Analyzer analyzer) throws AnalysisException {
+  }
+
+  /**
+   * We need to override resetAnalysisState so that Impala Analyzer doesn't
+   * attempt to reanalyze this.
+   */
+  @Override
+  protected void resetAnalysisState() {
   }
 }

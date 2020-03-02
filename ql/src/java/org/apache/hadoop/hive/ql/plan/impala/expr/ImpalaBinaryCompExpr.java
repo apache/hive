@@ -42,7 +42,26 @@ public class ImpalaBinaryCompExpr extends BinaryPredicate {
     }
   }
 
+  public ImpalaBinaryCompExpr(ImpalaBinaryCompExpr other) {
+    super(other);
+    this.fn_ = other.fn_;
+    this.type_ = other.type_;
+  }
+
+  @Override
+  public Expr clone() {
+    return new ImpalaBinaryCompExpr(this);
+  }
+
   @Override
   protected void analyzeImpl(Analyzer analyzer) throws AnalysisException {
+  }
+
+  /**
+   * We need to override resetAnalysisState so that Impala Analyzer doesn't
+   * attempt to reanalyze this.
+   */
+  @Override
+  protected void resetAnalysisState() {
   }
 }
