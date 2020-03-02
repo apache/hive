@@ -471,7 +471,13 @@ public class TezSessionPoolManager extends AbstractTriggerValidator
       String queueName = session.getQueueName();
       String confQueueName = conf.get(TezConfiguration.TEZ_QUEUE_NAME);
       LOG.info("Current queue name is " + queueName + " incoming queue name is " + confQueueName);
-      return Objects.equals(queueName, confQueueName);
+
+      if (queueName != null && confQueueName == null) {
+        LOG.info("Incoming queue null is reset to current queue " + queueName);
+        confQueueName = queueName;
+      }
+
+      return (queueName == null) ? confQueueName == null : queueName.equals(confQueueName);
     } else {
       // this session should never be a default session unless something has messed up.
       throw new HiveException("The pool session " + session + " should have been returned to the pool");
