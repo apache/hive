@@ -123,7 +123,7 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
 
   @Test
   public void testAcidTableIncrementalReplication() throws Throwable {
-    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, null);
+    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName);
     replica.load(replicatedDbName, bootStrapDump.dumpLocation)
             .run("REPL STATUS " + replicatedDbName)
             .verifyResult(bootStrapDump.lastReplicationId);
@@ -208,14 +208,14 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
     String[] result = new String[]{"5"};
 
     WarehouseInstance.Tuple incrementalDump;
-    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, null);
+    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName);
     replica.load(replicatedDbName, bootStrapDump.dumpLocation)
             .run("REPL STATUS " + replicatedDbName)
             .verifyResult(bootStrapDump.lastReplicationId);
 
     ReplicationTestUtils.insertRecords(primary, primaryDbName, primaryDbNameExtra,
             tableName, null, false, ReplicationTestUtils.OperationType.REPL_TEST_ACID_INSERT);
-    incrementalDump = primary.dump(primaryDbName, bootStrapDump.lastReplicationId);
+    incrementalDump = primary.dump(primaryDbName);
     primary.run("drop table " + primaryDbName + "." + tableName);
     replica.loadWithoutExplain(replicatedDbName, incrementalDump.dumpLocation)
             .run("REPL STATUS " + replicatedDbName).verifyResult(incrementalDump.lastReplicationId);
@@ -225,7 +225,7 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
 
     ReplicationTestUtils.insertRecords(primary, primaryDbName, primaryDbNameExtra,
             tableNameMM, null, true, ReplicationTestUtils.OperationType.REPL_TEST_ACID_INSERT);
-    incrementalDump = primary.dump(primaryDbName, bootStrapDump.lastReplicationId);
+    incrementalDump = primary.dump(primaryDbName);
     primary.run("drop table " + primaryDbName + "." + tableNameMM);
     replica.loadWithoutExplain(replicatedDbName, incrementalDump.dumpLocation)
             .run("REPL STATUS " + replicatedDbName).verifyResult(incrementalDump.lastReplicationId);
