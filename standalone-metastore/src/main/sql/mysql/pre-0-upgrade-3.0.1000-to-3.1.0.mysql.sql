@@ -1,1 +1,3 @@
-CREATE INDEX TAB_COL_STATS_IDX ON TAB_COL_STATS (CAT_NAME, DB_NAME, TABLE_NAME, COLUMN_NAME) USING BTREE;
+-- This is necessary in CDH5-CDH7 upgrade path. The index already exists, but CAT_NAME column is missing from it.
+-- So dropping in pre-upgrade and recreating in the upgrade script is needed.
+DROP INDEX TAB_COL_STATS_IDX ON TAB_COL_STATS;
