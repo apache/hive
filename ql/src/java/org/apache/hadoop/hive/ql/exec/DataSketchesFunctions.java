@@ -3,17 +3,17 @@ package org.apache.hadoop.hive.ql.exec;
 import org.apache.datasketches.hive.hll.*;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver2;
 
-public class SketchesX {
+public class DataSketchesFunctions {
 
   private final Registry system;
 
-  public SketchesX(Registry system) {
+  public DataSketchesFunctions(Registry system) {
     this.system = system;
   }
 
   // FIXME: consider using the Reflection api to (auto)register things w/o physically importing
   public static void register(Registry system) {
-    new SketchesX(system).registerHll("hll");
+    new DataSketchesFunctions(system).registerHll("hll");
   }
 
   private void registerHll(String prefix) {
