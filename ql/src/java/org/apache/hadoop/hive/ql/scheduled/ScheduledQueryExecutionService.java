@@ -56,7 +56,7 @@ public class ScheduledQueryExecutionService implements Closeable {
   private AtomicInteger forcedScheduleCheckCounter = new AtomicInteger();
   private ScheduledQueryPoller poller;
   private AtomicInteger usedExecutors = new AtomicInteger(0);
-  private List<ScheduledQueryExecutor> runningWorkers = new LinkedList<>();
+  private List<ScheduledQueryWorker> runningWorkers = new LinkedList<>();
 
   public static ScheduledQueryExecutionService startScheduledQueryExecutorService(HiveConf inputConf) {
     HiveConf conf = new HiveConf(inputConf);
@@ -114,7 +114,7 @@ public class ScheduledQueryExecutionService implements Closeable {
           try {
             ScheduledQueryPollResponse q = context.schedulerService.scheduledQueryPoll();
             if (q.isSetExecutionId()) {
-              context.executor.submit(new ScheduledQueryExecutor(q));
+              context.executor.submit(new ScheduledQueryWorker(q));
               // skip sleep and poll again if there are available executor
               continue;
             }
@@ -142,12 +142,12 @@ public class ScheduledQueryExecutionService implements Closeable {
 
   }
 
-  private void workerStarted(ScheduledQueryExecutor executor) {
+  private void workerStarted(ScheduledQueryWorker executor) {
     runningWorkers.add(executor);
     usedExecutors.incrementAndGet();
   }
 
-  private void workerStopped(ScheduledQueryExecutor executor) {
+  private void workerStopped(ScheduledQueryWorker executor) {
     usedExecutors.decrementAndGet();
     runningWorkers.remove(executor);
     forceScheduleCheck();
@@ -156,14 +156,14 @@ public class ScheduledQueryExecutionService implements Closeable {
   /**
    * Responsible for a single execution of a scheduled query.
    *
-   * The execution happens in a separate Thread.
+   * The execution happens in a separate thread.
    */
-  class ScheduledQueryExecutor implements Runnable {
+  class ScheduledQueryWorker implements Runnable {
 
     private ScheduledQueryProgressInfo info;
     private final ScheduledQueryPollResponse pollResponse;
 
-    public ScheduledQueryExecutor(ScheduledQueryPollResponse pollResponse) {
+    public ScheduledQueryWorker(ScheduledQueryPollResponse pollResponse) {
       info = new ScheduledQueryProgressInfo();
       info.setScheduledExecutionId(pollResponse.getExecutionId());
       info.setState(QueryState.EXECUTING);
@@ -256,7 +256,7 @@ public class ScheduledQueryExecutionService implements Closeable {
           LOG.warn("interrupt discarded");
         }
         try {
-          for (ScheduledQueryExecutor worker : runningWorkers) {
+          for (ScheduledQueryWorker worker : runningWorkers) {
             worker.reportQueryProgress();
           }
         } catch (Exception e) {
