@@ -106,7 +106,7 @@ public class TestReplicationOnHDFSEncryptedZones {
             .run("create table encrypted_table (id int, value string)")
             .run("insert into table encrypted_table values (1,'value1')")
             .run("insert into table encrypted_table values (2,'value2')")
-            .dump(primaryDbName, null);
+            .dump(primaryDbName);
 
     replica
         .run("repl load " + replicatedDbName + " from '" + tuple.dumpLocation
@@ -137,7 +137,7 @@ public class TestReplicationOnHDFSEncryptedZones {
             .run("create table encrypted_table (id int, value string)")
             .run("insert into table encrypted_table values (1,'value1')")
             .run("insert into table encrypted_table values (2,'value2')")
-            .dump(primaryDbName, null);
+            .dump(primaryDbName);
 
     replica
         .run("repl load " + replicatedDbName + " from '" + tuple.dumpLocation

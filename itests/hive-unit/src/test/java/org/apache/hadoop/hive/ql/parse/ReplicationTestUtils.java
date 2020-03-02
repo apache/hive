@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.parse;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.parse.WarehouseInstance;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import org.junit.Assert;
 
@@ -28,10 +27,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Arrays;
 import java.util.Set;
+import java.util.HashSet;
 
 /**
  * ReplicationTestUtils - static helper functions for replication test
@@ -265,7 +264,7 @@ public class ReplicationTestUtils {
                                                               String primaryDbName, String replicatedDbName,
                                                               List<String> selectStmtList,
                                                   List<String[]> expectedValues, String lastReplId) throws Throwable {
-    WarehouseInstance.Tuple incrementalDump = primary.dump(primaryDbName, lastReplId);
+    WarehouseInstance.Tuple incrementalDump = primary.dump(primaryDbName);
     replica.loadWithoutExplain(replicatedDbName, incrementalDump.dumpLocation)
             .run("REPL STATUS " + replicatedDbName).verifyResult(incrementalDump.lastReplicationId);
     verifyResultsInReplica(replica, replicatedDbName, selectStmtList, expectedValues);

@@ -173,7 +173,7 @@ public class TestMetaStoreEventListenerInRepl {
   public void testReplEvents() throws Throwable {
     Map<String, Set<String>> eventsMap = prepareBootstrapData(primaryDbName);
     WarehouseInstance.Tuple bootstrapDump = primary.run("use " + primaryDbName)
-            .dump(primaryDbName, null);
+            .dump(primaryDbName);
     replica.load(replicatedDbName, bootstrapDump.dumpLocation);
     ReplMetaStoreEventListenerTestImpl.checkEventSanity(eventsMap, replicatedDbName);
     ReplMetaStoreEventListenerTestImpl.clearSanityData();
@@ -181,7 +181,7 @@ public class TestMetaStoreEventListenerInRepl {
     eventsMap = prepareIncData(primaryDbName);
     LOG.info(testName.getMethodName() + ": first incremental dump and load.");
     WarehouseInstance.Tuple incDump = primary.run("use " + primaryDbName)
-            .dump(primaryDbName, bootstrapDump.lastReplicationId);
+            .dump(primaryDbName);
     replica.load(replicatedDbName, incDump.dumpLocation);
     ReplMetaStoreEventListenerTestImpl.checkEventSanity(eventsMap, replicatedDbName);
     ReplMetaStoreEventListenerTestImpl.clearSanityData();
@@ -190,7 +190,7 @@ public class TestMetaStoreEventListenerInRepl {
     eventsMap = prepareInc2Data(primaryDbName);
     LOG.info(testName.getMethodName() + ": second incremental dump and load.");
     WarehouseInstance.Tuple inc2Dump = primary.run("use " + primaryDbName)
-            .dump(primaryDbName, incDump.lastReplicationId);
+            .dump(primaryDbName);
     replica.load(replicatedDbName, inc2Dump.dumpLocation);
     ReplMetaStoreEventListenerTestImpl.checkEventSanity(eventsMap, replicatedDbName);
     ReplMetaStoreEventListenerTestImpl.clearSanityData();

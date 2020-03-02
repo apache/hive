@@ -318,7 +318,7 @@ public class TestStatsReplicationScenarios {
 
     // Take dump
     WarehouseInstance.Tuple dumpTuple = primary.run("use " + primaryDbName)
-            .dump(primaryDbName, lastReplicationId, withClauseList);
+            .dump(primaryDbName, withClauseList);
 
 
     // Load, if necessary changing configuration.
