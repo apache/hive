@@ -98,6 +98,12 @@ public class ScheduledQueryExecutionService implements Closeable {
     return state == QueryState.FINISHED || state == QueryState.FAILED;
   }
 
+  /**
+   * The poller is responsible for checking for available scheduled queries.
+   *
+   * It also handles forced wakeup calls to reduce the impact that the default check period might be minutes.
+   * There might be only 1 running poller service at a time in a hiveserver instance.
+   */
   class ScheduledQueryPoller implements Runnable {
 
     @Override
@@ -147,14 +153,23 @@ public class ScheduledQueryExecutionService implements Closeable {
     forceScheduleCheck();
   }
 
+  /**
+   * Responsible for a single execution of a scheduled query.
+   *
+   * The execution happens in a separate Thread.
+   */
   class ScheduledQueryExecutor implements Runnable {
 
     private ScheduledQueryProgressInfo info;
-    final ScheduledQueryPollResponse pollResponse;
+    private final ScheduledQueryPollResponse pollResponse;
 
     public ScheduledQueryExecutor(ScheduledQueryPollResponse pollResponse) {
-      workerStarted(this);
+      info = new ScheduledQueryProgressInfo();
+      info.setScheduledExecutionId(pollResponse.getExecutionId());
+      info.setState(QueryState.EXECUTING);
+      info.setExecutorQueryId(buildExecutorQueryId(""));
       this.pollResponse = pollResponse;
+      workerStarted(this);
     }
 
     public void run() {
@@ -179,9 +194,6 @@ public class ScheduledQueryExecutionService implements Closeable {
     private void processQuery(ScheduledQueryPollResponse q) {
       LOG.info("Executing schq:{}, executionId: {}", q.getScheduleKey().getScheduleName(), q.getExecutionId());
       SessionState state = null;
-      info = new ScheduledQueryProgressInfo();
-      info.setScheduledExecutionId(q.getExecutionId());
-      info.setState(QueryState.EXECUTING);
       try {
         HiveConf conf = new HiveConf(context.conf);
         conf.set(Constants.HIVE_QUERY_EXCLUSIVE_LOCK, lockNameFor(q.getScheduleKey()));
@@ -212,7 +224,11 @@ public class ScheduledQueryExecutionService implements Closeable {
     }
 
     private String buildExecutorQueryId(IDriver driver) {
-      return String.format("%s/%s", context.executorHostName, driver.getQueryState().getQueryId());
+      return buildExecutorQueryId(driver.getQueryState().getQueryId());
+    }
+
+    private String buildExecutorQueryId(String queryId) {
+      return String.format("%s/%s", context.executorHostName, queryId);
     }
 
     private String lockNameFor(ScheduledQueryKey scheduleKey) {
