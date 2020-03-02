@@ -49,6 +49,9 @@ public class ScheduledQueryMaintenanceTask extends Task<ScheduledQueryMaintenanc
       Hive.get().getMSC().scheduledQueryMaintenance(request);
       if (work.getScheduledQuery().isSetNextExecution()
           || request.getType() == ScheduledQueryMaintenanceRequestType.CREATE) {
+        // we might have a scheduled query available for execution; immediately:
+        // * in case a schedule is altered to be executed at a specific time
+        // * in case we created a new scheduled query - for say run every second
         ScheduledQueryExecutionService.forceScheduleCheck();
       }
     } catch (TException | HiveException e) {

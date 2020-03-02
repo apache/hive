@@ -55,8 +55,8 @@ public class ScheduledQueryExecutionService implements Closeable {
   private ScheduledQueryExecutionContext context;
   private AtomicInteger forcedScheduleCheckCounter = new AtomicInteger();
   private ScheduledQueryPoller poller;
-  AtomicInteger usedExecutors = new AtomicInteger(0);
-  List<ScheduledQueryExecutor> runningWorkers = new LinkedList<>();
+  private AtomicInteger usedExecutors = new AtomicInteger(0);
+  private List<ScheduledQueryExecutor> runningWorkers = new LinkedList<>();
 
   public static ScheduledQueryExecutionService startScheduledQueryExecutorService(HiveConf inputConf) {
     HiveConf conf = new HiveConf(inputConf);
@@ -69,8 +69,9 @@ public class ScheduledQueryExecutionService implements Closeable {
   private static ExecutorService buildExecutor(HiveConf conf) {
     ThreadFactory threadFactory = new ThreadFactoryBuilder().setDaemon(true).setNameFormat("Scheduled Query Thread %d").build();
     int systemThreads = 2; // poller,reporter
+    int minServiceThreads = 1; // always keep 1 thread to be used for executing scheduled queries
     int maxServiceThreads = conf.getIntVar(ConfVars.HIVE_SCHEDULED_QUERIES_MAX_EXECUTORS);
-    return new ThreadPoolExecutor(systemThreads + 1, systemThreads + maxServiceThreads,
+    return new ThreadPoolExecutor(systemThreads + minServiceThreads, systemThreads + maxServiceThreads,
         60L, TimeUnit.SECONDS,
         new SynchronousQueue<Runnable>(),
         threadFactory);
