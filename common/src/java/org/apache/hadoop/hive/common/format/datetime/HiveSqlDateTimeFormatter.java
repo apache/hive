@@ -1186,7 +1186,13 @@ public class HiveSqlDateTimeFormatter implements Serializable {
   }
 
   /**
-   * Get the integer value of a temporal substring.
+   * Get the integer value of a numeric temporal substring.
+   *
+   * @param substring the next parseable substring of the input string
+   * @param token Token representing the next element of the pattern
+   * @return int value of temporal
+   * @throws IllegalArgumentException if substring is not parseable or if its value is outside of
+   * token's allowed range (e.g. token is hh/hh12 (range: 1-12) and substring is "0")
    */
   private int parseNumericTemporal(String substring, Token token) {
     checkFormatExact(substring, token);
@@ -1194,11 +1200,17 @@ public class HiveSqlDateTimeFormatter implements Serializable {
     // exceptions to the rule
     if (token.temporalField == ChronoField.AMPM_OF_DAY) {
       return substring.toLowerCase().startsWith("a") ? AM : PM;
-
-    } else if (token.temporalField == ChronoField.HOUR_OF_AMPM && "12".equals(substring)) {
-      substring = "0";
-
-    } else if (token.temporalField == ChronoField.YEAR
+    }
+    if (token.temporalField == ChronoField.HOUR_OF_AMPM) {
+      if ("12".equals(substring)) {
+        return 0;
+      }
+      if ("0".equals(substring)) {
+        throw new IllegalArgumentException("Value of hour of day (hh/hh12) in input is 0. "
+            + "The value should be between 1 and 12.");
+      }
+    }
+    if (token.temporalField == ChronoField.YEAR
         || token.temporalField == IsoFields.WEEK_BASED_YEAR) {
 
       String currentYearString;
