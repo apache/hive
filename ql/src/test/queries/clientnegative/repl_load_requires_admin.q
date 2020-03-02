@@ -29,10 +29,10 @@ show tables test_replload_adminpriv_src;
 repl dump test_replload_adminpriv_src;
 
 -- repl load as admin should succeed
-repl load test_replload_adminpriv_tgt1 from '${system:test.tmp.dir}/hrepl/next/';
+repl load test_replload_adminpriv_tgt1 from '${system:test.tmp.dir}/hrepl/test_replload_adminpriv_src/next/';
 show tables test_replload_adminpriv_tgt1;
 
 set user.name=ruser1;
 
 -- repl load as non-admin should fail
-repl load test_replload_adminpriv_tgt2 from '${system:test.tmp.dir}/hrepl/next';
+repl load test_replload_adminpriv_tgt2 from '${system:test.tmp.dir}/hrepl/test_replload_adminpriv_src/next';
