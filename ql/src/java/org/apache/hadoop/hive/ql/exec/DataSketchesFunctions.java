@@ -7,9 +7,11 @@ public class DataSketchesFunctions {
 
   private static final String DATA_TO_SKETCH = "datatosketch";
   private static final String SKETCH_TO_ESTIMATE_WITH_ERROR_BOUNDS = "sketchToEstimateWithErrorBounds";
-  private static final String SKETCH_TO_ESTIMATE = "sketchToEstimate"; // FIXME: rename to simply "estimate" or "evaluate" - in case of the counting sketches the "sketchto..." doesnt add value
+  // FIXME: consider to rename it to simply "estimate" or "evaluate" - in case of the counting sketches the "sketchto..." doesnt add value
+  private static final String SKETCH_TO_ESTIMATE = "sketchToEstimate";
   private static final String SKETCH_TO_STRING = "sketchToString";
-  private static final String UNION_SKETCH = "unionSketch"; // FIXME: probably use simply "union"
+  // FIXME: probably use simply "union"?
+  private static final String UNION_SKETCH = "unionSketch";
   private static final String GET_N = "getN";
   private static final String GET_CDF = "getCdf";
   private static final String GET_PMF = "getPmf";
