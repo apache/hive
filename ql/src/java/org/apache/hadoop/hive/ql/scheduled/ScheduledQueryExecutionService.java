@@ -317,6 +317,9 @@ public class ScheduledQueryExecutionService implements Closeable {
     }
   }
 
+  /**
+   * Forces the poller thread to re-check schedules before the normal timeout happens.
+   */
   public static void forceScheduleCheck() {
     INSTANCE.forcedScheduleCheckCounter.incrementAndGet();
   }
