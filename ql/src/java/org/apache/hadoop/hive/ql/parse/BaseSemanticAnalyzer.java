@@ -476,6 +476,13 @@ public abstract class BaseSemanticAnalyzer {
     return val;
   }
 
+  public static Map<String, String> getProps(ASTNode prop) {
+    // Must be deterministic order map for consistent q-test output across Java versions
+    Map<String, String> mapProp = new LinkedHashMap<String, String>();
+    readProps(prop, mapProp);
+    return mapProp;
+  }
+
   /**
    * Converts parsed key/value properties pairs into a map.
    *
