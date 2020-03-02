@@ -7,7 +7,7 @@ public class DataSketchesFunctions {
 
   private static final String DATA_TO_SKETCH = "datatosketch";
   private static final String SKETCH_TO_ESTIMATE_WITH_ERROR_BOUNDS = "sketchToEstimateWithErrorBounds";
-  private static final String SKETCH_TO_ESTIMATE = "sketchToEstimate"; // FIXME: rename to simply "estimate"
+  private static final String SKETCH_TO_ESTIMATE = "sketchToEstimate"; // FIXME: rename to simply "estimate" or "evaluate" - in case of the counting sketches the "sketchto..." doesnt add value
   private static final String SKETCH_TO_STRING = "sketchToString";
   private static final String UNION_SKETCH = "unionSketch"; // FIXME: probably use simply "union"
   private static final String GET_N = "getN";
@@ -27,6 +27,8 @@ public class DataSketchesFunctions {
   private static final String SKETCH_TO_VALUES = "sketchToValues";
   private static final String SKETCH_TO_VARIANCES = "sketchToVariances";
   private static final String SKETCH_TO_PERCENTILE = "sketchToPercentile";
+  private static final String UNION_SKETCH1 = "unionSketch1";
+  private static final String INTERSECT_SKETCH1 = "inter1";
 
   private final Registry system;
 
@@ -54,7 +56,7 @@ public class DataSketchesFunctions {
         p + SKETCH_TO_ESTIMATE_WITH_ERROR_BOUNDS);
     registerUDF(org.apache.datasketches.hive.hll.SketchToEstimateUDF.class, p + SKETCH_TO_ESTIMATE);
     registerUDF(org.apache.datasketches.hive.hll.SketchToStringUDF.class, p + SKETCH_TO_STRING);
-    registerUDF(org.apache.datasketches.hive.hll.UnionSketchUDF.class, p + UNION_SKETCH);
+    registerUDF(org.apache.datasketches.hive.hll.UnionSketchUDF.class, p + UNION_SKETCH1);
     registerUDAF(org.apache.datasketches.hive.hll.UnionSketchUDAF.class, p + UNION_SKETCH);
   }
 
@@ -67,7 +69,7 @@ public class DataSketchesFunctions {
     // FIXME: normalize GetEstimateUDF vs SketchToEstimateUDF
     registerUDF(org.apache.datasketches.hive.cpc.GetEstimateUDF.class, p + SKETCH_TO_ESTIMATE);
     registerUDF(org.apache.datasketches.hive.cpc.SketchToStringUDF.class, p + SKETCH_TO_STRING);
-    registerUDF(org.apache.datasketches.hive.cpc.UnionSketchUDF.class, p + UNION_SKETCH);
+    registerUDF(org.apache.datasketches.hive.cpc.UnionSketchUDF.class, p + UNION_SKETCH1);
     registerUDAF(org.apache.datasketches.hive.cpc.UnionSketchUDAF.class, p + UNION_SKETCH);
   }
 
@@ -91,9 +93,9 @@ public class DataSketchesFunctions {
     registerUDAF(org.apache.datasketches.hive.theta.DataToSketchUDAF.class, p + DATA_TO_SKETCH);
     // FIXME: missing?
     //registerUDF(org.apache.datasketches.hive.theta.SketchToStringUDF.class, p + SKETCH_TO_STRING);
-    registerUDF(org.apache.datasketches.hive.theta.UnionSketchUDF.class, p + UNION_SKETCH);
+    registerUDF(org.apache.datasketches.hive.theta.UnionSketchUDF.class, p + UNION_SKETCH1);
     registerUDAF(org.apache.datasketches.hive.theta.UnionSketchUDAF.class, p + UNION_SKETCH);
-    registerUDF(org.apache.datasketches.hive.theta.IntersectSketchUDF.class, p + INTERSECT_SKETCH);
+    registerUDF(org.apache.datasketches.hive.theta.IntersectSketchUDF.class, p + INTERSECT_SKETCH1);
     registerUDAF(org.apache.datasketches.hive.theta.IntersectSketchUDAF.class, p + INTERSECT_SKETCH);
     registerUDF(org.apache.datasketches.hive.theta.EstimateSketchUDF.class, p + SKETCH_TO_ESTIMATE);
     registerUDF(org.apache.datasketches.hive.theta.ExcludeSketchUDF.class, p + EXCLUDE_SKETCH);
