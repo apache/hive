@@ -367,6 +367,7 @@ public class TestHiveSqlDateTimeFormatter {
     verifyBadParseString("yyyy-mm-dd tzh:tzm", "2019-01-01 +16:00"); //tzh out of range
     verifyBadParseString("yyyy-mm-dd tzh:tzm", "2019-01-01 +14:60"); //tzm out of range
     verifyBadParseString("YYYY DDD", "2000 367"); //ddd out of range
+    verifyBadParseString("yyyy-mm-dd hh12 p.m. ss", "2020-01-01 0 am 00"); //hh12 range is 1-12
     verifyBadParseString("yyyy-month-dd", "2019-merch-23"); //invalid month of year
     verifyBadParseString("yyyy-mon-dd", "2019-mer-23"); //invalid month of year
     verifyBadParseString("yyyy-MON-dd", "2018-FEBRUARY-28"); // can't mix and match mon and month
