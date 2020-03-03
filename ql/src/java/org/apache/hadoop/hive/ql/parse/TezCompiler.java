@@ -1990,7 +1990,7 @@ public class TezCompiler extends TaskCompiler {
 
         // Found the target RSOp 0
         int bucketingVersion = fsOp.getConf().getTableInfo().getBucketingVersion();
-        if (fsOp.getConf().getTableInfo().getBucketingVersion() == fsOp.getConf().getBucketingVersion()) {
+        if (fsOp.getConf().getTableInfo().getBucketingVersion() != fsOp.getConf().getBucketingVersion()) {
           throw new RuntimeException("FsOp bucketingVersions is inconsistent with its tableinfo");
         }
         if (processedOperators.containsKey(parent) && processedOperators.get(parent) != bucketingVersion) {
