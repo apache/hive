@@ -85,6 +85,7 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
 
     acidConfs.putAll(overrides);
     primary = new WarehouseInstance(LOG, miniDFSCluster, acidConfs);
+    acidConfs.put(MetastoreConf.ConfVars.REPLDIR.getHiveName(), primary.repldDir);
     replica = new WarehouseInstance(LOG, miniDFSCluster, acidConfs);
     Map<String, String> overridesForHiveConf1 = new HashMap<String, String>() {{
         put("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
@@ -93,6 +94,7 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
         put("hive.metastore.client.capability.check", "false");
         put("hive.stats.autogather", "false");
     }};
+    overridesForHiveConf1.put(MetastoreConf.ConfVars.REPLDIR.getHiveName(), primary.repldDir);
     replicaNonAcid = new WarehouseInstance(LOG, miniDFSCluster, overridesForHiveConf1);
   }
 
@@ -124,7 +126,7 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
   @Test
   public void testAcidTableIncrementalReplication() throws Throwable {
     WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName);
-    replica.load(replicatedDbName, bootStrapDump.dumpLocation)
+    replica.load(replicatedDbName, primaryDbName)
             .run("REPL STATUS " + replicatedDbName)
             .verifyResult(bootStrapDump.lastReplicationId);
     List<String> selectStmtList = new ArrayList<>();
@@ -209,7 +211,7 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
 
     WarehouseInstance.Tuple incrementalDump;
     WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName);
-    replica.load(replicatedDbName, bootStrapDump.dumpLocation)
+    replica.load(replicatedDbName, primaryDbName)
             .run("REPL STATUS " + replicatedDbName)
             .verifyResult(bootStrapDump.lastReplicationId);
 
@@ -217,7 +219,7 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
             tableName, null, false, ReplicationTestUtils.OperationType.REPL_TEST_ACID_INSERT);
     incrementalDump = primary.dump(primaryDbName);
     primary.run("drop table " + primaryDbName + "." + tableName);
-    replica.loadWithoutExplain(replicatedDbName, incrementalDump.dumpLocation)
+    replica.loadWithoutExplain(replicatedDbName, primaryDbName)
             .run("REPL STATUS " + replicatedDbName).verifyResult(incrementalDump.lastReplicationId);
     verifyResultsInReplicaInt(Lists.newArrayList("select count(*) from " + tableName,
                                               "select count(*) from " + tableName + "_nopart"),
@@ -227,7 +229,7 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
             tableNameMM, null, true, ReplicationTestUtils.OperationType.REPL_TEST_ACID_INSERT);
     incrementalDump = primary.dump(primaryDbName);
     primary.run("drop table " + primaryDbName + "." + tableNameMM);
-    replica.loadWithoutExplain(replicatedDbName, incrementalDump.dumpLocation)
+    replica.loadWithoutExplain(replicatedDbName, primaryDbName)
             .run("REPL STATUS " + replicatedDbName).verifyResult(incrementalDump.lastReplicationId);
     verifyResultsInReplicaInt(Lists.newArrayList("select count(*) from " + tableNameMM,
             "select count(*) from " + tableNameMM + "_nopart"),

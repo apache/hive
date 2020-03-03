@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -76,16 +75,9 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
       }};
 
     acidEnableConf.putAll(overrides);
-
     primary = new WarehouseInstance(LOG, miniDFSCluster, acidEnableConf);
+    acidEnableConf.put(MetastoreConf.ConfVars.REPLDIR.getHiveName(), primary.repldDir);
     replica = new WarehouseInstance(LOG, miniDFSCluster, acidEnableConf);
-    Map<String, String> overridesForHiveConf1 = new HashMap<String, String>() {{
-          put("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
-          put("hive.support.concurrency", "false");
-          put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager");
-          put("hive.metastore.client.capability.check", "false");
-      }};
-    replicaNonAcid = new WarehouseInstance(LOG, miniDFSCluster, overridesForHiveConf1);
   }
 
   @Before
@@ -97,16 +89,15 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
   public void tearDown() throws Throwable {
     primary.run("drop database if exists " + primaryDbName + " cascade");
     replica.run("drop database if exists " + replicatedDbName + " cascade");
-    replicaNonAcid.run("drop database if exists " + replicatedDbName + " cascade");
     primary.run("drop database if exists " + primaryDbName + "_extra cascade");
   }
 
   @Test
-  public void testAcidTablesBootstrapIncr() throws Throwable {
+  public void testAcidTablesReplLoadBootstrapIncr() throws Throwable {
     // Bootstrap
     primary.run("use " + primaryDbName)
             .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc " +
-                      "tblproperties (\"transactional\"=\"true\")")
+                    "tblproperties (\"transactional\"=\"true\")")
             .run("insert into t1 values(1)")
             .run("insert into t1 values(2)");
     try (ScheduledQueryExecutionService schqS =
@@ -116,36 +107,53 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
       primary.run("create scheduled query s1 every 10 minutes as repl dump " + primaryDbName);
       primary.run("alter scheduled query s1 execute");
       Thread.sleep(6000);
-      Path dumpRoot = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPLDIR), primaryDbName.toLowerCase());
-      Path currdumpRoot = new Path(dumpRoot, String.valueOf(next));
-      replica.load(replicatedDbName, currdumpRoot.toString());
+      replica.run("create scheduled query s2 every 10 minutes as repl load " + primaryDbName + " INTO "
+              + replicatedDbName);
+      replica.run("alter scheduled query s2 execute");
+      Thread.sleep(20000);
       replica.run("use " + replicatedDbName)
               .run("show tables like 't1'")
               .verifyResult("t1")
               .run("select id from t1 order by id")
               .verifyResults(new String[]{"1", "2"});
 
-    // First incremental, after bootstrap
-
+      // First incremental, after bootstrap
       primary.run("use " + primaryDbName)
-            .run("insert into t1 values(3)")
-            .run("insert into t1 values(4)");
+              .run("insert into t1 values(3)")
+              .run("insert into t1 values(4)");
       next++;
       ReplDumpWork.injectNextDumpDirForTest(String.valueOf(next));
       primary.run("alter scheduled query s1 execute");
       Thread.sleep(20000);
-      Path incrdumpRoot = new Path(dumpRoot, String.valueOf(next));
-      replica.load(replicatedDbName, incrdumpRoot.toString());
+      replica.run("alter scheduled query s2 execute");
+      Thread.sleep(20000);
       replica.run("use " + replicatedDbName)
               .run("show tables like 't1'")
               .verifyResult("t1")
               .run("select id from t1 order by id")
-              .verifyResults(new String[]{"1", "2", "3", "4"})
+              .verifyResults(new String[]{"1", "2", "3", "4"});
+
+      // Second incremental
+      primary.run("use " + primaryDbName)
+              .run("insert into t1 values(5)")
+              .run("insert into t1 values(6)");
+      next++;
+      ReplDumpWork.injectNextDumpDirForTest(String.valueOf(next));
+      primary.run("alter scheduled query s1 execute");
+      Thread.sleep(30000);
+      replica.run("alter scheduled query s2 execute");
+      Thread.sleep(30000);
+      replica.run("use " + replicatedDbName)
+              .run("show tables like 't1'")
+              .verifyResult("t1")
+              .run("select id from t1 order by id")
+              .verifyResults(new String[]{"1", "2", "3", "4", "5", "6"})
               .run("drop table t1");
 
 
     } finally {
       primary.run("drop scheduled query s1");
+      replica.run("drop scheduled query s2");
     }
   }
 }
