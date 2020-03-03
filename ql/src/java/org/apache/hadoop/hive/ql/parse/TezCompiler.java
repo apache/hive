@@ -1996,7 +1996,7 @@ public class TezCompiler extends TaskCompiler {
         if (processedOperators.containsKey(parent) && processedOperators.get(parent) != bucketingVersion) {
           throw new SemanticException(String.format(
               "Operator (%s) is already processed and is using bucketingVersion(%d); so it can't be changed to %d ",
-              processedOperators.get(parent), bucketingVersion));
+              parent, processedOperators.get(parent), bucketingVersion));
         }
         processedOperators.put(parent, bucketingVersion);
 
