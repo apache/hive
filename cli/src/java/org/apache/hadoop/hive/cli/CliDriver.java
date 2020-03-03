@@ -788,8 +788,8 @@ public class CliDriver {
 
     ss.updateThreadName();
 
-    // Initialize metadata provider class
-    CalcitePlanner.initializeMetadataProviderClass();
+    // Initialize metadata provider class and trimmer
+    CalcitePlanner.warmup();
     // Create views registry
     HiveMaterializedViewsRegistry.get().init();
 

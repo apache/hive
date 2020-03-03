@@ -38,6 +38,12 @@ import org.apache.calcite.adapter.druid.DruidTable;
 import org.apache.calcite.adapter.java.JavaTypeFactory;
 import org.apache.calcite.adapter.jdbc.JdbcConvention;
 import org.apache.calcite.adapter.jdbc.JdbcImplementor;
+import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcAggregate;
+import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcFilter;
+import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcJoin;
+import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcProject;
+import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcSort;
+import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcUnion;
 import org.apache.calcite.adapter.jdbc.JdbcSchema;
 import org.apache.calcite.adapter.jdbc.JdbcTable;
 import org.apache.calcite.config.CalciteConnectionConfig;
@@ -57,12 +63,17 @@ import org.apache.calcite.plan.hep.HepMatchOrder;
 import org.apache.calcite.plan.hep.HepPlanner;
 import org.apache.calcite.plan.hep.HepProgram;
 import org.apache.calcite.plan.hep.HepProgramBuilder;
+import org.apache.calcite.plan.hep.HepRelVertex;
+import org.apache.calcite.plan.volcano.AbstractConverter;
+import org.apache.calcite.plan.volcano.RelSubset;
+import org.apache.calcite.rel.AbstractRelNode;
 import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelCollationImpl;
 import org.apache.calcite.rel.RelCollations;
 import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelVisitor;
+import org.apache.calcite.rel.convert.ConverterImpl;
 import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.core.Filter;
@@ -148,9 +159,11 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveGroupingID;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIntersect;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveMultiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortExchange;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableFunctionScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
@@ -337,6 +350,44 @@ public class CalcitePlanner extends SemanticAnalyzer {
       Pattern.compile("VARCHAR\\(2147483647\\)");
   private static final Pattern PATTERN_TIMESTAMP =
       Pattern.compile("TIMESTAMP\\(9\\)");
+
+  /**
+   * This is the list of operators that are specifically used in Hive.
+   */
+  private static final List<Class<? extends RelNode>> HIVE_REL_NODE_CLASSES =
+      ImmutableList.of(
+          RelNode.class,
+          AbstractRelNode.class,
+          RelSubset.class,
+          HepRelVertex.class,
+          ConverterImpl.class,
+          AbstractConverter.class,
+
+          HiveTableScan.class,
+          HiveAggregate.class,
+          HiveExcept.class,
+          HiveFilter.class,
+          HiveIntersect.class,
+          HiveJoin.class,
+          HiveMultiJoin.class,
+          HiveProject.class,
+          HiveRelNode.class,
+          HiveSemiJoin.class,
+          HiveSortExchange.class,
+          HiveSortLimit.class,
+          HiveTableFunctionScan.class,
+          HiveUnion.class,
+
+          DruidQuery.class,
+
+          HiveJdbcConverter.class,
+          JdbcHiveTableScan.class,
+          JdbcAggregate.class,
+          JdbcFilter.class,
+          JdbcJoin.class,
+          JdbcProject.class,
+          JdbcSort.class,
+          JdbcUnion.class);
 
 
   public CalcitePlanner(QueryState queryState) throws SemanticException {
@@ -1794,14 +1845,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
       calciteGenPlan.getCluster().getPlanner().setExecutor(executorProvider);
 
       // We need to get the ColumnAccessInfo and viewToTableSchema for views.
-      HiveRelFieldTrimmer fieldTrimmer = new HiveRelFieldTrimmer(null,
-          HiveRelFactories.HIVE_BUILDER.create(optCluster, null),
-          this.columnAccessInfo, this.viewProjectToTableSchema);
-
-      fieldTrimmer.trim(calciteGenPlan);
+      HiveRelFieldTrimmer.get()
+          .trim(HiveRelFactories.HIVE_BUILDER.create(optCluster, null),
+              calciteGenPlan, this.columnAccessInfo, this.viewProjectToTableSchema);
 
       // Create and set MD provider
-      HiveDefaultRelMetadataProvider mdProvider = new HiveDefaultRelMetadataProvider(conf);
+      HiveDefaultRelMetadataProvider mdProvider = new HiveDefaultRelMetadataProvider(conf, HIVE_REL_NODE_CLASSES);
       RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(mdProvider.getMetadataProvider()));
 
       //Remove subquery
@@ -5214,10 +5263,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
   /**
    * This method can be called at startup time to pre-register all the
    * additional Hive classes (compared to Calcite core classes) that may
-   * be visited during the planning phase.
+   * be visited during the planning phase in the metadata providers
+   * and the field trimmer.
    */
-  public static void initializeMetadataProviderClass() {
-    HiveDefaultRelMetadataProvider.initializeMetadataProviderClass();
+  public static void warmup() {
+    HiveDefaultRelMetadataProvider.initializeMetadataProviderClass(HIVE_REL_NODE_CLASSES);
+    HiveRelFieldTrimmer.initializeFieldTrimmerClass(HIVE_REL_NODE_CLASSES);
   }
 
   private enum TableType {
