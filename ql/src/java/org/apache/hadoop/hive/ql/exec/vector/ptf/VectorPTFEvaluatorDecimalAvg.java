@@ -61,7 +61,7 @@ public class VectorPTFEvaluatorDecimalAvg extends VectorPTFEvaluatorBase {
     // last group batch compute the group avg when sum is non-null.
 
     // We do not filter when PTF is in reducer.
-    Preconditions.checkState(!batch.selectedInUse);
+//    Preconditions.checkState(!batch.selectedInUse);
 
     final int size = batch.size;
     if (size == 0) {
