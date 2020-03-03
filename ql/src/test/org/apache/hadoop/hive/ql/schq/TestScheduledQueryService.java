@@ -113,7 +113,6 @@ public class TestScheduledQueryService {
 
     @Override
     public ScheduledQueryPollResponse scheduledQueryPoll() {
-
       ScheduledQueryPollResponse r = new ScheduledQueryPollResponse();
       r.setExecutionId(id++);
       r.setQuery(stmt);
@@ -154,8 +153,6 @@ public class TestScheduledQueryService {
     MockScheduledQueryService qService = new MockScheduledQueryService("insert into tu values(1),(2),(3),(4),(5)");
     ScheduledQueryExecutionContext ctx = new ScheduledQueryExecutionContext(executor, conf, qService);
     try (ScheduledQueryExecutionService sQ = ScheduledQueryExecutionService.startScheduledQueryExecutorService(ctx)) {
-
-      executor.shutdown();
       // Wait for the scheduled query to finish. Hopefully 30 seconds should be more than enough.
       SessionState.getConsole().logInfo("Waiting for query execution to finish ...");
       synchronized (qService.notifier) {
@@ -163,7 +160,6 @@ public class TestScheduledQueryService {
       }
       SessionState.getConsole().logInfo("Done waiting for query execution!");
     }
-    executor.shutdownNow();
 
     assertThat(qService.lastProgressInfo.isSetExecutorQueryId(), is(true));
     assertThat(qService.lastProgressInfo.getExecutorQueryId(),

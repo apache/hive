@@ -1471,6 +1471,10 @@
       <field name="nextExecution">
         <column name="NEXT_EXECUTION" jdbc-type="integer" allows-null="true"/>
       </field>
+      <field name="activeExecution">
+        <column name="ACTIVE_EXECUTION_ID" allows-null="true"/>
+        <foreign-key name="SCHEDULED_EXECUTIONS_SCHQ_ACTIVE" delete-action="cascade"/>
+      </field>
       <field name="executions" mapped-by="scheduledQuery" dependent-element="true">
         <collection element-type="MScheduledExecution" dependent-element="true" />
         <foreign-key name="SCHEDULED_EXECUTIONS_SCHQ_FK" delete-action="cascade"/>
