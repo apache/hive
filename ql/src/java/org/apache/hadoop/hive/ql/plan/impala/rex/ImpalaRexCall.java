@@ -28,6 +28,7 @@ import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaBinaryCompExpr;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaCaseExpr;
+import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaCompoundExpr;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaFunctionCallExpr;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaInExpr;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaIsNullExpr;
@@ -38,6 +39,7 @@ import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ScalarFunctionUtil;
 import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.BinaryPredicate;
 import org.apache.impala.analysis.CaseWhenClause;
+import org.apache.impala.analysis.CompoundPredicate;
 import org.apache.impala.analysis.Expr;
 import org.apache.impala.catalog.Function;
 import org.apache.impala.catalog.Type;
@@ -74,6 +76,10 @@ public class ImpalaRexCall {
     }
 
     switch (rexCall.getOperator().getKind()) {
+      case OR:
+        return createCompoundExpr(analyzer, CompoundPredicate.Operator.OR, fn, params, impalaRetType);
+      case AND:
+        return createCompoundExpr(analyzer, CompoundPredicate.Operator.AND, fn, params, impalaRetType);
       case CASE:
         return createCaseExpr(analyzer, fn, params, impalaRetType);
       case IN:
@@ -88,6 +94,25 @@ public class ImpalaRexCall {
         return new ImpalaIsNullExpr(analyzer, fn, params.get(0), true, impalaRetType);
     }
     return new ImpalaFunctionCallExpr(analyzer, fn, params, rexCall, impalaRetType);
+  }
+
+  /**
+   * Create an expression that unflattens the Calcite expressions because Impala only supports
+   * binary expressions.
+   */
+  private static Expr createCompoundExpr(Analyzer analyzer, CompoundPredicate.Operator op, Function fn,
+      List<Expr> params, Type retType) throws HiveException {
+    // must be at least 2 params for the condition
+    Preconditions.checkState(params.size() >= 2);
+    Expr finalCondition = null;
+    Expr condition2 = params.get(params.size() - 1);
+    for (int i = params.size() - 2; i >= 0; --i) {
+      Expr condition1 = params.get(i);
+      finalCondition = new ImpalaCompoundExpr(analyzer, fn, op, condition1, condition2, retType);
+      condition2 = finalCondition;
+    }
+    Preconditions.checkNotNull(finalCondition);
+    return finalCondition;
   }
 
   private static Expr createCaseExpr(Analyzer analyzer, Function fn, List<Expr> params,
