@@ -52,9 +52,7 @@ import org.apache.calcite.rex.RexTableInputRef;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.rex.RexVisitor;
 import org.apache.calcite.sql.SqlKind;
-import org.apache.calcite.sql.validate.SqlValidator;
 import org.apache.calcite.sql2rel.CorrelationReferenceFinder;
-import org.apache.calcite.sql2rel.RelFieldTrimmer;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
@@ -81,26 +79,89 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
 
   protected static final Logger LOG = LoggerFactory.getLogger(HiveRelFieldTrimmer.class);
 
-  private ColumnAccessInfo columnAccessInfo;
-  private Map<HiveProject, Table> viewProjectToTableSchema;
-  private final RelBuilder relBuilder;
+  // We initialize the field trimmer statically here and we will reuse it across
+  // queries. The reason is that otherwise we will create a new dispatcher with
+  // each instantiation, thus effectively removing the caching mechanism that is
+  // built within the dispatcher.
+  private static final HiveRelFieldTrimmer FIELD_TRIMMER_STATS =
+      new HiveRelFieldTrimmer(true);
+  private static final HiveRelFieldTrimmer FIELD_TRIMMER_NO_STATS =
+      new HiveRelFieldTrimmer(false);
+  // For testing
+  private static final HiveRelFieldTrimmer FIELD_TRIMMER_STATS_METHOD_DISPATCHER =
+      new HiveRelFieldTrimmer(true, false);
+  private static final HiveRelFieldTrimmer FIELD_TRIMMER_NO_STATS_METHOD_DISPATCHER =
+      new HiveRelFieldTrimmer(false, false);
+
   private final boolean fetchStats;
 
-  public HiveRelFieldTrimmer(SqlValidator validator, RelBuilder relBuilder) {
-    this(validator, relBuilder, false);
+  private static final ThreadLocal<ColumnAccessInfo> COLUMN_ACCESS_INFO =
+      new ThreadLocal<>();
+  private static final ThreadLocal<Map<HiveProject, Table>> VIEW_PROJECT_TO_TABLE_SCHEMA =
+      new ThreadLocal<>();
+
+
+  private HiveRelFieldTrimmer(boolean fetchStats) {
+    this(fetchStats, true);
   }
 
-  public HiveRelFieldTrimmer(SqlValidator validator, RelBuilder relBuilder,
-      ColumnAccessInfo columnAccessInfo, Map<HiveProject, Table> viewToTableSchema) {
-    this(validator, relBuilder, false);
-    this.columnAccessInfo = columnAccessInfo;
-    this.viewProjectToTableSchema = viewToTableSchema;
-  }
-
-  public HiveRelFieldTrimmer(SqlValidator validator, RelBuilder relBuilder, boolean fetchStats) {
-    super(validator, relBuilder);
-    this.relBuilder = relBuilder;
+  private HiveRelFieldTrimmer(boolean fetchStats, boolean useLMFBasedDispatcher) {
+    super(useLMFBasedDispatcher);
     this.fetchStats = fetchStats;
+  }
+
+  /**
+   * Returns a HiveRelFieldTrimmer instance that does not retrieve
+   * stats.
+   */
+  public static HiveRelFieldTrimmer get() {
+    return get(false);
+  }
+
+  /**
+   * Returns a HiveRelFieldTrimmer instance that can retrieve stats.
+   */
+  public static HiveRelFieldTrimmer get(boolean fetchStats) {
+    return get(fetchStats, true);
+  }
+
+  /**
+   * Returns a HiveRelFieldTrimmer instance that can retrieve stats and use
+   * a custom dispatcher.
+   */
+  public static HiveRelFieldTrimmer get(boolean fetchStats, boolean useLMFBasedDispatcher) {
+    return fetchStats ?
+        (useLMFBasedDispatcher ? FIELD_TRIMMER_STATS : FIELD_TRIMMER_STATS_METHOD_DISPATCHER) :
+        (useLMFBasedDispatcher ? FIELD_TRIMMER_NO_STATS : FIELD_TRIMMER_NO_STATS_METHOD_DISPATCHER);
+  }
+
+  /**
+   * Trims unused fields from a relational expression.
+   *
+   * <p>We presume that all fields of the relational expression are wanted by
+   * its consumer, so only trim fields that are not used within the tree.
+   *
+   * @param root Root node of relational expression
+   * @return Trimmed relational expression
+   */
+  @Override
+  public RelNode trim(RelBuilder relBuilder, RelNode root) {
+    return trim(relBuilder, root, null, null);
+  }
+
+  public RelNode trim(RelBuilder relBuilder, RelNode root,
+      ColumnAccessInfo columnAccessInfo, Map<HiveProject, Table> viewToTableSchema) {
+    try {
+      // Set local thread variables
+      COLUMN_ACCESS_INFO.set(columnAccessInfo);
+      VIEW_PROJECT_TO_TABLE_SCHEMA.set(viewToTableSchema);
+      // Execute pruning
+      return super.trim(relBuilder, root);
+    } finally {
+      // Always remove the local thread variables to avoid leaks
+      COLUMN_ACCESS_INFO.remove();
+      VIEW_PROJECT_TO_TABLE_SCHEMA.remove();
+    }
   }
 
   /**
@@ -251,7 +312,7 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
       return trimFields(
           (RelNode) dq, fieldsUsed, extraFields);
     }
-    final RelNode newTableAccessRel = project(dq, fieldsUsed, extraFields, relBuilder);
+    final RelNode newTableAccessRel = project(dq, fieldsUsed, extraFields, REL_BUILDER.get());
 
     // Some parts of the system can't handle rows with zero fields, so
     // pretend that one field is used.
@@ -512,6 +573,7 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
           newProjects.add(rexBuilder.makeInputRef(input, i));
         }
       }
+      final RelBuilder relBuilder = REL_BUILDER.get();
       relBuilder.push(input);
       relBuilder.project(newProjects);
       Aggregate newAggregate = new HiveAggregate(aggregate.getCluster(), aggregate.getTraitSet(), relBuilder.build(),
@@ -641,6 +703,7 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
     }
 
     // Now create new agg calls, and populate mapping for them.
+    final RelBuilder relBuilder = REL_BUILDER.get();
     relBuilder.push(newInput);
     final List<RelBuilder.AggCall> newAggCallList = new ArrayList<>();
     j = originalGroupCount; // because lookup in fieldsUsed is done using original group count
@@ -675,12 +738,14 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
   public TrimResult trimFields(Project project, ImmutableBitSet fieldsUsed,
       Set<RelDataTypeField> extraFields) {
     // set columnAccessInfo for ViewColumnAuthorization
-    if (this.columnAccessInfo != null && this.viewProjectToTableSchema != null
-        && this.viewProjectToTableSchema.containsKey(project)) {
+    final ColumnAccessInfo columnAccessInfo = COLUMN_ACCESS_INFO.get();
+    final Map<HiveProject, Table> viewProjectToTableSchema = VIEW_PROJECT_TO_TABLE_SCHEMA.get();
+    if (columnAccessInfo != null && viewProjectToTableSchema != null
+        && viewProjectToTableSchema.containsKey(project)) {
       for (Ord<RexNode> ord : Ord.zip(project.getProjects())) {
         if (fieldsUsed.get(ord.i)) {
-          Table tab = this.viewProjectToTableSchema.get(project);
-          this.columnAccessInfo.add(tab.getCompleteName(), tab.getAllCols().get(ord.i).getName());
+          Table tab = viewProjectToTableSchema.get(project);
+          columnAccessInfo.add(tab.getCompleteName(), tab.getAllCols().get(ord.i).getName());
         }
       }
     }
@@ -690,7 +755,8 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
   public TrimResult trimFields(HiveTableScan tableAccessRel, ImmutableBitSet fieldsUsed,
       Set<RelDataTypeField> extraFields) {
     final TrimResult result = super.trimFields(tableAccessRel, fieldsUsed, extraFields);
-    if (this.columnAccessInfo != null) {
+    final ColumnAccessInfo columnAccessInfo = COLUMN_ACCESS_INFO.get();
+    if (columnAccessInfo != null) {
       // Store information about column accessed by the table so it can be used
       // to send only this information for column masking
       final RelOptHiveTable tab = (RelOptHiveTable) tableAccessRel.getTable();
@@ -788,5 +854,27 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
     // Always project all fields.
     Mapping mapping = Mappings.createIdentity(fieldCount);
     return result(newTabFun, mapping);
+  }
+
+  /**
+   * This method can be called to pre-register all the classes that may be
+   * visited during the planning phase.
+   */
+  protected void register(List<Class<? extends RelNode>> nodeClasses) throws Throwable {
+    this.trimFieldsDispatcher.register(nodeClasses);
+  }
+
+  /**
+   * This method can be called at startup time to pre-register all the
+   * Hive classes that may be visited during the planning phase.
+   */
+  public static void initializeFieldTrimmerClass(List<Class<? extends RelNode>> nodeClasses) {
+    try {
+      FIELD_TRIMMER_STATS.register(nodeClasses);
+      FIELD_TRIMMER_NO_STATS.register(nodeClasses);
+    } catch (Throwable t) {
+      // LOG it but do not fail
+      LOG.warn("Error initializing field trimmer instance", t);
+    }
   }
 }
