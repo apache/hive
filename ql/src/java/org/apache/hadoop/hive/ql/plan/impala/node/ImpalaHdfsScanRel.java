@@ -143,7 +143,7 @@ public class ImpalaHdfsScanRel extends ImpalaPlanRel {
     basicAnalyzer.setTable(impalaTblName, hdfsTable);
     Path resolvedPath = ctx.getRootAnalyzer().resolvePath(tblRef.getPath(), Path.PathType.TABLE_REF);
 
-    BaseTableRef baseTblRef = new BaseTableRef(tblRef, resolvedPath);
+    ImpalaBaseTableRef baseTblRef = new ImpalaBaseTableRef(tblRef, resolvedPath, basicAnalyzer);
 
     TupleDescriptor tupleDesc = createTupleAndSlotDesc(baseTblRef, ctx);
 

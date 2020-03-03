@@ -18,38 +18,26 @@
 package org.apache.hadoop.hive.ql.plan.impala;
 
 import com.google.common.collect.Lists;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.BinaryPredicate;
 import org.apache.impala.analysis.Expr;
-import org.apache.impala.analysis.StmtMetadataLoader;
 import org.apache.impala.analysis.SlotDescriptor;
 import org.apache.impala.analysis.SlotId;
+import org.apache.impala.analysis.StmtMetadataLoader;
 import org.apache.impala.analysis.TableName;
 import org.apache.impala.analysis.TupleDescriptor;
 import org.apache.impala.analysis.TupleId;
 import org.apache.impala.authorization.AuthorizationFactory;
-import org.apache.impala.authorization.AuthorizationPolicy;
 import org.apache.impala.authorization.Privilege;
 import org.apache.impala.catalog.BuiltinsDb;
-import org.apache.impala.catalog.CatalogException;
-import org.apache.impala.catalog.DatabaseNotFoundException;
-import org.apache.impala.catalog.FeCatalog;
-import org.apache.impala.catalog.FeDataSource;
 import org.apache.impala.catalog.FeDb;
-import org.apache.impala.catalog.FeFsPartition;
 import org.apache.impala.catalog.FeTable;
-import org.apache.impala.catalog.Function;
-import org.apache.impala.catalog.HdfsCachePool;
 import org.apache.impala.common.AnalysisException;
-import org.apache.impala.common.InternalException;
-import org.apache.impala.thrift.TCatalogObject;
-import org.apache.impala.thrift.TGetPartitionStatsResponse;
 import org.apache.impala.thrift.TNetworkAddress;
-import org.apache.impala.thrift.TPartitionKeyValue;
 import org.apache.impala.thrift.TQueryCtx;
-import org.apache.impala.thrift.TUniqueId;
-import org.apache.impala.util.PatternMatcher;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -62,6 +50,7 @@ import java.util.Set;
 public class ImpalaBasicAnalyzer extends Analyzer {
 
   private StmtMetadataLoader.StmtTableCache stmtTableCache;
+  private Set<String> uniqueTableAlias;
 
   // List of temporary filter expressions while initializing an Impala plan node.
   private List<Expr> unassignedConjuncts = Lists.newArrayList();
@@ -72,7 +61,7 @@ public class ImpalaBasicAnalyzer extends Analyzer {
         List<TNetworkAddress> hostLocations) {
     super(stmtTableCache, queryCtx, authzFactory, null);
     this.stmtTableCache = stmtTableCache;
-
+    this.uniqueTableAlias = new HashSet<>();
     this.getHostIndex().populate(hostLocations);
   }
 
@@ -84,6 +73,32 @@ public class ImpalaBasicAnalyzer extends Analyzer {
    */
   @Override
   public void createAuxEqPredicate(Expr lhs, Expr rhs) {
+  }
+
+  /**
+   * Given an alias name, check if it is unique based on previously
+   * cached names. If not, create a unique name by concatenating
+   * it with an integer sequence counter.
+   */
+  public String getUniqueTableAlias(String alias) throws HiveException {
+    final String base = alias;
+    String newAlias = base;
+    int i = 0;
+    while (uniqueTableAlias.contains(newAlias)) {
+      newAlias = base + "_" + i++;
+    }
+
+    // final alias name should conform to the max identifer length
+    // TODO: CDPD-8730: check if the max length can be retrieved from HMS apis
+    if (newAlias.length() > ImpalaPlannerConstants.MAX_IDENTIFIER_LENGTH) {
+      newAlias = newAlias.substring(0, ImpalaPlannerConstants.MAX_IDENTIFIER_LENGTH);
+      if (uniqueTableAlias.contains(newAlias)) {
+        throw new HiveException ("Cannot create a unique identifier since it exceeds maximum allowed length");
+      }
+    }
+
+    uniqueTableAlias.add(newAlias);
+    return newAlias;
   }
 
   /**
