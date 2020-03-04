@@ -161,7 +161,7 @@ import java.util.stream.Collectors;
     BytesConverterType avroByteConverterType = BytesConverterType.fromString(avroBytesConverterProperty);
     Integer avroSkipBytes = Integer.getInteger(tbl.getProperty(AvroSerdeUtils.AvroTableProperties.AVRO_SERDE_SKIP_BYTES
                                                          .getPropName()));
-    switch ( avroByteConverterType ) {
+    switch (avroByteConverterType) {
       case CONFLUENT: return new AvroSkipBytesConverter(schema, 5);
       case SKIP: return new AvroSkipBytesConverter(schema, avroSkipBytes);
       default: return new AvroBytesConverter(schema);
@@ -409,12 +409,12 @@ import java.util.stream.Collectors;
      *       Confluent kafka producer add 5 magic bytes that represents Schema ID as Integer to the message.
      */
   static class AvroSkipBytesConverter extends AvroBytesConverter {
-      private final int skipBytes;
+    private final int skipBytes;
 
-      AvroSkipBytesConverter(Schema schema, int skipBytes) {
-        super(schema);
-        this.skipBytes = skipBytes;
-      }
+    AvroSkipBytesConverter(Schema schema, int skipBytes) {
+      super(schema);
+      this.skipBytes = skipBytes;
+    }
 
     @Override
     Decoder getDecoder(byte[] value) {
