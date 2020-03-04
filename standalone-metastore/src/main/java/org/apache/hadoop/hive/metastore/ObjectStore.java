@@ -13051,7 +13051,7 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
       Query q = pm.newQuery(MScheduledQuery.class,
-          "nextExecution <= now && enabled && clusterNamespace == ns");
+          "nextExecution <= now && enabled && clusterNamespace == ns && activeExecution == null");
       q.setSerializeRead(true);
       q.declareParameters("java.lang.Integer now, java.lang.String ns");
       q.setOrdering("nextExecution");
@@ -13069,6 +13069,7 @@ public class ObjectStore implements RawStore, Configurable {
       execution.setState(QueryState.INITED);
       execution.setStartTime(now);
       execution.setLastUpdateTime(now);
+      schq.setActiveExecution(execution);
       pm.makePersistent(execution);
       pm.makePersistent(schq);
       ObjectStoreTestHook.onScheduledQueryPoll();
@@ -13119,6 +13120,7 @@ public class ObjectStore implements RawStore, Configurable {
       case TIMED_OUT:
         execution.setEndTime((int) (System.currentTimeMillis() / 1000));
         execution.setLastUpdateTime(null);
+        execution.getScheduledQuery().setActiveExecution(null);
         break;
       default:
         throw new InvalidOperationException("invalid state: " + info.getState());
@@ -13351,11 +13353,30 @@ public class ObjectStore implements RawStore, Configurable {
         //        info.set
         scheduledQueryProgress(info);
       }
+
+      recoverInvalidScheduledQueryState(timeoutSecs);
       committed = commitTransaction();
       return results.size();
     } finally {
       if (!committed) {
         rollbackTransaction();
+      }
+    }
+  }
+
+  private void recoverInvalidScheduledQueryState(int timeoutSecs) {
+    int maxLastUpdateTime = (int) (System.currentTimeMillis() / 1000) - timeoutSecs;
+    Query q = pm.newQuery(MScheduledQuery.class);
+    q.setFilter("activeExecution != null");
+
+    List<MScheduledQuery> results = (List<MScheduledQuery>) q.execute();
+    for (MScheduledQuery e : results) {
+      Integer lastUpdateTime = e.getActiveExecution().getLastUpdateTime();
+      if (lastUpdateTime == null || lastUpdateTime < maxLastUpdateTime) {
+        LOG.error("Scheduled query: {} stuck with an activeExecution - clearing",
+            scheduledQueryKeyRef(e.getScheduleKey()));
+        e.setActiveExecution(null);
+        pm.makePersistent(e);
       }
     }
   }

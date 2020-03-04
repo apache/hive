@@ -1291,6 +1291,7 @@ CREATE TABLE "SCHEDULED_QUERIES" (
        "SCHEDULE" VARCHAR(256),
        "SCHEDULE_NAME" VARCHAR(256),
        "USER" VARCHAR(256),
+       "ACTIVE_EXECUTION_ID" bigint,
        CONSTRAINT SCHEDULED_QUERIES_PK PRIMARY KEY ("SCHEDULED_QUERY_ID")
 );
 
@@ -1316,3 +1317,15 @@ CREATE UNIQUE INDEX UNIQUE_SCHEDULED_EXECUTIONS_ID ON "SCHEDULED_EXECUTIONS" ("S
 -- Record schema version. Should be the last step in the init script
 -- -----------------------------------------------------------------
 INSERT INTO VERSION (VER_ID, SCHEMA_VERSION, VERSION_COMMENT) VALUES (1, '3.1.3000', 'Hive release version 3.1.3000');
+
+
+CREATE TABLE "CDH_VERSION" (
+  "VER_ID" bigint,
+  "SCHEMA_VERSION" character varying(127) NOT NULL,
+  "VERSION_COMMENT" character varying(255) NOT NULL
+);
+ALTER TABLE ONLY "CDH_VERSION" ADD CONSTRAINT "CDH_VERSION_pkey" PRIMARY KEY ("VER_ID");
+
+INSERT INTO "CDH_VERSION" ("VER_ID", "SCHEMA_VERSION", "VERSION_COMMENT") VALUES (1, '3.1.3000.7.1.1.0', 'Hive release version 3.1.3000 for CDH 7.1.1.0');
+
+SELECT 'Initialized metastore to 3.1.3000.7.1.1.0';

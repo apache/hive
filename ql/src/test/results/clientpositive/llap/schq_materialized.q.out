@@ -205,6 +205,7 @@ STAGE PLANS:
                       Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col1 (type: int)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col1 (type: int)
                         Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
@@ -226,6 +227,7 @@ STAGE PLANS:
                       Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: COMPLETE
@@ -275,7 +277,7 @@ POSTHOOK: query: select `(NEXT_EXECUTION|SCHEDULED_QUERY_ID)?+.+` from sys.sched
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@scheduled_queries
 #### A masked pattern was here ####
-d	true	hive	0 0 * * * ? *	hive_admin_user	alter materialized view `default`.`mv1` rebuild
+d	true	hive	0 0 * * * ? *	hive_admin_user	alter materialized view `default`.`mv1` rebuild	NULL
 PREHOOK: query: alter scheduled query d execute
 PREHOOK: type: ALTER SCHEDULED QUERY
 POSTHOOK: query: alter scheduled query d execute

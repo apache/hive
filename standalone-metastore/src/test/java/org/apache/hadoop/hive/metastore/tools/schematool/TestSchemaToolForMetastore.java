@@ -487,7 +487,7 @@ public class TestSchemaToolForMetastore {
   @Test
   public void testHiveMetastoreDbPropertiesTable() throws HiveMetaException, IOException {
     execute(new SchemaToolTaskInit(), "-initSchemaTo 3.0.0");
-    boolean isValid = (boolean) validator.validateSchemaTables(conn);
+    boolean isValid = validator.validateSchemaTables(conn);
     Assert.assertFalse(isValid);
     validateMetastoreDbPropertiesTable();
   }
@@ -496,7 +496,7 @@ public class TestSchemaToolForMetastore {
   public void testMetastoreDbPropertiesAfterUpgrade() throws HiveMetaException, IOException {
     execute(new SchemaToolTaskInit(), "-initSchemaTo 1.2.0");
     execute(new SchemaToolTaskUpgrade(), "-upgradeSchema");
-    boolean isValid = (boolean) validator.validateSchemaTables(conn);
+    boolean isValid = validator.validateSchemaTables(conn);
     Assert.assertTrue(isValid);
     validateMetastoreDbPropertiesTable();
   }
