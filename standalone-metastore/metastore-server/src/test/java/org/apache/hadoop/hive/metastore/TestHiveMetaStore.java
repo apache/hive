@@ -1850,14 +1850,7 @@ public abstract class TestHiveMetaStore {
         .addCol("bar", "string")
         .build(conf);
     table.setId(1);
-    try {
-      client.createTable(table);
-      Assert.fail("An error should happen when setting the id"
-          + " to create a table");
-    } catch (InvalidObjectException e) {
-      Assert.assertTrue(e.getMessage().contains("Id shouldn't be set"));
-      Assert.assertTrue(e.getMessage().contains(tblName));
-    }
+    client.createTable(table);
   }
 
   @Test
