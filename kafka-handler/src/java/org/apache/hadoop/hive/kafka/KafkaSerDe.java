@@ -155,12 +155,12 @@ import java.util.stream.Collectors;
   }
 
   BytesConverter getByteConverterForAvroDelegate(Schema schema, Properties tbl) {
-    String avroBytesConverterProperty = tbl.getProperty(AvroSerdeUtils
-                                                            .AvroTableProperties.AVRO_SERDE_TYPE
-                                                            .getPropName(), BytesConverterType.NONE.toString());
+    String avroBytesConverterPropertyName = AvroSerdeUtils.AvroTableProperties.AVRO_SERDE_TYPE.getPropName();
+    String avroBytesConverterProperty = tbl.getProperty(avroBytesConverterPropertyName, 
+      BytesConverterType.NONE.toString());
     BytesConverterType avroByteConverterType = BytesConverterType.fromString(avroBytesConverterProperty);
-    Integer avroSkipBytes = Integer.getInteger(tbl.getProperty(AvroSerdeUtils.AvroTableProperties.AVRO_SERDE_SKIP_BYTES
-                                                         .getPropName()));
+    String avroSkipBytesPropertyName = AvroSerdeUtils.AvroTableProperties.AVRO_SERDE_SKIP_BYTES.getPropName();
+    Integer avroSkipBytes = Integer.getInteger(tbl.getProperty(avroSkipBytesPropertyName));
     switch (avroByteConverterType) {
       case CONFLUENT: return new AvroSkipBytesConverter(schema, 5);
       case SKIP: return new AvroSkipBytesConverter(schema, avroSkipBytes);
