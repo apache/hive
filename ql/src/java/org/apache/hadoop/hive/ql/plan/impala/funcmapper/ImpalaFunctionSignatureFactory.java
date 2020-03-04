@@ -59,6 +59,8 @@ public class ImpalaFunctionSignatureFactory {
     switch(kind) {
       case CAST:
         return new CastFunctionSignature(argTypes, retType);
+      case CASE:
+        return new CaseFunctionSignature(argTypes, retType);
       case EXTRACT:
         return new ExtractFunctionSignature(func, argTypes, retType);
       default:
