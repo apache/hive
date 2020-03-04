@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.plan.impala.node;
 import java.util.List;
 
 import com.google.common.base.Preconditions;
+import org.apache.calcite.rel.RelWriter;
 import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.sql.SqlAggFunction;
@@ -108,14 +109,15 @@ public class ImpalaAggregateRel extends ImpalaPlanRel {
     this.nodeInfo = new ImpalaNodeInfo();
     aggNode =
         new ImpalaAggNode(nodeId, input, multiAggInfo, MultiAggregateInfo.AggPhase.FIRST, nodeInfo, ctx);
+
+    AggregateInfo aggInfo = multiAggInfo.getAggClasses().get(0);
+    this.outputExprs = createOutputExprs(aggInfo.getOutputTupleDesc().getSlots());
     // This is the only way to shove in the "having" filter into the aggregate node.
     // In the init clause, the aggregate node calls into the analyzer to get all remaining
     // unassigned conjuncts.
-    analyzer.setUnassignedConjuncts(getConjuncts(filter, analyzer, relInput));
+    analyzer.setUnassignedConjuncts(getConjuncts(filter, analyzer, this));
     aggNode.init(analyzer);
     analyzer.clearUnassignedConjuncts();
-    AggregateInfo aggInfo = multiAggInfo.getAggClasses().get(0);
-    this.outputExprs = createOutputExprs(aggInfo.getOutputTupleDesc().getSlots());
 
     return aggNode;
   }
@@ -178,5 +180,14 @@ public class ImpalaAggregateRel extends ImpalaPlanRel {
             funcDetails.updateFnSymbol, funcDetails.initFnSymbol, funcDetails.serializeFnSymbol,
             funcDetails.mergeFnSymbol, funcDetails.getValueFnSymbol, funcDetails.removeFnSymbol,
             funcDetails.finalizeFnSymbol);
+  }
+
+  @Override
+  public RelWriter explainTerms(RelWriter pw) {
+    RelWriter rw = aggregate.explainTerms(pw);
+    if (filter != null) {
+      rw = filter.explainTerms(rw);
+    }
+    return rw;
   }
 }
