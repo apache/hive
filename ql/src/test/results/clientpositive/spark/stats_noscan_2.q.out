@@ -377,3 +377,4 @@ POSTHOOK: query: drop table anaylyze_external
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@anaylyze_external
 POSTHOOK: Output: default@anaylyze_external
+#### A masked pattern was here ####

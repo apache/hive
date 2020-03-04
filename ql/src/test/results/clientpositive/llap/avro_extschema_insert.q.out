@@ -65,7 +65,6 @@ POSTHOOK: Input: default@avro_extschema_insert2
 POSTHOOK: Input: default@avro_extschema_insert2@p1=part1
 #### A masked pattern was here ####
 col1_value	1	col3_value	part1
-#### A masked pattern was here ####
 PREHOOK: query: drop table avro_extschema_insert1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@avro_extschema_insert1
@@ -82,3 +81,4 @@ POSTHOOK: query: drop table avro_extschema_insert2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@avro_extschema_insert2
 POSTHOOK: Output: default@avro_extschema_insert2
+#### A masked pattern was here ####
