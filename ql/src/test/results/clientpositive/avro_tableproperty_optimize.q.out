@@ -224,3 +224,4 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@avro_extschema_url1
 #### A masked pattern was here ####
 s1	1	s2
+#### A masked pattern was here ####
