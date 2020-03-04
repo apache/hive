@@ -51,12 +51,12 @@ public class TableName implements Serializable {
    * @param tableName  table name, cannot be null
    */
   public TableName(final String catName, final String dbName, final String tableName) {
-    if (tableName == null || tableName.trim().isEmpty()) {
+    if (tableName == null || tableName.isEmpty()) {
       throw new IllegalArgumentException(String.join("", "Table value was blank. ", ILL_ARG_EXCEPTION_MSG));
     }
 
-    this.dbIsBlank = dbName == null || dbName.trim().isEmpty();
-    this.catIsBlank = catName == null || catName.trim().isEmpty();
+    this.dbIsBlank = dbName == null || dbName.isEmpty();
+    this.catIsBlank = catName == null || catName.isEmpty();
     if (dbIsBlank && !catIsBlank) {
       throw new IllegalArgumentException(
           String.join("", "Invalid values: database was blank, while category wasn't. ", ILL_ARG_EXCEPTION_MSG));
@@ -151,7 +151,7 @@ public class TableName implements Serializable {
    */
   @Deprecated
   public String getNotEmptyDbTable() {
-    return db == null || db.trim().isEmpty() ? table : db + DatabaseName.CAT_DB_TABLE_SEPARATOR + table;
+    return db == null || db.isEmpty() ? table : db + DatabaseName.CAT_DB_TABLE_SEPARATOR + table;
   }
 
   /**
