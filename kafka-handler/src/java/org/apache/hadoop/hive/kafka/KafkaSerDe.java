@@ -160,7 +160,7 @@ import java.util.stream.Collectors;
       BytesConverterType.NONE.toString());
     BytesConverterType avroByteConverterType = BytesConverterType.fromString(avroBytesConverterProperty);
     String avroSkipBytesPropertyName = AvroSerdeUtils.AvroTableProperties.AVRO_SERDE_SKIP_BYTES.getPropName();
-    Integer avroSkipBytes = Integer.getInteger(tbl.getProperty(avroSkipBytesPropertyName));
+    Integer avroSkipBytes = Integer.parseInt(tbl.getProperty(avroSkipBytesPropertyName));
     switch (avroByteConverterType) {
       case CONFLUENT: return new AvroSkipBytesConverter(schema, 5);
       case SKIP: return new AvroSkipBytesConverter(schema, avroSkipBytes);
@@ -406,7 +406,7 @@ import java.util.stream.Collectors;
      * The converter reads bytes from kafka message and skip first @skipBytes from beginning.
      *
      * For example:
-     *       Confluent kafka producer add 5 magic bytes that represents Schema ID as Integer to the message.
+     *       The Confluent Avro serializer adds 5 magic bytes that represents Schema ID as Integer to the message.
      */
   static class AvroSkipBytesConverter extends AvroBytesConverter {
     private final int skipBytes;

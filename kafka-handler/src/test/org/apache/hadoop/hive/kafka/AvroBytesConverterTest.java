@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.kafka;
 
 import com.google.common.collect.Maps;
 import io.confluent.kafka.schemaregistry.client.MockSchemaRegistryClient;
+import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig;
 import io.confluent.kafka.serializers.KafkaAvroSerializer;
 import org.apache.avro.Schema;
 import org.apache.hadoop.hive.serde2.avro.AvroGenericRecordWritable;
@@ -42,7 +43,7 @@ public class AvroBytesConverterTest {
   @BeforeClass
   public static void setUp() {
     Map<String, String> config = Maps.newHashMap();
-    config.put("schema.registry.url", "http://localhost");
+    config.put(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, "http://localhost:8081");
     KafkaAvroSerializer avroSerializer = new KafkaAvroSerializer(new MockSchemaRegistryClient());
     avroSerializer.configure(config, false);
     simpleRecord1AsBytes = avroSerializer.serialize("temp", simpleRecord1);
