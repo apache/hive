@@ -17,7 +17,6 @@
 
 package org.apache.hive.spark.client;
 
-import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.HADOOP_SECURITY_AUTHENTICATION;
 import static org.apache.hive.spark.client.SparkClientUtilities.HIVE_KRYO_REG_NAME;
 
 import com.google.common.base.Charsets;
@@ -55,6 +54,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.SecurityUtil;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.spark.client.rpc.Rpc;
 import org.apache.hive.spark.client.rpc.RpcConfiguration;
 import org.apache.hive.spark.client.rpc.RpcServer;
@@ -341,7 +341,7 @@ abstract class AbstractSparkClient implements SparkClient {
     // are needed, we choose to favor doAs. So when doAs is enabled, we use kinit command,
     // otherwise, we pass the principal/keypad to spark to support the token renewal for
     // long-running application.
-    if ("kerberos".equals(hiveConf.get(HADOOP_SECURITY_AUTHENTICATION))) {
+    if (UserGroupInformation.isSecurityEnabled()) {
       String principal = SecurityUtil.getServerPrincipal(hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL),
           "0.0.0.0");
       String keyTabFile = hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB);
