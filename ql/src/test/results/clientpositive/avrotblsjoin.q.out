@@ -84,3 +84,4 @@ POSTHOOK: Input: default@table1_1
 POSTHOOK: Input: default@table1_n1
 #### A masked pattern was here ####
 1	1	2
+#### A masked pattern was here ####
