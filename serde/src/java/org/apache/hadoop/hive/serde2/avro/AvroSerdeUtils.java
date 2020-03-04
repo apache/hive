@@ -68,6 +68,8 @@ public class AvroSerdeUtils {
     SCHEMA_NAME("avro.schema.name"),
     SCHEMA_DOC("avro.schema.doc"),
     AVRO_SERDE_SCHEMA("avro.serde.schema"),
+    AVRO_SERDE_TYPE("avro.serde.type"),
+    AVRO_SERDE_SKIP_BYTES("avro.serde.skip.bytes"),
     SCHEMA_RETRIEVER("avro.schema.retriever");
 
     private final String propName;
