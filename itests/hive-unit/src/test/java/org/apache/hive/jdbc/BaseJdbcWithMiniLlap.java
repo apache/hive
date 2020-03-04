@@ -73,6 +73,7 @@ public abstract class BaseJdbcWithMiniLlap {
   private static String dataFileDir;
   private static Path kvDataFilePath;
   private static Path dataTypesFilePath;
+  private static Path over10KFilePath;
 
   protected static MiniHS2 miniHS2 = null;
   protected static HiveConf conf = null;
@@ -86,6 +87,7 @@ public abstract class BaseJdbcWithMiniLlap {
     dataFileDir = conf.get("test.data.files").replace('\\', '/').replace("c:", "");
     kvDataFilePath = new Path(dataFileDir, "kv1.txt");
     dataTypesFilePath = new Path(dataFileDir, "datatypes.txt");
+    over10KFilePath = new Path(dataFileDir, "over10k");
     Map<String, String> confOverlay = new HashMap<String, String>();
     miniHS2.start(confOverlay);
     miniHS2.getDFS().getFileSystem().mkdirs(new Path("/apps_staging_dir/anonymous"));
@@ -185,6 +187,21 @@ public abstract class BaseJdbcWithMiniLlap {
     stmt.close();
   }
 
+  protected void createOver10KTable(String tableName) throws Exception {
+    try (Statement stmt = hs2Conn.createStatement()) {
+
+      String createQuery =
+          "create table " + tableName + " (t tinyint, si smallint, i int, b bigint, f float, d double, bo boolean, "
+              + "s string, ts timestamp, `dec` decimal(4,2), bin binary) row format delimited fields terminated by '|'";
+
+      // create table
+      stmt.execute("DROP TABLE IF EXISTS " + tableName);
+      stmt.execute(createQuery);
+      // load data
+      stmt.execute("load data local inpath '" + over10KFilePath.toString() + "' into table " + tableName);
+    }
+  }
+
   @Test(timeout = 60000)
   public void testLlapInputFormatEndToEnd() throws Exception {
     createTestTable("testtab1");
@@ -205,6 +222,34 @@ public abstract class BaseJdbcWithMiniLlap {
     rowCount = processQuery(query, 1, rowCollector);
     assertEquals(0, rowCount);
   }
+
+  @Test(timeout = 300000)
+  public void testLlapInputFormatEndToEndWithMultipleBatches() throws Exception {
+    String tableName = "over10k_table";
+
+    createOver10KTable(tableName);
+
+    int rowCount;
+
+    // Try with more than one batch
+    RowCollector rowCollector = new RowCollector();
+    String query = "select * from " + tableName;
+    rowCount = processQuery(query, 1, rowCollector);
+    assertEquals(9999, rowCount);
+
+    // Try with less than one batch
+    rowCollector.rows.clear();
+    query = "select * from " + tableName + " where s = 'rachel brown'";
+    rowCount = processQuery(query, 1, rowCollector);
+    assertEquals(17, rowCount);
+
+    // Try empty rows query
+    rowCollector.rows.clear();
+    query = "select * from " + tableName + " where false";
+    rowCount = processQuery(query, 1, rowCollector);
+    assertEquals(0, rowCount);
+  }
+
 
   @Test(timeout = 60000)
   public void testNonAsciiStrings() throws Exception {
