@@ -28,28 +28,28 @@ ROW FORMAT DELIMITED
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DECIMAL_6_1_txt
+PREHOOK: Output: default@decimal_6_1_txt
 POSTHOOK: query: CREATE TABLE DECIMAL_6_1_txt(key decimal(10,5), value int)
 ROW FORMAT DELIMITED
    FIELDS TERMINATED BY ' '
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DECIMAL_6_1_txt
+POSTHOOK: Output: default@decimal_6_1_txt
 PREHOOK: query: CREATE TABLE DECIMAL_6_2_txt(key decimal(17,4), value int)
 ROW FORMAT DELIMITED
    FIELDS TERMINATED BY ' '
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DECIMAL_6_2_txt
+PREHOOK: Output: default@decimal_6_2_txt
 POSTHOOK: query: CREATE TABLE DECIMAL_6_2_txt(key decimal(17,4), value int)
 ROW FORMAT DELIMITED
    FIELDS TERMINATED BY ' '
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DECIMAL_6_2_txt
+POSTHOOK: Output: default@decimal_6_2_txt
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv9.txt' INTO TABLE DECIMAL_6_1_txt
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -70,22 +70,22 @@ PREHOOK: query: CREATE TABLE DECIMAL_6_1(key decimal(10,5), value int)
 STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DECIMAL_6_1
+PREHOOK: Output: default@decimal_6_1
 POSTHOOK: query: CREATE TABLE DECIMAL_6_1(key decimal(10,5), value int)
 STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DECIMAL_6_1
+POSTHOOK: Output: default@decimal_6_1
 PREHOOK: query: CREATE TABLE DECIMAL_6_2(key decimal(17,4), value int)
 STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DECIMAL_6_2
+PREHOOK: Output: default@decimal_6_2
 POSTHOOK: query: CREATE TABLE DECIMAL_6_2(key decimal(17,4), value int)
 STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DECIMAL_6_2
+POSTHOOK: Output: default@decimal_6_2
 PREHOOK: query: INSERT OVERWRITE TABLE DECIMAL_6_1 SELECT * FROM DECIMAL_6_1_txt
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_6_1_txt
@@ -642,13 +642,13 @@ CREATE TABLE DECIMAL_6_3 STORED AS ORC AS SELECT key + 5.5 AS k, value * 11 AS v
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@decimal_6_1
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DECIMAL_6_3
+PREHOOK: Output: default@decimal_6_3
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 CREATE TABLE DECIMAL_6_3 STORED AS ORC AS SELECT key + 5.5 AS k, value * 11 AS v from DECIMAL_6_1 ORDER BY v
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@decimal_6_1
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DECIMAL_6_3
+POSTHOOK: Output: default@decimal_6_3
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -733,7 +733,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      name: default.DECIMAL_6_3
+                      name: default.decimal_6_3
                 Select Operator
                   expressions: _col0 (type: decimal(11,5)), _col1 (type: int)
                   outputColumnNames: col1, col2
@@ -761,10 +761,10 @@ STAGE PLANS:
   Stage: Stage-4
     Create Table
       columns: k decimal(11,5), v int
-      name: default.DECIMAL_6_3
       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
       serde name: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+      name: hive.default.decimal_6_3
 
   Stage: Stage-3
     Stats Work
@@ -772,7 +772,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: k, v
           Column Types: decimal(11,5), int
-          Table: default.DECIMAL_6_3
+          Table: default.decimal_6_3
 
   Stage: Stage-0
     Move Operator
@@ -784,12 +784,12 @@ PREHOOK: query: CREATE TABLE DECIMAL_6_3 STORED AS ORC AS SELECT key + 5.5 AS k,
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@decimal_6_1
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DECIMAL_6_3
+PREHOOK: Output: default@decimal_6_3
 POSTHOOK: query: CREATE TABLE DECIMAL_6_3 STORED AS ORC AS SELECT key + 5.5 AS k, value * 11 AS v from DECIMAL_6_1 ORDER BY v
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@decimal_6_1
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DECIMAL_6_3
+POSTHOOK: Output: default@decimal_6_3
 POSTHOOK: Lineage: decimal_6_3.k EXPRESSION [(decimal_6_1)decimal_6_1.FieldSchema(name:key, type:decimal(10,5), comment:null), ]
 POSTHOOK: Lineage: decimal_6_3.v EXPRESSION [(decimal_6_1)decimal_6_1.FieldSchema(name:value, type:int, comment:null), ]
 PREHOOK: query: desc DECIMAL_6_3

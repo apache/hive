@@ -3758,12 +3758,12 @@ PREHOOK: query: CREATE TABLE tablePartitioned (a STRING NOT NULL ENFORCED, b STR
     PARTITIONED BY (p1 STRING, p2 INT NOT NULL DISABLE)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tablePartitioned
+PREHOOK: Output: default@tablepartitioned
 POSTHOOK: query: CREATE TABLE tablePartitioned (a STRING NOT NULL ENFORCED, b STRING, c STRING NOT NULL ENFORCED)
     PARTITIONED BY (p1 STRING, p2 INT NOT NULL DISABLE)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tablePartitioned
+POSTHOOK: Output: default@tablepartitioned
 PREHOOK: query: explain INSERT INTO tablePartitioned partition(p1='today', p2=10) values('not', 'null', 'constraint')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table

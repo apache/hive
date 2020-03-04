@@ -152,11 +152,11 @@ POSTHOOK: Input: database:newdb
 PREHOOK: query: create table tab_n2 (name string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:newdb
-PREHOOK: Output: newDB@tab_n2
+PREHOOK: Output: newdb@tab_n2
 POSTHOOK: query: create table tab_n2 (name string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:newdb
-POSTHOOK: Output: newDB@tab_n2
+POSTHOOK: Output: newdb@tab_n2
 PREHOOK: query: alter table tab_n2 rename to newName
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: newdb@tab_n2
@@ -174,7 +174,7 @@ POSTHOOK: type: ALTERTABLE_RENAME
 POSTHOOK: Input: newdb@tab_n2
 POSTHOOK: Output: newdb@tab_n2
 Stage-0
-  Rename Table{"table name:":"newDB.tab_n2","new table name:":"hive.newDB.newName"}
+  Rename Table{"table name:":"hive.newdb.tab_n2","new table name:":"hive.newdb.newname"}
 
 PREHOOK: query: drop table tab_n2
 PREHOOK: type: DROPTABLE
@@ -406,7 +406,7 @@ Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 Stage-3
   Stats Work{}
     Stage-4
-      Create Table{"name:":"default.src_autho_test_n4"}
+      Create Table{"name:":"hive.default.src_autho_test_n4"}
         Stage-0
           Move Operator
             Stage-1
@@ -672,7 +672,7 @@ POSTHOOK: Output: default@v_n5
 Plan optimized by CBO.
 
 Stage-1
-  Create View{"name:":"default.v_n5","original text:":"with cte as (select * from src  order by key limit 5)\nselect * from cte"}
+  Create View{"name:":"hive.default.v_n5","original text:":"with cte as (select * from src  order by key limit 5)\nselect * from cte"}
 
 PREHOOK: query: with cte as (select * from src  order by key limit 5)
 select * from cte

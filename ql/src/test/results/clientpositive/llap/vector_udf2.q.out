@@ -145,11 +145,11 @@ POSTHOOK: Output: default@varchar_udf_2
 PREHOOK: query: create temporary table HIVE_14349 (a string) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@HIVE_14349
+PREHOOK: Output: default@hive_14349
 POSTHOOK: query: create temporary table HIVE_14349 (a string) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@HIVE_14349
+POSTHOOK: Output: default@hive_14349
 PREHOOK: query: insert into HIVE_14349 values('XYZa'), ('badXYZa')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table

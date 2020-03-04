@@ -1,11 +1,11 @@
 PREHOOK: query: CREATE TABLE T1_text_n11(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1_text_n11
+PREHOOK: Output: default@t1_text_n11
 POSTHOOK: query: CREATE TABLE T1_text_n11(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1_text_n11
+POSTHOOK: Output: default@t1_text_n11
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/grouping_sets.txt' INTO TABLE T1_text_n11
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -18,12 +18,12 @@ PREHOOK: query: CREATE TABLE T1_n161 STORED AS ORC AS SELECT * FROM T1_text_n11
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@t1_text_n11
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1_n161
+PREHOOK: Output: default@t1_n161
 POSTHOOK: query: CREATE TABLE T1_n161 STORED AS ORC AS SELECT * FROM T1_text_n11
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@t1_text_n11
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1_n161
+POSTHOOK: Output: default@t1_n161
 POSTHOOK: Lineage: t1_n161.a SIMPLE [(t1_text_n11)t1_text_n11.FieldSchema(name:a, type:string, comment:null), ]
 POSTHOOK: Lineage: t1_n161.b SIMPLE [(t1_text_n11)t1_text_n11.FieldSchema(name:b, type:string, comment:null), ]
 POSTHOOK: Lineage: t1_n161.c SIMPLE [(t1_text_n11)t1_text_n11.FieldSchema(name:c, type:string, comment:null), ]

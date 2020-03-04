@@ -1,11 +1,11 @@
 PREHOOK: query: CREATE TABLE sourceTable (one string,two string) PARTITIONED BY (ds string,hr string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@sourceTable
+PREHOOK: Output: default@sourcetable
 POSTHOOK: query: CREATE TABLE sourceTable (one string,two string) PARTITIONED BY (ds string,hr string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@sourceTable
+POSTHOOK: Output: default@sourcetable
 PREHOOK: query: load data local inpath '../../data/files/kv1.txt' INTO TABLE sourceTable partition(ds='2011-11-11', hr='11')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -27,11 +27,11 @@ POSTHOOK: Output: default@sourcetable@ds=2011-11-11/hr=12
 PREHOOK: query: CREATE TABLE destinTable (one string,two string) PARTITIONED BY (ds string,hr string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@destinTable
+PREHOOK: Output: default@destintable
 POSTHOOK: query: CREATE TABLE destinTable (one string,two string) PARTITIONED BY (ds string,hr string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@destinTable
+POSTHOOK: Output: default@destintable
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE destinTable PARTITION (ds='2011-11-11', hr='11') if not exists
 SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one desc, two desc limit 5
 PREHOOK: type: QUERY
@@ -234,11 +234,11 @@ POSTHOOK: Output: default@destintable
 PREHOOK: query: CREATE TABLE destinTable (one string,two string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@destinTable
+PREHOOK: Output: default@destintable
 POSTHOOK: query: CREATE TABLE destinTable (one string,two string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@destinTable
+POSTHOOK: Output: default@destintable
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE destinTable SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one desc, two desc limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sourcetable
@@ -389,11 +389,11 @@ POSTHOOK: Output: default@sourcetable
 PREHOOK: query: CREATE TABLE sourceTable (one string,two string) PARTITIONED BY (DS string,HR string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@sourceTable
+PREHOOK: Output: default@sourcetable
 POSTHOOK: query: CREATE TABLE sourceTable (one string,two string) PARTITIONED BY (DS string,HR string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@sourceTable
+POSTHOOK: Output: default@sourcetable
 PREHOOK: query: load data local inpath '../../data/files/kv1.txt' INTO TABLE sourceTable partition(DS='2011-11-11', HR='11')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -406,11 +406,11 @@ POSTHOOK: Output: default@sourcetable@ds=2011-11-11/hr=11
 PREHOOK: query: CREATE TABLE destinTable (one string,two string) PARTITIONED BY (DS string,HR string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@destinTable
+PREHOOK: Output: default@destintable
 POSTHOOK: query: CREATE TABLE destinTable (one string,two string) PARTITIONED BY (DS string,HR string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@destinTable
+POSTHOOK: Output: default@destintable
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE destinTable PARTITION (DS='2011-11-11', HR='11') if not exists
 SELECT one,two FROM sourceTable WHERE DS='2011-11-11' AND HR='11' order by one desc, two desc limit 5
 PREHOOK: type: QUERY

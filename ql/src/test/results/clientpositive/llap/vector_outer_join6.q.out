@@ -2,42 +2,42 @@ PREHOOK: query: create table TJOIN1_txt (RNUM int , C1 int, C2 int)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' LINES TERMINATED BY '\n'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@TJOIN1_txt
+PREHOOK: Output: default@tjoin1_txt
 POSTHOOK: query: create table TJOIN1_txt (RNUM int , C1 int, C2 int)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' LINES TERMINATED BY '\n'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@TJOIN1_txt
+POSTHOOK: Output: default@tjoin1_txt
 PREHOOK: query: create table TJOIN2_txt (RNUM int , C1 int, C2 char(2))
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' LINES TERMINATED BY '\n'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@TJOIN2_txt
+PREHOOK: Output: default@tjoin2_txt
 POSTHOOK: query: create table TJOIN2_txt (RNUM int , C1 int, C2 char(2))
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' LINES TERMINATED BY '\n'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@TJOIN2_txt
+POSTHOOK: Output: default@tjoin2_txt
 PREHOOK: query: create table if not exists TJOIN3_txt (RNUM int , C1 int, C2 char(2))
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' LINES TERMINATED BY '\n'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@TJOIN3_txt
+PREHOOK: Output: default@tjoin3_txt
 POSTHOOK: query: create table if not exists TJOIN3_txt (RNUM int , C1 int, C2 char(2))
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' LINES TERMINATED BY '\n'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@TJOIN3_txt
+POSTHOOK: Output: default@tjoin3_txt
 PREHOOK: query: create table TJOIN4_txt (RNUM int , C1 int, C2 char(2))
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' LINES TERMINATED BY '\n'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@TJOIN4_txt
+PREHOOK: Output: default@tjoin4_txt
 POSTHOOK: query: create table TJOIN4_txt (RNUM int , C1 int, C2 char(2))
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' LINES TERMINATED BY '\n'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@TJOIN4_txt
+POSTHOOK: Output: default@tjoin4_txt
 PREHOOK: query: load data local inpath '../../data/files/TJOIN1' into table TJOIN1_txt
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -74,12 +74,12 @@ PREHOOK: query: create table TJOIN1_n0 stored as orc AS SELECT * FROM TJOIN1_txt
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@tjoin1_txt
 PREHOOK: Output: database:default
-PREHOOK: Output: default@TJOIN1_n0
+PREHOOK: Output: default@tjoin1_n0
 POSTHOOK: query: create table TJOIN1_n0 stored as orc AS SELECT * FROM TJOIN1_txt
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@tjoin1_txt
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@TJOIN1_n0
+POSTHOOK: Output: default@tjoin1_n0
 POSTHOOK: Lineage: tjoin1_n0.c1 SIMPLE [(tjoin1_txt)tjoin1_txt.FieldSchema(name:c1, type:int, comment:null), ]
 POSTHOOK: Lineage: tjoin1_n0.c2 SIMPLE [(tjoin1_txt)tjoin1_txt.FieldSchema(name:c2, type:int, comment:null), ]
 POSTHOOK: Lineage: tjoin1_n0.rnum SIMPLE [(tjoin1_txt)tjoin1_txt.FieldSchema(name:rnum, type:int, comment:null), ]
@@ -87,12 +87,12 @@ PREHOOK: query: create table TJOIN2_n0 stored as orc AS SELECT * FROM TJOIN2_txt
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@tjoin2_txt
 PREHOOK: Output: database:default
-PREHOOK: Output: default@TJOIN2_n0
+PREHOOK: Output: default@tjoin2_n0
 POSTHOOK: query: create table TJOIN2_n0 stored as orc AS SELECT * FROM TJOIN2_txt
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@tjoin2_txt
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@TJOIN2_n0
+POSTHOOK: Output: default@tjoin2_n0
 POSTHOOK: Lineage: tjoin2_n0.c1 SIMPLE [(tjoin2_txt)tjoin2_txt.FieldSchema(name:c1, type:int, comment:null), ]
 POSTHOOK: Lineage: tjoin2_n0.c2 SIMPLE [(tjoin2_txt)tjoin2_txt.FieldSchema(name:c2, type:char(2), comment:null), ]
 POSTHOOK: Lineage: tjoin2_n0.rnum SIMPLE [(tjoin2_txt)tjoin2_txt.FieldSchema(name:rnum, type:int, comment:null), ]
@@ -100,12 +100,12 @@ PREHOOK: query: create table TJOIN3 stored as orc AS SELECT * FROM TJOIN3_txt
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@tjoin3_txt
 PREHOOK: Output: database:default
-PREHOOK: Output: default@TJOIN3
+PREHOOK: Output: default@tjoin3
 POSTHOOK: query: create table TJOIN3 stored as orc AS SELECT * FROM TJOIN3_txt
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@tjoin3_txt
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@TJOIN3
+POSTHOOK: Output: default@tjoin3
 POSTHOOK: Lineage: tjoin3.c1 SIMPLE [(tjoin3_txt)tjoin3_txt.FieldSchema(name:c1, type:int, comment:null), ]
 POSTHOOK: Lineage: tjoin3.c2 SIMPLE [(tjoin3_txt)tjoin3_txt.FieldSchema(name:c2, type:char(2), comment:null), ]
 POSTHOOK: Lineage: tjoin3.rnum SIMPLE [(tjoin3_txt)tjoin3_txt.FieldSchema(name:rnum, type:int, comment:null), ]
@@ -113,12 +113,12 @@ PREHOOK: query: create table TJOIN4 stored as orc AS SELECT * FROM TJOIN4_txt
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@tjoin4_txt
 PREHOOK: Output: database:default
-PREHOOK: Output: default@TJOIN4
+PREHOOK: Output: default@tjoin4
 POSTHOOK: query: create table TJOIN4 stored as orc AS SELECT * FROM TJOIN4_txt
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@tjoin4_txt
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@TJOIN4
+POSTHOOK: Output: default@tjoin4
 POSTHOOK: Lineage: tjoin4.c1 SIMPLE [(tjoin4_txt)tjoin4_txt.FieldSchema(name:c1, type:int, comment:null), ]
 POSTHOOK: Lineage: tjoin4.c2 SIMPLE [(tjoin4_txt)tjoin4_txt.FieldSchema(name:c2, type:char(2), comment:null), ]
 POSTHOOK: Lineage: tjoin4.rnum SIMPLE [(tjoin4_txt)tjoin4_txt.FieldSchema(name:rnum, type:int, comment:null), ]

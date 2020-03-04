@@ -32,7 +32,7 @@ Reducer 3 <- Union 2 (CUSTOM_SIMPLE_EDGE)
 Stage-3
   Stats Work{}
     Stage-9
-      Create Table{"name:":"default.x"}
+      Create Table{"name:":"hive.default.x"}
         Stage-0
           Move Operator
             Stage-5(CONDITIONAL)

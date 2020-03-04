@@ -1515,11 +1515,11 @@ POSTHOOK: Output: default@ut
 PREHOOK: query: create table TABLE1_n3(EMP_NAME STRING, EMP_ID INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@TABLE1_n3
+PREHOOK: Output: default@table1_n3
 POSTHOOK: query: create table TABLE1_n3(EMP_NAME STRING, EMP_ID INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@TABLE1_n3
+POSTHOOK: Output: default@table1_n3
 PREHOOK: query: create table table2_n1 (EMP_NAME STRING) PARTITIONED BY (EMP_ID INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

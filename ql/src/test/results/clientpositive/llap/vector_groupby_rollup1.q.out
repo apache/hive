@@ -1,11 +1,11 @@
 PREHOOK: query: CREATE TABLE T1_text_n5(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1_text_n5
+PREHOOK: Output: default@t1_text_n5
 POSTHOOK: query: CREATE TABLE T1_text_n5(key STRING, val STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1_text_n5
+POSTHOOK: Output: default@t1_text_n5
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_text_n5
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -18,12 +18,12 @@ PREHOOK: query: CREATE TABLE T1_n83 STORED AS ORC AS SELECT * FROM T1_text_n5
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@t1_text_n5
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1_n83
+PREHOOK: Output: default@t1_n83
 POSTHOOK: query: CREATE TABLE T1_n83 STORED AS ORC AS SELECT * FROM T1_text_n5
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@t1_text_n5
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1_n83
+POSTHOOK: Output: default@t1_n83
 POSTHOOK: Lineage: t1_n83.key SIMPLE [(t1_text_n5)t1_text_n5.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: t1_n83.val SIMPLE [(t1_text_n5)t1_text_n5.FieldSchema(name:val, type:string, comment:null), ]
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
@@ -629,19 +629,19 @@ NULL	6
 PREHOOK: query: CREATE TABLE T2_n52(key1 STRING, key2 STRING, val INT) STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T2_n52
+PREHOOK: Output: default@t2_n52
 POSTHOOK: query: CREATE TABLE T2_n52(key1 STRING, key2 STRING, val INT) STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T2_n52
+POSTHOOK: Output: default@t2_n52
 PREHOOK: query: CREATE TABLE T3_n17(key1 STRING, key2 STRING, val INT) STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T3_n17
+PREHOOK: Output: default@t3_n17
 POSTHOOK: query: CREATE TABLE T3_n17(key1 STRING, key2 STRING, val INT) STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T3_n17
+POSTHOOK: Output: default@t3_n17
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 FROM T1_n83
 INSERT OVERWRITE TABLE T2_n52 SELECT key, val, count(1) group by key, val with rollup

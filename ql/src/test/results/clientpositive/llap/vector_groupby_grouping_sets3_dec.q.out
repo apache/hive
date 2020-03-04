@@ -1,11 +1,11 @@
 PREHOOK: query: CREATE TABLE T1_text_n10(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1_text_n10
+PREHOOK: Output: default@t1_text_n10
 POSTHOOK: query: CREATE TABLE T1_text_n10(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1_text_n10
+POSTHOOK: Output: default@t1_text_n10
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/grouping_sets1.txt' INTO TABLE T1_text_n10
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -26,12 +26,12 @@ PREHOOK: query: CREATE TABLE T1_n115 STORED AS ORC AS SELECT a, b, cast(c as dec
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@t1_text_n10
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1_n115
+PREHOOK: Output: default@t1_n115
 POSTHOOK: query: CREATE TABLE T1_n115 STORED AS ORC AS SELECT a, b, cast(c as decimal(10,2)) as c_dec FROM T1_text_n10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@t1_text_n10
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1_n115
+POSTHOOK: Output: default@t1_n115
 POSTHOOK: Lineage: t1_n115.a SIMPLE [(t1_text_n10)t1_text_n10.FieldSchema(name:a, type:string, comment:null), ]
 POSTHOOK: Lineage: t1_n115.b SIMPLE [(t1_text_n10)t1_text_n10.FieldSchema(name:b, type:string, comment:null), ]
 POSTHOOK: Lineage: t1_n115.c_dec EXPRESSION [(t1_text_n10)t1_text_n10.FieldSchema(name:c, type:string, comment:null), ]

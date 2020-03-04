@@ -4701,11 +4701,11 @@ POSTHOOK: Output: default@tempty_n0
 PREHOOK: query: create table EMPS_n4(EMPNO int,NAME string,DEPTNO int,GENDER string,CITY string,EMPID int,AGE int,SLACKER boolean,MANAGER boolean,JOINEDAT date)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@EMPS_n4
+PREHOOK: Output: default@emps_n4
 POSTHOOK: query: create table EMPS_n4(EMPNO int,NAME string,DEPTNO int,GENDER string,CITY string,EMPID int,AGE int,SLACKER boolean,MANAGER boolean,JOINEDAT date)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@EMPS_n4
+POSTHOOK: Output: default@emps_n4
 PREHOOK: query: insert into EMPS_n4 values (100,'Fred',10,NULL,NULL,30,25,true,false,'1996-08-03')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -4799,11 +4799,11 @@ POSTHOOK: Lineage: emps_n4.slacker SCRIPT []
 PREHOOK: query: create table DEPTS_n3(deptno int, name string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEPTS_n3
+PREHOOK: Output: default@depts_n3
 POSTHOOK: query: create table DEPTS_n3(deptno int, name string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEPTS_n3
+POSTHOOK: Output: default@depts_n3
 PREHOOK: query: insert into DEPTS_n3 values( 10,'Sales')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table

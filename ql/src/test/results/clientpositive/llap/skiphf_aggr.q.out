@@ -8,14 +8,14 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 TBLPROPERTIES('skip.header.line.count'='1')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@skipHTbl
+PREHOOK: Output: default@skiphtbl
 POSTHOOK: query: CREATE TABLE skipHTbl (a int) 
 PARTITIONED BY (b int) 
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' 
 TBLPROPERTIES('skip.header.line.count'='1')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@skipHTbl
+POSTHOOK: Output: default@skiphtbl
 PREHOOK: query: INSERT OVERWRITE TABLE skipHTbl PARTITION (b = 1) VALUES (1), (2), (3), (4)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -163,14 +163,14 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 TBLPROPERTIES('skip.footer.line.count'='1')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@skipFTbl
+PREHOOK: Output: default@skipftbl
 POSTHOOK: query: CREATE TABLE skipFTbl (a int) 
 PARTITIONED BY (b int) 
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' 
 TBLPROPERTIES('skip.footer.line.count'='1')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@skipFTbl
+POSTHOOK: Output: default@skipftbl
 PREHOOK: query: INSERT OVERWRITE TABLE skipFTbl PARTITION (b = 1) VALUES (1), (2), (3), (4)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table

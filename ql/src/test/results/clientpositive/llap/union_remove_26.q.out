@@ -1,27 +1,27 @@
 PREHOOK: query: create table inputSrcTbl1(key string, val int) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@inputSrcTbl1
+PREHOOK: Output: default@inputsrctbl1
 POSTHOOK: query: create table inputSrcTbl1(key string, val int) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@inputSrcTbl1
+POSTHOOK: Output: default@inputsrctbl1
 PREHOOK: query: create table inputSrcTbl2(key string, val int) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@inputSrcTbl2
+PREHOOK: Output: default@inputsrctbl2
 POSTHOOK: query: create table inputSrcTbl2(key string, val int) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@inputSrcTbl2
+POSTHOOK: Output: default@inputsrctbl2
 PREHOOK: query: create table inputSrcTbl3(key string, val int) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@inputSrcTbl3
+PREHOOK: Output: default@inputsrctbl3
 POSTHOOK: query: create table inputSrcTbl3(key string, val int) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@inputSrcTbl3
+POSTHOOK: Output: default@inputsrctbl3
 PREHOOK: query: load data local inpath '../../data/files/T1.txt' into table inputSrcTbl1
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -49,27 +49,27 @@ POSTHOOK: Output: default@inputsrctbl3
 PREHOOK: query: create table inputTbl1_n6(key string, val int) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@inputTbl1_n6
+PREHOOK: Output: default@inputtbl1_n6
 POSTHOOK: query: create table inputTbl1_n6(key string, val int) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@inputTbl1_n6
+POSTHOOK: Output: default@inputtbl1_n6
 PREHOOK: query: create table inputTbl2(key string, val int) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@inputTbl2
+PREHOOK: Output: default@inputtbl2
 POSTHOOK: query: create table inputTbl2(key string, val int) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@inputTbl2
+POSTHOOK: Output: default@inputtbl2
 PREHOOK: query: create table inputTbl3(key string, val int) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@inputTbl3
+PREHOOK: Output: default@inputtbl3
 POSTHOOK: query: create table inputTbl3(key string, val int) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@inputTbl3
+POSTHOOK: Output: default@inputtbl3
 PREHOOK: query: insert into inputTbl1_n6 select * from inputSrcTbl1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@inputsrctbl1

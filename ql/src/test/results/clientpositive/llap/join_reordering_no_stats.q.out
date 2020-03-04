@@ -380,12 +380,12 @@ PREHOOK: query: CREATE TABLE Employee_Part_n1(employeeID int, employeeName Strin
 row format delimited fields terminated by '|'  stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@Employee_Part_n1
+PREHOOK: Output: default@employee_part_n1
 POSTHOOK: query: CREATE TABLE Employee_Part_n1(employeeID int, employeeName String) partitioned by (employeeSalary double, country string)
 row format delimited fields terminated by '|'  stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@Employee_Part_n1
+POSTHOOK: Output: default@employee_part_n1
 PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee.dat"  INTO TABLE Employee_Part_n1 partition(employeeSalary='2000.0', country='USA')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####

@@ -26,12 +26,12 @@ PREHOOK: query: CREATE TABLE `DECIMAL` STORED AS ORC AS SELECT * FROM decimal_tx
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@decimal_txt
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DECIMAL
+PREHOOK: Output: default@decimal
 POSTHOOK: query: CREATE TABLE `DECIMAL` STORED AS ORC AS SELECT * FROM decimal_txt
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@decimal_txt
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DECIMAL
+POSTHOOK: Output: default@decimal
 POSTHOOK: Lineage: decimal.dec SIMPLE [(decimal_txt)decimal_txt.FieldSchema(name:dec, type:decimal(10,0), comment:null), ]
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT `dec` FROM `DECIMAL` order by `dec`

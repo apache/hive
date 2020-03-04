@@ -1,11 +1,11 @@
 PREHOOK: query: CREATE TABLE T1_n146(key INT, val STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1_n146
+PREHOOK: Output: default@t1_n146
 POSTHOOK: query: CREATE TABLE T1_n146(key INT, val STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1_n146
+POSTHOOK: Output: default@t1_n146
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_n146
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -17,11 +17,11 @@ POSTHOOK: Output: default@t1_n146
 PREHOOK: query: CREATE TABLE T2_n86(key INT, val STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T2_n86
+PREHOOK: Output: default@t2_n86
 POSTHOOK: query: CREATE TABLE T2_n86(key INT, val STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T2_n86
+POSTHOOK: Output: default@t2_n86
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2_n86
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -33,11 +33,11 @@ POSTHOOK: Output: default@t2_n86
 PREHOOK: query: CREATE TABLE T3_n34(key INT, val STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T3_n34
+PREHOOK: Output: default@t3_n34
 POSTHOOK: query: CREATE TABLE T3_n34(key INT, val STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T3_n34
+POSTHOOK: Output: default@t3_n34
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T3_n34
 PREHOOK: type: LOAD
 #### A masked pattern was here ####

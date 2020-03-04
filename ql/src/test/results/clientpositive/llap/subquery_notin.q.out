@@ -1488,29 +1488,29 @@ select key from src where key <'11'
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1_v
+PREHOOK: Output: default@t1_v
 POSTHOOK: query: create view T1_v as 
 select key from src where key <'11'
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1_v
-POSTHOOK: Lineage: T1_v.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Output: default@t1_v
+POSTHOOK: Lineage: t1_v.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: create view T2_v as 
 select case when key > '104' then null else key end as key from T1_v
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Input: default@t1_v
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T2_v
+PREHOOK: Output: default@t2_v
 POSTHOOK: query: create view T2_v as 
 select case when key > '104' then null else key end as key from T1_v
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@t1_v
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T2_v
-POSTHOOK: Lineage: T2_v.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Output: default@t2_v
+POSTHOOK: Lineage: t2_v.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 Warning: Shuffle Join MERGEJOIN[34][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain
 select * 
@@ -6519,11 +6519,11 @@ POSTHOOK: Lineage: t7.j SCRIPT []
 PREHOOK: query: create table fixOb(i int, j int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@fixOb
+PREHOOK: Output: default@fixob
 POSTHOOK: query: create table fixOb(i int, j int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@fixOb
+POSTHOOK: Output: default@fixob
 PREHOOK: query: insert into fixOb values(-1, 5), (-1, 15)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table

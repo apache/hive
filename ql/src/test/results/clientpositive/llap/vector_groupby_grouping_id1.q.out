@@ -1,11 +1,11 @@
 PREHOOK: query: CREATE TABLE T1_text(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1_text
+PREHOOK: Output: default@t1_text
 POSTHOOK: query: CREATE TABLE T1_text(key STRING, val STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1_text
+POSTHOOK: Output: default@t1_text
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_text
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -18,12 +18,12 @@ PREHOOK: query: CREATE TABLE T1_n17 STORED AS ORC AS SELECT * FROM T1_text
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@t1_text
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1_n17
+PREHOOK: Output: default@t1_n17
 POSTHOOK: query: CREATE TABLE T1_n17 STORED AS ORC AS SELECT * FROM T1_text
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@t1_text
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1_n17
+POSTHOOK: Output: default@t1_n17
 POSTHOOK: Lineage: t1_n17.key SIMPLE [(t1_text)t1_text.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: t1_n17.val SIMPLE [(t1_text)t1_text.FieldSchema(name:val, type:string, comment:null), ]
 t1_text.key	t1_text.val

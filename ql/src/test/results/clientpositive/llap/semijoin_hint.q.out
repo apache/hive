@@ -3308,19 +3308,19 @@ STAGE PLANS:
 PREHOOK: query: create table acidTbl(a int, b int) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@acidTbl
+PREHOOK: Output: default@acidtbl
 POSTHOOK: query: create table acidTbl(a int, b int) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@acidTbl
+POSTHOOK: Output: default@acidtbl
 PREHOOK: query: create table nonAcidOrcTbl(a int, b int) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='false')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@nonAcidOrcTbl
+PREHOOK: Output: default@nonacidorctbl
 POSTHOOK: query: create table nonAcidOrcTbl(a int, b int) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='false')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@nonAcidOrcTbl
+POSTHOOK: Output: default@nonacidorctbl
 PREHOOK: query: explain merge into acidTbl as t using nonAcidOrcTbl s ON t.a = s.a
 WHEN MATCHED AND s.a > 8 THEN DELETE
 WHEN MATCHED THEN UPDATE SET b = 7

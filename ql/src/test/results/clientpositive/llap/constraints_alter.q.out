@@ -21,7 +21,7 @@ FROM
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@COLUMNS_V2
+PREHOOK: Output: default@columns_v2
 POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `COLUMNS_V2` (
   `CD_ID` bigint,
   `COMMENT` string,
@@ -45,7 +45,7 @@ FROM
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@COLUMNS_V2
+POSTHOOK: Output: default@columns_v2
 PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `KEY_CONSTRAINTS`
 (
   `CHILD_CD_ID` bigint,
@@ -86,7 +86,7 @@ FROM
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@KEY_CONSTRAINTS
+PREHOOK: Output: default@key_constraints
 POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `KEY_CONSTRAINTS`
 (
   `CHILD_CD_ID` bigint,
@@ -127,7 +127,7 @@ FROM
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@KEY_CONSTRAINTS
+POSTHOOK: Output: default@key_constraints
 PREHOOK: query: create table t1_n2939 (a_n2939 integer, b_n2939 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

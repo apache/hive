@@ -3,13 +3,13 @@ select distinct * from src order by key limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@X_n0
+PREHOOK: Output: default@x_n0
 POSTHOOK: query: create table X_n0 as
 select distinct * from src order by key limit 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@X_n0
+POSTHOOK: Output: default@x_n0
 POSTHOOK: Lineage: x_n0.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: x_n0.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 Warning: Shuffle Join MERGEJOIN[11][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product

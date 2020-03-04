@@ -71,11 +71,11 @@ POSTHOOK: Output: partstatsdb1@testtable_n0@part1=p11/part2=P12
 PREHOOK: query: CREATE TABLE IF NOT EXISTS TestTable1_n1 (key STRING, value STRING) PARTITIONED BY (part1 STRING, Part2 STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:partstatsdb1
-PREHOOK: Output: partstatsdb1@TestTable1_n1
+PREHOOK: Output: partstatsdb1@testtable1_n1
 POSTHOOK: query: CREATE TABLE IF NOT EXISTS TestTable1_n1 (key STRING, value STRING) PARTITIONED BY (part1 STRING, Part2 STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:partstatsdb1
-POSTHOOK: Output: partstatsdb1@TestTable1_n1
+POSTHOOK: Output: partstatsdb1@testtable1_n1
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE TestTable1_n1 PARTITION (part1='p11', Part2='P11')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -173,11 +173,11 @@ POSTHOOK: Output: partstatsdb1@testtable1_n1@part1=p11/part2=P12
 PREHOOK: query: CREATE TABLE IF NOT EXISTS TESTTABLE2_n1 (key STRING, value STRING) PARTITIONED BY (part1 STRING, Part2 STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:partstatsdb1
-PREHOOK: Output: partstatsdb1@TESTTABLE2_n1
+PREHOOK: Output: partstatsdb1@testtable2_n1
 POSTHOOK: query: CREATE TABLE IF NOT EXISTS TESTTABLE2_n1 (key STRING, value STRING) PARTITIONED BY (part1 STRING, Part2 STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:partstatsdb1
-POSTHOOK: Output: partstatsdb1@TESTTABLE2_n1
+POSTHOOK: Output: partstatsdb1@testtable2_n1
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE TESTTABLE2_n1 PARTITION (part1='p11', Part2='P12')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -298,12 +298,12 @@ POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:partstatsdb2
 PREHOOK: query: CREATE TABLE IF NOT EXISTS testtable_n0 (key STRING, value STRING) PARTITIONED BY (part1 STRING, Part2 STRING)
 PREHOOK: type: CREATETABLE
-PREHOOK: Output: PARTSTATSDB2@testtable_n0
 PREHOOK: Output: database:partstatsdb2
+PREHOOK: Output: partstatsdb2@testtable_n0
 POSTHOOK: query: CREATE TABLE IF NOT EXISTS testtable_n0 (key STRING, value STRING) PARTITIONED BY (part1 STRING, Part2 STRING)
 POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: PARTSTATSDB2@testtable_n0
 POSTHOOK: Output: database:partstatsdb2
+POSTHOOK: Output: partstatsdb2@testtable_n0
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE testtable_n0 PARTITION (part1='p11', Part2='P12')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -356,12 +356,12 @@ POSTHOOK: Output: partstatsdb2@testtable_n0
 POSTHOOK: Output: partstatsdb2@testtable_n0@part1=p11/part2=P12
 PREHOOK: query: CREATE TABLE IF NOT EXISTS TestTable1_n1 (key STRING, value STRING) PARTITIONED BY (part1 STRING, Part2 STRING)
 PREHOOK: type: CREATETABLE
-PREHOOK: Output: PARTSTATSDB2@TestTable1_n1
 PREHOOK: Output: database:partstatsdb2
+PREHOOK: Output: partstatsdb2@testtable1_n1
 POSTHOOK: query: CREATE TABLE IF NOT EXISTS TestTable1_n1 (key STRING, value STRING) PARTITIONED BY (part1 STRING, Part2 STRING)
 POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: PARTSTATSDB2@TestTable1_n1
 POSTHOOK: Output: database:partstatsdb2
+POSTHOOK: Output: partstatsdb2@testtable1_n1
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE TestTable1_n1 PARTITION (part1='p11', Part2='P11')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -458,12 +458,12 @@ POSTHOOK: Output: partstatsdb2@testtable1_n1
 POSTHOOK: Output: partstatsdb2@testtable1_n1@part1=p11/part2=P12
 PREHOOK: query: CREATE TABLE IF NOT EXISTS TESTTABLE2_n1 (key STRING, value STRING) PARTITIONED BY (part1 STRING, Part2 STRING)
 PREHOOK: type: CREATETABLE
-PREHOOK: Output: PARTSTATSDB2@TESTTABLE2_n1
 PREHOOK: Output: database:partstatsdb2
+PREHOOK: Output: partstatsdb2@testtable2_n1
 POSTHOOK: query: CREATE TABLE IF NOT EXISTS TESTTABLE2_n1 (key STRING, value STRING) PARTITIONED BY (part1 STRING, Part2 STRING)
 POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: PARTSTATSDB2@TESTTABLE2_n1
 POSTHOOK: Output: database:partstatsdb2
+POSTHOOK: Output: partstatsdb2@testtable2_n1
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE TESTTABLE2_n1 PARTITION (part1='p11', Part2='P12')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####

@@ -1,7 +1,7 @@
 PREHOOK: query: CREATE TABLE T1_n127(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1_n127
+PREHOOK: Output: default@t1_n127
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_n127
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -9,15 +9,15 @@ PREHOOK: Output: default@t1_n127
 PREHOOK: query: CREATE TABLE T2_n75(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T2_n75
+PREHOOK: Output: default@t2_n75
 PREHOOK: query: CREATE TABLE T3_n29(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T3_n29
+PREHOOK: Output: default@t3_n29
 PREHOOK: query: CREATE TABLE T4_n16(key STRING, val STRING) PARTITIONED BY (p STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T4_n16
+PREHOOK: Output: default@t4_n16
 PREHOOK: query: SELECT key FROM T1_n127
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1_n127

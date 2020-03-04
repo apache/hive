@@ -1842,19 +1842,19 @@ Stage-7
 PREHOOK: query: CREATE TABLE DEST1_n105(key STRING, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEST1_n105
+PREHOOK: Output: default@dest1_n105
 POSTHOOK: query: CREATE TABLE DEST1_n105(key STRING, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST1_n105
+POSTHOOK: Output: default@dest1_n105
 PREHOOK: query: CREATE TABLE DEST2_n29(key STRING, val1 STRING, val2 STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEST2_n29
+PREHOOK: Output: default@dest2_n29
 POSTHOOK: query: CREATE TABLE DEST2_n29(key STRING, val1 STRING, val2 STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST2_n29
+POSTHOOK: Output: default@dest2_n29
 PREHOOK: query: FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
                          UNION DISTINCT  
       select s2.key as key, s2.value as value from src s2) unionsrc_n3

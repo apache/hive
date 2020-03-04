@@ -9,19 +9,19 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE tableA (a INTEGER,z INTEGER)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tableA
+PREHOOK: Output: default@tablea
 POSTHOOK: query: CREATE TABLE tableA (a INTEGER,z INTEGER)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tableA
+POSTHOOK: Output: default@tablea
 PREHOOK: query: CREATE TABLE tableB (a INTEGER,b INTEGER,z INTEGER)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tableB
+PREHOOK: Output: default@tableb
 POSTHOOK: query: CREATE TABLE tableB (a INTEGER,b INTEGER,z INTEGER)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tableB
+POSTHOOK: Output: default@tableb
 PREHOOK: query: SELECT a.z, b.b FROM tableB AS b JOIN tableA AS a ON a.a=b.b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tablea

@@ -1379,7 +1379,7 @@ STAGE PLANS:
     Create View
       columns: key string, value string
       expanded text: select distinct `src`.`key`, `src`.`value` from `default`.`src` order by `src`.`key` limit 2
-      name: default.sdi
+      name: hive.default.sdi
       original text: select distinct * from src order by key limit 2
 
 PREHOOK: query: create view sdi as select distinct * from src order by key limit 2
@@ -3868,7 +3868,7 @@ STAGE PLANS:
     Create View
       columns: key string, value string
       expanded text: select distinct `src`.`key`, `src`.`value` from `default`.`src` order by `src`.`key` limit 2
-      name: default.sdi
+      name: hive.default.sdi
       original text: select distinct * from src order by key limit 2
 
 PREHOOK: query: create view sdi as select distinct * from src order by key limit 2

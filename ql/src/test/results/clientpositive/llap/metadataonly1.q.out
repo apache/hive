@@ -1,11 +1,11 @@
 PREHOOK: query: CREATE TABLE TEST1_n12(A INT, B DOUBLE) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@TEST1_n12
+PREHOOK: Output: default@test1_n12
 POSTHOOK: query: CREATE TABLE TEST1_n12(A INT, B DOUBLE) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@TEST1_n12
+POSTHOOK: Output: default@test1_n12
 PREHOOK: query: explain extended select max(ds) from TEST1_n12
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test1_n12
@@ -968,11 +968,11 @@ POSTHOOK: Input: default@test1_n12@ds=2
 PREHOOK: query: CREATE TABLE TEST2_n8(A INT, B DOUBLE) partitioned by (ds string, hr string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@TEST2_n8
+PREHOOK: Output: default@test2_n8
 POSTHOOK: query: CREATE TABLE TEST2_n8(A INT, B DOUBLE) partitioned by (ds string, hr string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@TEST2_n8
+POSTHOOK: Output: default@test2_n8
 PREHOOK: query: alter table TEST2_n8 add partition (ds='1', hr='1')
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Output: default@test2_n8

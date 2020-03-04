@@ -50,14 +50,14 @@ ROW FORMAT DELIMITED
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DECIMAL_UDF_txt_n0
+PREHOOK: Output: default@decimal_udf_txt_n0
 POSTHOOK: query: CREATE TABLE DECIMAL_UDF_txt_n0 (key decimal(20,10), value int)
 ROW FORMAT DELIMITED
    FIELDS TERMINATED BY ' '
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DECIMAL_UDF_txt_n0
+POSTHOOK: Output: default@decimal_udf_txt_n0
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv7.txt' INTO TABLE DECIMAL_UDF_txt_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -70,12 +70,12 @@ PREHOOK: query: CREATE TABLE DECIMAL_UDF_n1 (key decimal(20,10), value int)
 STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DECIMAL_UDF_n1
+PREHOOK: Output: default@decimal_udf_n1
 POSTHOOK: query: CREATE TABLE DECIMAL_UDF_n1 (key decimal(20,10), value int)
 STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DECIMAL_UDF_n1
+POSTHOOK: Output: default@decimal_udf_n1
 PREHOOK: query: INSERT OVERWRITE TABLE DECIMAL_UDF_n1 SELECT * FROM DECIMAL_UDF_txt_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_udf_txt_n0

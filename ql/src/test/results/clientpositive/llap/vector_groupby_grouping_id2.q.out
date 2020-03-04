@@ -1,11 +1,11 @@
 PREHOOK: query: CREATE TABLE T1_text_n4(key INT, value INT) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1_text_n4
+PREHOOK: Output: default@t1_text_n4
 POSTHOOK: query: CREATE TABLE T1_text_n4(key INT, value INT) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1_text_n4
+POSTHOOK: Output: default@t1_text_n4
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/groupby_groupingid.txt' INTO TABLE T1_text_n4
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -18,12 +18,12 @@ PREHOOK: query: CREATE TABLE T1_n73 STORED AS ORC AS SELECT * FROM T1_text_n4
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@t1_text_n4
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1_n73
+PREHOOK: Output: default@t1_n73
 POSTHOOK: query: CREATE TABLE T1_n73 STORED AS ORC AS SELECT * FROM T1_text_n4
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@t1_text_n4
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1_n73
+POSTHOOK: Output: default@t1_n73
 POSTHOOK: Lineage: t1_n73.key SIMPLE [(t1_text_n4)t1_text_n4.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: t1_n73.value SIMPLE [(t1_text_n4)t1_text_n4.FieldSchema(name:value, type:int, comment:null), ]
 t1_text_n4.key	t1_text_n4.value

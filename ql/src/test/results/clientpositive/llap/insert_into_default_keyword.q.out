@@ -2603,13 +2603,13 @@ clustered by (value) into 2 buckets stored as orc
 tblproperties ("transactional"="true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@acidTable
+PREHOOK: Output: default@acidtable
 POSTHOOK: query: create table acidTable(key int NOT NULL enable, a1 string DEFAULT 'a1', value string)
 clustered by (value) into 2 buckets stored as orc
 tblproperties ("transactional"="true")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@acidTable
+POSTHOOK: Output: default@acidtable
 PREHOOK: query: insert into acidTable values(1, 'a10','val100')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -3210,12 +3210,12 @@ PREHOOK: query: create table acidTable2(key int DEFAULT 404) clustered by (key) 
 tblproperties ("transactional"="true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@acidTable2
+PREHOOK: Output: default@acidtable2
 POSTHOOK: query: create table acidTable2(key int DEFAULT 404) clustered by (key) into 2 buckets stored as orc
 tblproperties ("transactional"="true")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@acidTable2
+POSTHOOK: Output: default@acidtable2
 PREHOOK: query: explain MERGE INTO acidTable2 as t using nonacid_n1 as s ON t.key = s.key
 WHEN NOT MATCHED THEN INSERT VALUES (DEFAULT)
 PREHOOK: type: QUERY

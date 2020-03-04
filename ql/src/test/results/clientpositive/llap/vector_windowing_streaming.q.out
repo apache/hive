@@ -779,13 +779,13 @@ select * from (select ctinyint, cdouble, rank() over(partition by ctinyint order
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
-PREHOOK: Output: default@sB
+PREHOOK: Output: default@sb
 POSTHOOK: query: create table sB ROW FORMAT DELIMITED FIELDS TERMINATED BY ','  STORED AS TEXTFILE as  
 select * from (select ctinyint, cdouble, rank() over(partition by ctinyint order by cdouble) r from  alltypesorc) a where r < 5
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@sB
+POSTHOOK: Output: default@sb
 POSTHOOK: Lineage: sb.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
 POSTHOOK: Lineage: sb.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: sb.r SCRIPT [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
@@ -815,14 +815,14 @@ select * from (select ctinyint, cdouble, rank() over(partition by ctinyint order
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
-PREHOOK: Output: default@sD
+PREHOOK: Output: default@sd
 POSTHOOK: query: explain vectorization detail
 create table sD ROW FORMAT DELIMITED FIELDS TERMINATED BY ','  STORED AS TEXTFILE as  
 select * from (select ctinyint, cdouble, rank() over(partition by ctinyint order by cdouble) r from  alltypesorc) a where r < 5
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@sD
+POSTHOOK: Output: default@sd
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -939,7 +939,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.sD
+                            name: default.sd
                       Select Operator
                         expressions: _col0 (type: tinyint), _col1 (type: double), _col2 (type: int)
                         outputColumnNames: col1, col2, col3
@@ -982,11 +982,11 @@ STAGE PLANS:
   Stage: Stage-4
     Create Table
       columns: ctinyint tinyint, cdouble double, r int
-      name: default.sD
       field delimiter: ,
       input format: org.apache.hadoop.mapred.TextInputFormat
       output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
       serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      name: hive.default.sd
 
   Stage: Stage-3
     Stats Work
@@ -994,7 +994,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: ctinyint, cdouble, r
           Column Types: tinyint, double, int
-          Table: default.sD
+          Table: default.sd
 
   Stage: Stage-0
     Move Operator
@@ -1007,13 +1007,13 @@ select * from (select ctinyint, cdouble, rank() over(partition by ctinyint order
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
-PREHOOK: Output: default@sD
+PREHOOK: Output: default@sd
 POSTHOOK: query: create table sD ROW FORMAT DELIMITED FIELDS TERMINATED BY ','  STORED AS TEXTFILE as  
 select * from (select ctinyint, cdouble, rank() over(partition by ctinyint order by cdouble) r from  alltypesorc) a where r < 5
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@sD
+POSTHOOK: Output: default@sd
 POSTHOOK: Lineage: sd.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
 POSTHOOK: Lineage: sd.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: sd.r SCRIPT [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:null), ]

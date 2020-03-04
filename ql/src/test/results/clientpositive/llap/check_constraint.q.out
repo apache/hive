@@ -430,7 +430,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Add Constraint
-      table name: default.tmulti
+      table name: hive.default.tmulti
 
 PREHOOK: query: alter table tmulti add constraint un1 UNIQUE (userName, numClicks) DISABLE
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
@@ -2149,7 +2149,7 @@ STAGE PLANS:
   Stage: Stage-0
     Drop Constraint
       constraint name: ch2
-      table name: default.acid_uami_n0
+      table name: hive.default.acid_uami_n0
 
 PREHOOK: query: ALTER table acid_uami_n0 drop constraint ch2
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
@@ -3091,13 +3091,13 @@ PREHOOK: query: CREATE TABLE numericDataType(a TINYINT CONSTRAINT tinyint_constr
     clustered by (b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@numericDataType
+PREHOOK: Output: default@numericdatatype
 POSTHOOK: query: CREATE TABLE numericDataType(a TINYINT CONSTRAINT tinyint_constraint DEFAULT 127Y ENABLE,
     b bigint CONSTRAINT check1 CHECK (b in(4,5)) ENABLE)
     clustered by (b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@numericDataType
+POSTHOOK: Output: default@numericdatatype
 PREHOOK: query: DESC FORMATTED numericDataType
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@numericdatatype

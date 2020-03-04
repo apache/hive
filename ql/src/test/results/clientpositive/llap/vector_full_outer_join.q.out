@@ -9,35 +9,35 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table if not exists TJOIN1 (RNUM int , C1 int, C2 int) STORED AS orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@TJOIN1
+PREHOOK: Output: default@tjoin1
 POSTHOOK: query: create table if not exists TJOIN1 (RNUM int , C1 int, C2 int) STORED AS orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@TJOIN1
+POSTHOOK: Output: default@tjoin1
 PREHOOK: query: create table if not exists TJOIN2 (RNUM int , C1 int, C2 char(2)) STORED AS orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@TJOIN2
+PREHOOK: Output: default@tjoin2
 POSTHOOK: query: create table if not exists TJOIN2 (RNUM int , C1 int, C2 char(2)) STORED AS orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@TJOIN2
+POSTHOOK: Output: default@tjoin2
 PREHOOK: query: create table if not exists TJOIN1STAGE (RNUM int , C1 int, C2 char(2)) ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' LINES TERMINATED BY '\n' STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@TJOIN1STAGE
+PREHOOK: Output: default@tjoin1stage
 POSTHOOK: query: create table if not exists TJOIN1STAGE (RNUM int , C1 int, C2 char(2)) ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' LINES TERMINATED BY '\n' STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@TJOIN1STAGE
+POSTHOOK: Output: default@tjoin1stage
 PREHOOK: query: create table if not exists TJOIN2STAGE (RNUM int , C1 int, C2 char(2)) ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' LINES TERMINATED BY '\n' STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@TJOIN2STAGE
+PREHOOK: Output: default@tjoin2stage
 POSTHOOK: query: create table if not exists TJOIN2STAGE (RNUM int , C1 int, C2 char(2)) ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' LINES TERMINATED BY '\n' STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@TJOIN2STAGE
+POSTHOOK: Output: default@tjoin2stage
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/tjoin1.txt' OVERWRITE INTO TABLE TJOIN1STAGE
 PREHOOK: type: LOAD
 #### A masked pattern was here ####

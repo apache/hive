@@ -1466,12 +1466,12 @@ PREHOOK: query: create table orcTbl (t1 tinyint, t2 tinyint)
 stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@orcTbl
+PREHOOK: Output: default@orctbl
 POSTHOOK: query: create table orcTbl (t1 tinyint, t2 tinyint)
 stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@orcTbl
+POSTHOOK: Output: default@orctbl
 PREHOOK: query: insert into orcTbl values (54, 9), (-104, 25), (-112, 24)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -1549,12 +1549,12 @@ PREHOOK: query: create table parquetTbl (t1 tinyint, t2 tinyint)
 stored as parquet
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@parquetTbl
+PREHOOK: Output: default@parquettbl
 POSTHOOK: query: create table parquetTbl (t1 tinyint, t2 tinyint)
 stored as parquet
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@parquetTbl
+POSTHOOK: Output: default@parquettbl
 PREHOOK: query: insert into parquetTbl values (54, 9), (-104, 25), (-112, 24)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table

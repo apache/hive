@@ -3,13 +3,13 @@ PREHOOK: query: CREATE TABLE numericDataType_n1(a TINYINT CONSTRAINT tinyint_con
     clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@numericDataType_n1
+PREHOOK: Output: default@numericdatatype_n1
 POSTHOOK: query: CREATE TABLE numericDataType_n1(a TINYINT CONSTRAINT tinyint_constraint DEFAULT 127Y ENABLE, b SMALLINT DEFAULT 32767S, c INT DEFAULT 2147483647,
     d BIGINT DEFAULT  9223372036854775807L, e DOUBLE DEFAULT 3.4E38, f DECIMAL(9,2) DEFAULT 1234567.89)
     clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@numericDataType_n1
+POSTHOOK: Output: default@numericdatatype_n1
 PREHOOK: query: DESC FORMATTED numericDataType_n1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@numericdatatype_n1
@@ -1361,13 +1361,13 @@ PREHOOK: query: CREATE TABLE numericDataType_n1(a TINYINT CONSTRAINT tinyint_con
     clustered by (b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@numericDataType_n1
+PREHOOK: Output: default@numericdatatype_n1
 POSTHOOK: query: CREATE TABLE numericDataType_n1(a TINYINT CONSTRAINT tinyint_constraint DEFAULT 127Y ENABLE, b SMALLINT DEFAULT 32767S, c INT DEFAULT 2147483647,
     d BIGINT DEFAULT  9223372036854775807L, e DOUBLE DEFAULT 3.4E38, f DECIMAL(9,2) DEFAULT 1234567.89)
     clustered by (b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@numericDataType_n1
+POSTHOOK: Output: default@numericdatatype_n1
 PREHOOK: query: ALTER TABLE numericDataType_n1 DROP CONSTRAINT tinyint_constraint
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
 POSTHOOK: query: ALTER TABLE numericDataType_n1 DROP CONSTRAINT tinyint_constraint
@@ -2467,13 +2467,13 @@ PREHOOK: query: CREATE TABLE tablePartitioned_n0 (a STRING NOT NULL ENFORCED, ur
     PARTITIONED BY (p1 STRING, p2 INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tablePartitioned_n0
+PREHOOK: Output: default@tablepartitioned_n0
 POSTHOOK: query: CREATE TABLE tablePartitioned_n0 (a STRING NOT NULL ENFORCED, url STRING constraint bdc1 default 'http://localhost',
     c STRING NOT NULL ENFORCED)
     PARTITIONED BY (p1 STRING, p2 INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tablePartitioned_n0
+POSTHOOK: Output: default@tablepartitioned_n0
 PREHOOK: query: explain INSERT INTO tablePartitioned_n0 partition(p1='today', p2=10) values('not', 'null', 'constraint')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -2563,13 +2563,13 @@ PREHOOK: query: CREATE TABLE numericDataType_n1(a TINYINT CONSTRAINT tinyint_con
     clustered by (b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@numericDataType_n1
+PREHOOK: Output: default@numericdatatype_n1
 POSTHOOK: query: CREATE TABLE numericDataType_n1(a TINYINT CONSTRAINT tinyint_constraint DEFAULT 127Y ENABLE, b SMALLINT DEFAULT 32767S, c INT DEFAULT 2147483647,
     d BIGINT DEFAULT  9223372036854775807L, e DOUBLE DEFAULT 3.4E38, f DECIMAL(9,2) DEFAULT 1234567.89)
     clustered by (b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@numericDataType_n1
+POSTHOOK: Output: default@numericdatatype_n1
 PREHOOK: query: ALTER TABLE numericDataType_n1 DROP CONSTRAINT tinyint_constraint
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
 POSTHOOK: query: ALTER TABLE numericDataType_n1 DROP CONSTRAINT tinyint_constraint

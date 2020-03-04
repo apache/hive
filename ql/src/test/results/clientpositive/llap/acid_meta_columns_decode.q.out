@@ -1,11 +1,11 @@
 PREHOOK: query: CREATE transactional TABLE acidTblDefault(a int, b INT) STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@acidTblDefault
+PREHOOK: Output: default@acidtbldefault
 POSTHOOK: query: CREATE transactional TABLE acidTblDefault(a int, b INT) STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@acidTblDefault
+POSTHOOK: Output: default@acidtbldefault
 PREHOOK: query: INSERT INTO TABLE acidTblDefault VALUES (1,2),(2,3),(3,4)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table

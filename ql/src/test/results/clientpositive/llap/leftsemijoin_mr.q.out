@@ -1,11 +1,11 @@
 PREHOOK: query: CREATE TABLE T1_n43(key INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1_n43
+PREHOOK: Output: default@t1_n43
 POSTHOOK: query: CREATE TABLE T1_n43(key INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1_n43
+POSTHOOK: Output: default@t1_n43
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/leftsemijoin_mr_t1.txt' INTO TABLE T1_n43
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -17,11 +17,11 @@ POSTHOOK: Output: default@t1_n43
 PREHOOK: query: CREATE TABLE T2_n27(key INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T2_n27
+PREHOOK: Output: default@t2_n27
 POSTHOOK: query: CREATE TABLE T2_n27(key INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T2_n27
+POSTHOOK: Output: default@t2_n27
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/leftsemijoin_mr_t2.txt' INTO TABLE T2_n27
 PREHOOK: type: LOAD
 #### A masked pattern was here ####

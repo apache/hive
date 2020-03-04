@@ -25,83 +25,83 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE DEST1_acid_1(key STRING, value STRING) STORED AS ORC TBLPROPERTIES('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEST1_acid_1
+PREHOOK: Output: default@dest1_acid_1
 POSTHOOK: query: CREATE TABLE DEST1_acid_1(key STRING, value STRING) STORED AS ORC TBLPROPERTIES('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST1_acid_1
+POSTHOOK: Output: default@dest1_acid_1
 PREHOOK: query: CREATE TABLE DEST1_acid_2(key STRING, val1 STRING, val2 STRING) STORED AS ORC TBLPROPERTIES('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEST1_acid_2
+PREHOOK: Output: default@dest1_acid_2
 POSTHOOK: query: CREATE TABLE DEST1_acid_2(key STRING, val1 STRING, val2 STRING) STORED AS ORC TBLPROPERTIES('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST1_acid_2
+POSTHOOK: Output: default@dest1_acid_2
 PREHOOK: query: CREATE TABLE DEST1_acid_3(key STRING, value STRING) STORED AS ORC TBLPROPERTIES('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEST1_acid_3
+PREHOOK: Output: default@dest1_acid_3
 POSTHOOK: query: CREATE TABLE DEST1_acid_3(key STRING, value STRING) STORED AS ORC TBLPROPERTIES('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST1_acid_3
+POSTHOOK: Output: default@dest1_acid_3
 PREHOOK: query: CREATE TABLE DEST1_acid_4(key STRING, val1 STRING, val2 STRING) STORED AS ORC TBLPROPERTIES('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEST1_acid_4
+PREHOOK: Output: default@dest1_acid_4
 POSTHOOK: query: CREATE TABLE DEST1_acid_4(key STRING, val1 STRING, val2 STRING) STORED AS ORC TBLPROPERTIES('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST1_acid_4
+POSTHOOK: Output: default@dest1_acid_4
 PREHOOK: query: CREATE TABLE DEST1_acid_5(key STRING, value STRING) STORED AS ORC TBLPROPERTIES('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEST1_acid_5
+PREHOOK: Output: default@dest1_acid_5
 POSTHOOK: query: CREATE TABLE DEST1_acid_5(key STRING, value STRING) STORED AS ORC TBLPROPERTIES('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST1_acid_5
+POSTHOOK: Output: default@dest1_acid_5
 PREHOOK: query: CREATE TABLE DEST1_acid_6(key STRING, val1 STRING, val2 STRING) STORED AS ORC TBLPROPERTIES('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEST1_acid_6
+PREHOOK: Output: default@dest1_acid_6
 POSTHOOK: query: CREATE TABLE DEST1_acid_6(key STRING, val1 STRING, val2 STRING) STORED AS ORC TBLPROPERTIES('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST1_acid_6
+POSTHOOK: Output: default@dest1_acid_6
 PREHOOK: query: CREATE TABLE DEST1_acid_7(key STRING, value STRING) STORED AS ORC TBLPROPERTIES('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEST1_acid_7
+PREHOOK: Output: default@dest1_acid_7
 POSTHOOK: query: CREATE TABLE DEST1_acid_7(key STRING, value STRING) STORED AS ORC TBLPROPERTIES('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST1_acid_7
+POSTHOOK: Output: default@dest1_acid_7
 PREHOOK: query: CREATE TABLE DEST1_acid_8(key STRING, val1 STRING, val2 STRING) STORED AS ORC TBLPROPERTIES('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEST1_acid_8
+PREHOOK: Output: default@dest1_acid_8
 POSTHOOK: query: CREATE TABLE DEST1_acid_8(key STRING, val1 STRING, val2 STRING) STORED AS ORC TBLPROPERTIES('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST1_acid_8
+POSTHOOK: Output: default@dest1_acid_8
 PREHOOK: query: CREATE TABLE DEST1_acid_9(key STRING, value STRING) STORED AS ORC TBLPROPERTIES('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEST1_acid_9
+PREHOOK: Output: default@dest1_acid_9
 POSTHOOK: query: CREATE TABLE DEST1_acid_9(key STRING, value STRING) STORED AS ORC TBLPROPERTIES('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST1_acid_9
+POSTHOOK: Output: default@dest1_acid_9
 PREHOOK: query: CREATE TABLE DEST1_acid_10(key STRING, val1 STRING, val2 STRING) STORED AS ORC TBLPROPERTIES('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEST1_acid_10
+PREHOOK: Output: default@dest1_acid_10
 POSTHOOK: query: CREATE TABLE DEST1_acid_10(key STRING, val1 STRING, val2 STRING) STORED AS ORC TBLPROPERTIES('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST1_acid_10
+POSTHOOK: Output: default@dest1_acid_10
 PREHOOK: query: FROM (
       select key, value from (
       select 'tst1' as key, cast(count(1) as string) as value, 'tst1' as value2 from src s1

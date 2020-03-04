@@ -4729,7 +4729,7 @@ STAGE PLANS:
 round(sum(`part`.`p_retailprice`),2) as `s` 
 from `default`.`part` 
 group by `part`.`p_mfgr`, `part`.`p_brand`
-      name: default.mfgr_price_view_n2
+      name: hive.default.mfgr_price_view_n2
       original text: select p_mfgr, p_brand, 
 round(sum(p_retailprice),2) as s 
 from part 
@@ -5061,7 +5061,7 @@ STAGE PLANS:
 round(sum(`part`.`p_retailprice`) over w1,2) as `s`
 from `default`.`part` 
 window w1 as (distribute by `part`.`p_mfgr` sort by `part`.`p_name` rows between 2 preceding and current row)
-      name: default.mfgr_brand_price_view_n0
+      name: hive.default.mfgr_brand_price_view_n0
       original text: select p_mfgr, p_brand, 
 round(sum(p_retailprice) over w1,2) as s
 from part 

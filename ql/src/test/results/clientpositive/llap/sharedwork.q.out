@@ -5,7 +5,7 @@ PREHOOK: query: create table MY_TABLE_0001 (
   col_20 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@MY_TABLE_0001
+PREHOOK: Output: default@my_table_0001
 POSTHOOK: query: create table MY_TABLE_0001 (
   col_1 string,
   col_3 timestamp,
@@ -13,45 +13,45 @@ POSTHOOK: query: create table MY_TABLE_0001 (
   col_20 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@MY_TABLE_0001
+POSTHOOK: Output: default@my_table_0001
 PREHOOK: query: create table MY_TABLE_0001_00 (
   col_1 string,
   col_22 string,
   col_23 int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@MY_TABLE_0001_00
+PREHOOK: Output: default@my_table_0001_00
 POSTHOOK: query: create table MY_TABLE_0001_00 (
   col_1 string,
   col_22 string,
   col_23 int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@MY_TABLE_0001_00
+POSTHOOK: Output: default@my_table_0001_00
 PREHOOK: query: create table MY_TABLE_0003 (
   col_24 string,
   col_21 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@MY_TABLE_0003
+PREHOOK: Output: default@my_table_0003
 POSTHOOK: query: create table MY_TABLE_0003 (
   col_24 string,
   col_21 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@MY_TABLE_0003
+POSTHOOK: Output: default@my_table_0003
 PREHOOK: query: create table MY_TABLE_0001_01 (
   col_1 string,
   col_100 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@MY_TABLE_0001_01
+PREHOOK: Output: default@my_table_0001_01
 POSTHOOK: query: create table MY_TABLE_0001_01 (
   col_1 string,
   col_100 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@MY_TABLE_0001_01
+POSTHOOK: Output: default@my_table_0001_01
 PREHOOK: query: explain extended SELECT
   Table__323.col_7,
   CAST(Table__323.col_3 AS DATE) col_3,
