@@ -52,7 +52,7 @@ SET TBLPROPERTIES (
 ```
 
 If you use Confluent's Avro serialzier or deserializer with the Confluent Schema Registry, you will need to remove five bytes from beginning of each message. These five bytes represent [a magic byte and a four-byte schema ID from registry.](https://docs.confluent.io/current/schema-registry/serializer-formatter.html#wire-format)
-This can be done by setting `"avro.serde.type"="confluent"`. In this case it is recommended to set an Avro schema via `"avro.schema.url"="http://hostname/SimpleDocument.avsc"` or `"avro.schema.literal"="{"type" : "record","name" : "SimpleRecord","..."}`. If both properties are set then `avro.schema.literal` has higher priority.
+This can be done by setting `"avro.serde.type"="confluent"`. In this case it is also recommended to set the Avro schema either via `"avro.schema.url"="http://hostname/SimpleDocument.avsc"` or `"avro.schema.literal"="{"type" : "record","name" : "SimpleRecord","..."}`. If both properties are set then `avro.schema.literal` has higher priority.
  
 List of supported serializers and deserializers:
 

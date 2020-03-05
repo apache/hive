@@ -72,6 +72,7 @@ public class AvroBytesConverterTest {
    */
   @Test
   public void convertWithAvroBytesConverter() {
+    // Since the serialized version was created by Confluent, lets remove the first five bytes to get the actual message.
     byte[] simpleRecordWithNoOffset = Arrays.copyOfRange(simpleRecordConfluentBytes, 5, simpleRecordConfluentBytes.length);
 
     Schema schema = SimpleRecord.getClassSchema();
@@ -95,6 +96,8 @@ public class AvroBytesConverterTest {
   @Test
   public void convertWithCustomAvroSkipBytesConverter() {
     int offset = 2;
+    // Remove all but two bytes of the five byte offset which Confluent adds, 
+    // to simulate a message with only 2 bytes in front of each message.
     byte[] simpleRecordAsOffsetBytes = Arrays.copyOfRange(simpleRecordConfluentBytes, 5 - offset, simpleRecordConfluentBytes.length);
 
     Schema schema = SimpleRecord.getClassSchema();
@@ -107,7 +110,10 @@ public class AvroBytesConverterTest {
    */
   @Test
   public void skipBytesLargerThanMessageSizeConverter() {
-    int offset = 25;
+    // The simple record we are serializing is two strings, that combine to be 7 characters or 14 bytes.
+    // Adding in the 5 byte offset, we get 19 bytes. To make sure we go bigger than that, we are setting
+    // the offset to ten times that value. 
+    int offset = 190;
 
     Schema schema = SimpleRecord.getClassSchema();
     KafkaSerDe.AvroSkipBytesConverter conv = new KafkaSerDe.AvroSkipBytesConverter(schema, offset);
@@ -128,16 +134,21 @@ public class AvroBytesConverterTest {
       put("conFLuent", KafkaSerDe.BytesConverterType.CONFLUENT);
       put("Confluent", KafkaSerDe.BytesConverterType.CONFLUENT);
       put("CONFLUENT", KafkaSerDe.BytesConverterType.CONFLUENT);
+      put("   confluent   ", KafkaSerDe.BytesConverterType.CONFLUENT);
       put("skip", KafkaSerDe.BytesConverterType.SKIP);
       put("sKIp", KafkaSerDe.BytesConverterType.SKIP);
       put("SKIP", KafkaSerDe.BytesConverterType.SKIP);
+      put("	skip	", KafkaSerDe.BytesConverterType.SKIP);
       put("SKIP1", KafkaSerDe.BytesConverterType.NONE);
       put("skipper", KafkaSerDe.BytesConverterType.NONE);
       put("", KafkaSerDe.BytesConverterType.NONE);
       put(null, KafkaSerDe.BytesConverterType.NONE);
+      put("none", KafkaSerDe.BytesConverterType.NONE);
+      put("NONE", KafkaSerDe.BytesConverterType.NONE);
+      put("	none	", KafkaSerDe.BytesConverterType.NONE);
     }};
 
-    for(Map.Entry<String, KafkaSerDe.BytesConverterType> entry:  testCases.entrySet()){
+    for(Map.Entry<String, KafkaSerDe.BytesConverterType> entry: testCases.entrySet()){
       Assert.assertEquals(entry.getValue(), KafkaSerDe.BytesConverterType.fromString(entry.getKey()));
     }
   }

@@ -371,7 +371,7 @@ import java.util.stream.Collectors;
 
     AvroBytesConverter(Schema schema) {
       this.schema = schema;
-      this.dataReader = new SpecificDatumReader<>(this.schema);
+      dataReader = new SpecificDatumReader<>(this.schema);
     }
 
     @Override public byte[] getBytes(AvroGenericRecordWritable writable) {
@@ -411,10 +411,10 @@ import java.util.stream.Collectors;
   }
 
     /**
-     * The converter reads bytes from kafka message and skip first @skipBytes from beginning.
+     * Avro converter which skips the first @skipBytes of each message.
      *
-     * For example:
-     *       The Confluent Avro serializer adds 5 magic bytes that represents Schema ID as Integer to the message.
+     * This may be needed for various serializers, such as the Confluent Avro serializer, which uses the first five
+     * bytes to indicate a magic byte, as well as a four byte schema ID.
      */
   static class AvroSkipBytesConverter extends AvroBytesConverter {
     private final int skipBytes;
