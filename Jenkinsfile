@@ -1,3 +1,4 @@
+
 def executorNode(run) {
   stage("An Executor") {
     container('maven') {
@@ -38,42 +39,26 @@ def testInParallel(parallelism, inclusionsFile, exclusionsFile, results, image, 
   parallel branches
 }
 
-
-
 pipeline {
-podTemplate(containers: [
-    containerTemplate(name: 'maven', image: 'maven:3.3.9-jdk-8-alpine', ttyEnabled: true, command: 'cat'),
-    containerTemplate(name: 'golang', image: 'golang:1.8.0', ttyEnabled: true, command: 'cat')
-  ]) {
-
-properties([
-    parameters([
-        string(name: 'MULTIPLIER', defaultValue: '1', description: 'Factor by which to artificially slow down tests.'),
-        string(name: 'SPLIT', defaultValue: '5', description: 'Number of buckets to split tests into.')
-    ])
-])
-
-
-container('maven') {
-	sh 'ls -l'
-}
-/*
-stage('Testing') {
-  testInParallel(count(Integer.parseInt(params.SPLIT)), 'inclusions.txt', 'exclusions.txt', 'target/surefire-reports/TEST-*.xml', 'maven:3.5.0-jdk-8', {
-//    checkout scm
-//    unstash 'sources'
-  }, {
-    configFileProvider([configFile(fileId: 'artifactory', variable: 'SETTINGS')]) {
-      withEnv(["MULTIPLIER=$params.MULTIPLIER"]) {
-        sh 'mvn -s $SETTINGS -B install -Dmaven.test.failure.ignore -Dtest.groups= -pl common -am'
+  agent {
+    kubernetes {
+      yamlFile 'pod.yaml'
+    }
+  }
+  stages {
+    stage('Run maven') {
+      steps {
+        sh 'set'
+        sh "echo OUTSIDE_CONTAINER_ENV_VAR = ${CONTAINER_ENV_VAR}"
+        container('maven') {
+          sh 'echo MAVEN_CONTAINER_ENV_VAR = ${CONTAINER_ENV_VAR}'
+          sh 'mvn -version'
+        }
+        container('busybox') {
+          sh 'echo BUSYBOX_CONTAINER_ENV_VAR = ${CONTAINER_ENV_VAR}'
+          sh '/bin/busybox'
+        }
       }
     }
-  })
-}
-
-*/
-
-//jenkins/jnlp-slave:3.27-1
-}
-
+  }
 }
