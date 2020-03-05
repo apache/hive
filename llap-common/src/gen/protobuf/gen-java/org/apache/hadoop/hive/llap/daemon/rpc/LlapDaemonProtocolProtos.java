@@ -24357,15 +24357,15 @@ public final class LlapDaemonProtocolProtos {
   public interface EvictEntityResponseProtoOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
-    // required bool ack = 1;
+    // required int64 evicted_bytes = 1;
     /**
-     * <code>required bool ack = 1;</code>
+     * <code>required int64 evicted_bytes = 1;</code>
      */
-    boolean hasAck();
+    boolean hasEvictedBytes();
     /**
-     * <code>required bool ack = 1;</code>
+     * <code>required int64 evicted_bytes = 1;</code>
      */
-    boolean getAck();
+    long getEvictedBytes();
   }
   /**
    * Protobuf type {@code EvictEntityResponseProto}
@@ -24420,7 +24420,7 @@ public final class LlapDaemonProtocolProtos {
             }
             case 8: {
               bitField0_ |= 0x00000001;
-              ack_ = input.readBool();
+              evictedBytes_ = input.readInt64();
               break;
             }
           }
@@ -24463,31 +24463,31 @@ public final class LlapDaemonProtocolProtos {
     }
 
     private int bitField0_;
-    // required bool ack = 1;
-    public static final int ACK_FIELD_NUMBER = 1;
-    private boolean ack_;
+    // required int64 evicted_bytes = 1;
+    public static final int EVICTED_BYTES_FIELD_NUMBER = 1;
+    private long evictedBytes_;
     /**
-     * <code>required bool ack = 1;</code>
+     * <code>required int64 evicted_bytes = 1;</code>
      */
-    public boolean hasAck() {
+    public boolean hasEvictedBytes() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
-     * <code>required bool ack = 1;</code>
+     * <code>required int64 evicted_bytes = 1;</code>
      */
-    public boolean getAck() {
-      return ack_;
+    public long getEvictedBytes() {
+      return evictedBytes_;
     }
 
     private void initFields() {
-      ack_ = false;
+      evictedBytes_ = 0L;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized != -1) return isInitialized == 1;
 
-      if (!hasAck()) {
+      if (!hasEvictedBytes()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -24499,7 +24499,7 @@ public final class LlapDaemonProtocolProtos {
                         throws java.io.IOException {
       getSerializedSize();
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        output.writeBool(1, ack_);
+        output.writeInt64(1, evictedBytes_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -24512,7 +24512,7 @@ public final class LlapDaemonProtocolProtos {
       size = 0;
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBoolSize(1, ack_);
+          .computeInt64Size(1, evictedBytes_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -24537,10 +24537,10 @@ public final class LlapDaemonProtocolProtos {
       org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.EvictEntityResponseProto other = (org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.EvictEntityResponseProto) obj;
 
       boolean result = true;
-      result = result && (hasAck() == other.hasAck());
-      if (hasAck()) {
-        result = result && (getAck()
-            == other.getAck());
+      result = result && (hasEvictedBytes() == other.hasEvictedBytes());
+      if (hasEvictedBytes()) {
+        result = result && (getEvictedBytes()
+            == other.getEvictedBytes());
       }
       result = result &&
           getUnknownFields().equals(other.getUnknownFields());
@@ -24555,9 +24555,9 @@ public final class LlapDaemonProtocolProtos {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptorForType().hashCode();
-      if (hasAck()) {
-        hash = (37 * hash) + ACK_FIELD_NUMBER;
-        hash = (53 * hash) + hashBoolean(getAck());
+      if (hasEvictedBytes()) {
+        hash = (37 * hash) + EVICTED_BYTES_FIELD_NUMBER;
+        hash = (53 * hash) + hashLong(getEvictedBytes());
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -24668,7 +24668,7 @@ public final class LlapDaemonProtocolProtos {
 
       public Builder clear() {
         super.clear();
-        ack_ = false;
+        evictedBytes_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000001);
         return this;
       }
@@ -24701,7 +24701,7 @@ public final class LlapDaemonProtocolProtos {
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
           to_bitField0_ |= 0x00000001;
         }
-        result.ack_ = ack_;
+        result.evictedBytes_ = evictedBytes_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -24718,15 +24718,15 @@ public final class LlapDaemonProtocolProtos {
 
       public Builder mergeFrom(org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.EvictEntityResponseProto other) {
         if (other == org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.EvictEntityResponseProto.getDefaultInstance()) return this;
-        if (other.hasAck()) {
-          setAck(other.getAck());
+        if (other.hasEvictedBytes()) {
+          setEvictedBytes(other.getEvictedBytes());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
 
       public final boolean isInitialized() {
-        if (!hasAck()) {
+        if (!hasEvictedBytes()) {
           
           return false;
         }
@@ -24752,35 +24752,35 @@ public final class LlapDaemonProtocolProtos {
       }
       private int bitField0_;
 
-      // required bool ack = 1;
-      private boolean ack_ ;
+      // required int64 evicted_bytes = 1;
+      private long evictedBytes_ ;
       /**
-       * <code>required bool ack = 1;</code>
+       * <code>required int64 evicted_bytes = 1;</code>
        */
-      public boolean hasAck() {
+      public boolean hasEvictedBytes() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
-       * <code>required bool ack = 1;</code>
+       * <code>required int64 evicted_bytes = 1;</code>
        */
-      public boolean getAck() {
-        return ack_;
+      public long getEvictedBytes() {
+        return evictedBytes_;
       }
       /**
-       * <code>required bool ack = 1;</code>
+       * <code>required int64 evicted_bytes = 1;</code>
        */
-      public Builder setAck(boolean value) {
+      public Builder setEvictedBytes(long value) {
         bitField0_ |= 0x00000001;
-        ack_ = value;
+        evictedBytes_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>required bool ack = 1;</code>
+       * <code>required int64 evicted_bytes = 1;</code>
        */
-      public Builder clearAck() {
+      public Builder clearEvictedBytes() {
         bitField0_ = (bitField0_ & ~0x00000001);
-        ack_ = false;
+        evictedBytes_ = 0L;
         onChanged();
         return this;
       }
@@ -26160,35 +26160,35 @@ public final class LlapDaemonProtocolProtos {
       "seProto\"F\n\027EvictEntityRequestProto\022\017\n\007db",
       "_name\030\001 \002(\t\022\032\n\005table\030\002 \003(\0132\013.TableProto\"" +
       "D\n\nTableProto\022\022\n\ntable_name\030\001 \002(\t\022\020\n\010par" +
-      "t_key\030\002 \003(\t\022\020\n\010part_val\030\003 \003(\t\"\'\n\030EvictEn" +
-      "tityResponseProto\022\013\n\003ack\030\001 \002(\010*2\n\020Source" +
-      "StateProto\022\017\n\013S_SUCCEEDED\020\001\022\r\n\tS_RUNNING" +
-      "\020\002*E\n\024SubmissionStateProto\022\014\n\010ACCEPTED\020\001" +
-      "\022\014\n\010REJECTED\020\002\022\021\n\rEVICTED_OTHER\020\0032\337\003\n\022Ll" +
-      "apDaemonProtocol\022B\n\013registerDag\022\030.Regist" +
-      "erDagRequestProto\032\031.RegisterDagResponseP" +
-      "roto\022?\n\nsubmitWork\022\027.SubmitWorkRequestPr",
-      "oto\032\030.SubmitWorkResponseProto\022W\n\022sourceS" +
-      "tateUpdated\022\037.SourceStateUpdatedRequestP" +
-      "roto\032 .SourceStateUpdatedResponseProto\022H" +
-      "\n\rqueryComplete\022\032.QueryCompleteRequestPr" +
-      "oto\032\033.QueryCompleteResponseProto\022T\n\021term" +
-      "inateFragment\022\036.TerminateFragmentRequest" +
-      "Proto\032\037.TerminateFragmentResponseProto\022K" +
-      "\n\016updateFragment\022\033.UpdateFragmentRequest" +
-      "Proto\032\034.UpdateFragmentResponseProto2\371\002\n\026" +
-      "LlapManagementProtocol\022C\n\022getDelegationT",
-      "oken\022\025.GetTokenRequestProto\032\026.GetTokenRe" +
-      "sponseProto\022?\n\npurgeCache\022\027.PurgeCacheRe" +
-      "questProto\032\030.PurgeCacheResponseProto\022Q\n\020" +
-      "getDaemonMetrics\022\035.GetDaemonMetricsReque" +
-      "stProto\032\036.GetDaemonMetricsResponseProto\022" +
-      "B\n\013setCapacity\022\030.SetCapacityRequestProto" +
-      "\032\031.SetCapacityResponseProto\022B\n\013evictEnti" +
-      "ty\022\030.EvictEntityRequestProto\032\031.EvictEnti" +
-      "tyResponseProtoBH\n&org.apache.hadoop.hiv" +
-      "e.llap.daemon.rpcB\030LlapDaemonProtocolPro",
-      "tos\210\001\001\240\001\001"
+      "t_key\030\002 \003(\t\022\020\n\010part_val\030\003 \003(\t\"1\n\030EvictEn" +
+      "tityResponseProto\022\025\n\revicted_bytes\030\001 \002(\003" +
+      "*2\n\020SourceStateProto\022\017\n\013S_SUCCEEDED\020\001\022\r\n" +
+      "\tS_RUNNING\020\002*E\n\024SubmissionStateProto\022\014\n\010" +
+      "ACCEPTED\020\001\022\014\n\010REJECTED\020\002\022\021\n\rEVICTED_OTHE" +
+      "R\020\0032\337\003\n\022LlapDaemonProtocol\022B\n\013registerDa" +
+      "g\022\030.RegisterDagRequestProto\032\031.RegisterDa" +
+      "gResponseProto\022?\n\nsubmitWork\022\027.SubmitWor",
+      "kRequestProto\032\030.SubmitWorkResponseProto\022" +
+      "W\n\022sourceStateUpdated\022\037.SourceStateUpdat" +
+      "edRequestProto\032 .SourceStateUpdatedRespo" +
+      "nseProto\022H\n\rqueryComplete\022\032.QueryComplet" +
+      "eRequestProto\032\033.QueryCompleteResponsePro" +
+      "to\022T\n\021terminateFragment\022\036.TerminateFragm" +
+      "entRequestProto\032\037.TerminateFragmentRespo" +
+      "nseProto\022K\n\016updateFragment\022\033.UpdateFragm" +
+      "entRequestProto\032\034.UpdateFragmentResponse" +
+      "Proto2\371\002\n\026LlapManagementProtocol\022C\n\022getD",
+      "elegationToken\022\025.GetTokenRequestProto\032\026." +
+      "GetTokenResponseProto\022?\n\npurgeCache\022\027.Pu" +
+      "rgeCacheRequestProto\032\030.PurgeCacheRespons" +
+      "eProto\022Q\n\020getDaemonMetrics\022\035.GetDaemonMe" +
+      "tricsRequestProto\032\036.GetDaemonMetricsResp" +
+      "onseProto\022B\n\013setCapacity\022\030.SetCapacityRe" +
+      "questProto\032\031.SetCapacityResponseProto\022B\n" +
+      "\013evictEntity\022\030.EvictEntityRequestProto\032\031" +
+      ".EvictEntityResponseProtoBH\n&org.apache." +
+      "hadoop.hive.llap.daemon.rpcB\030LlapDaemonP",
+      "rotocolProtos\210\001\001\240\001\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -26398,7 +26398,7 @@ public final class LlapDaemonProtocolProtos {
           internal_static_EvictEntityResponseProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_EvictEntityResponseProto_descriptor,
-              new java.lang.String[] { "Ack", });
+              new java.lang.String[] { "EvictedBytes", });
           return null;
         }
       };

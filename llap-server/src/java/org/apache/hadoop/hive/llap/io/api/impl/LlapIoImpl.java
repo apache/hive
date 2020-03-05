@@ -109,7 +109,6 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
   private final BufferUsageManager bufferManager;
   private final Configuration daemonConf;
   private final LowLevelCacheMemoryManager memoryManager;
-  private final ExecutorService proactiveEvictionExecutor;
 
   private List<LlapIoDebugDump> debugDumpComponents = new ArrayList<>();
 
@@ -227,8 +226,6 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
         metadataCache, dataCache, bufferManagerOrc, conf, cacheMetrics, ioMetrics, tracePool);
     this.genericCvp = isEncodeEnabled ? new GenericColumnVectorProducer(
         serdeCache, bufferManagerGeneric, conf, cacheMetrics, ioMetrics, tracePool) : null;
-    proactiveEvictionExecutor = Executors.newSingleThreadExecutor(
-        new ThreadFactoryBuilder().setNameFormat("Proactive-Evictor-%d").setDaemon(true).build());
 
     LOG.info("LLAP IO initialized");
 
@@ -254,34 +251,23 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
     return 0;
   }
 
-  public boolean evictEntity(LlapDaemonProtocolProtos.EvictEntityRequestProto protoRequest) {
+  public long evictEntity(LlapDaemonProtocolProtos.EvictEntityRequestProto protoRequest) {
     if (memoryManager == null || !HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_IO_PROACTIVE_EVICTION_ENABLED)) {
-      return false;
+      return -1;
     }
     final ProactiveEviction.Request request = ProactiveEviction.Request.Builder.create()
         .fromProtoRequest(protoRequest).build();
     Predicate<LlapCacheableBuffer> predicate = buffer -> request.isTagMatch(buffer.getTag());
-    Runnable evictionTask = new Runnable() {
-      @Override
-      public void run() {
-        long evictedBytes = memoryManager.evictEntity(predicate);
-        StringBuilder sb = new StringBuilder();
-        sb.append("Evicted ").append(evictedBytes).append(" bytes from LLAP cache buffers that " +
-            "belong to table(s): ");
-        for (String table : request.getEntities().get(request.getSingleDbName()).keySet()) {
-          sb.append(table).append(" ");
-        }
-        sb.append("in DB: ").append(protoRequest.getDbName());
-        LOG.info(sb.toString());
-      }
-    };
-
-    if (HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_IO_PROACTIVE_EVICTION_ASYNC)) {
-      proactiveEvictionExecutor.submit(evictionTask);
-    } else {
-      evictionTask.run();
+    long evictedBytes = memoryManager.evictEntity(predicate);
+    StringBuilder sb = new StringBuilder();
+    sb.append("Evicted ").append(evictedBytes).append(" bytes from LLAP cache buffers that " +
+        "belong to table(s): ");
+    for (String table : request.getEntities().get(request.getSingleDbName()).keySet()) {
+      sb.append(table).append(" ");
     }
-    return true;
+    sb.append("in DB: ").append(protoRequest.getDbName());
+    LOG.info(sb.toString());
+    return evictedBytes;
   }
 
   @Override

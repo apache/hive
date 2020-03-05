@@ -79,5 +79,10 @@ public interface LowLevelCachePolicy extends LlapIoDebugDump {
    */
   long purge();
 
+  /**
+   * Evicts buffers that match true for the supplied predicate.
+   * @param predicate the predicate buffers will be matched against.
+   * @return evicted byte count
+   */
   long evictEntity(Predicate<LlapCacheableBuffer> predicate);
 }

@@ -342,10 +342,10 @@ public class LlapProtocolServerImpl extends AbstractService
 
     LlapIo<?> llapIo = LlapProxy.getIo();
     if (llapIo != null) {
-      llapIo.evictEntity(protoRequest);
-      responseProtoBuilder.setAck(true);
+      long evicted = llapIo.evictEntity(protoRequest);
+      responseProtoBuilder.setEvictedBytes(evicted);
     } else {
-      responseProtoBuilder.setAck(false);
+      responseProtoBuilder.setEvictedBytes(-1L);
     }
     return responseProtoBuilder.build();
   }

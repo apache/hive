@@ -243,7 +243,7 @@ message TableProto {
 }
 
 message EvictEntityResponseProto {
-  required bool ack = 1;
+  required int64 evicted_bytes = 1;
 }
 
 service LlapDaemonProtocol {
