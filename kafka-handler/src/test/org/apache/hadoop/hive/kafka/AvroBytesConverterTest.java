@@ -25,20 +25,26 @@ import org.apache.avro.Schema;
 import org.apache.hadoop.hive.serde2.avro.AvroGenericRecordWritable;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Test class for Hive Kafka Avro bytes converter.
+ * Test class for Hive Kafka Avro SerDe with variable bytes skipped.
  */
 public class AvroBytesConverterTest {
-  private static SimpleRecord simpleRecord1 = SimpleRecord.newBuilder().setId("123").setName("test").build();
-  private static byte[] simpleRecord1AsBytes;
+  private static SimpleRecord simpleRecord = SimpleRecord.newBuilder().setId("123").setName("test").build();
+  private static byte[] simpleRecordConfluentBytes;
+
+  @Rule
+  public ExpectedException exception = ExpectedException.none();
 
   /**
-   * Emulate confluent avro producer that add 4 magic bits (int) before value bytes. The int represents the schema ID from schema registry.
+   * Use the KafkaAvroSerializer from Confluent to serialize the simpleRecord. 
    */
   @BeforeClass
   public static void setUp() {
@@ -46,82 +52,93 @@ public class AvroBytesConverterTest {
     config.put(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, "http://localhost:8081");
     KafkaAvroSerializer avroSerializer = new KafkaAvroSerializer(new MockSchemaRegistryClient());
     avroSerializer.configure(config, false);
-    simpleRecord1AsBytes = avroSerializer.serialize("temp", simpleRecord1);
+    simpleRecordConfluentBytes = avroSerializer.serialize("temp", simpleRecord);
+  }
+
+  private void runConversionTest(KafkaSerDe.AvroBytesConverter conv, byte[] serializedSimpleRecord) { 
+    AvroGenericRecordWritable simpleRecordWritable = conv.getWritable(serializedSimpleRecord);
+
+    Assert.assertNotNull(simpleRecordWritable);
+    Assert.assertEquals(SimpleRecord.class, simpleRecordWritable.getRecord().getClass());
+
+    SimpleRecord simpleRecordDeserialized = (SimpleRecord) simpleRecordWritable.getRecord();
+
+    Assert.assertNotNull(simpleRecordDeserialized);
+    Assert.assertEquals(simpleRecord, simpleRecordDeserialized);
   }
 
   /**
-   * Emulate - avro.serde.type = none (Default).
+   * Tests the default case of no skipped bytes per record works properly. 
    */
   @Test
   public void convertWithAvroBytesConverter() {
+    byte[] simpleRecordWithNoOffset = Arrays.copyOfRange(simpleRecordConfluentBytes, 5, simpleRecordConfluentBytes.length);
+
     Schema schema = SimpleRecord.getClassSchema();
     KafkaSerDe.AvroBytesConverter conv = new KafkaSerDe.AvroBytesConverter(schema);
-    AvroGenericRecordWritable simpleRecord1Writable = conv.getWritable(simpleRecord1AsBytes);
-
-    Assert.assertNotNull(simpleRecord1Writable);
-    Assert.assertEquals(SimpleRecord.class, simpleRecord1Writable.getRecord().getClass());
-
-    SimpleRecord simpleRecord1Deserialized = (SimpleRecord) simpleRecord1Writable.getRecord();
-
-    Assert.assertNotNull(simpleRecord1Deserialized);
-    Assert.assertNotEquals(simpleRecord1, simpleRecord1Deserialized);
+    runConversionTest(conv, simpleRecordWithNoOffset);
   }
 
   /**
-   * Emulate - avro.serde.type = confluent.
+   * Tests that the skip converter skips 5 bytes properly, which matches what Confluent needs.
    */
   @Test
   public void convertWithConfluentAvroBytesConverter() {
     Schema schema = SimpleRecord.getClassSchema();
     KafkaSerDe.AvroSkipBytesConverter conv = new KafkaSerDe.AvroSkipBytesConverter(schema, 5);
-    AvroGenericRecordWritable simpleRecord1Writable = conv.getWritable(simpleRecord1AsBytes);
-
-    Assert.assertNotNull(simpleRecord1Writable);
-    Assert.assertEquals(SimpleRecord.class, simpleRecord1Writable.getRecord().getClass());
-
-    SimpleRecord simpleRecord1Deserialized = (SimpleRecord) simpleRecord1Writable.getRecord();
-
-    Assert.assertNotNull(simpleRecord1Deserialized);
-    Assert.assertEquals(simpleRecord1, simpleRecord1Deserialized);
+    runConversionTest(conv, simpleRecordConfluentBytes);
   }
 
   /**
-   * Emulate - avro.serde.type = skip.
+   * Tests that the skip converter skips a custom number of bytes properly.
    */
   @Test
   public void convertWithCustomAvroSkipBytesConverter() {
     int offset = 2;
-    byte[] simpleRecordAsOffsetBytes = Arrays.copyOfRange(simpleRecord1AsBytes, 5 - offset, simpleRecord1AsBytes.length);
+    byte[] simpleRecordAsOffsetBytes = Arrays.copyOfRange(simpleRecordConfluentBytes, 5 - offset, simpleRecordConfluentBytes.length);
 
     Schema schema = SimpleRecord.getClassSchema();
     KafkaSerDe.AvroSkipBytesConverter conv = new KafkaSerDe.AvroSkipBytesConverter(schema, offset);
-    AvroGenericRecordWritable simpleRecord1Writable = conv.getWritable(simpleRecordAsOffsetBytes);
-
-    Assert.assertNotNull(simpleRecord1Writable);
-    Assert.assertEquals(SimpleRecord.class, simpleRecord1Writable.getRecord().getClass());
-
-    SimpleRecord simpleRecord1Deserialized = (SimpleRecord) simpleRecord1Writable.getRecord();
-
-    Assert.assertNotNull(simpleRecord1Deserialized);
-    Assert.assertEquals(simpleRecord1, simpleRecord1Deserialized);
+    runConversionTest(conv, simpleRecordAsOffsetBytes);    
   }
 
+  /**
+   * Test that when we skip more bytes than are in the message, we throw an exception properly.
+   */
   @Test
-  public void enumParseTest() {
-    Assert.assertEquals(KafkaSerDe.BytesConverterType.CONFLUENT, 
-      KafkaSerDe.BytesConverterType.fromString("confluent"));
-    Assert.assertEquals(KafkaSerDe.BytesConverterType.CONFLUENT, 
-      KafkaSerDe.BytesConverterType.fromString("conFLuent"));
-    Assert.assertEquals(KafkaSerDe.BytesConverterType.CONFLUENT, 
-      KafkaSerDe.BytesConverterType.fromString("Confluent"));
-    Assert.assertEquals(KafkaSerDe.BytesConverterType.CONFLUENT, 
-      KafkaSerDe.BytesConverterType.fromString("CONFLUENT"));
-    Assert.assertEquals(KafkaSerDe.BytesConverterType.SKIP, KafkaSerDe.BytesConverterType.fromString("skip"));
-    Assert.assertEquals(KafkaSerDe.BytesConverterType.SKIP, KafkaSerDe.BytesConverterType.fromString("sKIp"));
-    Assert.assertEquals(KafkaSerDe.BytesConverterType.SKIP, KafkaSerDe.BytesConverterType.fromString("SKIP"));
-    Assert.assertEquals(KafkaSerDe.BytesConverterType.NONE, KafkaSerDe.BytesConverterType.fromString("SKIP1"));
-    Assert.assertEquals(KafkaSerDe.BytesConverterType.NONE, KafkaSerDe.BytesConverterType.fromString("skipper"));
-    Assert.assertEquals(KafkaSerDe.BytesConverterType.NONE, KafkaSerDe.BytesConverterType.fromString(""));
-    Assert.assertEquals(KafkaSerDe.BytesConverterType.NONE, KafkaSerDe.BytesConverterType.fromString(null));
+  public void skipBytesLargerThanMessageSizeConverter() {
+    int offset = 25;
+
+    Schema schema = SimpleRecord.getClassSchema();
+    KafkaSerDe.AvroSkipBytesConverter conv = new KafkaSerDe.AvroSkipBytesConverter(schema, offset);
+
+    exception.expect(RuntimeException.class);
+    exception.expectMessage("org.apache.hadoop.hive.serde2.SerDeException: " + 
+      "Skip bytes value is larger than the message length.");
+    runConversionTest(conv, simpleRecordConfluentBytes);    
+  }
+
+  /**
+  * Test that we properly parse the converter type, no matter the casing.
+  */
+  @Test
+  public void bytesConverterTypeParseTest() {
+    Map<String, KafkaSerDe.BytesConverterType> testCases = new HashMap<String, KafkaSerDe.BytesConverterType>() {{
+      put("confluent", KafkaSerDe.BytesConverterType.CONFLUENT);
+      put("conFLuent", KafkaSerDe.BytesConverterType.CONFLUENT);
+      put("Confluent", KafkaSerDe.BytesConverterType.CONFLUENT);
+      put("CONFLUENT", KafkaSerDe.BytesConverterType.CONFLUENT);
+      put("skip", KafkaSerDe.BytesConverterType.SKIP);
+      put("sKIp", KafkaSerDe.BytesConverterType.SKIP);
+      put("SKIP", KafkaSerDe.BytesConverterType.SKIP);
+      put("SKIP1", KafkaSerDe.BytesConverterType.NONE);
+      put("skipper", KafkaSerDe.BytesConverterType.NONE);
+      put("", KafkaSerDe.BytesConverterType.NONE);
+      put(null, KafkaSerDe.BytesConverterType.NONE);
+    }};
+
+    for(Map.Entry<String, KafkaSerDe.BytesConverterType> entry:  testCases.entrySet()){
+      Assert.assertEquals(entry.getValue(), KafkaSerDe.BytesConverterType.fromString(entry.getKey()));
+    }
   }
 }

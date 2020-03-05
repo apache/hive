@@ -154,17 +154,23 @@ import java.util.stream.Collectors;
     }
   }
 
-  BytesConverter getByteConverterForAvroDelegate(Schema schema, Properties tbl) {
+  BytesConverter getByteConverterForAvroDelegate(Schema schema, Properties tbl) throws SerDeException {
     String avroBytesConverterPropertyName = AvroSerdeUtils.AvroTableProperties.AVRO_SERDE_TYPE.getPropName();
     String avroBytesConverterProperty = tbl.getProperty(avroBytesConverterPropertyName, 
       BytesConverterType.NONE.toString());
     BytesConverterType avroByteConverterType = BytesConverterType.fromString(avroBytesConverterProperty);
     String avroSkipBytesPropertyName = AvroSerdeUtils.AvroTableProperties.AVRO_SERDE_SKIP_BYTES.getPropName();
-    Integer avroSkipBytes = Integer.parseInt(tbl.getProperty(avroSkipBytesPropertyName));
+    Integer avroSkipBytes = 0;
+    try {
+      Integer.parseInt(tbl.getProperty(avroSkipBytesPropertyName));
+    } catch (NumberFormatException e) {
+      throw new SerDeException("Value of " + avroSkipBytesPropertyName + " could not be parsed into an integer properly.", e);
+    }
     switch (avroByteConverterType) {
       case CONFLUENT: return new AvroSkipBytesConverter(schema, 5);
       case SKIP: return new AvroSkipBytesConverter(schema, avroSkipBytes);
-      default: return new AvroBytesConverter(schema);
+      case NONE: return new AvroBytesConverter(schema);
+      default: throw new SerDeException("Value of " + avroBytesConverterPropertyName + " was invalid.");
     }
   }
 
@@ -383,7 +389,7 @@ import java.util.stream.Collectors;
       return valueBytes;
     }
 
-    Decoder getDecoder(byte[] value) {
+    Decoder getDecoder(byte[] value) throws SerDeException {
       return DecoderFactory.get().binaryDecoder(value, null);
     }
 
@@ -393,6 +399,8 @@ import java.util.stream.Collectors;
         avroRecord = dataReader.read(null, getDecoder(value));
       } catch (IOException e) {
         Throwables.propagate(new SerDeException(e));
+      } catch (SerDeException e) {
+        Throwables.propagate(e);
       }
 
       avroGenericRecordWritable.setRecord(avroRecord);
@@ -417,8 +425,12 @@ import java.util.stream.Collectors;
     }
 
     @Override
-    Decoder getDecoder(byte[] value) {
-      return DecoderFactory.get().binaryDecoder(value, this.skipBytes, value.length - this.skipBytes, null);
+    Decoder getDecoder(byte[] value) throws SerDeException {
+      try {
+        return DecoderFactory.get().binaryDecoder(value, this.skipBytes, value.length - this.skipBytes, null);
+      } catch (ArrayIndexOutOfBoundsException e) {
+        throw new SerDeException("Skip bytes value is larger than the message length.", e);
+      }
     }
   }
 
