@@ -1,7 +1,11 @@
+podTemplate(containers: [
+    containerTemplate(name: 'maven', image: 'maven:3.3.9-jdk-8-alpine', ttyEnabled: true, command: 'cat'),
+    containerTemplate(name: 'golang', image: 'golang:1.8.0', ttyEnabled: true, command: 'cat')
+  ]) {
 
 def executorNode(run) {
   stage("An Executor") {
-    node {
+    container('maven') {
       run()
     }
   }
@@ -62,3 +66,5 @@ stage('Testing') {
 
 
 //jenkins/jnlp-slave:3.27-1
+
+}
