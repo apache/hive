@@ -7,7 +7,8 @@ agent any
 stages {
   stage('Testing') {
     steps {
-      def splits=splitTests parallelism: parallelism, generateInclusions: true, estimateTestsFromFiles: true
+//      def splits=splitTests parallelism: parallelism, generateInclusions: true, estimateTestsFromFiles: true
+      sh 'echo'
     }
     /*
     testInParallel(count(Integer.parseInt(params.SPLIT)), 'inclusions.txt', 'exclusions.txt', 'target/surefire-reports/TEST-*.xml', 'maven:3.5.0-jdk-8', {
