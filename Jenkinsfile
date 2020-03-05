@@ -43,8 +43,7 @@ def testInParallel(parallelism, inclusionsFile, exclusionsFile, results, image, 
 }
 
 
-
-podTemplate(containers: [
+podTemplate(workspaceVolume: dynamicPVC(requestsSize: "16Gi"), containers: [
     containerTemplate(name: 'maven', image: 'cloudbees/jnlp-slave-with-java-build-tools', ttyEnabled: true, command: 'cat'),
 //    containerTemplate(name: 'maven', image: 'maven:3.3.9-jdk-8-alpine', ttyEnabled: true, command: 'cat'),
 //    containerTemplate(name: 'golang', image: 'golang:1.8.0', ttyEnabled: true, command: 'cat')
