@@ -113,7 +113,7 @@ POSTHOOK: Input: default@store
 POSTHOOK: Input: default@store_sales
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
-HiveProject($f0=[/(CAST($0):DOUBLE, $1)], $f1=[/($2, $3)], $f2=[/($4, $5)], $f3=[CAST($4):DECIMAL(17, 2)])
+HiveProject($f0=[/(CAST($0):DOUBLE, $1)], $f1=[CAST(/($2, $3)):DECIMAL(11, 6)], $f2=[CAST(/($4, $5)):DECIMAL(11, 6)], $f3=[CAST($4):DECIMAL(17, 2)])
   HiveAggregate(group=[{}], agg#0=[sum($9)], agg#1=[count($9)], agg#2=[sum($10)], agg#3=[count($10)], agg#4=[sum($11)], agg#5=[count($11)])
     HiveJoin(condition=[=($29, $8)], joinType=[inner], algorithm=[none], cost=[not available])
       HiveJoin(condition=[AND(=($6, $26), OR(AND($20, $21, $15, $27), AND($22, $23, $16, $28), AND($24, $25, $17, $28)))], joinType=[inner], algorithm=[none], cost=[not available])
