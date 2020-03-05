@@ -12,8 +12,8 @@ def executorNode(run) {
 
 
 def testInParallel(parallelism, inclusionsFile, exclusionsFile, results, image, prepare, run) {
-  //def splits
-  executorNode {
+  def splits
+  node {
     prepare()
     splits = splitTests parallelism: parallelism, generateInclusions: true, estimateTestsFromFiles: true
   }
