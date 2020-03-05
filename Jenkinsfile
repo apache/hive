@@ -44,7 +44,8 @@ def testInParallel(parallelism, inclusionsFile, exclusionsFile, results, image, 
 
 podTemplate(containers: [
     containerTemplate(name: 'maven', image: 'maven:3.3.9-jdk-8-alpine', ttyEnabled: true, command: 'cat'),
-    containerTemplate(name: 'golang', image: 'golang:1.8.0', ttyEnabled: true, command: 'cat')
+//    containerTemplate(name: 'maven', image: 'maven:3.3.9-jdk-8-alpine', ttyEnabled: true, command: 'cat'),
+//    containerTemplate(name: 'golang', image: 'golang:1.8.0', ttyEnabled: true, command: 'cat')
   ]) {
 
 properties([
@@ -55,11 +56,13 @@ properties([
 ])
 
 
+/*
 node(POD_LABEL) {
   container('maven') {
   	sh 'ls -l'
   }
 }
+*/
 
 stage('Testing') {
   testInParallel(count(Integer.parseInt(params.SPLIT)), 'inclusions.txt', 'exclusions.txt', 'target/surefire-reports/TEST-*.xml', 'maven:3.5.0-jdk-8', {
@@ -68,7 +71,8 @@ stage('Testing') {
   }, {
     configFileProvider([configFile(fileId: 'artifactory', variable: 'SETTINGS')]) {
       withEnv(["MULTIPLIER=$params.MULTIPLIER"]) {
-        sh 'mvn -s $SETTINGS -B install -Dmaven.test.failure.ignore -Dtest.groups= -pl common -am'
+        sh 'git clone https://github.com/kgyrtkirk/pipeline-test'
+        sh 'cd pipeline-test;mvn -s $SETTINGS -B install -Dmaven.test.failure.ignore -Dtest.groups= '
       }
     }
   })
