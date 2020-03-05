@@ -1,12 +1,13 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -72,8 +73,10 @@ public class AvroBytesConverterTest {
    */
   @Test
   public void convertWithAvroBytesConverter() {
-    // Since the serialized version was created by Confluent, lets remove the first five bytes to get the actual message.
-    byte[] simpleRecordWithNoOffset = Arrays.copyOfRange(simpleRecordConfluentBytes, 5, simpleRecordConfluentBytes.length);
+    // Since the serialized version was created by Confluent, 
+    // let's remove the first five bytes to get the actual message.
+    int recordLength = simpleRecordConfluentBytes.length;
+    byte[] simpleRecordWithNoOffset = Arrays.copyOfRange(simpleRecordConfluentBytes, 5, recordLength);
 
     Schema schema = SimpleRecord.getClassSchema();
     KafkaSerDe.AvroBytesConverter conv = new KafkaSerDe.AvroBytesConverter(schema);
@@ -98,7 +101,8 @@ public class AvroBytesConverterTest {
     int offset = 2;
     // Remove all but two bytes of the five byte offset which Confluent adds, 
     // to simulate a message with only 2 bytes in front of each message.
-    byte[] simpleRecordAsOffsetBytes = Arrays.copyOfRange(simpleRecordConfluentBytes, 5 - offset, simpleRecordConfluentBytes.length);
+    int recordLength = simpleRecordConfluentBytes.length;
+    byte[] simpleRecordAsOffsetBytes = Arrays.copyOfRange(simpleRecordConfluentBytes, 5 - offset, recordLength);`
 
     Schema schema = SimpleRecord.getClassSchema();
     KafkaSerDe.AvroSkipBytesConverter conv = new KafkaSerDe.AvroSkipBytesConverter(schema, offset);
@@ -148,7 +152,7 @@ public class AvroBytesConverterTest {
       put("	none	", KafkaSerDe.BytesConverterType.NONE);
     }};
 
-    for(Map.Entry<String, KafkaSerDe.BytesConverterType> entry: testCases.entrySet()){
+    for(Map.Entry<String, KafkaSerDe.BytesConverterType> entry: testCases.entrySet()) {
       Assert.assertEquals(entry.getValue(), KafkaSerDe.BytesConverterType.fromString(entry.getKey()));
     }
   }

@@ -167,10 +167,10 @@ import java.util.stream.Collectors;
       throw new SerDeException("Value of " + avroSkipBytesPropertyName + " could not be parsed into an integer properly.", e);
     }
     switch (avroByteConverterType) {
-      case CONFLUENT: return new AvroSkipBytesConverter(schema, 5);
-      case SKIP: return new AvroSkipBytesConverter(schema, avroSkipBytes);
-      case NONE: return new AvroBytesConverter(schema);
-      default: throw new SerDeException("Value of " + avroBytesConverterPropertyName + " was invalid.");
+    case CONFLUENT: return new AvroSkipBytesConverter(schema, 5);
+    case SKIP: return new AvroSkipBytesConverter(schema, avroSkipBytes);
+    case NONE: return new AvroBytesConverter(schema);
+    default: throw new SerDeException("Value of " + avroBytesConverterPropertyName + " was invalid.");
     }
   }
 
