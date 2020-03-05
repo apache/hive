@@ -134,11 +134,6 @@ public class AvroBytesConverterTest {
   @Test
   public void bytesConverterTypeParseTest() {
     Map<String, KafkaSerDe.BytesConverterType> testCases = new HashMap<String, KafkaSerDe.BytesConverterType>() {{
-      put("confluent", KafkaSerDe.BytesConverterType.CONFLUENT);
-      put("conFLuent", KafkaSerDe.BytesConverterType.CONFLUENT);
-      put("Confluent", KafkaSerDe.BytesConverterType.CONFLUENT);
-      put("CONFLUENT", KafkaSerDe.BytesConverterType.CONFLUENT);
-      put("   confluent   ", KafkaSerDe.BytesConverterType.CONFLUENT);
       put("skip", KafkaSerDe.BytesConverterType.SKIP);
       put("sKIp", KafkaSerDe.BytesConverterType.SKIP);
       put("SKIP", KafkaSerDe.BytesConverterType.SKIP);
