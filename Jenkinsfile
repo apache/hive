@@ -1,4 +1,13 @@
 
+def executorNode(run) {
+  stage("An Executor") {
+    node {
+      run()
+    }
+  }
+}
+
+
 def testInParallel(parallelism, inclusionsFile, exclusionsFile, results, image, prepare, run) {
   def splits
   node {
@@ -11,7 +20,7 @@ def testInParallel(parallelism, inclusionsFile, exclusionsFile, results, image, 
     def split = splits[num]
     branches["split${num}"] = {
       stage("Test #${num + 1}") {
-node {
+      executorNode {
         //docker.image(image).inside {
 //          stage('Preparation') {
             prepare()
