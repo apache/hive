@@ -13,20 +13,20 @@ def testInParallel(parallelism, inclusionsFile, exclusionsFile, results, image, 
   //def splits
   executorNode {
     prepare()
-//    splits = splitTests parallelism: parallelism, generateInclusions: true, estimateTestsFromFiles: true
+    splits = splitTests parallelism: parallelism, generateInclusions: true, estimateTestsFromFiles: true
   }
   def branches = [:]
   for (int i = 0; i < 3;/*splits.size()*/ i++) {
     def num = i
-//    def split = splits[num]
+    def split = splits[num]
     branches["split${num}"] = {
       stage("Test #${num + 1}") {
       executorNode {
         //docker.image(image).inside {
 //          stage('Preparation') {
             prepare()
-    //        writeFile file: (split.includes ? inclusionsFile : exclusionsFile), text: split.list.join("\n")
-      //      writeFile file: (split.includes ? exclusionsFile : inclusionsFile), text: ''
+            writeFile file: (split.includes ? inclusionsFile : exclusionsFile), text: split.list.join("\n")
+            writeFile file: (split.includes ? exclusionsFile : inclusionsFile), text: ''
   //        }
         //  stage('Main') {
             realtimeJUnit(results) {
