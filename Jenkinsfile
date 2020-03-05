@@ -2,7 +2,9 @@ def executorNode(run) {
   stage("An Executor") {
     node(POD_LABEL) {
       container('maven') {
-        run()
+        timestamps {
+          run()
+        }
       }
     }
   }
