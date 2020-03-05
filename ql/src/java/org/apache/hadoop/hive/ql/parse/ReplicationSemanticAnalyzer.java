@@ -389,9 +389,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       // tells us what is inside that dumpdir.
 
       //If repl status of target is greater than dumps, don't do anything as the load for the latest dump is done
-      if (isTargetAlreadyLoaded) {
-        return;
-      } else {
+      if (!isTargetAlreadyLoaded) {
         DumpMetaData dmd = new DumpMetaData(loadPath, conf);
 
         boolean evDump = false;
@@ -443,21 +441,22 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
           return statuses[0].getPath();
         } else {
           DumpMetaData latestDump = new DumpMetaData(statuses[statuses.length - 1].getPath(), conf);
-          if (Long.parseLong(currentReplStatusOfTarget) >= latestDump.getEventTo().longValue()) {
+          if (Long.parseLong(currentReplStatusOfTarget.trim()) >= latestDump.getEventTo()) {
             isTargetAlreadyLoaded = true;
           } else {
             for (FileStatus status : statuses) {
               DumpMetaData dmd = new DumpMetaData(status.getPath(), conf);
               if (dmd.isIncrementalDump()
-                      && Long.parseLong(currentReplStatusOfTarget) < dmd.getEventTo().longValue()) {
+                      && Long.parseLong(currentReplStatusOfTarget.trim()) < dmd.getEventTo()) {
                 return status.getPath();
               }
             }
           }
         }
+      } else {
+        //If dbname is null(in case of repl load *), can't get repl status of target, return unsupported
+        throw new UnsupportedOperationException("REPL LOAD * is not supported");
       }
-      //If dbname is null(in case of repl load *), can't get repl status of target, return the latest dump
-      return statuses[statuses.length - 1].getPath();
     }
     return null;
   }
@@ -524,7 +523,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     String replLastId = getReplStatus(dbNameOrPattern);
     prepareReturnValues(Collections.singletonList(replLastId), "last_repl_id#string");
     setFetchTask(createFetchTask("last_repl_id#string"));
-    LOG.debug("ReplicationSemanticAnalyzer.analyzeReplStatus: writing repl.last.id={} out to {}",
+    LOG.debug("ReplicationSemanticAnalyzer.analyzeReplStatus: writing repl.last.id={} out to {} using configuration {}",
         replLastId, ctx.getResFile(), conf);
   }
 

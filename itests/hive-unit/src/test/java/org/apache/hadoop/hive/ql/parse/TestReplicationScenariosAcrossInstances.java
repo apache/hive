@@ -563,106 +563,12 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     // Reset ckpt and last repl ID keys to empty set for allowing bootstrap load
     replica.run("show databases")
         .verifyFailure(new String[] { primaryDbName, dbOne, dbTwo })
-        .run("alter database default set dbproperties ('hive.repl.ckpt.key'='', 'repl.last.id'='')")
-        .load("", "`*`")
-        .run("show databases")
-        .verifyResults(new String[] { "default", primaryDbName, dbOne, dbTwo })
-        .run("use " + primaryDbName)
-        .run("show tables")
-        .verifyResults(new String[] { "t1" })
-        .run("use " + dbOne)
-        .run("show tables")
-        .verifyResults(new String[] { "t1" })
-        .run("use " + dbTwo)
-        .run("show tables")
-        .verifyResults(new String[] { "t1" })
-        .verifyReplTargetProperty(primaryDbName)
-        .verifyReplTargetProperty(dbOne)
-        .verifyReplTargetProperty(dbTwo);
-
-    /*
-       Start of cleanup
-    */
-
-    replica.run("drop database " + primaryDbName + " cascade");
-    replica.run("drop database " + dbOne + " cascade");
-    replica.run("drop database " + dbTwo + " cascade");
-
-    /*
-       End of cleanup
-    */
-  }
-
-  @Test
-  public void testIncrementalDumpOfWarehouse() throws Throwable {
-    String randomOne = RandomStringUtils.random(10, true, false);
-    String randomTwo = RandomStringUtils.random(10, true, false);
-    String dbOne = primaryDbName + randomOne;
-    String dbTwo = primaryDbName + randomTwo;
-    primary.run("alter database default set dbproperties ('" + SOURCE_OF_REPLICATION + "' = '1, 2, 3')");
-    primary.run("use " + primaryDbName)
-            .run("create table t1 (i int, j int)")
-            .run("create database " + dbOne + " WITH DBPROPERTIES ( '" +
-                SOURCE_OF_REPLICATION + "' = '1,2,3')")
-            .run("use " + dbOne)
-            .run("create table t1 (i int, j int) partitioned by (load_date date) "
-                    + "clustered by(i) into 2 buckets stored as orc tblproperties ('transactional'='true') ")
-            .run("create database " + dbTwo + " WITH DBPROPERTIES ( '" +
-                    SOURCE_OF_REPLICATION + "' = '1,2,3')")
-            .run("use " + dbTwo)
-            .run("create table t1 (i int, j int)")
-            .run("use " + dbOne)
-            .run("create table t2 (a int, b int)")
-            .dump("`*`", Arrays.asList("'hive.repl.dump.metadata.only'='true'"));
-
-    /*
-      Due to the limitation that we can only have one instance of Persistence Manager Factory in a JVM
-      we are not able to create multiple embedded derby instances for two different MetaStore instances.
-    */
-
-    primary.run("drop database " + primaryDbName + " cascade");
-    primary.run("drop database " + dbOne + " cascade");
-    primary.run("drop database " + dbTwo + " cascade");
-    /*
-      End of additional steps
-    */
-
-    replica.run("show databases")
-            .verifyFailure(new String[] { primaryDbName, dbOne, dbTwo })
-            .run("alter database default set dbproperties ('hive.repl.ckpt.key'='', 'repl.last.id'='')")
-            .load("", "`*`")
-            .run("show databases")
-            .verifyResults(new String[] {"default", primaryDbName, dbOne, dbTwo})
-            .run("use " + primaryDbName)
-            .run("show tables")
-            .verifyResults(new String[] { "t1" })
-            .run("use " + dbOne)
-            .run("show tables")
-            .verifyResults(new String[] { "t1", "t2" })
-            .run("use " + dbTwo)
-            .run("show tables")
-            .verifyResults(new String[] { "t1" })
-            .verifyReplTargetProperty(primaryDbName)
-            .verifyReplTargetProperty(dbOne)
-            .verifyReplTargetProperty(dbTwo);
-
-    assertTrue(ReplUtils.isFirstIncPending(replica.getDatabase("default").getParameters()));
-    assertTrue(ReplUtils.isFirstIncPending(replica.getDatabase(primaryDbName).getParameters()));
-    assertTrue(ReplUtils.isFirstIncPending(replica.getDatabase(dbOne).getParameters()));
-    assertTrue(ReplUtils.isFirstIncPending(replica.getDatabase(dbTwo).getParameters()));
-
-    /*
-       Start of cleanup
-    */
-
-    replica.run("drop database " + primaryDbName + " cascade");
-    replica.run("drop database " + dbOne + " cascade");
-    replica.run("drop database " + dbTwo + " cascade");
-
-    /*
-       End of cleanup
-    */
-
+        .run("alter database default set dbproperties ('hive.repl.ckpt.key'='', 'repl.last.id'='')");
+    try {
+      replica.load("", "`*`");
+    } catch (SemanticException e) {
+      assertEquals("REPL LOAD * is not supported", e.getMessage());
+    }
   }
 
   @Test

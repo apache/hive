@@ -51,6 +51,7 @@ import java.util.Collections;
 import java.util.Map;
 
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
+import static org.junit.Assert.assertEquals;
 
 /**
  * TestReplicationScenariosAcidTables - test replication for ACID tables.
@@ -646,16 +647,10 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     primary.run("drop database " + dbName1 + " cascade");
     primary.run("drop database " + dbName2 + " cascade");
     //End of additional steps
-
-    replica.loadWithoutExplain("", "`*`")
-          .run("REPL STATUS " + dbName1)
-          .run("select key from " + dbName1 + "." + tableName + " order by key")
-          .verifyResults(resultArray)
-          .run("select key from " + dbName2 + "." + tableName + " order by key")
-          .verifyResults(resultArray);
-
-    replica.run("drop database " + primaryDbName + " cascade");
-    replica.run("drop database " + dbName1 + " cascade");
-    replica.run("drop database " + dbName2 + " cascade");
+    try {
+      replica.loadWithoutExplain("", "`*`");
+    } catch (SemanticException e) {
+      assertEquals("REPL LOAD * is not supported", e.getMessage());
+    }
   }
 }
