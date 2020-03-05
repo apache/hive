@@ -55,8 +55,10 @@ properties([
 ])
 
 
-container('maven') {
-	sh 'ls -l'
+node {
+  container('maven') {
+  	sh 'ls -l'
+  }
 }
 
 stage('Testing') {
