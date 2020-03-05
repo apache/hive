@@ -71,7 +71,7 @@ stage('Testing') {
   }, {
     configFileProvider([configFile(fileId: 'artifactory', variable: 'SETTINGS')]) {
       withEnv(["MULTIPLIER=$params.MULTIPLIER"]) {
-        sh 'git clone https://github.com/kgyrtkirk/pipeline-test'
+        sh 'git clone -b pipe1 https://github.com/kgyrtkirk/pipeline-test'
         sh 'cd pipeline-test;mvn -s $SETTINGS -B install -Dmaven.test.failure.ignore -Dtest.groups= '
       }
     }
