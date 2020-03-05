@@ -81,6 +81,7 @@ OPTS=" -s $SETTINGS -B install -Dmaven.test.failure.ignore -Dtest.groups= "
 OPTS+="-pl ql -am "
 if [ -s inclusions.txt ]; then OPTS+=" -Dsurefire.includesFile=inclusions.txt";fi
 if [ -s exclusions.txt ]; then OPTS+=" -Dsurefire.excludesFile=exclusions.txt";fi
+OPTS+=" -Dmaven.repo.local=$PWD/.m2"
 mvn $OPTS
 '''
       }
