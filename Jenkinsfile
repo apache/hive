@@ -54,7 +54,7 @@ stage('Testing') {
   }, {
     configFileProvider([configFile(fileId: 'artifactory', variable: 'SETTINGS')]) {
       withEnv(["MULTIPLIER=$params.MULTIPLIER"]) {
-        sh 'mvn -s $SETTINGS -B install -Dmaven.test.failure.ignore -Dtest.groups='
+        sh 'mvn -s $SETTINGS -B install -Dmaven.test.failure.ignore -Dtest.groups= -pl common -am'
       }
     }
   })
