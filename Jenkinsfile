@@ -65,14 +65,14 @@ node(POD_LABEL) {
 */
 
 stage('Testing') {
-  testInParallel(count(Integer.parseInt(params.SPLIT)), 'inclusions.txt', 'exclusions.txt', '**/target/surefire-reports/TEST-*.xml', 'maven:3.5.0-jdk-8', {
+  testInParallel(count(Integer.parseInt(params.SPLIT)), 'pipeline-test/inclusions.txt', 'pipeline-test/exclusions.txt', '**/target/surefire-reports/TEST-*.xml', 'maven:3.5.0-jdk-8', {
+        sh 'git clone -b pipe1 https://github.com/kgyrtkirk/pipeline-test'
 //    checkout scm
 //    unstash 'sources'
   }, {
     configFileProvider([configFile(fileId: 'artifactory', variable: 'SETTINGS')]) {
       withEnv(["MULTIPLIER=$params.MULTIPLIER"]) {
         sh 'pwd'
-        sh 'git clone -b pipe1 https://github.com/kgyrtkirk/pipeline-test'
         sh 'cd pipeline-test;mvn -s $SETTINGS -B install -Dmaven.test.failure.ignore -Dtest.groups= '
       }
     }
