@@ -71,8 +71,8 @@ public class TestJdbcGenericUDTFGetSplits extends AbstractTestJdbcGenericUDTFGet
       assertNotNull(schemaSplit);
       FieldDesc fieldDesc = schemaSplit.getSchema().getColumns().get(0);
       DecimalTypeInfo type = (DecimalTypeInfo) fieldDesc.getTypeInfo();
-      assertEquals(38, type.getPrecision());
-      assertEquals(24, type.scale());
+      assertEquals(12, type.getPrecision());
+      assertEquals(8, type.scale());
 
       LlapBaseInputFormat.close(handleId);
     }
