@@ -10,12 +10,10 @@ def executorNode(run) {
   }
 }
 
-
 def testInParallel(parallelism, inclusionsFile, exclusionsFile, results, image, prepare, run) {
   def splits
   node {
-    prepare()
-    splits = splitTests parallelism: parallelism, generateInclusions: true, estimateTestsFromFiles: true
+    splits = splitTests parallelism: parallelism, generateInclusions: true, estimateTestsFromFiles: false
   }
   def branches = [:]
   for (int i = 0; i < splits.size(); i++) {
@@ -71,15 +69,20 @@ node(POD_LABEL) {
 */
 
 stage('Testing') {
-  testInParallel(count(Integer.parseInt(params.SPLIT)), 'pipeline-test/inclusions.txt', 'pipeline-test/exclusions.txt', '**/target/surefire-reports/TEST-*.xml', 'maven:3.5.0-jdk-8', {
-        sh 'git clone -b pipe1 https://github.com/kgyrtkirk/pipeline-test'
-//    checkout scm
+  testInParallel(count(Integer.parseInt(params.SPLIT)), 'inclusions.txt', 'exclusions.txt', '**/target/surefire-reports/TEST-*.xml', 'maven:3.5.0-jdk-8', {
+//        sh 'git clone -b pipe1 https://github.com/kgyrtkirk/pipeline-test'
+    checkout scm
 //    unstash 'sources'
   }, {
     configFileProvider([configFile(fileId: 'artifactory', variable: 'SETTINGS')]) {
       withEnv(["MULTIPLIER=$params.MULTIPLIER"]) {
-        sh 'pwd'
-        sh 'cd pipeline-test;mvn -s $SETTINGS -B install -Dmaven.test.failure.ignore -Dtest.groups= '
+        sh '''#!/bin/bash -e
+OPTS=" -s $SETTINGS -B install -Dmaven.test.failure.ignore -Dtest.groups= "
+OPTS+="-pl common -am "
+if [ -s inclusions.txt ]; then OPTS+=" -Dsurefire.includesFile=inclusions.txt";fi
+if [ -s exclusions.txt ]; then OPTS+=" -Dsurefire.excludesFile=exclusions.txt";fi
+mvn $OPTS
+'''
       }
     }
   })
