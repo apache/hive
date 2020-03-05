@@ -14,7 +14,7 @@ def testInParallel(parallelism, inclusionsFile, exclusionsFile, results, image, 
 //    splits = splitTests parallelism: parallelism, generateInclusions: true, estimateTestsFromFiles: true
   }
   def branches = [:]
-  for (int i = 0; i < 3;/*splits.size()*/; i++) {
+  for (int i = 0; i < 3;/*splits.size()*/ i++) {
     def num = i
 //    def split = splits[num]
     branches["split${num}"] = {
