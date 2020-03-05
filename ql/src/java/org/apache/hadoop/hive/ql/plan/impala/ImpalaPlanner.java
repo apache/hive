@@ -20,6 +20,10 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.session.SessionState;
+
 import org.apache.impala.analysis.Expr;
 import org.apache.impala.analysis.StmtMetadataLoader;
 import org.apache.impala.authorization.AuthorizationFactory;
@@ -267,9 +271,9 @@ public class ImpalaPlanner {
     queryCtx.setLocal_time_zone("UTC");
     queryCtx.setStart_unix_millis(System.currentTimeMillis());
     queryCtx.setPid(1000);
-
-    queryCtx.setRequest_pool("default-pool"); // for admission control
-
+    String requestPool = SessionState.get().getConf()
+        .getVar(HiveConf.ConfVars.HIVE_IMPALA_REQUEST_POOL);
+    queryCtx.setRequest_pool(requestPool); // for admission control
     queryCtx.setCoord_address(hostLocation);
 
     TNetworkAddress krpcCordAddr = new TNetworkAddress();

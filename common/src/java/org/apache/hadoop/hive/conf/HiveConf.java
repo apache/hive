@@ -4050,6 +4050,8 @@ public class HiveConf extends Configuration {
             "Chooses whether Impala will execute a provided plan or a query string"),
     HIVE_IMPALA_FETCH_SIZE("hive.impala.fetch.size", 1024, "Determines the number of rows per fetch " +
             "when streaming results from an Impala coordinator"),
+    HIVE_IMPALA_REQUEST_POOL("hive.impala.request.pool", "default-pool",
+             new StringSet(true, "default-pool", "root.default"), "Admission pool used for Impala queries"),
 
     HIVE_JAR_DIRECTORY("hive.jar.directory", null,
         "This is the location hive in tez mode will look for to find a site wide \n" +
