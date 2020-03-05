@@ -1,8 +1,3 @@
-podTemplate(containers: [
-    containerTemplate(name: 'maven', image: 'maven:3.3.9-jdk-8-alpine', ttyEnabled: true, command: 'cat'),
-    containerTemplate(name: 'golang', image: 'golang:1.8.0', ttyEnabled: true, command: 'cat')
-  ]) {
-
 def executorNode(run) {
   stage("An Executor") {
     container('maven') {
@@ -42,6 +37,13 @@ def testInParallel(parallelism, inclusionsFile, exclusionsFile, results, image, 
   }
   parallel branches
 }
+
+
+
+podTemplate(containers: [
+    containerTemplate(name: 'maven', image: 'maven:3.3.9-jdk-8-alpine', ttyEnabled: true, command: 'cat'),
+    containerTemplate(name: 'golang', image: 'golang:1.8.0', ttyEnabled: true, command: 'cat')
+  ]) {
 
 properties([
     parameters([
