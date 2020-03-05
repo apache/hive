@@ -1,6 +1,6 @@
 def executorNode(run) {
   stage("An Executor") {
-    node {
+    node(POD_LABEL) {
       container('maven') {
         run()
       }
