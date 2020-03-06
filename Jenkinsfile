@@ -78,7 +78,7 @@ stage('Testing') {
       withEnv(["MULTIPLIER=$params.MULTIPLIER"]) {
         sh '''#!/bin/bash -e
 OPTS=" -s $SETTINGS -B install -Dmaven.test.failure.ignore -Dtest.groups= "
-#OPTS+="-pl ql -am "
+OPTS+="-pl ql -am "
 if [ -s inclusions.txt ]; then OPTS+=" -Dsurefire.includesFile=$PWD/inclusions.txt";fi
 if [ -s exclusions.txt ]; then OPTS+=" -Dsurefire.excludesFile=$PWD/exclusions.txt";fi
 OPTS+=" -Dmaven.repo.local=$PWD/.m2"
