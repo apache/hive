@@ -46,9 +46,6 @@ public abstract class CacheTag implements Comparable<CacheTag> {
 
   @Override
   public int compareTo(CacheTag o) {
-    if (o == null) {
-      return 1;
-    }
     return tableName.compareTo(o.tableName);
   }
 
@@ -155,9 +152,6 @@ public abstract class CacheTag implements Comparable<CacheTag> {
 
     @Override
     public int compareTo(CacheTag o) {
-      if (o == null) {
-        return 1;
-      }
       if (o instanceof SinglePartitionCacheTag || o instanceof MultiPartitionCacheTag) {
         return -1;
       } else {
@@ -206,21 +200,14 @@ public abstract class CacheTag implements Comparable<CacheTag> {
 
     @Override
     public int compareTo(CacheTag o) {
-      if (o == null) {
-        return 1;
-      }
       if (o instanceof TableCacheTag) {
         return 1;
       } else if (o instanceof MultiPartitionCacheTag) {
         return -1;
       }
       SinglePartitionCacheTag other = (SinglePartitionCacheTag) o;
-      int tableNameDiff = super.compareTo(other);
-      if (tableNameDiff != 0) {
-        return tableNameDiff;
-      } else {
-        return partitionDesc.compareTo(other.partitionDesc);
-      }
+      return super.compareTo(o) +
+          partitionDesc.toString().compareTo(other.partitionDesc.toString());
     }
 
     @Override
@@ -248,30 +235,12 @@ public abstract class CacheTag implements Comparable<CacheTag> {
 
     @Override
     public int compareTo(CacheTag o) {
-      if (o == null) {
-        return 1;
-      }
       if (o instanceof TableCacheTag || o instanceof SinglePartitionCacheTag) {
         return 1;
       }
       MultiPartitionCacheTag other = (MultiPartitionCacheTag) o;
-      int tableNameDiff = super.compareTo(other);
-      if (tableNameDiff != 0) {
-        return tableNameDiff;
-      } else {
-        int sizeDiff = partitionDesc.size() - other.partitionDesc.size();
-        if (sizeDiff != 0) {
-          return sizeDiff;
-        } else {
-          for (int i = 0; i < partitionDesc.size(); ++i) {
-            int partDiff = partitionDesc.get(i).compareTo(other.partitionDesc.get(i));
-            if (partDiff != 0) {
-              return partDiff;
-            }
-          }
-          return 0;
-        }
-      }
+      return super.compareTo(o) +
+          partitionDesc.toString().compareTo(other.partitionDesc.toString());
     }
 
     @Override
