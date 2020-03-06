@@ -42,6 +42,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.hdfs.protocol.EncryptionZone;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.JobConf;
@@ -555,13 +556,20 @@ public interface HadoopShims {
     public int comparePathKeyStrength(Path path1, Path path2) throws IOException;
 
     /**
-     * create encryption zone by path and keyname
+     * create encryption zone by path and keyname.
      * @param path HDFS path to create encryption zone
      * @param keyName keyname
      * @throws IOException
      */
     @VisibleForTesting
     public void createEncryptionZone(Path path, String keyName) throws IOException;
+
+    /**
+     * Get encryption zone by path.
+     * @param path HDFS path to create encryption zone.
+     * @throws IOException
+     */
+    EncryptionZone getEncryptionZoneForPath(Path path) throws IOException;
 
     /**
      * Creates an encryption key.
@@ -613,6 +621,11 @@ public interface HadoopShims {
     @Override
     public void createEncryptionZone(Path path, String keyName) {
     /* not supported */
+    }
+
+    @Override
+    public EncryptionZone getEncryptionZoneForPath(Path path) throws IOException {
+      return null;
     }
 
     @Override

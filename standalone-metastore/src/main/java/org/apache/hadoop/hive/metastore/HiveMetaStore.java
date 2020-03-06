@@ -2394,7 +2394,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (!success) {
           ms.rollbackTransaction();
           if (madeDir) {
-            wh.deleteDir(tblPath, true, db);
+            wh.deleteDir(tblPath, true, false, ReplChangeManager.shouldEnableCm(db, tbl));
           }
         }
 
@@ -2997,9 +2997,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         } else if (tableDataShouldBeDeleted) {
           // Data needs deletion. Check if trash may be skipped.
           // Delete the data in the partitions which have other locations
-          deletePartitionData(partPaths, ifPurge, db);
+          deletePartitionData(partPaths, ifPurge, ReplChangeManager.shouldEnableCm(db, tbl));
           // Delete the data in the table
-          deleteTableData(tblPath, ifPurge, db);
+          deleteTableData(tblPath, ifPurge, ReplChangeManager.shouldEnableCm(db, tbl));
           // ok even if the data is not deleted
         }
 
@@ -3028,6 +3028,40 @@ public class HiveMetaStore extends ThriftHiveMetastore {
      * @param tablePath
      * @param ifPurge completely purge the table (skipping trash) while removing
      *                data from warehouse
+     * @param shouldEnableCm If cm should be enabled
+     */
+    private void deleteTableData(Path tablePath, boolean ifPurge, boolean shouldEnableCm) {
+      if (tablePath != null) {
+        try {
+          if (shouldEnableCm) {
+            //Don't delete cmdir if its inside the table path
+            FileStatus[] statuses = tablePath.getFileSystem(conf).listStatus(tablePath,
+                    ReplChangeManager.CMROOT_PATH_FILTER);
+            for (final FileStatus status : statuses) {
+              wh.deleteDir(status.getPath(), true, ifPurge, shouldEnableCm);
+            }
+            //Check if table directory is empty, delete it
+            FileStatus[] statusWithoutFilter = tablePath.getFileSystem(conf).listStatus(tablePath);
+            if (statusWithoutFilter.length == 0) {
+              wh.deleteDir(tablePath, true, ifPurge, shouldEnableCm);
+            }
+          } else {
+            //If no cm delete the complete table directory
+            wh.deleteDir(tablePath, true, ifPurge, shouldEnableCm);
+          }
+        } catch (Exception e) {
+          LOG.error("Failed to delete table directory: " + tablePath +
+                  " " + e.getMessage());
+        }
+      }
+    }
+
+    /**
+     * Deletes the data in a table's location, if it fails logs an error
+     *
+     * @param tablePath
+     * @param ifPurge completely purge the table (skipping trash) while removing
+     *                data from warehouse
      * @param db database the table belongs to
      */
     private void deleteTableData(Path tablePath, boolean ifPurge, Database db) {
@@ -3038,6 +3072,43 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         } catch (Exception e) {
           LOG.error("Failed to delete table directory: " + tablePath +
               " " + e.getMessage());
+        }
+      }
+    }
+
+    /**
+     * Give a list of partitions' locations, tries to delete each one
+     * and for each that fails logs an error.
+     *
+     * @param partPaths
+     * @param ifPurge completely purge the partition (skipping trash) while
+     *                removing data from warehouse
+     * @param shouldEnableCm If cm should be enabled
+     */
+    private void deletePartitionData(List<Path> partPaths, boolean ifPurge, boolean shouldEnableCm) {
+      if (partPaths != null && !partPaths.isEmpty()) {
+        for (Path partPath : partPaths) {
+          try {
+            if (shouldEnableCm) {
+              //Don't delete cmdir if its inside the partition path
+              FileStatus[] statuses = partPath.getFileSystem(conf).listStatus(partPath,
+                      ReplChangeManager.CMROOT_PATH_FILTER);
+              for (final FileStatus status : statuses) {
+                wh.deleteDir(status.getPath(), true, ifPurge, shouldEnableCm);
+              }
+              //Check if partition directory is empty, delete it
+              FileStatus[] statusWithoutFilter = partPath.getFileSystem(conf).listStatus(partPath);
+              if (statusWithoutFilter.length == 0) {
+                wh.deleteDir(partPath, true, ifPurge, shouldEnableCm);
+              }
+            } else {
+              //If no cm delete the complete partition directory
+              wh.deleteDir(partPath, true, ifPurge, shouldEnableCm);
+            }
+          } catch (Exception e) {
+            LOG.error("Failed to delete partition directory: " + partPath +
+                    " " + e.getMessage());
+          }
         }
       }
     }
@@ -3315,7 +3386,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             HdfsUtils.HadoopFileStatus status = new HdfsUtils.HadoopFileStatus(getConf(), fs, location);
             FileStatus targetStatus = fs.getFileStatus(location);
             String targetGroup = targetStatus == null ? null : targetStatus.getGroup();
-            wh.deleteDir(location, true, isAutopurge, db);
+            wh.deleteDir(location, true, isAutopurge,
+                    ReplChangeManager.shouldEnableCm(db, tbl));
             fs.mkdirs(location);
             HdfsUtils.setFullFileStatus(getConf(), status, targetGroup, fs, location, false);
           } else {
@@ -3324,7 +3396,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               continue;
             }
             for (final FileStatus status : statuses) {
-              wh.deleteDir(status.getPath(), true, isAutopurge, db);
+              wh.deleteDir(status.getPath(), true, isAutopurge,
+                      ReplChangeManager.shouldEnableCm(db, tbl));
             }
           }
         }
@@ -3819,7 +3892,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (!success) {
           ms.rollbackTransaction();
           if (madeDir) {
-            wh.deleteDir(partLocation, true, db);
+            wh.deleteDir(partLocation, true, false,
+                    ReplChangeManager.shouldEnableCm(db, tbl));
           }
         }
 
@@ -4532,8 +4606,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           success = ms.addPartition(part);
         } finally {
           if (!success && madeDir) {
-            wh.deleteDir(new Path(part.getSd().getLocation()), true,
-                    ms.getDatabase(tbl.getCatName(), tbl.getDbName()));
+            wh.deleteDir(new Path(part.getSd().getLocation()), true, false,
+                    ReplChangeManager.shouldEnableCm(ms.getDatabase(part.getCatName(),
+                            part.getDbName()), tbl));
           }
         }
 
@@ -4806,7 +4881,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Path archiveParentDir = null;
       boolean mustPurge = false;
       boolean tableDataShouldBeDeleted = false;
-      boolean isSourceOfReplication = false;
+      boolean needsCm = false;
       Map<String, String> transactionalListenerResponses = Collections.emptyMap();
 
       if (db_name == null) {
@@ -4854,7 +4929,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                                                       new DropPartitionEvent(tbl, part, true, deleteData, this),
                                                       envContext);
           }
-          isSourceOfReplication = ReplChangeManager.isSourceOfReplication(ms.getDatabase(catName, db_name));
+          needsCm = ReplChangeManager.shouldEnableCm(ms.getDatabase(catName, db_name), tbl);
           success = ms.commitTransaction();
         }
       } finally {
@@ -4873,11 +4948,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
             if (isArchived) {
               assert (archiveParentDir != null);
-              wh.deleteDir(archiveParentDir, true, mustPurge, isSourceOfReplication);
+              wh.deleteDir(archiveParentDir, true, mustPurge, needsCm);
             } else {
               assert (partPath != null);
-              wh.deleteDir(partPath, true, mustPurge, isSourceOfReplication);
-              deleteParentRecursive(partPath.getParent(), part_vals.size() - 1, mustPurge, isSourceOfReplication);
+              wh.deleteDir(partPath, true, mustPurge, needsCm);
+              deleteParentRecursive(partPath.getParent(), part_vals.size() - 1,
+                      mustPurge, needsCm);
             }
             // ok even if the data is not deleted
           }
@@ -4953,7 +5029,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       List<Partition> parts = null;
       boolean mustPurge = false;
       List<Map<String, String>> transactionalListenerResponses = Lists.newArrayList();
-      boolean isSourceOfReplication = ReplChangeManager.isSourceOfReplication(ms.getDatabase(catName, dbName));
+      boolean needsCm = ReplChangeManager.shouldEnableCm(ms.getDatabase(catName, dbName),
+              ms.getTable(catName, dbName, tblName));
 
       try {
         // We need Partition-s for firing events and for result; DN needs MPartition-s to drop.
@@ -5061,12 +5138,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           // Archived partitions have har:/to_har_file as their location.
           // The original directory was saved in params
           for (Path path : archToDelete) {
-            wh.deleteDir(path, true, mustPurge, isSourceOfReplication);
+            wh.deleteDir(path, true, mustPurge, needsCm);
           }
           for (PathAndPartValSize p : dirsToDelete) {
-            wh.deleteDir(p.path, true, mustPurge, isSourceOfReplication);
+            wh.deleteDir(p.path, true, mustPurge, needsCm);
             try {
-              deleteParentRecursive(p.path.getParent(), p.partValSize - 1, mustPurge, isSourceOfReplication);
+              deleteParentRecursive(p.path.getParent(), p.partValSize - 1, mustPurge, needsCm);
             } catch (IOException ex) {
               LOG.warn("Error from deleteParentRecursive", ex);
               throw new MetaException("Failed to delete parent: " + ex.getMessage());
@@ -7980,7 +8057,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (func == null) {
           throw new NoSuchObjectException("Function " + funcName + " does not exist");
         }
-        Boolean isSourceOfReplication =
+        Boolean needsCm =
               ReplChangeManager.isSourceOfReplication(get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]));
 
         // if copy of jar to change management fails we fail the metastore transaction, since the
@@ -7988,7 +8065,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         // a copy is required to allow incremental replication to work correctly.
         if (func.getResourceUris() != null && !func.getResourceUris().isEmpty()) {
           for (ResourceUri uri : func.getResourceUris()) {
-            if (uri.getUri().toLowerCase().startsWith("hdfs:") && isSourceOfReplication) {
+            if (uri.getUri().toLowerCase().startsWith("hdfs:") && needsCm) {
               wh.addToChangeManagement(new Path(uri.getUri()));
             }
           }

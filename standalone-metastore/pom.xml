@@ -422,6 +422,11 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-shims</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
         <!-- Note, this is LGPL.  But we're only using it in a test and not changing it, so I
         believe we are fine. -->
       <groupId>org.mariadb.jdbc</groupId>

@@ -271,6 +271,7 @@ public class TestReplChangeManager {
     FileSystem fs = warehouse.getWhRoot().getFileSystem(hiveConf);
     long now = System.currentTimeMillis();
     Path dirDb = new Path(warehouse.getWhRoot(), "db3");
+    fs.delete(dirDb, true);
     fs.mkdirs(dirDb);
     Path dirTbl1 = new Path(dirDb, "tbl1");
     fs.mkdirs(dirTbl1);

@@ -225,7 +225,7 @@ public class Cleaner extends MetaStoreCompactorThread {
     return " id=" + ci.id;
   }
   private void removeFiles(String location, ValidWriteIdList writeIdList, CompactionInfo ci)
-          throws IOException, NoSuchObjectException {
+          throws IOException, NoSuchObjectException, MetaException {
     Path locPath = new Path(location);
     AcidUtils.Directory dir = AcidUtils.getAcidState(locPath.getFileSystem(conf), locPath, conf, writeIdList, Ref.from(
         false), false, null, false);
@@ -260,11 +260,11 @@ public class Cleaner extends MetaStoreCompactorThread {
 
     FileSystem fs = filesToDelete.get(0).getFileSystem(conf);
     Database db = rs.getDatabase(getDefaultCatalog(conf), ci.dbname);
-    Boolean isSourceOfRepl = ReplChangeManager.isSourceOfReplication(db);
+    Table table = rs.getTable(getDefaultCatalog(conf), ci.dbname, ci.tableName);
 
     for (Path dead : filesToDelete) {
       LOG.debug("Going to delete path " + dead.toString());
-      if (isSourceOfRepl) {
+      if (ReplChangeManager.shouldEnableCm(db, table)) {
         replChangeManager.recycle(dead, ReplChangeManager.RecycleType.MOVE, true);
       }
       fs.delete(dead, true);
