@@ -85,7 +85,7 @@ stage('Testing') {
       stage('build1') {
         sh '''#!/bin/bash -e
 OPTS=" -s $SETTINGS -B install -Dmaven.test.failure.ignore -Dtest.groups= "
-OPTS+="-pl ql -am "
+#OPTS+="-pl ql -am "
 OPTS+=" -Dmaven.repo.local=$PWD/.m2"
 OPTS+=" $M_OPTS "
 mvn $OPTS
@@ -94,7 +94,7 @@ mvn $OPTS
       stage('build2') {
         sh '''#!/bin/bash -e
 OPTS=" -s $SETTINGS -B install -Dmaven.test.failure.ignore -Dtest.groups= "
-OPTS+="-pl ql -am "
+#OPTS+="-pl ql -am "
 OPTS+=" -Dmaven.repo.local=$PWD/.m2"
 OPTS+=" $M_OPTS "
 mvn $OPTS
@@ -103,7 +103,7 @@ mvn $OPTS
       stage('test1') {
         sh '''#!/bin/bash -e
 OPTS=" -s $SETTINGS -B test -Dmaven.test.failure.ignore -Dtest.groups= "
-OPTS+="-pl ql -am "
+#OPTS+="-pl ql -am "
 OPTS+=" -Dmaven.repo.local=$PWD/.m2"
 OPTS+=" $M_OPTS "
 mvn $OPTS
