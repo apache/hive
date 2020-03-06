@@ -81,6 +81,34 @@ stage('Testing') {
 //    unstash 'sources'
   }, {
     configFileProvider([configFile(fileId: 'artifactory', variable: 'SETTINGS')]) {
+      stage('build1') {
+        sh '''#!/bin/bash -e
+OPTS=" -s $SETTINGS -B install -Dmaven.test.failure.ignore -Dtest.groups= "
+OPTS+="-pl ql -am "
+OPTS+=" -Dmaven.repo.local=$PWD/.m2"
+OPTS+=" $M_OPTS "
+mvn $OPTS
+'''
+      }
+      stage('build2') {
+        sh '''#!/bin/bash -e
+OPTS=" -s $SETTINGS -B install -Dmaven.test.failure.ignore -Dtest.groups= "
+OPTS+="-pl ql -am "
+OPTS+=" -Dmaven.repo.local=$PWD/.m2"
+OPTS+=" $M_OPTS "
+mvn $OPTS
+'''
+      }
+      stage('test1') {
+        sh '''#!/bin/bash -e
+OPTS=" -s $SETTINGS -B test -Dmaven.test.failure.ignore -Dtest.groups= "
+OPTS+="-pl ql -am "
+OPTS+=" -Dmaven.repo.local=$PWD/.m2"
+OPTS+=" $M_OPTS "
+mvn $OPTS
+'''
+      }
+
       withEnv(["MULTIPLIER=$params.MULTIPLIER","M_OPTS=$params.OPTS"]) {
         sh '''#!/bin/bash -e
 OPTS=" -s $SETTINGS -B install -Dmaven.test.failure.ignore -Dtest.groups= "
@@ -101,4 +129,5 @@ du -h --max-depth=1
 
 //jenkins/jnlp-slave:3.27-1
 }
+
 
