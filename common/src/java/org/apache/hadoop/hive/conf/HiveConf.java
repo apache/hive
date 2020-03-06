@@ -1999,7 +1999,7 @@ public class HiveConf extends Configuration {
     HIVE_PARQUET_WRITE_INT64_TIMESTAMP("hive.parquet.write.int64.timestamp", false,
         "Write parquet timestamps as int64/LogicalTypes instead of int96/OriginalTypes. Note:" +
         "Timestamps will be time zone agnostic (NEVER converted to a different time zone)."),
-    HIVE_PARQUET_TIMESTAMP_TIME_UNIT("hive.parquet.timestamp.time.unit", "millis",
+    HIVE_PARQUET_TIMESTAMP_TIME_UNIT("hive.parquet.timestamp.time.unit", "micros",
         new StringSet("nanos", "micros", "millis"),
         "Store parquet int64/LogicalTypes timestamps in this time unit."),
 
