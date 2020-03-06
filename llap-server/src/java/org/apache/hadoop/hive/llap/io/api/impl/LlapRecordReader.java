@@ -471,10 +471,10 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
           // TODO: should we create the batch from vrbctx, and reuse the vectors, like below? Future work.
           inputVrb.cols[ixInVrb] = cvb.getCvb().cols[ixInReadSet];
         }
-        if (cvb.isSelectedInUse()) {
+        if (cvb.getFilterContext().isSelectedInUse()) {
           inputVrb.selectedInUse = true;
-          inputVrb.size = cvb.getSelectedSize();
-          inputVrb.selected = cvb.getSelected();
+          inputVrb.size = cvb.getFilterContext().getSelectedSize();
+          inputVrb.selected = cvb.getFilterContext().getSelected();
         } else {
           inputVrb.size = cvb.getCvb().size;
         }
@@ -496,10 +496,10 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
         int ixInVrb = includes.getPhysicalColumnIds().get(ixInReadSet);
         cvb.getCvb().swapColumnVector(ixInReadSet, vrb.cols, ixInVrb);
       }
-      if (cvb.isSelectedInUse()) {
+      if (cvb.getFilterContext().isSelectedInUse()) {
         vrb.selectedInUse = true;
-        vrb.size = cvb.getSelectedSize();
-        vrb.selected = cvb.getSelected();
+        vrb.size = cvb.getFilterContext().getSelectedSize();
+        vrb.selected = cvb.getFilterContext().getSelected();
       } else {
         vrb.selectedInUse = false;
         vrb.size = cvb.getCvb().size;

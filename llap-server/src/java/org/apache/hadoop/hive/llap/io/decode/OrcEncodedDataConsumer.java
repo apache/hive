@@ -215,7 +215,7 @@ public class OrcEncodedDataConsumer
         }
 
         ColumnVectorBatchWrapper cvbw = cvbPool.take();
-        cvbw.resetCnx();
+        cvbw.getFilterContext().resetFilterContext();
         // assert cvb.cols.length == batch.getColumnIxs().length; // Must be constant per split.
         cvbw.getCvb().size = batchSize;
         // for every column of the row group
@@ -272,7 +272,7 @@ public class OrcEncodedDataConsumer
             if (probeDecodeMapJoinTable != null)
               HashTableRowFilterCallback(cvbw, idx, batchSize);
           } else {
-            reader.getFilterContext().copyFilterContextFromOther(cvbw.getFilterContext());
+            reader.setFilterContext(cvbw.getFilterContext().immutable());
             reader.nextVector(cv, null, batchSize);
           }
         }
@@ -280,7 +280,7 @@ public class OrcEncodedDataConsumer
           downstreamConsumer.consumeData(cvbw);
           counters.incrCounter(LlapIOCounters.ROWS_EMITTED, batchSize);
         }
-        nonSkippedRowCount += cvbw.getSelectedSize();
+        nonSkippedRowCount += cvbw.getFilterContext().getSelectedSize();
       }
       LlapIoImpl.ORC_LOGGER.debug("Done with decode, skippedRows {} out of {} on {} Cols", nonNullRowCount - nonSkippedRowCount,
           nonNullRowCount, columnReaders.length);
@@ -297,7 +297,7 @@ public class OrcEncodedDataConsumer
   // Filter out rows in a round-robbin fashion starting with a pass
   public void HashTableRowFilterCallback(ColumnVectorBatchWrapper cvbw, int colIdx, int batchSize) {
     long startDecodeTime = counters.startTimeCounter();
-    TreeReaderFactory.FilterContext cntx = cvbw.getFilterContext();
+    TreeReaderFactory.MutableFilterContext cntx = cvbw.getFilterContext();
     int[] selected = null;
     int newSize = 0;
     boolean selectedInUse = false;
@@ -312,7 +312,7 @@ public class OrcEncodedDataConsumer
           cvbw.getCvb().size = 0;
         }
       } else {
-        selected = new int[batchSize];
+        selected = cntx.borrowSelected(batchSize);
         for (int row = 0; row < batchSize; ++row) {
           // Pass ony Valid key
           if (probeDecodeMapJoinTable.lookup(probeCol.vector[row])) {
@@ -327,7 +327,7 @@ public class OrcEncodedDataConsumer
       }
     }
 //    LlapIoImpl.ORC_LOGGER.info("PANOS Matched: {} selectedInUse {} batchSize {} newCV size: {}", newSize, selectedInUse, batchSize, cvbw.getCvb().size);
-    cntx.updateFilterContext(selectedInUse, selected, newSize);
+    cntx.setFilterContext(selectedInUse, selected, newSize);
     counters.incrWallClockCounter(LlapIOCounters.PROBE_DECODE_TIME_NS, startDecodeTime);
   }
 
