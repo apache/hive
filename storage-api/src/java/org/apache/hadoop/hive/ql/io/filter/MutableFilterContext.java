@@ -42,9 +42,8 @@ public class MutableFilterContext extends FilterContext {
     this.currBatchSelected = selected;
     this.currBatchSelectedSize = selectedSize;
     // Avoid selected.length < selectedSize since we can borrow a larger array for selected
-    // debug loop for checking if selected is in order without duplicates (i.e [1,1,1] is illegal)
-    for (int i = 0; i < selectedSize-1; i++)
-      assert selected[i] < selected[i+1];
+    // Debug loop for selected array: use without assert when needed (asserts only fail in testing)
+    assert isValidSelected() : "Selected array may not contain duplicates or unordered values";
   }
 
   /**
@@ -54,17 +53,33 @@ public class MutableFilterContext extends FilterContext {
    * @param other FilterContext to copy from
    */
   public void copyFilterContextFrom(MutableFilterContext other) {
-    // assert if copying into self
-    assert this != other;
+    // assert if copying into self (can fail only in testing)
+    assert this != other: "May not copy a FilterContext to itself";
 
-    if (this.currBatchSelected == null || this.currBatchSelected.length < other.currBatchSelectedSize) {
-      // note: still allocating a full size buffer, for later use
-      this.currBatchSelected = Arrays.copyOf(other.currBatchSelected, other.currBatchSelected.length);
-    } else {
-      System.arraycopy(other.currBatchSelected, 0, this.currBatchSelected, 0, other.currBatchSelectedSize);
+    if (this != other) {
+      if (this.currBatchSelected == null || this.currBatchSelected.length < other.currBatchSelectedSize) {
+        // note: still allocating a full size buffer, for later use
+        this.currBatchSelected = Arrays.copyOf(other.currBatchSelected, other.currBatchSelected.length);
+      } else {
+        System.arraycopy(other.currBatchSelected, 0, this.currBatchSelected, 0, other.currBatchSelectedSize);
+      }
+      this.currBatchSelectedSize = other.currBatchSelectedSize;
+      this.currBatchIsSelectedInUse = other.currBatchIsSelectedInUse;
     }
-    this.currBatchSelectedSize = other.currBatchSelectedSize;
-    this.currBatchIsSelectedInUse = other.currBatchIsSelectedInUse;
+  }
+
+  /**
+   * Validate method checking if existing selected array contains values that
+   * are in order and does not without duplicates i.e [1,1,1] is illegal
+   *
+   * @return true if the selected array is valid
+   */
+  public boolean isValidSelected() {
+    for (int i = 1; i < this.currBatchSelectedSize; i++) {
+      if (this.currBatchSelected[i-1] >= this.currBatchSelected[i])
+        return false;
+    }
+    return true;
   }
 
   /**
