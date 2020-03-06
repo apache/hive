@@ -56,24 +56,17 @@ import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_METADATA_O
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_ENABLE_MOVE_OPTIMIZATION;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_MOVE_OPTIMIZED_FILE_SCHEMES;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_DBNAME;
-import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_FROM;
-import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_LIMIT;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPLACE;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_CONFIG;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_DUMP;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_LOAD;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_STATUS;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_TABLES;
-import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_TO;
 
 public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   // Replication Scope
   private ReplScope replScope = new ReplScope();
   private ReplScope oldReplScope = null;
-
-  private Long eventFrom;
-  private Long eventTo;
-  private Integer maxEventLimit;
 
   // Base path for REPL LOAD
   private String path;
@@ -207,27 +200,6 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       case TOK_REPLACE:
         setOldReplPolicy(currNode);
         break;
-      case TOK_FROM:
-        // TOK_FROM subtree
-        Tree fromNode = currNode;
-        eventFrom = Long.parseLong(PlanUtils.stripQuotes(fromNode.getChild(0).getText()));
-
-        // Skip the first, which is always required
-        int fromChildIdx = 1;
-        while (fromChildIdx < fromNode.getChildCount()) {
-          if (fromNode.getChild(fromChildIdx).getType() == TOK_TO) {
-            eventTo = Long.parseLong(PlanUtils.stripQuotes(fromNode.getChild(fromChildIdx + 1).getText()));
-            // Skip the next child, since we already took care of it
-            fromChildIdx++;
-          } else if (fromNode.getChild(fromChildIdx).getType() == TOK_LIMIT) {
-            maxEventLimit = Integer.parseInt(PlanUtils.stripQuotes(fromNode.getChild(fromChildIdx + 1).getText()));
-            // Skip the next child, since we already took care of it
-            fromChildIdx++;
-          }
-          // move to the next child in FROM tree
-          fromChildIdx++;
-        }
-        break;
       default:
         throw new SemanticException("Unrecognized token " + currNode.getType() + " in REPL DUMP statement.");
       }
@@ -263,10 +235,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
           .get(new ReplDumpWork(
               replScope,
               oldReplScope,
-              eventFrom,
-              eventTo,
               ErrorMsg.INVALID_PATH.getMsg(ast),
-              maxEventLimit,
               ctx.getResFile().toUri().toString()
       ), conf);
       rootTasks.add(replDumpWorkTask);
