@@ -135,6 +135,7 @@ STAGE PLANS:
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 12 Data size: 2196 Basic stats: COMPLETE Column stats: COMPLETE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(DISTINCT KEY._col1:0._col0)
