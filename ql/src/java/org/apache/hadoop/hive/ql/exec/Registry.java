@@ -723,12 +723,15 @@ public class Registry {
     }
   }
 
-  public void closeCUDFLoaders() {
+  public void closeCUDFLoaders(ClassLoader baseLoader) {
     lock.lock();
     try {
       try {
         for(ClassLoader loader: mSessionUDFLoaders) {
-          JavaUtils.closeClassLoader(loader);
+          // do a sanity check here just in case
+          if (loader != baseLoader) {
+            JavaUtils.closeClassLoader(loader);
+          }
         }
       } catch (IOException ie) {
           LOG.error("Error in close loader: " + ie);

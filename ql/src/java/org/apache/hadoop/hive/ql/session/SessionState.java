@@ -1801,7 +1801,7 @@ public class SessionState implements ISessionAuthState{
 
     try {
       closeSparkSession();
-      registry.closeCUDFLoaders();
+      registry.closeCUDFLoaders(parentLoader);
       dropSessionPaths(sessionConf);
       unCacheDataNucleusClassLoaders();
     } finally {
