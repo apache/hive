@@ -413,7 +413,7 @@ public class TestHiveSchemaConverter {
     testLogicalTypeAnnotation("boolean", "a", null, conf);
     testLogicalTypeAnnotation("binary", "a", null, conf);
     testLogicalTypeAnnotation("timestamp", "a",
-        LogicalTypeAnnotation.timestampType(false, LogicalTypeAnnotation.TimeUnit.MILLIS), conf);
+        LogicalTypeAnnotation.timestampType(false, LogicalTypeAnnotation.TimeUnit.MICROS), conf);
     testLogicalTypeAnnotation("char(3)", "a", LogicalTypeAnnotation.stringType(), conf);
     testLogicalTypeAnnotation("varchar(30)", "a", LogicalTypeAnnotation.stringType(), conf);
     testLogicalTypeAnnotation("decimal(7,2)", "a", LogicalTypeAnnotation.decimalType(2, 7), conf);
