@@ -31,6 +31,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
@@ -305,10 +306,15 @@ public class BasicStats {
     long result = -1;
 
     if (params != null) {
-      try {
-        result = Long.parseLong(params.get(fieldName));
-      } catch (NumberFormatException e) {
-        result = -1;
+      String val = params.get(fieldName);
+      if (!StringUtils.isBlank(val)) {
+        try {
+          result = Long.parseLong(val);
+        } catch (NumberFormatException e) {
+          // Pass-through. This should not happen and we will LOG it,
+          // but do not fail query.
+          LOG.warn("Error parsing {} value: {}", fieldName, val);
+        }
       }
     }
     return result;
