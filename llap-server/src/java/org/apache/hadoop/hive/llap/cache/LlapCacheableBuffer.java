@@ -17,8 +17,6 @@
  */
 package org.apache.hadoop.hive.llap.cache;
 
-import org.apache.hadoop.hive.common.io.CacheTag;
-
 /**
  * Buffer that can be managed by LowLevelEvictionPolicy.
  * We want to have cacheable and non-allocator buffers, as well as allocator buffers with no
@@ -58,7 +56,7 @@ public abstract class LlapCacheableBuffer {
         + lastUpdate + " " + (isLocked() ? "!" : ".") + "]";
   }
 
-  public abstract CacheTag getTag();
+  public abstract String getTag();
 
   protected abstract boolean isLocked();
 }

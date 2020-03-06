@@ -33,7 +33,6 @@ import org.apache.hadoop.hive.common.io.Allocator;
 import org.apache.hadoop.hive.common.io.DataCache.BooleanRef;
 import org.apache.hadoop.hive.common.io.DataCache.DiskRangeListFactory;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
-import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.llap.DebugUtils;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
@@ -56,16 +55,16 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapOomDebugD
 
   public static final class LlapSerDeDataBuffer extends LlapAllocatorBuffer {
     public boolean isCached = false;
-    private CacheTag tag;
+    private String tag;
     @Override
     public void notifyEvicted(EvictionDispatcher evictionDispatcher) {
       evictionDispatcher.notifyEvicted(this);
     }
-    public void setTag(CacheTag tag) {
+    public void setTag(String tag) {
       this.tag = tag;
     }
     @Override
-    public CacheTag getTag() {
+    public String getTag() {
       return tag;
     }
   }
@@ -500,7 +499,7 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapOomDebugD
   }
 
   public void putFileData(final FileData data, Priority priority,
-      LowLevelCacheCounters qfCounters, CacheTag tag) {
+      LowLevelCacheCounters qfCounters, String tag) {
     // TODO: buffers are accounted for at allocation time, but ideally we should report the memory
     //       overhead from the java objects to memory manager and remove it when discarding file.
     if (data.stripes == null || data.stripes.isEmpty()) {
@@ -575,7 +574,7 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapOomDebugD
     }
   }
 
-  private void lockAllBuffersForPut(StripeData si, Priority priority, CacheTag tag) {
+  private void lockAllBuffersForPut(StripeData si, Priority priority, String tag) {
     for (int i = 0; i < si.data.length; ++i) {
       LlapSerDeDataBuffer[][] colData = si.data[i];
       if (colData == null) continue;

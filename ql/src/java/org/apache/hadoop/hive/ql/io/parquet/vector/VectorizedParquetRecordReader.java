@@ -22,14 +22,13 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.common.io.DataCache;
 import org.apache.hadoop.hive.common.io.FileMetadataCache;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBufferOrBuffers;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.LlapCacheAwareFs;
-import org.apache.hadoop.hive.llap.LlapHiveUtils;
+import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
@@ -38,9 +37,6 @@ import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.parquet.ParquetRecordReaderBase;
 import org.apache.hadoop.hive.ql.io.parquet.ProjectionPusher;
 import org.apache.hadoop.hive.ql.io.parquet.read.DataWritableReadSupport;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.MapWork;
-import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
@@ -82,7 +78,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -109,7 +104,6 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
   private Object[] partitionValues;
   private Path cacheFsPath;
   private static final int MAP_DEFINITION_LEVEL_MAX = 3;
-  private Map<Path, PartitionDesc> parts;
 
   /**
    * For each request column, the reader to read this column. This is NULL if this column
@@ -176,19 +170,13 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
   @SuppressWarnings("deprecation")
   public void initialize(
     InputSplit oldSplit,
-    JobConf configuration) throws IOException, InterruptedException, HiveException {
+    JobConf configuration) throws IOException, InterruptedException {
     // the oldSplit may be null during the split phase
     if (oldSplit == null) {
       return;
     }
     ParquetMetadata footer;
     List<BlockMetaData> blocks;
-
-    MapWork mapWork = LlapHiveUtils.findMapWork(jobConf);
-    if (mapWork != null) {
-      parts = mapWork.getPathToPartitionInfo();
-    }
-
     ParquetInputSplit split = (ParquetInputSplit) oldSplit;
     boolean indexAccess =
       configuration.getBoolean(DataWritableReadSupport.PARQUET_COLUMN_INDEX_ACCESS, false);
@@ -202,7 +190,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
 
     // if task.side.metadata is set, rowGroupOffsets is null
     Object cacheKey = null;
-    CacheTag cacheTag = null;
+    String cacheTag = null;
     // TODO: also support fileKey in splits, like OrcSplit does
     if (metadataCache != null) {
       cacheKey = HdfsUtils.getFileId(file.getFileSystem(configuration), file,
@@ -212,7 +200,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     }
     if (cacheKey != null) {
       if (HiveConf.getBoolVar(cacheConf, ConfVars.LLAP_TRACK_CACHE_USAGE)) {
-        cacheTag = LlapHiveUtils.getDbAndTableNameForMetrics(file, true, parts);
+        cacheTag = LlapUtil.getDbAndTableNameForMetrics(file, true);
       }
       // If we are going to use cache, change the path to depend on file ID for extra consistency.
       FileSystem fs = file.getFileSystem(configuration);
@@ -277,7 +265,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
   }
 
   private Path wrapPathForCache(Path path, Object fileKey, JobConf configuration,
-      List<BlockMetaData> blocks, CacheTag tag) throws IOException {
+      List<BlockMetaData> blocks, String tag) throws IOException {
     if (fileKey == null || cache == null) {
       return path;
     }
@@ -304,7 +292,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
   }
 
   private ParquetMetadata readSplitFooter(JobConf configuration, final Path file,
-      Object cacheKey, MetadataFilter filter, CacheTag tag) throws IOException {
+      Object cacheKey, MetadataFilter filter, String tag) throws IOException {
     MemoryBufferOrBuffers footerData = (cacheKey == null || metadataCache == null) ? null
         : metadataCache.getFileMetadata(cacheKey);
     if (footerData != null) {

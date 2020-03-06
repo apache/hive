@@ -312,7 +312,8 @@ public class LlapUtil {
       DELETE_DELTA_PREFIX = "delete_delta_", BUCKET_PREFIX = "bucket_",
       DATABASE_PATH_SUFFIX = ".db", UNION_SUDBIR_PREFIX = "HIVE_UNION_SUBDIR_";
 
-  @Deprecated
+  public static final char DERIVED_ENTITY_PARTITION_SEPARATOR = '/';
+
   public static String getDbAndTableNameForMetrics(Path path, boolean includeParts) {
     String[] parts = path.toUri().getPath().toString().split(Path.SEPARATOR);
     int dbIx = -1;
