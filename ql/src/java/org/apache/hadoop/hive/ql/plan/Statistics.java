@@ -52,7 +52,9 @@ public class Statistics implements Serializable {
 
   private long numRows;
   private long runTimeNumRows;
+  // dataSize represents raw data size (estimated in-memory size based on row schema) after decompression and decoding.
   private long dataSize;
+  // totalFileSize represents on-disk size.
   private long totalFileSize;
   private long numErasureCodedFiles;
   private State basicStatsState;

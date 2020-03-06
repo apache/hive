@@ -147,7 +147,7 @@ public class StatsUtils {
    *          - hive configuration
    * @param partList
    *          - partition list
-   * @param tablebasicStats.getNumRows()
+   * @param table
    *          - table
    * @param tableScanOperator
    *          - table scan operator
