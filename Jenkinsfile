@@ -54,7 +54,7 @@ spec:
 properties([
     parameters([
         string(name: 'MULTIPLIER', defaultValue: '1', description: 'Factor by which to artificially slow down tests.'),
-        string(name: 'SPLIT', defaultValue: '5', description: 'Number of buckets to split tests into.')
+        string(name: 'SPLIT', defaultValue: '5', description: 'Number of buckets to split tests into.'),
         string(name: 'OPTS', defaultValue: '', description: 'additional maven opts')
     ])
 ])
