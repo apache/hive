@@ -17,14 +17,15 @@
  */
 package org.apache.hadoop.hive.llap.cache;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Arrays;
+import java.util.LinkedList;
 
 import org.apache.hadoop.hive.common.io.CacheTag;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import static java.util.stream.Collectors.toCollection;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -122,27 +123,6 @@ public class TestCacheContentsTracker {
 
   }
 
-  @Test
-  public void testEncodingDecoding() throws Exception {
-    Map<String, String> partDescs = new HashMap<>();
-    partDescs.put("pytha=goras", "a2+b2=c2");
-    CacheTag tag = CacheTag.build("math.rules", partDescs);
-    CacheTag.SinglePartitionCacheTag stag = ((CacheTag.SinglePartitionCacheTag)tag);
-    assertEquals("pytha=goras=a2+b2=c2", stag.partitionDescToString());
-    assertEquals(1, stag.getPartitionDescMap().size());
-    assertEquals("a2+b2=c2", stag.getPartitionDescMap().get("pytha=goras"));
-
-    partDescs.clear();
-    partDescs.put("mutli=one", "one=/1");
-    partDescs.put("mutli=two/", "two=2");
-    tag = CacheTag.build("math.rules", partDescs);
-    CacheTag.MultiPartitionCacheTag mtag = ((CacheTag.MultiPartitionCacheTag)tag);
-    assertEquals("mutli=one=one=/1/mutli=two/=two=2", mtag.partitionDescToString());
-    assertEquals(2, mtag.getPartitionDescMap().size());
-    assertEquals("one=/1", mtag.getPartitionDescMap().get("mutli=one"));
-    assertEquals("two=2", mtag.getPartitionDescMap().get("mutli=two/"));
-  }
-
   private static void compareViceVersa(int expected, CacheTag a, CacheTag b) {
     if (a != null) {
       assertEquals(expected, a.compareTo(b));
@@ -168,12 +148,8 @@ public class TestCacheContentsTracker {
 
   private static CacheTag cacheTagBuilder(String dbAndTable, String... partitions) {
     if (partitions != null && partitions.length > 0) {
-      Map<String, String> partDescs = new HashMap<>();
-      for (String partition : partitions) {
-        String[] partDesc = partition.split("=");
-        partDescs.put(partDesc[0], partDesc[1]);
-      }
-      return CacheTag.build(dbAndTable, partDescs);
+      LinkedList<String> parts = Arrays.stream(partitions).collect(toCollection(LinkedList::new));
+      return CacheTag.build(dbAndTable, parts);
     } else {
       return CacheTag.build(dbAndTable);
     }
