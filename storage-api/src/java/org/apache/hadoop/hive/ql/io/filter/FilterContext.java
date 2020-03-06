@@ -21,41 +21,19 @@ package org.apache.hadoop.hive.ql.io.filter;
  * A representation of a Filter applied on the rows of a VectorizedRowBatch
  * {@link org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch}.
  *
- * Each FilterContext consists of an array with the ids (int) of rows that are selected
- * by the filter, an integer representing the number of selected rows, and a boolean showing
- * if the filter actually selected any rows.
+ * Each FilterContext consists of an array with the ids (int) of rows that are selected by the
+ * filter, an integer representing the number of selected rows, and a boolean showing if the filter
+ * actually selected any rows.
  *
  */
-public class FilterContext {
-  private boolean currBatchIsSelectedInUse = false;
-  private int[] currBatchSelected = null;
-  private int currBatchSelectedSize = 0;
+public abstract class FilterContext {
 
-  /**
-   * Empty constructor
-   */
-  public FilterContext(){};
+  protected boolean currBatchIsSelectedInUse = false;
+  protected int[] currBatchSelected = null;
+  protected int currBatchSelectedSize = 0;
 
-  /**
-   * Update context with the given values
-   * @param isSelectedInUse if the filter is applied
-   * @param selected an array of the selected rows
-   * @param selectedSize the number of the selected rows
-   */
-  public void updateFilterContext(boolean isSelectedInUse, int[] selected, int selectedSize) {
-    this.currBatchIsSelectedInUse = isSelectedInUse;
-    this.currBatchSelected = selected;
-    this.currBatchSelectedSize = selectedSize;
-  }
-
-  /**
-   * Copy context variables from the a given FilterContext
-   * @param other FilterContext to copy from
-   */
-  public void copyFilterContextFromOther(FilterContext other) {
-    this.currBatchIsSelectedInUse = other.currBatchIsSelectedInUse;
-    this.currBatchSelected = other.currBatchSelected;
-    this.currBatchSelectedSize = other.currBatchSelectedSize;
+  public FilterContext() {
+    super();
   }
 
   /**
@@ -68,15 +46,8 @@ public class FilterContext {
   }
 
   /**
-   * Set the selectedInUse boolean showing if the filter is applied
-   * @param selectedInUse
-   */
-  public void setSelectedInUse(boolean selectedInUse) {
-    this.currBatchIsSelectedInUse = selectedInUse;
-  }
-
-  /**
    * Is the filter applied?
+   * 
    * @return true if the filter is actually applied
    */
   public boolean isSelectedInUse() {
@@ -84,15 +55,9 @@ public class FilterContext {
   }
 
   /**
-   * Set the array of the rows that pass the filter
-   * @param selectedArray
-   */
-  public void setSelected(int[] selectedArray) {
-    this.currBatchSelected = selectedArray;
-  }
-
-  /**
-   * Return an int array with the rows that pass the filter
+   * Return an int array with the rows that pass the filter. 
+   * Do not modify the array returned!
+   * 
    * @return int array
    */
   public int[] getSelected() {
@@ -100,15 +65,8 @@ public class FilterContext {
   }
 
   /**
-   * Set the number of the rows that pass the filter
-   * @param selectedSize
-   */
-  public void setSelectedSize(int selectedSize) {
-    this.currBatchSelectedSize = selectedSize;
-  }
-
-  /**
    * Return the number of rows that pass the filter
+   * 
    * @return an int
    */
   public int getSelectedSize() {
