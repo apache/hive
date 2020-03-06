@@ -184,7 +184,7 @@ def main(args):
 	# Make the llap tarball
 	print "%s Prepared the files" % (strftime("%H:%M:%S", gmtime()))
 
-	tarball = tarfile.open(join(output, "llap-%s.tar.gz" %  version), "w:gz")
+	tarball = tarfile.open(join(output, "%s-%s.tar.gz" % (resource.clusterName, version), "w:gz")
 	# recursive add + -C chdir inside
 	tarball.add(input, "")
 	tarball.close()
