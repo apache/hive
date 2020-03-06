@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableKeyType;
 import org.apache.hadoop.hive.serde2.WriteBuffers;
 import org.apache.hadoop.hive.serde2.WriteBuffers.ByteSegmentRef;
 import org.apache.hadoop.io.BytesWritable;
+import org.apache.hive.common.util.BloomKFilter;
 import org.apache.hive.common.util.HashCodeUtil;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -157,13 +158,13 @@ public class VectorMapJoinFastLongHashMap
   }
 
   @Override
-  public CuckooSetLong getHashTableKeySet() {
-    return getHashTablekeys();
+  public BloomKFilter getHashTableKeys() {
+    return getHashTablekeysBF();
   }
 
   @Override
-  public boolean containsKey(byte[] currentKey) {
-    return adaptContainsKey(currentKey);
+  public boolean containsLongKey(long currentKey) {
+    return containsKey(currentKey);
   }
 
   /*

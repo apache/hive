@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast;
 
 import java.io.IOException;
 
-import org.apache.hadoop.hive.ql.exec.vector.expressions.CuckooSetLong;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
+import org.apache.hive.common.util.BloomKFilter;
 import org.apache.hive.common.util.HashCodeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,42 +56,14 @@ public abstract class VectorMapJoinFastBytesHashTable
   }
 
   @Override
-  public CuckooSetLong getHashTableKeySet() {
+  public BloomKFilter getHashTableKeys() {
     throw new RuntimeException("Not supported yet!");
   }
 
   // Same method can be used for all Bytes-Hash implementations (hash map, hash multi-set, or hash set)
   @Override
-  public boolean containsKey(byte[] currentKey) {
-    int keyLength = currentKey.length;
-
-    long hashCode = HashCodeUtil.murmurHash(currentKey, 0, keyLength);
-    int intHashCode = (int) hashCode;
-    int slot = (intHashCode & logicalHashBucketMask);
-    long probeSlot = slot;
-    int i = 0;
-    boolean keyExists;
-    long refWord;
-    final long partialHashCode =
-        VectorMapJoinFastBytesHashKeyRef.extractPartialHashCode(hashCode);
-    while (true) {
-      refWord = slots[slot];
-      if (refWord == 0) {
-        keyExists = false;
-        break;
-      }
-      if (VectorMapJoinFastBytesHashKeyRef.getPartialHashCodeFromRefWord(refWord) ==
-          partialHashCode &&
-          VectorMapJoinFastBytesHashKeyRef.equalKey(
-              refWord, currentKey, 0, keyLength, writeBuffers, unsafeReadPos)) {
-        keyExists = true;
-        break;
-      }
-      // Some other key (collision) - keep probing.
-      probeSlot += (++i);
-      slot = (int) (probeSlot & logicalHashBucketMask);
-    }
-    return keyExists;
+  public boolean containsLongKey(long currentKey) {
+    throw new RuntimeException("Not supported yet!");
   }
 
   public abstract void add(byte[] keyBytes, int keyStart, int keyLength,

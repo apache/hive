@@ -52,10 +52,10 @@ import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.UnionColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.CuckooSetLong;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashTable;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinTableContainer;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hive.common.util.BloomKFilter;
 import org.apache.orc.CompressionCodec;
 import org.apache.orc.OrcProto.CalendarKind;
 import org.apache.orc.impl.PositionProvider;
@@ -89,9 +89,11 @@ public class OrcEncodedDataConsumer
   private TypeDescription[] batchSchemas;
   private boolean useDecimal64ColumnVectors;
   // ProbeDecode extra variables
-  private Boolean probeDecodeEnabled = false;
+  private boolean probeDecodeEnabled = false;
+  private boolean probeDecodeCuckooEnabled = false;
   private float probeDecodeFilterThresPerc;
-  private CuckooSetLong probeDecodeMapJoinTable = null;
+  private BloomKFilter probeDecodeMapBf = null;
+  private VectorMapJoinHashTable probeDecodeMapJoinTable = null;
   private ObjectCache probeDecodeCache = null;
 
 
@@ -103,19 +105,23 @@ public class OrcEncodedDataConsumer
     this.skipCorrupt = skipCorrupt;
     this.probeDecodeEnabled = HiveConf.getBoolVar(includes.getJobConf(), HiveConf.ConfVars.HIVE_MAPJOIN_PROBEDECODE_ENABLED) &&
         this.includes.getProbeDecodeCacheKey() != null;
+    this.probeDecodeCuckooEnabled = HiveConf.getBoolVar(includes.getJobConf(), HiveConf.ConfVars.HIVE_MAPJOIN_PROBEDECODE_BF_ENABLED);
     this.probeDecodeFilterThresPerc = HiveConf.getFloatVar(includes.getJobConf(), HiveConf.ConfVars.HIVE_MAPJOIN_PROBEDECODE_FILTER_PERC);
     if (this.probeDecodeEnabled) {
       this.probeDecodeCache = ObjectCacheFactory.getCache(conf, HiveConf.getVar(includes.getJobConf(), HiveConf.ConfVars.HIVEQUERYID), false);
       // Start periodic MapJoinTable checker
       ExecutorService executorService = Executors.newFixedThreadPool(1);
       executorService.execute(()->{
-        while (probeDecodeMapJoinTable == null) {
+        while (probeDecodeMapJoinTable == null && probeDecodeMapBf == null) {
           try {
             // TODO: Check if we can get directly from operator
             Pair<MapJoinTableContainer[], MapJoinTableContainerSerDe[]> smallTablePair = probeDecodeCache.retrieve(includes.getProbeDecodeCacheKey());
             if (smallTablePair != null ) {
               VectorMapJoinHashTable ht = ((VectorMapJoinTableContainer) smallTablePair.getLeft()[smallTablePair.getLeft().length-1]).vectorMapJoinHashTable();
-              this.probeDecodeMapJoinTable = ht.getHashTableKeySet();
+              if (probeDecodeCuckooEnabled)
+                this.probeDecodeMapBf = ht.getHashTableKeys();
+              else
+                this.probeDecodeMapJoinTable = ht;
               LlapIoImpl.LOG.info("ProbeDecode finally got HashTable of size {}", ht.size());
             } else {
               Thread.sleep(50);
@@ -307,16 +313,29 @@ public class OrcEncodedDataConsumer
       if (probeCol.isRepeating) {
         // All must be selected otherwise size would be zero
         // Repeating property will not change.
-        if (!(probeDecodeMapJoinTable.lookup(probeCol.vector[0]))) {
-          // Entire batch is filtered out.
-          cvbw.getCvb().size = 0;
+        if (probeDecodeCuckooEnabled) {
+          if (!(probeDecodeMapBf.testLong(probeCol.vector[0]))) {
+            // Entire batch is filtered out.
+            cvbw.getCvb().size = 0;
+          }
+        } else {
+          if (!(probeDecodeMapJoinTable.containsLongKey(probeCol.vector[0]))) {
+            // Entire batch is filtered out.
+            cvbw.getCvb().size = 0;
+          }
         }
       } else {
         selected = cntx.borrowSelected(batchSize);
         for (int row = 0; row < batchSize; ++row) {
           // Pass ony Valid key
-          if (probeDecodeMapJoinTable.lookup(probeCol.vector[row])) {
-            selected[newSize++] = row;
+          if (probeDecodeCuckooEnabled) {
+            if (probeDecodeMapBf.testLong(probeCol.vector[row])) {
+              selected[newSize++] = row;
+            }
+          } else {
+            if (probeDecodeMapJoinTable.containsLongKey(probeCol.vector[row])) {
+              selected[newSize++] = row;
+            }
           }
         }
         if (newSize == 0) cvbw.getCvb().size = 0;

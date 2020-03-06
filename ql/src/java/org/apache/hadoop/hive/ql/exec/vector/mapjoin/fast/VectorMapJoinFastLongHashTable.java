@@ -24,6 +24,7 @@ import com.google.common.primitives.Longs;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CuckooSetLong;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
+import org.apache.hive.common.util.BloomKFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
@@ -230,22 +231,17 @@ public abstract class VectorMapJoinFastLongHashTable
     }
   }
 
-  public CuckooSetLong getHashTablekeys(){
-    CuckooSetLong toReturn = new CuckooSetLong(keysAssigned);
+  public BloomKFilter getHashTablekeysBF(){
+    BloomKFilter toReturn = new BloomKFilter(keysAssigned);
     for (int slot = 0; slot < logicalHashBucketCount; slot++) {
       int pairIndex = slot * 2;
       long valueRef = slotPairs[pairIndex];
       if (valueRef != 0) {
         long tableKey = slotPairs[pairIndex + 1];
-        toReturn.insert(tableKey);
+        toReturn.addLong(tableKey);
       }
     }
     return toReturn;
-  }
-
-  public boolean adaptContainsKey(byte[] currentKey) {
-    long key = Longs.fromByteArray(currentKey);
-    return containsKey(key);
   }
 
   protected boolean containsKey(long key) {

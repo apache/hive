@@ -22,6 +22,7 @@ import java.io.IOException;
 
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CuckooSetLong;
+import org.apache.hive.common.util.BloomKFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
@@ -66,13 +67,13 @@ public class VectorMapJoinFastLongHashMultiSet
   }
 
   @Override
-  public CuckooSetLong getHashTableKeySet() {
-    return getHashTablekeys();
+  public BloomKFilter getHashTableKeys() {
+    return getHashTablekeysBF();
   }
 
   @Override
-  public boolean containsKey(byte[] currentKey) {
-    return adaptContainsKey(currentKey);
+  public boolean containsLongKey(long currentKey) {
+    return containsKey(currentKey);
   }
 
   /*

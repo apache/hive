@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.CuckooSetLong;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.io.BytesWritable;
+import org.apache.hive.common.util.BloomKFilter;
 
 /*
  * Root interface for a vector map join hash table (which could be a hash map, hash multi-set, or
@@ -47,9 +48,9 @@ public interface VectorMapJoinHashTable extends MemoryEstimate {
    * @param currentKey
    * @return true if HashTable contains the given key
    */
-  boolean containsKey(byte [] currentKey);
+  boolean containsLongKey(long currentKey);
 
-  CuckooSetLong getHashTableKeySet();
+  BloomKFilter getHashTableKeys();
 
   /**
    * Get hash table size

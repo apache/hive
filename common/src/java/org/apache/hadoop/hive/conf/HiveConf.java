@@ -1771,6 +1771,8 @@ public class HiveConf extends Configuration {
     HIVE_MAPJOIN_PROBEDECODE_ENABLED("hive.mapjoin.probedecode.enabled", false,
         "Use cached MapJoin hashtable created on the small table side to filter out row columns that are not going\n "+
             "to be used when reading the large table data. This will result less CPU cycles spent for decoding unused data. "),
+    HIVE_MAPJOIN_PROBEDECODE_BF_ENABLED("hive.mapjoin.probedecode.bloomfilter.enabled", false,
+        "Use CuckooSet for probing or not"),
     HIVE_MAPJOIN_PROBEDECODE_FILTER_PERC("hive.mapjoin.probedecode.filterperc", (float) 0.6,
         "The percentage of matching rows per VectorColumnBatch BELOW which the filter is going to be applied."
         + "Applying a filter when all or the most rows match (0.9 - 1.0) can be more time consuming than just reading the whole batch"

@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.exec.vector.mapjoin.optimized;
 
 import java.io.IOException;
 
-import org.apache.hadoop.hive.ql.exec.vector.expressions.CuckooSetLong;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
+import org.apache.hive.common.util.BloomKFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
@@ -77,12 +77,12 @@ public abstract class VectorMapJoinOptimizedHashTable
   }
 
   @Override
-  public CuckooSetLong getHashTableKeySet() {
+  public BloomKFilter getHashTableKeys() {
     throw new RuntimeException("Not supported yet!");
   }
 
   @Override
-  public boolean containsKey(byte[] currentKey) {
+  public boolean containsLongKey(long currentKey) {
     // Method to be used only for ProbeDecode with FAST HashTable implementations
     throw new RuntimeException("Not implemented");
   }
