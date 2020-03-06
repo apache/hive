@@ -43,6 +43,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.ConvertDecimal64ToDecimal;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorCoalesce;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColDivideDecimalScalar;
 import org.apache.hadoop.hive.ql.exec.vector.reducesink.*;
 import org.apache.hadoop.hive.ql.exec.vector.udf.VectorUDFArgDesc;
@@ -4755,15 +4756,27 @@ public class Vectorizer implements PhysicalPlanResolver {
         } else {
           Object[] arguments;
           int argumentCount = children.length + (parent.getOutputColumnNum() == -1 ? 0 : 1);
-          if (parent instanceof DecimalColDivideDecimalScalar) {
-            arguments = new Object[argumentCount + 1];
-            arguments[children.length] = ((DecimalColDivideDecimalScalar) parent).getValue();
+          // VectorCoalesce receives arguments as an array.
+          // Need to handle it as a special case to avoid instantiation failure.
+          if (parent instanceof VectorCoalesce) {
+            arguments = new Object[2];
+            arguments[0] = new int[children.length];
+            for (int i = 0; i < children.length; i++) {
+              VectorExpression vce = children[i];
+              ((int[]) arguments[0])[i] = vce.getOutputColumnNum();
+            }
+            arguments[1] = parent.getOutputColumnNum();
           } else {
-            arguments = new Object[argumentCount];
-          }
-          for (int i = 0; i < children.length; i++) {
-            VectorExpression vce = children[i];
-            arguments[i] = vce.getOutputColumnNum();
+            if (parent instanceof DecimalColDivideDecimalScalar) {
+              arguments = new Object[argumentCount + 1];
+              arguments[children.length] = ((DecimalColDivideDecimalScalar) parent).getValue();
+            } else {
+              arguments = new Object[argumentCount];
+            }
+            for (int i = 0; i < children.length; i++) {
+              VectorExpression vce = children[i];
+              arguments[i] = vce.getOutputColumnNum();
+            }
           }
           // retain output column number from parent
           if (parent.getOutputColumnNum() != -1) {
