@@ -36,6 +36,7 @@ import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.core.CorrelationId;
 import org.apache.calcite.rel.core.Project;
+import org.apache.calcite.rel.core.TableFunctionScan;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataType;
@@ -68,6 +69,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveMultiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableFunctionScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.parse.ColumnAccessInfo;
 import org.slf4j.Logger;
@@ -744,5 +746,47 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
 
   protected TrimResult result(RelNode r, final Mapping mapping) {
     return new TrimResult(r, mapping);
+  }
+
+  /**
+   * Variant of {@link #trimFields(RelNode, ImmutableBitSet, Set)} for {@link HiveTableFunctionScan}.
+   * Copied {@link org.apache.calcite.sql2rel.RelFieldTrimmer#trimFields(
+   * org.apache.calcite.rel.logical.LogicalTableFunctionScan, ImmutableBitSet, Set)}
+   * and replaced <code>tabFun</code> to {@link HiveTableFunctionScan}.
+   * Proper fix would be implement this in calcite.
+   */
+  public TrimResult trimFields(
+          HiveTableFunctionScan tabFun,
+          ImmutableBitSet fieldsUsed,
+          Set<RelDataTypeField> extraFields) {
+    final RelDataType rowType = tabFun.getRowType();
+    final int fieldCount = rowType.getFieldCount();
+    final List<RelNode> newInputs = new ArrayList<>();
+
+    for (RelNode input : tabFun.getInputs()) {
+      final int inputFieldCount = input.getRowType().getFieldCount();
+      ImmutableBitSet inputFieldsUsed = ImmutableBitSet.range(inputFieldCount);
+
+      // Create input with trimmed columns.
+      final Set<RelDataTypeField> inputExtraFields =
+              Collections.emptySet();
+      TrimResult trimResult =
+              trimChildRestore(
+                      tabFun, input, inputFieldsUsed, inputExtraFields);
+      assert trimResult.right.isIdentity();
+      newInputs.add(trimResult.left);
+    }
+
+    TableFunctionScan newTabFun = tabFun;
+    if (!tabFun.getInputs().equals(newInputs)) {
+      newTabFun = tabFun.copy(tabFun.getTraitSet(), newInputs,
+              tabFun.getCall(), tabFun.getElementType(), tabFun.getRowType(),
+              tabFun.getColumnMappings());
+    }
+    assert newTabFun.getClass() == tabFun.getClass();
+
+    // Always project all fields.
+    Mapping mapping = Mappings.createIdentity(fieldCount);
+    return result(newTabFun, mapping);
   }
 }
