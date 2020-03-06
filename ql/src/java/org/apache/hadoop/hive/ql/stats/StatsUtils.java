@@ -268,6 +268,7 @@ public class StatsUtils {
       //      long nr = getNumRows(conf, schema, neededColumns, table, ds);
       long ds = basicStats.getDataSize();
       long nr = basicStats.getNumRows();
+      long fs = basicStats.getTotalFileSize();
       List<ColStatistics> colStats = Lists.newArrayList();
 
       long numErasureCodedFiles = getErasureCodedFiles(table);
@@ -281,7 +282,7 @@ public class StatsUtils {
         ds = (betterDS < 1 || colStats.isEmpty()) ? ds : betterDS;
       }
 
-      stats = new Statistics(nr, ds, numErasureCodedFiles);
+      stats = new Statistics(nr, ds, fs, numErasureCodedFiles);
       // infer if any column can be primary key based on column statistics
       inferAndSetPrimaryKey(stats.getNumRows(), colStats);
 
@@ -315,6 +316,7 @@ public class StatsUtils {
 
       long nr = bbs.getNumRows();
       long ds = bbs.getDataSize();
+      long fs = bbs.getTotalFileSize();
 
       List<Long> erasureCodedFiles = getBasicStatForPartitions(table, partList.getNotDeniedPartns(),
           StatsSetupConst.NUM_ERASURE_CODED_FILES);
@@ -323,7 +325,7 @@ public class StatsUtils {
       if (nr == 0) {
         nr=1;
       }
-      stats = new Statistics(nr, ds, numErasureCodedFiles);
+      stats = new Statistics(nr, ds, fs, numErasureCodedFiles);
       stats.setBasicStatsState(bbs.getState());
       if (nr > 0) {
         // FIXME: this promotion process should be removed later
