@@ -66,7 +66,7 @@ class CreateTableHandler extends AbstractEventHandler<CreateTableMessage> {
     // If we are not dumping data about a table, we shouldn't be dumping basic statistics
     // as well, since that won't be accurate. So reset them to what they would look like for an
     // empty table.
-    if (withinContext.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY)) {
+    if (Utils.shouldDumpMetaDataOnly(qlMdTable, withinContext.hiveConf)) {
       qlMdTable.setStatsStateLikeNewTable();
     }
 
