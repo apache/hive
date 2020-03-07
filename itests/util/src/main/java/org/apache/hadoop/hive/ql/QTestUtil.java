@@ -110,7 +110,6 @@ import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSources;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.processors.HiveCommand;
@@ -1164,10 +1163,9 @@ public class QTestUtil {
       String cleanupCommands = readEntireFileIntoString(cleanupFile);
       LOG.info("Cleanup (" + cleanupScript + "):\n" + cleanupCommands);
 
-      try {
-        getCliDriver().processLine(cleanupCommands);
-      } catch (CommandProcessorException e) {
-        LOG.error("Failed during cleanup processLine with code={}. Ignoring", e.getResponseCode());
+      int result = getCliDriver().processLine(cleanupCommands);
+      if (result != 0) {
+        LOG.error("Failed during cleanup processLine with code={}. Ignoring", result);
         // TODO Convert this to an Assert.fail once HIVE-14682 is fixed
       }
     } else {
@@ -1176,23 +1174,25 @@ public class QTestUtil {
   }
 
   protected void runCreateTableCmd(String createTableCmd) throws Exception {
-    try {
-      drv.run(createTableCmd);
-    } catch (CommandProcessorException e) {
-      throw new Exception("create table command: " + createTableCmd + " failed with exit code= " + e.getErrorCode());
+    int ecode = 0;
+    ecode = drv.run(createTableCmd).getResponseCode();
+    if (ecode != 0) {
+      throw new Exception("create table command: " + createTableCmd
+                              + " failed with exit code= " + ecode);
     }
 
     return;
   }
 
   protected void runCmd(String cmd) throws Exception {
-    try {
-      drv.run(cmd);
-    } catch (CommandProcessorException e) {
-      throw new Exception("command: " + cmd + " failed with exit code= " + e.getErrorCode());
-    } finally {
-      drv.close();
+    int ecode = 0;
+    ecode = drv.run(cmd).getResponseCode();
+    drv.close();
+    if (ecode != 0) {
+      throw new Exception("command: " + cmd
+                              + " failed with exit code= " + ecode);
     }
+    return;
   }
 
   public void createSources() throws Exception {
@@ -1224,11 +1224,10 @@ public class QTestUtil {
     String initCommands = readEntireFileIntoString(scriptFile);
     LOG.info("Initial setup (" + initScript + "):\n" + initCommands);
 
-    try {
-      cliDriver.processLine(initCommands);
-      LOG.info("Result from cliDrriver.processLine in createSources=0");
-    } catch (CommandProcessorException e) {
-      Assert.fail("Failed during createSources processLine with code=" + e.getResponseCode());
+    int result = cliDriver.processLine(initCommands);
+    LOG.info("Result from cliDrriver.processLine in createSources=" + result);
+    if (result != 0) {
+      Assert.fail("Failed during createSources processLine with code=" + result);
     }
   }
 
@@ -1262,11 +1261,10 @@ public class QTestUtil {
       throw new RuntimeException(String.format("dataset file not found %s", tableFile), e);
     }
 
-    try {
-      getCliDriver().processLine(commands);
-      LOG.info("Result from cliDrriver.processLine in initFromDatasets=0");
-    } catch (CommandProcessorException e) {
-      Assert.fail("Failed during initFromDatasets processLine with code=" + e.getErrorCode());
+    int result = getCliDriver().processLine(commands);
+    LOG.info("Result from cliDrriver.processLine in initFromDatasets=" + result);
+    if (result != 0) {
+      Assert.fail("Failed during initFromDatasets processLine with code=" + result);
     }
 
     addSrcTable(table);
@@ -1411,7 +1409,7 @@ public class QTestUtil {
     }
   }
 
-  public int executeAdhocCommand(String q) throws CommandProcessorException {
+  public int executeAdhocCommand(String q) {
     if (!q.contains(";")) {
       return -1;
     }
@@ -1419,24 +1417,25 @@ public class QTestUtil {
     String q1 = q.split(";")[0] + ";";
 
     LOG.debug("Executing " + q1);
-
-    cliDriver.processLine(q1);
-    return 0;
+    return cliDriver.processLine(q1);
   }
 
-  public CommandProcessorResponse executeClient(String tname1, String tname2) throws CommandProcessorException {
-    String commands =
-        getCommand(tname1) + System.getProperty("line.separator") + getCommand(tname2);
+  public int execute(String tname) {
+    return drv.run(qMap.get(tname)).getResponseCode();
+  }
+
+  public int executeClient(String tname1, String tname2) {
+    String commands = getCommand(tname1) + CRLF + getCommand(tname2);
     return executeClientInternal(commands);
   }
 
-  public CommandProcessorResponse executeClient(String fileName) throws CommandProcessorException {
+  public int executeClient(String fileName) {
     return executeClientInternal(getCommand(fileName));
   }
 
-  private CommandProcessorResponse executeClientInternal(String commands) throws CommandProcessorException {
+  private int executeClientInternal(String commands) {
     List<String> cmds = CliDriver.splitSemiColon(commands);
-    CommandProcessorResponse response = new CommandProcessorResponse();
+    int rc = 0;
 
     String command = "";
     for (String oneCmd : cmds) {
@@ -1454,23 +1453,21 @@ public class QTestUtil {
         continue;
       }
 
-      try {
-        if (isCommandUsedForTesting(command)) {
-          response = executeTestCommand(command);
-        } else {
-          response = cliDriver.processLine(command);
-        }
-      } catch (CommandProcessorException e) {
-        if (!ignoreErrors()) {
-          throw e;
-        }
+      if (isCommandUsedForTesting(command)) {
+        rc = executeTestCommand(command);
+      } else {
+        rc = cliDriver.processLine(command);
+      }
+
+      if (rc != 0 && !ignoreErrors()) {
+        break;
       }
       command = "";
     }
-    if (SessionState.get() != null) {
+    if (rc == 0 && SessionState.get() != null) {
       SessionState.get().setLastCommand(null);  // reset
     }
-    return response;
+    return rc;
   }
 
   /**
@@ -1492,7 +1489,7 @@ public class QTestUtil {
     }
   }
 
-  private CommandProcessorResponse executeTestCommand(String command) throws CommandProcessorException {
+  private int executeTestCommand(final String command) {
     String commandName = command.trim().split("\\s+")[0];
     String commandArgs = command.trim().substring(commandName.length());
 
@@ -1502,7 +1499,8 @@ public class QTestUtil {
 
     //replace ${hiveconf:hive.metastore.warehouse.dir} with actual dir if existed.
     //we only want the absolute path, so remove the header, such as hdfs://localhost:57145
-    String wareHouseDir =
+    String
+        wareHouseDir =
         SessionState.get().getConf().getVar(ConfVars.METASTOREWAREHOUSE).replaceAll("^[a-zA-Z]+://.*?:\\d+", "");
     commandArgs = commandArgs.replaceAll("\\$\\{hiveconf:hive\\.metastore\\.warehouse\\.dir\\}", wareHouseDir);
 
@@ -1515,14 +1513,16 @@ public class QTestUtil {
     try {
       CommandProcessor proc = getTestCommand(commandName);
       if (proc != null) {
-        try {
-          CommandProcessorResponse response = proc.run(commandArgs.trim());
-          return response;
-        } catch (CommandProcessorException e) {
-          SessionState.getConsole().printError(e.toString(),
-                  e.getException() != null ? Throwables.getStackTraceAsString(e.getException()) : "");
-          throw e;
+        CommandProcessorResponse response = proc.run(commandArgs.trim());
+
+        int rc = response.getResponseCode();
+        if (rc != 0) {
+          SessionState.getConsole()
+              .printError(response.toString(),
+                  response.getException() != null ? Throwables.getStackTraceAsString(response.getException()) : "");
         }
+
+        return rc;
       } else {
         throw new RuntimeException("Could not get CommandProcessor for command: " + commandName);
       }

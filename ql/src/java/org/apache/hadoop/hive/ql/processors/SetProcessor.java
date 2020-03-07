@@ -44,6 +44,7 @@ import org.apache.orc.OrcConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 /**
@@ -158,16 +159,17 @@ public class SetProcessor implements CommandProcessor {
     }
   }
 
-  public CommandProcessorResponse executeSetVariable(String varname, String varvalue) throws CommandProcessorException {
+  public CommandProcessorResponse executeSetVariable(String varname, String varvalue) {
     try {
       return setVariable(varname, varvalue);
     } catch (Exception e) {
-      Throwable exception = e instanceof IllegalArgumentException ? null : e;
-      throw new CommandProcessorException(1, -1, e.getMessage(), "42000", exception);
+      return new CommandProcessorResponse(1, e.getMessage(), "42000",
+          e instanceof IllegalArgumentException ? null : e);
     }
   }
 
-  public static CommandProcessorResponse setVariable(String varname, String varvalue) throws Exception {
+  public static CommandProcessorResponse setVariable(
+      String varname, String varvalue) throws Exception {
     SessionState ss = SessionState.get();
     if (varvalue.contains("\n")){
       ss.err.println("Warning: Value had a \\n character in it.");
@@ -176,7 +178,7 @@ public class SetProcessor implements CommandProcessor {
     String nonErrorMessage = null;
     if (varname.startsWith(ENV_PREFIX)){
       ss.err.println("env:* variables can not be set.");
-      throw new CommandProcessorException(1); // Should we propagate the error message properly?
+      return new CommandProcessorResponse(1); // Should we propagate the error message properly?
     } else if (varname.startsWith(SYSTEM_PREFIX)){
       String propName = varname.substring(SYSTEM_PREFIX.length());
       System.getProperties()
@@ -212,7 +214,8 @@ public class SetProcessor implements CommandProcessor {
         SessionState.get().updateHistory(Boolean.parseBoolean(varvalue), ss);
       }
     }
-    return new CommandProcessorResponse(null, nonErrorMessage);
+    return nonErrorMessage == null ? new CommandProcessorResponse(0)
+      : new CommandProcessorResponse(0, Lists.newArrayList(nonErrorMessage));
   }
 
   static String setConf(String varname, String key, String varvalue, boolean register)
@@ -291,7 +294,7 @@ public class SetProcessor implements CommandProcessor {
     SessionState ss = SessionState.get();
     if (varname.equals("silent")){
       ss.out.println("silent" + "=" + ss.getIsSilent());
-      return new CommandProcessorResponse(getSchema(), null);
+      return createProcessorSuccessResponse();
     }
     if (varname.startsWith(SYSTEM_PREFIX)) {
       String propName = varname.substring(SYSTEM_PREFIX.length());
@@ -302,10 +305,10 @@ public class SetProcessor implements CommandProcessor {
         } else {
           ss.out.println(SYSTEM_PREFIX + propName + "=" + result);
         }
-        return new CommandProcessorResponse(getSchema(), null);
+        return createProcessorSuccessResponse();
       } else {
         ss.out.println(propName + " is undefined as a system property");
-        throw new CommandProcessorException(1);
+        return new CommandProcessorResponse(1);
       }
     } else if (varname.indexOf(ENV_PREFIX) == 0) {
       String var = varname.substring(ENV_PREFIX.length());
@@ -315,31 +318,31 @@ public class SetProcessor implements CommandProcessor {
         } else {
           ss.out.println(ENV_PREFIX + var + "=" + System.getenv(var));
         }
-        return new CommandProcessorResponse(getSchema(), null);
+        return createProcessorSuccessResponse();
       } else {
         ss.out.println(varname + " is undefined as an environmental variable");
-        throw new CommandProcessorException(1);
+        return new CommandProcessorResponse(1);
       }
     } else if (varname.indexOf(HIVECONF_PREFIX) == 0) {
       String var = varname.substring(HIVECONF_PREFIX.length());
       if (ss.getConf().isHiddenConfig(var)) {
         ss.out.println(HIVECONF_PREFIX + var + " is a hidden config");
-        return new CommandProcessorResponse(getSchema(), null);
+        return createProcessorSuccessResponse();
       } if (ss.getConf().get(var) != null) {
         ss.out.println(HIVECONF_PREFIX + var + "=" + ss.getConf().get(var));
-        return new CommandProcessorResponse(getSchema(), null);
+        return createProcessorSuccessResponse();
       } else {
         ss.out.println(varname + " is undefined as a hive configuration variable");
-        throw new CommandProcessorException(1);
+        return new CommandProcessorResponse(1);
       }
     } else if (varname.indexOf(HIVEVAR_PREFIX) == 0) {
       String var = varname.substring(HIVEVAR_PREFIX.length());
       if (ss.getHiveVariables().get(var) != null) {
         ss.out.println(HIVEVAR_PREFIX + var + "=" + ss.getHiveVariables().get(var));
-        return new CommandProcessorResponse(getSchema(), null);
+        return createProcessorSuccessResponse();
       } else {
         ss.out.println(varname + " is undefined as a hive variable");
-        throw new CommandProcessorException(1);
+        return new CommandProcessorResponse(1);
       }
     } else if (varname.indexOf(METACONF_PREFIX) == 0) {
       String var = varname.substring(METACONF_PREFIX.length());
@@ -347,25 +350,29 @@ public class SetProcessor implements CommandProcessor {
       String value = hive.getMetaConf(var);
       if (value != null) {
         ss.out.println(METACONF_PREFIX + var + "=" + value);
-        return new CommandProcessorResponse(getSchema(), null);
+        return createProcessorSuccessResponse();
       } else {
         ss.out.println(varname + " is undefined as a hive meta variable");
-        throw new CommandProcessorException(1);
+        return new CommandProcessorResponse(1);
       }
     } else {
       dumpOption(varname);
-      return new CommandProcessorResponse(getSchema(), null);
+      return createProcessorSuccessResponse();
     }
   }
 
+  private CommandProcessorResponse createProcessorSuccessResponse() {
+    return new CommandProcessorResponse(0, null, null, getSchema());
+  }
+
   @Override
-  public CommandProcessorResponse run(String command) throws CommandProcessorException {
+  public CommandProcessorResponse run(String command) {
     SessionState ss = SessionState.get();
 
     String nwcmd = command.trim();
     if (nwcmd.equals("")) {
       dumpOptions(ss.getConf().getChangedProperties());
-      return new CommandProcessorResponse(getSchema(), null);
+      return createProcessorSuccessResponse();
     }
 
     if (nwcmd.equals("-v")) {
@@ -379,13 +386,13 @@ public class SetProcessor implements CommandProcessor {
               (Configuration) clazz.getConstructor(Configuration.class).newInstance(ss.getConf());
           properties = HiveConf.getProperties(tezConf);
         } catch (Exception e) {
-          throw new CommandProcessorException(1, -1, e.getMessage(), "42000", e);
+          return new CommandProcessorResponse(1, e.getMessage(), "42000", e);
         }
       } else {
         properties = ss.getConf().getAllProperties();
       }
       dumpOptions(properties);
-      return new CommandProcessorResponse(getSchema(), null);
+      return createProcessorSuccessResponse();
     }
 
     // Special handling for time-zone
@@ -407,14 +414,14 @@ public class SetProcessor implements CommandProcessor {
       }
       if (part[0].equals("silent")) {
         ss.setIsSilent(getBoolean(part[1]));
-        return new CommandProcessorResponse();
+        return new CommandProcessorResponse(0);
       }
       return executeSetVariable(part[0],part[1]);
     }
     try {
       return getVariable(nwcmd);
     } catch (Exception e) {
-      throw new CommandProcessorException(1, -1, e.getMessage(), "42000", e);
+      return new CommandProcessorResponse(1, e.getMessage(), "42000", e);
     }
   }
 

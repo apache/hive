@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.Utils;
 
@@ -225,7 +226,10 @@ public class BaseReplicationScenariosAcidTables {
   }
 
   private void runUsingDriver(IDriver driver, String command) throws Throwable {
-    driver.run(command);
+    CommandProcessorResponse ret = driver.run(command);
+    if (ret.getException() != null) {
+      throw ret.getException();
+    }
   }
 
   void prepareInc2AcidData(String dbName, HiveConf hiveConf) throws Throwable {

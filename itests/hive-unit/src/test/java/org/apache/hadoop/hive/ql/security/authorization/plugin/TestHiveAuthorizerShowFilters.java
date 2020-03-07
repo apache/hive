@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.SessionStateUserAuthenticator;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
@@ -255,7 +256,8 @@ public class TestHiveAuthorizerShowFilters {
   }
 
   private static void runCmd(String cmd) throws Exception {
-    driver.run(cmd);
+    CommandProcessorResponse resp = driver.run(cmd);
+    assertEquals(0, resp.getResponseCode());
   }
 
   private static List<String> getSortedList(String... strings) {

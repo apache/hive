@@ -72,6 +72,7 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.Reader;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.common.util.Retry;
 import org.apache.hive.hcatalog.common.HCatUtil;
@@ -1727,6 +1728,7 @@ public class TestCompactor {
     }
     return valuesReadFromHiveDriver;
   }
+
 
   static void createTestDataFile(String filename, String[] lines) throws IOException {
     FileWriter writer = null;

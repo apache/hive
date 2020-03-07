@@ -36,11 +36,12 @@ import org.slf4j.LoggerFactory;
  */
 public class AddResourceProcessor implements CommandProcessor {
 
-  private static final Logger LOG = LoggerFactory.getLogger(AddResourceProcessor.class.getName());
-  private static final LogHelper console = new LogHelper(LOG);
+  public static final Logger LOG = LoggerFactory.getLogger(AddResourceProcessor.class
+      .getName());
+  public static final LogHelper console = new LogHelper(LOG);
 
   @Override
-  public CommandProcessorResponse run(String command) throws CommandProcessorException {
+  public CommandProcessorResponse run(String command) {
     SessionState ss = SessionState.get();
     command = new VariableSubstitution(new HiveVariableSource() {
       @Override
@@ -55,7 +56,7 @@ public class AddResourceProcessor implements CommandProcessor {
       console.printError("Usage: add ["
           + StringUtils.join(SessionState.ResourceType.values(), "|")
           + "] <value> [<value>]*");
-      throw new CommandProcessorException(1);
+      return new CommandProcessorResponse(1);
     }
 
     CommandProcessorResponse authErrResp =
@@ -69,9 +70,9 @@ public class AddResourceProcessor implements CommandProcessor {
       ss.add_resources(t,
           Arrays.asList(Arrays.copyOfRange(tokens, 1, tokens.length)));
     } catch (Exception e) {
-      throw new CommandProcessorException(e);
+      return CommandProcessorResponse.create(e);
     }
-    return new CommandProcessorResponse();
+    return new CommandProcessorResponse(0);
   }
 
   @Override

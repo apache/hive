@@ -18,11 +18,13 @@
 
 package org.apache.hadoop.hive.ql;
 
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lockmgr.TestDbTxnManager2;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -114,10 +116,10 @@ public class TestTxnAddPartition extends TxnCommandsBaseForTests {
 
     runStatementOnDriver("export table Tstage to '" + getWarehouseDir() + "/3'");
     //should be an error since p=3 exists
-    CommandProcessorException e =
-        runStatementOnDriverNegative("ALTER TABLE T ADD PARTITION (p=0) location '" + getWarehouseDir() + "/3/data'");
-    Assert.assertTrue("add existing partition",
-        e.getErrorMessage() != null && e.getErrorMessage().contains("Partition already exists"));
+    CommandProcessorResponse cpr = runStatementOnDriverNegative(
+        "ALTER TABLE T ADD PARTITION (p=0) location '" + getWarehouseDir() + "/3/data'");
+    Assert.assertTrue("add existing partition", cpr.getErrorMessage() != null
+        && cpr.getErrorMessage().contains("Partition already exists"));
 
     //should be no-op since p=3 exists
     String stmt = "ALTER TABLE T ADD IF NOT EXISTS " +
@@ -188,10 +190,10 @@ public class TestTxnAddPartition extends TxnCommandsBaseForTests {
 
     runStatementOnDriver("export table Tstage to '" + getWarehouseDir() + "/3'");
     //should be an error since p=3 exists
-    CommandProcessorException e =
-        runStatementOnDriverNegative("ALTER TABLE T ADD PARTITION (p=0) location '" + getWarehouseDir() + "/3/data'");
-    Assert.assertTrue("add existing partition",
-        e.getErrorMessage() != null && e.getErrorMessage().contains("Partition already exists"));
+    CommandProcessorResponse cpr = runStatementOnDriverNegative(
+        "ALTER TABLE T ADD PARTITION (p=0) location '" + getWarehouseDir() + "/3/data'");
+    Assert.assertTrue("add existing partition", cpr.getErrorMessage() != null
+        && cpr.getErrorMessage().contains("Partition already exists"));
 
     //should be no-op since p=3 exists
     runStatementOnDriver("ALTER TABLE T ADD IF NOT EXISTS " +
@@ -254,8 +256,10 @@ public class TestTxnAddPartition extends TxnCommandsBaseForTests {
     runStatementOnDriver("insert into Tstage values(0,2),(1,4)");
     runStatementOnDriver("export table Tstage to '" + getWarehouseDir() + "/1'");
     FileSystem fs = FileSystem.get(hiveConf);
-    fs.rename(new Path(getWarehouseDir() + "/1/data/000000_0"), new Path(getWarehouseDir() + "/1/data/part-m000"));
-    fs.rename(new Path(getWarehouseDir() + "/1/data/000001_0"), new Path(getWarehouseDir() + "/1/data/part-m001"));
+    FileStatus[] status = fs.listStatus(new Path(getWarehouseDir() + "/1/data"),
+        AcidUtils.originalBucketFilter);
+    boolean b = fs.rename(new Path(getWarehouseDir() + "/1/data/000000_0"), new Path(getWarehouseDir() + "/1/data/part-m000"));
+    b = fs.rename(new Path(getWarehouseDir() + "/1/data/000001_0"), new Path(getWarehouseDir() + "/1/data/part-m001"));
 
     runStatementOnDriver("ALTER TABLE T ADD PARTITION (p=0) location '"
         + getWarehouseDir() + "/1/data'");

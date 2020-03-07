@@ -20,12 +20,15 @@ package org.apache.hadoop.hive.ql.hooks;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Driver;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.junit.Assert;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.ArgumentMatcher;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
@@ -34,6 +37,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+
 
 public class TestQueryHooks {
 
@@ -54,7 +58,8 @@ public class TestQueryHooks {
     QueryLifeTimeHookWithParseHooks mockHook = mock(QueryLifeTimeHookWithParseHooks.class);
     Driver driver = createDriver();
     driver.getHookRunner().addLifeTimeHook(mockHook);
-    driver.run(query);
+    int ret = driver.run(query).getResponseCode();
+    assertEquals("Expected query to succeed", 0, ret);
 
     verify(mockHook).beforeParse(argThat(argMatcher));
     verify(mockHook).afterParse(argThat(argMatcher), eq(false));
@@ -71,13 +76,8 @@ public class TestQueryHooks {
     QueryLifeTimeHookWithParseHooks mockHook = mock(QueryLifeTimeHookWithParseHooks.class);
     Driver driver = createDriver();
     driver.getHookRunner().addLifeTimeHook(mockHook);
-    try {
-      driver.run(query);
-      Assert.fail("Expected parsing to fail");
-    } catch (CommandProcessorException e) {
-      // we expect to get here
-    }
-
+    int ret = driver.run(query).getResponseCode();
+    assertNotEquals("Expected parsing to fail", 0, ret);
 
     verify(mockHook).beforeParse(argThat(argMatcher));
     verify(mockHook).afterParse(argThat(argMatcher), eq(true));
@@ -94,13 +94,8 @@ public class TestQueryHooks {
     QueryLifeTimeHookWithParseHooks mockHook = mock(QueryLifeTimeHookWithParseHooks.class);
     Driver driver = createDriver();
     driver.getHookRunner().addLifeTimeHook(mockHook);
-    try {
-      driver.run(query);
-      Assert.fail("Expected compilation to fail");
-    } catch (CommandProcessorException e) {
-      // we expect to get here
-    }
-
+    int ret = driver.run(query).getResponseCode();
+    assertNotEquals("Expected compilation to fail", 0, ret);
 
     verify(mockHook).beforeParse(argThat(argMatcher));
     verify(mockHook).afterParse(argThat(argMatcher), eq(false));
@@ -117,7 +112,8 @@ public class TestQueryHooks {
     QueryLifeTimeHook mockHook = mock(QueryLifeTimeHook.class);
     Driver driver = createDriver();
     driver.getHookRunner().addLifeTimeHook(mockHook);
-    driver.run(query);
+    int ret = driver.run(query).getResponseCode();
+    assertEquals("Expected query to succeed", 0, ret);
 
     verify(mockHook).beforeCompile(argThat(argMatcher));
     verify(mockHook).afterCompile(argThat(argMatcher), eq(false));
@@ -132,12 +128,8 @@ public class TestQueryHooks {
     QueryLifeTimeHook mockHook = mock(QueryLifeTimeHook.class);
     Driver driver = createDriver();
     driver.getHookRunner().addLifeTimeHook(mockHook);
-    try {
-      driver.run(query);
-      Assert.fail("Expected compilation to fail");
-    } catch (CommandProcessorException e) {
-      // we expect to get here
-    }
+    int ret = driver.run(query).getResponseCode();
+    assertNotEquals("Expected compilation to fail", 0, ret);
 
     verify(mockHook).beforeCompile(argThat(argMatcher));
     verify(mockHook).afterCompile(argThat(argMatcher), eq(true));

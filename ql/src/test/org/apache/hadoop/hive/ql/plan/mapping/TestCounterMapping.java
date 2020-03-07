@@ -23,6 +23,7 @@ import static org.junit.Assert.fail;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -37,7 +38,6 @@ import org.apache.hadoop.hive.ql.plan.mapper.EmptyStatsSource;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.EquivGroup;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSources;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.reexec.ReExecDriver;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
@@ -65,6 +65,10 @@ public class TestCounterMapping {
     public int compare(Operator<?> o1, Operator<?> o2) {
       Long id1 = Long.valueOf(o1.getIdentifier());
       Long id2 = Long.valueOf(o2.getIdentifier());
+      int c0 = Objects.compare(o1.getOperatorName(), o2.getOperatorName(), Comparator.naturalOrder());
+      if (c0 != 0) {
+        return c0;
+      }
       return Long.compare(id1, id2);
     }
   };
@@ -95,7 +99,8 @@ public class TestCounterMapping {
         // @formatter:on
     };
     for (String cmd : cmds) {
-      driver.run(cmd);
+      int ret = driver.run(cmd).getResponseCode();
+      assertEquals("Checking command success", 0, ret);
     }
   }
 
@@ -108,18 +113,21 @@ public class TestCounterMapping {
   public static void dropTables(IDriver driver) throws Exception {
     String tables[] = { "s", "tu", "tv", "tw" };
     for (String t : tables) {
-      driver.run("drop table if exists " + t);
+      int ret = driver.run("drop table if exists " + t).getResponseCode();
+      assertEquals("Checking command success", 0, ret);
     }
   }
 
-  private PlanMapper getMapperForQuery(IDriver driver, String query) throws CommandProcessorException {
-    driver.run(query);
+  private PlanMapper getMapperForQuery(IDriver driver, String query) {
+    int ret;
+    ret = driver.run(query).getResponseCode();
+    assertEquals("Checking command success", 0, ret);
     PlanMapper pm0 = driver.getContext().getPlanMapper();
     return pm0;
   }
 
   @Test
-  public void testUsageOfRuntimeInfo() throws ParseException, CommandProcessorException {
+  public void testUsageOfRuntimeInfo() throws ParseException {
     IDriver driver = createDriver();
     String query = "select sum(u) from tu where u>1";
     PlanMapper pm1 = getMapperForQuery(driver, query);
@@ -143,7 +151,7 @@ public class TestCounterMapping {
   }
 
   @Test
-  public void testInConversion() throws ParseException, CommandProcessorException {
+  public void testInConversion() throws ParseException {
     String query =
         "explain select sum(id_uv) from tu where u in (1,2) group by u";
 
@@ -161,7 +169,7 @@ public class TestCounterMapping {
   }
 
   @Test
-  public void testBreakupAnd() throws ParseException, CommandProcessorException {
+  public void testBreakupAnd() throws ParseException {
     String query =
         "explain select sum(id_uv) from tu where u=1  and (u=2 or u=1) group by u";
 
@@ -174,7 +182,7 @@ public class TestCounterMapping {
   }
 
   @Test
-  public void testBreakupAnd2() throws ParseException, CommandProcessorException {
+  public void testBreakupAnd2() throws ParseException {
     String query =
         "explain select sum(id_uv) from tu where u in (1,2,3) and u=2 and u=2 and 2=u group by u";
 
@@ -190,13 +198,10 @@ public class TestCounterMapping {
 
   @Test
   @Ignore("needs HiveFilter mapping")
-  public void testMappingJoinLookup() throws ParseException, CommandProcessorException {
+  public void testMappingJoinLookup() throws ParseException {
     IDriver driver = createDriver();
 
-    PlanMapper pm0 = getMapperForQuery(driver,
-        "select sum(tu.id_uv), sum(u)\n" +
-        "from tu join tv on (tu.id_uv = tv.id_uv)\n" +
-        "where u > 1 and v > 1");
+    PlanMapper pm0 = getMapperForQuery(driver, "select sum(tu.id_uv),sum(u) from tu join tv on (tu.id_uv = tv.id_uv) where u>1 and v>1");
 
     Iterator<EquivGroup> itG = pm0.iterateGroups();
     int checkedOperators = 0;

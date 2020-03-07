@@ -35,7 +35,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
@@ -107,7 +106,7 @@ public class TestCompileLock {
     conf.setBoolVar(HIVE_SERVER2_PARALLEL_COMPILATION, false);
 
     initDriver(conf, 10);
-    List<Integer> responseList = compileAndRespond(10);
+    List<CommandProcessorResponse> responseList = compileAndRespond(10);
 
     verifyThatWaitingCompileOpsCountIsEqualTo(0);
     verifyThatTimedOutCompileOpsCountIsZero(responseList);
@@ -121,7 +120,7 @@ public class TestCompileLock {
     conf.setIntVar(HIVE_SERVER2_PARALLEL_COMPILATION_LIMIT, 1);
 
     initDriver(conf, 10);
-    List<Integer> responseList = compileAndRespond(10);
+    List<CommandProcessorResponse> responseList = compileAndRespond(10);
 
     verifyThatWaitingCompileOpsCountIsEqualTo(0);
     verifyThatTimedOutCompileOpsCountIsZero(responseList);
@@ -135,7 +134,7 @@ public class TestCompileLock {
     conf.setIntVar(HIVE_SERVER2_PARALLEL_COMPILATION_LIMIT, -1);
 
     initDriver(conf, 10);
-    List<Integer> responseList = compileAndRespond(10);
+    List<CommandProcessorResponse> responseList = compileAndRespond(10);
 
     verifyThatWaitingCompileOpsCountIsEqualTo(0);
     verifyThatTimedOutCompileOpsCountIsZero(responseList);
@@ -149,7 +148,7 @@ public class TestCompileLock {
     conf.setIntVar(HIVE_SERVER2_PARALLEL_COMPILATION_LIMIT, -1);
 
     initDriver(conf, 10);
-    List<Integer> responseList = compileAndRespond(true, 10);
+    List<CommandProcessorResponse> responseList = compileAndRespond(true, 10);
 
     verifyThatWaitingCompileOpsCountIsEqualTo(0);
     verifyThatTimedOutCompileOpsCountIsZero(responseList);
@@ -164,7 +163,7 @@ public class TestCompileLock {
     conf.setTimeVar(HIVE_SERVER2_COMPILE_LOCK_TIMEOUT, 1, TimeUnit.SECONDS);
 
     initDriver(conf, 10);
-    List<Integer> responseList = compileAndRespond(10);
+    List<CommandProcessorResponse> responseList = compileAndRespond(10);
 
     verifyThatWaitingCompileOpsCountIsEqualTo(0);
     verifyThatTimedOutCompileOpsCountIsNotZero(responseList);
@@ -181,7 +180,7 @@ public class TestCompileLock {
     conf.setTimeVar(HIVE_SERVER2_COMPILE_LOCK_TIMEOUT, 1, TimeUnit.SECONDS);
 
     initDriver(conf, 10);
-    List<Integer> responseList = compileAndRespond(LONG_QUERY, 10);
+    List<CommandProcessorResponse> responseList = compileAndRespond(LONG_QUERY, 10);
 
     verifyThatWaitingCompileOpsCountIsEqualTo(0);
     verifyThatTimedOutCompileOpsCount(responseList, 6);
@@ -194,7 +193,7 @@ public class TestCompileLock {
     conf.setTimeVar(HIVE_SERVER2_COMPILE_LOCK_TIMEOUT, 0, TimeUnit.SECONDS);
 
     initDriver(conf, 10);
-    List<Integer> responseList = compileAndRespond(10);
+    List<CommandProcessorResponse> responseList = compileAndRespond(10);
 
     verifyThatWaitingCompileOpsCountIsEqualTo(0);
     verifyThatTimedOutCompileOpsCountIsZero(responseList);
@@ -208,7 +207,7 @@ public class TestCompileLock {
     conf.setIntVar(HIVE_SERVER2_PARALLEL_COMPILATION_LIMIT, 2);
 
     initDriver(conf, 10);
-    List<Integer> responseList = compileAndRespond(10);
+    List<CommandProcessorResponse> responseList = compileAndRespond(10);
 
     verifyThatWaitingCompileOpsCountIsEqualTo(0);
     verifyThatTimedOutCompileOpsCountIsZero(responseList);
@@ -222,17 +221,17 @@ public class TestCompileLock {
     conf.setIntVar(HIVE_SERVER2_PARALLEL_COMPILATION_LIMIT, 2);
 
     initDriver(conf, 10);
-    List<Integer> responseList = new ArrayList<>();
+    List<CommandProcessorResponse> responseList = new ArrayList<>();
 
-    List<Callable<List<Integer>>> callables = new ArrayList<>();
+    List<Callable<List<CommandProcessorResponse>>> callables = new ArrayList<>();
     for (int i = 0; i < 5; i++) {
       callables.add(() -> compileAndRespond(true, 2));
     }
 
     ExecutorService pool = Executors.newFixedThreadPool(callables.size());
     try {
-      List<Future<List<Integer>>> futures = pool.invokeAll(callables);
-      for (Future<List<Integer>> future : futures) {
+      List<Future<List<CommandProcessorResponse>>> futures = pool.invokeAll(callables);
+      for (Future<List<CommandProcessorResponse>> future : futures) {
         responseList.addAll(future.get());
       }
     } finally {
@@ -245,22 +244,22 @@ public class TestCompileLock {
     verifyThatConcurrentCompilationWasIndeed(responseList);
   }
 
-  private List<Integer> compileAndRespond(int threadCount) throws Exception {
+  private List<CommandProcessorResponse> compileAndRespond(int threadCount) throws Exception {
     return compileAndRespond(SHORT_QUERY, false, threadCount);
   }
 
-  private List<Integer> compileAndRespond(boolean reuseSession, int threadCount) throws Exception {
+  private List<CommandProcessorResponse> compileAndRespond(boolean reuseSession, int threadCount) throws Exception {
     return compileAndRespond(SHORT_QUERY, reuseSession, threadCount);
   }
 
 
-  private List<Integer> compileAndRespond(String query, int threadCount) throws Exception {
+  private List<CommandProcessorResponse> compileAndRespond(String query, int threadCount) throws Exception {
     return compileAndRespond(query, false, threadCount);
   }
 
-  private List<Integer> compileAndRespond(String query, boolean reuseSession, int threadCount)
+  private List<CommandProcessorResponse> compileAndRespond(String query, boolean reuseSession, int threadCount)
       throws Exception {
-    List<Integer> responseList = new ArrayList<>();
+    List<CommandProcessorResponse> responseList = new ArrayList<>();
     SessionState sessionState = new SessionState(conf);
 
     List<Callable<CommandProcessorResponse>> callables = new ArrayList<>();
@@ -286,12 +285,13 @@ public class TestCompileLock {
 
       for (Future<CommandProcessorResponse> future : futures) {
         try {
-          future.get();
-          responseList.add(0);
+          responseList.add(future.get());
 
         } catch (ExecutionException ex) {
-          responseList.add(ex.getCause() instanceof CommandProcessorException ?
-                ErrorMsg.COMPILE_LOCK_TIMED_OUT.getErrorCode() : CONCURRENT_COMPILATION);
+          responseList.add(
+              (ex.getCause() instanceof CommandProcessorResponse) ?
+                new CommandProcessorResponse(ErrorMsg.COMPILE_LOCK_TIMED_OUT.getErrorCode()) :
+                new CommandProcessorResponse(CONCURRENT_COMPILATION));
         }
       }
     } finally {
@@ -317,31 +317,35 @@ public class TestCompileLock {
     return Enum.valueOf((Class<T>) type, name);
   }
 
-  private void verifyThatTimedOutCompileOpsCountIsZero(List<Integer> responseList) {
-    verifyErrorCount(ErrorMsg.COMPILE_LOCK_TIMED_OUT.getErrorCode(), is(equalTo(0)), responseList);
+  private void verifyThatTimedOutCompileOpsCountIsZero(List<CommandProcessorResponse> responseList) {
+    verifyErrorCount(ErrorMsg.COMPILE_LOCK_TIMED_OUT.getErrorCode(),
+        is(equalTo(0)), responseList);
   }
 
-  private void verifyThatTimedOutCompileOpsCountIsNotZero(List<Integer> responseList) {
-    verifyErrorCount(ErrorMsg.COMPILE_LOCK_TIMED_OUT.getErrorCode(), is(not(equalTo(0))), responseList);
+  private void verifyThatTimedOutCompileOpsCountIsNotZero(List<CommandProcessorResponse> responseList) {
+    verifyErrorCount(ErrorMsg.COMPILE_LOCK_TIMED_OUT.getErrorCode(),
+        is(not(equalTo(0))), responseList);
   }
 
-  private void verifyThatTimedOutCompileOpsCount(List<Integer> responseList, int count) {
-    verifyErrorCount(ErrorMsg.COMPILE_LOCK_TIMED_OUT.getErrorCode(), is(equalTo(count)), responseList);
+  private void verifyThatTimedOutCompileOpsCount(List<CommandProcessorResponse> responseList, int count) {
+    verifyErrorCount(ErrorMsg.COMPILE_LOCK_TIMED_OUT.getErrorCode(),
+        is(equalTo(count)), responseList);
   }
 
-  private void verifyThatConcurrentCompilationWasIndeed(List<Integer> responseList){
-    verifyErrorCount(CONCURRENT_COMPILATION, is(not(equalTo(0))), responseList);
+  private void verifyThatConcurrentCompilationWasIndeed(List<CommandProcessorResponse> responseList){
+    verifyErrorCount(CONCURRENT_COMPILATION,
+        is(not(equalTo(0))), responseList);
   }
 
-  private void verifyThatNoConcurrentCompilationWasIndeed(List<Integer> responseList){
-    verifyErrorCount(CONCURRENT_COMPILATION, is(equalTo(0)), responseList);
+  private void verifyThatNoConcurrentCompilationWasIndeed(List<CommandProcessorResponse> responseList){
+    verifyErrorCount(CONCURRENT_COMPILATION,
+        is(equalTo(0)), responseList);
   }
-
-  private void verifyErrorCount(int code, Matcher<Integer> matcher, List<Integer> responseList) {
+  private void verifyErrorCount(int code, Matcher<Integer> matcher, List<CommandProcessorResponse> responseList) {
     int count = 0;
 
-    for(Integer response : responseList){
-      if (code == response){
+    for(CommandProcessorResponse response : responseList){
+      if(code == response.getResponseCode()){
         count++;
       }
     }

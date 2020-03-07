@@ -81,8 +81,8 @@ public class TestHCatInputFormat extends HCatBaseTest {
     seqFileWriter.close();
 
     // Now let's load this file into a new Hive table.
-    driver.run("drop table if exists test_bad_records");
-    driver.run(
+    Assert.assertEquals(0, driver.run("drop table if exists test_bad_records").getResponseCode());
+    Assert.assertEquals(0, driver.run(
       "create table test_bad_records " +
         "row format serde 'org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer' " +
         "with serdeproperties ( " +
@@ -90,8 +90,10 @@ public class TestHCatInputFormat extends HCatBaseTest {
         "  'serialization.format'='org.apache.thrift.protocol.TBinaryProtocol') " +
         "stored as" +
         "  inputformat 'org.apache.hadoop.mapred.SequenceFileInputFormat'" +
-        "  outputformat 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'");
-    driver.run("load data local inpath '" + intStringSeq.getParent() + "' into table test_bad_records");
+        "  outputformat 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'")
+      .getResponseCode());
+    Assert.assertEquals(0, driver.run("load data local inpath '" + intStringSeq.getParent() +
+      "' into table test_bad_records").getResponseCode());
 
     setUpComplete = true;
   }

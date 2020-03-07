@@ -109,7 +109,6 @@ import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.security.authorization.command.CommandAuthorizer;
 import org.apache.hadoop.hive.ql.session.LineageState;
@@ -198,7 +197,12 @@ public class Driver implements IDriver {
   private boolean retrial = false;
 
   private boolean checkConcurrency() {
-    return conf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY);
+    boolean supportConcurrency = conf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY);
+    if (!supportConcurrency) {
+      LOG.info("Concurrency mode is disabled, not creating a lock manager");
+      return false;
+    }
+    return true;
   }
 
   @Override
@@ -337,7 +341,7 @@ public class Driver implements IDriver {
     try {
       compile(command, resetTaskIds, false);
       return 0;
-    } catch (CommandProcessorException cpr) {
+    } catch (CommandProcessorResponse cpr) {
       return cpr.getErrorCode();
     }
   }
@@ -346,13 +350,16 @@ public class Driver implements IDriver {
   // interrupted, it should be set to true if the compile is called within another method like
   // runInternal, which defers the close to the called in that method.
   @VisibleForTesting
-  public void compile(String command, boolean resetTaskIds, boolean deferClose) throws CommandProcessorException {
-    createTransactionManager();
-
+  public void compile(String command, boolean resetTaskIds, boolean deferClose) throws CommandProcessorResponse {
     PerfLogger perfLogger = SessionState.getPerfLogger(true);
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.DRIVER_RUN);
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.COMPILE);
-    driverState.compilingWithLocking();
+    driverState.lock();
+    try {
+      driverState.compiling();
+    } finally {
+      driverState.unlock();
+    }
 
     command = new VariableSubstitution(new HiveVariableSource() {
       @Override
@@ -407,6 +414,35 @@ public class Driver implements IDriver {
     boolean parseError = false;
 
     try {
+
+      // Initialize the transaction manager.  This must be done before analyze is called.
+      if (initTxnMgr != null) {
+        queryTxnMgr = initTxnMgr;
+      } else {
+        queryTxnMgr = SessionState.get().initTxnMgr(conf);
+      }
+      if (queryTxnMgr instanceof Configurable) {
+        ((Configurable) queryTxnMgr).setConf(conf);
+      }
+      queryState.setTxnManager(queryTxnMgr);
+
+      // In case when user Ctrl-C twice to kill Hive CLI JVM, we want to release locks
+      // if compile is being called multiple times, clear the old shutdownhook
+      ShutdownHookManager.removeShutdownHook(shutdownRunner);
+      final HiveTxnManager txnMgr = queryTxnMgr;
+      shutdownRunner = new Runnable() {
+        @Override
+        public void run() {
+          try {
+            releaseLocksAndCommitOrRollback(false, txnMgr);
+          } catch (LockException e) {
+            LOG.warn("Exception when releasing locks in ShutdownHook for Driver: " +
+                e.getMessage());
+          }
+        }
+      };
+      ShutdownHookManager.addShutdownHook(shutdownRunner, SHUTDOWN_HOOK_PRIORITY);
+
       checkInterrupted("before parsing and analysing the query", null, null);
 
       if (ctx == null) {
@@ -525,7 +561,7 @@ public class Driver implements IDriver {
           }
         } catch (AuthorizationException authExp) {
           console.printError("Authorization failed:" + authExp.getMessage() + ". Use SHOW GRANT to get more details.");
-          throw createProcessorException(403, authExp.getMessage(), "42000", null);
+          throw createProcessorResponse(403, authExp.getMessage(), "42000", null);
         } finally {
           perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.DO_AUTHORIZATION);
         }
@@ -544,8 +580,8 @@ public class Driver implements IDriver {
           }
         }
       }
-    } catch (CommandProcessorException cpe) {
-      throw cpe;
+    } catch (CommandProcessorResponse cpr) {
+      throw cpr;
     } catch (Exception e) {
       checkInterrupted("during query compilation: " + e.getMessage(), null, null);
 
@@ -568,7 +604,7 @@ public class Driver implements IDriver {
       }
 
       console.printError(errorMessage, "\n" + StringUtils.stringifyException(e));
-      throw createProcessorException(error.getErrorCode(), errorMessage, error.getSQLState(), e);
+      throw createProcessorResponse(error.getErrorCode(), errorMessage, error.getSQLState(), e);
     } finally {
       // Trigger post compilation hook. Note that if the compilation fails here then
       // before/after execution hook will never be executed.
@@ -588,51 +624,22 @@ public class Driver implements IDriver {
       if (isInterrupted && !deferClose) {
         closeInProcess(true);
       }
+      driverState.lock();
+      try {
+        if (isInterrupted) {
+          driverState.compilationInterrupted(deferClose);
+        } else {
+          driverState.compilationFinished(compileError);
+        }
+      } finally {
+        driverState.unlock();
+      }
 
       if (isInterrupted) {
-        driverState.compilationInterruptedWithLocking(deferClose);
         LOG.info("Compiling command(queryId=" + queryId + ") has been interrupted after " + duration + " seconds");
       } else {
-        driverState.compilationFinishedWithLocking(compileError);
         LOG.info("Completed compiling command(queryId=" + queryId + "); Time taken: " + duration + " seconds");
       }
-    }
-  }
-
-  private void createTransactionManager() throws CommandProcessorException {
-    try {
-      // Initialize the transaction manager.  This must be done before analyze is called.
-      if (initTxnMgr != null) {
-        queryTxnMgr = initTxnMgr;
-      } else {
-        queryTxnMgr = SessionState.get().initTxnMgr(conf);
-      }
-      if (queryTxnMgr instanceof Configurable) {
-        ((Configurable) queryTxnMgr).setConf(conf);
-      }
-      queryState.setTxnManager(queryTxnMgr);
-
-      // In case when user Ctrl-C twice to kill Hive CLI JVM, we want to release locks
-      // if compile is being called multiple times, clear the old shutdownhook
-      ShutdownHookManager.removeShutdownHook(shutdownRunner);
-      shutdownRunner = new Runnable() {
-        @Override
-        public void run() {
-          try {
-            releaseLocksAndCommitOrRollback(false, queryTxnMgr);
-          } catch (LockException e) {
-            LOG.warn("Exception when releasing locks in ShutdownHook for Driver: " +
-                e.getMessage());
-          }
-        }
-      };
-      ShutdownHookManager.addShutdownHook(shutdownRunner, SHUTDOWN_HOOK_PRIORITY);
-    } catch (LockException e) {
-      ErrorMsg error = ErrorMsg.getErrorMsg(e.getMessage());
-      String errorMessage = "FAILED: " + e.getClass().getSimpleName() + " [Error "  + error.getErrorCode()  + "]:";
-
-      console.printError(errorMessage, "\n" + StringUtils.stringifyException(e));
-      throw createProcessorException(error.getErrorCode(), errorMessage, error.getSQLState(), e);
     }
   }
 
@@ -764,7 +771,7 @@ public class Driver implements IDriver {
     LOG.debug("Setting " + ReplUtils.LAST_REPL_ID_KEY + " = " + lastReplId);
   }
 
-  private void openTransaction(TxnType txnType) throws LockException, CommandProcessorException {
+  private void openTransaction(TxnType txnType) throws LockException, CommandProcessorResponse {
     if (checkConcurrency() && startImplicitTxn(queryTxnMgr) && !queryTxnMgr.isTxnOpen()) {
       String userFromUGI = getUserFromUGI();
       queryTxnMgr.openTxn(ctx, userFromUGI, txnType);
@@ -823,8 +830,7 @@ public class Driver implements IDriver {
     return shouldOpenImplicitTxn;
   }
 
-  private void checkInterrupted(String msg, HookContext hookContext, PerfLogger perfLogger)
-      throws CommandProcessorException {
+  private void checkInterrupted(String msg, HookContext hookContext, PerfLogger perfLogger) throws CommandProcessorResponse {
     if (driverState.isAborted()) {
       String errorMessage = "FAILED: command has been interrupted: " + msg;
       console.printError(errorMessage);
@@ -835,7 +841,7 @@ public class Driver implements IDriver {
           LOG.warn("Caught exception attempting to invoke Failure Hooks", e);
         }
       }
-      throw createProcessorException(1000, errorMessage, "HY008", null);
+      throw createProcessorResponse(1000, errorMessage, "HY008", null);
     }
   }
 
@@ -1027,7 +1033,7 @@ public class Driver implements IDriver {
     tables.put(fullTableName, tbl);
   }
 
-  private String getUserFromUGI() throws CommandProcessorException {
+  private String getUserFromUGI() throws CommandProcessorResponse {
     // Don't use the userName member, as it may or may not have been set.  Get the value from
     // conf, which calls into getUGI to figure out who the process is running as.
     try {
@@ -1035,7 +1041,7 @@ public class Driver implements IDriver {
     } catch (IOException e) {
       String errorMessage = "FAILED: Error in determining user while acquiring locks: " + e.getMessage();
       console.printError(errorMessage, "\n" + StringUtils.stringifyException(e));
-      throw createProcessorException(10, errorMessage, ErrorMsg.findSQLState(e.getMessage()), e);
+      throw createProcessorResponse(10, errorMessage, ErrorMsg.findSQLState(e.getMessage()), e);
     }
   }
 
@@ -1046,9 +1052,9 @@ public class Driver implements IDriver {
    *
    * This method also records the list of valid transactions.  This must be done after any
    * transactions have been opened.
-   * @throws CommandProcessorException
+   * @throws CommandProcessorResponse
    **/
-  private void acquireLocks() throws CommandProcessorException {
+  private void acquireLocks() throws CommandProcessorResponse {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.ACQUIRE_READ_WRITE_LOCKS);
 
@@ -1125,7 +1131,7 @@ public class Driver implements IDriver {
     } catch (Exception e) {
       String errorMessage = "FAILED: Error in acquiring locks: " + e.getMessage();
       console.printError(errorMessage, "\n" + StringUtils.stringifyException(e));
-      throw createProcessorException(10, errorMessage, ErrorMsg.findSQLState(e.getMessage()), e);
+      throw createProcessorResponse(10, errorMessage, ErrorMsg.findSQLState(e.getMessage()), e);
     } finally {
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.ACQUIRE_READ_WRITE_LOCKS);
     }
@@ -1142,7 +1148,8 @@ public class Driver implements IDriver {
    *
    **/
   @VisibleForTesting
-  public void releaseLocksAndCommitOrRollback(boolean commit, HiveTxnManager txnManager) throws LockException {
+  public void releaseLocksAndCommitOrRollback(boolean commit, HiveTxnManager txnManager)
+      throws LockException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.RELEASE_LOCKS);
     HiveTxnManager txnMgr;
@@ -1195,28 +1202,29 @@ public class Driver implements IDriver {
   }
 
   @Override
-  public CommandProcessorResponse run(String command) throws CommandProcessorException {
+
+  public CommandProcessorResponse run(String command) {
     return run(command, false);
   }
 
   @Override
-  public CommandProcessorResponse run() throws CommandProcessorException {
+  public CommandProcessorResponse run() {
     return run(null, true);
   }
 
-  public CommandProcessorResponse run(String command, boolean alreadyCompiled) throws CommandProcessorException {
+  public CommandProcessorResponse run(String command, boolean alreadyCompiled) {
 
     try {
       runInternal(command, alreadyCompiled);
-      return new CommandProcessorResponse(getSchema(), null);
-    } catch (CommandProcessorException cpe) {
+      return createProcessorResponse(0, null, null, null);
+    } catch (CommandProcessorResponse cpr) {
       SessionState ss = SessionState.get();
       if (ss == null) {
-        throw cpe;
+        return cpr;
       }
       MetaDataFormatter mdf = MetaDataFormatUtils.getFormatter(ss.getConf());
       if (!(mdf instanceof JsonMetaDataFormatter)) {
-        throw cpe;
+        return cpr;
       }
       /*Here we want to encode the error in machine readable way (e.g. JSON)
        * Ideally, errorCode would always be set to a canonical error defined in ErrorMsg.
@@ -1225,48 +1233,47 @@ public class Driver implements IDriver {
        * the error is a specific/expected one.
        * It's written to stdout for backward compatibility (WebHCat consumes it).*/
       try {
-        if (cpe.getException() == null) {
-          mdf.error(ss.out, cpe.getErrorMessage(), cpe.getResponseCode(), cpe.getSqlState());
-          throw cpe;
+        if (cpr.getException() == null) {
+          mdf.error(ss.out, cpr.getErrorMessage(), cpr.getResponseCode(), cpr.getSQLState());
+          return cpr;
         }
-        ErrorMsg canonicalErr = ErrorMsg.getErrorMsg(cpe.getResponseCode());
+        ErrorMsg canonicalErr = ErrorMsg.getErrorMsg(cpr.getResponseCode());
         if (canonicalErr != null && canonicalErr != ErrorMsg.GENERIC_ERROR) {
           /*Some HiveExceptions (e.g. SemanticException) don't set
             canonical ErrorMsg explicitly, but there is logic
             (e.g. #compile()) to find an appropriate canonical error and
             return its code as error code. In this case we want to
             preserve it for downstream code to interpret*/
-          mdf.error(ss.out, cpe.getErrorMessage(), cpe.getResponseCode(), cpe.getSqlState(), null);
-          throw cpe;
+          mdf.error(ss.out, cpr.getErrorMessage(), cpr.getResponseCode(), cpr.getSQLState(), null);
+          return cpr;
         }
-        if (cpe.getException() instanceof HiveException) {
-          HiveException rc = (HiveException)cpe.getException();
-          mdf.error(ss.out, cpe.getErrorMessage(), rc.getCanonicalErrorMsg().getErrorCode(), cpe.getSqlState(),
+        if (cpr.getException() instanceof HiveException) {
+          HiveException rc = (HiveException)cpr.getException();
+          mdf.error(ss.out, cpr.getErrorMessage(), rc.getCanonicalErrorMsg().getErrorCode(), cpr.getSQLState(),
               rc.getCanonicalErrorMsg() == ErrorMsg.GENERIC_ERROR ? StringUtils.stringifyException(rc) : null);
         } else {
-          ErrorMsg canonicalMsg = ErrorMsg.getErrorMsg(cpe.getException().getMessage());
-          mdf.error(ss.out, cpe.getErrorMessage(), canonicalMsg.getErrorCode(), cpe.getSqlState(),
-              StringUtils.stringifyException(cpe.getException()));
+          ErrorMsg canonicalMsg = ErrorMsg.getErrorMsg(cpr.getException().getMessage());
+          mdf.error(ss.out, cpr.getErrorMessage(), canonicalMsg.getErrorCode(), cpr.getSQLState(),
+              StringUtils.stringifyException(cpr.getException()));
         }
       } catch (HiveException ex) {
         console.printError("Unable to JSON-encode the error", StringUtils.stringifyException(ex));
       }
-      throw cpe;
+      return cpr;
     }
   }
 
   @Override
-  public CommandProcessorResponse compileAndRespond(String command) throws CommandProcessorException {
+  public CommandProcessorResponse compileAndRespond(String command) {
     return compileAndRespond(command, false);
   }
 
-  public CommandProcessorResponse compileAndRespond(String command, boolean cleanupTxnList)
-      throws CommandProcessorException {
+  public CommandProcessorResponse compileAndRespond(String command, boolean cleanupTxnList) {
     try {
       compileInternal(command, false);
-      return new CommandProcessorResponse(getSchema(), null);
-    } catch (CommandProcessorException cpe) {
-      throw cpe;
+      return createProcessorResponse(0, null, null, null);
+    } catch (CommandProcessorResponse e) {
+      return e;
     } finally {
       if (cleanupTxnList) {
         // Valid txn list might be generated for a query compiled using this
@@ -1276,7 +1283,7 @@ public class Driver implements IDriver {
     }
   }
 
-  public void lockAndRespond() throws CommandProcessorException {
+  public void lockAndRespond() throws CommandProcessorResponse {
     // Assumes the query has already been compiled
     if (plan == null) {
       throw new IllegalStateException(
@@ -1286,14 +1293,14 @@ public class Driver implements IDriver {
     if (requiresLock()) {
       try {
         acquireLocks();
-      } catch (CommandProcessorException cpe) {
-        rollback(cpe);
-        throw cpe;
+      } catch (CommandProcessorResponse cpr) {
+        rollback(cpr);
+        throw cpr;
       }
     }
   }
 
-  private void compileInternal(String command, boolean deferClose) throws CommandProcessorException {
+  private void compileInternal(String command, boolean deferClose) throws CommandProcessorResponse {
     Metrics metrics = MetricsFactory.getInstance();
     if (metrics != null) {
       metrics.incrementCounter(MetricsConstant.WAITING_COMPILE_OPS, 1);
@@ -1312,18 +1319,18 @@ public class Driver implements IDriver {
       }
       if (!success) {
         String errorMessage = ErrorMsg.COMPILE_LOCK_TIMED_OUT.getErrorCodedMsg();
-        throw createProcessorException(ErrorMsg.COMPILE_LOCK_TIMED_OUT.getErrorCode(), errorMessage, null, null);
+        throw createProcessorResponse(ErrorMsg.COMPILE_LOCK_TIMED_OUT.getErrorCode(), errorMessage, null, null);
       }
 
       try {
         compile(command, true, deferClose);
-      } catch (CommandProcessorException cpe) {
+      } catch (CommandProcessorResponse cpr) {
         try {
           releaseLocksAndCommitOrRollback(false);
         } catch (LockException e) {
           LOG.warn("Exception in releasing locks. " + StringUtils.stringifyException(e));
         }
-        throw cpe;
+        throw cpr;
       }
     }
 
@@ -1334,7 +1341,7 @@ public class Driver implements IDriver {
     queryDisplay.setPerfLogEnds(QueryDisplay.Phase.COMPILATION, perfLogger.getEndTimes());
   }
 
-  private void runInternal(String command, boolean alreadyCompiled) throws CommandProcessorException {
+  private void runInternal(String command, boolean alreadyCompiled) throws CommandProcessorResponse {
     DriverState.setDriverState(driverState);
 
     driverState.lock();
@@ -1345,7 +1352,7 @@ public class Driver implements IDriver {
         } else {
           String errorMessage = "FAILED: Precompiled query has been cancelled or closed.";
           console.printError(errorMessage);
-          throw createProcessorException(12, errorMessage, null, null);
+          throw createProcessorResponse(12, errorMessage, null, null);
         }
       } else {
         driverState.compiling();
@@ -1366,7 +1373,7 @@ public class Driver implements IDriver {
       } catch (Exception e) {
         String errorMessage = "FAILED: Hive Internal Error: " + Utilities.getNameMessage(e);
         console.printError(errorMessage + "\n" + StringUtils.stringifyException(e));
-        throw createProcessorException(12, errorMessage, ErrorMsg.findSQLState(e.getMessage()), e);
+        throw createProcessorResponse(12, errorMessage, ErrorMsg.findSQLState(e.getMessage()), e);
       }
 
       PerfLogger perfLogger = null;
@@ -1436,9 +1443,9 @@ public class Driver implements IDriver {
 
       try {
         execute();
-      } catch (CommandProcessorException cpe) {
-        rollback(cpe);
-        throw cpe;
+      } catch (CommandProcessorResponse cpr) {
+        rollback(cpr);
+        throw cpr;
       }
 
       //if needRequireLock is false, the release here will do nothing because there is no lock
@@ -1471,7 +1478,7 @@ public class Driver implements IDriver {
       } catch (Exception e) {
         String errorMessage = "FAILED: Hive Internal Error: " + Utilities.getNameMessage(e);
         console.printError(errorMessage + "\n" + StringUtils.stringifyException(e));
-        throw createProcessorException(12, errorMessage, ErrorMsg.findSQLState(e.getMessage()), e);
+        throw createProcessorResponse(12, errorMessage, ErrorMsg.findSQLState(e.getMessage()), e);
       }
       isFinishedWithError = false;
     } finally {
@@ -1489,27 +1496,26 @@ public class Driver implements IDriver {
         driverState.unlock();
       }
     }
-
-    SessionState.getPerfLogger().cleanupPerfLogMetrics();
   }
 
-  private void rollback(CommandProcessorException cpe) throws CommandProcessorException {
+  private CommandProcessorResponse rollback(CommandProcessorResponse cpr) throws CommandProcessorResponse {
 
     //console.printError(cpr.toString());
     try {
       releaseLocksAndCommitOrRollback(false);
-    } catch (LockException e) {
-      LOG.error("rollback() FAILED: " + cpe); //make sure not to loose
+    }
+    catch (LockException e) {
+      LOG.error("rollback() FAILED: " + cpr);//make sure not to loose
       handleHiveException(e, 12, "Additional info in hive.log at \"rollback() FAILED\"");
     }
+    return cpr;
   }
 
-  private CommandProcessorException handleHiveException(HiveException e, int ret) throws CommandProcessorException {
+  private CommandProcessorResponse handleHiveException(HiveException e, int ret) throws CommandProcessorResponse {
     return handleHiveException(e, ret, null);
   }
 
-  private CommandProcessorException handleHiveException(HiveException e, int ret, String rootMsg)
-      throws CommandProcessorException {
+  private CommandProcessorResponse handleHiveException(HiveException e, int ret, String rootMsg) throws CommandProcessorResponse {
     String errorMessage = "FAILED: Hive Internal Error: " + Utilities.getNameMessage(e);
     if(rootMsg != null) {
       errorMessage += "\n" + rootMsg;
@@ -1517,11 +1523,10 @@ public class Driver implements IDriver {
     String sqlState = e.getCanonicalErrorMsg() != null ?
         e.getCanonicalErrorMsg().getSQLState() : ErrorMsg.findSQLState(e.getMessage());
     console.printError(errorMessage + "\n" + StringUtils.stringifyException(e));
-    throw createProcessorException(ret, errorMessage, sqlState, e);
+    throw createProcessorResponse(ret, errorMessage, sqlState, e);
   }
   private boolean requiresLock() {
     if (!checkConcurrency()) {
-      LOG.info("Concurrency mode is disabled, not creating a lock manager");
       return false;
     }
     // Lock operations themselves don't require the lock.
@@ -1569,17 +1574,18 @@ public class Driver implements IDriver {
     return false;
   }
 
-  private CommandProcessorException createProcessorException(int ret, String errorMessage, String sqlState,
+  private CommandProcessorResponse createProcessorResponse(int ret, String errorMessage, String sqlState,
       Throwable downstreamError) {
     SessionState.getPerfLogger().cleanupPerfLogMetrics();
     queryDisplay.setErrorMessage(errorMessage);
-    if (downstreamError != null && downstreamError instanceof HiveException) {
+    if(downstreamError != null && downstreamError instanceof HiveException) {
       ErrorMsg em = ((HiveException)downstreamError).getCanonicalErrorMsg();
-      if (em != null) {
-        return new CommandProcessorException(ret, em.getErrorCode(), errorMessage, sqlState, downstreamError);
+      if(em != null) {
+        return new CommandProcessorResponse(ret, errorMessage, sqlState,
+          schema, downstreamError, em.getErrorCode(), null);
       }
     }
-    return new CommandProcessorException(ret, -1, errorMessage, sqlState, downstreamError);
+    return new CommandProcessorResponse(ret, errorMessage, sqlState, downstreamError);
   }
 
   private void useFetchFromCache(CacheEntry cacheEntry) {
@@ -1645,7 +1651,7 @@ public class Driver implements IDriver {
     }
   }
 
-  private void execute() throws CommandProcessorException {
+  private void execute() throws CommandProcessorResponse {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.DRIVER_EXECUTE);
 
@@ -1665,7 +1671,7 @@ public class Driver implements IDriver {
       if (!driverState.isCompiled() && !driverState.isExecuting()) {
         String errorMessage = "FAILED: unexpected driverstate: " + driverState + ", for query " + queryStr;
         console.printError(errorMessage);
-        throw createProcessorException(1000, errorMessage, "HY008", null);
+        throw createProcessorResponse(1000, errorMessage, "HY008", null);
       } else {
         driverState.executing();
       }
@@ -1831,7 +1837,7 @@ public class Driver implements IDriver {
             // in case we decided to run everything in local mode, restore the
             // the jobtracker setting to its initial value
             ctx.restoreOriginalTracker();
-            throw createProcessorException(exitVal, errorMessage, sqlState, result.getTaskError());
+            throw createProcessorResponse(exitVal, errorMessage, sqlState, result.getTaskError());
           }
         }
 
@@ -1863,7 +1869,7 @@ public class Driver implements IDriver {
         String errorMessage = "FAILED: Operation cancelled";
         invokeFailureHooks(perfLogger, hookContext, errorMessage, null);
         console.printError(errorMessage);
-        throw createProcessorException(1000, errorMessage, "HY008", null);
+        throw createProcessorResponse(1000, errorMessage, "HY008", null);
       }
 
       // remove incomplete outputs.
@@ -1891,9 +1897,9 @@ public class Driver implements IDriver {
         SessionState.get().getHiveHistory().printRowCount(queryId);
       }
       releasePlan(plan);
-    } catch (CommandProcessorException cpe) {
+    } catch (CommandProcessorResponse cpr) {
       executionError = true;
-      throw cpe;
+      throw cpr;
     } catch (Throwable e) {
       executionError = true;
 
@@ -1914,7 +1920,7 @@ public class Driver implements IDriver {
         }
       }
       console.printError(errorMessage + "\n" + StringUtils.stringifyException(e));
-      throw createProcessorException(12, errorMessage, "08S01", e);
+      throw createProcessorResponse(12, errorMessage, "08S01", e);
     } finally {
       // Trigger query hooks after query completes its execution.
       try {
@@ -2408,8 +2414,11 @@ public class Driver implements IDriver {
         return true;
       }
     }
-
-    return plan.getFetchTask() != null && plan.getResultSchema() != null && plan.getResultSchema().isSetFieldSchemas();
+    if (plan.getFetchTask() != null && schema != null && schema.isSetFieldSchemas()) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   void setCompactionWriteIds(ValidWriteIdList val, long compactorTxnId) {

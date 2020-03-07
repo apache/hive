@@ -86,7 +86,7 @@ import org.apache.hadoop.hive.ql.io.orc.OrcStruct;
 import org.apache.hadoop.hive.ql.io.orc.Reader;
 import org.apache.hadoop.hive.ql.io.orc.RecordReader;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.txn.compactor.Worker;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -3166,21 +3166,19 @@ public class TestStreaming {
     LOG.debug(sql);
     System.out.println(sql);
     //LOG.debug("Running Hive Query: "+ sql);
-    try {
-      driver.run(sql);
+    CommandProcessorResponse cpr = driver.run(sql);
+    if (cpr.getResponseCode() == 0) {
       return true;
-    } catch (CommandProcessorException e) {
-      LOG.error("Statement: " + sql + " failed: " + e);
-      return false;
     }
+    LOG.error("Statement: " + sql + " failed: " + cpr);
+    return false;
   }
 
 
   private static ArrayList<String> queryTable(IDriver driver, String query) throws IOException {
-    try {
-      driver.run(query);
-    } catch (CommandProcessorException e) {
-      throw new RuntimeException(query + " failed: " + e);
+    CommandProcessorResponse cpr = driver.run(query);
+    if (cpr.getResponseCode() != 0) {
+      throw new RuntimeException(query + " failed: " + cpr);
     }
     ArrayList<String> res = new ArrayList<String>();
     driver.getResults(res);

@@ -31,7 +31,6 @@ import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.hcatalog.common.HCatConstants;
@@ -44,24 +43,22 @@ public class HCatDriver {
     driver = DriverFactory.newDriver(hiveConf);
   }
 
-  public CommandProcessorResponse run(String command) throws CommandProcessorException {
-    SessionState ss = SessionState.get();
+  public CommandProcessorResponse run(String command) {
 
     CommandProcessorResponse cpr = null;
-    try {
-      cpr = driver.run(command);
-    } finally {
-      // reset conf vars
-      ss.getConf().set(HCatConstants.HCAT_CREATE_DB_NAME, "");
-      ss.getConf().set(HCatConstants.HCAT_CREATE_TBL_NAME, "");
-    }
+    cpr = driver.run(command);
 
-    // Only attempt to do this, if cmd was successful.
-    // FIXME: it would be probably better to move this to an after-execution
-    int rc = setFSPermsNGrp(ss, driver.getConf());
-    if (rc != 0) {
-      throw new CommandProcessorException(rc);
+    SessionState ss = SessionState.get();
+
+    if (cpr.getResponseCode() == 0) {
+      // Only attempt to do this, if cmd was successful.
+      // FIXME: it would be probably better to move this to an after-execution
+      int rc = setFSPermsNGrp(ss, driver.getConf());
+      cpr = new CommandProcessorResponse(rc);
     }
+    // reset conf vars
+    ss.getConf().set(HCatConstants.HCAT_CREATE_DB_NAME, "");
+    ss.getConf().set(HCatConstants.HCAT_CREATE_TBL_NAME, "");
 
     return cpr;
   }

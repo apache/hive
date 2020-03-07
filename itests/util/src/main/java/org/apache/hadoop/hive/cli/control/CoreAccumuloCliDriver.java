@@ -26,7 +26,6 @@ import org.apache.hadoop.hive.accumulo.AccumuloQTestUtil;
 import org.apache.hadoop.hive.accumulo.AccumuloTestSetup;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -110,10 +109,9 @@ public class CoreAccumuloCliDriver extends CliAdapter {
       qt.addFile(fpath);
       qt.cliInit(new File(fpath));
 
-      try {
-        qt.executeClient(fname);
-      } catch (CommandProcessorException e) {
-        qt.failed(e.getResponseCode(), fname, null);
+      int ecode = qt.executeClient(fname);
+      if (ecode != 0) {
+        qt.failed(ecode, fname, null);
       }
 
       QTestProcessExecResult result = qt.checkCliDriverResults(fname);

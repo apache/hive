@@ -34,6 +34,7 @@ import org.apache.hive.hcatalog.data.DefaultHCatRecord;
 import org.apache.hive.hcatalog.data.HCatRecord;
 import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
 import org.apache.hive.hcatalog.data.schema.HCatSchemaUtils;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;
@@ -132,7 +133,11 @@ public class TestHCatNonPartitioned extends HCatMapReduceTest {
   private void hiveReadTest() throws Exception {
 
     String query = "select * from " + tableName;
-    driver.run(query);
+    int retCode = driver.run(query).getResponseCode();
+
+    if (retCode != 0) {
+      throw new Exception("Error " + retCode + " running query " + query);
+    }
 
     ArrayList<String> res = new ArrayList<String>();
     driver.getResults(res);
@@ -143,7 +148,11 @@ public class TestHCatNonPartitioned extends HCatMapReduceTest {
     }
 
     query = "select count(*) from " + tableName;
-    driver.run(query);
+    retCode = driver.run(query).getResponseCode();
+
+    if (retCode != 0) {
+      throw new Exception("Error " + retCode + " running query " + query);
+    }
 
     res = new ArrayList<String>();
     driver.getResults(res);

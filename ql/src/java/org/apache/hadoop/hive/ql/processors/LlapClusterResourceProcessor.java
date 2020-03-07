@@ -54,25 +54,29 @@ public class LlapClusterResourceProcessor implements CommandProcessor {
     CLUSTER_OPTIONS.addOption("info", "info", false, "Information about LLAP cluster");
   }
 
+  private CommandProcessorResponse returnErrorResponse(final String errmsg) {
+    return new CommandProcessorResponse(1, "LLAP Cluster Processor Helper Failed:" + errmsg, null);
+  }
+
   @Override
-  public CommandProcessorResponse run(String command) throws CommandProcessorException {
+  public CommandProcessorResponse run(String command) {
     SessionState ss = SessionState.get();
     command = new VariableSubstitution(() -> SessionState.get().getHiveVariables()).substitute(ss.getConf(), command);
     String[] tokens = command.split("\\s+");
     if (tokens.length < 1) {
-      throw new CommandProcessorException("LLAP Cluster Processor Helper Failed: Command arguments are empty.");
+      return returnErrorResponse("Command arguments are empty.");
     }
 
     String params[] = Arrays.copyOfRange(tokens, 1, tokens.length);
     try {
       return llapClusterCommandHandler(ss, params);
     } catch (Exception e) {
-      throw new CommandProcessorException("LLAP Cluster Processor Helper Failed: " + e.getMessage());
+      return returnErrorResponse(e.getMessage());
     }
   }
 
-  private CommandProcessorResponse llapClusterCommandHandler(SessionState ss, String[] params)
-      throws ParseException, CommandProcessorException {
+  private CommandProcessorResponse llapClusterCommandHandler(final SessionState ss,
+    final String[] params) throws ParseException {
     CommandLine args = parseCommandArgs(CLUSTER_OPTIONS, params);
     String hs2Host = null;
     if (ss.isHiveServerQuery()) {
@@ -98,17 +102,19 @@ public class LlapClusterResourceProcessor implements CommandProcessor {
             instance.getRpcPort(), instance.getResource().getMemory() * 1024L * 1024L,
             instance.getResource().getVirtualCores()));
         }
-        return new CommandProcessorResponse(getSchema(), null);
+        return createProcessorSuccessResponse();
       } catch (Exception e) {
         LOG.error("Unable to list LLAP instances. err: ", e);
-        throw new CommandProcessorException(
-            "LLAP Cluster Processor Helper Failed: Unable to list LLAP instances. err: " + e.getMessage());
+        return returnErrorResponse("Unable to list LLAP instances. err: " + e.getMessage());
       }
     } else {
       String usage = getUsageAsString();
-      throw new CommandProcessorException(
-          "LLAP Cluster Processor Helper Failed: Unsupported sub-command option. " + usage);
+      return returnErrorResponse("Unsupported sub-command option. " + usage);
     }
+  }
+
+  private CommandProcessorResponse createProcessorSuccessResponse() {
+    return new CommandProcessorResponse(0, null, null, getSchema());
   }
 
   private Schema getSchema() {

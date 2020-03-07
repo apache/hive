@@ -29,9 +29,10 @@ import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.Utils;
@@ -119,7 +120,8 @@ public class TestClientSideAuthorizationProvider extends TestCase {
 
     allowCreateDatabase(userName);
 
-    driver.run("create database " + dbName);
+    CommandProcessorResponse ret = driver.run("create database " + dbName);
+    assertEquals(0,ret.getResponseCode());
     Database db = msc.getDatabase(dbName);
     String dbLocn = db.getLocationUri();
 
@@ -129,18 +131,19 @@ public class TestClientSideAuthorizationProvider extends TestCase {
     disallowCreateInDb(dbName, userName, dbLocn);
 
     driver.run("use " + dbName);
-    try {
-      driver.run(String.format("create table %s (a string) partitioned by (b string)", tblName));
-    } catch (CommandProcessorException e) {
-      // failure from not having permissions to create table
-      assertNoPrivileges(e);
-    }
+    ret = driver.run(
+        String.format("create table %s (a string) partitioned by (b string)", tblName));
+
+    // failure from not having permissions to create table
+    assertNoPrivileges(ret);
 
     allowCreateInDb(dbName, userName, dbLocn);
 
     driver.run("use " + dbName);
-    driver.run(String.format("create table %s (a string) partitioned by (b string)", tblName));
+    ret = driver.run(
+        String.format("create table %s (a string) partitioned by (b string)", tblName));
 
+    assertEquals(0,ret.getResponseCode()); // now it succeeds.
     Table tbl = msc.getTable(dbName, tblName);
 
     validateCreateTable(tbl,tblName, dbName);
@@ -154,26 +157,23 @@ public class TestClientSideAuthorizationProvider extends TestCase {
     InjectableDummyAuthenticator.injectMode(true);
 
     allowSelectOnTable(tbl.getTableName(), fakeUser, tbl.getSd().getLocation());
-    driver.run(String.format("select * from %s limit 10", tblName));
+    ret = driver.run(String.format("select * from %s limit 10", tblName));
+    assertEquals(0,ret.getResponseCode());
 
-    try {
-      driver.run(String.format("create table %s (a string) partitioned by (b string)", tblName+"mal"));
-    } catch (CommandProcessorException e) {
-      assertNoPrivileges(e);
-    }
+    ret = driver.run(
+        String.format("create table %s (a string) partitioned by (b string)", tblName+"mal"));
+
+    assertNoPrivileges(ret);
 
     disallowCreateInTbl(tbl.getTableName(), userName, tbl.getSd().getLocation());
-
-    try {
-      driver.run("alter table "+tblName+" add partition (b='2011')");
-    } catch (CommandProcessorException e) {
-      assertNoPrivileges(e);
-    }
+    ret = driver.run("alter table "+tblName+" add partition (b='2011')");
+    assertNoPrivileges(ret);
 
     InjectableDummyAuthenticator.injectMode(false);
     allowCreateInTbl(tbl.getTableName(), userName, tbl.getSd().getLocation());
 
-    driver.run("alter table "+tblName+" add partition (b='2011')");
+    ret = driver.run("alter table "+tblName+" add partition (b='2011')");
+    assertEquals(0,ret.getResponseCode());
 
     allowDropOnTable(tblName, userName, tbl.getSd().getLocation());
     allowDropOnDb(dbName,userName,db.getLocationUri());
@@ -226,7 +226,7 @@ public class TestClientSideAuthorizationProvider extends TestCase {
     driver.run("grant select on table "+tblName+" to user "+userName);
   }
 
-  protected void assertNoPrivileges(CommandProcessorException ret){
+  protected void assertNoPrivileges(CommandProcessorResponse ret){
     assertNotNull(ret);
     assertFalse(0 == ret.getResponseCode());
     assertTrue(ret.getErrorMessage().indexOf("No privilege") != -1);

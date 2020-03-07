@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.SessionStateUserAuthenticator;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
@@ -114,7 +115,8 @@ public class TestHiveAuthorizerCheckInvocation {
   }
 
   private static void runCmd(String cmd) throws Exception {
-    driver.run(cmd);
+    CommandProcessorResponse resp = driver.run(cmd);
+    assertEquals(0, resp.getResponseCode());
   }
 
   @AfterClass
@@ -285,7 +287,8 @@ public class TestHiveAuthorizerCheckInvocation {
     assertTrue("db name", dbName.equalsIgnoreCase(dbObj.getDbname()));
 
     // actually create the permanent function
-    driver.run(null, true);
+    CommandProcessorResponse cresponse = driver.run(null, true);
+    assertEquals(0, cresponse.getResponseCode());
 
     // Verify privilege objects
     reset(mockedAuthorizer);
@@ -312,7 +315,9 @@ public class TestHiveAuthorizerCheckInvocation {
 
     // create 2nd permanent function
     String funcName2 = "funcName2";
-    driver.run("create function " + dbName + "." + funcName2 + " as 'org.apache.hadoop.hive.ql.udf.UDFRand'");
+    cresponse = driver
+        .run("create function " + dbName + "." + funcName2 + " as 'org.apache.hadoop.hive.ql.udf.UDFRand'");
+    assertEquals(0, cresponse.getResponseCode());
 
     // try using 2nd permanent function and verify its only 2nd one that shows up
     // for auth
@@ -389,7 +394,9 @@ public class TestHiveAuthorizerCheckInvocation {
     final String tableName = "testTempTable";
     { // create temp table
       reset(mockedAuthorizer);
-      driver.run("create temporary table " + tableName + "(i int) location '" + tmpTableDir + "'");
+      int status = driver.run("create temporary table " + tableName + "(i int) location '" + tmpTableDir + "'")
+          .getResponseCode();
+      assertEquals(0, status);
 
       List<HivePrivilegeObject> inputs = getHivePrivilegeObjectInputs().getLeft();
       List<HivePrivilegeObject> outputs = getHivePrivilegeObjectInputs().getRight();
@@ -402,7 +409,7 @@ public class TestHiveAuthorizerCheckInvocation {
       assertEquals("output count", 1, outputs.size());
       assertEquals("output type", HivePrivilegeObjectType.DATABASE, outputs.get(0).getType());
 
-      int status = driver.compile("select * from " + tableName, true);
+      status = driver.compile("select * from " + tableName, true);
       assertEquals(0, status);
     }
     { // select from the temp table
@@ -439,10 +446,11 @@ public class TestHiveAuthorizerCheckInvocation {
   @Test
   public void testTempTableImplicit() throws Exception {
     final String tableName = "testTempTableImplicit";
-    driver.run("create table " + tableName + "(i int)");
+    int status = driver.run("create table " + tableName + "(i int)").getResponseCode();
+    assertEquals(0, status);
 
     reset(mockedAuthorizer);
-    int status = driver.compile("insert into " + tableName + " values (1)", true);
+    status = driver.compile("insert into " + tableName + " values (1)", true);
     assertEquals(0, status);
 
     List<HivePrivilegeObject> inputs = getHivePrivilegeObjectInputs().getLeft();

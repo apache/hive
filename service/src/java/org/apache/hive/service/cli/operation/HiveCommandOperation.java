@@ -33,7 +33,6 @@ import java.util.Map;
 import org.apache.commons.lang3.CharEncoding;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.service.ServiceUtils;
@@ -112,6 +111,10 @@ public class HiveCommandOperation extends ExecuteStatementOperation {
       String commandArgs = command.substring(tokens[0].length()).trim();
 
       CommandProcessorResponse response = commandProcessor.run(commandArgs);
+      int returnCode = response.getResponseCode();
+      if (returnCode != 0) {
+        throw toSQLException("Error while processing statement", response);
+      }
       Schema schema = response.getSchema();
       if (schema != null) {
         setHasResultSet(true);
@@ -120,12 +123,14 @@ public class HiveCommandOperation extends ExecuteStatementOperation {
         setHasResultSet(false);
         resultSchema = new TableSchema();
       }
-      if (response.getMessage() != null) {
-        LOG.info(response.getMessage());
+      if (response.getConsoleMessages() != null) {
+        for (String consoleMsg : response.getConsoleMessages()) {
+          LOG.info(consoleMsg);
+        }
       }
-    } catch (CommandProcessorException e) {
+    } catch (HiveSQLException e) {
       setState(OperationState.ERROR);
-      throw toSQLException("Error while processing statement", e);
+      throw e;
     } catch (Exception e) {
       setState(OperationState.ERROR);
       throw new HiveSQLException("Error running query: " + e.toString(), e);

@@ -27,7 +27,6 @@ import org.apache.hadoop.hive.hbase.HBaseQTestUtil;
 import org.apache.hadoop.hive.hbase.HBaseTestSetup;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -118,10 +117,9 @@ public class CoreHBaseCliDriver extends CliAdapter {
 
       qt.cliInit(new File(fpath));
 
-      try {
-        qt.executeClient(fname);
-      } catch (CommandProcessorException e) {
-        qt.failed(e.getResponseCode(), fname, null);
+      int ecode = qt.executeClient(fname);
+      if (ecode != 0) {
+        qt.failed(ecode, fname, null);
       }
 
       QTestProcessExecResult result = qt.checkCliDriverResults(fname);

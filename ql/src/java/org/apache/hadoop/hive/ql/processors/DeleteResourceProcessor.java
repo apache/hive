@@ -36,11 +36,11 @@ import org.slf4j.LoggerFactory;
  */
 public class DeleteResourceProcessor implements CommandProcessor {
 
-  private static final Logger LOG = LoggerFactory.getLogger(DeleteResourceProcessor.class.getName());
-  private static final LogHelper console = new LogHelper(LOG);
+  public static final Logger LOG = LoggerFactory.getLogger(DeleteResourceProcessor.class.getName());
+  public static final LogHelper console = new LogHelper(LOG);
 
   @Override
-  public CommandProcessorResponse run(String command) throws CommandProcessorException {
+  public CommandProcessorResponse run(String command) {
     SessionState ss = SessionState.get();
     command = new VariableSubstitution(new HiveVariableSource() {
       @Override
@@ -56,7 +56,7 @@ public class DeleteResourceProcessor implements CommandProcessor {
       console.printError("Usage: delete ["
           + StringUtils.join(SessionState.ResourceType.values(), "|")
           + "] <value> [<value>]*");
-      throw new CommandProcessorException(1);
+      return new CommandProcessorResponse(1);
     }
     CommandProcessorResponse authErrResp =
         CommandUtil.authorizeCommand(ss, HiveOperationType.DELETE, Arrays.asList(tokens));
@@ -70,7 +70,7 @@ public class DeleteResourceProcessor implements CommandProcessor {
       ss.delete_resources(t);
     }
 
-    return new CommandProcessorResponse();
+    return new CommandProcessorResponse(0);
   }
 
   @Override

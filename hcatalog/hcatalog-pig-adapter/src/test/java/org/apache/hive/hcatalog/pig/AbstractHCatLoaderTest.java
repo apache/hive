@@ -43,6 +43,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.IDriver;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hive.hcatalog.HcatTestUtils;
@@ -149,7 +150,10 @@ public abstract class AbstractHCatLoaderTest extends HCatBaseTest {
    */
   static void executeStatementOnDriver(String cmd, IDriver driver) throws Exception {
     LOG.debug("Executing: " + cmd);
-    driver.run(cmd);
+    CommandProcessorResponse cpr = driver.run(cmd);
+    if(cpr.getResponseCode() != 0) {
+      throw new IOException("Failed to execute \"" + cmd + "\". Driver returned " + cpr.getResponseCode() + " Error: " + cpr.getErrorMessage());
+    }
   }
 
   private static void checkProjection(FieldSchema fs, String expectedName, byte expectedPigType) {
@@ -656,10 +660,11 @@ public abstract class AbstractHCatLoaderTest extends HCatBaseTest {
     String[] lines = new String[]{"llama\ttrue", "alpaca\tfalse"};
     HcatTestUtils.createTestDataFile(inputFileName, lines);
 
-    driver.run("drop table if exists " + tbl);
-    driver.run("create external table " + tbl +
-        " (a string, b boolean) row format delimited fields terminated by '\t'" +
-        " stored as textfile location 'file:///" + inputDataDir.getPath().replaceAll("\\\\", "/") + "'");
+    assertEquals(0, driver.run("drop table if exists " + tbl).getResponseCode());
+    assertEquals(0, driver.run("create external table " + tbl +
+      " (a string, b boolean) row format delimited fields terminated by '\t'" +
+      " stored as textfile location 'file:///" +
+      inputDataDir.getPath().replaceAll("\\\\", "/") + "'").getResponseCode());
 
     Properties properties = new Properties();
     properties.setProperty(HCatConstants.HCAT_DATA_CONVERT_BOOLEAN_TO_INTEGER, "true");

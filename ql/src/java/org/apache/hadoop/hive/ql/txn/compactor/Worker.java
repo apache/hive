@@ -22,6 +22,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreThread;
@@ -43,7 +44,7 @@ import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.QueryState;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -68,6 +69,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
   static final private String CLASS_NAME = Worker.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   static final private long SLEEP_TIME = 10000;
+  static final private int baseThreadNum = 10002;
 
   private String workerName;
   private JobConf mrJob; // the MR job for compaction
@@ -357,17 +359,16 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         conf.setVar(HiveConf.ConfVars.METASTOREURIS,"");
 
         //todo: use DriverUtils.runOnDriver() here
-        QueryState queryState = new QueryState.Builder().withGenerateNewQueryId(true).withHiveConf(conf).build();
+        Driver d = new Driver(new QueryState.Builder().withGenerateNewQueryId(true).withHiveConf(conf).build(), userName);
         SessionState localSession = null;
-        try (Driver d = new Driver(queryState, userName)) {
+        try {
           if (SessionState.get() == null) {
             localSession = new SessionState(conf);
             SessionState.start(localSession);
           }
-          try {
-            d.run(sb.toString());
-          } catch (CommandProcessorException e) {
-            LOG.warn(ci + ": " + sb.toString() + " failed due to: " + e);
+          CommandProcessorResponse cpr = d.run(sb.toString());
+          if (cpr.getResponseCode() != 0) {
+            LOG.warn(ci + ": " + sb.toString() + " failed due to: " + cpr);
           }
         } finally {
           if (localSession != null) {

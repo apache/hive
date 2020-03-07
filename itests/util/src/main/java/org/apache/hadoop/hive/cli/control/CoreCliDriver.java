@@ -27,7 +27,6 @@ import org.apache.hadoop.hive.ql.QTestArguments;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.util.ElapsedTimeLoggingWrapper;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -190,11 +189,10 @@ public class CoreCliDriver extends CliAdapter {
 
       qt.cliInit(new File(fpath));
 
-      try {
-        qt.executeClient(fname);
-      } catch (CommandProcessorException e) {
+      int ecode = qt.executeClient(fname);
+      if (ecode != 0) {
         failed = true;
-        qt.failed(e.getResponseCode(), fname, debugHint);
+        qt.failed(ecode, fname, debugHint);
       }
 
       QTestProcessExecResult result = qt.checkCliDriverResults(fname);

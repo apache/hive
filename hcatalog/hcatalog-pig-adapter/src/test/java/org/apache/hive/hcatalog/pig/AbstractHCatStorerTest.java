@@ -35,7 +35,7 @@ import java.util.List;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hive.hcatalog.HcatTestUtils;
 import org.apache.hive.hcatalog.mapreduce.HCatBaseTest;
 import org.apache.pig.EvalFunc;
@@ -179,6 +179,7 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
   @Test
   public void testWriteDate3() throws Exception {
     DateTime d = new DateTime(1991, 10, 11, 23, 10, DateTimeZone.forOffsetHours(-11));
+    FrontendException fe = null;
     // expect to fail since the time component is not 0
     pigValueRangeTestOverflow("junitTypeTest4", "date", "datetime",
         HCatBaseStorer.OOR_VALUE_OPT_VALUES.Throw, d.toString(), FORMAT_4_DATE);
@@ -274,6 +275,7 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
     int queryNumber = 1;
     logAndRegister(server,
         "A = load '" + INPUT_FILE_NAME + "' as (" + field + ":" + pigType + ");", queryNumber++);
+    Iterator<Tuple> firstLoad = server.openIterator("A");
     if (goal == null) {
       logAndRegister(server, "store A into '" + tblName + "' using " + HCatStorer.class.getName()
           + "();", queryNumber++);
@@ -300,11 +302,9 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
     }
     logAndRegister(server,
         "B = load '" + tblName + "' using " + HCatLoader.class.getName() + "();", queryNumber);
-    try {
-      driver.run("select * from " + tblName);
-    } catch (CommandProcessorException e) {
-      LOG.debug("cpr.respCode=" + e.getResponseCode() + " cpr.errMsg=" + e.getErrorMessage() + " for table " + tblName);
-    }
+    CommandProcessorResponse cpr = driver.run("select * from " + tblName);
+    LOG.debug("cpr.respCode=" + cpr.getResponseCode() + " cpr.errMsg=" + cpr.getErrorMessage()
+        + " for table " + tblName);
     List l = new ArrayList();
     driver.getResults(l);
     LOG.debug("Dumping rows via SQL from " + tblName);
@@ -368,11 +368,8 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
         + "();", queryNumber++);
     logAndRegister(server,
         "B = load '" + tblName + "' using " + HCatLoader.class.getName() + "();", queryNumber);
-    try {
-      driver.run("select * from " + tblName);
-    } catch (CommandProcessorException e) {
-      LOG.debug("cpr.respCode=" + e.getResponseCode() + " cpr.errMsg=" + e.getErrorMessage());
-    }
+    CommandProcessorResponse cpr = driver.run("select * from " + tblName);
+    LOG.debug("cpr.respCode=" + cpr.getResponseCode() + " cpr.errMsg=" + cpr.getErrorMessage());
     List l = new ArrayList();
     driver.getResults(l);
     LOG.debug("Dumping rows via SQL from " + tblName);
@@ -1048,7 +1045,11 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
     server.executeBatch();
 
     String query = "show partitions ptn_fail";
-    driver.run(query);
+    int retCode = driver.run(query).getResponseCode();
+
+    if (retCode != 0) {
+      throw new IOException("Error " + retCode + " running query " + query);
+    }
 
     ArrayList<String> res = new ArrayList<String>();
     driver.getResults(res);

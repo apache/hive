@@ -22,9 +22,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Random;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.collect.Lists;
 import org.apache.hadoop.fs.FileStatus;
@@ -43,12 +40,10 @@ import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.streaming.HiveStreamingConnection;
 import org.apache.hive.streaming.StreamingConnection;
 import org.apache.hive.streaming.StrictDelimitedInputWriter;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -57,17 +52,6 @@ import static org.apache.hadoop.hive.ql.txn.compactor.CompactorTestUtil.executeS
 
 @SuppressWarnings("deprecation")
 public class TestCrudCompactorOnTez extends CompactorOnTezTest {
-
-  @After
-  public void tearDown() {
-    if (msClient != null) {
-      msClient.close();
-    }
-    if (driver != null) {
-      driver.close();
-    }
-    conf = null;
-  }
 
   @Test
   public void testMajorCompaction() throws Exception {

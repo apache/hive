@@ -28,7 +28,6 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.ddl.table.partition.AlterTableAddPartitionDesc;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.cli.CliSessionState;
@@ -487,7 +486,7 @@ public class HiveEndPoint {
       }
     }
 
-    private static boolean runDDL(IDriver driver, String sql) throws QueryFailedException, CommandProcessorException {
+    private static boolean runDDL(IDriver driver, String sql) throws QueryFailedException {
       if (LOG.isDebugEnabled()) {
         LOG.debug("Running Hive Query: " + sql);
       }

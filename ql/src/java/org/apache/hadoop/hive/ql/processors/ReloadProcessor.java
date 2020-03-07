@@ -31,15 +31,15 @@ public class ReloadProcessor implements CommandProcessor{
   private static final Logger LOG = LoggerFactory.getLogger(ReloadProcessor.class);
 
   @Override
-  public CommandProcessorResponse run(String command) throws CommandProcessorException {
+  public CommandProcessorResponse run(String command) {
     SessionState ss = SessionState.get();
     try {
       ss.loadReloadableAuxJars();
     } catch (IOException e) {
       LOG.error("fail to reload auxiliary jar files", e);
-      throw new CommandProcessorException(e.getMessage(), e);
+      return CommandProcessorResponse.create(e);
     }
-    return new CommandProcessorResponse();
+    return new CommandProcessorResponse(0);
   }
 
   @Override

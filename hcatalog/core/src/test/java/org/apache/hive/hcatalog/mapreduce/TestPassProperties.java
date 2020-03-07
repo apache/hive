@@ -89,7 +89,8 @@ public class TestPassProperties {
     Initialize();
     String createTable = "CREATE TABLE bad_props_table(a0 int, a1 String, a2 String) STORED AS SEQUENCEFILE";
     driver.run("drop table bad_props_table");
-    driver.run(createTable);
+    int retCode1 = driver.run(createTable).getResponseCode();
+    assertTrue(retCode1 == 0);
 
     boolean caughtException = false;
     try {

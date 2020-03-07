@@ -131,7 +131,11 @@ public class TestHCatDynamicPartitioned extends HCatMapReduceTest {
     // read from hive to test
 
     String query = "select * from " + tableName;
-    driver.run(query);
+    int retCode = driver.run(query).getResponseCode();
+
+    if (retCode != 0) {
+      throw new Exception("Error " + retCode + " running query " + query);
+    }
 
     ArrayList<String> res = new ArrayList<String>();
     driver.getResults(res);
@@ -165,26 +169,38 @@ public class TestHCatDynamicPartitioned extends HCatMapReduceTest {
     }
 
     query = "show partitions " + tableName;
-    driver.run(query);
+    retCode = driver.run(query).getResponseCode();
+    if (retCode != 0) {
+      throw new Exception("Error " + retCode + " running query " + query);
+    }
     res = new ArrayList<String>();
     driver.getResults(res);
     assertEquals(NUM_PARTITIONS, res.size());
 
     query = "select * from " + tableName;
-    driver.run(query);
+    retCode = driver.run(query).getResponseCode();
+    if (retCode != 0) {
+      throw new Exception("Error " + retCode + " running query " + query);
+    }
     res = new ArrayList<String>();
     driver.getResults(res);
     assertEquals(NUM_RECORDS, res.size());
 
     query = "select count(*) from " + tableName;
-    driver.run(query);
+    retCode = driver.run(query).getResponseCode();
+    if (retCode != 0) {
+      throw new Exception("Error " + retCode + " running query " + query);
+    }
     res = new ArrayList<String>();
     driver.getResults(res);
     assertEquals(1, res.size());
     assertEquals("20", res.get(0));
 
     query = "select count(*) from " + tableName + " where p1=1";
-    driver.run(query);
+    retCode = driver.run(query).getResponseCode();
+    if (retCode != 0) {
+      throw new Exception("Error " + retCode + " running query " + query);
+    }
     res = new ArrayList<String>();
     driver.getResults(res);
     assertEquals(1, res.size());

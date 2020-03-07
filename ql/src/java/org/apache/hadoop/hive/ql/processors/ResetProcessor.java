@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Lists;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -35,17 +36,18 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
+
 public class ResetProcessor implements CommandProcessor {
 
   private final static String DEFAULT_ARG = "-d";
 
   @Override
-  public CommandProcessorResponse run(String command) throws CommandProcessorException {
+  public CommandProcessorResponse run(String command) {
     return run(SessionState.get(), command);
   }
 
   @VisibleForTesting
-  CommandProcessorResponse run(SessionState ss, String command) throws CommandProcessorException {
+  CommandProcessorResponse run(SessionState ss, String command) {
     CommandProcessorResponse authErrResp =
         CommandUtil.authorizeCommand(ss, HiveOperationType.RESET, Arrays.asList(command));
     if (authErrResp != null) {
@@ -55,7 +57,7 @@ public class ResetProcessor implements CommandProcessor {
     command = command.trim();
     if (StringUtils.isBlank(command)) {
       resetOverridesOnly(ss);
-      return new CommandProcessorResponse();
+      return new CommandProcessorResponse(0);
     }
     String[] parts = command.split("\\s+");
     boolean isDefault = false;
@@ -71,22 +73,22 @@ public class ResetProcessor implements CommandProcessor {
       }
     }
     if (varnames.isEmpty()) {
-      throw new CommandProcessorException(1, -1, "No variable names specified", "42000", null);
+      return new CommandProcessorResponse(1, "No variable names specified", "42000");
     }
-    String variableNames = "";
+    String message = "";
     for (String varname : varnames) {
       if (isDefault) {
-        if (!variableNames.isEmpty()) {
-          variableNames += ", ";
+        if (!message.isEmpty()) {
+          message += ", ";
         }
-        variableNames += varname;
+        message += varname;
         resetToDefault(ss, varname);
       } else {
         resetOverrideOnly(ss, varname);
       }
     }
-    String message = isDefault ? "Resetting " + variableNames + " to default values" : null;
-    return new CommandProcessorResponse(null, message);
+    return new CommandProcessorResponse(0, isDefault
+        ? Lists.newArrayList("Resetting " + message + " to default values") : null);
   }
 
   private static void resetOverridesOnly(SessionState ss) {
@@ -115,8 +117,7 @@ public class ResetProcessor implements CommandProcessor {
     }
   }
 
-  private static CommandProcessorResponse resetToDefault(SessionState ss, String varname)
-      throws CommandProcessorException {
+  private static CommandProcessorResponse resetToDefault(SessionState ss, String varname) {
     varname = varname.trim();
     try {
       String nonErrorMessage = null;
@@ -140,10 +141,11 @@ public class ResetProcessor implements CommandProcessor {
           SessionState.get().updateHistory(Boolean.parseBoolean(defaultVal), ss);
         }
       }
-      return new CommandProcessorResponse(null, nonErrorMessage);
+      return nonErrorMessage == null ? new CommandProcessorResponse(0)
+        : new CommandProcessorResponse(0, Lists.newArrayList(nonErrorMessage));
     } catch (Exception e) {
-      Throwable exception = e instanceof IllegalArgumentException ? null : e;
-      throw new CommandProcessorException(1, -1, e.getMessage(), "42000", exception);
+      return new CommandProcessorResponse(1, e.getMessage(), "42000",
+          e instanceof IllegalArgumentException ? null : e);
     }
   }
 

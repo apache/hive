@@ -33,6 +33,7 @@ import org.apache.commons.compress.archivers.jar.JarArchiveOutputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.hive.conf.HiveVariableSource;
 import org.apache.hadoop.hive.conf.VariableSubstitution;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
@@ -99,10 +100,10 @@ public class CompileProcessor implements CommandProcessor {
    * will be added to the session state via the session state's
    * ADD RESOURCE command.
    * @param command a String to be compiled
-   * @return CommandProcessorResponse with some message
+   * @return CommandProcessorResponse with 0 for success and 1 for failure
    */
   @Override
-  public CommandProcessorResponse run(String command) throws CommandProcessorException {
+  public CommandProcessorResponse run(String command) {
     SessionState ss = SessionState.get();
     this.command = command;
 
@@ -115,8 +116,17 @@ public class CompileProcessor implements CommandProcessor {
 
     myId = runCount.getAndIncrement();
 
-    parse(ss);
-    CommandProcessorResponse result = compile(ss);
+    try {
+      parse(ss);
+    } catch (CompileProcessorException e) {
+      return CommandProcessorResponse.create(e);
+    }
+    CommandProcessorResponse result = null;
+    try {
+      result = compile(ss);
+    } catch (CompileProcessorException e) {
+      return CommandProcessorResponse.create(e);
+    }
     return result;
   }
 
@@ -126,7 +136,7 @@ public class CompileProcessor implements CommandProcessor {
    * @throws CompileProcessorException if the code can not be compiled or the jar can not be made
    */
   @VisibleForTesting
-  void parse(SessionState ss) throws CommandProcessorException {
+  void parse(SessionState ss) throws CompileProcessorException {
     if (ss != null){
       command = new VariableSubstitution(new HiveVariableSource() {
         @Override
@@ -136,7 +146,7 @@ public class CompileProcessor implements CommandProcessor {
       }).substitute(ss.getConf(), command);
     }
     if (command == null || command.length() == 0) {
-      throw new CommandProcessorException("Command was empty");
+      throw new CompileProcessorException("Command was empty");
     }
     StringBuilder toCompile = new StringBuilder();
     int startPosition = 0;
@@ -150,7 +160,7 @@ public class CompileProcessor implements CommandProcessor {
 
     }
     if (startPosition == command.length()){
-      throw new CommandProcessorException(SYNTAX);
+      throw new CompileProcessorException(SYNTAX);
     }
     for (int i = startPosition; i < command.length(); i++) {
       if (command.charAt(i) == '\\') {
@@ -165,23 +175,23 @@ public class CompileProcessor implements CommandProcessor {
       }
     }
     if (endPosition == -1){
-      throw new CommandProcessorException(SYNTAX);
+      throw new CompileProcessorException(SYNTAX);
     }
     StringTokenizer st = new StringTokenizer(command.substring(endPosition+1), " ");
     if (st.countTokens() != 4){
-      throw new CommandProcessorException(SYNTAX);
+      throw new CompileProcessorException(SYNTAX);
     }
     String shouldBeAs = st.nextToken();
     if (!shouldBeAs.equalsIgnoreCase(AS)){
-      throw new CommandProcessorException(SYNTAX);
+      throw new CompileProcessorException(SYNTAX);
     }
     setLang(st.nextToken());
     if (!lang.equalsIgnoreCase(GROOVY)){
-      throw new CommandProcessorException("Can not compile " + lang + ". Hive can only compile " + GROOVY);
+      throw new CompileProcessorException("Can not compile " + lang + ". Hive can only compile " + GROOVY);
     }
     String shouldBeNamed = st.nextToken();
     if (!shouldBeNamed.equalsIgnoreCase(NAMED)){
-      throw new CommandProcessorException(SYNTAX);
+      throw new CompileProcessorException(SYNTAX);
     }
     setNamed(st.nextToken());
     setCode(toCompile.toString());
@@ -194,15 +204,15 @@ public class CompileProcessor implements CommandProcessor {
    * @return Response code of 0 for success 1 for failure
    * @throws CompileProcessorException
    */
-  CommandProcessorResponse compile(SessionState ss) throws CommandProcessorException {
+  CommandProcessorResponse compile(SessionState ss) throws CompileProcessorException {
     Project proj = new Project();
     String ioTempDir = System.getProperty(IO_TMP_DIR);
     File ioTempFile = new File(ioTempDir);
     if (!ioTempFile.exists()){
-      throw new CommandProcessorException(ioTempDir + " does not exists");
+      throw new CompileProcessorException(ioTempDir + " does not exists");
     }
     if (!ioTempFile.isDirectory() || !ioTempFile.canWrite()){
-      throw new CommandProcessorException(ioTempDir + " is not a writable directory");
+      throw new CompileProcessorException(ioTempDir + " is not a writable directory");
     }
     Groovyc g = new Groovyc();
     long runStamp = System.currentTimeMillis();
@@ -220,13 +230,13 @@ public class CompileProcessor implements CommandProcessor {
     try {
       Files.write(this.code, fileToWrite, Charset.forName("UTF-8"));
     } catch (IOException e1) {
-      throw new CommandProcessorException("writing file", e1);
+      throw new CompileProcessorException("writing file", e1);
     }
     destination.mkdir();
     try {
       g.execute();
     } catch (BuildException ex){
-      throw new CommandProcessorException("Problem compiling", ex);
+      throw new CompileProcessorException("Problem compiling", ex);
     }
     File testArchive = new File(ioTempFile, jarId + ".jar");
     JarArchiveOutputStream out = null;
@@ -242,7 +252,7 @@ public class CompileProcessor implements CommandProcessor {
       }
       out.finish();
     } catch (IOException e) {
-      throw new CommandProcessorException("Exception while writing jar", e);
+      throw new CompileProcessorException("Exception while writing jar", e);
     } finally {
       if (out!=null){
         try {
@@ -255,7 +265,7 @@ public class CompileProcessor implements CommandProcessor {
     if (ss != null){
       ss.add_resource(ResourceType.JAR, testArchive.getAbsolutePath());
     }
-    CommandProcessorResponse good = new CommandProcessorResponse(null, testArchive.getAbsolutePath());
+    CommandProcessorResponse good = new CommandProcessorResponse(0, testArchive.getAbsolutePath(), null);
     return good;
   }
 
@@ -285,6 +295,19 @@ public class CompileProcessor implements CommandProcessor {
 
   public String getCommand() {
     return command;
+  }
+
+  class CompileProcessorException extends HiveException {
+
+    private static final long serialVersionUID = 1L;
+
+    CompileProcessorException(String s, Throwable t) {
+      super(s, t);
+    }
+
+    CompileProcessorException(String s) {
+      super(s);
+    }
   }
 
   @Override

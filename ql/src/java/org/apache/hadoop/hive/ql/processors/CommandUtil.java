@@ -35,7 +35,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import com.google.common.base.Joiner;
 
 class CommandUtil {
-  private static final Logger LOG = LoggerFactory.getLogger(CommandUtil.class);
+  public static final Logger LOG = LoggerFactory.getLogger(CommandUtil.class);
 
   /**
    * Authorize command of given type and arguments
@@ -47,7 +47,7 @@ class CommandUtil {
    * capturing the authorization error
    */
   static CommandProcessorResponse authorizeCommand(SessionState ss, HiveOperationType type,
-      List<String> command) throws CommandProcessorException {
+      List<String> command) {
     if (ss == null) {
       // ss can be null in unit tests
       return null;
@@ -60,9 +60,12 @@ class CommandUtil {
         authorizeCommandThrowEx(ss, type, command);
         // authorized to perform action
         return null;
-      } catch (HiveAuthzPluginException | HiveAccessControlException e) {
+      } catch (HiveAuthzPluginException e) {
         LOG.error(errMsg, e);
-        throw new CommandProcessorException(e);
+        return CommandProcessorResponse.create(e);
+      } catch (HiveAccessControlException e) {
+        LOG.error(errMsg, e);
+        return CommandProcessorResponse.create(e);
       }
     }
     return null;
@@ -75,7 +78,7 @@ class CommandUtil {
    * @throws HiveAuthzPluginException
    * @throws HiveAccessControlException
    */
-  private static void authorizeCommandThrowEx(SessionState ss, HiveOperationType type,
+  static void authorizeCommandThrowEx(SessionState ss, HiveOperationType type,
       List<String> command) throws HiveAuthzPluginException, HiveAccessControlException {
     HivePrivilegeObject commandObj = HivePrivilegeObject.createHivePrivilegeObject(command);
     HiveAuthzContext.Builder ctxBuilder = new HiveAuthzContext.Builder();
@@ -96,7 +99,7 @@ class CommandUtil {
    * capturing the authorization error
    */
   static CommandProcessorResponse authorizeCommandAndServiceObject(SessionState ss, HiveOperationType type,
-      List<String> command, String serviceObject) throws CommandProcessorException {
+    List<String> command, String serviceObject) {
     if (ss == null) {
       // ss can be null in unit tests
       return null;
@@ -111,7 +114,7 @@ class CommandUtil {
         return null;
       } catch (HiveAuthzPluginException | HiveAccessControlException e) {
         LOG.error(errMsg, e);
-        throw new CommandProcessorException(e);
+        return CommandProcessorResponse.create(e);
       }
     }
     return null;

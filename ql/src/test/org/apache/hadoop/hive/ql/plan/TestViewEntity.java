@@ -30,7 +30,6 @@ import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.parse.AbstractSemanticAnalyzerHook;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -85,10 +84,14 @@ public class TestViewEntity {
     final String tab1 = prefix + "t1";
     final String tab2 = prefix + "t2";
     final String view1 = prefix + "v1";
-    driver.run("create table " + tab1 + "(id int)");
-    driver.run("create table " + tab2 + "(id int)");
-    driver.run("create view " + view1 + " as select t.id from "
-            + "(select " + tab1 + ".id from " + tab1 + " union all select " + tab2 + ".id from " + tab2 + ") as t");
+    int ret = driver.run("create table " + tab1 + "(id int)").getResponseCode();
+    assertEquals("Checking command success", 0, ret);
+    ret = driver.run("create table " + tab2 + "(id int)").getResponseCode();
+    assertEquals("Checking command success", 0, ret);
+    ret = driver.run("create view " + view1 + " as select t.id from "
+            + "(select " + tab1 + ".id from " + tab1 + " union all select " + tab2 + ".id from " + tab2 + ") as t")
+        .getResponseCode();
+    assertEquals("Checking command success", 0, ret);
 
     driver.compile("select * from " + view1, true);
     // view entity
@@ -120,8 +123,10 @@ public class TestViewEntity {
     final String tab1 = prefix + "t";
     final String view1 = prefix + "v";
 
-    driver.run("create table " + tab1 + "(id int)");
-    driver.run("create view " + view1 + " as select * from " + tab1);
+    int ret = driver.run("create table " + tab1 + "(id int)").getResponseCode();
+    assertEquals("Checking command success", 0, ret);
+    ret = driver.run("create view " + view1 + " as select * from " + tab1).getResponseCode();
+    assertEquals("Checking command success", 0, ret);
 
     driver.compile("select * from " + view1, true);
     // view entity
@@ -157,7 +162,7 @@ public class TestViewEntity {
     testViewInSubQueryWithWhereClause();
   }
 
-  private void testViewInSubQueryWithWhereClause() throws CommandProcessorException {
+  private void testViewInSubQueryWithWhereClause() {
     String prefix = "tvsubquerywithwhereclause" + NAME_PREFIX;
     final String tab1 = prefix + "t";
     final String view1 = prefix + "v";
@@ -166,28 +171,37 @@ public class TestViewEntity {
     final String tab1row2 = "'a','b','c'";
 
     //drop all if exists
-    driver.run("drop table if exists " + tab1);
-    driver.run("drop view if exists " + view1);
-    driver.run("drop view if exists " + view2);
+    int ret = driver.run("drop table if exists " + tab1).getResponseCode();
+    assertEquals("Checking command success", 0, ret);
+    ret = driver.run("drop view if exists " + view1).getResponseCode();
+    assertEquals("Checking command success", 0, ret);
+    ret = driver.run("drop view if exists " + view2).getResponseCode();
+    assertEquals("Checking command success", 0, ret);
 
     //create tab1
-    driver.run("create table " + tab1 + "(col1 string, col2 string, col3 string)");
-    driver.run("insert into " + tab1 + " values (" + tab1row1 + ")");
+    ret = driver.run("create table " + tab1 + "(col1 string, col2 string, col3 string)")
+        .getResponseCode();
+    assertEquals("Checking command success", 0, ret);
+    ret = driver.run("insert into " + tab1 + " values (" + tab1row1 + ")").getResponseCode();
+    assertEquals("Checking command success", 0, ret);
 
     //create view1
-    driver.run("create view " + view1 + " as select " +
+    ret = driver.run("create view " + view1 + " as select " +
         tab1 + ".col1, " + tab1 + ".col2, " + tab1 + ".col3 " +
-        " from " + tab1);
+        " from " + tab1).getResponseCode();
+    assertEquals("Checking command success", 0, ret);
 
-    driver.run("insert into " + tab1 + " values (" + tab1row2 + ")");
+    ret = driver.run("insert into " + tab1 + " values (" + tab1row2 + ")").getResponseCode();
+    assertEquals("Checking command success", 0, ret);
 
     //create view2
-    driver.run(
+    ret = driver.run(
         "create view " + view2 + " as select " +
             tab1 + ".col1, " + tab1 + ".col2, " + tab1 + ".col3 " +
             " from " + tab1 +
             " where " + tab1 + ".col1 NOT IN (" +
-            "SELECT " + view1 + ".col1 FROM " + view1 + ")");
+            "SELECT " + view1 + ".col1 FROM " + view1 + ")").getResponseCode();
+    assertEquals("Checking command success", 0, ret);
 
     //select from view2
     driver.compile("select * from " + view2, true);
@@ -221,10 +235,13 @@ public class TestViewEntity {
     final String view1 = prefix + "v";
     final String view2 = prefix + "v2";
 
-    driver.run("create table " + tab1 + "(id int)");
-    driver.run("create view " + view1 + " as select * from " + tab1);
+    int ret = driver.run("create table " + tab1 + "(id int)").getResponseCode();
+    assertEquals("Checking command success", 0, ret);
+    ret = driver.run("create view " + view1 + " as select * from " + tab1).getResponseCode();
+    assertEquals("Checking command success", 0, ret);
 
-    driver.run("create view " + view2 + " as select * from (select * from " + view1 + ") x");
+    ret = driver.run("create view " + view2 + " as select * from (select * from " + view1 + ") x").getResponseCode();
+    assertEquals("Checking command success", 0, ret);
 
     driver.compile("select * from " + view2, true);
     // view entity
@@ -252,10 +269,13 @@ public class TestViewEntity {
     final String view1 = prefix + "v";
     final String view2 = prefix + "v2";
 
-    driver.run("create table " + tab1 + "(id int)");
-    driver.run("create view " + view1 + " as select * from " + tab1);
+    int ret = driver.run("create table " + tab1 + "(id int)").getResponseCode();
+    assertEquals("Checking command success", 0, ret);
+    ret = driver.run("create view " + view1 + " as select * from " + tab1).getResponseCode();
+    assertEquals("Checking command success", 0, ret);
 
-    driver.run("create view " + view2 + " as select * from (select * from " + view1 + " union all select * from " + view1 + ") x");
+    ret = driver.run("create view " + view2 + " as select * from (select * from " + view1 + " union all select * from " + view1 + ") x").getResponseCode();
+    assertEquals("Checking command success", 0, ret);
 
     driver.compile("select * from " + view2, true);
     // view entity

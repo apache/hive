@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.metastore.model.MScheduledQuery;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.parse.ParseException;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryExecutionService;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.testutils.HiveTestEnvSetup;
@@ -64,7 +64,7 @@ public class TestScheduledQueryStatements {
         // @formatter:on
     };
     for (String cmd : cmds) {
-      driver.run(cmd);
+      driverrun(driver,cmd);
     }
 
     ScheduledQueryExecutionService.startScheduledQueryExecutorService(env_setup.getTestCtx().hiveConf);
@@ -80,7 +80,7 @@ public class TestScheduledQueryStatements {
   public static void dropTables(IDriver driver) throws Exception {
     String[] tables = { "tu" };
     for (String t : tables) {
-      driver.run("drop table if exists " + t);
+      driverrun(driver,"drop table if exists " + t);
     }
   }
 
@@ -88,8 +88,8 @@ public class TestScheduledQueryStatements {
   private void checkScheduleCreation(String schqName, String schedule, String expectedSchedule)
       throws CommandProcessorException, Exception {
     IDriver driver = createDriver();
-    driver.run("set role admin");
-    driver.run("create scheduled query " + schqName + " " + schedule + " as select 1 from tu");
+    driverrun(driver,"set role admin");
+    driverrun(driver,"create scheduled query " + schqName + " " + schedule + " as select 1 from tu");
     try (CloseableObjectStore os = new CloseableObjectStore(env_setup.getTestCtx().hiveConf)) {
       Optional<MScheduledQuery> sq = os.getMScheduledQuery(new ScheduledQueryKey(schqName, "hive"));
       assertTrue(sq.isPresent());
@@ -145,27 +145,27 @@ public class TestScheduledQueryStatements {
   @Test(expected = CommandProcessorException.class)
   public void testNonExistentTable1() throws ParseException, Exception {
     IDriver driver = createDriver();
-    driver.run("create scheduled query nonexist cron '* * * * * ? *' as select 1 from nonexist");
+    driverrun(driver,"create scheduled query nonexist cron '* * * * * ? *' as select 1 from nonexist");
   }
 
   @Test(expected = CommandProcessorException.class)
   public void testNonExistentTable2() throws ParseException, Exception {
     IDriver driver = createDriver();
-    driver.run("use asd");
-    driver.run("create scheduled query nonexist2 cron '* * * * * ? *' as select 1 from tu");
+    driverrun(driver,"use asd");
+    driverrun(driver,"create scheduled query nonexist2 cron '* * * * * ? *' as select 1 from tu");
   }
 
   @Test
   public void testCreateFromNonDefaultDatabase() throws ParseException, Exception {
     IDriver driver = createDriver();
 
-    driver.run("set role admin");
-    driver.run("use asd");
+    driverrun(driver,"set role admin");
+    driverrun(driver,"use asd");
 
-    driver.run("create table tt (a integer)");
+    driverrun(driver,"create table tt (a integer)");
 
     // the scheduled query may reference a table inside the current database
-    driver.run("create scheduled query nonDef cron '* * * * * ? *' as select 1 from tt");
+    driverrun(driver,"create scheduled query nonDef cron '* * * * * ? *' as select 1 from tt");
 
     try (CloseableObjectStore os = new CloseableObjectStore(env_setup.getTestCtx().hiveConf)) {
       Optional<MScheduledQuery> sq = os.getMScheduledQuery(new ScheduledQueryKey("nonDef", "hive"));
@@ -178,18 +178,18 @@ public class TestScheduledQueryStatements {
   @Test(expected = CommandProcessorException.class)
   public void testDoubleCreate() throws ParseException, Exception {
     IDriver driver = createDriver();
-    driver.run("create scheduled query dc cron '* * * * * ? *' as select 1 from tu");
-    driver.run("create scheduled query dc cron '* * * * * ? *' as select 1 from tu");
+    driverrun(driver,"create scheduled query dc cron '* * * * * ? *' as select 1 from tu");
+    driverrun(driver,"create scheduled query dc cron '* * * * * ? *' as select 1 from tu");
   }
 
   @Test
   public void testAlter() throws ParseException, Exception {
     IDriver driver = createDriver();
 
-    driver.run("set role admin");
-    driver.run("create scheduled query alter1 cron '* * * * * ? *' as select 1 from tu");
-    driver.run("alter scheduled query alter1 executed as 'user3'");
-    driver.run("alter scheduled query alter1 defined as select 22 from tu");
+    driverrun(driver,"set role admin");
+    driverrun(driver,"create scheduled query alter1 cron '* * * * * ? *' as select 1 from tu");
+    driverrun(driver,"alter scheduled query alter1 executed as 'user3'");
+    driverrun(driver,"alter scheduled query alter1 defined as select 22 from tu");
 
     try (CloseableObjectStore os = new CloseableObjectStore(env_setup.getTestCtx().hiveConf)) {
       Optional<MScheduledQuery> sq = os.getMScheduledQuery(new ScheduledQueryKey("alter1", "hive"));
@@ -206,9 +206,24 @@ public class TestScheduledQueryStatements {
 
     setupAuthorization();
 
-    driver.run("create table t1 (a integer)");
+    driverrun(driver,"create table t1 (a integer)");
     conf.set("user.name", "user1");
-    driver.run("drop table t1");
+    driverrun(driver,"drop table t1");
+  }
+
+  private static void driverrun(IDriver driver, String string) throws CommandProcessorException {
+    CommandProcessorResponse ret = driver.run(string);
+    if (ret.getResponseCode() != 0) {
+      throw new CommandProcessorException(ret.getMessage());
+    }
+
+  }
+
+  static class CommandProcessorException extends Exception {
+
+    public CommandProcessorException(String message) {
+      super(message);
+    }
   }
 
   private void setupAuthorization() {

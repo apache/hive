@@ -55,7 +55,7 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
@@ -86,6 +86,7 @@ import org.codehaus.jackson.map.ObjectMapper;
  */
 public class SQLOperation extends ExecuteStatementOperation {
   private IDriver driver = null;
+  private CommandProcessorResponse response;
   private TableSchema resultSchema;
   private AbstractSerDe serde = null;
   private boolean fetchStarted = false;
@@ -196,14 +197,17 @@ public class SQLOperation extends ExecuteStatementOperation {
       // In Hive server mode, we are not able to retry in the FetchTask
       // case, when calling fetch queries since execute() has returned.
       // For now, we disable the test attempts.
-      driver.compileAndRespond(statement);
+      response = driver.compileAndRespond(statement);
+      if (0 != response.getResponseCode()) {
+        throw toSQLException("Error while compiling statement", response);
+      }
       if (queryState.getQueryTag() != null && queryState.getQueryId() != null) {
         parentSession.updateQueryTag(queryState.getQueryId(), queryState.getQueryTag());
       }
       setHasResultSet(driver.hasResultSet());
-    } catch (CommandProcessorException e) {
+    } catch (HiveSQLException e) {
       setState(OperationState.ERROR);
-      throw toSQLException("Error while compiling statement", e);
+      throw e;
     } catch (Throwable e) {
       setState(OperationState.ERROR);
       throw new HiveSQLException("Error running query: " + e.toString(), e);
@@ -222,7 +226,10 @@ public class SQLOperation extends ExecuteStatementOperation {
       // In Hive server mode, we are not able to retry in the FetchTask
       // case, when calling fetch queries since execute() has returned.
       // For now, we disable the test attempts.
-      driver.run();
+      response = driver.run();
+      if (0 != response.getResponseCode()) {
+        throw toSQLException("Error while processing statement", response);
+      }
     } catch (Throwable e) {
       /**
        * If the operation was cancelled by another thread, or the execution timed out, Driver#run
@@ -237,9 +244,7 @@ public class SQLOperation extends ExecuteStatementOperation {
         return;
       }
       setState(OperationState.ERROR);
-      if (e instanceof CommandProcessorException) {
-        throw toSQLException("Error while compiling statement", (CommandProcessorException)e);
-      } else if (e instanceof HiveSQLException) {
+      if (e instanceof HiveSQLException) {
         throw (HiveSQLException) e;
       } else {
         throw new HiveSQLException("Error running query: " + e.toString(), e);

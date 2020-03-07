@@ -34,7 +34,6 @@ import org.apache.hadoop.hive.ql.QTestArguments;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -127,7 +126,8 @@ public abstract class AbstractCoreBlobstoreCliDriver extends CliAdapter {
     try {
       qt.shutdown();
       if (System.getenv(QTestUtil.QTEST_LEAVE_FILES) == null) {
-        qt.executeAdhocCommand("dfs -rmdir " + testBlobstorePathUnique);
+        String rmUniquePathCommand = String.format("dfs -rmdir ${hiveconf:%s};", HCONF_TEST_BLOBSTORE_PATH_UNIQUE);
+        qt.executeAdhocCommand(rmUniquePathCommand);
       }
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
@@ -154,15 +154,9 @@ public abstract class AbstractCoreBlobstoreCliDriver extends CliAdapter {
       }
       qt.cliInit(new File(fpath));
 
-      try {
-        qt.executeClient(fname);
-        if (!expectSuccess) {
-          qt.failed(0, fname, debugHint);
-        }
-      } catch (CommandProcessorException e) {
-        if (expectSuccess) {
-          qt.failed(e.getResponseCode(), fname, debugHint);
-        }
+      int ecode = qt.executeClient(fname);
+      if ((ecode == 0) ^ expectSuccess) {
+        qt.failed(ecode, fname, debugHint);
       }
 
       QTestProcessExecResult result = qt.checkCliDriverResults(fname);

@@ -70,7 +70,7 @@ public class TestSetProcessor {
   }
 
   @Test
-  public void testHiddenConfigSetVarName() throws CommandProcessorException {
+  public void testHiddenConfigSetVarName() {
     runSetProcessor(HiveConf.ConfVars.METASTOREPWD.varname);
     String output = baos.toString();
     Assert.assertTrue(output.contains("hidden"));
@@ -109,7 +109,7 @@ public class TestSetProcessor {
   /*
    * Simulates the set <command>;
    */
-  private void runSetProcessor(String command) throws CommandProcessorException {
+  private void runSetProcessor(String command) {
     processor.run(command);
     state.out.flush();
   }

@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.Behaviour
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.IDriver;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.Utils;
 
@@ -43,13 +43,13 @@ import org.junit.Test;
 import org.junit.BeforeClass;
 
 import javax.annotation.Nullable;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Collections;
 import java.util.Map;
 
+import static org.junit.Assert.assertTrue;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 
 /**
@@ -252,12 +252,10 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
               LOG.info("Entered new thread");
               IDriver driver = DriverFactory.newDriver(primaryConf);
               SessionState.start(new CliSessionState(primaryConf));
-              try {
-                driver.run("insert into " + primaryDbName + ".t1 values(2)");
-              } catch (CommandProcessorException e) {
-                throw new RuntimeException(e);
-              }
-              LOG.info("Exit new thread success");
+              CommandProcessorResponse ret = driver.run("insert into " + primaryDbName + ".t1 values(2)");
+              boolean success = (ret.getException() == null);
+              assertTrue(success);
+              LOG.info("Exit new thread success - {}", success, ret.getException());
             }
           });
           t.start();
@@ -325,13 +323,13 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
               LOG.info("Entered new thread");
               IDriver driver = DriverFactory.newDriver(primaryConf);
               SessionState.start(new CliSessionState(primaryConf));
-              try {
-                driver.run("insert into " + primaryDbName + ".t1 values(2)");
-                driver.run("drop table " + primaryDbName + ".t1");
-              } catch (CommandProcessorException e) {
-                throw new RuntimeException(e);
-              }
-              LOG.info("Exit new thread success");
+              CommandProcessorResponse ret = driver.run("insert into " + primaryDbName + ".t1 values(2)");
+              boolean success = (ret.getException() == null);
+              assertTrue(success);
+              ret = driver.run("drop table " + primaryDbName + ".t1");
+              success = (ret.getException() == null);
+              assertTrue(success);
+              LOG.info("Exit new thread success - {}", success, ret.getException());
             }
           });
           t.start();
@@ -415,6 +413,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
 
   @Test
   public void testAbortTxnEvent() throws Throwable {
+    String tableName = testName.getMethodName();
     String tableNameFail = testName.getMethodName() + "Fail";
     WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, null);
     replica.load(replicatedDbName, bootStrapDump.dumpLocation)
@@ -567,12 +566,9 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     FileSystem fs = path.getFileSystem(conf);
     fs.delete(path);
 
-    try {
-      primary.runCommand("REPL DUMP " + dbName + " with ('hive.repl.dump.include.acid.tables' = 'true')");
-      assert false;
-    } catch (CommandProcessorException e) {
-      Assert.assertEquals(e.getResponseCode(), ErrorMsg.FILE_NOT_FOUND.getErrorCode());
-    }
+    CommandProcessorResponse ret = primary.runCommand("REPL DUMP " + dbName +
+            " with ('hive.repl.dump.include.acid.tables' = 'true')");
+    Assert.assertEquals(ret.getResponseCode(), ErrorMsg.FILE_NOT_FOUND.getErrorCode());
 
     primary.run("DROP TABLE " + dbName + ".normal");
     primary.run("drop database " + dbName);
@@ -592,12 +588,9 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     FileSystem fs = path.getFileSystem(conf);
     fs.delete(path);
 
-    try {
-      primary.runCommand("REPL DUMP " + dbName + " with ('hive.repl.dump.include.acid.tables' = 'true')");
-      assert false;
-    } catch (CommandProcessorException e) {
-      Assert.assertEquals(e.getResponseCode(), ErrorMsg.FILE_NOT_FOUND.getErrorCode());
-    }
+    CommandProcessorResponse ret = primary.runCommand("REPL DUMP " + dbName +
+            " with ('hive.repl.dump.include.acid.tables' = 'true')");
+    Assert.assertEquals(ret.getResponseCode(), ErrorMsg.FILE_NOT_FOUND.getErrorCode());
 
     primary.run("DROP TABLE " + dbName + ".normal");
     primary.run("drop database " + dbName);
