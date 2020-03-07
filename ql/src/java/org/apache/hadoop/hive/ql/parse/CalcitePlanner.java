@@ -54,6 +54,7 @@ import org.apache.calcite.config.NullCollation;
 import org.apache.calcite.interpreter.BindableConvention;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptCost;
+import org.apache.calcite.plan.RelOptCostImpl;
 import org.apache.calcite.plan.RelOptMaterialization;
 import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.plan.RelOptRule;
@@ -1983,9 +1984,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
       if (impalaHelper != null) {
         perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
         HepProgram hepProgram = impalaHelper.getHepProgram(getDb());
+        // The last parameter here (noDag="true") allows for the creation of separate nodes
+        // even if they are equivalent.
+        // While this does have the potential to have a bigger memory footprint, the nodes being
+        // replaced in these rules are 1:1, so it should be ok here.
         calciteOptimizedPlan =
             executeProgram(calciteOptimizedPlan, hepProgram, mdProvider.getMetadataProvider(),
-                executorProvider);
+                executorProvider, null, true);
         perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Impala transformation rules");
       }
 
@@ -2631,11 +2636,16 @@ public class CalcitePlanner extends SemanticAnalyzer {
     private RelNode executeProgram(RelNode basePlan, HepProgram program,
         RelMetadataProvider mdProvider, RexExecutor executorProvider,
         List<RelOptMaterialization> materializations) {
+      return executeProgram(basePlan, program, mdProvider, executorProvider, materializations, false);
+    }
 
+    private RelNode executeProgram(RelNode basePlan, HepProgram program,
+        RelMetadataProvider mdProvider, RexExecutor executorProvider,
+        List<RelOptMaterialization> materializations, boolean noDag) {
       // Create planner and copy context
       HepPlanner planner = new HepPlanner(program,
-          basePlan.getCluster().getPlanner().getContext());
-
+          basePlan.getCluster().getPlanner().getContext(),
+          noDag, null, RelOptCostImpl.FACTORY);
       List<RelMetadataProvider> list = Lists.newArrayList();
       list.add(mdProvider);
       planner.registerMetadataProviders(list);
