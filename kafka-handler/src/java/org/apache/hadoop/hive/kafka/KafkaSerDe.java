@@ -161,7 +161,7 @@ import java.util.stream.Collectors;
     String avroSkipBytesPropertyName = AvroSerdeUtils.AvroTableProperties.AVRO_SERDE_SKIP_BYTES.getPropName();
     Integer avroSkipBytes = 0;
     try {
-      Integer.parseInt(tbl.getProperty(avroSkipBytesPropertyName));
+      avroSkipBytes = Integer.parseInt(tbl.getProperty(avroSkipBytesPropertyName));
     } catch (NumberFormatException e) {
       throw new SerDeException("Value of " + avroSkipBytesPropertyName + " could not be parsed into an integer properly.", e);
     }

@@ -202,10 +202,6 @@
     <testSourceDirectory>${basedir}/src/test</testSourceDirectory>
     <plugins>
       <plugin>
-        <groupId>org.apache.avro</groupId>
-        <artifactId>avro-maven-plugin</artifactId>
-      </plugin>
-      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
         <executions>
@@ -225,7 +221,7 @@
           <version>${avro.version}</version>
           <executions>
             <execution>
-              <phase>generate-sources</phase>
+              <phase>generate-test-sources</phase>
               <goals>
                 <goal>schema</goal>
               </goals>
