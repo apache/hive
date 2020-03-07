@@ -18,23 +18,24 @@
 
 package org.apache.hadoop.hive.ql.ddl.workloadmanagement;
 
-import org.apache.hadoop.hive.metastore.api.WMTrigger;
+import java.io.IOException;
+
+import org.apache.hadoop.hive.ql.ddl.DDLOperation;
+import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.wm.ExecutionTrigger;
 
 /**
- * Common utilities for Workload Management related ddl operations.
+ * Operation process of dropping a resource plan.
  */
-final class WMUtils {
-  private WMUtils() {
-    throw new UnsupportedOperationException("WMUtils should not be instantiated");
+public class DropResourcePlanOperation extends DDLOperation<DropResourcePlanDesc> {
+  public DropResourcePlanOperation(DDLOperationContext context, DropResourcePlanDesc desc) {
+    super(context, desc);
   }
 
-  static void validateTrigger(WMTrigger trigger) throws HiveException {
-    try {
-      ExecutionTrigger.fromWMTrigger(trigger);
-    } catch (IllegalArgumentException e) {
-      throw new HiveException(e);
-    }
+  @Override
+  public int execute() throws HiveException, IOException {
+    context.getDb().dropResourcePlan(desc.getPlanName(), desc.getIfExists());
+
+    return 0;
   }
 }

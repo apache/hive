@@ -18,23 +18,28 @@
 
 package org.apache.hadoop.hive.ql.ddl.workloadmanagement;
 
-import org.apache.hadoop.hive.metastore.api.WMTrigger;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.wm.ExecutionTrigger;
+import java.io.Serializable;
+
+import org.apache.hadoop.hive.metastore.api.WMMapping;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.plan.Explain;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
- * Common utilities for Workload Management related ddl operations.
+ * DDL task description for DROP ... MAPPING commands.
  */
-final class WMUtils {
-  private WMUtils() {
-    throw new UnsupportedOperationException("WMUtils should not be instantiated");
+@Explain(displayName = "Drop mapping", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class DropWMMappingDesc implements DDLDesc, Serializable {
+  private static final long serialVersionUID = -1567558687529244218L;
+
+  private final WMMapping mapping;
+
+  public DropWMMappingDesc(WMMapping mapping) {
+    this.mapping = mapping;
   }
 
-  static void validateTrigger(WMTrigger trigger) throws HiveException {
-    try {
-      ExecutionTrigger.fromWMTrigger(trigger);
-    } catch (IllegalArgumentException e) {
-      throw new HiveException(e);
-    }
+  @Explain(displayName = "mapping", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public WMMapping getMapping() {
+    return mapping;
   }
 }

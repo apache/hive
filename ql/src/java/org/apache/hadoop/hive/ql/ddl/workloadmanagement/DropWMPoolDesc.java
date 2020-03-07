@@ -18,23 +18,33 @@
 
 package org.apache.hadoop.hive.ql.ddl.workloadmanagement;
 
-import org.apache.hadoop.hive.metastore.api.WMTrigger;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.wm.ExecutionTrigger;
+import java.io.Serializable;
+
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.plan.Explain;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
- * Common utilities for Workload Management related ddl operations.
+ * DDL task description for DROP POOL commands.
  */
-final class WMUtils {
-  private WMUtils() {
-    throw new UnsupportedOperationException("WMUtils should not be instantiated");
+@Explain(displayName="Drop WM Pool", explainLevels={ Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class DropWMPoolDesc implements DDLDesc, Serializable {
+  private static final long serialVersionUID = -2608462103392563252L;
+
+  private final String planName;
+  private final String poolPath;
+
+  public DropWMPoolDesc(String planName, String poolPath) {
+    this.planName = planName;
+    this.poolPath = poolPath;
   }
 
-  static void validateTrigger(WMTrigger trigger) throws HiveException {
-    try {
-      ExecutionTrigger.fromWMTrigger(trigger);
-    } catch (IllegalArgumentException e) {
-      throw new HiveException(e);
-    }
+  @Explain(displayName="poolName", explainLevels={ Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public String getPlanName() {
+    return planName;
+  }
+
+  public String getPoolPath() {
+    return poolPath;
   }
 }

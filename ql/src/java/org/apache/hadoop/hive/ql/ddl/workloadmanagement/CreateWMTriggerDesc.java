@@ -18,23 +18,28 @@
 
 package org.apache.hadoop.hive.ql.ddl.workloadmanagement;
 
+import java.io.Serializable;
+
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.wm.ExecutionTrigger;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.plan.Explain;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
- * Common utilities for Workload Management related ddl operations.
+ * DDL task description for CREATE TRIGGER commands.
  */
-final class WMUtils {
-  private WMUtils() {
-    throw new UnsupportedOperationException("WMUtils should not be instantiated");
+@Explain(displayName="Create WM Trigger", explainLevels={ Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class CreateWMTriggerDesc implements DDLDesc, Serializable {
+  private static final long serialVersionUID = 1705317739121300923L;
+
+  private final WMTrigger trigger;
+
+  public CreateWMTriggerDesc(WMTrigger trigger) {
+    this.trigger = trigger;
   }
 
-  static void validateTrigger(WMTrigger trigger) throws HiveException {
-    try {
-      ExecutionTrigger.fromWMTrigger(trigger);
-    } catch (IllegalArgumentException e) {
-      throw new HiveException(e);
-    }
+  @Explain(displayName="trigger", explainLevels={ Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public WMTrigger getTrigger() {
+    return trigger;
   }
 }

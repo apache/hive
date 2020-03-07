@@ -18,23 +18,25 @@
 
 package org.apache.hadoop.hive.ql.ddl.workloadmanagement;
 
-import org.apache.hadoop.hive.metastore.api.WMTrigger;
+import java.io.IOException;
+
+import org.apache.hadoop.hive.ql.ddl.DDLOperation;
+import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.wm.ExecutionTrigger;
 
 /**
- * Common utilities for Workload Management related ddl operations.
+ * Operation process of creating a workload management trigger.
  */
-final class WMUtils {
-  private WMUtils() {
-    throw new UnsupportedOperationException("WMUtils should not be instantiated");
+public class CreateWMTriggerOperation extends DDLOperation<CreateWMTriggerDesc> {
+  public CreateWMTriggerOperation(DDLOperationContext context, CreateWMTriggerDesc desc) {
+    super(context, desc);
   }
 
-  static void validateTrigger(WMTrigger trigger) throws HiveException {
-    try {
-      ExecutionTrigger.fromWMTrigger(trigger);
-    } catch (IllegalArgumentException e) {
-      throw new HiveException(e);
-    }
+  @Override
+  public int execute() throws HiveException, IOException {
+    WMUtils.validateTrigger(desc.getTrigger());
+    context.getDb().createWMTrigger(desc.getTrigger());
+
+    return 0;
   }
 }

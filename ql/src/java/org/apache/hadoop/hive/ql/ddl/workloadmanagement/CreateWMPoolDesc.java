@@ -18,23 +18,28 @@
 
 package org.apache.hadoop.hive.ql.ddl.workloadmanagement;
 
-import org.apache.hadoop.hive.metastore.api.WMTrigger;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.wm.ExecutionTrigger;
+import java.io.Serializable;
+
+import org.apache.hadoop.hive.metastore.api.WMPool;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.plan.Explain;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
- * Common utilities for Workload Management related ddl operations.
+ * DDL task description for CREATE POOL commands.
  */
-final class WMUtils {
-  private WMUtils() {
-    throw new UnsupportedOperationException("WMUtils should not be instantiated");
+@Explain(displayName = "Create Pool", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class CreateWMPoolDesc implements DDLDesc, Serializable {
+  private static final long serialVersionUID = 4872940135771213510L;
+
+  private final WMPool pool;
+
+  public CreateWMPoolDesc(WMPool pool) {
+    this.pool = pool;
   }
 
-  static void validateTrigger(WMTrigger trigger) throws HiveException {
-    try {
-      ExecutionTrigger.fromWMTrigger(trigger);
-    } catch (IllegalArgumentException e) {
-      throw new HiveException(e);
-    }
+  @Explain(displayName="pool", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public WMPool getPool() {
+    return pool;
   }
 }

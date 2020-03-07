@@ -15,26 +15,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.hadoop.hive.ql.ddl.workloadmanagement;
 
-import org.apache.hadoop.hive.metastore.api.WMTrigger;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.wm.ExecutionTrigger;
+import java.io.Serializable;
+
+import org.apache.hadoop.hive.metastore.api.WMMapping;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.plan.Explain;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
- * Common utilities for Workload Management related ddl operations.
+ * DDL task description for ALTER ... MAPPING commands.
  */
-final class WMUtils {
-  private WMUtils() {
-    throw new UnsupportedOperationException("WMUtils should not be instantiated");
+@Explain(displayName = "Alter Mapping", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class AlterWMMappingDesc implements DDLDesc, Serializable {
+  private static final long serialVersionUID = -442968568922083053L;
+
+  private final WMMapping mapping;
+
+  public AlterWMMappingDesc(WMMapping mapping) {
+    this.mapping = mapping;
   }
 
-  static void validateTrigger(WMTrigger trigger) throws HiveException {
-    try {
-      ExecutionTrigger.fromWMTrigger(trigger);
-    } catch (IllegalArgumentException e) {
-      throw new HiveException(e);
-    }
+  @Explain(displayName = "mapping", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public WMMapping getMapping() {
+    return mapping;
   }
 }

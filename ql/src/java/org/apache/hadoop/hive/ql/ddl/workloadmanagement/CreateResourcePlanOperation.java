@@ -18,23 +18,30 @@
 
 package org.apache.hadoop.hive.ql.ddl.workloadmanagement;
 
-import org.apache.hadoop.hive.metastore.api.WMTrigger;
+import java.io.IOException;
+
+import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
+import org.apache.hadoop.hive.ql.ddl.DDLOperation;
+import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.wm.ExecutionTrigger;
 
 /**
- * Common utilities for Workload Management related ddl operations.
+ * Operation process of creating a resource plan.
  */
-final class WMUtils {
-  private WMUtils() {
-    throw new UnsupportedOperationException("WMUtils should not be instantiated");
+public class CreateResourcePlanOperation extends DDLOperation<CreateResourcePlanDesc> {
+  public CreateResourcePlanOperation(DDLOperationContext context, CreateResourcePlanDesc desc) {
+    super(context, desc);
   }
 
-  static void validateTrigger(WMTrigger trigger) throws HiveException {
-    try {
-      ExecutionTrigger.fromWMTrigger(trigger);
-    } catch (IllegalArgumentException e) {
-      throw new HiveException(e);
+  @Override
+  public int execute() throws HiveException, IOException {
+    WMResourcePlan plan = new WMResourcePlan(desc.getPlanName());
+    if (desc.getQueryParallelism() != null) {
+      plan.setQueryParallelism(desc.getQueryParallelism());
     }
+
+    context.getDb().createResourcePlan(plan, desc.getCopyFromName(), desc.getIfNotExists());
+
+    return 0;
   }
 }

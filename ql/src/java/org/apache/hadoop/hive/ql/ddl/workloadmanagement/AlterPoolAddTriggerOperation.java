@@ -18,23 +18,35 @@
 
 package org.apache.hadoop.hive.ql.ddl.workloadmanagement;
 
+import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
+
+import java.io.IOException;
+
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
+import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.wm.ExecutionTrigger;
 
 /**
- * Common utilities for Workload Management related ddl operations.
+ * Operation process of adding a trigger to a pool.
  */
-final class WMUtils {
-  private WMUtils() {
-    throw new UnsupportedOperationException("WMUtils should not be instantiated");
+public class AlterPoolAddTriggerOperation extends DDLOperation<AlterPoolAddTriggerDesc> {
+  public AlterPoolAddTriggerOperation(DDLOperationContext context, AlterPoolAddTriggerDesc desc) {
+    super(context, desc);
   }
 
-  static void validateTrigger(WMTrigger trigger) throws HiveException {
-    try {
-      ExecutionTrigger.fromWMTrigger(trigger);
-    } catch (IllegalArgumentException e) {
-      throw new HiveException(e);
+  @Override
+  public int execute() throws HiveException, IOException {
+    if (!desc.isUnmanagedPool()) {
+      context.getDb().createOrDropTriggerToPoolMapping(desc.getPlanName(), desc.getTriggerName(), desc.getPoolPath(),
+          false);
+    } else {
+      assert desc.getPoolPath() == null;
+      WMTrigger trigger = new WMTrigger(desc.getPlanName(), desc.getTriggerName());
+      // If we are dropping from unmanaged, unset the flag; and vice versa
+      trigger.setIsInUnmanaged(true);
+      context.getDb().alterWMTrigger(trigger);
     }
+
+    return 0;
   }
 }
