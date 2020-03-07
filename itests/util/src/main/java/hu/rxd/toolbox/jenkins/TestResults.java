@@ -16,7 +16,14 @@ public class TestResults {
       public double duration;
     }
 
+    public String name;
+    public double duration;
     public List<Case> cases;
+
+    @Override
+    public String toString() {
+      return name + " duration: " + duration;
+    }
   };
 
   public String _class;
