@@ -60,9 +60,9 @@
       <artifactId>hadoop-common</artifactId>
       <exclusions>
         <exclusion>
-        <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-api</artifactId>
-      </exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-api</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -202,15 +202,20 @@
     <testSourceDirectory>${basedir}/src/test</testSourceDirectory>
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
+        <groupId>org.apache.avro</groupId>
+        <artifactId>avro-maven-plugin</artifactId>
         <executions>
           <execution>
+            <phase>generate-test-sources</phase>
             <goals>
-              <goal>test-jar</goal>
+              <goal>schema</goal>
             </goals>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
       </plugin>
     </plugins>
     <pluginManagement>
@@ -228,7 +233,8 @@
             </execution>
           </executions>
           <configuration>
-            <sourceDirectory>${project.basedir}/src/resources/</sourceDirectory>
+            <testSourceDirectory>${project.basedir}/src/test/resources</testSourceDirectory>
+            <testOutputDirectory>${project.basedir}/src/test</testOutputDirectory>
             <enableDecimalLogicalType>true</enableDecimalLogicalType>
             <stringType>String</stringType>
           </configuration>
