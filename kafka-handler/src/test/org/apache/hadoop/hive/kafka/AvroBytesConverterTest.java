@@ -53,7 +53,7 @@ public class AvroBytesConverterTest {
   public ExpectedException exception = ExpectedException.none();
 
   /**
-   * Use the KafkaAvroSerializer from Confluent to serialize the simpleRecord. 
+   * Use the KafkaAvroSerializer from Confluent to serialize the simpleRecord.
    */
   @BeforeClass
   public static void setUp() {
@@ -64,7 +64,7 @@ public class AvroBytesConverterTest {
     simpleRecordConfluentBytes = avroSerializer.serialize("temp", simpleRecord);
   }
 
-  private void runConversionTest(Properties tbl, byte[] serializedSimpleRecord) throws SerDeException { 
+  private void runConversionTest(Properties tbl, byte[] serializedSimpleRecord) throws SerDeException {
     KafkaSerDe serde = new KafkaSerDe();
     Schema schema = SimpleRecord.getClassSchema();
     KafkaSerDe.AvroBytesConverter conv = (KafkaSerDe.AvroBytesConverter)serde.getByteConverterForAvroDelegate(schema, tbl);
@@ -80,11 +80,11 @@ public class AvroBytesConverterTest {
   }
 
   /**
-   * Tests the default case of no skipped bytes per record works properly. 
+   * Tests the default case of no skipped bytes per record works properly.
    */
   @Test
   public void convertWithAvroBytesConverter() throws SerDeException {
-    // Since the serialized version was created by Confluent, 
+    // Since the serialized version was created by Confluent,
     // let's remove the first five bytes to get the actual message.
     int recordLength = simpleRecordConfluentBytes.length;
     byte[] simpleRecordWithNoOffset = Arrays.copyOfRange(simpleRecordConfluentBytes, 5, recordLength);
@@ -116,7 +116,7 @@ public class AvroBytesConverterTest {
   @Test
   public void convertWithCustomAvroSkipBytesConverter() throws SerDeException {
     Integer offset = 2;
-    // Remove all but two bytes of the five byte offset which Confluent adds, 
+    // Remove all but two bytes of the five byte offset which Confluent adds,
     // to simulate a message with only 2 bytes in front of each message.
     int recordLength = simpleRecordConfluentBytes.length;
     byte[] simpleRecordAsOffsetBytes = Arrays.copyOfRange(simpleRecordConfluentBytes, 5 - offset, recordLength);
@@ -124,7 +124,7 @@ public class AvroBytesConverterTest {
     Properties tbl = new Properties();
     tbl.setProperty(AvroSerdeUtils.AvroTableProperties.AVRO_SERDE_TYPE.getPropName(), "SKIP");                                                                                                                                                   tbl.setProperty(AvroSerdeUtils.AvroTableProperties.AVRO_SERDE_SKIP_BYTES.getPropName(), offset.toString());
 
-    runConversionTest(tbl, simpleRecordAsOffsetBytes);    
+    runConversionTest(tbl, simpleRecordAsOffsetBytes);
   }
 
   /**
@@ -134,7 +134,7 @@ public class AvroBytesConverterTest {
   public void skipBytesLargerThanMessageSizeConverter() throws SerDeException {
     // The simple record we are serializing is two strings, that combine to be 7 characters or 14 bytes.
     // Adding in the 5 byte offset, we get 19 bytes. To make sure we go bigger than that, we are setting
-    // the offset to ten times that value. 
+    // the offset to ten times that value.
     Integer offset = 190;
 
     Properties tbl = new Properties();
@@ -142,9 +142,9 @@ public class AvroBytesConverterTest {
     tbl.setProperty(AvroSerdeUtils.AvroTableProperties.AVRO_SERDE_SKIP_BYTES.getPropName(), offset.toString());
 
     exception.expect(RuntimeException.class);
-    exception.expectMessage("org.apache.hadoop.hive.serde2.SerDeException: " + 
+    exception.expectMessage("org.apache.hadoop.hive.serde2.SerDeException: " +
       "Skip bytes value is larger than the message length.");
-    runConversionTest(tbl, simpleRecordConfluentBytes);    
+    runConversionTest(tbl, simpleRecordConfluentBytes);
   }
 
   /**

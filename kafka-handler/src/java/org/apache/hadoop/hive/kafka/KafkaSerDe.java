@@ -155,7 +155,7 @@ import java.util.stream.Collectors;
 
   BytesConverter getByteConverterForAvroDelegate(Schema schema, Properties tbl) throws SerDeException {
     String avroBytesConverterPropertyName = AvroSerdeUtils.AvroTableProperties.AVRO_SERDE_TYPE.getPropName();
-    String avroBytesConverterProperty = tbl.getProperty(avroBytesConverterPropertyName, 
+    String avroBytesConverterProperty = tbl.getProperty(avroBytesConverterPropertyName,
       BytesConverterType.NONE.toString());
     BytesConverterType avroByteConverterType = BytesConverterType.fromString(avroBytesConverterProperty);
     String avroSkipBytesPropertyName = AvroSerdeUtils.AvroTableProperties.AVRO_SERDE_SKIP_BYTES.getPropName();
