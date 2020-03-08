@@ -41,9 +41,11 @@ import org.apache.calcite.util.mapping.Mappings;
 import org.apache.calcite.util.mapping.MappingType;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
-import org.apache.hadoop.hive.ql.plan.impala.funcmapper.AggFunctionDetails;
+import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaBuiltins;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.Calcite2302;
+import org.apache.hadoop.hive.ql.plan.impala.funcmapper.DefaultFunctionSignature;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaFunctionMapper;
+import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaFunctionSignature;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
@@ -211,12 +213,13 @@ public class ImpalaAggCastRule extends RelOptRule {
     List<SqlTypeName> currentSqlOperandTypes = getSqlTypeNameOperands(currentOperandTypes);
 
     // create the signature as/is to see if it needs casting.
-    ImpalaFunctionMapper ifs =
-        new ImpalaFunctionMapper(opName, currentSqlOperandTypes, currentSqlRetType);
+    ImpalaFunctionSignature ifs =
+        new DefaultFunctionSignature(opName.toLowerCase(), currentSqlOperandTypes, currentSqlRetType);
+    ImpalaFunctionMapper ifm = new ImpalaFunctionMapper(ifs);
 
     // The main call to check if this AggCall maps to a known Impala function signature.
     Pair<SqlTypeName, List<SqlTypeName>> pair =
-        ifs.mapOperands(AggFunctionDetails.AGG_BUILTINS_INSTANCE);
+        ifm.mapOperands(ImpalaBuiltins.AGG_BUILTINS_INSTANCE);
 
     SqlTypeName mappedSqlRetType = pair.left;
     List<SqlTypeName> mappedSqlOperandTypes = pair.right;

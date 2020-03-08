@@ -34,17 +34,20 @@ import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.tools.RelBuilderFactory;
 import org.apache.calcite.util.Pair;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.Calcite2302;
+import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaBuiltins;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaFunctionMapper;
+import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaFunctionSignatureFactory;
+import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaFunctionSignature;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
-import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ScalarFunctionDetails;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -170,32 +173,30 @@ public abstract class ImpalaRexCastRule extends RelOptRule {
           getSqlTypeNamesFromNodes(rexCall.getOperands());
       // The return SqlTypeName for the current call.
       SqlTypeName currentRetSqlType = rexCall.getType().getSqlTypeName();
-
       // apply the rex casting to all of the operand first, then apply to this RexNode.
       List<RexNode> newOperands = apply(rexCall.getOperands());
 
       String opName = rexCall.getOperator().getName();
-      ImpalaFunctionMapper ifs = new ImpalaFunctionMapper(opName,
-          getSqlTypeNamesFromNodes(newOperands), currentRetSqlType);
-
+      ImpalaFunctionSignature ifs = null;
+      try {
+        ifs = ImpalaFunctionSignatureFactory.create(rexCall.getOperator(),
+           getSqlTypeNamesFromNodes(newOperands), currentRetSqlType);
+      } catch (HiveException e) {
+        throw new RuntimeException(e);
+      }
+      ImpalaFunctionMapper ifm = new ImpalaFunctionMapper(ifs);
       // The main call to check if this RexCall maps to a known Impala function signature.
       Pair<SqlTypeName, List<SqlTypeName>> pair =
-          ifs.mapOperands(ScalarFunctionDetails.SCALAR_BUILTINS_INSTANCE);
+          ifm.mapOperands(ImpalaBuiltins.SCALAR_BUILTINS_INSTANCE);
 
       SqlTypeName mappedRetType = pair.left;
       List<SqlTypeName> mappedOperandTypes = pair.right;
-
       // It involves a bit more work to make sure the return type casting matches.  This would involve
       // making sure that propagation happens across RelNodes.  For now, we will punt this.
       // Only the SqlTypeNames have to match.  Decimal values don't need to be recast, and the
       // type will be determined by Calcite.
       if (!mappedRetType.equals(currentRetSqlType)) {
         throw new RuntimeException(UPCAST_NOT_ALLOWED + opName);
-      }
-
-      if (mappedOperandTypes.equals(currentSqlOperandTypes)) {
-        // no casting needed, just return original rexCall
-        return rexCall;
       }
 
       // create the new RexNode operands.  These new operands will either have a cast of the

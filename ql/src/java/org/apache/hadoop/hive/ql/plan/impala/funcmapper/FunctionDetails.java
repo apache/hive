@@ -22,4 +22,5 @@ package org.apache.hadoop.hive.ql.plan.impala.funcmapper;
  * FunctionDetails interface allowing multiple types of FunctionDetails (i.e. Scalar, Agg)
  */
 public interface FunctionDetails {
+  public ImpalaFunctionSignature getSignature();
 }

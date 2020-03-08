@@ -18,20 +18,6 @@
 
 package org.apache.hadoop.hive.ql.plan.impala.funcmapper;
 
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
-import org.apache.calcite.sql.type.SqlTypeName;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.impala.thrift.TPrimitiveType;
 
 /**
@@ -41,34 +27,6 @@ import org.apache.impala.thrift.TPrimitiveType;
  * as a key for both AggFunctionDetails and ScalarFunctionDetails.
  */
 public class AggFunctionDetails implements FunctionDetails {
-
-  // Map containing an Impala signature to the details associated with the signature.
-  // A signature consists of the function name, the operand types and the return type.
-  static public Map<ImpalaFunctionSignature, AggFunctionDetails> AGG_BUILTINS_INSTANCE = Maps.newHashMap();
-
-  // populate all functions from the resource file.
-  static {
-    Reader reader =
-        new InputStreamReader(ImpalaFunctionSignature.class.getResourceAsStream("/impala_aggs.json"));
-    Gson gson = new Gson();
-    Type aggFuncDetailsType = new TypeToken<ArrayList<AggFunctionDetails>>(){}.getType();
-    List<AggFunctionDetails> aggDetails = gson.fromJson(reader, aggFuncDetailsType);
-
-    try {
-      for (AggFunctionDetails afd : aggDetails) {
-        List<SqlTypeName> argTypes = (afd.argTypes == null)
-            ? Lists.newArrayList()
-            : ImpalaTypeConverter.getSqlTypeNames(afd.argTypes);
-        SqlTypeName retType = ImpalaTypeConverter.getSqlTypeName(afd.retType);
-        ImpalaFunctionSignature ifs = new ImpalaFunctionSignature(afd.fnName, argTypes, retType,
-            false);
-        AGG_BUILTINS_INSTANCE.put(ifs, afd);
-      }
-    } catch (HiveException e) {
-      // if an exception is hit here, we have a problem in our resource file.
-      throw new RuntimeException("Problem processing resource file impala_aggs.json:" + e);
-    }
-  }
 
   public String fnName;
   public String impalaFnName;
@@ -85,6 +43,7 @@ public class AggFunctionDetails implements FunctionDetails {
   public String serializeFnSymbol;
   public boolean ignoresDistinct;
   public boolean isAgg;
+  public ImpalaFunctionSignature ifs;
 
   public void setFnName(String fnName) {
     this.fnName = fnName;
@@ -142,13 +101,16 @@ public class AggFunctionDetails implements FunctionDetails {
     this.isAgg= isAgg;
   }
 
-  static public AggFunctionDetails get(String name, SqlTypeName retType,
-      List<SqlTypeName> operandTypes) {
-    ImpalaFunctionSignature sig = new ImpalaFunctionSignature(name, operandTypes, retType);
-    return AGG_BUILTINS_INSTANCE.get(sig);
+  @Override
+  public ImpalaFunctionSignature getSignature() {
+    return ifs;
   }
 
-  static public AggFunctionDetails get(ImpalaFunctionSignature sig) {
-    return (AggFunctionDetails) AGG_BUILTINS_INSTANCE.get(sig);
+  /** 
+   * Retrieve function details about an agg function given a signature
+   * containing the function name, return type, and operand types.
+   */
+  public static AggFunctionDetails get(ImpalaFunctionSignature sig) {
+    return (AggFunctionDetails) ImpalaBuiltins.AGG_BUILTINS_INSTANCE.get(sig);
   }
 }

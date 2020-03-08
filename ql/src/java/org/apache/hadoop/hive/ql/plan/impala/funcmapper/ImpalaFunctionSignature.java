@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.plan.impala.funcmapper;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -26,6 +27,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import org.apache.calcite.sql.type.SqlTypeName;
+import org.apache.calcite.util.Pair;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 
@@ -38,7 +40,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-public class ImpalaFunctionSignature {
+public abstract class ImpalaFunctionSignature {
 
   // A map of the function name to a list of possible signatures.
   // For instance, the "sum" function has an instance where BIGINT is an operand and has an instance
@@ -70,7 +72,7 @@ public class ImpalaFunctionSignature {
           argTypes = ImpalaTypeConverter.getSqlTypeNames(sfd.argTypes);
         }
         SqlTypeName retType = ImpalaTypeConverter.getSqlTypeName(sfd.retType);
-        ImpalaFunctionSignature ifs = new ImpalaFunctionSignature(sfd.fnName, argTypes, retType,
+        ImpalaFunctionSignature ifs = new DefaultFunctionSignature(sfd.fnName, argTypes, retType,
             sfd.hasVarArgs);
         List<ImpalaFunctionSignature> castIfsList = CAST_CHECK_BUILTINS_INSTANCE.get(sfd.fnName);
         if (castIfsList == null) {
@@ -91,7 +93,7 @@ public class ImpalaFunctionSignature {
           argTypes = ImpalaTypeConverter.getSqlTypeNames(afd.argTypes);
         }
         SqlTypeName retType = ImpalaTypeConverter.getSqlTypeName(afd.retType);
-        ImpalaFunctionSignature ifs = new ImpalaFunctionSignature(afd.fnName, argTypes, retType,
+        ImpalaFunctionSignature ifs = new DefaultFunctionSignature(afd.fnName, argTypes, retType,
             false);
         List<ImpalaFunctionSignature> castIfsList = CAST_CHECK_BUILTINS_INSTANCE.get(afd.fnName);
         if (castIfsList == null) {
@@ -107,17 +109,17 @@ public class ImpalaFunctionSignature {
     }
   }
 
-  private final String func;
+  protected final String func;
 
-  private final List<SqlTypeName> argTypes;
+  protected final List<SqlTypeName> argTypes;
 
-  private final SqlTypeName retType;
+  protected final SqlTypeName retType;
 
-  private final boolean hasVarArgs;
+  protected final boolean hasVarArgs;
 
   public ImpalaFunctionSignature(String func, List<SqlTypeName> argTypes, SqlTypeName retType,
       boolean hasVarArgs) {
-    assert func != null;
+    Preconditions.checkNotNull(func);
     this.func = func;
     this.argTypes = ImmutableList.copyOf(argTypes);
     this.retType = retType;
@@ -128,32 +130,107 @@ public class ImpalaFunctionSignature {
     this(name, argTypes, retType, false);
   }
 
-  public SqlTypeName getRetType() { return retType; }
+  public String getFunc() {
+     return func;
+  }
 
-  public List<SqlTypeName> getArgTypes() { return argTypes; }
+  public SqlTypeName getRetType() {
+     return retType;
+  }
+
+  public List<SqlTypeName> getArgTypes() {
+    return argTypes;
+  }
+
+  public boolean hasVarArgs() {
+    return hasVarArgs;
+  }
+
+  /**
+   * Returns the expected arguments for the function signature.
+   **/
+  public abstract List<SqlTypeName> getSignatureArgTypes();
+
+  /**
+   * Method for whether we should this signature. We will allow it to use these
+   * signature types if it is found in the map. But just checking for a matching
+   * signature type in the map isn't enough, because there may be a variable number
+   * of arguments in "this" signature. So we also have to check if the variable number
+   * of arguments also matches the found signature.
+   **/
+  public abstract boolean useSignatureTypes(Map<ImpalaFunctionSignature,
+      ? extends FunctionDetails> functionDetailsMap);
+
+  /**
+   * Returns true if all of the given operands can be cast to the given function
+   * signature.
+   **/
+  public abstract boolean canCastToCandidate(ImpalaFunctionSignature castCandidate);
+
+  /**
+   * Gets the full signature of the expected return type and all the cast operand types.
+   * The "left" part of the pair is the return type. The "right" part of the pair are the
+   * types of all the operands.
+   * It is possible that the cast candidate has a variable number of operands, and thus
+   * can have less than the number of operands in "this" object. But in any case, the
+   * number of operands returned should match the number of operands in "this" object.
+   **/ 
+  public abstract Pair<SqlTypeName, List<SqlTypeName>> getCastOpAndRetTypes(
+      ImpalaFunctionSignature castCandidate);
 
   @Override
   public boolean equals(Object obj) {
-    if (obj == null) {
-      return false;
-    }
-
     if ((obj == null) || !(obj instanceof ImpalaFunctionSignature)) {
       return false;
     }
 
     ImpalaFunctionSignature other = (ImpalaFunctionSignature) obj;
-    return this.func.equals(other.func) && this.argTypes.equals(other.argTypes)
-        && this.retType.equals(other.retType);
+    if (!this.func.equals(other.func)) {
+      return false;
+    }
+
+    if (!this.retType.equals(other.retType)) {
+      return false;
+    }
+
+    List<SqlTypeName> thisArgTypes = this.getSignatureArgTypes();
+    List<SqlTypeName> otherArgTypes = other.getSignatureArgTypes();
+
+    int argsToCheck = thisArgTypes.size();
+
+    // if the number of arguments for both objects are the same, we just need
+    // to check them.  If they are not the same, we check if either one has
+    // a variable amount of arguments.  If neither one does, we return false.
+    // If one of the arguments has variable arguments, we only check the arguments
+    // specified by the signature of the object with the variable arguments for
+    // equality.
+    if (thisArgTypes.size() != otherArgTypes.size()) {
+      if (other.hasVarArgs()) {
+        argsToCheck = otherArgTypes.size();
+      } else if (!this.hasVarArgs()) {
+        return false;
+      }
+    }
+
+    for (int i = 0; i < argsToCheck; ++i) {
+      if (!thisArgTypes.get(i).equals(otherArgTypes.get(i))) {
+        return false;
+      }
+    }
+    return true;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(func, argTypes, retType);
-  }
-
-  public boolean hasVarArgs() {
-    return hasVarArgs;
+    // For the hash code, we need to ensure that all potential matching signatures go
+    // to the same bucket. It is possible for signatures to be equal when they have
+    // a different number of arguments. For this reason, we will return the same
+    // hashcode based only on the first argument, if it exists.
+    List<SqlTypeName> argTypes = this.getSignatureArgTypes();
+    if (argTypes.size() == 0) {
+      return Objects.hash(func, retType);
+    }
+    return Objects.hash(func, argTypes.get(0), retType);
   }
 
   @Override

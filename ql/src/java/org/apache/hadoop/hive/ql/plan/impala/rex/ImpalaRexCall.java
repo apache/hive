@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaCompoundExpr;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaFunctionCallExpr;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaInExpr;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaIsNullExpr;
+import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaFunctionSignatureFactory;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaFunctionSignature;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaTypeConverter;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ScalarFunctionDetails;
@@ -59,7 +60,7 @@ public class ImpalaRexCall {
     String funcName = rexCall.getOperator().getName().toLowerCase();
     SqlTypeName retType = rexCall.getType().getSqlTypeName();
     List<SqlTypeName> args = ImpalaTypeConverter.getSqlTypeNamesFromNodes(rexCall.getOperands());
-    ImpalaFunctionSignature ifs = new ImpalaFunctionSignature(funcName, args, retType);
+    ImpalaFunctionSignature ifs = ImpalaFunctionSignatureFactory.create(rexCall.getOperator(), args, retType);
     ScalarFunctionDetails details = ScalarFunctionDetails.get(ifs);
     if (details == null) {
       throw new HiveException("Could not find function \"" + ifs + "\"");

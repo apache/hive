@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.ql.plan.impala.ImpalaBasicAnalyzer;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaFunctionCallExpr;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.AggFunctionDetails;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaFunctionSignature;
+import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaFunctionSignatureFactory;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaTypeConverter;
 import org.apache.impala.analysis.AggregateInfo;
 import org.apache.impala.analysis.Analyzer;
@@ -166,7 +167,8 @@ public class ImpalaAggregateRel extends ImpalaPlanRel {
     }
 
     ImpalaFunctionSignature ifs =
-        new ImpalaFunctionSignature(aggFunction.getName(), operandTypes, retType.getSqlTypeName());
+        ImpalaFunctionSignatureFactory.create(aggFunction.getName().toLowerCase(), operandTypes,
+             retType.getSqlTypeName());
     AggFunctionDetails funcDetails = AggFunctionDetails.get(ifs);
 
     if (funcDetails == null) {
