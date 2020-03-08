@@ -52,6 +52,7 @@ public class ReplicationSpec {
   private boolean needDupCopyCheck = false;
   //Determine if replication is done using repl or export-import
   private boolean isRepl = false;
+  private boolean isMetadataOnlyForExternalTables = false;
 
   // Key definitions related to replication.
   public enum KEY {
@@ -280,6 +281,17 @@ public class ReplicationSpec {
   }
 
   /**
+   * @return true if this statement refers to metadata-only operation.
+   */
+  public boolean isMetadataOnlyForExternalTables() {
+    return isMetadataOnlyForExternalTables;
+  }
+
+  public void setMetadataOnlyForExternalTables(boolean metadataOnlyForExternalTables) {
+    isMetadataOnlyForExternalTables = metadataOnlyForExternalTables;
+  }
+
+  /**
    * @return true if this statement refers to insert-into or insert-overwrite operation.
    */
   public boolean isReplace(){ return isReplace; }
@@ -379,7 +391,7 @@ public class ReplicationSpec {
 
   public SCOPE getScope(){
     if (isInReplicationScope()){
-      if (isMetadataOnly()){
+      if (isMetadataOnly() || isMetadataOnlyForExternalTables()){
         return SCOPE.MD_ONLY;
       } else {
         return SCOPE.REPL;

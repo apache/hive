@@ -191,7 +191,7 @@ public class LoadTable {
     } else {
       tblRootTask.addDependentTask(createTableTask);
     }
-    if (replicationSpec.isMetadataOnly()) {
+    if (replicationSpec.isMetadataOnly() || replicationSpec.isMetadataOnlyForExternalTables()) {
       tracker.addTask(tblRootTask);
       return;
     }

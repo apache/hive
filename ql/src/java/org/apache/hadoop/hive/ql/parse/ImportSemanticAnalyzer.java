@@ -1224,7 +1224,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         dependentTasks = new ArrayList<>(partitionDescs.size());
         for (AlterTableAddPartitionDesc addPartitionDesc : partitionDescs) {
           addPartitionDesc.setReplicationSpec(replicationSpec);
-          if (!replicationSpec.isMetadataOnly()) {
+          if (!replicationSpec.isMetadataOnly() && !replicationSpec.isMetadataOnlyForExternalTables()) {
             dependentTasks.add(addSinglePartition(tblDesc, table, wh, addPartitionDesc,
                                                 replicationSpec, x, writeId, stmtId));
           } else {
@@ -1236,7 +1236,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
                     addPartitionDesc.getPartitions().get(0).getPartSpec());
           }
         }
-      } else if (!replicationSpec.isMetadataOnly()
+      } else if (!replicationSpec.isMetadataOnly() && !replicationSpec.isMetadataOnlyForExternalTables()
               && !shouldSkipDataCopyInReplScope(tblDesc, replicationSpec)) {
         x.getLOG().debug("adding dependent CopyWork/MoveWork for table");
         dependentTasks = new ArrayList<>(1);
@@ -1302,7 +1302,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
           }
 
           if (ptn == null) {
-            if (!replicationSpec.isMetadataOnly()){
+            if (!replicationSpec.isMetadataOnly() && !replicationSpec.isMetadataOnlyForExternalTables()){
               x.getTasks().add(addSinglePartition(
                   tblDesc, table, wh, addPartitionDesc, replicationSpec, x, writeId, stmtId));
               if (updatedMetadata != null) {
@@ -1319,7 +1319,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
             // If replicating, then the partition already existing means we need to replace, maybe, if
             // the destination ptn's repl.last.id is older than the replacement's.
             if (replicationSpec.allowReplacementInto(ptn.getParameters())){
-              if (!replicationSpec.isMetadataOnly()){
+              if (!replicationSpec.isMetadataOnly() && !replicationSpec.isMetadataOnlyForExternalTables()){
                 x.getTasks().add(addSinglePartition(
                     tblDesc, table, wh, addPartitionDesc, replicationSpec, x, writeId, stmtId));
               } else {
@@ -1335,7 +1335,8 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
             }
           }
         }
-        if (replicationSpec.isMetadataOnly() && partitionDescs.isEmpty()){
+        if ((replicationSpec.isMetadataOnly() || replicationSpec.isMetadataOnlyForExternalTables())
+                && partitionDescs.isEmpty()){
           // MD-ONLY table alter
           x.getTasks().add(alterTableTask(tblDesc, x,replicationSpec));
           if (lockType == WriteEntity.WriteType.DDL_NO_LOCK){
@@ -1344,7 +1345,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       } else {
         x.getLOG().debug("table non-partitioned");
-        if (!replicationSpec.isMetadataOnly()) {
+        if (!replicationSpec.isMetadataOnly() && !replicationSpec.isMetadataOnlyForExternalTables()) {
           // repl-imports are replace-into unless the event is insert-into
           loadTable(fromURI, table, replicationSpec.isReplace(), new Path(tblDesc.getLocation()),
             replicationSpec, x, writeId, stmtId);

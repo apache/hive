@@ -129,7 +129,8 @@ public class LoadPartitions {
       // existing
       if (table.isPartitioned()) {
         List<AlterTableAddPartitionDesc> partitionDescs = event.partitionDescriptions(tableDesc);
-        if (!event.replicationSpec().isMetadataOnly() && !partitionDescs.isEmpty()) {
+        if (!event.replicationSpec().isMetadataOnly() && !event.replicationSpec().isMetadataOnlyForExternalTables()
+                && !partitionDescs.isEmpty()) {
           updateReplicationState(initialReplicationState());
           if (!forExistingTable(lastReplicatedPartition).hasReplicationState()) {
             // Add ReplStateLogTask only if no pending table load tasks left for next cycle
@@ -205,6 +206,7 @@ public class LoadPartitions {
     );
 
     boolean isOnlyDDLOperation = event.replicationSpec().isMetadataOnly()
+            || event.replicationSpec().isMetadataOnlyForExternalTables()
         || (TableType.EXTERNAL_TABLE.equals(table.getTableType())
         && !event.replicationSpec().isMigratingToExternalTable()
     );

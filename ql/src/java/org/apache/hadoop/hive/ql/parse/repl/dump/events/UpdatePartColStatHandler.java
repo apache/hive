@@ -48,7 +48,8 @@ class UpdatePartColStatHandler extends AbstractEventHandler<UpdatePartitionColum
     }
 
     // Statistics without any data does not make sense.
-    if (withinContext.replicationSpec.isMetadataOnly()) {
+    if (withinContext.replicationSpec.isMetadataOnly()
+            || withinContext.replicationSpec.isMetadataOnlyForExternalTables()) {
       return;
     }
 

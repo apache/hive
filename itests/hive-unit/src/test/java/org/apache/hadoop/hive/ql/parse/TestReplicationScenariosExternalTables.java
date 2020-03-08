@@ -167,7 +167,8 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
         .run("select country from t2 where country = 'us'")
         .verifyResult("us")
         .run("select country from t2 where country = 'france'")
-        .verifyResult("france");
+        .verifyResult("france")
+        .run("show partitions t2").verifyResults(new String[] {"country=france", "country=india", "country=us"});
 
     String hiveDumpLocation = tuple.dumpLocation + File.separator + ReplUtils.REPL_HIVE_BASE_DIR;
     // Ckpt should be set on bootstrapped db.

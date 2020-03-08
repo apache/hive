@@ -75,11 +75,16 @@ public class TableExport {
         ? null
         : tableSpec;
     this.replicationSpec = replicationSpec;
-    if (this.tableSpec != null && this.tableSpec.tableHandle!=null && (this.tableSpec.tableHandle.isView() ||
-            Utils.shouldDumpMetaDataOnly(this.tableSpec.tableHandle, conf))) {
-      this.replicationSpec.setIsMetadataOnly(true);
-
-      this.tableSpec.tableHandle.setStatsStateLikeNewTable();
+    if (this.tableSpec != null && this.tableSpec.tableHandle!=null) {
+      if (this.tableSpec.tableHandle.isView() || Utils.shouldDumpMetaDataOnly(conf)) {
+        this.tableSpec.tableHandle.setStatsStateLikeNewTable();
+        this.replicationSpec.setIsMetadataOnly(true);
+      }
+      if (this.tableSpec.tableHandle.isView()
+              || Utils.shouldDumpMetaDataOnlyForExternalTables(this.tableSpec.tableHandle, conf)) {
+        this.tableSpec.tableHandle.setStatsStateLikeNewTable();
+        this.replicationSpec.setMetadataOnlyForExternalTables(true);
+      }
     }
     this.db = db;
     this.distCpDoAsUser = distCpDoAsUser;
@@ -95,7 +100,7 @@ public class TableExport {
     } else if (shouldExport()) {
       PartitionIterable withPartitions = getPartitions();
       writeMetaData(withPartitions);
-      if (!replicationSpec.isMetadataOnly()
+      if (!replicationSpec.isMetadataOnly() && !replicationSpec.isMetadataOnlyForExternalTables()
               && !(replicationSpec.isRepl() && tableSpec.tableHandle.getTableType().equals(TableType.EXTERNAL_TABLE))) {
         replPathMappings = writeData(withPartitions, isExportTask);
       }
@@ -110,6 +115,7 @@ public class TableExport {
       if (tableSpec != null && tableSpec.tableHandle != null && tableSpec.tableHandle.isPartitioned()) {
         if (tableSpec.specType == TableSpec.SpecType.TABLE_ONLY) {
           // TABLE-ONLY, fetch partitions if regular export, don't if metadata-only
+          //For metadata only external tables, we still need the partition info
           if (replicationSpec.isMetadataOnly()) {
             return null;
           } else {
@@ -315,7 +321,7 @@ public class TableExport {
     AuthEntities authEntities = new AuthEntities();
     try {
       // Return if metadata-only
-      if (replicationSpec.isMetadataOnly()) {
+      if (replicationSpec.isMetadataOnly() || replicationSpec.isMetadataOnlyForExternalTables()) {
         return authEntities;
       }
       PartitionIterable partitions = getPartitions();
