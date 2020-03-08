@@ -72,7 +72,13 @@ public abstract class LlapCacheableBuffer {
   }
 
   public String toStringForCache() {
-    return "[" + Integer.toHexString(hashCode()) + " Cache Attributes " + cacheAttribute == null ? "NONE" : cacheAttribute.toString() + " " + (isLocked() ? "!" : ".") + "]";
+    return cacheAttribute == null ?
+        "NONE" :
+        String.format("[ObjectId %s, Entry Attributes %s, Locked %s]",
+            Integer.toHexString(hashCode()),
+            cacheAttribute.toString(),
+            isLocked());
+
   }
 
   /**

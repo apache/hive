@@ -73,6 +73,7 @@ public class ClockCachePolicy implements LowLevelCachePolicy {
   @Override public void cache(LlapCacheableBuffer buffer, LowLevelCache.Priority priority) {
     listLock.lock();
     try {
+      //noinspection NonAtomicOperationOnVolatileField
       clockHand = appendToCircularList(clockHand, buffer);
     } finally {
       listLock.unlock();
@@ -231,7 +232,7 @@ public class ClockCachePolicy implements LowLevelCachePolicy {
         }
 
         @Override public LlapCacheableBuffer next() {
-          return null;
+          throw new NoSuchElementException("empty iterator");
         }
       };
     }
