@@ -10,12 +10,19 @@ import com.google.common.annotations.VisibleForTesting;
 public class SplitSupport {
 
   public static List<Object[]> process(List<Object[]> parameters, Class<?> currentClass, int nSplits) {
+    if (!isSplitExecution(currentClass)) {
+      return parameters;
+    }
     // auto-disable primary test in case splits are present
-    if (!isSplitClass(currentClass) && isSplit0ClassExistsFor(currentClass)) {
+    if (isSplit0ClassExistsFor(currentClass)) {
       return new ArrayList<>();
     }
     int i = getSplitIndex(currentClass);
     return getSplitParams(parameters, i, nSplits);
+  }
+
+  private static boolean isSplitExecution(Class<?> currentClass) {
+    return isSplitClass(currentClass) || isSplit0ClassExistsFor(currentClass);
   }
 
   @VisibleForTesting
