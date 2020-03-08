@@ -234,7 +234,7 @@
           </executions>
           <configuration>
             <testSourceDirectory>${project.basedir}/src/test/resources</testSourceDirectory>
-            <testOutputDirectory>${project.basedir}/src/test</testOutputDirectory>
+            <testOutputDirectory>${project.basedir}/src/test/gen</testOutputDirectory>
             <enableDecimalLogicalType>true</enableDecimalLogicalType>
             <stringType>String</stringType>
           </configuration>

@@ -26,7 +26,6 @@ import io.confluent.kafka.serializers.KafkaAvroSerializer;
 
 import org.apache.avro.Schema;
 
-import org.apache.hadoop.hive.kafka.KafkaSerDe;
 import org.apache.hadoop.hive.serde2.avro.AvroGenericRecordWritable;
 import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -67,7 +66,8 @@ public class AvroBytesConverterTest {
   private void runConversionTest(Properties tbl, byte[] serializedSimpleRecord) throws SerDeException {
     KafkaSerDe serde = new KafkaSerDe();
     Schema schema = SimpleRecord.getClassSchema();
-    KafkaSerDe.AvroBytesConverter conv = (KafkaSerDe.AvroBytesConverter)serde.getByteConverterForAvroDelegate(schema, tbl);
+    KafkaSerDe.AvroBytesConverter conv = (KafkaSerDe.AvroBytesConverter)serde.getByteConverterForAvroDelegate(
+        schema, tbl);
     AvroGenericRecordWritable simpleRecordWritable = conv.getWritable(serializedSimpleRecord);
 
     Assert.assertNotNull(simpleRecordWritable);
@@ -143,7 +143,7 @@ public class AvroBytesConverterTest {
 
     exception.expect(RuntimeException.class);
     exception.expectMessage("org.apache.hadoop.hive.serde2.SerDeException: " +
-      "Skip bytes value is larger than the message length.");
+        "Skip bytes value is larger than the message length.");
     runConversionTest(tbl, simpleRecordConfluentBytes);
   }
 
@@ -153,18 +153,17 @@ public class AvroBytesConverterTest {
   @Test
   public void bytesConverterTypeParseTest() {
     Map<String, KafkaSerDe.BytesConverterType> testCases = new HashMap<String, KafkaSerDe.BytesConverterType>() {{
-      put("skip", KafkaSerDe.BytesConverterType.SKIP);
-      put("sKIp", KafkaSerDe.BytesConverterType.SKIP);
-      put("SKIP", KafkaSerDe.BytesConverterType.SKIP);
-      put("	skip	", KafkaSerDe.BytesConverterType.SKIP);
-      put("SKIP1", KafkaSerDe.BytesConverterType.NONE);
-      put("skipper", KafkaSerDe.BytesConverterType.NONE);
-      put("", KafkaSerDe.BytesConverterType.NONE);
-      put(null, KafkaSerDe.BytesConverterType.NONE);
-      put("none", KafkaSerDe.BytesConverterType.NONE);
-      put("NONE", KafkaSerDe.BytesConverterType.NONE);
-      put("	none	", KafkaSerDe.BytesConverterType.NONE);
-    }};
+        put("skip", KafkaSerDe.BytesConverterType.SKIP);
+        put("sKIp", KafkaSerDe.BytesConverterType.SKIP);
+        put("SKIP", KafkaSerDe.BytesConverterType.SKIP);
+        put("   skip   ", KafkaSerDe.BytesConverterType.SKIP);
+        put("SKIP1", KafkaSerDe.BytesConverterType.NONE);
+        put("skipper", KafkaSerDe.BytesConverterType.NONE);
+        put("", KafkaSerDe.BytesConverterType.NONE);
+        put(null, KafkaSerDe.BytesConverterType.NONE);
+        put("none", KafkaSerDe.BytesConverterType.NONE);
+        put("NONE", KafkaSerDe.BytesConverterType.NONE);
+      }};
 
     for(Map.Entry<String, KafkaSerDe.BytesConverterType> entry: testCases.entrySet()) {
       Assert.assertEquals(entry.getValue(), KafkaSerDe.BytesConverterType.fromString(entry.getKey()));
