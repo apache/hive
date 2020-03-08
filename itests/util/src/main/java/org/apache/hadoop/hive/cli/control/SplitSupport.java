@@ -2,6 +2,10 @@ package org.apache.hadoop.hive.cli.control;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import com.google.common.annotations.VisibleForTesting;
 
 public class SplitSupport {
 
@@ -14,7 +18,8 @@ public class SplitSupport {
     return getSplitParams(parameters, i, nSplits);
   }
 
-  private static List<Object[]> getSplitParams(List<Object[]> parameters, int i, int nSplits) {
+  @VisibleForTesting
+  static List<Object[]> getSplitParams(List<Object[]> parameters, int i, int nSplits) {
     if(i<0 || i>=nSplits) {
       throw new IllegalArgumentException("unexpected");
     }
@@ -25,18 +30,25 @@ public class SplitSupport {
     return parameters.subList(st, ed);
   }
 
-  private static boolean isSplitClass(Class<?> currentClass) {
+  @VisibleForTesting
+  static boolean isSplitClass(Class<?> currentClass) {
     Package p = currentClass.getPackage();
-    return p.getName().matches(".*split[1-9]+$");
+    return p.getName().matches(".*split[0-9]+$");
   }
 
-  private static int getSplitIndex(Class<?> currentClass) {
+  @VisibleForTesting
+  static int getSplitIndex(Class<?> currentClass) {
     Package p = currentClass.getPackage();
-    String splitNum = p.getName().replaceAll("(.*split)([1-9]+)$", "\\1");
-    return Integer.parseInt(splitNum);
+    Pattern pat = Pattern.compile("(.*split)([0-9]+)$");
+    Matcher matcher = pat.matcher(p.getName());
+    if (matcher.find()) {
+      return Integer.parseInt(matcher.group(2));
+    }
+    throw new IllegalArgumentException("cant get splitindex for: " + p);
   }
 
-  private static boolean isSplit0ClassExistsFor(Class<?> clazz) {
+  @VisibleForTesting
+  static boolean isSplit0ClassExistsFor(Class<?> clazz) {
     Package p = clazz.getPackage();
     String split1 = p.getName() + ".split0." + clazz.getSimpleName();
     try {
