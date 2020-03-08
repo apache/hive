@@ -34,7 +34,7 @@ import org.junit.runners.Parameterized.Parameters;
 @RunWith(Parameterized.class)
 public class TestCliDriver {
 
-  private static final int N_SPLITS = 3;
+  private static final int N_SPLITS = 35;
 
   static CliAdapter adapter = new CliConfigs.CliConfig().getCliAdapter();
 
