@@ -158,16 +158,17 @@ import java.util.stream.Collectors;
     String avroBytesConverterProperty = tbl.getProperty(avroBytesConverterPropertyName,
         BytesConverterType.NONE.toString());
     BytesConverterType avroByteConverterType = BytesConverterType.fromString(avroBytesConverterProperty);
-    String avroSkipBytesPropertyName = AvroSerdeUtils.AvroTableProperties.AVRO_SERDE_SKIP_BYTES.getPropName();
-    Integer avroSkipBytes = 0;
-    try {
-      avroSkipBytes = Integer.parseInt(tbl.getProperty(avroSkipBytesPropertyName));
-    } catch (NumberFormatException e) {
-      String message = "Value of " + avroSkipBytesPropertyName + " could not be parsed into an integer properly.";
-      throw new SerDeException(message, e);
-    }
     switch (avroByteConverterType) {
-    case SKIP: return new AvroSkipBytesConverter(schema, avroSkipBytes);
+    case SKIP: 
+      String avroSkipBytesPropertyName = AvroSerdeUtils.AvroTableProperties.AVRO_SERDE_SKIP_BYTES.getPropName();
+      Integer avroSkipBytes = 0;
+      try {
+        avroSkipBytes = Integer.parseInt(tbl.getProperty(avroSkipBytesPropertyName));
+      } catch (NumberFormatException e) {
+        String message = "Value of " + avroSkipBytesPropertyName + " could not be parsed into an integer properly.";
+        throw new SerDeException(message, e);
+      }
+      return new AvroSkipBytesConverter(schema, avroSkipBytes);
     case NONE: return new AvroBytesConverter(schema);
     default: throw new SerDeException("Value of " + avroBytesConverterPropertyName + " was invalid.");
     }
