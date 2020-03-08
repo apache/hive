@@ -159,7 +159,7 @@ import java.util.stream.Collectors;
         BytesConverterType.NONE.toString());
     BytesConverterType avroByteConverterType = BytesConverterType.fromString(avroBytesConverterProperty);
     switch (avroByteConverterType) {
-    case SKIP: 
+    case SKIP:
       String avroSkipBytesPropertyName = AvroSerdeUtils.AvroTableProperties.AVRO_SERDE_SKIP_BYTES.getPropName();
       Integer avroSkipBytes = 0;
       try {
