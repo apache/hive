@@ -59,7 +59,7 @@ public class TestCliDriver {
 
   @Test
   public void testCliDriver() throws Exception {
-    //    adapter.runTest(name, qfile);
+    adapter.runTest(name, qfile);
   }
 
 }
