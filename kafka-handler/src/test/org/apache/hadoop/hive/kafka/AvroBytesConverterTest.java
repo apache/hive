@@ -91,7 +91,6 @@ public class AvroBytesConverterTest {
 
     Properties tbl = new Properties();
     tbl.setProperty(AvroSerdeUtils.AvroTableProperties.AVRO_SERDE_TYPE.getPropName(), "NONE");
-    tbl.setProperty(AvroSerdeUtils.AvroTableProperties.AVRO_SERDE_SKIP_BYTES.getPropName(), "5");
 
     runConversionTest(tbl, simpleRecordWithNoOffset);
   }
