@@ -438,7 +438,7 @@
                                 <configuration>
                                     <target>
                                         <exec executable="bash" failonerror="true">
-                                            <arg value="${basedir}/src/scripts/generate-cli-splits.sh" />
+                                            <arg value="${basedir}/../bin/generate-cli-splits.sh" />
                                             <arg value="src/test/java" />
                                             <arg value="target/generated-test-sources" />
                                         </exec>
