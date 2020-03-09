@@ -125,6 +125,12 @@ OPTS+=" -Pitests -Pqsplits"
 OPTS+=" -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugin.surefire.SurefirePlugin=INFO"
 if [ -s inclusions.txt ]; then OPTS+=" -Dsurefire.includesFile=$PWD/inclusions.txt";fi
 if [ -s exclusions.txt ]; then OPTS+=" -Dsurefire.excludesFile=$PWD/exclusions.txt";fi
+echo "@INC"
+cat inclusions.txt
+echo "@ENC"
+cat exclusions.txt
+echo "@END"
+
 OPTS+=" -Dmaven.repo.local=$PWD/.m2"
 OPTS+=" $M_OPTS "
 mvn $OPTS
