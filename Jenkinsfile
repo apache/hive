@@ -87,8 +87,6 @@ use chroot = false
 EOF
 cat rsyncd.conf
 '''
-    sh 'git clone https://github.com/apache/hive'
-
   // FIXME: dup
     sh '''#!/bin/bash -e
 OPTS=" -s $SETTINGS -B install -Dmaven.test.failure.ignore -Dtest.groups= "
