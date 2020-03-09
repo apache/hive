@@ -101,7 +101,7 @@ mvn $OPTS -Dtest=noMatches
 du -h --max-depth=1
 '''
     }
-    sh '''rsync --daemon --config=rsyncd.conf --port 9873'''
+    sh '''rsync -q --daemon --config=rsyncd.conf --port 9873'''
 
   }
   }
