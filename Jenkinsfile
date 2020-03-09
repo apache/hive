@@ -96,7 +96,7 @@ stage('Compile') {
   // FIXME: dup
     sh '''#!/bin/bash -e
 OPTS=" -s $SETTINGS -B install -Dmaven.test.failure.ignore -Dtest.groups= "
-OPTS+=" -Pitests -Pqsplits"
+OPTS+=" -Pitests,qsplits"
 OPTS+=" -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugin.surefire.SurefirePlugin=INFO"
 OPTS+=" -Dmaven.repo.local=$PWD/.m2"
 OPTS+=" $M_OPTS "
@@ -125,7 +125,7 @@ stage('Testing') {
         sh '''#!/bin/bash -e
 OPTS=" -s $SETTINGS -B install -Dmaven.test.failure.ignore -Dtest.groups= "
 OPTS+=" -q"
-OPTS+=" -Pitests -Pqsplits"
+OPTS+=" -Pitests,qsplits"
 OPTS+=" -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugin.surefire.SurefirePlugin=INFO"
 if [ -s inclusions.txt ]; then OPTS+=" -Dsurefire.includesFile=$PWD/inclusions.txt";fi
 if [ -s exclusions.txt ]; then OPTS+=" -Dsurefire.excludesFile=$PWD/exclusions.txt";fi
