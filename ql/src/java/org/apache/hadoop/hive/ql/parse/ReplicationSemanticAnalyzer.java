@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.parse;
 
 import org.antlr.runtime.tree.Tree;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidTxnList;
@@ -44,10 +45,14 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
+import java.util.Base64;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVEQUERYID;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY;
@@ -68,8 +73,8 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   private ReplScope replScope = new ReplScope();
   private ReplScope oldReplScope = null;
 
-  // Base path for REPL LOAD
-  private String path;
+  // Source DB Name for REPL LOAD
+  private String sourceDbNameOrPattern;
   // Added conf member to set the REPL command specific config entries without affecting the configs
   // of any other queries running in the session
   private HiveConf conf;
@@ -77,6 +82,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   // By default, this will be same as that of super class BaseSemanticAnalyzer. But need to obtain again
   // if the Hive configs are received from WITH clause in REPL LOAD or REPL STATUS commands.
   private Hive db;
+  private boolean isTargetAlreadyLoaded;
 
   private static final String dumpSchema = "dump_dir,last_repl_id#string,string";
 
@@ -280,18 +286,20 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   // REPL LOAD
-  private void initReplLoad(ASTNode ast) throws SemanticException {
-    path = PlanUtils.stripQuotes(ast.getChild(0).getText());
+  private void initReplLoad(ASTNode ast) throws HiveException {
+    sourceDbNameOrPattern = PlanUtils.stripQuotes(ast.getChild(0).getText());
     int numChildren = ast.getChildCount();
     for (int i = 1; i < numChildren; i++) {
       ASTNode childNode = (ASTNode) ast.getChild(i);
       switch (childNode.getToken().getType()) {
-        case TOK_DBNAME:
-          replScope.setDbName(PlanUtils.stripQuotes(childNode.getChild(0).getText()));
-          break;
-        case TOK_REPL_CONFIG:
-          setConfigs((ASTNode) childNode.getChild(0));
-          break;
+      case TOK_DBNAME:
+        replScope.setDbName(PlanUtils.stripQuotes(childNode.getChild(0).getText()));
+        break;
+      case TOK_REPL_CONFIG:
+        setConfigs((ASTNode) childNode.getChild(0));
+        break;
+      case TOK_REPL_TABLES: //Accept TOK_REPL_TABLES for table level repl.Needn't do anything as dump path needs db only
+        break;
         default:
           throw new SemanticException("Unrecognized token in REPL LOAD statement.");
       }
@@ -341,25 +349,18 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
    *    36/
    */
   private void analyzeReplLoad(ASTNode ast) throws SemanticException {
-    initReplLoad(ast);
+    try {
+      initReplLoad(ast);
+    } catch (HiveException e) {
+      throw new SemanticException(e);
+    }
 
     // For analyze repl load, we walk through the dir structure available in the path,
     // looking at each db, and then each table, and then setting up the appropriate
     // import job in its place.
     try {
-      assert(path != null);
-      Path loadPath = new Path(path);
-      final FileSystem fs = loadPath.getFileSystem(conf);
-
-      // Make fully qualified path for further use.
-      loadPath = fs.makeQualified(loadPath);
-
-      if (!fs.exists(loadPath)) {
-        // supposed dump path does not exist.
-        LOG.error("File not found " + loadPath.toUri().toString());
-        throw new FileNotFoundException(ErrorMsg.REPL_LOAD_PATH_NOT_FOUND.getMsg());
-      }
-
+      assert(sourceDbNameOrPattern != null);
+      Path loadPath = getCurrentLoadPath();
       // Ths config is set to make sure that in case of s3 replication, move is skipped.
       try {
         Warehouse wh = new Warehouse(conf);
@@ -387,25 +388,77 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       // At this point, all dump dirs should contain a _dumpmetadata file that
       // tells us what is inside that dumpdir.
 
-      DumpMetaData dmd = new DumpMetaData(loadPath, conf);
+      //If repl status of target is greater than dumps, don't do anything as the load for the latest dump is done
+      if (!isTargetAlreadyLoaded) {
+        DumpMetaData dmd = new DumpMetaData(loadPath, conf);
 
-      boolean evDump = false;
-      // we will decide what hdfs locations needs to be copied over here as well.
-      if (dmd.isIncrementalDump()) {
-        LOG.debug("{} contains an incremental dump", loadPath);
-        evDump = true;
-      } else {
-        LOG.debug("{} contains an bootstrap dump", loadPath);
+        boolean evDump = false;
+        // we will decide what hdfs locations needs to be copied over here as well.
+        if (dmd.isIncrementalDump()) {
+          LOG.debug("{} contains an incremental dump", loadPath);
+          evDump = true;
+        } else {
+          LOG.debug("{} contains an bootstrap dump", loadPath);
+        }
+        ReplLoadWork replLoadWork = new ReplLoadWork(conf, loadPath.toString(), replScope.getDbName(),
+                dmd.getReplScope(),
+                queryState.getLineageState(), evDump, dmd.getEventTo(),
+                dirLocationsToCopy(loadPath, evDump));
+        rootTasks.add(TaskFactory.get(replLoadWork, conf));
       }
-      ReplLoadWork replLoadWork = new ReplLoadWork(conf, loadPath.toString(), replScope.getDbName(),
-              dmd.getReplScope(),
-              queryState.getLineageState(), evDump, dmd.getEventTo(),
-          dirLocationsToCopy(loadPath, evDump));
-      rootTasks.add(TaskFactory.get(replLoadWork, conf));
     } catch (Exception e) {
       // TODO : simple wrap & rethrow for now, clean up with error codes
       throw new SemanticException(e.getMessage(), e);
     }
+  }
+
+  private Path getCurrentLoadPath() throws IOException, SemanticException {
+    Path loadPathBase = new Path(conf.getVar(HiveConf.ConfVars.REPLDIR),
+            Base64.getEncoder().encodeToString(sourceDbNameOrPattern.toLowerCase()
+            .getBytes(StandardCharsets.UTF_8.name())));
+    final FileSystem fs = loadPathBase.getFileSystem(conf);
+
+    // Make fully qualified path for further use.
+    loadPathBase = fs.makeQualified(loadPathBase);
+
+    if (!fs.exists(loadPathBase)) {
+      // supposed dump path does not exist.
+      LOG.error("File not found " + loadPathBase.toUri().toString());
+      throw new FileNotFoundException(ErrorMsg.REPL_LOAD_PATH_NOT_FOUND.getMsg());
+    }
+    FileStatus[] statuses = loadPathBase.getFileSystem(conf).listStatus(loadPathBase);
+    if (statuses.length > 0) {
+      //sort based on last modified. Recent one is at the end
+      Arrays.sort(statuses, new Comparator<FileStatus>() {
+        public int compare(FileStatus f1, FileStatus f2) {
+          return Long.compare(f1.getModificationTime(), f2.getModificationTime());
+        }
+      });
+      if (replScope.getDbName() != null) {
+        String currentReplStatusOfTarget
+                = getReplStatus(replScope.getDbName());
+        if (currentReplStatusOfTarget == null) { //bootstrap
+          return statuses[0].getPath();
+        } else {
+          DumpMetaData latestDump = new DumpMetaData(statuses[statuses.length - 1].getPath(), conf);
+          if (Long.parseLong(currentReplStatusOfTarget.trim()) >= latestDump.getEventTo()) {
+            isTargetAlreadyLoaded = true;
+          } else {
+            for (FileStatus status : statuses) {
+              DumpMetaData dmd = new DumpMetaData(status.getPath(), conf);
+              if (dmd.isIncrementalDump()
+                      && Long.parseLong(currentReplStatusOfTarget.trim()) < dmd.getEventTo()) {
+                return status.getPath();
+              }
+            }
+          }
+        }
+      } else {
+        //If dbname is null(in case of repl load *), can't get repl status of target, return unsupported
+        throw new UnsupportedOperationException("REPL LOAD * is not supported");
+      }
+    }
+    return null;
   }
 
   private List<DirCopyWork> dirLocationsToCopy(Path loadPath, boolean isIncrementalPhase)
@@ -466,10 +519,15 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private void analyzeReplStatus(ASTNode ast) throws SemanticException {
     initReplStatus(ast);
-
     String dbNameOrPattern = replScope.getDbName();
-    String replLastId = null;
+    String replLastId = getReplStatus(dbNameOrPattern);
+    prepareReturnValues(Collections.singletonList(replLastId), "last_repl_id#string");
+    setFetchTask(createFetchTask("last_repl_id#string"));
+    LOG.debug("ReplicationSemanticAnalyzer.analyzeReplStatus: writing repl.last.id={} out to {} using configuration {}",
+        replLastId, ctx.getResFile(), conf);
+  }
 
+  private String getReplStatus(String dbNameOrPattern) throws SemanticException {
     try {
       // Checking for status of a db
       Database database = db.getDatabase(dbNameOrPattern);
@@ -477,18 +535,14 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         inputs.add(new ReadEntity(database));
         Map<String, String> params = database.getParameters();
         if (params != null && (params.containsKey(ReplicationSpec.KEY.CURR_STATE_ID.toString()))) {
-          replLastId = params.get(ReplicationSpec.KEY.CURR_STATE_ID.toString());
+          return params.get(ReplicationSpec.KEY.CURR_STATE_ID.toString());
         }
       }
     } catch (HiveException e) {
       throw new SemanticException(e); // TODO : simple wrap & rethrow for now, clean up with error
-                                      // codes
+      // codes
     }
-
-    prepareReturnValues(Collections.singletonList(replLastId), "last_repl_id#string");
-    setFetchTask(createFetchTask("last_repl_id#string"));
-    LOG.debug("ReplicationSemanticAnalyzer.analyzeReplStatus: writing repl.last.id={} out to {}",
-        replLastId, ctx.getResFile(), conf);
+    return null;
   }
 
   private void prepareReturnValues(List<String> values, String schema) throws SemanticException {

@@ -265,11 +265,11 @@ public class ReplicationTestUtils {
                                                               List<String> selectStmtList,
                                                   List<String[]> expectedValues, String lastReplId) throws Throwable {
     WarehouseInstance.Tuple incrementalDump = primary.dump(primaryDbName);
-    replica.loadWithoutExplain(replicatedDbName, incrementalDump.dumpLocation)
+    replica.loadWithoutExplain(replicatedDbName, primaryDbName)
             .run("REPL STATUS " + replicatedDbName).verifyResult(incrementalDump.lastReplicationId);
     verifyResultsInReplica(replica, replicatedDbName, selectStmtList, expectedValues);
 
-    replica.loadWithoutExplain(replicatedDbName, incrementalDump.dumpLocation)
+    replica.loadWithoutExplain(replicatedDbName, primaryDbName)
             .run("REPL STATUS " + replicatedDbName).verifyResult(incrementalDump.lastReplicationId);
     verifyResultsInReplica(replica, replicatedDbName, selectStmtList, expectedValues);
     return incrementalDump;

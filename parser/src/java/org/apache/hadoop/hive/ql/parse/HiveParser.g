@@ -924,12 +924,8 @@ replDumpStatement
       : KW_REPL KW_DUMP
         (dbPolicy=replDbPolicy)
         (KW_REPLACE oldDbPolicy=replDbPolicy)?
-        (KW_FROM (eventId=Number)
-          (KW_TO (rangeEnd=Number))?
-          (KW_LIMIT (batchSize=Number))?
-        )?
         (KW_WITH replConf=replConfigs)?
-    -> ^(TOK_REPL_DUMP $dbPolicy ^(TOK_REPLACE $oldDbPolicy)? ^(TOK_FROM $eventId (TOK_TO $rangeEnd)? (TOK_LIMIT $batchSize)?)? $replConf?)
+    -> ^(TOK_REPL_DUMP $dbPolicy ^(TOK_REPLACE $oldDbPolicy)? $replConf?)
     ;
 
 replDbPolicy
@@ -943,10 +939,10 @@ replLoadStatement
 @init { pushMsg("Replication load statement", state); }
 @after { popMsg(state); }
       : KW_REPL KW_LOAD
-        (dbName=identifier)?
-        KW_FROM (path=StringLiteral)
-        (KW_WITH replConf=replConfigs)?
-      -> ^(TOK_REPL_LOAD $path ^(TOK_DBNAME $dbName)? $replConf?)
+      (sourceDbPolicy=replDbPolicy)
+      (KW_INTO dbName=identifier)?
+      (KW_WITH replConf=replConfigs)?
+      -> ^(TOK_REPL_LOAD $sourceDbPolicy ^(TOK_DBNAME $dbName)? $replConf?)
       ;
 
 replConfigs

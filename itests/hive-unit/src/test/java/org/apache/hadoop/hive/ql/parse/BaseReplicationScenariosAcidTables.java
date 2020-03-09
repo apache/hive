@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
 import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.ql.DriverFactory;
@@ -87,6 +88,7 @@ public class BaseReplicationScenariosAcidTables {
     acidEnableConf.putAll(overrides);
 
     primary = new WarehouseInstance(LOG, miniDFSCluster, acidEnableConf);
+    acidEnableConf.put(MetastoreConf.ConfVars.REPLDIR.getHiveName(), primary.repldDir);
     replica = new WarehouseInstance(LOG, miniDFSCluster, acidEnableConf);
     HashMap<String, String> overridesForHiveConf1 = new HashMap<String, String>() {{
         put("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
@@ -94,6 +96,7 @@ public class BaseReplicationScenariosAcidTables {
         put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager");
         put("hive.metastore.client.capability.check", "false");
     }};
+    overridesForHiveConf1.put(MetastoreConf.ConfVars.REPLDIR.getHiveName(), primary.repldDir);
     replicaNonAcid = new WarehouseInstance(LOG, miniDFSCluster, overridesForHiveConf1);
   }
 

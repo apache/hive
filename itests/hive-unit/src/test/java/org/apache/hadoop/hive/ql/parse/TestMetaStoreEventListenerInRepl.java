@@ -84,6 +84,7 @@ public class TestMetaStoreEventListenerInRepl {
     }};
 
     primary = new WarehouseInstance(LOG, miniDFSCluster, conf);
+    conf.put(MetastoreConf.ConfVars.REPLDIR.getHiveName(), primary.repldDir);
     replica = new WarehouseInstance(LOG, miniDFSCluster, conf);
   }
 
@@ -172,26 +173,26 @@ public class TestMetaStoreEventListenerInRepl {
   @Test
   public void testReplEvents() throws Throwable {
     Map<String, Set<String>> eventsMap = prepareBootstrapData(primaryDbName);
-    WarehouseInstance.Tuple bootstrapDump = primary.run("use " + primaryDbName)
+    primary.run("use " + primaryDbName)
             .dump(primaryDbName);
-    replica.load(replicatedDbName, bootstrapDump.dumpLocation);
+    replica.load(replicatedDbName, primaryDbName);
     ReplMetaStoreEventListenerTestImpl.checkEventSanity(eventsMap, replicatedDbName);
     ReplMetaStoreEventListenerTestImpl.clearSanityData();
 
     eventsMap = prepareIncData(primaryDbName);
     LOG.info(testName.getMethodName() + ": first incremental dump and load.");
-    WarehouseInstance.Tuple incDump = primary.run("use " + primaryDbName)
+    primary.run("use " + primaryDbName)
             .dump(primaryDbName);
-    replica.load(replicatedDbName, incDump.dumpLocation);
+    replica.load(replicatedDbName, primaryDbName);
     ReplMetaStoreEventListenerTestImpl.checkEventSanity(eventsMap, replicatedDbName);
     ReplMetaStoreEventListenerTestImpl.clearSanityData();
 
     // Second incremental, after bootstrap
     eventsMap = prepareInc2Data(primaryDbName);
     LOG.info(testName.getMethodName() + ": second incremental dump and load.");
-    WarehouseInstance.Tuple inc2Dump = primary.run("use " + primaryDbName)
+    primary.run("use " + primaryDbName)
             .dump(primaryDbName);
-    replica.load(replicatedDbName, inc2Dump.dumpLocation);
+    replica.load(replicatedDbName, primaryDbName);
     ReplMetaStoreEventListenerTestImpl.checkEventSanity(eventsMap, replicatedDbName);
     ReplMetaStoreEventListenerTestImpl.clearSanityData();
   }

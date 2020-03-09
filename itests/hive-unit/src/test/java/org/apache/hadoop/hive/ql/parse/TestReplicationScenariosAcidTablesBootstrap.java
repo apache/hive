@@ -68,7 +68,7 @@ public class TestReplicationScenariosAcidTablesBootstrap
     WarehouseInstance.Tuple bootstrapDump = prepareDataAndDump(primaryDbName,
             dumpWithoutAcidClause);
     LOG.info(testName.getMethodName() + ": loading dump without acid tables.");
-    replica.load(replicatedDbName, bootstrapDump.dumpLocation);
+    replica.load(replicatedDbName, primaryDbName);
     verifyLoadExecution(replicatedDbName, bootstrapDump.lastReplicationId, false);
 
     // Take a incremental dump with acid table bootstrap
@@ -77,7 +77,7 @@ public class TestReplicationScenariosAcidTablesBootstrap
     LOG.info(testName.getMethodName() + ": incremental dump and load dump with acid table bootstrap.");
     WarehouseInstance.Tuple incrementalDump = primary.run("use " + primaryDbName)
             .dump(primaryDbName, dumpWithAcidBootstrapClause);
-    replica.load(replicatedDbName, incrementalDump.dumpLocation);
+    replica.load(replicatedDbName, primaryDbName);
     verifyIncLoad(replicatedDbName, incrementalDump.lastReplicationId);
     // Ckpt should be set on bootstrapped tables.
     replica.verifyIfCkptSetForTables(replicatedDbName, acidTableNames, incrementalDump.dumpLocation);
@@ -90,7 +90,7 @@ public class TestReplicationScenariosAcidTablesBootstrap
             "bootstrap.");
     WarehouseInstance.Tuple inc2Dump = primary.run("use " + primaryDbName)
             .dump(primaryDbName);
-    replica.load(replicatedDbName, inc2Dump.dumpLocation);
+    replica.load(replicatedDbName, primaryDbName);
     verifyInc2Load(replicatedDbName, inc2Dump.lastReplicationId);
   }
 
@@ -99,7 +99,7 @@ public class TestReplicationScenariosAcidTablesBootstrap
     WarehouseInstance.Tuple bootstrapDump = prepareDataAndDump(primaryDbName,
             dumpWithoutAcidClause);
     LOG.info(testName.getMethodName() + ": loading dump without acid tables.");
-    replica.load(replicatedDbName, bootstrapDump.dumpLocation);
+    replica.load(replicatedDbName, primaryDbName);
     verifyLoadExecution(replicatedDbName, bootstrapDump.lastReplicationId, false);
 
     prepareIncAcidData(primaryDbName);
@@ -129,7 +129,7 @@ public class TestReplicationScenariosAcidTablesBootstrap
     try {
       LOG.info(testName.getMethodName()
               + ": loading first incremental dump with acid table bootstrap (will fail)");
-      replica.loadFailure(replicatedDbName, incDump.dumpLocation);
+      replica.loadFailure(replicatedDbName, primaryDbName);
       callerVerifier.assertInjectionsPerformed(true, false);
     } finally {
       InjectableBehaviourObjectStore.resetAlterTableModifier();
@@ -149,7 +149,7 @@ public class TestReplicationScenariosAcidTablesBootstrap
     LOG.info(testName.getMethodName()
             + ": trying to load second incremental dump with wrong bootstrap dump "
             + " specified for cleaning ACID tables. Should fail.");
-    replica.loadFailure(replicatedDbName, inc2Dump.dumpLocation, loadWithClause);
+    replica.loadFailure(replicatedDbName, primaryDbName, loadWithClause);
 
     // Set previously failed bootstrap dump to clean-up. Now, new bootstrap should overwrite the old one.
     loadWithClause = Collections.singletonList(
@@ -159,7 +159,7 @@ public class TestReplicationScenariosAcidTablesBootstrap
     LOG.info(testName.getMethodName()
             + ": trying to load second incremental dump with correct bootstrap dump "
             + "specified for cleaning ACID tables. Should succeed.");
-    replica.load(replicatedDbName, inc2Dump.dumpLocation, loadWithClause);
+    replica.load(replicatedDbName, primaryDbName, loadWithClause);
     verifyInc2Load(replicatedDbName, inc2Dump.lastReplicationId);
 
     // Once the REPL LOAD is successful, the this config should be unset or else, the subsequent REPL LOAD
@@ -170,7 +170,7 @@ public class TestReplicationScenariosAcidTablesBootstrap
     LOG.info(testName.getMethodName()
             + ": trying to load second incremental dump (with acid bootstrap) again."
             + " Should succeed.");
-    replica.load(replicatedDbName, inc2Dump.dumpLocation, loadWithClause);
+    replica.load(replicatedDbName, primaryDbName, loadWithClause);
     verifyInc2Load(replicatedDbName, inc2Dump.lastReplicationId);
   }
 
@@ -178,7 +178,7 @@ public class TestReplicationScenariosAcidTablesBootstrap
   public void retryIncBootstrapAcidFromDifferentDumpWithoutCleanTablesConfig() throws Throwable {
     WarehouseInstance.Tuple bootstrapDump = prepareDataAndDump(primaryDbName,
             dumpWithoutAcidClause);
-    replica.load(replicatedDbName, bootstrapDump.dumpLocation);
+    replica.load(replicatedDbName, primaryDbName);
 
     prepareIncAcidData(primaryDbName);
     prepareIncNonAcidData(primaryDbName);
@@ -186,10 +186,10 @@ public class TestReplicationScenariosAcidTablesBootstrap
             .dump(primaryDbName, dumpWithAcidBootstrapClause);
     WarehouseInstance.Tuple inc2Dump = primary.run("use " + primaryDbName)
             .dump(primaryDbName, dumpWithAcidBootstrapClause);
-    replica.load(replicatedDbName, incDump.dumpLocation);
+    replica.load(replicatedDbName, primaryDbName);
 
     // Re-bootstrapping from different bootstrap dump without clean tables config should fail.
-    replica.loadFailure(replicatedDbName, inc2Dump.dumpLocation, Collections.emptyList(),
+    replica.loadFailure(replicatedDbName, primaryDbName, Collections.emptyList(),
             ErrorMsg.REPL_BOOTSTRAP_LOAD_PATH_NOT_VALID.getErrorCode());
   }
 
@@ -199,7 +199,7 @@ public class TestReplicationScenariosAcidTablesBootstrap
     WarehouseInstance.Tuple bootstrapDump = prepareDataAndDump(primaryDbName,
                                                                 dumpWithoutAcidClause);
     LOG.info(testName.getMethodName() + ": loading dump without acid tables.");
-    replica.load(replicatedDbName, bootstrapDump.dumpLocation);
+    replica.load(replicatedDbName, primaryDbName);
 
     // Open concurrent transactions, create data for incremental and take an incremental dump
     // with ACID table bootstrap.
@@ -232,7 +232,7 @@ public class TestReplicationScenariosAcidTablesBootstrap
     // tables t1 and t2
     HiveConf replicaConf = replica.getConf();
     LOG.info(testName.getMethodName() + ": loading incremental dump with ACID bootstrap.");
-    replica.load(replicatedDbName, incDump.dumpLocation);
+    replica.load(replicatedDbName, primaryDbName);
     verifyIncLoad(replicatedDbName, incDump.lastReplicationId);
     // Verify if HWM is properly set after REPL LOAD
     verifyNextId(tables, replicatedDbName, replicaConf);
@@ -257,7 +257,7 @@ public class TestReplicationScenariosAcidTablesBootstrap
     WarehouseInstance.Tuple bootstrapDump = prepareDataAndDump(primaryDbName,
                                                                 dumpWithoutAcidClause);
     LOG.info(testName.getMethodName() + ": loading dump without acid tables.");
-    replica.load(replicatedDbName, bootstrapDump.dumpLocation);
+    replica.load(replicatedDbName, primaryDbName);
 
     // Create incremental data for incremental load with bootstrap of ACID
     prepareIncNonAcidData(primaryDbName);
@@ -315,7 +315,7 @@ public class TestReplicationScenariosAcidTablesBootstrap
     // write. So concurrent writes won't be dumped.
     LOG.info(testName.getMethodName() +
             ": loading incremental dump containing bootstrapped ACID tables.");
-    replica.load(replicatedDbName, incDump.dumpLocation);
+    replica.load(replicatedDbName, primaryDbName);
     verifyIncLoad(replicatedDbName, incDump.lastReplicationId);
 
     // Next Incremental should include the concurrent writes
@@ -324,7 +324,7 @@ public class TestReplicationScenariosAcidTablesBootstrap
     WarehouseInstance.Tuple inc2Dump = primary.dump(primaryDbName);
     LOG.info(testName.getMethodName() +
             ": loading second normal incremental dump from event id = " + incDump.lastReplicationId);
-    replica.load(replicatedDbName, inc2Dump.dumpLocation);
+    replica.load(replicatedDbName, primaryDbName);
     verifyInc2Load(replicatedDbName, inc2Dump.lastReplicationId);
   }
 }
