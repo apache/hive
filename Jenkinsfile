@@ -67,8 +67,8 @@ properties([
 
 
 
-stage('Prepare') {
 node(POD_LABEL) {
+stage('Prepare') {
   container('maven') {
     // FIXME can this be moved outside?
     configFileProvider([configFile(fileId: 'artifactory', variable: 'SETTINGS')]) {
@@ -109,7 +109,7 @@ du -h --max-depth=1
   }
   }
 }
-}
+
 
 
 
@@ -137,6 +137,7 @@ du -h --max-depth=1
   })
 }
 
+}
 
 
 //jenkins/jnlp-slave:3.27-1
