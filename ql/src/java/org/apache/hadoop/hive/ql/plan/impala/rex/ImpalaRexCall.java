@@ -93,6 +93,14 @@ public class ImpalaRexCall {
       case IS_NOT_NULL:
         Preconditions.checkState(params.size() == 1);
         return new ImpalaIsNullExpr(analyzer, fn, params.get(0), true, impalaRetType);
+      case EXTRACT:
+        // for specific extract functions (e.g.year, month), we ignore the first redundant
+        // "SYMBOL" parameter
+        if (!funcName.equals("extract")) {
+          return new ImpalaFunctionCallExpr(analyzer, fn, params.subList(1,2), rexCall, impalaRetType);
+        }
+        // CDPD-8867: normal 'extract function currently uses default ImpalaFunctionCallExpr
+        break;
     }
     return new ImpalaFunctionCallExpr(analyzer, fn, params, rexCall, impalaRetType);
   }

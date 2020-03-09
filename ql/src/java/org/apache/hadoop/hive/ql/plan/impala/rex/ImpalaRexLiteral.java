@@ -60,6 +60,8 @@ public class ImpalaRexLiteral {
           String dateString = (dateStringClass == null) ? null : dateStringClass.toString();
           return new ImpalaDateLiteral(analyzer, rexLiteral.getValueAs(Integer.class),
               dateString);
+        case SYMBOL:
+          return new ImpalaStringLiteral(analyzer, rexLiteral.getValue().toString());
         default:
           throw new HiveException("Unsupported RexLiteral: " + rexLiteral.getTypeName());
       }

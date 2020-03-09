@@ -56,6 +56,13 @@ public class ImpalaFunctionSignatureFactory {
 
   static public ImpalaFunctionSignature create(SqlKind kind, String func, List<SqlTypeName> argTypes,
       SqlTypeName retType) throws HiveException {
-    return new DefaultFunctionSignature(func, argTypes, retType, false);
+    switch(kind) {
+      case CAST:
+        return new CastFunctionSignature(argTypes, retType);
+      case EXTRACT:
+        return new ExtractFunctionSignature(func, argTypes, retType);
+      default:
+        return new DefaultFunctionSignature(func, argTypes, retType, false);
+    }
   }
 }
