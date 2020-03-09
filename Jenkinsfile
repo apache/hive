@@ -1,12 +1,10 @@
 def executorNode(run) {
-  stage("An Executor") {
     node(POD_LABEL) {
       container('maven') {
         timestamps {
           run()
         }
       }
-    }
   }
 }
 
@@ -60,7 +58,7 @@ spec:
 properties([
     parameters([
         string(name: 'SPLIT', defaultValue: '3', description: 'Number of buckets to split tests into.'),
-        string(name: 'OPTS', defaultValue: '', description: 'additional maven opts')
+        string(name: 'OPTS', defaultValue: '-pl ql -am', description: 'additional maven opts')
     ])
 ])
 
@@ -129,7 +127,7 @@ if [ -s inclusions.txt ]; then OPTS+=" -Dsurefire.includesFile=$PWD/inclusions.t
 if [ -s exclusions.txt ]; then OPTS+=" -Dsurefire.excludesFile=$PWD/exclusions.txt";fi
 OPTS+=" -Dmaven.repo.local=$PWD/.m2"
 OPTS+=" $M_OPTS "
-mvn $OPTS -pl ql -am
+mvn $OPTS
 du -h --max-depth=1
 '''
       }
