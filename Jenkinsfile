@@ -67,6 +67,7 @@ properties([
 
 
 
+stage('Prepare') {
 node(POD_LABEL) {
   container('maven') {
     // FIXME can this be moved outside?
@@ -88,6 +89,9 @@ use chroot = false
 EOF
 cat rsyncd.conf
 '''
+
+stage('Compile') {
+
   // FIXME: dup
     sh '''#!/bin/bash -e
 OPTS=" -s $SETTINGS -B install -Dmaven.test.failure.ignore -Dtest.groups= "
@@ -98,11 +102,13 @@ OPTS+=" $M_OPTS "
 mvn $OPTS -Dtest=noMatches
 du -h --max-depth=1
 '''
+    }
     sh '''rsync --daemon --config=rsyncd.conf --port 9873'''
 
   }
   }
   }
+}
 }
 
 
