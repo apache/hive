@@ -70,6 +70,7 @@ properties([
 node(POD_LABEL) {
   container('maven') {
     // FIXME can this be moved outside?
+    configFileProvider([configFile(fileId: 'artifactory', variable: 'SETTINGS')]) {
     withEnv(["MULTIPLIER=$params.MULTIPLIER","M_OPTS=$params.OPTS"]) {
 
     checkout scm
@@ -99,6 +100,7 @@ du -h --max-depth=1
 '''
     sh '''rsync --daemon --config=rsyncd.conf --port 9873'''
 
+  }
   }
   }
 }
