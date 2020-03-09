@@ -4245,7 +4245,7 @@
     },
     {
         "impalaFnName": "in_set_lookup",
-        "fnName": "in_set_lookup",
+        "fnName": "in",
         "userVisible": "false",
         "isAgg": "false",
         "closeFnSymbol": "_ZN6impala11InPredicate22SetLookupClose_booleanEPN10impala_udf15FunctionContextENS2_18FunctionStateScopeE",
@@ -4313,7 +4313,7 @@
     },
     {
         "impalaFnName": "in_set_lookup",
-        "fnName": "in_set_lookup",
+        "fnName": "in",
         "userVisible": "false",
         "isAgg": "false",
         "closeFnSymbol": "_ZN6impala11InPredicate22SetLookupClose_tinyintEPN10impala_udf15FunctionContextENS2_18FunctionStateScopeE",
@@ -4381,7 +4381,7 @@
     },
     {
         "impalaFnName": "in_set_lookup",
-        "fnName": "in_set_lookup",
+        "fnName": "in",
         "userVisible": "false",
         "isAgg": "false",
         "closeFnSymbol": "_ZN6impala11InPredicate23SetLookupClose_smallintEPN10impala_udf15FunctionContextENS2_18FunctionStateScopeE",
@@ -4449,7 +4449,7 @@
     },
     {
         "impalaFnName": "in_set_lookup",
-        "fnName": "in_set_lookup",
+        "fnName": "in",
         "userVisible": "false",
         "isAgg": "false",
         "closeFnSymbol": "_ZN6impala11InPredicate18SetLookupClose_intEPN10impala_udf15FunctionContextENS2_18FunctionStateScopeE",
@@ -4517,7 +4517,7 @@
     },
     {
         "impalaFnName": "in_set_lookup",
-        "fnName": "in_set_lookup",
+        "fnName": "in",
         "userVisible": "false",
         "isAgg": "false",
         "closeFnSymbol": "_ZN6impala11InPredicate21SetLookupClose_bigintEPN10impala_udf15FunctionContextENS2_18FunctionStateScopeE",
@@ -4585,7 +4585,7 @@
     },
     {
         "impalaFnName": "in_set_lookup",
-        "fnName": "in_set_lookup",
+        "fnName": "in",
         "userVisible": "false",
         "isAgg": "false",
         "closeFnSymbol": "_ZN6impala11InPredicate20SetLookupClose_floatEPN10impala_udf15FunctionContextENS2_18FunctionStateScopeE",
@@ -4653,7 +4653,7 @@
     },
     {
         "impalaFnName": "in_set_lookup",
-        "fnName": "in_set_lookup",
+        "fnName": "in",
         "userVisible": "false",
         "isAgg": "false",
         "closeFnSymbol": "_ZN6impala11InPredicate21SetLookupClose_doubleEPN10impala_udf15FunctionContextENS2_18FunctionStateScopeE",
@@ -4721,7 +4721,7 @@
     },
     {
         "impalaFnName": "in_set_lookup",
-        "fnName": "in_set_lookup",
+        "fnName": "in",
         "userVisible": "false",
         "isAgg": "false",
         "closeFnSymbol": "_ZN6impala11InPredicate21SetLookupClose_stringEPN10impala_udf15FunctionContextENS2_18FunctionStateScopeE",
@@ -4789,7 +4789,7 @@
     },
     {
         "impalaFnName": "in_set_lookup",
-        "fnName": "in_set_lookup",
+        "fnName": "in",
         "userVisible": "false",
         "isAgg": "false",
         "closeFnSymbol": "_ZN6impala11InPredicate21SetLookupClose_stringEPN10impala_udf15FunctionContextENS2_18FunctionStateScopeE",
@@ -4857,7 +4857,7 @@
     },
     {
         "impalaFnName": "in_set_lookup",
-        "fnName": "in_set_lookup",
+        "fnName": "in",
         "userVisible": "false",
         "isAgg": "false",
         "closeFnSymbol": "_ZN6impala11InPredicate24SetLookupClose_timestampEPN10impala_udf15FunctionContextENS2_18FunctionStateScopeE",
@@ -4925,7 +4925,7 @@
     },
     {
         "impalaFnName": "in_set_lookup",
-        "fnName": "in_set_lookup",
+        "fnName": "in",
         "userVisible": "false",
         "isAgg": "false",
         "closeFnSymbol": "_ZN6impala11InPredicate22SetLookupClose_decimalEPN10impala_udf15FunctionContextENS2_18FunctionStateScopeE",
@@ -4993,7 +4993,7 @@
     },
     {
         "impalaFnName": "in_set_lookup",
-        "fnName": "in_set_lookup",
+        "fnName": "in",
         "userVisible": "false",
         "isAgg": "false",
         "closeFnSymbol": "_ZN6impala11InPredicate19SetLookupClose_dateEPN10impala_udf15FunctionContextENS2_18FunctionStateScopeE",
