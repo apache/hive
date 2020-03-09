@@ -10,10 +10,11 @@ def executorNode(run) {
   }
 }
 
+// FIXME decomission this method
 def testInParallel(parallelism, inclusionsFile, exclusionsFile, results, image, prepare, run) {
   def splits
-  node {
-    splits = splitTests parallelism: parallelism, generateInclusions: true, estimateTestsFromFiles: false
+  container('maven') {
+    splits = splitTests parallelism: parallelism, generateInclusions: true, estimateTestsFromFiles: true
   }
   def branches = [:]
   for (int i = 0; i < splits.size(); i++) {
@@ -58,68 +59,71 @@ spec:
 
 properties([
     parameters([
-        string(name: 'MULTIPLIER', defaultValue: '1', description: 'Factor by which to artificially slow down tests.'),
-        string(name: 'SPLIT', defaultValue: '5', description: 'Number of buckets to split tests into.'),
+        string(name: 'SPLIT', defaultValue: '3', description: 'Number of buckets to split tests into.'),
         string(name: 'OPTS', defaultValue: '', description: 'additional maven opts')
     ])
 ])
 
 
 
-/*
+
 node(POD_LABEL) {
   container('maven') {
-  	sh 'ls -l'
+    // FIXME can this be moved outside?
+    withEnv(["MULTIPLIER=$params.MULTIPLIER","M_OPTS=$params.OPTS"]) {
+
+    checkout scm
+    sh '''printf 'env.S="%s"' "`hostname -i`" >> /home/jenkins/agent/load.props'''
+    sh '''cat /home/jenkins/agent/load.props'''
+    load '/home/jenkins/agent/load.props'
+    sh 'df -h'
+    sh '''echo S==$S'''
+    sh '''cat << EOF > rsyncd.conf
+[ws]
+path = $PWD
+read only = true
+timeout = 300
+use chroot = false
+EOF
+cat rsyncd.conf
+'''
+    sh 'git clone https://github.com/apache/hive'
+
+  // FIXME: dup
+    sh '''#!/bin/bash -e
+OPTS=" -s $SETTINGS -B install -Dmaven.test.failure.ignore -Dtest.groups= "
+OPTS+=" -Pitests -Pqsplits"
+OPTS+=" -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugin.surefire.SurefirePlugin=INFO"
+OPTS+=" -Dmaven.repo.local=$PWD/.m2"
+OPTS+=" $M_OPTS "
+mvn $OPTS -Dtest=noMatches
+du -h --max-depth=1
+'''
+    sh '''rsync --daemon --config=rsyncd.conf --port 9873'''
+
+  }
   }
 }
-*/
+
+
 
 stage('Testing') {
   testInParallel(count(Integer.parseInt(params.SPLIT)), 'inclusions.txt', 'exclusions.txt', '**/target/surefire-reports/TEST-*.xml', 'maven:3.5.0-jdk-8', {
-//        sh 'git clone -b pipe1 https://github.com/kgyrtkirk/pipeline-test'
-    checkout scm
-//    unstash 'sources'
+    sh  'rsync -arvv --stats rsync://$S:9873/ws .'
+    sh 'du -h --max-depth=1'
   }, {
     configFileProvider([configFile(fileId: 'artifactory', variable: 'SETTINGS')]) {
-      withEnv(["MULTIPLIER=$params.MULTIPLIER","M_OPTS=$params.OPTS"]) {
-      stage('build1') {
-        sh '''#!/bin/bash -e
-OPTS=" -s $SETTINGS -B install -Dmaven.test.failure.ignore -Dtest.groups= "
-#OPTS+="-pl ql -am "
-OPTS+=" -Dmaven.repo.local=$PWD/.m2"
-OPTS+=" $M_OPTS "
-mvn $OPTS
-'''
-      }
-      stage('build2') {
-        sh '''#!/bin/bash -e
-OPTS=" -s $SETTINGS -B install -Dmaven.test.failure.ignore -Dtest.groups= "
-#OPTS+="-pl ql -am "
-OPTS+=" -Dmaven.repo.local=$PWD/.m2"
-OPTS+=" $M_OPTS "
-mvn $OPTS
-'''
-      }
-      stage('test1') {
-        sh '''#!/bin/bash -e
-OPTS=" -s $SETTINGS -B test -Dmaven.test.failure.ignore -Dtest.groups= "
-#OPTS+="-pl ql -am "
-OPTS+=" -Dmaven.repo.local=$PWD/.m2"
-OPTS+=" $M_OPTS "
-mvn $OPTS
-'''
-      }
-      }
 
       withEnv(["MULTIPLIER=$params.MULTIPLIER","M_OPTS=$params.OPTS"]) {
         sh '''#!/bin/bash -e
 OPTS=" -s $SETTINGS -B install -Dmaven.test.failure.ignore -Dtest.groups= "
-#OPTS+="-pl ql -am "
+OPTS+=" -Pitests -Pqsplits"
+OPTS+=" -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugin.surefire.SurefirePlugin=INFO"
 if [ -s inclusions.txt ]; then OPTS+=" -Dsurefire.includesFile=$PWD/inclusions.txt";fi
 if [ -s exclusions.txt ]; then OPTS+=" -Dsurefire.excludesFile=$PWD/exclusions.txt";fi
 OPTS+=" -Dmaven.repo.local=$PWD/.m2"
 OPTS+=" $M_OPTS "
-mvn $OPTS
+mvn $OPTS -pl ql -am
 du -h --max-depth=1
 '''
       }
