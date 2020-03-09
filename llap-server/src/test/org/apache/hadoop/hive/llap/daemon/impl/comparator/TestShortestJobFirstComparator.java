@@ -200,9 +200,9 @@ public class TestShortestJobFirstComparator {
 
   @Test(timeout = 60000)
   public void testWaitQueueComparatorWithinSameDagPriority() throws InterruptedException {
-    TaskWrapper r1 = createTaskWrapper(createSubmitWorkRequestProto(1, 1, 0, 10, 100, 10), true, 100000);
-    TaskWrapper r2 = createTaskWrapper(createSubmitWorkRequestProto(2, 1, 0, 10, 100, 10), true, 100000);
-    TaskWrapper r3 = createTaskWrapper(createSubmitWorkRequestProto(3, 1, 0, 10, 100, 10), true, 100000);
+    TaskWrapper r1 = createTaskWrapper(createSubmitWorkRequestProto(1, 1, 0, 10, 1, 10), true, 100000);
+    TaskWrapper r2 = createTaskWrapper(createSubmitWorkRequestProto(2, 1, 0, 10, 2, 10), true, 100000);
+    TaskWrapper r3 = createTaskWrapper(createSubmitWorkRequestProto(3, 1, 0, 10, 3, 10), true, 100000);
 
     EvictingPriorityBlockingQueue<TaskWrapper> queue = new EvictingPriorityBlockingQueue<>(
         new ShortestJobFirstComparator(), 3);
@@ -214,6 +214,16 @@ public class TestShortestJobFirstComparator {
     // can not queue more requests as queue is full
     TaskWrapper r4 = createTaskWrapper(createSubmitWorkRequestProto(4, 1, 0, 10, 100, 10), true, 100000);
     assertEquals(r4, queue.offer(r4, 0));
+
+    // add a task with currentAttemptStartTime lesser than existing tasks
+    TaskWrapper r0 = createTaskWrapper(createSubmitWorkRequestProto(0, 1, 0, 10, 0, 10), true, 100000);
+    assertEquals(r3, queue.offer(r0, 0));
+    // ensure that R0 is picked up as it started much earlier.
+    assertEquals(r0, queue.take());
+
+    // other tasks
+    assertEquals(r1, queue.take());
+    assertEquals(r2, queue.take());
   }
 
   @Test(timeout = 60000)
