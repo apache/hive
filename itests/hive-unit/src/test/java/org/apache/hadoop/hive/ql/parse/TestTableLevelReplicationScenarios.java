@@ -153,7 +153,8 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     if (lastReplId == null) {
       replica.run("drop database if exists " + replicatedDbName + " cascade");
     }
-    WarehouseInstance.Tuple tuple = primary.dump(replPolicy, oldReplPolicy, lastReplId, dumpWithClause);
+
+    WarehouseInstance.Tuple tuple = primary.dump(replPolicy, oldReplPolicy, dumpWithClause);
 
     if (bootstrappedTables != null) {
       verifyBootstrapDirInIncrementalDump(tuple.dumpLocation, bootstrappedTables);
@@ -176,6 +177,51 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
               .run("select a from " + table)
               .verifyResults(records);
     }
+    return tuple.lastReplicationId;
+  }
+
+  private String replicateAndVerifyClearDump(String replPolicy, String oldReplPolicy, String lastReplId,
+                                    List<String> dumpWithClause,
+                                    List<String> loadWithClause,
+                                    String[] bootstrappedTables,
+                                    String[] expectedTables,
+                                    String[] records) throws Throwable {
+    if (dumpWithClause == null) {
+      dumpWithClause = new ArrayList<>();
+    }
+    if (loadWithClause == null) {
+      loadWithClause = new ArrayList<>();
+    }
+
+    // For bootstrap replication, drop the target database before triggering it.
+    if (lastReplId == null) {
+      replica.run("drop database if exists " + replicatedDbName + " cascade");
+    }
+
+    WarehouseInstance.Tuple tuple = primary.dump(replPolicy, oldReplPolicy, dumpWithClause);
+
+    if (bootstrappedTables != null) {
+      verifyBootstrapDirInIncrementalDump(tuple.dumpLocation, bootstrappedTables);
+    }
+
+    // If the policy contains '.'' means its table level replication.
+    verifyTableListForPolicy(tuple.dumpLocation, replPolicy.contains(".'") ? expectedTables : null);
+
+    replica.load(replicatedDbName, tuple.dumpLocation, loadWithClause)
+            .run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(expectedTables)
+            .verifyReplTargetProperty(replicatedDbName);
+
+    if (records == null) {
+      records = new String[] {"1"};
+    }
+    for (String table : expectedTables) {
+      replica.run("use " + replicatedDbName)
+              .run("select a from " + table)
+              .verifyResults(records);
+    }
+    new Path(tuple.dumpLocation).getFileSystem(conf).delete(new Path(tuple.dumpLocation), true);
     return tuple.lastReplicationId;
   }
 
@@ -263,7 +309,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
   @Test
   public void testBasicIncrementalWithIncludeList() throws Throwable {
     WarehouseInstance.Tuple tupleBootstrap = primary.run("use " + primaryDbName)
-            .dump(primaryDbName, null);
+            .dump(primaryDbName);
     replica.load(replicatedDbName, tupleBootstrap.dumpLocation);
 
     String[] originalNonAcidTables = new String[] {"t1", "t2"};
@@ -282,7 +328,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
   @Test
   public void testBasicIncrementalWithIncludeAndExcludeList() throws Throwable {
     WarehouseInstance.Tuple tupleBootstrap = primary.run("use " + primaryDbName)
-            .dump(primaryDbName, null);
+            .dump(primaryDbName);
     replica.load(replicatedDbName, tupleBootstrap.dumpLocation);
 
     String[] originalTables = new String[] {"t1", "t11", "t2", "t3", "t111"};
@@ -326,7 +372,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     // Test incremental replication with invalid replication policies in REPLACE clause.
     String replPolicy = primaryDbName;
     WarehouseInstance.Tuple tupleBootstrap = primary.run("use " + primaryDbName)
-            .dump(primaryDbName, null);
+            .dump(primaryDbName);
     replica.load(replicatedDbName, tupleBootstrap.dumpLocation);
     String lastReplId = tupleBootstrap.lastReplicationId;
     for (String oldReplPolicy : invalidReplPolicies) {
@@ -386,7 +432,8 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
 
     // Replicate and verify if all 3 tables are replicated to target.
     for (String replPolicy : fullDbReplPolicies) {
-      replicateAndVerify(replPolicy, null, null, null, originalTables);
+      replicateAndVerifyClearDump(replPolicy, null, null, null,
+              null, null, originalTables, null);
     }
   }
 
@@ -447,7 +494,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     String replPolicy = primaryDbName + ".'(a[0-9]+)|(b2)'.'a1'";
     String[] replicatedTables = new String[] {"a2", "b2"};
     WarehouseInstance.Tuple tuple = primary.run("use " + primaryDbName)
-            .dump(replPolicy, null, dumpWithClause);
+            .dump(replPolicy, dumpWithClause);
 
     // the _external_tables_file info should be created as external tables are to be replicated.
     Assert.assertTrue(primary.miniDFSCluster.getFileSystem()
@@ -486,7 +533,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     dumpWithClause = Arrays.asList("'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='true'",
             "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES.varname + "'='true'");
     WarehouseInstance.Tuple tuple = primary.run("use " + primaryDbName)
-            .dump(replPolicy, lastReplId, dumpWithClause);
+            .dump(replPolicy, dumpWithClause);
 
     // the _external_tables_file info should be created as external tables are to be replicated.
     Assert.assertTrue(primary.miniDFSCluster.getFileSystem()
@@ -635,7 +682,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     dumpWithClause = Arrays.asList("'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='true'",
             "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES.varname + "'='true'");
     WarehouseInstance.Tuple tuple = primary.run("use " + primaryDbName)
-            .dump(replPolicy, oldReplPolicy, lastReplId, dumpWithClause);
+            .dump(replPolicy, oldReplPolicy, dumpWithClause);
 
     // the _external_tables_file info should be created as external tables are to be replicated.
     Assert.assertTrue(primary.miniDFSCluster.getFileSystem()

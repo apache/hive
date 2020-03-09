@@ -2886,7 +2886,7 @@ public class TestJdbcDriver2 {
       // Incremental dump
       stmt = (HiveStatement) con.createStatement();
       advanceDumpDir();
-      replDumpRslt = stmt.executeQuery("repl dump " + primaryDb + " from " + lastReplId +
+      replDumpRslt = stmt.executeQuery("repl dump " + primaryDb +
               " with ('hive.repl.rootdir' = '" + replDir + "')");
       assertTrue(replDumpRslt.next());
       dumpLocation = replDumpRslt.getString(1);

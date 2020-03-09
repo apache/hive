@@ -2278,8 +2278,8 @@ public abstract class TestHiveMetaStore {
     checkFilter(client, dbName, tblName, "p1 >= \"p12\"", 4);
     checkFilter(client, dbName, tblName, "p1 < \"p12\"", 2);
     checkFilter(client, dbName, tblName, "p1 <= \"p12\"", 4);
-    checkFilter(client, dbName, tblName, "p1 like \"p1.*\"", 6);
-    checkFilter(client, dbName, tblName, "p2 like \"p.*3\"", 1);
+    checkFilter(client, dbName, tblName, "p1 like \"p1%\"", 6);
+    checkFilter(client, dbName, tblName, "p2 like \"p%3\"", 1);
 
     // Test gt/lt/lte/gte for numbers.
     checkFilter(client, dbName, tblName, "p3 < 0", 1);
@@ -2400,8 +2400,8 @@ public abstract class TestHiveMetaStore {
       checkFilter(client, dbName, tblName, "p1 >= \"p12\"", 2);
       checkFilter(client, dbName, tblName, "p1 <= \"p12\"", 2);
       checkFilter(client, dbName, tblName, "p1 <> \"p12\"", 2);
-      checkFilter(client, dbName, tblName, "p1 like \"p1.*\"", 3);
-      checkFilter(client, dbName, tblName, "p1 like \"p.*2\"", 1);
+      checkFilter(client, dbName, tblName, "p1 like \"p1%\"", 3);
+      checkFilter(client, dbName, tblName, "p1 like \"p%2\"", 1);
 
       client.dropTable(dbName, tblName);
       client.dropDatabase(dbName);
@@ -2451,8 +2451,6 @@ public abstract class TestHiveMetaStore {
       checkFilter(client, dbName, tblName, "p2 <= \"p21\"", 2);
       checkFilter(client, dbName, tblName, "p2 <> \"p12\"", 3);
       checkFilter(client, dbName, tblName, "p2 != \"p12\"", 3);
-      checkFilter(client, dbName, tblName, "p2 like \"p2.*\"", 3);
-      checkFilter(client, dbName, tblName, "p2 like \"p.*2\"", 1);
 
       try {
         checkFilter(client, dbName, tblName, "p2 !< 'dd'", 0);
@@ -2463,6 +2461,65 @@ public abstract class TestHiveMetaStore {
 
       cleanUp(dbName, tblName, null);
   }
+
+  /**
+   * Test "like" filtering on table with single partition.
+   */
+  @Test
+  public void testPartitionFilterLike() throws Exception {
+    String dbName = "filterdb";
+    String tblName = "filtertbl";
+
+    List<String> vals = new ArrayList<>(1);
+    vals.add("abc");
+    List <String> vals2 = new ArrayList<>(1);
+    vals2.add("d_\\\\%ae");
+    List <String> vals3 = new ArrayList<>(1);
+    vals3.add("af%");
+
+    silentDropDatabase(dbName);
+
+    new DatabaseBuilder()
+        .setName(dbName)
+        .create(client, conf);
+
+    Table tbl = new TableBuilder()
+        .setDbName(dbName)
+        .setTableName(tblName)
+        .addCol("c1", ColumnType.STRING_TYPE_NAME)
+        .addCol("c2", ColumnType.INT_TYPE_NAME)
+        .addPartCol("p1", ColumnType.STRING_TYPE_NAME)
+        .create(client, conf);
+
+    tbl = client.getTable(dbName, tblName);
+
+    add_partition(client, tbl, vals, "part1");
+    add_partition(client, tbl, vals2, "part2");
+    add_partition(client, tbl, vals3, "part3");
+
+    checkFilter(client, dbName, tblName, "p1 like \"a%\"", 2);
+    checkFilter(client, dbName, tblName, "p1 like \"%a%\"", 3);
+    checkFilter(client, dbName, tblName, "p1 like \"%a\"", 0);
+    checkFilter(client, dbName, tblName, "p1 like \"a%c\"", 1);
+    checkFilter(client, dbName, tblName, "p1 like \"%a%c%\"", 1);
+    checkFilter(client, dbName, tblName, "p1 like \"%_b%\"", 1);
+    checkFilter(client, dbName, tblName, "p1 like \"%b_\"", 1);
+    checkFilter(client, dbName, tblName, "p1 like \"%c\"", 1);
+    checkFilter(client, dbName, tblName, "p1 like \"%c%\"", 1);
+    checkFilter(client, dbName, tblName, "p1 like \"c%\"", 0);
+    checkFilter(client, dbName, tblName, "p1 like \"%\\_%\"", 1);
+    checkFilter(client, dbName, tblName, "p1 like \"%\\%%\"", 2);
+    checkFilter(client, dbName, tblName, "p1 like \"abc\"", 1);
+    checkFilter(client, dbName, tblName, "p1 like \"%\"", 3);
+    checkFilter(client, dbName, tblName, "p1 like \"_\"", 0);
+    checkFilter(client, dbName, tblName, "p1 like \"___\"", 2);
+    checkFilter(client, dbName, tblName, "p1 like \"%%%\"", 3);
+    checkFilter(client, dbName, tblName, "p1 like \"%\\\\\\\\%\"", 1);
+
+    client.dropTable(dbName, tblName);
+    client.dropDatabase(dbName);
+  }
+
 
   private void checkFilter(HiveMetaStoreClient client, String dbName,
         String tblName, String filter, int expectedCount) throws TException {

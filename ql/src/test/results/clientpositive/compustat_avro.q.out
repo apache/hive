@@ -3,22 +3,22 @@ PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table if exists testAvro
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table testAvro
-   ROW FORMAT SERDE                                                                      
-     'org.apache.hadoop.hive.serde2.avro.AvroSerDe'                                      
-   STORED AS INPUTFORMAT                                                                 
-     'org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat'                        
-   OUTPUTFORMAT                                                                          
+   ROW FORMAT SERDE
+     'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
+   STORED AS INPUTFORMAT
+     'org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat'
+   OUTPUTFORMAT
      'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat'
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@testAvro
 POSTHOOK: query: create table testAvro
-   ROW FORMAT SERDE                                                                      
-     'org.apache.hadoop.hive.serde2.avro.AvroSerDe'                                      
-   STORED AS INPUTFORMAT                                                                 
-     'org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat'                        
-   OUTPUTFORMAT                                                                          
+   ROW FORMAT SERDE
+     'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
+   STORED AS INPUTFORMAT
+     'org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat'
+   OUTPUTFORMAT
      'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat'
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
@@ -72,3 +72,4 @@ num_falses
 bit_vector          	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\",\"col4\":\"true\",\"col5\":\"true\",\"col6\":\"true\"}}
+#### A masked pattern was here ####

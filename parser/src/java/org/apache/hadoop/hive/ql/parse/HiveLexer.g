@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.parse;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.commons.lang3.StringUtils;
 }
 
 @lexer::members {
@@ -527,7 +528,7 @@ Identifier
 fragment    
 QuotedIdentifier 
     :
-    '`'  ( '``' | ~('`') )* '`' { setText(getText().substring(1, getText().length() -1 ).replaceAll("``", "`")); }
+    '`'  ( '``' | ~('`') )* '`' { setText(StringUtils.replace(getText().substring(1, getText().length() -1 ), "``", "`")); }
     ;
 
 CharSetName

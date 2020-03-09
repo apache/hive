@@ -116,7 +116,7 @@ public class TestReplicationOfHiveStreaming {
 
   @Test
   public void testHiveStreamingUnpartitionedWithTxnBatchSizeAsOne() throws Throwable {
-    WarehouseInstance.Tuple bootstrapDump = primary.dump(primaryDbName, null);
+    WarehouseInstance.Tuple bootstrapDump = primary.dump(primaryDbName);
     replica.loadWithoutExplain(replicatedDbName, bootstrapDump.dumpLocation);
 
     // Create an ACID table.
@@ -148,7 +148,7 @@ public class TestReplicationOfHiveStreaming {
     connection.commitTransaction();
 
     // Replicate the committed data which should be visible.
-    WarehouseInstance.Tuple incrDump = primary.dump(primaryDbName, bootstrapDump.lastReplicationId);
+    WarehouseInstance.Tuple incrDump = primary.dump(primaryDbName);
     replica.loadWithoutExplain(replicatedDbName, incrDump.dumpLocation)
             .run("use " + replicatedDbName)
             .run("select msg from " + tblName + " order by msg")
@@ -160,7 +160,7 @@ public class TestReplicationOfHiveStreaming {
     connection.write("4,val4".getBytes());
 
     // Replicate events before committing txn. The uncommitted data shouldn't be seen.
-    incrDump = primary.dump(primaryDbName, bootstrapDump.lastReplicationId);
+    incrDump = primary.dump(primaryDbName);
     replica.loadWithoutExplain(replicatedDbName, incrDump.dumpLocation)
             .run("use " + replicatedDbName)
             .run("select msg from " + tblName + " order by msg")
@@ -169,7 +169,7 @@ public class TestReplicationOfHiveStreaming {
     connection.commitTransaction();
 
     // After commit, the data should be replicated and visible.
-    incrDump = primary.dump(primaryDbName, incrDump.lastReplicationId);
+    incrDump = primary.dump(primaryDbName);
     replica.loadWithoutExplain(replicatedDbName, incrDump.dumpLocation)
             .run("use " + replicatedDbName)
             .run("select msg from " + tblName + " order by msg")
@@ -182,7 +182,7 @@ public class TestReplicationOfHiveStreaming {
     connection.abortTransaction();
 
     // Aborted data shouldn't be visible.
-    incrDump = primary.dump(primaryDbName, incrDump.lastReplicationId);
+    incrDump = primary.dump(primaryDbName);
     replica.loadWithoutExplain(replicatedDbName, incrDump.dumpLocation)
             .run("use " + replicatedDbName)
             .run("select msg from " + tblName + " order by msg")
@@ -194,7 +194,7 @@ public class TestReplicationOfHiveStreaming {
 
   @Test
   public void testHiveStreamingStaticPartitionWithTxnBatchSizeAsOne() throws Throwable {
-    WarehouseInstance.Tuple bootstrapDump = primary.dump(primaryDbName, null);
+    WarehouseInstance.Tuple bootstrapDump = primary.dump(primaryDbName);
     replica.loadWithoutExplain(replicatedDbName, bootstrapDump.dumpLocation);
 
     // Create an ACID table.
@@ -233,7 +233,7 @@ public class TestReplicationOfHiveStreaming {
     connection.commitTransaction();
 
     // Replicate the committed data which should be visible.
-    WarehouseInstance.Tuple incrDump = primary.dump(primaryDbName, bootstrapDump.lastReplicationId);
+    WarehouseInstance.Tuple incrDump = primary.dump(primaryDbName);
     replica.loadWithoutExplain(replicatedDbName, incrDump.dumpLocation)
             .run("use " + replicatedDbName)
             .run("select msg from " + tblName + " where continent='Asia' and country='India' order by msg")
@@ -245,7 +245,7 @@ public class TestReplicationOfHiveStreaming {
     connection.write("4,val4".getBytes());
 
     // Replicate events before committing txn. The uncommitted data shouldn't be seen.
-    incrDump = primary.dump(primaryDbName, bootstrapDump.lastReplicationId);
+    incrDump = primary.dump(primaryDbName);
     replica.loadWithoutExplain(replicatedDbName, incrDump.dumpLocation)
             .run("use " + replicatedDbName)
             .run("select msg from " + tblName + " where continent='Asia' and country='India' order by msg")
@@ -254,7 +254,7 @@ public class TestReplicationOfHiveStreaming {
     connection.commitTransaction();
 
     // After commit, the data should be replicated and visible.
-    incrDump = primary.dump(primaryDbName, incrDump.lastReplicationId);
+    incrDump = primary.dump(primaryDbName);
     replica.loadWithoutExplain(replicatedDbName, incrDump.dumpLocation)
             .run("use " + replicatedDbName)
             .run("select msg from " + tblName + " where continent='Asia' and country='India' order by msg")
@@ -267,7 +267,7 @@ public class TestReplicationOfHiveStreaming {
     connection.abortTransaction();
 
     // Aborted data shouldn't be visible.
-    incrDump = primary.dump(primaryDbName, incrDump.lastReplicationId);
+    incrDump = primary.dump(primaryDbName);
     replica.loadWithoutExplain(replicatedDbName, incrDump.dumpLocation)
             .run("use " + replicatedDbName)
             .run("select msg from " + tblName + " where continent='Asia' and country='India' order by msg")
@@ -279,7 +279,7 @@ public class TestReplicationOfHiveStreaming {
 
   @Test
   public void testHiveStreamingDynamicPartitionWithTxnBatchSizeAsOne() throws Throwable {
-    WarehouseInstance.Tuple bootstrapDump = primary.dump(primaryDbName, null);
+    WarehouseInstance.Tuple bootstrapDump = primary.dump(primaryDbName);
     replica.loadWithoutExplain(replicatedDbName, bootstrapDump.dumpLocation);
 
     // Create an ACID table.
@@ -315,7 +315,7 @@ public class TestReplicationOfHiveStreaming {
     connection.commitTransaction();
 
     // Replicate the committed data which should be visible.
-    WarehouseInstance.Tuple incrDump = primary.dump(primaryDbName, bootstrapDump.lastReplicationId);
+    WarehouseInstance.Tuple incrDump = primary.dump(primaryDbName);
     replica.loadWithoutExplain(replicatedDbName, incrDump.dumpLocation)
             .run("use " + replicatedDbName)
             .run("select msg from " + tblName + " where continent='Asia' and country='China' order by msg")
@@ -329,7 +329,7 @@ public class TestReplicationOfHiveStreaming {
     connection.write("14,val14,Asia,India".getBytes());
 
     // Replicate events before committing txn. The uncommitted data shouldn't be seen.
-    incrDump = primary.dump(primaryDbName, bootstrapDump.lastReplicationId);
+    incrDump = primary.dump(primaryDbName);
     replica.loadWithoutExplain(replicatedDbName, incrDump.dumpLocation)
             .run("use " + replicatedDbName)
             .run("select msg from " + tblName + " where continent='Asia' and country='India' order by msg")
@@ -338,7 +338,7 @@ public class TestReplicationOfHiveStreaming {
     connection.commitTransaction();
 
     // After committing the txn, the data should be visible.
-    incrDump = primary.dump(primaryDbName, bootstrapDump.lastReplicationId);
+    incrDump = primary.dump(primaryDbName);
     replica.loadWithoutExplain(replicatedDbName, incrDump.dumpLocation)
             .run("use " + replicatedDbName)
             .run("select msg from " + tblName + " where continent='Asia' and country='India' order by msg")
@@ -353,7 +353,7 @@ public class TestReplicationOfHiveStreaming {
     connection.abortTransaction();
 
     // Aborted data should not be visible.
-    incrDump = primary.dump(primaryDbName, bootstrapDump.lastReplicationId);
+    incrDump = primary.dump(primaryDbName);
     replica.loadWithoutExplain(replicatedDbName, incrDump.dumpLocation)
             .run("use " + replicatedDbName)
             .run("select msg from " + tblName + " where continent='Asia' and country='India' order by msg")
