@@ -101,7 +101,7 @@ mvn $OPTS -Dtest=noMatches
 du -h --max-depth=1
 '''
     }
-    sh '''rsync -q --daemon --config=rsyncd.conf --port 9873'''
+    sh '''rsync --daemon --config=rsyncd.conf --port 9873'''
 
   }
   }
@@ -113,7 +113,7 @@ du -h --max-depth=1
 
 stage('Testing') {
   testInParallel(count(Integer.parseInt(params.SPLIT)), 'inclusions.txt', 'exclusions.txt', '**/target/surefire-reports/TEST-*.xml', 'maven:3.5.0-jdk-8', {
-    sh  'rsync -arvv --stats rsync://$S:9873/ws .'
+    sh  'rsync -arvvq --stats rsync://$S:9873/ws .'
     sh 'du -h --max-depth=1'
   }, {
     configFileProvider([configFile(fileId: 'artifactory', variable: 'SETTINGS')]) {
