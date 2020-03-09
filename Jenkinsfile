@@ -42,7 +42,8 @@ def testInParallel(parallelism, inclusionsFile, exclusionsFile, results, image, 
 
 podTemplate(workspaceVolume: dynamicPVC(requestsSize: "16Gi"), containers: [
   //cloudbees/jnlp-slave-with-java-build-tools
-    containerTemplate(name: 'maven', image: 'kgyrtkirk/hive-dev-box:executor', ttyEnabled: true, command: 'cat',
+  //kgyrtkirk/hive-dev-box:executor
+    containerTemplate(name: 'maven', image: 'kgyrtkirk/tx1:x', ttyEnabled: true, command: 'cat',
         alwaysPullImage: true,
         resourceRequestCpu: '1500m',
         resourceLimitCpu: '4000m',
