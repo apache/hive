@@ -76,14 +76,14 @@ import javax.security.auth.login.LoginException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Comparator;
+import java.util.Base64;
 import java.util.ArrayList;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.Writer;
 
@@ -121,7 +121,9 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   public int execute() {
     try {
       Hive hiveDb = getHive();
-      Path dumpRoot = new Path(conf.getVar(HiveConf.ConfVars.REPLDIR), work.dbNameOrPattern.toLowerCase());
+      Path dumpRoot = new Path(conf.getVar(HiveConf.ConfVars.REPLDIR),
+              Base64.getEncoder().encodeToString(work.dbNameOrPattern.toLowerCase()
+                      .getBytes(StandardCharsets.UTF_8.name())));
       Path currentDumpPath = new Path(dumpRoot, getNextDumpDir());
       DumpMetaData dmd = new DumpMetaData(currentDumpPath, conf);
       // Initialize ReplChangeManager instance since we will require it to encode file URI.
@@ -147,14 +149,13 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   private Long getEventFromPreviousDumpMetadata(Path dumpRoot) throws IOException, SemanticException {
     FileStatus[] statuses = dumpRoot.getFileSystem(conf).listStatus(dumpRoot);
     if (statuses.length > 0) {
-      //sort based on last modified. Recent one is at the top
-      Arrays.sort(statuses, new Comparator<FileStatus>() {
-        public int compare(FileStatus f1, FileStatus f2) {
-          return Long.compare(f2.getModificationTime(), f1.getModificationTime());
+      FileStatus latestUpdatedStatus = statuses[0];
+      for (FileStatus status : statuses) {
+        if (status.getModificationTime() > latestUpdatedStatus.getModificationTime()) {
+          latestUpdatedStatus = status;
         }
-      });
-      FileStatus recentDump = statuses[0];
-      DumpMetaData dmd = new DumpMetaData(recentDump.getPath(), conf);
+      }
+      DumpMetaData dmd = new DumpMetaData(latestUpdatedStatus.getPath(), conf);
       if (dmd.isIncrementalDump()) {
         return dmd.getEventTo();
       }

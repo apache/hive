@@ -26,7 +26,7 @@ show role grant user hive_admin_user;
 show tables test_repldump_adminpriv;
 repl dump test_repldump_adminpriv;
 
-dfs -rmr  ${system:test.tmp.dir}/hrepl/test_repldump_adminpriv/next;
+dfs -rmr  ${system:test.tmp.dir}/hrepl/dGVzdF9yZXBsZHVtcF9hZG1pbnByaXY=/next;
 
 set user.name=ruser1;
 show tables test_repldump_adminpriv;
