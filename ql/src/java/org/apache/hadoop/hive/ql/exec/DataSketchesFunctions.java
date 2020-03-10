@@ -151,7 +151,7 @@ public class DataSketchesFunctions {
     //registerUDF(org.apache.datasketches.hive.quantiles.UnionItemsSketchUDAF.class, p + UNION_SKETCH);
     registerUDAF(org.apache.datasketches.hive.frequencies.UnionStringsSketchUDAF.class, p + UNION_SKETCH);
     registerUDTF(org.apache.datasketches.hive.frequencies.GetFrequentItemsFromStringsSketchUDTF.class,
-        prefix + GET_FREQUENT_ITEMS);
+        p + GET_FREQUENT_ITEMS);
   }
 
   private void registerQuantilesString(String prefix) {
