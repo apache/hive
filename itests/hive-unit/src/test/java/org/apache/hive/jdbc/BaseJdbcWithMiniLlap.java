@@ -60,6 +60,7 @@ import org.apache.hadoop.hive.llap.LlapBaseInputFormat;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.apache.hadoop.mapred.InputFormat;
 
@@ -361,6 +362,7 @@ public abstract class BaseJdbcWithMiniLlap {
   }
 
   @Test(timeout = 300000)
+  @Ignore("Temporarily disable until fixed")
   public void testInvalidReferenceCountScenario() throws Exception {
     final String tableName = "testInvalidReferenceCountScenario";
     try (Statement stmt = hs2Conn.createStatement()) {
