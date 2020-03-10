@@ -32,7 +32,6 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
-import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.repl.incremental.IncrementalLoadTasksBuilder;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
@@ -77,8 +76,8 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
 
   @Test
   public void testCreateFunctionIncrementalReplication() throws Throwable {
-    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, null);
-    replica.load(replicatedDbName, bootStrapDump.dumpLocation)
+    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName);
+    replica.load(replicatedDbName, primaryDbName)
         .run("REPL STATUS " + replicatedDbName)
         .verifyResult(bootStrapDump.lastReplicationId);
 
@@ -89,8 +88,8 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             + ".testFunctionTwo as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMax'");
 
     WarehouseInstance.Tuple incrementalDump =
-        primary.dump(primaryDbName, bootStrapDump.lastReplicationId);
-    replica.load(replicatedDbName, incrementalDump.dumpLocation)
+        primary.dump(primaryDbName);
+    replica.load(replicatedDbName, primaryDbName)
         .run("REPL STATUS " + replicatedDbName)
         .verifyResult(incrementalDump.lastReplicationId)
         .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "%'")
@@ -98,7 +97,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
                                       replicatedDbName + ".testFunctionTwo" });
 
     // Test the idempotent behavior of CREATE FUNCTION
-    replica.load(replicatedDbName, incrementalDump.dumpLocation)
+    replica.load(replicatedDbName, primaryDbName)
         .run("REPL STATUS " + replicatedDbName)
         .verifyResult(incrementalDump.lastReplicationId)
         .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "%'")
@@ -117,7 +116,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .run("CREATE FUNCTION " + primaryDbName + "." + funcName2 +
                     " as 'hivemall.tools.string.SplitWordsUDF' "+
                     "using jar  'ivy://io.github.myui:hivemall:0.4.0-1'")
-            .dump(primaryDbName, null);
+            .dump(primaryDbName);
 
     // Allow create function only on f1. Create should fail for the second function.
     BehaviourInjection<CallerArguments, Boolean> callerVerifier
@@ -142,7 +141,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     List<String> withConfigs = Arrays.asList("'hive.repl.approx.max.load.tasks'='1'",
             "'hive.in.repl.test.files.sorted'='true'");
     try {
-      replica.loadFailure(replicatedDbName, tuple.dumpLocation, withConfigs);
+      replica.loadFailure(replicatedDbName, primaryDbName, withConfigs);
       callerVerifier.assertInjectionsPerformed(true, false);
     } finally {
       InjectableBehaviourObjectStore.resetCallerVerifier(); // reset the behaviour
@@ -176,7 +175,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     try {
       // Retry with same dump with which it was already loaded should resume the bootstrap load.
       // This time, it completes by adding just the function f2
-      replica.load(replicatedDbName, tuple.dumpLocation);
+      replica.load(replicatedDbName, primaryDbName);
       callerVerifier.assertInjectionsPerformed(true, false);
     } finally {
       InjectableBehaviourObjectStore.resetCallerVerifier(); // reset the behaviour
@@ -196,23 +195,23 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     primary.run("CREATE FUNCTION " + primaryDbName
         + ".testFunctionAnother as 'hivemall.tools.string.StopwordUDF' "
         + "using jar  'ivy://io.github.myui:hivemall:0.4.0-2'");
-    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, null);
-    replica.load(replicatedDbName, bootStrapDump.dumpLocation)
+    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName);
+    replica.load(replicatedDbName, primaryDbName)
         .run("REPL STATUS " + replicatedDbName)
         .verifyResult(bootStrapDump.lastReplicationId);
 
     primary.run("Drop FUNCTION " + primaryDbName + ".testFunctionAnother ");
 
     WarehouseInstance.Tuple incrementalDump =
-        primary.dump(primaryDbName, bootStrapDump.lastReplicationId);
-    replica.load(replicatedDbName, incrementalDump.dumpLocation)
+        primary.dump(primaryDbName);
+    replica.load(replicatedDbName, primaryDbName)
         .run("REPL STATUS " + replicatedDbName)
         .verifyResult(incrementalDump.lastReplicationId)
         .run("SHOW FUNCTIONS LIKE '%testfunctionanother%'")
         .verifyResult(null);
 
     // Test the idempotent behavior of DROP FUNCTION
-    replica.load(replicatedDbName, incrementalDump.dumpLocation)
+    replica.load(replicatedDbName, primaryDbName)
         .run("REPL STATUS " + replicatedDbName)
         .verifyResult(incrementalDump.lastReplicationId)
         .run("SHOW FUNCTIONS LIKE '%testfunctionanother%'")
@@ -224,9 +223,9 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     primary.run("CREATE FUNCTION " + primaryDbName
         + ".testFunction as 'hivemall.tools.string.StopwordUDF' "
         + "using jar  'ivy://io.github.myui:hivemall:0.4.0-2'");
-    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, null);
+    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName);
 
-    replica.load(replicatedDbName, bootStrapDump.dumpLocation)
+    replica.load(replicatedDbName, primaryDbName)
         .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "%'")
         .verifyResult(replicatedDbName + ".testFunction");
   }
@@ -240,9 +239,9 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
         + ".anotherFunction as 'hivemall.tools.string.StopwordUDF' "
         + "using " + jarSubString);
 
-    WarehouseInstance.Tuple tuple = primary.dump(primaryDbName, null);
+    WarehouseInstance.Tuple tuple = primary.dump(primaryDbName);
 
-    replica.load(replicatedDbName, tuple.dumpLocation)
+    replica.load(replicatedDbName, primaryDbName)
         .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "%'")
         .verifyResult(replicatedDbName + ".anotherFunction");
 
@@ -262,8 +261,8 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
 
   @Test
   public void testIncrementalCreateFunctionWithFunctionBinaryJarsOnHDFS() throws Throwable {
-    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, null);
-    replica.load(replicatedDbName, bootStrapDump.dumpLocation)
+    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName);
+    replica.load(replicatedDbName, primaryDbName)
             .run("REPL STATUS " + replicatedDbName)
             .verifyResult(bootStrapDump.lastReplicationId);
 
@@ -274,9 +273,9 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             + ".anotherFunction as 'hivemall.tools.string.StopwordUDF' "
             + "using " + jarSubString);
 
-    WarehouseInstance.Tuple tuple = primary.dump(primaryDbName, bootStrapDump.lastReplicationId);
+    WarehouseInstance.Tuple tuple = primary.dump(primaryDbName);
 
-    replica.load(replicatedDbName, tuple.dumpLocation)
+    replica.load(replicatedDbName, primaryDbName)
             .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "%'")
             .verifyResult(replicatedDbName + ".anotherFunction");
 
@@ -349,13 +348,13 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
         .run("insert into table t2 partition(country='us') values ('austin')")
         .run("insert into table t2 partition(country='france') values ('paris')")
         .run("create table t3 (rank int)")
-        .dump(primaryDbName, null);
+        .dump(primaryDbName);
 
     // each table creation itself takes more than one task, give we are giving a max of 1, we should hit multiple runs.
     List<String> withClause = Collections.singletonList(
         "'" + HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS.varname + "'='1'");
 
-    replica.load(replicatedDbName, tuple.dumpLocation, withClause)
+    replica.load(replicatedDbName, primaryDbName, withClause)
         .run("use " + replicatedDbName)
         .run("show tables")
         .verifyResults(new String[] { "t1", "t2", "t3" })
@@ -380,10 +379,10 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
         .run("insert into table t2 partition(country='japan') values ('tokyo')")
         .run("insert into table t2 partition(country='china') values ('hkg')")
         .run("create table t3 (rank int)")
-        .dump(primaryDbName, null);
+        .dump(primaryDbName);
 
     replica.hiveConf.setBoolVar(HiveConf.ConfVars.EXECPARALLEL, true);
-    replica.load(replicatedDbName, tuple.dumpLocation)
+    replica.load(replicatedDbName, primaryDbName)
         .run("use " + replicatedDbName)
         .run("repl status " + replicatedDbName)
         .verifyResult(tuple.lastReplicationId)
@@ -402,10 +401,9 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             "clustered by(key) into 2 buckets stored as orc tblproperties ('transactional'='true')")
         .run("create table table1 (i int, j int)")
         .run("insert into table1 values (1,2)")
-        .dump(primaryDbName, null,
-            Collections.singletonList("'hive.repl.dump.metadata.only'='true'"));
+        .dump(primaryDbName, Collections.singletonList("'hive.repl.dump.metadata.only'='true'"));
 
-    replica.load(replicatedDbName, tuple.dumpLocation)
+    replica.load(replicatedDbName, primaryDbName)
         .run("use " + replicatedDbName)
         .run("show tables")
         .verifyResults(new String[] { "acid_table", "table1" })
@@ -422,10 +420,9 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
         .run("create table table2 (a int, city string) partitioned by (country string)")
         .run("create table table3 (i int, j int)")
         .run("insert into table1 values (1,2)")
-        .dump(primaryDbName, null,
-            Collections.singletonList("'hive.repl.dump.metadata.only'='true'"));
+        .dump(primaryDbName, Collections.singletonList("'hive.repl.dump.metadata.only'='true'"));
 
-    replica.load(replicatedDbName, bootstrapTuple.dumpLocation)
+    replica.load(replicatedDbName, primaryDbName)
         .run("use " + replicatedDbName)
         .run("show tables")
         .verifyResults(new String[] { "table1", "table2", "table3" })
@@ -439,13 +436,11 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .run("alter table table1 rename to renamed_table1")
             .run("insert into table2 partition(country='india') values (1,'mumbai') ")
             .run("create table table4 (i int, j int)")
-            .dump(
-                "repl dump " + primaryDbName + " from " + bootstrapTuple.lastReplicationId + " to "
-                    + Long.parseLong(bootstrapTuple.lastReplicationId) + 100L + " limit 100 "
-                    + "with ('hive.repl.dump.metadata.only'='true')"
+            .dumpWithCommand(
+                "repl dump " + primaryDbName + " with ('hive.repl.dump.metadata.only'='true')"
             );
 
-    replica.load(replicatedDbName, incrementalOneTuple.dumpLocation)
+    replica.load(replicatedDbName, primaryDbName)
         .run("use " + replicatedDbName)
         .run("show tables")
         .verifyResults(new String[] { "renamed_table1", "table2", "table3", "table4" })
@@ -460,11 +455,10 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
         .run("alter table table3 change i a string")
         .run("alter table table3 set tblproperties('custom.property'='custom.value')")
         .run("drop table renamed_table1")
-        .dump("repl dump " + primaryDbName + " from " + incrementalOneTuple.lastReplicationId
-            + " with ('hive.repl.dump.metadata.only'='true')"
+        .dumpWithCommand("repl dump " + primaryDbName + " with ('hive.repl.dump.metadata.only'='true')"
         );
 
-    replica.load(replicatedDbName, secondIncremental.dumpLocation)
+    replica.load(replicatedDbName, primaryDbName)
         .run("use " + replicatedDbName)
         .run("show tables")
         .verifyResults(new String[] { "table2", "table3", "table4" })
@@ -500,9 +494,9 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .run("create table table2 (a int, city string) partitioned by (country string)")
             .run("create table table3 (i int, j int)")
             .run("insert into table1 values (1,2)")
-        .dump(dbName, null, Collections.singletonList("'hive.repl.dump.metadata.only'='true'"));
+        .dump(dbName, Collections.singletonList("'hive.repl.dump.metadata.only'='true'"));
 
-    replica.load(replicatedDbName, tuple.dumpLocation)
+    replica.load(replicatedDbName, dbName)
             .run("use " + replicatedDbName)
             .run("show tables")
             .verifyResults(new String[]{"table1", "table2", "table3"})
@@ -514,10 +508,9 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .run("alter table table1 rename to renamed_table1")
             .run("insert into table2 partition(country='india') values (1,'mumbai') ")
             .run("create table table4 (i int, j int)")
-        .dump(dbName, tuple.lastReplicationId,
-            Collections.singletonList("'hive.repl.dump.metadata.only'='true'"));
+        .dump(dbName, Collections.singletonList("'hive.repl.dump.metadata.only'='true'"));
 
-    replica.load(replicatedDbName, tuple.dumpLocation)
+    replica.load(replicatedDbName, dbName)
             .run("use " + replicatedDbName)
             .run("show tables")
             .verifyResults(new String[] { "renamed_table1", "table2", "table3", "table4" })
@@ -529,6 +522,9 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
 
     @Test
   public void testBootStrapDumpOfWarehouse() throws Throwable {
+    //Clear the repl base dir
+    Path replBootstrapDumpDir = new Path(primary.hiveConf.get(MetastoreConf.ConfVars.REPLDIR.getHiveName()), "*");
+    replBootstrapDumpDir.getFileSystem(primary.hiveConf).delete(replBootstrapDumpDir, true);
     String randomOne = RandomStringUtils.random(10, true, false);
     String randomTwo = RandomStringUtils.random(10, true, false);
     String dbOne = primaryDbName + randomOne;
@@ -549,7 +545,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
                 SOURCE_OF_REPLICATION + "' = '1,2,3')")
         .run("use " + dbTwo)
         .run("create table t1 (i int, j int)")
-        .dump("`*`", null, Collections.singletonList("'hive.repl.dump.metadata.only'='true'"));
+        .dump("`*`", Collections.singletonList("'hive.repl.dump.metadata.only'='true'"));
 
     /*
       Due to the limitation that we can only have one instance of Persistence Manager Factory in a JVM
@@ -567,127 +563,12 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     // Reset ckpt and last repl ID keys to empty set for allowing bootstrap load
     replica.run("show databases")
         .verifyFailure(new String[] { primaryDbName, dbOne, dbTwo })
-        .run("alter database default set dbproperties ('hive.repl.ckpt.key'='', 'repl.last.id'='')")
-        .load("", tuple.dumpLocation)
-        .run("show databases")
-        .verifyResults(new String[] { "default", primaryDbName, dbOne, dbTwo })
-        .run("use " + primaryDbName)
-        .run("show tables")
-        .verifyResults(new String[] { "t1" })
-        .run("use " + dbOne)
-        .run("show tables")
-        .verifyResults(new String[] { "t1" })
-        .run("use " + dbTwo)
-        .run("show tables")
-        .verifyResults(new String[] { "t1" })
-        .verifyReplTargetProperty(primaryDbName)
-        .verifyReplTargetProperty(dbOne)
-        .verifyReplTargetProperty(dbTwo);
-
-    /*
-       Start of cleanup
-    */
-
-    replica.run("drop database " + primaryDbName + " cascade");
-    replica.run("drop database " + dbOne + " cascade");
-    replica.run("drop database " + dbTwo + " cascade");
-
-    /*
-       End of cleanup
-    */
-  }
-
-  @Test
-  public void testIncrementalDumpOfWarehouse() throws Throwable {
-    String randomOne = RandomStringUtils.random(10, true, false);
-    String randomTwo = RandomStringUtils.random(10, true, false);
-    String dbOne = primaryDbName + randomOne;
-    primary.run("alter database default set dbproperties ('" + SOURCE_OF_REPLICATION + "' = '1, 2, 3')");
-    WarehouseInstance.Tuple bootstrapTuple = primary
-        .run("use " + primaryDbName)
-        .run("create table t1 (i int, j int)")
-        .run("create database " + dbOne + " WITH DBPROPERTIES ( '" +
-                SOURCE_OF_REPLICATION + "' = '1,2,3')")
-        .run("use " + dbOne)
-        .run("create table t1 (i int, j int) partitioned by (load_date date) "
-            + "clustered by(i) into 2 buckets stored as orc tblproperties ('transactional'='true') ")
-        .dump("`*`", null, Collections.singletonList("'hive.repl.dump.metadata.only'='true'"));
-
-    String dbTwo = primaryDbName + randomTwo;
-    WarehouseInstance.Tuple incrementalTuple = primary
-        .run("create database " + dbTwo + " WITH DBPROPERTIES ( '" +
-                SOURCE_OF_REPLICATION + "' = '1,2,3')")
-        .run("use " + dbTwo)
-        .run("create table t1 (i int, j int)")
-        .run("use " + dbOne)
-        .run("create table t2 (a int, b int)")
-        .dump("`*`", bootstrapTuple.lastReplicationId,
-            Arrays.asList("'hive.repl.dump.metadata.only'='true'"));
-
-    /*
-      Due to the limitation that we can only have one instance of Persistence Manager Factory in a JVM
-      we are not able to create multiple embedded derby instances for two different MetaStore instances.
-    */
-
-    primary.run("drop database " + primaryDbName + " cascade");
-    primary.run("drop database " + dbOne + " cascade");
-    primary.run("drop database " + dbTwo + " cascade");
-
-    /*
-      End of additional steps
-    */
-
-    // Reset ckpt and last repl ID keys to empty set for allowing bootstrap load
-    replica.run("show databases")
-        .verifyFailure(new String[] { primaryDbName, dbOne, dbTwo })
-        .run("alter database default set dbproperties ('hive.repl.ckpt.key'='', 'repl.last.id'='')")
-        .load("", bootstrapTuple.dumpLocation)
-        .run("show databases")
-        .verifyResults(new String[] { "default", primaryDbName, dbOne })
-        .run("use " + primaryDbName)
-        .run("show tables")
-        .verifyResults(new String[] { "t1" })
-        .run("use " + dbOne)
-        .run("show tables")
-        .verifyResults(new String[] { "t1" })
-        .verifyReplTargetProperty(primaryDbName)
-        .verifyReplTargetProperty(dbOne)
-        .verifyReplTargetProperty(dbTwo);
-
-    assertTrue(ReplUtils.isFirstIncPending(replica.getDatabase("default").getParameters()));
-    assertTrue(ReplUtils.isFirstIncPending(replica.getDatabase(primaryDbName).getParameters()));
-    assertTrue(ReplUtils.isFirstIncPending(replica.getDatabase(dbOne).getParameters()));
-
-    replica.load("", incrementalTuple.dumpLocation)
-        .run("show databases")
-        .verifyResults(new String[] { "default", primaryDbName, dbOne, dbTwo })
-        .run("use " + dbTwo)
-        .run("show tables")
-        .verifyResults(new String[] { "t1" })
-        .run("use " + dbOne)
-        .run("show tables")
-        .verifyResults(new String[] { "t1", "t2" })
-        .verifyReplTargetProperty(primaryDbName)
-        .verifyReplTargetProperty(dbOne)
-        .verifyReplTargetProperty(dbTwo);
-
-    assertFalse(ReplUtils.isFirstIncPending(replica.getDatabase("default").getParameters()));
-    assertFalse(ReplUtils.isFirstIncPending(replica.getDatabase(primaryDbName).getParameters()));
-    assertFalse(ReplUtils.isFirstIncPending(replica.getDatabase(dbOne).getParameters()));
-    assertFalse(ReplUtils.isFirstIncPending(replica.getDatabase(dbTwo).getParameters()));
-
-    /*
-       Start of cleanup
-    */
-
-    replica.run("drop database " + primaryDbName + " cascade");
-    replica.run("drop database " + dbOne + " cascade");
-    replica.run("drop database " + dbTwo + " cascade");
-
-    /*
-       End of cleanup
-    */
-
+        .run("alter database default set dbproperties ('hive.repl.ckpt.key'='', 'repl.last.id'='')");
+    try {
+      replica.load("", "`*`");
+    } catch (SemanticException e) {
+      assertEquals("REPL LOAD * is not supported", e.getMessage());
+    }
   }
 
   @Test
@@ -704,10 +585,10 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .run("create table table1 (i int)")
             .run("create table table2 (id int) partitioned by (country string)")
             .run("insert into table1 values (1)")
-            .dump(primaryDbName, null);
+            .dump(primaryDbName);
 
     // Run load on primary itself
-    primary.load(replicatedDbName, bootstrapTuple.dumpLocation, withConfigs)
+    primary.load(replicatedDbName, primaryDbName, withConfigs)
             .status(replicatedDbName, withConfigs)
             .verifyResult(bootstrapTuple.lastReplicationId);
 
@@ -729,10 +610,10 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
                     .run("create function " + primaryDbName
                       + ".testFunctionOne as 'hivemall.tools.string.StopwordUDF' "
                       + "using jar  'ivy://io.github.myui:hivemall:0.4.0-2'")
-                    .dump(primaryDbName, bootstrapTuple.lastReplicationId);
+                    .dump(primaryDbName, Collections.emptyList());
 
     // Run load on primary itself
-    primary.load(replicatedDbName, incrementalOneTuple.dumpLocation, withConfigs)
+    primary.load(replicatedDbName, primaryDbName, withConfigs)
             .status(replicatedDbName, withConfigs)
             .verifyResult(incrementalOneTuple.lastReplicationId);
 
@@ -758,10 +639,10 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .run("alter table table2 drop partition(country='usa')")
             .run("truncate table table3")
             .run("drop function " + primaryDbName + ".testFunctionOne ")
-            .dump(primaryDbName, incrementalOneTuple.lastReplicationId);
+            .dump(primaryDbName, Collections.emptyList());
 
     // Run load on primary itself
-    primary.load(replicatedDbName, secondIncremental.dumpLocation, withConfigs)
+    primary.load(replicatedDbName, primaryDbName, withConfigs)
             .status(replicatedDbName, withConfigs)
             .verifyResult(secondIncremental.lastReplicationId);
 
@@ -792,10 +673,10 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
   @Test
   public void testIncrementalReplWithEventsBatchHavingDropCreateTable() throws Throwable {
     // Bootstrap dump with empty db
-    WarehouseInstance.Tuple bootstrapTuple = primary.dump(primaryDbName, null);
+    WarehouseInstance.Tuple bootstrapTuple = primary.dump(primaryDbName);
 
     // Bootstrap load in replica
-    replica.load(replicatedDbName, bootstrapTuple.dumpLocation)
+    replica.load(replicatedDbName, primaryDbName)
             .status(replicatedDbName)
             .verifyResult(bootstrapTuple.lastReplicationId);
 
@@ -805,7 +686,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .run("create table table2 (id int) partitioned by (country string)")
             .run("insert into table1 values (1)")
             .run("insert into table2 partition(country='india') values(1)")
-            .dump(primaryDbName, bootstrapTuple.lastReplicationId);
+            .dump(primaryDbName, Collections.emptyList());
 
     // Second incremental dump
     WarehouseInstance.Tuple secondIncremental = primary.run("use " + primaryDbName)
@@ -817,10 +698,10 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .run("insert into table2 partition(country='us') values(2)")
             .run("create table table1 (i int)")
             .run("insert into table1 values (2)")
-            .dump(primaryDbName, firstIncremental.lastReplicationId);
+            .dump(primaryDbName, Collections.emptyList());
 
     // First incremental load
-    replica.load(replicatedDbName, firstIncremental.dumpLocation)
+    replica.load(replicatedDbName, primaryDbName)
             .status(replicatedDbName)
             .verifyResult(firstIncremental.lastReplicationId)
             .run("use " + replicatedDbName)
@@ -832,7 +713,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .verifyResults(new String[] {"1"});
 
     // Second incremental load
-    replica.load(replicatedDbName, secondIncremental.dumpLocation)
+    replica.load(replicatedDbName, primaryDbName)
             .status(replicatedDbName)
             .verifyResult(secondIncremental.lastReplicationId)
             .run("use " + replicatedDbName)
@@ -847,10 +728,10 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
   @Test
   public void testIncrementalReplWithDropAndCreateTableDifferentPartitionTypeAndInsert() throws Throwable {
     // Bootstrap dump with empty db
-    WarehouseInstance.Tuple bootstrapTuple = primary.dump(primaryDbName, null);
+    WarehouseInstance.Tuple bootstrapTuple = primary.dump(primaryDbName);
 
     // Bootstrap load in replica
-    replica.load(replicatedDbName, bootstrapTuple.dumpLocation)
+    replica.load(replicatedDbName, primaryDbName)
         .status(replicatedDbName)
         .verifyResult(bootstrapTuple.lastReplicationId);
 
@@ -862,7 +743,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
         .run("insert into table1 partition(country='india') values(1)")
         .run("insert into table2 values(2)")
         .run("insert into table3 partition(country='india') values(3)")
-        .dump(primaryDbName, bootstrapTuple.lastReplicationId);
+        .dump(primaryDbName, Collections.emptyList());
 
     // Second incremental dump
     WarehouseInstance.Tuple secondIncremental = primary.run("use " + primaryDbName)
@@ -875,10 +756,10 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
         .run("insert into table2 partition(country='india') values(20)")
         .run("create table table3 (id int) partitioned by (name string, rank int)")
         .run("insert into table3 partition(name='adam', rank=100) values(30)")
-        .dump(primaryDbName, firstIncremental.lastReplicationId);
+        .dump(primaryDbName, Collections.emptyList());
 
     // First incremental load
-    replica.load(replicatedDbName, firstIncremental.dumpLocation)
+    replica.load(replicatedDbName, primaryDbName)
         .status(replicatedDbName)
         .verifyResult(firstIncremental.lastReplicationId)
         .run("use " + replicatedDbName)
@@ -890,7 +771,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
         .verifyResults(new String[] { "3" });
 
     // Second incremental load
-    replica.load(replicatedDbName, secondIncremental.dumpLocation)
+    replica.load(replicatedDbName, primaryDbName)
         .status(replicatedDbName)
         .verifyResult(secondIncremental.lastReplicationId)
         .run("use " + replicatedDbName)
@@ -916,7 +797,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
 
     WarehouseInstance.Tuple bootstrapTuple = primary
         .run("use " + primaryDbName)
-        .run(createTableQuery).dump(primaryDbName, null);
+        .run(createTableQuery).dump(primaryDbName);
     Path cSerdesTableDumpLocation = new Path(
         new Path(bootstrapTuple.dumpLocation, primaryDbName),
         "custom_serdes");
@@ -940,10 +821,10 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     WarehouseInstance.Tuple bootstrapTuple = primary
             .run("use " + primaryDbName)
             .run(createTableQuery)
-            .dump(primaryDbName, null, Collections.singletonList("'hive.repl.dump.metadata.only'='true'"));
+            .dump(primaryDbName, Collections.singletonList("'hive.repl.dump.metadata.only'='true'"));
 
     // Bootstrap load in replica
-    replica.load(replicatedDbName, bootstrapTuple.dumpLocation)
+    replica.load(replicatedDbName, primaryDbName)
             .status(replicatedDbName)
             .verifyResult(bootstrapTuple.lastReplicationId)
             .run("use " + replicatedDbName)
@@ -966,15 +847,15 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
 
   @Test
   public void testIncrementalDumpEmptyDumpDirectory() throws Throwable {
-    WarehouseInstance.Tuple tuple = primary.dump(primaryDbName, null);
+    WarehouseInstance.Tuple tuple = primary.dump(primaryDbName);
 
-    replica.load(replicatedDbName, tuple.dumpLocation)
+    replica.load(replicatedDbName, primaryDbName)
             .status(replicatedDbName)
             .verifyResult(tuple.lastReplicationId);
 
-    tuple = primary.dump(primaryDbName, tuple.lastReplicationId);
+    tuple = primary.dump(primaryDbName, Collections.emptyList());
 
-    replica.load(replicatedDbName, tuple.dumpLocation)
+    replica.load(replicatedDbName, primaryDbName)
             .status(replicatedDbName)
             .verifyResult(tuple.lastReplicationId);
 
@@ -982,27 +863,27 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     String testDbName = primaryDbName + "_test";
     tuple = primary.run(" create database " + testDbName)
             .run("create table " + testDbName + ".tbl (fld int)")
-            .dump(primaryDbName, tuple.lastReplicationId);
+            .dump(primaryDbName, Collections.emptyList());
 
     // Incremental load to existing database with empty dump directory should set the repl id to the last event at src.
-    replica.load(replicatedDbName, tuple.dumpLocation)
+    replica.load(replicatedDbName, primaryDbName)
             .status(replicatedDbName)
             .verifyResult(tuple.lastReplicationId);
 
-    // Incremental load to non existing db should return database not exist error.
-    tuple = primary.dump("someJunkDB", tuple.lastReplicationId);
+    // Bootstrap load from an empty dump directory should return empty load directory error.
+    tuple = primary.dump("someJunkDB", Collections.emptyList());
     try {
-      replica.runCommand("REPL LOAD someJunkDB from '" + tuple.dumpLocation + "'");
+      replica.runCommand("REPL LOAD someJunkDB into someJunkDB");
       assert false;
     } catch (CommandProcessorException e) {
-      assertTrue(e.getMessage().toLowerCase().contains(
-          "org.apache.hadoop.hive.ql.ddl.DDLTask. Database does not exist: someJunkDB".toLowerCase()));
+      assertTrue(e.getMessage().toLowerCase().contains("semanticException no data to load in path".toLowerCase()));
     }
 
-    // Bootstrap load from an empty dump directory should return empty load directory error.
-    tuple = primary.dump("someJunkDB", null);
+    // Bootstrap load from an empty dump directory should return empty load directory error. Since we have repl status
+    //check on target
+    tuple = primary.dump("someJunkDB");
     try {
-      replica.runCommand("REPL LOAD someJunkDB from '" + tuple.dumpLocation+"'");
+      replica.runCommand("REPL LOAD someJunkDB into someJunkDB ");
     } catch (CommandProcessorException e) {
       assertTrue(e.getMessage().toLowerCase().contains("semanticException no data to load in path".toLowerCase()));
     }
@@ -1012,9 +893,9 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
 
   @Test
   public void testIncrementalDumpMultiIteration() throws Throwable {
-    WarehouseInstance.Tuple bootstrapTuple = primary.dump(primaryDbName, null);
+    WarehouseInstance.Tuple bootstrapTuple = primary.dump(primaryDbName);
 
-    replica.load(replicatedDbName, bootstrapTuple.dumpLocation)
+    replica.load(replicatedDbName, primaryDbName)
             .status(replicatedDbName)
             .verifyResult(bootstrapTuple.lastReplicationId);
 
@@ -1025,9 +906,9 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .run("insert into table1 partition(country='india') values(1)")
             .run("insert into table2 values(2)")
             .run("insert into table3 partition(country='india') values(3)")
-            .dump(primaryDbName, bootstrapTuple.lastReplicationId);
+            .dump(primaryDbName, Collections.emptyList());
 
-    replica.load(replicatedDbName, incremental.dumpLocation,
+    replica.load(replicatedDbName, primaryDbName,
         Collections.singletonList("'hive.repl.approx.max.load.tasks'='10'"))
             .status(replicatedDbName)
             .verifyResult(incremental.lastReplicationId)
@@ -1045,14 +926,14 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
                     "clustered by(key) into 2 buckets stored as orc")
             .run("create table table4 (i int, j int)")
             .run("insert into table4 values (1,2)")
-            .dump(primaryDbName, incremental.lastReplicationId);
+            .dump(primaryDbName, Collections.emptyList());
 
     Path path = new Path(incremental.dumpLocation);
     FileSystem fs = path.getFileSystem(conf);
     FileStatus[] fileStatus = fs.listStatus(path);
     int numEvents = fileStatus.length - 1; //one is metadata file
 
-    replica.load(replicatedDbName, incremental.dumpLocation,
+    replica.load(replicatedDbName, primaryDbName,
         Collections.singletonList("'hive.repl.approx.max.load.tasks'='1'"))
             .run("use " + replicatedDbName)
             .run("show tables")
@@ -1069,27 +950,27 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .run("create table t1 (place string) partitioned by (country string) "
                     + " tblproperties('custom.property'='custom.value')")
             .run("insert into table t1 partition(country='india') values ('bangalore')")
-            .dump(primaryDbName, null);
+            .dump(primaryDbName);
 
     // Bootstrap Repl A -> B
-    replica.load(replicatedDbName, tuplePrimary.dumpLocation)
+    replica.load(replicatedDbName, primaryDbName)
             .run("repl status " + replicatedDbName)
             .verifyResult(tuplePrimary.lastReplicationId)
             .run("show tblproperties t1('custom.property')")
             .verifyResults(new String[] { "custom.property\tcustom.value" })
-            .dumpFailure(replicatedDbName, null)
+            .dumpFailure(replicatedDbName)
             .run("alter database " + replicatedDbName
                     + " set dbproperties ('" + SOURCE_OF_REPLICATION + "' = '1, 2, 3')")
-            .dumpFailure(replicatedDbName, null);//can not dump the db before first successful incremental load is done.
+            .dumpFailure(replicatedDbName);   //can not dump the db before first successful incremental load is done.
 
     // do a empty incremental load to allow dump of replicatedDbName
-    WarehouseInstance.Tuple temp = primary.dump(primaryDbName, tuplePrimary.lastReplicationId);
-    replica.load(replicatedDbName, temp.dumpLocation); // first successful incremental load.
+    WarehouseInstance.Tuple temp = primary.dump(primaryDbName, Collections.emptyList());
+    replica.load(replicatedDbName, primaryDbName); // first successful incremental load.
 
     // Bootstrap Repl B -> C
-    WarehouseInstance.Tuple tupleReplica = replica.dump(replicatedDbName, null);
+    WarehouseInstance.Tuple tupleReplica = replica.dump(replicatedDbName);
     String replDbFromReplica = replicatedDbName + "_dupe";
-    replica.load(replDbFromReplica, tupleReplica.dumpLocation)
+    replica.load(replDbFromReplica, replicatedDbName)
             .run("use " + replDbFromReplica)
             .run("repl status " + replDbFromReplica)
             .verifyResult(tupleReplica.lastReplicationId)
@@ -1115,13 +996,13 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .run("alter database " + primaryDbName + " set dbproperties('dummy_key'='dummy_val')")
             .run("alter table t1 set tblproperties('dummy_key'='dummy_val')")
             .run("alter table t1 partition(country='india') set fileformat orc")
-            .dump(primaryDbName, tuplePrimary.lastReplicationId);
+            .dump(primaryDbName, Collections.emptyList());
 
     // Incremental Repl A -> B with alters on db/table/partition
-    WarehouseInstance.Tuple tupleReplicaInc = replica.load(replicatedDbName, tuplePrimaryInc.dumpLocation)
+    WarehouseInstance.Tuple tupleReplicaInc = replica.load(replicatedDbName, primaryDbName)
             .run("repl status " + replicatedDbName)
             .verifyResult(tuplePrimaryInc.lastReplicationId)
-            .dump(replicatedDbName, tupleReplica.lastReplicationId);
+            .dump(replicatedDbName, Collections.emptyList());
 
     // Check if DB in B have ckpt property is set to bootstrap dump location used in B and missing for table/partition.
     db = replica.getDatabase(replicatedDbName);
@@ -1132,7 +1013,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     verifyIfCkptPropMissing(india.getParameters());
 
     // Incremental Repl B -> C with alters on db/table/partition
-    replica.load(replDbFromReplica, tupleReplicaInc.dumpLocation)
+    replica.load(replDbFromReplica, replicatedDbName)
             .run("use " + replDbFromReplica)
             .run("repl status " + replDbFromReplica)
             .verifyResult(tupleReplicaInc.lastReplicationId)
@@ -1158,12 +1039,12 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .run("use " + primaryDbName)
             .run("create table t1 (place string) partitioned by (country string)")
             .run("insert into table t1 partition(country='india') values ('bangalore')")
-            .dump(primaryDbName, null);
+            .dump(primaryDbName);
 
     // Bootstrap Repl A -> B and then export table t1
     String path = "hdfs:///tmp/" + replicatedDbName + "/";
     String exportPath = "'" + path + "1/'";
-    replica.load(replicatedDbName, tuplePrimary.dumpLocation)
+    replica.load(replicatedDbName, primaryDbName)
             .run("repl status " + replicatedDbName)
             .verifyResult(tuplePrimary.lastReplicationId)
             .run("use " + replicatedDbName)
@@ -1202,9 +1083,9 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .run("insert into table t2 partition(country='india') values ('bangalore')")
             .run("insert into table t2 partition(country='uk') values ('london')")
             .run("insert into table t2 partition(country='us') values ('sfo')")
-            .dump(primaryDbName, null);
+            .dump(primaryDbName);
 
-    replica.load(replicatedDbName, tuple.dumpLocation)
+    replica.load(replicatedDbName, primaryDbName)
             .run("use " + replicatedDbName)
             .run("repl status " + replicatedDbName)
             .verifyResult(tuple.lastReplicationId)
@@ -1216,20 +1097,13 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .verifyResults(Arrays.asList("india", "uk", "us"));
     replica.verifyIfCkptSet(replicatedDbName, tuple.dumpLocation);
 
-    WarehouseInstance.Tuple tuple_2 = primary
-            .run("use " + primaryDbName)
-            .dump(primaryDbName, null);
-
-    // Retry with different dump should fail.
-    replica.loadFailure(replicatedDbName, tuple_2.dumpLocation);
-
     // Retry with same dump with which it was already loaded also fails.
-    replica.loadFailure(replicatedDbName, tuple.dumpLocation);
+    replica.loadFailure(replicatedDbName, primaryDbName);
 
     // Retry from same dump when the database is empty is also not allowed.
     replica.run("drop table t1")
             .run("drop table t2")
-            .loadFailure(replicatedDbName, tuple.dumpLocation);
+            .loadFailure(replicatedDbName, primaryDbName);
   }
 
   @Test
@@ -1239,11 +1113,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .run("create table t1(a string, b string, primary key (a, b) disable novalidate rely)")
             .run("create table t2(a string, b string, foreign key (a, b) references t1(a, b) disable novalidate)")
             .run("create table t3(a string, b string not null disable, unique (a) disable)")
-            .dump(primaryDbName, null);
-
-    WarehouseInstance.Tuple tuple2 = primary
-            .run("use " + primaryDbName)
-            .dump(primaryDbName, null);
+            .dump(primaryDbName);
 
     // Need to drop the primary DB as metastore is shared by both primary/replica. So, constraints
     // conflict when loaded. Some issue with framework which needs to be relook into later.
@@ -1273,7 +1143,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     // Trigger bootstrap dump which just creates table t1 and other tables (t2, t3) and constraints not loaded.
     List<String> withConfigs = Arrays.asList("'hive.repl.approx.max.load.tasks'='1'");
     try {
-      replica.loadFailure(replicatedDbName, tuple.dumpLocation, withConfigs);
+      replica.loadFailure(replicatedDbName, primaryDbName, withConfigs);
       callerVerifier.assertInjectionsPerformed(true, false);
     } finally {
       InjectableBehaviourObjectStore.resetCallerVerifier(); // reset the behaviour
@@ -1286,10 +1156,6 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     assertEquals(0, replica.getUniqueConstraintList(replicatedDbName, "t3").size());
     assertEquals(0, replica.getNotNullConstraintList(replicatedDbName, "t3").size());
     assertEquals(0, replica.getForeignKeyList(replicatedDbName, "t2").size());
-
-    // Retry with different dump should fail.
-    replica.loadFailure(replicatedDbName, tuple2.dumpLocation, null,
-            ErrorMsg.REPL_BOOTSTRAP_LOAD_PATH_NOT_VALID.getErrorCode());
 
     // Verify if create table is not called on table t1 but called for t2 and t3.
     // Also, allow constraint creation only on t1 and t3. Foreign key creation on t2 fails.
@@ -1313,7 +1179,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     try {
       // Retry with same dump with which it was already loaded should resume the bootstrap load.
       // This time, it fails when try to load the foreign key constraints. All other constraints are loaded.
-      replica.loadFailure(replicatedDbName, tuple.dumpLocation, withConfigs);
+      replica.loadFailure(replicatedDbName, primaryDbName, withConfigs);
       callerVerifier.assertInjectionsPerformed(true, false);
     } finally {
       InjectableBehaviourObjectStore.resetCallerVerifier(); // reset the behaviour
@@ -1351,7 +1217,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     try {
       // Retry with same dump with which it was already loaded should resume the bootstrap load.
       // This time, it completes by adding just foreign key constraints for table t2.
-      replica.load(replicatedDbName, tuple.dumpLocation);
+      replica.load(replicatedDbName, primaryDbName);
       callerVerifier.assertInjectionsPerformed(true, false);
     } finally {
       InjectableBehaviourObjectStore.resetCallerVerifier(); // reset the behaviour
@@ -1379,11 +1245,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .run("CREATE FUNCTION " + primaryDbName
                     + ".testFunctionOne as 'hivemall.tools.string.StopwordUDF' "
                     + "using jar  'ivy://io.github.myui:hivemall:0.4.0-2'")
-            .dump(primaryDbName, null);
-
-    WarehouseInstance.Tuple tuple2 = primary
-            .run("use " + primaryDbName)
-            .dump(primaryDbName, null);
+            .dump(primaryDbName);
 
     // Inject a behavior where REPL LOAD failed when try to load table "t2" and partition "uk".
     // So, table "t2" will exist and partition "india" will exist, rest failed as operation failed.
@@ -1406,7 +1268,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     // Make sure that there's some order in which the objects are loaded.
     List<String> withConfigs = Arrays.asList("'hive.repl.approx.max.load.tasks'='1'",
             "'hive.in.repl.test.files.sorted'='true'");
-    replica.loadFailure(replicatedDbName, tuple.dumpLocation, withConfigs);
+    replica.loadFailure(replicatedDbName, primaryDbName, withConfigs);
     InjectableBehaviourObjectStore.setAlterPartitionsBehaviour(null); // reset the behaviour
     alterPartitionStub.assertInjectionsPerformed(true, false);
 
@@ -1417,9 +1279,6 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .verifyResults(new String[] {"t2" })
             .run("select country from t2 order by country")
             .verifyResults(Collections.singletonList("india"));
-
-    // Retry with different dump should fail.
-    replica.loadFailure(replicatedDbName, tuple2.dumpLocation);
 
     // Verify if no create table calls. Add partitions and create function calls expected.
     BehaviourInjection<CallerArguments, Boolean> callerVerifier
@@ -1441,7 +1300,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     try {
       // Retry with same dump with which it was already loaded should resume the bootstrap load.
       // This time, it completes by adding remaining partitions and function.
-      replica.load(replicatedDbName, tuple.dumpLocation);
+      replica.load(replicatedDbName, primaryDbName);
       callerVerifier.assertInjectionsPerformed(false, false);
     } finally {
       InjectableBehaviourObjectStore.resetCallerVerifier(); // reset the behaviour
@@ -1465,10 +1324,10 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .run("use " + primaryDbName)
             .run("create table t2 (place string) partitioned by (country string)")
             .run("insert into table t2 partition(country='india') values ('bangalore')")
-            .dump(primaryDbName, null);
+            .dump(primaryDbName);
 
     testMoveOptimization(primaryDbName, replicatedDbName, replicatedDbName_CM, "t2",
-            "ADD_PARTITION", tuple);
+            "ADD_PARTITION");
   }
 
   @Test
@@ -1480,17 +1339,17 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .run("create table t2 (place string) partitioned by (country string)")
             .run("insert into table t2 partition(country='india') values ('bangalore')")
             .run("create table t1 (place string) partitioned by (country string)")
-            .dump(primaryDbName, null);
-    replica.load(replicatedDbName, tuple.dumpLocation, withConfigs);
-    replica.load(replicatedDbName_CM, tuple.dumpLocation, withConfigs);
+            .dump(primaryDbName);
+    replica.load(replicatedDbName, primaryDbName, withConfigs);
+    replica.load(replicatedDbName_CM, primaryDbName, withConfigs);
     replica.run("alter database " + replicatedDbName + " set DBPROPERTIES ('" + SOURCE_OF_REPLICATION + "' = '1,2,3')")
         .run("alter database " + replicatedDbName_CM + " set DBPROPERTIES ('" + SOURCE_OF_REPLICATION + "' = '1,2,3')");
 
     tuple = primary.run("use " + primaryDbName)
             .run("insert overwrite table t1 select * from t2")
-            .dump(primaryDbName, tuple.lastReplicationId);
+            .dump(primaryDbName, Collections.emptyList());
 
-    testMoveOptimization(primaryDbName, replicatedDbName, replicatedDbName_CM, "t1", "ADD_PARTITION", tuple);
+    testMoveOptimization(primaryDbName, replicatedDbName, replicatedDbName_CM, "t1", "ADD_PARTITION");
   }
 
   @Test
@@ -1498,24 +1357,24 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     List<String> withConfigs =
         Collections.singletonList("'hive.repl.enable.move.optimization'='true'");
     String replicatedDbName_CM = replicatedDbName + "_CM";
-    WarehouseInstance.Tuple tuple = primary.run("use " + primaryDbName)
+    primary.run("use " + primaryDbName)
             .run("create table t2 (place string) partitioned by (country string)")
             .run("ALTER TABLE t2 ADD PARTITION (country='india')")
-            .dump(primaryDbName, null);
-    replica.load(replicatedDbName, tuple.dumpLocation, withConfigs);
-    replica.load(replicatedDbName_CM, tuple.dumpLocation, withConfigs);
+            .dump(primaryDbName);
+    replica.load(replicatedDbName, primaryDbName, withConfigs);
+    replica.load(replicatedDbName_CM, primaryDbName, withConfigs);
     replica.run("alter database " + replicatedDbName + " set DBPROPERTIES ('" + SOURCE_OF_REPLICATION + "' = '1,2,3')")
         .run("alter database " + replicatedDbName_CM + " set DBPROPERTIES ('" + SOURCE_OF_REPLICATION + "' = '1,2,3')");
 
-    tuple = primary.run("use " + primaryDbName)
+    WarehouseInstance.Tuple tuple = primary.run("use " + primaryDbName)
             .run("insert into table t2 partition(country='india') values ('bangalore')")
-            .dump(primaryDbName, tuple.lastReplicationId);
+            .dump(primaryDbName, Collections.emptyList());
 
-    testMoveOptimization(primaryDbName, replicatedDbName, replicatedDbName_CM, "t2", "INSERT", tuple);
+    testMoveOptimization(primaryDbName, replicatedDbName, replicatedDbName_CM, "t2", "INSERT");
   }
 
   private void testMoveOptimization(String primaryDb, String replicaDb, String replicatedDbName_CM,
-                                    String tbl,  String eventType, WarehouseInstance.Tuple tuple) throws Throwable {
+                                    String tbl,  String eventType) throws Throwable {
     List<String> withConfigs =
         Collections.singletonList("'hive.repl.enable.move.optimization'='true'");
 
@@ -1537,13 +1396,13 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
 
     InjectableBehaviourObjectStore.setAddNotificationModifier(callerVerifier);
     try {
-      replica.loadFailure(replicaDb, tuple.dumpLocation, withConfigs);
+      replica.loadFailure(replicaDb, primaryDbName, withConfigs);
     } finally {
       InjectableBehaviourObjectStore.resetAddNotificationModifier();
     }
 
     callerVerifier.assertInjectionsPerformed(true, false);
-    replica.load(replicaDb, tuple.dumpLocation, withConfigs);
+    replica.load(replicaDb, primaryDbName, withConfigs);
 
     replica.run("use " + replicaDb)
             .run("select country from " + tbl + " where country == 'india'")
@@ -1554,13 +1413,13 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
 
     InjectableBehaviourObjectStore.setAddNotificationModifier(callerVerifier);
     try {
-      replica.loadFailure(replicatedDbName_CM, tuple.dumpLocation, withConfigs);
+      replica.loadFailure(replicatedDbName_CM, primaryDbName, withConfigs);
     } finally {
       InjectableBehaviourObjectStore.resetAddNotificationModifier();
     }
 
     callerVerifier.assertInjectionsPerformed(true, false);
-    replica.load(replicatedDbName_CM, tuple.dumpLocation, withConfigs);
+    replica.load(replicatedDbName_CM, primaryDbName, withConfigs);
 
     replica.run("use " + replicatedDbName_CM)
             .run("select country from " + tbl + " where country == 'india'")
@@ -1578,7 +1437,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .run("create table t2 (place string) partitioned by (country string)")
             .run("insert into table t2 partition(country='china') values ('shenzhen')")
             .run("insert into table t2 partition(country='india') values ('banaglore')")
-            .dump(primaryDbName, null);
+            .dump(primaryDbName);
 
     // fail setting ckpt directory property for table t1.
     BehaviourInjection<CallerArguments, Boolean> callerVerifier
@@ -1600,7 +1459,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     // again from start.
     InjectableBehaviourObjectStore.setAlterTableModifier(callerVerifier);
     try {
-      replica.loadFailure(replicatedDbName, tuple.dumpLocation);
+      replica.loadFailure(replicatedDbName, primaryDbName);
       callerVerifier.assertInjectionsPerformed(true, false);
     } finally {
       InjectableBehaviourObjectStore.resetAlterTableModifier();
@@ -1610,7 +1469,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     // is loaded before t2. So that scope is set to table in first iteration for table t1. In the next iteration, it
     // loads only remaining partitions of t2, so that the table tracker has no tasks.
     List<String> withConfigs = Arrays.asList("'hive.in.repl.test.files.sorted'='true'");
-    replica.load(replicatedDbName, tuple.dumpLocation, withConfigs);
+    replica.load(replicatedDbName, primaryDbName, withConfigs);
 
     replica.run("use " + replicatedDbName)
             .run("repl status " + replicatedDbName)

@@ -72,12 +72,26 @@ STAGE PLANS:
                 TableScan
                   alias: abcd
                   Statistics: Num rows: 7 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
                   Select Operator
                     expressions: a (type: int), b (type: int), c (type: int), d (type: int)
                     outputColumnNames: a, b, c, d
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 1, 2, 3]
                     Statistics: Num rows: 7 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count(DISTINCT b), count(DISTINCT c), sum(d)
+                      Group By Vectorization:
+                          aggregators: VectorUDAFCount(col 1:int) -> bigint, VectorUDAFCount(col 2:int) -> bigint, VectorUDAFSumLong(col 3:int) -> bigint
+                          className: VectorGroupByOperator
+                          groupByMode: HASH
+                          keyExpressions: col 0:int, col 1:int, col 2:int
+                          native: false
+                          vectorProcessingMode: HASH
+                          projectedOutputColumnNums: [0, 1, 2]
                       keys: a (type: int), b (type: int), c (type: int)
                       minReductionHashAggr: 0.14285713
                       mode: hash
@@ -88,16 +102,24 @@ STAGE PLANS:
                         null sort order: zzz
                         sort order: +++
                         Map-reduce partition columns: _col0 (type: int)
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkOperator
+                            native: false
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsNotMet: No DISTINCT columns IS false
                         Statistics: Num rows: 3 Data size: 108 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col5 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                notVectorizedReason: Aggregation Function expression for GROUPBY operator: DISTINCT not supported
-                vectorized: false
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Reducer 2 
             Execution mode: llap
             Reduce Vectorization:
@@ -190,7 +212,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                notVectorizedReason: Aggregation Function expression for GROUPBY operator: DISTINCT not supported
+                notVectorizedReason: GROUPBY operator: Aggregations with > 1 parameter are not supported count([Column[a], Column[b]])
                 vectorized: false
         Reducer 2 
             Execution mode: llap

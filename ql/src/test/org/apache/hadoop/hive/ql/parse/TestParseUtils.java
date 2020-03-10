@@ -78,7 +78,7 @@ public class TestParseUtils {
           {"LOAD DATA LOCAL INPATH './examples/files/kv.txt' " +
              "  OVERWRITE INTO TABLE a", TxnType.DEFAULT},
 
-          {"REPL LOAD a from './examples/files/kv.txt'", TxnType.DEFAULT},
+          {"REPL LOAD a INTO a", TxnType.DEFAULT},
           {"REPL DUMP a", TxnType.DEFAULT},
           {"REPL STATUS a", TxnType.DEFAULT},
 

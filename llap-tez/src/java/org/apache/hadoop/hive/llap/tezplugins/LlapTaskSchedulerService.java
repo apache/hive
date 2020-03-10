@@ -296,6 +296,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
   private int totalGuaranteed = 0, unusedGuaranteed = 0;
 
+  private final boolean consistentSplits;
   /**
    * An internal version to make sure we don't race and overwrite a newer totalGuaranteed count in
    * ZK with an older one, without requiring us to make ZK updates under the main writeLock.
@@ -345,6 +346,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
                                     LOCK_METRICS);
     readLock = lock.readLock();
     writeLock = lock.writeLock();
+    this.consistentSplits = HiveConf.getBoolVar(conf, ConfVars.LLAP_CLIENT_CONSISTENT_SPLITS);
 
     if (conf.getBoolean(LLAP_PLUGIN_ENDPOINT_ENABLED, false)) {
       JobTokenSecretManager sm = null;
@@ -444,8 +446,8 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
     String hostsString = HiveConf.getVar(conf, ConfVars.LLAP_DAEMON_SERVICE_HOSTS);
     LOG.info("Running with configuration: hosts={}, numSchedulableTasksPerNode={}, "
-        + "nodeBlacklistConf={}, localityConf={}",
-        hostsString, numSchedulableTasksPerNode, nodeBlacklistConf, localityDelayConf);
+        + "nodeBlacklistConf={}, localityConf={} consistentSplits={}",
+        hostsString, numSchedulableTasksPerNode, nodeBlacklistConf, localityDelayConf, consistentSplits);
     this.amRegistry = TezAmRegistryImpl.create(conf, true);
 
     synchronized (LlapTaskCommunicator.pluginInitLock) {
@@ -1476,7 +1478,13 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       }
 
       /* fall through - miss in locality or no locality-requested */
-      Collection<LlapServiceInstance> instances = activeInstances.getAllInstancesOrdered(true);
+      Collection<LlapServiceInstance> instances;
+      if (consistentSplits) {
+        instances = activeInstances.getAllInstancesOrdered(true);
+      } else {
+        // if consistent splits are not used we don't need the ordering as there will be no cache benefit anyways
+        instances = activeInstances.getAll();
+      }
       List<NodeInfo> allNodes = new ArrayList<>(instances.size());
       List<NodeInfo> activeNodesWithFreeSlots = new ArrayList<>();
       for (LlapServiceInstance inst : instances) {

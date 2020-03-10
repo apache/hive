@@ -17,11 +17,20 @@
  */
 package org.apache.hadoop.hive.ql.exec.spark;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSession;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManager;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.parse.ParseContext;
+import org.apache.hadoop.hive.ql.parse.spark.GenSparkUtils;
+import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hive.common.util.Ref;
+
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -37,6 +46,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 /**
@@ -85,6 +95,59 @@ public class TestSparkUtilities {
     // Then
     results.stream().map(f -> resolve(f)).forEach(ss -> assertEquals(ss, activeSparkSession.get()));
 
+  }
+
+  @Test
+  public void testCreateMoveTaskDoesntCreateCascadeTempDirs() throws Exception {
+    FileSinkOperator fsOp = mock(FileSinkOperator.class);
+    ParseContext pctx = mock(ParseContext.class);
+    Configuration conf = new Configuration();
+    conf.set("_hive.hdfs.session.path", "hdfs:/dummypath");
+    conf.set("_hive.local.session.path", "hdfs:/dummypath");
+    Context ctx = new Context(conf);
+    String executionId = ctx.getExecutionId();
+    Context ctxSpy = spy(ctx);
+    FileSinkDesc fileSinkDesc = mock(FileSinkDesc.class);
+
+    Path mrPath = new Path("hdfs:/tmp/.staging/" + executionId + "/-mr-10001");
+    Path mrPath2 = new Path("hdfs:/tmp/.staging/" + executionId + "/-mr-10002");
+    Path extPath = new Path("hdfs:/tmp/.staging/" + executionId + "/-ext-10001");
+    Path extPath2 = new Path("hdfs:/tmp/.staging/" + executionId + "/-ext-10002");
+
+    final Ref<Path> expectedPathRef = new Ref<>(mrPath);
+    final Ref<Path> testPathRef = new Ref<>(extPath);
+
+    doAnswer(invocationOnMock -> {
+      return ctxSpy;
+    }).when(pctx).getContext();
+    doAnswer(invocationOnMock -> {
+      return mrPath2;
+    }).when(ctxSpy).getMRTmpPath();
+    doAnswer(invocationOnMock -> {
+      return extPath2;
+    }).when(ctxSpy).getExternalTmpPath(any(Path.class));
+    doAnswer(invocationOnMock -> {
+      return testPathRef.value;
+    }).when(fileSinkDesc).getFinalDirName();
+    doAnswer(invocationOnMock -> {
+      return null;
+    }).when(fileSinkDesc).getLinkedFileSinkDesc();
+    doAnswer(invocationOnMock -> {
+      return fileSinkDesc;
+    }).when(fsOp).getConf();
+
+    doAnswer(invocationOnMock -> {
+      assertEquals(expectedPathRef.value, invocationOnMock.getArgumentAt(0, Path.class));
+      return null;
+    }).when(fileSinkDesc).setDirName(any(Path.class));
+
+    testPathRef.value = mrPath;
+    expectedPathRef.value = mrPath2;
+    GenSparkUtils.createMoveTask(null, true, fsOp, pctx, null, null, null);
+
+    testPathRef.value = extPath;
+    expectedPathRef.value = extPath2;
+    GenSparkUtils.createMoveTask(null, true, fsOp, pctx, null, null, null);
   }
 
   private SparkSession resolve(Future<SparkSession> future) {

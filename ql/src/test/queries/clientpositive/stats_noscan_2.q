@@ -1,7 +1,7 @@
 --! qt:dataset:src
 dfs -cp ${system:hive.root}/data/files/ext_test ${system:test.tmp.dir}/analyze_external;
 
--- test analyze table compute statistiscs [noscan] on external table 
+-- test analyze table compute statistiscs [noscan] on external table
 -- 1 test table
 CREATE EXTERNAL TABLE anaylyze_external (a INT) LOCATION '${system:test.tmp.dir}/analyze_external';
 SELECT * FROM anaylyze_external;
@@ -20,7 +20,7 @@ from src insert overwrite table texternal partition (insertdate='2008-01-01') se
 explain select count(*) from texternal where insertdate='2008-01-01';
 select count(*) from texternal where insertdate='2008-01-01';
 -- create external table
-CREATE EXTERNAL TABLE anaylyze_external (key string, val string) partitioned by (insertdate string) LOCATION "pfile://${system:test.tmp.dir}/texternal"; 
+CREATE EXTERNAL TABLE anaylyze_external (key string, val string) partitioned by (insertdate string) LOCATION "pfile://${system:test.tmp.dir}/texternal";
 ALTER TABLE anaylyze_external ADD PARTITION (insertdate='2008-01-01') location 'pfile://${system:test.tmp.dir}/texternal/2008-01-01';
 select count(*) from anaylyze_external where insertdate='2008-01-01';
 -- analyze
@@ -28,10 +28,9 @@ analyze table anaylyze_external PARTITION (insertdate='2008-01-01') compute stat
 describe formatted anaylyze_external PARTITION (insertdate='2008-01-01');
 analyze table anaylyze_external PARTITION (insertdate='2008-01-01') compute statistics;
 describe formatted anaylyze_external PARTITION (insertdate='2008-01-01');
-dfs -rmr ${system:test.tmp.dir}/texternal;
+dfs -rm -r ${system:test.tmp.dir}/texternal;
 explain select count(*) from anaylyze_external where insertdate='2008-01-01';
 select count(*) from anaylyze_external where insertdate='2008-01-01';
 drop table anaylyze_external;
 
-
-
+dfs -rm -r ${system:test.tmp.dir}/analyze_external;

@@ -625,6 +625,10 @@ public class BeeLineOpts implements Completer {
   }
 
   public void setHiveVariables(Map<String, String> hiveVariables) {
+    if (hiveVariables == null) {
+      this.hiveVariables.clear();
+      return;
+    }
     this.hiveVariables = hiveVariables;
   }
 
@@ -658,6 +662,10 @@ public class BeeLineOpts implements Completer {
   }
 
   public void setHiveConfVariables(Map<String, String> hiveConfVariables) {
+    if (hiveConfVariables == null) {
+      this.hiveConfVariables.clear();
+      return;
+    }
     this.hiveConfVariables = hiveConfVariables;
   }
 

@@ -97,8 +97,13 @@ import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
+import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TimestampLocalTZTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.security.alias.AbstractJavaKeyStoreProvider;
 import org.apache.hadoop.security.alias.CredentialProvider;
@@ -876,8 +881,64 @@ public abstract class BaseSemanticAnalyzer {
     case HiveParser.TOK_UNIONTYPE:
       return getUnionTypeStringFromAST(typeNode);
     default:
-      return DDLSemanticAnalyzer.getTypeName(typeNode);
+      return getTypeName(typeNode);
     }
+  }
+
+  private static final Map<Integer, String> TOKEN_TO_TYPE = new HashMap<Integer, String>();
+
+  static {
+    TOKEN_TO_TYPE.put(HiveParser.TOK_BOOLEAN, serdeConstants.BOOLEAN_TYPE_NAME);
+    TOKEN_TO_TYPE.put(HiveParser.TOK_TINYINT, serdeConstants.TINYINT_TYPE_NAME);
+    TOKEN_TO_TYPE.put(HiveParser.TOK_SMALLINT, serdeConstants.SMALLINT_TYPE_NAME);
+    TOKEN_TO_TYPE.put(HiveParser.TOK_INT, serdeConstants.INT_TYPE_NAME);
+    TOKEN_TO_TYPE.put(HiveParser.TOK_BIGINT, serdeConstants.BIGINT_TYPE_NAME);
+    TOKEN_TO_TYPE.put(HiveParser.TOK_FLOAT, serdeConstants.FLOAT_TYPE_NAME);
+    TOKEN_TO_TYPE.put(HiveParser.TOK_DOUBLE, serdeConstants.DOUBLE_TYPE_NAME);
+    TOKEN_TO_TYPE.put(HiveParser.TOK_STRING, serdeConstants.STRING_TYPE_NAME);
+    TOKEN_TO_TYPE.put(HiveParser.TOK_CHAR, serdeConstants.CHAR_TYPE_NAME);
+    TOKEN_TO_TYPE.put(HiveParser.TOK_VARCHAR, serdeConstants.VARCHAR_TYPE_NAME);
+    TOKEN_TO_TYPE.put(HiveParser.TOK_BINARY, serdeConstants.BINARY_TYPE_NAME);
+    TOKEN_TO_TYPE.put(HiveParser.TOK_DATE, serdeConstants.DATE_TYPE_NAME);
+    TOKEN_TO_TYPE.put(HiveParser.TOK_DATETIME, serdeConstants.DATETIME_TYPE_NAME);
+    TOKEN_TO_TYPE.put(HiveParser.TOK_TIMESTAMP, serdeConstants.TIMESTAMP_TYPE_NAME);
+    TOKEN_TO_TYPE.put(HiveParser.TOK_TIMESTAMPLOCALTZ, serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME);
+    TOKEN_TO_TYPE.put(HiveParser.TOK_INTERVAL_YEAR_MONTH, serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME);
+    TOKEN_TO_TYPE.put(HiveParser.TOK_INTERVAL_DAY_TIME, serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME);
+    TOKEN_TO_TYPE.put(HiveParser.TOK_DECIMAL, serdeConstants.DECIMAL_TYPE_NAME);
+  }
+
+  private static String getTypeName(ASTNode node) throws SemanticException {
+    int token = node.getType();
+    String typeName;
+
+    // datetime type isn't currently supported
+    if (token == HiveParser.TOK_DATETIME) {
+      throw new SemanticException(ErrorMsg.UNSUPPORTED_TYPE.getMsg());
+    }
+
+    switch (token) {
+    case HiveParser.TOK_CHAR:
+      CharTypeInfo charTypeInfo = ParseUtils.getCharTypeInfo(node);
+      typeName = charTypeInfo.getQualifiedName();
+      break;
+    case HiveParser.TOK_VARCHAR:
+      VarcharTypeInfo varcharTypeInfo = ParseUtils.getVarcharTypeInfo(node);
+      typeName = varcharTypeInfo.getQualifiedName();
+      break;
+    case HiveParser.TOK_TIMESTAMPLOCALTZ:
+      TimestampLocalTZTypeInfo timestampLocalTZTypeInfo =
+          TypeInfoFactory.getTimestampTZTypeInfo(null);
+      typeName = timestampLocalTZTypeInfo.getQualifiedName();
+      break;
+    case HiveParser.TOK_DECIMAL:
+      DecimalTypeInfo decTypeInfo = ParseUtils.getDecimalTypeTypeInfo(node);
+      typeName = decTypeInfo.getQualifiedName();
+      break;
+    default:
+      typeName = TOKEN_TO_TYPE.get(token);
+    }
+    return typeName;
   }
 
   private static String getStructTypeStringFromAST(ASTNode typeNode)

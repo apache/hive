@@ -31,6 +31,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
@@ -195,7 +196,7 @@ public class BasicStats {
     public void apply(BasicStats stats) {
       long ds = stats.getRawDataSize();
       if (ds <= 0) {
-        ds = stats.getTotalSize();
+        ds = stats.getTotalFileSize();
 
         // if data size is still 0 then get file size
         if (ds <= 0) {
@@ -228,6 +229,7 @@ public class BasicStats {
 
   private long currentNumRows;
   private long currentDataSize;
+  private long currentFileSize;
   private Statistics.State state;
 
   public BasicStats(Partish p) {
@@ -239,6 +241,7 @@ public class BasicStats {
 
     currentNumRows = rowCount;
     currentDataSize = rawDataSize;
+    currentFileSize = totalSize;
 
     if (currentNumRows > 0) {
       state = State.COMPLETE;
@@ -252,10 +255,12 @@ public class BasicStats {
     partish = null;
     List<Long> nrIn = Lists.newArrayList();
     List<Long> dsIn = Lists.newArrayList();
+    List<Long> fsIn = Lists.newArrayList();
     state = (partStats.size() == 0) ? State.COMPLETE : null;
     for (BasicStats ps : partStats) {
       nrIn.add(ps.getNumRows());
       dsIn.add(ps.getDataSize());
+      fsIn.add(ps.getTotalFileSize());
 
       if (state == null) {
         state = ps.getState();
@@ -265,6 +270,7 @@ public class BasicStats {
     }
     currentNumRows = StatsUtils.getSumIgnoreNegatives(nrIn);
     currentDataSize = StatsUtils.getSumIgnoreNegatives(dsIn);
+    currentFileSize = StatsUtils.getSumIgnoreNegatives(fsIn);
 
   }
 
@@ -292,8 +298,12 @@ public class BasicStats {
     currentDataSize = ds;
   }
 
-  protected long getTotalSize() {
-    return totalSize;
+  protected long getTotalFileSize() {
+    return currentFileSize;
+  }
+
+  public void setTotalFileSize(final long totalFileSize) {
+    this.currentFileSize = totalFileSize;
   }
 
   protected long getRawDataSize() {
@@ -305,10 +315,15 @@ public class BasicStats {
     long result = -1;
 
     if (params != null) {
-      try {
-        result = Long.parseLong(params.get(fieldName));
-      } catch (NumberFormatException e) {
-        result = -1;
+      String val = params.get(fieldName);
+      if (!StringUtils.isBlank(val)) {
+        try {
+          result = Long.parseLong(val);
+        } catch (NumberFormatException e) {
+          // Pass-through. This should not happen and we will LOG it,
+          // but do not fail query.
+          LOG.warn("Error parsing {} value: {}", fieldName, val);
+        }
       }
     }
     return result;

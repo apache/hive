@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.exec.repl;
 
 import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
@@ -75,13 +76,14 @@ import javax.security.auth.login.LoginException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
+import java.util.Base64;
+import java.util.ArrayList;
 import java.util.UUID;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.Writer;
 
@@ -119,24 +121,48 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   public int execute() {
     try {
       Hive hiveDb = getHive();
-      Path dumpRoot = new Path(conf.getVar(HiveConf.ConfVars.REPLDIR), getNextDumpDir());
-      DumpMetaData dmd = new DumpMetaData(dumpRoot, conf);
+      Path dumpRoot = new Path(conf.getVar(HiveConf.ConfVars.REPLDIR),
+              Base64.getEncoder().encodeToString(work.dbNameOrPattern.toLowerCase()
+                      .getBytes(StandardCharsets.UTF_8.name())));
+      Path currentDumpPath = new Path(dumpRoot, getNextDumpDir());
+      DumpMetaData dmd = new DumpMetaData(currentDumpPath, conf);
       // Initialize ReplChangeManager instance since we will require it to encode file URI.
       ReplChangeManager.getInstance(conf);
       Path cmRoot = new Path(conf.getVar(HiveConf.ConfVars.REPLCMDIR));
       Long lastReplId;
-      if (work.isBootStrapDump()) {
-        lastReplId = bootStrapDump(dumpRoot, dmd, cmRoot, hiveDb);
+      if (!dumpRoot.getFileSystem(conf).exists(dumpRoot)
+              || dumpRoot.getFileSystem(conf).listStatus(dumpRoot).length == 0) {
+        lastReplId = bootStrapDump(currentDumpPath, dmd, cmRoot, hiveDb);
       } else {
-        lastReplId = incrementalDump(dumpRoot, dmd, cmRoot, hiveDb);
+        work.setEventFrom(getEventFromPreviousDumpMetadata(dumpRoot));
+        lastReplId = incrementalDump(currentDumpPath, dmd, cmRoot, hiveDb);
       }
-      prepareReturnValues(Arrays.asList(dumpRoot.toUri().toString(), String.valueOf(lastReplId)));
+      prepareReturnValues(Arrays.asList(currentDumpPath.toUri().toString(), String.valueOf(lastReplId)));
     } catch (Exception e) {
       LOG.error("failed", e);
       setException(e);
       return ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
     }
     return 0;
+  }
+
+  private Long getEventFromPreviousDumpMetadata(Path dumpRoot) throws IOException, SemanticException {
+    FileStatus[] statuses = dumpRoot.getFileSystem(conf).listStatus(dumpRoot);
+    if (statuses.length > 0) {
+      FileStatus latestUpdatedStatus = statuses[0];
+      for (FileStatus status : statuses) {
+        if (status.getModificationTime() > latestUpdatedStatus.getModificationTime()) {
+          latestUpdatedStatus = status;
+        }
+      }
+      DumpMetaData dmd = new DumpMetaData(latestUpdatedStatus.getPath(), conf);
+      if (dmd.isIncrementalDump()) {
+        return dmd.getEventTo();
+      }
+      //bootstrap case return event from
+      return dmd.getEventFrom();
+    }
+    return 0L;
   }
 
   private void prepareReturnValues(List<String> values) throws SemanticException {

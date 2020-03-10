@@ -403,8 +403,8 @@ public class VectorPTFOperator extends Operator<PTFDesc>
       groupBatches.fillGroupResultsAndForward(this, batch);
     }
 
-    // If we are only processing a PARTITION BY, reset our evaluators.
-    if (!isPartitionOrderBy) {
+    // If we are only processing a PARTITION BY and isLastGroupBatch, reset our evaluators.
+    if (!isPartitionOrderBy && isLastGroupBatch) {
       groupBatches.resetEvaluators();
     }
   }

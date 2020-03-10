@@ -1869,7 +1869,8 @@ public class HiveConf extends Configuration {
         "org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe," +
         "org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe," +
         "org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe," +
-        "org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe",
+        "org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe," +
+        "org.apache.hadoop.hive.serde2.OpenCSVSerde",
         "SerDes retrieving schema from metastore. This is an internal parameter."),
 
     @Deprecated
@@ -2035,7 +2036,7 @@ public class HiveConf extends Configuration {
     HIVE_PARQUET_WRITE_INT64_TIMESTAMP("hive.parquet.write.int64.timestamp", false,
         "Write parquet timestamps as int64/LogicalTypes instead of int96/OriginalTypes. Note:" +
         "Timestamps will be time zone agnostic (NEVER converted to a different time zone)."),
-    HIVE_PARQUET_TIMESTAMP_TIME_UNIT("hive.parquet.timestamp.time.unit", "millis",
+    HIVE_PARQUET_TIMESTAMP_TIME_UNIT("hive.parquet.timestamp.time.unit", "micros",
         new StringSet("nanos", "micros", "millis"),
         "Store parquet int64/LogicalTypes timestamps in this time unit."),
 
@@ -2416,6 +2417,9 @@ public class HiveConf extends Configuration {
     HIVE_OPTIMIZE_TOPNKEY("hive.optimize.topnkey", true, "Whether to enable top n key optimizer."),
     HIVE_MAX_TOPN_ALLOWED("hive.optimize.topnkey.max", 128, "Maximum topN value allowed by top n key optimizer.\n" +
       "If the LIMIT is greater than this value then top n key optimization won't be used."),
+    HIVE_TOPN_EFFICIENCY_THRESHOLD("hive.optimize.topnkey.efficiency.threshold", 0.8f, "Disable topN key filter if the ratio between forwarded and total rows reaches this limit."),
+    HIVE_TOPN_EFFICIENCY_CHECK_BATCHES("hive.optimize.topnkey.efficiency.check.nbatches", 10000, "Check topN key filter efficiency after a specific number of batches."),
+    HIVE_TOPN_MAX_NUMBER_OF_PARTITIONS("hive.optimize.topnkey.partitions.max", 64, "Limit the maximum number of partitions used by the top N key operator."),
 
     HIVE_SHARED_WORK_OPTIMIZATION("hive.optimize.shared.work", true,
         "Whether to enable shared work optimizer. The optimizer finds scan operator over the same table\n" +
@@ -4045,7 +4049,7 @@ public class HiveConf extends Configuration {
         "When auto reducer parallelism is enabled this factor will be used to put a lower limit to the number\n" +
         "of reducers that tez specifies."),
     TEZ_OPTIMIZE_BUCKET_PRUNING(
-        "hive.tez.bucket.pruning", false,
+        "hive.tez.bucket.pruning", true,
          "When pruning is enabled, filters on bucket columns will be processed by \n" +
          "filtering the splits against a bitset of included buckets. This needs predicates \n"+
             "produced by hive.optimize.ppd and hive.optimize.index.filters."),
@@ -4869,6 +4873,8 @@ public class HiveConf extends Configuration {
     HIVE_SECURITY_AUTHORIZATION_SCHEDULED_QUERIES_SUPPORTED("hive.security.authorization.scheduled.queries.supported",
         false,
         "Enable this if the configured authorizer is able to handle scheduled query related calls."),
+    HIVE_SCHEDULED_QUERIES_MAX_EXECUTORS("hive.scheduled.queries.max.executors", 4, new RangeValidator(1, null),
+        "Maximal number of scheduled query executors to allow."),
 
     HIVE_QUERY_RESULTS_CACHE_ENABLED("hive.query.results.cache.enabled", true,
         "If the query results cache is enabled. This will keep results of previously executed queries " +

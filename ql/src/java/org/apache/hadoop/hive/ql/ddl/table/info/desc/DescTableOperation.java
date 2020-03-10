@@ -153,39 +153,42 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
       cols.addAll(table.getPartCols());
     }
 
-    if (table.isPartitioned() && partition == null) {
-      // No partition specified for partitioned table, lets fetch all.
-      Map<String, String> tblProps = table.getParameters() == null ?
-          new HashMap<String, String>() : table.getParameters();
+    // Fetch partition statistics only for describe extended or formatted.
+    if (desc.isExtended() || desc.isFormatted()) {
+      if (table.isPartitioned() && partition == null) {
+        // No partition specified for partitioned table, lets fetch all.
+        Map<String, String> tblProps = table.getParameters() == null ?
+                new HashMap<String, String>() : table.getParameters();
 
-      Map<String, Long> valueMap = new HashMap<>();
-      Map<String, Boolean> stateMap = new HashMap<>();
-      for (String stat : StatsSetupConst.SUPPORTED_STATS) {
-        valueMap.put(stat, 0L);
-        stateMap.put(stat, true);
-      }
-
-      PartitionIterable partitions = new PartitionIterable(context.getDb(), table, null,
-          MetastoreConf.getIntVar(context.getConf(), MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX));
-      int numParts = 0;
-      for (Partition p : partitions) {
-        Map<String, String> partitionProps = p.getParameters();
-        Boolean state = StatsSetupConst.areBasicStatsUptoDate(partitionProps);
+        Map<String, Long> valueMap = new HashMap<>();
+        Map<String, Boolean> stateMap = new HashMap<>();
         for (String stat : StatsSetupConst.SUPPORTED_STATS) {
-          stateMap.put(stat, stateMap.get(stat) && state);
-          if (partitionProps != null && partitionProps.get(stat) != null) {
-            valueMap.put(stat, valueMap.get(stat) + Long.parseLong(partitionProps.get(stat)));
-          }
+          valueMap.put(stat, 0L);
+          stateMap.put(stat, true);
         }
-        numParts++;
-      }
-      tblProps.put(StatsSetupConst.NUM_PARTITIONS, Integer.toString(numParts));
 
-      for (String stat : StatsSetupConst.SUPPORTED_STATS) {
-        StatsSetupConst.setBasicStatsState(tblProps, Boolean.toString(stateMap.get(stat)));
-        tblProps.put(stat, valueMap.get(stat).toString());
+        PartitionIterable partitions = new PartitionIterable(context.getDb(), table, null,
+                MetastoreConf.getIntVar(context.getConf(), MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX));
+        int numParts = 0;
+        for (Partition p : partitions) {
+          Map<String, String> partitionProps = p.getParameters();
+          Boolean state = StatsSetupConst.areBasicStatsUptoDate(partitionProps);
+          for (String stat : StatsSetupConst.SUPPORTED_STATS) {
+            stateMap.put(stat, stateMap.get(stat) && state);
+            if (partitionProps != null && partitionProps.get(stat) != null) {
+              valueMap.put(stat, valueMap.get(stat) + Long.parseLong(partitionProps.get(stat)));
+            }
+          }
+          numParts++;
+        }
+        tblProps.put(StatsSetupConst.NUM_PARTITIONS, Integer.toString(numParts));
+
+        for (String stat : StatsSetupConst.SUPPORTED_STATS) {
+          StatsSetupConst.setBasicStatsState(tblProps, Boolean.toString(stateMap.get(stat)));
+          tblProps.put(stat, valueMap.get(stat).toString());
+        }
+        table.setParameters(tblProps);
       }
-      table.setParameters(tblProps);
     }
   }
 

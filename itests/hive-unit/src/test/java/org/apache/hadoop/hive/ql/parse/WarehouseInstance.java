@@ -262,29 +262,33 @@ public class WarehouseInstance implements Closeable {
     }
   }
 
-  Tuple dump(String dbName, String lastReplicationId, List<String> withClauseOptions)
-      throws Throwable {
-    String dumpCommand =
-        "REPL DUMP " + dbName + (lastReplicationId == null ? "" : " FROM " + lastReplicationId);
-    if (!withClauseOptions.isEmpty()) {
-      dumpCommand += " with (" + StringUtils.join(withClauseOptions, ",") + ")";
-    }
-    return dump(dumpCommand);
+  Tuple dump(String dbName)
+          throws Throwable {
+    return dump(dbName, Collections.emptyList());
   }
 
-  Tuple dump(String replPolicy, String oldReplPolicy, String lastReplicationId, List<String> withClauseOptions)
+  Tuple dump(String dbName, List<String> withClauseOptions)
+      throws Throwable {
+    String dumpCommand =
+        "REPL DUMP " + dbName;
+    if (withClauseOptions != null && !withClauseOptions.isEmpty()) {
+      dumpCommand += " with (" + StringUtils.join(withClauseOptions, ",") + ")";
+    }
+    return dumpWithCommand(dumpCommand);
+  }
+
+  Tuple dump(String replPolicy, String oldReplPolicy, List<String> withClauseOptions)
           throws Throwable {
     String dumpCommand =
             "REPL DUMP " + replPolicy
-                    + (oldReplPolicy == null ? "" : " REPLACE " + oldReplPolicy)
-                    + (lastReplicationId == null ? "" : " FROM " + lastReplicationId);
+                    + (oldReplPolicy == null ? "" : " REPLACE " + oldReplPolicy);
     if (!withClauseOptions.isEmpty()) {
       dumpCommand += " with (" + StringUtils.join(withClauseOptions, ",") + ")";
     }
-    return dump(dumpCommand);
+    return dumpWithCommand(dumpCommand);
   }
 
-  Tuple dump(String dumpCommand) throws Throwable {
+  Tuple dumpWithCommand(String dumpCommand) throws Throwable {
     advanceDumpDir();
     run(dumpCommand);
     String dumpLocation = row0Result(0, false);
@@ -292,33 +296,37 @@ public class WarehouseInstance implements Closeable {
     return new Tuple(dumpLocation, lastDumpId);
   }
 
-  Tuple dump(String dbName, String lastReplicationId) throws Throwable {
-    return dump(dbName, lastReplicationId, Collections.emptyList());
-  }
-
-  WarehouseInstance dumpFailure(String dbName, String lastReplicationId) throws Throwable {
+  WarehouseInstance dumpFailure(String dbName) throws Throwable {
     String dumpCommand =
-            "REPL DUMP " + dbName + (lastReplicationId == null ? "" : " FROM " + lastReplicationId);
+            "REPL DUMP " + dbName;
     advanceDumpDir();
     runFailure(dumpCommand);
     return this;
   }
 
-  WarehouseInstance load(String replicatedDbName, String dumpLocation) throws Throwable {
-    run("EXPLAIN REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'");
+  WarehouseInstance load(String replicatedDbName, String primaryDbName) throws Throwable {
+    StringBuilder replCommand = new StringBuilder("REPL LOAD " + primaryDbName);
+    if (!StringUtils.isEmpty(replicatedDbName)) {
+      replCommand.append(" INTO " + replicatedDbName);
+    }
+    run("EXPLAIN " + replCommand.toString());
     printOutput();
-    run("REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'");
+    run(replCommand.toString());
     return this;
   }
 
-  WarehouseInstance loadWithoutExplain(String replicatedDbName, String dumpLocation) throws Throwable {
-    run("REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "' with ('hive.exec.parallel'='true')");
+  WarehouseInstance loadWithoutExplain(String replicatedDbName, String primaryDbName) throws Throwable {
+    StringBuilder replCommand = new StringBuilder("REPL LOAD " + primaryDbName);
+    if (!StringUtils.isEmpty(replicatedDbName)) {
+      replCommand.append(" INTO " + replicatedDbName);
+    }
+    run(replCommand.toString() + " with ('hive.exec.parallel'='true')");
     return this;
   }
 
-  WarehouseInstance load(String replicatedDbName, String dumpLocation, List<String> withClauseOptions)
+  WarehouseInstance load(String replicatedDbName, String primaryDbName, List<String> withClauseOptions)
           throws Throwable {
-    String replLoadCmd = "REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'";
+    String replLoadCmd = "REPL LOAD " + primaryDbName + " INTO " + replicatedDbName;
     if ((withClauseOptions != null) && !withClauseOptions.isEmpty()) {
       replLoadCmd += " WITH (" + StringUtils.join(withClauseOptions, ",") + ")";
     }
@@ -338,23 +346,23 @@ public class WarehouseInstance implements Closeable {
     return run(replStatusCmd);
   }
 
-  WarehouseInstance loadFailure(String replicatedDbName, String dumpLocation) throws Throwable {
-    loadFailure(replicatedDbName, dumpLocation, null);
+  WarehouseInstance loadFailure(String replicatedDbName, String primaryDbName) throws Throwable {
+    loadFailure(replicatedDbName, primaryDbName, null);
     return this;
   }
 
-  WarehouseInstance loadFailure(String replicatedDbName, String dumpLocation, List<String> withClauseOptions)
+  WarehouseInstance loadFailure(String replicatedDbName, String primaryDbName, List<String> withClauseOptions)
           throws Throwable {
-    String replLoadCmd = "REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'";
+    String replLoadCmd = "REPL LOAD " + primaryDbName + " INTO " + replicatedDbName;
     if ((withClauseOptions != null) && !withClauseOptions.isEmpty()) {
       replLoadCmd += " WITH (" + StringUtils.join(withClauseOptions, ",") + ")";
     }
     return runFailure(replLoadCmd);
   }
 
-  WarehouseInstance loadFailure(String replicatedDbName, String dumpLocation, List<String> withClauseOptions,
+  WarehouseInstance loadFailure(String replicatedDbName, String primaryDbName, List<String> withClauseOptions,
                                 int errorCode) throws Throwable {
-    String replLoadCmd = "REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'";
+    String replLoadCmd = "REPL LOAD " + primaryDbName + " INTO " + replicatedDbName;
     if ((withClauseOptions != null) && !withClauseOptions.isEmpty()) {
       replLoadCmd += " WITH (" + StringUtils.join(withClauseOptions, ",") + ")";
     }

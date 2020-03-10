@@ -29,6 +29,13 @@ public class ShortestJobFirstComparator extends LlapQueueComparatorBase {
     // Check if these belong to the same task, and work with withinDagPriority
     if (o1.getQueryId().equals(o2.getQueryId())) {
       // Same Query
+
+      if (fri1.getWithinDagPriority() == fri2.getWithinDagPriority()) {
+        // task_attempt within same vertex.
+        // Choose the attempt that was started earlier
+        return Long.compare(fri1.getCurrentAttemptStartTime(), fri2.getCurrentAttemptStartTime());
+      }
+
       // Within dag priority - lower values indicate higher priority.
       return Integer.compare(fri1.getWithinDagPriority(), fri2.getWithinDagPriority());
     }

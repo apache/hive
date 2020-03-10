@@ -375,8 +375,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     PreCboCtx cboCtx = new PreCboCtx();
     //change the location of position alias process here
     processPositionAlias(ast);
-    this.setAST(ast);
-    if (!genResolvedParseTree(cboCtx)) {
+    if (!genResolvedParseTree(ast, cboCtx)) {
       return null;
     }
     ASTNode queryForCbo = ast;
@@ -428,12 +427,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
   @Override
   @SuppressWarnings("rawtypes")
-  Operator genOPTree(PlannerContext plannerCtx) throws SemanticException {
+  Operator genOPTree(ASTNode ast, PlannerContext plannerCtx) throws SemanticException {
     Operator sinkOp = null;
     boolean skipCalcitePlan = false;
-
-    // Save original AST in case CBO tampers with the contents of ast to guarantee fail-safe behavior.
-    final ASTNode originalAst = (ASTNode) ParseDriver.adaptor.dupTree(this.getAST());
 
     if (!runCBO) {
       skipCalcitePlan = true;
@@ -449,14 +445,14 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // SA. We rely on the fact that CBO ignores the unknown tokens (create
       // table, destination), so if the query is otherwise ok, it is as if we
       // did remove those and gave CBO the proper AST. That is kinda hacky.
-      ASTNode queryForCbo = this.getAST();
+      ASTNode queryForCbo = ast;
       if (cboCtx.type == PreCboCtx.Type.CTAS || cboCtx.type == PreCboCtx.Type.VIEW) {
         queryForCbo = cboCtx.nodeOfInterest; // nodeOfInterest is the query
       }
       Pair<Boolean, String> canCBOHandleReason = canCBOHandleAst(queryForCbo, getQB(), cboCtx);
       runCBO = canCBOHandleReason.left;
       if (queryProperties.hasMultiDestQuery()) {
-        handleMultiDestQuery(this.getAST(), cboCtx);
+        handleMultiDestQuery(ast, cboCtx);
       }
 
       if (runCBO) {
@@ -487,7 +483,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
             ASTNode newAST = getOptimizedAST(newPlan);
 
             // 1.1. Fix up the query for insert/ctas/materialized views
-            newAST = fixUpAfterCbo(this.getAST(), newAST, cboCtx);
+            newAST = fixUpAfterCbo(ast, newAST, cboCtx);
 
             // 1.2. Fix up the query for materialization rebuild
             if (mvRebuildMode == MaterializationRebuildMode.AGGREGATE_REBUILD) {
@@ -617,14 +613,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
           runCBO = false;
           disableJoinMerge = defaultJoinMerge;
           disableSemJoinReordering = false;
-          // Make sure originalAst is used from here on.
           if (reAnalyzeAST) {
             init(true);
             prunedPartitions.clear();
             // Assumption: At this point Parse Tree gen & resolution will always
             // be true (since we started out that way).
-            this.setAST(originalAst);
-            super.genResolvedParseTree(new PlannerContext());
+            super.genResolvedParseTree(ast, new PlannerContext());
             skipCalcitePlan = true;
           }
         }
@@ -641,7 +635,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     if (skipCalcitePlan) {
-      sinkOp = super.genOPTree();
+      sinkOp = super.genOPTree(ast, plannerCtx);
     }
 
     return sinkOp;
