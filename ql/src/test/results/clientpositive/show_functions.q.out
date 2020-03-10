@@ -111,6 +111,7 @@ ds_cpc_sketch
 ds_cpc_stringify
 ds_cpc_union
 ds_cpc_union_f
+ds_freq_frequent_items
 ds_freq_sketch
 ds_freq_union
 ds_hll_estimate
@@ -167,7 +168,6 @@ ds_tuple_doublesummary_estimate
 ds_tuple_doublesummary_percentile
 ds_tuple_doublesummary_sketch
 ds_tuple_doublesummary_union
-dsfrequent_items
 e
 elt
 encode
@@ -619,6 +619,7 @@ ds_cpc_sketch
 ds_cpc_stringify
 ds_cpc_union
 ds_cpc_union_f
+ds_freq_frequent_items
 ds_freq_sketch
 ds_freq_union
 ds_hll_estimate
@@ -675,7 +676,6 @@ ds_tuple_doublesummary_estimate
 ds_tuple_doublesummary_percentile
 ds_tuple_doublesummary_sketch
 ds_tuple_doublesummary_union
-dsfrequent_items
 e
 elt
 encode
