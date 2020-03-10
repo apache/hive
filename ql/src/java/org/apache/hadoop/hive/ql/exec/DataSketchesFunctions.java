@@ -5,9 +5,9 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
 
 public class DataSketchesFunctions {
 
-  private static final String GET_PREFIX = "get_";
+  private static final String GET_PREFIX = "";
 
-  private static final String DATA_TO_SKETCH = "gen_sketch";
+  private static final String DATA_TO_SKETCH = "sketch";
   private static final String SKETCH_TO_ESTIMATE_WITH_ERROR_BOUNDS = GET_PREFIX + "estimate_bounds";
   private static final String SKETCH_TO_ESTIMATE = GET_PREFIX + "estimate";
   private static final String SKETCH_TO_STRING = "stringify";
@@ -26,7 +26,7 @@ public class DataSketchesFunctions {
   private static final String GET_FREQUENT_ITEMS = GET_PREFIX + "frequent_items";
   private static final String T_TEST = "ttest";
   private static final String SKETCH_TO_MEANS = GET_PREFIX + "means";
-  private static final String SKETCH_TO_NUMBER_OF_RETAINED_ENTRIES = "get_n_retained";
+  private static final String SKETCH_TO_NUMBER_OF_RETAINED_ENTRIES = GET_PREFIX + "n_retained";
   private static final String SKETCH_TO_QUANTILES_SKETCH = GET_PREFIX + "quantiles_sketch";
   private static final String SKETCH_TO_VALUES = GET_PREFIX + "values";
   private static final String SKETCH_TO_VARIANCES = GET_PREFIX + "variances";
@@ -144,7 +144,7 @@ public class DataSketchesFunctions {
   }
 
   private void registerFrequencies(String prefix) {
-    String p = prefix + "_";
+    String p = prefix + "_freq_";
     registerUDAF(org.apache.datasketches.hive.frequencies.DataToStringsSketchUDAF.class, p + DATA_TO_SKETCH);
     // FIXME: missing?
     //registerUDF(org.apache.datasketches.hive.frequencies.DoublesSketchToStringUDF.class, p + SKETCH_TO_STRING);

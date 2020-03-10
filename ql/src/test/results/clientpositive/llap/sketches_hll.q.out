@@ -28,31 +28,31 @@ POSTHOOK: query: create temporary table sketch_intermediate (category char(1), s
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@sketch_intermediate
-PREHOOK: query: insert into sketch_intermediate select category, ds_hll_dataToSketch(id) from sketch_input group by category
+PREHOOK: query: insert into sketch_intermediate select category, ds_hll_sketch(id) from sketch_input group by category
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sketch_input
 PREHOOK: Output: default@sketch_intermediate
-POSTHOOK: query: insert into sketch_intermediate select category, ds_hll_dataToSketch(id) from sketch_input group by category
+POSTHOOK: query: insert into sketch_intermediate select category, ds_hll_sketch(id) from sketch_input group by category
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sketch_input
 POSTHOOK: Output: default@sketch_intermediate
 POSTHOOK: Lineage: sketch_intermediate.category SIMPLE [(sketch_input)sketch_input.FieldSchema(name:category, type:char(1), comment:null), ]
 POSTHOOK: Lineage: sketch_intermediate.sketch EXPRESSION [(sketch_input)sketch_input.FieldSchema(name:id, type:int, comment:null), ]
-PREHOOK: query: select category, ds_hll_sketchToEstimate(sketch) from sketch_intermediate
+PREHOOK: query: select category, ds_hll_estimate(sketch) from sketch_intermediate
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sketch_intermediate
 #### A masked pattern was here ####
-POSTHOOK: query: select category, ds_hll_sketchToEstimate(sketch) from sketch_intermediate
+POSTHOOK: query: select category, ds_hll_estimate(sketch) from sketch_intermediate
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sketch_intermediate
 #### A masked pattern was here ####
 a	10.000000223517425
 b	10.000000223517425
-PREHOOK: query: select ds_hll_sketchToEstimate(ds_hll_unionSketch(sketch)) from sketch_intermediate
+PREHOOK: query: select ds_hll_estimate(ds_hll_union(sketch)) from sketch_intermediate
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sketch_intermediate
 #### A masked pattern was here ####
-POSTHOOK: query: select ds_hll_sketchToEstimate(ds_hll_unionSketch(sketch)) from sketch_intermediate
+POSTHOOK: query: select ds_hll_estimate(ds_hll_union(sketch)) from sketch_intermediate
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sketch_intermediate
 #### A masked pattern was here ####

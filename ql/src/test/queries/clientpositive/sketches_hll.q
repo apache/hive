@@ -6,11 +6,11 @@ insert into table sketch_input values
 
 -- build sketches per category
 create temporary table sketch_intermediate (category char(1), sketch binary);
-insert into sketch_intermediate select category, ds_hll_dataToSketch(id) from sketch_input group by category;
+insert into sketch_intermediate select category, ds_hll_sketch(id) from sketch_input group by category;
 
 -- get unique count estimates per category
-select category, ds_hll_sketchToEstimate(sketch) from sketch_intermediate;
+select category, ds_hll_estimate(sketch) from sketch_intermediate;
 
 
 -- union sketches across categories and get overall unique count estimate
-select ds_hll_sketchToEstimate(ds_hll_unionSketch(sketch)) from sketch_intermediate;
+select ds_hll_estimate(ds_hll_union(sketch)) from sketch_intermediate;

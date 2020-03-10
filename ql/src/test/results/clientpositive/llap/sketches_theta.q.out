@@ -28,31 +28,31 @@ POSTHOOK: query: create temporary table sketch_intermediate (category char(1), s
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@sketch_intermediate
-PREHOOK: query: insert into sketch_intermediate select category, ds_theta_datatosketch(id) from theta_input group by category
+PREHOOK: query: insert into sketch_intermediate select category, ds_theta_sketch(id) from theta_input group by category
 PREHOOK: type: QUERY
 PREHOOK: Input: default@theta_input
 PREHOOK: Output: default@sketch_intermediate
-POSTHOOK: query: insert into sketch_intermediate select category, ds_theta_datatosketch(id) from theta_input group by category
+POSTHOOK: query: insert into sketch_intermediate select category, ds_theta_sketch(id) from theta_input group by category
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@theta_input
 POSTHOOK: Output: default@sketch_intermediate
 POSTHOOK: Lineage: sketch_intermediate.category SIMPLE [(theta_input)theta_input.FieldSchema(name:category, type:char(1), comment:null), ]
 POSTHOOK: Lineage: sketch_intermediate.sketch EXPRESSION [(theta_input)theta_input.FieldSchema(name:id, type:int, comment:null), ]
-PREHOOK: query: select category, ds_theta_sketchtoestimate(sketch) from sketch_intermediate
+PREHOOK: query: select category, ds_theta_estimate(sketch) from sketch_intermediate
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sketch_intermediate
 #### A masked pattern was here ####
-POSTHOOK: query: select category, ds_theta_sketchtoestimate(sketch) from sketch_intermediate
+POSTHOOK: query: select category, ds_theta_estimate(sketch) from sketch_intermediate
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sketch_intermediate
 #### A masked pattern was here ####
 a	10.0
 b	10.0
-PREHOOK: query: select ds_theta_sketchtoestimate(ds_theta_unionSketch(sketch)) from sketch_intermediate
+PREHOOK: query: select ds_theta_estimate(ds_theta_union(sketch)) from sketch_intermediate
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sketch_intermediate
 #### A masked pattern was here ####
-POSTHOOK: query: select ds_theta_sketchtoestimate(ds_theta_unionSketch(sketch)) from sketch_intermediate
+POSTHOOK: query: select ds_theta_estimate(ds_theta_union(sketch)) from sketch_intermediate
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sketch_intermediate
 #### A masked pattern was here ####
@@ -85,34 +85,34 @@ POSTHOOK: query: create temporary table sketch_intermediate2 (sketch1 binary, sk
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@sketch_intermediate2
-PREHOOK: query: insert into sketch_intermediate2 select ds_theta_datatosketch(id1), ds_theta_datatosketch(id2) from sketch_input
+PREHOOK: query: insert into sketch_intermediate2 select ds_theta_sketch(id1), ds_theta_sketch(id2) from sketch_input
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sketch_input
 PREHOOK: Output: default@sketch_intermediate2
-POSTHOOK: query: insert into sketch_intermediate2 select ds_theta_datatosketch(id1), ds_theta_datatosketch(id2) from sketch_input
+POSTHOOK: query: insert into sketch_intermediate2 select ds_theta_sketch(id1), ds_theta_sketch(id2) from sketch_input
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sketch_input
 POSTHOOK: Output: default@sketch_intermediate2
 POSTHOOK: Lineage: sketch_intermediate2.sketch1 EXPRESSION [(sketch_input)sketch_input.FieldSchema(name:id1, type:int, comment:null), ]
 POSTHOOK: Lineage: sketch_intermediate2.sketch2 EXPRESSION [(sketch_input)sketch_input.FieldSchema(name:id2, type:int, comment:null), ]
 PREHOOK: query: select
-  ds_theta_sketchtoestimate(sketch1),
-  ds_theta_sketchtoestimate(sketch2),
-  ds_theta_sketchtoestimate(ds_theta_unionSketch1(sketch1, sketch2)),
-  ds_theta_sketchtoestimate(ds_theta_intersect(sketch1, sketch2)),
-  ds_theta_sketchtoestimate(ds_theta_exclude(sketch1, sketch2)),
-  ds_theta_sketchtoestimate(ds_theta_exclude(sketch2, sketch1))
+  ds_theta_estimate(sketch1),
+  ds_theta_estimate(sketch2),
+  ds_theta_estimate(ds_theta_union_f(sketch1, sketch2)),
+  ds_theta_estimate(ds_theta_intersect_f(sketch1, sketch2)),
+  ds_theta_estimate(ds_theta_exclude(sketch1, sketch2)),
+  ds_theta_estimate(ds_theta_exclude(sketch2, sketch1))
 from sketch_intermediate2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sketch_intermediate2
 #### A masked pattern was here ####
 POSTHOOK: query: select
-  ds_theta_sketchtoestimate(sketch1),
-  ds_theta_sketchtoestimate(sketch2),
-  ds_theta_sketchtoestimate(ds_theta_unionSketch1(sketch1, sketch2)),
-  ds_theta_sketchtoestimate(ds_theta_intersect(sketch1, sketch2)),
-  ds_theta_sketchtoestimate(ds_theta_exclude(sketch1, sketch2)),
-  ds_theta_sketchtoestimate(ds_theta_exclude(sketch2, sketch1))
+  ds_theta_estimate(sketch1),
+  ds_theta_estimate(sketch2),
+  ds_theta_estimate(ds_theta_union_f(sketch1, sketch2)),
+  ds_theta_estimate(ds_theta_intersect_f(sketch1, sketch2)),
+  ds_theta_estimate(ds_theta_exclude(sketch1, sketch2)),
+  ds_theta_estimate(ds_theta_exclude(sketch2, sketch1))
 from sketch_intermediate2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sketch_intermediate2

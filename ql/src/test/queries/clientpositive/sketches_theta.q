@@ -6,11 +6,11 @@ insert into table theta_input values
   (6, 'b'), (7, 'b'), (8, 'b'), (9, 'b'), (10, 'b'), (11, 'b'), (12, 'b'), (13, 'b'), (14, 'b'), (15, 'b');
 
 create temporary table sketch_intermediate (category char(1), sketch binary);
-insert into sketch_intermediate select category, ds_theta_datatosketch(id) from theta_input group by category;
+insert into sketch_intermediate select category, ds_theta_sketch(id) from theta_input group by category;
 
-select category, ds_theta_sketchtoestimate(sketch) from sketch_intermediate;
+select category, ds_theta_estimate(sketch) from sketch_intermediate;
 
-select ds_theta_sketchtoestimate(ds_theta_unionSketch(sketch)) from sketch_intermediate;
+select ds_theta_estimate(ds_theta_union(sketch)) from sketch_intermediate;
 
 
 
@@ -20,14 +20,14 @@ insert into table sketch_input values
 
 create temporary table sketch_intermediate2 (sketch1 binary, sketch2 binary);
 
-insert into sketch_intermediate2 select ds_theta_datatosketch(id1), ds_theta_datatosketch(id2) from sketch_input;
+insert into sketch_intermediate2 select ds_theta_sketch(id1), ds_theta_sketch(id2) from sketch_input;
 
 select
-  ds_theta_sketchtoestimate(sketch1),
-  ds_theta_sketchtoestimate(sketch2),
-  ds_theta_sketchtoestimate(ds_theta_unionSketch1(sketch1, sketch2)),
-  ds_theta_sketchtoestimate(ds_theta_intersect(sketch1, sketch2)),
-  ds_theta_sketchtoestimate(ds_theta_exclude(sketch1, sketch2)),
-  ds_theta_sketchtoestimate(ds_theta_exclude(sketch2, sketch1))
+  ds_theta_estimate(sketch1),
+  ds_theta_estimate(sketch2),
+  ds_theta_estimate(ds_theta_union_f(sketch1, sketch2)),
+  ds_theta_estimate(ds_theta_intersect_f(sketch1, sketch2)),
+  ds_theta_estimate(ds_theta_exclude(sketch1, sketch2)),
+  ds_theta_estimate(ds_theta_exclude(sketch2, sketch1))
 from sketch_intermediate2;
 
