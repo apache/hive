@@ -120,11 +120,19 @@ public class CliDriver {
   public CommandProcessorResponse processCmd(String cmd) throws CommandProcessorException {
     CliSessionState ss = (CliSessionState) SessionState.get();
     ss.setLastCommand(cmd);
-
-    ss.updateThreadName();
-
     // Flush the print stream, so it doesn't include output from the last command
     ss.err.flush();
+    try {
+      ss.updateThreadName();
+      return processCmd1(cmd);
+    } finally {
+      ss.resetThreadName();
+    }
+  }
+
+  public CommandProcessorResponse processCmd1(String cmd) throws CommandProcessorException {
+    CliSessionState ss = (CliSessionState) SessionState.get();
+
     String cmd_trimmed = HiveStringUtils.removeComments(cmd).trim();
     String[] tokens = tokenizeCmd(cmd_trimmed);
     CommandProcessorResponse response = new CommandProcessorResponse();
@@ -206,7 +214,6 @@ public class CliDriver {
       }
     }
 
-    ss.resetThreadName();
     return response;
   }
 
