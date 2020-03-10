@@ -200,7 +200,8 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
 
   public static HivePrivilegeObject forScheduledQuery(String owner, String clusterNamespace, String scheduleName) {
     return new HivePrivilegeObject(HivePrivilegeObjectType.SCHEDULED_QUERY,
-        /*dbName*/clusterNamespace, /*objectName*/scheduleName, null, null, null, null, null,
+        /*dbName*/clusterNamespace, /*objectName*/scheduleName, null, null,
+        /*actionType*/HivePrivObjectActionType.OTHER, null, null,
         /*ownerName*/owner, null);
   }
 
