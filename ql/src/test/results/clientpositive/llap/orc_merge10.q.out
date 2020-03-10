@@ -166,8 +166,10 @@ POSTHOOK: Lineage: orcfile_merge1 PARTITION(ds=1,part=0).key EXPRESSION [(src)sr
 POSTHOOK: Lineage: orcfile_merge1 PARTITION(ds=1,part=0).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: orcfile_merge1 PARTITION(ds=1,part=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: orcfile_merge1 PARTITION(ds=1,part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-Found 1 items
--rw-rw-rw-   3 ### USER ### ### GROUP ###       1756 ### HDFS DATE ### hdfs://### HDFS PATH ###
+Found 3 items
+-rw-rw-rw-   3 ### USER ### ### GROUP ###        949 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###        877 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###        858 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: EXPLAIN
     INSERT OVERWRITE TABLE orcfile_merge1b PARTITION (ds='1', part)
         SELECT key, value, PMOD(HASH(key), 2) as part
@@ -515,7 +517,7 @@ POSTHOOK: Lineage: orcfile_merge1c PARTITION(ds=1,part=0).value SIMPLE [(src)src
 POSTHOOK: Lineage: orcfile_merge1c PARTITION(ds=1,part=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: orcfile_merge1c PARTITION(ds=1,part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 Found 1 items
--rw-rw-rw-   3 ### USER ### ### GROUP ###       1756 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       2411 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c)
     FROM orcfile_merge1 WHERE ds='1'
@@ -627,7 +629,7 @@ POSTHOOK: type: ALTER_PARTITION_MERGE
 POSTHOOK: Input: default@orcfile_merge1
 POSTHOOK: Output: default@orcfile_merge1@ds=1/part=0
 Found 1 items
--rw-rw-rw-   3 ### USER ### ### GROUP ###       1756 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       2411 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c)
     FROM orcfile_merge1c WHERE ds='1'
@@ -775,7 +777,7 @@ Stripes:
     Row group indices for column 2:
       Entry 0: count: 74 hasNull: false min: val_105 max: val_97 sum: 505 positions: 0,0,0,0,0
 
-File length: 1756 bytes
+File length: 2411 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________
@@ -865,7 +867,7 @@ Stripes:
     Row group indices for column 2:
       Entry 0: count: 74 hasNull: false min: val_105 max: val_97 sum: 505 positions: 0,0,0,0,0
 
-File length: 1756 bytes
+File length: 2411 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________
