@@ -39,7 +39,6 @@ public class HiveTypeSystemImpl extends RelDataTypeSystemImpl {
   private static final int MAX_BINARY_PRECISION      = Integer.MAX_VALUE;
   private static final int MAX_TIMESTAMP_PRECISION   = 9;
   private static final int MAX_TIMESTAMP_WITH_LOCAL_TIME_ZONE_PRECISION = 15; // Up to nanos
-  private static final int DEFAULT_BOOLEAN_PRECISION  = 1;
   private static final int DEFAULT_TINYINT_PRECISION  = 3;
   private static final int DEFAULT_SMALLINT_PRECISION = 5;
   private static final int DEFAULT_INTEGER_PRECISION  = 10;
@@ -103,8 +102,6 @@ public class HiveTypeSystemImpl extends RelDataTypeSystemImpl {
     case INTERVAL_MINUTE_SECOND:
     case INTERVAL_SECOND:
       return SqlTypeName.DEFAULT_INTERVAL_START_PRECISION;
-    case BOOLEAN:
-      return DEFAULT_BOOLEAN_PRECISION;
     case TINYINT:
       return DEFAULT_TINYINT_PRECISION;
     case SMALLINT:
@@ -177,6 +174,9 @@ public class HiveTypeSystemImpl extends RelDataTypeSystemImpl {
       RelDataType argumentType) {
     switch (argumentType.getSqlTypeName()) {
       case DECIMAL:
+        // In Hive, SUM aggregate on decimal column will add 10 to compute
+        // the output precision; see
+        // GenericUDAFSum.GenericUDAFSumHiveDecimal#getOutputDecimalTypeInfoForSum
         return typeFactory.createSqlType(
             SqlTypeName.DECIMAL,
             Math.min(MAX_DECIMAL_PRECISION, argumentType.getPrecision() + 10),
