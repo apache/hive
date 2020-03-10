@@ -135,10 +135,10 @@ Stage-0
               Output:["_col0","_col1","_col2"]
               TableScan [TS_0] (rows=2 width=237)
                 default@char_tbl1,c1,Tbl:COMPLETE,Col:COMPLETE,Output:["name","age"]
-          Dynamic Partitioning Event Operator [EVENT_26] (rows=1 width=99)
-            Group By Operator [GBY_25] (rows=1 width=99)
+          Dynamic Partitioning Event Operator [EVENT_26] (rows=1 width=134)
+            Group By Operator [GBY_25] (rows=1 width=134)
               Output:["_col0"],keys:_col0
-              Select Operator [SEL_24] (rows=2 width=237)
+              Select Operator [SEL_24] (rows=2 width=134)
                 Output:["_col0"]
                  Please refer to the previous Select Operator [SEL_22]
         <-Map 3 [SIMPLE_EDGE] vectorized

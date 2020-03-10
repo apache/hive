@@ -470,6 +470,9 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
     SelectDesc select = new SelectDesc(keyExprs, outputNames);
     SelectOperator selectOp =
         (SelectOperator) OperatorFactory.getAndMakeChild(select, new RowSchema(selectColInfos), parentOfRS);
+    Map<String, ExprNodeDesc> selectColumnExprMap = new HashMap<>();
+    selectColumnExprMap.put(outputNames.get(0), key);
+    selectOp.setColumnExprMap(selectColumnExprMap);
 
     // do a group by on the list to dedup
     float groupByMemoryUsage =

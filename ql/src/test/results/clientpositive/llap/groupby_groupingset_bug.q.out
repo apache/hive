@@ -276,7 +276,7 @@ Stage-0
                           Dynamic Partitioning Event Operator [EVENT_131] (rows=1 width=4)
                             Group By Operator [GBY_130] (rows=1 width=4)
                               Output:["_col0"],keys:_col0
-                              Select Operator [SEL_129] (rows=28 width=8)
+                              Select Operator [SEL_129] (rows=28 width=4)
                                 Output:["_col0"]
                                  Please refer to the previous Map Join Operator [MAPJOIN_127]
                         <-Map Join Operator [MAPJOIN_134] (rows=370371 width=4)
