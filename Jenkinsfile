@@ -125,6 +125,7 @@ stage('Testing') {
 
       withEnv(["MULTIPLIER=$params.MULTIPLIER","M_OPTS=$params.OPTS"]) {
         sh '''#!/bin/bash -e
+export USER="`whoami`"
 OPTS=" -s $SETTINGS -B install -Dmaven.test.failure.ignore -Dtest.groups= "
 OPTS+=" -q"
 OPTS+=" -Pitests,qsplits"
