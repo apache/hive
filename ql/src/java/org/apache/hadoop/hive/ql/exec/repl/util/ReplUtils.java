@@ -98,7 +98,10 @@ public class ReplUtils {
   // Configuration to enable/disable dumping ACID tables. Used only for testing and shouldn't be
   // seen in production or in case of tests other than the ones where it's required.
   public static final String REPL_DUMP_INCLUDE_ACID_TABLES = "hive.repl.dump.include.acid.tables";
-
+  //Acknoledgement for repl dump complete
+  public static final String DUMP_ACKNOWLEDGEMENT = "_finished_dump";
+  //Acknoledgement for repl load complete
+  public static final String LOAD_ACKNOWLEDGEMENT = "_finished_load";
   /**
    * Bootstrap REPL LOAD operation type on the examined object based on ckpt state.
    */

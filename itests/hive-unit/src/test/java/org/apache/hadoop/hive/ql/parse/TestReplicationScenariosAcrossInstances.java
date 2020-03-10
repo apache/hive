@@ -689,18 +689,6 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .run("insert into table2 partition(country='india') values(1)")
             .dump(primaryDbName, Collections.emptyList());
 
-    // Second incremental dump
-    WarehouseInstance.Tuple secondIncremental = primary.run("use " + primaryDbName)
-            .run("drop table table1")
-            .run("drop table table2")
-            .run("create table table2 (id int) partitioned by (country string)")
-            .run("alter table table2 add partition(country='india')")
-            .run("alter table table2 drop partition(country='india')")
-            .run("insert into table2 partition(country='us') values(2)")
-            .run("create table table1 (i int)")
-            .run("insert into table1 values (2)")
-            .dump(primaryDbName, Collections.emptyList());
-
     // First incremental load
     replica.load(replicatedDbName, primaryDbName)
             .status(replicatedDbName)
@@ -712,6 +700,18 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .verifyResults(new String[] {"1"})
             .run("select id from table2 order by id")
             .verifyResults(new String[] {"1"});
+
+    // Second incremental dump
+    WarehouseInstance.Tuple secondIncremental = primary.run("use " + primaryDbName)
+            .run("drop table table1")
+            .run("drop table table2")
+            .run("create table table2 (id int) partitioned by (country string)")
+            .run("alter table table2 add partition(country='india')")
+            .run("alter table table2 drop partition(country='india')")
+            .run("insert into table2 partition(country='us') values(2)")
+            .run("create table table1 (i int)")
+            .run("insert into table1 values (2)")
+            .dump(primaryDbName, Collections.emptyList());
 
     // Second incremental load
     replica.load(replicatedDbName, primaryDbName)
@@ -746,6 +746,18 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
         .run("insert into table3 partition(country='india') values(3)")
         .dump(primaryDbName, Collections.emptyList());
 
+    // First incremental load
+    replica.load(replicatedDbName, primaryDbName)
+            .status(replicatedDbName)
+            .verifyResult(firstIncremental.lastReplicationId)
+            .run("use " + replicatedDbName)
+            .run("select id from table1")
+            .verifyResults(new String[] {"1"})
+            .run("select * from table2")
+            .verifyResults(new String[] {"2"})
+            .run("select id from table3")
+            .verifyResults(new String[] {"3"});
+
     // Second incremental dump
     WarehouseInstance.Tuple secondIncremental = primary.run("use " + primaryDbName)
         .run("drop table table1")
@@ -758,18 +770,6 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
         .run("create table table3 (id int) partitioned by (name string, rank int)")
         .run("insert into table3 partition(name='adam', rank=100) values(30)")
         .dump(primaryDbName, Collections.emptyList());
-
-    // First incremental load
-    replica.load(replicatedDbName, primaryDbName)
-        .status(replicatedDbName)
-        .verifyResult(firstIncremental.lastReplicationId)
-        .run("use " + replicatedDbName)
-        .run("select id from table1")
-        .verifyResults(new String[] { "1" })
-        .run("select * from table2")
-        .verifyResults(new String[] { "2" })
-        .run("select id from table3")
-        .verifyResults(new String[] { "3" });
 
     // Second incremental load
     replica.load(replicatedDbName, primaryDbName)
@@ -880,16 +880,6 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     } catch (CommandProcessorException e) {
       assertTrue(e.getMessage().toLowerCase().contains("semanticException no data to load in path".toLowerCase()));
     }
-
-    // Bootstrap load from an empty dump directory should return empty load directory error. Since we have repl status
-    //check on target
-    tuple = primary.dump("someJunkDB");
-    try {
-      replica.runCommand("REPL LOAD someJunkDB into someJunkDB ");
-    } catch (CommandProcessorException e) {
-      assertTrue(e.getMessage().toLowerCase().contains("semanticException no data to load in path".toLowerCase()));
-    }
-
     primary.run(" drop database if exists " + testDbName + " cascade");
   }
 
@@ -934,7 +924,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     Path path = new Path(hiveDumpDir);
     FileSystem fs = path.getFileSystem(conf);
     FileStatus[] fileStatus = fs.listStatus(path);
-    int numEvents = fileStatus.length - 2; //one is metadata file and one data dir
+    int numEvents = fileStatus.length - 3; //one is metadata file and one data dir and one is _dump ack
 
     replica.load(replicatedDbName, primaryDbName,
         Collections.singletonList("'hive.repl.approx.max.load.tasks'='1'"))

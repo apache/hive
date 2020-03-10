@@ -60,6 +60,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
+import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 
 import java.io.IOException;
@@ -97,17 +98,38 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
 
   @Override
   public int execute() {
-    Task<?> rootTask = work.getRootTask();
-    if (rootTask != null) {
-      rootTask.setChildTasks(null);
+    try {
+      Task<?> rootTask = work.getRootTask();
+      if (rootTask != null) {
+        rootTask.setChildTasks(null);
+      }
+      work.setRootTask(this);
+      this.parentTasks = null;
+      int status = 0;
+      if (work.isIncrementalLoad()) {
+        status = executeIncrementalLoad();
+        //All repl load tasks are executed and status is 0, write the load ack
+        if (status == 0 && !work.incrementalLoadTasksBuilder().hasMoreWork()) {
+          writeLoadCompleteAck(work.dumpDirectory);
+        }
+      } else {
+        status = executeBootStrapLoad();
+        //All repl load tasks are executed and status is 0, write the load ack
+        if (status == 0 && !work.hasBootstrapLoadTasks()) {
+          writeLoadCompleteAck(work.dumpDirectory);
+        }
+      }
+      return status;
+    } catch (SemanticException e) {
+      LOG.error("failed", e);
+      setException(e);
+      return ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
     }
-    work.setRootTask(this);
-    this.parentTasks = null;
-    if (work.isIncrementalLoad()) {
-      return executeIncrementalLoad();
-    } else {
-      return executeBootStrapLoad();
-    }
+  }
+
+  private void writeLoadCompleteAck(String dumpDirectory) throws SemanticException {
+    Path ackPath = new Path(dumpDirectory, ReplUtils.LOAD_ACKNOWLEDGEMENT);
+    Utils.write(ackPath, conf);
   }
 
   private int executeBootStrapLoad() {

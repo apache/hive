@@ -83,7 +83,6 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   // By default, this will be same as that of super class BaseSemanticAnalyzer. But need to obtain again
   // if the Hive configs are received from WITH clause in REPL LOAD or REPL STATUS commands.
   private Hive db;
-  private boolean isTargetAlreadyLoaded;
 
   private static final String dumpSchema = "dump_dir,last_repl_id#string,string";
 
@@ -390,7 +389,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       // tells us what is inside that dumpdir.
 
       //If repl status of target is greater than dumps, don't do anything as the load for the latest dump is done
-      if (!isTargetAlreadyLoaded) {
+      if (loadPath != null) {
         DumpMetaData dmd = new DumpMetaData(loadPath, conf);
 
         boolean evDump = false;
@@ -406,6 +405,8 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
                 queryState.getLineageState(), evDump, dmd.getEventTo(),
                 dirLocationsToCopy(loadPath, evDump));
         rootTasks.add(TaskFactory.get(replLoadWork, conf));
+      } else {
+        LOG.warn("Previous Dump Already Loaded");
       }
     } catch (Exception e) {
       // TODO : simple wrap & rethrow for now, clean up with error codes
@@ -429,36 +430,28 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     FileStatus[] statuses = loadPathBase.getFileSystem(conf).listStatus(loadPathBase);
     if (statuses.length > 0) {
-      //sort based on last modified. Recent one is at the end
+      //sort based on last modified. Recent one is at the beginning
       Arrays.sort(statuses, new Comparator<FileStatus>() {
         public int compare(FileStatus f1, FileStatus f2) {
-          return Long.compare(f1.getModificationTime(), f2.getModificationTime());
+          return Long.compare(f2.getModificationTime(), f1.getModificationTime());
         }
       });
-      if (replScope.getDbName() != null) {
-        String currentReplStatusOfTarget
-                = getReplStatus(replScope.getDbName());
-        if (currentReplStatusOfTarget == null) { //bootstrap
-          return new Path(statuses[0].getPath(), ReplUtils.REPL_HIVE_BASE_DIR);
-        } else {
-          DumpMetaData latestDump = new DumpMetaData(
-                  new Path(statuses[statuses.length - 1].getPath(), ReplUtils.REPL_HIVE_BASE_DIR), conf);
-          if (Long.parseLong(currentReplStatusOfTarget.trim()) >= latestDump.getEventTo()) {
-            isTargetAlreadyLoaded = true;
-          } else {
-            for (FileStatus status : statuses) {
-              Path hiveLoadPath = new Path(status.getPath(), ReplUtils.REPL_HIVE_BASE_DIR);
-              DumpMetaData dmd = new DumpMetaData(hiveLoadPath, conf);
-              if (dmd.isIncrementalDump()
-                      && Long.parseLong(currentReplStatusOfTarget.trim()) < dmd.getEventTo()) {
-                return hiveLoadPath;
-              }
-            }
+      Path hiveDumpPath = new Path(statuses[0].getPath(), ReplUtils.REPL_HIVE_BASE_DIR);
+      if (loadPathBase.getFileSystem(conf).exists(hiveDumpPath)) {
+        boolean dumpComplete = false;
+        boolean loadComplete = false;
+        FileStatus[] dumpStatuses = loadPathBase.getFileSystem(conf).listStatus(hiveDumpPath);
+        for (FileStatus dumpStatus : dumpStatuses) {
+          if (dumpStatus.getPath().getName().contains(ReplUtils.DUMP_ACKNOWLEDGEMENT)) {
+            dumpComplete = true;
+          }
+          if (dumpStatus.getPath().getName().contains(ReplUtils.LOAD_ACKNOWLEDGEMENT)) {
+            loadComplete = true;
           }
         }
-      } else {
-        //If dbname is null(in case of repl load *), can't get repl status of target, return unsupported
-        throw new UnsupportedOperationException("REPL LOAD * is not supported");
+        if (dumpComplete && !loadComplete) {
+          return hiveDumpPath;
+        }
       }
     }
     return null;

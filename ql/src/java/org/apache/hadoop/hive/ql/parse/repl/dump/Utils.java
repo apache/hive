@@ -82,6 +82,16 @@ public class Utils {
     }
   }
 
+  public static void write(Path outputFile, HiveConf hiveConf)
+          throws SemanticException {
+    try {
+      FileSystem fs = outputFile.getFileSystem(hiveConf);
+      fs.create(outputFile);
+    } catch (IOException e) {
+      throw new SemanticException(e);
+    }
+  }
+
   public static Iterable<String> matchesDb(Hive db, String dbPattern) throws HiveException {
     if (dbPattern == null) {
       return db.getAllDatabases();

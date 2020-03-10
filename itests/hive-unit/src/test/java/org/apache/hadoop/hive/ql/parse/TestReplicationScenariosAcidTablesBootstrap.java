@@ -178,18 +178,17 @@ public class TestReplicationScenariosAcidTablesBootstrap
 
   @Test
   public void retryIncBootstrapAcidFromDifferentDumpWithoutCleanTablesConfig() throws Throwable {
-    WarehouseInstance.Tuple bootstrapDump = prepareDataAndDump(primaryDbName,
+    prepareDataAndDump(primaryDbName,
             dumpWithoutAcidClause);
     replica.load(replicatedDbName, primaryDbName);
 
     prepareIncAcidData(primaryDbName);
     prepareIncNonAcidData(primaryDbName);
-    WarehouseInstance.Tuple incDump = primary.run("use " + primaryDbName)
-            .dump(primaryDbName, dumpWithAcidBootstrapClause);
-    WarehouseInstance.Tuple inc2Dump = primary.run("use " + primaryDbName)
+    primary.run("use " + primaryDbName)
             .dump(primaryDbName, dumpWithAcidBootstrapClause);
     replica.load(replicatedDbName, primaryDbName);
-
+    primary.run("use " + primaryDbName)
+            .dump(primaryDbName, dumpWithAcidBootstrapClause);
     // Re-bootstrapping from different bootstrap dump without clean tables config should fail.
     replica.loadFailure(replicatedDbName, primaryDbName, Collections.emptyList(),
             ErrorMsg.REPL_BOOTSTRAP_LOAD_PATH_NOT_VALID.getErrorCode());
