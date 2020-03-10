@@ -2357,7 +2357,8 @@ public class VectorizationContext {
       inputColumns[i] = ve.getOutputColumnNum();
       inputTypeInfos[i] = ve.getOutputTypeInfo();
       inputDataTypePhysicalVariations[i] = ve.getOutputDataTypePhysicalVariation();
-      if (inputDataTypePhysicalVariations[i] == DataTypePhysicalVariation.NONE) {
+      if (inputDataTypePhysicalVariations[i] == DataTypePhysicalVariation.NONE ||
+          inputDataTypePhysicalVariations[i] == null) {
         if (childExpr.get(i) instanceof ExprNodeConstantDesc && inputTypeInfos[i] instanceof DecimalTypeInfo &&
             ((DecimalTypeInfo)inputTypeInfos[i]).precision() <= 18) {
           fixConstants = true;
@@ -2369,8 +2370,8 @@ public class VectorizationContext {
 
     if (outputDataTypePhysicalVariation == DataTypePhysicalVariation.DECIMAL_64 && fixConstants) {
       for (int i = 0; i < vectorChildren.length; ++i) {
-        if (inputDataTypePhysicalVariations[i] == DataTypePhysicalVariation.NONE &&
-            vectorChildren[i] instanceof ConstantVectorExpression) {
+        if ((inputDataTypePhysicalVariations[i] == DataTypePhysicalVariation.NONE ||
+            inputDataTypePhysicalVariations[i] == null) && vectorChildren[i] instanceof ConstantVectorExpression) {
           ConstantVectorExpression cve = ((ConstantVectorExpression)vectorChildren[i]);
           HiveDecimal hd = cve.getDecimalValue();
           Long longValue = new HiveDecimalWritable(hd).serialize64(((DecimalTypeInfo)cve.getOutputTypeInfo()).getScale());
