@@ -41,7 +41,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.DYNAMICPARTITIONINGMODE;
+
 import static org.apache.hadoop.hive.ql.txn.compactor.CompactorTestUtil.executeStatementOnDriver;
 
 /**
@@ -408,7 +408,6 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
   }
 
   @Test public void testMmMinorCompactionWithSchemaEvolutionAndBuckets() throws Exception {
-    driver.getConf().setVar(DYNAMICPARTITIONINGMODE, "nonstrict");
     String dbName = "default";
     String tblName = "testMmMinorCompactionWithSchemaEvolutionAndBuckets";
     executeStatementOnDriver("drop table if exists " + tblName, driver);
@@ -452,7 +451,6 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     HiveConf hiveConf = new HiveConf(conf);
     hiveConf.setIntVar(HiveConf.ConfVars.MAXREDUCERS, 2);
     hiveConf.setIntVar(HiveConf.ConfVars.HADOOPNUMREDUCERS, 2);
-    hiveConf.setVar(DYNAMICPARTITIONINGMODE, "nonstrict");
     driver = DriverFactory.newDriver(hiveConf);
     String dbName = "default";
     String tblName = "testMmMinorCompactionWithSchemaEvolutionNoBucketsMultipleReducers";

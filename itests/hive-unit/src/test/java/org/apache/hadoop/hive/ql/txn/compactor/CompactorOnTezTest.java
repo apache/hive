@@ -69,6 +69,7 @@ public class CompactorOnTezTest {
     hiveConf.setVar(HiveConf.ConfVars.METASTOREWAREHOUSE, TEST_WAREHOUSE_DIR);
     hiveConf.setVar(HiveConf.ConfVars.HIVEINPUTFORMAT, HiveInputFormat.class.getName());
     hiveConf.setVar(HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "none");
+    hiveConf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
     TxnDbUtil.setConfValues(hiveConf);
     TxnDbUtil.cleanDb(hiveConf);
     TxnDbUtil.prepDb(hiveConf);

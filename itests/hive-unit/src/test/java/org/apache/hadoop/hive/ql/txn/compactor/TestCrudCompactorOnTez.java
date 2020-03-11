@@ -889,6 +889,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     HiveConf hiveConf = new HiveConf(conf);
     hiveConf.setIntVar(HiveConf.ConfVars.MAXREDUCERS, 2);
     hiveConf.setIntVar(HiveConf.ConfVars.HADOOPNUMREDUCERS, 2);
+    hiveConf.setIntVar(HiveConf.ConfVars.HIVEOPTSORTDYNAMICPARTITIONTHRESHOLD, 0);
     driver = DriverFactory.newDriver(hiveConf);
     String dbName = "default";
     String tblName = "testCompactionWithSchemaEvolutionNoBucketsMultipleReducers";
