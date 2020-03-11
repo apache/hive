@@ -391,7 +391,7 @@ public class ReplicationSpec {
 
   public SCOPE getScope(){
     if (isInReplicationScope()){
-      if (isMetadataOnly() || isMetadataOnlyForExternalTables()){
+      if (isMetadataOnly()){
         return SCOPE.MD_ONLY;
       } else {
         return SCOPE.REPL;

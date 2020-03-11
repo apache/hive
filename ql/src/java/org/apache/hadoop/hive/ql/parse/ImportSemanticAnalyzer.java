@@ -56,6 +56,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
+import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.load.MetaData;
 import org.apache.hadoop.hive.ql.parse.repl.load.UpdatedMetaDataTracker;
 import org.apache.hadoop.hive.ql.plan.CopyWork;
@@ -1224,7 +1225,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         dependentTasks = new ArrayList<>(partitionDescs.size());
         for (AlterTableAddPartitionDesc addPartitionDesc : partitionDescs) {
           addPartitionDesc.setReplicationSpec(replicationSpec);
-          if (!replicationSpec.isMetadataOnly() && !replicationSpec.isMetadataOnlyForExternalTables()) {
+          if (!replicationSpec.isMetadataOnly() && !Utils.shouldDumpMetaDataOnlyForExternalTables(table, x.getConf())) {
             dependentTasks.add(addSinglePartition(tblDesc, table, wh, addPartitionDesc,
                                                 replicationSpec, x, writeId, stmtId));
           } else {
@@ -1236,7 +1237,8 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
                     addPartitionDesc.getPartitions().get(0).getPartSpec());
           }
         }
-      } else if (!replicationSpec.isMetadataOnly() && !replicationSpec.isMetadataOnlyForExternalTables()
+      } else if (!replicationSpec.isMetadataOnly() &&
+              !Utils.shouldDumpMetaDataOnlyForExternalTables(table, x.getConf())
               && !shouldSkipDataCopyInReplScope(tblDesc, replicationSpec)) {
         x.getLOG().debug("adding dependent CopyWork/MoveWork for table");
         dependentTasks = new ArrayList<>(1);
@@ -1302,7 +1304,8 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
           }
 
           if (ptn == null) {
-            if (!replicationSpec.isMetadataOnly() && !replicationSpec.isMetadataOnlyForExternalTables()){
+            if (!replicationSpec.isMetadataOnly()
+                    && !Utils.shouldDumpMetaDataOnlyForExternalTables(table, x.getConf())){
               x.getTasks().add(addSinglePartition(
                   tblDesc, table, wh, addPartitionDesc, replicationSpec, x, writeId, stmtId));
               if (updatedMetadata != null) {
@@ -1319,7 +1322,8 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
             // If replicating, then the partition already existing means we need to replace, maybe, if
             // the destination ptn's repl.last.id is older than the replacement's.
             if (replicationSpec.allowReplacementInto(ptn.getParameters())){
-              if (!replicationSpec.isMetadataOnly() && !replicationSpec.isMetadataOnlyForExternalTables()){
+              if (!replicationSpec.isMetadataOnly()
+                      && !Utils.shouldDumpMetaDataOnlyForExternalTables(table, x.getConf())){
                 x.getTasks().add(addSinglePartition(
                     tblDesc, table, wh, addPartitionDesc, replicationSpec, x, writeId, stmtId));
               } else {
@@ -1335,7 +1339,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
             }
           }
         }
-        if ((replicationSpec.isMetadataOnly() || replicationSpec.isMetadataOnlyForExternalTables())
+        if ((replicationSpec.isMetadataOnly() || Utils.shouldDumpMetaDataOnlyForExternalTables(table, x.getConf()))
                 && partitionDescs.isEmpty()){
           // MD-ONLY table alter
           x.getTasks().add(alterTableTask(tblDesc, x,replicationSpec));
@@ -1345,7 +1349,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       } else {
         x.getLOG().debug("table non-partitioned");
-        if (!replicationSpec.isMetadataOnly() && !replicationSpec.isMetadataOnlyForExternalTables()) {
+        if (!replicationSpec.isMetadataOnly() && !Utils.shouldDumpMetaDataOnlyForExternalTables(table, x.getConf())) {
           // repl-imports are replace-into unless the event is insert-into
           loadTable(fromURI, table, replicationSpec.isReplace(), new Path(tblDesc.getLocation()),
             replicationSpec, x, writeId, stmtId);

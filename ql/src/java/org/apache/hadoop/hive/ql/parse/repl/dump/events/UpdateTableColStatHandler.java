@@ -44,7 +44,7 @@ class UpdateTableColStatHandler extends AbstractEventHandler<UpdateTableColumnSt
 
     // Statistics without data doesn't make sense.
     if (withinContext.replicationSpec.isMetadataOnly()
-            || withinContext.replicationSpec.isMetadataOnlyForExternalTables()) {
+            || Utils.shouldDumpMetaDataOnlyForExternalTables(qlMdTable, withinContext.hiveConf)) {
       return;
     }
 

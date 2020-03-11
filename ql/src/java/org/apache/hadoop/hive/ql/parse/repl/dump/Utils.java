@@ -190,7 +190,7 @@ public class Utils {
 
     // if its metadata only, then dump metadata of non native tables also.
     if (tableHandle.isNonNative() && !replicationSpec.isMetadataOnly()
-            && !replicationSpec.isMetadataOnlyForExternalTables()) {
+            && !Utils.shouldDumpMetaDataOnlyForExternalTables(tableHandle, hiveConf)) {
       return false;
     }
 
@@ -201,7 +201,8 @@ public class Utils {
 
       if (MetaStoreUtils.isExternalTable(tableHandle.getTTable())) {
         boolean shouldReplicateExternalTables = hiveConf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES)
-                || replicationSpec.isMetadataOnlyForExternalTables();
+                || replicationSpec.isMetadataOnly()
+                || Utils.shouldDumpMetaDataOnlyForExternalTables(tableHandle, hiveConf);
         if (isEventDump) {
           // Skip dumping of events related to external tables if bootstrap is enabled on it.
           // Also, skip if current table is included only in new policy but not in old policy.

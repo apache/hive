@@ -100,7 +100,8 @@ public class TableExport {
     } else if (shouldExport()) {
       PartitionIterable withPartitions = getPartitions();
       writeMetaData(withPartitions);
-      if (!replicationSpec.isMetadataOnly() && !replicationSpec.isMetadataOnlyForExternalTables()
+      if (!replicationSpec.isMetadataOnly()
+              && !Utils.shouldDumpMetaDataOnlyForExternalTables(tableSpec.tableHandle, conf)
               && !(replicationSpec.isRepl() && tableSpec.tableHandle.getTableType().equals(TableType.EXTERNAL_TABLE))) {
         replPathMappings = writeData(withPartitions, isExportTask);
       }
@@ -321,7 +322,8 @@ public class TableExport {
     AuthEntities authEntities = new AuthEntities();
     try {
       // Return if metadata-only
-      if (replicationSpec.isMetadataOnly() || replicationSpec.isMetadataOnlyForExternalTables()) {
+      if (replicationSpec.isMetadataOnly()
+              || Utils.shouldDumpMetaDataOnlyForExternalTables(tableSpec.tableHandle, conf)) {
         return authEntities;
       }
       PartitionIterable partitions = getPartitions();
