@@ -93,6 +93,7 @@ cat rsyncd.conf
 
 stage('Compile') {
 
+    //buildHive("install -Dtest=noMatches")
   // FIXME: dup
     sh '''#!/bin/bash -e
 export HIVE_HOME="$PWD"
@@ -102,11 +103,14 @@ OPTS+=" -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugin.surefire.SurefirePl
 OPTS+=" -Dmaven.repo.local=$PWD/.m2"
 OPTS+=" $M_OPTS "
 mvn $OPTS -Dtest=noMatches
+'''
+    }
+    sh '''#!/bin/bash -e
 du -h --max-depth=1
 # make the source scanner happier
 find . -name '*.java'|grep /Test|grep -v src/test/java|grep org/apache|while read f;do t="`echo $f|sed 's|.*org/apache|x/src/test/java/org/apache|'`";mkdir -p  "${t%/*}";touch "$t";done
 '''
-    }
+
     sh '''rsync --daemon --config=rsyncd.conf --port 9873'''
 
   }
