@@ -39,6 +39,7 @@ import org.apache.calcite.util.Pair;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.Expr;
+import org.apache.impala.analysis.TupleId;
 
 import java.util.List;
 /**
@@ -49,12 +50,18 @@ public class ImpalaRexVisitor extends RexVisitorImpl<Expr> {
 
   private final Analyzer analyzer;
   private final ImmutableList<ReferrableNode> impalaPlanNodes;
+  private final List<TupleId> tupleIds;
 
   public ImpalaRexVisitor(Analyzer analyzer, List<ReferrableNode> impalaPlanNodes) {
+   this(analyzer, impalaPlanNodes, null);
+  }
+
+  public ImpalaRexVisitor(Analyzer analyzer, List<ReferrableNode> impalaPlanNodes, List<TupleId> tupleIds) {
     super(false);
     this.analyzer = analyzer;
 
     this.impalaPlanNodes = ImmutableList.copyOf(impalaPlanNodes);
+    this.tupleIds = tupleIds;
   }
 
   @Override
@@ -70,7 +77,7 @@ public class ImpalaRexVisitor extends RexVisitorImpl<Expr> {
       for (RexNode operand : rexCall.getOperands()) {
         params.add(operand.accept(this));
       }
-      return ImpalaRexCall.getExpr(analyzer, rexCall, params);
+      return ImpalaRexCall.getExpr(analyzer, rexCall, params, tupleIds);
     } catch (HiveException e) {
       throw new RuntimeException(e);
     }

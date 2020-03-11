@@ -109,6 +109,43 @@ public class HiveImpalaRules {
     }
   }
 
+  public static class ImpalaFilterJoinRule extends RelOptRule {
+
+    public ImpalaFilterJoinRule(RelBuilderFactory relBuilderFactory) {
+      super(operand(HiveFilter.class, operand(HiveJoin.class, none())),
+              relBuilderFactory, null);
+    }
+
+    @Override
+    public void onMatch(RelOptRuleCall call) {
+      final HiveFilter filter = call.rel(0);
+      final HiveJoin join = call.rel(1);
+
+      ImpalaJoinRel newJoin = new ImpalaJoinRel(join, filter);
+
+      call.transformTo(newJoin);
+    }
+  }
+
+
+  public static class ImpalaFilterProjectRule extends RelOptRule {
+
+    public ImpalaFilterProjectRule(RelBuilderFactory relBuilderFactory) {
+      super(operand(HiveFilter.class, operand(HiveProject.class, none())),
+              relBuilderFactory, null);
+    }
+
+    @Override
+    public void onMatch(RelOptRuleCall call) {
+      final HiveFilter filter = call.rel(0);
+      final HiveProject project = call.rel(1);
+
+      ImpalaProjectRel newProject = new ImpalaProjectRel(project, filter);
+
+      call.transformTo(newProject);
+    }
+  }
+
   public static class ImpalaAggRule extends RelOptRule {
 
     public ImpalaAggRule(RelBuilderFactory relBuilderFactory) {

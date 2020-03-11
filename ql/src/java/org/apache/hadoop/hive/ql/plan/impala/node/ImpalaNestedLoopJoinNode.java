@@ -40,9 +40,7 @@ public class ImpalaNestedLoopJoinNode extends NestedLoopJoinNode {
 
   @Override
   public void assignConjuncts(Analyzer analyzer) {
-    // Do nothing since the join conjuncts were already supplied to
-    // the constructor; just make sure this is an empty list of conjuncts
-    Preconditions.checkState(nodeInfo.getAssignedConjuncts().size() == 0);
+    this.conjuncts_ = nodeInfo.getAssignedConjuncts();
   }
 
 }

@@ -18,29 +18,17 @@
 
 package org.apache.hadoop.hive.ql.plan.impala.node;
 
-import org.apache.impala.analysis.Analyzer;
-import org.apache.impala.analysis.BinaryPredicate;
 import org.apache.impala.analysis.Expr;
-import org.apache.impala.analysis.JoinOperator;
-import org.apache.impala.planner.HashJoinNode;
 import org.apache.impala.planner.PlanNode;
+import org.apache.impala.planner.PlanNodeId;
+import org.apache.impala.planner.SelectNode;
 
 import java.util.List;
 
-public class ImpalaHashJoinNode extends HashJoinNode {
+public class ImpalaSelectNode extends SelectNode {
 
-  private final ImpalaNodeInfo nodeInfo;
-
-  public ImpalaHashJoinNode(PlanNode leftInput, PlanNode rightInput,
-      boolean isStraightJoin, DistributionMode distMode, JoinOperator joinOp,
-      List<BinaryPredicate> equiJoinConjuncts, List<Expr> nonEquijoinConjuncts, ImpalaNodeInfo nodeInfo) {
-    super(leftInput, rightInput, isStraightJoin, distMode, joinOp, equiJoinConjuncts, nonEquijoinConjuncts);
-    this.nodeInfo = nodeInfo;
-  }
-
-  @Override
-  public void assignConjuncts(Analyzer analyzer) {
-    this.conjuncts_ = nodeInfo.getAssignedConjuncts();
+  public ImpalaSelectNode(PlanNodeId id, PlanNode input, List<Expr> conjuncts) {
+    super(id, input, conjuncts);
   }
 
 }

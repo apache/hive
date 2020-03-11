@@ -31,6 +31,7 @@ import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaPlannerContext;
@@ -39,6 +40,7 @@ import org.apache.hadoop.hive.ql.plan.impala.rex.ReferrableNode;
 import org.apache.impala.analysis.BinaryPredicate;
 import org.apache.impala.analysis.Expr;
 import org.apache.impala.analysis.JoinOperator;
+import org.apache.impala.analysis.TupleId;
 import org.apache.impala.common.ImpalaException;
 import org.apache.impala.planner.JoinNode;
 import org.apache.impala.planner.PlanNode;
@@ -51,10 +53,16 @@ public class ImpalaJoinRel extends ImpalaPlanRel {
 
   private JoinNode joinNode = null;
   private final Join hiveJoin;
+  private final HiveFilter hiveFilter;
 
   public ImpalaJoinRel(Join hiveJoin) {
+    this(hiveJoin, null);
+  }
+
+  public ImpalaJoinRel(Join hiveJoin, HiveFilter hiveFilter) {
     super(hiveJoin.getCluster(), hiveJoin.getTraitSet(), hiveJoin.getInputs(), hiveJoin.getRowType());
     this.hiveJoin = hiveJoin;
+    this.hiveFilter = hiveFilter;
   }
 
   public PlanNode getPlanNode(ImpalaPlannerContext ctx) throws ImpalaException, HiveException, MetaException {
@@ -155,6 +163,20 @@ public class ImpalaJoinRel extends ImpalaPlanRel {
     }
 
     joinNode.setId(ctx.getNextNodeId());
+
+    List<TupleId> tupleIds = new ArrayList<>();
+
+    if (joinOp == JoinOperator.LEFT_OUTER_JOIN) {
+      tupleIds.addAll(rightInputNode.getTupleIds());
+    } else if (joinOp == JoinOperator.RIGHT_OUTER_JOIN) {
+      tupleIds.addAll(leftInputNode.getTupleIds());
+    } else if (joinOp == JoinOperator.FULL_OUTER_JOIN) {
+      tupleIds.addAll(leftInputNode.getTupleIds());
+      tupleIds.addAll(rightInputNode.getTupleIds());
+    }
+
+    List<Expr> assignedConjuncts = getConjuncts(hiveFilter, ctx.getRootAnalyzer(), this, tupleIds);
+    nodeInfo.setAssignedConjuncts(assignedConjuncts);
     joinNode.init(ctx.getRootAnalyzer());
 
     return joinNode;

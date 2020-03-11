@@ -19,16 +19,10 @@
 package org.apache.hadoop.hive.ql.plan.impala.node;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
-import org.apache.calcite.plan.hep.HepRelVertex;
-import org.apache.calcite.rel.RelFieldCollation;
-import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.rel.RelWriter;
-import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
-import org.apache.calcite.rex.RexLiteral;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaPlannerContext;
@@ -38,7 +32,6 @@ import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.Expr;
 import org.apache.impala.analysis.SlotDescriptor;
 import org.apache.impala.analysis.TupleDescriptor;
-import org.apache.impala.catalog.ColumnStats;
 import org.apache.impala.common.ImpalaException;
 import org.apache.impala.planner.PlanNode;
 import org.apache.impala.planner.PlanNodeId;
@@ -52,13 +45,18 @@ import java.util.List;
  * a concept of a Project node, but the Union node where there is only one input
  * node essentially handles this concept.
  */
-
 public class ImpalaProjectRel extends ImpalaProjectRelBase {
 
   private UnionNode unionNode = null;
+  private final HiveFilter filter;
 
   public ImpalaProjectRel(HiveProject project) {
+    this(project, null);
+  }
+
+  public ImpalaProjectRel(HiveProject project, HiveFilter filter) {
     super(project);
+    this.filter = filter;
   }
 
   @Override
@@ -82,6 +80,14 @@ public class ImpalaProjectRel extends ImpalaProjectRelBase {
     unionNode = new ImpalaUnionNode(nodeId, tupleDesc.getId(), unionInputNode,
         projectExprs);
     unionNode.init(ctx.getRootAnalyzer());
+
+    if (filter != null) {
+      List<Expr> conjuncts = getConjuncts(filter, ctx.getRootAnalyzer(), this);
+      ImpalaSelectNode selectNode = new ImpalaSelectNode(ctx.getNextNodeId(), unionNode, conjuncts);
+      selectNode.init(ctx.getRootAnalyzer());
+      return selectNode;
+    }
+
     return unionNode;
   }
 

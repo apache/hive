@@ -16,6 +16,7 @@
  */
 package org.apache.hadoop.hive.ql.plan.impala.node;
 
+import com.google.common.base.Preconditions;
 import org.apache.impala.analysis.Expr;
 import org.apache.impala.analysis.TupleDescriptor;
 
@@ -69,6 +70,11 @@ public class ImpalaNodeInfo {
 
   public List<Expr> getAssignedConjuncts() {
     return assignedConjuncts;
+  }
+
+  public void setAssignedConjuncts(List<Expr> conjs) {
+    Preconditions.checkState(assignedConjuncts.size() == 0);
+    assignedConjuncts = conjs;
   }
 
 }

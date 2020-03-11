@@ -21,52 +21,38 @@ package org.apache.hadoop.hive.ql.plan.impala.expr;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.Expr;
-import org.apache.impala.analysis.NullLiteral;
-import org.apache.impala.catalog.Type;
+import org.apache.impala.analysis.TupleId;
+import org.apache.impala.analysis.TupleIsNullPredicate;
 import org.apache.impala.common.AnalysisException;
 
-/**
- * A NulLLiteral that has most of the analysis done by Calcite.
- * A NullLiteral that is already marked as analyzed.
- */
-public class ImpalaNullLiteral extends NullLiteral {
-  public ImpalaNullLiteral(Analyzer analyzer) throws HiveException {
+import java.util.List;
+
+public class ImpalaTupleIsNullExpr extends TupleIsNullPredicate {
+  public ImpalaTupleIsNullExpr(List<TupleId> tupleIds, Analyzer analyzer) throws HiveException {
+    super(tupleIds);
     try {
       this.analyze(analyzer);
     } catch (AnalysisException e) {
-      throw new HiveException("Exception in ImpalaNullLiteral instantiation", e);
+      throw new HiveException("Exception in ImpalaTupleIsNullExpr instantiation", e);
     }
   }
 
-  public ImpalaNullLiteral(ImpalaNullLiteral other) {
+  public ImpalaTupleIsNullExpr(ImpalaTupleIsNullExpr other) {
     super(other);
+    this.fn_ = other.fn_;
+    this.type_ = other.type_;
   }
 
   @Override
   public Expr clone() {
-    return new ImpalaNullLiteral(this);
-  }
-
-  @Override
-  protected void analyzeImpl(Analyzer analyzer) throws AnalysisException {
+    return new ImpalaTupleIsNullExpr(this);
   }
 
   /**
-   * We need to override resetAnalysisState so that Impala Analyzer doesn't
-   * We override the resetAnalysisState so that Impala Analyzer doesn't
+   * We need to override the resetAnalysisState so that Impala Analyzer doesn't
    * attempt to reanalyze this.
    */
   @Override
   protected void resetAnalysisState() {
   }
-
-  /**
-   * We override this method in order to provide public visibility
-   * since the base class method is protected
-   */
-  @Override
-  public Expr uncheckedCastTo(Type targetType) {
-    return super.uncheckedCastTo(targetType);
-  }
-
 }

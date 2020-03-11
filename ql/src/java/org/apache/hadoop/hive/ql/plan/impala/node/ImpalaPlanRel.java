@@ -42,6 +42,7 @@ import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.Expr;
 import org.apache.impala.analysis.SlotDescriptor;
 import org.apache.impala.analysis.SlotRef;
+import org.apache.impala.analysis.TupleId;
 import org.apache.impala.common.ImpalaException;
 import org.apache.impala.planner.PlanNode;
 
@@ -183,11 +184,16 @@ public abstract class ImpalaPlanRel extends AbstractRelNode implements Referrabl
   }
 
   protected List<Expr> getConjuncts(HiveFilter filter, Analyzer analyzer, ReferrableNode relNode) {
+    return getConjuncts(filter, analyzer, relNode, null /* no tuple ids */);
+  }
+
+  protected List<Expr> getConjuncts(HiveFilter filter, Analyzer analyzer, ReferrableNode relNode,
+      List<TupleId> tupleIds) {
     List<Expr> conjuncts = Lists.newArrayList();
     if (filter == null) {
       return conjuncts;
     }
-    ImpalaRexVisitor visitor = new ImpalaRexVisitor(analyzer, ImmutableList.of(relNode));
+    ImpalaRexVisitor visitor = new ImpalaRexVisitor(analyzer, ImmutableList.of(relNode), tupleIds);
     List<RexNode> andOperands = getAndOperands(filter.getCondition());
     for (RexNode andOperand : andOperands) {
       conjuncts.add(andOperand.accept(visitor));
