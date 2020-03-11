@@ -117,7 +117,7 @@ public class OrcEncodedDataConsumer
             // TODO: Check if we can get directly from operator
             Pair<MapJoinTableContainer[], MapJoinTableContainerSerDe[]> smallTablePair = probeDecodeCache.retrieve(includes.getProbeDecodeCacheKey());
             if (smallTablePair != null ) {
-              VectorMapJoinHashTable ht = ((VectorMapJoinTableContainer) smallTablePair.getLeft()[smallTablePair.getLeft().length-1]).vectorMapJoinHashTable();
+              VectorMapJoinHashTable ht = ((VectorMapJoinTableContainer) smallTablePair.getLeft()[includes.getPosSingleVectorMapJoinSmallTable()]).vectorMapJoinHashTable();
               if (probeDecodeCuckooEnabled)
                 this.probeDecodeMapBf = ht.getHashTableKeys();
               else

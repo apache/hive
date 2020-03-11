@@ -226,24 +226,26 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     String colName = null;
     while (!opStack.empty()) {
       Operator<?> op = opStack.pop();
-      if (op instanceof MapJoinOperator && noDynamicPruningMapJoin(op) && validProbeDecodeMapJoin(op)) {
+      if (op instanceof VectorMapJoinCommonOperator) {
         vop = (VectorMapJoinCommonOperator) op;
-        // Following MapJoinOperator cache key definition
-        mjCacheKey = vop.getCacheKey() != null ? vop.getCacheKey(): MapJoinDesc.generateCacheKey(op.getOperatorId());
-        ((VectorMapJoinCommonOperator) op).getVectorMapJoinHashTable();
-        colId = ((VectorMapJoinDesc)((VectorMapJoinCommonOperator) op).getVectorDesc()).getVectorMapJoinInfo().getBigTableKeyColumnMap()[0];
-        colName = vop.getInputVectorizationContext().getInitialColumnNames().get(colId);
-        // ColId to ColIdx mapping
-        includes.setProbeDecodeColIdx(includes.getReaderLogicalColumnIds().indexOf(colId));
-        includes.setProbeDecodeColName(colName);
-      }
+        if (!vop.getConf().isDynamicPartitionHashJoin() && !vop.getConf().isBucketMapJoin() && validProbeDecodeMapJoin(op)){
+          // Following MapJoinOperator cache key definition
+          mjCacheKey = vop.getCacheKey() != null ? vop.getCacheKey(): MapJoinDesc.generateCacheKey(op.getOperatorId());
+          colId = ((VectorMapJoinDesc) vop.getVectorDesc()).getVectorMapJoinInfo().getBigTableKeyColumnMap()[0];
+          colName = vop.getInputVectorizationContext().getInitialColumnNames().get(colId);
+          // ColId to ColIdx mapping
+          includes.setProbeDecodeColIdx(includes.getReaderLogicalColumnIds().indexOf(colId));
+          includes.setPosSingleVectorMapJoinSmallTable(vop.posSingleVectorMapJoinSmallTable);
+          includes.setProbeDecodeColName(colName);
+        }
+    }
       if (op.getChildOperators() != null) {
         opStack.addAll(op.getChildOperators());
       }
     }
     if (mjCacheKey != null) {
-      LOG.info("ProbeDecode found MapJoin op {}  with CacheKey {} MapJoin ColID {} and ColName {}", vop.getName(), mjCacheKey,
-          colId, colName);
+      LOG.info("ProbeDecode found MapJoin op {}  with CacheKey {} MapJoin ColID {} and ColName {} and Pos {}", vop.getName(), mjCacheKey,
+          colId, colName, vop.posSingleVectorMapJoinSmallTable);
     }
     includes.setProbeDecodeCacheKey(mjCacheKey);
   }
@@ -258,24 +260,6 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
            vectorMapJoinDesc.getHashTableKeyType() == VectorMapJoinDesc.HashTableKeyType.INT);
     }
     return false;
-  }
-  // Is NOT a MapJoin with Dynamic Pruning
-  private static boolean noDynamicPruningMapJoin(Operator mapJoinOp) {
-    Stack<Operator<?>> opStack = new Stack<>();
-    // Children BFS
-    opStack.addAll(mapJoinOp.getChildOperators());
-    while (!opStack.empty()) {
-      Operator<?> op = opStack.pop();
-      // Check if there is a Dynamic Partitioning Event involved
-      if (op instanceof AppMasterEventOperator && op.getConf() instanceof DynamicPruningEventDesc) {
-        // found dynamic partition pruning operator
-        return false;
-      }
-      if (op.getChildOperators() != null) {
-        opStack.addAll(op.getChildOperators());
-      }
-    }
-    return true;
   }
 
   private static int getQueueVar(ConfVars var, JobConf jobConf, Configuration daemonConf) {
@@ -720,6 +704,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     // ProbeDecode settings
     private String probeDecodeOpCacheKey;
     private int probeDecodeColIdx = -1;
+    private byte posSingleVectorMapJoinSmallTable;
     private String probeDecodeColName = null;
 
     public IncludesImpl(List<Integer> tableIncludedCols, boolean isAcidScan,
@@ -788,6 +773,15 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
 
     public void setProbeDecodeColIdx(int probeDecodeColIdx) {
       this.probeDecodeColIdx = probeDecodeColIdx;
+    }
+
+    public void setPosSingleVectorMapJoinSmallTable(byte posSingleVectorMapJoinSmallTable) {
+      this.posSingleVectorMapJoinSmallTable = posSingleVectorMapJoinSmallTable;
+    }
+
+    @Override
+    public byte getPosSingleVectorMapJoinSmallTable() {
+      return posSingleVectorMapJoinSmallTable;
     }
 
     @Override

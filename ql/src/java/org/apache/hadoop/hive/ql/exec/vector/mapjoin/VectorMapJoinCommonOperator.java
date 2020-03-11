@@ -114,7 +114,7 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   protected boolean isOuterJoin;
 
   // Position of the *single* native vector map join small table.
-  protected byte posSingleVectorMapJoinSmallTable;
+  public byte posSingleVectorMapJoinSmallTable;
 
   // The incoming vectorization context.  It describes the input big table vectorized row batch.
   protected VectorizationContext vContext;
@@ -676,7 +676,7 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
       throw new RuntimeException("Unknown vector map join hash table implementation type " + hashTableImplementationType.name());
     }
     LOG.info("Using " + vectorMapJoinHashTable.getClass().getSimpleName() + " from " + this.getClass().getSimpleName() +
-        "with size: " + vectorMapJoinHashTable.size() + " and cache_key " + this.getCacheKey());
+        "with size: " + vectorMapJoinHashTable.size() + " pos " + posSingleVectorMapJoinSmallTable + "and cache_key " + this.getCacheKey());
   }
 
   /*
