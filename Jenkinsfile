@@ -40,6 +40,24 @@ def testInParallel(parallelism, inclusionsFile, exclusionsFile, results, image, 
 }
 
 
+def buildHive(args) {
+  configFileProvider([configFile(fileId: 'artifactory', variable: 'SETTINGS')]) {
+    withEnv(["MULTIPLIER=$params.MULTIPLIER","M_OPTS=$params.OPTS"]) {
+      sh '''#!/bin/bash -e
+export USER="`whoami`"
+export HIVE_HOME="$PWD"
+OPTS=" -s $SETTINGS -B -Dmaven.test.failure.ignore -Dtest.groups= "
+OPTS+=" -Pitests,qsplits"
+OPTS+=" -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugin.surefire.SurefirePlugin=INFO"
+OPTS+=" -Dmaven.repo.local=$PWD/.m2"
+OPTS+=" $M_OPTS "
+mvn $OPTS -Dtest=noMatches
+du -h --max-depth=1
+'''
+    }
+  }
+}
+
 podTemplate(workspaceVolume: dynamicPVC(requestsSize: "24Gi"), containers: [
   //cloudbees/jnlp-slave-with-java-build-tools
   //kgyrtkirk/hive-dev-box:executor
@@ -65,9 +83,7 @@ properties([
     ])
 ])
 
-
-
-
+// launch the main pod
 node(POD_LABEL) {
   container('maven') {
 stage('Prepare') {
@@ -90,25 +106,8 @@ cat rsyncd.conf
 '''
     sh '''rsync --daemon --config=rsyncd.conf --port 9873'''
 }
-stage('Compile') {
-
+  stage('Compile') {
     buildHive("install -Dtest=noMatches")
-    configFileProvider([configFile(fileId: 'artifactory', variable: 'SETTINGS')]) {
-    withEnv(["MULTIPLIER=$params.MULTIPLIER","M_OPTS=$params.OPTS"]) {
-  // FIXME: dup
-    sh '''#!/bin/bash -e
-export HIVE_HOME="$PWD"
-OPTS=" -s $SETTINGS -B install -Dmaven.test.failure.ignore -Dtest.groups= "
-OPTS+=" -Pitests,qsplits"
-OPTS+=" -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugin.surefire.SurefirePlugin=INFO"
-OPTS+=" -Dmaven.repo.local=$PWD/.m2"
-OPTS+=" $M_OPTS "
-mvn $OPTS -Dtest=noMatches
-du -h --max-depth=1
-'''
-    }
-
-  }
   }
 }
 
@@ -123,30 +122,15 @@ stage('Testing') {
 find . -name '*.java'|grep /Test|grep -v src/test/java|grep org/apache|while read f;do t="`echo $f|sed 's|.*org/apache|x/src/test/java/org/apache|'`";mkdir -p  "${t%/*}";touch "$t";done
 '''
   }, {
-    configFileProvider([configFile(fileId: 'artifactory', variable: 'SETTINGS')]) {
-
-      withEnv(["MULTIPLIER=$params.MULTIPLIER","M_OPTS=$params.OPTS"]) {
-        sh '''#!/bin/bash -e
-export USER="`whoami`"
-OPTS=" -s $SETTINGS -B install -Dmaven.test.failure.ignore -Dtest.groups= "
-OPTS+=" -q"
-OPTS+=" -Pitests,qsplits"
-OPTS+=" -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugin.surefire.SurefirePlugin=INFO"
-if [ -s inclusions.txt ]; then OPTS+=" -Dsurefire.includesFile=$PWD/inclusions.txt";fi
-if [ -s exclusions.txt ]; then OPTS+=" -Dsurefire.excludesFile=$PWD/exclusions.txt";fi
+    sh '''
 echo "@INC"
 cat inclusions.txt
 echo "@ENC"
 cat exclusions.txt
 echo "@END"
-
-OPTS+=" -Dmaven.repo.local=$PWD/.m2"
-OPTS+=" $M_OPTS "
-mvn $OPTS
-du -h --max-depth=1
 '''
-      }
-    }
+
+      buildHive("install -q")
   })
 }
 
