@@ -69,11 +69,9 @@ properties([
 
 
 node(POD_LABEL) {
-stage('Prepare') {
   container('maven') {
+stage('Prepare') {
     // FIXME can this be moved outside?
-    configFileProvider([configFile(fileId: 'artifactory', variable: 'SETTINGS')]) {
-    withEnv(["MULTIPLIER=$params.MULTIPLIER","M_OPTS=$params.OPTS"]) {
 
     checkout scm
     sh '''printf 'env.S="%s"' "`hostname -i`" >> /home/jenkins/agent/load.props'''
@@ -90,10 +88,13 @@ use chroot = false
 EOF
 cat rsyncd.conf
 '''
-
+    sh '''rsync --daemon --config=rsyncd.conf --port 9873'''
+}
 stage('Compile') {
 
-    //buildHive("install -Dtest=noMatches")
+    buildHive("install -Dtest=noMatches")
+    configFileProvider([configFile(fileId: 'artifactory', variable: 'SETTINGS')]) {
+    withEnv(["MULTIPLIER=$params.MULTIPLIER","M_OPTS=$params.OPTS"]) {
   // FIXME: dup
     sh '''#!/bin/bash -e
 export HIVE_HOME="$PWD"
@@ -103,17 +104,10 @@ OPTS+=" -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugin.surefire.SurefirePl
 OPTS+=" -Dmaven.repo.local=$PWD/.m2"
 OPTS+=" $M_OPTS "
 mvn $OPTS -Dtest=noMatches
+du -h --max-depth=1
 '''
     }
-    sh '''#!/bin/bash -e
-du -h --max-depth=1
-# make the source scanner happier
-find . -name '*.java'|grep /Test|grep -v src/test/java|grep org/apache|while read f;do t="`echo $f|sed 's|.*org/apache|x/src/test/java/org/apache|'`";mkdir -p  "${t%/*}";touch "$t";done
-'''
 
-    sh '''rsync --daemon --config=rsyncd.conf --port 9873'''
-
-  }
   }
   }
 }
@@ -124,7 +118,10 @@ find . -name '*.java'|grep /Test|grep -v src/test/java|grep org/apache|while rea
 stage('Testing') {
   testInParallel(count(Integer.parseInt(params.SPLIT)), 'inclusions.txt', 'exclusions.txt', '**/target/surefire-reports/TEST-*.xml', 'maven:3.5.0-jdk-8', {
     sh  'rsync -arvvq --stats rsync://$S:9873/ws .'
-    sh 'du -h --max-depth=1'
+    sh '''#!/bin/bash -e
+# make parallel-test-execution plugins source scanner happy ~ better results for 1st run
+find . -name '*.java'|grep /Test|grep -v src/test/java|grep org/apache|while read f;do t="`echo $f|sed 's|.*org/apache|x/src/test/java/org/apache|'`";mkdir -p  "${t%/*}";touch "$t";done
+'''
   }, {
     configFileProvider([configFile(fileId: 'artifactory', variable: 'SETTINGS')]) {
 
