@@ -1155,6 +1155,7 @@ import org.junit.Test;
     testScriptFile(SCRIPT_TEXT, argList, EXPECTED_PATTERN, true);
   }
 
+  @Ignore("CDPD-8969: Ignore org.apache.hive.beeline.TestBeeLineWithArgs.testRowsAffected as it is flaky")
   @Test
   public void testRowsAffected() throws Throwable {
     final String SCRIPT_TEXT = "drop table if exists new_table;\n create table new_table(foo int);\n "
