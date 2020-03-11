@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.HiveTableName;
 import org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -242,9 +243,9 @@ public class LoadPartitions {
 
     Task<?> copyTask = ReplCopyTask.getLoadCopyTask(
         event.replicationSpec(),
-        sourceWarehousePartitionLocation,
+        new Path(sourceWarehousePartitionLocation, EximUtil.DATA_PATH_NAME),
         stagingDir,
-        context.hiveConf
+        context.hiveConf, false
     );
 
     Task<?> movePartitionTask = null;

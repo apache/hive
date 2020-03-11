@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.metastore.messaging.event.filters.AndFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.EventBoundaryFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.ReplEventFilter;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.exec.ReplCopyTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -51,6 +52,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.events.EventUtils;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
+import org.apache.hadoop.hive.ql.parse.EximUtil.ReplPathMapping;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
@@ -125,17 +127,18 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
               Base64.getEncoder().encodeToString(work.dbNameOrPattern.toLowerCase()
                       .getBytes(StandardCharsets.UTF_8.name())));
       Path currentDumpPath = new Path(dumpRoot, getNextDumpDir());
-      DumpMetaData dmd = new DumpMetaData(currentDumpPath, conf);
+      Path hiveDumpRoot = new Path(currentDumpPath, ReplUtils.REPL_HIVE_BASE_DIR);
+      DumpMetaData dmd = new DumpMetaData(hiveDumpRoot, conf);
       // Initialize ReplChangeManager instance since we will require it to encode file URI.
       ReplChangeManager.getInstance(conf);
       Path cmRoot = new Path(conf.getVar(HiveConf.ConfVars.REPLCMDIR));
       Long lastReplId;
       if (!dumpRoot.getFileSystem(conf).exists(dumpRoot)
               || dumpRoot.getFileSystem(conf).listStatus(dumpRoot).length == 0) {
-        lastReplId = bootStrapDump(currentDumpPath, dmd, cmRoot, hiveDb);
+        lastReplId = bootStrapDump(hiveDumpRoot, dmd, cmRoot, hiveDb);
       } else {
         work.setEventFrom(getEventFromPreviousDumpMetadata(dumpRoot));
-        lastReplId = incrementalDump(currentDumpPath, dmd, cmRoot, hiveDb);
+        lastReplId = incrementalDump(hiveDumpRoot, dmd, cmRoot, hiveDb);
       }
       prepareReturnValues(Arrays.asList(currentDumpPath.toUri().toString(), String.valueOf(lastReplId)));
     } catch (Exception e) {
@@ -155,7 +158,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           latestUpdatedStatus = status;
         }
       }
-      DumpMetaData dmd = new DumpMetaData(latestUpdatedStatus.getPath(), conf);
+      DumpMetaData dmd = new DumpMetaData(new Path(latestUpdatedStatus.getPath(), ReplUtils.REPL_HIVE_BASE_DIR), conf);
       if (dmd.isIncrementalDump()) {
         return dmd.getEventTo();
       }
@@ -331,7 +334,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       NotificationEvent ev = evIter.next();
       lastReplId = ev.getEventId();
       Path evRoot = new Path(dumpRoot, String.valueOf(lastReplId));
-      dumpEvent(ev, evRoot, cmRoot, hiveDb);
+      dumpEvent(ev, evRoot, dumpRoot, cmRoot, hiveDb);
     }
 
     replLogger.endLog(lastReplId.toString());
@@ -370,8 +373,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
             // Dump the table to be bootstrapped if required.
             if (shouldBootstrapDumpTable(table)) {
               HiveWrapper.Tuple<Table> tableTuple = new HiveWrapper(hiveDb, dbName).table(table);
-              dumpTable(dbName, tableName, validTxnList, dbRoot, bootDumpBeginReplId, hiveDb,
-                      tableTuple);
+              dumpTable(dbName, tableName, validTxnList, dbRoot, dumpRoot, bootDumpBeginReplId, hiveDb, tableTuple);
             }
             if (tableList != null && isTableSatifiesConfig(table)) {
               tableList.add(tableName);
@@ -411,9 +413,10 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return new Path(dumpRoot, dbName);
   }
 
-  private void dumpEvent(NotificationEvent ev, Path evRoot, Path cmRoot, Hive db) throws Exception {
+  private void dumpEvent(NotificationEvent ev, Path evRoot, Path dumpRoot, Path cmRoot, Hive db) throws Exception {
     EventHandler.Context context = new EventHandler.Context(
         evRoot,
+        dumpRoot,
         cmRoot,
         db,
         conf,
@@ -531,7 +534,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
               LOG.debug("Adding table {} to external tables list", tblName);
               writer.dataLocationDump(tableTuple.object);
             }
-            dumpTable(dbName, tblName, validTxnList, dbRoot, bootDumpBeginReplId, hiveDb,
+            dumpTable(dbName, tblName, validTxnList, dbRoot, dumpRoot, bootDumpBeginReplId, hiveDb,
                 tableTuple);
           } catch (InvalidTableException te) {
             // Bootstrap dump shouldn't fail if the table is dropped/renamed while dumping it.
@@ -589,7 +592,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return dbRoot;
   }
 
-  void dumpTable(String dbName, String tblName, String validTxnList, Path dbRoot, long lastReplId,
+  void dumpTable(String dbName, String tblName, String validTxnList, Path dbRoot, Path dumproot, long lastReplId,
       Hive hiveDb, HiveWrapper.Tuple<Table> tuple) throws Exception {
     LOG.info("Bootstrap Dump for table " + tblName);
     TableSpec tableSpec = new TableSpec(tuple.object);
@@ -608,10 +611,20 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     }
     MmContext mmCtx = MmContext.createIfNeeded(tableSpec.tableHandle);
     tuple.replicationSpec.setRepl(true);
-    new TableExport(
-        exportPaths, tableSpec, tuple.replicationSpec, hiveDb, distCpDoAsUser, conf, mmCtx).write();
-
+    List<ReplPathMapping> replPathMappings = new TableExport(
+            exportPaths, tableSpec, tuple.replicationSpec, hiveDb, distCpDoAsUser, conf, mmCtx).write(false);
     replLogger.tableLog(tblName, tableSpec.tableHandle.getTableType());
+    if (tableSpec.tableHandle.getTableType().equals(TableType.EXTERNAL_TABLE)
+            || Utils.shouldDumpMetaDataOnly(tuple.object, conf)) {
+      return;
+    }
+    for (ReplPathMapping replPathMapping: replPathMappings) {
+      Task<?> copyTask = ReplCopyTask.getLoadCopyTask(
+              tuple.replicationSpec, replPathMapping.getSrcPath(), replPathMapping.getTargetPath(), conf, false);
+      this.addDependentTask(copyTask);
+      LOG.info("Scheduled a repl copy task from [{}] to [{}]",
+              replPathMapping.getSrcPath(), replPathMapping.getTargetPath());
+    }
   }
 
   private String getValidWriteIdList(String dbName, String tblName, String validTxnString) throws LockException {
@@ -680,7 +693,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
 
   private ReplicationSpec getNewReplicationSpec(String evState, String objState,
       boolean isMetadataOnly) {
-    return new ReplicationSpec(true, isMetadataOnly, evState, objState, false, true, true);
+    return new ReplicationSpec(true, isMetadataOnly, evState, objState, false, true);
   }
 
   private String getNextDumpDir() {

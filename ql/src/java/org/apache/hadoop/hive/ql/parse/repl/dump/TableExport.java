@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
+import org.apache.hadoop.hive.ql.parse.EximUtil.ReplPathMapping;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.dump.io.FileOperations;
@@ -46,6 +47,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -86,20 +88,21 @@ public class TableExport {
     this.mmCtx = mmCtx;
   }
 
-  public boolean write() throws SemanticException {
+  public List<ReplPathMapping> write(boolean isExportTask) throws SemanticException {
+    List<ReplPathMapping> replPathMappings = Collections.emptyList();
     if (tableSpec == null) {
       writeMetaData(null);
-      return true;
     } else if (shouldExport()) {
       PartitionIterable withPartitions = getPartitions();
       writeMetaData(withPartitions);
       if (!replicationSpec.isMetadataOnly()
               && !(replicationSpec.isRepl() && tableSpec.tableHandle.getTableType().equals(TableType.EXTERNAL_TABLE))) {
-        writeData(withPartitions);
+        replPathMappings = writeData(withPartitions, isExportTask);
       }
-      return true;
+    } else if (isExportTask) {
+      throw new SemanticException(ErrorMsg.INCOMPATIBLE_SCHEMA.getMsg());
     }
-    return false;
+    return replPathMappings;
   }
 
   private PartitionIterable getPartitions() throws SemanticException {
@@ -149,20 +152,24 @@ public class TableExport {
     }
   }
 
-  private void writeData(PartitionIterable partitions) throws SemanticException {
+  private List<ReplPathMapping> writeData(PartitionIterable partitions, boolean isExportTask) throws SemanticException {
+    List<ReplPathMapping> replCopyPathMappings = new LinkedList<>();
     try {
       if (tableSpec.tableHandle.isPartitioned()) {
         if (partitions == null) {
           throw new IllegalStateException("partitions cannot be null for partitionTable :"
               + tableSpec.getTableName().getTable());
         }
-        new PartitionExport(paths, partitions, distCpDoAsUser, conf, mmCtx).write(replicationSpec);
+        replCopyPathMappings = new PartitionExport(
+                paths, partitions, distCpDoAsUser, conf, mmCtx).write(replicationSpec, isExportTask);
       } else {
         List<Path> dataPathList = Utils.getDataPathList(tableSpec.tableHandle.getDataLocation(),
                 replicationSpec, conf);
+        replCopyPathMappings.add(new ReplPathMapping(tableSpec.tableHandle.getDataLocation(), paths.dataExportDir()));
         new FileOperations(dataPathList, paths.dataExportDir(), distCpDoAsUser, conf, mmCtx)
-                .export(replicationSpec);
+                .export(isExportTask);
       }
+      return replCopyPathMappings;
     } catch (Exception e) {
       throw new SemanticException(e.getMessage(), e);
     }

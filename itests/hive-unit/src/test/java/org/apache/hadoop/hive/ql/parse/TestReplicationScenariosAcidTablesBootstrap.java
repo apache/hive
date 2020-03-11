@@ -34,6 +34,7 @@ import org.junit.Test;
 import org.junit.BeforeClass;
 
 import javax.annotation.Nullable;
+import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -80,7 +81,8 @@ public class TestReplicationScenariosAcidTablesBootstrap
     replica.load(replicatedDbName, primaryDbName);
     verifyIncLoad(replicatedDbName, incrementalDump.lastReplicationId);
     // Ckpt should be set on bootstrapped tables.
-    replica.verifyIfCkptSetForTables(replicatedDbName, acidTableNames, incrementalDump.dumpLocation);
+    String hiveDumpLocation = incrementalDump.dumpLocation + File.separator + ReplUtils.REPL_HIVE_BASE_DIR;
+    replica.verifyIfCkptSetForTables(replicatedDbName, acidTableNames, hiveDumpLocation);
 
     // Take a second normal incremental dump after Acid table boostrap
     prepareInc2AcidData(primaryDbName, primary.hiveConf);
