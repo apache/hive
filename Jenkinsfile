@@ -95,6 +95,7 @@ stage('Compile') {
 
   // FIXME: dup
     sh '''#!/bin/bash -e
+export HIVE_HOME="$PWD"
 OPTS=" -s $SETTINGS -B install -Dmaven.test.failure.ignore -Dtest.groups= "
 OPTS+=" -Pitests,qsplits"
 OPTS+=" -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugin.surefire.SurefirePlugin=INFO"
