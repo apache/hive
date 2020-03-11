@@ -192,9 +192,9 @@ public final class ConstantPropagateProcFactory {
     // We shouldn't cast strings to other types because that can break original data in cases of
     // leading zeros or zeros trailing after decimal point.
     // Example: "000126" => 126 => "126"
-    boolean brokenDataTypesCombination = unsafeConversionTypes.contains(
-        priti.getPrimitiveCategory()) && !unsafeConversionTypes.contains(
-            descti.getPrimitiveCategory());
+    boolean brokenDataTypesCombination = unsafeConversionTypes.contains(priti.getPrimitiveCategory())
+        && !unsafeConversionTypes.contains(descti.getPrimitiveCategory())
+        || priti.getPrimitiveCategory() == PrimitiveCategory.TIMESTAMP && descti.getPrimitiveCategory() == PrimitiveCategory.DATE;
     if (performSafeTypeCast && brokenDataTypesCombination) {
       if (LOG.isDebugEnabled()) {
         LOG.debug("Unsupported cast " + priti + "; " + descti);
