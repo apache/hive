@@ -40,7 +40,7 @@ def testInParallel(parallelism, inclusionsFile, exclusionsFile, results, image, 
 }
 
 
-podTemplate(workspaceVolume: dynamicPVC(requestsSize: "16Gi"), containers: [
+podTemplate(workspaceVolume: dynamicPVC(requestsSize: "24Gi"), containers: [
   //cloudbees/jnlp-slave-with-java-build-tools
   //kgyrtkirk/hive-dev-box:executor
     containerTemplate(name: 'maven', image: 'kgyrtkirk/tx1:x', ttyEnabled: true, command: 'cat',
