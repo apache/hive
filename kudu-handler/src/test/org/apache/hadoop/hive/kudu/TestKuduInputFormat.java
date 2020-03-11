@@ -45,6 +45,7 @@ import org.apache.kudu.client.RowResult;
 import org.apache.kudu.shaded.com.google.common.collect.ImmutableList;
 import org.apache.kudu.test.KuduTestHarness;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -185,6 +186,7 @@ public class TestKuduInputFormat {
     }
   }
 
+  @Ignore
   @Test
   public void testBadTable() throws Exception {
     KuduInputFormat input = new KuduInputFormat();
@@ -253,6 +255,7 @@ public class TestKuduInputFormat {
     assertEquals(2, splits.length);
   }
 
+  @Ignore
   @Test
   public void testPredicate() throws Exception {
     // Insert a second test row that will be filtered out.
