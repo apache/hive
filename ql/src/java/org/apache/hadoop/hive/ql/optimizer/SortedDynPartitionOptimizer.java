@@ -74,6 +74,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
+import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.orc.OrcConf;
@@ -210,7 +211,7 @@ public class SortedDynPartitionOptimizer extends Transform {
           destTable.getCols());
       List<Integer> sortPositions = null;
       List<Integer> sortOrder = null;
-      ArrayList<ExprNodeDesc> bucketColumns;
+      ArrayList<ExprNodeDesc> bucketColumns = null;
       if (fsOp.getConf().getWriteType() == AcidUtils.Operation.UPDATE ||
           fsOp.getConf().getWriteType() == AcidUtils.Operation.DELETE) {
         // When doing updates and deletes we always want to sort on the rowid because the ACID
@@ -218,7 +219,6 @@ public class SortedDynPartitionOptimizer extends Transform {
         // ignore whatever comes from the table and enforce this sort order instead.
         sortPositions = Collections.singletonList(0);
         sortOrder = Collections.singletonList(1); // 1 means asc, could really use enum here in the thrift if
-        bucketColumns = new ArrayList<>();
         /**
          * ROW__ID is always the 1st column of Insert representing Update/Delete operation
          * (set up in {@link org.apache.hadoop.hive.ql.parse.UpdateDeleteSemanticAnalyzer})
@@ -230,8 +230,12 @@ public class SortedDynPartitionOptimizer extends Transform {
         if (!VirtualColumn.ROWID.getTypeInfo().equals(ci.getType())) {
           throw new IllegalStateException("expected 1st column to be ROW__ID but got wrong type: " + ci.toString());
         }
-        //add a cast(ROW__ID as int) to wrap in UDFToInteger()
-        bucketColumns.add(ParseUtils.createConversionCast(new ExprNodeColumnDesc(ci), TypeInfoFactory.intTypeInfo));
+
+        if (numBuckets > 0) {
+          bucketColumns = new ArrayList<>();
+          //add a cast(ROW__ID as int) to wrap in UDFToInteger()
+          bucketColumns.add(ParseUtils.createConversionCast(new ExprNodeColumnDesc(ci), TypeInfoFactory.intTypeInfo));
+        }
       } else {
         if (!destTable.getSortCols().isEmpty()) {
           // Sort columns specified by table
@@ -296,7 +300,7 @@ public class SortedDynPartitionOptimizer extends Transform {
         }
       }
       RowSchema selRS = new RowSchema(fsParent.getSchema());
-      if (!bucketColumns.isEmpty()) {
+      if (bucketColumns!= null && !bucketColumns.isEmpty()) {
         descs.add(new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo,
                                          ReduceField.KEY.toString()+"."+BUCKET_NUMBER_COL_NAME, null, false));
         colNames.add(BUCKET_NUMBER_COL_NAME);
@@ -319,7 +323,7 @@ public class SortedDynPartitionOptimizer extends Transform {
 
       // Set if partition sorted or partition bucket sorted
       fsOp.getConf().setDpSortState(FileSinkDesc.DPSortState.PARTITION_SORTED);
-      if (!bucketColumns.isEmpty()) {
+      if (bucketColumns!=null && !bucketColumns.isEmpty()) {
         fsOp.getConf().setDpSortState(FileSinkDesc.DPSortState.PARTITION_BUCKET_SORTED);
       }
 
@@ -500,7 +504,7 @@ public class SortedDynPartitionOptimizer extends Transform {
       int numPartAndBuck = partitionPositions.size();
 
       keyColsPosInVal.addAll(partitionPositions);
-      if (!bucketColumns.isEmpty()) {
+      if (bucketColumns != null && !bucketColumns.isEmpty()) {
         keyColsPosInVal.add(-1);
         numPartAndBuck += 1;
       }
@@ -721,7 +725,12 @@ public class SortedDynPartitionOptimizer extends Transform {
         break;
       }
 
-      List<ColStatistics> colStats = fsParent.getStatistics().getColumnStats();
+      Statistics tStats = fsParent.getStatistics();
+      if (tStats == null) {
+        return true;
+      }
+
+      List<ColStatistics> colStats = tStats.getColumnStats();
       if (colStats == null || colStats.isEmpty()) {
         return true;
       }
