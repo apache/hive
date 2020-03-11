@@ -33,13 +33,12 @@ class ImpalaConnection {
     static private final TBinaryProtocol.Factory protocolFactory = new TBinaryProtocol.Factory();
     private final InetSocketAddress socketAddress;
     private final TSocket socket;
-    private boolean isOpen = false;
 
     /**
      * @param address Address in the form of "host:port" to a Impala coordinator. Host may be a hostname or IP.
      * @throws HiveException
      */
-    ImpalaConnection(String address) throws HiveException {
+    ImpalaConnection(String address, int timeout) throws HiveException {
         String[] addr = address.split(":");
 
         if (addr.length != 2) {
@@ -55,6 +54,7 @@ class ImpalaConnection {
         }
         this.socketAddress = InetSocketAddress.createUnresolved(addr[0], port);
         this.socket = new TSocket(socketAddress.getHostString(), socketAddress.getPort());
+        this.socket.setSocketTimeout(timeout);
     }
 
     /**
@@ -62,9 +62,8 @@ class ImpalaConnection {
      * @throws TException
      */
     public void open() throws TException {
-        Preconditions.checkState(!isOpen);
+        Preconditions.checkState(!socket.isOpen());
         socket.open();
-        isOpen = true;
     }
 
     /**
@@ -72,11 +71,10 @@ class ImpalaConnection {
      */
     public void close() {
         socket.close();
-        isOpen = false;
     }
 
     public String toString() {
-        return "ImpalaConnection{socket: " + socket + " isOpen: " + isOpen + "}";
+        return "ImpalaConnection{socket: " + socket + " isOpen: " + socket.isOpen() + "}";
     }
 
     /**
@@ -88,7 +86,7 @@ class ImpalaConnection {
      */
     ImpalaHiveServer2Service.Client getClient() throws HiveException {
         try {
-            if (!isOpen) {
+            if (!socket.isOpen()) {
                 socket.open();
             }
         } catch (Exception e) {

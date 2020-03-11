@@ -57,7 +57,7 @@ public class ImpalaTask extends Task<ImpalaWork> {
         try {
             // CDPD-6966: Cache Impala Session connection for a user
             // Currently this is recreated with each query.
-            session = new ImpalaSession(getQueryState().getConf().getVar(HiveConf.ConfVars.HIVE_IMPALA_ADDRESS));
+            session = new ImpalaSession(getQueryState().getConf());
             session.open();
 
             ImpalaWork work = getWork();
