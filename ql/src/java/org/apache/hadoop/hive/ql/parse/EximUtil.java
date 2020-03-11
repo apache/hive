@@ -157,6 +157,40 @@ public class EximUtil {
     }
   }
 
+  /**
+   * Wrapper class for mapping replication source and target path for copying data.
+   */
+  public static class ReplPathMapping {
+    private Path srcPath;
+    private Path tgtPath;
+
+    public ReplPathMapping(Path srcPath, Path tgtPath) {
+      if (srcPath == null) {
+        throw new IllegalArgumentException("Source Path can not be null.");
+      }
+      this.srcPath = srcPath;
+      if (tgtPath == null) {
+        throw new IllegalArgumentException("Target Path can not be null.");
+      }
+      this.tgtPath = tgtPath;
+    }
+
+    public Path getSrcPath() {
+      return srcPath;
+    }
+
+    public void setSrcPath(Path srcPath) {
+      this.srcPath = srcPath;
+    }
+
+    public Path getTargetPath() {
+      return tgtPath;
+    }
+
+    public void setTargetPath(Path targetPath) {
+      this.tgtPath = targetPath;
+    }
+  }
 
   private EximUtil() {
   }

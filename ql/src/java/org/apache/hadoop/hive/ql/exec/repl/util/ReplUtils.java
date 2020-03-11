@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.repl.ReplStateLogWork;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsUpdateWork;
@@ -78,6 +79,9 @@ public class ReplUtils {
 
   // Root directory for dumping bootstrapped tables along with incremental events dump.
   public static final String INC_BOOTSTRAP_ROOT_DIR_NAME = "_bootstrap";
+
+  // Root base directory name for hive.
+  public static final String REPL_HIVE_BASE_DIR = "hive";
 
   // Name of the directory which stores the list of tables included in the policy in case of table level replication.
   // One file per database, named after the db name. The directory is not created for db level replication.
@@ -236,7 +240,8 @@ public class ReplUtils {
     return p -> {
       try {
         return fs.isDirectory(p) && !p.getName().equalsIgnoreCase(ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME)
-                && !p.getName().equalsIgnoreCase(ReplUtils.REPL_TABLE_LIST_DIR_NAME);
+                && !p.getName().equalsIgnoreCase(ReplUtils.REPL_TABLE_LIST_DIR_NAME)
+                && !p.getName().equalsIgnoreCase(EximUtil.DATA_PATH_NAME);
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
@@ -246,7 +251,8 @@ public class ReplUtils {
   public static PathFilter getBootstrapDirectoryFilter(final FileSystem fs) {
     return p -> {
       try {
-        return fs.isDirectory(p) && !p.getName().equalsIgnoreCase(ReplUtils.REPL_TABLE_LIST_DIR_NAME);
+        return fs.isDirectory(p) && !p.getName().equalsIgnoreCase(ReplUtils.REPL_TABLE_LIST_DIR_NAME)
+                && !p.getName().equalsIgnoreCase(EximUtil.DATA_PATH_NAME);
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
