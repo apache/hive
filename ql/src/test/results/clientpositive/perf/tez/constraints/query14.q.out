@@ -568,7 +568,7 @@ Stage-0
                                   Select Operator [SEL_1381] (rows=1 width=112)
                                     Output:["_col0"]
                                     Filter Operator [FIL_1380] (rows=1 width=120)
-                                      predicate:(_col0 is not null and _col1 is not null)
+                                      predicate:CAST( (_col0 / _col1) AS decimal(22,6)) is not null
                                       Group By Operator [GBY_1379] (rows=1 width=120)
                                         Output:["_col0","_col1"],aggregations:["sum(VALUE._col0)","count(VALUE._col1)"]
                                       <-Union 58 [CUSTOM_SIMPLE_EDGE]
@@ -813,7 +813,7 @@ Stage-0
                                   Select Operator [SEL_1397] (rows=1 width=112)
                                     Output:["_col0"]
                                     Filter Operator [FIL_1396] (rows=1 width=120)
-                                      predicate:(_col0 is not null and _col1 is not null)
+                                      predicate:CAST( (_col0 / _col1) AS decimal(22,6)) is not null
                                       Group By Operator [GBY_1395] (rows=1 width=120)
                                         Output:["_col0","_col1"],aggregations:["sum(VALUE._col0)","count(VALUE._col1)"]
                                       <-Union 61 [CUSTOM_SIMPLE_EDGE]
@@ -1000,7 +1000,7 @@ Stage-0
                                   Select Operator [SEL_1359] (rows=1 width=112)
                                     Output:["_col0"]
                                     Filter Operator [FIL_1358] (rows=1 width=120)
-                                      predicate:(_col0 is not null and _col1 is not null)
+                                      predicate:CAST( (_col0 / _col1) AS decimal(22,6)) is not null
                                       Group By Operator [GBY_1357] (rows=1 width=120)
                                         Output:["_col0","_col1"],aggregations:["sum(VALUE._col0)","count(VALUE._col1)"]
                                       <-Union 54 [CUSTOM_SIMPLE_EDGE]

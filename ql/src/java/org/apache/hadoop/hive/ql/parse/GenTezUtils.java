@@ -312,9 +312,8 @@ public class GenTezUtils {
 
     while(!operators.isEmpty()) {
       Operator<?> current = operators.pop();
-      seen.add(current);
 
-      if (current instanceof FileSinkOperator) {
+      if (seen.add(current) && current instanceof FileSinkOperator) {
         FileSinkOperator fileSink = (FileSinkOperator)current;
 
         // remember it for additional processing later

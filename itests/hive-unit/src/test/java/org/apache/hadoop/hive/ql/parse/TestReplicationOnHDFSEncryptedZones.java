@@ -99,6 +99,7 @@ public class TestReplicationOnHDFSEncryptedZones {
           put(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS.varname, "false");
           put(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname,
                   UserGroupInformation.getCurrentUser().getUserName());
+          put(HiveConf.ConfVars.REPLDIR.varname, primary.repldDir);
         }}, "test_key123");
 
     WarehouseInstance.Tuple tuple =
@@ -106,11 +107,11 @@ public class TestReplicationOnHDFSEncryptedZones {
             .run("create table encrypted_table (id int, value string)")
             .run("insert into table encrypted_table values (1,'value1')")
             .run("insert into table encrypted_table values (2,'value2')")
-            .dump(primaryDbName, null);
+            .dump(primaryDbName);
 
     replica
-        .run("repl load " + replicatedDbName + " from '" + tuple.dumpLocation
-                + "' with('hive.repl.add.raw.reserved.namespace'='true', "
+        .run("repl load " + primaryDbName + " into " + replicatedDbName
+                + " with('hive.repl.add.raw.reserved.namespace'='true', "
                 + "'hive.repl.replica.external.table.base.dir'='" + replica.externalTableWarehouseRoot + "', "
                 + "'distcp.options.pugpbx'='', 'distcp.options.skipcrccheck'='')")
         .run("use " + replicatedDbName)
@@ -137,11 +138,11 @@ public class TestReplicationOnHDFSEncryptedZones {
             .run("create table encrypted_table (id int, value string)")
             .run("insert into table encrypted_table values (1,'value1')")
             .run("insert into table encrypted_table values (2,'value2')")
-            .dump(primaryDbName, null);
+            .dump(primaryDbName);
 
     replica
-        .run("repl load " + replicatedDbName + " from '" + tuple.dumpLocation
-            + "' with('hive.repl.add.raw.reserved.namespace'='true')")
+        .run("repl load " + primaryDbName + " into " + replicatedDbName
+            + " with('hive.repl.add.raw.reserved.namespace'='true')")
         .run("use " + replicatedDbName)
         .run("repl status " + replicatedDbName)
         .verifyResult(tuple.lastReplicationId)

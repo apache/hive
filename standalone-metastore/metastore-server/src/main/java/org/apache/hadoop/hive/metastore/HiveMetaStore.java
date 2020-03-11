@@ -2040,9 +2040,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
       }
       if (tbl.isSetId()) {
-        throw new InvalidObjectException("Id shouldn't be set but table "
-            + tbl.getDbName() + "." + tbl.getTableName() + " has the Id set to "
-            + tbl.getId() + ". It's a read-only option");
+        LOG.debug("Id shouldn't be set but table {}.{} has the Id set to {}. Id is ignored.", tbl.getDbName(),
+            tbl.getTableName(), tbl.getId());
+        tbl.unsetId();
       }
       SkewedInfo skew = tbl.getSd().getSkewedInfo();
       if (skew != null) {

@@ -127,8 +127,8 @@ public class TestReplDumpTask {
       private int tableDumpCount = 0;
 
       @Override
-      void dumpTable(String dbName, String tblName, String validTxnList, Path dbRoot,
-          long lastReplId, Hive hiveDb, HiveWrapper.Tuple<Table> tuple)
+      void dumpTable(String dbName, String tblName, String validTxnList, Path dbRoot, Path replDataDir,
+                     long lastReplId, Hive hiveDb, HiveWrapper.Tuple<Table> tuple)
           throws Exception {
         tableDumpCount++;
         if (tableDumpCount > 1) {
@@ -139,9 +139,7 @@ public class TestReplDumpTask {
 
     task.initialize(queryState, null, null, null);
     task.setWork(
-        new ReplDumpWork(replScope, null,
-            Long.MAX_VALUE, Long.MAX_VALUE, "",
-            Integer.MAX_VALUE, "")
+        new ReplDumpWork(replScope, null, "", "")
     );
 
     try {

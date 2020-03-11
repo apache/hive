@@ -17,6 +17,10 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.topnkey;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Stack;
+
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
@@ -33,20 +37,25 @@ import org.apache.hadoop.hive.ql.plan.TopNKeyDesc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Stack;
-
 /**
  * TopNKeyProcessor is a processor for TopNKeyOperator.
  * A TopNKeyOperator will be placed before any ReduceSinkOperator which has a topN property >= 0.
  */
 public class TopNKeyProcessor implements SemanticNodeProcessor {
   private static final Logger LOG = LoggerFactory.getLogger(TopNKeyProcessor.class);
-  private final int maxTopNAllowed;
+  private float efficiencyThreshold;
+  private long checkEfficiencyNumBatches;
+  private int maxTopNAllowed;
+  private int maxNumberOfPartitions;
 
-  public TopNKeyProcessor(int maxTopNAllowed) {
+  public TopNKeyProcessor() {
+  }
+
+  public TopNKeyProcessor(int maxTopNAllowed, float efficiencyThreshold, long checkEfficiencyNumBatches, int maxNumberOfPartitions) {
     this.maxTopNAllowed = maxTopNAllowed;
+    this.efficiencyThreshold = efficiencyThreshold;
+    this.checkEfficiencyNumBatches = checkEfficiencyNumBatches;
+    this.maxNumberOfPartitions = maxNumberOfPartitions;
   }
 
   @Override
@@ -84,7 +93,9 @@ public class TopNKeyProcessor implements SemanticNodeProcessor {
     }
 
     TopNKeyDesc topNKeyDesc = new TopNKeyDesc(reduceSinkDesc.getTopN(), reduceSinkDesc.getOrder(),
-            reduceSinkDesc.getNullOrder(), reduceSinkDesc.getKeyCols(), partitionCols);
+    reduceSinkDesc.getNullOrder(), reduceSinkDesc.getKeyCols(), partitionCols,
+      efficiencyThreshold, checkEfficiencyNumBatches, maxNumberOfPartitions);
+
 
     copyDown(reduceSinkOperator, topNKeyDesc);
     return null;

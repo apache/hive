@@ -815,11 +815,11 @@ public class TestListPartitions extends MetaStoreClientTest {
     assertPartitionsHaveCorrectValues(partitions, testValues.subList(4, 5));
 
     partitions = client.listPartitionsByFilter(DB_NAME, tableName,
-        "mOnTh like \"m.*\"", (short) -1);
+        "mOnTh like \"m%\"", (short) -1);
     assertPartitionsHaveCorrectValues(partitions, testValues.subList(0, 4));
 
     partitions = client.listPartitionsByFilter(DB_NAME, tableName,
-        "yYyY=\"2018\" AND mOnTh like \"m.*\"", (short) -1);
+        "yYyY=\"2018\" AND mOnTh like \"m%\"", (short) -1);
     assertPartitionsHaveCorrectValues(partitions, testValues.subList(3, 4));
     client.dropTable(DB_NAME, tableName);
   }
@@ -853,7 +853,7 @@ public class TestListPartitions extends MetaStoreClientTest {
     assertPartitionsHaveCorrectValues(partitions, testValues.subList(0, 3));
 
     partitions = client.listPartitionsByFilter(DB_NAME, tableName,
-        "month like \"M.*\"", (short) -1);
+        "month like \"M%\"", (short) -1);
     Assert.assertTrue(partitions.isEmpty());
     client.dropTable(DB_NAME, tableName);
 

@@ -2472,3 +2472,70 @@ NULL	NULL	NULL	105	NULL	None	101	2	Car	102	2	Del
 NULL	NULL	NULL	105	NULL	None	101	2	Car	103	2	Ema
 NULL	NULL	NULL	105	NULL	None	NULL	NULL	None	NULL	NULL	NULL
 NULL	NULL	NULL	105	NULL	None	98	NULL	None	NULL	NULL	NULL
+PREHOOK: query: CREATE TABLE table1 (a INT, b INT)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table1
+POSTHOOK: query: CREATE TABLE table1 (a INT, b INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table1
+PREHOOK: query: INSERT INTO table1 VALUES (1, 2), (1, 2), (1, 2), (1, 2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table1
+POSTHOOK: query: INSERT INTO table1 VALUES (1, 2), (1, 2), (1, 2), (1, 2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table1
+POSTHOOK: Lineage: table1.a SCRIPT []
+POSTHOOK: Lineage: table1.b SCRIPT []
+PREHOOK: query: EXPLAIN CBO
+SELECT sub1.r FROM
+    (
+        SELECT
+            RANK() OVER (ORDER BY t1.b desc) as r
+        FROM table1 t1
+                 JOIN table1 t2 ON t1.a = t2.b
+    ) sub1
+        LEFT OUTER JOIN table1 t3
+                        ON sub1.r = t3.a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table1
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+SELECT sub1.r FROM
+    (
+        SELECT
+            RANK() OVER (ORDER BY t1.b desc) as r
+        FROM table1 t1
+                 JOIN table1 t2 ON t1.a = t2.b
+    ) sub1
+        LEFT OUTER JOIN table1 t3
+                        ON sub1.r = t3.a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(r=[$0])
+  HiveJoin(condition=[=($0, $1)], joinType=[left], algorithm=[none], cost=[not available])
+    HiveProject(_o__col11=[RANK() OVER (PARTITION BY 0 ORDER BY $1 DESC NULLS LAST ROWS BETWEEN 2147483647 FOLLOWING AND 2147483647 PRECEDING)])
+      HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+        HiveProject(a=[$0], b=[$1])
+          HiveFilter(condition=[IS NOT NULL($0)])
+            HiveTableScan(table=[[default, table1]], table:alias=[t1])
+        HiveProject(b=[$1])
+          HiveFilter(condition=[IS NOT NULL($1)])
+            HiveTableScan(table=[[default, table1]], table:alias=[t2])
+    HiveProject(a=[$0])
+      HiveFilter(condition=[IS NOT NULL($0)])
+        HiveTableScan(table=[[default, table1]], table:alias=[t3])
+
+PREHOOK: query: DROP TABLE table1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@table1
+PREHOOK: Output: default@table1
+POSTHOOK: query: DROP TABLE table1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@table1
+POSTHOOK: Output: default@table1

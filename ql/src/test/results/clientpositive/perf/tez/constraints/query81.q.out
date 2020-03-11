@@ -117,7 +117,7 @@ Stage-0
                                 Select Operator [SEL_211] (rows=12 width=198)
                                   Output:["_col0","_col1"]
                                   Filter Operator [FIL_210] (rows=12 width=206)
-                                    predicate:(_col1 is not null and _col2 is not null)
+                                    predicate:CAST( (_col1 / _col2) AS decimal(21,6)) is not null
                                     Group By Operator [GBY_209] (rows=12 width=206)
                                       Output:["_col0","_col1","_col2"],aggregations:["sum(_col2)","count(_col2)"],keys:_col0
                                       Select Operator [SEL_208] (rows=5266632 width=201)

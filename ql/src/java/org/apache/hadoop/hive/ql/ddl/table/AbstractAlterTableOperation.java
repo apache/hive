@@ -98,7 +98,7 @@ public abstract class AbstractAlterTableOperation<T extends AbstractAlterTableDe
         }
         partitions.add(part);
       } else {
-        // DDLSemanticAnalyzer has already checked if partial partition specs are allowed,
+        // AbstractBaseAlterTableAnalyzer has already checked if partial partition specs are allowed,
         // thus we should not need to check it here.
         partitions = context.getDb().getPartitions(tbl, partSpec);
       }
@@ -178,7 +178,7 @@ public abstract class AbstractAlterTableOperation<T extends AbstractAlterTableDe
 
     // This is kind of hacky - the read entity contains the old table, whereas the write entity contains the new
     // table. This is needed for rename - both the old and the new table names are passed
-    // Don't acquire locks for any of these, we have already asked for them in DDLSemanticAnalyzer.
+    // Don't acquire locks for any of these, we have already asked for them in AbstractBaseAlterTableAnalyzer.
     if (partitions != null) {
       for (Partition partition : partitions) {
         context.getWork().getInputs().add(new ReadEntity(partition));

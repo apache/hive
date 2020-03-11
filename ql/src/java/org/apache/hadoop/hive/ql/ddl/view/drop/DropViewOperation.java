@@ -38,7 +38,7 @@ public class DropViewOperation extends DDLOperation<DropViewDesc> {
   public int execute() throws HiveException {
     Table table = getTable();
     if (table == null) {
-      return 0; // dropping not existing view is handled by DDLSemanticAnalyzer
+      return 0; // dropping not existing view is handled by DropViewAnalyzer
     }
 
     if (!table.isView()) {

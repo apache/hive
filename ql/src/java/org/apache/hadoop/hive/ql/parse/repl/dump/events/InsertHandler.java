@@ -97,7 +97,7 @@ class InsertHandler extends AbstractEventHandler<InsertMessage> {
       // encoded filename/checksum of files, write into _files
       try (BufferedWriter fileListWriter = writer(withinContext, dataPath)) {
         for (String file : files) {
-          fileListWriter.write(file + "\n");
+          writeFileEntry(qlMdTable.getDbName(), qlMdTable, file, fileListWriter, withinContext);
         }
       }
     }

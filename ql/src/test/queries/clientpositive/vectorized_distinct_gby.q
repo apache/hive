@@ -18,3 +18,14 @@ select sum(distinct a), count(distinct a) from dtest;
 explain vectorization detail
 select sum(distinct cint), count(distinct cint), avg(distinct cint), std(distinct cint) from alltypesorc;
 select sum(distinct cint), count(distinct cint), avg(distinct cint), std(distinct cint) from alltypesorc;
+
+explain vectorization detail
+select ctinyint, count(distinct cint), sum(( CASE WHEN ( ( cstring1 LIKE'test%1' )
+ OR ( cstring1 LIKE 'test%2' ) ) THEN 1 ELSE 0 END )) AS s,
+max(( CASE WHEN ( ( cstring1 LIKE 'test%3' ) OR ( cstring1 LIKE '%test%5' ) )
+THEN cstring1 ELSE 'XXXXX' END )) AS maxVal from alltypesorc group by ctinyint;
+
+select ctinyint, count(distinct cint), sum(( CASE WHEN ( ( cstring1 LIKE
+'test%1' ) OR ( cstring1 LIKE 'test%2' ) ) THEN 1 ELSE 0 END )) AS s,
+max(( CASE WHEN ( ( cstring1 LIKE 'test%3' ) OR ( cstring1 LIKE '%test%5' ) )
+THEN cstring1 ELSE 'XXXXX' END )) AS maxVal from alltypesorc group by ctinyint;

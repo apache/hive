@@ -1108,15 +1108,10 @@ class MetaStoreDirectSql {
 
     @Override
     public void visit(LeafNode node) throws MetaException {
-      if (node.operator == Operator.LIKE) {
-        filterBuffer.setError("LIKE is not supported for SQL filter pushdown");
-        return;
-      }
       int partColCount = table.getPartitionKeys().size();
       int partColIndex = node.getPartColIndexForFilter(table, filterBuffer);
       if (filterBuffer.hasError()) return;
 
-      // We skipped 'like', other ops should all work as long as the types are right.
       String colTypeStr = table.getPartitionKeys().get(partColIndex).getType();
       FilterType colType = FilterType.fromType(colTypeStr);
       if (colType == FilterType.Invalid) {
@@ -1220,6 +1215,11 @@ class MetaStoreDirectSql {
       }
       if (!node.isReverseOrder) {
         params.add(nodeValue);
+      }
+
+      // The following syntax is required for using LIKE clause wildcards '_' and '%' as literals.
+      if (node.operator == Operator.LIKE) {
+        nodeValue0 = nodeValue0 + " ESCAPE '\\' ";
       }
 
       filterBuffer.append(node.isReverseOrder
