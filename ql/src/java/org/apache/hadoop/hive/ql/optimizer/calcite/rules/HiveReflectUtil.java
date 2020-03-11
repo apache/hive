@@ -32,7 +32,10 @@ import org.apache.calcite.util.ReflectUtil.MethodDispatcher;
 import org.apache.calcite.util.ReflectiveVisitor;
 
 /**
- * Static utilities for Java reflection.
+ * Static utilities for Java reflection. This is based on Calcite
+ * {@link ReflectUtil}. It contains methods to wrap a Calcite dispatcher
+ * (based on reflection) into a Hive dispatcher as well as a Hive
+ * dispatcher implementation based on {@link LambdaMetafactory}.
  */
 public class HiveReflectUtil {
 

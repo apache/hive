@@ -107,6 +107,12 @@ public class RelFieldTrimmer implements ReflectiveVisitor {
 
   /**
    * Creates a RelFieldTrimmer.
+   * @param useLMFBasedDispatcher True if we want to create a dispatcher based on
+   *                              {@link java.lang.invoke.LambdaMetafactory} that is
+   *                              thread-safe, or false if we want to create a
+   *                              Calcite dispatcher based on reflection that is not
+   *                              thread-safe. False should only be used for
+   *                              testing/benchmarking purposes
    */
   protected RelFieldTrimmer(boolean useLMFBasedDispatcher) {
     if (useLMFBasedDispatcher) {
