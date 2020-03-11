@@ -51,7 +51,7 @@ OPTS+=" -Pitests,qsplits"
 OPTS+=" -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugin.surefire.SurefirePlugin=INFO"
 OPTS+=" -Dmaven.repo.local=$PWD/.m2"
 OPTS+=" $M_OPTS "
-mvn $OPTS -Dtest=noMatches
+mvn $OPTS '''+args+'''
 du -h --max-depth=1
 '''
     }
