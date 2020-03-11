@@ -135,7 +135,7 @@ import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdenti
  * It's imperative that any operation on a txn (e.g. commit), ensure (atomically) that this txn is
  * still valid and active.  In the code this is usually achieved at the same time the txn record
  * is locked for some operation.
- * 
+ *
  * Note on retry logic:
  * Metastore has retry logic in both {@link org.apache.hadoop.hive.metastore.RetryingMetaStoreClient}
  * and {@link org.apache.hadoop.hive.metastore.RetryingHMSHandler}.  The retry logic there is very
@@ -1007,7 +1007,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * In order to prevent lost update problem, the the non-overlapping txns must lock in the snapshot
    * that they read appropriately.  In particular, if txns do not overlap, then one follows the other
    * (assumig they write the same entity), and thus the 2nd must see changes of the 1st.  We ensure
-   * this by locking in snapshot after 
+   * this by locking in snapshot after
    * {@link #openTxns(OpenTxnRequest)} call is made (see org.apache.hadoop.hive.ql.Driver.acquireLocksAndOpenTxn)
    * and mutexing openTxn() with commit().  In other words, once a S.commit() starts we must ensure
    * that txn T which will be considered a later txn, locks in a snapshot that includes the result
@@ -1015,7 +1015,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * As a counter example, suppose we have S[3,3] and T[4,4] (commitId=txnid means no other transactions
    * were running in parallel).  If T and S both locked in the same snapshot (for example commit of
    * txnid:2, which is possible if commitTxn() and openTxnx() is not mutexed)
-   * 'x' would be updated to the same value by both, i.e. lost update. 
+   * 'x' would be updated to the same value by both, i.e. lost update.
    */
   @Override
   @RetrySemantics.Idempotent("No-op if already committed")
@@ -1094,7 +1094,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           close(rs);
           //if here it means currently committing txn performed update/delete and we should check WW conflict
           /**
-           * This S4U will mutex with other commitTxn() and openTxns(). 
+           * This S4U will mutex with other commitTxn() and openTxns().
            * -1 below makes txn intervals look like [3,3] [4,4] if all txns are serial
            * Note: it's possible to have several txns have the same commit id.  Suppose 3 txns start
            * at the same time and no new txns start until all 3 commit.
@@ -1931,7 +1931,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         //the +1 is there because "delete ..." below has < (which is correct for the case when
         //there is an open txn
         //Concurrency: even if new txn starts (or starts + commits) it is still true that
-        //there are no currently open txns that overlap with any committed txn with 
+        //there are no currently open txns that overlap with any committed txn with
         //commitId <= commitHighWaterMark (as set on next line).  So plain READ_COMMITTED is enough.
         commitHighWaterMark = highestAllocatedTxnId + 1;
       }
@@ -2220,9 +2220,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * connection (but separate transactions).  This avoid some flakiness in BONECP where if you
    * perform an operation on 1 connection and immediately get another from the pool, the 2nd one
    * doesn't see results of the first.
-   * 
+   *
    * Retry-by-caller note: If the call to lock is from a transaction, then in the worst case
-   * there will be a duplicate set of locks but both sets will belong to the same txn so they 
+   * there will be a duplicate set of locks but both sets will belong to the same txn so they
    * will not conflict with each other.  For locks w/o txn context (i.e. read-only query), this
    * may lead to deadlock (at least a long wait).  (e.g. 1st call creates locks in {@code LOCK_WAITING}
    * mode and response gets lost.  Then {@link org.apache.hadoop.hive.metastore.RetryingMetaStoreClient}
@@ -2372,7 +2372,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
                   updateTxnComponents = false;
                   break;
                 default:
-                  //since we have an open transaction, only 4 values above are expected 
+                  //since we have an open transaction, only 4 values above are expected
                   throw new IllegalStateException("Unexpected DataOperationType: " + lc.getOperationType()
                     + " agentInfo=" + rqst.getAgentInfo() + " " + JavaUtils.txnIdToString(txnid));
               }
@@ -2563,7 +2563,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * {@link #checkLock(java.sql.Connection, long)}  must run at SERIALIZABLE (make sure some lock we are checking
    * against doesn't move from W to A in another txn) but this method can heartbeat in
    * separate txn at READ_COMMITTED.
-   * 
+   *
    * Retry-by-caller note:
    * Retryable because {@link #checkLock(Connection, long)} is
    */
@@ -4225,8 +4225,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    */
   @RetrySemantics.SafeToRetry("See @SafeToRetry")
   private LockResponse checkLock(Connection dbConn, long extLockId)
-    throws NoSuchLockException, NoSuchTxnException, TxnAbortedException, MetaException, SQLException {
-    TxnStore.MutexAPI.LockHandle handle =  null;
+    throws NoSuchLockException, TxnAbortedException, MetaException, SQLException {
     Statement stmt = null;
     ResultSet rs = null;
     LockResponse response = new LockResponse();
@@ -4242,16 +4241,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
      */
     boolean isPartOfDynamicPartitionInsert = true;
     try {
-      /**
-       * checkLock() must be mutex'd against any other checkLock to make sure 2 conflicting locks
-       * are not granted by parallel checkLock() calls.
-       */
-      handle = getMutexAPI().acquireLock(MUTEX_KEY.CheckLock.name());
       List<LockInfo> locksBeingChecked = getLockInfoFromLockId(dbConn, extLockId);//being acquired now
       response.setLockid(extLockId);
-
       LOG.debug("checkLock(): Setting savepoint. extLockId=" + JavaUtils.lockIdToString(extLockId));
-      Savepoint save = dbConn.setSavepoint();
+
       StringBuilder query = new StringBuilder("select hl_lock_ext_id, " +
         "hl_lock_int_id, hl_db, hl_table, hl_partition, hl_lock_state, " +
         "hl_lock_type, hl_txnid from HIVE_LOCKS where hl_db in (");
@@ -4440,11 +4433,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           switch (lockAction) {
             case WAIT:
               if(!ignoreConflict(info, locks[i])) {
-                /*we acquire all locks for a given query atomically; if 1 blocks, all go into (remain) in
-                * Waiting state.  wait() will undo any 'acquire()' which may have happened as part of
-                * this (metastore db) transaction and then we record which lock blocked the lock
-                * we were testing ('info').*/
-                wait(dbConn, save);
                 String sqlText = "update HIVE_LOCKS" +
                   " set HL_BLOCKEDBY_EXT_ID=" + locks[i].extLockId +
                   ", HL_BLOCKEDBY_INT_ID=" + locks[i].intLockId +
@@ -4479,9 +4467,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       response.setState(LockState.ACQUIRED);
     } finally {
       close(rs, stmt, null);
-      if(handle != null) {
-        handle.releaseLocks();
-      }
     }
     return response;
   }
@@ -4559,16 +4544,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       (desiredLock.txnId == 0 &&  desiredLock.extLockId == existingLock.extLockId);
   }
 
-  private void wait(Connection dbConn, Savepoint save) throws SQLException {
-    // Need to rollback because we did a select that acquired locks but we didn't
-    // actually update anything.  Also, we may have locked some locks as
-    // acquired that we now want to not acquire.  It's ok to rollback because
-    // once we see one wait, we're done, we won't look for more.
-    // Only rollback to savepoint because we want to commit our heartbeat
-    // changes.
-    LOG.debug("Going to rollback to savepoint");
-    dbConn.rollback(save);
-  }
   /**
    * Heartbeats on the lock table.  This commits, so do not enter it with any state.
    * Should not be called on a lock that belongs to transaction.
@@ -4750,7 +4725,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * Used to raise an informative error when the caller expected a txn in a particular TxnStatus
    * but found it in some other status
    */
-  private static void raiseTxnUnexpectedState(TxnStatus actualStatus, long txnid) 
+  private static void raiseTxnUnexpectedState(TxnStatus actualStatus, long txnid)
     throws NoSuchTxnException, TxnAbortedException {
     switch (actualStatus) {
       case ABORTED:
@@ -5378,7 +5353,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       //would need a list of (stmt,rs) pairs - 1 for each key
       throw new NotImplementedException();
     }
-    
+
     @Override
     public void releaseLocks() {
       rollbackDBConn(dbConn);
