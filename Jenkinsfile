@@ -79,7 +79,8 @@ spec:
 properties([
     parameters([
         string(name: 'SPLIT', defaultValue: '3', description: 'Number of buckets to split tests into.'),
-        string(name: 'OPTS', defaultValue: '-pl ql -am', description: 'additional maven opts')
+        string(name: 'OPTS', defaultValue: '-pl ql -am', description: 'additional maven opts'),
+        string(name: 'SCRIPT', defaultValue: '', description: 'custom build script'),
     ])
 ])
 
@@ -129,8 +130,10 @@ echo "@ENC"
 cat exclusions.txt
 echo "@END"
 '''
-
       buildHive("install -q")
+      withEnv(["SCRIPT=$params.SCRIPT"]) {
+        sh '''$SCRIPT'''
+      }
   })
 }
 
