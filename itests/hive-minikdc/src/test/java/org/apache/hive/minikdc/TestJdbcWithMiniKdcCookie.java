@@ -35,6 +35,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class TestJdbcWithMiniKdcCookie {
@@ -82,6 +83,7 @@ public class TestJdbcWithMiniKdcCookie {
     miniHS2.stop();
   }
 
+  @Ignore("CDPD-8970: Ignore org.apache.hive.minikdc.TestJdbcWithMiniKdcCookie.testCookie as it is flaky")
   @Test
   public void testCookie() throws Exception {
     String tableName = "test_cookie";
