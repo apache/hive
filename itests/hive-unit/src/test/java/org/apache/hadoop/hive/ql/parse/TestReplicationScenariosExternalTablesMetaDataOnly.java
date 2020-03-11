@@ -37,6 +37,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import javax.annotation.Nullable;
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -49,6 +50,7 @@ import java.util.stream.Collectors;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.FILE_NAME;
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME;
+import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.REPL_HIVE_BASE_DIR;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -167,7 +169,8 @@ public class TestReplicationScenariosExternalTablesMetaDataOnly extends BaseRepl
         .verifyResult(null);
 
     // Ckpt should be set on bootstrapped db.
-    replica.verifyIfCkptSet(replicatedDbName, tuple.dumpLocation);
+    String hiveDumpLocation = tuple.dumpLocation + File.separator + REPL_HIVE_BASE_DIR;
+    replica.verifyIfCkptSet(replicatedDbName, hiveDumpLocation);
 
     tuple = primary.run("use " + primaryDbName)
         .run("create external table t3 (id int)")
@@ -476,16 +479,18 @@ public class TestReplicationScenariosExternalTablesMetaDataOnly extends BaseRepl
             .run("create table t4 as select * from t3")
             .dump(primaryDbName, dumpWithClause);
 
+    String hiveDumpDir = tuple.dumpLocation + File.separator + REPL_HIVE_BASE_DIR;
     // the _external_tables_file info should be created as external tables are to be replicated.
     assertTrue(primary.miniDFSCluster.getFileSystem()
-            .exists(new Path(tuple.dumpLocation, FILE_NAME)));
+            .exists(new Path(hiveDumpDir, FILE_NAME)));
 
     // verify that the external table info is written correctly for incremental
     assertExternalFileInfo(Arrays.asList("t2", "t3"),
-            new Path(tuple.dumpLocation, FILE_NAME));
+            new Path(hiveDumpDir, FILE_NAME));
+
 
     // _bootstrap directory should be created as bootstrap enabled on external tables.
-    Path dumpPath = new Path(tuple.dumpLocation, INC_BOOTSTRAP_ROOT_DIR_NAME);
+    Path dumpPath = new Path(hiveDumpDir, INC_BOOTSTRAP_ROOT_DIR_NAME);
     assertTrue(primary.miniDFSCluster.getFileSystem().exists(dumpPath));
 
     // _bootstrap/<db_name>/t2
@@ -511,7 +516,8 @@ public class TestReplicationScenariosExternalTablesMetaDataOnly extends BaseRepl
             .verifyReplTargetProperty(replicatedDbName);
 
     // Ckpt should be set on bootstrapped tables.
-    replica.verifyIfCkptSetForTables(replicatedDbName, Arrays.asList("t2", "t3"), tuple.dumpLocation);
+    hiveDumpDir = tuple.dumpLocation + File.separator + REPL_HIVE_BASE_DIR;
+    replica.verifyIfCkptSetForTables(replicatedDbName, Arrays.asList("t2", "t3"), hiveDumpDir);
 
     // Drop source tables to see if target points to correct data or not after bootstrap load.
     primary.run("use " + primaryDbName)
@@ -576,7 +582,8 @@ public class TestReplicationScenariosExternalTablesMetaDataOnly extends BaseRepl
     }
 
     // Only table t2 should exist in the data location list file.
-    assertFalseExternalFileInfo(new Path(tupleInc.dumpLocation, FILE_NAME));
+    String hiveDumpDir = tupleInc.dumpLocation + File.separator + REPL_HIVE_BASE_DIR;
+    assertFalseExternalFileInfo(new Path(hiveDumpDir, FILE_NAME));
 
     // The newly inserted data "2" should be missing in table "t1". But, table t2 should exist and have
     // inserted data.

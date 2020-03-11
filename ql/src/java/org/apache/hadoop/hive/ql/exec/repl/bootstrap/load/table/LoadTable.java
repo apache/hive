@@ -296,7 +296,7 @@ public class LoadTable {
             + table.getCompleteName() + " with source location: "
             + dataPath.toString() + " and target location " + tgtPath.toString());
 
-    Task<?> copyTask = ReplCopyTask.getLoadCopyTask(replicationSpec, dataPath, tmpPath, context.hiveConf);
+    Task<?> copyTask = ReplCopyTask.getLoadCopyTask(replicationSpec, dataPath, tmpPath, context.hiveConf, false);
 
     MoveWork moveWork = new MoveWork(new HashSet<>(), new HashSet<>(), null, null, false);
     if (AcidUtils.isTransactionalTable(table)) {

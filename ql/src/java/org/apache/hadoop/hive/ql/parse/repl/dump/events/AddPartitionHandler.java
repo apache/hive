@@ -110,8 +110,7 @@ class AddPartitionHandler extends AbstractEventHandler {
           // encoded filename/checksum of files, write into _files
           try (BufferedWriter fileListWriter = writer(withinContext, qlPtn)) {
             for (String file : files) {
-              fileListWriter.write(file);
-              fileListWriter.newLine();
+              writeFileEntry(qlMdTable.getDbName(), qlMdTable, file, fileListWriter, withinContext);
             }
           }
         }

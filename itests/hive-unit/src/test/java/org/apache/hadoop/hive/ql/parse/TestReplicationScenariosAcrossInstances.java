@@ -43,6 +43,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import javax.annotation.Nullable;
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -834,7 +835,8 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
 
   private void verifyIfCkptSet(Map<String, String> props, String dumpDir) {
     assertTrue(props.containsKey(ReplUtils.REPL_CHECKPOINT_KEY));
-    assertTrue(props.get(ReplUtils.REPL_CHECKPOINT_KEY).equals(dumpDir));
+    String hiveDumpDir = dumpDir + File.separator + ReplUtils.REPL_HIVE_BASE_DIR;
+    assertTrue(props.get(ReplUtils.REPL_CHECKPOINT_KEY).equals(hiveDumpDir));
   }
 
   private void verifyIfCkptPropMissing(Map<String, String> props) {
@@ -928,10 +930,11 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .run("insert into table4 values (1,2)")
             .dump(primaryDbName, Collections.emptyList());
 
-    Path path = new Path(incremental.dumpLocation);
+    String hiveDumpDir = incremental.dumpLocation + File.separator + ReplUtils.REPL_HIVE_BASE_DIR;
+    Path path = new Path(hiveDumpDir);
     FileSystem fs = path.getFileSystem(conf);
     FileStatus[] fileStatus = fs.listStatus(path);
-    int numEvents = fileStatus.length - 1; //one is metadata file
+    int numEvents = fileStatus.length - 2; //one is metadata file and one data dir
 
     replica.load(replicatedDbName, primaryDbName,
         Collections.singletonList("'hive.repl.approx.max.load.tasks'='1'"))
@@ -1095,7 +1098,8 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
         .verifyResults(Collections.singletonList("10"))
             .run("select country from t2 order by country")
             .verifyResults(Arrays.asList("india", "uk", "us"));
-    replica.verifyIfCkptSet(replicatedDbName, tuple.dumpLocation);
+    String hiveDumpLocation = tuple.dumpLocation + File.separator + ReplUtils.REPL_HIVE_BASE_DIR;
+    replica.verifyIfCkptSet(replicatedDbName, hiveDumpLocation);
 
     // Retry with same dump with which it was already loaded also fails.
     replica.loadFailure(replicatedDbName, primaryDbName);

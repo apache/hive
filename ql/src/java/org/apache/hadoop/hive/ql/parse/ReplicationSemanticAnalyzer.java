@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
 import org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables;
 import org.apache.hadoop.hive.ql.exec.repl.ReplLoadWork;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -438,17 +439,19 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         String currentReplStatusOfTarget
                 = getReplStatus(replScope.getDbName());
         if (currentReplStatusOfTarget == null) { //bootstrap
-          return statuses[0].getPath();
+          return new Path(statuses[0].getPath(), ReplUtils.REPL_HIVE_BASE_DIR);
         } else {
-          DumpMetaData latestDump = new DumpMetaData(statuses[statuses.length - 1].getPath(), conf);
+          DumpMetaData latestDump = new DumpMetaData(
+                  new Path(statuses[statuses.length - 1].getPath(), ReplUtils.REPL_HIVE_BASE_DIR), conf);
           if (Long.parseLong(currentReplStatusOfTarget.trim()) >= latestDump.getEventTo()) {
             isTargetAlreadyLoaded = true;
           } else {
             for (FileStatus status : statuses) {
-              DumpMetaData dmd = new DumpMetaData(status.getPath(), conf);
+              Path hiveLoadPath = new Path(status.getPath(), ReplUtils.REPL_HIVE_BASE_DIR);
+              DumpMetaData dmd = new DumpMetaData(hiveLoadPath, conf);
               if (dmd.isIncrementalDump()
                       && Long.parseLong(currentReplStatusOfTarget.trim()) < dmd.getEventTo()) {
-                return status.getPath();
+                return hiveLoadPath;
               }
             }
           }

@@ -17,9 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.exec;
 
-import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.dump.TableExport;
 import org.apache.hadoop.hive.ql.plan.ExportWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
@@ -27,7 +25,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
-
 public class ExportTask extends Task<ExportWork> implements Serializable {
 
   private static final long serialVersionUID = 1L;
@@ -53,9 +50,7 @@ public class ExportTask extends Task<ExportWork> implements Serializable {
       work.acidPostProcess(db);
       TableExport tableExport = new TableExport(exportPaths, work.getTableSpec(),
           work.getReplicationSpec(), db, null, conf, work.getMmContext());
-      if (!tableExport.write()) {
-        throw new SemanticException(ErrorMsg.INCOMPATIBLE_SCHEMA.getMsg());
-      }
+      tableExport.write(true);
     } catch (Exception e) {
       LOG.error("failed", e);
       setException(e);
