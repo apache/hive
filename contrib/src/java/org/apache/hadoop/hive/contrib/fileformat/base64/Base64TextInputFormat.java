@@ -20,11 +20,9 @@ package org.apache.hadoop.hive.contrib.fileformat.base64;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
+import java.util.Base64;
 import java.nio.charset.StandardCharsets;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -105,7 +103,7 @@ public class Base64TextInputFormat implements
         if (length != textBytes.length) {
           textBytes = Arrays.copyOf(textBytes, length);
         }
-        byte[] binaryData = base64.decode(textBytes);
+        byte[] binaryData = Base64.getDecoder().decode(textBytes);
 
         // compare data header with signature
         int i;
@@ -126,7 +124,6 @@ public class Base64TextInputFormat implements
     }
 
     private byte[] signature;
-    private final Base64 base64 = createBase64();
 
     @Override
     public void configure(JobConf job) {
@@ -165,30 +162,6 @@ public class Base64TextInputFormat implements
   @Override
   public InputSplit[] getSplits(JobConf job, int numSplits) throws IOException {
     return format.getSplits(job, numSplits);
-  }
-
-  /**
-   * Workaround an incompatible change from commons-codec 1.3 to 1.4.
-   * Since Hadoop has this jar on its classpath, we have no way of knowing
-   * which version we are running against.
-   */
-  static Base64 createBase64() {
-    try {
-      // This constructor appeared in 1.4 and specifies that we do not want to
-      // line-wrap or use any newline separator
-      Constructor<Base64> ctor = Base64.class.getConstructor(int.class, byte[].class);
-      return ctor.newInstance(0, null);
-    } catch (NoSuchMethodException e) { // ie we are running 1.3
-      // In 1.3, this constructor has the same behavior, but in 1.4 the default
-      // was changed to add wrapping and newlines.
-      return new Base64();
-    } catch (InstantiationException e) {
-      throw new RuntimeException(e);
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
-    } catch (InvocationTargetException e) {
-      throw new RuntimeException(e.getCause());
-    }
   }
 
 }

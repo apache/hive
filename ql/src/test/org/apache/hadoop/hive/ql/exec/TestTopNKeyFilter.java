@@ -118,7 +118,7 @@ public class TestTopNKeyFilter {
     }};
 
     Set<KeyWrapper> disabled = new HashSet<>();
-    checkTopNFilterEfficiency(filters, disabled, 0.6f, LOG);
+    checkTopNFilterEfficiency(filters, disabled, 0.6f, LOG, 1);
     assertThat(disabled, hasSize(1));
     assertThat(disabled, hasItem(new TestKeyWrapper(200)));
   }

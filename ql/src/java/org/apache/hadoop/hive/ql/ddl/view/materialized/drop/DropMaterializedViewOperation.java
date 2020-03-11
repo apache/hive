@@ -39,7 +39,7 @@ public class DropMaterializedViewOperation extends DDLOperation<DropMaterialized
   public int execute() throws HiveException {
     Table table = getTable();
     if (table == null) {
-      return 0; // dropping not existing materialized view is handled by DDLSemanticAnalyzer
+      return 0; // dropping not existing materialized view is handled by DropMaterializedViewAnalyzer
     }
 
     if (!table.isMaterializedView()) {

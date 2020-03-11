@@ -35,3 +35,5 @@ select length(decode(msg,'UTF-8')) as msg from logs2;
 select regexp_replace(regexp_replace(decode(msg,'UTF-8'), "at ", "at-"), "Caused by", "Caused-by") as msg from logs2;
 
 drop table logs2;
+
+dfs -rm -r ${hiveconf:hive.metastore.warehouse.dir}/logs2/;

@@ -139,7 +139,8 @@ public class TopNKeyOperator extends Operator<TopNKeyDesc> implements Serializab
     }
 
     if (runTimeNumRows % conf.getCheckEfficiencyNumRows() == 0) { // check the efficiency at every nth rows
-      checkTopNFilterEfficiency(topNKeyFilters, disabledPartitions, conf.getEfficiencyThreshold(), LOG);
+      checkTopNFilterEfficiency(
+        topNKeyFilters, disabledPartitions, conf.getEfficiencyThreshold(), LOG, conf.getCheckEfficiencyNumRows());
     }
   }
 

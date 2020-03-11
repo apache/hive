@@ -71,29 +71,35 @@ public class CopyUtils {
   // Used by replication, copy files from source to destination. It is possible source file is
   // changed/removed during copy, so double check the checksum after copy,
   // if not match, copy again from cm
-  public void copyAndVerify(Path destRoot,
-                    List<ReplChangeManager.FileInfo> srcFiles) throws IOException, LoginException, HiveFatalException {
-    Map<FileSystem, Map< Path, List<ReplChangeManager.FileInfo>>> map = fsToFileMap(srcFiles, destRoot);
+  public void copyAndVerify(Path destRoot, List<ReplChangeManager.FileInfo> srcFiles, Path origSrcPtah)
+          throws IOException, LoginException, HiveFatalException {
     UserGroupInformation proxyUser = getProxyUser();
+    FileSystem sourceFs = origSrcPtah.getFileSystem(hiveConf);
+    boolean useRegularCopy = regularCopy(sourceFs, srcFiles);
     try {
-      for (Map.Entry<FileSystem, Map<Path, List<ReplChangeManager.FileInfo>>> entry : map.entrySet()) {
-        Map<Path, List<ReplChangeManager.FileInfo>> destMap = entry.getValue();
-        for (Map.Entry<Path, List<ReplChangeManager.FileInfo>> destMapEntry : destMap.entrySet()) {
-          Path destination = destMapEntry.getKey();
-          List<ReplChangeManager.FileInfo> fileInfoList = destMapEntry.getValue();
-          // Get the file system again from cache. There is a chance that the file system stored in the map is closed.
-          // For instance, doCopyRetry closes the file system in case of i/o exceptions.
-          FileSystem sourceFs = fileInfoList.get(0).getSourcePath().getFileSystem(hiveConf);
-          boolean useRegularCopy = regularCopy(sourceFs, fileInfoList);
+      if (!useRegularCopy) {
+        srcFiles.clear();
+        srcFiles.add(new ReplChangeManager.FileInfo(sourceFs, origSrcPtah, null));
+        doCopyRetry(sourceFs, srcFiles, destRoot, proxyUser, useRegularCopy);
+      } else {
+        Map<FileSystem, Map< Path, List<ReplChangeManager.FileInfo>>> map = fsToFileMap(srcFiles, destRoot);
+        for (Map.Entry<FileSystem, Map<Path, List<ReplChangeManager.FileInfo>>> entry : map.entrySet()) {
+          Map<Path, List<ReplChangeManager.FileInfo>> destMap = entry.getValue();
+          for (Map.Entry<Path, List<ReplChangeManager.FileInfo>> destMapEntry : destMap.entrySet()) {
+            Path destination = destMapEntry.getKey();
+            List<ReplChangeManager.FileInfo> fileInfoList = destMapEntry.getValue();
+            // Get the file system again from cache. There is a chance that the file system stored in the map is closed.
+            // For instance, doCopyRetry closes the file system in case of i/o exceptions.
+            sourceFs = fileInfoList.get(0).getSourcePath().getFileSystem(hiveConf);
+            if (!destinationFs.exists(destination)
+                    && !FileUtils.mkdir(destinationFs, destination, hiveConf)) {
+              LOG.error("Failed to create destination directory: " + destination);
+              throw new IOException("Destination directory creation failed");
+            }
 
-          if (!destinationFs.exists(destination)
-                  && !FileUtils.mkdir(destinationFs, destination, hiveConf)) {
-            LOG.error("Failed to create destination directory: " + destination);
-            throw new IOException("Destination directory creation failed");
+            // Copy files with retry logic on failure or source file is dropped or changed.
+            doCopyRetry(sourceFs, fileInfoList, destination, proxyUser, true);
           }
-
-          // Copy files with retry logic on failure or source file is dropped or changed.
-          doCopyRetry(sourceFs, fileInfoList, destination, proxyUser, useRegularCopy);
         }
       }
     } finally {
@@ -181,12 +187,12 @@ public class CopyUtils {
         continue;
       }
       Path srcPath = srcFile.getEffectivePath();
-      Path destPath = new Path(destination, srcPath.getName());
-      if (destinationFs.exists(destPath)) {
+      //Path destPath = new Path(destination, srcPath.getName());
+      if (destinationFs.exists(destination)) {
         // If destination file is present and checksum of source mismatch, then retry copy.
         if (isSourceFileMismatch(sourceFs, srcFile)) {
           // Delete the incorrectly copied file and retry with CM path
-          destinationFs.delete(destPath, true);
+          destinationFs.delete(destination, true);
           srcFile.setIsUseSourcePath(false);
         } else {
           // If the retry logic is reached after copy error, then include the copied file as well.

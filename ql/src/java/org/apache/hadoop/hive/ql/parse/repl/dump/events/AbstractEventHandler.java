@@ -17,14 +17,31 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.ReplChangeManager;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.messaging.MessageDeserializer;
 import org.apache.hadoop.hive.metastore.messaging.MessageEncoder;
 import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONMessageEncoder;
+import org.apache.hadoop.hive.ql.metadata.HiveFatalException;
+import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.EximUtil;
+import org.apache.hadoop.hive.ql.parse.repl.CopyUtils;
+import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.security.auth.login.LoginException;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 abstract class AbstractEventHandler<T extends EventMessage> implements EventHandler {
   static final Logger LOG = LoggerFactory.getLogger(AbstractEventHandler.class);
@@ -70,5 +87,44 @@ abstract class AbstractEventHandler<T extends EventMessage> implements EventHand
   @Override
   public long toEventId() {
     return event.getEventId();
+  }
+
+  protected void writeFileEntry(String dbName, Table table, String file, BufferedWriter fileListWriter,
+                                Context withinContext)
+          throws IOException, LoginException, MetaException, HiveFatalException {
+    HiveConf hiveConf = withinContext.hiveConf;
+    String distCpDoAsUser = hiveConf.getVar(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER);
+    if (!Utils.shouldDumpMetaDataOnly(table, withinContext.hiveConf)) {
+      Path dataPath = new Path(withinContext.dumpRoot.toString(), EximUtil.DATA_PATH_NAME);
+      List<ReplChangeManager.FileInfo> filePaths = new ArrayList<>();
+      String[] decodedURISplits = ReplChangeManager.decodeFileUri(file);
+      String srcDataFile = decodedURISplits[0];
+      Path srcDataPath = new Path(srcDataFile);
+      if (dataPath.toUri().getScheme() == null) {
+        dataPath = new Path(srcDataPath.toUri().getScheme(), srcDataPath.toUri().getAuthority(), dataPath.toString());
+      }
+      String eventTblPath = event.getEventId() + File.separator + dbName + File.separator + table.getTableName();
+      String srcDataFileRelativePath = null;
+      if (srcDataFile.contains(table.getPath().toString())) {
+        srcDataFileRelativePath = srcDataFile.substring(table.getPath().toString().length() + 1);
+      } else if (decodedURISplits[3] == null) {
+        srcDataFileRelativePath = srcDataPath.getName();
+      } else {
+        srcDataFileRelativePath = srcDataFileRelativePath + File.separator + srcDataPath.getName();
+      }
+      Path targetPath = new Path(dataPath, eventTblPath + File.separator + srcDataFileRelativePath);
+      String encodedTargetPath = ReplChangeManager.encodeFileUri(
+              targetPath.toString(), decodedURISplits[1], decodedURISplits[3]);
+      ReplChangeManager.FileInfo f = ReplChangeManager.getFileInfo(new Path(decodedURISplits[0]),
+                  decodedURISplits[1], decodedURISplits[2], decodedURISplits[3], hiveConf);
+      filePaths.add(f);
+      FileSystem dstFs = targetPath.getFileSystem(hiveConf);
+      Path finalTargetPath = targetPath.getParent();
+      if (decodedURISplits[3] != null) {
+        finalTargetPath = finalTargetPath.getParent();
+      }
+      new CopyUtils(distCpDoAsUser, hiveConf, dstFs).copyAndVerify(finalTargetPath, filePaths, srcDataPath);
+      fileListWriter.write(encodedTargetPath + "\n");
+    }
   }
 }

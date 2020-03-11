@@ -17,7 +17,7 @@ yarnfile = """
       "number_of_containers": %(instances)d,
       "launch_command": "$LLAP_DAEMON_BIN_HOME/llapDaemon.sh start &> $LLAP_DAEMON_TMP_DIR/shell.out",
       "artifact": {
-        "id": "%(hdfs_package_dir)s/package/LLAP/llap-%(version)s.tar.gz",
+        "id": "%(hdfs_package_dir)s/package/LLAP/%(name)s-%(version)s.tar.gz",
         "type": "TARBALL"
       },
       "resource": {
@@ -74,6 +74,6 @@ BASEDIR=$(dirname $0)
 yarn app -stop %(name)s
 yarn app -destroy %(name)s
 hdfs dfs -mkdir -p %(hdfs_package_dir)s/package/LLAP
-hdfs dfs -copyFromLocal -f $BASEDIR/llap-%(version)s.tar.gz %(hdfs_package_dir)s/package/LLAP
+hdfs dfs -copyFromLocal -f $BASEDIR/%(name)s-%(version)s.tar.gz %(hdfs_package_dir)s/package/LLAP
 yarn app -launch %(name)s $BASEDIR/Yarnfile
 """

@@ -2850,8 +2850,6 @@ public class TestJdbcDriver2 {
       ResultSet replDumpRslt = stmt.executeQuery("repl dump " + primaryDb +
               " with ('hive.repl.rootdir' = '" + replDir + "')");
       assertTrue(replDumpRslt.next());
-      String dumpLocation = replDumpRslt.getString(1);
-      String lastReplId = replDumpRslt.getString(2);
       List<String> logs = stmt.getQueryLog(false, 10000);
       stmt.close();
       LOG.info("Query_Log for Bootstrap Dump");
@@ -2865,7 +2863,8 @@ public class TestJdbcDriver2 {
 
       // Bootstrap load
       stmt = (HiveStatement) con.createStatement();
-      stmt.execute("repl load " + replicaDb + " from '" + dumpLocation + "'");
+      stmt.execute("repl load " + primaryDb + " into " + replicaDb +
+              " with ('hive.repl.rootdir' = '" + replDir + "')");
       logs = stmt.getQueryLog(false, 10000);
       stmt.close();
       LOG.info("Query_Log for Bootstrap Load");
@@ -2889,8 +2888,6 @@ public class TestJdbcDriver2 {
       replDumpRslt = stmt.executeQuery("repl dump " + primaryDb +
               " with ('hive.repl.rootdir' = '" + replDir + "')");
       assertTrue(replDumpRslt.next());
-      dumpLocation = replDumpRslt.getString(1);
-      lastReplId = replDumpRslt.getString(2);
       logs = stmt.getQueryLog(false, 10000);
       stmt.close();
       LOG.info("Query_Log for Incremental Dump");
@@ -2904,7 +2901,8 @@ public class TestJdbcDriver2 {
 
       // Incremental load
       stmt = (HiveStatement) con.createStatement();
-      stmt.execute("repl load " + replicaDb + " from '" + dumpLocation + "'");
+      stmt.execute("repl load " + primaryDb + " into " + replicaDb +
+              " with ('hive.repl.rootdir' = '" + replDir + "')");
       logs = stmt.getQueryLog(false, 10000);
       LOG.info("Query_Log for Incremental Load");
       verifyFetchedLog(logs, expectedIncrementalLoadLogs);
@@ -3105,7 +3103,7 @@ public class TestJdbcDriver2 {
 
     try {
       // invalid load path
-      stmt.execute("repl load default1 from '/tmp/junk'");
+      stmt.execute("repl load default into default1");
     } catch(SQLException e){
       assertTrue(e.getErrorCode() == ErrorMsg.REPL_LOAD_PATH_NOT_FOUND.getErrorCode());
     }
