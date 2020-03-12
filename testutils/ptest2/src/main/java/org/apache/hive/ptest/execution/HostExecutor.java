@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import com.google.common.base.Stopwatch;
@@ -153,6 +154,51 @@ class HostExecutor {
       mLogger.warn("Shutting down host " + mHost.getName());
       return;
     }
+    executeIsolatedTests(isolatedWorkQueue, failedTestResults);
+    if(mShutdown) {
+      mLogger.warn("Shutting down host " + mHost.getName());
+      return;
+    }
+    executeParallelTests(parallelWorkQueue, failedTestResults);
+  }
+
+  private void executeIsolatedTests(final BlockingQueue<TestBatch> isolatedWorkQueue,
+      final Set<TestBatch> failedTestResults) throws InterruptedException, IOException, SSHExecutionException {
+    mLogger.info("Starting isolated execution on " + mHost.getName());
+    for(Drone drone : ImmutableList.copyOf(mDrones)) {
+      TestBatch batch = null;
+      Stopwatch sw = Stopwatch.createUnstarted();
+      try {
+        do {
+
+          batch = isolatedWorkQueue.poll(mNumPollSeconds, TimeUnit.SECONDS);
+          if(batch != null) {
+            numIsolatedBatchesProcessed++;
+            sw.reset().start();
+            try {
+              if (!executeTestBatch(drone, batch, failedTestResults)) {
+                failedTestResults.add(batch);
+              }
+            } finally {
+              sw.stop();
+              mLogger.info("Finished processing isolated batch [{}] on host {}. ElapsedTime(ms)={}",
+                  new Object[]{batch.getName(), getHost().toShortString(), sw.elapsed(TimeUnit.MILLISECONDS)});
+            }
+          }
+        } while(!mShutdown && !isolatedWorkQueue.isEmpty());
+      } catch(AbortDroneException ex) {
+        mDrones.remove(drone); // return value not checked due to concurrent access
+        mLogger.error("Aborting drone during isolated execution", ex);
+        if(batch != null) {
+          Preconditions.checkState(isolatedWorkQueue.add(batch),
+              "Could not add batch to isolated queue " + batch);
+        }
+      }
+    }
+  }
+
+  private void executeParallelTests(final BlockingQueue<TestBatch> parallelWorkQueue,
+      final Set<TestBatch> failedTestResults) throws InterruptedException, ExecutionException {
     mLogger.info("Starting parallel execution on " + mHost.getName());
     List<ListenableFuture<Void>> droneResults = Lists.newArrayList();
     for(final Drone drone : ImmutableList.copyOf(mDrones)) {
@@ -194,43 +240,9 @@ class HostExecutor {
         }
       }));
     }
-    if(mShutdown) {
-      mLogger.warn("Shutting down host " + mHost.getName());
-      return;
-    }
     Futures.allAsList(droneResults).get();
-    mLogger.info("Starting isolated execution on " + mHost.getName());
-    for(Drone drone : ImmutableList.copyOf(mDrones)) {
-      TestBatch batch = null;
-      Stopwatch sw = Stopwatch.createUnstarted();
-      try {
-        do {
-
-          batch = isolatedWorkQueue.poll(mNumPollSeconds, TimeUnit.SECONDS);
-          if(batch != null) {
-            numIsolatedBatchesProcessed++;
-            sw.reset().start();
-            try {
-              if (!executeTestBatch(drone, batch, failedTestResults)) {
-                failedTestResults.add(batch);
-              }
-            } finally {
-              sw.stop();
-              mLogger.info("Finished processing isolated batch [{}] on host {}. ElapsedTime(ms)={}",
-                  new Object[]{batch.getName(), getHost().toShortString(), sw.elapsed(TimeUnit.MILLISECONDS)});
-            }
-          }
-        } while(!mShutdown && !isolatedWorkQueue.isEmpty());
-      } catch(AbortDroneException ex) {
-        mDrones.remove(drone); // return value not checked due to concurrent access
-        mLogger.error("Aborting drone during isolated execution", ex);
-        if(batch != null) {
-          Preconditions.checkState(isolatedWorkQueue.add(batch),
-              "Could not add batch to isolated queue " + batch);
-        }
-      }
-    }
   }
+
   /**
    * Executes the test batch on the drone in question. If the command
    * exits with a status code of 255 throw an AbortDroneException.
