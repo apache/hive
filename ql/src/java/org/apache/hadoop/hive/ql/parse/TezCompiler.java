@@ -87,6 +87,7 @@ import org.apache.hadoop.hive.ql.optimizer.ConvertJoinMapJoin;
 import org.apache.hadoop.hive.ql.optimizer.DynamicPartitionPruningOptimization;
 import org.apache.hadoop.hive.ql.optimizer.MergeJoinProc;
 import org.apache.hadoop.hive.ql.optimizer.NonBlockingOpDeDupProc;
+import org.apache.hadoop.hive.ql.optimizer.ProbeDecodeOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.ReduceSinkMapJoinProc;
 import org.apache.hadoop.hive.ql.optimizer.RemoveDynamicPruningBySize;
 import org.apache.hadoop.hive.ql.optimizer.SetHashGroupByMinReduction;
@@ -226,6 +227,12 @@ public class TezCompiler extends TaskCompiler {
       new SharedWorkOptimizer().transform(procCtx.parseContext);
     }
     perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Shared scans optimization");
+
+    perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
+    if(procCtx.conf.getBoolVar(ConfVars.HIVE_MAPJOIN_PROBEDECODE_ENABLED)) {
+      new ProbeDecodeOptimizer().transform(procCtx.parseContext);
+    }
+    perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "ProbeDecode optimization");
 
     // need a new run of the constant folding because we might have created lots
     // of "and true and true" conditions.

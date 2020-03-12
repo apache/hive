@@ -84,6 +84,37 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
   private String schemaEvolutionColumns;
   private String schemaEvolutionColumnsTypes;
 
+  private ProbeDecodeContext probeDecodeContext = null;
+
+  /**
+   * Inner wrapper class for TS ProbeDecode optimization
+   */
+  public static class ProbeDecodeContext {
+
+    private final String mjSmallTableCacheKey;
+    private final String mjBigTableKeyColName;
+    private final byte mjSmallTablePos;
+
+    public ProbeDecodeContext(String mjSmallTableCacheKey, byte mjSmallTablePos, String mjBigTableKeyColName) {
+      this.mjSmallTableCacheKey = mjSmallTableCacheKey;
+      this.mjSmallTablePos = mjSmallTablePos;
+      this.mjBigTableKeyColName = mjBigTableKeyColName;
+    }
+
+    public String getMjSmallTableCacheKey() {
+      return mjSmallTableCacheKey;
+    }
+
+    public byte getMjSmallTablePos() {
+      return mjSmallTablePos;
+    }
+
+    public String getMjBigTableKeyColName() {
+      return mjBigTableKeyColName;
+    }
+  }
+
+
   public TableDesc getTableDescSkewJoin() {
     return tableDesc;
   }
@@ -433,6 +464,14 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
   @Override
   public VectorizationContext getOutputVectorizationContext() {
     return taskVectorizationContext;
+  }
+
+  public ProbeDecodeContext getProbeDecodeContext() {
+    return probeDecodeContext;
+  }
+
+  public void setProbeDecodeContext(ProbeDecodeContext probeDecodeContext) {
+    this.probeDecodeContext = probeDecodeContext;
   }
 
 }

@@ -196,6 +196,10 @@ public class GenTezUtils {
       mapWork.setIncludedBuckets(ts.getConf().getIncludedBuckets());
     }
 
+    if (ts.getProbeDecodeContext() != null) {
+      mapWork.setProbeDecodeContext(ts.getProbeDecodeContext());
+    }
+
     // add new item to the tez work
     tezWork.add(mapWork);
 
