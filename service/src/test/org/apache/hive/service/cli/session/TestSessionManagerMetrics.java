@@ -47,6 +47,7 @@ import org.apache.hive.service.rpc.thrift.TProtocolVersion;
 import org.apache.hive.service.server.HiveServer2;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -365,7 +366,7 @@ public class TestSessionManagerMetrics {
         MetricsConstant.HS2_AVG_ACTIVE_SESSION_TIME, "NaN");
   }
 
-
+  @Ignore("CDPD-9053 Ignore TestSessionManagerMetrics.testAbandonedSessionMetrics as it is flaky")
   @Test
   public void testAbandonedSessionMetrics() throws Exception {
 
