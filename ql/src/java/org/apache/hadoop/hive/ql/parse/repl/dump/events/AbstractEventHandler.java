@@ -94,8 +94,7 @@ abstract class AbstractEventHandler<T extends EventMessage> implements EventHand
           throws IOException, LoginException, MetaException, HiveFatalException {
     HiveConf hiveConf = withinContext.hiveConf;
     String distCpDoAsUser = hiveConf.getVar(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER);
-    if (!Utils.shouldDumpMetaDataOnlyForExternalTables(table, withinContext.hiveConf)
-            && !Utils.shouldDumpMetaDataOnly(withinContext.hiveConf)) {
+    if (!Utils.shouldDumpMetaDataOnlyForExternalTables(table, withinContext.hiveConf)) {
       Path dataPath = new Path(withinContext.dumpRoot.toString(), EximUtil.DATA_PATH_NAME);
       List<ReplChangeManager.FileInfo> filePaths = new ArrayList<>();
       String[] decodedURISplits = ReplChangeManager.decodeFileUri(file);

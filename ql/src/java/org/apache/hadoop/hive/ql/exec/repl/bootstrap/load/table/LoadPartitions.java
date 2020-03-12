@@ -47,7 +47,6 @@ import org.apache.hadoop.hive.ql.parse.HiveTableName;
 import org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
-import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.ImportTableDesc;
 import org.apache.hadoop.hive.ql.plan.LoadMultiFilesDesc;
@@ -130,9 +129,7 @@ public class LoadPartitions {
       // existing
       if (table.isPartitioned()) {
         List<AlterTableAddPartitionDesc> partitionDescs = event.partitionDescriptions(tableDesc);
-        if (!event.replicationSpec().isMetadataOnly()
-                && !Utils.shouldDumpMetaDataOnlyForExternalTables(table, context.hiveConf)
-                && !partitionDescs.isEmpty()) {
+        if (!event.replicationSpec().isMetadataOnly() && !partitionDescs.isEmpty()) {
           updateReplicationState(initialReplicationState());
           if (!forExistingTable(lastReplicatedPartition).hasReplicationState()) {
             // Add ReplStateLogTask only if no pending table load tasks left for next cycle
@@ -208,7 +205,6 @@ public class LoadPartitions {
     );
 
     boolean isOnlyDDLOperation = event.replicationSpec().isMetadataOnly()
-            || Utils.shouldDumpMetaDataOnlyForExternalTables(table, context.hiveConf)
         || (TableType.EXTERNAL_TABLE.equals(table.getTableType())
         && !event.replicationSpec().isMigratingToExternalTable()
     );

@@ -344,6 +344,8 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
         .verifyResults(new String[] { "bangalore", "pune", "mumbai" })
         .run("select place from t2 where country='australia'")
         .verifyResults(new String[] { "sydney" })
+        .run("show partitions t2")
+        .verifyResults(new String[] {"country=australia", "country=india"})
         .verifyReplTargetProperty(replicatedDbName);
 
     Path customPartitionLocation =
@@ -365,6 +367,8 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
         .run("use " + replicatedDbName)
         .run("select place from t2 where country='france'")
         .verifyResults(new String[] { "paris" })
+        .run("show partitions t2")
+        .verifyResults(new String[] {"country=australia", "country=france", "country=india"})
         .verifyReplTargetProperty(replicatedDbName);
 
     // change the location of the partition via alter command

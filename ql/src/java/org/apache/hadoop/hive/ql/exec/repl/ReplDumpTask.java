@@ -615,7 +615,6 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
             exportPaths, tableSpec, tuple.replicationSpec, hiveDb, distCpDoAsUser, conf, mmCtx).write(false);
     replLogger.tableLog(tblName, tableSpec.tableHandle.getTableType());
     if (tableSpec.tableHandle.getTableType().equals(TableType.EXTERNAL_TABLE)
-            || Utils.shouldDumpMetaDataOnlyForExternalTables(tuple.object, conf)
             || Utils.shouldDumpMetaDataOnly(conf)) {
       return;
     }

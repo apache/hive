@@ -47,7 +47,6 @@ import org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
-import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.plan.ImportTableDesc;
 import org.apache.hadoop.hive.ql.plan.LoadMultiFilesDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
@@ -192,7 +191,7 @@ public class LoadTable {
     } else {
       tblRootTask.addDependentTask(createTableTask);
     }
-    if (replicationSpec.isMetadataOnly() || Utils.shouldDumpMetaDataOnlyForExternalTables(table, context.hiveConf)) {
+    if (replicationSpec.isMetadataOnly()) {
       tracker.addTask(tblRootTask);
       return;
     }

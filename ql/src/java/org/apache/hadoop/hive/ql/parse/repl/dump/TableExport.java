@@ -76,10 +76,14 @@ public class TableExport {
         : tableSpec;
     this.replicationSpec = replicationSpec;
     if (this.tableSpec != null && this.tableSpec.tableHandle!=null) {
+      //If table is view or if should dump metadata only flag used by DAS is set to true
+      //enable isMetadataOnly
       if (this.tableSpec.tableHandle.isView() || Utils.shouldDumpMetaDataOnly(conf)) {
         this.tableSpec.tableHandle.setStatsStateLikeNewTable();
         this.replicationSpec.setIsMetadataOnly(true);
       }
+      //If table is view or if should dump metadata only for external table flag is set to true
+      //enable isMetadataOnlyForExternalTable
       if (this.tableSpec.tableHandle.isView()
               || Utils.shouldDumpMetaDataOnlyForExternalTables(this.tableSpec.tableHandle, conf)) {
         this.tableSpec.tableHandle.setStatsStateLikeNewTable();
@@ -101,7 +105,6 @@ public class TableExport {
       PartitionIterable withPartitions = getPartitions();
       writeMetaData(withPartitions);
       if (!replicationSpec.isMetadataOnly()
-              && !Utils.shouldDumpMetaDataOnlyForExternalTables(tableSpec.tableHandle, conf)
               && !(replicationSpec.isRepl() && tableSpec.tableHandle.getTableType().equals(TableType.EXTERNAL_TABLE))) {
         replPathMappings = writeData(withPartitions, isExportTask);
       }
@@ -322,8 +325,7 @@ public class TableExport {
     AuthEntities authEntities = new AuthEntities();
     try {
       // Return if metadata-only
-      if (replicationSpec.isMetadataOnly()
-              || Utils.shouldDumpMetaDataOnlyForExternalTables(tableSpec.tableHandle, conf)) {
+      if (replicationSpec.isMetadataOnly() || replicationSpec.isMetadataOnlyForExternalTables()) {
         return authEntities;
       }
       PartitionIterable partitions = getPartitions();
