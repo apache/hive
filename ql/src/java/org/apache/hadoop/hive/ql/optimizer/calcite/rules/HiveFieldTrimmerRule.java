@@ -63,9 +63,8 @@ public class HiveFieldTrimmerRule  extends RelOptRule {
     final HepPlanner tmpPlanner = new HepPlanner(PROGRAM);
     tmpPlanner.setRoot(node);
     node = tmpPlanner.findBestExp();
-    final HiveRelFieldTrimmer fieldTrimmer = new HiveRelFieldTrimmer(null,
-        relBuilderFactory.create(node.getCluster(), null), fetchStats);
-    call.transformTo(fieldTrimmer.trim(node));
+    call.transformTo(
+        HiveRelFieldTrimmer.get(fetchStats).trim(call.builder(), node));
     triggered = true;
   }
 

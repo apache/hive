@@ -25132,11 +25132,24 @@ class FireEventRequest {
 class FireEventResponse {
   static $_TSPEC;
 
+  /**
+   * @var int
+   */
+  public $eventId = null;
 
-  public function __construct() {
+  public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
+        1 => array(
+          'var' => 'eventId',
+          'type' => TType::I64,
+          ),
         );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['eventId'])) {
+        $this->eventId = $vals['eventId'];
+      }
     }
   }
 
@@ -25159,6 +25172,13 @@ class FireEventResponse {
       }
       switch ($fid)
       {
+        case 1:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->eventId);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -25172,6 +25192,11 @@ class FireEventResponse {
   public function write($output) {
     $xfer = 0;
     $xfer += $output->writeStructBegin('FireEventResponse');
+    if ($this->eventId !== null) {
+      $xfer += $output->writeFieldBegin('eventId', TType::I64, 1);
+      $xfer += $output->writeI64($this->eventId);
+      $xfer += $output->writeFieldEnd();
+    }
     $xfer += $output->writeFieldStop();
     $xfer += $output->writeStructEnd();
     return $xfer;

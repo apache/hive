@@ -25,6 +25,7 @@ import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.BinaryEncoder;
 import org.apache.avro.io.DatumReader;
+import org.apache.avro.io.Decoder;
 import org.apache.avro.io.DecoderFactory;
 import org.apache.avro.io.EncoderFactory;
 import org.apache.avro.specific.SpecificDatumReader;
@@ -133,9 +134,43 @@ import java.util.stream.Collectors;
       Preconditions.checkArgument(!schemaFromProperty.isEmpty(), "Avro Schema is empty Can not go further");
       Schema schema = AvroSerdeUtils.getSchemaFor(schemaFromProperty);
       LOG.debug("Building Avro Reader with schema {}", schemaFromProperty);
-      bytesConverter = new AvroBytesConverter(schema);
+      bytesConverter = getByteConverterForAvroDelegate(schema, tbl);
     } else {
       bytesConverter = new BytesWritableConverter();
+    }
+  }
+
+  enum BytesConverterType {
+    SKIP,
+    NONE;
+
+    static BytesConverterType fromString(String value) {
+      try {
+        return BytesConverterType.valueOf(value.trim().toUpperCase());
+      } catch (Exception e){
+        return NONE;
+      }
+    }
+  }
+
+  BytesConverter getByteConverterForAvroDelegate(Schema schema, Properties tbl) throws SerDeException {
+    String avroBytesConverterPropertyName = AvroSerdeUtils.AvroTableProperties.AVRO_SERDE_TYPE.getPropName();
+    String avroBytesConverterProperty = tbl.getProperty(avroBytesConverterPropertyName,
+        BytesConverterType.NONE.toString());
+    BytesConverterType avroByteConverterType = BytesConverterType.fromString(avroBytesConverterProperty);
+    switch (avroByteConverterType) {
+    case SKIP:
+      String avroSkipBytesPropertyName = AvroSerdeUtils.AvroTableProperties.AVRO_SERDE_SKIP_BYTES.getPropName();
+      Integer avroSkipBytes = 0;
+      try {
+        avroSkipBytes = Integer.parseInt(tbl.getProperty(avroSkipBytesPropertyName));
+      } catch (NumberFormatException e) {
+        String message = "Value of " + avroSkipBytesPropertyName + " could not be parsed into an integer properly.";
+        throw new SerDeException(message, e);
+      }
+      return new AvroSkipBytesConverter(schema, avroSkipBytes);
+    case NONE: return new AvroBytesConverter(schema);
+    default: throw new SerDeException("Value of " + avroBytesConverterPropertyName + " was invalid.");
     }
   }
 
@@ -327,7 +362,7 @@ import java.util.stream.Collectors;
     K getWritable(byte[] value);
   }
 
-  private static class AvroBytesConverter implements BytesConverter<AvroGenericRecordWritable> {
+  static class AvroBytesConverter implements BytesConverter<AvroGenericRecordWritable> {
     private final Schema schema;
     private final DatumReader<GenericRecord> dataReader;
     private final GenericDatumWriter<GenericRecord> gdw = new GenericDatumWriter<>();
@@ -354,18 +389,48 @@ import java.util.stream.Collectors;
       return valueBytes;
     }
 
+    Decoder getDecoder(byte[] value) throws SerDeException {
+      return DecoderFactory.get().binaryDecoder(value, null);
+    }
+
     @Override public AvroGenericRecordWritable getWritable(byte[] value) {
       GenericRecord avroRecord = null;
       try {
-        avroRecord = dataReader.read(null, DecoderFactory.get().binaryDecoder(value, null));
+        avroRecord = dataReader.read(null, getDecoder(value));
       } catch (IOException e) {
         Throwables.propagate(new SerDeException(e));
+      } catch (SerDeException e) {
+        Throwables.propagate(e);
       }
 
       avroGenericRecordWritable.setRecord(avroRecord);
       avroGenericRecordWritable.setRecordReaderID(uid);
       avroGenericRecordWritable.setFileSchema(avroRecord.getSchema());
       return avroGenericRecordWritable;
+    }
+  }
+
+    /**
+     * Avro converter which skips the first @skipBytes of each message.
+     *
+     * This may be needed for various serializers, such as the Confluent Avro serializer, which uses the first five
+     * bytes to indicate a magic byte, as well as a four byte schema ID.
+     */
+  static class AvroSkipBytesConverter extends AvroBytesConverter {
+    private final int skipBytes;
+
+    AvroSkipBytesConverter(Schema schema, int skipBytes) {
+      super(schema);
+      this.skipBytes = skipBytes;
+    }
+
+    @Override
+    Decoder getDecoder(byte[] value) throws SerDeException {
+      try {
+        return DecoderFactory.get().binaryDecoder(value, this.skipBytes, value.length - this.skipBytes, null);
+      } catch (ArrayIndexOutOfBoundsException e) {
+        throw new SerDeException("Skip bytes value is larger than the message length.", e);
+      }
     }
   }
 

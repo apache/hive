@@ -1300,7 +1300,7 @@ STAGE PLANS:
                       Select Operator
                         expressions: _col0 (type: string)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: string)
                           minReductionHashAggr: 0.0
@@ -1316,18 +1316,18 @@ STAGE PLANS:
                       Select Operator
                         expressions: _col1 (type: string)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 86 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: string)
                           minReductionHashAggr: 0.0
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 86 Basic stats: COMPLETE Column stats: COMPLETE
                           Dynamic Partitioning Event Operator
                             Target column: hr (string)
                             Target Input: srcpart
                             Partition key expr: hr
-                            Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 1 Data size: 86 Basic stats: COMPLETE Column stats: COMPLETE
                             Target Vertex: Map 1
             Execution mode: llap
             LLAP IO: no inputs
@@ -2916,7 +2916,7 @@ STAGE PLANS:
                       Select Operator
                         expressions: _col0 (type: string)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: string)
                           minReductionHashAggr: 0.0
@@ -2932,18 +2932,18 @@ STAGE PLANS:
                       Select Operator
                         expressions: _col1 (type: string)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 86 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: string)
                           minReductionHashAggr: 0.0
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 86 Basic stats: COMPLETE Column stats: COMPLETE
                           Dynamic Partitioning Event Operator
                             Target column: hr (string)
                             Target Input: srcpart
                             Partition key expr: hr
-                            Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 1 Data size: 86 Basic stats: COMPLETE Column stats: COMPLETE
                             Target Vertex: Map 1
             Execution mode: llap
             LLAP IO: no inputs
@@ -5126,7 +5126,7 @@ STAGE PLANS:
                       Select Operator
                         expressions: _col0 (type: string)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: string)
                           minReductionHashAggr: 0.0
@@ -5142,18 +5142,18 @@ STAGE PLANS:
                       Select Operator
                         expressions: _col1 (type: string)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 86 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: string)
                           minReductionHashAggr: 0.0
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 86 Basic stats: COMPLETE Column stats: COMPLETE
                           Dynamic Partitioning Event Operator
                             Target column: hr (string)
                             Target Input: srcpart
                             Partition key expr: hr
-                            Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 1 Data size: 86 Basic stats: COMPLETE Column stats: COMPLETE
                             Target Vertex: Map 1
             Execution mode: llap
             LLAP IO: no inputs
@@ -6813,7 +6813,7 @@ STAGE PLANS:
                       Select Operator
                         expressions: _col0 (type: string)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 2 Data size: 204 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: string)
                           minReductionHashAggr: 0.5
@@ -6829,18 +6829,18 @@ STAGE PLANS:
                       Select Operator
                         expressions: _col1 (type: double)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 2 Data size: 204 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: double)
                           minReductionHashAggr: 0.5
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                           Dynamic Partitioning Event Operator
                             Target column: hr (int)
                             Target Input: srcpart_orc
                             Partition key expr: UDFToDouble(hr)
-                            Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                             Target Vertex: Map 1
             Execution mode: llap
             LLAP IO: no inputs

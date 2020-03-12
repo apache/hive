@@ -3888,9 +3888,10 @@ end
 
 class FireEventResponse
   include ::Thrift::Struct, ::Thrift::Struct_Union
+  EVENTID = 1
 
   FIELDS = {
-
+    EVENTID => {:type => ::Thrift::Types::I64, :name => 'eventId'}
   }
 
   def struct_fields; FIELDS; end
