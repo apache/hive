@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +38,7 @@ public class TestMetastoreHousekeepingLeader extends MetastoreHousekeepingLeader
     internalSetup("localhost");
   }
 
+  @Ignore("CDPD-9033 Ignore TestMetastoreHousekeepingLeader.testHouseKeepingThreadExistence as it is flaky")
   @Test
   public void testHouseKeepingThreadExistence() throws Exception {
     searchHousekeepingThreads();
