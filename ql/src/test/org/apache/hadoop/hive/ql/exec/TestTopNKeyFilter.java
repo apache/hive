@@ -21,6 +21,7 @@ import static org.apache.hadoop.hive.ql.exec.vector.VectorTopNKeyOperator.checkT
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import java.util.Comparator;
@@ -48,6 +49,10 @@ public class TestTopNKeyFilter {
     TopNKeyFilter topNKeyFilter = new TopNKeyFilter(0, TEST_KEY_WRAPPER_COMPARATOR);
     assertThat(topNKeyFilter.canForward(new TestKeyWrapper(1)), is(false));
     assertThat(topNKeyFilter.canForward(new TestKeyWrapper(-1)), is(false));
+
+    assertEquals(0, topNKeyFilter.getEffectiveBoundaryChecks());
+    assertEquals(0, topNKeyFilter.getRepeated());
+    assertEquals(0, topNKeyFilter.getKeySetSize());
   }
 
   @Test
@@ -55,8 +60,47 @@ public class TestTopNKeyFilter {
     TopNKeyFilter topNKeyFilter = new TopNKeyFilter(3, TEST_KEY_WRAPPER_COMPARATOR);
     assertThat(topNKeyFilter.canForward(new TestKeyWrapper(1)), is(true));
     assertThat(topNKeyFilter.canForward(new TestKeyWrapper(5)), is(true));
+
+    assertEquals(0, topNKeyFilter.getEffectiveBoundaryChecks());
+    assertEquals(0, topNKeyFilter.getRepeated());
+
     assertThat(topNKeyFilter.canForward(new TestKeyWrapper(10)), is(true));
     assertThat(topNKeyFilter.canForward(new TestKeyWrapper(11)), is(false));
+    assertEquals(1, topNKeyFilter.getEffectiveBoundaryChecks());
+
+    assertEquals(3, topNKeyFilter.getKeySetSize());
+
+    //new key same as boundary element (in 1,5,10)
+    assertThat(topNKeyFilter.canForward(new TestKeyWrapper(10)), is(true));
+    assertEquals(2, topNKeyFilter.getEffectiveBoundaryChecks());
+  }
+
+  @Test
+  public void testFirstTopNKeysCanBeForwardedDesc() {
+    TopNKeyFilter topNKeyFilter = new TopNKeyFilter(3, TEST_KEY_WRAPPER_COMPARATOR.reversed());
+    assertThat(topNKeyFilter.canForward(new TestKeyWrapper(10)), is(true));
+    assertThat(topNKeyFilter.canForward(new TestKeyWrapper(5)), is(true));
+
+    assertEquals(0, topNKeyFilter.getEffectiveBoundaryChecks());
+    assertEquals(0, topNKeyFilter.getRepeated());
+
+    assertThat(topNKeyFilter.canForward(new TestKeyWrapper(1)), is(true));
+
+    assertThat(topNKeyFilter.canForward(new TestKeyWrapper(11)), is(true));
+    assertEquals(0, topNKeyFilter.getEffectiveBoundaryChecks());
+    assertEquals(0, topNKeyFilter.getRepeated());
+
+    assertThat(topNKeyFilter.canForward(new TestKeyWrapper(0)), is(false));
+    assertEquals(1, topNKeyFilter.getEffectiveBoundaryChecks());
+
+    assertThat(topNKeyFilter.canForward(new TestKeyWrapper(11)), is(true));
+    assertEquals(1, topNKeyFilter.getRepeated());
+
+    assertEquals(3, topNKeyFilter.getKeySetSize());
+
+    //new key same as boundary element (in 11, 10, 5)
+    assertThat(topNKeyFilter.canForward(new TestKeyWrapper(5)), is(true));
+    assertEquals(2, topNKeyFilter.getEffectiveBoundaryChecks());
   }
 
   @Test
