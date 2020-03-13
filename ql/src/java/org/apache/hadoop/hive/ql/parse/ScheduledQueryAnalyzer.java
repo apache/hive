@@ -26,6 +26,7 @@ import com.cronutils.model.field.expression.FieldExpression;
 import com.google.common.base.Objects;
 
 import org.antlr.runtime.tree.Tree;
+import org.apache.curator.shaded.com.google.common.collect.Lists;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -36,6 +37,7 @@ import org.apache.hadoop.hive.metastore.api.ScheduledQueryMaintenanceRequestType
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
+import org.apache.hadoop.hive.ql.processors.CommandUtil;
 import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryMaintenanceWork;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
@@ -282,6 +284,8 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
     boolean schqAuthorization = (SessionState.get().getAuthorizerV2() != null)
         && conf.getBoolVar(ConfVars.HIVE_SECURITY_AUTHORIZATION_SCHEDULED_QUERIES_SUPPORTED);
 
+    boolean serviceAdminCheck = (SessionState.get().getAuthorizerV2() != null)
+        && conf.getBoolVar(ConfVars.HIVE_SECURITY_AUTHORIZATION_SCHEDULED_QUERIES_SERVICEADMIN_CHECK);
     try {
       if (!schqAuthorization) {
         String currentUser = getUserName();
@@ -290,6 +294,18 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
               "Authorization of scheduled queries is not enabled - only owners may change scheduled queries (currentUser: "
                   + currentUser + ", owner: " + schq.getUser() + ")");
         }
+      } else if (serviceAdminCheck) {
+        SessionState ss = SessionState.get();
+        String hs2Host = null;
+        if (ss.isHiveServerQuery()) {
+          hs2Host = ss.getHiveServer2Host();
+        }
+        ScheduledQueryKey key = schq.getScheduleKey();
+        ArrayList<String> fullCommand =
+            Lists.newArrayList(type.toString(), key.getScheduleName() + "@" + key.getClusterNamespace());
+
+        CommandUtil.authorizeCommandThrowEx(ss, HiveOperationType.LLAP_CACHE_PURGE, fullCommand, hs2Host);
+
       } else {
         HiveOperationType opType = toHiveOpType(type);
         List<HivePrivilegeObject> privObjects = new ArrayList<HivePrivilegeObject>();

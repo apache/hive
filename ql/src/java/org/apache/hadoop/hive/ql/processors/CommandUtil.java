@@ -34,7 +34,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 
 import com.google.common.base.Joiner;
 
-class CommandUtil {
+public class CommandUtil {
   private static final Logger LOG = LoggerFactory.getLogger(CommandUtil.class);
 
   /**
@@ -117,7 +117,7 @@ class CommandUtil {
     return null;
   }
 
-  private static void authorizeCommandThrowEx(SessionState ss, HiveOperationType type,
+  public static void authorizeCommandThrowEx(SessionState ss, HiveOperationType type,
     List<String> command, String serviceObject) throws HiveAuthzPluginException, HiveAccessControlException {
     HivePrivilegeObject commandObj = HivePrivilegeObject.createHivePrivilegeObject(command);
     HivePrivilegeObject serviceObj = new HivePrivilegeObject(HivePrivilegeObject.HivePrivilegeObjectType.SERVICE_NAME,

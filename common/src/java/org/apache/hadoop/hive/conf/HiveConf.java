@@ -4806,6 +4806,10 @@ public class HiveConf extends Configuration {
     HIVE_SECURITY_AUTHORIZATION_SCHEDULED_QUERIES_SUPPORTED("hive.security.authorization.scheduled.queries.supported",
         false,
         "Enable this if the configured authorizer is able to handle scheduled query related calls."),
+    HIVE_SECURITY_AUTHORIZATION_SCHEDULED_QUERIES_SERVICEADMIN_CHECK(
+        "hive.security.authorization.scheduled.queries.serviceadmin.check", false,
+        "An internal flag to change the normal authorization check wether the user is a ServiceAdmin."),
+
     HIVE_SCHEDULED_QUERIES_MAX_EXECUTORS("hive.scheduled.queries.max.executors", 4, new RangeValidator(1, null),
         "Maximal number of scheduled query executors to allow."),
 
