@@ -32,7 +32,7 @@ public class ReplDumpWork implements Serializable {
   final ReplScope replScope;
   final ReplScope oldReplScope;
   final String dbNameOrPattern, astRepresentationForErrorMsg, resultTempPath;
-  Long eventFrom;
+  final Long eventFrom;
   Long eventTo;
   private Integer maxEventLimit;
   static String testInjectDumpDir = null;
@@ -42,17 +42,20 @@ public class ReplDumpWork implements Serializable {
   }
 
   public ReplDumpWork(ReplScope replScope, ReplScope oldReplScope,
-                      String astRepresentationForErrorMsg,
+                      Long eventFrom, Long eventTo, String astRepresentationForErrorMsg, Integer maxEventLimit,
                       String resultTempPath) {
     this.replScope = replScope;
     this.oldReplScope = oldReplScope;
     this.dbNameOrPattern = replScope.getDbName();
+    this.eventFrom = eventFrom;
+    this.eventTo = eventTo;
     this.astRepresentationForErrorMsg = astRepresentationForErrorMsg;
+    this.maxEventLimit = maxEventLimit;
     this.resultTempPath = resultTempPath;
   }
 
-  void setEventFrom(long eventId) {
-    eventFrom = eventId;
+  boolean isBootStrapDump() {
+    return eventFrom == null;
   }
 
   int maxEventLimit() throws Exception {
@@ -74,6 +77,7 @@ public class ReplDumpWork implements Serializable {
     // bootstrampDump() for more details.
     if (bootstrapLastId > 0) {
       eventTo = bootstrapLastId;
+      maxEventLimit = null;
       LoggerFactory.getLogger(this.getClass())
               .debug("eventTo restricted to event id : {} because of bootstrap of ACID tables",
                       eventTo);

@@ -154,11 +154,12 @@ public class BaseReplicationScenariosAcidTables {
     nonAcidTableNames.add("t4");
   }
 
-  WarehouseInstance.Tuple prepareDataAndDump(String primaryDbName, List<String> withClause) throws Throwable {
+  WarehouseInstance.Tuple prepareDataAndDump(String primaryDbName, String fromReplId,
+                                                     List<String> withClause) throws Throwable {
     prepareAcidData(primaryDbName);
     prepareNonAcidData(primaryDbName);
     return primary.run("use " + primaryDbName)
-            .dump(primaryDbName, withClause != null ?
+            .dump(primaryDbName, fromReplId, withClause != null ?
                     withClause : Collections.emptyList());
   }
 

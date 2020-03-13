@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.ql.exec.repl;
 
 import org.apache.hadoop.fs.FSDataOutputStream;
-import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
@@ -85,7 +84,6 @@ import java.util.UUID;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.Comparator;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.Writer;
 
 public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
@@ -122,47 +120,24 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   public int execute(DriverContext driverContext) {
     try {
       Hive hiveDb = getHive();
-      Path dumpRoot = new Path(conf.getVar(HiveConf.ConfVars.REPLDIR),work.dbNameOrPattern.toLowerCase());
-      Path currentDumpPath = new Path(dumpRoot, getNextDumpDir());
-      DumpMetaData dmd = new DumpMetaData(currentDumpPath, conf);
+      Path dumpRoot = new Path(conf.getVar(HiveConf.ConfVars.REPLDIR), getNextDumpDir());
+      DumpMetaData dmd = new DumpMetaData(dumpRoot, conf);
       // Initialize ReplChangeManager instance since we will require it to encode file URI.
       ReplChangeManager.getInstance(conf);
       Path cmRoot = new Path(conf.getVar(HiveConf.ConfVars.REPLCMDIR));
       Long lastReplId;
-      if (!dumpRoot.getFileSystem(conf).exists(dumpRoot)
-              || dumpRoot.getFileSystem(conf).listStatus(dumpRoot).length == 0) {
-        lastReplId = bootStrapDump(currentDumpPath, dmd, cmRoot, hiveDb);
+      if (work.isBootStrapDump()) {
+        lastReplId = bootStrapDump(dumpRoot, dmd, cmRoot, hiveDb);
       } else {
-        work.setEventFrom(getEventFromPreviousDumpMetadata(dumpRoot));
-        lastReplId = incrementalDump(currentDumpPath, dmd, cmRoot, hiveDb);
+        lastReplId = incrementalDump(dumpRoot, dmd, cmRoot, hiveDb);
       }
-      prepareReturnValues(Arrays.asList(currentDumpPath.toUri().toString(), String.valueOf(lastReplId)));
+      prepareReturnValues(Arrays.asList(dumpRoot.toUri().toString(), String.valueOf(lastReplId)));
     } catch (Exception e) {
       LOG.error("failed", e);
       setException(e);
       return ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
     }
     return 0;
-  }
-
-  private Long getEventFromPreviousDumpMetadata(Path dumpRoot) throws IOException, SemanticException {
-    FileStatus[] statuses = dumpRoot.getFileSystem(conf).listStatus(dumpRoot);
-    if (statuses.length > 0) {
-      //sort based on last modified. Recent one is at the top
-      Arrays.sort(statuses, new Comparator<FileStatus>() {
-        public int compare(FileStatus f1, FileStatus f2) {
-          return Long.compare(f2.getModificationTime(), f1.getModificationTime());
-        }
-      });
-      FileStatus recentDump = statuses[0];
-      DumpMetaData dmd = new DumpMetaData(recentDump.getPath(), conf);
-      if (dmd.isIncrementalDump()) {
-        return dmd.getEventTo();
-      }
-      //bootstrap case return event from
-      return dmd.getEventFrom();
-    }
-    return 0L;
   }
 
   private void prepareReturnValues(List<String> values) throws SemanticException {

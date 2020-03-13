@@ -117,7 +117,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
   @Test
   public void testAcidTablesBootstrap() throws Throwable {
     // Bootstrap
-    WarehouseInstance.Tuple bootstrapDump = prepareDataAndDump(primaryDbName, null);
+    WarehouseInstance.Tuple bootstrapDump = prepareDataAndDump(primaryDbName, null, null);
     replica.load(replicatedDbName, bootstrapDump.dumpLocation);
     verifyLoadExecution(replicatedDbName, bootstrapDump.lastReplicationId, true);
 
@@ -126,7 +126,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     prepareIncAcidData(primaryDbName);
     LOG.info(testName.getMethodName() + ": first incremental dump and load.");
     WarehouseInstance.Tuple incDump = primary.run("use " + primaryDbName)
-            .dump(primaryDbName);
+            .dump(primaryDbName, bootstrapDump.lastReplicationId);
     replica.load(replicatedDbName, incDump.dumpLocation);
     verifyIncLoad(replicatedDbName, incDump.lastReplicationId);
 
@@ -135,14 +135,14 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     prepareInc2AcidData(primaryDbName, primary.hiveConf);
     LOG.info(testName.getMethodName() + ": second incremental dump and load.");
     WarehouseInstance.Tuple inc2Dump = primary.run("use " + primaryDbName)
-            .dump(primaryDbName);
+            .dump(primaryDbName, incDump.lastReplicationId);
     replica.load(replicatedDbName, inc2Dump.dumpLocation);
     verifyInc2Load(replicatedDbName, inc2Dump.lastReplicationId);
   }
 
   @Test
   public void testAcidTablesMoveOptimizationBootStrap() throws Throwable {
-    WarehouseInstance.Tuple bootstrapDump = prepareDataAndDump(primaryDbName, null);
+    WarehouseInstance.Tuple bootstrapDump = prepareDataAndDump(primaryDbName, null, null);
     replica.load(replicatedDbName, bootstrapDump.dumpLocation,
             Collections.singletonList("'hive.repl.enable.move.optimization'='true'"));
     verifyLoadExecution(replicatedDbName, bootstrapDump.lastReplicationId, true);
@@ -150,10 +150,11 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
 
   @Test
   public void testAcidTablesMoveOptimizationIncremental() throws Throwable {
-    WarehouseInstance.Tuple bootstrapDump = primary.dump(primaryDbName);
+    WarehouseInstance.Tuple bootstrapDump = primary.dump(primaryDbName, null);
     replica.load(replicatedDbName, bootstrapDump.dumpLocation,
             Collections.singletonList("'hive.repl.enable.move.optimization'='true'"));
-    WarehouseInstance.Tuple incrDump = prepareDataAndDump(primaryDbName, null);
+    WarehouseInstance.Tuple incrDump = prepareDataAndDump(primaryDbName,
+            bootstrapDump.lastReplicationId, null);
     replica.load(replicatedDbName, incrDump.dumpLocation,
             Collections.singletonList("'hive.repl.enable.move.optimization'='true'"));
     verifyLoadExecution(replicatedDbName, incrDump.lastReplicationId, true);
@@ -189,7 +190,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             "'hive.repl.bootstrap.dump.open.txn.timeout'='1s'");
     WarehouseInstance.Tuple bootstrapDump = primary
             .run("use " + primaryDbName)
-            .dump(primaryDbName, withConfigs);
+            .dump(primaryDbName, null, withConfigs);
 
     // After bootstrap dump, all the opened txns should be aborted. Verify it.
     verifyAllOpenTxnsAborted(txns, primaryConf);
@@ -274,7 +275,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     InjectableBehaviourObjectStore.setCallerVerifier(callerInjectedBehavior);
     WarehouseInstance.Tuple bootstrapDump = null;
     try {
-      bootstrapDump = primary.dump(primaryDbName);
+      bootstrapDump = primary.dump(primaryDbName, null);
       callerInjectedBehavior.assertInjectionsPerformed(true, true);
     } finally {
       InjectableBehaviourObjectStore.resetCallerVerifier(); // reset the behaviour
@@ -289,7 +290,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             .verifyResults(new String[]{"1" });
 
     // Incremental should include the concurrent write of data "2" from another txn.
-    WarehouseInstance.Tuple incrementalDump = primary.dump(primaryDbName);
+    WarehouseInstance.Tuple incrementalDump = primary.dump(primaryDbName, bootstrapDump.lastReplicationId);
     replica.load(replicatedDbName, incrementalDump.dumpLocation)
             .run("use " + replicatedDbName)
             .run("repl status " + replicatedDbName)
@@ -348,7 +349,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     InjectableBehaviourObjectStore.setCallerVerifier(callerInjectedBehavior);
     WarehouseInstance.Tuple bootstrapDump = null;
     try {
-      bootstrapDump = primary.dump(primaryDbName);
+      bootstrapDump = primary.dump(primaryDbName, null);
       callerInjectedBehavior.assertInjectionsPerformed(true, true);
     } finally {
       InjectableBehaviourObjectStore.resetCallerVerifier(); // reset the behaviour
@@ -367,7 +368,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc " +
                     "tblproperties (\"transactional\"=\"true\")")
             .run("insert into t1 values(100)")
-            .dump(primaryDbName);
+            .dump(primaryDbName, bootstrapDump.lastReplicationId);
 
     replica.load(replicatedDbName, incrementalDump.dumpLocation)
             .run("use " + replicatedDbName)
@@ -380,7 +381,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
   @Test
   public void testOpenTxnEvent() throws Throwable {
     String tableName = testName.getMethodName();
-    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName);
+    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, null);
     replica.load(replicatedDbName, bootStrapDump.dumpLocation)
             .run("REPL STATUS " + replicatedDbName)
             .verifyResult(bootStrapDump.lastReplicationId);
@@ -396,7 +397,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             .verifyResult("1");
 
     WarehouseInstance.Tuple incrementalDump =
-            primary.dump(primaryDbName);
+            primary.dump(primaryDbName, bootStrapDump.lastReplicationId);
 
     long lastReplId = Long.parseLong(bootStrapDump.lastReplicationId);
     primary.testEventCounts(primaryDbName, lastReplId, null, null, 22);
@@ -415,7 +416,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
   @Test
   public void testAbortTxnEvent() throws Throwable {
     String tableNameFail = testName.getMethodName() + "Fail";
-    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName);
+    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, null);
     replica.load(replicatedDbName, bootStrapDump.dumpLocation)
             .run("REPL STATUS " + replicatedDbName)
             .verifyResult(bootStrapDump.lastReplicationId);
@@ -429,7 +430,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             .verifyFailure(new String[]{tableNameFail});
 
     WarehouseInstance.Tuple incrementalDump =
-            primary.dump(primaryDbName);
+            primary.dump(primaryDbName, bootStrapDump.lastReplicationId);
     replica.load(replicatedDbName, incrementalDump.dumpLocation)
             .run("REPL STATUS " + replicatedDbName)
             .verifyResult(incrementalDump.lastReplicationId);
@@ -443,7 +444,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
   @Test
   public void testTxnEventNonAcid() throws Throwable {
     String tableName = testName.getMethodName();
-    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName);
+    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, null);
     replicaNonAcid.load(replicatedDbName, bootStrapDump.dumpLocation)
             .run("REPL STATUS " + replicatedDbName)
             .verifyResult(bootStrapDump.lastReplicationId);
@@ -460,7 +461,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             .verifyResult("1");
 
     WarehouseInstance.Tuple incrementalDump =
-            primary.dump(primaryDbName);
+            primary.dump(primaryDbName, bootStrapDump.lastReplicationId);
     replicaNonAcid.runFailure("REPL LOAD " + replicatedDbName + " FROM '" + incrementalDump.dumpLocation + "'")
             .run("REPL STATUS " + replicatedDbName)
             .verifyResult(bootStrapDump.lastReplicationId);
@@ -477,7 +478,11 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
                     "\"transactional_properties\"=\"insert_only\")")
             .run("insert into t2 partition(name='bob') values(11)")
             .run("insert into t2 partition(name='carl') values(10)")
-            .dump(primaryDbName);
+            .dump(primaryDbName, null);
+
+    WarehouseInstance.Tuple tuple2 = primary
+            .run("use " + primaryDbName)
+            .dump(primaryDbName, null);
 
     // Inject a behavior where REPL LOAD failed when try to load table "t2", it fails.
     BehaviourInjection<CallerArguments, Boolean> callerVerifier
@@ -510,6 +515,9 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             .run("show tables like t2")
             .verifyResults(new String[] { })
             .verifyReplTargetProperty(replicatedDbName);
+
+    // Retry with different dump should fail.
+    replica.loadFailure(replicatedDbName, tuple2.dumpLocation);
 
     // Verify if no create table on t1. Only table t2 should  be created in retry.
     callerVerifier = new BehaviourInjection<CallerArguments, Boolean>() {
@@ -607,7 +615,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
 
     WarehouseInstance.Tuple incrementalDump;
     primary.run("alter database default set dbproperties ('repl.source.for' = '1, 2, 3')");
-    WarehouseInstance.Tuple bootStrapDump = primary.dump("`*`");
+    WarehouseInstance.Tuple bootStrapDump = primary.dump("`*`", null);
 
     primary.run("use " + primaryDbName)
           .run("create database " + dbName1 + " WITH DBPROPERTIES ( '" + SOURCE_OF_REPLICATION + "' = '1,2,3')")
@@ -639,7 +647,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
           .verifyResults(resultArray)
           .run(txnStrCommit);
 
-    incrementalDump = primary.dump("`*`");
+    incrementalDump = primary.dump("`*`", bootStrapDump.lastReplicationId);
 
     // Due to the limitation that we can only have one instance of Persistence Manager Factory in a JVM
     // we are not able to create multiple embedded derby instances for two different MetaStore instances.

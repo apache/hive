@@ -262,33 +262,29 @@ public class WarehouseInstance implements Closeable {
     }
   }
 
-  Tuple dump(String dbName)
-          throws Throwable {
-    return dump(dbName, Collections.emptyList());
-  }
-
-  Tuple dump(String dbName, List<String> withClauseOptions)
+  Tuple dump(String dbName, String lastReplicationId, List<String> withClauseOptions)
       throws Throwable {
     String dumpCommand =
-        "REPL DUMP " + dbName;
+        "REPL DUMP " + dbName + (lastReplicationId == null ? "" : " FROM " + lastReplicationId);
     if (!withClauseOptions.isEmpty()) {
       dumpCommand += " with (" + StringUtils.join(withClauseOptions, ",") + ")";
     }
-    return dumpWithCommand(dumpCommand);
+    return dump(dumpCommand);
   }
 
-  Tuple dump(String replPolicy, String oldReplPolicy, List<String> withClauseOptions)
+  Tuple dump(String replPolicy, String oldReplPolicy, String lastReplicationId, List<String> withClauseOptions)
           throws Throwable {
     String dumpCommand =
             "REPL DUMP " + replPolicy
-                    + (oldReplPolicy == null ? "" : " REPLACE " + oldReplPolicy);
+                    + (oldReplPolicy == null ? "" : " REPLACE " + oldReplPolicy)
+                    + (lastReplicationId == null ? "" : " FROM " + lastReplicationId);
     if (!withClauseOptions.isEmpty()) {
       dumpCommand += " with (" + StringUtils.join(withClauseOptions, ",") + ")";
     }
-    return dumpWithCommand(dumpCommand);
+    return dump(dumpCommand);
   }
 
-  Tuple dumpWithCommand(String dumpCommand) throws Throwable {
+  Tuple dump(String dumpCommand) throws Throwable {
     advanceDumpDir();
     run(dumpCommand);
     String dumpLocation = row0Result(0, false);
@@ -296,9 +292,13 @@ public class WarehouseInstance implements Closeable {
     return new Tuple(dumpLocation, lastDumpId);
   }
 
-  WarehouseInstance dumpFailure(String dbName) throws Throwable {
+  Tuple dump(String dbName, String lastReplicationId) throws Throwable {
+    return dump(dbName, lastReplicationId, Collections.emptyList());
+  }
+
+  WarehouseInstance dumpFailure(String dbName, String lastReplicationId) throws Throwable {
     String dumpCommand =
-            "REPL DUMP " + dbName;
+            "REPL DUMP " + dbName + (lastReplicationId == null ? "" : " FROM " + lastReplicationId);
     advanceDumpDir();
     runFailure(dumpCommand);
     return this;
