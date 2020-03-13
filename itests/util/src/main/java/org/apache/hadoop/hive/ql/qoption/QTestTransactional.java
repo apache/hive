@@ -23,12 +23,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * QTest sysdb directive handler
+ * QTest transactional directive handler
  *
- * Loads the sysdb schema prior to running the test.
+ * Enables transactional for the test.
+ * Could also make it for other QOption-s.
  *
  * Example:
- * --! qt:sysdb
+ * --! qt:transactional
  *
  */
 public class QTestTransactional implements QTestOptionHandler {
@@ -45,8 +46,6 @@ public class QTestTransactional implements QTestOptionHandler {
     if (enabled) {
       qt.getConf().set("hive.support.concurrency", "true");
       qt.getConf().set("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
-      qt.getConf().set("hive.strict.checks.cartesian.product", "false");
-      qt.getConf().set("hive.stats.fetch.column.stats", "true");
     }
   }
 
