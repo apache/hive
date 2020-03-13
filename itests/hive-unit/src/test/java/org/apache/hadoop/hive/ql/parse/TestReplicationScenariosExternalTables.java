@@ -167,7 +167,8 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
         .run("select country from t2 where country = 'us'")
         .verifyResult("us")
         .run("select country from t2 where country = 'france'")
-        .verifyResult("france");
+        .verifyResult("france")
+        .run("show partitions t2").verifyResults(new String[] {"country=france", "country=india", "country=us"});
 
     // Ckpt should be set on bootstrapped db.
     replica.verifyIfCkptSet(replicatedDbName, tuple.dumpLocation);
@@ -346,6 +347,8 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
         .verifyResults(new String[] { "bangalore", "pune", "mumbai" })
         .run("select place from t2 where country='australia'")
         .verifyResults(new String[] { "sydney" })
+        .run("show partitions t2")
+        .verifyResults(new String[] {"country=australia", "country=india"})
         .verifyReplTargetProperty(replicatedDbName);
 
     Path customPartitionLocation =
@@ -367,6 +370,8 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
         .run("use " + replicatedDbName)
         .run("select place from t2 where country='france'")
         .verifyResults(new String[] { "paris" })
+        .run("show partitions t2")
+        .verifyResults(new String[] {"country=australia", "country=france", "country=india"})
         .verifyReplTargetProperty(replicatedDbName);
 
     // change the location of the partition via alter command
