@@ -79,6 +79,7 @@ import org.apache.hadoop.hive.ql.qoption.QTestAuthorizerHandler;
 import org.apache.hadoop.hive.ql.qoption.QTestOptionDispatcher;
 import org.apache.hadoop.hive.ql.qoption.QTestReplaceHandler;
 import org.apache.hadoop.hive.ql.qoption.QTestSysDbHandler;
+import org.apache.hadoop.hive.ql.qoption.QTestTransactional;
 import org.apache.hadoop.hive.ql.scheduled.QTestScheduledQueryCleaner;
 import org.apache.hadoop.hive.ql.scheduled.QTestScheduledQueryServiceProvider;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -214,6 +215,7 @@ public class QTestUtil {
     dispatcher.register("dataset", datasetHandler);
     dispatcher.register("replace", replaceHandler);
     dispatcher.register("sysdb", new QTestSysDbHandler());
+    dispatcher.register("transactional", new QTestTransactional());
     dispatcher.register("scheduledqueryservice", new QTestScheduledQueryServiceProvider(conf));
     dispatcher.register("scheduledquerycleaner", new QTestScheduledQueryCleaner());
     dispatcher.register("authorizer", new QTestAuthorizerHandler());
