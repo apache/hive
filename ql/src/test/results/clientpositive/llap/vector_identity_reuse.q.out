@@ -201,12 +201,13 @@ STAGE PLANS:
                           predicate: ((_col1 = 5) or (_col5 = 10) or (UDFToLong(_col5) = 571L)) (type: boolean)
                           Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                           Select Operator
-                            expressions: _col3 (type: int), _col4 (type: smallint), _col5 (type: int)
+                            expressions: _col3 (type: int), _col5 (type: int), CASE WHEN (_col3 is not null) THEN (_col3) ELSE (UDFToInteger(_col4)) END (type: int)
                             outputColumnNames: _col0, _col1, _col2
                             Select Vectorization:
                                 className: VectorSelectOperator
                                 native: true
-                                projectedOutputColumnNums: [4, 5, 6]
+                                projectedOutputColumnNums: [4, 6, 8]
+                                selectExpressions: IfExprColumnCondExpr(col 7:boolean, col 4:intcol 5:smallint)(children: IsNotNull(col 4:int) -> 7:boolean, col 4:int, col 5:smallint) -> 8:int
                             Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                             Map Join Operator
                               condition map:
@@ -215,13 +216,13 @@ STAGE PLANS:
                                 0 
                                 1 
                               Map Join Vectorization:
-                                  bigTableRetainColumnNums: [4, 5, 6]
-                                  bigTableValueColumns: 4:int, 5:smallint, 6:int
+                                  bigTableRetainColumnNums: [4, 6, 8]
+                                  bigTableValueColumns: 4:int, 6:int, 8:int
                                   className: VectorMapJoinInnerBigOnlyMultiKeyOperator
                                   native: true
                                   nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
                                   nonOuterSmallTableKeyMapping: []
-                                  projectedOutput: 4:int, 5:smallint, 6:int
+                                  projectedOutput: 4:int, 6:int, 8:int
                                   hashTableImplementationType: OPTIMIZED
                               outputColumnNames: _col0, _col1, _col2
                               input vertices:
@@ -238,13 +239,12 @@ STAGE PLANS:
                                     keyExpressions: col 4:int
                                     native: true
                                 Select Operator
-                                  expressions: _col0 (type: int), CASE WHEN (_col0 is not null) THEN (_col0) ELSE (UDFToInteger(_col1)) END (type: int), _col2 (type: int)
+                                  expressions: _col0 (type: int), _col2 (type: int), _col1 (type: int)
                                   outputColumnNames: _col0, _col1, _col2
                                   Select Vectorization:
                                       className: VectorSelectOperator
                                       native: true
                                       projectedOutputColumnNums: [4, 8, 6]
-                                      selectExpressions: IfExprColumnCondExpr(col 7:boolean, col 4:intcol 5:smallint)(children: IsNotNull(col 4:int) -> 7:boolean, col 4:int, col 5:smallint) -> 8:int
                                   Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                                   Reduce Output Operator
                                     key expressions: _col0 (type: int)
