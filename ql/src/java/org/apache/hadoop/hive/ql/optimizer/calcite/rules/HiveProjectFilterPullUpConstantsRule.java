@@ -119,7 +119,7 @@ public class HiveProjectFilterPullUpConstantsRule extends RelOptRule {
         case IS_NULL:
           conditions.put(conjCall.operands.get(0).toString(),
                   relBuilder.getRexBuilder().makeNullLiteral(
-                          conjCall.operands.get(0).getType().getSqlTypeName()));
+                          conjCall.operands.get(0).getType()));
       }
     }
 
