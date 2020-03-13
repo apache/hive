@@ -54,7 +54,7 @@ public abstract class FilterContext {
   }
 
   /**
-   * Return an int array with the rows that pass the filter. 
+   * Return an int array with the rows that pass the filter.
    * Do not modify the array returned!
    * @return int array
    */

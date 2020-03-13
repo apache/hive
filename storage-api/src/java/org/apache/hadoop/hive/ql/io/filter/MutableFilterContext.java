@@ -73,8 +73,9 @@ public class MutableFilterContext extends FilterContext {
    */
   public boolean isValidSelected() {
     for (int i = 1; i < this.currBatchSelectedSize; i++) {
-      if (this.currBatchSelected[i-1] >= this.currBatchSelected[i])
+      if (this.currBatchSelected[i-1] >= this.currBatchSelected[i]) {
         return false;
+      }
     }
     return true;
   }
