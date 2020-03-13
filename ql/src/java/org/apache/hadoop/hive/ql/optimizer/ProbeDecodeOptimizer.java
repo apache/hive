@@ -94,6 +94,10 @@ public class ProbeDecodeOptimizer extends Transform {
       }
     }
 
+    // TODO: what if we have multiple MapJoins per TS?
+
+    // TODO: some operators like VectorPTFEvaluatorStreamingDecimalMax do not allow selected -- take this into account here?
+
     // Propagate MapJoin information to the mapped TS operator (to be used by MapWork)
     for (Map.Entry<TableScanOperator, MapJoinOperator> entry: tableJoinMap.entrySet()) {
 
