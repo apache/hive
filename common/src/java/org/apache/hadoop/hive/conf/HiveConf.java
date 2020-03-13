@@ -2094,6 +2094,10 @@ public class HiveConf extends Configuration {
         "Allow synthetic file ID in splits on file systems that don't have a native one."),
     HIVE_ORC_CACHE_STRIPE_DETAILS_MEMORY_SIZE("hive.orc.cache.stripe.details.mem.size", "256Mb",
         new SizeValidator(), "Maximum size of orc splits cached in the client."),
+    /**
+     * @deprecated Use HiveConf.HIVE_COMPUTE_SPLITS_NUM_THREADS
+     */
+    @Deprecated
     HIVE_ORC_COMPUTE_SPLITS_NUM_THREADS("hive.orc.compute.splits.num.threads", 10,
         "How many threads orc should use to create splits in parallel."),
     HIVE_ORC_CACHE_USE_SOFT_REFERENCES("hive.orc.cache.use.soft.references", false,
@@ -4827,6 +4831,9 @@ public class HiveConf extends Configuration {
         new TimeValidator(TimeUnit.SECONDS),
         "Timeout for Running Query in seconds. A nonpositive value means infinite. " +
         "If the query timeout is also set by thrift API call, the smaller one will be taken."),
+    HIVE_COMPUTE_SPLITS_NUM_THREADS("hive.compute.splits.num.threads", 10,
+            "How many threads Input Format should use to create splits in parallel.",
+            HIVE_ORC_COMPUTE_SPLITS_NUM_THREADS.varname),
     HIVE_EXEC_INPUT_LISTING_MAX_THREADS("hive.exec.input.listing.max.threads", 0, new  SizeValidator(0L, true, 1024L, true),
         "Maximum number of threads that Hive uses to list file information from file systems (recommended > 1 for blobstore)."),
 
