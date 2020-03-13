@@ -31,8 +31,7 @@ import java.util.Arrays;
 public class MutableFilterContext extends FilterContext {
 
   /**
-   * Set context with the given values by reference
-   * 
+   * Set context with the given values by reference.
    * @param isSelectedInUse if the filter is applied
    * @param selected an array of the selected rows
    * @param selectedSize the number of the selected rows
@@ -49,7 +48,6 @@ public class MutableFilterContext extends FilterContext {
   /**
    * Copy context variables from the a given FilterContext.
    * Always does a deep copy of the data.
-   *
    * @param other FilterContext to copy from
    */
   public void copyFilterContextFrom(MutableFilterContext other) {
@@ -69,9 +67,8 @@ public class MutableFilterContext extends FilterContext {
   }
 
   /**
-   * Validate method checking if existing selected array contains values that
-   * are in order and does not without duplicates i.e [1,1,1] is illegal
-   *
+   * Validate method checking if existing selected array contains accepted values.
+   * Values should be in order and without duplicates i.e [1,1,1] is illegal
    * @return true if the selected array is valid
    */
   public boolean isValidSelected() {
@@ -86,7 +83,6 @@ public class MutableFilterContext extends FilterContext {
    * Borrow the current selected array to be modified if it satisfies minimum capacity.
    * If it is too small or unset, allocates one.
    * This method never returns null!
-   *
    * @param minCapacity
    * @return the current selected array to be modified
    */
@@ -100,16 +96,15 @@ public class MutableFilterContext extends FilterContext {
   }
 
   /**
-   * Get the immutable version of the current FilterContext
-   * @return
+   * Get the immutable version of the current FilterContext.
+   * @return immutable FilterContext instance
    */
   public FilterContext immutable(){
     return this;
   }
 
   /**
-   * Set the selectedInUse boolean showing if the filter is applied
-   * 
+   * Set the selectedInUse boolean showing if the filter is applied.
    * @param selectedInUse
    */
   public void setSelectedInUse(boolean selectedInUse) {
@@ -117,8 +112,7 @@ public class MutableFilterContext extends FilterContext {
   }
 
   /**
-   * Set the array of the rows that pass the filter by reference
-   * 
+   * Set the array of the rows that pass the filter by reference.
    * @param selectedArray
    */
   public void setSelected(int[] selectedArray) {
@@ -126,8 +120,7 @@ public class MutableFilterContext extends FilterContext {
   }
 
   /**
-   * Set the number of the rows that pass the filter
-   * 
+   * Set the number of the rows that pass the filter.
    * @param selectedSize
    */
   public void setSelectedSize(int selectedSize) {

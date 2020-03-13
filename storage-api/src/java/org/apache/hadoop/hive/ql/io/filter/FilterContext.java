@@ -37,7 +37,7 @@ public abstract class FilterContext {
   }
 
   /**
-   * Reset FilterContext variables
+   * Reset FilterContext variables.
    */
   public void resetFilterContext() {
     this.currBatchIsSelectedInUse = false;
@@ -47,7 +47,6 @@ public abstract class FilterContext {
 
   /**
    * Is the filter applied?
-   * 
    * @return true if the filter is actually applied
    */
   public boolean isSelectedInUse() {
@@ -57,7 +56,6 @@ public abstract class FilterContext {
   /**
    * Return an int array with the rows that pass the filter. 
    * Do not modify the array returned!
-   * 
    * @return int array
    */
   public int[] getSelected() {
@@ -65,8 +63,7 @@ public abstract class FilterContext {
   }
 
   /**
-   * Return the number of rows that pass the filter
-   * 
+   * Return the number of rows that pass the filter.
    * @return an int
    */
   public int getSelectedSize() {
