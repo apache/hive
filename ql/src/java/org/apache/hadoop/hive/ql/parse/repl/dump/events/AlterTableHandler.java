@@ -229,7 +229,8 @@ class AlterTableHandler extends AbstractEventHandler<AlterTableMessage> {
       // If we are not dumping metadata about a table, we shouldn't be dumping basic statistics
       // as well, since that won't be accurate. So reset them to what they would look like for an
       // empty table.
-      if (Utils.shouldDumpMetaDataOnly(qlMdTableAfter, withinContext.hiveConf)) {
+      if (Utils.shouldDumpMetaDataOnly(withinContext.hiveConf)
+              || Utils.shouldDumpMetaDataOnlyForExternalTables(qlMdTableAfter, withinContext.hiveConf)) {
         qlMdTableAfter.setStatsStateLikeNewTable();
       }
 

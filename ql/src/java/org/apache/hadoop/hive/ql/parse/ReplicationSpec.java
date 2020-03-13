@@ -52,6 +52,7 @@ public class ReplicationSpec {
   private boolean needDupCopyCheck = false;
   //Determine if replication is done using repl or export-import
   private boolean isRepl = false;
+  private boolean isMetadataOnlyForExternalTables = false;
 
   // Key definitions related to replication.
   public enum KEY {
@@ -277,6 +278,17 @@ public class ReplicationSpec {
 
   public void setIsMetadataOnly(boolean isMetadataOnly){
     this.isMetadataOnly = isMetadataOnly;
+  }
+
+  /**
+   * @return true if this statement refers to metadata-only operation.
+   */
+  public boolean isMetadataOnlyForExternalTables() {
+    return isMetadataOnlyForExternalTables;
+  }
+
+  public void setMetadataOnlyForExternalTables(boolean metadataOnlyForExternalTables) {
+    isMetadataOnlyForExternalTables = metadataOnlyForExternalTables;
   }
 
   /**

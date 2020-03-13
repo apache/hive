@@ -166,7 +166,8 @@ public class TestReplicationScenariosExternalTablesMetaDataOnly extends BaseRepl
         .run("select country from t2 where country = 'us'")
         .verifyResult(null)
         .run("select country from t2 where country = 'france'")
-        .verifyResult(null);
+        .verifyResult(null)
+        .run("show partitions t2").verifyResults(new String[] {"country=france", "country=india", "country=us"});
 
     // Ckpt should be set on bootstrapped db.
     String hiveDumpLocation = tuple.dumpLocation + File.separator + REPL_HIVE_BASE_DIR;
@@ -279,7 +280,9 @@ public class TestReplicationScenariosExternalTablesMetaDataOnly extends BaseRepl
         .verifyResults(new String[] {"t2"})
         .run("select place from t2")
         .verifyResults(new String[] {})
-        .verifyReplTargetProperty(replicatedDbName);
+        .verifyReplTargetProperty(replicatedDbName)
+        .run("show partitions t2")
+        .verifyResults(new String[] {"country=india"});
 
     // add new  data externally, to a partition, but under the table level top directory
     Path partitionDir = new Path(externalTableLocation, "country=india");
@@ -302,6 +305,8 @@ public class TestReplicationScenariosExternalTablesMetaDataOnly extends BaseRepl
         .verifyResults(new String[] {})
         .run("select place from t2 where country='australia'")
         .verifyResults(new String[] {})
+        .run("show partitions t2")
+        .verifyResults(new String[] {"country=australia", "country=india"})
         .verifyReplTargetProperty(replicatedDbName);
 
     Path customPartitionLocation =
@@ -323,6 +328,8 @@ public class TestReplicationScenariosExternalTablesMetaDataOnly extends BaseRepl
         .run("use " + replicatedDbName)
         .run("select place from t2 where country='france'")
         .verifyResults(new String[] {})
+        .run("show partitions t2")
+        .verifyResults(new String[] {"country=australia", "country=france", "country=india"})
         .verifyReplTargetProperty(replicatedDbName);
 
     // change the location of the partition via alter command
