@@ -181,9 +181,11 @@ public class ImpalaHdfsScanRel extends ImpalaPlanRel {
 
   @Override
   public RelWriter explainTerms(RelWriter pw) {
-    RelWriter rw = scan.explainTerms(pw);
+    RelWriter rw = super.explainTerms(pw)
+        .item("table", scan.getTable().getQualifiedName());
+
     if (filter != null) {
-      rw = filter.explainTerms(rw);
+      rw = rw.item("condition", filter.getCondition());
     }
     return rw;
   }

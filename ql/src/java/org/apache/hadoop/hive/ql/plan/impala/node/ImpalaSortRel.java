@@ -19,11 +19,14 @@
 package org.apache.hadoop.hive.ql.plan.impala.node;
 
 import com.google.common.base.Preconditions;
+import org.apache.calcite.linq4j.Ord;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.plan.hep.HepRelVertex;
 import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.RelWriter;
 import org.apache.calcite.rex.RexLiteral;
+import org.apache.calcite.rex.RexNode;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
@@ -104,4 +107,24 @@ public class ImpalaSortRel extends ImpalaPlanRel {
     return new ImpalaSortRel(sortLimit, inputs);
   }
 
+  @Override
+  public RelWriter explainTerms(RelWriter pw) {
+    RelWriter rw = super.explainTerms(pw);
+    Preconditions.checkState(
+        sortLimit.getChildExps().size() == sortLimit.getCollation().getFieldCollations().size());
+    if (rw.nest()) {
+      rw.item("collation", sortLimit.getCollation());
+    } else {
+      for (Ord<RexNode> ord : Ord.zip(sortLimit.getChildExps())) {
+        rw.item("sort" + ord.i, ord.e);
+      }
+      for (Ord<RelFieldCollation> ord
+          : Ord.zip(sortLimit.getCollation().getFieldCollations())) {
+        rw.item("dir" + ord.i, ord.e.shortString());
+      }
+    }
+    rw.itemIf("offset", sortLimit.getOffsetExpr(), sortLimit.getOffsetExpr() != null);
+    rw.itemIf("fetch", sortLimit.getFetchExpr(), sortLimit.getFetchExpr() != null);
+    return rw;
+  }
 }

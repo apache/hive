@@ -21,11 +21,14 @@ package org.apache.hadoop.hive.ql.plan.impala.node;
 import java.util.List;
 
 import com.google.common.base.Preconditions;
+import org.apache.calcite.linq4j.Ord;
 import org.apache.calcite.rel.RelWriter;
+import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.type.SqlTypeName;
+import org.apache.calcite.util.Util;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
@@ -184,9 +187,18 @@ public class ImpalaAggregateRel extends ImpalaPlanRel {
 
   @Override
   public RelWriter explainTerms(RelWriter pw) {
-    RelWriter rw = aggregate.explainTerms(pw);
+    RelWriter rw = super.explainTerms(pw);
+    rw = rw.item("group", aggregate.getGroupSet())
+        .itemIf("groups", aggregate.getGroupSets(), aggregate.getGroupType() != Aggregate.Group.SIMPLE)
+        .itemIf("indicator", !Aggregate.noIndicator(aggregate), !Aggregate.noIndicator(aggregate))
+        .itemIf("aggs", aggregate.getAggCallList(), rw.nest());
+    if (!rw.nest()) {
+      for (Ord<AggregateCall> ord : Ord.zip(aggregate.getAggCallList())) {
+        rw.item(Util.first(ord.e.name, "agg#" + ord.i), ord.e);
+      }
+    }
     if (filter != null) {
-      rw = filter.explainTerms(rw);
+      rw = rw.item("condition", filter.getCondition());
     }
     return rw;
   }

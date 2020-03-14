@@ -186,8 +186,13 @@ public class ImpalaJoinRel extends ImpalaPlanRel {
 
   @Override
   public RelWriter explainTerms(RelWriter pw) {
-    RelWriter rw = hiveJoin.explainTerms(pw);
-    return rw;
+    RelWriter rw = super.explainTerms(pw);
+    return rw.item("condition", hiveJoin.getCondition())
+        .item("joinType", hiveJoin.getJoinType().lowerName)
+        .itemIf(
+            "systemFields",
+            hiveJoin.getSystemFieldList(),
+            !hiveJoin.getSystemFieldList().isEmpty());
   }
 
 }

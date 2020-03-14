@@ -23,8 +23,11 @@ import com.google.common.collect.ImmutableList;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import org.apache.calcite.linq4j.Ord;
 import org.apache.calcite.rel.RelWriter;
+import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.sql.SqlExplainLevel;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
@@ -65,6 +68,29 @@ abstract public class ImpalaProjectRelBase extends ImpalaPlanRel {
 
   @Override
   public RelWriter explainTerms(RelWriter pw) {
-    return hiveProject.explainTerms(pw);
+    RelWriter rw = super.explainTerms(pw);
+    if (rw.nest()) {
+      rw.item("fields", hiveProject.getRowType().getFieldNames());
+      rw.item("exprs", hiveProject.getChildExps());
+    } else {
+      for (Ord<RelDataTypeField> field : Ord.zip(hiveProject.getRowType().getFieldList())) {
+        String fieldName = field.e.getName();
+        if (fieldName == null) {
+          fieldName = "field#" + field.i;
+        }
+        rw.item(fieldName, hiveProject.getChildExps().get(field.i));
+      }
+    }
+
+    // If we're generating a digest, include the rowtype. If two projects
+    // differ in return type, we don't want to regard them as equivalent,
+    // otherwise we will try to put rels of different types into the same
+    // planner equivalence set.
+    if ((rw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES)
+        && false) {
+      rw.item("type", hiveProject.getRowType());
+    }
+
+    return rw;
   }
 }
