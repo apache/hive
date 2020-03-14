@@ -147,7 +147,7 @@
     <dropwizard-metrics-hadoop-metrics2-reporter.version>0.1.2</dropwizard-metrics-hadoop-metrics2-reporter.version>
     <druid.version>0.15.1.7.1.1.0-SNAPSHOT</druid.version>
     <flatbuffers.version>1.2.0-3f79e055</flatbuffers.version>
-    <guava.version>28.1-jre</guava.version>
+    <guava.version>19.0</guava.version>
     <groovy.version>2.4.11</groovy.version>
     <h2database.version>1.3.166</h2database.version>
     <hadoop.version>3.1.1.7.1.1.0-SNAPSHOT</hadoop.version>

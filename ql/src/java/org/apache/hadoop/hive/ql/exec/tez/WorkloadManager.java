@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.exec.tez;
 
-import com.google.common.util.concurrent.*;
 import org.apache.hadoop.hive.metastore.api.WMPoolSchedulingPolicy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 
@@ -25,6 +24,11 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.math.DoubleMath;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.SettableFuture;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -1119,7 +1123,7 @@ public class WorkloadManager extends AbstractTriggerValidator
   }
 
   private void failOnFutureFailure(ListenableFuture<?> future) {
-    Futures.addCallback(future, FATAL_ERROR_CALLBACK, MoreExecutors.directExecutor());
+    Futures.addCallback(future, FATAL_ERROR_CALLBACK);
   }
 
   private void queueGetRequestOnMasterThread(
@@ -1960,7 +1964,7 @@ public class WorkloadManager extends AbstractTriggerValidator
 
     public void start() throws Exception {
       ListenableFuture<WmTezSession> getFuture = tezAmPool.getSessionAsync();
-      Futures.addCallback(getFuture, this, MoreExecutors.directExecutor());
+      Futures.addCallback(getFuture, this);
     }
 
     @Override
@@ -2014,7 +2018,7 @@ public class WorkloadManager extends AbstractTriggerValidator
       case GETTING: {
         ListenableFuture<WmTezSession> waitFuture = session.waitForAmRegistryAsync(
             amRegistryTimeoutMs, timeoutPool);
-        Futures.addCallback(waitFuture, this, MoreExecutors.directExecutor());
+        Futures.addCallback(waitFuture, this);
         break;
       }
       case WAITING_FOR_REGISTRY: {
