@@ -1335,6 +1335,11 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .run("create table t1 (place string) partitioned by (country string)")
             .dump(primaryDbName);
     replica.load(replicatedDbName, primaryDbName, withConfigs);
+    //delete load ack to reuse the dump
+    new Path(tuple.dumpLocation).getFileSystem(conf).delete(new Path(tuple.dumpLocation
+            + Path.SEPARATOR + ReplUtils.REPL_HIVE_BASE_DIR + Path.SEPARATOR
+            + ReplUtils.LOAD_ACKNOWLEDGEMENT), true);
+
     replica.load(replicatedDbName_CM, primaryDbName, withConfigs);
     replica.run("alter database " + replicatedDbName + " set DBPROPERTIES ('" + SOURCE_OF_REPLICATION + "' = '1,2,3')")
         .run("alter database " + replicatedDbName_CM + " set DBPROPERTIES ('" + SOURCE_OF_REPLICATION + "' = '1,2,3')");
@@ -1351,11 +1356,14 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     List<String> withConfigs =
         Collections.singletonList("'hive.repl.enable.move.optimization'='true'");
     String replicatedDbName_CM = replicatedDbName + "_CM";
-    primary.run("use " + primaryDbName)
+    WarehouseInstance.Tuple bootstrapDump = primary.run("use " + primaryDbName)
             .run("create table t2 (place string) partitioned by (country string)")
             .run("ALTER TABLE t2 ADD PARTITION (country='india')")
             .dump(primaryDbName);
     replica.load(replicatedDbName, primaryDbName, withConfigs);
+    //delete load ack to reuse the dump
+    new Path(bootstrapDump.dumpLocation).getFileSystem(conf).delete(new Path(bootstrapDump.dumpLocation
+            + Path.SEPARATOR + ReplUtils.REPL_HIVE_BASE_DIR + Path.SEPARATOR + ReplUtils.LOAD_ACKNOWLEDGEMENT), true);
     replica.load(replicatedDbName_CM, primaryDbName, withConfigs);
     replica.run("alter database " + replicatedDbName + " set DBPROPERTIES ('" + SOURCE_OF_REPLICATION + "' = '1,2,3')")
         .run("alter database " + replicatedDbName_CM + " set DBPROPERTIES ('" + SOURCE_OF_REPLICATION + "' = '1,2,3')");

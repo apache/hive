@@ -60,7 +60,6 @@ import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
-import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 
 import java.io.IOException;
@@ -98,38 +97,17 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
 
   @Override
   public int execute() {
-    try {
-      Task<?> rootTask = work.getRootTask();
-      if (rootTask != null) {
-        rootTask.setChildTasks(null);
-      }
-      work.setRootTask(this);
-      this.parentTasks = null;
-      int status = 0;
-      if (work.isIncrementalLoad()) {
-        status = executeIncrementalLoad();
-        //All repl load tasks are executed and status is 0, write the load ack
-        if (status == 0 && !work.incrementalLoadTasksBuilder().hasMoreWork()) {
-          writeLoadCompleteAck(work.dumpDirectory);
-        }
-      } else {
-        status = executeBootStrapLoad();
-        //All repl load tasks are executed and status is 0, write the load ack
-        if (status == 0 && !work.hasBootstrapLoadTasks()) {
-          writeLoadCompleteAck(work.dumpDirectory);
-        }
-      }
-      return status;
-    } catch (SemanticException e) {
-      LOG.error("failed", e);
-      setException(e);
-      return ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
+    Task<?> rootTask = work.getRootTask();
+    if (rootTask != null) {
+      rootTask.setChildTasks(null);
     }
-  }
-
-  private void writeLoadCompleteAck(String dumpDirectory) throws SemanticException {
-    Path ackPath = new Path(dumpDirectory, ReplUtils.LOAD_ACKNOWLEDGEMENT);
-    Utils.write(ackPath, conf);
+    work.setRootTask(this);
+    this.parentTasks = null;
+    if (work.isIncrementalLoad()) {
+      return executeIncrementalLoad();
+    } else {
+      return executeBootStrapLoad();
+    }
   }
 
   private int executeBootStrapLoad() {
@@ -308,6 +286,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
 
       // Populate the driver context with the scratch dir info from the repl context, so that the temp dirs will be cleaned up later
       context.getFsScratchDirs().putAll(loadContext.pathInfo.getFsScratchDirs());
+      createReplLoadCompleteAckTask();
     }  catch (RuntimeException e) {
       LOG.error("replication failed with run time exception", e);
       throw e;
@@ -418,6 +397,21 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     }
     LOG.info("Tables in the Database: {} that are excluded in the replication scope are dropped.",
             dbName);
+  }
+
+  private void createReplLoadCompleteAckTask() {
+    if ((work.isIncrementalLoad() && !work.incrementalLoadTasksBuilder().hasMoreWork() && !work.hasBootstrapLoadTasks())
+            || (!work.isIncrementalLoad() && !work.hasBootstrapLoadTasks())) {
+      //All repl load tasks are executed and status is 0, create the task to add the acknowledgement
+      ReplLoadCompleteAckWork replLoadCompleteAckWork = new ReplLoadCompleteAckWork(work.dumpDirectory);
+      Task<ReplLoadCompleteAckWork> loadCompleteAckWorkTask = TaskFactory.get(replLoadCompleteAckWork, conf);
+      if (this.childTasks.isEmpty()) {
+        this.childTasks.add(loadCompleteAckWorkTask);
+      } else {
+        DAGTraversal.traverse(this.childTasks,
+                new AddDependencyToLeaves(Collections.singletonList(loadCompleteAckWorkTask)));
+      }
+    }
   }
 
   private void createEndReplLogTask(Context context, Scope scope,
@@ -584,6 +578,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
         DAGTraversal.traverse(childTasks, new AddDependencyToLeaves(TaskFactory.get(work, conf)));
       }
       this.childTasks = childTasks;
+      createReplLoadCompleteAckTask();
       return 0;
     } catch (Exception e) {
       LOG.error("failed replication", e);

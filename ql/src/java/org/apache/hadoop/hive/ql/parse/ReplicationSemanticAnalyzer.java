@@ -49,8 +49,6 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Base64;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -431,12 +429,13 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     FileStatus[] statuses = loadPathBase.getFileSystem(conf).listStatus(loadPathBase);
     if (statuses.length > 0) {
       //sort based on last modified. Recent one is at the beginning
-      Arrays.sort(statuses, new Comparator<FileStatus>() {
-        public int compare(FileStatus f1, FileStatus f2) {
-          return Long.compare(f2.getModificationTime(), f1.getModificationTime());
+      FileStatus latestUpdatedStatus = statuses[0];
+      for (FileStatus status : statuses) {
+        if (status.getModificationTime() > latestUpdatedStatus.getModificationTime()) {
+          latestUpdatedStatus = status;
         }
-      });
-      Path hiveDumpPath = new Path(statuses[0].getPath(), ReplUtils.REPL_HIVE_BASE_DIR);
+      }
+      Path hiveDumpPath = new Path(latestUpdatedStatus.getPath(), ReplUtils.REPL_HIVE_BASE_DIR);
       if (loadPathBase.getFileSystem(conf).exists(hiveDumpPath)) {
         boolean dumpComplete = false;
         boolean loadComplete = false;

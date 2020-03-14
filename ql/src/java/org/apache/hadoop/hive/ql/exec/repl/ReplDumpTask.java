@@ -146,7 +146,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         }
         prepareReturnValues(Arrays.asList(currentDumpPath.toUri().toString(), String.valueOf(lastReplId)));
         writeDumpCompleteAck(hiveDumpRoot);
-        deletePreviousDumpMeta(previousDumpMetaPath);
+        deleteAllPreviousDumpMeta(dumpRoot, currentDumpPath);
       } else {
         LOG.warn("Previous Dump is not yet loaded");
       }
@@ -158,10 +158,13 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return 0;
   }
 
-  private void deletePreviousDumpMeta(Path previousDumpMetaPath) throws IOException {
-    if (previousDumpMetaPath != null) {
-      FileSystem fs = previousDumpMetaPath.getFileSystem(conf);
-      fs.delete(previousDumpMetaPath, true);
+  private void deleteAllPreviousDumpMeta(Path dumpRoot, Path currentDumpPath) throws IOException {
+    FileSystem fs = dumpRoot.getFileSystem(conf);
+    if (fs.exists(dumpRoot)) {
+      FileStatus[] statuses = fs.listStatus(dumpRoot, path -> !path.equals(currentDumpPath));
+      for (FileStatus status : statuses) {
+        fs.delete(status.getPath(), true);
+      }
     }
   }
 
@@ -186,8 +189,14 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     FileSystem fs = dumpRoot.getFileSystem(conf);
     if (fs.exists(dumpRoot)) {
       FileStatus[] statuses = fs.listStatus(dumpRoot);
-      if (statuses.length == 1) {
-        return statuses[0].getPath();
+      if (statuses.length > 0)  {
+        FileStatus latestUpdatedStatus = statuses[0];
+        for (FileStatus status : statuses) {
+          if (status.getModificationTime() > latestUpdatedStatus.getModificationTime()) {
+            latestUpdatedStatus = status;
+          }
+        }
+        return latestUpdatedStatus.getPath();
       }
     }
     return null;
