@@ -272,7 +272,7 @@ public class TestParseDriver {
     }
   }
 
-  @Test(timeout = 10000)
+  @Test(timeout = 20000)
   public void testExoticSJSSubQuery() throws Exception {
     ExoticQueryBuilder eqb = new ExoticQueryBuilder();
     eqb.recursiveSJS(10);
