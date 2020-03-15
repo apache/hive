@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.BeforeClass;
 
@@ -247,6 +248,7 @@ public class TestReplicationScenariosAcidTablesBootstrap
     verifyCompactionQueue(tables, replicatedDbName, replicaConf);
   }
 
+  @Ignore("CDPD-9135 Ignore TestReplicationScenariosAcidTablesBootstrap.testBootstrapAcidTablesDuringIncrementalWithConcurrentWrites as it is flaky")
   @Test
   public void testBootstrapAcidTablesDuringIncrementalWithConcurrentWrites() throws Throwable {
     // Dump and load bootstrap without ACID tables.
