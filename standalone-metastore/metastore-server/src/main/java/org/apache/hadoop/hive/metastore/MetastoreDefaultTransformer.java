@@ -24,20 +24,20 @@ import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.EXTERNAL_TABLE_PURGE;
 
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
-import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.utils.FileUtils;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -648,7 +648,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
         tableLocation = Path.getPathWithoutSchemeAndAuthority(new Path(table.getSd().getLocation()));
       }
       whRootPath = Path.getPathWithoutSchemeAndAuthority(hmsHandler.getWh().getWhRoot());
-      if (tableLocation != null && !FileUtils.isSubdirectory(whRootPath.toString(), tableLocation.toString())) {
+      if (tableLocation != null && tableLocationChanged(table) && !FileUtils.isSubdirectory(whRootPath.toString(), tableLocation.toString())) {
         throw new MetaException(
             "A managed table's location needs to be under the hive warehouse root directory," + "table:"
                 + table.getTableName() + ",location:" + tableLocation + ",Hive warehouse:" + whRootPath);
@@ -660,7 +660,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
       whRootPath = Path.getPathWithoutSchemeAndAuthority(hmsHandler.getWh().getWhRoot());
       if (tableLocation != null) {
         LOG.debug("Table is an EXTERNAL TABLE:tableLocation={}, whroot={}", tableLocation, whRootPath);
-        if (FileUtils.isSubdirectory(whRootPath.toString(), tableLocation.toString())) {
+        if (tableLocationChanged(table) && FileUtils.isSubdirectory(whRootPath.toString(), tableLocation.toString())) {
           throw new MetaException(
               "An external table's location should not be located within managed warehouse root directory," + "table:"
               + table.getTableName() + ",location:" + tableLocation + ",Hive managed warehouse:" + whRootPath);
@@ -671,6 +671,21 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
     }
     LOG.debug("Transformer returning table:" + table.toString());
     return table;
+  }
+
+  private boolean tableLocationChanged(Table alteredTable) throws MetaException {
+    if (!alteredTable.isSetSd() || alteredTable.getSd().getLocation() == null) {
+      return false;
+    }
+    try {
+      Table currentTable = hmsHandler.get_table_core(alteredTable.getCatName(), alteredTable.getDbName(), alteredTable.getTableName());
+      if (!currentTable.isSetSd() || currentTable.getSd().getLocation() == null) {
+        return false;
+      }
+      return !currentTable.getSd().getLocation().equals(alteredTable.getSd().getLocation());
+    } catch (NoSuchObjectException e) {
+      return false;
+    }
   }
 
   /**
