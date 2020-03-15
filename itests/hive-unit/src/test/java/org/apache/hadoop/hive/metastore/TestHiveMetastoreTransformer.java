@@ -1333,6 +1333,26 @@ public class TestHiveMetastoreTransformer {
   }
 
   @Test
+  public void testTransformerAlterTableWithoutLocationChangeDoesntValidateLocation() throws Exception {
+    try {
+      resetHMSClient();
+      String dbName = "dbalter";
+      String tblName = "test_alter_mgd_table";
+      TableType type = TableType.MANAGED_TABLE;
+      Map<String, Object> tProps = new HashMap<>();
+      tProps.put("DBNAME", dbName);
+      tProps.put("TBLNAME", tblName);
+      tProps.put("TBLTYPE", type);
+      tProps.put("LOCATION", wh.getAbsolutePath().concat(File.separator).concat(dbName).concat(File.separator).concat(tblName));
+      createTableWithCapabilities(tProps);
+      client.alter_table(dbName, tblName, client.getTable(dbName, tblName));
+    } finally {
+      resetHMSClient();
+    }
+  }
+
+
+  @Test
   public void testTransformerDatabase() throws Exception {
     try {
       resetHMSClient();
