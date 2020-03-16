@@ -1,36 +1,57 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.hadoop.hive.ql.exec;
 
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver2;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
 
+/**
+ * Registers functions from the DataSketches library as builtin functions.
+ *
+ * In an effort to show a more consistent
+ */
 public class DataSketchesFunctions {
 
-  private static final String GET_PREFIX = "";
-
   private static final String DATA_TO_SKETCH = "sketch";
-  private static final String SKETCH_TO_ESTIMATE_WITH_ERROR_BOUNDS = GET_PREFIX + "estimate_bounds";
-  private static final String SKETCH_TO_ESTIMATE = GET_PREFIX + "estimate";
+  private static final String SKETCH_TO_ESTIMATE_WITH_ERROR_BOUNDS = "estimate_bounds";
+  private static final String SKETCH_TO_ESTIMATE = "estimate";
   private static final String SKETCH_TO_STRING = "stringify";
   private static final String UNION_SKETCH = "union";
   private static final String UNION_SKETCH1 = "union_f";
-  private static final String GET_N = GET_PREFIX + "n";
-  private static final String GET_CDF = GET_PREFIX + "cdf";
-  private static final String GET_PMF = GET_PREFIX + "pmf";
-  private static final String GET_QUANTILES = GET_PREFIX + "quantiles";
-  private static final String GET_QUANTILE = GET_PREFIX + "quantile";
-  private static final String GET_RANK = GET_PREFIX + "rank";
+  private static final String GET_N = "n";
+  private static final String GET_CDF = "cdf";
+  private static final String GET_PMF = "pmf";
+  private static final String GET_QUANTILES = "quantiles";
+  private static final String GET_QUANTILE = "quantile";
+  private static final String GET_RANK = "rank";
   private static final String INTERSECT_SKETCH = "intersect";
   private static final String INTERSECT_SKETCH1 = "intersect_f";
   private static final String EXCLUDE_SKETCH = "exclude";
-  private static final String GET_K = GET_PREFIX + "k";
-  private static final String GET_FREQUENT_ITEMS = GET_PREFIX + "frequent_items";
+  private static final String GET_K = "k";
+  private static final String GET_FREQUENT_ITEMS = "frequent_items";
   private static final String T_TEST = "ttest";
-  private static final String SKETCH_TO_MEANS = GET_PREFIX + "means";
-  private static final String SKETCH_TO_NUMBER_OF_RETAINED_ENTRIES = GET_PREFIX + "n_retained";
-  private static final String SKETCH_TO_QUANTILES_SKETCH = GET_PREFIX + "quantiles_sketch";
-  private static final String SKETCH_TO_VALUES = GET_PREFIX + "values";
-  private static final String SKETCH_TO_VARIANCES = GET_PREFIX + "variances";
-  private static final String SKETCH_TO_PERCENTILE = GET_PREFIX + "percentile";
+  private static final String SKETCH_TO_MEANS = "means";
+  private static final String SKETCH_TO_NUMBER_OF_RETAINED_ENTRIES = "n_retained";
+  private static final String SKETCH_TO_QUANTILES_SKETCH = "quantiles_sketch";
+  private static final String SKETCH_TO_VALUES = "values";
+  private static final String SKETCH_TO_VARIANCES = "variances";
+  private static final String SKETCH_TO_PERCENTILE = "percentile";
 
   private final Registry system;
 
@@ -40,7 +61,6 @@ public class DataSketchesFunctions {
 
   public static void register(Registry system) {
     DataSketchesFunctions dsf = new DataSketchesFunctions(system);
-    // FIXME: what this should be approx, ds ... other?
     String prefix = "ds";
     dsf.registerHll(prefix);
     dsf.registerCpc(prefix);
@@ -196,23 +216,6 @@ public class DataSketchesFunctions {
 
   private void registerUDTF(Class<? extends GenericUDTF> udtfClass, String name) {
     system.registerGenericUDTF(name, udtfClass);
-  }
-
-  private String getUDFName(Class<?> clazz) {
-    Description desc = getDescription(clazz);
-    String name = desc.name().toLowerCase();
-    if (name == null || name == "") {
-      throw new RuntimeException("The UDF class (" + clazz.getName() + ") doesn't have a valid name");
-    }
-    return name;
-  }
-
-  private Description getDescription(Class<?> clazz) {
-    Description desc = clazz.getAnnotation(Description.class);
-    if (desc == null) {
-      throw new RuntimeException("no Description annotation on class: " + clazz.getName());
-    }
-    return desc;
   }
 
 }
