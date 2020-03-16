@@ -1,5 +1,6 @@
 --! qt:authorizer
 --! qt:scheduledqueryservice
+--! qt:transactional
 --! qt:sysdb
 
 set user.name=hive_admin_user;
@@ -9,10 +10,6 @@ drop materialized view if exists mv1;
 drop table if exists emps;
 drop table if exists depts;
 
-set hive.support.concurrency=true;
-set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
-set hive.strict.checks.cartesian.product=false;
-set hive.stats.fetch.column.stats=true;
 set hive.materializedview.rewriting=true;
 
 -- create some tables

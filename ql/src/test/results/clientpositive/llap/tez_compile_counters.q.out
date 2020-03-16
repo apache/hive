@@ -13,6 +13,7 @@ PREHOOK: Output: default@testpart
 POSTHOOK: query: insert overwrite table testpart partition(v) select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+POSTHOOK: Output: default@testpart
 POSTHOOK: Output: default@testpart@v=val_0
 POSTHOOK: Output: default@testpart@v=val_10
 POSTHOOK: Output: default@testpart@v=val_100
@@ -638,6 +639,7 @@ PREHOOK: Output: default@testpart
 POSTHOOK: query: insert into table testpart partition(v) select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+POSTHOOK: Output: default@testpart
 POSTHOOK: Output: default@testpart@v=val_0
 POSTHOOK: Output: default@testpart@v=val_10
 POSTHOOK: Output: default@testpart@v=val_100

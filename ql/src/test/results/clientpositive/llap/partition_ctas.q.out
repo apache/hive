@@ -13,6 +13,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partition_ctas_1
+POSTHOOK: Output: default@partition_ctas_1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -134,6 +135,7 @@ SELECT value, key FROM src where key > 200 and key < 300
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
+POSTHOOK: Output: default@partition_ctas_1
 POSTHOOK: Output: default@partition_ctas_1
 POSTHOOK: Output: default@partition_ctas_1@key=201
 POSTHOOK: Output: default@partition_ctas_1@key=202
@@ -350,6 +352,7 @@ SELECT key, value FROM src where key > 200 and key < 300
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
+POSTHOOK: Output: default@partition_ctas_2
 POSTHOOK: Output: default@partition_ctas_2
 POSTHOOK: Output: default@partition_ctas_2@value=val_201
 POSTHOOK: Output: default@partition_ctas_2@value=val_202
@@ -814,6 +817,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partition_ctas_diff_order
+POSTHOOK: Output: default@partition_ctas_diff_order
 POSTHOOK: Output: default@partition_ctas_diff_order@value=val_201
 POSTHOOK: Output: default@partition_ctas_diff_order@value=val_202
 POSTHOOK: Output: default@partition_ctas_diff_order@value=val_203
@@ -1002,6 +1006,7 @@ FROM src where key > 200 and key < 240
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
+POSTHOOK: Output: default@partition_ctas_complex_order
 POSTHOOK: Output: default@partition_ctas_complex_order
 POSTHOOK: Output: default@partition_ctas_complex_order@c0=val_201_0/c4=val_201_4/c1=val_201_1
 POSTHOOK: Output: default@partition_ctas_complex_order@c0=val_202_0/c4=val_202_4/c1=val_202_1

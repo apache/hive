@@ -1369,6 +1369,7 @@ insert overwrite table merge_dynamic_part_n1 partition (ds, hr) select key, valu
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart_merge_dp_n1
 POSTHOOK: Input: default@srcpart_merge_dp_n1@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@merge_dynamic_part_n1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -1505,6 +1506,7 @@ POSTHOOK: query: insert overwrite table merge_dynamic_part_n1 partition (ds, hr)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart_merge_dp_n1
 POSTHOOK: Input: default@srcpart_merge_dp_n1@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@merge_dynamic_part_n1
 POSTHOOK: Output: default@merge_dynamic_part_n1@ds=2008-04-08/hr=11
 POSTHOOK: Lineage: merge_dynamic_part_n1 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart_merge_dp_n1)srcpart_merge_dp_n1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: merge_dynamic_part_n1 PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart_merge_dp_n1)srcpart_merge_dp_n1.FieldSchema(name:value, type:string, comment:default), ]

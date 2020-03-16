@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import org.apache.hadoop.hive.common.io.NonSyncByteArrayInputStream;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
@@ -51,6 +52,7 @@ import java.util.List;
 /**
  * Generic UDF to generate Bloom Filter
  */
+@Description(name = "bloom_filter")
 public class GenericUDAFBloomFilter implements GenericUDAFResolver2 {
 
   @Override

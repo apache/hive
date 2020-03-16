@@ -65,6 +65,7 @@ PREHOOK: Output: default@smb_table_part
 POSTHOOK: query: INSERT OVERWRITE TABLE smb_table_part PARTITION (p1) SELECT key, value, 100 as p1 FROM data_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@data_table
+POSTHOOK: Output: default@smb_table_part
 POSTHOOK: Output: default@smb_table_part@p1=100
 POSTHOOK: Lineage: smb_table_part PARTITION(p1=100).key SIMPLE [(data_table)data_table.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: smb_table_part PARTITION(p1=100).value SIMPLE [(data_table)data_table.FieldSchema(name:value, type:string, comment:null), ]
@@ -109,6 +110,7 @@ PREHOOK: Output: default@smb_table_part
 POSTHOOK: query: INSERT OVERWRITE TABLE smb_table_part PARTITION (p1) SELECT key, value, 100 as p1 FROM data_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@data_table
+POSTHOOK: Output: default@smb_table_part
 POSTHOOK: Output: default@smb_table_part@p1=100
 POSTHOOK: Lineage: smb_table_part PARTITION(p1=100).key SIMPLE [(data_table)data_table.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: smb_table_part PARTITION(p1=100).value SIMPLE [(data_table)data_table.FieldSchema(name:value, type:string, comment:null), ]

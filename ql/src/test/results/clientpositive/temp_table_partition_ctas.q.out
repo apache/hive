@@ -13,6 +13,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partition_ctas_1_temp
+POSTHOOK: Output: default@partition_ctas_1_temp
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -127,6 +128,7 @@ POSTHOOK: query: CREATE TABLE partition_ctas_1_temp PARTITIONED BY (key) AS
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
+POSTHOOK: Output: default@partition_ctas_1_temp
 POSTHOOK: Output: default@partition_ctas_1_temp
 POSTHOOK: Output: default@partition_ctas_1_temp@key=201
 POSTHOOK: Output: default@partition_ctas_1_temp@key=202
@@ -345,6 +347,7 @@ POSTHOOK: query: CREATE TEMPORARY TABLE partition_ctas_2_temp PARTITIONED BY (va
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
+POSTHOOK: Output: default@partition_ctas_2_temp
 POSTHOOK: Output: default@partition_ctas_2_temp
 POSTHOOK: Output: default@partition_ctas_2_temp@value=val_201
 POSTHOOK: Output: default@partition_ctas_2_temp@value=val_202
@@ -827,6 +830,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partition_ctas_diff_order_temp
+POSTHOOK: Output: default@partition_ctas_diff_order_temp
 POSTHOOK: Output: default@partition_ctas_diff_order_temp@value=val_201
 POSTHOOK: Output: default@partition_ctas_diff_order_temp@value=val_202
 POSTHOOK: Output: default@partition_ctas_diff_order_temp@value=val_203
@@ -1017,6 +1021,7 @@ POSTHOOK: query: CREATE TEMPORARY TABLE partition_ctas_complex_order_temp PARTIT
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
+POSTHOOK: Output: default@partition_ctas_complex_order_temp
 POSTHOOK: Output: default@partition_ctas_complex_order_temp
 POSTHOOK: Output: default@partition_ctas_complex_order_temp@c0=val_201_0/c4=val_201_4/c1=val_201_1
 POSTHOOK: Output: default@partition_ctas_complex_order_temp@c0=val_202_0/c4=val_202_4/c1=val_202_1

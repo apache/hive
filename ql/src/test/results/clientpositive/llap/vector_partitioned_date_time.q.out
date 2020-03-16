@@ -610,6 +610,7 @@ SELECT  origin_city_name, dest_city_name, fl_time, arr_delay, fl_num, fl_date
 FROM flights_tiny_orc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@flights_tiny_orc
+POSTHOOK: Output: default@flights_tiny_orc_partitioned_date
 POSTHOOK: Output: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-20
 POSTHOOK: Output: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-21
 POSTHOOK: Output: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-22
@@ -1673,6 +1674,7 @@ SELECT  origin_city_name, dest_city_name, fl_date, arr_delay, fl_num, fl_time
 FROM flights_tiny_orc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@flights_tiny_orc
+POSTHOOK: Output: default@flights_tiny_orc_partitioned_timestamp
 POSTHOOK: Output: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-20 07%3A00%3A00
 POSTHOOK: Output: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-21 07%3A00%3A00
 POSTHOOK: Output: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-22 07%3A00%3A00
@@ -3283,6 +3285,7 @@ SELECT  origin_city_name, dest_city_name, fl_time, arr_delay, fl_num, fl_date
 FROM flights_tiny_parquet
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@flights_tiny_parquet
+POSTHOOK: Output: default@flights_tiny_parquet_partitioned_date
 POSTHOOK: Output: default@flights_tiny_parquet_partitioned_date@fl_date=2010-10-20
 POSTHOOK: Output: default@flights_tiny_parquet_partitioned_date@fl_date=2010-10-21
 POSTHOOK: Output: default@flights_tiny_parquet_partitioned_date@fl_date=2010-10-22
@@ -4346,6 +4349,7 @@ SELECT  origin_city_name, dest_city_name, fl_date, arr_delay, fl_num, fl_time
 FROM flights_tiny_parquet
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@flights_tiny_parquet
+POSTHOOK: Output: default@flights_tiny_parquet_partitioned_timestamp
 POSTHOOK: Output: default@flights_tiny_parquet_partitioned_timestamp@fl_time=2010-10-20 07%3A00%3A00
 POSTHOOK: Output: default@flights_tiny_parquet_partitioned_timestamp@fl_time=2010-10-21 07%3A00%3A00
 POSTHOOK: Output: default@flights_tiny_parquet_partitioned_timestamp@fl_time=2010-10-22 07%3A00%3A00

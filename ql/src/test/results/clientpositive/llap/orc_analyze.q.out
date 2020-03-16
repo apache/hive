@@ -291,6 +291,7 @@ POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_people_n0 PARTITION (state)
   SELECT * FROM orc_create_people_staging_n0 ORDER BY id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_create_people_staging_n0
+POSTHOOK: Output: default@orc_create_people_n0
 POSTHOOK: Output: default@orc_create_people_n0@state=Ca
 POSTHOOK: Output: default@orc_create_people_n0@state=Or
 POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Ca).address SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:address, type:string, comment:null), ]
@@ -534,6 +535,7 @@ POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_people_n0 PARTITION (state)
   SELECT * FROM orc_create_people_staging_n0 ORDER BY id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_create_people_staging_n0
+POSTHOOK: Output: default@orc_create_people_n0
 POSTHOOK: Output: default@orc_create_people_n0@state=Ca
 POSTHOOK: Output: default@orc_create_people_n0@state=Or
 POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Ca).address SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:address, type:string, comment:null), ]
@@ -677,6 +679,7 @@ POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_people_n0 PARTITION (state)
   SELECT * FROM orc_create_people_staging_n0 ORDER BY id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_create_people_staging_n0
+POSTHOOK: Output: default@orc_create_people_n0
 POSTHOOK: Output: default@orc_create_people_n0@state=Ca
 POSTHOOK: Output: default@orc_create_people_n0@state=Or
 POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Ca).address SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:address, type:string, comment:null), ]
@@ -926,6 +929,7 @@ POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_people_n0 PARTITION (state)
   SELECT * FROM orc_create_people_staging_n0 ORDER BY id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_create_people_staging_n0
+POSTHOOK: Output: default@orc_create_people_n0
 POSTHOOK: Output: default@orc_create_people_n0@state=Ca
 POSTHOOK: Output: default@orc_create_people_n0@state=Or
 POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Ca).address SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:address, type:string, comment:null), ]
@@ -1063,6 +1067,7 @@ POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_people_n0 PARTITION (state)
   SELECT * FROM orc_create_people_staging_n0 ORDER BY id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_create_people_staging_n0
+POSTHOOK: Output: default@orc_create_people_n0
 POSTHOOK: Output: default@orc_create_people_n0@state=Ca
 POSTHOOK: Output: default@orc_create_people_n0@state=Or
 POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Ca).address SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:address, type:string, comment:null), ]

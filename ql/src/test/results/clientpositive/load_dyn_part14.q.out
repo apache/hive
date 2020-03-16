@@ -45,6 +45,7 @@ select key, value from (
 ) T
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+POSTHOOK: Output: default@nzhang_part14_n0
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-9, Stage-10
@@ -344,6 +345,7 @@ select key, value from (
 ) T
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+POSTHOOK: Output: default@nzhang_part14_n0
 POSTHOOK: Output: default@nzhang_part14_n0@value= 
 POSTHOOK: Output: default@nzhang_part14_n0@value=__HIVE_DEFAULT_PARTITION__
 POSTHOOK: Lineage: nzhang_part14_n0 PARTITION(value= ).key EXPRESSION []

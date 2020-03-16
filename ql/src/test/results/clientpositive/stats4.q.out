@@ -54,6 +54,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@nzhang_part1
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-8 depends on stages: Stage-2 , consists of Stage-5, Stage-4, Stage-6
@@ -290,6 +291,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@nzhang_part1
 POSTHOOK: Output: default@nzhang_part1@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@nzhang_part1@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@nzhang_part2@ds=2008-12-31/hr=11

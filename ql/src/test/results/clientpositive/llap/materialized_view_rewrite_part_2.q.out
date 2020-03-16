@@ -151,6 +151,7 @@ POSTHOOK: Input: default@depts_n00
 POSTHOOK: Input: default@emps_n00
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_part_n0
+POSTHOOK: Output: default@mv1_part_n0
 POSTHOOK: Output: default@mv1_part_n0@deptno=20
 POSTHOOK: Lineage: mv1_part_n0 PARTITION(deptno=20).empid SIMPLE [(emps_n00)emps_n00.FieldSchema(name:empid, type:int, comment:null), ]
 PREHOOK: query: explain
@@ -234,6 +235,7 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@depts_n00
 POSTHOOK: Input: default@emps_n00
 POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mv1_part_n0
 POSTHOOK: Output: default@mv1_part_n0
 POSTHOOK: Output: default@mv1_part_n0@deptno=20
 POSTHOOK: Lineage: mv1_part_n0 PARTITION(deptno=20).empid SIMPLE [(emps_n00)emps_n00.FieldSchema(name:empid, type:int, comment:null), ]
@@ -319,6 +321,7 @@ POSTHOOK: Input: default@depts_n00
 POSTHOOK: Input: default@emps_n00
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_part_n0
+POSTHOOK: Output: default@mv1_part_n0
 POSTHOOK: Output: default@mv1_part_n0@deptno=20
 POSTHOOK: Lineage: mv1_part_n0 PARTITION(deptno=20).empid SIMPLE [(emps_n00)emps_n00.FieldSchema(name:empid, type:int, comment:null), ]
 PREHOOK: query: explain
@@ -402,6 +405,7 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@depts_n00
 POSTHOOK: Input: default@emps_n00
 POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mv1_part_n0
 POSTHOOK: Output: default@mv1_part_n0
 POSTHOOK: Output: default@mv1_part_n0@deptno=10
 POSTHOOK: Output: default@mv1_part_n0@deptno=20
@@ -498,6 +502,7 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@depts_n00
 POSTHOOK: Input: default@emps_n00
 POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mv1_part_n0
 POSTHOOK: Output: default@mv1_part_n0
 POSTHOOK: Output: default@mv1_part_n0@deptno=10
 POSTHOOK: Output: default@mv1_part_n0@deptno=20
@@ -691,6 +696,7 @@ POSTHOOK: Input: default@dependents_n00
 POSTHOOK: Input: default@depts_n00
 POSTHOOK: Input: default@emps_n00
 POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mv1_part_n0
 POSTHOOK: Output: default@mv1_part_n0
 POSTHOOK: Output: default@mv1_part_n0@deptno2=20
 POSTHOOK: Output: default@mv1_part_n0@deptno2=30

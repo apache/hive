@@ -21,6 +21,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@analyze_srcpart_n0
 POSTHOOK: Output: default@analyze_srcpart_n0@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@analyze_srcpart_n0@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@analyze_srcpart_n0@ds=2008-04-09/hr=11
@@ -292,6 +293,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@analyze_srcpart_partial
 POSTHOOK: Output: default@analyze_srcpart_partial@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@analyze_srcpart_partial@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@analyze_srcpart_partial@ds=2008-04-09/hr=11

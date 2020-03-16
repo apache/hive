@@ -63,6 +63,7 @@ PARTITION (b)
 SELECT a, c, b FROM blobstore_source
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@blobstore_source
+POSTHOOK: Output: default@rcfile_buckets
 POSTHOOK: Output: default@rcfile_buckets@b=abc
 POSTHOOK: Output: default@rcfile_buckets@b=ajss
 POSTHOOK: Output: default@rcfile_buckets@b=data
@@ -124,6 +125,7 @@ PARTITION (b)
 SELECT a, c, b FROM blobstore_source
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@blobstore_source
+POSTHOOK: Output: default@rcfile_buckets
 POSTHOOK: Output: default@rcfile_buckets@b=abc
 POSTHOOK: Output: default@rcfile_buckets@b=ajss
 POSTHOOK: Output: default@rcfile_buckets@b=data

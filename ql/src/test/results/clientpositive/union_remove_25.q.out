@@ -261,6 +261,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@outputtbl2_n6
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1, Stage-2
@@ -386,6 +387,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@outputtbl2_n6
 POSTHOOK: Output: default@outputtbl2_n6@ds=2008-04-08
 POSTHOOK: Lineage: outputtbl2_n6 PARTITION(ds=2008-04-08).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: outputtbl2_n6 PARTITION(ds=2008-04-08).values EXPRESSION [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
@@ -453,6 +455,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@outputtbl3_n3
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1, Stage-2
@@ -579,6 +582,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@outputtbl3_n3
 POSTHOOK: Output: default@outputtbl3_n3@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@outputtbl3_n3@ds=2008-04-08/hr=12
 POSTHOOK: Lineage: outputtbl3_n3 PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]

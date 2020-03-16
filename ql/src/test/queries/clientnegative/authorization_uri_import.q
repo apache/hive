@@ -1,3 +1,4 @@
+--! qt:disabled:disabled for a long time now...dont know why
 set hive.mapred.mode=nonstrict;
 set hive.test.authz.sstd.hs2.mode=true;
 set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactoryForTest;

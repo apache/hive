@@ -1,3 +1,4 @@
+--! qt:disabled:Disabled in HIVE-20322
 
 SET hive.explain.user=false;
 SET hive.ctas.external.tables=true;

@@ -212,6 +212,7 @@ POSTHOOK: Input: default@intermediate_n2
 POSTHOOK: Input: default@intermediate_n2@p=455
 POSTHOOK: Input: default@intermediate_n2@p=456
 POSTHOOK: Input: default@intermediate_n2@p=457
+POSTHOOK: Output: default@bucket1_mm
 POSTHOOK: Output: default@bucket1_mm@key2=-1
 POSTHOOK: Output: default@bucket1_mm@key2=1
 POSTHOOK: Output: default@bucket1_mm@key2=101

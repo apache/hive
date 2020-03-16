@@ -110,6 +110,7 @@ POSTHOOK: query: insert overwrite table src_p2 partition(`!@#$%^&*()_q`)
 select key, value as `!@#$%^&*()_q` from src where key < '200'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+POSTHOOK: Output: default@src_p2
 POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_0
 POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_10
 POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_100

@@ -469,6 +469,7 @@ PREHOOK: Output: default@tmp_src_part
 POSTHOOK: query: EXPLAIN INSERT INTO TABLE tmp_src_part PARTITION (d) SELECT * FROM tmp_src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_src
+POSTHOOK: Output: default@tmp_src_part
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -571,6 +572,7 @@ PREHOOK: Output: default@tmp_src_part
 POSTHOOK: query: INSERT INTO TABLE tmp_src_part PARTITION (d) SELECT * FROM tmp_src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_src
+POSTHOOK: Output: default@tmp_src_part
 POSTHOOK: Output: default@tmp_src_part@d=1
 POSTHOOK: Output: default@tmp_src_part@d=2
 POSTHOOK: Output: default@tmp_src_part@d=3

@@ -1491,6 +1491,7 @@ SELECT s1.f1 AS f1, S1.f2 AS f2, s1.f6 AS f3
 FROM nested_tbl_1_n1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nested_tbl_1_n1
+POSTHOOK: Output: default@nested_tbl_3_n1
 POSTHOOK: Output: default@nested_tbl_3_n1@f3=4
 POSTHOOK: Lineage: nested_tbl_3_n1 PARTITION(f3=4).f1 EXPRESSION [(nested_tbl_1_n1)nested_tbl_1_n1.FieldSchema(name:s1, type:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, comment:null), ]
 POSTHOOK: Lineage: nested_tbl_3_n1 PARTITION(f3=4).f2 EXPRESSION [(nested_tbl_1_n1)nested_tbl_1_n1.FieldSchema(name:s1, type:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, comment:null), ]

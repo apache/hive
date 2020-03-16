@@ -1,3 +1,4 @@
+--! qt:disabled:Disabled in HIVE-19509
 set hive.explain.user=false;
 set hive.fetch.task.conversion=none;
 set hive.mapred.mode=nonstrict;

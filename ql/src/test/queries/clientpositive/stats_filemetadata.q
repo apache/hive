@@ -1,3 +1,4 @@
+--! qt:disabled:disabled by 98c5b637df2d in 2017
 set hive.mapred.mode=nonstrict;
 
 CREATE TABLE many_files(key string, value string)

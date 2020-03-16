@@ -626,6 +626,7 @@ PREHOOK: Output: default@io_test_acid_part
 POSTHOOK: query: insert overwrite table io_test_acid_part partition (c) select a, b, c from io_test_text_1 where c is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@io_test_text_1
+POSTHOOK: Output: default@io_test_acid_part
 POSTHOOK: Output: default@io_test_acid_part@c=1111
 POSTHOOK: Output: default@io_test_acid_part@c=2222
 POSTHOOK: Lineage: io_test_acid_part PARTITION(c=1111).a SIMPLE [(io_test_text_1)io_test_text_1.FieldSchema(name:a, type:int, comment:null), ]
@@ -654,6 +655,7 @@ PREHOOK: Output: default@io_test_acid_part
 POSTHOOK: query: insert overwrite table io_test_acid_part partition (c) select a, b, c from io_test_text_1 where c is null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@io_test_text_1
+POSTHOOK: Output: default@io_test_acid_part
 POSTHOOK: Output: default@io_test_acid_part@c=1111
 POSTHOOK: Output: default@io_test_acid_part@c=2222
 POSTHOOK: Output: default@io_test_acid_part@c=__HIVE_DEFAULT_PARTITION__
@@ -689,6 +691,7 @@ PREHOOK: Output: default@io_test_acid_part
 POSTHOOK: query: insert overwrite table io_test_acid_part partition (c) select a, b, c from io_test_text_2 where b=11 or b=44 or b=99
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@io_test_text_2
+POSTHOOK: Output: default@io_test_acid_part
 POSTHOOK: Output: default@io_test_acid_part@c=1111
 POSTHOOK: Output: default@io_test_acid_part@c=2222
 POSTHOOK: Output: default@io_test_acid_part@c=4444
@@ -729,6 +732,7 @@ PREHOOK: Output: default@io_test_acid_part
 POSTHOOK: query: insert overwrite table io_test_acid_part partition (c) select a, b, c from io_test_text_2 where b=99
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@io_test_text_2
+POSTHOOK: Output: default@io_test_acid_part
 POSTHOOK: Output: default@io_test_acid_part@c=1111
 POSTHOOK: Output: default@io_test_acid_part@c=2222
 POSTHOOK: Output: default@io_test_acid_part@c=4444
@@ -789,6 +793,7 @@ insert overwrite table io_test_acid_part partition (c) select a, b, c where c is
 insert overwrite table io_test_acid_part partition (c) select a, b, c where c is null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@io_test_text_1
+POSTHOOK: Output: default@io_test_acid_part
 POSTHOOK: Output: default@io_test_acid_part@c=1111
 POSTHOOK: Output: default@io_test_acid_part@c=2222
 POSTHOOK: Output: default@io_test_acid_part@c=__HIVE_DEFAULT_PARTITION__
@@ -830,6 +835,7 @@ insert overwrite table io_test_acid_part partition (c) select a, b, c where b=99
 insert overwrite table io_test_acid_part partition (c) select a, b, c where b=44
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@io_test_text_1
+POSTHOOK: Output: default@io_test_acid_part
 POSTHOOK: Output: default@io_test_acid_part@c=1111
 POSTHOOK: Output: default@io_test_acid_part@c=2222
 POSTHOOK: Output: default@io_test_acid_part@c=__HIVE_DEFAULT_PARTITION__
@@ -869,6 +875,7 @@ insert overwrite table io_test_acid_part partition (c) select a, b, c where b=44
 insert overwrite table io_test_acid_part partition (c) select a, b, c where b=9
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@io_test_text_2
+POSTHOOK: Output: default@io_test_acid_part
 POSTHOOK: Output: default@io_test_acid_part@c=1111
 POSTHOOK: Output: default@io_test_acid_part@c=2222
 POSTHOOK: Output: default@io_test_acid_part@c=4444
@@ -928,6 +935,7 @@ insert overwrite table io_test_acid_part partition (c) select a, b, c where c is
 insert overwrite table io_test_acid_part partition (c) select a, b, c where c is null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@io_test_text_2
+POSTHOOK: Output: default@io_test_acid_part
 POSTHOOK: Output: default@io_test_acid_part@c=1111
 POSTHOOK: Output: default@io_test_acid_part@c=2222
 POSTHOOK: Output: default@io_test_acid_part@c=4444
@@ -987,6 +995,7 @@ insert overwrite table io_test_acid_part partition (c) select a, b, c where b=33
 insert overwrite table io_test_acid_part partition (c) select a, b, c where b=88
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@io_test_text_2
+POSTHOOK: Output: default@io_test_acid_part
 POSTHOOK: Output: default@io_test_acid_part@c=1111
 POSTHOOK: Output: default@io_test_acid_part@c=2222
 POSTHOOK: Lineage: io_test_acid_part PARTITION(c=1111).a SIMPLE [(io_test_text_2)io_test_text_2.FieldSchema(name:a, type:int, comment:null), ]
@@ -1117,6 +1126,7 @@ insert overwrite table io_test_acid_part partition (pc1, pc2, pc3)
   where a=111
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@io_test_text_3
+POSTHOOK: Output: default@io_test_acid_part
 POSTHOOK: Output: default@io_test_acid_part@pc1=11/pc2=11/pc3=11
 POSTHOOK: Output: default@io_test_acid_part@pc1=11/pc2=11/pc3=22
 POSTHOOK: Output: default@io_test_acid_part@pc1=11/pc2=11/pc3=__HIVE_DEFAULT_PARTITION__

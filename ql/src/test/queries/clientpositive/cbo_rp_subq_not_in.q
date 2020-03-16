@@ -1,3 +1,4 @@
+--! qt:disabled:disabled by 382dc2084224 in 2016
 set hive.mapred.mode=nonstrict;
 set hive.cbo.enable=true;
 set hive.cbo.returnpath.hiveop=true;

@@ -96,6 +96,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@testpartbucket
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -216,6 +217,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@testpartbucket
 POSTHOOK: Output: default@testpartbucket@ds=hello/hr=world
 POSTHOOK: Lineage: testpartbucket PARTITION(ds=hello,hr=world).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: testpartbucket PARTITION(ds=hello,hr=world).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]

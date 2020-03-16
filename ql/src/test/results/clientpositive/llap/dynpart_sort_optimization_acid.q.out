@@ -25,6 +25,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@acid_part
 POSTHOOK: Output: default@acid_part@ds=2008-04-08
 POSTHOOK: Output: default@acid_part@ds=2008-04-09
 POSTHOOK: Lineage: acid_part PARTITION(ds=2008-04-08).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -326,6 +327,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@acid_part_sdpo
 POSTHOOK: Output: default@acid_part_sdpo@ds=2008-04-08
 POSTHOOK: Output: default@acid_part_sdpo@ds=2008-04-09
 POSTHOOK: Lineage: acid_part_sdpo PARTITION(ds=2008-04-08).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -627,6 +629,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@acid_2l_part
 POSTHOOK: Output: default@acid_2l_part@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@acid_2l_part@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@acid_2l_part@ds=2008-04-09/hr=11
@@ -1087,6 +1090,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@acid_2l_part_sdpo
 POSTHOOK: Output: default@acid_2l_part_sdpo@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@acid_2l_part_sdpo@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@acid_2l_part_sdpo@ds=2008-04-09/hr=11
@@ -1546,6 +1550,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@acid_2l_part_sdpo_no_cp
 POSTHOOK: Output: default@acid_2l_part_sdpo_no_cp@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@acid_2l_part_sdpo_no_cp@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@acid_2l_part_sdpo_no_cp@ds=2008-04-09/hr=11

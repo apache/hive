@@ -122,6 +122,7 @@ POSTHOOK: Input: default@intermediate_n0@p=456
 POSTHOOK: Input: default@intermediate_n0@p=457
 POSTHOOK: Input: default@intermediate_n0@p=458
 POSTHOOK: Input: default@intermediate_n0@p=459
+POSTHOOK: Output: default@dp_mm
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -213,6 +214,7 @@ POSTHOOK: Input: default@intermediate_n0@p=456
 POSTHOOK: Input: default@intermediate_n0@p=457
 POSTHOOK: Input: default@intermediate_n0@p=458
 POSTHOOK: Input: default@intermediate_n0@p=459
+POSTHOOK: Output: default@dp_mm
 POSTHOOK: Output: default@dp_mm@val=val_0
 POSTHOOK: Output: default@dp_mm@val=val_10
 POSTHOOK: Output: default@dp_mm@val=val_100

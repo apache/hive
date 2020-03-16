@@ -67,6 +67,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@transactional_insert_only_table
 POSTHOOK: Output: default@transactional_insert_only_table@ds=2008-04-08
 POSTHOOK: Output: default@transactional_insert_only_table@ds=2008-04-09
 POSTHOOK: Lineage: transactional_insert_only_table PARTITION(ds=2008-04-08).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]

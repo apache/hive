@@ -141,6 +141,7 @@ POSTHOOK: query: insert overwrite table ctas_part partition (modkey)
 select key, value, ceil(key / 100) from src where key is not null limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ctas_part
 POSTHOOK: Output: default@ctas_part@modkey=1
 POSTHOOK: Output: default@ctas_part@modkey=2
 POSTHOOK: Output: default@ctas_part@modkey=3

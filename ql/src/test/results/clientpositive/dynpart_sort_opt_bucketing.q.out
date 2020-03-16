@@ -70,6 +70,7 @@ POSTHOOK: query: insert overwrite table t1_n147 partition(e) select a,b,c,d,'epa
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1_staging
 POSTHOOK: Input: default@t1_staging@e=epart
+POSTHOOK: Output: default@t1_n147
 POSTHOOK: Output: default@t1_n147@e=epart
 POSTHOOK: Lineage: t1_n147 PARTITION(e=epart).a SIMPLE [(t1_staging)t1_staging.FieldSchema(name:a, type:string, comment:null), ]
 POSTHOOK: Lineage: t1_n147 PARTITION(e=epart).b SIMPLE [(t1_staging)t1_staging.FieldSchema(name:b, type:int, comment:null), ]
@@ -173,6 +174,7 @@ POSTHOOK: query: insert overwrite table t1_n147 partition(e) select a,b,c,d,'epa
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1_staging
 POSTHOOK: Input: default@t1_staging@e=epart
+POSTHOOK: Output: default@t1_n147
 POSTHOOK: Output: default@t1_n147@e=epart
 POSTHOOK: Lineage: t1_n147 PARTITION(e=epart).a SIMPLE [(t1_staging)t1_staging.FieldSchema(name:a, type:string, comment:null), ]
 POSTHOOK: Lineage: t1_n147 PARTITION(e=epart).b SIMPLE [(t1_staging)t1_staging.FieldSchema(name:b, type:int, comment:null), ]
@@ -264,6 +266,7 @@ POSTHOOK: query: explain INSERT INTO TABLE dynpart_sort_opt_bucketing_test PARTI
                 '-5', 'single family')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@dynpart_sort_opt_bucketing_test
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -333,6 +336,7 @@ POSTHOOK: query: INSERT INTO TABLE dynpart_sort_opt_bucketing_test PARTITION (ca
                 '-5', 'single family')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@dynpart_sort_opt_bucketing_test
 POSTHOOK: Output: default@dynpart_sort_opt_bucketing_test@ca_location_type=single family
 POSTHOOK: Lineage: dynpart_sort_opt_bucketing_test PARTITION(ca_location_type=single family).ca_address_id SCRIPT []
 POSTHOOK: Lineage: dynpart_sort_opt_bucketing_test PARTITION(ca_location_type=single family).ca_address_sk SCRIPT []

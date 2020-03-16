@@ -27,6 +27,7 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@src_txn
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partition_mv_sdp
+POSTHOOK: Output: default@partition_mv_sdp
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

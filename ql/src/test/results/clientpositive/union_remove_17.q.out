@@ -43,6 +43,7 @@ FROM (
 ) a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@inputtbl1_n3
+POSTHOOK: Output: default@outputtbl1_n4
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -125,6 +126,7 @@ FROM (
 ) a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@inputtbl1_n3
+POSTHOOK: Output: default@outputtbl1_n4
 POSTHOOK: Output: default@outputtbl1_n4@ds=1
 POSTHOOK: Output: default@outputtbl1_n4@ds=2
 POSTHOOK: Lineage: outputtbl1_n4 PARTITION(ds=1).key EXPRESSION [(inputtbl1_n3)inputtbl1_n3.FieldSchema(name:key, type:string, comment:null), ]

@@ -141,6 +141,7 @@ POSTHOOK: Input: default@srcpart_merge_dp_n2@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart_merge_dp_n2@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart_merge_dp_n2@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart_merge_dp_n2@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@merge_dynamic_part_n2
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -283,6 +284,7 @@ POSTHOOK: Input: default@srcpart_merge_dp_n2@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart_merge_dp_n2@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart_merge_dp_n2@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart_merge_dp_n2@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@merge_dynamic_part_n2
 POSTHOOK: Output: default@merge_dynamic_part_n2@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@merge_dynamic_part_n2@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@merge_dynamic_part_n2@ds=2008-04-09/hr=11

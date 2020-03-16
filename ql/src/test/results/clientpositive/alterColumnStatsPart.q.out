@@ -212,6 +212,7 @@ PREHOOK: Output: default@p
 POSTHOOK: query: insert into p partition (c) values (2,3,4)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@p
 POSTHOOK: Output: default@p@c=4
 POSTHOOK: Lineage: p PARTITION(c=4).a SCRIPT []
 POSTHOOK: Lineage: p PARTITION(c=4).b SCRIPT []
@@ -222,6 +223,7 @@ PREHOOK: Output: default@p
 POSTHOOK: query: insert into p partition (c) values (4,5,6)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@p
 POSTHOOK: Output: default@p@c=6
 POSTHOOK: Lineage: p PARTITION(c=6).a SCRIPT []
 POSTHOOK: Lineage: p PARTITION(c=6).b SCRIPT []

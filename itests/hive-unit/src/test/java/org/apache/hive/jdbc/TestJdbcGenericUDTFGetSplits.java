@@ -37,8 +37,8 @@ import static org.junit.Assert.assertTrue;
  */
 public class TestJdbcGenericUDTFGetSplits extends AbstractTestJdbcGenericUDTFGetSplits {
 
-  @Ignore("HIVE-23394")
   @Test(timeout = 200000)
+  @Ignore("HIVE-23394")
   public void testGenericUDTFOrderBySplitCount1() throws Exception {
     super.testGenericUDTFOrderBySplitCount1("get_splits", new int[]{10, 1, 0, 1, 10});
   }

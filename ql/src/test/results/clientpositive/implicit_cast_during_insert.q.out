@@ -21,6 +21,7 @@ insert overwrite table implicit_cast_during_insert partition (p1)
   distribute by key1 sort by key1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+POSTHOOK: Output: default@implicit_cast_during_insert
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -114,6 +115,7 @@ POSTHOOK: query: insert overwrite table implicit_cast_during_insert partition (p
   distribute by key1 sort by key1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+POSTHOOK: Output: default@implicit_cast_during_insert
 POSTHOOK: Output: default@implicit_cast_during_insert@p1=0
 POSTHOOK: Lineage: implicit_cast_during_insert PARTITION(p1=0).c1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: implicit_cast_during_insert PARTITION(p1=0).c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

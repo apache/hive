@@ -145,6 +145,7 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@emps_n30
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_part_n2
+POSTHOOK: Output: default@mv1_part_n2
 POSTHOOK: Output: default@mv1_part_n2@deptno=10
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(deptno=10).commission SIMPLE [(emps_n30)emps_n30.FieldSchema(name:commission, type:int, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(deptno=10).empid SIMPLE [(emps_n30)emps_n30.FieldSchema(name:empid, type:int, comment:null), ]
@@ -309,6 +310,7 @@ from emps_n30
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@emps_n30
 POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mv1_part_n2
 POSTHOOK: Output: default@mv1_part_n2
 POSTHOOK: Output: default@mv1_part_n2@deptno=10
 POSTHOOK: Output: default@mv1_part_n2@deptno=20
@@ -475,6 +477,7 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@emps_n30
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_part_n2
+POSTHOOK: Output: default@mv1_part_n2
 POSTHOOK: Output: default@mv1_part_n2@deptno=10
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(deptno=10).commission SIMPLE [(emps_n30)emps_n30.FieldSchema(name:commission, type:int, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(deptno=10).empid SIMPLE [(emps_n30)emps_n30.FieldSchema(name:empid, type:int, comment:null), ]
@@ -602,6 +605,7 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@emps_n30
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_part_n2
+POSTHOOK: Output: default@mv1_part_n2
 POSTHOOK: Output: default@mv1_part_n2@name=Bill
 POSTHOOK: Output: default@mv1_part_n2@name=Eric
 POSTHOOK: Output: default@mv1_part_n2@name=Sebastian
@@ -687,6 +691,7 @@ select name, salary from emps_n30 group by name, salary
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@emps_n30
 POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mv1_part_n2
 POSTHOOK: Output: default@mv1_part_n2
 POSTHOOK: Output: default@mv1_part_n2@name=Bill
 POSTHOOK: Output: default@mv1_part_n2@name=Eric
@@ -816,6 +821,7 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@emps_n30
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_part_n2
+POSTHOOK: Output: default@mv1_part_n2
 POSTHOOK: Output: default@mv1_part_n2@name=Bill
 POSTHOOK: Output: default@mv1_part_n2@name=Sebastian
 POSTHOOK: Output: default@mv1_part_n2@name=Theodore
@@ -938,6 +944,7 @@ from emps_n30 group by name, salary
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@emps_n30
 POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mv1_part_n2
 POSTHOOK: Output: default@mv1_part_n2
 POSTHOOK: Output: default@mv1_part_n2@name=Bill
 POSTHOOK: Output: default@mv1_part_n2@name=Eric

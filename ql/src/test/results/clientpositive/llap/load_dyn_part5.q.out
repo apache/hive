@@ -29,6 +29,7 @@ POSTHOOK: query: explain
 insert overwrite table nzhang_part5 partition (value) select key, value from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+POSTHOOK: Output: default@nzhang_part5
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -146,6 +147,7 @@ PREHOOK: Output: default@nzhang_part5
 POSTHOOK: query: insert overwrite table nzhang_part5 partition (value) select key, value from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+POSTHOOK: Output: default@nzhang_part5
 POSTHOOK: Output: default@nzhang_part5@value=val_0
 POSTHOOK: Output: default@nzhang_part5@value=val_10
 POSTHOOK: Output: default@nzhang_part5@value=val_100

@@ -1,3 +1,4 @@
+--! qt:disabled:disabled by e1ce9a23a704 in 2015
 set hive.merge.rcfile.block.level=false;
 set hive.exec.dynamic.partition=true;
 set mapred.max.split.size=100;

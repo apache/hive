@@ -41,15 +41,13 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
+@Description(
+        name = "first_value",
+        value = "_FUNC_(x)")
 @WindowFunctionDescription(
-  description = @Description(
-    name = "first_value",
-    value = "_FUNC_(x)"
-  ),
-  supportsWindow = true,
-  pivotResult = false,
-  impliesOrder = true
-)
+        supportsWindow = true,
+        pivotResult = false,
+        impliesOrder = true)
 public class GenericUDAFFirstValue extends AbstractGenericUDAFResolver {
 
   static final Logger LOG = LoggerFactory.getLogger(GenericUDAFFirstValue.class.getName());

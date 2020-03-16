@@ -72,6 +72,7 @@ PREHOOK: Output: default@loc_orc_n4
 POSTHOOK: query: insert overwrite table loc_orc_n4 partition(year) select * from loc_staging_n4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@loc_staging_n4
+POSTHOOK: Output: default@loc_orc_n4
 POSTHOOK: Output: default@loc_orc_n4@year=2001
 POSTHOOK: Output: default@loc_orc_n4@year=__HIVE_DEFAULT_PARTITION__
 POSTHOOK: Lineage: loc_orc_n4 PARTITION(year=2001).locid SIMPLE [(loc_staging_n4)loc_staging_n4.FieldSchema(name:locid, type:int, comment:null), ]

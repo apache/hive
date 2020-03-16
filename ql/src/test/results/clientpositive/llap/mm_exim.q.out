@@ -118,6 +118,7 @@ POSTHOOK: Input: default@intermediate_n4
 POSTHOOK: Input: default@intermediate_n4@p=455
 POSTHOOK: Input: default@intermediate_n4@p=456
 POSTHOOK: Input: default@intermediate_n4@p=457
+POSTHOOK: Output: default@intermmediate
 POSTHOOK: Output: default@intermmediate@p=455
 POSTHOOK: Output: default@intermmediate@p=456
 POSTHOOK: Output: default@intermmediate@p=457

@@ -43,6 +43,7 @@ FROM (
 ) a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@inputtbl1_n22
+POSTHOOK: Output: default@outputtbl1_n30
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1, Stage-2
@@ -170,6 +171,7 @@ FROM (
 ) a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@inputtbl1_n22
+POSTHOOK: Output: default@outputtbl1_n30
 POSTHOOK: Output: default@outputtbl1_n30@ds=11
 POSTHOOK: Output: default@outputtbl1_n30@ds=12
 POSTHOOK: Output: default@outputtbl1_n30@ds=13

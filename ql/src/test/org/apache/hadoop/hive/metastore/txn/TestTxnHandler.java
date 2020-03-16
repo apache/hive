@@ -1194,7 +1194,7 @@ public class TestTxnHandler {
       LockRequest req = new LockRequest(components, "me", "localhost");
       LockResponse res = txnHandler.lock(req);
       assertTrue(res.getState() == LockState.ACQUIRED);
-      Thread.sleep(10);
+      Thread.sleep(1000);
       txnHandler.performTimeOuts();
       txnHandler.checkLock(new CheckLockRequest(res.getLockid()));
       fail("Told there was a lock, when it should have timed out.");
@@ -1209,7 +1209,7 @@ public class TestTxnHandler {
     long timeout = txnHandler.setTimeout(1);
     try {
       txnHandler.openTxns(new OpenTxnRequest(503, "me", "localhost"));
-      Thread.sleep(10);
+      Thread.sleep(1000);
       txnHandler.performTimeOuts();
       GetOpenTxnsInfoResponse rsp = txnHandler.getOpenTxnsInfo();
       int numAborted = 0;
@@ -1232,7 +1232,7 @@ public class TestTxnHandler {
       request.setReplPolicy("default.*");
       request.setReplSrcTxnIds(response.getTxn_ids());
       OpenTxnsResponse responseRepl = txnHandler.openTxns(request);
-      Thread.sleep(10);
+      Thread.sleep(1000);
       txnHandler.performTimeOuts();
       GetOpenTxnsInfoResponse rsp = txnHandler.getOpenTxnsInfo();
       int numAborted = 0;

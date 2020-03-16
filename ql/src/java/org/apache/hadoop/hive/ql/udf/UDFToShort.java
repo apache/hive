@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastDecimalToLong;
@@ -44,6 +45,23 @@ import org.apache.hadoop.io.Text;
  */
 @VectorizedExpressions({CastTimestampToLong.class, CastDoubleToLong.class,
     CastDecimalToLong.class, CastStringToLong.class})
+@Description(
+        name = "bigint",
+        value = "_FUNC_(x) - converts it's parameter to _FUNC_",
+        extended =
+                "- x is NULL -> NULL\n" +
+                "- byte, short, integer, long, timestamp:\n" +
+                "  x fits into the type _FUNC_ -> integer part of x\n" +
+                "  undefined otherwise\n" +
+                "- boolean:\n" +
+                "  true  -> 1\n" +
+                "  false -> 0\n" +
+                "- string:\n" +
+                "  x is a valid integer -> x\n" +
+                "  NULL otherwise\n" +
+                "Example:\n "
+                + "  > SELECT _FUNC_(true);\n"
+                + "  1")
 public class UDFToShort extends UDF {
   ShortWritable shortWritable = new ShortWritable();
 
