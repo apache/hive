@@ -8616,7 +8616,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventType.INSERT, event);
         MetaStoreListenerNotifier.notifyEvent(listeners, EventType.INSERT, event);
 
-        return new FireEventResponse();
+        FireEventResponse response = new FireEventResponse();
+        if (event.getParameters() != null && event.getParameters()
+            .containsKey(
+                MetaStoreEventListenerConstants.DB_NOTIFICATION_EVENT_ID_KEY_NAME)) {
+          response.setEventId(Long.valueOf(event.getParameters()
+              .get(MetaStoreEventListenerConstants.DB_NOTIFICATION_EVENT_ID_KEY_NAME)));
+        }
+        return response;
 
       default:
         throw new TException("Event type " + rqst.getData().getSetField().toString()

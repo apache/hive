@@ -79,7 +79,8 @@ public class HiveRelFactories {
 
   public static final RelBuilderFactory HIVE_BUILDER =
       HiveRelBuilder.proto(
-          Contexts.of(HIVE_PROJECT_FACTORY,
+          Contexts.of(
+              HIVE_PROJECT_FACTORY,
               HIVE_FILTER_FACTORY,
               HIVE_JOIN_FACTORY,
               HIVE_SEMI_JOIN_FACTORY,

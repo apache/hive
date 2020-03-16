@@ -192,7 +192,7 @@ public final class UDAFExampleMaxMinNUtil {
         break;
       }
       if (p2 < n2) {
-        if (p1 == n1 || comparator.compare(a2.get(p2), a1.get(p1)) < 0) {
+        if (p1 == n1 || comparator.compare(a2.get(p2), a1.get(p1)) <= 0) {
           output.add(a2.get(p2++));
         }
       }
