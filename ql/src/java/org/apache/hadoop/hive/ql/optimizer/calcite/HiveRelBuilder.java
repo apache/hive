@@ -139,6 +139,10 @@ public class HiveRelBuilder extends RelBuilder {
   }
 
   public static SqlAggFunction getRollup(SqlAggFunction aggregation) {
+    IRollupableAggregate x = aggregation.unwrap(IRollupableAggregate.class);
+    if (x != null) {
+      return x.getAggregate();
+    }
     if (aggregation instanceof HiveSqlSumAggFunction
         || aggregation instanceof HiveSqlMinMaxAggFunction
         || aggregation instanceof HiveSqlSumEmptyIsZeroAggFunction) {
