@@ -83,7 +83,7 @@ public class Utils {
     }
   }
 
-  public static void write(Path outputFile, HiveConf hiveConf)
+  public static void create(Path outputFile, HiveConf hiveConf)
           throws SemanticException {
     Retry<Void> retriable = new Retry<Void>(IOException.class) {
       @Override

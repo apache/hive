@@ -1321,7 +1321,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .dump(primaryDbName);
 
     testMoveOptimization(primaryDbName, replicatedDbName, replicatedDbName_CM, "t2",
-            "ADD_PARTITION");
+            "ADD_PARTITION", tuple);
   }
 
   @Test
@@ -1348,7 +1348,8 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .run("insert overwrite table t1 select * from t2")
             .dump(primaryDbName, Collections.emptyList());
 
-    testMoveOptimization(primaryDbName, replicatedDbName, replicatedDbName_CM, "t1", "ADD_PARTITION");
+    testMoveOptimization(primaryDbName, replicatedDbName, replicatedDbName_CM, "t1", "ADD_PARTITION",
+            tuple);
   }
 
   @Test
@@ -1372,11 +1373,11 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .run("insert into table t2 partition(country='india') values ('bangalore')")
             .dump(primaryDbName, Collections.emptyList());
 
-    testMoveOptimization(primaryDbName, replicatedDbName, replicatedDbName_CM, "t2", "INSERT");
+    testMoveOptimization(primaryDbName, replicatedDbName, replicatedDbName_CM, "t2", "INSERT", tuple);
   }
 
   private void testMoveOptimization(String primaryDb, String replicaDb, String replicatedDbName_CM,
-                                    String tbl,  String eventType) throws Throwable {
+                                    String tbl,  String eventType, WarehouseInstance.Tuple tuple) throws Throwable {
     List<String> withConfigs =
         Collections.singletonList("'hive.repl.enable.move.optimization'='true'");
 
@@ -1412,6 +1413,12 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
 
     primary.run("use " + primaryDb)
             .run("drop table " + tbl);
+
+    //delete load ack to reuse the dump
+    new Path(tuple.dumpLocation).getFileSystem(conf).delete(new Path(tuple.dumpLocation
+            + Path.SEPARATOR + ReplUtils.REPL_HIVE_BASE_DIR + Path.SEPARATOR
+            + ReplUtils.LOAD_ACKNOWLEDGEMENT), true);
+
 
     InjectableBehaviourObjectStore.setAddNotificationModifier(callerVerifier);
     try {

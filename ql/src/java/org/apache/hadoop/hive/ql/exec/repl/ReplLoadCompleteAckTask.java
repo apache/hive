@@ -41,7 +41,7 @@ public class ReplLoadCompleteAckTask extends Task<ReplLoadCompleteAckWork> imple
   public int execute() {
     try {
       Path ackPath = new Path(work.getDumpPath(), ReplUtils.LOAD_ACKNOWLEDGEMENT);
-      Utils.write(ackPath, conf);
+      Utils.create(ackPath, conf);
     } catch (SemanticException e) {
       setException(e);
       return ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();

@@ -53,6 +53,8 @@ public class TestReplicationScenariosAcidTablesBootstrap
   private static List<String> dumpWithAcidBootstrapClause = Arrays.asList(
           "'" + ReplUtils.REPL_DUMP_INCLUDE_ACID_TABLES + "'='true'",
           "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES + "'='true'");
+  private static List<String> dumpWithAcidClause = Arrays.asList(
+          "'" + ReplUtils.REPL_DUMP_INCLUDE_ACID_TABLES + "'='true'");
 
   @BeforeClass
   public static void classLevelSetup() throws Exception {
@@ -136,43 +138,19 @@ public class TestReplicationScenariosAcidTablesBootstrap
     } finally {
       InjectableBehaviourObjectStore.resetAlterTableModifier();
     }
+    //Load again should succeed as checkpointing is in place
+    replica.load(replicatedDbName, primaryDbName);
+    verifyIncLoad(replicatedDbName, incDump.lastReplicationId);
 
     prepareInc2AcidData(primaryDbName, primary.hiveConf);
     prepareInc2NonAcidData(primaryDbName, primary.hiveConf);
     LOG.info(testName.getMethodName() + ": second incremental dump with acid table bootstrap");
     WarehouseInstance.Tuple inc2Dump = primary.run("use " + primaryDbName)
-            .dump(primaryDbName, dumpWithAcidBootstrapClause);
-
-    // Set incorrect bootstrap dump to clean tables. Here, used the full bootstrap dump which is invalid.
-    // So, REPL LOAD fails.
-    List<String> loadWithClause = Collections.singletonList(
-            "'" + ReplUtils.REPL_CLEAN_TABLES_FROM_BOOTSTRAP_CONFIG + "'='"
-            + bootstrapDump.dumpLocation + "'");
-    LOG.info(testName.getMethodName()
-            + ": trying to load second incremental dump with wrong bootstrap dump "
-            + " specified for cleaning ACID tables. Should fail.");
-    replica.loadFailure(replicatedDbName, primaryDbName, loadWithClause);
-
-    // Set previously failed bootstrap dump to clean-up. Now, new bootstrap should overwrite the old one.
-    loadWithClause = Collections.singletonList(
-            "'" + ReplUtils.REPL_CLEAN_TABLES_FROM_BOOTSTRAP_CONFIG + "'='"
-                    + incDump.dumpLocation + "'");
-
-    LOG.info(testName.getMethodName()
-            + ": trying to load second incremental dump with correct bootstrap dump "
-            + "specified for cleaning ACID tables. Should succeed.");
-    replica.load(replicatedDbName, primaryDbName, loadWithClause);
-    verifyInc2Load(replicatedDbName, inc2Dump.lastReplicationId);
-
-    // Once the REPL LOAD is successful, the this config should be unset or else, the subsequent REPL LOAD
-    // will also drop those tables which will cause data loss.
-    loadWithClause = Collections.emptyList();
-
-    // Verify if bootstrapping with same dump is idempotent and return same result
+            .dump(primaryDbName, dumpWithAcidClause);
     LOG.info(testName.getMethodName()
             + ": trying to load second incremental dump (with acid bootstrap) again."
             + " Should succeed.");
-    replica.load(replicatedDbName, primaryDbName, loadWithClause);
+    replica.load(replicatedDbName, primaryDbName);
     verifyInc2Load(replicatedDbName, inc2Dump.lastReplicationId);
   }
 

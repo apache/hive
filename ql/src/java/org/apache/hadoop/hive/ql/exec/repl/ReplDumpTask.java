@@ -161,7 +161,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   private void deleteAllPreviousDumpMeta(Path dumpRoot, Path currentDumpPath) throws IOException {
     FileSystem fs = dumpRoot.getFileSystem(conf);
     if (fs.exists(dumpRoot)) {
-      FileStatus[] statuses = fs.listStatus(dumpRoot, path -> !path.equals(currentDumpPath));
+      FileStatus[] statuses = fs.listStatus(dumpRoot,
+              path -> !path.equals(currentDumpPath) && !path.toUri().getPath().equals(currentDumpPath.toString()));
       for (FileStatus status : statuses) {
         fs.delete(status.getPath(), true);
       }
@@ -170,7 +171,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
 
   private void writeDumpCompleteAck(Path currentDumpPath) throws SemanticException {
     Path ackPath = new Path(currentDumpPath, ReplUtils.DUMP_ACKNOWLEDGEMENT);
-    Utils.write(ackPath, conf);
+    Utils.create(ackPath, conf);
   }
 
   private Long getEventFromPreviousDumpMetadata(Path previousDumpPath) throws SemanticException {
@@ -209,16 +210,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       return true;
     } else {
       FileSystem fs = previousDumpPath.getFileSystem(conf);
-      if (fs.exists(previousDumpPath)) {
-        FileStatus[] latestUpdateStatuses = fs.listStatus(previousDumpPath);
-        for (FileStatus status : latestUpdateStatuses) {
-          if (status.getPath().getName().equalsIgnoreCase(ReplUtils.LOAD_ACKNOWLEDGEMENT)) {
-            return true;
-          }
-        }
-      }
+      return fs.exists(new Path(previousDumpPath, ReplUtils.LOAD_ACKNOWLEDGEMENT));
     }
-    return false;
   }
 
   private void prepareReturnValues(List<String> values) throws SemanticException {
