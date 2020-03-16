@@ -3927,7 +3927,7 @@ public class HiveConf extends Configuration {
         "The default value is true."),
     HIVE_VECTORIZATION_GROUPBY_COMPLEX_TYPES_ENABLED("hive.vectorized.groupby.complex.types.enabled", true,
         "This flag should be set to true to enable group by vectorization\n" +
-        "of aggregations that use complex types.\n",
+        "of aggregations that use complex types.\n" +
         "For example, AVG uses a complex type (STRUCT) for partial aggregation results" +
         "The default value is true."),
     HIVE_VECTORIZATION_ROW_IDENTIFIER_ENABLED("hive.vectorized.row.identifier.enabled", true,
