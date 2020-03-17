@@ -316,18 +316,8 @@ public class TestReplicationScenarios {
 
     FileSystem fs = new Path(bootstrapDump.dumpLocation).getFileSystem(hconf);
     Path dumpPath = new Path(bootstrapDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
-    boolean dumpAckFound = false;
-    boolean loadAckFound = false;
-    for (FileStatus status : fs.listStatus(dumpPath)) {
-      if (status.getPath().getName().equalsIgnoreCase(ReplUtils.DUMP_ACKNOWLEDGEMENT)) {
-        dumpAckFound = true;
-      }
-      if (status.getPath().getName().equalsIgnoreCase(ReplUtils.LOAD_ACKNOWLEDGEMENT)) {
-        loadAckFound = true;
-      }
-    }
-    assertTrue(dumpAckFound);
-    assertTrue(loadAckFound);
+    assertTrue(fs.exists(new Path(dumpPath, ReplUtils.DUMP_ACKNOWLEDGEMENT)));
+    assertTrue(fs.exists(new Path(dumpPath, ReplUtils.LOAD_ACKNOWLEDGEMENT)));
 
     verifyRun("SELECT * from " + replicatedDbName + ".unptned", unptn_data, driverMirror);
     verifyRun("SELECT a from " + replicatedDbName + ".ptned WHERE b=1", ptn_data_1, driverMirror);
@@ -861,24 +851,9 @@ public class TestReplicationScenarios {
     // Perform REPL-DUMP/LOAD
     Tuple incrementalDump = incrementalLoadAndVerify(dbName, replDbName);
     FileSystem fs = new Path(bootstrapDump.dumpLocation).getFileSystem(hconf);
-    boolean dumpAckFound = false;
-    boolean loadAckFound = false;
-    assertFalse(fs.exists(new Path(bootstrapDump.dumpLocation)));
-    fs = new Path(incrementalDump.dumpLocation).getFileSystem(hconf);
     Path dumpPath = new Path(incrementalDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
-    dumpAckFound = false;
-    loadAckFound = false;
-    for (FileStatus status : fs.listStatus(dumpPath)) {
-      if (status.getPath().getName().equalsIgnoreCase(ReplUtils.DUMP_ACKNOWLEDGEMENT)) {
-        dumpAckFound = true;
-      }
-      if (status.getPath().getName().equalsIgnoreCase(ReplUtils.LOAD_ACKNOWLEDGEMENT)) {
-        loadAckFound = true;
-      }
-    }
-
-    assertTrue(dumpAckFound);
-    assertTrue(loadAckFound);
+    assertTrue(fs.exists(new Path(dumpPath, ReplUtils.DUMP_ACKNOWLEDGEMENT)));
+    assertTrue(fs.exists(new Path(dumpPath, ReplUtils.LOAD_ACKNOWLEDGEMENT)));
 
     // VERIFY tables and partitions on destination for equivalence.
     verifyRun("SELECT * from " + replDbName + ".unptned_empty", empty, driverMirror);

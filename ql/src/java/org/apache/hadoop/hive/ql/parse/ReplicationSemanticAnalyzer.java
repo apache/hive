@@ -436,11 +436,9 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
       Path hiveDumpPath = new Path(latestUpdatedStatus.getPath(), ReplUtils.REPL_HIVE_BASE_DIR);
-      if (loadPathBase.getFileSystem(conf).exists(hiveDumpPath)) {
-        if (loadPathBase.getFileSystem(conf).exists(new Path(hiveDumpPath, ReplUtils.DUMP_ACKNOWLEDGEMENT))
-                && !loadPathBase.getFileSystem(conf).exists(new Path(hiveDumpPath, ReplUtils.LOAD_ACKNOWLEDGEMENT))) {
-          return hiveDumpPath;
-        }
+      if (loadPathBase.getFileSystem(conf).exists(new Path(hiveDumpPath, ReplUtils.DUMP_ACKNOWLEDGEMENT))
+              && !loadPathBase.getFileSystem(conf).exists(new Path(hiveDumpPath, ReplUtils.LOAD_ACKNOWLEDGEMENT))) {
+        return hiveDumpPath;
       }
     }
     return null;

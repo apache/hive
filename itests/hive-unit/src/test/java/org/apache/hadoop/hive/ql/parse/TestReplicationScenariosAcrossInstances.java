@@ -1091,9 +1091,15 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     String hiveDumpLocation = tuple.dumpLocation + File.separator + ReplUtils.REPL_HIVE_BASE_DIR;
     replica.verifyIfCkptSet(replicatedDbName, hiveDumpLocation);
 
+    // To retry with same dump delete the load ack
+    new Path(tuple.dumpLocation).getFileSystem(conf).delete(new Path(
+            hiveDumpLocation, ReplUtils.LOAD_ACKNOWLEDGEMENT), true);
     // Retry with same dump with which it was already loaded also fails.
     replica.loadFailure(replicatedDbName, primaryDbName);
 
+    // To retry with same dump delete the load ack
+    new Path(tuple.dumpLocation).getFileSystem(conf).delete(new Path(
+            hiveDumpLocation, ReplUtils.LOAD_ACKNOWLEDGEMENT), true);
     // Retry from same dump when the database is empty is also not allowed.
     replica.run("drop table t1")
             .run("drop table t2")

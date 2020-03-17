@@ -320,8 +320,10 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
   }
 
   private void createReplLoadCompleteAckTask() {
-    if ((work.isIncrementalLoad() && !work.incrementalLoadTasksBuilder().hasMoreWork() && !work.hasBootstrapLoadTasks())
-            || (!work.isIncrementalLoad() && !work.hasBootstrapLoadTasks())) {
+    if ((work.isIncrementalLoad() && !work.incrementalLoadTasksBuilder().hasMoreWork() && !work.hasBootstrapLoadTasks()
+            && !work.getPathsToCopyIterator().hasNext())
+            || (!work.isIncrementalLoad() && !work.hasBootstrapLoadTasks()
+            && !work.getPathsToCopyIterator().hasNext())) {
       //All repl load tasks are executed and status is 0, create the task to add the acknowledgement
       ReplLoadCompleteAckWork replLoadCompleteAckWork = new ReplLoadCompleteAckWork(work.dumpDirectory);
       Task<ReplLoadCompleteAckWork> loadCompleteAckWorkTask = TaskFactory.get(replLoadCompleteAckWork, conf);
