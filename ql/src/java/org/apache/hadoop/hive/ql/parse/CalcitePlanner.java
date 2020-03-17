@@ -210,6 +210,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRelDecorrelator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRelFieldTrimmer;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRemoveGBYSemiJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRemoveSqCountCheck;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRewriteCountDistinctToDataSketches;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRulesRegistry;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSemiJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSortJoinReduceRule;
@@ -240,7 +241,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.MaterializedViewR
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTBuilder;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter;
 import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
-import org.apache.hadoop.hive.ql.parse.type.JoinCondTypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.parse.type.JoinTypeCheckCtx;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.PlanModifierForReturnPath;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.RexNodeConverter;
@@ -1954,6 +1954,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
       generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
           HiveExceptRewriteRule.INSTANCE);
 
+      // ?
+      if (true/*FIXME*/) {
+        generatePartialProgram(program, true, HepMatchOrder.TOP_DOWN,
+            HiveRewriteCountDistinctToDataSketches.INSTANCE);
+      }
+
+
       //1. Distinct aggregate rewrite
       // Run this optimization early, since it is expanding the operator pipeline.
       if (!conf.getVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("mr") &&
@@ -2264,7 +2271,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.DEFAULT);
         RelMetadataQuery mq = RelMetadataQuery.instance();
         RelOptCost costOriginalPlan = mq.getCumulativeCost(calcitePreMVRewritingPlan);
-        final double factorSelectivity = (double) HiveConf.getFloatVar(
+        final double factorSelectivity = HiveConf.getFloatVar(
             conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REBUILD_INCREMENTAL_FACTOR);
         RelOptCost costRebuildPlan = mq.getCumulativeCost(basePlan).multiplyBy(factorSelectivity);
         if (costOriginalPlan.isLe(costRebuildPlan)) {
@@ -4682,7 +4689,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
           // 6.4 Build ExprNode corresponding to colums
           if (expr.getType() == HiveParser.TOK_ALLCOLREF) {
-            pos = genColListRegex(".*", expr.getChildCount() == 0 ? null : 
+            pos = genColListRegex(".*", expr.getChildCount() == 0 ? null :
                             getUnescapedName((ASTNode) expr.getChild(0)).toLowerCase(), expr, col_list,
                     excludedColumns, inputRR, starRR, pos, out_rwsch, qb.getAliases(), true);
             selectStar = true;
