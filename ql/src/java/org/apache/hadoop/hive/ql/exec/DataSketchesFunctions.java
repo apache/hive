@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
  */
 public class DataSketchesFunctions {
 
+  private static final String DATASKETCHES_PREFIX = "ds";
   private static final String DATA_TO_SKETCH = "sketch";
   private static final String SKETCH_TO_ESTIMATE_WITH_ERROR_BOUNDS = "estimate_bounds";
   private static final String SKETCH_TO_ESTIMATE = "estimate";
@@ -61,7 +62,7 @@ public class DataSketchesFunctions {
 
   public static void register(Registry system) {
     DataSketchesFunctions dsf = new DataSketchesFunctions(system);
-    String prefix = "ds";
+    String prefix = DATASKETCHES_PREFIX;
     dsf.registerHll(prefix);
     dsf.registerCpc(prefix);
     dsf.registerKll(prefix);
@@ -216,6 +217,10 @@ public class DataSketchesFunctions {
 
   private void registerUDTF(Class<? extends GenericUDTF> udtfClass, String name) {
     system.registerGenericUDTF(name, udtfClass);
+  }
+
+  public static boolean isUnionFunction(String udfName) {
+    return (udfName.startsWith(DATASKETCHES_PREFIX + "_") && udfName.endsWith("_" + UNION_SKETCH));
   }
 
 }

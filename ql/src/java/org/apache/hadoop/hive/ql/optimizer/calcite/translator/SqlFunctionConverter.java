@@ -37,6 +37,7 @@ import org.apache.calcite.sql.type.SqlReturnTypeInference;
 import org.apache.calcite.sql.type.SqlTypeFamily;
 import org.apache.calcite.util.Util;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.hive.ql.exec.DataSketchesFunctions;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -580,28 +581,21 @@ public class SqlFunctionConverter {
       ImmutableList<RelDataType> calciteArgTypes, RelDataType calciteRetType) {
     SqlAggFunction calciteAggFn = (SqlAggFunction) hiveToCalcite.get(hiveUdfName);
 
+    if (DataSketchesFunctions.isUnionFunction(hiveUdfName)) {
+      CalciteUDFInfo udfInfo = getUDFInfo(hiveUdfName, calciteArgTypes, calciteRetType);
+        calciteAggFn =
+            new HiveMergeablAggregate(
+              hiveUdfName,
+              SqlKind.OTHER_FUNCTION,
+              udfInfo.returnTypeInference,
+              udfInfo.operandTypeInference,
+              udfInfo.operandTypeChecker);
+    }
+
     if (calciteAggFn == null) {
       CalciteUDFInfo udfInfo = getUDFInfo(hiveUdfName, calciteArgTypes, calciteRetType);
 
       switch (hiveUdfName.toLowerCase()) {
-      case "sketchtoestimate":
-        calciteAggFn =
-            new HiveMergeablAggregate(
-                "sketchtoestimate",
-                SqlKind.REGR_SXX,
-            udfInfo.returnTypeInference,
-            udfInfo.operandTypeInference,
-                udfInfo.operandTypeChecker);
-        break;
-      case "datatosketch2":
-        calciteAggFn =
-            new HiveMergeablAggregate(
-                "datatosketch2",
-                SqlKind.REGR_SYY,
-            udfInfo.returnTypeInference,
-            udfInfo.operandTypeInference,
-                udfInfo.operandTypeChecker);
-        break;
       case "sum":
         calciteAggFn = new HiveSqlSumAggFunction(
             isDistinct,
