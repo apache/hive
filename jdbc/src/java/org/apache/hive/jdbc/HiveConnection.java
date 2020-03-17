@@ -533,7 +533,7 @@ public class HiveConnection implements java.sql.Connection {
     if (isCookieEnabled) {
       // Create a http client with a retry mechanism when the server returns a status code of 401.
       httpClientBuilder =
-          HttpClients.custom().setServiceUnavailableRetryStrategy(
+          HttpClients.custom().setDefaultCookieStore(cookieStore).setServiceUnavailableRetryStrategy(
               new ServiceUnavailableRetryStrategy() {
                 @Override
                 public boolean retryRequest(final HttpResponse response, final int executionCount,
