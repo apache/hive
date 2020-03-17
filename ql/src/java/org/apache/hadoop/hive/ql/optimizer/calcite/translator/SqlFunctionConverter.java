@@ -583,13 +583,12 @@ public class SqlFunctionConverter {
 
     if (DataSketchesFunctions.isUnionFunction(hiveUdfName)) {
       CalciteUDFInfo udfInfo = getUDFInfo(hiveUdfName, calciteArgTypes, calciteRetType);
-        calciteAggFn =
-            new HiveMergeablAggregate(
-              hiveUdfName,
-              SqlKind.OTHER_FUNCTION,
-              udfInfo.returnTypeInference,
-              udfInfo.operandTypeInference,
-              udfInfo.operandTypeChecker);
+      calciteAggFn = new HiveMergeablAggregate(
+          hiveUdfName,
+          SqlKind.OTHER_FUNCTION,
+          udfInfo.returnTypeInference,
+          udfInfo.operandTypeInference,
+          udfInfo.operandTypeChecker);
     }
     if (DataSketchesFunctions.isSketchFunction(hiveUdfName)) {
       CalciteUDFInfo udfInfo = getUDFInfo(hiveUdfName, calciteArgTypes, calciteRetType);
@@ -602,13 +601,12 @@ public class SqlFunctionConverter {
           udfInfo.operandTypeInference,
           udfInfo.operandTypeChecker);
 
-        calciteAggFn =
-            new HiveMergeablAggregate(
-              hiveUdfName,
-              SqlKind.OTHER_FUNCTION,
-              udfInfo.returnTypeInference,
-              udfInfo.operandTypeInference,
-              udfInfo.operandTypeChecker, unionFn);
+      calciteAggFn = new HiveMergeablAggregate(
+          hiveUdfName,
+          SqlKind.OTHER_FUNCTION,
+          udfInfo.returnTypeInference,
+          udfInfo.operandTypeInference,
+          udfInfo.operandTypeChecker, unionFn);
     }
 
     if (calciteAggFn == null) {
