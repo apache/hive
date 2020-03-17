@@ -141,7 +141,8 @@ public class HiveRelBuilder extends RelBuilder {
 
   public static SqlAggFunction getRollup(SqlAggFunction aggregation) {
     if (aggregation instanceof HiveMergeablAggregate) {
-      return aggregation;
+      HiveMergeablAggregate mAgg = (HiveMergeablAggregate) aggregation;
+      return mAgg.getUnionAggFunction();
     }
     if (aggregation instanceof HiveSqlSumAggFunction
         || aggregation instanceof HiveSqlMinMaxAggFunction

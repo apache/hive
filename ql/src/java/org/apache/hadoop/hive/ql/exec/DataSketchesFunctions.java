@@ -223,4 +223,13 @@ public class DataSketchesFunctions {
     return (udfName.startsWith(DATASKETCHES_PREFIX + "_") && udfName.endsWith("_" + UNION_SKETCH));
   }
 
+  public static boolean isSketchFunction(String udfName) {
+    return (udfName.startsWith(DATASKETCHES_PREFIX + "_") && udfName.endsWith("_" + DATA_TO_SKETCH));
+  }
+
+  public static String getUnionFor(String hiveUdfName) {
+    //FIXME
+    return "ds_hll_union";
+  }
+
 }

@@ -227,11 +227,13 @@ STAGE PLANS:
 PREHOOK: query: explain
 select ds_hll_estimate(ds_hll_sketch(id)) from sketch_input
 PREHOOK: type: QUERY
+PREHOOK: Input: default@mv_1
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select ds_hll_estimate(ds_hll_sketch(id)) from sketch_input
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mv_1
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -249,15 +251,15 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: sketch_input
-                  Statistics: Num rows: 22 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
+                  alias: default.mv_1
+                  Statistics: Num rows: 2 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: id (type: int)
-                    outputColumnNames: id
-                    Statistics: Num rows: 22 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
+                    expressions: _c1 (type: binary)
+                    outputColumnNames: _c1
+                    Statistics: Num rows: 2 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: ds_hll_sketch(id)
-                      minReductionHashAggr: 0.95454544
+                      aggregations: ds_hll_union(_c1)
+                      minReductionHashAggr: 0.5
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 388 Basic stats: COMPLETE Column stats: COMPLETE
@@ -267,12 +269,12 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 388 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: struct<lgk:int,type:string,sketch:binary>)
             Execution mode: llap
-            LLAP IO: may be used (ACID table)
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: ds_hll_sketch(VALUE._col0)
+                aggregations: ds_hll_union(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 144 Basic stats: COMPLETE Column stats: COMPLETE
@@ -296,10 +298,12 @@ STAGE PLANS:
 
 PREHOOK: query: select ds_hll_estimate(ds_hll_sketch(id)) from sketch_input
 PREHOOK: type: QUERY
+PREHOOK: Input: default@mv_1
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 POSTHOOK: query: select ds_hll_estimate(ds_hll_sketch(id)) from sketch_input
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mv_1
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 15.000000521540663

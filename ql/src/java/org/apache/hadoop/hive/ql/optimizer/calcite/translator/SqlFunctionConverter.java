@@ -591,6 +591,25 @@ public class SqlFunctionConverter {
               udfInfo.operandTypeInference,
               udfInfo.operandTypeChecker);
     }
+    if (DataSketchesFunctions.isSketchFunction(hiveUdfName)) {
+      CalciteUDFInfo udfInfo = getUDFInfo(hiveUdfName, calciteArgTypes, calciteRetType);
+      String union = DataSketchesFunctions.getUnionFor(hiveUdfName);
+
+      HiveMergeablAggregate unionFn = new HiveMergeablAggregate(
+          union,
+          SqlKind.OTHER_FUNCTION,
+          udfInfo.returnTypeInference,
+          udfInfo.operandTypeInference,
+          udfInfo.operandTypeChecker);
+
+        calciteAggFn =
+            new HiveMergeablAggregate(
+              hiveUdfName,
+              SqlKind.OTHER_FUNCTION,
+              udfInfo.returnTypeInference,
+              udfInfo.operandTypeInference,
+              udfInfo.operandTypeChecker, unionFn);
+    }
 
     if (calciteAggFn == null) {
       CalciteUDFInfo udfInfo = getUDFInfo(hiveUdfName, calciteArgTypes, calciteRetType);
