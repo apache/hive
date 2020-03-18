@@ -44,6 +44,7 @@ import org.apache.curator.framework.state.ConnectionStateListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.curator.utils.CloseableUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.SSLZookeeperFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.LlapUtil;
@@ -220,6 +221,12 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
     int baseSleepTime = (int) HiveConf.getTimeVar(conf,
       ConfVars.HIVE_ZOOKEEPER_CONNECTION_BASESLEEPTIME, TimeUnit.MILLISECONDS);
     int maxRetries = HiveConf.getIntVar(conf, ConfVars.HIVE_ZOOKEEPER_CONNECTION_MAX_RETRIES);
+    boolean sslEnabled = HiveConf.getBoolVar(conf, ConfVars.HIVE_ZOOKEEPER_SSL_ENABLE);
+    String keyStoreLocation = HiveConf.getVar(conf, ConfVars.HIVE_ZOOKEEPER_SSL_KEYSTORE_LOCATION);
+    String keyStorePassword = HiveConf.getVar(conf, ConfVars.HIVE_ZOOKEEPER_SSL_KEYSTORE_PASSWORD);
+    String trustStoreLocation = HiveConf.getVar(conf, ConfVars.HIVE_ZOOKEEPER_SSL_TRUSTSTORE_LOCATION);
+    String trustStorePassword = HiveConf.getVar(conf, ConfVars.HIVE_ZOOKEEPER_SSL_TRUSTSTORE_PASSWORD);
+
 
     LOG.info("Creating curator client with connectString: {} sessionTimeoutMs: {} connectionTimeoutMs: {}" +
       " namespace: {} exponentialBackoff - sleepTime: {} maxRetries: {}", zkEnsemble, sessionTimeout,
@@ -231,8 +238,9 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
       .sessionTimeoutMs(sessionTimeout)
       .connectionTimeoutMs(connectionTimeout)
       .aclProvider(zooKeeperAclProvider)
-      .namespace(namespace)
-      .retryPolicy(new ExponentialBackoffRetry(baseSleepTime, maxRetries))
+      .namespace(namespace).retryPolicy(new ExponentialBackoffRetry(baseSleepTime, maxRetries))
+      .zookeeperFactory(new SSLZookeeperFactory(sslEnabled, keyStoreLocation, keyStorePassword,
+          trustStoreLocation, trustStorePassword))
       .build();
   }
 

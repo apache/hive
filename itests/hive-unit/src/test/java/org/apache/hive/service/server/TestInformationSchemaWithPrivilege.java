@@ -55,7 +55,7 @@ import org.apache.hive.service.cli.OperationHandle;
 import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.SessionHandle;
 import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -175,14 +175,22 @@ public class TestInformationSchemaWithPrivilege {
     }
   }
 
-  private static MiniHS2 miniHS2 = null;
-  private static MiniZooKeeperCluster zkCluster = null;
-  private static Map<String, String> confOverlay;
+  private static final String LOCALHOST_KEY_STORE_NAME = "keystore.jks";
+  private static final String TRUST_STORE_NAME = "truststore.jks";
+  private static final String KEY_STORE_TRUST_STORE_PASSWORD = "HiveJdbc";
 
-  @BeforeClass
-  public static void beforeTest() throws Exception {
+  private MiniHS2 miniHS2 = null;
+  private MiniZooKeeperCluster zkCluster = null;
+  private Map<String, String> confOverlay;
+
+  @Before
+  public void setUp() throws Exception {
+    setupInternal(false);
+  }
+
+  protected void setupInternal(boolean zookeeperSSLEnabled) throws Exception {
     File zkDataDir = new File(System.getProperty("test.tmp.dir"));
-    zkCluster = new MiniZooKeeperCluster();
+    zkCluster = new MiniZooKeeperCluster(zookeeperSSLEnabled);
     int zkPort = zkCluster.startup(zkDataDir);
 
     miniHS2 = new MiniHS2(new HiveConf());
@@ -206,6 +214,21 @@ public class TestInformationSchemaWithPrivilege {
     confOverlay.put(ConfVars.HIVE_AUTHENTICATOR_MANAGER.varname, FakeGroupAuthenticator.class.getName());
     confOverlay.put(ConfVars.HIVE_AUTHORIZATION_ENABLED.varname, "true");
     confOverlay.put(ConfVars.HIVE_AUTHORIZATION_SQL_STD_AUTH_CONFIG_WHITELIST.varname, ".*");
+
+    if(zookeeperSSLEnabled) {
+      String dataFileDir = !System.getProperty("test.data.files", "").isEmpty() ?
+          System.getProperty("test.data.files") :
+          (new HiveConf()).get("test.data.files").replace('\\', '/').replace("c:", "");
+      confOverlay.put(ConfVars.HIVE_ZOOKEEPER_SSL_KEYSTORE_LOCATION.varname,
+          dataFileDir + File.separator + LOCALHOST_KEY_STORE_NAME);
+      confOverlay.put(ConfVars.HIVE_ZOOKEEPER_SSL_KEYSTORE_PASSWORD.varname,
+          KEY_STORE_TRUST_STORE_PASSWORD);
+      confOverlay.put(ConfVars.HIVE_ZOOKEEPER_SSL_TRUSTSTORE_LOCATION.varname,
+          dataFileDir + File.separator + TRUST_STORE_NAME);
+      confOverlay.put(ConfVars.HIVE_ZOOKEEPER_SSL_TRUSTSTORE_PASSWORD.varname,
+          KEY_STORE_TRUST_STORE_PASSWORD);
+      confOverlay.put(ConfVars.HIVE_ZOOKEEPER_SSL_ENABLE.varname, "true");
+    }
     miniHS2.start(confOverlay);
   }
 

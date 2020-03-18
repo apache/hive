@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.hadoop.hive.common.SSLZookeeperFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.curator.framework.CuratorFramework;
@@ -50,8 +51,12 @@ public class ZooKeeperStorage implements TempletonStorage {
   public String overhead_path = null;
 
   public static final String ZK_HOSTS = "templeton.zookeeper.hosts";
-  public static final String ZK_SESSION_TIMEOUT
-    = "templeton.zookeeper.session-timeout";
+  public static final String ZK_SESSION_TIMEOUT = "templeton.zookeeper.session-timeout";
+  public static final String ZK_SSL_ENABLE = "templeton.zookeeper.ssl.client.enable";
+  public static final String ZK_KEYSTORE_LOCATION = "templeton.zookeeper.keystore.location";
+  public static final String ZK_KEYSTORE_PASSWORD = "templeton.zookeeper.keystore.password";
+  public static final String ZK_TRUSTSTORE_LOCATION = "templeton.zookeeper.truststore.location";
+  public static final String ZK_TRUSTSTORE_PASSWORD = "templeton.zookeeper.truststore.password";
 
   public static final String ENCODING = "UTF-8";
 
@@ -59,27 +64,31 @@ public class ZooKeeperStorage implements TempletonStorage {
 
   private CuratorFramework zk;
 
-  /**
-   * Open a ZooKeeper connection for the JobState.
-   */
-  public static CuratorFramework zkOpen(String zkHosts, int zkSessionTimeoutMs)
-    throws IOException {
-    //do we need to add a connection status listener?  What will that do?
-    ExponentialBackoffRetry retryPolicy = new ExponentialBackoffRetry(1000, 3);
-    CuratorFramework zk = CuratorFrameworkFactory.newClient(zkHosts, zkSessionTimeoutMs,
-      CuratorFrameworkFactory.builder().getConnectionTimeoutMs(), retryPolicy);
-    zk.start();
-    return zk;
-  }
 
   /**
    * Open a ZooKeeper connection for the JobState.
    */
   public static CuratorFramework zkOpen(Configuration conf) throws IOException {
-    /*the silly looking call to Builder below is to get the default value of session timeout
-    from Curator which itself exposes it as system property*/
-    return zkOpen(conf.get(ZK_HOSTS),
-      conf.getInt(ZK_SESSION_TIMEOUT, CuratorFrameworkFactory.builder().getSessionTimeoutMs()));
+
+    String zkHosts = conf.get(ZK_HOSTS);
+    /* the silly looking call to Builder below is to get the default value of session timeout
+    from Curator which itself exposes it as system property */
+    int sessionTimeoutMs = conf.getInt(ZK_SESSION_TIMEOUT, CuratorFrameworkFactory.builder().getSessionTimeoutMs());
+    boolean sslEnabled = conf.getBoolean(ZK_SSL_ENABLE, false);
+    String keyStoreLocation = conf.get(ZK_KEYSTORE_LOCATION, "");
+    String keyStorePassword = conf.get(ZK_KEYSTORE_PASSWORD, "");
+    String trustStoreLocation = conf.get(ZK_TRUSTSTORE_LOCATION, "");
+    String trustStorePassword = conf.get(ZK_TRUSTSTORE_PASSWORD, "");
+    ExponentialBackoffRetry retryPolicy = new ExponentialBackoffRetry(1000, 3);
+    CuratorFramework zk = CuratorFrameworkFactory.builder()
+        .connectString(zkHosts)
+        .sessionTimeoutMs(sessionTimeoutMs)
+        .retryPolicy(retryPolicy)
+        .zookeeperFactory(new SSLZookeeperFactory(sslEnabled, keyStoreLocation, keyStorePassword,
+            trustStoreLocation, trustStorePassword))
+        .build();
+    zk.start();
+    return zk;
   }
 
   public ZooKeeperStorage() {
