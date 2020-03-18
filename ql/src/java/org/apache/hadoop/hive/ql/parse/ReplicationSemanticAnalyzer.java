@@ -400,8 +400,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         ReplLoadWork replLoadWork = new ReplLoadWork(conf, loadPath.toString(), replScope.getDbName(),
                 dmd.getReplScope(),
-                queryState.getLineageState(), evDump, dmd.getEventTo(),
-                dirLocationsToCopy(loadPath, evDump));
+                queryState.getLineageState(), evDump, dmd.getEventTo());
         rootTasks.add(TaskFactory.get(replLoadWork, conf));
       } else {
         LOG.warn("Previous Dump Already Loaded");

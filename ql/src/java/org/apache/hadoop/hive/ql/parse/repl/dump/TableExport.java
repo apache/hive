@@ -175,7 +175,8 @@ public class TableExport {
       } else {
         List<Path> dataPathList = Utils.getDataPathList(tableSpec.tableHandle.getDataLocation(),
                 replicationSpec, conf);
-        replCopyPathMappings.add(new ReplPathMapping(tableSpec.tableHandle.getDataLocation(), paths.dataExportDir()));
+        replCopyPathMappings.add(new ReplPathMapping(replicationSpec, tableSpec.tableHandle.getDataLocation(),
+                paths.dataExportDir()));
         new FileOperations(dataPathList, paths.dataExportDir(), distCpDoAsUser, conf, mmCtx)
                 .export(isExportTask);
       }

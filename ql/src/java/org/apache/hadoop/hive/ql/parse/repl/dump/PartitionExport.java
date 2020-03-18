@@ -122,7 +122,8 @@ class PartitionExport {
           new FileOperations(dataPathList, rootDataDumpDir, distCpDoAsUser, hiveConf, mmCtx)
                   .export(isExportTask);
           LOG.debug("Thread: {}, finish partition dump {}", threadName, partitionName);
-          return new ReplPathMapping(partition.getDataLocation(), new Path(rootDataDumpDir, EximUtil.DATA_PATH_NAME));
+          return new ReplPathMapping(forReplicationSpec, partition.getDataLocation(),
+                  new Path(rootDataDumpDir, EximUtil.DATA_PATH_NAME));
         } catch (Exception e) {
           throw new RuntimeException(e.getMessage(), e);
         }

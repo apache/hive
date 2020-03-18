@@ -42,24 +42,22 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 public class ExternalTableCopyTaskBuilder {
   private static final Logger LOG = LoggerFactory.getLogger(ExternalTableCopyTaskBuilder.class);
-  private final ReplLoadWork work;
+  private final ReplDumpWork work;
   private final HiveConf conf;
 
-  ExternalTableCopyTaskBuilder(ReplLoadWork work, HiveConf conf) {
+  ExternalTableCopyTaskBuilder(ReplDumpWork work, HiveConf conf) {
     this.work = work;
     this.conf = conf;
   }
 
   List<Task<?>> tasks(TaskTracker tracker) {
     List<Task<?>> tasks = new ArrayList<>();
-    Iterator<DirCopyWork> itr = work.getPathsToCopyIterator();
-    while (tracker.canAddMoreTasks() && itr.hasNext()) {
-      DirCopyWork dirCopyWork = itr.next();
+    while (tracker.canAddMoreTasks() && work.getDirCopyIterator().hasNext()) {
+      DirCopyWork dirCopyWork = work.getDirCopyIterator().next();
       Task<DirCopyWork> task = TaskFactory.get(dirCopyWork, conf);
       tasks.add(task);
       tracker.addTask(task);

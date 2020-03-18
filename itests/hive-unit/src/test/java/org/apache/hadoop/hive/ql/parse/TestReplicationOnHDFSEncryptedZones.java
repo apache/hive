@@ -36,7 +36,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_ENABLED;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
@@ -102,12 +104,20 @@ public class TestReplicationOnHDFSEncryptedZones {
           put(HiveConf.ConfVars.REPLDIR.varname, primary.repldDir);
         }}, "test_key123");
 
+    List<String> dumpWithClause = Arrays.asList(
+            "'hive.repl.add.raw.reserved.namespace'='true'",
+            "'" + HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname + "'='"
+                    + replica.externalTableWarehouseRoot + "'",
+            "'distcp.options.skipcrccheck'=''",
+            "'" + HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS.varname + "'='false'",
+            "'" + HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname + "'='"
+                    + UserGroupInformation.getCurrentUser().getUserName() +"'");
     WarehouseInstance.Tuple tuple =
         primary.run("use " + primaryDbName)
             .run("create table encrypted_table (id int, value string)")
             .run("insert into table encrypted_table values (1,'value1')")
             .run("insert into table encrypted_table values (2,'value2')")
-            .dump(primaryDbName);
+            .dump(primaryDbName, dumpWithClause);
 
     replica
         .run("repl load " + primaryDbName + " into " + replicatedDbName

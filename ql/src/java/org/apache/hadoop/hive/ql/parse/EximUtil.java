@@ -30,8 +30,11 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.exec.ReplCopyTask;
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.exec.repl.util.TaskTracker;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -51,10 +54,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -161,10 +164,12 @@ public class EximUtil {
    * Wrapper class for mapping replication source and target path for copying data.
    */
   public static class ReplPathMapping {
+    private ReplicationSpec replicationSpec;
     private Path srcPath;
     private Path tgtPath;
 
-    public ReplPathMapping(Path srcPath, Path tgtPath) {
+    public ReplPathMapping(ReplicationSpec replicationSpec, Path srcPath, Path tgtPath) {
+      this.replicationSpec = replicationSpec;
       if (srcPath == null) {
         throw new IllegalArgumentException("Source Path can not be null.");
       }
@@ -189,6 +194,36 @@ public class EximUtil {
 
     public void setTargetPath(Path targetPath) {
       this.tgtPath = targetPath;
+    }
+
+    @Override
+    public String toString() {
+      return "ReplPathMapping{"
+              + "fullyQualifiedSourcePath=" + srcPath
+              + ", fullyQualifiedTargetPath=" + tgtPath
+              + '}';
+    }
+
+    public static List<Task<?>> tasks(ReplDumpWork work, TaskTracker tracker, HiveConf conf) {
+      List<Task<?>> tasks = new ArrayList<>();
+      while (tracker.canAddMoreTasks() && work.getReplPathIterator().hasNext()) {
+        ReplPathMapping replPathMapping = work.getReplPathIterator().next();
+        Task<?> copyTask = ReplCopyTask.getLoadCopyTask(
+                replPathMapping.replicationSpec, replPathMapping.getSrcPath(), replPathMapping.getTargetPath(), conf,
+                false);
+        tasks.add(copyTask);
+        tracker.addTask(copyTask);
+        LOG.debug("added task for {}", replPathMapping);
+      }
+      return tasks;
+    }
+
+    public ReplicationSpec getReplicationSpec() {
+      return replicationSpec;
+    }
+
+    public void setReplicationSpec(ReplicationSpec replicationSpec) {
+      this.replicationSpec = replicationSpec;
     }
   }
 

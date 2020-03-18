@@ -20,10 +20,12 @@ package org.apache.hadoop.hive.ql.exec.repl;
 import com.google.common.primitives.Ints;
 import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
+import java.util.Iterator;
 
 @Explain(displayName = "Replication Dump Operator", explainLevels = { Explain.Level.USER,
     Explain.Level.DEFAULT,
@@ -36,6 +38,8 @@ public class ReplDumpWork implements Serializable {
   Long eventFrom;
   static String testInjectDumpDir = null;
   private Integer maxEventLimit;
+  private transient Iterator<ExternalTableCopyTaskBuilder.DirCopyWork> dirCopyIterator;
+  private transient Iterator<EximUtil.ReplPathMapping> replPathIterator;
 
   public static void injectNextDumpDirForTest(String dumpDir) {
     testInjectDumpDir = dumpDir;
@@ -86,5 +90,32 @@ public class ReplDumpWork implements Serializable {
       LoggerFactory.getLogger(this.getClass())
           .debug("eventTo not specified, using current event id : {}", eventTo);
     }
+  }
+
+  public Iterator<ExternalTableCopyTaskBuilder.DirCopyWork> getDirCopyIterator() {
+    return dirCopyIterator;
+  }
+
+  public void setDirCopyIterator(Iterator<ExternalTableCopyTaskBuilder.DirCopyWork> dirCopyIterator) {
+    if (dirCopyIteratorInitialized()) {
+      throw new IllegalStateException("Dir Copy iterator has already been initialized");
+    }
+    this.dirCopyIterator = dirCopyIterator;
+  }
+
+  public boolean dirCopyIteratorInitialized() {
+    return dirCopyIterator != null;
+  }
+
+  public Iterator<EximUtil.ReplPathMapping> getReplPathIterator() {
+    return replPathIterator;
+  }
+
+  public void setReplPathIterator(Iterator<EximUtil.ReplPathMapping> replPathIterator) {
+    this.replPathIterator = replPathIterator;
+  }
+
+  public boolean replPathIteratorInitialized() {
+    return replPathIterator != null;
   }
 }
