@@ -104,7 +104,7 @@ class Deserializer {
     final VectorSchemaRoot vectorSchemaRoot = arrowWrapperWritable.getVectorSchemaRoot();
     final List<FieldVector> fieldVectors = vectorSchemaRoot.getFieldVectors();
     final int fieldCount = fieldVectors.size();
-    final int rowCount = vectorSchemaRoot.getRowCount();
+    final int rowCount = vectorSchemaRoot.getFieldVectors().get(0).getValueCount();
     vectorizedRowBatch.ensureSize(rowCount);
 
     if (rows == null || rows.length < rowCount ) {
@@ -129,6 +129,10 @@ class Deserializer {
   }
 
   private void read(FieldVector arrowVector, ColumnVector hiveVector, TypeInfo typeInfo) {
+    // make sure that hiveVector is as big as arrowVector
+    final int size = arrowVector.getValueCount();
+    hiveVector.ensureSize(size, false);
+
     switch (typeInfo.getCategory()) {
       case PRIMITIVE:
         readPrimitive(arrowVector, hiveVector);
@@ -154,7 +158,6 @@ class Deserializer {
     final Types.MinorType minorType = arrowVector.getMinorType();
 
     final int size = arrowVector.getValueCount();
-    hiveVector.ensureSize(size, false);
 
     switch (minorType) {
       case BIT:

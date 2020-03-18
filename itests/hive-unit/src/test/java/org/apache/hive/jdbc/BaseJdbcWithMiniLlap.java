@@ -20,14 +20,12 @@ package org.apache.hive.jdbc;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
-import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.Connection;
@@ -36,29 +34,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.UUID;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
@@ -66,31 +47,18 @@ import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.FieldDesc;
-import org.apache.hadoop.hive.llap.LlapRowRecordReader;
 import org.apache.hadoop.hive.llap.Row;
 import org.apache.hadoop.hive.llap.Schema;
 import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.io.Text;
 
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.apache.hive.jdbc.miniHS2.MiniHS2.MiniClusterType;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.llap.LlapBaseInputFormat;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
-import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
-import org.datanucleus.ClassLoaderResolver;
-import org.datanucleus.NucleusContext;
-import org.datanucleus.api.jdo.JDOPersistenceManagerFactory;
-import org.datanucleus.AbstractNucleusContext;
 import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -106,6 +74,7 @@ public abstract class BaseJdbcWithMiniLlap {
   private static String dataFileDir;
   private static Path kvDataFilePath;
   private static Path dataTypesFilePath;
+  private static Path over10KFilePath;
 
   protected static MiniHS2 miniHS2 = null;
   protected static HiveConf conf = null;
@@ -119,6 +88,7 @@ public abstract class BaseJdbcWithMiniLlap {
     dataFileDir = conf.get("test.data.files").replace('\\', '/').replace("c:", "");
     kvDataFilePath = new Path(dataFileDir, "kv1.txt");
     dataTypesFilePath = new Path(dataFileDir, "datatypes.txt");
+    over10KFilePath = new Path(dataFileDir, "over10k");
     Map<String, String> confOverlay = new HashMap<String, String>();
     miniHS2.start(confOverlay);
     miniHS2.getDFS().getFileSystem().mkdirs(new Path("/apps_staging_dir/anonymous"));
@@ -218,6 +188,21 @@ public abstract class BaseJdbcWithMiniLlap {
     stmt.close();
   }
 
+  protected void createOver10KTable(String tableName) throws Exception {
+    try (Statement stmt = hs2Conn.createStatement()) {
+
+      String createQuery =
+          "create table " + tableName + " (t tinyint, si smallint, i int, b bigint, f float, d double, bo boolean, "
+              + "s string, ts timestamp, `dec` decimal(4,2), bin binary) row format delimited fields terminated by '|'";
+
+      // create table
+      stmt.execute("DROP TABLE IF EXISTS " + tableName);
+      stmt.execute(createQuery);
+      // load data
+      stmt.execute("load data local inpath '" + over10KFilePath.toString() + "' into table " + tableName);
+    }
+  }
+
   @Test(timeout = 60000)
   public void testLlapInputFormatEndToEnd() throws Exception {
     createTestTable("testtab1");
@@ -238,6 +223,144 @@ public abstract class BaseJdbcWithMiniLlap {
     rowCount = processQuery(query, 1, rowCollector);
     assertEquals(0, rowCount);
   }
+
+  @Test(timeout = 300000)
+  public void testMultipleBatchesOfComplexTypes() throws Exception {
+    final String tableName = "testMultipleBatchesOfComplexTypes";
+    try (Statement stmt = hs2Conn.createStatement()) {
+      String createQuery =
+          "create table " + tableName + "(c1 array<struct<f1:string,f2:string>>, "
+              + "c2 int, "
+              + "c3 array<array<int>>, "
+              + "c4 array<struct<f1:array<string>>>) STORED AS ORC";
+
+      // create table
+      stmt.execute("DROP TABLE IF EXISTS " + tableName);
+      stmt.execute(createQuery);
+      // load data
+      stmt.execute("INSERT INTO " + tableName + "  VALUES "
+          // value 1
+          + "(ARRAY(NAMED_STRUCT('f1','a1', 'f2','a2'), NAMED_STRUCT('f1','a3', 'f2','a4')), "
+          + "1, ARRAY(ARRAY(1)), ARRAY(NAMED_STRUCT('f1',ARRAY('aa1')))), "
+          // value 2
+          + "(ARRAY(NAMED_STRUCT('f1','b1', 'f2','b2'), NAMED_STRUCT('f1','b3', 'f2','b4')), 2, "
+          + "ARRAY(ARRAY(2,2), ARRAY(2,2)), "
+          + "ARRAY(NAMED_STRUCT('f1',ARRAY('aa2','aa2')), NAMED_STRUCT('f1',ARRAY('aa2','aa2')))), "
+          // value 3
+          + "(ARRAY(NAMED_STRUCT('f1','c1', 'f2','c2'), NAMED_STRUCT('f1','c3', 'f2','c4'), "
+          + "NAMED_STRUCT('f1','c5', 'f2','c6')), 3, " + "ARRAY(ARRAY(3,3,3), ARRAY(3,3,3), ARRAY(3,3,3)), "
+          + "ARRAY(NAMED_STRUCT('f1',ARRAY('aa3','aa3','aa3')), "
+          + "NAMED_STRUCT('f1',ARRAY('aa3','aa3', 'aa3')), NAMED_STRUCT('f1',ARRAY('aa3','aa3', 'aa3')))), "
+          // value 4
+          + "(ARRAY(NAMED_STRUCT('f1','d1', 'f2','d2'), NAMED_STRUCT('f1','d3', 'f2','d4'),"
+          + " NAMED_STRUCT('f1','d5', 'f2','d6'), NAMED_STRUCT('f1','d7', 'f2','d8')), 4, "
+          + "ARRAY(ARRAY(4,4,4,4),ARRAY(4,4,4,4),ARRAY(4,4,4,4),ARRAY(4,4,4,4)), "
+          + "ARRAY(NAMED_STRUCT('f1',ARRAY('aa4','aa4','aa4', 'aa4')), "
+          + "NAMED_STRUCT('f1',ARRAY('aa4','aa4','aa4', 'aa4')), NAMED_STRUCT('f1',ARRAY('aa4','aa4','aa4', 'aa4')),"
+          + " NAMED_STRUCT('f1',ARRAY('aa4','aa4','aa4', 'aa4'))))");
+
+      // generate 4096 rows from above records
+      for (int i = 0; i < 10; i++) {
+        stmt.execute(String.format("insert into %s select * from %s", tableName, tableName));
+      }
+      // validate test table
+      ResultSet res = stmt.executeQuery("SELECT count(*) FROM " + tableName);
+      assertTrue(res.next());
+      assertEquals(4096, res.getInt(1));
+      res.close();
+    }
+
+    RowCollector rowCollector = new RowCollector();
+    String query = "select * from " + tableName;
+    int rowCount = processQuery(query, 1, rowCollector);
+    assertEquals(4096, rowCount);
+
+    /*
+     *
+     * validate different rows
+     * [[[a1, a2], [a3, a4]], 1, [[1]], [[[aa1]]]]
+     * [[[b1, b2], [b3, b4]], 2, [[2, 2], [2, 2]], [[[aa2, aa2]], [[aa2, aa2]]]]
+     * [[[c1, c2], [c3, c4], [c5, c6]], 3, [[3, 3, 3], [3, 3, 3], [3, 3, 3]], [[[aa3, aa3, aa3]], [[aa3, aa3, aa3]], [[aa3, aa3, aa3]]]]
+     * [[[d1, d2], [d3, d4], [d5, d6], [d7, d8]], 4, [[4, 4, 4, 4], [4, 4, 4, 4], [4, 4, 4, 4], [4, 4, 4, 4]], [[[aa4, aa4, aa4, aa4]], [[aa4, aa4, aa4, aa4]], [[aa4, aa4, aa4, aa4]], [[aa4, aa4, aa4, aa4]]]]
+     *
+     */
+    rowCollector.rows.clear();
+    query = "select * from " + tableName + " where c2=1 limit 1";
+    rowCount = processQuery(query, 1, rowCollector);
+    assertEquals(1, rowCount);
+    final String[] expected1 =
+        { "[[a1, a2], [a3, a4]]",
+            "1",
+            "[[1]]",
+            "[[[aa1]]]"
+        };
+    assertArrayEquals(expected1, rowCollector.rows.get(0));
+
+    rowCollector.rows.clear();
+    query = "select * from " + tableName + " where c2=2 limit 1";
+    rowCount = processQuery(query, 1, rowCollector);
+    assertEquals(1, rowCount);
+    final String[] expected2 =
+        { "[[b1, b2], [b3, b4]]",
+            "2",
+            "[[2, 2], [2, 2]]",
+            "[[[aa2, aa2]], [[aa2, aa2]]]"
+        };
+    assertArrayEquals(expected2, rowCollector.rows.get(0));
+
+    rowCollector.rows.clear();
+    query = "select * from " + tableName + " where c2=3 limit 1";
+    rowCount = processQuery(query, 1, rowCollector);
+    assertEquals(1, rowCount);
+    final String[] expected3 =
+        { "[[c1, c2], [c3, c4], [c5, c6]]",
+            "3",
+            "[[3, 3, 3], [3, 3, 3], [3, 3, 3]]",
+            "[[[aa3, aa3, aa3]], [[aa3, aa3, aa3]], [[aa3, aa3, aa3]]]"
+        };
+    assertArrayEquals(expected3, rowCollector.rows.get(0));
+
+    rowCollector.rows.clear();
+    query = "select * from " + tableName + " where c2=4 limit 1";
+    rowCount = processQuery(query, 1, rowCollector);
+    assertEquals(1, rowCount);
+    final String[] expected4 =
+        { "[[d1, d2], [d3, d4], [d5, d6], [d7, d8]]",
+            "4",
+            "[[4, 4, 4, 4], [4, 4, 4, 4], [4, 4, 4, 4], [4, 4, 4, 4]]",
+            "[[[aa4, aa4, aa4, aa4]], [[aa4, aa4, aa4, aa4]], [[aa4, aa4, aa4, aa4]], [[aa4, aa4, aa4, aa4]]]"
+        };
+    assertArrayEquals(expected4, rowCollector.rows.get(0));
+
+  }
+
+  @Test(timeout = 300000)
+  public void testLlapInputFormatEndToEndWithMultipleBatches() throws Exception {
+    String tableName = "over10k_table";
+
+    createOver10KTable(tableName);
+
+    int rowCount;
+
+    // Try with more than one batch
+    RowCollector rowCollector = new RowCollector();
+    String query = "select * from " + tableName;
+    rowCount = processQuery(query, 1, rowCollector);
+    assertEquals(9999, rowCount);
+
+    // Try with less than one batch
+    rowCollector.rows.clear();
+    query = "select * from " + tableName + " where s = 'rachel brown'";
+    rowCount = processQuery(query, 1, rowCollector);
+    assertEquals(17, rowCount);
+
+    // Try empty rows query
+    rowCollector.rows.clear();
+    query = "select * from " + tableName + " where false";
+    rowCount = processQuery(query, 1, rowCollector);
+    assertEquals(0, rowCount);
+  }
+
 
   @Test(timeout = 60000)
   public void testNonAsciiStrings() throws Exception {
@@ -453,7 +576,6 @@ public abstract class BaseJdbcWithMiniLlap {
 
 
   @Test(timeout = 60000)
-  @Ignore("HIVE-27202")
   public void testComplexQuery() throws Exception {
     createTestTable("testtab1");
 
@@ -535,15 +657,12 @@ public abstract class BaseJdbcWithMiniLlap {
     }
 
     InputSplit[] splits = inputFormat.getSplits(job, numSplits);
-    assertTrue(splits.length > 0);
 
     // Fetch rows from splits
-    boolean first = true;
     int rowCount = 0;
     for (InputSplit split : splits) {
       System.out.println("Processing split " + split.getLocations());
 
-      int numColumns = 2;
       RecordReader<NullWritable, Row> reader = inputFormat.getRecordReader(split, job, null);
       Row row = reader.createValue();
       while (reader.next(NullWritable.get(), row)) {
