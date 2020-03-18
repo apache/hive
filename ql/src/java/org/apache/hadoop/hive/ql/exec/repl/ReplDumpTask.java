@@ -95,10 +95,12 @@ import java.util.concurrent.TimeUnit;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.Writer;
 
 public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
+  private static final long serialVersionUID = 1L;
   private static final String dumpSchema = "dump_dir,last_repl_id#string,string";
   private static final String FUNCTION_METADATA_FILE_NAME = EximUtil.METADATA_NAME;
   private static final long SLEEP_TIME = 60000;
   Set<String> tablesForBootstrap = new HashSet<>();
+  private Path dumpAckFile;
 
   public enum ConstraintFileType {COMMON("common", "c_"), FOREIGNKEY("fk", "f_");
     private final String name;
@@ -153,8 +155,9 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
             lastReplId = incrementalDump(hiveDumpRoot, dmd, cmRoot, hiveDb);
           }
           prepareReturnValues(Arrays.asList(currentDumpPath.toUri().toString(), String.valueOf(lastReplId)));
-          writeDumpCompleteAck(hiveDumpRoot);
           deleteAllPreviousDumpMeta(dumpRoot, currentDumpPath);
+          this.dumpAckFile = new Path(hiveDumpRoot, ReplUtils.DUMP_ACKNOWLEDGEMENT);
+          intitiateDataCopyTasks();
         } else {
           LOG.warn("Previous Dump is not yet loaded");
         }
@@ -176,11 +179,6 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         fs.delete(status.getPath(), true);
       }
     }
-  }
-
-  private void writeDumpCompleteAck(Path currentDumpPath) throws SemanticException {
-    Path ackPath = new Path(currentDumpPath, ReplUtils.DUMP_ACKNOWLEDGEMENT);
-    Utils.create(ackPath, conf);
   }
 
   private Long getEventFromPreviousDumpMetadata(Path previousDumpPath) throws SemanticException {
@@ -699,23 +697,39 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
 
   private void intitiateDataCopyTasks() {
     Iterator<ExternalTableCopyTaskBuilder.DirCopyWork> extCopyWorkItr = work.getDirCopyIterator();
-    Iterator<EximUtil.ReplPathMapping> mangedTablCopyPathItr = work.getReplPathIterator();
+    ReplOperationCompleteAckWork replDumpCompleteAckWork = new ReplOperationCompleteAckWork(dumpAckFile);
+    Task<ReplOperationCompleteAckWork> dumpCompleteAckWorkTask = TaskFactory.get(replDumpCompleteAckWork, conf);
     List<Task<?>> childTasks = new ArrayList<>();
     int maxTasks = conf.getIntVar(HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS);
     TaskTracker taskTracker = new TaskTracker(maxTasks);
-    while (taskTracker.canAddMoreTasks()
-            && ((work.dirCopyIteratorInitialized() && extCopyWorkItr.hasNext())
-            || (work.replPathIteratorInitialized() && mangedTablCopyPathItr.hasNext()))) {
-      if (extCopyWorkItr.hasNext()) {
+    while (taskTracker.canAddMoreTasks() && hasMoreCopyWork()) {
+      if (work.replPathIteratorInitialized() && extCopyWorkItr.hasNext()) {
         childTasks.addAll(new ExternalTableCopyTaskBuilder(work, conf).tasks(taskTracker));
       } else {
         childTasks.addAll(ReplPathMapping.tasks(work, taskTracker, conf));
       }
     }
     if (!childTasks.isEmpty()) {
-      DAGTraversal.traverse(childTasks, new AddDependencyToLeaves(TaskFactory.get(work, conf)));
+      boolean ackTaskAdded = false;
+      if (taskTracker.canAddMoreTasks()) {
+        childTasks.add(dumpCompleteAckWorkTask);
+        ackTaskAdded = true;
+      }
+      if (hasMoreCopyWork() || !ackTaskAdded) {
+        DAGTraversal.traverse(childTasks, new AddDependencyToLeaves(TaskFactory.get(work, conf)));
+      }
       this.childTasks = childTasks;
+    } else {
+      childTasks.add(dumpCompleteAckWorkTask);
+      this.childTasks =childTasks;
     }
+  }
+
+  private boolean hasMoreCopyWork() {
+    Iterator<ExternalTableCopyTaskBuilder.DirCopyWork> extCopyWorkItr = work.getDirCopyIterator();
+    Iterator<EximUtil.ReplPathMapping> mangedTablCopyPathItr = work.getReplPathIterator();
+    return ((work.dirCopyIteratorInitialized() && extCopyWorkItr.hasNext())
+            || (work.replPathIteratorInitialized() && mangedTablCopyPathItr.hasNext()));
   }
 
   private String getValidWriteIdList(String dbName, String tblName, String validTxnString) throws LockException {

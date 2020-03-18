@@ -414,30 +414,25 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   private Path getCurrentLoadPath() throws IOException, SemanticException {
     Path loadPathBase = new Path(conf.getVar(HiveConf.ConfVars.REPLDIR),
             Base64.getEncoder().encodeToString(sourceDbNameOrPattern.toLowerCase()
-            .getBytes(StandardCharsets.UTF_8.name())));
+                    .getBytes(StandardCharsets.UTF_8.name())));
     final FileSystem fs = loadPathBase.getFileSystem(conf);
-
     // Make fully qualified path for further use.
     loadPathBase = fs.makeQualified(loadPathBase);
-
-    if (!fs.exists(loadPathBase)) {
-      // supposed dump path does not exist.
-      LOG.error("File not found " + loadPathBase.toUri().toString());
-      throw new FileNotFoundException(ErrorMsg.REPL_LOAD_PATH_NOT_FOUND.getMsg());
-    }
-    FileStatus[] statuses = loadPathBase.getFileSystem(conf).listStatus(loadPathBase);
-    if (statuses.length > 0) {
-      //sort based on last modified. Recent one is at the beginning
-      FileStatus latestUpdatedStatus = statuses[0];
-      for (FileStatus status : statuses) {
-        if (status.getModificationTime() > latestUpdatedStatus.getModificationTime()) {
-          latestUpdatedStatus = status;
+    if (fs.exists(loadPathBase)) {
+      FileStatus[] statuses = loadPathBase.getFileSystem(conf).listStatus(loadPathBase);
+      if (statuses.length > 0) {
+        //sort based on last modified. Recent one is at the beginning
+        FileStatus latestUpdatedStatus = statuses[0];
+        for (FileStatus status : statuses) {
+          if (status.getModificationTime() > latestUpdatedStatus.getModificationTime()) {
+            latestUpdatedStatus = status;
+          }
         }
-      }
-      Path hiveDumpPath = new Path(latestUpdatedStatus.getPath(), ReplUtils.REPL_HIVE_BASE_DIR);
-      if (loadPathBase.getFileSystem(conf).exists(new Path(hiveDumpPath, ReplUtils.DUMP_ACKNOWLEDGEMENT))
-              && !loadPathBase.getFileSystem(conf).exists(new Path(hiveDumpPath, ReplUtils.LOAD_ACKNOWLEDGEMENT))) {
-        return hiveDumpPath;
+        Path hiveDumpPath = new Path(latestUpdatedStatus.getPath(), ReplUtils.REPL_HIVE_BASE_DIR);
+        if (loadPathBase.getFileSystem(conf).exists(new Path(hiveDumpPath, ReplUtils.DUMP_ACKNOWLEDGEMENT))
+                && !loadPathBase.getFileSystem(conf).exists(new Path(hiveDumpPath, ReplUtils.LOAD_ACKNOWLEDGEMENT))) {
+          return hiveDumpPath;
+        }
       }
     }
     return null;
