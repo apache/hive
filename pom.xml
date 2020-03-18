@@ -124,7 +124,7 @@
     <!-- Include arrow for LlapOutputFormatService -->
     <arrow.version>0.8.0.7.1.1.0-SNAPSHOT</arrow.version>
     <avatica.version>1.10.0.7.1.1.0-SNAPSHOT</avatica.version>
-    <avro.version>1.7.7</avro.version>
+    <avro.version>1.8.2.7.1.1.0-SNAPSHOT</avro.version>
     <bonecp.version>0.8.0.RELEASE</bonecp.version>
     <calcite.version>1.19.0.7.1.1.0-SNAPSHOT</calcite.version>
     <datanucleus-api-jdo.version>4.2.4</datanucleus-api-jdo.version>
