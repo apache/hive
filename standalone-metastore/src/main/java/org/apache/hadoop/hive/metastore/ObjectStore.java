@@ -4794,7 +4794,9 @@ public class ObjectStore implements RawStore, Configurable {
       constraintExistsQuery.declareParameters("java.lang.Long parentTableP, java.lang.String constraintNameP");
       constraintExistsQuery.setUnique(true);
       constraintExistsQuery.setResult("constraintName");
-      constraintNameIfExists = (String) constraintExistsQuery.executeWithArray(table.getId(), constraintName);
+      // table id must be converted to Long as Oracle 19 can not handle primitive types
+      constraintNameIfExists = (String) constraintExistsQuery.executeWithArray(Long.valueOf(table.getId()),
+          constraintName);
       commited = commitTransaction();
     } finally {
       rollbackAndCleanup(commited, constraintExistsQuery);
