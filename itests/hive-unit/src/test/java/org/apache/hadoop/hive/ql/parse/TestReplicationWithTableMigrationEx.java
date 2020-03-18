@@ -314,9 +314,9 @@ public class TestReplicationWithTableMigrationEx {
     assertTrue(ReplUtils.isFirstIncPending(replica.getDatabase(replicatedDbName).getParameters()));
     assertFalse(ReplUtils.isFirstIncPending(primary.getDatabase(primaryDbName).getParameters()));
 
-    tuple = primary.run("use " + primaryDbName)
+    primary.run("use " + primaryDbName)
             .run("alter database " + primaryDbName + " set dbproperties('dummy_key'='dummy_val')")
-           .run("create table tbl_temp (fld int)")
+            .run("create table tbl_temp (fld int)")
             .dump(primaryDbName);
 
     loadWithFailureInAddNotification("tbl_temp");
@@ -325,8 +325,6 @@ public class TestReplicationWithTableMigrationEx {
     assertFalse(ReplUtils.isFirstIncPending(primary.getDatabase(primaryDbName).getParameters()));
     assertTrue(replDb.getParameters().get("dummy_key").equalsIgnoreCase("dummy_val"));
 
-    // next incremental dump
-    primary.dump(primaryDbName);
     replica.loadWithoutExplain(replicatedDbName, primaryDbName);
     assertFalse(ReplUtils.isFirstIncPending(replica.getDatabase(replicatedDbName).getParameters()));
   }
