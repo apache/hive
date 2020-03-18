@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.exec.repl;
 
 import com.google.common.primitives.Ints;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
@@ -40,6 +41,7 @@ public class ReplDumpWork implements Serializable {
   private Integer maxEventLimit;
   private transient Iterator<ExternalTableCopyTaskBuilder.DirCopyWork> dirCopyIterator;
   private transient Iterator<EximUtil.ReplPathMapping> replPathIterator;
+  private Path dumpAckFile;
 
   public static void injectNextDumpDirForTest(String dumpDir) {
     testInjectDumpDir = dumpDir;
@@ -117,5 +119,13 @@ public class ReplDumpWork implements Serializable {
 
   public boolean replPathIteratorInitialized() {
     return replPathIterator != null;
+  }
+
+  public Path getDumpAckFile() {
+    return dumpAckFile;
+  }
+
+  public void setDumpAckFile(Path dumpAckFile) {
+    this.dumpAckFile = dumpAckFile;
   }
 }

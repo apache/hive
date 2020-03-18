@@ -188,7 +188,7 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
       next++;
       ReplDumpWork.injectNextDumpDirForTest(String.valueOf(next));
       primary.run("alter scheduled query s1 execute");
-      Thread.sleep(20000);
+      Thread.sleep(40000);
       replica.run("alter scheduled query s2 execute");
       Thread.sleep(20000);
       replica.run("use " + replicatedDbName)

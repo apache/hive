@@ -100,7 +100,6 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   private static final String FUNCTION_METADATA_FILE_NAME = EximUtil.METADATA_NAME;
   private static final long SLEEP_TIME = 60000;
   Set<String> tablesForBootstrap = new HashSet<>();
-  private Path dumpAckFile;
 
   public enum ConstraintFileType {COMMON("common", "c_"), FOREIGNKEY("fk", "f_");
     private final String name;
@@ -156,7 +155,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           }
           prepareReturnValues(Arrays.asList(currentDumpPath.toUri().toString(), String.valueOf(lastReplId)));
           deleteAllPreviousDumpMeta(dumpRoot, currentDumpPath);
-          this.dumpAckFile = new Path(hiveDumpRoot, ReplUtils.DUMP_ACKNOWLEDGEMENT);
+          work.setDumpAckFile(new Path(hiveDumpRoot, ReplUtils.DUMP_ACKNOWLEDGEMENT));
           intitiateDataCopyTasks();
         } else {
           LOG.warn("Previous Dump is not yet loaded");
@@ -697,8 +696,6 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
 
   private void intitiateDataCopyTasks() {
     Iterator<ExternalTableCopyTaskBuilder.DirCopyWork> extCopyWorkItr = work.getDirCopyIterator();
-    ReplOperationCompleteAckWork replDumpCompleteAckWork = new ReplOperationCompleteAckWork(dumpAckFile);
-    Task<ReplOperationCompleteAckWork> dumpCompleteAckWorkTask = TaskFactory.get(replDumpCompleteAckWork, conf);
     List<Task<?>> childTasks = new ArrayList<>();
     int maxTasks = conf.getIntVar(HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS);
     TaskTracker taskTracker = new TaskTracker(maxTasks);
@@ -712,7 +709,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     if (!childTasks.isEmpty()) {
       boolean ackTaskAdded = false;
       if (taskTracker.canAddMoreTasks()) {
-        childTasks.add(dumpCompleteAckWorkTask);
+        childTasks.add(TaskFactory.get(new ReplOperationCompleteAckWork(work.getDumpAckFile()), conf));
         ackTaskAdded = true;
       }
       if (hasMoreCopyWork() || !ackTaskAdded) {
@@ -720,7 +717,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       }
       this.childTasks = childTasks;
     } else {
-      childTasks.add(dumpCompleteAckWorkTask);
+      childTasks.add(TaskFactory.get(new ReplOperationCompleteAckWork(work.getDumpAckFile()), conf));
       this.childTasks =childTasks;
     }
   }
