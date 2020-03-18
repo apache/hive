@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.Iterator;
+import java.util.List;
 
 @Explain(displayName = "Replication Dump Operator", explainLevels = { Explain.Level.USER,
     Explain.Level.DEFAULT,
@@ -42,6 +43,7 @@ public class ReplDumpWork implements Serializable {
   private transient Iterator<ExternalTableCopyTaskBuilder.DirCopyWork> dirCopyIterator;
   private transient Iterator<EximUtil.ReplPathMapping> replPathIterator;
   private Path dumpAckFile;
+  private List<String> resultValues;
 
   public static void injectNextDumpDirForTest(String dumpDir) {
     testInjectDumpDir = dumpDir;
@@ -127,5 +129,13 @@ public class ReplDumpWork implements Serializable {
 
   public void setDumpAckFile(Path dumpAckFile) {
     this.dumpAckFile = dumpAckFile;
+  }
+
+  public List<String> getResultValues() {
+    return resultValues;
+  }
+
+  public void setResultValues(List<String> resultValues) {
+    this.resultValues = resultValues;
   }
 }

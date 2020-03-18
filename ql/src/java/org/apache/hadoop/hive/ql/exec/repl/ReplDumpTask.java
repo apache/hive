@@ -153,7 +153,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
             work.setEventFrom(getEventFromPreviousDumpMetadata(previousHiveDumpPath));
             lastReplId = incrementalDump(hiveDumpRoot, dmd, cmRoot, hiveDb);
           }
-          prepareReturnValues(Arrays.asList(currentDumpPath.toUri().toString(), String.valueOf(lastReplId)));
+          work.setResultValues(Arrays.asList(currentDumpPath.toUri().toString(), String.valueOf(lastReplId)));
           deleteAllPreviousDumpMeta(dumpRoot, currentDumpPath);
           work.setDumpAckFile(new Path(hiveDumpRoot, ReplUtils.DUMP_ACKNOWLEDGEMENT));
           intitiateDataCopyTasks();
@@ -193,20 +193,29 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   }
 
   private Path getPreviousDumpMetadataPath(Path dumpRoot) throws IOException {
+    FileStatus latestUpdatedStatus = null;
     FileSystem fs = dumpRoot.getFileSystem(conf);
     if (fs.exists(dumpRoot)) {
       FileStatus[] statuses = fs.listStatus(dumpRoot);
       if (statuses.length > 0)  {
-        FileStatus latestUpdatedStatus = statuses[0];
         for (FileStatus status : statuses) {
-          if (status.getModificationTime() > latestUpdatedStatus.getModificationTime()) {
+          if (latestUpdatedStatus == null) {
+            latestUpdatedStatus = validDump(status.getPath()) ? status : null;
+          } else if (validDump(status.getPath())
+                  && status.getModificationTime() > latestUpdatedStatus.getModificationTime()) {
             latestUpdatedStatus = status;
           }
         }
-        return latestUpdatedStatus.getPath();
       }
     }
-    return null;
+    return latestUpdatedStatus != null ? latestUpdatedStatus.getPath() : null;
+  }
+
+  private boolean validDump(Path dumpDir) throws IOException {
+    //Check if it was a successful dump
+    FileSystem fs = dumpDir.getFileSystem(conf);
+    Path hiveDumpDir = new Path (dumpDir, ReplUtils.REPL_HIVE_BASE_DIR);
+    return fs.exists(new Path(hiveDumpDir, ReplUtils.DUMP_ACKNOWLEDGEMENT));
   }
 
   private boolean shouldDump(Path previousDumpPath) throws IOException {
@@ -694,7 +703,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return replPathMappings;
   }
 
-  private void intitiateDataCopyTasks() {
+  private void intitiateDataCopyTasks() throws SemanticException {
     Iterator<ExternalTableCopyTaskBuilder.DirCopyWork> extCopyWorkItr = work.getDirCopyIterator();
     List<Task<?>> childTasks = new ArrayList<>();
     int maxTasks = conf.getIntVar(HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS);
@@ -707,19 +716,12 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       }
     }
     if (!childTasks.isEmpty()) {
-      boolean ackTaskAdded = false;
-      if (taskTracker.canAddMoreTasks()) {
-        childTasks.add(TaskFactory.get(new ReplOperationCompleteAckWork(work.getDumpAckFile()), conf));
-        ackTaskAdded = true;
-      }
-      if (hasMoreCopyWork() || !ackTaskAdded) {
-        DAGTraversal.traverse(childTasks, new AddDependencyToLeaves(TaskFactory.get(work, conf)));
-      }
-      this.childTasks = childTasks;
+      DAGTraversal.traverse(childTasks, new AddDependencyToLeaves(TaskFactory.get(work, conf)));
     } else {
+      prepareReturnValues(work.getResultValues());
       childTasks.add(TaskFactory.get(new ReplOperationCompleteAckWork(work.getDumpAckFile()), conf));
-      this.childTasks =childTasks;
     }
+    this.childTasks = childTasks;
   }
 
   private boolean hasMoreCopyWork() {
