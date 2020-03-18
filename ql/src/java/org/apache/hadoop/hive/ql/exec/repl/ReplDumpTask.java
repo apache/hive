@@ -197,14 +197,12 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     FileSystem fs = dumpRoot.getFileSystem(conf);
     if (fs.exists(dumpRoot)) {
       FileStatus[] statuses = fs.listStatus(dumpRoot);
-      if (statuses.length > 0)  {
-        for (FileStatus status : statuses) {
-          if (latestUpdatedStatus == null) {
-            latestUpdatedStatus = validDump(status.getPath()) ? status : null;
-          } else if (validDump(status.getPath())
-                  && status.getModificationTime() > latestUpdatedStatus.getModificationTime()) {
-            latestUpdatedStatus = status;
-          }
+      for (FileStatus status : statuses) {
+        if (latestUpdatedStatus == null) {
+          latestUpdatedStatus = validDump(status.getPath()) ? status : null;
+        } else if (validDump(status.getPath())
+                && status.getModificationTime() > latestUpdatedStatus.getModificationTime()) {
+          latestUpdatedStatus = status;
         }
       }
     }
