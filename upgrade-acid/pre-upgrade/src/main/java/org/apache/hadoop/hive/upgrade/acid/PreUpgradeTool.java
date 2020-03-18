@@ -26,6 +26,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -123,7 +124,7 @@ public class PreUpgradeTool implements AutoCloseable {
   public static void main(String[] args) throws Exception {
     Options cmdLineOptions = createCommandLineOptions();
     CommandLineParser parser = new GnuParser();
-    CommandLine line ;
+    CommandLine line;
     try {
       line = parser.parse(cmdLineOptions, args);
     } catch (ParseException e) {
@@ -149,8 +150,7 @@ public class PreUpgradeTool implements AutoCloseable {
       try (PreUpgradeTool tool = new PreUpgradeTool(runOptions)) {
         tool.prepareAcidUpgradeInternal();
       }
-    }
-    catch(Exception ex) {
+    } catch(Exception ex) {
       LOG.error("PreUpgradeTool failed", ex);
       throw ex;
     }
@@ -230,8 +230,7 @@ public class PreUpgradeTool implements AutoCloseable {
       cmdLineOptions.addOption(tablePoolSizeOption);
 
       return cmdLineOptions;
-    }
-    catch(Exception ex) {
+    } catch(Exception ex) {
       LOG.error("init()", ex);
       throw ex;
     }
@@ -278,7 +277,7 @@ public class PreUpgradeTool implements AutoCloseable {
     }
   }
 
-  /**
+  /*
    * todo: change script comments to a preamble instead of a footer
    */
   private void prepareAcidUpgradeInternal()
@@ -328,29 +327,29 @@ public class PreUpgradeTool implements AutoCloseable {
           final String state = e.getState();
           boolean removed;
           switch (state) {
-            case TxnStore.CLEANING_RESPONSE:
-            case TxnStore.SUCCEEDED_RESPONSE:
-              removed = compactTablesState.getMetaInfo().getCompactionIds().remove(e.getId());
-              if(removed) {
-                LOG.debug("Required compaction succeeded: " + e.toString());
-              }
-              break;
-            case TxnStore.ATTEMPTED_RESPONSE:
-            case TxnStore.FAILED_RESPONSE:
-              removed = compactTablesState.getMetaInfo().getCompactionIds().remove(e.getId());
-              if(removed) {
-                LOG.warn("Required compaction failed: " + e.toString());
-              }
-              break;
-            case TxnStore.INITIATED_RESPONSE:
-              //may flood the log
-              //LOG.debug("Still waiting  on: " + e.toString());
-              break;
-            case TxnStore.WORKING_RESPONSE:
-              LOG.debug("Still working on: " + e.toString());
-              break;
-            default://shouldn't be any others
-              LOG.error("Unexpected state for : " + e.toString());
+          case TxnStore.CLEANING_RESPONSE:
+          case TxnStore.SUCCEEDED_RESPONSE:
+            removed = compactTablesState.getMetaInfo().getCompactionIds().remove(e.getId());
+            if(removed) {
+              LOG.debug("Required compaction succeeded: " + e.toString());
+            }
+            break;
+          case TxnStore.ATTEMPTED_RESPONSE:
+          case TxnStore.FAILED_RESPONSE:
+            removed = compactTablesState.getMetaInfo().getCompactionIds().remove(e.getId());
+            if(removed) {
+              LOG.warn("Required compaction failed: " + e.toString());
+            }
+            break;
+          case TxnStore.INITIATED_RESPONSE:
+            //may flood the log
+            //LOG.debug("Still waiting  on: " + e.toString());
+            break;
+          case TxnStore.WORKING_RESPONSE:
+            LOG.debug("Still working on: " + e.toString());
+            break;
+          default://shouldn't be any others
+            LOG.error("Unexpected state for : " + e.toString());
           }
         }
         if(compactTablesState.getMetaInfo().getCompactionIds().size() > 0) {
@@ -380,17 +379,16 @@ public class PreUpgradeTool implements AutoCloseable {
       if (runOptions.getTableType() == null) {
         tables = hms.getTables(dbName, runOptions.getTableRegex());
         LOG.debug("found {} tables in {}", tables.size(), dbName);
-      }
-      else {
+      } else {
         tables = hms.getTables(dbName, runOptions.getTableRegex(), runOptions.getTableType());
         LOG.debug("found {} {} in {}", tables.size(), runOptions.getTableType().name(), dbName);
       }
 
       return threadPool.submit(
-              () -> tables.parallelStream()
-                      .map(table -> processTable(dbName, table, runOptions))
-                      .reduce(CompactTablesState::merge)).get()
-              .orElse(CompactTablesState.empty());
+          () -> tables.parallelStream()
+                .map(table -> processTable(dbName, table, runOptions))
+                .reduce(CompactTablesState::merge)).get()
+                .orElse(CompactTablesState.empty());
     } catch (Exception e) {
       if (isAccessControlException(e)) {
         // we may not have access to read all tables from this db
@@ -431,22 +429,23 @@ public class PreUpgradeTool implements AutoCloseable {
   private boolean isAccessControlException(final Exception e) {
     // hadoop security AccessControlException
     if ((e instanceof MetaException && e.getCause() instanceof AccessControlException) ||
-      ExceptionUtils.getRootCause(e) instanceof AccessControlException) {
+        ExceptionUtils.getRootCause(e) instanceof AccessControlException) {
       return true;
     }
 
     // java security AccessControlException
     if ((e instanceof MetaException && e.getCause() instanceof java.security.AccessControlException) ||
-      ExceptionUtils.getRootCause(e) instanceof java.security.AccessControlException) {
+        ExceptionUtils.getRootCause(e) instanceof java.security.AccessControlException) {
       return true;
     }
 
     // metastore in some cases sets the AccessControlException as message instead of wrapping the exception
-    return e instanceof MetaException && e.getMessage().startsWith("java.security.AccessControlException: Permission denied");
+    return e instanceof MetaException
+            && e.getMessage().startsWith("java.security.AccessControlException: Permission denied");
   }
 
   /**
-   * Generates a set compaction commands to run on pre Hive 3 cluster
+   * Generates a set compaction commands to run on pre Hive 3 cluster.
    */
   private static void makeCompactionScript(CompactTablesState result, String scriptLocation) throws IOException {
     if (result.getCompactionCommands().isEmpty()) {
@@ -463,8 +462,7 @@ public class PreUpgradeTool implements AutoCloseable {
         //to see it working in UTs
         pw.println("-- The total volume of data to be compacted is " +
             String.format("%.6fMB", result.getMetaInfo().getNumberOfBytes()/Math.pow(2, 20)));
-      }
-      else {
+      } else {
         pw.println("-- The total volume of data to be compacted is " +
             String.format("%.3fGB", result.getMetaInfo().getNumberOfBytes()/Math.pow(2, 30)));
       }
@@ -634,8 +632,9 @@ public class PreUpgradeTool implements AutoCloseable {
   }
 
 
-  private static final Charset utf8 = Charset.forName("UTF-8");
-  private static final CharsetDecoder utf8Decoder = utf8.newDecoder();
+  private static final Charset UTF_8 = StandardCharsets.UTF_8;
+  private static final ThreadLocal<CharsetDecoder> UTF8_DECODER =
+          ThreadLocal.withInitial(UTF_8::newDecoder);
   private static final String ACID_STATS = "hive.acid.stats";
 
   private static boolean needsCompaction(FileStatus bucket, FileSystem fs) throws IOException {
@@ -645,7 +644,7 @@ public class PreUpgradeTool implements AutoCloseable {
     if (orcReader.hasMetadataValue(ACID_STATS)) {
       try {
         ByteBuffer val = orcReader.getMetadataValue(ACID_STATS).duplicate();
-        String acidStats = utf8Decoder.decode(val).toString();
+        String acidStats = UTF8_DECODER.get().decode(val).toString();
         String[] parts = acidStats.split(",");
         long updates = Long.parseLong(parts[1]);
         long deletes = Long.parseLong(parts[2]);
@@ -669,17 +668,18 @@ public class PreUpgradeTool implements AutoCloseable {
             genPartValueString(t.getPartitionKeys().get(i).getType(), p.getValues().get(i))).
             append(",");
       }
-      sb.setCharAt(sb.length() - 1, ')');//replace trailing ','
+      //replace trailing ','
+      sb.setCharAt(sb.length() - 1, ')');
     }
     return sb.append(" COMPACT 'major'").toString();
   }
 
   /**
    * This is copy-pasted from {@link org.apache.hadoop.hive.ql.parse.ColumnStatsSemanticAnalyzer},
-   * which can't be refactored since this is linked against Hive 2.x
+   * which can't be refactored since this is linked against Hive 2.x .
    */
   private static String genPartValueString(String partColType, String partVal)  {
-    String returnVal = partVal;
+    String returnVal;
     if (partColType.equals(serdeConstants.STRING_TYPE_NAME) ||
         partColType.contains(serdeConstants.VARCHAR_TYPE_NAME) ||
         partColType.contains(serdeConstants.CHAR_TYPE_NAME)) {
@@ -711,7 +711,7 @@ public class PreUpgradeTool implements AutoCloseable {
     }
     String transacationalValue = t.getParameters()
         .get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
-    if (transacationalValue != null && "true".equalsIgnoreCase(transacationalValue)) {
+    if ("true".equalsIgnoreCase(transacationalValue)) {
       System.out.println("Found Acid table: " + Warehouse.getQualifiedName(t));
       return true;
     }
@@ -730,7 +730,7 @@ public class PreUpgradeTool implements AutoCloseable {
   }
 
   @VisibleForTesting
-  static abstract class Callback {
+  abstract static class Callback {
     /**
      * This is a hack enable Unit testing.  Derby can't handle multiple concurrent threads but
      * somehow Compactor needs to run to test "execute" mode.  This callback can be used
@@ -743,7 +743,7 @@ public class PreUpgradeTool implements AutoCloseable {
   @VisibleForTesting
   static int pollIntervalMs = 1000*30;
   /**
-   * can set it from tests to test when config needs something other than default values
+   * can set it from tests to test when config needs something other than default values.
    */
   @VisibleForTesting
   static HiveConf hiveConf = null;
