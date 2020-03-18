@@ -224,6 +224,116 @@ public abstract class BaseJdbcWithMiniLlap {
   }
 
   @Test(timeout = 300000)
+  public void testMultipleBatchesOfComplexTypes() throws Exception {
+    final String tableName = "testMultipleBatchesOfComplexTypes";
+    try (Statement stmt = hs2Conn.createStatement()) {
+      String createQuery =
+          "create table " + tableName + "(c1 array<struct<f1:string,f2:string>>, "
+              + "c2 int, "
+              + "c3 array<array<int>>, "
+              + "c4 array<struct<f1:array<string>>>) STORED AS ORC";
+
+      // create table
+      stmt.execute("DROP TABLE IF EXISTS " + tableName);
+      stmt.execute(createQuery);
+      // load data
+      stmt.execute("INSERT INTO " + tableName + "  VALUES "
+          // value 1
+          + "(ARRAY(NAMED_STRUCT('f1','a1', 'f2','a2'), NAMED_STRUCT('f1','a3', 'f2','a4')), "
+          + "1, ARRAY(ARRAY(1)), ARRAY(NAMED_STRUCT('f1',ARRAY('aa1')))), "
+          // value 2
+          + "(ARRAY(NAMED_STRUCT('f1','b1', 'f2','b2'), NAMED_STRUCT('f1','b3', 'f2','b4')), 2, "
+          + "ARRAY(ARRAY(2,2), ARRAY(2,2)), "
+          + "ARRAY(NAMED_STRUCT('f1',ARRAY('aa2','aa2')), NAMED_STRUCT('f1',ARRAY('aa2','aa2')))), "
+          // value 3
+          + "(ARRAY(NAMED_STRUCT('f1','c1', 'f2','c2'), NAMED_STRUCT('f1','c3', 'f2','c4'), "
+          + "NAMED_STRUCT('f1','c5', 'f2','c6')), 3, " + "ARRAY(ARRAY(3,3,3), ARRAY(3,3,3), ARRAY(3,3,3)), "
+          + "ARRAY(NAMED_STRUCT('f1',ARRAY('aa3','aa3','aa3')), "
+          + "NAMED_STRUCT('f1',ARRAY('aa3','aa3', 'aa3')), NAMED_STRUCT('f1',ARRAY('aa3','aa3', 'aa3')))), "
+          // value 4
+          + "(ARRAY(NAMED_STRUCT('f1','d1', 'f2','d2'), NAMED_STRUCT('f1','d3', 'f2','d4'),"
+          + " NAMED_STRUCT('f1','d5', 'f2','d6'), NAMED_STRUCT('f1','d7', 'f2','d8')), 4, "
+          + "ARRAY(ARRAY(4,4,4,4),ARRAY(4,4,4,4),ARRAY(4,4,4,4),ARRAY(4,4,4,4)), "
+          + "ARRAY(NAMED_STRUCT('f1',ARRAY('aa4','aa4','aa4', 'aa4')), "
+          + "NAMED_STRUCT('f1',ARRAY('aa4','aa4','aa4', 'aa4')), NAMED_STRUCT('f1',ARRAY('aa4','aa4','aa4', 'aa4')),"
+          + " NAMED_STRUCT('f1',ARRAY('aa4','aa4','aa4', 'aa4'))))");
+
+      // generate 4096 rows from above records
+      for (int i = 0; i < 10; i++) {
+        stmt.execute(String.format("insert into %s select * from %s", tableName, tableName));
+      }
+      // validate test table
+      ResultSet res = stmt.executeQuery("SELECT count(*) FROM " + tableName);
+      assertTrue(res.next());
+      assertEquals(4096, res.getInt(1));
+      res.close();
+    }
+
+    RowCollector rowCollector = new RowCollector();
+    String query = "select * from " + tableName;
+    int rowCount = processQuery(query, 1, rowCollector);
+    assertEquals(4096, rowCount);
+
+    /*
+     *
+     * validate different rows
+     * [[[a1, a2], [a3, a4]], 1, [[1]], [[[aa1]]]]
+     * [[[b1, b2], [b3, b4]], 2, [[2, 2], [2, 2]], [[[aa2, aa2]], [[aa2, aa2]]]]
+     * [[[c1, c2], [c3, c4], [c5, c6]], 3, [[3, 3, 3], [3, 3, 3], [3, 3, 3]], [[[aa3, aa3, aa3]], [[aa3, aa3, aa3]], [[aa3, aa3, aa3]]]]
+     * [[[d1, d2], [d3, d4], [d5, d6], [d7, d8]], 4, [[4, 4, 4, 4], [4, 4, 4, 4], [4, 4, 4, 4], [4, 4, 4, 4]], [[[aa4, aa4, aa4, aa4]], [[aa4, aa4, aa4, aa4]], [[aa4, aa4, aa4, aa4]], [[aa4, aa4, aa4, aa4]]]]
+     *
+     */
+    rowCollector.rows.clear();
+    query = "select * from " + tableName + " where c2=1 limit 1";
+    rowCount = processQuery(query, 1, rowCollector);
+    assertEquals(1, rowCount);
+    final String[] expected1 =
+        { "[[a1, a2], [a3, a4]]",
+            "1",
+            "[[1]]",
+            "[[[aa1]]]"
+        };
+    assertArrayEquals(expected1, rowCollector.rows.get(0));
+
+    rowCollector.rows.clear();
+    query = "select * from " + tableName + " where c2=2 limit 1";
+    rowCount = processQuery(query, 1, rowCollector);
+    assertEquals(1, rowCount);
+    final String[] expected2 =
+        { "[[b1, b2], [b3, b4]]",
+            "2",
+            "[[2, 2], [2, 2]]",
+            "[[[aa2, aa2]], [[aa2, aa2]]]"
+        };
+    assertArrayEquals(expected2, rowCollector.rows.get(0));
+
+    rowCollector.rows.clear();
+    query = "select * from " + tableName + " where c2=3 limit 1";
+    rowCount = processQuery(query, 1, rowCollector);
+    assertEquals(1, rowCount);
+    final String[] expected3 =
+        { "[[c1, c2], [c3, c4], [c5, c6]]",
+            "3",
+            "[[3, 3, 3], [3, 3, 3], [3, 3, 3]]",
+            "[[[aa3, aa3, aa3]], [[aa3, aa3, aa3]], [[aa3, aa3, aa3]]]"
+        };
+    assertArrayEquals(expected3, rowCollector.rows.get(0));
+
+    rowCollector.rows.clear();
+    query = "select * from " + tableName + " where c2=4 limit 1";
+    rowCount = processQuery(query, 1, rowCollector);
+    assertEquals(1, rowCount);
+    final String[] expected4 =
+        { "[[d1, d2], [d3, d4], [d5, d6], [d7, d8]]",
+            "4",
+            "[[4, 4, 4, 4], [4, 4, 4, 4], [4, 4, 4, 4], [4, 4, 4, 4]]",
+            "[[[aa4, aa4, aa4, aa4]], [[aa4, aa4, aa4, aa4]], [[aa4, aa4, aa4, aa4]], [[aa4, aa4, aa4, aa4]]]"
+        };
+    assertArrayEquals(expected4, rowCollector.rows.get(0));
+
+  }
+
+  @Test(timeout = 300000)
   public void testLlapInputFormatEndToEndWithMultipleBatches() throws Exception {
     String tableName = "over10k_table";
 
