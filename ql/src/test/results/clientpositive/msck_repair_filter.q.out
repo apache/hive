@@ -1,0 +1,364 @@
+PREHOOK: query: DROP TABLE IF EXISTS repairtable
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS repairtable
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE repairtable(col STRING) PARTITIONED BY (p1 STRING, p2 STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@repairtable
+POSTHOOK: query: CREATE TABLE repairtable(col STRING) PARTITIONED BY (p1 STRING, p2 STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@repairtable
+PREHOOK: query: MSCK REPAIR TABLE default.repairtable SYNC PARTITIONS
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable
+POSTHOOK: query: MSCK REPAIR TABLE default.repairtable SYNC PARTITIONS
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable
+Partitions not in metastore:	repairtable:p1=b/p2=a	repairtable:p1=c/p2=a
+#### A masked pattern was here ####
+PREHOOK: query: select * from repairtable
+PREHOOK: type: QUERY
+PREHOOK: Input: default@repairtable
+PREHOOK: Input: default@repairtable@p1=b/p2=a
+PREHOOK: Input: default@repairtable@p1=c/p2=a
+#### A masked pattern was here ####
+POSTHOOK: query: select * from repairtable
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@repairtable
+POSTHOOK: Input: default@repairtable@p1=b/p2=a
+POSTHOOK: Input: default@repairtable@p1=c/p2=a
+#### A masked pattern was here ####
+PREHOOK: query: MSCK REPAIR TABLE default.repairtable SYNC PARTITIONS WHERE p1='b'
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable
+POSTHOOK: query: MSCK REPAIR TABLE default.repairtable SYNC PARTITIONS WHERE p1='b'
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable
+Partitions not in metastore:	repairtable:p1=b/p2=e
+#### A masked pattern was here ####
+PREHOOK: query: select * from repairtable
+PREHOOK: type: QUERY
+PREHOOK: Input: default@repairtable
+PREHOOK: Input: default@repairtable@p1=b/p2=a
+PREHOOK: Input: default@repairtable@p1=b/p2=e
+PREHOOK: Input: default@repairtable@p1=c/p2=a
+#### A masked pattern was here ####
+POSTHOOK: query: select * from repairtable
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@repairtable
+POSTHOOK: Input: default@repairtable@p1=b/p2=a
+POSTHOOK: Input: default@repairtable@p1=b/p2=e
+POSTHOOK: Input: default@repairtable@p1=c/p2=a
+#### A masked pattern was here ####
+PREHOOK: query: MSCK REPAIR TABLE default.repairtable SYNC PARTITIONS WHERE p1 like 'c%'
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable
+POSTHOOK: query: MSCK REPAIR TABLE default.repairtable SYNC PARTITIONS WHERE p1 like 'c%'
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable
+Partitions not in metastore:	repairtable:p1=c/p2=e	repairtable:p1=ca/p2=e	repairtable:p1=cb/p2=e
+#### A masked pattern was here ####
+PREHOOK: query: select * from repairtable
+PREHOOK: type: QUERY
+PREHOOK: Input: default@repairtable
+PREHOOK: Input: default@repairtable@p1=b/p2=a
+PREHOOK: Input: default@repairtable@p1=b/p2=e
+PREHOOK: Input: default@repairtable@p1=c/p2=a
+PREHOOK: Input: default@repairtable@p1=c/p2=e
+PREHOOK: Input: default@repairtable@p1=ca/p2=e
+PREHOOK: Input: default@repairtable@p1=cb/p2=e
+#### A masked pattern was here ####
+POSTHOOK: query: select * from repairtable
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@repairtable
+POSTHOOK: Input: default@repairtable@p1=b/p2=a
+POSTHOOK: Input: default@repairtable@p1=b/p2=e
+POSTHOOK: Input: default@repairtable@p1=c/p2=a
+POSTHOOK: Input: default@repairtable@p1=c/p2=e
+POSTHOOK: Input: default@repairtable@p1=ca/p2=e
+POSTHOOK: Input: default@repairtable@p1=cb/p2=e
+#### A masked pattern was here ####
+PREHOOK: query: MSCK REPAIR TABLE default.repairtable SYNC PARTITIONS WHERE p1!='bba'
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable
+POSTHOOK: query: MSCK REPAIR TABLE default.repairtable SYNC PARTITIONS WHERE p1!='bba'
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable
+Partitions not in metastore:	repairtable:p1=bb/p2=e	repairtable:p1=bbc/p2=e
+#### A masked pattern was here ####
+PREHOOK: query: select * from repairtable
+PREHOOK: type: QUERY
+PREHOOK: Input: default@repairtable
+PREHOOK: Input: default@repairtable@p1=b/p2=a
+PREHOOK: Input: default@repairtable@p1=b/p2=e
+PREHOOK: Input: default@repairtable@p1=bb/p2=e
+PREHOOK: Input: default@repairtable@p1=bbc/p2=e
+PREHOOK: Input: default@repairtable@p1=c/p2=a
+PREHOOK: Input: default@repairtable@p1=c/p2=e
+PREHOOK: Input: default@repairtable@p1=ca/p2=e
+PREHOOK: Input: default@repairtable@p1=cb/p2=e
+#### A masked pattern was here ####
+POSTHOOK: query: select * from repairtable
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@repairtable
+POSTHOOK: Input: default@repairtable@p1=b/p2=a
+POSTHOOK: Input: default@repairtable@p1=b/p2=e
+POSTHOOK: Input: default@repairtable@p1=bb/p2=e
+POSTHOOK: Input: default@repairtable@p1=bbc/p2=e
+POSTHOOK: Input: default@repairtable@p1=c/p2=a
+POSTHOOK: Input: default@repairtable@p1=c/p2=e
+POSTHOOK: Input: default@repairtable@p1=ca/p2=e
+POSTHOOK: Input: default@repairtable@p1=cb/p2=e
+#### A masked pattern was here ####
+PREHOOK: query: MSCK REPAIR TABLE default.repairtable SYNC PARTITIONS WHERE p1='ber' and p2='ehb'
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable
+POSTHOOK: query: MSCK REPAIR TABLE default.repairtable SYNC PARTITIONS WHERE p1='ber' and p2='ehb'
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable
+Partitions not in metastore:	repairtable:p1=ber/p2=ehb
+#### A masked pattern was here ####
+PREHOOK: query: select * from repairtable
+PREHOOK: type: QUERY
+PREHOOK: Input: default@repairtable
+PREHOOK: Input: default@repairtable@p1=b/p2=a
+PREHOOK: Input: default@repairtable@p1=b/p2=e
+PREHOOK: Input: default@repairtable@p1=bb/p2=e
+PREHOOK: Input: default@repairtable@p1=bbc/p2=e
+PREHOOK: Input: default@repairtable@p1=ber/p2=ehb
+PREHOOK: Input: default@repairtable@p1=c/p2=a
+PREHOOK: Input: default@repairtable@p1=c/p2=e
+PREHOOK: Input: default@repairtable@p1=ca/p2=e
+PREHOOK: Input: default@repairtable@p1=cb/p2=e
+#### A masked pattern was here ####
+POSTHOOK: query: select * from repairtable
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@repairtable
+POSTHOOK: Input: default@repairtable@p1=b/p2=a
+POSTHOOK: Input: default@repairtable@p1=b/p2=e
+POSTHOOK: Input: default@repairtable@p1=bb/p2=e
+POSTHOOK: Input: default@repairtable@p1=bbc/p2=e
+POSTHOOK: Input: default@repairtable@p1=ber/p2=ehb
+POSTHOOK: Input: default@repairtable@p1=c/p2=a
+POSTHOOK: Input: default@repairtable@p1=c/p2=e
+POSTHOOK: Input: default@repairtable@p1=ca/p2=e
+POSTHOOK: Input: default@repairtable@p1=cb/p2=e
+#### A masked pattern was here ####
+PREHOOK: query: MSCK REPAIR TABLE default.repairtable SYNC PARTITIONS WHERE p1 like 'c%' and p2 like 'e%'
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable
+POSTHOOK: query: MSCK REPAIR TABLE default.repairtable SYNC PARTITIONS WHERE p1 like 'c%' and p2 like 'e%'
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable
+Partitions not in metastore:	repairtable:p1=cab/p2=eb	repairtable:p1=cob/p2=es	repairtable:p1=cp/p2=eg
+#### A masked pattern was here ####
+PREHOOK: query: select * from repairtable
+PREHOOK: type: QUERY
+PREHOOK: Input: default@repairtable
+PREHOOK: Input: default@repairtable@p1=b/p2=a
+PREHOOK: Input: default@repairtable@p1=b/p2=e
+PREHOOK: Input: default@repairtable@p1=bb/p2=e
+PREHOOK: Input: default@repairtable@p1=bbc/p2=e
+PREHOOK: Input: default@repairtable@p1=ber/p2=ehb
+PREHOOK: Input: default@repairtable@p1=c/p2=a
+PREHOOK: Input: default@repairtable@p1=c/p2=e
+PREHOOK: Input: default@repairtable@p1=ca/p2=e
+PREHOOK: Input: default@repairtable@p1=cab/p2=eb
+PREHOOK: Input: default@repairtable@p1=cb/p2=e
+PREHOOK: Input: default@repairtable@p1=cob/p2=es
+PREHOOK: Input: default@repairtable@p1=cp/p2=eg
+#### A masked pattern was here ####
+POSTHOOK: query: select * from repairtable
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@repairtable
+POSTHOOK: Input: default@repairtable@p1=b/p2=a
+POSTHOOK: Input: default@repairtable@p1=b/p2=e
+POSTHOOK: Input: default@repairtable@p1=bb/p2=e
+POSTHOOK: Input: default@repairtable@p1=bbc/p2=e
+POSTHOOK: Input: default@repairtable@p1=ber/p2=ehb
+POSTHOOK: Input: default@repairtable@p1=c/p2=a
+POSTHOOK: Input: default@repairtable@p1=c/p2=e
+POSTHOOK: Input: default@repairtable@p1=ca/p2=e
+POSTHOOK: Input: default@repairtable@p1=cab/p2=eb
+POSTHOOK: Input: default@repairtable@p1=cb/p2=e
+POSTHOOK: Input: default@repairtable@p1=cob/p2=es
+POSTHOOK: Input: default@repairtable@p1=cp/p2=eg
+#### A masked pattern was here ####
+PREHOOK: query: MSCK REPAIR TABLE default.repairtable SYNC PARTITIONS WHERE p1!='bba' and p2!='e'
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable
+POSTHOOK: query: MSCK REPAIR TABLE default.repairtable SYNC PARTITIONS WHERE p1!='bba' and p2!='e'
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable
+Partitions not in metastore:	repairtable:p1=bb/p2=ep
+#### A masked pattern was here ####
+PREHOOK: query: select * from repairtable
+PREHOOK: type: QUERY
+PREHOOK: Input: default@repairtable
+PREHOOK: Input: default@repairtable@p1=b/p2=a
+PREHOOK: Input: default@repairtable@p1=b/p2=e
+PREHOOK: Input: default@repairtable@p1=bb/p2=e
+PREHOOK: Input: default@repairtable@p1=bb/p2=ep
+PREHOOK: Input: default@repairtable@p1=bbc/p2=e
+PREHOOK: Input: default@repairtable@p1=ber/p2=ehb
+PREHOOK: Input: default@repairtable@p1=c/p2=a
+PREHOOK: Input: default@repairtable@p1=c/p2=e
+PREHOOK: Input: default@repairtable@p1=ca/p2=e
+PREHOOK: Input: default@repairtable@p1=cab/p2=eb
+PREHOOK: Input: default@repairtable@p1=cb/p2=e
+PREHOOK: Input: default@repairtable@p1=cob/p2=es
+PREHOOK: Input: default@repairtable@p1=cp/p2=eg
+#### A masked pattern was here ####
+POSTHOOK: query: select * from repairtable
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@repairtable
+POSTHOOK: Input: default@repairtable@p1=b/p2=a
+POSTHOOK: Input: default@repairtable@p1=b/p2=e
+POSTHOOK: Input: default@repairtable@p1=bb/p2=e
+POSTHOOK: Input: default@repairtable@p1=bb/p2=ep
+POSTHOOK: Input: default@repairtable@p1=bbc/p2=e
+POSTHOOK: Input: default@repairtable@p1=ber/p2=ehb
+POSTHOOK: Input: default@repairtable@p1=c/p2=a
+POSTHOOK: Input: default@repairtable@p1=c/p2=e
+POSTHOOK: Input: default@repairtable@p1=ca/p2=e
+POSTHOOK: Input: default@repairtable@p1=cab/p2=eb
+POSTHOOK: Input: default@repairtable@p1=cb/p2=e
+POSTHOOK: Input: default@repairtable@p1=cob/p2=es
+POSTHOOK: Input: default@repairtable@p1=cp/p2=eg
+#### A masked pattern was here ####
+PREHOOK: query: MSCK REPAIR TABLE default.repairtable SYNC PARTITIONS WHERE p1='ber' and p2!='ehb'
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable
+POSTHOOK: query: MSCK REPAIR TABLE default.repairtable SYNC PARTITIONS WHERE p1='ber' and p2!='ehb'
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable
+PREHOOK: query: select * from repairtable
+PREHOOK: type: QUERY
+PREHOOK: Input: default@repairtable
+PREHOOK: Input: default@repairtable@p1=b/p2=a
+PREHOOK: Input: default@repairtable@p1=b/p2=e
+PREHOOK: Input: default@repairtable@p1=bb/p2=e
+PREHOOK: Input: default@repairtable@p1=bb/p2=ep
+PREHOOK: Input: default@repairtable@p1=bbc/p2=e
+PREHOOK: Input: default@repairtable@p1=ber/p2=ehb
+PREHOOK: Input: default@repairtable@p1=c/p2=a
+PREHOOK: Input: default@repairtable@p1=c/p2=e
+PREHOOK: Input: default@repairtable@p1=ca/p2=e
+PREHOOK: Input: default@repairtable@p1=cab/p2=eb
+PREHOOK: Input: default@repairtable@p1=cb/p2=e
+PREHOOK: Input: default@repairtable@p1=cob/p2=es
+PREHOOK: Input: default@repairtable@p1=cp/p2=eg
+#### A masked pattern was here ####
+POSTHOOK: query: select * from repairtable
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@repairtable
+POSTHOOK: Input: default@repairtable@p1=b/p2=a
+POSTHOOK: Input: default@repairtable@p1=b/p2=e
+POSTHOOK: Input: default@repairtable@p1=bb/p2=e
+POSTHOOK: Input: default@repairtable@p1=bb/p2=ep
+POSTHOOK: Input: default@repairtable@p1=bbc/p2=e
+POSTHOOK: Input: default@repairtable@p1=ber/p2=ehb
+POSTHOOK: Input: default@repairtable@p1=c/p2=a
+POSTHOOK: Input: default@repairtable@p1=c/p2=e
+POSTHOOK: Input: default@repairtable@p1=ca/p2=e
+POSTHOOK: Input: default@repairtable@p1=cab/p2=eb
+POSTHOOK: Input: default@repairtable@p1=cb/p2=e
+POSTHOOK: Input: default@repairtable@p1=cob/p2=es
+POSTHOOK: Input: default@repairtable@p1=cp/p2=eg
+#### A masked pattern was here ####
+PREHOOK: query: MSCK REPAIR TABLE default.repairtable SYNC PARTITIONS WHERE p1 like 'c%' and p2='e'
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable
+POSTHOOK: query: MSCK REPAIR TABLE default.repairtable SYNC PARTITIONS WHERE p1 like 'c%' and p2='e'
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable
+PREHOOK: query: select * from repairtable
+PREHOOK: type: QUERY
+PREHOOK: Input: default@repairtable
+PREHOOK: Input: default@repairtable@p1=b/p2=a
+PREHOOK: Input: default@repairtable@p1=b/p2=e
+PREHOOK: Input: default@repairtable@p1=bb/p2=e
+PREHOOK: Input: default@repairtable@p1=bb/p2=ep
+PREHOOK: Input: default@repairtable@p1=bbc/p2=e
+PREHOOK: Input: default@repairtable@p1=ber/p2=ehb
+PREHOOK: Input: default@repairtable@p1=c/p2=a
+PREHOOK: Input: default@repairtable@p1=c/p2=e
+PREHOOK: Input: default@repairtable@p1=ca/p2=e
+PREHOOK: Input: default@repairtable@p1=cab/p2=eb
+PREHOOK: Input: default@repairtable@p1=cb/p2=e
+PREHOOK: Input: default@repairtable@p1=cob/p2=es
+PREHOOK: Input: default@repairtable@p1=cp/p2=eg
+#### A masked pattern was here ####
+POSTHOOK: query: select * from repairtable
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@repairtable
+POSTHOOK: Input: default@repairtable@p1=b/p2=a
+POSTHOOK: Input: default@repairtable@p1=b/p2=e
+POSTHOOK: Input: default@repairtable@p1=bb/p2=e
+POSTHOOK: Input: default@repairtable@p1=bb/p2=ep
+POSTHOOK: Input: default@repairtable@p1=bbc/p2=e
+POSTHOOK: Input: default@repairtable@p1=ber/p2=ehb
+POSTHOOK: Input: default@repairtable@p1=c/p2=a
+POSTHOOK: Input: default@repairtable@p1=c/p2=e
+POSTHOOK: Input: default@repairtable@p1=ca/p2=e
+POSTHOOK: Input: default@repairtable@p1=cab/p2=eb
+POSTHOOK: Input: default@repairtable@p1=cb/p2=e
+POSTHOOK: Input: default@repairtable@p1=cob/p2=es
+POSTHOOK: Input: default@repairtable@p1=cp/p2=eg
+#### A masked pattern was here ####
+PREHOOK: query: MSCK REPAIR TABLE default.repairtable SYNC PARTITIONS WHERE p1!='bba' and p2 like 'e%'
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable
+POSTHOOK: query: MSCK REPAIR TABLE default.repairtable SYNC PARTITIONS WHERE p1!='bba' and p2 like 'e%'
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable
+Partitions not in metastore:	repairtable:p1=bbe/p2=ep	repairtable:p1=bbsc/p2=e	repairtable:p1=bbw/p2=e	repairtable:p1=bter/p2=ehb	repairtable:p1=cobf/p2=ess	repairtable:p1=cpa/p2=eg
+#### A masked pattern was here ####
+PREHOOK: query: select * from repairtable
+PREHOOK: type: QUERY
+PREHOOK: Input: default@repairtable
+PREHOOK: Input: default@repairtable@p1=b/p2=a
+PREHOOK: Input: default@repairtable@p1=b/p2=e
+PREHOOK: Input: default@repairtable@p1=bb/p2=e
+PREHOOK: Input: default@repairtable@p1=bb/p2=ep
+PREHOOK: Input: default@repairtable@p1=bbc/p2=e
+PREHOOK: Input: default@repairtable@p1=bbe/p2=ep
+PREHOOK: Input: default@repairtable@p1=bbsc/p2=e
+PREHOOK: Input: default@repairtable@p1=bbw/p2=e
+PREHOOK: Input: default@repairtable@p1=ber/p2=ehb
+PREHOOK: Input: default@repairtable@p1=bter/p2=ehb
+PREHOOK: Input: default@repairtable@p1=c/p2=a
+PREHOOK: Input: default@repairtable@p1=c/p2=e
+PREHOOK: Input: default@repairtable@p1=ca/p2=e
+PREHOOK: Input: default@repairtable@p1=cab/p2=eb
+PREHOOK: Input: default@repairtable@p1=cb/p2=e
+PREHOOK: Input: default@repairtable@p1=cob/p2=es
+PREHOOK: Input: default@repairtable@p1=cobf/p2=ess
+PREHOOK: Input: default@repairtable@p1=cp/p2=eg
+PREHOOK: Input: default@repairtable@p1=cpa/p2=eg
+#### A masked pattern was here ####
+POSTHOOK: query: select * from repairtable
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@repairtable
+POSTHOOK: Input: default@repairtable@p1=b/p2=a
+POSTHOOK: Input: default@repairtable@p1=b/p2=e
+POSTHOOK: Input: default@repairtable@p1=bb/p2=e
+POSTHOOK: Input: default@repairtable@p1=bb/p2=ep
+POSTHOOK: Input: default@repairtable@p1=bbc/p2=e
+POSTHOOK: Input: default@repairtable@p1=bbe/p2=ep
+POSTHOOK: Input: default@repairtable@p1=bbsc/p2=e
+POSTHOOK: Input: default@repairtable@p1=bbw/p2=e
+POSTHOOK: Input: default@repairtable@p1=ber/p2=ehb
+POSTHOOK: Input: default@repairtable@p1=bter/p2=ehb
+POSTHOOK: Input: default@repairtable@p1=c/p2=a
+POSTHOOK: Input: default@repairtable@p1=c/p2=e
+POSTHOOK: Input: default@repairtable@p1=ca/p2=e
+POSTHOOK: Input: default@repairtable@p1=cab/p2=eb
+POSTHOOK: Input: default@repairtable@p1=cb/p2=e
+POSTHOOK: Input: default@repairtable@p1=cob/p2=es
+POSTHOOK: Input: default@repairtable@p1=cobf/p2=ess
+POSTHOOK: Input: default@repairtable@p1=cp/p2=eg
+POSTHOOK: Input: default@repairtable@p1=cpa/p2=eg
+#### A masked pattern was here ####

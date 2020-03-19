@@ -154,7 +154,7 @@ public class PartitionManagementTask implements MetastoreTaskThread {
             retentionSeconds);
           // this always runs in 'sync' mode where partitions can be added and dropped
           MsckInfo msckInfo = new MsckInfo(table.getCatName(), table.getDbName(), table.getTableName(),
-            null, null, true, true, true, retentionSeconds);
+            null, null, null, true, true, true, retentionSeconds);
           executorService.submit(new MsckThread(msckInfo, conf, qualifiedTableName, countDownLatch));
         }
         countDownLatch.await();

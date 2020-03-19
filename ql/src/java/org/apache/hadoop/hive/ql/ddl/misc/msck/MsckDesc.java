@@ -39,15 +39,17 @@ public class MsckDesc implements DDLDesc, Serializable {
   private final boolean repairPartitions;
   private final boolean addPartitions;
   private final boolean dropPartitions;
+  private final String partitionFilterStr;
 
   public MsckDesc(String tableName, List<Map<String, String>> partitionsSpecs, Path resFile,
-      boolean repairPartitions, boolean addPartitions, boolean dropPartitions) {
+      boolean repairPartitions, boolean addPartitions, boolean dropPartitions, String partitionFilterStr) {
     this.tableName = tableName;
     this.partitionsSpecs = partitionsSpecs;
     this.resFile = resFile.toString();
     this.repairPartitions = repairPartitions;
     this.addPartitions = addPartitions;
     this.dropPartitions = dropPartitions;
+    this.partitionFilterStr = partitionFilterStr;
   }
 
   @Explain(displayName = "table name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
@@ -62,6 +64,10 @@ public class MsckDesc implements DDLDesc, Serializable {
 
   public String getResFile() {
     return resFile;
+  }
+
+  public String getPartitionFilterStr() {
+    return partitionFilterStr;
   }
 
   @Explain(displayName = "repair partition", displayOnlyOnTrue = true,

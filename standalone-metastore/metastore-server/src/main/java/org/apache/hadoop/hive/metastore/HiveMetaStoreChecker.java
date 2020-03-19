@@ -22,6 +22,7 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getDat
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartColNames;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartCols;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartition;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartitionByFilter;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartitionName;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartitionSpec;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPath;
@@ -31,13 +32,16 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -57,6 +61,7 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
@@ -81,6 +86,48 @@ public class HiveMetaStoreChecker {
   private final Configuration conf;
   private final long partitionExpirySeconds;
   private final Interner<Path> pathInterner = Interners.newStrongInterner();
+
+  public enum Operator {
+    EQUALS("="),
+    LIKE("like"),
+    NOTEQUALS2("!=");
+
+    private final String op;
+
+    // private constructor
+    Operator(String op) {
+      this.op = op;
+    }
+
+    public String getOp() {
+      return op.toLowerCase();
+    }
+
+    public static boolean isValidOperator(String operator) {
+      for (ExpressionTree.Operator op : ExpressionTree.Operator.values()) {
+        if (op.getOp().toLowerCase().equals(operator)) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    public static Operator fromString(String inputOperator) {
+      for(Operator op : Operator.values()) {
+        if(op.getOp().equals(inputOperator)){
+          return op;
+        }
+      }
+
+      throw new Error("Invalid value " + inputOperator +
+          " for " + Operator.class.getSimpleName());
+    }
+
+    @Override
+    public String toString() {
+      return op;
+    }
+  }
 
   public HiveMetaStoreChecker(IMetaStoreClient msc, Configuration conf) {
     this(msc, conf, -1);
@@ -119,7 +166,7 @@ public class HiveMetaStoreChecker {
    *           Most likely filesystem related
    */
   public void checkMetastore(String catName, String dbName, String tableName,
-      List<? extends Map<String, String>> partitions, CheckResult result)
+      List<? extends Map<String, String>> partitions, String partitionFilterStr, CheckResult result)
       throws MetastoreException, IOException {
 
     if (dbName == null || "".equalsIgnoreCase(dbName)) {
@@ -131,16 +178,18 @@ public class HiveMetaStoreChecker {
         // no table specified, check all tables and all partitions.
         List<String> tables = getMsc().getTables(catName, dbName, ".*");
         for (String currentTableName : tables) {
-          checkTable(catName, dbName, currentTableName, null, result);
+          checkTable(catName, dbName, currentTableName, null, null, result);
         }
 
         findUnknownTables(catName, dbName, tables, result);
+      } else if (partitionFilterStr != null) {
+        // check the specified partitions based on partition filter
+        checkTable(catName, dbName, tableName, null, partitionFilterStr, result);
       } else if (partitions == null || partitions.isEmpty()) {
-        // only one table, let's check all partitions
-        checkTable(catName, dbName, tableName, null, result);
+        checkTable(catName, dbName, tableName, null, null, result);
       } else {
         // check the specified partitions
-        checkTable(catName, dbName, tableName, partitions, result);
+        checkTable(catName, dbName, tableName, partitions, null, result);
       }
       LOG.info("Number of partitionsNotInMs=" + result.getPartitionsNotInMs()
               + ", partitionsNotOnFs=" + result.getPartitionsNotOnFs()
@@ -225,7 +274,7 @@ public class HiveMetaStoreChecker {
    *           Failed to get required information from the metastore.
    */
   void checkTable(String catName, String dbName, String tableName,
-      List<? extends Map<String, String>> partitions, CheckResult result)
+      List<? extends Map<String, String>> partitions, String partitionFilterStr, CheckResult result)
       throws MetaException, IOException, MetastoreException {
 
     Table table;
@@ -241,7 +290,10 @@ public class HiveMetaStoreChecker {
     boolean findUnknownPartitions = true;
 
     if (isPartitioned(table)) {
-      if (partitions == null || partitions.isEmpty()) {
+      if (partitionFilterStr != null) {
+        List<Partition> loadedPartitions = getPartitionByFilter(getMsc(), table, partitionFilterStr);
+        parts = new PartitionIterable(loadedPartitions);
+      } else if (partitions == null || partitions.isEmpty()) {
         int batchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
         if (batchSize > 0) {
           parts = new PartitionIterable(getMsc(), table, batchSize);
@@ -271,7 +323,7 @@ public class HiveMetaStoreChecker {
       parts = new PartitionIterable(Collections.<Partition>emptyList());
     }
 
-    checkTable(table, parts, findUnknownPartitions, result);
+    checkTable(table, parts, findUnknownPartitions, result, partitionFilterStr);
   }
 
   /**
@@ -292,8 +344,8 @@ public class HiveMetaStoreChecker {
    *           Could not create Partition object
    */
   void checkTable(Table table, PartitionIterable parts,
-      boolean findUnknownPartitions, CheckResult result) throws IOException,
-    MetastoreException {
+      boolean findUnknownPartitions, CheckResult result, String partitionFilterStr) throws IOException,
+    MetastoreException, MetaException {
 
     Path tablePath = getPath(table);
     if (tablePath == null) {
@@ -351,7 +403,7 @@ public class HiveMetaStoreChecker {
     }
 
     if (findUnknownPartitions) {
-      findUnknownPartitions(table, partPaths, result);
+      findUnknownPartitions(table, partPaths, result, partitionFilterStr);
     }
   }
 
@@ -369,7 +421,7 @@ public class HiveMetaStoreChecker {
    * @throws MetastoreException
    */
   void findUnknownPartitions(Table table, Set<Path> partPaths,
-      CheckResult result) throws IOException, MetastoreException {
+      CheckResult result, String partitionFilterStr) throws IOException, MetastoreException, MetaException {
 
     Path tablePath = getPath(table);
     if (tablePath == null) {
@@ -381,6 +433,21 @@ public class HiveMetaStoreChecker {
     checkPartitionDirs(tablePath, allPartDirs, Collections.unmodifiableList(getPartColNames(table)));
     // don't want the table dir
     allPartDirs.remove(tablePath);
+
+    // Construct expression tree from partition filter string
+    final ExpressionTree tree = (partitionFilterStr != null && !partitionFilterStr.isEmpty())
+        ? PartFilterExprUtil.getFilterParser(partitionFilterStr).tree : ExpressionTree.EMPTY_TREE;
+
+    // Construct partition filter mapping from the expression tree
+    // Structure of mapping is of the form <partKey, <operator, value>>
+    if (tree != null && tree != ExpressionTree.EMPTY_TREE) {
+      PartitionFilterMapping visitor = new PartitionFilterMapping();
+      tree.accept(visitor);
+      // Filter out partition path which doesn't match with the filter predicate
+      //TODO: Need to think of better approach as this might slow down when
+      // No.of partition in the filesystem is large.
+      prunePartitions(allPartDirs, tablePath, visitor);
+    }
 
     // remove the partition paths we know about
     allPartDirs.removeAll(partPaths);
@@ -406,6 +473,67 @@ public class HiveMetaStoreChecker {
       }
     }
     LOG.debug("Number of partitions not in metastore : " + result.getPartitionsNotInMs().size());
+  }
+
+  /**
+   * Prunes all the partition path which was fetched from the
+   * filesystem and which doesn't match with filter expression
+   * @param allPartDirs
+   *          All partition paths from the filesystem
+   * @param tablePath
+   *          Table path location
+   * @param visitor
+   *          Mapping of partition key to filter expression
+   */
+  private void prunePartitions(Set<Path> allPartDirs, Path tablePath, PartitionFilterMapping visitor) {
+    for (Iterator<Path> iterator = allPartDirs.iterator(); iterator.hasNext();) {
+      // Extract partition information from the path
+      // tblPath/a=1      ->  a=1
+      // tblPath/a=1/b=1  ->  a=1/b=1
+      Path path = iterator.next();
+      String partInfo = path.toString().substring(tablePath.toString().length() + 1);
+      boolean isPathRemoved = false;
+      String[] partKeyVal = partInfo.split("/");
+      for (int i = 0; i < partKeyVal.length; i++) {
+        String partKey = partKeyVal[i].split("=")[0];
+        String partValue = partKeyVal[i].split("=")[1];
+
+        Map<String, String> partFilterMap = visitor.getFilterMapping().get(partKey);
+        if (partFilterMap != null) {
+          for (Map.Entry<String, String> entry : partFilterMap.entrySet()) {
+            String operator = entry.getKey().toLowerCase();
+            String value = entry.getValue();
+
+            switch (Operator.fromString(operator)) {
+            case EQUALS:
+              if (!partValue.equals(value)) {
+                iterator.remove();
+                isPathRemoved = true;
+              }
+              break;
+            case LIKE:
+              if (!partValue.matches(ExpressionTree.makeJdoFilterForLike(value))) {
+                iterator.remove();
+                isPathRemoved = true;
+              }
+              break;
+            case NOTEQUALS2:
+              if (partValue.equals(value)) {
+                iterator.remove();
+                isPathRemoved = true;
+              }
+              break;
+            default:
+              break;
+            }
+          }
+        }
+        // path already removed hence no need to check for other partition values
+        if (isPathRemoved) {
+          break;
+        }
+      }
+    }
   }
 
   /**
@@ -569,5 +697,47 @@ public class HiveMetaStoreChecker {
       executor.shutdownNow();
       throw new MetastoreException(e.getCause());
     }
+  }
+
+  private static class PartitionFilterMapping extends ExpressionTree.TreeVisitor {
+
+    private Map<String, Map<String, String>> filterMapping = new ConcurrentHashMap<>();
+
+    public void PartitionFilterMapping() {
+    }
+
+    public Map<String, Map<String, String>> getFilterMapping() {
+      return filterMapping;
+    }
+
+    @Override
+    protected void beginTreeNode(ExpressionTree.TreeNode node) throws MetaException {
+
+    }
+
+    @Override
+    protected void midTreeNode(ExpressionTree.TreeNode node) throws MetaException {
+    }
+
+    @Override
+    protected void endTreeNode(ExpressionTree.TreeNode node) throws MetaException {
+    }
+
+    @Override
+    protected boolean shouldStop() {
+      return false;
+    }
+
+    @Override
+    public void visit(ExpressionTree.LeafNode node) throws MetaException {
+      Object nodeValue = node.value;
+      Object nodeOperator = node.operator;
+      Object nodeKey = node.keyName;
+
+      Map<String, String> map = new HashMap<>();
+      map.put(nodeOperator.toString(), nodeValue.toString());
+      filterMapping.put(nodeKey.toString(), map);
+    }
+
   }
 }

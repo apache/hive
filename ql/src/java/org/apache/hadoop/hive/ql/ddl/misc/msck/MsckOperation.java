@@ -70,8 +70,8 @@ public class MsckOperation extends DDLOperation<MsckDesc> {
       }
 
       MsckInfo msckInfo = new MsckInfo(SessionState.get().getCurrentCatalog(), names[0], names[1],
-          desc.getPartitionsSpecs(), desc.getResFile(), desc.isRepairPartitions(), desc.isAddPartitions(),
-          desc.isDropPartitions(), partitionExpirySeconds);
+          desc.getPartitionsSpecs(), desc.getPartitionFilterStr(), desc.getResFile(), desc.isRepairPartitions(),
+          desc.isAddPartitions(), desc.isDropPartitions(), partitionExpirySeconds);
       return msck.repair(msckInfo);
     } catch (MetaException e) {
       LOG.error("Unable to create msck instance.", e);

@@ -109,6 +109,30 @@ public class ExpressionTree {
 
   }
 
+  public static String  makeJdoFilterForLike(String likePattern) {
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < likePattern.length(); i++) {
+      // Make a special case for "\\_" and "\\%"
+      char n = likePattern.charAt(i);
+      if (n == '\\'
+          && i + 1 < likePattern.length()
+          && (likePattern.charAt(i + 1) == '_' || likePattern.charAt(i + 1) == '%')) {
+        sb.append(likePattern.charAt(i + 1));
+        i++;
+        continue;
+      }
+
+      if (n == '_') {
+        sb.append(".");
+      } else if (n == '%') {
+        sb.append(".*");
+      } else {
+        sb.append(likePattern.charAt(i));
+      }
+    }
+    return sb.toString();
+  }
+
   /**
    * Depth first traversal of ExpressionTree.
    * The users should override the subset of methods to do their stuff.
@@ -386,30 +410,6 @@ public class ExpressionTree {
             ? paramName + " " + operator.getJdoOp() + " " + valString
             : " " + valString + " " + operator.getJdoOp() + " " + paramName);
       }
-    }
-
-    private static String makeJdoFilterForLike(String likePattern) {
-      StringBuilder sb = new StringBuilder();
-      for (int i = 0; i < likePattern.length(); i++) {
-        // Make a special case for "\\_" and "\\%"
-        char n = likePattern.charAt(i);
-        if (n == '\\'
-            && i + 1 < likePattern.length()
-            && (likePattern.charAt(i + 1) == '_' || likePattern.charAt(i + 1) == '%')) {
-          sb.append(likePattern.charAt(i + 1));
-          i++;
-          continue;
-        }
-
-        if (n == '_') {
-          sb.append(".");
-        } else if (n == '%') {
-          sb.append(".*");
-        } else {
-          sb.append(likePattern.charAt(i));
-        }
-      }
-      return sb.toString();
     }
 
     /**

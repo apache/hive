@@ -34,9 +34,11 @@ public class MsckInfo {
   private final boolean addPartitions;
   private final boolean dropPartitions;
   private final long partitionExpirySeconds;
+  private final String partitionFilterStr;
 
   public MsckInfo(String catalogName, String dbName, String tableName, List<Map<String, String>> partSpecs,
-      String resFile, boolean repairPartitions, boolean addPartitions, boolean dropPartitions,
+                  String partitionFilterStr, String resFile, boolean repairPartitions,
+                  boolean addPartitions, boolean dropPartitions,
       long partitionExpirySeconds) {
     this.catalogName = catalogName;
     this.dbName = dbName;
@@ -47,6 +49,7 @@ public class MsckInfo {
     this.addPartitions = addPartitions;
     this.dropPartitions = dropPartitions;
     this.partitionExpirySeconds = partitionExpirySeconds;
+    this.partitionFilterStr = partitionFilterStr;
   }
 
   public String getCatalogName() {
@@ -67,6 +70,10 @@ public class MsckInfo {
 
   public String getResFile() {
     return resFile;
+  }
+
+  public String getPartitionFilterStr() {
+    return partitionFilterStr;
   }
 
   public boolean isRepairPartitions() {
