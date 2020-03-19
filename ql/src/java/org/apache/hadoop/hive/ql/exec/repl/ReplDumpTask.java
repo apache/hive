@@ -212,7 +212,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   private boolean validDump(Path dumpDir) throws IOException {
     //Check if it was a successful dump
     FileSystem fs = dumpDir.getFileSystem(conf);
-    Path hiveDumpDir = new Path (dumpDir, ReplUtils.REPL_HIVE_BASE_DIR);
+    Path hiveDumpDir = new Path(dumpDir, ReplUtils.REPL_HIVE_BASE_DIR);
     return fs.exists(new Path(hiveDumpDir, ReplUtils.DUMP_ACKNOWLEDGEMENT));
   }
 
