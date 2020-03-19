@@ -225,6 +225,7 @@ public class ScheduledQueryExecutionService implements Closeable {
         conf.setVar(HiveConf.ConfVars.HIVE_AUTHENTICATOR_MANAGER, SessionStateUserAuthenticator.class.getName());
         conf.unset(HiveConf.ConfVars.HIVESESSIONID.varname);
         state = new SessionState(conf, q.getUser());
+        state.setIsHiveServerQuery(true);
         SessionState.start(state);
         reportQueryProgress();
         try (
