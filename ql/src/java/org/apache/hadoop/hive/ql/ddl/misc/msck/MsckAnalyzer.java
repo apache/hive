@@ -26,7 +26,6 @@ import org.antlr.runtime.tree.CommonTree;
 import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreChecker;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
@@ -130,7 +129,7 @@ public class MsckAnalyzer extends AbstractFunctionAnalyzer {
       if (partColNameTypeMap.get(partKey) == null) {
         throw new SemanticException("Filter predicate on non-partitioned column: " + partKey + " not supported");
       }
-      //TODO: Add Support For Other Data Types
+      //todo: Add Support For Other Data Types
       if (FilterType.fromType(partColNameTypeMap.get(partKey)) == FilterType.Invalid) {
         throw new SemanticException("Filter predicate only supported for string data types");
       }

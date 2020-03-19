@@ -87,6 +87,9 @@ public class HiveMetaStoreChecker {
   private final long partitionExpirySeconds;
   private final Interner<Path> pathInterner = Interners.newStrongInterner();
 
+  /**
+   * Supported Operators.
+   */
   public enum Operator {
     EQUALS("="),
     LIKE("like"),
@@ -444,7 +447,7 @@ public class HiveMetaStoreChecker {
       PartitionFilterMapping visitor = new PartitionFilterMapping();
       tree.accept(visitor);
       // Filter out partition path which doesn't match with the filter predicate
-      //TODO: Need to think of better approach as this might slow down when
+      //todo: Need to think of better approach as this might slow down when
       // No.of partition in the filesystem is large.
       prunePartitions(allPartDirs, tablePath, visitor);
     }
@@ -476,14 +479,13 @@ public class HiveMetaStoreChecker {
   }
 
   /**
-   * Prunes all the partition path which was fetched from the
-   * filesystem and which doesn't match with filter expression
+   * Prunes all the partition path which was fetched from the filesystem and which doesn't match with filter expression.
    * @param allPartDirs
-   *          All partition paths from the filesystem
+   *          All partition paths from the filesystem.
    * @param tablePath
-   *          Table path location
+   *          Table path location.
    * @param visitor
-   *          Mapping of partition key to filter expression
+   *          Mapping of partition key to filter expression.
    */
   private void prunePartitions(Set<Path> allPartDirs, Path tablePath, PartitionFilterMapping visitor) {
     for (Iterator<Path> iterator = allPartDirs.iterator(); iterator.hasNext();) {
@@ -702,9 +704,6 @@ public class HiveMetaStoreChecker {
   private static class PartitionFilterMapping extends ExpressionTree.TreeVisitor {
 
     private Map<String, Map<String, String>> filterMapping = new ConcurrentHashMap<>();
-
-    public void PartitionFilterMapping() {
-    }
 
     public Map<String, Map<String, String>> getFilterMapping() {
       return filterMapping;
