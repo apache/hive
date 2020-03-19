@@ -167,18 +167,15 @@ public abstract class ImpalaPlanRel extends AbstractRelNode implements Referrabl
    * Create the output SlotRefs using the supplied slot descriptors.
    * This will be invoked by most plan rels but not all. For instance,
    * the ImpalaProjectRel may have expressions other than SlotRefs.
+   * Also, the ImpalaHdfsScanRel does not map the index number directly
+   * to the slot descriptor array position.
    */
   public static ImmutableMap<Integer, Expr> createOutputExprs(List<SlotDescriptor> slotDescs) {
     Map<Integer, Expr> exprs = Maps.newLinkedHashMap();
     int index = 0;
     for (SlotDescriptor slotDesc : slotDescs) {
       slotDesc.setIsMaterialized(true);
-      int position = index;
-      if (slotDesc.getColumn() != null) {
-        position = slotDesc.getColumn().getPosition();
-      }
-      exprs.put(position, new SlotRef(slotDesc));
-      index++;
+      exprs.put(index++, new SlotRef(slotDesc));
     }
     return ImmutableMap.copyOf(exprs);
   }

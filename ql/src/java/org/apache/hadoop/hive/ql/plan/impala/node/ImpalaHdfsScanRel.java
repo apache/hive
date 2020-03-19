@@ -19,7 +19,9 @@
 package org.apache.hadoop.hive.ql.plan.impala.node;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import org.apache.calcite.rel.RelWriter;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexCall;
@@ -55,6 +57,7 @@ import org.apache.impala.planner.PlanNodeId;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class ImpalaHdfsScanRel extends ImpalaPlanRel {
 
@@ -147,7 +150,7 @@ public class ImpalaHdfsScanRel extends ImpalaPlanRel {
 
     TupleDescriptor tupleDesc = createTupleAndSlotDesc(baseTblRef, ctx);
 
-    this.outputExprs = createOutputExprs(tupleDesc.getSlots());
+    this.outputExprs = createScanOutputExprs(tupleDesc.getSlots());
 
     // get the list of conjuncts from the filter
     List<Expr> assignedConjuncts = getConjuncts(filter, ctx.getRootAnalyzer(), this);
@@ -178,6 +181,28 @@ public class ImpalaHdfsScanRel extends ImpalaPlanRel {
     TupleDescriptor tupleDesc = baseTblRef.getDesc();
     return tupleDesc;
   }
+
+  /**
+   * Create the output SlotRefs using the supplied slot descriptors. The key for the map
+   * is the position in the Hdfs table, with partitioned columns coming after non-partitioned
+   * columns.
+   */
+  public ImmutableMap<Integer, Expr> createScanOutputExprs(List<SlotDescriptor> slotDescs) {
+    Map<Integer, Expr> exprs = Maps.newLinkedHashMap();
+    RelOptHiveTable scanTable = (RelOptHiveTable) scan.getTable();
+    int totalColumnsInTbl = scanTable.getNoOfNonVirtualCols();
+    int nonPartitionedCols = scanTable.getNonPartColumns().size();
+    for (SlotDescriptor slotDesc : slotDescs) {
+      slotDesc.setIsMaterialized(true);
+      // We need to determine the position of the column in the table. However, Impala places
+      // the partitioned columns as the first columns whereas Calcite places them at the end.
+      // We do modulo arithmetic to get the right position of the column.
+      int position = (slotDesc.getColumn().getPosition() + nonPartitionedCols) % totalColumnsInTbl;
+      exprs.put(position, new SlotRef(slotDesc));
+    }
+    return ImmutableMap.copyOf(exprs);
+  }
+
 
   @Override
   public RelWriter explainTerms(RelWriter pw) {
