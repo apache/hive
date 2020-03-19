@@ -184,7 +184,7 @@ public class TestHiveMetaStoreChecker {
 
     // find the extra table
     result = new CheckResult();
-    checker.checkMetastore(catName, dbName, tableName, null, null, result);
+    checker.checkMetastore(catName, dbName, null, null, null, result);
     assertEquals(1, result.getTablesNotInMs().size());
     assertEquals(fakeTable.getName(), Lists.newArrayList(result.getTablesNotInMs()).get(0));
     assertEquals(Collections.<String>emptySet(), result.getTablesNotOnFs());
@@ -198,7 +198,7 @@ public class TestHiveMetaStoreChecker {
 
     // should return all ok
     result = new CheckResult();
-    checker.checkMetastore(catName, dbName, tableName, null, null, result);
+    checker.checkMetastore(catName, dbName, null, null, null, result);
     assertEquals(Collections.<String>emptySet(), result.getTablesNotInMs());
     assertEquals(Collections.<String>emptySet(), result.getTablesNotOnFs());
     assertEquals(Collections.<CheckResult.PartitionResult>emptySet(), result.getPartitionsNotOnFs());
