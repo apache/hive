@@ -2383,6 +2383,9 @@ public class HiveConf extends Configuration {
     HIVE_OPTIMIZE_TOPNKEY("hive.optimize.topnkey", true, "Whether to enable top n key optimizer."),
     HIVE_MAX_TOPN_ALLOWED("hive.optimize.topnkey.max", 128, "Maximum topN value allowed by top n key optimizer.\n" +
       "If the LIMIT is greater than this value then top n key optimization won't be used."),
+    HIVE_TOPN_EFFICIENCY_THRESHOLD("hive.optimize.topnkey.efficiency.threshold", 0.8f, "Disable topN key filter if the ratio between forwarded and total rows reaches this limit."),
+    HIVE_TOPN_EFFICIENCY_CHECK_BATCHES("hive.optimize.topnkey.efficiency.check.nbatches", 10000, "Check topN key filter efficiency after a specific number of batches."),
+    HIVE_TOPN_MAX_NUMBER_OF_PARTITIONS("hive.optimize.topnkey.partitions.max", 64, "Limit the maximum number of partitions used by the top N key operator."),
 
     HIVE_SHARED_WORK_OPTIMIZATION("hive.optimize.shared.work", true,
         "Whether to enable shared work optimizer. The optimizer finds scan operator over the same table\n" +

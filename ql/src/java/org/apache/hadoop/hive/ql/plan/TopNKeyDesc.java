@@ -17,12 +17,13 @@
  */
 package org.apache.hadoop.hive.ql.plan;
 
-import org.apache.hadoop.hive.ql.optimizer.topnkey.CommonKeyPrefix;
-import org.apache.hadoop.hive.ql.plan.Explain.Level;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.optimizer.topnkey.CommonKeyPrefix;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
  * TopNKeyDesc.
@@ -38,19 +39,30 @@ public class TopNKeyDesc extends AbstractOperatorDesc {
   private String nullOrder;
   private List<ExprNodeDesc> keyColumns;
   private List<ExprNodeDesc> partitionKeyColumns;
+  private float efficiencyThreshold;
+  private long checkEfficiencyNumBatches;
+  private long checkEfficiencyNumRows;
+  private int maxNumberOfPartitions;
 
   public TopNKeyDesc() {
   }
 
   public TopNKeyDesc(
-      final int topN,
-      final String columnSortOrder,
-      final String nullOrder,
-      final List<ExprNodeDesc> keyColumns,
-      final List<ExprNodeDesc> partitionKeyColumns) {
+    final int topN,
+    final String columnSortOrder,
+    final String nullOrder,
+    final List<ExprNodeDesc> keyColumns,
+    final List<ExprNodeDesc> partitionKeyColumns,
+    float efficiencyThreshold,
+    long checkEfficiencyNumBatches,
+    int maxNumberOfPartitions) {
 
     this.topN = topN;
     this.keyColumns = new ArrayList<>(keyColumns.size());
+    this.efficiencyThreshold = efficiencyThreshold;
+    this.checkEfficiencyNumBatches = checkEfficiencyNumBatches;
+    this.checkEfficiencyNumRows = checkEfficiencyNumBatches * VectorizedRowBatch.DEFAULT_SIZE;
+    this.maxNumberOfPartitions = maxNumberOfPartitions;
     StringBuilder sortOrder = new StringBuilder(columnSortOrder.length());
     StringBuilder nullSortOrder = new StringBuilder(nullOrder.length());
     this.partitionKeyColumns = new ArrayList<>(partitionKeyColumns.size());
@@ -79,6 +91,22 @@ public class TopNKeyDesc extends AbstractOperatorDesc {
   @Explain(displayName = "top n", explainLevels = { Level.DEFAULT, Level.EXTENDED, Level.USER })
   public int getTopN() {
     return topN;
+  }
+
+  public float getEfficiencyThreshold() {
+    return efficiencyThreshold;
+  }
+
+  public long getCheckEfficiencyNumBatches() {
+    return checkEfficiencyNumBatches;
+  }
+
+  public long getCheckEfficiencyNumRows() {
+    return checkEfficiencyNumRows;
+  }
+
+  public int getMaxNumberOfPartitions() {
+    return maxNumberOfPartitions;
   }
 
   public void setTopN(int topN) {
@@ -153,6 +181,11 @@ public class TopNKeyDesc extends AbstractOperatorDesc {
     if (getClass().getName().equals(other.getClass().getName())) {
       TopNKeyDesc otherDesc = (TopNKeyDesc) other;
       return getTopN() == otherDesc.getTopN() &&
+          getEfficiencyThreshold() == otherDesc.getEfficiencyThreshold() &&
+          getCheckEfficiencyNumRows() == otherDesc.getCheckEfficiencyNumRows() &&
+          getCheckEfficiencyNumBatches() == otherDesc.getCheckEfficiencyNumBatches() &&
+          getMaxNumberOfPartitions() == otherDesc.getMaxNumberOfPartitions() &&
+          ExprNodeDescUtils.isSame(partitionKeyColumns, otherDesc.partitionKeyColumns) &&
           Objects.equals(columnSortOrder, otherDesc.columnSortOrder) &&
           Objects.equals(nullOrder, otherDesc.nullOrder) &&
           ExprNodeDescUtils.isSame(keyColumns, otherDesc.keyColumns);
@@ -167,7 +200,28 @@ public class TopNKeyDesc extends AbstractOperatorDesc {
     ret.setColumnSortOrder(columnSortOrder);
     ret.setNullOrder(nullOrder);
     ret.setKeyColumns(getKeyColumns() == null ? null : new ArrayList<>(getKeyColumns()));
+    ret.setPartitionKeyColumns(getPartitionKeyColumns() == null ? null : new ArrayList<>(getPartitionKeyColumns()));
+    ret.setCheckEfficiencyNumRows(checkEfficiencyNumRows);
+    ret.setCheckEfficiencyNumBatches(checkEfficiencyNumBatches);
+    ret.setEfficiencyThreshold(efficiencyThreshold);
+    ret.setMaxNumberOfPartitions(maxNumberOfPartitions);
     return ret;
+  }
+
+  public void setEfficiencyThreshold(float efficiencyThreshold) {
+    this.efficiencyThreshold = efficiencyThreshold;
+  }
+
+  public void setCheckEfficiencyNumBatches(long checkEfficiencyNumBatches) {
+    this.checkEfficiencyNumBatches = checkEfficiencyNumBatches;
+  }
+
+  public void setCheckEfficiencyNumRows(long checkEfficiencyNumRows) {
+    this.checkEfficiencyNumRows = checkEfficiencyNumRows;
+  }
+
+  public void setMaxNumberOfPartitions(int maxNumberOfPartitions) {
+    this.maxNumberOfPartitions = maxNumberOfPartitions;
   }
 
   public class TopNKeyDescExplainVectorization extends OperatorExplainVectorization {
@@ -198,7 +252,8 @@ public class TopNKeyDesc extends AbstractOperatorDesc {
   public TopNKeyDesc combine(CommonKeyPrefix commonKeyPrefix) {
     return new TopNKeyDesc(topN, commonKeyPrefix.getMappedOrder(),
             commonKeyPrefix.getMappedNullOrder(), commonKeyPrefix.getMappedColumns(),
-            commonKeyPrefix.getMappedColumns().subList(0, partitionKeyColumns.size()));
+            commonKeyPrefix.getMappedColumns().subList(0, partitionKeyColumns.size()),
+            efficiencyThreshold, checkEfficiencyNumBatches, maxNumberOfPartitions);
   }
 
 }
