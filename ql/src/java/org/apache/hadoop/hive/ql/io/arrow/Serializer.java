@@ -318,16 +318,15 @@ public class Serializer {
     // Map is converted as a list of structs and thus we call the writeList() method with the flag 'isMapDataType'=true
     writeList(arrowVector, structListVector, structListTypeInfo, size, vectorizedRowBatch, isNative, true);
 
-    final ArrowBuf validityBuffer = arrowVector.getValidityBuffer();
     for (int rowIndex = 0; rowIndex < size; rowIndex++) {
       int selectedIndex = rowIndex;
       if (vectorizedRowBatch.selectedInUse) {
         selectedIndex = vectorizedRowBatch.selected[rowIndex];
       }
       if (hiveVector.isNull[selectedIndex]) {
-        BitVectorHelper.setValidityBit(validityBuffer, rowIndex, 0);
+        BitVectorHelper.setValidityBit(arrowVector.getValidityBuffer(), rowIndex, 0);
       } else {
-        BitVectorHelper.setValidityBitToOne(validityBuffer, rowIndex);
+        BitVectorHelper.setValidityBitToOne(arrowVector.getValidityBuffer(), rowIndex);
       }
     }
   }
@@ -383,12 +382,11 @@ public class Serializer {
       write(arrowFieldVector, hiveFieldVector, fieldTypeInfo, size, vectorizedRowBatch, isNative);
     }
 
-    final ArrowBuf validityBuffer = arrowVector.getValidityBuffer();
     for (int rowIndex = 0; rowIndex < size; rowIndex++) {
       if (hiveVector.isNull[rowIndex]) {
-        BitVectorHelper.setValidityBit(validityBuffer, rowIndex, 0);
+        BitVectorHelper.setValidityBit(arrowVector.getValidityBuffer(), rowIndex, 0);
       } else {
-        BitVectorHelper.setValidityBitToOne(validityBuffer, rowIndex);
+        BitVectorHelper.setValidityBitToOne(arrowVector.getValidityBuffer(), rowIndex);
       }
     }
   }
@@ -460,7 +458,6 @@ public class Serializer {
       write(arrowElementVector, hiveElementVector, elementTypeInfo, correctedSize, correctedVrb, isNative);
     }
 
-    final ArrowBuf offsetBuffer = arrowVector.getOffsetBuffer();
     int nextOffset = 0;
 
     for (int rowIndex = 0; rowIndex < size; rowIndex++) {
@@ -469,14 +466,14 @@ public class Serializer {
         selectedIndex = vectorizedRowBatch.selected[rowIndex];
       }
       if (hiveVector.isNull[selectedIndex]) {
-        offsetBuffer.setInt(rowIndex * OFFSET_WIDTH, nextOffset);
+        arrowVector.getOffsetBuffer().setInt(rowIndex * OFFSET_WIDTH, nextOffset);
       } else {
-        offsetBuffer.setInt(rowIndex * OFFSET_WIDTH, nextOffset);
+        arrowVector.getOffsetBuffer().setInt(rowIndex * OFFSET_WIDTH, nextOffset);
         nextOffset += (int) hiveVector.lengths[selectedIndex];
         arrowVector.setNotNull(rowIndex);
       }
     }
-    offsetBuffer.setInt(size * OFFSET_WIDTH, nextOffset);
+    arrowVector.getOffsetBuffer().setInt(size * OFFSET_WIDTH, nextOffset);
   }
 
   //Handle cases for both internally constructed
