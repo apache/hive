@@ -34,7 +34,7 @@ import org.apache.calcite.sql.type.SqlReturnTypeInference;
  */
 public class HiveMergeablAggregate extends SqlAggFunction  {
 
-  private HiveMergeablAggregate unionAgg;
+  private SqlAggFunction mergeAgg;
 
   public HiveMergeablAggregate(String string, SqlKind kind, SqlReturnTypeInference returnTypeInference,
       SqlOperandTypeInference operandTypeInference,
@@ -44,23 +44,23 @@ public class HiveMergeablAggregate extends SqlAggFunction  {
 
   public HiveMergeablAggregate(String string, SqlKind kind, SqlReturnTypeInference returnTypeInference,
       SqlOperandTypeInference operandTypeInference, SqlOperandTypeChecker operandTypeChecker,
-      HiveMergeablAggregate unionAgg) {
+      SqlAggFunction unionFn) {
     super(
         string, kind,
         returnTypeInference,
         operandTypeInference,
         operandTypeChecker,
         SqlFunctionCategory.NUMERIC);
-    if (unionAgg == null) {
-      this.unionAgg = this;
+    if (unionFn == null) {
+      this.mergeAgg = this;
     } else {
-      this.unionAgg = unionAgg;
+      this.mergeAgg = unionFn;
     }
 
   }
 
-  public SqlAggFunction getUnionAggFunction() {
-    return unionAgg;
+  public SqlAggFunction getMergeAggFunction() {
+    return mergeAgg;
   }
 
 }

@@ -228,8 +228,11 @@ public class DataSketchesFunctions {
   }
 
   public static String getUnionFor(String hiveUdfName) {
-    //FIXME
-    return "ds_hll_union";
+    if (isSketchFunction(hiveUdfName)) {
+      return hiveUdfName.replaceFirst("_" + DATA_TO_SKETCH + "$", "_" + UNION_SKETCH);
+    } else {
+      throw new RuntimeException("error; unexpected udf name: " + hiveUdfName);
+    }
   }
 
 }
