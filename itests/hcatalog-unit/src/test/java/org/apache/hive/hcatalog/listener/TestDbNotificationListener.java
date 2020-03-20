@@ -65,6 +65,7 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TxnType;
+import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
@@ -1174,9 +1175,10 @@ public class TestDbNotificationListener {
     rqst.setTableName(tblName);
     // Event 2
     FireEventResponse response = msClient.fireListenerEvent(rqst);
-    assertTrue("Event id must be set in the fireEvent response", response.isSetEventId());
-    Assert.assertNotNull(response.getEventId());
-    Assert.assertTrue(response.getEventId() != -1);
+    assertTrue("Event id must be set in the fireEvent response", response.isSetEventIds());
+    Assert.assertNotNull(response.getEventIds());
+    Assert.assertTrue(response.getEventIds().size() == 1);
+    Assert.assertEquals(firstEventId+2, response.getEventIds().get(0).longValue());
 
     // Get notifications from metastore
     NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
@@ -1246,32 +1248,106 @@ public class TestDbNotificationListener {
     rqst.setTableName(tblName);
     rqst.setPartitionVals(partCol1Vals);
     // Event 3
-    FireEventResponse response = msClient.fireListenerEvent(rqst);
-    assertTrue("Event id must be set in the fireEvent response", response.isSetEventId());
-    Assert.assertNotNull(response.getEventId());
-    Assert.assertTrue(response.getEventId() != -1);
-
-    // Get notifications from metastore
-    NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
-    assertEquals(3, rsp.getEventsSize());
-    NotificationEvent event = rsp.getEvents().get(2);
-    assertEquals(firstEventId + 3, event.getEventId());
-    assertTrue(event.getEventTime() >= startTime);
-    assertEquals(EventType.INSERT.toString(), event.getEventType());
-    assertEquals(defaultDbName, event.getDbName());
-    assertEquals(tblName, event.getTableName());
-    // Parse the message field
-    verifyInsert(event, defaultDbName, tblName);
-    InsertMessage insertMessage = md.getInsertMessage(event.getMessage());
-    List<String> ptnValues = insertMessage.getPtnObj().getValues();
-    assertFalse(insertMessage.isReplace());
-    assertEquals(partKeyVals, ptnValues);
+    verifyInsertEventReceived(defaultDbName, tblName, Arrays.asList(partKeyVals), rqst,
+        firstEventId + 3, 1);
 
     // Verify the eventID was passed to the non-transactional listener
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.INSERT, firstEventId + 3);
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.ADD_PARTITION, firstEventId + 2);
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.CREATE_TABLE, firstEventId + 1);
     testEventCounts(defaultDbName, firstEventId, null, null, 3);
+
+    // fire multiple insert events on partition
+    // add some more partitions
+    partition =
+        new Partition(Arrays.asList("yesterday"), defaultDbName, tblName, startTime, startTime, sd,
+            emptyParameters);
+    // Event 4
+    msClient.add_partition(partition);
+    partition =
+        new Partition(Arrays.asList("tomorrow"), defaultDbName, tblName, startTime, startTime, sd,
+            emptyParameters);
+    // Event 5
+    msClient.add_partition(partition);
+    data = new FireEventRequestData();
+    List<InsertEventRequestData> insertEventRequestDataList = new ArrayList<>();
+    data.setInsertDatas(insertEventRequestDataList);
+    // event 6
+    InsertEventRequestData insertData1 = new InsertEventRequestData();
+    insertData1.addToFilesAdded(fileAdded);
+    insertData1.addToFilesAddedChecksum(checksumAdded);
+    insertData1.setReplace(false);
+    insertData1.setPartitionVal(Arrays.asList("yesterday"));
+
+    // event 7
+    InsertEventRequestData insertData2 = new InsertEventRequestData();
+    insertData2.addToFilesAdded(fileAdded);
+    insertData2.addToFilesAddedChecksum(checksumAdded);
+    insertData2.setReplace(false);
+    insertData2.setPartitionVal(Arrays.asList("today"));
+
+    // event 8
+    InsertEventRequestData insertData3 = new InsertEventRequestData();
+    insertData3.addToFilesAdded(fileAdded);
+    insertData3.addToFilesAddedChecksum(checksumAdded);
+    insertData3.setReplace(false);
+    insertData3.setPartitionVal(Arrays.asList("tomorrow"));
+    // fire insert event on 3 partitions
+    insertEventRequestDataList.add(insertData1);
+    insertEventRequestDataList.add(insertData2);
+    insertEventRequestDataList.add(insertData3);
+
+    rqst = new FireEventRequest(true, data);
+    rqst.setDbName(defaultDbName);
+    rqst.setTableName(tblName);
+
+    verifyInsertEventReceived(defaultDbName, tblName, Arrays
+        .asList(Arrays.asList("yesterday"), Arrays.asList("today"),
+            Arrays.asList("tomorrow")), rqst, firstEventId + 6, 3);
+
+    // negative test. partition values must be set when firing bulk insert events
+    data.getInsertDatas().get(1).unsetPartitionVal();
+    boolean threwException = false;
+    try {
+      FireEventResponse response = msClient.fireListenerEvent(rqst);
+    } catch (MetaException ex) {
+      threwException = true;
+      Assert.assertTrue(ex instanceof  MetaException);
+      Assert.assertTrue(ex.getMessage()
+          .contains("Partition values must be set when firing multiple insert events"));
+    }
+    Assert.assertTrue("bulk insert event API didn't "
+        + "throw exception when partition values were not set", threwException);
+  }
+
+  private void verifyInsertEventReceived(String defaultDbName, String tblName,
+      List<List<String>> partKeyVals, FireEventRequest rqst, long expectedStartEventId,
+      int expectedNumOfEvents) throws Exception {
+    FireEventResponse response = msClient.fireListenerEvent(rqst);
+    assertTrue("Event id must be set in the fireEvent response", response.isSetEventIds());
+    Assert.assertNotNull(response.getEventIds());
+    Assert.assertTrue(response.getEventIds().size() == expectedNumOfEvents);
+    for (int i = 0; i < expectedNumOfEvents; i++) {
+      Assert.assertEquals(expectedStartEventId + i, response.getEventIds().get(i).longValue());
+    }
+
+    // Get notifications from metastore
+    NotificationEventResponse rsp = msClient.getNextNotification(expectedStartEventId-1, 0, null);
+    assertEquals(expectedNumOfEvents, rsp.getEventsSize());
+    for (int i=0; i<expectedNumOfEvents; i++) {
+      NotificationEvent event = rsp.getEvents().get(i);
+      assertEquals(expectedStartEventId+i, event.getEventId());
+      assertTrue(event.getEventTime() >= startTime);
+      assertEquals(EventType.INSERT.toString(), event.getEventType());
+      assertEquals(defaultDbName, event.getDbName());
+      assertEquals(tblName, event.getTableName());
+      // Parse the message field
+      verifyInsert(event, defaultDbName, tblName);
+      InsertMessage insertMessage = md.getInsertMessage(event.getMessage());
+      List<String> ptnValues = insertMessage.getPtnObj().getValues();
+      assertFalse(insertMessage.isReplace());
+      assertEquals(partKeyVals.get(i), ptnValues);
+    }
   }
 
 
