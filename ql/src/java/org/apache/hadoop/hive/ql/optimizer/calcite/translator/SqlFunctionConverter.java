@@ -37,6 +37,7 @@ import org.apache.calcite.sql.type.SqlReturnTypeInference;
 import org.apache.calcite.sql.type.SqlTypeFamily;
 import org.apache.calcite.util.Util;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.hive.ql.exec.DataSketchesFunctions;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -49,6 +50,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlCountAggFunc
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlMinMaxAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlSumAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlVarianceAggFunction;
+import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveMergeablAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveBetween;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveConcat;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveDateAddSqlOperator;
@@ -525,7 +527,7 @@ public class SqlFunctionConverter {
   }
 
   private static CalciteUDFInfo getUDFInfo(String hiveUdfName,
-      ImmutableList<RelDataType> calciteArgTypes, RelDataType calciteRetType) {
+      List<RelDataType> calciteArgTypes, RelDataType calciteRetType) {
     CalciteUDFInfo udfInfo = new CalciteUDFInfo();
     udfInfo.udfName = hiveUdfName;
     udfInfo.returnTypeInference = ReturnTypes.explicit(calciteRetType);
@@ -578,6 +580,18 @@ public class SqlFunctionConverter {
   public static SqlAggFunction getCalciteAggFn(String hiveUdfName, boolean isDistinct,
       ImmutableList<RelDataType> calciteArgTypes, RelDataType calciteRetType) {
     SqlAggFunction calciteAggFn = (SqlAggFunction) hiveToCalcite.get(hiveUdfName);
+
+    if (DataSketchesFunctions.isUnionFunction(hiveUdfName)) {
+      calciteAggFn = getMergeableAgg(hiveUdfName, calciteArgTypes, calciteRetType);
+    }
+
+    if (DataSketchesFunctions.isSketchFunction(hiveUdfName)) {
+
+      SqlAggFunction unionFn = getMergeableAgg(DataSketchesFunctions.getUnionFor(hiveUdfName),
+          ImmutableList.of(calciteRetType), calciteRetType);
+
+      calciteAggFn = getMergeableAgg(hiveUdfName, calciteArgTypes, calciteRetType, unionFn);
+    }
 
     if (calciteAggFn == null) {
       CalciteUDFInfo udfInfo = getUDFInfo(hiveUdfName, calciteArgTypes, calciteRetType);
@@ -661,6 +675,22 @@ public class SqlFunctionConverter {
       }
     }
     return calciteAggFn;
+  }
+
+  private static SqlAggFunction getMergeableAgg(String hiveUdfName, List<RelDataType> calciteArgTypes,
+      RelDataType calciteRetType, SqlAggFunction unionFn) {
+    CalciteUDFInfo udfInfo = getUDFInfo(hiveUdfName, calciteArgTypes, calciteRetType);
+    return new HiveMergeablAggregate(
+        hiveUdfName,
+        SqlKind.OTHER_FUNCTION,
+        udfInfo.returnTypeInference,
+        udfInfo.operandTypeInference,
+        udfInfo.operandTypeChecker, unionFn);
+  }
+
+  private static SqlAggFunction getMergeableAgg(String hiveUdfName, List<RelDataType> calciteArgTypes,
+      RelDataType calciteRetType) {
+    return getMergeableAgg(hiveUdfName, calciteArgTypes, calciteRetType, null);
   }
 
   static class HiveToken {
