@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.plan.impala.node;
 
 import com.google.common.collect.Lists;
 
+import org.apache.calcite.util.Pair;
 import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.Expr;
 import org.apache.impala.analysis.TupleId;
@@ -31,13 +32,17 @@ import java.util.List;
 
 public class ImpalaUnionNode extends UnionNode {
 
-  public ImpalaUnionNode(PlanNodeId id, TupleId tupleId, PlanNode input, List<Expr> resultExprs) {
-    super(id, tupleId, Lists.newArrayList(), true);
-    addChild(input, resultExprs);
+  public ImpalaUnionNode(PlanNodeId id, TupleId tupleId,
+      List<Expr> resultExprs,
+      List<Pair<PlanNode, List<Expr>>> planNodeAndExprsList) {
+    // CDPD-9406: Need to determine when we should set subPlanId to true.
+    super(id, tupleId, resultExprs, false /* subPlanId */);
+    for (Pair<PlanNode, List<Expr>> planNodeAndExprs : planNodeAndExprsList) {
+      addChild(planNodeAndExprs.left, planNodeAndExprs.right);
+    }
   }
 
   @Override
   public void assignConjuncts(Analyzer analyzer) {
   }
-
 }

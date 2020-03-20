@@ -32,12 +32,14 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
 import org.apache.hadoop.hive.ql.plan.impala.node.ImpalaAggregateRel;
 import org.apache.hadoop.hive.ql.plan.impala.node.ImpalaHdfsScanRel;
 import org.apache.hadoop.hive.ql.plan.impala.node.ImpalaJoinRel;
 import org.apache.hadoop.hive.ql.plan.impala.node.ImpalaProjectPassthroughRel;
 import org.apache.hadoop.hive.ql.plan.impala.node.ImpalaProjectRel;
 import org.apache.hadoop.hive.ql.plan.impala.node.ImpalaSortRel;
+import org.apache.hadoop.hive.ql.plan.impala.node.ImpalaUnionRel;
 
 /**
  * Impala specific transformation rules.
@@ -249,5 +251,23 @@ public class HiveImpalaRules {
       call.transformTo(newJoin);
     }
   }
+
+  public static class ImpalaUnionRule extends RelOptRule {
+
+    public ImpalaUnionRule(RelBuilderFactory relBuilderFactory) {
+      super(operand(HiveUnion.class, any()),
+          relBuilderFactory, "ImpalaUnionRule");
+    }
+
+    @Override
+    public void onMatch(RelOptRuleCall call) {
+      final HiveUnion union = call.rel(0);
+
+      ImpalaUnionRel newUnion = new ImpalaUnionRel(union);
+
+      call.transformTo(newUnion);
+    }
+  }
+
 
 }

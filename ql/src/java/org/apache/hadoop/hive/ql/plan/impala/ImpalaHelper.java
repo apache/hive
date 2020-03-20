@@ -85,6 +85,8 @@ public class ImpalaHelper {
         new HiveImpalaRules.ImpalaJoinRule(HiveRelFactories.HIVE_BUILDER));
     programBuilder.addRuleInstance(
         new HiveImpalaRules.ImpalaSemiJoinRule(HiveRelFactories.HIVE_BUILDER));
+    programBuilder.addRuleInstance(
+        new HiveImpalaRules.ImpalaUnionRule(HiveRelFactories.HIVE_BUILDER));
     return programBuilder.build();
   }
 

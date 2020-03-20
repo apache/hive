@@ -18,15 +18,15 @@
 
 package org.apache.hadoop.hive.ql.plan.impala.node;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import org.apache.calcite.linq4j.Ord;
+import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.RelWriter;
 import org.apache.calcite.rel.type.RelDataTypeField;
-import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.util.Pair;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
 
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaPlannerContext;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaTypeConverter;
@@ -43,68 +43,68 @@ import org.apache.impala.planner.UnionNode;
 import java.util.List;
 
 /**
- * Impala project relnode. This is the Impala Calcite intermediary representation
- * from the Calcite Project node to the Impala Union node. Impala does not have
- * a concept of a Project node, but the Union node where there is only one input
- * node essentially handles this concept.
+ * Impala RelNode class for Union.
+ * One note: Both "union distinct" and "union all" are handled by this class.
+ * Calcite handles the "union distinct" by changing it to a "union all" plus
+ * aggregation.
+ * CDPD-9408: Need to see if we can take advantage of UnionNode.addConstExprList()
+ * for performance gains.
  */
-public class ImpalaProjectRel extends ImpalaProjectRelBase {
+public class ImpalaUnionRel extends ImpalaPlanRel {
 
   private UnionNode unionNode = null;
-  private final HiveFilter filter;
 
-  public ImpalaProjectRel(HiveProject project) {
-    this(project, null);
-  }
+  private final HiveUnion union;
 
-  public ImpalaProjectRel(HiveProject project, HiveFilter filter) {
-    super(project);
-    this.filter = filter;
+  public ImpalaUnionRel(HiveUnion union) {
+    super(union.getCluster(), union.getTraitSet(), union.getInputs(), union.getRowType());
+    this.union = union;
   }
 
   @Override
-  public PlanNode getPlanNode(ImpalaPlannerContext ctx) throws ImpalaException, HiveException, MetaException {
+  public PlanNode getPlanNode(ImpalaPlannerContext ctx)
+      throws ImpalaException, HiveException, MetaException {
     if (unionNode != null) {
       return unionNode;
     }
     PlanNodeId nodeId = ctx.getNextNodeId();
 
-    ImpalaPlanRel unionInputRel = getImpalaRelInput(0);
-
-    PlanNode unionInputNode = unionInputRel.getPlanNode(ctx);
-    Preconditions.checkArgument(getInputs().size() == 1);
-    Preconditions.checkArgument(getInput(0) instanceof ImpalaPlanRel);
     TupleDescriptor tupleDesc = createTupleDescriptor(ctx.getRootAnalyzer());
     // The outputexprs are the SlotRef exprs passed to the parent node.
     this.outputExprs = createOutputExprs(tupleDesc.getSlots());
-    // The project exprs are the Calcite RexNode exprs that are passed into the
-    // Impala Union Node.
-    List<Expr> projectExprs = createProjectExprs(ctx).values().asList();
-    Pair<PlanNode, List<Expr>> pair = Pair.of(unionInputNode, projectExprs);
-    unionNode = new ImpalaUnionNode(nodeId, tupleDesc.getId(), getOutputExprs(),
-        Lists.newArrayList(pair));
-    unionNode.init(ctx.getRootAnalyzer());
 
-    if (filter != null) {
-      List<Expr> conjuncts = getConjuncts(filter, ctx.getRootAnalyzer(), this);
-      ImpalaSelectNode selectNode = new ImpalaSelectNode(ctx.getNextNodeId(), unionNode, conjuncts);
-      selectNode.init(ctx.getRootAnalyzer());
-      return selectNode;
+    int numInputs = getInputs().size();
+    List<Pair<PlanNode, List<Expr>>> planNodeAndExprsList = Lists.newArrayList();
+    for(int i = 0; i < numInputs; ++i) {
+      ImpalaPlanRel unionInputRel = getImpalaRelInput(i);
+      PlanNode unionInputNode = unionInputRel.getPlanNode(ctx);
+      planNodeAndExprsList.add(Pair.of(unionInputNode, unionInputRel.getOutputExprs()));
     }
 
+    unionNode =
+        new ImpalaUnionNode(nodeId, tupleDesc.getId(), getOutputExprs(), planNodeAndExprsList);
+    unionNode.init(ctx.getRootAnalyzer());
     return unionNode;
   }
 
   private TupleDescriptor createTupleDescriptor(Analyzer analyzer) throws HiveException {
-    TupleDescriptor tupleDesc = analyzer.getDescTbl().createTupleDescriptor("single input union");
+    TupleDescriptor tupleDesc = analyzer.getDescTbl().createTupleDescriptor("union");
     tupleDesc.setIsMaterialized(true);
 
-    for (RelDataTypeField relDataTypeField : hiveProject.getRowType().getFieldList()) {
+    for (RelDataTypeField relDataTypeField : union.getRowType().getFieldList()) {
       SlotDescriptor slotDesc = analyzer.addSlotDescriptor(tupleDesc);
       slotDesc.setType(ImpalaTypeConverter.getImpalaType(relDataTypeField.getType()));
       slotDesc.setIsMaterialized(true);
     }
-    tupleDesc.computeMemLayout();
     return tupleDesc;
+  }
+
+  @Override
+  public RelWriter explainTerms(RelWriter pw) {
+    RelWriter rw = super.explainTerms(pw);
+    for (Ord<RelNode> ord : Ord.zip(getInputs())) {
+      rw.input("input#" + ord.i, ord.e);
+    }
+    return rw.item("all", union.all);
   }
 }
