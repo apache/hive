@@ -14,6 +14,7 @@
 package org.apache.hadoop.hive.llap.registry;
 
 import java.util.Collection;
+
 import org.apache.hadoop.hive.registry.ServiceInstanceSet;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 

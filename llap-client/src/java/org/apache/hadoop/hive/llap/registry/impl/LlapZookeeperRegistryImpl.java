@@ -18,13 +18,6 @@
 
 package org.apache.hadoop.hive.llap.registry.impl;
 
-import com.google.common.annotations.VisibleForTesting;
-import org.apache.curator.framework.recipes.atomic.AtomicValue;
-import org.apache.curator.framework.recipes.atomic.DistributedAtomicLong;
-import org.apache.curator.framework.recipes.cache.TreeCache;
-import org.apache.hadoop.registry.client.binding.RegistryUtils;
-
-import com.google.common.collect.Sets;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
@@ -38,7 +31,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
+
+import org.apache.curator.framework.recipes.atomic.AtomicValue;
+import org.apache.curator.framework.recipes.atomic.DistributedAtomicLong;
 import org.apache.curator.framework.recipes.cache.ChildData;
+import org.apache.curator.framework.recipes.cache.TreeCache;
 import org.apache.curator.utils.CloseableUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -58,9 +55,11 @@ import org.apache.hadoop.registry.client.types.ServiceRecord;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.ContainerId;
 import org.apache.hadoop.yarn.api.records.Resource;
-import org.apache.tez.client.registry.zookeeper.ZkConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Sets;
 
 public class LlapZookeeperRegistryImpl
     extends ZkRegistryBase<LlapServiceInstance> implements ServiceRegistry<LlapServiceInstance> {
@@ -316,7 +315,7 @@ public class LlapZookeeperRegistryImpl
 
     @Override
     public Collection<LlapServiceInstance> getAll() {
-      return parent.getAllInternal();
+      return parent.getAllInstancesUnordered(instancesCache);
     }
 
     @Override
@@ -376,6 +375,24 @@ public class LlapZookeeperRegistryImpl
     return new String(childData.getData(), SlotZnode.CHARSET);
   }
 
+  Collection<LlapServiceInstance> getAllInstancesUnordered(TreeCache instancesCache) {
+    Set<LlapServiceInstance> unsorted = Sets.newHashSet();
+    //using the workersPath to ensure that we see the llap instance from the same group
+    Map<String, ChildData> currentChildren = instancesCache.getCurrentChildren(workersPath);
+    if (currentChildren == null) {
+      LOG.warn("No zookeeper data for path [{}]", workersPath);
+      return Collections.EMPTY_SET;
+    }
+    for (ChildData childData : currentChildren.values()) {
+      if (childData != null && childData.getData() != null && extractNodeName(childData).startsWith(WORKER_PREFIX)) {
+        LlapServiceInstance instances = getInstanceByPath(childData.getPath());
+        if (instances != null) {
+          unsorted.add(instances);
+        }
+      }
+    }
+    return unsorted;
+  }
   // The real implementation for the instanceset... instanceset has its own copy of the
   // ZK cache yet completely depends on the parent in every other aspect and is thus unneeded.
 

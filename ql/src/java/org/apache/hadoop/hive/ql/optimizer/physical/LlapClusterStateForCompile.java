@@ -122,7 +122,7 @@ public class LlapClusterStateForCompile {
           return false; // Don't fail; this is best-effort.
         }
       }
-      ServiceInstanceSet<LlapServiceInstance> instances;
+      LlapServiceInstanceSet instances;
       try {
         instances = svc.getInstances(10);
       } catch (IOException e) {

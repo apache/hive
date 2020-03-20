@@ -17,33 +17,49 @@
  */
 package org.apache.hadoop.hive.llap.registry.impl;
 
+import static java.lang.Integer.parseInt;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.URI;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.framework.recipes.nodes.PersistentEphemeralNode;
 import org.apache.curator.retry.RetryOneTime;
 import org.apache.curator.test.TestingServer;
+import org.apache.curator.utils.CloseableUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
+import org.apache.hadoop.hive.llap.registry.LlapServiceInstanceSet;
 import org.apache.hadoop.hive.registry.ServiceInstanceSet;
+import org.apache.hadoop.hive.registry.impl.ZkRegistryBase;
+import org.apache.hadoop.registry.client.binding.RegistryTypeUtils;
+import org.apache.hadoop.registry.client.binding.RegistryUtils;
+import org.apache.hadoop.registry.client.types.ServiceRecord;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.internal.util.reflection.Fields;
 import org.mockito.internal.util.reflection.InstanceField;
 
-import java.io.IOException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static java.lang.Integer.parseInt;
-import static org.junit.Assert.assertEquals;
-
 public class TestLlapZookeeperRegistryImpl {
 
+  public static final String COMPUTE_1 = "compute1";
+  public static final String COMPUTE_2 = "compute2";
+  private static final long TIMEOUT_MS = 10000;
   private HiveConf hiveConf = new HiveConf();
 
   private LlapZookeeperRegistryImpl registry;
+  private LlapZookeeperRegistryImpl compute1;
 
   private CuratorFramework curatorFramework;
   private TestingServer server;
@@ -52,6 +68,7 @@ public class TestLlapZookeeperRegistryImpl {
   public void setUp() throws Exception {
     hiveConf.set(HiveConf.ConfVars.HIVE_ZOOKEEPER_QUORUM.varname, "localhost");
     registry = new LlapZookeeperRegistryImpl("TestLlapZookeeperRegistryImpl", hiveConf);
+    compute1 = new LlapZookeeperRegistryImpl("TestLlapZookeeperRegistryImpl", COMPUTE_1, hiveConf);
 
     server = new TestingServer();
     server.start();
@@ -65,7 +82,7 @@ public class TestLlapZookeeperRegistryImpl {
     curatorFramework.start();
 
     trySetMock(registry, CuratorFramework.class, curatorFramework);
-
+    trySetMock(compute1, CuratorFramework.class, curatorFramework);
   }
 
   @After
@@ -122,6 +139,50 @@ public class TestLlapZookeeperRegistryImpl {
             attributes.get(LlapRegistryService.LLAP_DAEMON_TASK_SCHEDULER_ENABLED_WAIT_QUEUE_SIZE));
     assertEquals(expectedExecutorCount,
             attributes.get(LlapRegistryService.LLAP_DAEMON_NUM_ENABLED_EXECUTORS));
+  }
+
+  @Test
+  public void testComputeGroup() throws Exception {
+    LlapServiceInstanceSet instances = compute1.getInstances("LLAP", 1000);
+    PersistentEphemeralNode znode1 = createZnodeForComputeGroup(COMPUTE_1, "id1");
+    PersistentEphemeralNode znode2 = createZnodeForComputeGroup(COMPUTE_2, "id2");
+    assertEventually(() -> instances.getAll().size() == 1, "should have size 1 after adding 1 to its compute group");
+    CloseableUtils.closeQuietly(znode2);
+    assertEventually(() -> instances.getAll().size() == 1, "should have size 1 after removing from different compute group");
+    CloseableUtils.closeQuietly(znode1);
+    assertEventually(() -> instances.getAll().size() == 0, "should have size 0 after removing from same compute group");
+  }
+
+  static <T> void assertEventually(Callable<Boolean> matcher, String message) throws Exception {
+    long started = System.currentTimeMillis();
+    while (!matcher.call()) {
+      Thread.sleep(100);
+      if (System.currentTimeMillis() - started > TIMEOUT_MS) {
+        fail(message + " was not satisfied withing " + TIMEOUT_MS + "ms");
+      }
+    }
+  }
+
+  private PersistentEphemeralNode createZnodeForComputeGroup(final String computeGroup, String id) throws Exception {
+    ServiceRecord record = new ServiceRecord();
+    record.addInternalEndpoint(RegistryTypeUtils.ipcEndpoint("llap", new InetSocketAddress("dynamic", 4000)));
+    record.addInternalEndpoint(RegistryTypeUtils.ipcEndpoint("shuffle", new InetSocketAddress("dynamic", 4000)));
+    record.addInternalEndpoint(RegistryTypeUtils.ipcEndpoint("llapmng", new InetSocketAddress("dynamic", 4000)));
+    record.addInternalEndpoint(RegistryTypeUtils.ipcEndpoint("llapoutputformat", new InetSocketAddress("dynamic", 4000)));
+    record.addExternalEndpoint(RegistryTypeUtils.webEndpoint("services", new URI("dynamic" + ":4000")));
+    record.set(LlapRegistryService.LLAP_DAEMON_NUM_ENABLED_EXECUTORS, 10);
+    record.set(HiveConf.ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB.varname, 100);
+    record.set(ZkRegistryBase.UNIQUE_IDENTIFIER, id);
+    PersistentEphemeralNode znode = new PersistentEphemeralNode(
+      curatorFramework,
+      PersistentEphemeralNode.Mode.EPHEMERAL_SEQUENTIAL,
+      compute1.getWorkersPath().replace(compute1.getComputeGroup(), computeGroup) + "/worker-",
+      new RegistryUtils.ServiceRecordMarshal().toBytes(record));
+    znode.start();
+    if (!znode.waitForInitialCreate(10, TimeUnit.SECONDS)) {
+      fail("Max znode creation wait time exhausted");
+    }
+    return znode;
   }
 
   static <T> void trySetMock(Object o, Class<T> clazz, T mock) {

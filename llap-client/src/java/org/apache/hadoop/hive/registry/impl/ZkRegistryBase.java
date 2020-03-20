@@ -68,6 +68,7 @@ import org.apache.zookeeper.data.Id;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
@@ -214,6 +215,10 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
     }
     this.zooKeeperClient = getZookeeperClient(conf, namespace, aclProvider);
     this.zooKeeperClient.getConnectionStateListenable().addListener(new ZkConnectionStateListener());
+  }
+
+  private boolean hasComputeGroup() {
+    return this.computeGroup != null && !this.computeGroup.isEmpty();
   }
 
   public static String getRootNamespace(Configuration conf, String userProvidedNamespace,
@@ -808,5 +813,15 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  @VisibleForTesting
+  public String getWorkersPath() {
+    return workersPath;
+  }
+
+  @VisibleForTesting
+  public String getComputeGroup() {
+    return computeGroup;
   }
 }
