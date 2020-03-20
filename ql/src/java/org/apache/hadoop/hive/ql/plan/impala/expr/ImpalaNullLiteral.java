@@ -30,12 +30,13 @@ import org.apache.impala.common.AnalysisException;
  * A NullLiteral that is already marked as analyzed.
  */
 public class ImpalaNullLiteral extends NullLiteral {
-  public ImpalaNullLiteral(Analyzer analyzer) throws HiveException {
+  public ImpalaNullLiteral(Analyzer analyzer, Type type) throws HiveException {
     try {
       this.analyze(analyzer);
     } catch (AnalysisException e) {
       throw new HiveException("Exception in ImpalaNullLiteral instantiation", e);
     }
+    uncheckedCastTo(type);
   }
 
   public ImpalaNullLiteral(ImpalaNullLiteral other) {

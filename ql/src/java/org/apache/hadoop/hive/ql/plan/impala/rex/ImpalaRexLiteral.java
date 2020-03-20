@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.plan.impala.rex;
 
 import org.apache.calcite.rex.RexLiteral;
+import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.DateString;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaBoolLiteral;
@@ -28,8 +29,11 @@ import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaStringLiteral;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaTypeConverter;
 import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.Expr;
+import org.apache.impala.analysis.NullLiteral;
 import org.apache.impala.analysis.NumericLiteral;
+import org.apache.impala.catalog.Type;
 import org.apache.impala.common.SqlCastException;
+import org.apache.impala.thrift.TPrimitiveType;
 
 import java.math.BigDecimal;
 
@@ -46,7 +50,11 @@ public class ImpalaRexLiteral {
       // TODO: CDPD-8266: need to support all getTypeName types.
       switch (rexLiteral.getTypeName()) {
         case NULL:
-          return new ImpalaNullLiteral(analyzer);
+          SqlTypeName sqlTypeName = rexLiteral.getType().getSqlTypeName();
+          TPrimitiveType primitiveType = ImpalaTypeConverter.getTPrimitiveType(sqlTypeName);
+          Type type = ImpalaTypeConverter.getImpalaType(primitiveType,
+              rexLiteral.getType().getPrecision(), rexLiteral.getType().getScale());
+          return new ImpalaNullLiteral(analyzer, type);
         case BOOLEAN:
           return new ImpalaBoolLiteral(analyzer, rexLiteral.getValueAs(Boolean.class));
         case DECIMAL:

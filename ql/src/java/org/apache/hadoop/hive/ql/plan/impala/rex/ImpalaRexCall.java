@@ -154,9 +154,8 @@ public class ImpalaRexCall {
     List<Expr> tmpArgs = new ArrayList<>();
     ImpalaTupleIsNullExpr tupleIsNullExpr = new ImpalaTupleIsNullExpr(tupleIds, analyzer);
     tmpArgs.add(tupleIsNullExpr);
-    ImpalaNullLiteral nullLiteral = new ImpalaNullLiteral(analyzer);
     // null type needs to be cast to appropriate target type before thrift serialization
-    nullLiteral.uncheckedCastTo(Type.BOOLEAN);
+    ImpalaNullLiteral nullLiteral = new ImpalaNullLiteral(analyzer, Type.BOOLEAN);
     tmpArgs.add(nullLiteral);
     tmpArgs.add(expr);
     List<SqlTypeName> typeNames = ImmutableList.of(SqlTypeName.BOOLEAN, SqlTypeName.BOOLEAN, SqlTypeName.BOOLEAN);
