@@ -31,6 +31,7 @@ import org.apache.hive.service.cli.SessionHandle;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.Serializable;
@@ -90,6 +91,7 @@ public class TestHs2Metrics {
     MetricsFactory.init(conf);
   }
 
+  @Ignore
   @Test
   public void testMetrics() throws Exception {
     String tableName = "testMetrics";
@@ -120,6 +122,7 @@ public class TestHs2Metrics {
     serviceClient.closeSession(sessHandle);
   }
 
+  @Ignore
   @Test
   public void testClosedScopes() throws Exception {
     CLIServiceClient serviceClient = miniHS2.getServiceClient();
