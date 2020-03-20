@@ -28,11 +28,11 @@ import org.apache.hadoop.hive.ql.plan.api.StageType;
 import java.io.Serializable;
 
 /**
- * ReplOperationCompleteAckTask.
+ * AckTask.
  *
  * Add the repl dump/ repl load complete acknowledgement.
  **/
-public class ReplOperationCompleteAckTask extends Task<ReplOperationCompleteAckWork> implements Serializable {
+public class AckTask extends Task<AckWork> implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
@@ -50,17 +50,17 @@ public class ReplOperationCompleteAckTask extends Task<ReplOperationCompleteAckW
 
   @Override
   public StageType getType() {
-    return StageType.REPL_OPERATION_COMPLETE_ACK;
+    return StageType.ACK;
   }
 
   @Override
   public String getName() {
-    return "REPL_OPERATION_COMPLETE_ACK";
+    return "ACK_TASK";
   }
 
   @Override
   public boolean canExecuteInParallel() {
-    // REPL_OPERATION_COMPLETE_ACK must be executed only when all its parents are done with execution.
+    // ACK_TASK must be executed only when all its parents are done with execution.
     return false;
   }
 }

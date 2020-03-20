@@ -315,14 +315,14 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     if ((work.isIncrementalLoad() && !work.incrementalLoadTasksBuilder().hasMoreWork() && !work.hasBootstrapLoadTasks())
             || (!work.isIncrementalLoad() && !work.hasBootstrapLoadTasks())) {
       //All repl load tasks are executed and status is 0, create the task to add the acknowledgement
-      ReplOperationCompleteAckWork replLoadCompleteAckWork = new ReplOperationCompleteAckWork(
+      AckWork replLoadAckWork = new AckWork(
               new Path(work.dumpDirectory, ReplUtils.LOAD_ACKNOWLEDGEMENT));
-      Task<ReplOperationCompleteAckWork> loadCompleteAckWorkTask = TaskFactory.get(replLoadCompleteAckWork, conf);
+      Task<AckWork> loadAckWorkTask = TaskFactory.get(replLoadAckWork, conf);
       if (this.childTasks.isEmpty()) {
-        this.childTasks.add(loadCompleteAckWorkTask);
+        this.childTasks.add(loadAckWorkTask);
       } else {
         DAGTraversal.traverse(this.childTasks,
-                new AddDependencyToLeaves(Collections.singletonList(loadCompleteAckWorkTask)));
+                new AddDependencyToLeaves(Collections.singletonList(loadAckWorkTask)));
       }
     }
   }

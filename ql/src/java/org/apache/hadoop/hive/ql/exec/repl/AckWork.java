@@ -25,12 +25,12 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import java.io.Serializable;
 
 /**
- * ReplOperationCompleteAckWork.
+ * AckWork.
  * FS based acknowledgement on repl dump and repl load completion.
  *
  */
-@Explain(displayName = "Repl Operation Complete Ack", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class ReplOperationCompleteAckWork implements Serializable {
+@Explain(displayName = "Replication Ack", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class AckWork implements Serializable {
   private static final long serialVersionUID = 1L;
   private Path ackFilePath;
 
@@ -38,7 +38,7 @@ public class ReplOperationCompleteAckWork implements Serializable {
     return ackFilePath;
   }
 
-  public ReplOperationCompleteAckWork(Path ackFilePath) {
+  public AckWork(Path ackFilePath) {
     this.ackFilePath = ackFilePath;
   }
 

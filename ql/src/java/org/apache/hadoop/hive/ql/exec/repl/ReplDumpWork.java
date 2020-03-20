@@ -20,12 +20,19 @@ package org.apache.hadoop.hive.ql.exec.repl;
 import com.google.common.primitives.Ints;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.repl.ReplScope;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.ReplCopyTask;
+import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.exec.repl.util.TaskTracker;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.plan.Explain;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -33,6 +40,7 @@ import java.util.List;
     Explain.Level.DEFAULT,
     Explain.Level.EXTENDED })
 public class ReplDumpWork implements Serializable {
+  private static Logger LOG = LoggerFactory.getLogger(ReplDumpWork.class);
   final ReplScope replScope;
   final ReplScope oldReplScope;
   final String dbNameOrPattern, astRepresentationForErrorMsg, resultTempPath;
@@ -40,8 +48,8 @@ public class ReplDumpWork implements Serializable {
   Long eventFrom;
   static String testInjectDumpDir = null;
   private Integer maxEventLimit;
-  private transient Iterator<ExternalTableCopyTaskBuilder.DirCopyWork> dirCopyIterator;
-  private transient Iterator<EximUtil.ReplPathMapping> replPathIterator;
+  private transient Iterator<DirCopyWork> dirCopyIterator;
+  private transient Iterator<EximUtil.ManagedTableCopyPath> managedTableCopyPathIterator;
   private Path dumpAckFile;
   private List<String> resultValues;
 
@@ -96,31 +104,27 @@ public class ReplDumpWork implements Serializable {
     }
   }
 
-  public Iterator<ExternalTableCopyTaskBuilder.DirCopyWork> getDirCopyIterator() {
-    return dirCopyIterator;
-  }
-
-  public void setDirCopyIterator(Iterator<ExternalTableCopyTaskBuilder.DirCopyWork> dirCopyIterator) {
+  public void setDirCopyIterator(Iterator<DirCopyWork> dirCopyIterator) {
     if (dirCopyIteratorInitialized()) {
       throw new IllegalStateException("Dir Copy iterator has already been initialized");
     }
     this.dirCopyIterator = dirCopyIterator;
   }
 
-  public boolean dirCopyIteratorInitialized() {
+  private boolean dirCopyIteratorInitialized() {
     return dirCopyIterator != null;
   }
 
-  public Iterator<EximUtil.ReplPathMapping> getReplPathIterator() {
-    return replPathIterator;
+  public void setManagedTableCopyPathIterator(Iterator<EximUtil.ManagedTableCopyPath> managedTableCopyPathIterator) {
+    this.managedTableCopyPathIterator = managedTableCopyPathIterator;
   }
 
-  public void setReplPathIterator(Iterator<EximUtil.ReplPathMapping> replPathIterator) {
-    this.replPathIterator = replPathIterator;
+  private boolean managedTableCopyPathIteratorInitialized() {
+    return managedTableCopyPathIterator != null;
   }
 
-  public boolean replPathIteratorInitialized() {
-    return replPathIterator != null;
+  public boolean tableDataCopyIteratorsInitialized() {
+    return dirCopyIteratorInitialized() || managedTableCopyPathIteratorInitialized();
   }
 
   public Path getDumpAckFile() {
@@ -137,5 +141,35 @@ public class ReplDumpWork implements Serializable {
 
   public void setResultValues(List<String> resultValues) {
     this.resultValues = resultValues;
+  }
+
+  public List<Task<?>> externalTableCopyTasks(TaskTracker tracker, HiveConf conf) {
+    List<Task<?>> tasks = new ArrayList<>();
+    if (dirCopyIteratorInitialized()) {
+      while (dirCopyIterator.hasNext() && tracker.canAddMoreTasks()) {
+        DirCopyWork dirCopyWork = dirCopyIterator.next();
+        Task<DirCopyWork> task = TaskFactory.get(dirCopyWork, conf);
+        tasks.add(task);
+        tracker.addTask(task);
+        LOG.debug("added task for {}", dirCopyWork);
+      }
+    }
+    return tasks;
+  }
+
+  public List<Task<?>> managedTableCopyTasks(TaskTracker tracker, HiveConf conf) {
+    List<Task<?>> tasks = new ArrayList<>();
+    if (managedTableCopyPathIteratorInitialized()) {
+      while (managedTableCopyPathIterator.hasNext() && tracker.canAddMoreTasks()) {
+        EximUtil.ManagedTableCopyPath managedTableCopyPath = managedTableCopyPathIterator.next();
+        Task<?> copyTask = ReplCopyTask.getLoadCopyTask(
+                managedTableCopyPath.getReplicationSpec(), managedTableCopyPath.getSrcPath(),
+                managedTableCopyPath.getTargetPath(), conf, false);
+        tasks.add(copyTask);
+        tracker.addTask(copyTask);
+        LOG.debug("added task for {}", managedTableCopyPath);
+      }
+    }
+    return tasks;
   }
 }

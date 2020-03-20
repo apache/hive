@@ -128,7 +128,7 @@ public class TestReplDumpTask {
       private int tableDumpCount = 0;
 
       @Override
-      List<EximUtil.ReplPathMapping> dumpTable(String dbName, String tblName, String validTxnList, Path dbRoot,
+      List<EximUtil.ManagedTableCopyPath> dumpTable(String dbName, String tblName, String validTxnList, Path dbRoot,
                                                Path replDataDir, long lastReplId, Hive hiveDb,
                                                HiveWrapper.Tuple<Table> tuple)
           throws Exception {
@@ -136,7 +136,7 @@ public class TestReplDumpTask {
         if (tableDumpCount > 1) {
           throw new TestException();
         }
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
       }
     };
 

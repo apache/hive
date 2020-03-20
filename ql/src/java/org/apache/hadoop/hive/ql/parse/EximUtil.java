@@ -161,21 +161,21 @@ public class EximUtil {
   }
 
   /**
-   * Wrapper class for mapping replication source and target path for copying data.
+   * Wrapper class for mapping source and target path for copying managed table data.
    */
-  public static class ReplPathMapping {
+  public static class ManagedTableCopyPath {
     private ReplicationSpec replicationSpec;
     private Path srcPath;
     private Path tgtPath;
 
-    public ReplPathMapping(ReplicationSpec replicationSpec, Path srcPath, Path tgtPath) {
+    public ManagedTableCopyPath(ReplicationSpec replicationSpec, Path srcPath, Path tgtPath) {
       this.replicationSpec = replicationSpec;
       if (srcPath == null) {
-        throw new IllegalArgumentException("Source Path can not be null.");
+        throw new IllegalArgumentException("Source path can not be null.");
       }
       this.srcPath = srcPath;
       if (tgtPath == null) {
-        throw new IllegalArgumentException("Target Path can not be null.");
+        throw new IllegalArgumentException("Target path can not be null.");
       }
       this.tgtPath = tgtPath;
     }
@@ -198,24 +198,10 @@ public class EximUtil {
 
     @Override
     public String toString() {
-      return "ReplPathMapping{"
+      return "ManagedTableCopyPath{"
               + "fullyQualifiedSourcePath=" + srcPath
               + ", fullyQualifiedTargetPath=" + tgtPath
               + '}';
-    }
-
-    public static List<Task<?>> tasks(ReplDumpWork work, TaskTracker tracker, HiveConf conf) {
-      List<Task<?>> tasks = new ArrayList<>();
-      while (tracker.canAddMoreTasks() && work.getReplPathIterator().hasNext()) {
-        ReplPathMapping replPathMapping = work.getReplPathIterator().next();
-        Task<?> copyTask = ReplCopyTask.getLoadCopyTask(
-                replPathMapping.replicationSpec, replPathMapping.getSrcPath(), replPathMapping.getTargetPath(), conf,
-                false);
-        tasks.add(copyTask);
-        tracker.addTask(copyTask);
-        LOG.debug("added task for {}", replPathMapping);
-      }
-      return tasks;
     }
 
     public ReplicationSpec getReplicationSpec() {
