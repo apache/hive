@@ -37,17 +37,25 @@ import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlAggFunction;
+import org.apache.calcite.sql.SqlFunctionCategory;
+import org.apache.calcite.sql.SqlKind;
+import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
+import org.apache.calcite.sql.type.OperandTypes;
+import org.apache.calcite.sql.type.ReturnTypes;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
+import org.apache.hadoop.hive.ql.exec.DataSketchesFunctions;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
+import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveMergeablAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveGroupingID;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSqlFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.slf4j.Logger;
@@ -131,11 +139,11 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
         rewriteCountDistinct(aggCall);
         return;
       }
-      addAggCall(aggCall);
+      addAggCall(aggCall, null);
 
     }
 
-    private void addAggCall(AggregateCall aggCall) {
+    private void addAggCall(AggregateCall aggCall, SqlOperator sqlOperator) {
       // TODO Auto-generated method stub
 
     }
@@ -145,9 +153,9 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
           && !aggCall.hasFilter();
     }
 
-  private AggregateCall rewriteCountDistinct(AggregateCall aggCall) {
+  private void rewriteCountDistinct(AggregateCall aggCall) {
 
-      SqlAggFunction aggFunction = null;
+      SqlAggFunction aggFunction = getDS_FN(aggCall.getAggregation());
       boolean distinct = false;
       boolean approximate = true;
       boolean ignoreNulls = aggCall.ignoreNulls();
@@ -163,11 +171,40 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
           collation, groupCount, input, type, name);
       //    aggCall
       //    aggCall.copy(aggCall.getArgList(), aggCall.filterArg, aggCall.getCollation());
-      return ret;
+
+      addAggCall(ret, createSqlOperator());
 
 //    projExpressions.add();
   }
+
+  private SqlOperator createSqlOperator() {
+    SqlOperator ret;
+    String name="x";
+    ret=new HiveSqlFunction(name, SqlKind.OTHER_FUNCTION,
+        ReturnTypes.explicit(SqlTypeName.ANY),
+        OperandTypes.ANY, OperandTypes.family(),
+        SqlFunctionCategory.USER_DEFINED_FUNCTION, true, false);
+    return ret;
   }
+
+  // FIXME move this to common place
+  private SqlAggFunction getDS_FN(SqlAggFunction oldAggFunction) {
+HiveMergeablAggregate union = new HiveMergeablAggregate(
+    "ds_hll_union",
+    SqlKind.OTHER_FUNCTION,
+    oldAggFunction.getReturnTypeInference(),
+    oldAggFunction.getOperandTypeInference(),
+    oldAggFunction.getOperandTypeChecker()
+    );
+    return new HiveMergeablAggregate(
+        "ds_hll_sketch",
+        SqlKind.OTHER_FUNCTION,
+        oldAggFunction.getReturnTypeInference(),
+        oldAggFunction.getOperandTypeInference(),
+        oldAggFunction.getOperandTypeChecker(),union
+        );
+  }
+
 
   /**
    * Converts an aggregate relational expression that contains only
