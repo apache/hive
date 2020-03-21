@@ -75,6 +75,7 @@ public class Compiler {
   private final Context context;
   private final DriverContext driverContext;
   private final DriverState driverState;
+  private final PerfLogger perfLogger = SessionState.getPerfLogger(true);
 
   private ASTNode tree;
 
@@ -123,8 +124,8 @@ public class Compiler {
   }
 
   private void initialize(String rawCommand) throws CommandProcessorException {
-    SessionState.getPerfLogger(true).PerfLogBegin(CLASS_NAME, PerfLogger.DRIVER_RUN);
-    SessionState.getPerfLogger(true).PerfLogBegin(CLASS_NAME, PerfLogger.COMPILE);
+    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.DRIVER_RUN);
+    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.COMPILE);
     driverState.compilingWithLocking();
 
     VariableSubstitution variableSubstitution = new VariableSubstitution(new HiveVariableSource() {
@@ -158,7 +159,7 @@ public class Compiler {
   }
 
   private void parse() throws ParseException {
-    SessionState.getPerfLogger(true).PerfLogBegin(CLASS_NAME, PerfLogger.PARSE);
+    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.PARSE);
 
     // Trigger query hook before compilation
     driverContext.getHookRunner().runBeforeParseHook(context.getCmd());
@@ -170,11 +171,11 @@ public class Compiler {
     } finally {
       driverContext.getHookRunner().runAfterParseHook(context.getCmd(), !success);
     }
-    SessionState.getPerfLogger(true).PerfLogEnd(CLASS_NAME, PerfLogger.PARSE);
+    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.PARSE);
   }
 
   private BaseSemanticAnalyzer analyze() throws Exception {
-    SessionState.getPerfLogger(true).PerfLogBegin(CLASS_NAME, PerfLogger.ANALYZE);
+    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.ANALYZE);
 
     driverContext.getHookRunner().runBeforeCompileHook(context.getCmd());
 
@@ -234,7 +235,7 @@ public class Compiler {
     // validate the plan
     sem.validate();
 
-    SessionState.getPerfLogger(true).PerfLogEnd(CLASS_NAME, PerfLogger.ANALYZE);
+    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.ANALYZE);
 
     return sem;
   }
@@ -333,7 +334,7 @@ public class Compiler {
     // get the output schema
     setSchema(sem);
     QueryPlan plan = new QueryPlan(driverContext.getQueryString(), sem,
-        SessionState.getPerfLogger(true).getStartTime(PerfLogger.DRIVER_RUN), driverContext.getQueryId(),
+        perfLogger.getStartTime(PerfLogger.DRIVER_RUN), driverContext.getQueryId(),
         driverContext.getQueryState().getHiveOperation(), driverContext.getSchema());
     // save the optimized plan and sql for the explain
     plan.setOptimizedCBOPlan(context.getCalcitePlan());
@@ -400,7 +401,7 @@ public class Compiler {
         HiveConf.getBoolVar(driverContext.getConf(), HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED)) {
 
       try {
-        SessionState.getPerfLogger(true).PerfLogBegin(CLASS_NAME, PerfLogger.DO_AUTHORIZATION);
+        perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.DO_AUTHORIZATION);
         // Authorization check for kill query will be in KillQueryImpl
         // As both admin or operation owner can perform the operation.
         // Which is not directly supported in authorizer
@@ -411,7 +412,7 @@ public class Compiler {
         CONSOLE.printError("Authorization failed:" + authExp.getMessage() + ". Use SHOW GRANT to get more details.");
         throw DriverUtils.createProcessorException(driverContext, 403, authExp.getMessage(), "42000", null);
       } finally {
-        SessionState.getPerfLogger(true).PerfLogEnd(CLASS_NAME, PerfLogger.DO_AUTHORIZATION);
+        perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.DO_AUTHORIZATION);
       }
     }
   }
@@ -467,7 +468,7 @@ public class Compiler {
       }
     }
 
-    double duration = SessionState.getPerfLogger(true).PerfLogEnd(CLASS_NAME, PerfLogger.COMPILE) / 1000.00;
+    double duration = perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.COMPILE) / 1000.00;
     ImmutableMap<String, Long> compileHMSTimings = Hive.dumpMetaCallTimingWithoutEx("compilation");
     driverContext.getQueryDisplay().setHmsTimings(QueryDisplay.Phase.COMPILATION, compileHMSTimings);
 

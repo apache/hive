@@ -91,7 +91,6 @@ public class TestHs2Metrics {
     MetricsFactory.init(conf);
   }
 
-  @Ignore
   @Test
   public void testMetrics() throws Exception {
     String tableName = "testMetrics";
@@ -122,7 +121,6 @@ public class TestHs2Metrics {
     serviceClient.closeSession(sessHandle);
   }
 
-  @Ignore
   @Test
   public void testClosedScopes() throws Exception {
     CLIServiceClient serviceClient = miniHS2.getServiceClient();
