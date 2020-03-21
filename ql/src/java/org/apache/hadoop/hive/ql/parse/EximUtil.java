@@ -30,11 +30,8 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
-import org.apache.hadoop.hive.ql.exec.ReplCopyTask;
 import org.apache.hadoop.hive.ql.exec.Task;
-import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
-import org.apache.hadoop.hive.ql.exec.repl.util.TaskTracker;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -57,7 +54,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -165,6 +161,7 @@ public class EximUtil {
    */
   public static class ManagedTableCopyPath {
     private ReplicationSpec replicationSpec;
+    private static boolean nullSrcPath = false;
     private Path srcPath;
     private Path tgtPath;
 
@@ -180,20 +177,15 @@ public class EximUtil {
       this.tgtPath = tgtPath;
     }
 
-    public Path getSrcPath() {
+    public Path getSrcPath(HiveConf hiveConf) {
+      if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST) && nullSrcPath) {
+        return null;
+      }
       return srcPath;
-    }
-
-    public void setSrcPath(Path srcPath) {
-      this.srcPath = srcPath;
     }
 
     public Path getTargetPath() {
       return tgtPath;
-    }
-
-    public void setTargetPath(Path targetPath) {
-      this.tgtPath = targetPath;
     }
 
     @Override
@@ -210,6 +202,14 @@ public class EximUtil {
 
     public void setReplicationSpec(ReplicationSpec replicationSpec) {
       this.replicationSpec = replicationSpec;
+    }
+
+    /**
+     *
+     * To be used only for testing purpose
+     */
+    public static void setNullSrcPath(boolean aNullSrcPath) {
+      nullSrcPath = aNullSrcPath;
     }
   }
 

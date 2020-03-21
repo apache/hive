@@ -32,9 +32,7 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
-import org.apache.hadoop.hive.ql.exec.repl.DirCopyWork;
 import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
-import org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables;
 import org.apache.hadoop.hive.ql.exec.repl.ReplLoadWork;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -50,14 +48,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Base64;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Collections;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVEQUERYID;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_ENABLE_MOVE_OPTIMIZATION;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_MOVE_OPTIMIZED_FILE_SCHEMES;
-import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.Reader;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_DBNAME;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPLACE;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_CONFIG;
@@ -435,22 +431,6 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
     return null;
-  }
-
-  private List<DirCopyWork> dirLocationsToCopy(Path loadPath, boolean isIncrementalPhase)
-      throws HiveException, IOException {
-    List<DirCopyWork> list = new ArrayList<>();
-    String baseDir = conf.get(HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname);
-    // this is done to remove any scheme related information that will be present in the base path
-    // specifically when we are replicating to cloud storage
-    Path basePath = new Path(baseDir);
-
-    for (String location : new Reader(conf, loadPath, isIncrementalPhase).sourceLocationsToCopy()) {
-      Path sourcePath = new Path(location);
-      Path targetPath = ReplExternalTables.externalTableDataPath(conf, basePath, sourcePath);
-      list.add(new DirCopyWork(sourcePath, targetPath));
-    }
-    return list;
   }
 
   private void setConfigs(ASTNode node) throws SemanticException {

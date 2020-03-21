@@ -78,6 +78,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.security.auth.login.LoginException;
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
@@ -151,8 +152,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
             lastReplId = incrementalDump(hiveDumpRoot, dmd, cmRoot, hiveDb);
           }
           work.setResultValues(Arrays.asList(currentDumpPath.toUri().toString(), String.valueOf(lastReplId)));
-          deleteAllPreviousDumpMeta(dumpRoot, currentDumpPath);
-          work.setDumpAckFile(new Path(hiveDumpRoot, ReplUtils.DUMP_ACKNOWLEDGEMENT));
+          work.setCurrentDumpPath(currentDumpPath);
           initiateDataCopyTasks();
         } else {
           LOG.info("Previous Dump is not yet loaded");
@@ -166,7 +166,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return 0;
   }
 
-  private void deleteAllPreviousDumpMeta(Path dumpRoot, Path currentDumpPath) throws IOException {
+  private void deleteAllPreviousDumpMeta(Path currentDumpPath) throws IOException {
+    Path dumpRoot = currentDumpPath.getParent();
     FileSystem fs = dumpRoot.getFileSystem(conf);
     if (fs.exists(dumpRoot)) {
       FileStatus[] statuses = fs.listStatus(dumpRoot,
@@ -698,18 +699,26 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return managedTableCopyPaths;
   }
 
-  private void initiateDataCopyTasks() throws SemanticException {
+  private void initiateDataCopyTasks() throws SemanticException, IOException {
     TaskTracker taskTracker = new TaskTracker(conf.getIntVar(HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS));
     List<Task<?>> childTasks = new ArrayList<>();
     childTasks.addAll(work.externalTableCopyTasks(taskTracker, conf));
     childTasks.addAll(work.managedTableCopyTasks(taskTracker, conf));
     if (childTasks.isEmpty()) {
-      prepareReturnValues(work.getResultValues());
-      childTasks.add(TaskFactory.get(new AckWork(work.getDumpAckFile()), conf));
+      //All table data copy work finished.
+      finishRemainingTasks();
     } else {
       DAGTraversal.traverse(childTasks, new AddDependencyToLeaves(TaskFactory.get(work, conf)));
+      this.childTasks = childTasks;
     }
-    this.childTasks = childTasks;
+  }
+
+  private void finishRemainingTasks() throws SemanticException, IOException {
+    prepareReturnValues(work.getResultValues());
+    Path dumpAckFile = new Path(work.getCurrentDumpPath(),
+            ReplUtils.REPL_HIVE_BASE_DIR + File.separator + ReplUtils.DUMP_ACKNOWLEDGEMENT);
+    Utils.create(dumpAckFile, conf);
+    deleteAllPreviousDumpMeta(work.getCurrentDumpPath());
   }
 
   private String getValidWriteIdList(String dbName, String tblName, String validTxnString) throws LockException {

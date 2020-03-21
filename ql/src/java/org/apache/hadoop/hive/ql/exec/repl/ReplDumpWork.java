@@ -50,7 +50,7 @@ public class ReplDumpWork implements Serializable {
   private Integer maxEventLimit;
   private transient Iterator<DirCopyWork> dirCopyIterator;
   private transient Iterator<EximUtil.ManagedTableCopyPath> managedTableCopyPathIterator;
-  private Path dumpAckFile;
+  private Path currentDumpPath;
   private List<String> resultValues;
 
   public static void injectNextDumpDirForTest(String dumpDir) {
@@ -127,12 +127,12 @@ public class ReplDumpWork implements Serializable {
     return dirCopyIteratorInitialized() || managedTableCopyPathIteratorInitialized();
   }
 
-  public Path getDumpAckFile() {
-    return dumpAckFile;
+  public Path getCurrentDumpPath() {
+    return currentDumpPath;
   }
 
-  public void setDumpAckFile(Path dumpAckFile) {
-    this.dumpAckFile = dumpAckFile;
+  public void setCurrentDumpPath(Path currentDumpPath) {
+    this.currentDumpPath = currentDumpPath;
   }
 
   public List<String> getResultValues() {
@@ -163,7 +163,7 @@ public class ReplDumpWork implements Serializable {
       while (managedTableCopyPathIterator.hasNext() && tracker.canAddMoreTasks()) {
         EximUtil.ManagedTableCopyPath managedTableCopyPath = managedTableCopyPathIterator.next();
         Task<?> copyTask = ReplCopyTask.getLoadCopyTask(
-                managedTableCopyPath.getReplicationSpec(), managedTableCopyPath.getSrcPath(),
+                managedTableCopyPath.getReplicationSpec(), managedTableCopyPath.getSrcPath(conf),
                 managedTableCopyPath.getTargetPath(), conf, false);
         tasks.add(copyTask);
         tracker.addTask(copyTask);
