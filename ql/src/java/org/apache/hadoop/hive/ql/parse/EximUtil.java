@@ -161,7 +161,7 @@ public class EximUtil {
    */
   public static class ManagedTableCopyPath {
     private ReplicationSpec replicationSpec;
-    private static boolean nullSrcPath = false;
+    private static boolean nullSrcPathForTest = false;
     private Path srcPath;
     private Path tgtPath;
 
@@ -177,8 +177,8 @@ public class EximUtil {
       this.tgtPath = tgtPath;
     }
 
-    public Path getSrcPath(HiveConf hiveConf) {
-      if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST) && nullSrcPath) {
+    public Path getSrcPath() {
+      if (nullSrcPathForTest) {
         return null;
       }
       return srcPath;
@@ -205,11 +205,13 @@ public class EximUtil {
     }
 
     /**
-     *
-     * To be used only for testing purpose
+     * To be used only for testing purpose.
+     * It has been used to make repl dump operation fail.
      */
-    public static void setNullSrcPath(boolean aNullSrcPath) {
-      nullSrcPath = aNullSrcPath;
+    public static void setNullSrcPath(HiveConf conf, boolean aNullSrcPath) {
+      if (conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST)) {
+        nullSrcPathForTest = aNullSrcPath;
+      }
     }
   }
 

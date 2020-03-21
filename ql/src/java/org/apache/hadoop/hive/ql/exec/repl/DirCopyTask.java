@@ -52,8 +52,8 @@ public class DirCopyTask extends Task<DirCopyWork> implements Serializable {
       // target path is created even if the source path is missing, so that ddl task does not try to create it.
       if (!targetFs.mkdirs(destPath)) {
         throw new IOException(destPath + " is not a directory or unable to create one");
-        }
-        createdDir = true;
+      }
+      createdDir = true;
     }
 
     FileStatus status;

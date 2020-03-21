@@ -166,12 +166,42 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return 0;
   }
 
+  private void initiateDataCopyTasks() throws SemanticException, IOException {
+    TaskTracker taskTracker = new TaskTracker(conf.getIntVar(HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS));
+    List<Task<?>> childTasks = new ArrayList<>();
+    childTasks.addAll(work.externalTableCopyTasks(taskTracker, conf));
+    childTasks.addAll(work.managedTableCopyTasks(taskTracker, conf));
+    if (childTasks.isEmpty()) {
+      //All table data copy work finished.
+      finishRemainingTasks();
+    } else {
+      DAGTraversal.traverse(childTasks, new AddDependencyToLeaves(TaskFactory.get(work, conf)));
+      this.childTasks = childTasks;
+    }
+  }
+
+  private void finishRemainingTasks() throws SemanticException, IOException {
+    prepareReturnValues(work.getResultValues());
+    Path dumpAckFile = new Path(work.getCurrentDumpPath(),
+            ReplUtils.REPL_HIVE_BASE_DIR + File.separator + ReplUtils.DUMP_ACKNOWLEDGEMENT);
+    Utils.create(dumpAckFile, conf);
+    deleteAllPreviousDumpMeta(work.getCurrentDumpPath());
+  }
+
+  private void prepareReturnValues(List<String> values) throws SemanticException {
+    LOG.debug("prepareReturnValues : " + dumpSchema);
+    for (String s : values) {
+      LOG.debug("    > " + s);
+    }
+    Utils.writeOutput(Collections.singletonList(values), new Path(work.resultTempPath), conf);
+  }
+
   private void deleteAllPreviousDumpMeta(Path currentDumpPath) throws IOException {
     Path dumpRoot = currentDumpPath.getParent();
     FileSystem fs = dumpRoot.getFileSystem(conf);
     if (fs.exists(dumpRoot)) {
       FileStatus[] statuses = fs.listStatus(dumpRoot,
-        path -> !path.equals(currentDumpPath) && !path.toUri().getPath().equals(currentDumpPath.toString()));
+              path -> !path.equals(currentDumpPath) && !path.toUri().getPath().equals(currentDumpPath.toString()));
       for (FileStatus status : statuses) {
         fs.delete(status.getPath(), true);
       }
@@ -222,14 +252,6 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       FileSystem fs = previousDumpPath.getFileSystem(conf);
       return fs.exists(new Path(previousDumpPath, ReplUtils.LOAD_ACKNOWLEDGEMENT));
     }
-  }
-
-  private void prepareReturnValues(List<String> values) throws SemanticException {
-    LOG.debug("prepareReturnValues : " + dumpSchema);
-    for (String s : values) {
-      LOG.debug("    > " + s);
-    }
-    Utils.writeOutput(Collections.singletonList(values), new Path(work.resultTempPath), conf);
   }
 
   /**
@@ -697,28 +719,6 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       return Collections.emptyList();
     }
     return managedTableCopyPaths;
-  }
-
-  private void initiateDataCopyTasks() throws SemanticException, IOException {
-    TaskTracker taskTracker = new TaskTracker(conf.getIntVar(HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS));
-    List<Task<?>> childTasks = new ArrayList<>();
-    childTasks.addAll(work.externalTableCopyTasks(taskTracker, conf));
-    childTasks.addAll(work.managedTableCopyTasks(taskTracker, conf));
-    if (childTasks.isEmpty()) {
-      //All table data copy work finished.
-      finishRemainingTasks();
-    } else {
-      DAGTraversal.traverse(childTasks, new AddDependencyToLeaves(TaskFactory.get(work, conf)));
-      this.childTasks = childTasks;
-    }
-  }
-
-  private void finishRemainingTasks() throws SemanticException, IOException {
-    prepareReturnValues(work.getResultValues());
-    Path dumpAckFile = new Path(work.getCurrentDumpPath(),
-            ReplUtils.REPL_HIVE_BASE_DIR + File.separator + ReplUtils.DUMP_ACKNOWLEDGEMENT);
-    Utils.create(dumpAckFile, conf);
-    deleteAllPreviousDumpMeta(work.getCurrentDumpPath());
   }
 
   private String getValidWriteIdList(String dbName, String tblName, String validTxnString) throws LockException {

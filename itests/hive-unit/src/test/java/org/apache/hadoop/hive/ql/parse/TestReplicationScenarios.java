@@ -334,59 +334,45 @@ public class TestReplicationScenarios {
     run("CREATE TABLE " + dbName + ".unptned_empty(a string) STORED AS TEXTFILE", driver);
     run("CREATE TABLE " + dbName + ".ptned_empty(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
 
-    String[] unptn_data = new String[]{ "eleven" , "twelve" };
-    String[] ptn_data_1 = new String[]{ "thirteen", "fourteen", "fifteen"};
-    String[] ptn_data_2 = new String[]{ "fifteen", "sixteen", "seventeen"};
+    String[] unptnData = new String[]{ "eleven" , "twelve" };
+    String[] ptnData1 = new String[]{ "thirteen", "fourteen", "fifteen"};
+    String[] ptnData2 = new String[]{ "fifteen", "sixteen", "seventeen"};
     String[] empty = new String[]{};
 
-    String unptn_locn = new Path(TEST_PATH, name + "_unptn").toUri().getPath();
-    String ptn_locn_1 = new Path(TEST_PATH, name + "_ptn1").toUri().getPath();
-    String ptn_locn_2 = new Path(TEST_PATH, name + "_ptn2").toUri().getPath();
+    String unptnLocn = new Path(TEST_PATH, name + "_unptn").toUri().getPath();
+    String ptnLocn1 = new Path(TEST_PATH, name + "_ptn1").toUri().getPath();
+    String ptnLocn2 = new Path(TEST_PATH, name + "_ptn2").toUri().getPath();
 
-    createTestDataFile(unptn_locn, unptn_data);
-    createTestDataFile(ptn_locn_1, ptn_data_1);
-    createTestDataFile(ptn_locn_2, ptn_data_2);
+    createTestDataFile(unptnLocn, unptnData);
+    createTestDataFile(ptnLocn1, ptnData1);
+    createTestDataFile(ptnLocn2, ptnData2);
 
-    run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned", driver);
-    verifySetup("SELECT * from " + dbName + ".unptned", unptn_data, driver);
-    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=1)", driver);
-    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=1", ptn_data_1, driver);
-    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=2)", driver);
-    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=2", ptn_data_2, driver);
+    run("LOAD DATA LOCAL INPATH '" + unptnLocn + "' OVERWRITE INTO TABLE " + dbName + ".unptned", driver);
+    verifySetup("SELECT * from " + dbName + ".unptned", unptnData, driver);
+    run("LOAD DATA LOCAL INPATH '" + ptnLocn1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=1)", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=1", ptnData1, driver);
+    run("LOAD DATA LOCAL INPATH '" + ptnLocn2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=2)", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=2", ptnData2, driver);
     verifySetup("SELECT a from " + dbName + ".ptned_empty", empty, driver);
     verifySetup("SELECT * from " + dbName + ".unptned_empty", empty, driver);
 
     String replicatedDbName = dbName + "_dupe";
 
 
-    EximUtil.ManagedTableCopyPath.setNullSrcPath(true);
+    EximUtil.ManagedTableCopyPath.setNullSrcPath(hconf, true);
     verifyFail("REPL DUMP " + dbName, driver);
     advanceDumpDir();
-    Path dumpBaseDir = new Path(hconf.get(HiveConf.ConfVars.REPLDIR.varname));
-    FileSystem fs = FileSystem.get(dumpBaseDir.toUri(), hconf);
-    // Make sure only one dump directories are present.
-    FileStatus[] fileStatuses = fs.listStatus(dumpBaseDir);
-    assertEquals(fileStatuses.length, 1);
-
-    FileStatus[] uuidFileStatuses = fs.listStatus(fileStatuses[0].getPath());
-    assertEquals(uuidFileStatuses.length, 1);
-
-    Path hiveDumpDir = new Path(uuidFileStatuses[0].getPath(), ReplUtils.REPL_HIVE_BASE_DIR);
-    assertTrue(fs.exists(hiveDumpDir));
-    assertTrue(fs.exists(new Path(hiveDumpDir, "_dumpmetadata")));
-    assertTrue(!fs.exists(new Path(hiveDumpDir, ReplUtils.DUMP_ACKNOWLEDGEMENT)));
-    EximUtil.ManagedTableCopyPath.setNullSrcPath(false);
-
+    EximUtil.ManagedTableCopyPath.setNullSrcPath(hconf, false);
     Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replicatedDbName);
     advanceDumpDir();
-    fs = new Path(bootstrapDump.dumpLocation).getFileSystem(hconf);
+    FileSystem fs = new Path(bootstrapDump.dumpLocation).getFileSystem(hconf);
     Path dumpPath = new Path(bootstrapDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
     assertTrue(fs.exists(new Path(dumpPath, ReplUtils.DUMP_ACKNOWLEDGEMENT)));
     assertTrue(fs.exists(new Path(dumpPath, ReplUtils.LOAD_ACKNOWLEDGEMENT)));
 
-    verifyRun("SELECT * from " + replicatedDbName + ".unptned", unptn_data, driverMirror);
-    verifyRun("SELECT a from " + replicatedDbName + ".ptned WHERE b=1", ptn_data_1, driverMirror);
-    verifyRun("SELECT a from " + replicatedDbName + ".ptned WHERE b=2", ptn_data_2, driverMirror);
+    verifyRun("SELECT * from " + replicatedDbName + ".unptned", unptnData, driverMirror);
+    verifyRun("SELECT a from " + replicatedDbName + ".ptned WHERE b=1", ptnData1, driverMirror);
+    verifyRun("SELECT a from " + replicatedDbName + ".ptned WHERE b=2", ptnData2, driverMirror);
     verifyRun("SELECT a from " + replicatedDbName + ".ptned_empty", empty, driverMirror);
     verifyRun("SELECT * from " + replicatedDbName + ".unptned_empty", empty, driverMirror);
   }
@@ -1700,8 +1686,8 @@ public class TestReplicationScenarios {
 
   @Test
   public void testIncrementalLoadWithOneFailedDump() throws IOException {
-    String testName = "incrementalLoad";
-    String dbName = createDB(testName, driver);
+    String nameOfTest = "testIncrementalLoadWithOneFailedDump";
+    String dbName = createDB(nameOfTest, driver);
     String replDbName = dbName + "_dupe";
 
     run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE", driver);
@@ -1717,9 +1703,9 @@ public class TestReplicationScenarios {
     String[] ptnData2 = new String[] {"fifteen", "sixteen", "seventeen"};
     String[] empty = new String[] {};
 
-    String unptnLocn = new Path(TEST_PATH, testName + "_unptn").toUri().getPath();
-    String ptnLocn1 = new Path(TEST_PATH, testName + "_ptn1").toUri().getPath();
-    String ptnLocn2 = new Path(TEST_PATH, testName + "_ptn2").toUri().getPath();
+    String unptnLocn = new Path(TEST_PATH, nameOfTest + "_unptn").toUri().getPath();
+    String ptnLocn1 = new Path(TEST_PATH, nameOfTest + "_ptn1").toUri().getPath();
+    String ptnLocn2 = new Path(TEST_PATH, nameOfTest + "_ptn2").toUri().getPath();
 
     createTestDataFile(unptnLocn, unptnData);
     createTestDataFile(ptnLocn1, ptnData1);

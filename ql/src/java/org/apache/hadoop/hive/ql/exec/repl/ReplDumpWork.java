@@ -40,7 +40,7 @@ import java.util.List;
     Explain.Level.DEFAULT,
     Explain.Level.EXTENDED })
 public class ReplDumpWork implements Serializable {
-  private static Logger LOG = LoggerFactory.getLogger(ReplDumpWork.class);
+  private static final Logger LOG = LoggerFactory.getLogger(ReplDumpWork.class);
   final ReplScope replScope;
   final ReplScope oldReplScope;
   final String dbNameOrPattern, astRepresentationForErrorMsg, resultTempPath;
@@ -163,7 +163,7 @@ public class ReplDumpWork implements Serializable {
       while (managedTableCopyPathIterator.hasNext() && tracker.canAddMoreTasks()) {
         EximUtil.ManagedTableCopyPath managedTableCopyPath = managedTableCopyPathIterator.next();
         Task<?> copyTask = ReplCopyTask.getLoadCopyTask(
-                managedTableCopyPath.getReplicationSpec(), managedTableCopyPath.getSrcPath(conf),
+                managedTableCopyPath.getReplicationSpec(), managedTableCopyPath.getSrcPath(),
                 managedTableCopyPath.getTargetPath(), conf, false);
         tasks.add(copyTask);
         tracker.addTask(copyTask);
