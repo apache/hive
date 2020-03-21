@@ -16,6 +16,7 @@
 
 package org.apache.hive.jdbc;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -23,6 +24,7 @@ import org.junit.Test;
  */
 public class TestJdbcGenericUDTFGetSplits2 extends AbstractTestJdbcGenericUDTFGetSplits {
 
+  @Ignore("CDPD-9304 Ignore TestJdbcGenericUDTFGetSplits2.testGenericUDTFOrderBySplitCount1 as it is flaky")
   @Test(timeout = 200000)
   public void testGenericUDTFOrderBySplitCount1() throws Exception {
     super.testGenericUDTFOrderBySplitCount1("get_llap_splits", new int[]{12, 3, 1, 3, 12});
