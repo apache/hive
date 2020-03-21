@@ -334,9 +334,9 @@ public class TestReplicationScenarios {
     run("CREATE TABLE " + dbName + ".unptned_empty(a string) STORED AS TEXTFILE", driver);
     run("CREATE TABLE " + dbName + ".ptned_empty(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
 
-    String[] unptnData = new String[]{ "eleven" , "twelve" };
-    String[] ptnData1 = new String[]{ "thirteen", "fourteen", "fifteen"};
-    String[] ptnData2 = new String[]{ "fifteen", "sixteen", "seventeen"};
+    String[] unptnData = new String[]{"eleven", "twelve"};
+    String[] ptnData1 = new String[]{"thirteen", "fourteen", "fifteen"};
+    String[] ptnData2 = new String[]{"fifteen", "sixteen", "seventeen"};
     String[] empty = new String[]{};
 
     String unptnLocn = new Path(TEST_PATH, name + "_unptn").toUri().getPath();
