@@ -48,6 +48,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import static org.apache.hadoop.hive.ql.QTestUtil.DEFAULT_TEST_EC_POLICY;
 import static org.apache.hive.jdbc.TestJdbcWithMiniHS2.getDetailedTableDescription;
@@ -57,6 +58,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Run erasure Coding tests with jdbc.
  */
+@Ignore("CDPD-9303 Ignore TestJdbcWithMiniHS2ErasureCoding as it leads to a System.exit call")
 public class TestJdbcWithMiniHS2ErasureCoding {
   private static final String DB_NAME = "ecTestDb";
   private static MiniHS2 miniHS2 = null;
