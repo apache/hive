@@ -40,6 +40,7 @@ import java.util.List;
     Explain.Level.DEFAULT,
     Explain.Level.EXTENDED })
 public class ReplDumpWork implements Serializable {
+  private static final long serialVersionUID = 1L;
   private static final Logger LOG = LoggerFactory.getLogger(ReplDumpWork.class);
   final ReplScope replScope;
   final ReplScope oldReplScope;
