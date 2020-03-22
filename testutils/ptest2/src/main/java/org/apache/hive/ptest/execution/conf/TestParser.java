@@ -71,16 +71,17 @@ public class TestParser {
 
     Set<String> excluded = new HashSet<String>();
 
-    List<TestBatch> result = Lists.newArrayList();
-    for(QFileTestBatch test : parseQFileTests()) {
-      result.add(test);
-      excluded.add(test.getDriver());
-    }
 
+    List<TestBatch> result = Lists.newArrayList();
     Collection<TestBatch> unitTestBatches =
         new UnitTestPropertiesParser(context, batchIdCounter, testCasePropertyName, sourceDirectory, logger,
             excluded).generateTestBatches();
     result.addAll(unitTestBatches);
+
+    for(QFileTestBatch test : parseQFileTests()) {
+      result.add(test);
+      excluded.add(test.getDriver());
+    }
 
     return result;
   }
