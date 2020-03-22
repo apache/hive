@@ -18,24 +18,33 @@
 
 package org.apache.hadoop.hive.ql.plan.impala.rex;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.DateString;
+import org.apache.calcite.util.TimestampString;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaBoolLiteral;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaDateLiteral;
+import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaFunctionCallExpr;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaNullLiteral;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaStringLiteral;
+import org.apache.hadoop.hive.ql.plan.impala.funcmapper.DefaultFunctionSignature;
+import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaFunctionSignature;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaTypeConverter;
+import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ScalarFunctionDetails;
+import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ScalarFunctionUtil;
 import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.Expr;
-import org.apache.impala.analysis.NullLiteral;
 import org.apache.impala.analysis.NumericLiteral;
+import org.apache.impala.catalog.Function;
 import org.apache.impala.catalog.Type;
 import org.apache.impala.common.SqlCastException;
 import org.apache.impala.thrift.TPrimitiveType;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * Static Helper class that returns Exprs for RexLiteral nodes.
@@ -70,6 +79,8 @@ public class ImpalaRexLiteral {
               dateString);
         case SYMBOL:
           return new ImpalaStringLiteral(analyzer, rexLiteral.getValue().toString());
+        case TIMESTAMP:
+          return createCastTimestampExpr(analyzer, rexLiteral);
         default:
           throw new HiveException("Unsupported RexLiteral: " + rexLiteral.getTypeName());
       }
@@ -77,5 +88,26 @@ public class ImpalaRexLiteral {
       throw new HiveException("Cast exception for type " + rexLiteral.getTypeName()
           + " for value " + rexLiteral + " :" + e);
     }
+  }
+
+  /**
+   * Create a cast timestamp expression from a String to a Timestamp.
+   * The only way to create a TimestampLiteral directly in Impala is by accessing
+   * the backend. This will normally be done earlier in Calcite via constant folding.
+   * If constant folding was not allowed, it means we did not have access to the backend
+   * and thus need to do a cast in order to support conversion to a Timestamp.
+   */
+  private static Expr createCastTimestampExpr(Analyzer analyzer, RexLiteral rexLiteral)
+      throws HiveException, SqlCastException {
+    List<SqlTypeName> typeNames =
+        ImmutableList.of(SqlTypeName.VARCHAR);
+
+    String timestamp = rexLiteral.getValueAs(TimestampString.class).toString();
+    List<Expr> argList = Lists.newArrayList(new ImpalaStringLiteral(analyzer, timestamp));
+    ImpalaFunctionSignature castFuncSig =
+        new DefaultFunctionSignature("cast", typeNames, SqlTypeName.TIMESTAMP);
+    ScalarFunctionDetails castFuncDetails = ScalarFunctionDetails.get(castFuncSig);
+    Function castFunc = ScalarFunctionUtil.create(castFuncDetails);
+    return new ImpalaFunctionCallExpr(analyzer, castFunc, argList, null, Type.TIMESTAMP);
   }
 }
