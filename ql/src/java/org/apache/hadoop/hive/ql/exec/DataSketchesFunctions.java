@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
 public class DataSketchesFunctions {
 
   private static final String DATASKETCHES_PREFIX = "ds";
+
   private static final String DATA_TO_SKETCH = "sketch";
   private static final String SKETCH_TO_ESTIMATE_WITH_ERROR_BOUNDS = "estimate_bounds";
   private static final String SKETCH_TO_ESTIMATE = "estimate";
@@ -81,29 +82,75 @@ public class DataSketchesFunctions {
 
   public static void register(Registry system) {
     DataSketchesFunctions dsf = new DataSketchesFunctions(system);
+
+    dsf.registerFunctions(system);
   }
+
+  private void registerFunctions(Registry system2) {
+    for (SketchDescriptor sketchDescriptor : sketchClasses) {
+      List<SketchFunctionDescriptor> functions = sketchDescriptor.li;
+      for (SketchFunctionDescriptor fn : functions) {
+        if (UDF.class.isAssignableFrom(fn.udfClass)) {
+          registerUDF((Class<? extends UDF>) fn.udfClass, fn.name);
+          continue;
+        }
+        if (GenericUDAFResolver2.class.isAssignableFrom(fn.udfClass)) {
+          registerUDAF((Class<? extends GenericUDAFResolver2>) fn.udfClass, fn.name);
+          continue;
+        }
+        if (GenericUDTF.class.isAssignableFrom(fn.udfClass)) {
+          registerUDTF((Class<? extends GenericUDTF>) fn.udfClass, fn.name);
+          continue;
+        }
+        throw new RuntimeException("Don't know how to register: " + fn.name);
+      }
+    }
+
+  }
+
+  private void registerUDF(Class<? extends UDF> udfClass, String name) {
+    system.registerUDF(name, udfClass, false);
+  }
+
+  private void registerUDAF(Class<? extends GenericUDAFResolver2> udafClass, String name) {
+    try {
+      system.registerGenericUDAF(name, udafClass.newInstance());
+    } catch (InstantiationException | IllegalAccessException e) {
+      throw new RuntimeException("Unable to register: " + name, e);
+    }
+  }
+
+  private void registerUDTF(Class<? extends GenericUDTF> udtfClass, String name) {
+    system.registerGenericUDTF(name, udtfClass);
+  }
+
 
   static class SketchFunctionDescriptor {
     String name;
     Class<?> udfClass;
+
+    public SketchFunctionDescriptor(String name, Class<?> udfClass) {
+      this.name = name;
+      this.udfClass = udfClass;
+    }
   }
 
   static class SketchDescriptor {
     List<SketchFunctionDescriptor> li;
+    private String functionPrefix;
 
     public SketchDescriptor(String string) {
-      String x = DATASKETCHES_PREFIX;
-      // TODO Auto-generated constructor stub
+      li = new ArrayList<SketchFunctionDescriptor>();
+      functionPrefix = DATASKETCHES_PREFIX + "_" + string + "_";
     }
 
     public void registerUDAF(Class<?> class1, String p, String dataToSketch) {
       register(dataToSketch, class1);
-      // TODO Auto-generated method stub
 
     }
 
-    private void register(String dataToSketch, Class<?> class1) {
-      // TODO Auto-generated method stub
+    private void register(String name, Class<?> class1) {
+      li.add(new SketchFunctionDescriptor(functionPrefix + name, class1));
 
     }
 
@@ -114,7 +161,7 @@ public class DataSketchesFunctions {
 
 
     public void registerUDTF(Class<?> class1, String p, String getFrequentItems) {
-      // TODO Auto-generated method stub
+      register(getFrequentItems, class1);
 
     }
   }
@@ -269,21 +316,6 @@ public class DataSketchesFunctions {
     sketchClasses.add(sd);
   }
 
-  private void registerUDF(Class<? extends UDF> udfClass, String name) {
-    system.registerUDF(name, udfClass, false);
-  }
-
-  private void registerUDAF(Class<? extends GenericUDAFResolver2> udafClass, String name) {
-    try {
-      system.registerGenericUDAF(name, udafClass.newInstance());
-    } catch (InstantiationException | IllegalAccessException e) {
-      throw new RuntimeException("Unable to register: " + name, e);
-    }
-  }
-
-  private void registerUDTF(Class<? extends GenericUDTF> udtfClass, String name) {
-    system.registerGenericUDTF(name, udtfClass);
-  }
 
   public static boolean isUnionFunction(String udfName) {
     return (udfName.startsWith(DATASKETCHES_PREFIX + "_") && udfName.endsWith("_" + UNION_SKETCH));
