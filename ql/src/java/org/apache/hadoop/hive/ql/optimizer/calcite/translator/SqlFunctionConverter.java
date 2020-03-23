@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Map;
-
+import java.util.function.Consumer;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlFunctionCategory;
@@ -35,6 +35,7 @@ import org.apache.calcite.sql.type.SqlOperandTypeChecker;
 import org.apache.calcite.sql.type.SqlOperandTypeInference;
 import org.apache.calcite.sql.type.SqlReturnTypeInference;
 import org.apache.calcite.sql.type.SqlTypeFamily;
+import org.apache.calcite.util.Pair;
 import org.apache.calcite.util.Util;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.ql.exec.DataSketchesFunctions;
@@ -50,7 +51,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlCountAggFunc
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlMinMaxAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlSumAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlVarianceAggFunction;
-import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveMergeablAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveBetween;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveConcat;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveDateAddSqlOperator;
@@ -351,7 +351,7 @@ public class SqlFunctionConverter {
   /**
    * This class is used to build immutable hashmaps in the static block above.
    */
-  private static class StaticBlockBuilder {
+  private static class StaticBlockBuilder implements Consumer<Pair<String, SqlOperator>> {
     final Map<String, SqlOperator>    hiveToCalcite      = Maps.newHashMap();
     final Map<SqlOperator, HiveToken> calciteToHiveToken = Maps.newHashMap();
     final Map<SqlOperator, String>    reverseOperatorMap = Maps.newHashMap();
@@ -470,6 +470,13 @@ public class SqlFunctionConverter {
       );
       registerFunction("date_add", HiveDateAddSqlOperator.INSTANCE, hToken(HiveParser.Identifier, "date_add"));
       registerFunction("date_sub", HiveDateSubSqlOperator.INSTANCE, hToken(HiveParser.Identifier, "date_sub"));
+
+      DataSketchesFunctions.registerCalciteFunctions(this);
+    }
+
+    @Override
+    public void accept(Pair<String, SqlOperator> t) {
+      registerDuplicateFunction(t.left, t.right, hToken(HiveParser.Identifier, t.left));
     }
 
     private void registerFunction(String name, SqlOperator calciteFn, HiveToken hiveToken) {
@@ -581,18 +588,6 @@ public class SqlFunctionConverter {
       ImmutableList<RelDataType> calciteArgTypes, RelDataType calciteRetType) {
     SqlAggFunction calciteAggFn = (SqlAggFunction) hiveToCalcite.get(hiveUdfName);
 
-    if (DataSketchesFunctions.isUnionFunction(hiveUdfName)) {
-      calciteAggFn = getMergeableAgg(hiveUdfName, calciteArgTypes, calciteRetType);
-    }
-
-    if (DataSketchesFunctions.isSketchFunction(hiveUdfName)) {
-
-      SqlAggFunction unionFn = getMergeableAgg(DataSketchesFunctions.getUnionFor(hiveUdfName),
-          ImmutableList.of(calciteRetType), calciteRetType);
-
-      calciteAggFn = getMergeableAgg(hiveUdfName, calciteArgTypes, calciteRetType, unionFn);
-    }
-
     if (calciteAggFn == null) {
       CalciteUDFInfo udfInfo = getUDFInfo(hiveUdfName, calciteArgTypes, calciteRetType);
 
@@ -675,22 +670,6 @@ public class SqlFunctionConverter {
       }
     }
     return calciteAggFn;
-  }
-
-  private static SqlAggFunction getMergeableAgg(String hiveUdfName, List<RelDataType> calciteArgTypes,
-      RelDataType calciteRetType, SqlAggFunction unionFn) {
-    CalciteUDFInfo udfInfo = getUDFInfo(hiveUdfName, calciteArgTypes, calciteRetType);
-    return new HiveMergeablAggregate(
-        hiveUdfName,
-        SqlKind.OTHER_FUNCTION,
-        udfInfo.returnTypeInference,
-        udfInfo.operandTypeInference,
-        udfInfo.operandTypeChecker, unionFn);
-  }
-
-  private static SqlAggFunction getMergeableAgg(String hiveUdfName, List<RelDataType> calciteArgTypes,
-      RelDataType calciteRetType) {
-    return getMergeableAgg(hiveUdfName, calciteArgTypes, calciteRetType, null);
   }
 
   static class HiveToken {
