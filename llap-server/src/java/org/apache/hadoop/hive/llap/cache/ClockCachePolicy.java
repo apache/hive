@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.llap.cache;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import org.apache.hadoop.hive.llap.io.metadata.MetadataCache;
 
 import javax.annotation.concurrent.GuardedBy;
 import java.util.Iterator;
@@ -146,13 +147,11 @@ public class ClockCachePolicy implements LowLevelCachePolicy {
       // clock position as soon we are done with looping
       LlapCacheableBuffer currentClockHead = clockHand;
 
-      while (evicted < memoryToReserve && currentClockHead != null && fullClockRotation < maxCircles) {
+      while (evicted < memoryToReserve && fullClockRotation < maxCircles) {
         if (ringTail == currentClockHead) {
           fullClockRotation++;
         }
-        if (currentClockHead.isClockBitSet()) {
-          // case the buffer getting second chance.
-          currentClockHead.unSetClockBit();
+        if (currentClockHead.unSetClockBit()) { // case the buffer was set and is getting second chance
           currentClockHead = currentClockHead.next;
         } else {
           // try to evict this victim
@@ -204,25 +203,69 @@ public class ClockCachePolicy implements LowLevelCachePolicy {
   }
 
   @Override public void debugDumpShort(StringBuilder sb) {
+    String newLine = System.getProperty("line.separator");
+    sb.append("Clock Caching policy short summary").append(newLine);
     if (clockHand == null) {
-      sb.append("Clock is empty");
+      sb.append("Cache is empty").append(newLine);
       return;
     }
+    int totalDataBuffer = 0;
+    int totalMetadataBuffer = 0;
+    long totalDataBufferSize = 0;
+    long totalMetadataBufferSize = 0;
+    long totalLockedDataBufferSize = 0;
+    long totalLockedMetadataBufferSize = 0;
+
     listLock.lock();
     try {
-      sb.append("Clock Status\n");
+      sb.append("Clock Status").append(newLine);
       LlapCacheableBuffer currentClockHand = clockHand;
       LlapCacheableBuffer lastElement = clockHand.prev;
       while (currentClockHand != lastElement) {
         sb.append(currentClockHand.toStringForCache());
+        long size = currentClockHand.getMemoryUsage();
+        int isLocked = currentClockHand.isLocked() ? 1 : 0;
+        boolean isMetadata = currentClockHand instanceof MetadataCache.LlapMetadataBuffer;
+        if (isMetadata) {
+          totalMetadataBuffer++;
+          totalMetadataBufferSize += size * (1 - isLocked);
+          totalLockedMetadataBufferSize  += size * isLocked;
+        } else {
+          totalDataBuffer++;
+          totalDataBufferSize += size * (1 - isLocked);
+          totalLockedDataBufferSize  += size * isLocked;
+        }
         currentClockHand = currentClockHand.next;
       }
-      sb.append(lastElement.toStringForCache());
+
     } finally {
       listLock.unlock();
     }
+
+    sb.append("Number of Data buffer: ")
+        .append(totalDataBuffer)
+        .append(newLine)
+        .append("Number of MetaData buffer: ")
+        .append(totalMetadataBuffer)
+        .append(newLine)
+        .append("Total bytes of locked data buffers: ")
+        .append(totalLockedDataBufferSize)
+        .append(newLine)
+        .append("Total size of unlocked data buffers: ")
+        .append(totalDataBufferSize)
+        .append(newLine)
+        .append("Total size of locked metadata buffer: ")
+        .append(totalLockedMetadataBufferSize)
+        .append(newLine)
+        .append("Total size of unlocked metadata buffer: ")
+        .append(totalMetadataBufferSize);
   }
 
+  /**
+   * This method is @NotThreadSafe and used only by testing with single reader and writer thread.
+   *
+   * @return iterator over the clock.
+   */
   @VisibleForTesting protected Iterator<LlapCacheableBuffer> getIterator() {
     final LlapCacheableBuffer currentHead = clockHand;
     if (currentHead == null) {
@@ -259,6 +302,11 @@ public class ClockCachePolicy implements LowLevelCachePolicy {
     };
   }
 
+  /**
+   * Using the clock hand without locking is @NotThreadSafe, as per annotation is testing only method.
+   *
+   * @return clock hand
+   */
   @VisibleForTesting public LlapCacheableBuffer getClockHand() {
     return clockHand;
   }

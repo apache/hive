@@ -4190,10 +4190,8 @@ public class HiveConf extends Configuration {
     LLAP_TRACK_CACHE_USAGE("hive.llap.io.track.cache.usage", true,
          "Whether to tag LLAP cache contents, mapping them to Hive entities (paths for\n" +
          "partitions and tables) for reporting."),
-    LLAP_USE_LRFU("hive.llap.io.use.lrfu", true,
-        "Whether ORC low-level cache should use LRFU cache policy instead of default (FIFO)."),
     LLAP_IO_CACHE_STRATEGY("hive.llap.io.replacement.strategy", "lrfu", new StringSet("fifo", "clock", "lrfu"),
-        "Cache replacement strategy used by low-level (default to LRFU)."),
+        "Replacement strategy for LLAP IO/data cache (default to LRFU)."),
     LLAP_LRFU_LAMBDA("hive.llap.io.lrfu.lambda", 0.1f,
         "Lambda for ORC low-level cache LRFU cache policy. Must be in [0, 1]. 0 makes LRFU\n" +
         "behave like LFU, 1 makes it behave like LRU, values in between balance accordingly.\n" +
@@ -4205,7 +4203,7 @@ public class HiveConf extends Configuration {
         + "and block when max queue size reached"),
     LLAP_IO_MAX_CLOCK_ROTATION("hive.llap.io.clock.max.rotation",
         5,
-        "Maximum number of clock rotation before giving up on clock operations like search eviction victim"),
+        "HIVE DEVs ONLY property. Maximum number of clock rotation before giving up on clock operations like search eviction victim"),
     LLAP_CACHE_ALLOW_SYNTHETIC_FILEID("hive.llap.cache.allow.synthetic.fileid", true,
         "Whether LLAP cache should use synthetic file ID if real one is not available. Systems\n" +
         "like HDFS, Isilon, etc. provide a unique file/inode ID. On other FSes (e.g. local\n" +

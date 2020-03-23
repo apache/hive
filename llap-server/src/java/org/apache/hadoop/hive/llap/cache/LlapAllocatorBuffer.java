@@ -91,11 +91,15 @@ public abstract class LlapAllocatorBuffer extends LlapCacheableBuffer implements
     }
   }
   @Override
-  public final void unSetClockBit() {
+  public final boolean unSetClockBit() {
     long val = state.get();
-    while (State.isClockBitSet(val) && !state.compareAndSet(val, State.unSetClockBit(val))) {
+    if (!State.isClockBitSet(val)) return false;
+
+    while (State.isClockBitSet(val)) {
+      if (state.compareAndSet(val, State.unSetClockBit(val))) return true;
       val = state.get();
     }
+    return false;
   }
 
   @Override

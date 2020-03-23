@@ -137,7 +137,7 @@ public final class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
     // a locked item in either, it will remove it from cache; when we unlock, we are going to
     // put it back or update it, depending on whether this has happened. This should cause
     // most of the expensive cache update work to happen in unlock, not blocking processing.
-    if (buffer.cacheAttribute == null || buffer.cacheAttribute.getIndex() != IN_LIST || !listLock.tryLock()) {
+    if (buffer.cacheAttribute.getIndex() != IN_LIST || !listLock.tryLock()) {
       return;
     }
 
@@ -213,7 +213,7 @@ public final class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
         LlapCacheableBuffer demoted = heap[0];
         listLock.lock();
         try {
-          //assert demoted.indexInHeap == 0; // Noone could have moved it, we have the heap lock.
+          assert demoted.cacheAttribute.getIndex() == 0; // Noone could have moved it, we have the heap lock.
           demoted.cacheAttribute.setIndex(IN_LIST);
           demoted.prev = null;
           if (listHead != null) {

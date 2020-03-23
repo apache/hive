@@ -127,8 +127,8 @@ public class OrcFileEstimateErrors extends LlapCacheableBuffer {
     //no op
   }
 
-  @Override public void unSetClockBit() {
-    //no op
+  @Override public boolean unSetClockBit() {
+    return false;
   }
 
   @Override public boolean isClockBitSet() {

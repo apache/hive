@@ -58,8 +58,10 @@ public abstract class LlapCacheableBuffer {
 
   /**
    * Set the clock bit to false, should be thread safe.
+   *
+   * @return true if the bit was set and unset operation did occur by the caller.
    */
-  public abstract void unSetClockBit();
+  public abstract boolean unSetClockBit();
 
   /**
    * @return value of the clock bit.
@@ -91,12 +93,4 @@ public abstract class LlapCacheableBuffer {
    */
   protected abstract boolean isLocked();
 
-  public interface CacheAttribute {
-    double getPriority();
-    void setPriority(double priority);
-    long getLastUpdate();
-    void setTouchTime(long time);
-    int getIndex();
-    void setIndex(int index);
-  }
 }

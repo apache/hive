@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.llap.cache;
 
-public final class LrfuCacheAttribute implements LlapCacheableBuffer.CacheAttribute {
+public final class LrfuCacheAttribute implements CacheAttribute {
   /** Priority for cache policy (should be pretty universal). */
   public double priority;
   /** Last priority update time for cache policy (should be pretty universal). */

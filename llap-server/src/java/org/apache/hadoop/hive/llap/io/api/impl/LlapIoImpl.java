@@ -139,7 +139,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
       // Memory manager uses cache policy to trigger evictions, so create the policy first.
       final long totalMemorySize = HiveConf.getSizeVar(conf, ConfVars.LLAP_IO_MEMORY_MAX_SIZE);
 
-      final LowLevelCachePolicy cachePolicyWrapper = LowLevelCachePolicy.provideFromConf(conf);
+      final LowLevelCachePolicy cachePolicyWrapper = LowLevelCachePolicy.createFromConf(conf);
 
       // Allocator uses memory manager to request memory, so create the manager next.
       this.memoryManager = new LowLevelCacheMemoryManager(totalMemorySize, cachePolicyWrapper, cacheMetrics);

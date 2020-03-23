@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
  */
 public interface LowLevelCachePolicy extends LlapIoDebugDump {
 
-  static LowLevelCachePolicy provideFromConf(Configuration conf) {
+  static LowLevelCachePolicy createFromConf(Configuration conf) {
     final long totalMemorySize = HiveConf.getSizeVar(conf, HiveConf.ConfVars.LLAP_IO_MEMORY_MAX_SIZE);
     final int minAllocSize = (int) HiveConf.getSizeVar(conf, HiveConf.ConfVars.LLAP_ALLOCATOR_MIN_ALLOC);
     String policyName = HiveConf.getVar(conf,HiveConf.ConfVars.LLAP_IO_CACHE_STRATEGY);
