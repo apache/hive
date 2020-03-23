@@ -947,8 +947,6 @@ public class HiveServer2 extends CompositeService {
     if (zKClientForPrivSync != null) {
       zKClientForPrivSync.close();
     }
-
-    ProactiveEviction.shutdown();
   }
 
   private void shutdownExecutor(final ExecutorService leaderActionsExecutorService) {

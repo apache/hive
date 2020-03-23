@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.io.retry.RetryPolicies;
 import org.apache.hadoop.io.retry.RetryPolicy;
 import org.apache.hadoop.net.NetUtils;
+import org.apache.hive.common.util.ShutdownHookManager;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
@@ -54,16 +55,22 @@ import org.slf4j.LoggerFactory;
  */
 public final class ProactiveEviction {
 
-  private static ExecutorService executor = null;
+  static {
+    ShutdownHookManager.addShutdownHook(new Runnable() {
+      @Override
+      public void run() {
+        if (EXECUTOR != null) {
+          EXECUTOR.shutdownNow();
+        }
+      }
+    });
+  }
+
+  private static final ExecutorService EXECUTOR = Executors.newSingleThreadExecutor(
+      new ThreadFactoryBuilder().setNameFormat("Proactive-Eviction-Requester").setDaemon(true).build());
 
   private ProactiveEviction() {
     // Not to be used;
-  }
-
-  public static void shutdown() {
-    if (executor != null) {
-      executor.shutdownNow();
-    }
   }
 
   /**
@@ -76,11 +83,6 @@ public final class ProactiveEviction {
       return;
     }
 
-    if (executor == null) {
-      executor = Executors.newSingleThreadExecutor(
-          new ThreadFactoryBuilder().setNameFormat("Proactive-Eviction-Requester").setDaemon(true).build());
-    }
-
     try {
       LlapRegistryService llapRegistryService = LlapRegistryService.getClient(conf);
       Collection<LlapServiceInstance> instances = llapRegistryService.getInstances().getAll();
@@ -90,7 +92,7 @@ public final class ProactiveEviction {
       }
       for (LlapServiceInstance instance : instances) {
         Task task = new Task(conf, instance, request);
-        executor.execute(task);
+        EXECUTOR.execute(task);
       }
 
     } catch (IOException e) {
