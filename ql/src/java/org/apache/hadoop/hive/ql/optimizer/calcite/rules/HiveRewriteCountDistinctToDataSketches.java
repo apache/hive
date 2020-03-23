@@ -18,7 +18,6 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.rel.RelCollation;
@@ -29,6 +28,7 @@ import org.apache.calcite.rel.core.RelFactories;
 import org.apache.calcite.rel.core.RelFactories.AggregateFactory;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexBuilder;
+import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlFunctionCategory;
 import org.apache.calcite.sql.SqlKind;
@@ -44,6 +44,8 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSqlFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.ImmutableList;
 
 /**
  * Planner rule that expands distinct aggregates
@@ -81,8 +83,6 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
     projFactory = HiveRelFactories.HIVE_PROJECT_FACTORY;
   }
 
-  RelOptCluster cluster = null;
-  RexBuilder rexBuilder = null;
 
   @Override
   public void onMatch(RelOptRuleCall call) {
@@ -94,6 +94,7 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
 
     VBuilder vb = new VBuilder(aggregate);
 
+    newAggCalls = aggregate.getAggCallList();
     // FIXME HiveAggregate?
     RelNode newCall = aggregate.copy(aggregate.getTraitSet(), aggregate.getInput(), aggregate.getGroupSet(),
         aggregate.getGroupSets(), newAggCalls);
@@ -105,10 +106,14 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
   static class VBuilder {
 
     private Aggregate aggregate;
+    private List<AggregateCall> newAggCalls = new ArrayList<AggregateCall>();
+    private List<RexNode> newProjects = new ArrayList<RexNode>();
+    private final RexBuilder rexBuilder;
 
     public VBuilder(Aggregate aggregate) {
 
       this.aggregate = aggregate;
+      rexBuilder = aggregate.getCluster().getRexBuilder();
       for (AggregateCall aggCall : aggregate.getAggCallList()) {
         processAggCall(aggCall);
       }
@@ -124,8 +129,28 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
     }
 
     private void addAggCall(AggregateCall aggCall, SqlOperator sqlOperator) {
-      // TODO Auto-generated method stub
 
+//      Set<Integer> allFields = RelOptUtil.getAllFields(aggregate);
+//
+//      final Map<Integer, Integer> map = new HashMap<>();
+//
+//      for (Integer source: allFields) {
+//        map.put(source,)
+//      }
+//
+      newAggCalls.add(aggCall);
+      newProjects.add(buildIdentityRexNode(sqlOperator));
+
+    }
+
+    private RexNode buildIdentityRexNode(SqlOperator sqlOperator) {
+//      aggregate.
+      RexNode fieldRef = null;
+      if (sqlOperator != null) {
+        return rexBuilder.makeCall(sqlOperator, ImmutableList.of(fieldRef));
+//        return
+      }
+      return fieldRef;
     }
 
     private boolean isSimpleCountDistinct(AggregateCall aggCall) {
