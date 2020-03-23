@@ -133,16 +133,17 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
   static class VBuilder {
 
     private Aggregate aggregate;
-    private List<AggregateCall> newAggCalls = new ArrayList<AggregateCall>();
-    private List<RexNode> newProjects = new ArrayList<RexNode>();
+    private List<AggregateCall> newAggCalls;
+    private List<RexNode> newProjects;
     private final RexBuilder rexBuilder;
 
     public VBuilder(Aggregate aggregate) {
-
       this.aggregate = aggregate;
+      newAggCalls = new ArrayList<AggregateCall>();
+      newProjects = new ArrayList<RexNode>();
       rexBuilder = aggregate.getCluster().getRexBuilder();
 
-      // add non-aggregated fields
+      // add non-aggregated fields - as identity projections
       addGroupFields();
 
       for (AggregateCall aggCall : aggregate.getAggCallList()) {
@@ -154,18 +155,6 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
       for (int i = 0; i < aggregate.getGroupCount(); i++) {
         newProjects.add(rexBuilder.makeInputRef(aggregate, 0));
       }
-    }
-
-    private List<RexNode> genProjFields() {
-
-      List<RexNode> fields = new ArrayList<RexNode>();
-      RelDataType rowType = aggregate.getRowType();
-
-      for (int i = 0; i < rowType.getFieldCount(); i++) {
-        fields.add(rexBuilder.makeInputRef(aggregate, i));
-      }
-      return fields;
-      //      rexBuilder.makeCall(op, exprs)
     }
 
     private void processAggCall(AggregateCall aggCall) {
@@ -186,31 +175,6 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
       }
       newAggCalls.add(aggCall);
       newProjects.add(projRex);
-    }
-
-    private void addAggCall(AggregateCall aggCall, SqlOperator sqlOperator) {
-
-//      Set<Integer> allFields = RelOptUtil.getAllFields(aggregate);
-//
-//      final Map<Integer, Integer> map = new HashMap<>();
-//
-//      for (Integer source: allFields) {
-//        map.put(source,)
-//      }
-//
-      newAggCalls.add(aggCall);
-      newProjects.add(buildIdentityRexNode(sqlOperator));
-
-    }
-
-    private RexNode buildIdentityRexNode(SqlOperator sqlOperator) {
-//      aggregate.
-      RexNode fieldRef = null;
-      if (sqlOperator != null) {
-        return rexBuilder.makeCall(sqlOperator, ImmutableList.of(fieldRef));
-//        return
-      }
-      return fieldRef;
     }
 
     private boolean isSimpleCountDistinct(AggregateCall aggCall) {
