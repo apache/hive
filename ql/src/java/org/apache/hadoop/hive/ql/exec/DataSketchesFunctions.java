@@ -19,11 +19,21 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
+import org.apache.calcite.sql.SqlAggFunction;
+import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
+import org.apache.calcite.sql.type.InferTypes;
+import org.apache.calcite.sql.type.OperandTypes;
+import org.apache.calcite.sql.type.ReturnTypes;
+import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.Pair;
+import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveMergeablAggregate;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver2;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
 
@@ -75,14 +85,34 @@ public class DataSketchesFunctions {
   }
 
   public static void register(Registry system) {
-    DataSketchesFunctions dsf = new DataSketchesFunctions();
-    dsf.registerFunctions(system);
+    new DataSketchesFunctions().registerFunctions(system);
   }
+
+  public static void registerCalciteFunctions(Consumer<Pair<String, SqlOperator>> r) {
+    new DataSketchesFunctions().rr(r);
+  }
+
+  private void rr(Consumer<Pair<String, SqlOperator>> r) {
+
+    for (SketchDescriptor s : sketchClasses) {
+
+
+      SqlAggFunction unionFn = null;
+      HiveMergeablAggregate x = new HiveMergeablAggregate("asd",
+          SqlKind.OTHER_FUNCTION,
+          ReturnTypes.explicit(SqlTypeName.DOUBLE),
+          InferTypes.ANY_NULLABLE,
+          OperandTypes.family(),
+          unionFn);
+    }
+
+  }
+
 
   private void registerFunctions(Registry system2) {
     Registry system = system2;
     for (SketchDescriptor sketchDescriptor : sketchClasses) {
-      List<SketchFunctionDescriptor> functions = sketchDescriptor.li;
+      Collection<SketchFunctionDescriptor> functions = sketchDescriptor.fnMap.values();
       for (SketchFunctionDescriptor fn : functions) {
         if (UDF.class.isAssignableFrom(fn.udfClass)) {
           system.registerUDF(fn.name, (Class<? extends UDF>) fn.udfClass, false);
@@ -118,16 +148,16 @@ public class DataSketchesFunctions {
   }
 
   static class SketchDescriptor {
-    List<SketchFunctionDescriptor> li;
+    Map<String, SketchFunctionDescriptor> fnMap;
     private String functionPrefix;
 
     public SketchDescriptor(String string) {
-      li = new ArrayList<SketchFunctionDescriptor>();
+      fnMap = new HashMap<String, SketchFunctionDescriptor>();
       functionPrefix = DATASKETCHES_PREFIX + "_" + string + "_";
     }
 
-    private void register(String name, Class<?> class1) {
-      li.add(new SketchFunctionDescriptor(functionPrefix + name, class1));
+    private void register(String name, Class<?> clazz) {
+      fnMap.put(name, new SketchFunctionDescriptor(functionPrefix + name, clazz));
     }
   }
 
@@ -289,9 +319,5 @@ public class DataSketchesFunctions {
     }
   }
 
-  public static void registerCalciteFunctions(Consumer<Pair<String, SqlOperator>> staticBlockBuilder) {
-    // TODO Auto-generated method stub
-
-  }
 
 }
