@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.type.InferTypes;
@@ -84,26 +83,44 @@ public class DataSketchesFunctions {
     registerFrequencies();
   }
 
-  public static void register(Registry system) {
+  public static void registerHiveFunctions(Registry system) {
     new DataSketchesFunctions().registerFunctions(system);
   }
 
+  /**
+   * Registers functions which should communicate special features of the functions.
+   *
+   * Mergability is exposed to Calcite; which enables to use it during rollup.
+   */
   public static void registerCalciteFunctions(Consumer<Pair<String, SqlOperator>> r) {
     new DataSketchesFunctions().rr(r);
   }
 
   private void rr(Consumer<Pair<String, SqlOperator>> r) {
 
-    for (SketchDescriptor s : sketchClasses) {
+    for (SketchDescriptor sd : sketchClasses) {
 
+      SqlTypeName sketchType = SqlTypeName.DOUBLE;
 
-      SqlAggFunction unionFn = null;
-      HiveMergeablAggregate x = new HiveMergeablAggregate("asd",
+      SketchFunctionDescriptor sketchSFD = sd.fnMap.get(DATA_TO_SKETCH);
+      SketchFunctionDescriptor unionSFD = sd.fnMap.get(UNION_SKETCH);
+
+      HiveMergeablAggregate unionFn = new HiveMergeablAggregate(unionSFD.name,
           SqlKind.OTHER_FUNCTION,
-          ReturnTypes.explicit(SqlTypeName.DOUBLE),
+          ReturnTypes.explicit(sketchType),
+          InferTypes.ANY_NULLABLE,
+          OperandTypes.family(),
+          null);
+
+      HiveMergeablAggregate sketchFn = new HiveMergeablAggregate(sketchSFD.name,
+          SqlKind.OTHER_FUNCTION,
+          ReturnTypes.explicit(sketchType),
           InferTypes.ANY_NULLABLE,
           OperandTypes.family(),
           unionFn);
+
+      r.accept(new Pair<String, SqlOperator>(unionSFD.name, unionFn));
+      r.accept(new Pair<String, SqlOperator>(sketchSFD.name, sketchFn));
     }
 
   }
