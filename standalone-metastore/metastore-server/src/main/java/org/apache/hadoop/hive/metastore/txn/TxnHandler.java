@@ -625,31 +625,46 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       }
 
       // Need to register minimum open txnid for current transactions into MIN_HISTORY table.
-      s = "SELECT MIN(\"TXN_ID\") FROM \"TXNS\" WHERE \"TXN_STATE\" = " + quoteChar(TXN_OPEN);
-      LOG.debug("Going to execute query <" + s + ">");
-      rs = stmt.executeQuery(s);
-      if (!rs.next()) {
-        throw new IllegalStateException("Scalar query returned no rows?!?!!");
-      }
+      // For a single txn we can do it in a single insert. With multiple txns calculating the
+      // minOpenTxnId for every insert is not cost effective, so caching the value
+      if (txnIds.size() == 1) {
+        s = "INSERT INTO \"MIN_HISTORY_LEVEL\" (\"MHL_TXNID\",\"MHL_MIN_OPEN_TXNID\") " +
+                "SELECT ?, MIN(\"TXN_ID\") FROM \"TXNS\" WHERE \"TXN_STATE\" = " + quoteChar(TXN_OPEN);
+        LOG.debug("Going to execute query <" + s + ">");
+        try (PreparedStatement pstmt = dbConn.prepareStatement(s)) {
+          pstmt.setLong(1, txnIds.get(0));
+          pstmt.execute();
+        }
+        LOG.info("Added entries to MIN_HISTORY_LEVEL with a single query for current txn: " + txnIds);
+      } else {
+        s = "SELECT MIN(\"TXN_ID\") FROM \"TXNS\" WHERE \"TXN_STATE\" = " + quoteChar(TXN_OPEN);
+        LOG.debug("Going to execute query <" + s + ">");
+        long minOpenTxnId = -1L;
+        try(ResultSet minOpenTxnIdRs = stmt.executeQuery(s)) {
+          if (!minOpenTxnIdRs.next()) {
+            throw new IllegalStateException("Scalar query returned no rows?!?!!");
+          }
+          // TXNS table should have at least one entry because we just inserted the newly opened txns.
+          // So, min(txn_id) would be a non-zero txnid.
+          minOpenTxnId = minOpenTxnIdRs.getLong(1);
+        }
 
-      // TXNS table should have atleast one entry because we just inserted the newly opened txns.
-      // So, min(txn_id) would be a non-zero txnid.
-      long minOpenTxnId = rs.getLong(1);
-      assert (minOpenTxnId > 0);
-      rows.clear();
-      for (long txnId = first; txnId < first + numTxns; txnId++) {
-        rows.add(txnId + ", " + minOpenTxnId);
-      }
+        assert (minOpenTxnId > 0);
+        rows.clear();
+        for (long txnId = first; txnId < first + numTxns; txnId++) {
+          rows.add(txnId + ", " + minOpenTxnId);
+        }
 
-      // Insert transaction entries into MIN_HISTORY_LEVEL.
-      List<String> inserts = sqlGenerator.createInsertValuesStmt(
-              "\"MIN_HISTORY_LEVEL\" (\"MHL_TXNID\", \"MHL_MIN_OPEN_TXNID\")", rows);
-      for (String insert : inserts) {
-        LOG.debug("Going to execute insert <" + insert + ">");
-        stmt.execute(insert);
+        // Insert transaction entries into MIN_HISTORY_LEVEL.
+        List<String> inserts = sqlGenerator.createInsertValuesStmt(
+            "\"MIN_HISTORY_LEVEL\" (\"MHL_TXNID\", \"MHL_MIN_OPEN_TXNID\")", rows);
+        for (String insert : inserts) {
+          LOG.debug("Going to execute insert <" + insert + ">");
+          stmt.execute(insert);
+        }
+        LOG.info("Added entries to MIN_HISTORY_LEVEL for current txns: (" + txnIds
+                     + ") with min_open_txn: " + minOpenTxnId);
       }
-      LOG.info("Added entries to MIN_HISTORY_LEVEL for current txns: (" + txnIds
-              + ") with min_open_txn: " + minOpenTxnId);
 
       if (rqst.isSetReplPolicy()) {
         List<String> rowsRepl = new ArrayList<>();
@@ -1054,25 +1069,25 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   /**
    * Concurrency/isolation notes:
    * This is mutexed with {@link #openTxns(OpenTxnRequest)} and other {@link #commitTxn(CommitTxnRequest)}
-   * operations using select4update on NEXT_TXN_ID.  Also, mutexes on TXNX table for specific txnid:X
+   * operations using select4update on NEXT_TXN_ID. Also, mutexes on TXNS table for specific txnid:X
    * see more notes below.
    * In order to prevent lost updates, we need to determine if any 2 transactions overlap.  Each txn
    * is viewed as an interval [M,N]. M is the txnid and N is taken from the same NEXT_TXN_ID sequence
    * so that we can compare commit time of txn T with start time of txn S.  This sequence can be thought of
-   * as a logical time counter.  If S.commitTime < T.startTime, T and S do NOT overlap.
+   * as a logical time counter. If S.commitTime < T.startTime, T and S do NOT overlap.
    *
    * Motivating example:
    * Suppose we have multi-statment transactions T and S both of which are attempting x = x + 1
-   * In order to prevent lost update problem, the the non-overlapping txns must lock in the snapshot
-   * that they read appropriately.  In particular, if txns do not overlap, then one follows the other
-   * (assumig they write the same entity), and thus the 2nd must see changes of the 1st.  We ensure
+   * In order to prevent lost update problem, then the non-overlapping txns must lock in the snapshot
+   * that they read appropriately. In particular, if txns do not overlap, then one follows the other
+   * (assuming they write the same entity), and thus the 2nd must see changes of the 1st.  We ensure
    * this by locking in snapshot after
    * {@link #openTxns(OpenTxnRequest)} call is made (see org.apache.hadoop.hive.ql.Driver.acquireLocksAndOpenTxn)
-   * and mutexing openTxn() with commit().  In other words, once a S.commit() starts we must ensure
+   * and mutexing openTxn() with commit(). In other words, once a S.commit() starts we must ensure
    * that txn T which will be considered a later txn, locks in a snapshot that includes the result
    * of S's commit (assuming no other txns).
    * As a counter example, suppose we have S[3,3] and T[4,4] (commitId=txnid means no other transactions
-   * were running in parallel).  If T and S both locked in the same snapshot (for example commit of
+   * were running in parallel). If T and S both locked in the same snapshot (for example commit of
    * txnid:2, which is possible if commitTxn() and openTxnx() is not mutexed)
    * 'x' would be updated to the same value by both, i.e. lost update.
    */
