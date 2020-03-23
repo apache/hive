@@ -313,6 +313,11 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+       <groupId>org.apache.datasketches</groupId>
+       <artifactId>datasketches-hive</artifactId>
+       <version>${datasketches.version}</version>
+    </dependency>
+    <dependency>
       <groupId>com.lmax</groupId>
       <artifactId>disruptor</artifactId>
       <version>${disruptor.version}</version>
@@ -1007,6 +1012,7 @@
                   <include>io.dropwizard.metrics:metrics-jvm</include>
                   <include>io.dropwizard.metrics:metrics-json</include>
                   <include>com.zaxxer:HikariCP</include>
+                  <include>org.apache.datasketches:*</include>
                   <include>org.apache.calcite:*</include>
                   <include>org.apache.calcite.avatica:avatica</include>
                 </includes>
@@ -1039,6 +1045,10 @@
                 <relocation>
                   <pattern>com.google.thirdparty.publicsuffix</pattern>
                   <shadedPattern>org.apache.hive.com.google.thirdparty.publicsuffix</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>org.apache.datasketches</pattern>
+                  <shadedPattern>org.apache.hive.org.apache.datasketches</shadedPattern>
                 </relocation>
               </relocations>
             </configuration>
