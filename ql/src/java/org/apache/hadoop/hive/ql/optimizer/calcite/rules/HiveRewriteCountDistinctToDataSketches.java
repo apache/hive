@@ -26,6 +26,7 @@ import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.core.RelFactories;
 import org.apache.calcite.rel.core.RelFactories.AggregateFactory;
+import org.apache.calcite.rel.core.RelFactories.ProjectFactory;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexNode;
@@ -88,17 +89,43 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
   public void onMatch(RelOptRuleCall call) {
     final Aggregate aggregate = call.rel(0);
 
+    if(aggregate.getGroupSets().size()!=1) {
+      // not yet supported
+      return;
+    }
+
     List<AggregateCall> newAggCalls = new ArrayList<AggregateCall>();
 
     AggregateFactory f = HiveRelFactories.HIVE_AGGREGATE_FACTORY;
 
     VBuilder vb = new VBuilder(aggregate);
 
-    newAggCalls = aggregate.getAggCallList();
+    //    newAggCalls = aggregate.getAggCallList();
+
+    //aggregate.getCluster().getPlanner()
+    ProjectFactory projectFactory = HiveRelFactories.HIVE_PROJECT_FACTORY;
+
+    //    RelBuilder relBuilder = HiveRelFactories.HIVE_BUILDER.create(aggregate.getCluster(), null);
+    //    relBuilder.push(aggregate.getInput());
+    //    relBuilder.aggregate(groupKey, aggCalls)
+    //
+    //    aggregate.getCluster().get
+    //    Hivere
+    //    projectFactory.createProject(input, childExprs, fieldNames)
+
+    if (aggregate.getAggCallList().equals(vb.newAggCalls)) {
+      // rule didn't made any changes
+      return;
+    }
+
+    newAggCalls = vb.newAggCalls;
     // FIXME HiveAggregate?
-    RelNode newCall = aggregate.copy(aggregate.getTraitSet(), aggregate.getInput(), aggregate.getGroupSet(),
+    RelNode newAgg = aggregate.copy(aggregate.getTraitSet(), aggregate.getInput(), aggregate.getGroupSet(),
         aggregate.getGroupSets(), newAggCalls);
-    call.transformTo(newCall);
+
+    RelNode newProject = projectFactory.createProject(newAgg, vb.newProjects, aggregate.getRowType().getFieldNames());
+
+    call.transformTo(newProject);
     return;
   }
 
@@ -114,9 +141,31 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
 
       this.aggregate = aggregate;
       rexBuilder = aggregate.getCluster().getRexBuilder();
+
+      // add non-aggregated fields
+      addGroupFields();
+
       for (AggregateCall aggCall : aggregate.getAggCallList()) {
         processAggCall(aggCall);
       }
+    }
+
+    private void addGroupFields() {
+      for (int i = 0; i < aggregate.getGroupCount(); i++) {
+        newProjects.add(rexBuilder.makeInputRef(aggregate, 0));
+      }
+    }
+
+    private List<RexNode> genProjFields() {
+
+      List<RexNode> fields = new ArrayList<RexNode>();
+      RelDataType rowType = aggregate.getRowType();
+
+      for (int i = 0; i < rowType.getFieldCount(); i++) {
+        fields.add(rexBuilder.makeInputRef(aggregate, i));
+      }
+      return fields;
+      //      rexBuilder.makeCall(op, exprs)
     }
 
     private void processAggCall(AggregateCall aggCall) {
@@ -124,8 +173,17 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
         rewriteCountDistinct(aggCall);
         return;
       }
-      addAggCall(aggCall, null);
+      appendAggCall(aggCall, null);
 
+    }
+
+    private void appendAggCall(AggregateCall aggCall, SqlOperator projectOperator) {
+      RexNode projRex = rexBuilder.makeInputRef(aggCall.getType(), newProjects.size());
+      if (projectOperator != null) {
+        projRex = rexBuilder.makeCall(projectOperator, ImmutableList.of(projRex));
+      }
+      newAggCalls.add(aggCall);
+      newProjects.add(projRex);
     }
 
     private void addAggCall(AggregateCall aggCall, SqlOperator sqlOperator) {
@@ -169,7 +227,7 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
       RelCollation collation = aggCall.getCollation();
       int groupCount = aggregate.getGroupCount();
       RelNode input = aggregate.getInput();
-      RelDataType type = aggCall.getType();
+      RelDataType type = aggCall.getType(); // FIXME: this is not true!
       String name = aggFunction.getName();
       //      AggregateCall ret = null;
       AggregateCall ret = AggregateCall.create(aggFunction, distinct, approximate, ignoreNulls, argList, filterArg,
@@ -177,7 +235,7 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
       //    aggCall
       //    aggCall.copy(aggCall.getArgList(), aggCall.filterArg, aggCall.getCollation());
 
-      addAggCall(ret, createSqlOperator());
+      appendAggCall(ret, createSqlOperator());
 
 //    projExpressions.add();
   }
