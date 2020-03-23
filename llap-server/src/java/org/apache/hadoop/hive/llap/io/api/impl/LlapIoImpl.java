@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.llap.io.api.impl;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.OptionalInt;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -211,11 +211,11 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
     }
     return Arrays.stream(strings).map(x -> {
       try {
-        return OptionalInt.of(Integer.parseInt(x));
+        return Integer.parseInt(x);
       } catch (NumberFormatException e) {
-        return OptionalInt.empty();
+        return null;
       }
-    }).filter(OptionalInt::isPresent).mapToInt(OptionalInt::getAsInt).toArray();
+    }).filter(Objects::nonNull).mapToInt(x -> x).toArray();
   }
 
   @Override

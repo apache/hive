@@ -405,7 +405,7 @@ public class MetadataCache implements LlapIoDebugDump, FileMetadataCache {
     for (int i = 0; i < bufferArray.length; ++i) {
       if (lockOneBuffer(bufferArray[i], doNotifyPolicy)) continue;
       for (int j = 0; j < i; ++j) {
-        //@TODO this is a bug by it self.
+        // see https://issues.apache.org/jira/browse/HIVE-22437
         unlockSingleBuffer(bufferArray[j], true);
       }
       discardMultiBuffer(buffers);
