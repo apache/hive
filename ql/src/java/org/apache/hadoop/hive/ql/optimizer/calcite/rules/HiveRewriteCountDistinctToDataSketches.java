@@ -178,9 +178,11 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
     }
 
     private void appendAggCall(AggregateCall aggCall, SqlOperator projectOperator) {
+      RelDataType origType = aggregate.getRowType().getFieldList().get(newProjects.size()).getType();
       RexNode projRex = rexBuilder.makeInputRef(aggCall.getType(), newProjects.size());
       if (projectOperator != null) {
         projRex = rexBuilder.makeCall(projectOperator, ImmutableList.of(projRex));
+        projRex = rexBuilder.makeCast(origType, projRex);
       }
       newAggCalls.add(aggCall);
       newProjects.add(projRex);
@@ -212,7 +214,8 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
     }
 
     private boolean isSimpleCountDistinct(AggregateCall aggCall) {
-      return aggCall.isDistinct() && aggCall.getArgList().size() == 1 && aggCall.getName().equalsIgnoreCase("count")
+      return aggCall.isDistinct() && aggCall.getArgList().size() == 1
+          && aggCall.getAggregation().getName().equalsIgnoreCase("count")
           && !aggCall.hasFilter();
     }
 
