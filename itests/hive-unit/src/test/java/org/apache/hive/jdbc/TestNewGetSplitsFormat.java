@@ -28,6 +28,8 @@ import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -113,4 +115,9 @@ public class TestNewGetSplitsFormat extends BaseJdbcWithMiniLlap {
     return rowCount;
   }
 
+  @Ignore("CDPD-9363 Ignore TestNewGetSplitsFormat.testComplexQuery as it is flaky")
+  @Test
+  public void testComplexQuery() throws Exception {
+    super.testComplexQuery();
+  }
 }
