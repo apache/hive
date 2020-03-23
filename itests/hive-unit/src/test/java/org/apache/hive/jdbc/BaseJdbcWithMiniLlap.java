@@ -490,7 +490,7 @@ public abstract class BaseJdbcWithMiniLlap {
   }
 
 
-  @Test(timeout = 120000)
+  @Test(timeout = 60000)
   public void testComplexQuery() throws Exception {
     createTestTable("testtab1");
 

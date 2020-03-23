@@ -33,6 +33,7 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 
@@ -445,6 +446,18 @@ public class TestJdbcWithMiniLlapArrow extends BaseJdbcWithMiniLlap {
         }
       }
     }
+  }
+
+  @Ignore("CDPD-9330 Ignore TestJdbcWithMiniLlapArrow.testComplexQuery|testLlapInputFormatEndToEnd as they are flaky")
+  @Test
+  public void testComplexQuery() throws Exception {
+    super.testComplexQuery();
+  }
+
+  @Ignore("CDPD-9330 Ignore TestJdbcWithMiniLlapArrow.testComplexQuery|testLlapInputFormatEndToEnd as they are flaky")
+  @Test
+  public void testLlapInputFormatEndToEnd() throws Exception {
+    super.testLlapInputFormatEndToEnd();
   }
 }
 
