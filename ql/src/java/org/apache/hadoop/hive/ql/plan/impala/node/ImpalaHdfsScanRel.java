@@ -24,16 +24,16 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.calcite.rel.RelWriter;
 import org.apache.calcite.rel.type.RelDataType;
-import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
-import org.apache.calcite.sql.SqlKind;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
+import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaBasicAnalyzer;
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaPlannerContext;
 import org.apache.hadoop.hive.ql.plan.impala.rex.ImpalaRexVisitor;
@@ -49,6 +49,7 @@ import org.apache.impala.analysis.TableRef;
 import org.apache.impala.analysis.TupleDescriptor;
 import org.apache.impala.catalog.Db;
 import org.apache.impala.catalog.FeFsPartition;
+import org.apache.impala.catalog.HdfsPartition;
 import org.apache.impala.catalog.HdfsTable;
 import org.apache.impala.catalog.PrunablePartition;
 import org.apache.impala.common.ImpalaException;
@@ -115,9 +116,23 @@ public class ImpalaHdfsScanRel extends ImpalaPlanRel {
     }
 
     List<FeFsPartition> feFsPartitions = Lists.newArrayList();
-    // TODO: CDPD-8313: supply the actual pruned partition list
-    for (PrunablePartition p : hdfsTable.getPartitions()) {
-      feFsPartitions.add((FeFsPartition) p);
+    if (hdfsTable.isPartitioned()) {
+      // propagate Hive's statically pruned partition list to Impala
+      PrunedPartitionList prunedPartList = ((RelOptHiveTable) scan.getTable()).getPrunedPartitionList();
+      List<String> partitionNames = new ArrayList<>();
+      for (Partition p : prunedPartList.getPartitions()) {
+        // Impala's getPartitionsForNames() expects a terminating '/' in the partition name
+        // which it strips out. Example Impala partition name: "n_regionkey=3/"
+        partitionNames.add(p.getName() + "/");
+      }
+      if (partitionNames.size() > 0) {
+        List<HdfsPartition> hdfsPartitions = hdfsTable.getPartitionsForNames(partitionNames);
+        feFsPartitions.addAll(hdfsPartitions);
+      }
+    } else {
+      for (PrunablePartition p : hdfsTable.getPartitions()) {
+        feFsPartitions.add((FeFsPartition) p);
+      }
     }
 
     // TODO: CDPD-8315
