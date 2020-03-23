@@ -35,64 +35,30 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
 public class DataSketchesFunctions {
 
   private static final String DATASKETCHES_PREFIX = "ds";
-
-  enum SketchFn {
-    DATA_TO_SKETCH("sketch"),
-    SKETCH_TO_ESTIMATE_WITH_ERROR_BOUNDS("estimate_bounds"),
-    SKETCH_TO_ESTIMATE("estimate"),
-    SKETCH_TO_STRING("stringify"),
-    UNION_SKETCH("union"),
-    UNION_SKETCH1("union_f"),
-    GET_N("n"),
-    GET_CDF("cdf"),
-    GET_PMF("pmf"),
-    GET_QUANTILES("quantiles"),
-    GET_QUANTILE("quantile"),
-    GET_RANK("rank"),
-    INTERSECT_SKETCH("intersect"),
-    INTERSECT_SKETCH1("intersect_f"),
-    EXCLUDE_SKETCH("exclude"),
-    GET_K("k"),
-    GET_FREQUENT_ITEMS("frequent_items"),
-    T_TEST("ttest"),
-    SKETCH_TO_MEANS("means"),
-    SKETCH_TO_NUMBER_OF_RETAINED_ENTRIES("n_retained"),
-    SKETCH_TO_QUANTILES_SKETCH("quantiles_sketch"),
-    SKETCH_TO_VALUES("values"),
-    SKETCH_TO_VARIANCES("variances"),
-    SKETCH_TO_PERCENTILE("percentile"),;
-
-    final String fName;
-
-    private SketchFn(String fName) {
-      this.fName = fName;
-
-    }
-  }
-
-  //  private static final String SKETCH_TO_ESTIMATE_WITH_ERROR_BOUNDS = "estimate_bounds";
-  //  private static final String SKETCH_TO_ESTIMATE = "estimate";
-  //  private static final String SKETCH_TO_STRING = "stringify";
-  //  private static final String UNION_SKETCH = "union";
-  //  private static final String UNION_SKETCH1 = "union_f";
-  //  private static final String GET_N = "n";
-  //  private static final String GET_CDF = "cdf";
-  //  private static final String GET_PMF = "pmf";
-  //  private static final String GET_QUANTILES = "quantiles";
-  //  private static final String GET_QUANTILE = "quantile";
-  //  private static final String GET_RANK = "rank";
-  //  private static final String INTERSECT_SKETCH = "intersect";
-  //  private static final String INTERSECT_SKETCH1 = "intersect_f";
-  //  private static final String EXCLUDE_SKETCH = "exclude";
-  //  private static final String GET_K = "k";
-  //  private static final String GET_FREQUENT_ITEMS = "frequent_items";
-  //  private static final String T_TEST = "ttest";
-  //  private static final String SKETCH_TO_MEANS = "means";
-  //  private static final String SKETCH_TO_NUMBER_OF_RETAINED_ENTRIES = "n_retained";
-  //  private static final String SKETCH_TO_QUANTILES_SKETCH = "quantiles_sketch";
-  //  private static final String SKETCH_TO_VALUES = "values";
-  //  private static final String SKETCH_TO_VARIANCES = "variances";
-  //  private static final String SKETCH_TO_PERCENTILE = "percentile";
+  private static final String DATA_TO_SKETCH = "sketch";
+  private static final String SKETCH_TO_ESTIMATE_WITH_ERROR_BOUNDS = "estimate_bounds";
+  private static final String SKETCH_TO_ESTIMATE = "estimate";
+  private static final String SKETCH_TO_STRING = "stringify";
+  private static final String UNION_SKETCH = "union";
+  private static final String UNION_SKETCH1 = "union_f";
+  private static final String GET_N = "n";
+  private static final String GET_CDF = "cdf";
+  private static final String GET_PMF = "pmf";
+  private static final String GET_QUANTILES = "quantiles";
+  private static final String GET_QUANTILE = "quantile";
+  private static final String GET_RANK = "rank";
+  private static final String INTERSECT_SKETCH = "intersect";
+  private static final String INTERSECT_SKETCH1 = "intersect_f";
+  private static final String EXCLUDE_SKETCH = "exclude";
+  private static final String GET_K = "k";
+  private static final String GET_FREQUENT_ITEMS = "frequent_items";
+  private static final String T_TEST = "ttest";
+  private static final String SKETCH_TO_MEANS = "means";
+  private static final String SKETCH_TO_NUMBER_OF_RETAINED_ENTRIES = "n_retained";
+  private static final String SKETCH_TO_QUANTILES_SKETCH = "quantiles_sketch";
+  private static final String SKETCH_TO_VALUES = "values";
+  private static final String SKETCH_TO_VARIANCES = "variances";
+  private static final String SKETCH_TO_PERCENTILE = "percentile";
 
   private final Registry system;
   private List<SketchDescriptor> sketchClasses;
