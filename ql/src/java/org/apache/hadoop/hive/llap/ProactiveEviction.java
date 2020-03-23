@@ -43,6 +43,8 @@ import org.apache.hadoop.io.retry.RetryPolicies;
 import org.apache.hadoop.io.retry.RetryPolicy;
 import org.apache.hadoop.net.NetUtils;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,8 +54,16 @@ import org.slf4j.LoggerFactory;
  */
 public final class ProactiveEviction {
 
+  private static ExecutorService executor = null;
+
   private ProactiveEviction() {
     // Not to be used;
+  }
+
+  public static void shutdown() {
+    if (executor != null) {
+      executor.shutdownNow();
+    }
   }
 
   /**
@@ -66,6 +76,11 @@ public final class ProactiveEviction {
       return;
     }
 
+    if (executor == null) {
+      executor = Executors.newSingleThreadExecutor(
+          new ThreadFactoryBuilder().setNameFormat("Proactive-Eviction-Requester").setDaemon(true).build());
+    }
+
     try {
       LlapRegistryService llapRegistryService = LlapRegistryService.getClient(conf);
       Collection<LlapServiceInstance> instances = llapRegistryService.getInstances().getAll();
@@ -73,10 +88,9 @@ public final class ProactiveEviction {
         // Not in LLAP mode.
         return;
       }
-      ExecutorService executorService = Executors.newCachedThreadPool();
       for (LlapServiceInstance instance : instances) {
         Task task = new Task(conf, instance, request);
-        executorService.execute(task);
+        executor.execute(task);
       }
 
     } catch (IOException e) {
