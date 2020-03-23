@@ -2095,6 +2095,10 @@ public class HiveConf extends Configuration {
         "Allow synthetic file ID in splits on file systems that don't have a native one."),
     HIVE_ORC_CACHE_STRIPE_DETAILS_MEMORY_SIZE("hive.orc.cache.stripe.details.mem.size", "256Mb",
         new SizeValidator(), "Maximum size of orc splits cached in the client."),
+    /**
+     * @deprecated Use HiveConf.HIVE_COMPUTE_SPLITS_NUM_THREADS
+     */
+    @Deprecated
     HIVE_ORC_COMPUTE_SPLITS_NUM_THREADS("hive.orc.compute.splits.num.threads", 10,
         "How many threads orc should use to create splits in parallel."),
     HIVE_ORC_CACHE_USE_SOFT_REFERENCES("hive.orc.cache.use.soft.references", false,
@@ -2418,8 +2422,8 @@ public class HiveConf extends Configuration {
     HIVE_OPTIMIZE_TOPNKEY("hive.optimize.topnkey", true, "Whether to enable top n key optimizer."),
     HIVE_MAX_TOPN_ALLOWED("hive.optimize.topnkey.max", 128, "Maximum topN value allowed by top n key optimizer.\n" +
       "If the LIMIT is greater than this value then top n key optimization won't be used."),
-    HIVE_TOPN_EFFICIENCY_THRESHOLD("hive.optimize.topnkey.efficiency.threshold", 0.6f, "Disable topN key filter if the ratio between forwarded and total rows reaches this limit."),
-    HIVE_TOPN_EFFICIENCY_CHECK_BATCHES("hive.optimize.topnkey.efficiency.check.nbatches", 8, "Check topN key filter efficiency after a specific number of batches."),
+    HIVE_TOPN_EFFICIENCY_THRESHOLD("hive.optimize.topnkey.efficiency.threshold", 0.8f, "Disable topN key filter if the ratio between forwarded and total rows reaches this limit."),
+    HIVE_TOPN_EFFICIENCY_CHECK_BATCHES("hive.optimize.topnkey.efficiency.check.nbatches", 10000, "Check topN key filter efficiency after a specific number of batches."),
     HIVE_TOPN_MAX_NUMBER_OF_PARTITIONS("hive.optimize.topnkey.partitions.max", 64, "Limit the maximum number of partitions used by the top N key operator."),
 
     HIVE_SHARED_WORK_OPTIMIZATION("hive.optimize.shared.work", true,
@@ -3924,7 +3928,7 @@ public class HiveConf extends Configuration {
         "The default value is true."),
     HIVE_VECTORIZATION_GROUPBY_COMPLEX_TYPES_ENABLED("hive.vectorized.groupby.complex.types.enabled", true,
         "This flag should be set to true to enable group by vectorization\n" +
-        "of aggregations that use complex types.\n",
+        "of aggregations that use complex types.\n" +
         "For example, AVG uses a complex type (STRUCT) for partial aggregation results" +
         "The default value is true."),
     HIVE_VECTORIZATION_ROW_IDENTIFIER_ENABLED("hive.vectorized.row.identifier.enabled", true,
@@ -4793,6 +4797,7 @@ public class HiveConf extends Configuration {
             "hive.spark.client.rpc.max.size," +
             "hive.spark.client.rpc.threads," +
             "hive.spark.client.secret.bits," +
+            "hive.query.max.length," +
             "hive.spark.client.rpc.server.address," +
             "hive.spark.client.rpc.server.port," +
             "hive.spark.client.rpc.sasl.mechanisms," +
@@ -4829,10 +4834,15 @@ public class HiveConf extends Configuration {
         SPARK_CLIENT_TYPE.varname,
         "Comma separated list of variables which are related to remote spark context.\n" +
             "Changing these variables will result in re-creating the spark session."),
+    HIVE_QUERY_MAX_LENGTH("hive.query.max.length", "10Mb", new SizeValidator(), "The maximum" +
+            " size of a query string. Enforced after variable substitutions."),
     HIVE_QUERY_TIMEOUT_SECONDS("hive.query.timeout.seconds", "0s",
         new TimeValidator(TimeUnit.SECONDS),
         "Timeout for Running Query in seconds. A nonpositive value means infinite. " +
         "If the query timeout is also set by thrift API call, the smaller one will be taken."),
+    HIVE_COMPUTE_SPLITS_NUM_THREADS("hive.compute.splits.num.threads", 10,
+            "How many threads Input Format should use to create splits in parallel.",
+            HIVE_ORC_COMPUTE_SPLITS_NUM_THREADS.varname),
     HIVE_EXEC_INPUT_LISTING_MAX_THREADS("hive.exec.input.listing.max.threads", 0, new  SizeValidator(0L, true, 1024L, true),
         "Maximum number of threads that Hive uses to list file information from file systems (recommended > 1 for blobstore)."),
 

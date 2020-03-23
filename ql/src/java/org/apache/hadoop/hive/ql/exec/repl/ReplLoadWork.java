@@ -45,8 +45,6 @@ public class ReplLoadWork implements Serializable {
   final String dbNameToLoadIn;
   final ReplScope currentReplScope;
   final String dumpDirectory;
-  final String bootstrapDumpToCleanTables;
-  boolean needCleanTablesFromBootstrap;
 
   private final ConstraintEventsIterator constraintsIterator;
   private int loadTaskRunCount = 0;
@@ -76,8 +74,6 @@ public class ReplLoadWork implements Serializable {
     if ((currentReplScope != null) && StringUtils.isNotBlank(dbNameToLoadIn)) {
       currentReplScope.setDbName(dbNameToLoadIn);
     }
-    this.bootstrapDumpToCleanTables = hiveConf.get(ReplUtils.REPL_CLEAN_TABLES_FROM_BOOTSTRAP_CONFIG);
-    this.needCleanTablesFromBootstrap = StringUtils.isNotBlank(this.bootstrapDumpToCleanTables);
 
     rootTask = null;
     if (isIncrementalDump) {

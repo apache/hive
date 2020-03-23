@@ -18,9 +18,7 @@
 package org.apache.hadoop.hive.ql.exec.vector.wrapper;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.List;
 
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
@@ -35,7 +33,7 @@ public class VectorHashKeyWrapperGeneralComparator
   /**
    * Compare {@link VectorHashKeyWrapperBase} instances only by one column.
    */
-  private static class VectorHashKeyWrapperBaseComparator
+  static class VectorHashKeyWrapperBaseComparator
           implements Comparator<VectorHashKeyWrapperBase>, Serializable {
 
     private final int keyIndex;
@@ -72,10 +70,10 @@ public class VectorHashKeyWrapperGeneralComparator
     }
   }
 
-  private final List<VectorHashKeyWrapperBaseComparator> comparators;
+  private final VectorHashKeyWrapperBaseComparator[] comparators;
 
   public VectorHashKeyWrapperGeneralComparator(int numberOfColumns) {
-    this.comparators = new ArrayList<>(numberOfColumns);
+    this.comparators = new VectorHashKeyWrapperBaseComparator[numberOfColumns];
   }
 
   public void addColumnComparator(int keyIndex, int columnTypeSpecificIndex, ColumnVector.Type columnVectorType,
@@ -115,8 +113,7 @@ public class VectorHashKeyWrapperGeneralComparator
     default:
       throw new RuntimeException("Unexpected column vector columnVectorType " + columnVectorType);
     }
-
-    comparators.add(
+    comparators[keyIndex] = (
             new VectorHashKeyWrapperBaseComparator(
                     keyIndex,
                     sortOrder == '-' ? comparator.reversed() : comparator,
@@ -134,7 +131,7 @@ public class VectorHashKeyWrapperGeneralComparator
     return 0;
   }
 
-  public List<VectorHashKeyWrapperBaseComparator> getComparators() {
+  public VectorHashKeyWrapperBaseComparator[] getComparators() {
     return comparators;
   }
 }

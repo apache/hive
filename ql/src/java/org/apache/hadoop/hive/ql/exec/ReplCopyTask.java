@@ -255,7 +255,7 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
         return 2;
       }
       // Copy the files from different source file systems to one destination directory
-      new CopyUtils(rwork.distCpDoAsUser(), conf, dstFs).copyAndVerify(toPath, srcFiles);
+      new CopyUtils(rwork.distCpDoAsUser(), conf, dstFs).copyAndVerify(toPath, srcFiles, fromPath);
 
       // If a file is copied from CM path, then need to rename them using original source file name
       // This is needed to avoid having duplicate files in target if same event is applied twice
@@ -324,10 +324,18 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
   public static Task<?> getLoadCopyTask(ReplicationSpec replicationSpec, Path srcPath, Path dstPath,
                                         HiveConf conf, boolean isAutoPurge, boolean needRecycle,
                                         boolean copyToMigratedTxnTable) {
+    return getLoadCopyTask(replicationSpec, srcPath, dstPath, conf, isAutoPurge, needRecycle,
+                           copyToMigratedTxnTable, true);
+  }
+
+  public static Task<?> getLoadCopyTask(ReplicationSpec replicationSpec, Path srcPath, Path dstPath,
+                                        HiveConf conf, boolean isAutoPurge, boolean needRecycle,
+                                        boolean copyToMigratedTxnTable, boolean readSourceAsFileList) {
     Task<?> copyTask = null;
     LOG.debug("ReplCopyTask:getLoadCopyTask: {}=>{}", srcPath, dstPath);
     if ((replicationSpec != null) && replicationSpec.isInReplicationScope()){
       ReplCopyWork rcwork = new ReplCopyWork(srcPath, dstPath, false);
+      rcwork.setReadSrcAsFilesList(readSourceAsFileList);
       if (replicationSpec.isReplace() && (conf.getBoolVar(REPL_ENABLE_MOVE_OPTIMIZATION) || copyToMigratedTxnTable)) {
         rcwork.setDeleteDestIfExist(true);
         rcwork.setAutoPurge(isAutoPurge);
@@ -339,15 +347,8 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
       // replace events getting replayed in the first incremental load.
       rcwork.setCheckDuplicateCopy(replicationSpec.needDupCopyCheck() && !replicationSpec.isReplace());
       LOG.debug("ReplCopyTask:\trcwork");
-      if (replicationSpec.isLazy()) {
-        LOG.debug("ReplCopyTask:\tlazy");
-        rcwork.setReadSrcAsFilesList(true);
-
-        // It is assumed isLazy flag is set only for REPL LOAD flow.
-        // IMPORT always do deep copy. So, distCpDoAsUser will be null by default in ReplCopyWork.
-        String distCpDoAsUser = conf.getVar(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER);
-        rcwork.setDistCpDoAsUser(distCpDoAsUser);
-      }
+      String distCpDoAsUser = conf.getVar(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER);
+      rcwork.setDistCpDoAsUser(distCpDoAsUser);
       copyTask = TaskFactory.get(rcwork, conf);
     } else {
       LOG.debug("ReplCopyTask:\tcwork");
@@ -359,5 +360,10 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
   public static Task<?> getLoadCopyTask(ReplicationSpec replicationSpec, Path srcPath, Path dstPath,
                                         HiveConf conf) {
     return getLoadCopyTask(replicationSpec, srcPath, dstPath, conf, false, false, false);
+  }
+
+  public static Task<?> getLoadCopyTask(ReplicationSpec replicationSpec, Path srcPath, Path dstPath,
+                                          HiveConf conf, boolean readSourceAsFileList) {
+    return getLoadCopyTask(replicationSpec, srcPath, dstPath, conf, false, false, false, readSourceAsFileList);
   }
 }

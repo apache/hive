@@ -345,6 +345,46 @@ public class TestPreUpgradeTool {
     }
   }
 
+  @Test
+  public void testConcurrency() throws Exception {
+    int numberOfTables = 20;
+    String tablePrefix = "concurrency_";
+
+    int[][] data = {{1, 2}, {3, 4}, {5, 6}, {7, 8}, {9, 10},
+        {11, 12}, {13, 14}, {15, 16}, {17, 18}, {19, 20}};
+    for (int i = 0; i < numberOfTables; i++) {
+      runStatementOnDriver("drop table if exists " + tablePrefix + i);
+    }
+
+    try {
+      for (int i = 0; i < numberOfTables; i++) {
+        String tableName = tablePrefix + i;
+        runStatementOnDriver(
+                "create table " + tableName + " (a int, b int) " +
+                        "clustered by (b) " +
+                        "into 10 buckets " +
+                        "stored as orc TBLPROPERTIES ('transactional'='true')");
+        runStatementOnDriver("insert into " + tableName + makeValuesClause(data));
+      }
+
+      String[] args = {"-location", getTestDataDir(), "-execute"};
+      PreUpgradeTool.callback = new PreUpgradeTool.Callback() {
+        @Override
+        void onWaitForCompaction() throws MetaException {
+          runWorker(hiveConf);
+        }
+      };
+      PreUpgradeTool.pollIntervalMs = 1;
+      PreUpgradeTool.hiveConf = hiveConf;
+      PreUpgradeTool.main(args);
+
+    } finally {
+      for (int i = 0; i < numberOfTables; i++) {
+        runStatementOnDriver("drop table if exists " + tablePrefix + i);
+      }
+    }
+  }
+
   private static void runWorker(HiveConf hiveConf) throws MetaException {
     AtomicBoolean stop = new AtomicBoolean(true);
     Worker t = new Worker();

@@ -181,6 +181,11 @@ public class TopNKeyDesc extends AbstractOperatorDesc {
     if (getClass().getName().equals(other.getClass().getName())) {
       TopNKeyDesc otherDesc = (TopNKeyDesc) other;
       return getTopN() == otherDesc.getTopN() &&
+          getEfficiencyThreshold() == otherDesc.getEfficiencyThreshold() &&
+          getCheckEfficiencyNumRows() == otherDesc.getCheckEfficiencyNumRows() &&
+          getCheckEfficiencyNumBatches() == otherDesc.getCheckEfficiencyNumBatches() &&
+          getMaxNumberOfPartitions() == otherDesc.getMaxNumberOfPartitions() &&
+          ExprNodeDescUtils.isSame(partitionKeyColumns, otherDesc.partitionKeyColumns) &&
           Objects.equals(columnSortOrder, otherDesc.columnSortOrder) &&
           Objects.equals(nullOrder, otherDesc.nullOrder) &&
           ExprNodeDescUtils.isSame(keyColumns, otherDesc.keyColumns);
@@ -195,7 +200,28 @@ public class TopNKeyDesc extends AbstractOperatorDesc {
     ret.setColumnSortOrder(columnSortOrder);
     ret.setNullOrder(nullOrder);
     ret.setKeyColumns(getKeyColumns() == null ? null : new ArrayList<>(getKeyColumns()));
+    ret.setPartitionKeyColumns(getPartitionKeyColumns() == null ? null : new ArrayList<>(getPartitionKeyColumns()));
+    ret.setCheckEfficiencyNumRows(checkEfficiencyNumRows);
+    ret.setCheckEfficiencyNumBatches(checkEfficiencyNumBatches);
+    ret.setEfficiencyThreshold(efficiencyThreshold);
+    ret.setMaxNumberOfPartitions(maxNumberOfPartitions);
     return ret;
+  }
+
+  public void setEfficiencyThreshold(float efficiencyThreshold) {
+    this.efficiencyThreshold = efficiencyThreshold;
+  }
+
+  public void setCheckEfficiencyNumBatches(long checkEfficiencyNumBatches) {
+    this.checkEfficiencyNumBatches = checkEfficiencyNumBatches;
+  }
+
+  public void setCheckEfficiencyNumRows(long checkEfficiencyNumRows) {
+    this.checkEfficiencyNumRows = checkEfficiencyNumRows;
+  }
+
+  public void setMaxNumberOfPartitions(int maxNumberOfPartitions) {
+    this.maxNumberOfPartitions = maxNumberOfPartitions;
   }
 
   public class TopNKeyDescExplainVectorization extends OperatorExplainVectorization {

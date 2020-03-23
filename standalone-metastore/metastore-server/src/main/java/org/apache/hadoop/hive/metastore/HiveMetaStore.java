@@ -2040,9 +2040,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
       }
       if (tbl.isSetId()) {
-        throw new InvalidObjectException("Id shouldn't be set but table "
-            + tbl.getDbName() + "." + tbl.getTableName() + " has the Id set to "
-            + tbl.getId() + ". It's a read-only option");
+        LOG.debug("Id shouldn't be set but table {}.{} has the Id set to {}. Id is ignored.", tbl.getDbName(),
+            tbl.getTableName(), tbl.getId());
+        tbl.unsetId();
       }
       SkewedInfo skew = tbl.getSd().getSkewedInfo();
       if (skew != null) {
@@ -8616,7 +8616,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventType.INSERT, event);
         MetaStoreListenerNotifier.notifyEvent(listeners, EventType.INSERT, event);
 
-        return new FireEventResponse();
+        FireEventResponse response = new FireEventResponse();
+        if (event.getParameters() != null && event.getParameters()
+            .containsKey(
+                MetaStoreEventListenerConstants.DB_NOTIFICATION_EVENT_ID_KEY_NAME)) {
+          response.setEventId(Long.valueOf(event.getParameters()
+              .get(MetaStoreEventListenerConstants.DB_NOTIFICATION_EVENT_ID_KEY_NAME)));
+        }
+        return response;
 
       default:
         throw new TException("Event type " + rqst.getData().getSetField().toString()

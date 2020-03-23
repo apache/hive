@@ -4605,10 +4605,10 @@ public class ObjectStore implements RawStore, Configurable {
       constraintName = normalizeIdentifier(constraintName);
       constraintExistsQuery = pm.newQuery(MConstraint.class,
           "parentTable == parentTableP && constraintName == constraintNameP");
-      constraintExistsQuery.declareParameters("java.lang.Long parentTableP, java.lang.String constraintNameP");
+      constraintExistsQuery.declareParameters("MTable parentTableP, java.lang.String constraintNameP");
       constraintExistsQuery.setUnique(true);
       constraintExistsQuery.setResult("constraintName");
-      constraintNameIfExists = (String) constraintExistsQuery.executeWithArray(table.getId(), constraintName);
+      constraintNameIfExists = (String) constraintExistsQuery.executeWithArray(table, constraintName);
       commited = commitTransaction();
     } finally {
       rollbackAndCleanup(commited, constraintExistsQuery);

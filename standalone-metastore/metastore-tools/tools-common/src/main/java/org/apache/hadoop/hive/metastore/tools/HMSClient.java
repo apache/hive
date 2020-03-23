@@ -20,10 +20,15 @@ package org.apache.hadoop.hive.metastore.tools;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
+import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
+import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DropPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.DropPartitionsResult;
+import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.RequestPartsSpec;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -52,7 +57,9 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.PrivilegedExceptionAction;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -317,6 +324,40 @@ final class HMSClient implements AutoCloseable {
   void appendPartition(@NotNull String dbName, @NotNull String tableName,
                        @NotNull List<String> partitionValues) throws TException {
     client.append_partition_with_environment_context(dbName, tableName, partitionValues, null);
+  }
+
+  boolean openTxn(int numTxns) throws TException {
+    client.open_txns(new OpenTxnRequest(numTxns, "Test", "Host"));
+    return true;
+  }
+
+  List<Long> getOpenTxns() throws TException {
+    GetOpenTxnsResponse txns = client.get_open_txns();
+    List<Long> openTxns = new ArrayList<>();
+    BitSet abortedBits = BitSet.valueOf(txns.getAbortedBits());
+    int i = 0;
+    for(long txnId : txns.getOpen_txns()) {
+      if(!abortedBits.get(i)) {
+        openTxns.add(txnId);
+      }
+      ++i;
+    }
+    return openTxns;
+  }
+
+  boolean commitTxn(long txnId) throws TException {
+    client.commit_txn(new CommitTxnRequest(txnId));
+    return true;
+  }
+
+  boolean abortTxn(long txnId) throws TException {
+    client.abort_txn(new AbortTxnRequest(txnId));
+    return true;
+  }
+
+  boolean abortTxns(List<Long> txnIds) throws TException {
+    client.abort_txns(new AbortTxnsRequest(txnIds));
+    return true;
   }
 
   private TTransport open(Configuration conf, @NotNull URI uri) throws

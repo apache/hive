@@ -215,7 +215,7 @@ public class SparkMapJoinOptimizer implements SemanticNodeProcessor {
             LOG.debug("Found a big table branch with parent operator {} and position {}", parentOp, pos);
             bigTablePosition = pos;
             bigTableFound = true;
-            bigInputStat = new Statistics(0, Long.MAX_VALUE, 0);
+            bigInputStat = new Statistics(0, Long.MAX_VALUE, Long.MAX_VALUE, 0);
           } else {
             // Either we've found multiple big table branches, or the current branch cannot
             // be a big table branch. Disable mapjoin for these cases.

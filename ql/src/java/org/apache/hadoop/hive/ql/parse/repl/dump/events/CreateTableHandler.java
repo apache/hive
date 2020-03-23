@@ -65,7 +65,8 @@ class CreateTableHandler extends AbstractEventHandler<CreateTableMessage> {
     // If we are not dumping data about a table, we shouldn't be dumping basic statistics
     // as well, since that won't be accurate. So reset them to what they would look like for an
     // empty table.
-    if (Utils.shouldDumpMetaDataOnly(qlMdTable, withinContext.hiveConf)) {
+    if (Utils.shouldDumpMetaDataOnly(withinContext.hiveConf)
+            || Utils.shouldDumpMetaDataOnlyForExternalTables(qlMdTable, withinContext.hiveConf)) {
       qlMdTable.setStatsStateLikeNewTable();
     }
 
@@ -84,7 +85,7 @@ class CreateTableHandler extends AbstractEventHandler<CreateTableMessage> {
       // encoded filename/checksum of files, write into _files
       try (BufferedWriter fileListWriter = writer(withinContext, dataPath)) {
         for (String file : files) {
-          fileListWriter.write(file + "\n");
+          writeFileEntry(qlMdTable.getDbName(), qlMdTable, file, fileListWriter, withinContext);
         }
       }
     }

@@ -400,16 +400,7 @@ public final class TxnDbUtil {
         stmt = conn.createStatement();
 
         // We want to try these, whether they succeed or fail.
-        try {
-          stmt.execute("DROP INDEX HL_TXNID_INDEX");
-        } catch (SQLException e) {
-          if(!("42X65".equals(e.getSQLState()) && 30000 == e.getErrorCode())) {
-            //42X65/3000 means index doesn't exist
-            LOG.error("Unable to drop index HL_TXNID_INDEX " + e.getMessage() +
-              "State=" + e.getSQLState() + " code=" + e.getErrorCode() + " retryCount=" + retryCount);
-            success = false;
-          }
-        }
+        success &= dropIndex(stmt, "HL_TXNID_INDEX", retryCount);
 
         success &= dropTable(stmt, "TXN_COMPONENTS", retryCount);
         success &= dropTable(stmt, "COMPLETED_TXN_COMPONENTS", retryCount);
@@ -441,6 +432,20 @@ public final class TxnDbUtil {
       }
     }
     throw new RuntimeException("Failed to clean up txn tables");
+  }
+
+  private static boolean dropIndex(Statement stmt, String index, int retryCount) {
+    try {
+      stmt.execute("DROP INDEX " + index);
+    } catch (SQLException e) {
+      if (!("42X65".equals(e.getSQLState()) && 30000 == e.getErrorCode())) {
+        //42X65/3000 means index doesn't exist
+        LOG.error("Unable to drop index {} {} State={} code={} retryCount={}",
+            index, e.getMessage(), e.getSQLState(), e.getErrorCode(), retryCount);
+        return false;
+      }
+    }
+    return true;
   }
 
   private static boolean dropTable(Statement stmt, String name, int retryCount) throws SQLException {

@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.parse;
 
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.shims.Utils;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -57,6 +58,7 @@ public class BaseReplicationAcrossInstances {
     }};
     localOverrides.putAll(overrides);
     primary = new WarehouseInstance(LOG, miniDFSCluster, localOverrides);
+    localOverrides.put(MetastoreConf.ConfVars.REPLDIR.getHiveName(), primary.repldDir);
     replica = new WarehouseInstance(LOG, miniDFSCluster, localOverrides);
   }
 

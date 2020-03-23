@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.io;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -72,6 +73,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -80,6 +82,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
+import static java.lang.Integer.min;
 
 /**
  * HiveInputFormat is a parameterized InputFormat which looks at the path name
@@ -478,7 +486,8 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       pushFilters(conf, tableScan, this.mrwork);
     }
 
-    List<Path> dirsWithFileOriginals = new ArrayList<>(), finalDirs = new ArrayList<>();
+    List<Path> dirsWithFileOriginals = Collections.synchronizedList(new ArrayList<>()),
+            finalDirs = Collections.synchronizedList(new ArrayList<>());
     processPathsForMmRead(dirs, conf, validMmWriteIdList, finalDirs, dirsWithFileOriginals);
     if (finalDirs.isEmpty() && dirsWithFileOriginals.isEmpty()) {
       // This is for transactional tables.
@@ -577,9 +586,41 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       return;
     }
     boolean allowOriginals = HiveConf.getBoolVar(conf, ConfVars.HIVE_MM_ALLOW_ORIGINALS);
-    for (Path dir : dirs) {
-      processForWriteIdsForMmRead(
-          dir, conf, validWriteIdList, allowOriginals, finalPaths, pathsWithFileOriginals);
+
+    int numThreads = min(HiveConf.getIntVar(conf, ConfVars.HIVE_COMPUTE_SPLITS_NUM_THREADS), dirs.size());
+    List<Future<Void>> pathFutures = new ArrayList<>();
+    ExecutorService pool = null;
+    if (numThreads > 1) {
+      pool = Executors.newFixedThreadPool(numThreads,
+              new ThreadFactoryBuilder().setDaemon(true).setNameFormat("MM-Split-Paths-%d").build());
+    }
+
+    try {
+      for (Path dir : dirs) {
+        if (pool != null) {
+          Future<Void> pathFuture = pool.submit(() -> {
+            processForWriteIdsForMmRead(dir, conf, validWriteIdList, allowOriginals, finalPaths, pathsWithFileOriginals);
+            return null;
+          });
+          pathFutures.add(pathFuture);
+        } else {
+          processForWriteIdsForMmRead(dir, conf, validWriteIdList, allowOriginals, finalPaths, pathsWithFileOriginals);
+        }
+      }
+      try {
+        for (Future<Void> pathFuture : pathFutures) {
+          pathFuture.get();
+        }
+      } catch (InterruptedException | ExecutionException e) {
+        for (Future<Void> future : pathFutures) {
+          future.cancel(true);
+        }
+        throw new IOException(e);
+      }
+    } finally {
+      if (pool != null) {
+        pool.shutdown();
+      }
     }
   }
 

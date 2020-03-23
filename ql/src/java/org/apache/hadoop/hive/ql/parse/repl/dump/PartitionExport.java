@@ -23,6 +23,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
+import org.apache.hadoop.hive.ql.parse.EximUtil;
+import org.apache.hadoop.hive.ql.parse.EximUtil.ReplPathMapping;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.repl.dump.io.FileOperations;
 import org.apache.hadoop.hive.ql.plan.ExportWork.MmContext;
@@ -73,8 +75,10 @@ class PartitionExport {
     this.callersSession = SessionState.get();
   }
 
-  void write(final ReplicationSpec forReplicationSpec) throws InterruptedException, HiveException {
+  List<ReplPathMapping> write(final ReplicationSpec forReplicationSpec, boolean isExportTask)
+          throws InterruptedException, HiveException {
     List<Future<?>> futures = new LinkedList<>();
+    List<ReplPathMapping> replCopyPathMappings = new LinkedList<>(); //Collections.synchronizedList(new LinkedList<>());
     ExecutorService producer = Executors.newFixedThreadPool(1,
         new ThreadFactoryBuilder().setNameFormat("partition-submitter-thread-%d").build());
     futures.add(producer.submit(() -> {
@@ -116,8 +120,9 @@ class PartitionExport {
                   forReplicationSpec, hiveConf);
           Path rootDataDumpDir = paths.partitionExportDir(partitionName);
           new FileOperations(dataPathList, rootDataDumpDir, distCpDoAsUser, hiveConf, mmCtx)
-                  .export(forReplicationSpec);
+                  .export(isExportTask);
           LOG.debug("Thread: {}, finish partition dump {}", threadName, partitionName);
+          return new ReplPathMapping(partition.getDataLocation(), new Path(rootDataDumpDir, EximUtil.DATA_PATH_NAME));
         } catch (Exception e) {
           throw new RuntimeException(e.getMessage(), e);
         }
@@ -126,7 +131,11 @@ class PartitionExport {
     consumer.shutdown();
     for (Future<?> future : futures) {
       try {
-        future.get();
+        Object retVal =  future.get();
+        if (retVal != null) {
+          ReplPathMapping replPathMapping = (ReplPathMapping)retVal;
+          replCopyPathMappings.add(replPathMapping);
+        }
       } catch (Exception e) {
         LOG.error("failed", e.getCause());
         throw new HiveException(e.getCause().getMessage(), e.getCause());
@@ -134,5 +143,6 @@ class PartitionExport {
     }
     // may be drive this via configuration as well.
     consumer.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
+    return replCopyPathMappings;
   }
 }

@@ -250,8 +250,8 @@ public class HiveServer2 extends CompositeService {
       LlapRegistryService.getClient(hiveConf);
     }
 
-    // Initialize metadata provider class
-    CalcitePlanner.initializeMetadataProviderClass();
+    // Initialize metadata provider class and trimmer
+    CalcitePlanner.warmup();
 
     try {
       sessionHive = Hive.get(hiveConf);

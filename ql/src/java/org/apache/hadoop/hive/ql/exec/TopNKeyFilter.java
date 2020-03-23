@@ -17,10 +17,14 @@
  */
 package org.apache.hadoop.hive.ql.exec;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import static java.util.Arrays.binarySearch;
 
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Implementation of filtering out keys.
@@ -36,14 +40,43 @@ public final class TopNKeyFilter {
   private long added = 0;
   private long total = 0;
 
+  //to track effectiveness of boundary check
+  private long eff = 0;
+  private final Set<KeyWrapper> topNKeySet;
+
   public TopNKeyFilter(int topN, Comparator<? extends KeyWrapper> comparator) {
     this.comparator = comparator;
     this.sortedTopItems = new KeyWrapper[topN +1];
     this.topN = topN;
+    this.topNKeySet = new HashSet<>();
+  }
+
+  private int compareWithBoundary(KeyWrapper kw) {
+    return ((Comparator<? super KeyWrapper>) comparator).compare(kw, sortedTopItems[topN - 1]);
   }
 
   public final boolean canForward(KeyWrapper kw) {
     total++;
+    if (topN > 0 && (size == topN)) {
+      int comp = compareWithBoundary(kw);
+      if (comp == 0) {
+        // special case, if last element is same as kw;
+        // Avoids duplicate comparison later
+        eff++;
+        return true;
+      }
+
+      if (comp > 0) {
+        eff++;
+        return false;
+      }
+    }
+
+    if (topNKeySet.contains(kw)) {
+      repeated++;
+      return true;
+    }
+
     int pos = binarySearch(sortedTopItems, 0, size, kw, (Comparator<? super KeyWrapper>) comparator);
     if (pos >= 0) { // found
       repeated++;
@@ -53,8 +86,13 @@ public final class TopNKeyFilter {
     if (pos >= topN) { // would be inserted to the end, there are topN elements which are smaller/larger
       return false;
     }
+    KeyWrapper oldElement = sortedTopItems[pos];
     System.arraycopy(sortedTopItems, pos, sortedTopItems, pos +1, size - pos); // make space by shifting
     sortedTopItems[pos] = kw.copyKey();
+
+    topNKeySet.remove(oldElement);
+    topNKeySet.add(sortedTopItems[pos]);
+
     added++;
     if (size < topN) {
       size++;
@@ -78,6 +116,7 @@ public final class TopNKeyFilter {
     sb.append(", repeated=").append(repeated);
     sb.append(", added=").append(added);
     sb.append(", total=").append(total);
+    sb.append(", eff=").append(eff);
     sb.append(", forwardingRatio=").append(forwardingRatio());
     sb.append('}');
     return sb.toString();
@@ -98,5 +137,20 @@ public final class TopNKeyFilter {
 
   public long getTotal() {
     return total;
+  }
+
+  @VisibleForTesting
+  long getEffectiveBoundaryChecks() {
+    return eff;
+  }
+
+  @VisibleForTesting
+  long getRepeated() {
+    return repeated;
+  }
+
+  @VisibleForTesting
+  long getKeySetSize() {
+    return topNKeySet.size();
   }
 }

@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite;
 
+import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeSystemImpl;
 import org.apache.calcite.sql.type.SqlTypeName;
 
@@ -37,6 +39,13 @@ public class HiveTypeSystemImpl extends RelDataTypeSystemImpl {
   private static final int MAX_BINARY_PRECISION      = Integer.MAX_VALUE;
   private static final int MAX_TIMESTAMP_PRECISION   = 9;
   private static final int MAX_TIMESTAMP_WITH_LOCAL_TIME_ZONE_PRECISION = 15; // Up to nanos
+  private static final int DEFAULT_TINYINT_PRECISION  = 3;
+  private static final int DEFAULT_SMALLINT_PRECISION = 5;
+  private static final int DEFAULT_INTEGER_PRECISION  = 10;
+  private static final int DEFAULT_BIGINT_PRECISION   = 19;
+  private static final int DEFAULT_FLOAT_PRECISION    = 7;
+  private static final int DEFAULT_DOUBLE_PRECISION   = 15;
+
 
   @Override
   public int getMaxScale(SqlTypeName typeName) {
@@ -93,6 +102,18 @@ public class HiveTypeSystemImpl extends RelDataTypeSystemImpl {
     case INTERVAL_MINUTE_SECOND:
     case INTERVAL_SECOND:
       return SqlTypeName.DEFAULT_INTERVAL_START_PRECISION;
+    case TINYINT:
+      return DEFAULT_TINYINT_PRECISION;
+    case SMALLINT:
+      return DEFAULT_SMALLINT_PRECISION;
+    case INTEGER:
+      return DEFAULT_INTEGER_PRECISION;
+    case BIGINT:
+      return DEFAULT_BIGINT_PRECISION;
+    case FLOAT:
+      return DEFAULT_FLOAT_PRECISION;
+    case DOUBLE:
+      return DEFAULT_DOUBLE_PRECISION;
     default:
       return -1;
     }
@@ -129,7 +150,7 @@ public class HiveTypeSystemImpl extends RelDataTypeSystemImpl {
     case INTERVAL_SECOND:
       return SqlTypeName.MAX_INTERVAL_START_PRECISION;
     default:
-      return -1;
+      return getDefaultPrecision(typeName);
     }
   }
 
@@ -146,6 +167,22 @@ public class HiveTypeSystemImpl extends RelDataTypeSystemImpl {
   @Override
   public boolean isSchemaCaseSensitive() {
     return false;
+  }
+
+  @Override
+  public RelDataType deriveSumType(RelDataTypeFactory typeFactory,
+      RelDataType argumentType) {
+    switch (argumentType.getSqlTypeName()) {
+      case DECIMAL:
+        // In Hive, SUM aggregate on decimal column will add 10 to compute
+        // the output precision; see
+        // GenericUDAFSum.GenericUDAFSumHiveDecimal#getOutputDecimalTypeInfoForSum
+        return typeFactory.createSqlType(
+            SqlTypeName.DECIMAL,
+            Math.min(MAX_DECIMAL_PRECISION, argumentType.getPrecision() + 10),
+            argumentType.getScale());
+    }
+    return argumentType;
   }
 
 }

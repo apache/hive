@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.hadoop.fs.FileStatus;
@@ -211,7 +210,6 @@ public class TestTxnCommandsForMmTable extends TxnCommandsBaseForTests {
     for(int h=0; h < pStrings.length; h++) {
       status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
           (TableExtended.MMTBLPART).toString().toLowerCase() + pStrings[h]), FileUtils.STAGING_DIR_PATH_FILTER);
-      Arrays.sort(status);
       // There should be 1 delta dir, plus a base dir in the location
       Assert.assertEquals(2, status.length);
       for (int i = 0; i < status.length; i++) {
@@ -221,7 +219,7 @@ public class TestTxnCommandsForMmTable extends TxnCommandsBaseForTests {
         } else {
           sawBase = true;
           baseDirs[h] = dirName;
-          Assert.assertTrue(baseDirs[i].matches("base_.*"));
+          Assert.assertTrue(baseDirs[h].matches("base_.*"));
         }
       }
       Assert.assertEquals(1, deltaCount);

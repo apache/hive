@@ -24,6 +24,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.Timestamp;
 
@@ -44,12 +46,14 @@ import java.time.temporal.TemporalUnit;
 import java.time.temporal.WeekFields;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Formatter using SQL:2016 datetime patterns.
@@ -1040,12 +1044,12 @@ public class HiveSqlDateTimeFormatter implements Serializable {
   }
 
   public Timestamp parseTimestamp(final String fullInput) {
-    LocalDateTime ldt = LocalDateTime.ofInstant(Instant.EPOCH, ZoneOffset.UTC);
     String substring;
     int index = 0;
     int value;
     int timeZoneHours = 0, timeZoneMinutes = 0;
     int iyyy = 0, iw = 0;
+    List<Integer> temporalValues = new ArrayList<>();
 
     for (Token token : tokens) {
       switch (token.type) {
@@ -1058,12 +1062,7 @@ public class HiveSqlDateTimeFormatter implements Serializable {
           substring = getNextCharacterSubstring(fullInput, index, token); //e.g. Marcharch -> March
           value = parseCharacterTemporal(substring, token); // e.g. July->07
         }
-        try {
-          ldt = ldt.with(token.temporalField, value);
-        } catch (DateTimeException e){
-          throw new IllegalArgumentException(
-              "Value " + value + " not valid for token " + token);
-        }
+        temporalValues.add(value);
 
         //update IYYY and IW if necessary
         if (token.temporalField == IsoFields.WEEK_BASED_YEAR) {
@@ -1119,14 +1118,23 @@ public class HiveSqlDateTimeFormatter implements Serializable {
       }
     }
 
-    // anything left unparsed at end of string? throw error
+    checkForLeftoverInput(fullInput, index);
+
+    checkForInvalidIsoWeek(iyyy, iw);
+
+    return getTimestampFromValues(tokens, temporalValues);
+  }
+
+  /**
+   * Anything left unparsed at end of input string? Throw error.
+   * @param fullInput full input String
+   * @param index where we left off parsing
+   */
+  private void checkForLeftoverInput(String fullInput, int index) {
     if (!fullInput.substring(index).isEmpty()) {
       throw new IllegalArgumentException("Leftover input after parsing: " +
           fullInput.substring(index) + " in string " + fullInput);
     }
-    checkForInvalidIsoWeek(iyyy, iw);
-
-    return Timestamp.ofEpochSecond(ldt.toEpochSecond(ZoneOffset.UTC), ldt.getNano());
   }
 
   /**
@@ -1139,16 +1147,83 @@ public class HiveSqlDateTimeFormatter implements Serializable {
     }
 
     LocalDateTime ldt = LocalDateTime.ofInstant(Instant.EPOCH, ZoneOffset.UTC);
-    ldt = ldt.with(IsoFields.WEEK_BASED_YEAR, iyyy);
-    ldt = ldt.with(IsoFields.WEEK_OF_WEEK_BASED_YEAR, iw);
+    try {
+      ldt = ldt.with(IsoFields.WEEK_BASED_YEAR, iyyy);
+      ldt = ldt.with(IsoFields.WEEK_OF_WEEK_BASED_YEAR, iw);
+    } catch (DateTimeException e) {
+      throw new IllegalArgumentException(e);
+    }
+
     if (ldt.getYear() != iyyy) {
       throw new IllegalArgumentException("ISO year " + iyyy + " does not have " + iw + " weeks.");
     }
   }
 
+  /**
+   * Create a timestamp from the list of values parsed from the input and the list of tokens
+   * parsed from the pattern input.
+   *
+   * We need to be able to parse input like "29.02.2000" (with pattern "dd.mm.yyyy")
+   * correctly – if we assigned the day value to the timestamp before the year value, then
+   * output would be 2000-02-28. So before creating the Timestamp we have to:
+   *
+   *  - Make a list of pairs.
+   *    Left value: only the Tokens that represent a temporal value
+   *    Right value: their corresponding int values parsed from the input
+   *  - Sort this list by length of base unit, in descending order (years before months, etc.).
+   *  - Then create the parsed output Timestamp object by creating a LocalDateTime object using the
+   *    token's TemporalField and the value.
+   *
+   * @param tokens list of tokens of any type, in order of pattern input
+   * @param temporalValues list of integer values parsed from the input, in order of input
+   * @return the parsed Timestamp
+   * @throws IllegalStateException if temporal values list and tokens in tokens list sizes are not
+   * equal
+   */
+  private Timestamp getTimestampFromValues(List<Token> tokens, List<Integer> temporalValues) {
+
+    // Get list of temporal Tokens
+    List<Token> temporalTokens = tokens.stream()
+        .filter(token-> token.type == TokenType.NUMERIC_TEMPORAL
+            || token.type == TokenType.CHARACTER_TEMPORAL)
+        .collect(Collectors.toList());
+    Preconditions.checkState(temporalTokens.size() == temporalValues.size(),
+        "temporalTokens list length (" + temporalTokens.size()
+        + ") differs from that of temporalValues (length: " + temporalValues.size() + ")");
+
+    // Get sorted list of temporal Token/value Pairs
+    List<ImmutablePair<Token, Integer>> tokenValueList = new ArrayList<>(temporalTokens.size());
+    for (int i = 0; i < temporalTokens.size(); i++) {
+      ImmutablePair<Token, Integer> pair =
+          new ImmutablePair<>(temporalTokens.get(i), temporalValues.get(i));
+      tokenValueList.add(pair);
+    }
+    tokenValueList.sort(((Comparator<ImmutablePair<Token, Integer>>) (o1, o2) -> {
+              Token token1 = o1.left;
+              Token token2 = o2.left;
+              return token1.temporalField.getBaseUnit().getDuration()
+                .compareTo(token2.temporalField.getBaseUnit().getDuration());
+            }).reversed());
+
+    // Create Timestamp
+    LocalDateTime ldt = LocalDateTime.ofInstant(Instant.EPOCH, ZoneOffset.UTC);
+    for (Pair<Token, Integer> pair : tokenValueList) {
+      TemporalField temporalField = pair.getLeft().temporalField;
+      int value = pair.getRight();
+      try {
+        ldt = ldt.with(temporalField, value);
+      } catch (DateTimeException e){
+        throw new IllegalArgumentException(
+            "Value " + value + " not valid for token " + temporalField);
+      }
+    }
+    return Timestamp.ofEpochSecond(ldt.toEpochSecond(ZoneOffset.UTC), ldt.getNano());
+  }
+
   public Date parseDate(String input){
     return Date.ofEpochMilli(parseTimestamp(input).toEpochMilli());
   }
+
   /**
    * Return the next substring to parse. Length is either specified or token.length, but a
    * separator or an ISO-8601 delimiter can cut the substring short. (e.g. if the token pattern is
