@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
+import org.apache.calcite.rel.type.RelDataTypeImpl;
+import org.apache.calcite.rel.type.RelProtoDataType;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.type.InferTypes;
@@ -100,10 +102,14 @@ public class DataSketchesFunctions {
 
     for (SketchDescriptor sd : sketchClasses) {
 
-      SqlTypeName sketchType = SqlTypeName.DOUBLE;
+      RelProtoDataType sketchType = RelDataTypeImpl.proto(SqlTypeName.BINARY, true);
 
       SketchFunctionDescriptor sketchSFD = sd.fnMap.get(DATA_TO_SKETCH);
       SketchFunctionDescriptor unionSFD = sd.fnMap.get(UNION_SKETCH);
+
+      if (sketchSFD == null || unionSFD == null) {
+        continue;
+      }
 
       HiveMergeablAggregate unionFn = new HiveMergeablAggregate(unionSFD.name,
           SqlKind.OTHER_FUNCTION,

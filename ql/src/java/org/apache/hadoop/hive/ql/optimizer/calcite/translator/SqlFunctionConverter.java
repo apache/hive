@@ -20,10 +20,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.function.Consumer;
-import java.util.function.Function;
-
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlFunctionCategory;
@@ -480,11 +477,7 @@ public class SqlFunctionConverter {
 
     @Override
     public void accept(Pair<String, SqlOperator> t) {
-      registerFunction(t.left, t.right);
-    }
-
-    public void registerFunction(String name, SqlOperator calciteFn) {
-      registerFunction(name, calciteFn, hToken(HiveParser.Identifier, name));
+      registerDuplicateFunction(t.left, t.right, hToken(HiveParser.Identifier, t.left));
     }
 
     private void registerFunction(String name, SqlOperator calciteFn, HiveToken hiveToken) {
@@ -597,6 +590,7 @@ public class SqlFunctionConverter {
       ImmutableList<RelDataType> calciteArgTypes, RelDataType calciteRetType) {
     SqlAggFunction calciteAggFn = (SqlAggFunction) hiveToCalcite.get(hiveUdfName);
 
+    /*
     if (DataSketchesFunctions.isUnionFunction(hiveUdfName)) {
       calciteAggFn = getMergeableAgg(hiveUdfName, calciteArgTypes, calciteRetType);
     }
@@ -608,6 +602,7 @@ public class SqlFunctionConverter {
 
       calciteAggFn = getMergeableAgg(hiveUdfName, calciteArgTypes, calciteRetType, unionFn);
     }
+    */
 
     if (calciteAggFn == null) {
       CalciteUDFInfo udfInfo = getUDFInfo(hiveUdfName, calciteArgTypes, calciteRetType);
