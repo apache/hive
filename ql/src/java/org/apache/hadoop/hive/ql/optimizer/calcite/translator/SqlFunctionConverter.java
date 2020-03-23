@@ -20,6 +20,9 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.sql.SqlAggFunction;
@@ -35,6 +38,7 @@ import org.apache.calcite.sql.type.SqlOperandTypeChecker;
 import org.apache.calcite.sql.type.SqlOperandTypeInference;
 import org.apache.calcite.sql.type.SqlReturnTypeInference;
 import org.apache.calcite.sql.type.SqlTypeFamily;
+import org.apache.calcite.util.Pair;
 import org.apache.calcite.util.Util;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.ql.exec.DataSketchesFunctions;
@@ -351,7 +355,7 @@ public class SqlFunctionConverter {
   /**
    * This class is used to build immutable hashmaps in the static block above.
    */
-  private static class StaticBlockBuilder {
+  private static class StaticBlockBuilder implements Consumer<Pair<String, SqlOperator>> {
     final Map<String, SqlOperator>    hiveToCalcite      = Maps.newHashMap();
     final Map<SqlOperator, HiveToken> calciteToHiveToken = Maps.newHashMap();
     final Map<SqlOperator, String>    reverseOperatorMap = Maps.newHashMap();
@@ -470,6 +474,17 @@ public class SqlFunctionConverter {
       );
       registerFunction("date_add", HiveDateAddSqlOperator.INSTANCE, hToken(HiveParser.Identifier, "date_add"));
       registerFunction("date_sub", HiveDateSubSqlOperator.INSTANCE, hToken(HiveParser.Identifier, "date_sub"));
+
+      DataSketchesFunctions.registerCalciteFunctions(this);
+    }
+
+    @Override
+    public void accept(Pair<String, SqlOperator> t) {
+      registerFunction(t.left, t.right);
+    }
+
+    public void registerFunction(String name, SqlOperator calciteFn) {
+      registerFunction(name, calciteFn, hToken(HiveParser.Identifier, name));
     }
 
     private void registerFunction(String name, SqlOperator calciteFn, HiveToken hiveToken) {
@@ -497,6 +512,7 @@ public class SqlFunctionConverter {
         calciteToHiveToken.put(calciteFn, hiveToken);
       }
     }
+
   }
 
   private static HiveToken hToken(int type, String text) {

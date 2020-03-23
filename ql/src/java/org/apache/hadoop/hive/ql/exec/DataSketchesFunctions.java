@@ -18,6 +18,12 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
+
+import org.apache.calcite.sql.SqlOperator;
+import org.apache.calcite.util.Pair;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver2;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
 
@@ -29,41 +35,76 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
 public class DataSketchesFunctions {
 
   private static final String DATASKETCHES_PREFIX = "ds";
-  private static final String DATA_TO_SKETCH = "sketch";
-  private static final String SKETCH_TO_ESTIMATE_WITH_ERROR_BOUNDS = "estimate_bounds";
-  private static final String SKETCH_TO_ESTIMATE = "estimate";
-  private static final String SKETCH_TO_STRING = "stringify";
-  private static final String UNION_SKETCH = "union";
-  private static final String UNION_SKETCH1 = "union_f";
-  private static final String GET_N = "n";
-  private static final String GET_CDF = "cdf";
-  private static final String GET_PMF = "pmf";
-  private static final String GET_QUANTILES = "quantiles";
-  private static final String GET_QUANTILE = "quantile";
-  private static final String GET_RANK = "rank";
-  private static final String INTERSECT_SKETCH = "intersect";
-  private static final String INTERSECT_SKETCH1 = "intersect_f";
-  private static final String EXCLUDE_SKETCH = "exclude";
-  private static final String GET_K = "k";
-  private static final String GET_FREQUENT_ITEMS = "frequent_items";
-  private static final String T_TEST = "ttest";
-  private static final String SKETCH_TO_MEANS = "means";
-  private static final String SKETCH_TO_NUMBER_OF_RETAINED_ENTRIES = "n_retained";
-  private static final String SKETCH_TO_QUANTILES_SKETCH = "quantiles_sketch";
-  private static final String SKETCH_TO_VALUES = "values";
-  private static final String SKETCH_TO_VARIANCES = "variances";
-  private static final String SKETCH_TO_PERCENTILE = "percentile";
+
+  enum SketchFn {
+    DATA_TO_SKETCH("sketch"),
+    SKETCH_TO_ESTIMATE_WITH_ERROR_BOUNDS("estimate_bounds"),
+    SKETCH_TO_ESTIMATE("estimate"),
+    SKETCH_TO_STRING("stringify"),
+    UNION_SKETCH("union"),
+    UNION_SKETCH1("union_f"),
+    GET_N("n"),
+    GET_CDF("cdf"),
+    GET_PMF("pmf"),
+    GET_QUANTILES("quantiles"),
+    GET_QUANTILE("quantile"),
+    GET_RANK("rank"),
+    INTERSECT_SKETCH("intersect"),
+    INTERSECT_SKETCH1("intersect_f"),
+    EXCLUDE_SKETCH("exclude"),
+    GET_K("k"),
+    GET_FREQUENT_ITEMS("frequent_items"),
+    T_TEST("ttest"),
+    SKETCH_TO_MEANS("means"),
+    SKETCH_TO_NUMBER_OF_RETAINED_ENTRIES("n_retained"),
+    SKETCH_TO_QUANTILES_SKETCH("quantiles_sketch"),
+    SKETCH_TO_VALUES("values"),
+    SKETCH_TO_VARIANCES("variances"),
+    SKETCH_TO_PERCENTILE("percentile"),;
+
+    final String fName;
+
+    private SketchFn(String fName) {
+      this.fName = fName;
+
+    }
+  }
+
+  //  private static final String SKETCH_TO_ESTIMATE_WITH_ERROR_BOUNDS = "estimate_bounds";
+  //  private static final String SKETCH_TO_ESTIMATE = "estimate";
+  //  private static final String SKETCH_TO_STRING = "stringify";
+  //  private static final String UNION_SKETCH = "union";
+  //  private static final String UNION_SKETCH1 = "union_f";
+  //  private static final String GET_N = "n";
+  //  private static final String GET_CDF = "cdf";
+  //  private static final String GET_PMF = "pmf";
+  //  private static final String GET_QUANTILES = "quantiles";
+  //  private static final String GET_QUANTILE = "quantile";
+  //  private static final String GET_RANK = "rank";
+  //  private static final String INTERSECT_SKETCH = "intersect";
+  //  private static final String INTERSECT_SKETCH1 = "intersect_f";
+  //  private static final String EXCLUDE_SKETCH = "exclude";
+  //  private static final String GET_K = "k";
+  //  private static final String GET_FREQUENT_ITEMS = "frequent_items";
+  //  private static final String T_TEST = "ttest";
+  //  private static final String SKETCH_TO_MEANS = "means";
+  //  private static final String SKETCH_TO_NUMBER_OF_RETAINED_ENTRIES = "n_retained";
+  //  private static final String SKETCH_TO_QUANTILES_SKETCH = "quantiles_sketch";
+  //  private static final String SKETCH_TO_VALUES = "values";
+  //  private static final String SKETCH_TO_VARIANCES = "variances";
+  //  private static final String SKETCH_TO_PERCENTILE = "percentile";
 
   private final Registry system;
+  private List<SketchDescriptor> sketchClasses;
 
   public DataSketchesFunctions(Registry system) {
     this.system = system;
-  }
+    this.sketchClasses = new ArrayList<SketchDescriptor>();
 
-  public static void register(Registry system) {
-    DataSketchesFunctions dsf = new DataSketchesFunctions(system);
     String prefix = DATASKETCHES_PREFIX;
-    dsf.registerHll(prefix);
+    //    dsf.registerHll();
+    registerHll();
+    DataSketchesFunctions dsf = this;
     dsf.registerCpc(prefix);
     dsf.registerKll(prefix);
     dsf.registerTheta(prefix);
@@ -72,56 +113,104 @@ public class DataSketchesFunctions {
     dsf.registerFrequencies(prefix);
   }
 
-  private void registerHll(String prefix) {
-    String p = prefix + "_hll_";
-    registerUDAF(org.apache.datasketches.hive.hll.DataToSketchUDAF.class, p + DATA_TO_SKETCH);
-    registerUDF(org.apache.datasketches.hive.hll.SketchToEstimateAndErrorBoundsUDF.class,
-        p + SKETCH_TO_ESTIMATE_WITH_ERROR_BOUNDS);
-    registerUDF(org.apache.datasketches.hive.hll.SketchToEstimateUDF.class, p + SKETCH_TO_ESTIMATE);
-    registerUDF(org.apache.datasketches.hive.hll.SketchToStringUDF.class, p + SKETCH_TO_STRING);
-    registerUDF(org.apache.datasketches.hive.hll.UnionSketchUDF.class, p + UNION_SKETCH1);
-    registerUDAF(org.apache.datasketches.hive.hll.UnionSketchUDAF.class, p + UNION_SKETCH);
+  public static void register(Registry system) {
+    DataSketchesFunctions dsf = new DataSketchesFunctions(system);
+  }
+
+  static class SketchFunctionDescriptor {
+    String name;
+    Class<?> udfClass;
+  }
+
+  static class SketchDescriptor {
+    List<SketchFunctionDescriptor> li;
+
+    public SketchDescriptor(String string) {
+      String x = DATASKETCHES_PREFIX;
+      // TODO Auto-generated constructor stub
+    }
+
+    public void registerUDAF(Class<?> class1, String p, String dataToSketch) {
+      register(dataToSketch, class1);
+      // TODO Auto-generated method stub
+
+    }
+
+    private void register(String dataToSketch, Class<?> class1) {
+      // TODO Auto-generated method stub
+
+    }
+
+    public void registerUDF(Class<?> class1, String p,
+        String sketchToEstimateWithErrorBounds) {
+      register(sketchToEstimateWithErrorBounds, class1);
+    }
+
+
+    public void registerUDTF(Class<?> class1, String p, String getFrequentItems) {
+      // TODO Auto-generated method stub
+
+    }
+  }
+
+  private void registerHll() {
+    String p = "asd";
+    SketchDescriptor sd = new SketchDescriptor("hll");
+    sd.registerUDAF(org.apache.datasketches.hive.hll.DataToSketchUDAF.class, p, DATA_TO_SKETCH);
+    sd.registerUDF(org.apache.datasketches.hive.hll.SketchToEstimateAndErrorBoundsUDF.class, p,
+        SKETCH_TO_ESTIMATE_WITH_ERROR_BOUNDS);
+    sd.registerUDF(org.apache.datasketches.hive.hll.SketchToEstimateUDF.class, p, SKETCH_TO_ESTIMATE);
+    sd.registerUDF(org.apache.datasketches.hive.hll.SketchToStringUDF.class, p, SKETCH_TO_STRING);
+    sd.registerUDF(org.apache.datasketches.hive.hll.UnionSketchUDF.class, p, UNION_SKETCH1);
+    sd.registerUDAF(org.apache.datasketches.hive.hll.UnionSketchUDAF.class, p, UNION_SKETCH);
+    sketchClasses.add(sd);
   }
 
   private void registerCpc(String prefix) {
     String p = prefix + "_cpc_";
-    registerUDAF(org.apache.datasketches.hive.cpc.DataToSketchUDAF.class, p + DATA_TO_SKETCH);
+    SketchDescriptor sd = new SketchDescriptor("cpc");
+    sd.registerUDAF(org.apache.datasketches.hive.cpc.DataToSketchUDAF.class, p, DATA_TO_SKETCH);
     // FIXME: normalize GetEstimateAndErrorBoundsUDF vs SketchToEstimateAndErrorBoundsUDF
-    registerUDF(org.apache.datasketches.hive.cpc.GetEstimateAndErrorBoundsUDF.class,
-        p + SKETCH_TO_ESTIMATE_WITH_ERROR_BOUNDS);
+    sd.registerUDF(org.apache.datasketches.hive.cpc.GetEstimateAndErrorBoundsUDF.class, p,
+        SKETCH_TO_ESTIMATE_WITH_ERROR_BOUNDS);
     // FIXME: normalize GetEstimateUDF vs SketchToEstimateUDF
-    registerUDF(org.apache.datasketches.hive.cpc.GetEstimateUDF.class, p + SKETCH_TO_ESTIMATE);
-    registerUDF(org.apache.datasketches.hive.cpc.SketchToStringUDF.class, p + SKETCH_TO_STRING);
-    registerUDF(org.apache.datasketches.hive.cpc.UnionSketchUDF.class, p + UNION_SKETCH1);
-    registerUDAF(org.apache.datasketches.hive.cpc.UnionSketchUDAF.class, p + UNION_SKETCH);
+    sd.registerUDF(org.apache.datasketches.hive.cpc.GetEstimateUDF.class, p, SKETCH_TO_ESTIMATE);
+    sd.registerUDF(org.apache.datasketches.hive.cpc.SketchToStringUDF.class, p, SKETCH_TO_STRING);
+    sd.registerUDF(org.apache.datasketches.hive.cpc.UnionSketchUDF.class, p, UNION_SKETCH1);
+    sd.registerUDAF(org.apache.datasketches.hive.cpc.UnionSketchUDAF.class, p, UNION_SKETCH);
+    sketchClasses.add(sd);
   }
 
   private void registerKll(String prefix) {
     String p = prefix + "_kll_";
-    registerUDAF(org.apache.datasketches.hive.kll.DataToSketchUDAF.class, p + DATA_TO_SKETCH);
-    registerUDF(org.apache.datasketches.hive.kll.SketchToStringUDF.class, p + SKETCH_TO_STRING);
-    //    registerUDF(org.apache.datasketches.hive.kll.UnionSketchUDF.class, p + UNION_SKETCH);
-    registerUDAF(org.apache.datasketches.hive.kll.UnionSketchUDAF.class, p + UNION_SKETCH);
+    SketchDescriptor sd = new SketchDescriptor("kll");
+    sd.registerUDAF(org.apache.datasketches.hive.kll.DataToSketchUDAF.class, p, DATA_TO_SKETCH);
+    sd.registerUDF(org.apache.datasketches.hive.kll.SketchToStringUDF.class, p, SKETCH_TO_STRING);
+    //    registerUDF(org.apache.datasketches.hive.kll.UnionSketchUDF.class, p , UNION_SKETCH);
+    sd.registerUDAF(org.apache.datasketches.hive.kll.UnionSketchUDAF.class, p, UNION_SKETCH);
 
-    registerUDF(org.apache.datasketches.hive.kll.GetNUDF.class, p + GET_N);
-    registerUDF(org.apache.datasketches.hive.kll.GetCdfUDF.class, p + GET_CDF);
-    registerUDF(org.apache.datasketches.hive.kll.GetPmfUDF.class, p + GET_PMF);
-    registerUDF(org.apache.datasketches.hive.kll.GetQuantilesUDF.class, p + GET_QUANTILES);
-    registerUDF(org.apache.datasketches.hive.kll.GetQuantileUDF.class, p + GET_QUANTILE);
-    registerUDF(org.apache.datasketches.hive.kll.GetRankUDF.class, p + GET_RANK);
+    sd.registerUDF(org.apache.datasketches.hive.kll.GetNUDF.class, p, GET_N);
+    sd.registerUDF(org.apache.datasketches.hive.kll.GetCdfUDF.class, p, GET_CDF);
+    sd.registerUDF(org.apache.datasketches.hive.kll.GetPmfUDF.class, p, GET_PMF);
+    sd.registerUDF(org.apache.datasketches.hive.kll.GetQuantilesUDF.class, p, GET_QUANTILES);
+    sd.registerUDF(org.apache.datasketches.hive.kll.GetQuantileUDF.class, p, GET_QUANTILE);
+    sd.registerUDF(org.apache.datasketches.hive.kll.GetRankUDF.class, p, GET_RANK);
+    sketchClasses.add(sd);
   }
 
   private void registerTheta(String prefix) {
     String p = prefix + "_theta_";
-    registerUDAF(org.apache.datasketches.hive.theta.DataToSketchUDAF.class, p + DATA_TO_SKETCH);
+    SketchDescriptor sd = new SketchDescriptor("kll");
+    sd.registerUDAF(org.apache.datasketches.hive.theta.DataToSketchUDAF.class, p, DATA_TO_SKETCH);
     // FIXME: missing?
     //registerUDF(org.apache.datasketches.hive.theta.SketchToStringUDF.class, p + SKETCH_TO_STRING);
-    registerUDF(org.apache.datasketches.hive.theta.UnionSketchUDF.class, p + UNION_SKETCH1);
-    registerUDAF(org.apache.datasketches.hive.theta.UnionSketchUDAF.class, p + UNION_SKETCH);
-    registerUDF(org.apache.datasketches.hive.theta.IntersectSketchUDF.class, p + INTERSECT_SKETCH1);
-    registerUDAF(org.apache.datasketches.hive.theta.IntersectSketchUDAF.class, p + INTERSECT_SKETCH);
-    registerUDF(org.apache.datasketches.hive.theta.EstimateSketchUDF.class, p + SKETCH_TO_ESTIMATE);
-    registerUDF(org.apache.datasketches.hive.theta.ExcludeSketchUDF.class, p + EXCLUDE_SKETCH);
+    sd.registerUDF(org.apache.datasketches.hive.theta.UnionSketchUDF.class, p, UNION_SKETCH1);
+    sd.registerUDAF(org.apache.datasketches.hive.theta.UnionSketchUDAF.class, p, UNION_SKETCH);
+    sd.registerUDF(org.apache.datasketches.hive.theta.IntersectSketchUDF.class, p, INTERSECT_SKETCH1);
+    sd.registerUDAF(org.apache.datasketches.hive.theta.IntersectSketchUDAF.class, p, INTERSECT_SKETCH);
+    sd.registerUDF(org.apache.datasketches.hive.theta.EstimateSketchUDF.class, p, SKETCH_TO_ESTIMATE);
+    sd.registerUDF(org.apache.datasketches.hive.theta.ExcludeSketchUDF.class, p, EXCLUDE_SKETCH);
+    sketchClasses.add(sd);
 
   }
 
@@ -132,31 +221,35 @@ public class DataSketchesFunctions {
 
   private void registerTupleArrayOfDoubles(String string) {
     String p = string + "_";
-    registerUDAF(org.apache.datasketches.hive.tuple.DataToArrayOfDoublesSketchUDAF.class, p + DATA_TO_SKETCH);
+    SketchDescriptor sd = new SketchDescriptor("tuple_arrayofdouble");
+    sd.registerUDAF(org.apache.datasketches.hive.tuple.DataToArrayOfDoublesSketchUDAF.class, p, DATA_TO_SKETCH);
     // FIXME: missing?
-    //registerUDF(org.apache.datasketches.hive.theta.SketchToStringUDF.class, p + SKETCH_TO_STRING);
-    registerUDAF(org.apache.datasketches.hive.tuple.UnionArrayOfDoublesSketchUDAF.class, p + UNION_SKETCH);
-    registerUDF(org.apache.datasketches.hive.tuple.ArrayOfDoublesSketchesTTestUDF.class, p + T_TEST);
-    registerUDF(org.apache.datasketches.hive.tuple.ArrayOfDoublesSketchToEstimatesUDF.class, p + SKETCH_TO_ESTIMATE);
-    registerUDF(org.apache.datasketches.hive.tuple.ArrayOfDoublesSketchToEstimateAndErrorBoundsUDF.class,
-        p + SKETCH_TO_ESTIMATE_WITH_ERROR_BOUNDS);
-    registerUDF(org.apache.datasketches.hive.tuple.ArrayOfDoublesSketchToMeansUDF.class, p + SKETCH_TO_MEANS);
-    registerUDF(org.apache.datasketches.hive.tuple.ArrayOfDoublesSketchToNumberOfRetainedEntriesUDF.class,
-        p + SKETCH_TO_NUMBER_OF_RETAINED_ENTRIES);
-    registerUDF(org.apache.datasketches.hive.tuple.ArrayOfDoublesSketchToQuantilesSketchUDF.class,
-        p + SKETCH_TO_QUANTILES_SKETCH);
-    registerUDTF(org.apache.datasketches.hive.tuple.ArrayOfDoublesSketchToValuesUDTF.class, p + SKETCH_TO_VALUES);
-    registerUDF(org.apache.datasketches.hive.tuple.ArrayOfDoublesSketchToVariancesUDF.class, p + SKETCH_TO_VARIANCES);
+    //registerUDF(org.apache.datasketches.hive.theta.SketchToStringUDF.class, p , SKETCH_TO_STRING);
+    sd.registerUDAF(org.apache.datasketches.hive.tuple.UnionArrayOfDoublesSketchUDAF.class, p, UNION_SKETCH);
+    sd.registerUDF(org.apache.datasketches.hive.tuple.ArrayOfDoublesSketchesTTestUDF.class, p, T_TEST);
+    sd.registerUDF(org.apache.datasketches.hive.tuple.ArrayOfDoublesSketchToEstimatesUDF.class, p, SKETCH_TO_ESTIMATE);
+    sd.registerUDF(org.apache.datasketches.hive.tuple.ArrayOfDoublesSketchToEstimateAndErrorBoundsUDF.class, p,
+        SKETCH_TO_ESTIMATE_WITH_ERROR_BOUNDS);
+    sd.registerUDF(org.apache.datasketches.hive.tuple.ArrayOfDoublesSketchToMeansUDF.class, p, SKETCH_TO_MEANS);
+    sd.registerUDF(org.apache.datasketches.hive.tuple.ArrayOfDoublesSketchToNumberOfRetainedEntriesUDF.class, p,
+        SKETCH_TO_NUMBER_OF_RETAINED_ENTRIES);
+    sd.registerUDF(org.apache.datasketches.hive.tuple.ArrayOfDoublesSketchToQuantilesSketchUDF.class, p,
+        SKETCH_TO_QUANTILES_SKETCH);
+    sd.registerUDTF(org.apache.datasketches.hive.tuple.ArrayOfDoublesSketchToValuesUDTF.class, p, SKETCH_TO_VALUES);
+    sd.registerUDF(org.apache.datasketches.hive.tuple.ArrayOfDoublesSketchToVariancesUDF.class, p, SKETCH_TO_VARIANCES);
+    sketchClasses.add(sd);
   }
 
   private void registerTupleDoubleSummary(String string) {
     String p = string + "_";
-    registerUDAF(org.apache.datasketches.hive.tuple.DataToDoubleSummarySketchUDAF.class, p + DATA_TO_SKETCH);
-    // FIXME: missing?
+    SketchDescriptor sd = new SketchDescriptor("tuple_doublesummary");
+    sd.registerUDAF(org.apache.datasketches.hive.tuple.DataToDoubleSummarySketchUDAF.class, p, DATA_TO_SKETCH);
     //registerUDF(org.apache.datasketches.hive.theta.SketchToStringUDF.class, p + SKETCH_TO_STRING);
-    registerUDAF(org.apache.datasketches.hive.tuple.UnionDoubleSummarySketchUDAF.class, p + UNION_SKETCH);
-    registerUDF(org.apache.datasketches.hive.tuple.DoubleSummarySketchToEstimatesUDF.class, p + SKETCH_TO_ESTIMATE);
-    registerUDF(org.apache.datasketches.hive.tuple.DoubleSummarySketchToPercentileUDF.class, p + SKETCH_TO_PERCENTILE);
+    sd.registerUDAF(org.apache.datasketches.hive.tuple.UnionDoubleSummarySketchUDAF.class, p, UNION_SKETCH);
+    sd.registerUDF(org.apache.datasketches.hive.tuple.DoubleSummarySketchToEstimatesUDF.class, p, SKETCH_TO_ESTIMATE);
+    sd.registerUDF(org.apache.datasketches.hive.tuple.DoubleSummarySketchToPercentileUDF.class, p,
+        SKETCH_TO_PERCENTILE);
+    sketchClasses.add(sd);
   }
 
   private void registerQuantiles(String prefix) {
@@ -166,41 +259,48 @@ public class DataSketchesFunctions {
 
   private void registerFrequencies(String prefix) {
     String p = prefix + "_freq_";
-    registerUDAF(org.apache.datasketches.hive.frequencies.DataToStringsSketchUDAF.class, p + DATA_TO_SKETCH);
+    SketchDescriptor sd = new SketchDescriptor("freq");
+
+    sd.registerUDAF(org.apache.datasketches.hive.frequencies.DataToStringsSketchUDAF.class, p, DATA_TO_SKETCH);
     // FIXME: missing?
     //registerUDF(org.apache.datasketches.hive.frequencies.DoublesSketchToStringUDF.class, p + SKETCH_TO_STRING);
     //registerUDF(org.apache.datasketches.hive.quantiles.UnionItemsSketchUDAF.class, p + UNION_SKETCH);
-    registerUDAF(org.apache.datasketches.hive.frequencies.UnionStringsSketchUDAF.class, p + UNION_SKETCH);
-    registerUDTF(org.apache.datasketches.hive.frequencies.GetFrequentItemsFromStringsSketchUDTF.class,
-        p + GET_FREQUENT_ITEMS);
+    sd.registerUDAF(org.apache.datasketches.hive.frequencies.UnionStringsSketchUDAF.class, p, UNION_SKETCH);
+    sd.registerUDTF(org.apache.datasketches.hive.frequencies.GetFrequentItemsFromStringsSketchUDTF.class, p,
+        GET_FREQUENT_ITEMS);
+    sketchClasses.add(sd);
   }
 
   private void registerQuantilesString(String prefix) {
     String p = prefix + "_strings_";
-    registerUDAF(org.apache.datasketches.hive.quantiles.DataToStringsSketchUDAF.class, p + DATA_TO_SKETCH);
-    registerUDF(org.apache.datasketches.hive.quantiles.StringsSketchToStringUDF.class, p + SKETCH_TO_STRING);
-    //registerUDF(org.apache.datasketches.hive.quantiles.UnionItemsSketchUDAF.class, p + UNION_SKETCH);
-    registerUDAF(org.apache.datasketches.hive.quantiles.UnionStringsSketchUDAF.class, p + UNION_SKETCH);
-    registerUDF(org.apache.datasketches.hive.quantiles.GetNFromStringsSketchUDF.class, p + GET_N);
-    registerUDF(org.apache.datasketches.hive.quantiles.GetKFromStringsSketchUDF.class, p + GET_K);
-    registerUDF(org.apache.datasketches.hive.quantiles.GetCdfFromStringsSketchUDF.class, p + GET_CDF);
-    registerUDF(org.apache.datasketches.hive.quantiles.GetPmfFromStringsSketchUDF.class, p + GET_PMF);
-    registerUDF(org.apache.datasketches.hive.quantiles.GetQuantileFromStringsSketchUDF.class, p + GET_QUANTILE);
-    registerUDF(org.apache.datasketches.hive.quantiles.GetQuantilesFromStringsSketchUDF.class, p + GET_QUANTILES);
+    SketchDescriptor sd = new SketchDescriptor("quantile_strings");
+    sd.registerUDAF(org.apache.datasketches.hive.quantiles.DataToStringsSketchUDAF.class, p, DATA_TO_SKETCH);
+    sd.registerUDF(org.apache.datasketches.hive.quantiles.StringsSketchToStringUDF.class, p, SKETCH_TO_STRING);
+    //registerUDF(org.apache.datasketches.hive.quantiles.UnionItemsSketchUDAF.class, p , UNION_SKETCH);
+    sd.registerUDAF(org.apache.datasketches.hive.quantiles.UnionStringsSketchUDAF.class, p, UNION_SKETCH);
+    sd.registerUDF(org.apache.datasketches.hive.quantiles.GetNFromStringsSketchUDF.class, p, GET_N);
+    sd.registerUDF(org.apache.datasketches.hive.quantiles.GetKFromStringsSketchUDF.class, p, GET_K);
+    sd.registerUDF(org.apache.datasketches.hive.quantiles.GetCdfFromStringsSketchUDF.class, p, GET_CDF);
+    sd.registerUDF(org.apache.datasketches.hive.quantiles.GetPmfFromStringsSketchUDF.class, p, GET_PMF);
+    sd.registerUDF(org.apache.datasketches.hive.quantiles.GetQuantileFromStringsSketchUDF.class, p, GET_QUANTILE);
+    sd.registerUDF(org.apache.datasketches.hive.quantiles.GetQuantilesFromStringsSketchUDF.class, p, GET_QUANTILES);
+    sketchClasses.add(sd);
   }
 
   private void registerQuantilesDoubles(String prefix) {
     String p = prefix + "_doubles_";
-    registerUDAF(org.apache.datasketches.hive.quantiles.DataToDoublesSketchUDAF.class, p + DATA_TO_SKETCH);
-    registerUDF(org.apache.datasketches.hive.quantiles.DoublesSketchToStringUDF.class, p + SKETCH_TO_STRING);
-    //registerUDF(org.apache.datasketches.hive.quantiles.UnionItemsSketchUDAF.class, p + UNION_SKETCH);
-    registerUDAF(org.apache.datasketches.hive.quantiles.UnionDoublesSketchUDAF.class, p + UNION_SKETCH);
-    registerUDF(org.apache.datasketches.hive.quantiles.GetNFromDoublesSketchUDF.class, p + GET_N);
-    registerUDF(org.apache.datasketches.hive.quantiles.GetKFromDoublesSketchUDF.class, p + GET_K);
-    registerUDF(org.apache.datasketches.hive.quantiles.GetCdfFromDoublesSketchUDF.class, p + GET_CDF);
-    registerUDF(org.apache.datasketches.hive.quantiles.GetPmfFromDoublesSketchUDF.class, p + GET_PMF);
-    registerUDF(org.apache.datasketches.hive.quantiles.GetQuantileFromDoublesSketchUDF.class, p + GET_QUANTILE);
-    registerUDF(org.apache.datasketches.hive.quantiles.GetQuantilesFromDoublesSketchUDF.class, p + GET_QUANTILES);
+    SketchDescriptor sd = new SketchDescriptor("quantile_doubles");
+    sd.registerUDAF(org.apache.datasketches.hive.quantiles.DataToDoublesSketchUDAF.class, p, DATA_TO_SKETCH);
+    sd.registerUDF(org.apache.datasketches.hive.quantiles.DoublesSketchToStringUDF.class, p, SKETCH_TO_STRING);
+    //registerUDF(org.apache.datasketches.hive.quantiles.UnionItemsSketchUDAF.class, p , UNION_SKETCH);
+    sd.registerUDAF(org.apache.datasketches.hive.quantiles.UnionDoublesSketchUDAF.class, p, UNION_SKETCH);
+    sd.registerUDF(org.apache.datasketches.hive.quantiles.GetNFromDoublesSketchUDF.class, p, GET_N);
+    sd.registerUDF(org.apache.datasketches.hive.quantiles.GetKFromDoublesSketchUDF.class, p, GET_K);
+    sd.registerUDF(org.apache.datasketches.hive.quantiles.GetCdfFromDoublesSketchUDF.class, p, GET_CDF);
+    sd.registerUDF(org.apache.datasketches.hive.quantiles.GetPmfFromDoublesSketchUDF.class, p, GET_PMF);
+    sd.registerUDF(org.apache.datasketches.hive.quantiles.GetQuantileFromDoublesSketchUDF.class, p, GET_QUANTILE);
+    sd.registerUDF(org.apache.datasketches.hive.quantiles.GetQuantilesFromDoublesSketchUDF.class, p, GET_QUANTILES);
+    sketchClasses.add(sd);
   }
 
   private void registerUDF(Class<? extends UDF> udfClass, String name) {
@@ -233,6 +333,11 @@ public class DataSketchesFunctions {
     } else {
       throw new RuntimeException("error; unexpected udf name: " + hiveUdfName);
     }
+  }
+
+  public static void registerCalciteFunctions(Consumer<Pair<String, SqlOperator>> staticBlockBuilder) {
+    // TODO Auto-generated method stub
+
   }
 
 }
