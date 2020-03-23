@@ -61,11 +61,9 @@ public class DataSketchesFunctions {
   private static final String SKETCH_TO_VARIANCES = "variances";
   private static final String SKETCH_TO_PERCENTILE = "percentile";
 
-  private final Registry system;
   private List<SketchDescriptor> sketchClasses;
 
-  public DataSketchesFunctions(Registry system) {
-    this.system = system;
+  public DataSketchesFunctions() {
     this.sketchClasses = new ArrayList<SketchDescriptor>();
 
     String prefix = DATASKETCHES_PREFIX;
@@ -81,25 +79,31 @@ public class DataSketchesFunctions {
   }
 
   public static void register(Registry system) {
-    DataSketchesFunctions dsf = new DataSketchesFunctions(system);
+    DataSketchesFunctions dsf = new DataSketchesFunctions();
 
     dsf.registerFunctions(system);
   }
 
   private void registerFunctions(Registry system2) {
+    Registry system = system2;
     for (SketchDescriptor sketchDescriptor : sketchClasses) {
       List<SketchFunctionDescriptor> functions = sketchDescriptor.li;
       for (SketchFunctionDescriptor fn : functions) {
         if (UDF.class.isAssignableFrom(fn.udfClass)) {
-          registerUDF((Class<? extends UDF>) fn.udfClass, fn.name);
+          system.registerUDF(fn.name, (Class<? extends UDF>) fn.udfClass, false);
           continue;
         }
         if (GenericUDAFResolver2.class.isAssignableFrom(fn.udfClass)) {
-          registerUDAF((Class<? extends GenericUDAFResolver2>) fn.udfClass, fn.name);
+          String name = fn.name;
+          try {
+            system.registerGenericUDAF(name, ((Class<? extends GenericUDAFResolver2>) fn.udfClass).newInstance());
+          } catch (InstantiationException | IllegalAccessException e) {
+            throw new RuntimeException("Unable to register: " + name, e);
+          }
           continue;
         }
         if (GenericUDTF.class.isAssignableFrom(fn.udfClass)) {
-          registerUDTF((Class<? extends GenericUDTF>) fn.udfClass, fn.name);
+          system.registerGenericUDTF(fn.name, (Class<? extends GenericUDTF>) fn.udfClass);
           continue;
         }
         throw new RuntimeException("Don't know how to register: " + fn.name);
@@ -107,23 +111,6 @@ public class DataSketchesFunctions {
     }
 
   }
-
-  private void registerUDF(Class<? extends UDF> udfClass, String name) {
-    system.registerUDF(name, udfClass, false);
-  }
-
-  private void registerUDAF(Class<? extends GenericUDAFResolver2> udafClass, String name) {
-    try {
-      system.registerGenericUDAF(name, udafClass.newInstance());
-    } catch (InstantiationException | IllegalAccessException e) {
-      throw new RuntimeException("Unable to register: " + name, e);
-    }
-  }
-
-  private void registerUDTF(Class<? extends GenericUDTF> udtfClass, String name) {
-    system.registerGenericUDTF(name, udtfClass);
-  }
-
 
   static class SketchFunctionDescriptor {
     String name;
@@ -213,7 +200,7 @@ public class DataSketchesFunctions {
 
   private void registerTheta(String prefix) {
     String p = prefix + "_theta_";
-    SketchDescriptor sd = new SketchDescriptor("kll");
+    SketchDescriptor sd = new SketchDescriptor("theta");
     sd.registerUDAF(org.apache.datasketches.hive.theta.DataToSketchUDAF.class, p, DATA_TO_SKETCH);
     // FIXME: missing?
     //registerUDF(org.apache.datasketches.hive.theta.SketchToStringUDF.class, p + SKETCH_TO_STRING);
