@@ -54,7 +54,6 @@ import javax.annotation.Nullable;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.FILE_NAME;
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME;
-import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.REPL_CLEAN_TABLES_FROM_BOOTSTRAP_CONFIG;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -616,7 +615,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
 
     dumpWithClause = Arrays.asList("'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='true'",
             "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES.varname + "'='true'");
-    WarehouseInstance.Tuple tupleIncWithExternalBootstrap = primary.run("use " + primaryDbName)
+    primary.run("use " + primaryDbName)
             .run("drop table t1")
             .run("create external table t4 (id int)")
             .run("insert into table t4 values (10)")
@@ -648,46 +647,43 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
       InjectableBehaviourObjectStore.resetAlterTableModifier();
     }
 
+    replica.load(replicatedDbName, primaryDbName)
+            .run("use " + replicatedDbName)
+            .run("show tables like 't1'")
+            .verifyFailure(new String[]{"t1"})
+            .run("show tables like 't2'")
+            .verifyResult("t2")
+            .run("select country from t2 order by country")
+            .verifyResults(new String[] {"india", "us"})
+            .run("select id from t4")
+            .verifyResults(Arrays.asList("10"))
+            .run("select id from t5")
+            .verifyResult("10")
+            .verifyReplTargetProperty(replicatedDbName);
+
     // Insert into existing external table and then Drop it, add another managed table with same name
     // and dump another bootstrap dump for external tables.
-    WarehouseInstance.Tuple tupleNewIncWithExternalBootstrap = primary.run("use " + primaryDbName)
+    dumpWithClause = Arrays.asList("'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='true'");
+    primary.run("use " + primaryDbName)
             .run("insert into table t2 partition(country='india') values ('chennai')")
             .run("drop table t2")
             .run("create table t2 as select * from t4")
             .run("insert into table t4 values (20)")
             .dump(primaryDbName, dumpWithClause);
 
-    // Set incorrect bootstrap dump to clean tables. Here, used the full bootstrap dump which is invalid.
-    // So, REPL LOAD fails.
-    loadWithClause.add("'" + REPL_CLEAN_TABLES_FROM_BOOTSTRAP_CONFIG + "'='"
-            + tupleBootstrapWithoutExternal.dumpLocation + "'");
-    replica.loadFailure(replicatedDbName, primaryDbName, loadWithClause);
-    loadWithClause.remove("'" + REPL_CLEAN_TABLES_FROM_BOOTSTRAP_CONFIG + "'='"
-            + tupleBootstrapWithoutExternal.dumpLocation + "'");
 
-    // Set previously failed bootstrap dump to clean-up. Now, new bootstrap should overwrite the old one.
-    loadWithClause.add("'" + REPL_CLEAN_TABLES_FROM_BOOTSTRAP_CONFIG + "'='"
-            + tupleIncWithExternalBootstrap.dumpLocation + "'");
+    replica.load(replicatedDbName, primaryDbName)
+            .run("use " + replicatedDbName)
+            .run("show tables like 't1'")
+            .verifyFailure(new String[]{"t1"})
+            .run("select id from t2")
+            .verifyResult("10")
+            .run("select id from t4")
+            .verifyResults(Arrays.asList("10", "20"))
+            .run("select id from t5")
+            .verifyResult("10")
+            .verifyReplTargetProperty(replicatedDbName);
 
-    // Verify if bootstrapping with same dump is idempotent and return same result
-    for (int i = 0; i < 2; i++) {
-      replica.load(replicatedDbName, primaryDbName, loadWithClause)
-              .run("use " + replicatedDbName)
-              .run("show tables like 't1'")
-              .verifyFailure(new String[]{"t1"})
-              .run("select id from t2")
-              .verifyResult("10")
-              .run("select id from t4")
-              .verifyResults(Arrays.asList("10", "20"))
-              .run("select id from t5")
-              .verifyResult("10")
-              .verifyReplTargetProperty(replicatedDbName);
-
-      // Once the REPL LOAD is successful, the this config should be unset or else, the subsequent REPL LOAD
-      // will also drop those tables which will cause data loss.
-      loadWithClause.remove("'" + REPL_CLEAN_TABLES_FROM_BOOTSTRAP_CONFIG + "'='"
-              + tupleIncWithExternalBootstrap.dumpLocation + "'");
-    }
   }
 
   @Test

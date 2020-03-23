@@ -4791,6 +4791,7 @@ public class HiveConf extends Configuration {
             "hive.spark.client.rpc.max.size," +
             "hive.spark.client.rpc.threads," +
             "hive.spark.client.secret.bits," +
+            "hive.query.max.length," +
             "hive.spark.client.rpc.server.address," +
             "hive.spark.client.rpc.server.port," +
             "hive.spark.client.rpc.sasl.mechanisms," +
@@ -4827,6 +4828,8 @@ public class HiveConf extends Configuration {
         SPARK_CLIENT_TYPE.varname,
         "Comma separated list of variables which are related to remote spark context.\n" +
             "Changing these variables will result in re-creating the spark session."),
+    HIVE_QUERY_MAX_LENGTH("hive.query.max.length", "10Mb", new SizeValidator(), "The maximum" +
+            " size of a query string. Enforced after variable substitutions."),
     HIVE_QUERY_TIMEOUT_SECONDS("hive.query.timeout.seconds", "0s",
         new TimeValidator(TimeUnit.SECONDS),
         "Timeout for Running Query in seconds. A nonpositive value means infinite. " +
