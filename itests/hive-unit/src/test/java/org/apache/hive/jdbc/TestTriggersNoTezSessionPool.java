@@ -27,12 +27,14 @@ import org.apache.hadoop.hive.ql.wm.ExecutionTrigger;
 import org.apache.hadoop.hive.ql.wm.Expression;
 import org.apache.hadoop.hive.ql.wm.ExpressionFactory;
 import org.apache.hadoop.hive.ql.wm.Trigger;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 
 import com.google.common.collect.Lists;
 
+@Ignore("CDPD-9362 Ignore TestTriggersNoTezSessionPool as it is flaky")
 public class TestTriggersNoTezSessionPool extends AbstractJdbcTriggersTest {
   @Rule
   public TestName testName = new TestName();
