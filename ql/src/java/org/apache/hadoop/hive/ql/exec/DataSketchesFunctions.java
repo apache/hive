@@ -324,23 +324,4 @@ public class DataSketchesFunctions {
     sd.register(GET_QUANTILES, org.apache.datasketches.hive.quantiles.GetQuantilesFromDoublesSketchUDF.class);
     sketchClasses.add(sd);
   }
-
-
-  public static boolean isUnionFunction(String udfName) {
-    return (udfName.startsWith(DATASKETCHES_PREFIX + "_") && udfName.endsWith("_" + UNION_SKETCH));
-  }
-
-  public static boolean isSketchFunction(String udfName) {
-    return (udfName.startsWith(DATASKETCHES_PREFIX + "_") && udfName.endsWith("_" + DATA_TO_SKETCH));
-  }
-
-  public static String getUnionFor(String hiveUdfName) {
-    if (isSketchFunction(hiveUdfName)) {
-      return hiveUdfName.replaceFirst("_" + DATA_TO_SKETCH + "$", "_" + UNION_SKETCH);
-    } else {
-      throw new RuntimeException("error; unexpected udf name: " + hiveUdfName);
-    }
-  }
-
-
 }
