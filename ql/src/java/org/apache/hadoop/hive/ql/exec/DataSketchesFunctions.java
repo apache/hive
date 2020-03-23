@@ -28,7 +28,6 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
  */
 public class DataSketchesFunctions {
 
-  private static final String DATASKETCHES_PREFIX = "ds";
   private static final String DATA_TO_SKETCH = "sketch";
   private static final String SKETCH_TO_ESTIMATE_WITH_ERROR_BOUNDS = "estimate_bounds";
   private static final String SKETCH_TO_ESTIMATE = "estimate";
@@ -62,7 +61,7 @@ public class DataSketchesFunctions {
 
   public static void register(Registry system) {
     DataSketchesFunctions dsf = new DataSketchesFunctions(system);
-    String prefix = DATASKETCHES_PREFIX;
+    String prefix = "ds";
     dsf.registerHll(prefix);
     dsf.registerCpc(prefix);
     dsf.registerKll(prefix);
@@ -217,22 +216,6 @@ public class DataSketchesFunctions {
 
   private void registerUDTF(Class<? extends GenericUDTF> udtfClass, String name) {
     system.registerGenericUDTF(name, udtfClass);
-  }
-
-  public static boolean isUnionFunction(String udfName) {
-    return (udfName.startsWith(DATASKETCHES_PREFIX + "_") && udfName.endsWith("_" + UNION_SKETCH));
-  }
-
-  public static boolean isSketchFunction(String udfName) {
-    return (udfName.startsWith(DATASKETCHES_PREFIX + "_") && udfName.endsWith("_" + DATA_TO_SKETCH));
-  }
-
-  public static String getUnionFor(String hiveUdfName) {
-    if (isSketchFunction(hiveUdfName)) {
-      return hiveUdfName.replaceFirst("_" + DATA_TO_SKETCH + "$", "_" + UNION_SKETCH);
-    } else {
-      throw new RuntimeException("error; unexpected udf name: " + hiveUdfName);
-    }
   }
 
 }
