@@ -92,6 +92,7 @@ STAGE PLANS:
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 275 Basic stats: COMPLETE Column stats: PARTIAL
+            Execution mode: vectorized
         Map 7 
             Map Operator Tree:
                 TableScan
@@ -114,6 +115,7 @@ STAGE PLANS:
                         sort order: +++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 1 Data size: 459 Basic stats: COMPLETE Column stats: PARTIAL
+            Execution mode: vectorized
         Reducer 3 
             Reduce Operator Tree:
               Group By Operator
@@ -155,6 +157,7 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: default.dest2_n17
         Reducer 8 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -179,6 +182,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 1 Data size: 275 Basic stats: COMPLETE Column stats: PARTIAL
         Reducer 9 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)

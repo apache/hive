@@ -230,7 +230,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
-                notVectorizedReason: Aggregation Function expression for GROUPBY operator: DISTINCT not supported
+                notVectorizedReason: GROUPBY operator: Vector aggregation : "sum" for input type: "BYTES" and output type: "DOUBLE" and mode: PARTIAL1 not supported for evaluator GenericUDAFSumDouble
                 vectorized: false
         Reducer 2 
             Execution mode: llap
@@ -328,7 +328,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
-                notVectorizedReason: Aggregation Function expression for GROUPBY operator: DISTINCT not supported
+                notVectorizedReason: GROUPBY operator: Vector aggregation : "sum" for input type: "BYTES" and output type: "DOUBLE" and mode: PARTIAL1 not supported for evaluator GenericUDAFSumDouble
                 vectorized: false
         Reducer 2 
             Execution mode: llap
@@ -436,7 +436,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
-                notVectorizedReason: Aggregation Function expression for GROUPBY operator: DISTINCT not supported
+                notVectorizedReason: GROUPBY operator: Vector aggregation : "sum" for input type: "BYTES" and output type: "DOUBLE" and mode: PARTIAL1 not supported for evaluator GenericUDAFSumDouble
                 vectorized: false
         Reducer 2 
             Execution mode: llap

@@ -305,7 +305,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 192 Basic stats: PARTIAL Column stats: COMPLETE
                         tag: -1
                         auto parallelism: false
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
               nullscan://null/default.test1_n12/part_ds=1_ [test1_n12]
@@ -1048,7 +1048,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 376 Basic stats: PARTIAL Column stats: COMPLETE
                         tag: -1
                         auto parallelism: true
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
               nullscan://null/default.test2_n8/part_ds=1_hr=1_ [test2_n8]
@@ -1830,7 +1830,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 376 Basic stats: PARTIAL Column stats: COMPLETE
                         tag: -1
                         auto parallelism: true
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
               nullscan://null/default.test2_n8/part_ds=01_10_10_hr=01_ [test2_n8]

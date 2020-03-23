@@ -3570,11 +3570,11 @@ Stage-4
                               Output:["_col0","_col1"],keys:KEY._col0, KEY._col1
                             <-Union 3 [SIMPLE_EDGE]
                               <-Map 8 [CONTAINS] vectorized, llap
-                                Reduce Output Operator [RS_63]
+                                Reduce Output Operator [RS_64]
                                   PartitionCols:_col0, _col1
-                                  Group By Operator [GBY_62] (rows=1 width=272)
+                                  Group By Operator [GBY_63] (rows=1 width=272)
                                     Output:["_col0","_col1"],keys:_col0, _col1
-                                    Select Operator [SEL_61] (rows=500 width=10)
+                                    Select Operator [SEL_62] (rows=500 width=10)
                                       Output:["_col0","_col1"]
                                       TableScan [TS_48] (rows=500 width=10)
                                         Output:["key","value"]
@@ -3784,42 +3784,42 @@ Stage-4
                       Group By Operator [GBY_15] (rows=1 width=96)
                         Output:["_col0","_col1"],aggregations:["count(DISTINCT KEY._col1:0._col0)"],keys:KEY._col0
                       <-Union 3 [SIMPLE_EDGE]
-                        <-Map 8 [CONTAINS] llap
-                          Reduce Output Operator [RS_52]
+                        <-Map 8 [CONTAINS] vectorized, llap
+                          Reduce Output Operator [RS_73]
                             PartitionCols:_col0
-                            Group By Operator [GBY_50] (rows=1 width=275)
+                            Group By Operator [GBY_71] (rows=1 width=275)
                               Output:["_col0","_col1","_col2"],aggregations:["count(DISTINCT substr(_col1, 5))"],keys:_col0, substr(_col1, 5)
-                              Select Operator [SEL_48] (rows=500 width=10)
+                              Select Operator [SEL_70] (rows=500 width=10)
                                 Output:["_col0","_col1"]
                                 TableScan [TS_47] (rows=500 width=10)
                                   Output:["key","value"]
-                          Reduce Output Operator [RS_53]
+                          Reduce Output Operator [RS_74]
                             PartitionCols:_col0, _col1
-                            Group By Operator [GBY_51] (rows=1 width=459)
+                            Group By Operator [GBY_72] (rows=1 width=459)
                               Output:["_col0","_col1","_col2","_col3"],aggregations:["count(DISTINCT substr(_col1, 5))"],keys:_col0, _col1, substr(_col1, 5)
-                               Please refer to the previous Select Operator [SEL_48]
-                        <-Map 9 [CONTAINS] llap
-                          Reduce Output Operator [RS_59]
+                               Please refer to the previous Select Operator [SEL_70]
+                        <-Map 9 [CONTAINS] vectorized, llap
+                          Reduce Output Operator [RS_78]
                             PartitionCols:_col0
-                            Group By Operator [GBY_57] (rows=1 width=275)
+                            Group By Operator [GBY_76] (rows=1 width=275)
                               Output:["_col0","_col1","_col2"],aggregations:["count(DISTINCT substr(_col1, 5))"],keys:_col0, substr(_col1, 5)
-                              Select Operator [SEL_55] (rows=500 width=10)
+                              Select Operator [SEL_75] (rows=500 width=10)
                                 Output:["_col0","_col1"]
                                 TableScan [TS_54] (rows=500 width=10)
                                   Output:["key","value"]
-                          Reduce Output Operator [RS_60]
+                          Reduce Output Operator [RS_79]
                             PartitionCols:_col0, _col1
-                            Group By Operator [GBY_58] (rows=1 width=459)
+                            Group By Operator [GBY_77] (rows=1 width=459)
                               Output:["_col0","_col1","_col2","_col3"],aggregations:["count(DISTINCT substr(_col1, 5))"],keys:_col0, _col1, substr(_col1, 5)
-                               Please refer to the previous Select Operator [SEL_55]
-                        <-Reducer 2 [CONTAINS] llap
-                          Reduce Output Operator [RS_45]
+                               Please refer to the previous Select Operator [SEL_75]
+                        <-Reducer 2 [CONTAINS] vectorized, llap
+                          Reduce Output Operator [RS_68]
                             PartitionCols:_col0
-                            Group By Operator [GBY_43] (rows=1 width=275)
+                            Group By Operator [GBY_66] (rows=1 width=275)
                               Output:["_col0","_col1","_col2"],aggregations:["count(DISTINCT substr(_col1, 5))"],keys:_col0, substr(_col1, 5)
-                              Select Operator [SEL_41] (rows=1 width=272)
+                              Select Operator [SEL_65] (rows=1 width=272)
                                 Output:["_col0","_col1"]
-                                Group By Operator [GBY_40] (rows=1 width=8)
+                                Group By Operator [GBY_64] (rows=1 width=8)
                                   Output:["_col0"],aggregations:["count(VALUE._col0)"]
                                 <-Map 1 [CUSTOM_SIMPLE_EDGE] vectorized, llap
                                   PARTITION_ONLY_SHUFFLE [RS_63]
@@ -3828,11 +3828,11 @@ Stage-4
                                       Select Operator [SEL_61] (rows=500 width=10)
                                         TableScan [TS_0] (rows=500 width=10)
                                           default@src,s1,Tbl:COMPLETE,Col:COMPLETE
-                          Reduce Output Operator [RS_46]
+                          Reduce Output Operator [RS_69]
                             PartitionCols:_col0, _col1
-                            Group By Operator [GBY_44] (rows=1 width=459)
+                            Group By Operator [GBY_67] (rows=1 width=459)
                               Output:["_col0","_col1","_col2","_col3"],aggregations:["count(DISTINCT substr(_col1, 5))"],keys:_col0, _col1, substr(_col1, 5)
-                               Please refer to the previous Select Operator [SEL_41]
+                               Please refer to the previous Select Operator [SEL_65]
                   PARTITION_ONLY_SHUFFLE [RS_22]
                     Group By Operator [GBY_21] (rows=1 width=880)
                       Output:["_col0","_col1"],aggregations:["compute_stats(key, 'hll')","compute_stats(value, 'hll')"]
@@ -3920,28 +3920,28 @@ Stage-4
                       Group By Operator [GBY_13] (rows=1 width=96)
                         Output:["_col0","_col1"],aggregations:["count(DISTINCT KEY._col1:0._col0)"],keys:KEY._col0
                       <-Union 3 [SIMPLE_EDGE]
-                        <-Map 8 [CONTAINS] llap
-                          Reduce Output Operator [RS_50]
+                        <-Map 8 [CONTAINS] vectorized, llap
+                          Reduce Output Operator [RS_64]
                             PartitionCols:_col0
-                            Group By Operator [GBY_48] (rows=1 width=275)
+                            Group By Operator [GBY_62] (rows=1 width=275)
                               Output:["_col0","_col1","_col2"],aggregations:["count(DISTINCT substr(_col1, 5))"],keys:_col0, substr(_col1, 5)
-                              Select Operator [SEL_46] (rows=500 width=10)
+                              Select Operator [SEL_61] (rows=500 width=10)
                                 Output:["_col0","_col1"]
                                 TableScan [TS_45] (rows=500 width=10)
                                   Output:["key","value"]
-                          Reduce Output Operator [RS_51]
+                          Reduce Output Operator [RS_65]
                             PartitionCols:_col0, _col1
-                            Group By Operator [GBY_49] (rows=1 width=459)
+                            Group By Operator [GBY_63] (rows=1 width=459)
                               Output:["_col0","_col1","_col2","_col3"],aggregations:["count(DISTINCT substr(_col1, 5))"],keys:_col0, _col1, substr(_col1, 5)
-                               Please refer to the previous Select Operator [SEL_46]
-                        <-Reducer 2 [CONTAINS] llap
-                          Reduce Output Operator [RS_43]
+                               Please refer to the previous Select Operator [SEL_61]
+                        <-Reducer 2 [CONTAINS] vectorized, llap
+                          Reduce Output Operator [RS_59]
                             PartitionCols:_col0
-                            Group By Operator [GBY_41] (rows=1 width=275)
+                            Group By Operator [GBY_57] (rows=1 width=275)
                               Output:["_col0","_col1","_col2"],aggregations:["count(DISTINCT substr(_col1, 5))"],keys:_col0, substr(_col1, 5)
-                              Select Operator [SEL_39] (rows=1 width=272)
+                              Select Operator [SEL_56] (rows=1 width=272)
                                 Output:["_col0","_col1"]
-                                Group By Operator [GBY_38] (rows=1 width=8)
+                                Group By Operator [GBY_55] (rows=1 width=8)
                                   Output:["_col0"],aggregations:["count(VALUE._col0)"]
                                 <-Map 1 [CUSTOM_SIMPLE_EDGE] vectorized, llap
                                   PARTITION_ONLY_SHUFFLE [RS_54]
@@ -3950,11 +3950,11 @@ Stage-4
                                       Select Operator [SEL_52] (rows=500 width=10)
                                         TableScan [TS_0] (rows=500 width=10)
                                           default@src,s1,Tbl:COMPLETE,Col:COMPLETE
-                          Reduce Output Operator [RS_44]
+                          Reduce Output Operator [RS_60]
                             PartitionCols:_col0, _col1
-                            Group By Operator [GBY_42] (rows=1 width=459)
+                            Group By Operator [GBY_58] (rows=1 width=459)
                               Output:["_col0","_col1","_col2","_col3"],aggregations:["count(DISTINCT substr(_col1, 5))"],keys:_col0, _col1, substr(_col1, 5)
-                               Please refer to the previous Select Operator [SEL_39]
+                               Please refer to the previous Select Operator [SEL_56]
                   PARTITION_ONLY_SHUFFLE [RS_20]
                     Group By Operator [GBY_19] (rows=1 width=880)
                       Output:["_col0","_col1"],aggregations:["compute_stats(key, 'hll')","compute_stats(value, 'hll')"]
