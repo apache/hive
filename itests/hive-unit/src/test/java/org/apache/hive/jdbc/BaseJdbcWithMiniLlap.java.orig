@@ -360,53 +360,6 @@ public abstract class BaseJdbcWithMiniLlap {
     assertEquals(0, rowCount);
   }
 
-  @Test(timeout = 300000)
-  public void testInvalidReferenceCountScenario() throws Exception {
-    final String tableName = "testInvalidReferenceCountScenario";
-    try (Statement stmt = hs2Conn.createStatement()) {
-      String createQuery =
-          "create table " + tableName +
-              "(arr1 array<struct<f1:string,f2:string,arr2:array<struct<f3:string,f4:string,f5:string>>>>, "
-              + "c2 int) STORED AS ORC";
-
-      // create table
-      stmt.execute("DROP TABLE IF EXISTS " + tableName);
-      stmt.execute(createQuery);
-      // load data
-      stmt.execute("INSERT INTO " + tableName + "  VALUES "
-          // value 1
-          + "(ARRAY(NAMED_STRUCT('f1','a1', "
-          + "'f2','a2', "
-          + "'arr2',"
-          + " ARRAY("
-          + "NAMED_STRUCT('f3', cast(null as string), 'f4', cast(null as string), 'f5', cast(null as string)))), "
-          + "NAMED_STRUCT('f1','a1', 'f2','a2', 'arr2', "
-          + "ARRAY(NAMED_STRUCT('f3', 'fielddddddd3333333', 'f4', 'field4', 'f5', 'field5'))), "
-          + "NAMED_STRUCT('f1','a1', 'f2','a2', 'arr2', ARRAY(NAMED_STRUCT('f3', cast(null as string), "
-          + "'f4', cast(null as string), 'f5', cast(null as string)))), "
-          + "NAMED_STRUCT('f1','a1', 'f2','a2', 'arr2', ARRAY(NAMED_STRUCT('f3', 'fielddddddd3333333', "
-          + "'f4', 'field4', 'f5', 'field5'))), NAMED_STRUCT('f1','a1', 'f2','a2', 'arr2', "
-          + "ARRAY(NAMED_STRUCT('f3', cast(null as string), 'f4', cast(null as string), 'f5', cast(null as string)))),"
-          + " NAMED_STRUCT('f1','a1', 'f2','a2', 'arr2', "
-          + "ARRAY(NAMED_STRUCT('f3', 'fielddddddd3333333', 'f4', 'field4', 'f5', 'field5')))), 1)");
-
-      // generate 16384 rows from above records
-      for (int i = 0; i < 14; i++) {
-        stmt.execute(String.format("insert into %s select * from %s", tableName, tableName));
-      }
-      // validate test table
-      ResultSet res = stmt.executeQuery("SELECT count(*) FROM " + tableName);
-      assertTrue(res.next());
-      assertEquals(16384, res.getInt(1));
-      res.close();
-    }
-    // should not throw - IllegalReferenceCountException: refCnt: 0
-    RowCollector rowCollector = new RowCollector();
-    String query = "select * from " + tableName;
-    int rowCount = processQuery(query, 1, rowCollector);
-    assertEquals(16384, rowCount);
-
-  }
 
   @Test(timeout = 60000)
   public void testNonAsciiStrings() throws Exception {

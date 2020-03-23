@@ -32,7 +32,6 @@ import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.session.LineageState;
 import org.apache.hadoop.hive.ql.exec.Task;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Iterator;
@@ -46,8 +45,6 @@ public class ReplLoadWork implements Serializable {
   final String dbNameToLoadIn;
   final ReplScope currentReplScope;
   final String dumpDirectory;
-  final String bootstrapDumpToCleanTables;
-  boolean needCleanTablesFromBootstrap;
 
   private final ConstraintEventsIterator constraintsIterator;
   private int loadTaskRunCount = 0;
@@ -77,10 +74,6 @@ public class ReplLoadWork implements Serializable {
     if ((currentReplScope != null) && StringUtils.isNotBlank(dbNameToLoadIn)) {
       currentReplScope.setDbName(dbNameToLoadIn);
     }
-    String bootstrapDumpToCleanTablesLoc = hiveConf.get(ReplUtils.REPL_CLEAN_TABLES_FROM_BOOTSTRAP_CONFIG);
-    this.bootstrapDumpToCleanTables = bootstrapDumpToCleanTablesLoc == null ? null : bootstrapDumpToCleanTablesLoc
-            + File.separator + ReplUtils.REPL_HIVE_BASE_DIR;
-    this.needCleanTablesFromBootstrap = StringUtils.isNotBlank(this.bootstrapDumpToCleanTables);
 
     rootTask = null;
     if (isIncrementalDump) {

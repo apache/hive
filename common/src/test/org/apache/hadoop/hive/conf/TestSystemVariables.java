@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.conf;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
@@ -24,6 +25,7 @@ import org.junit.Test;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNull;
+import static org.junit.Assert.fail;
 
 public class TestSystemVariables {
   public static final String SYSTEM = "system";
@@ -73,5 +75,32 @@ public class TestSystemVariables {
 
     System.setProperty("java.io.tmpdir", "");
     assertEquals("", SystemVariables.substitute(systemJavaIoTmpDir));
+  }
+
+  @Test
+  public void test_SubstituteLongSelfReference() {
+    String randomPart = RandomStringUtils.random(100_000);
+    String reference = "${hiveconf:myTestVariable}";
+
+    StringBuilder longStringWithReferences = new StringBuilder();
+    for(int i = 0; i < 10; i ++) {
+      longStringWithReferences.append(randomPart).append(reference);
+    }
+
+    SystemVariables uut = new SystemVariables();
+
+    HiveConf conf = new HiveConf();
+    conf.set(HiveConf.ConfVars.HIVE_QUERY_MAX_LENGTH.varname, "100Kb");
+    conf.set("myTestVariable", longStringWithReferences.toString());
+
+    try {
+      uut.substitute(conf, longStringWithReferences.toString(), 40);
+    } catch (Exception e) {
+      if (!e.getMessage().startsWith("Query length longer than hive.query.max.length")) {
+        fail("unexpected error message: " + e.getMessage());
+      }
+      return;
+    }
+    fail("should have thrown exception during substitution");
   }
 }
