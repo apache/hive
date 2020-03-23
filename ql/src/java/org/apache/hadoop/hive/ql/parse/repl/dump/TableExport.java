@@ -47,7 +47,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -164,7 +163,7 @@ public class TableExport {
 
   private List<ManagedTableCopyPath> writeData(PartitionIterable partitions, boolean isExportTask)
           throws SemanticException {
-    List<ManagedTableCopyPath> managedTableCopyPaths = new LinkedList<>();
+    List<ManagedTableCopyPath> managedTableCopyPaths = new ArrayList<>();
     try {
       if (tableSpec.tableHandle.isPartitioned()) {
         if (partitions == null) {

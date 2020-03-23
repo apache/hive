@@ -196,15 +196,28 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     Utils.writeOutput(Collections.singletonList(values), new Path(work.resultTempPath), conf);
   }
 
-  private void deleteAllPreviousDumpMeta(Path currentDumpPath) throws IOException {
-    Path dumpRoot = currentDumpPath.getParent();
-    FileSystem fs = dumpRoot.getFileSystem(conf);
-    if (fs.exists(dumpRoot)) {
-      FileStatus[] statuses = fs.listStatus(dumpRoot,
-        path -> !path.equals(currentDumpPath) && !path.toUri().getPath().equals(currentDumpPath.toString()));
-      for (FileStatus status : statuses) {
-        fs.delete(status.getPath(), true);
+  private void deleteAllPreviousDumpMeta(Path currentDumpPath) {
+    try {
+      Path dumpRoot = getDumpRoot(currentDumpPath);
+      FileSystem fs = dumpRoot.getFileSystem(conf);
+      if (fs.exists(dumpRoot)) {
+        FileStatus[] statuses = fs.listStatus(dumpRoot,
+                path -> !path.equals(currentDumpPath) && !path.toUri().getPath().equals(currentDumpPath.toString()));
+        for (FileStatus status : statuses) {
+          fs.delete(status.getPath(), true);
+        }
       }
+    } catch (Exception ex) {
+      LOG.warn("Possible leak on disk, could not delete the previous dump directory:" + currentDumpPath, ex);
+    }
+  }
+
+  private Path getDumpRoot(Path currentDumpPath) {
+    if (ReplDumpWork.testDeletePreviousDumpMetaPath && conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST)) {
+      //testDeleteDumpMetaDumpPath to be used only for test.
+      return null;
+    } else {
+      return currentDumpPath.getParent();
     }
   }
 
@@ -226,6 +239,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     if (fs.exists(dumpRoot)) {
       FileStatus[] statuses = fs.listStatus(dumpRoot);
       for (FileStatus status : statuses) {
+        LOG.info("Evaluating previous dump dir path:{}", status.getPath());
         if (latestValidStatus == null) {
           latestValidStatus = validDump(fs, status.getPath()) ? status : null;
         } else if (validDump(fs, status.getPath())
@@ -234,7 +248,10 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         }
       }
     }
-    return (latestValidStatus == null) ? null : new Path(latestValidStatus.getPath(), ReplUtils.REPL_HIVE_BASE_DIR);
+    Path latestDumpDir = (latestValidStatus == null)
+         ? null : new Path(latestValidStatus.getPath(), ReplUtils.REPL_HIVE_BASE_DIR);
+    LOG.info("Selecting latest valid dump dir as {}", (latestDumpDir == null) ? "null" : latestDumpDir.toString());
+    return latestDumpDir;
   }
 
   private boolean validDump(FileSystem fs, Path dumpDir) throws IOException {
@@ -358,6 +375,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     String validTxnList = null;
     long waitUntilTime = 0;
     long bootDumpBeginReplId = -1;
+    List<EximUtil.ManagedTableCopyPath> managedTableCopyPaths = Collections.emptyList();
+    List<DirCopyWork> extTableCopyWorks = Collections.emptyList();
 
     List<String> tableList = work.replScope.includeAllTables() ? null : new ArrayList<>();
 
@@ -435,9 +454,9 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         validTxnList = getValidTxnListForReplDump(hiveDb, waitUntilTime);
       }
 
+      extTableCopyWorks = new ArrayList<>();
       Path dbRoot = getBootstrapDbRoot(dumpRoot, dbName, true);
       List<Path> extTableLocations = new LinkedList<>();
-      List<EximUtil.ManagedTableCopyPath> managedTableCopyPaths = new ArrayList<>();
       try (Writer writer = new Writer(dumpRoot, conf)) {
         for (String tableName : Utils.matchesTbl(hiveDb, dbName, work.replScope)) {
           try {
@@ -467,10 +486,10 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         }
       }
       dumpTableListToDumpLocation(tableList, dumpRoot, dbName, conf);
-      List<DirCopyWork> extTableCopyWorks = dirLocationsToCopy(extTableLocations);
-      work.setDirCopyIterator(extTableCopyWorks.iterator());
-      work.setManagedTableCopyPathIterator(managedTableCopyPaths.iterator());
+      extTableCopyWorks = dirLocationsToCopy(extTableLocations);
     }
+    work.setDirCopyIterator(extTableCopyWorks.iterator());
+    work.setManagedTableCopyPathIterator(managedTableCopyPaths.iterator());
     return lastReplId;
   }
 

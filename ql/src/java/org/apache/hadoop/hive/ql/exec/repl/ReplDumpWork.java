@@ -48,6 +48,7 @@ public class ReplDumpWork implements Serializable {
   Long eventTo;
   Long eventFrom;
   static String testInjectDumpDir = null;
+  static boolean testDeletePreviousDumpMetaPath = false;
   private Integer maxEventLimit;
   private transient Iterator<DirCopyWork> dirCopyIterator;
   private transient Iterator<EximUtil.ManagedTableCopyPath> managedTableCopyPathIterator;
@@ -56,6 +57,10 @@ public class ReplDumpWork implements Serializable {
 
   public static void injectNextDumpDirForTest(String dumpDir) {
     testInjectDumpDir = dumpDir;
+  }
+
+  public static void testDeletePreviousDumpMetaPath(boolean failDeleteDumpMeta) {
+    testDeletePreviousDumpMetaPath = failDeleteDumpMeta;
   }
 
   public ReplDumpWork(ReplScope replScope, ReplScope oldReplScope,
@@ -106,26 +111,21 @@ public class ReplDumpWork implements Serializable {
   }
 
   public void setDirCopyIterator(Iterator<DirCopyWork> dirCopyIterator) {
-    if (dirCopyIteratorInitialized()) {
+    if (this.dirCopyIterator != null) {
       throw new IllegalStateException("Dir Copy iterator has already been initialized");
     }
     this.dirCopyIterator = dirCopyIterator;
   }
 
-  private boolean dirCopyIteratorInitialized() {
-    return dirCopyIterator != null;
-  }
-
   public void setManagedTableCopyPathIterator(Iterator<EximUtil.ManagedTableCopyPath> managedTableCopyPathIterator) {
+    if (this.managedTableCopyPathIterator != null) {
+      throw new IllegalStateException("Managed table copy path iterator has already been initialized");
+    }
     this.managedTableCopyPathIterator = managedTableCopyPathIterator;
   }
 
-  private boolean managedTableCopyPathIteratorInitialized() {
-    return managedTableCopyPathIterator != null;
-  }
-
   public boolean tableDataCopyIteratorsInitialized() {
-    return dirCopyIteratorInitialized() || managedTableCopyPathIteratorInitialized();
+    return dirCopyIterator != null || managedTableCopyPathIterator != null;
   }
 
   public Path getCurrentDumpPath() {
@@ -146,30 +146,26 @@ public class ReplDumpWork implements Serializable {
 
   public List<Task<?>> externalTableCopyTasks(TaskTracker tracker, HiveConf conf) {
     List<Task<?>> tasks = new ArrayList<>();
-    if (dirCopyIteratorInitialized()) {
-      while (dirCopyIterator.hasNext() && tracker.canAddMoreTasks()) {
-        DirCopyWork dirCopyWork = dirCopyIterator.next();
-        Task<DirCopyWork> task = TaskFactory.get(dirCopyWork, conf);
-        tasks.add(task);
-        tracker.addTask(task);
-        LOG.debug("added task for {}", dirCopyWork);
-      }
+    while (dirCopyIterator.hasNext() && tracker.canAddMoreTasks()) {
+      DirCopyWork dirCopyWork = dirCopyIterator.next();
+      Task<DirCopyWork> task = TaskFactory.get(dirCopyWork, conf);
+      tasks.add(task);
+      tracker.addTask(task);
+      LOG.debug("added task for {}", dirCopyWork);
     }
     return tasks;
   }
 
   public List<Task<?>> managedTableCopyTasks(TaskTracker tracker, HiveConf conf) {
     List<Task<?>> tasks = new ArrayList<>();
-    if (managedTableCopyPathIteratorInitialized()) {
-      while (managedTableCopyPathIterator.hasNext() && tracker.canAddMoreTasks()) {
-        EximUtil.ManagedTableCopyPath managedTableCopyPath = managedTableCopyPathIterator.next();
-        Task<?> copyTask = ReplCopyTask.getLoadCopyTask(
-                managedTableCopyPath.getReplicationSpec(), managedTableCopyPath.getSrcPath(),
-                managedTableCopyPath.getTargetPath(), conf, false);
-        tasks.add(copyTask);
-        tracker.addTask(copyTask);
-        LOG.debug("added task for {}", managedTableCopyPath);
-      }
+    while (managedTableCopyPathIterator.hasNext() && tracker.canAddMoreTasks()) {
+      EximUtil.ManagedTableCopyPath managedTableCopyPath = managedTableCopyPathIterator.next();
+      Task<?> copyTask = ReplCopyTask.getLoadCopyTask(
+              managedTableCopyPath.getReplicationSpec(), managedTableCopyPath.getSrcPath(),
+              managedTableCopyPath.getTargetPath(), conf, false);
+      tasks.add(copyTask);
+      tracker.addTask(copyTask);
+      LOG.debug("added task for {}", managedTableCopyPath);
     }
     return tasks;
   }
