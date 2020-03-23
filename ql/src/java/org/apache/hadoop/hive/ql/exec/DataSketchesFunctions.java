@@ -86,7 +86,7 @@ public class DataSketchesFunctions {
   }
 
   public static void registerHiveFunctions(Registry system) {
-    new DataSketchesFunctions().registerFunctions(system);
+    new DataSketchesFunctions().registerHiveFunctionsInternal(system);
   }
 
   /**
@@ -95,10 +95,10 @@ public class DataSketchesFunctions {
    * Mergability is exposed to Calcite; which enables to use it during rollup.
    */
   public static void registerCalciteFunctions(Consumer<Pair<String, SqlOperator>> r) {
-    new DataSketchesFunctions().rr(r);
+    new DataSketchesFunctions().registerCalciteInternal(r);
   }
 
-  private void rr(Consumer<Pair<String, SqlOperator>> r) {
+  private void registerCalciteInternal(Consumer<Pair<String, SqlOperator>> r) {
 
     for (SketchDescriptor sd : sketchClasses) {
 
@@ -132,7 +132,7 @@ public class DataSketchesFunctions {
   }
 
 
-  private void registerFunctions(Registry system2) {
+  private void registerHiveFunctionsInternal(Registry system2) {
     Registry system = system2;
     for (SketchDescriptor sketchDescriptor : sketchClasses) {
       Collection<SketchFunctionDescriptor> functions = sketchDescriptor.fnMap.values();
