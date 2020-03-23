@@ -372,6 +372,11 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+       <groupId>org.apache.datasketches</groupId>
+       <artifactId>datasketches-hive</artifactId>
+       <version>${datasketches.version}</version>
+    </dependency>
+    <dependency>
       <groupId>com.lmax</groupId>
       <artifactId>disruptor</artifactId>
       <version>${disruptor.version}</version>
@@ -876,6 +881,22 @@
       </exclusions>
     </dependency>
     <dependency>
+      <groupId>com.jayway.jsonpath</groupId>
+      <artifactId>json-path</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.janino</groupId>
+      <artifactId>commons-compiler</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.janino</groupId>
+      <artifactId>janino</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.yaml</groupId>
+      <artifactId>snakeyaml</artifactId>
+    </dependency>
+    <dependency>
       <groupId>com.google.code.findbugs</groupId>
       <artifactId>findbugs-annotations</artifactId>
       <version>3.0.1</version>
@@ -1131,6 +1152,13 @@
                   is not included in relocations)
                   -->
                   <include>org.apache.arrow:*</include>
+                  <include>io.dropwizard.metrics:metrics-core</include>
+                  <include>io.dropwizard.metrics:metrics-jvm</include>
+                  <include>io.dropwizard.metrics:metrics-json</include>
+                  <include>com.zaxxer:HikariCP</include>
+                  <include>org.apache.datasketches:*</include>
+                  <include>org.apache.calcite:*</include>
+                  <include>org.apache.calcite.avatica:avatica</include>
                 </includes>
               </artifactSet>
               <relocations>
@@ -1149,6 +1177,10 @@
                 <relocation>
                   <pattern>io.netty</pattern>
                   <shadedPattern>org.apache.hive.io.netty</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>org.apache.datasketches</pattern>
+                  <shadedPattern>org.apache.hive.org.apache.datasketches</shadedPattern>
                 </relocation>
               </relocations>
             </configuration>

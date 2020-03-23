@@ -117,7 +117,6 @@
       <artifactId>hive-exec</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
-      <classifier>core</classifier>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>

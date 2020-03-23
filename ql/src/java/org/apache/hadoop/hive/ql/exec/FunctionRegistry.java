@@ -138,8 +138,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.Pr
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping;
 import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
-import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -466,6 +464,7 @@ public final class FunctionRegistry {
     system.registerGenericUDAF("bloom_filter", new GenericUDAFBloomFilter());
     system.registerUDAF("percentile", UDAFPercentile.class);
 
+    DataSketchesFunctions.register(system);
 
     // Generic UDFs
     system.registerGenericUDF("reflect", GenericUDFReflect.class);

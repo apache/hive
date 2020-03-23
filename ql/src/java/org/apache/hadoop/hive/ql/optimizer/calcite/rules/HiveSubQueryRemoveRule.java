@@ -49,13 +49,13 @@ import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.Pair;
 import org.apache.calcite.util.Util;
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSubqueryRuntimeException;
@@ -83,10 +83,10 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
  */
 public class HiveSubQueryRemoveRule extends RelOptRule {
 
-  private HiveConf conf;
+  private final HiveConf conf;
 
   public HiveSubQueryRemoveRule(HiveConf conf) {
-    super(operand(RelNode.class, null, HiveSubQueryFinder.RELNODE_PREDICATE, any()),
+    super(operandJ(RelNode.class, null, HiveSubQueryFinder.RELNODE_PREDICATE, any()),
         HiveRelFactories.HIVE_BUILDER, "SubQueryRemoveRule:Filter");
     this.conf = conf;
   }
@@ -625,7 +625,7 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
      * Returns whether a {@link Project} contains a sub-query.
      */
     public static final Predicate<RelNode> RELNODE_PREDICATE = new Predicate<RelNode>() {
-      @Override public boolean apply(RelNode relNode) {
+      @Override public boolean test(RelNode relNode) {
         if (relNode instanceof Project) {
           Project project = (Project) relNode;
           for (RexNode node : project.getProjects()) {
