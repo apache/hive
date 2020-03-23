@@ -71,6 +71,7 @@ public class TestGenericUDFToUnixTimestamp {
     }
   }
 
+  @Test
   public void testTimestamp() throws HiveException {
     GenericUDFToUnixTimeStamp udf = new GenericUDFToUnixTimeStamp();
     ObjectInspector valueOI = PrimitiveObjectInspectorFactory.writableTimestampObjectInspector;
@@ -96,6 +97,7 @@ public class TestGenericUDFToUnixTimestamp {
     runAndVerify(udf, null, null);
   }
 
+  @Test
   public void testDate() throws HiveException {
     GenericUDFToUnixTimeStamp udf = new GenericUDFToUnixTimeStamp();
     ObjectInspector valueOI = PrimitiveObjectInspectorFactory.writableDateObjectInspector;
@@ -115,6 +117,7 @@ public class TestGenericUDFToUnixTimestamp {
     runAndVerify(udf, null, null);
   }
 
+  @Test
   public void testString() throws HiveException {
     GenericUDFToUnixTimeStamp udf1 = new GenericUDFToUnixTimeStamp();
     ObjectInspector valueOI = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
