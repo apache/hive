@@ -145,7 +145,6 @@ public class SQLOperation extends ExecuteStatementOperation {
           new SessionStream(System.err, true, StandardCharsets.UTF_8.name());
     } catch (UnsupportedEncodingException e) {
         LOG.error("Error creating PrintStream", e);
-        e.printStackTrace();
         sessionState.out = null;
         sessionState.info = null;
         sessionState.err = null;
@@ -594,7 +593,6 @@ public class SQLOperation extends ExecuteStatementOperation {
       SerDeUtils.initializeSerDe(serde, queryState.getConf(), props, null);
 
     } catch (Exception ex) {
-      ex.printStackTrace();
       throw new SQLException("Could not create ResultSet: " + ex.getMessage(), ex);
     }
     return serde;
