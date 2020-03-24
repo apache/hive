@@ -87,7 +87,6 @@ import org.apache.hadoop.hive.ql.optimizer.ConvertJoinMapJoin;
 import org.apache.hadoop.hive.ql.optimizer.DynamicPartitionPruningOptimization;
 import org.apache.hadoop.hive.ql.optimizer.MergeJoinProc;
 import org.apache.hadoop.hive.ql.optimizer.NonBlockingOpDeDupProc;
-import org.apache.hadoop.hive.ql.optimizer.ProbeDecodeOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.ReduceSinkMapJoinProc;
 import org.apache.hadoop.hive.ql.optimizer.RemoveDynamicPruningBySize;
 import org.apache.hadoop.hive.ql.optimizer.SetHashGroupByMinReduction;
@@ -126,6 +125,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicValueDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
+import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -139,6 +139,8 @@ import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFBloomFilter.GenericUDAFBloomFilterEvaluator;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -227,12 +229,6 @@ public class TezCompiler extends TaskCompiler {
       new SharedWorkOptimizer().transform(procCtx.parseContext);
     }
     perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Shared scans optimization");
-
-    perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
-    if(procCtx.conf.getBoolVar(ConfVars.HIVE_MAPJOIN_PROBEDECODE_ENABLED)) {
-      new ProbeDecodeOptimizer().transform(procCtx.parseContext);
-    }
-    perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "ProbeDecode optimization");
 
     // need a new run of the constant folding because we might have created lots
     // of "and true and true" conditions.
@@ -1317,7 +1313,8 @@ public class TezCompiler extends TaskCompiler {
 
   private boolean findParallelSemiJoinBranch(Operator<?> mapjoin, TableScanOperator bigTableTS,
                                              ParseContext parseContext,
-                                             Map<ReduceSinkOperator, TableScanOperator> semijoins) {
+                                             Map<ReduceSinkOperator, TableScanOperator> semijoins,
+                                             Map<MapJoinOperator, TableScanOperator> mapJoins) {
 
     boolean parallelEdges = false;
     for (Operator<?> op : mapjoin.getParentOperators()) {
@@ -1384,12 +1381,10 @@ public class TezCompiler extends TaskCompiler {
 
           parallelEdges = true;
 
-          if (sjInfo.getIsHint() || !sjInfo.getShouldRemove()) {
-            // Created by hint, skip it
-            continue;
-          }
           // Add the semijoin branch to the map
           semijoins.put(rs, ts);
+          // Add mapJoin branch to probeDecode map
+          mapJoins.put((MapJoinOperator) mapjoin, ts);
         }
       }
     }
@@ -1450,11 +1445,14 @@ public class TezCompiler extends TaskCompiler {
    *  The algorithm looks at all the mapjoins in the operator pipeline until
    *  it hits RS Op and for each mapjoin examines if it has paralllel semijoin
    *  edge or dynamic partition pruning.
+   *
+   *  As an extension, the algorithm also looks for suitable table scan operators that
+   *  could reduce the number of rows decoded at runtime using the information provided by
+   *  the MapJoin operators of the branch when ProbeDecode feature is enabled.
    */
   private void removeSemijoinsParallelToMapJoin(OptimizeTezProcContext procCtx)
           throws SemanticException {
-    if(!procCtx.conf.getBoolVar(ConfVars.HIVECONVERTJOIN) ||
-        procCtx.conf.getBoolVar(ConfVars.TEZ_DYNAMIC_SEMIJOIN_REDUCTION_FOR_MAPJOIN)) {
+    if (!procCtx.conf.getBoolVar(ConfVars.HIVECONVERTJOIN)) {
       // Not needed without semi-join reduction or mapjoins or when semijoins
       // are enabled for parallel mapjoins.
       return;
@@ -1465,6 +1463,7 @@ public class TezCompiler extends TaskCompiler {
     topOps.addAll(procCtx.parseContext.getTopOps().values());
 
     Map<ReduceSinkOperator, TableScanOperator> semijoins = new HashMap<>();
+    Map<MapJoinOperator, TableScanOperator> mapJoins = new HashMap<>();
     for (Operator<?> parent : topOps) {
       // A TS can have multiple branches due to DPP Or Semijoin Opt.
       // USe DFS to traverse all the branches until RS is hit.
@@ -1480,7 +1479,7 @@ public class TezCompiler extends TaskCompiler {
         if (op instanceof MapJoinOperator) {
           // A candidate.
           if (!findParallelSemiJoinBranch(op, (TableScanOperator) parent,
-                  procCtx.parseContext, semijoins)) {
+                  procCtx.parseContext, semijoins, mapJoins)) {
             // No parallel edge was found for the given mapjoin op,
             // no need to go down further, skip this TS operator pipeline.
             break;
@@ -1490,17 +1489,64 @@ public class TezCompiler extends TaskCompiler {
       }
     }
 
-    if (semijoins.size() > 0) {
-      for (ReduceSinkOperator rs : semijoins.keySet()) {
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Semijoin optimization with parallel edge to map join. Removing semijoin "
-              + OperatorUtils.getOpNamePretty(rs) + " - " + OperatorUtils.getOpNamePretty(semijoins.get(rs)));
+    if (!procCtx.conf.getBoolVar(ConfVars.TEZ_DYNAMIC_SEMIJOIN_REDUCTION_FOR_MAPJOIN)) {
+      if (semijoins.size() > 0) {
+        for (Entry<ReduceSinkOperator, TableScanOperator> semiEntry : semijoins.entrySet()) {
+          SemiJoinBranchInfo sjInfo = procCtx.parseContext.getRsToSemiJoinBranchInfo().get(semiEntry.getKey());
+          if (sjInfo.getIsHint() || !sjInfo.getShouldRemove()) {
+            // Created by hint, skip it
+            continue;
+          }
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("Semijoin optimization with parallel edge to map join. Removing semijoin " +
+                OperatorUtils.getOpNamePretty(semiEntry.getKey()) + " - " + OperatorUtils.getOpNamePretty(semiEntry.getValue()));
+          }
+          GenTezUtils.removeBranch(semiEntry.getKey());
+          GenTezUtils.removeSemiJoinOperator(procCtx.parseContext, semiEntry.getKey(), semiEntry.getValue());
         }
-        GenTezUtils.removeBranch(rs);
-        GenTezUtils.removeSemiJoinOperator(procCtx.parseContext, rs,
-                semijoins.get(rs));
       }
     }
+    if (procCtx.conf.getBoolVar(ConfVars.HIVE_MAPJOIN_PROBEDECODE_ENABLED)) {
+      if (mapJoins.size() > 0) {
+        for (Entry<MapJoinOperator, TableScanOperator> smj : mapJoins.entrySet()) {
+          if (!isValidProbeDecodeMapJoin(smj.getKey())) {
+            continue;
+          }
+          String mjCacheKey = smj.getKey().getConf().getCacheKey();
+          if (mjCacheKey == null) {
+            // Generate cache key if it has not been yet generated
+            mjCacheKey = MapJoinDesc.generateCacheKey(smj.getValue().getOperatorId());
+            // Set in the conf of the map join operator
+            smj.getKey().getConf().setCacheKey(mjCacheKey);
+          }
+          // At this point we know it is a single Key MapJoin
+          byte posBigTable = (byte) smj.getKey().getConf().getPosBigTable();
+          Byte[] order = smj.getKey().getConf().getTagOrder();
+          Byte mjSmallTablePos = (order[0] == posBigTable ? order[1] : order[0]);
+
+          List<ExprNodeDesc> keyDesc = smj.getKey().getConf().getKeys().get(posBigTable);
+          ExprNodeColumnDesc keyCol = (ExprNodeColumnDesc) keyDesc.get(0);
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("ProbeDecode MapJoin Op {} for TS {}  with CacheKey {} MapJoin Pos {} ColName {}",
+                smj.getValue().getName(), smj.getKey().getName(), mjCacheKey, mjSmallTablePos, keyCol.getColumn());
+          }
+          TableScanOperator.ProbeDecodeContext currCtx =
+              new TableScanOperator.ProbeDecodeContext(mjCacheKey, mjSmallTablePos, keyCol.getColumn());
+          smj.getValue().addProbeDecodeContext(currCtx);
+        }
+      }
+    }
+  }
+
+  // Valid MapJoin with a single Key of Number type (Long/Int/Short)
+  private static boolean isValidProbeDecodeMapJoin(MapJoinOperator mapJoinOp) {
+    Map<Byte, List<ExprNodeDesc>> keyExprs = mapJoinOp.getConf().getKeys();
+    List<ExprNodeDesc> bigTableKeyExprs = keyExprs.get( (byte) mapJoinOp.getConf().getPosBigTable());
+    return (bigTableKeyExprs.size() == 1)
+        && !(((PrimitiveTypeInfo) bigTableKeyExprs.get(0).getTypeInfo()).getPrimitiveCategory().
+        equals(PrimitiveObjectInspector.PrimitiveCategory.STRING) ||
+        ((PrimitiveTypeInfo) bigTableKeyExprs.get(0).getTypeInfo()).getPrimitiveCategory().
+            equals(PrimitiveObjectInspector.PrimitiveCategory.BYTE));
   }
 
   private static boolean canUseNDV(ColStatistics colStats) {

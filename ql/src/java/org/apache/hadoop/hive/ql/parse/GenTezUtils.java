@@ -196,8 +196,11 @@ public class GenTezUtils {
       mapWork.setIncludedBuckets(ts.getConf().getIncludedBuckets());
     }
 
-    if (ts.getProbeDecodeContext() != null) {
-      mapWork.setProbeDecodeContext(ts.getProbeDecodeContext());
+    if (!ts.getProbeDecodeContextSet().isEmpty()) {
+      // TODO: Add some logic here?
+      // TODO: what if we have multiple MapJoins per TS?
+      // TODO: some operators like VectorPTFEvaluatorStreamingDecimalMax do not allow selected -- take this into account here?
+      mapWork.setProbeDecodeContext(ts.getProbeDecodeContextSet().iterator().next());
     }
 
     // add new item to the tez work

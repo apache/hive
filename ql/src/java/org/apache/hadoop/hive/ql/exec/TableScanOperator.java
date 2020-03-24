@@ -21,8 +21,10 @@ package org.apache.hadoop.hive.ql.exec;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -84,7 +86,7 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
   private String schemaEvolutionColumns;
   private String schemaEvolutionColumnsTypes;
 
-  private ProbeDecodeContext probeDecodeContext = null;
+  private Set<ProbeDecodeContext> probeDecodeContextSet = new HashSet<>();
 
   /**
    * Inner wrapper class for TS ProbeDecode optimization
@@ -466,12 +468,12 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
     return taskVectorizationContext;
   }
 
-  public ProbeDecodeContext getProbeDecodeContext() {
-    return probeDecodeContext;
+  public Set<ProbeDecodeContext> getProbeDecodeContextSet() {
+    return probeDecodeContextSet;
   }
 
-  public void setProbeDecodeContext(ProbeDecodeContext probeDecodeContext) {
-    this.probeDecodeContext = probeDecodeContext;
+  public void addProbeDecodeContext(ProbeDecodeContext probeDecodeContext) {
+    this.probeDecodeContextSet.add(probeDecodeContext);
   }
 
 }

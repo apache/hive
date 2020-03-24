@@ -1769,8 +1769,9 @@ public class HiveConf extends Configuration {
     HIVEMAPJOINFULLOUTER("hive.mapjoin.full.outer", true,
         "Whether to use MapJoin for FULL OUTER JOINs."),
     HIVE_MAPJOIN_PROBEDECODE_ENABLED("hive.mapjoin.probedecode.enabled", false,
-        "Use cached MapJoin hashtable created on the small table side to filter out row columns that are not going\n "+
-            "to be used when reading the large table data. This will result less CPU cycles spent for decoding unused data. "),
+        "Find suitable table scan operators that could reduce the number of rows decoded at runtime using extra available information. \n"
+            + "e.g., use the cached MapJoin hashtable created on the small table side to filter out row columns that are not going "+
+            "to be used when reading the large table data. This will result less CPU cycles spent for decoding unused data."),
     HIVE_TEST_MAPJOINFULLOUTER_OVERRIDE(
         "hive.test.mapjoin.full.outer.override",
         "none", new StringSet("none", "enable", "disable"),
