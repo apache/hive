@@ -20,10 +20,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.session.SessionState;
-
 import org.apache.impala.analysis.Expr;
 import org.apache.impala.analysis.StmtMetadataLoader;
 import org.apache.impala.authorization.AuthorizationFactory;
@@ -31,11 +29,10 @@ import org.apache.impala.authorization.NoopAuthorizationFactory;
 import org.apache.impala.common.ImpalaException;
 import org.apache.impala.planner.DistributedPlanner;
 import org.apache.impala.planner.PlanFragment;
-import org.apache.impala.util.EventSequence;
-
 import org.apache.impala.planner.PlanNode;
 import org.apache.impala.planner.PlanRootSink;
 import org.apache.impala.planner.Planner;
+import org.apache.impala.planner.RuntimeFilterGenerator;
 import org.apache.impala.service.BackendConfig;
 import org.apache.impala.service.FeSupport;
 import org.apache.impala.service.Frontend;
@@ -52,10 +49,12 @@ import org.apache.impala.thrift.TQueryExecRequest;
 import org.apache.impala.thrift.TQueryOptions;
 import org.apache.impala.thrift.TReservedWordsVersion;
 import org.apache.impala.thrift.TResultSetMetadata;
+import org.apache.impala.thrift.TRuntimeFilterMode;
 import org.apache.impala.thrift.TSessionState;
 import org.apache.impala.thrift.TSessionType;
 import org.apache.impala.thrift.TStmtType;
 import org.apache.impala.thrift.TUniqueId;
+import org.apache.impala.util.EventSequence;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -112,6 +111,15 @@ public class ImpalaPlanner {
    * @throws ImpalaException
    */
   public TExecRequest createExecRequest(PlanNode planNodeRoot) throws ImpalaException {
+    // Create the values transfer graph in the Analyzer. Note that FENG plans
+    // don't register equijoin predicates in the Analyzer's GlobalState since 
+    // Hive/Calcite should have already done the predicate inferencing analysis.
+    // Hence, the GlobalState's registeredValueTransfers will be empty. It is
+    // still necessary to instantiate the graph because otherwise
+    // RuntimeFilterGenerator tries to de-reference it and encounters NPE.
+    // TODO: CDPD-9689 tracks if we are missing any runtime filters compared
+    // to Impala
+    ctx_.getRootAnalyzer().computeValueTransferGraph();
     List<PlanFragment> fragments = createPlanFragments(planNodeRoot);
     Preconditions.checkArgument(fragments.size() > 0);
     PlanFragment planFragmentRoot = fragments.get(0);
@@ -176,7 +184,6 @@ public class ImpalaPlanner {
    * Create one or more plan fragments corresponding to the supplied single node physical plan.
    * This function calls Impala's DistributedPlanner to create the plan fragments and does
    * some post-processing.  It is loosely based on Impala's Planner.createPlan() function.
-   * More planning capabilities such as runtime filters will be added in the future.
    * @param planNodeRoot root node of the Impala physical plan
    * @return list of plan fragments in the order [root fragment, child of root ... leaf fragment]
    * @throws ImpalaException
@@ -191,7 +198,12 @@ public class ImpalaPlanner {
     distributedPlanner.createPlanFragments(planNodeRoot, isPartitioned, fragments);
 
     PlanFragment rootFragment = fragments.get(fragments.size() - 1);
-    // TODO:  CDPD-8106: Create runtime filters.
+
+    // Create runtime filters.
+    if (ctx_.getQueryOptions().getRuntime_filter_mode() != TRuntimeFilterMode.OFF) {
+      RuntimeFilterGenerator.generateRuntimeFilters(ctx_, rootFragment.getPlanRoot());
+      ctx_.getTimeline().markEvent("Runtime filters computed");
+    }
 
     rootFragment.verifyTree();
 
