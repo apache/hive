@@ -24,6 +24,7 @@ import org.apache.arrow.memory.BufferAllocator;
 import org.apache.arrow.vector.FieldVector;
 import org.apache.commons.collections4.MultiSet;
 import org.apache.commons.collections4.multiset.HashMultiSet;
+import org.apache.hadoop.hive.common.type.CalendarUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.LlapArrowRowInputFormat;
@@ -39,12 +40,18 @@ import org.apache.hadoop.mapred.RecordReader;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.*;
+import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_AVRO_PROLEPTIC_GREGORIAN_DEFAULT;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_PARQUET_DATE_PROLEPTIC_GREGORIAN_DEFAULT;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.LLAP_EXTERNAL_CLIENT_USE_HYBRID_CALENDAR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -55,7 +62,13 @@ import static org.junit.Assert.assertTrue;
  */
 public class TestJdbcWithMiniLlapVectorArrowBatch extends BaseJdbcWithMiniLlap {
 
-  private final DateTimestampTestIO dateTimestampTestIO = new DateTimestampTestIO();
+  private final MultiSet<List<Object>> legacyDateExpectedOutput = getLegacyDateExpectedOutput();
+  private final MultiSet<List<Object>> hybridMixedDateExpectedOutput = getHybridMixedDateExpectedOutput();
+
+  private final MultiSet<List<Object>> legacyTimestampExpectedOutput = getLegacyTimestampExpectedOutput();
+  private final MultiSet<List<Object>> convertedLegacyTimestampExpectedOutput =
+      getConvertedLegacyTimestampExpectedOutput();
+  private final MultiSet<List<Object>> hybridMixedTimestampExpectedOutput = getHybridMixedTimestampExpectedOutput();
 
   @BeforeClass public static void beforeTest() throws Exception {
     HiveConf conf = defaultConf();
@@ -68,101 +81,302 @@ public class TestJdbcWithMiniLlapVectorArrowBatch extends BaseJdbcWithMiniLlap {
     return new LlapArrowRowInputFormat(Long.MAX_VALUE);
   }
 
-  private static class DateTimestampTestIO {
+  private MultiSet<List<Object>> getHybridMixedDateExpectedOutput() {
+    MultiSet<List<Object>> expected = new HashMultiSet<>();
+    expected.add(Lists.newArrayList("2012-02-21"));
+    expected.add(Lists.newArrayList("2014-02-11"));
+    expected.add(Lists.newArrayList("1947-02-11"));
+    expected.add(Lists.newArrayList("8200-02-11"));
+    expected.add(Lists.newArrayList("1012-02-21"));
+    expected.add(Lists.newArrayList("1014-02-11"));
+    expected.add(Lists.newArrayList("0947-02-11"));
+    expected.add(Lists.newArrayList("0200-02-11"));
+    return expected;
+  }
 
-    final List<String> inputDates;
-    final MultiSet<List<Object>> expectedHybridDates;
+  private MultiSet<List<Object>> getLegacyDateExpectedOutput() {
+    MultiSet<List<Object>> expected = new HashMultiSet<>();
+    expected.add(Lists.newArrayList("2012-02-21"));
+    expected.add(Lists.newArrayList("2014-02-11"));
+    expected.add(Lists.newArrayList("1947-02-11"));
+    expected.add(Lists.newArrayList("8200-02-11"));
+    expected.add(Lists.newArrayList("1012-02-27"));
+    expected.add(Lists.newArrayList("1014-02-17"));
+    expected.add(Lists.newArrayList("0947-02-16"));
+    expected.add(Lists.newArrayList("0200-02-10"));
+    return expected;
+  }
 
-    final List<String> inputTimestamps;
-    final MultiSet<List<Object>> expectedHybridTimestamps;
+  private MultiSet<List<Object>> getHybridMixedTimestampExpectedOutput() {
+    MultiSet<List<Object>> expected = new HashMultiSet<>();
+    expected.add(Lists.newArrayList("2012-02-21 07:08:09.123"));
+    expected.add(Lists.newArrayList("2014-02-11 07:08:09.123"));
+    expected.add(Lists.newArrayList("1947-02-11 07:08:09.123"));
+    expected.add(Lists.newArrayList("8200-02-11 07:08:09.123"));
+    expected.add(Lists.newArrayList("1012-02-21 07:15:11.123"));
+    expected.add(Lists.newArrayList("1014-02-11 07:15:11.123"));
+    expected.add(Lists.newArrayList("0947-02-11 07:15:11.123"));
+    expected.add(Lists.newArrayList("0200-02-11 07:15:11.123"));
+    return expected;
+  }
 
-    public DateTimestampTestIO() {
-      // date stuff
-      this.inputDates = Arrays
-          .asList("2012-02-21", "2014-02-11", "1947-02-11", "8200-02-11", "1012-02-21", "1014-02-11", "0947-02-11",
-              "0200-02-11", "0001-01-01");
+  private MultiSet<List<Object>> getLegacyTimestampExpectedOutput() {
+    MultiSet<List<Object>> expected = new HashMultiSet<>();
+    expected.add(Lists.newArrayList("2012-02-21 07:08:09.123"));
+    expected.add(Lists.newArrayList("2014-02-11 07:08:09.123"));
+    expected.add(Lists.newArrayList("1947-02-11 07:08:09.123"));
+    expected.add(Lists.newArrayList("8200-02-11 07:08:09.123"));
+    expected.add(Lists.newArrayList("1012-02-21 07:08:09.123"));
+    expected.add(Lists.newArrayList("1014-02-11 07:08:09.123"));
+    expected.add(Lists.newArrayList("0947-02-11 07:08:09.123"));
+    expected.add(Lists.newArrayList("0200-02-11 07:08:09.123"));
+    return expected;
+  }
 
-      expectedHybridDates = new HashMultiSet<>();
-      expectedHybridDates.add(Lists.newArrayList(15391));
-      expectedHybridDates.add(Lists.newArrayList(16112));
-      expectedHybridDates.add(Lists.newArrayList(-8360));
-      expectedHybridDates.add(Lists.newArrayList(2275502));
-      expectedHybridDates.add(Lists.newArrayList(-349846));
-      expectedHybridDates.add(Lists.newArrayList(-349125));
-      expectedHybridDates.add(Lists.newArrayList(-373597));
-      expectedHybridDates.add(Lists.newArrayList(-646439));
-      expectedHybridDates.add(Lists.newArrayList(-719164));
+  private MultiSet<List<Object>> getConvertedLegacyTimestampExpectedOutput() {
+    MultiSet<List<Object>> expected = new HashMultiSet<>();
+    expected.add(Lists.newArrayList("2012-02-21 07:08:09.123"));
+    expected.add(Lists.newArrayList("2014-02-11 07:08:09.123"));
+    expected.add(Lists.newArrayList("1947-02-11 07:08:09.123"));
+    expected.add(Lists.newArrayList("8200-02-11 07:08:09.123"));
+    expected.add(Lists.newArrayList("1012-02-27 07:15:11.123"));
+    expected.add(Lists.newArrayList("1014-02-17 07:15:11.123"));
+    expected.add(Lists.newArrayList("0947-02-16 07:15:11.123"));
+    expected.add(Lists.newArrayList("0200-02-10 07:15:11.123"));
+    return expected;
+  }
 
-      // timestamp stuff
+  // test newly inserted orc records which have calendar info in orc footer.
+  // similar to ql/src/test/queries/clientpositive/orc_hybrid_mixed_date.q
+  @Test public void testOrcHybridMixedDates() throws Exception {
 
-      inputTimestamps = Arrays.asList("2012-02-21 07:08:09.123", "2014-02-11 07:08:09.123", "1947-02-11 07:08:09.123",
-          "8200-02-11 07:08:09.123", "1012-02-21 07:15:11.123", "1014-02-11 07:15:11.123", "947-02-11 07:15:11.123",
-          "0200-02-11 07:15:11.123", "0001-01-01 00:00:00");
-      expectedHybridTimestamps = new HashMultiSet<>();
-      expectedHybridTimestamps.add(Lists.newArrayList(1329808089123000L));
-      expectedHybridTimestamps.add(Lists.newArrayList(1392102489123000L));
-      expectedHybridTimestamps.add(Lists.newArrayList(-722278310877000L));
-      expectedHybridTimestamps.add(Lists.newArrayList(196603398489123000L));
-      expectedHybridTimestamps.add(Lists.newArrayList(-30226668288877000L));
-      expectedHybridTimestamps.add(Lists.newArrayList(-30164373888877000L));
-      expectedHybridTimestamps.add(Lists.newArrayList(-32278754688877000L));
-      expectedHybridTimestamps.add(Lists.newArrayList(-55852303488877000L));
-      expectedHybridTimestamps.add(Lists.newArrayList(-62135769600000000L));
+    final String tableName = "testOrcHybridMixedDates";
+    executeSQL("create table " + tableName + " (d date) stored as orc");
+    executeSQL("INSERT INTO " + tableName + " VALUES " + "('2012-02-21'), " + "('2014-02-11'), " + "('1947-02-11'), "
+        + "('8200-02-11'), " + "('1012-02-21'), " + "('1014-02-11'), " + "('0947-02-11'), " + "('0200-02-11')");
 
+    final String query = "select * from " + tableName;
+
+    testDateQueries(query, "orc.proleptic.gregorian.default", hybridMixedDateExpectedOutput,
+        hybridMixedDateExpectedOutput);
+  }
+
+  // test with legacy orc files
+  // similar to ql/src/test/queries/clientpositive/orc_legacy_mixed_date.q
+  @Test public void testOrcLegacyMixedDates() throws Exception {
+
+    final String tableName = "testOrcLegacyMixedDates";
+    executeSQL("create table " + tableName + " (d date) stored as orc");
+    executeSQL("load data local inpath '../../data/files/orc_legacy_mixed_dates.orc' into table " + tableName);
+
+    final String query = "select * from " + tableName;
+
+    // ORC properties (here orc.proleptic.gregorian.default) are not propogated to LLAP as of now
+    // and hence the expected output hybridMixedDateExpectedOutput otherwise it should be hybridMixedDateExpectedOutput ideally
+    testDateQueries(query, "orc.proleptic.gregorian.default", hybridMixedDateExpectedOutput,
+        hybridMixedDateExpectedOutput);
+  }
+
+  // test newly inserted orc records which have calendar info in orc footer.
+  // similar to ql/src/test/queries/clientpositive/orc_hybrid_mixed_timestamp.q
+  @Test public void testOrcHybridMixedTimestamps() throws Exception {
+
+    final String tableName = "testOrcHybridMixedTimestamps";
+    executeSQL("create table " + tableName + " (d timestamp) stored as orc");
+    executeSQL("INSERT INTO " + tableName + " VALUES ('2012-02-21 07:08:09.123')," + "('2014-02-11 07:08:09.123'),"
+        + "('1947-02-11 07:08:09.123')," + "('8200-02-11 07:08:09.123')," + "('1012-02-21 07:15:11.123'),"
+        + "('1014-02-11 07:15:11.123')," + "('0947-02-11 07:15:11.123')," + "('0200-02-11 07:15:11.123')");
+
+    final String query = "select * from " + tableName;
+
+    testTimestampQueries(query, "orc.proleptic.gregorian.default", hybridMixedTimestampExpectedOutput,
+        hybridMixedTimestampExpectedOutput);
+  }
+
+  // test with legacy parquet files
+  // similar to ql/src/test/queries/clientpositive/orc_legacy_mixed_timestamp.q
+  @Test public void testOrcLegacyMixedTimestamps() throws Exception {
+
+    final String tableName = "testOrcLegacyMixedTimestamps";
+    executeSQL("create table " + tableName + " (ts timestamp) stored as orc");
+    executeSQL("load data local inpath '../../data/files/orc_legacy_mixed_timestamps.orc' into table " + tableName);
+
+    final String query = "select * from " + tableName;
+
+    // ORC properties (here orc.proleptic.gregorian.default) are not propogated to LLAP as of now
+    testTimestampQueries(query, "orc.proleptic.gregorian.default", legacyTimestampExpectedOutput,
+        legacyTimestampExpectedOutput);
+  }
+
+  // test with new parquet files
+  // similar to ql/src/test/queries/clientpositive/parquet_hybrid_mixed_date.q
+  @Test public void testParquetHybridMixedDates() throws Exception {
+
+    final String tableName = "testParquetHybrcidMixedDates";
+    executeSQL("create table " + tableName + " (d date) stored as parquet");
+    executeSQL("INSERT INTO " + tableName + " VALUES " + "('2012-02-21'), " + "('2014-02-11'), " + "('1947-02-11'), "
+        + "('8200-02-11'), " + "('1012-02-21'), " + "('1014-02-11'), " + "('0947-02-11'), " + "('0200-02-11')");
+
+    final String query = "select * from " + tableName;
+
+    testDateQueries(query, HIVE_PARQUET_DATE_PROLEPTIC_GREGORIAN_DEFAULT.toString(), hybridMixedDateExpectedOutput,
+        hybridMixedDateExpectedOutput);
+  }
+
+  // test with legacy parquet files
+  // similar to ql/src/test/queries/clientpositive/parquet_legacy_mixed_date.q
+  @Test public void testParquetLegacyMixedDates() throws Exception {
+
+    final String tableName = "testParquetLegacyMixedDates";
+
+    executeSQL("create table " + tableName + " (d date) stored as parquet");
+    executeSQL("load data local inpath '../../data/files/parquet_legacy_mixed_dates.parq' into table " + tableName);
+
+    final String query = "select * from " + tableName;
+
+    testDateQueries(query, HIVE_PARQUET_DATE_PROLEPTIC_GREGORIAN_DEFAULT.toString(), hybridMixedDateExpectedOutput,
+        legacyDateExpectedOutput);
+  }
+
+  // test newly inserted parquet records.
+  // similar to ql/src/test/queries/clientpositive/parquet_hybrid_mixed_timestamp.q
+  @Test public void testParquetHybridMixedTimestamps() throws Exception {
+
+    final String tableName = "testParquetHybridMixedTimestamps";
+    executeSQL("create table " + tableName + " (ts timestamp) stored as parquet");
+    executeSQL("INSERT INTO " + tableName + " VALUES ('2012-02-21 07:08:09.123')," + "('2014-02-11 07:08:09.123'),"
+        + "('1947-02-11 07:08:09.123')," + "('8200-02-11 07:08:09.123')," + "('1012-02-21 07:15:11.123'),"
+        + "('1014-02-11 07:15:11.123')," + "('0947-02-11 07:15:11.123')," + "('0200-02-11 07:15:11.123')");
+
+    final String query = "select * from " + tableName;
+
+    testTimestampQueries(query, HIVE_PARQUET_DATE_PROLEPTIC_GREGORIAN_DEFAULT.toString(),
+        hybridMixedTimestampExpectedOutput, hybridMixedTimestampExpectedOutput);
+  }
+
+  // test with legacy parquet files
+  // similar to ql/src/test/queries/clientpositive/parquet_legacy_mixed_timestamp.q
+  @Test public void testParquetLegacyMixedTimestamps() throws Exception {
+
+    final String tableName = "testParquetLegacyMixedTimestamps";
+    executeSQL("create table " + tableName + " (d timestamp) stored as parquet");
+    executeSQL(
+        "load data local inpath '../../data/files/parquet_legacy_mixed_timestamps.parq' into table " + tableName);
+
+    final String query = "select * from " + tableName;
+
+    testTimestampQueries(query, HIVE_PARQUET_DATE_PROLEPTIC_GREGORIAN_DEFAULT.toString(),
+        hybridMixedTimestampExpectedOutput, hybridMixedTimestampExpectedOutput);
+  }
+
+  // test with new avro files
+  // similar to ql/src/test/queries/clientpositive/avro_hybrid_mixed_date.q
+  @Test public void testAvroHybridMixedDates() throws Exception {
+
+    final String tableName = "testAvroHybridMixedDates";
+    executeSQL("create table " + tableName + " (d date) stored as avro");
+    executeSQL("INSERT INTO " + tableName + " VALUES " + "('2012-02-21'), " + "('2014-02-11'), " + "('1947-02-11'), "
+        + "('8200-02-11'), " + "('1012-02-21'), " + "('1014-02-11'), " + "('0947-02-11'), " + "('0200-02-11')");
+
+    final String query = "select * from " + tableName;
+
+    testDateQueries(query, HIVE_AVRO_PROLEPTIC_GREGORIAN_DEFAULT.toString(), hybridMixedDateExpectedOutput,
+        hybridMixedDateExpectedOutput);
+  }
+
+  // test with legacy parquet files
+  // similar to ql/src/test/queries/clientpositive/avro_legacy_mixed_date.q
+  @Test public void testAvroLegacyMixedDates() throws Exception {
+
+    final String tableName = "testAvroLegacyMixedDates";
+
+    executeSQL("create table " + tableName + " (d date) ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' "
+        + "COLLECTION ITEMS TERMINATED BY ',' MAP KEYS TERMINATED BY ':' stored as avro");
+    executeSQL("load data local inpath '../../data/files/avro_legacy_mixed_dates.avro' into table " + tableName);
+
+    final String query = "select * from " + tableName;
+
+    testDateQueries(query, HIVE_AVRO_PROLEPTIC_GREGORIAN_DEFAULT.toString(), hybridMixedDateExpectedOutput,
+        legacyDateExpectedOutput);
+  }
+
+  // test newly inserted avro records
+  // similar to ql/src/test/queries/clientpositive/avro_hybrid_mixed_timestamp.q
+  @Test public void testAvroHybridMixedTimestamps() throws Exception {
+
+    final String tableName = "testAvroHybridMixedTimestamps";
+    executeSQL("create table " + tableName + " (d timestamp) ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' "
+        + "COLLECTION ITEMS TERMINATED BY ',' MAP KEYS TERMINATED BY ':' stored as avro");
+    executeSQL("INSERT INTO " + tableName + " VALUES ('2012-02-21 07:08:09.123')," + "('2014-02-11 07:08:09.123'),"
+        + "('1947-02-11 07:08:09.123')," + "('8200-02-11 07:08:09.123')," + "('1012-02-21 07:15:11.123'),"
+        + "('1014-02-11 07:15:11.123')," + "('0947-02-11 07:15:11.123')," + "('0200-02-11 07:15:11.123')");
+
+    final String query = "select * from " + tableName;
+
+    testTimestampQueries(query, HIVE_AVRO_PROLEPTIC_GREGORIAN_DEFAULT.toString(), hybridMixedTimestampExpectedOutput,
+        hybridMixedTimestampExpectedOutput);
+  }
+
+  // test with legacy avro files
+  // similar to ql/src/test/queries/clientpositive/avro_legacy_mixed_timestamp.q
+  @Test public void testAvroLegacyMixedTimestamps() throws Exception {
+
+    final String tableName = "testAvroLegacyMixedTimestamps";
+    executeSQL("create table " + tableName + "(d timestamp) ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'"
+        + "COLLECTION ITEMS TERMINATED BY ',' MAP KEYS TERMINATED BY ':' stored as avro");
+    executeSQL("load data local inpath '../../data/files/avro_legacy_mixed_timestamps.avro' into table " + tableName);
+
+    final String query = "select * from " + tableName;
+
+    testTimestampQueries(query, HIVE_AVRO_PROLEPTIC_GREGORIAN_DEFAULT.toString(), hybridMixedTimestampExpectedOutput,
+        convertedLegacyTimestampExpectedOutput);
+  }
+
+  private void testDateQueries(final String query, final String fileReaderLevelCalendarProp,
+      MultiSet<List<Object>> newHybridExpected, MultiSet<List<Object>> legacyExpected) throws Exception {
+
+    MultiSet<List<Object>> llapResultTransformed = transformLlapDateResultSet(runQueryUsingLlapArrowBatchReader(query,
+        ImmutableMap.of(LLAP_EXTERNAL_CLIENT_USE_HYBRID_CALENDAR.toString(), "true")), false);
+    assertEquals(newHybridExpected, llapResultTransformed);
+
+    // test hybrid output with fileReaderLevelCalendarProp
+    llapResultTransformed = transformLlapDateResultSet(runQueryUsingLlapArrowBatchReader(query, ImmutableMap
+        .of(LLAP_EXTERNAL_CLIENT_USE_HYBRID_CALENDAR.toString(), "true", fileReaderLevelCalendarProp, "true")), false);
+    assertEquals(legacyExpected, llapResultTransformed);
+  }
+
+  private void testTimestampQueries(final String query, final String fileReaderLevelCalendarProp,
+      MultiSet<List<Object>> newHybridExpected, MultiSet<List<Object>> legacyExpected) throws Exception {
+
+    MultiSet<List<Object>> llapResultTransformed = transformLlapTimestampResultSet(
+        runQueryUsingLlapArrowBatchReader(query,
+            ImmutableMap.of(LLAP_EXTERNAL_CLIENT_USE_HYBRID_CALENDAR.toString(), "true")), false);
+    assertEquals(newHybridExpected, llapResultTransformed);
+
+    // test hybrid output with fileReaderLevelCalendarProp
+    llapResultTransformed = transformLlapTimestampResultSet(runQueryUsingLlapArrowBatchReader(query, ImmutableMap
+        .of(LLAP_EXTERNAL_CLIENT_USE_HYBRID_CALENDAR.toString(), "true", fileReaderLevelCalendarProp, "true")), false);
+    assertEquals(legacyExpected, llapResultTransformed);
+  }
+
+  private MultiSet<List<Object>> transformLlapDateResultSet(MultiSet<List<Object>> llapResult,
+      final boolean useProleptic) {
+    MultiSet<List<Object>> llapResultTransformed = new HashMultiSet<>();
+    for (List<Object> list : llapResult) {
+      llapResultTransformed.add(
+          list.stream().map(ele -> CalendarUtils.formatDate((int) ele, useProleptic)).collect(Collectors.toList()));
     }
+    return llapResultTransformed;
+  }
 
-    private String getInsertQuery(String tableName, boolean dateQuery) {
-      String format = "INSERT INTO %s VALUES %s";
-      List<String> inputs = dateQuery ? inputDates : inputTimestamps;
-      String values = inputs.stream().map(d -> String.format("('%s')", d)).collect(Collectors.joining(","));
-      return String.format(format, tableName, values);
+  private MultiSet<List<Object>> transformLlapTimestampResultSet(MultiSet<List<Object>> llapResult,
+      final boolean useProleptic) {
+    MultiSet<List<Object>> llapResultTransformed = new HashMultiSet<>();
+    for (List<Object> list : llapResult) {
+      llapResultTransformed.add(list.stream().map(ele -> CalendarUtils.formatTimestamp((long) ele / 1000, useProleptic))
+          .collect(Collectors.toList()));
     }
-  }
-
-  @Test public void testDates() throws Exception {
-    String tableName = "test_dates";
-    testDateTimestampWithStorageFormat(tableName, "orc",
-        ImmutableMap.of(ConfVars.LLAP_EXTERNAL_CLIENT_USE_HYBRID_CALENDAR.toString(), "true"), true);
-    testDateTimestampWithStorageFormat(tableName, "parquet",
-        ImmutableMap.of(ConfVars.LLAP_EXTERNAL_CLIENT_USE_HYBRID_CALENDAR.toString(), "true"), true);
-  }
-
-  @Test public void testTimestamps() throws Exception {
-    String tableName = "test_timestamps";
-    testDateTimestampWithStorageFormat(tableName, "orc",
-        ImmutableMap.of(ConfVars.LLAP_EXTERNAL_CLIENT_USE_HYBRID_CALENDAR.toString(), "true"), false);
-    testDateTimestampWithStorageFormat(tableName, "parquet",
-        ImmutableMap.of(ConfVars.LLAP_EXTERNAL_CLIENT_USE_HYBRID_CALENDAR.toString(), "true"), false);
-  }
-
-  private void testDateTimestampWithStorageFormat(String tableName, String storageFormat,
-      Map<String, String> extraHiveConfs, boolean testDate) throws Exception {
-
-    String createTableQuery =
-        String.format("create table %s (d %s) stored as %s", tableName, testDate ? "date" : "timestamp", storageFormat);
-
-    executeSQL(createTableQuery, dateTimestampTestIO.getInsertQuery(tableName, testDate));
-
-    MultiSet<List<Object>> llapResult = runQueryUsingLlapArrowBatchReader("select * from " + tableName, extraHiveConfs);
-    assertEquals(testDate ? dateTimestampTestIO.expectedHybridDates : dateTimestampTestIO.expectedHybridTimestamps,
-        llapResult);
-    executeSQL("drop table " + tableName);
-  }
-
-  private MultiSet<List<Object>> executeQuerySQL(String query) throws SQLException {
-    MultiSet<List<Object>> rows = new HashMultiSet<>();
-    try (Statement stmt = hs2Conn.createStatement()) {
-      ResultSet rs = stmt.executeQuery(query);
-      int columnCount = rs.getMetaData().getColumnCount();
-      while (rs.next()) {
-        List<Object> oneRow = new ArrayList<>();
-        for (int i = 1; i <= columnCount; i++) {
-          oneRow.add(rs.getObject(i));
-        }
-        rows.add(oneRow);
-      }
-    }
-    return rows;
+    return llapResultTransformed;
   }
 
   private void executeSQL(String query, String... moreQueries) throws SQLException {
