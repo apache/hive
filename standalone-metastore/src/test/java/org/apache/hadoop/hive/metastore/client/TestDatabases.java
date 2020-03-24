@@ -126,6 +126,8 @@ public class TestDatabases extends MetaStoreClientTest {
     Assert.assertEquals("Comparing databases", database, createdDatabase);
     Assert.assertTrue("The directory should be created", metaStore.isPathExists(
         new Path(database.getLocationUri())));
+    Assert.assertTrue("The managed directory should be created", metaStore.isPathExists(
+        new Path(database.getManagedLocationUri())));
     client.dropDatabase(database.getName());
     Assert.assertFalse("The directory should be removed",
         metaStore.isPathExists(new Path(database.getLocationUri())));
@@ -146,7 +148,7 @@ public class TestDatabases extends MetaStoreClientTest {
     Database createdDatabase = client.getDatabase(database.getName());
 
     Assert.assertNull("Comparing description", createdDatabase.getDescription());
-    Assert.assertEquals("Comparing location", metaStore.getWarehouseRoot() + "/" +
+    Assert.assertEquals("Comparing location", metaStore.getExternalWarehouseRoot() + "/" +
                                                   createdDatabase.getName() + ".db", createdDatabase.getLocationUri());
     Assert.assertEquals("Comparing parameters", new HashMap<String, String>(),
         createdDatabase.getParameters());
@@ -494,6 +496,8 @@ public class TestDatabases extends MetaStoreClientTest {
         alteredDatabase.getDescription());
     Assert.assertEquals("Database location should not change", originalDatabase.getLocationUri(),
         alteredDatabase.getLocationUri());
+    Assert.assertEquals("Database managed location should not change", originalDatabase.getManagedLocationUri(),
+        alteredDatabase.getManagedLocationUri());
     Assert.assertEquals("Database parameters should be empty", new HashMap<String, String>(),
         alteredDatabase.getParameters());
     Assert.assertNull("Database owner should be empty", alteredDatabase.getOwnerName());
@@ -661,7 +665,8 @@ public class TestDatabases extends MetaStoreClientTest {
                .setName("dummy")
                .setOwnerType(PrincipalType.ROLE)
                .setOwnerName("owner")
-               .setLocation(metaStore.getWarehouseRoot() + "/database_location")
+               .setLocation(metaStore.getExternalWarehouseRoot() + "/database_location")
+               .setManagedLocation(metaStore.getWarehouseRoot() + "/database_location")
                .setDescription("dummy description")
                .addParam("param_key_1", "param_value_1")
                .addParam("param_key_2", "param_value_2")

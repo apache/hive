@@ -145,7 +145,7 @@ PREHOOK: Input: database:newdb
 POSTHOOK: query: describe database extended newDB
 POSTHOOK: type: DESCDATABASE
 POSTHOOK: Input: database:newdb
-newdb		location/in/test	hive_test_user	USER	
+newdb		location/in/test		hive_test_user	USER	
 PREHOOK: query: explain use newDB
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:newdb

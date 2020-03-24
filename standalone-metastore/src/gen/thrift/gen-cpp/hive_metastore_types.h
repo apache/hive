@@ -2903,7 +2903,7 @@ inline std::ostream& operator<<(std::ostream& out, const DropCatalogRequest& obj
 }
 
 typedef struct _Database__isset {
-  _Database__isset() : name(false), description(false), locationUri(false), parameters(false), privileges(false), ownerName(false), ownerType(false), catalogName(false), createTime(false) {}
+  _Database__isset() : name(false), description(false), locationUri(false), parameters(false), privileges(false), ownerName(false), ownerType(false), catalogName(false), createTime(false), managedLocationUri(false) {}
   bool name :1;
   bool description :1;
   bool locationUri :1;
@@ -2913,6 +2913,7 @@ typedef struct _Database__isset {
   bool ownerType :1;
   bool catalogName :1;
   bool createTime :1;
+  bool managedLocationUri :1;
 } _Database__isset;
 
 class Database {
@@ -2920,7 +2921,7 @@ class Database {
 
   Database(const Database&);
   Database& operator=(const Database&);
-  Database() : name(), description(), locationUri(), ownerName(), ownerType((PrincipalType::type)0), catalogName(), createTime(0) {
+  Database() : name(), description(), locationUri(), ownerName(), ownerType((PrincipalType::type)0), catalogName(), createTime(0), managedLocationUri() {
   }
 
   virtual ~Database() throw();
@@ -2933,6 +2934,7 @@ class Database {
   PrincipalType::type ownerType;
   std::string catalogName;
   int32_t createTime;
+  std::string managedLocationUri;
 
   _Database__isset __isset;
 
@@ -2953,6 +2955,8 @@ class Database {
   void __set_catalogName(const std::string& val);
 
   void __set_createTime(const int32_t val);
+
+  void __set_managedLocationUri(const std::string& val);
 
   bool operator == (const Database & rhs) const
   {
@@ -2983,6 +2987,10 @@ class Database {
     if (__isset.createTime != rhs.__isset.createTime)
       return false;
     else if (__isset.createTime && !(createTime == rhs.createTime))
+      return false;
+    if (__isset.managedLocationUri != rhs.__isset.managedLocationUri)
+      return false;
+    else if (__isset.managedLocationUri && !(managedLocationUri == rhs.managedLocationUri))
       return false;
     return true;
   }

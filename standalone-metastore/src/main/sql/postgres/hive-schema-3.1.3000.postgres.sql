@@ -79,7 +79,8 @@ CREATE TABLE "DBS" (
     "OWNER_NAME" character varying(128) DEFAULT NULL::character varying,
     "OWNER_TYPE" character varying(10) DEFAULT NULL::character varying,
     "CTLG_NAME" varchar(256),
-    "CREATE_TIME" BIGINT
+    "CREATE_TIME" BIGINT,
+    "DB_MANAGED_LOCATION_URI" character varying(4000)
 );
 
 

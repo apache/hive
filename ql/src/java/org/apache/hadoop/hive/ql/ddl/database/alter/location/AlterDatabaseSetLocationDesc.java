@@ -29,15 +29,31 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 public class AlterDatabaseSetLocationDesc extends AbstractAlterDatabaseDesc {
   private static final long serialVersionUID = 1L;
 
-  private final String location;
+  private String location = null;
+  private String managedLocation = null;
 
   public AlterDatabaseSetLocationDesc(String databaseName, String location) {
+    this(databaseName, location,null);
+  }
+
+  public AlterDatabaseSetLocationDesc(String databaseName, String location, String managedLocation) {
     super(databaseName, null);
-    this.location = location;
+    if (location != null) {
+      this.location = location;
+    }
+
+    if (managedLocation != null) {
+      this.managedLocation = managedLocation;
+    }
   }
 
   @Explain(displayName="location")
   public String getLocation() {
     return location;
+  }
+
+  @Explain(displayName="managedLocation")
+  public String getManagedLocation() {
+    return managedLocation;
   }
 }

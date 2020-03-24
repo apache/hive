@@ -5470,6 +5470,10 @@ class Database {
    * @var int
    */
   public $createTime = null;
+  /**
+   * @var string
+   */
+  public $managedLocationUri = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -5519,6 +5523,10 @@ class Database {
           'var' => 'createTime',
           'type' => TType::I32,
           ),
+        10 => array(
+          'var' => 'managedLocationUri',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -5548,6 +5556,9 @@ class Database {
       }
       if (isset($vals['createTime'])) {
         $this->createTime = $vals['createTime'];
+      }
+      if (isset($vals['managedLocationUri'])) {
+        $this->managedLocationUri = $vals['managedLocationUri'];
       }
     }
   }
@@ -5648,6 +5659,13 @@ class Database {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 10:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->managedLocationUri);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -5720,6 +5738,11 @@ class Database {
     if ($this->createTime !== null) {
       $xfer += $output->writeFieldBegin('createTime', TType::I32, 9);
       $xfer += $output->writeI32($this->createTime);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->managedLocationUri !== null) {
+      $xfer += $output->writeFieldBegin('managedLocationUri', TType::STRING, 10);
+      $xfer += $output->writeString($this->managedLocationUri);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

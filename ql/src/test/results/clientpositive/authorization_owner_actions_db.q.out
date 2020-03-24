@@ -28,7 +28,7 @@ PREHOOK: Input: database:testdb
 POSTHOOK: query: desc database testdb
 POSTHOOK: type: DESCDATABASE
 POSTHOOK: Input: database:testdb
-testdb		location/in/test	testrole	ROLE	
+testdb		location/in/test		testrole	ROLE	
 PREHOOK: query: use testdb
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:testdb

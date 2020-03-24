@@ -104,7 +104,7 @@ public interface MetaDataFormatter {
    * Describe a database.
    */
   void showDatabaseDescription(DataOutputStream out, String database, String comment, String location,
-      String ownerName, PrincipalType ownerType, Map<String, String> params)
+      String managedLocation, String ownerName, PrincipalType ownerType, Map<String, String> params)
       throws HiveException;
 
   void showResourcePlans(DataOutputStream out, List<WMResourcePlan> resourcePlans)

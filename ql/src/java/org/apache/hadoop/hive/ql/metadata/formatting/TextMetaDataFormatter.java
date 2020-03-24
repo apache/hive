@@ -622,7 +622,7 @@ class TextMetaDataFormatter implements MetaDataFormatter {
    */
   @Override
   public void showDatabaseDescription(DataOutputStream outStream, String database, String comment,
-      String location, String ownerName, PrincipalType ownerType, Map<String, String> params)
+      String location, String managedLocation, String ownerName, PrincipalType ownerType, Map<String, String> params)
           throws HiveException {
     try {
       outStream.write(database.getBytes("UTF-8"));
@@ -633,6 +633,10 @@ class TextMetaDataFormatter implements MetaDataFormatter {
       outStream.write(separator);
       if (location != null) {
         outStream.write(location.getBytes("UTF-8"));
+      }
+      outStream.write(separator);
+      if (managedLocation != null) {
+        outStream.write(managedLocation.getBytes("UTF-8"));
       }
       outStream.write(separator);
       if (ownerName != null) {

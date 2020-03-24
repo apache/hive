@@ -5504,6 +5504,11 @@ void Database::__set_createTime(const int32_t val) {
 __isset.createTime = true;
 }
 
+void Database::__set_managedLocationUri(const std::string& val) {
+  this->managedLocationUri = val;
+__isset.managedLocationUri = true;
+}
+
 uint32_t Database::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
@@ -5614,6 +5619,14 @@ uint32_t Database::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 10:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->managedLocationUri);
+          this->__isset.managedLocationUri = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -5681,6 +5694,11 @@ uint32_t Database::write(::apache::thrift::protocol::TProtocol* oprot) const {
     xfer += oprot->writeI32(this->createTime);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.managedLocationUri) {
+    xfer += oprot->writeFieldBegin("managedLocationUri", ::apache::thrift::protocol::T_STRING, 10);
+    xfer += oprot->writeString(this->managedLocationUri);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -5697,6 +5715,7 @@ void swap(Database &a, Database &b) {
   swap(a.ownerType, b.ownerType);
   swap(a.catalogName, b.catalogName);
   swap(a.createTime, b.createTime);
+  swap(a.managedLocationUri, b.managedLocationUri);
   swap(a.__isset, b.__isset);
 }
 
@@ -5710,6 +5729,7 @@ Database::Database(const Database& other169) {
   ownerType = other169.ownerType;
   catalogName = other169.catalogName;
   createTime = other169.createTime;
+  managedLocationUri = other169.managedLocationUri;
   __isset = other169.__isset;
 }
 Database& Database::operator=(const Database& other170) {
@@ -5722,6 +5742,7 @@ Database& Database::operator=(const Database& other170) {
   ownerType = other170.ownerType;
   catalogName = other170.catalogName;
   createTime = other170.createTime;
+  managedLocationUri = other170.managedLocationUri;
   __isset = other170.__isset;
   return *this;
 }
@@ -5737,6 +5758,7 @@ void Database::printTo(std::ostream& out) const {
   out << ", " << "ownerType="; (__isset.ownerType ? (out << to_string(ownerType)) : (out << "<null>"));
   out << ", " << "catalogName="; (__isset.catalogName ? (out << to_string(catalogName)) : (out << "<null>"));
   out << ", " << "createTime="; (__isset.createTime ? (out << to_string(createTime)) : (out << "<null>"));
+  out << ", " << "managedLocationUri="; (__isset.managedLocationUri ? (out << to_string(managedLocationUri)) : (out << "<null>"));
   out << ")";
 }
 

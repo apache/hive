@@ -192,6 +192,7 @@ public class MetaStoreTestUtils {
         Warehouse wh = new Warehouse(conf);
         if (!wh.isDir(wh.getWhRoot())) {
           FileSystem fs = wh.getWhRoot().getFileSystem(conf);
+          LOG.warn("WHRootFS={} default fs in conf={}", fs.toString(), conf.get("fs.defaultFS"));
           fs.mkdirs(wh.getWhRoot());
           fs.setPermission(wh.getWhRoot(),
               new FsPermission(FsAction.ALL, FsAction.ALL, FsAction.ALL));

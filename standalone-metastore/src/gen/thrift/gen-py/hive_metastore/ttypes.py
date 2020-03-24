@@ -4029,6 +4029,7 @@ class Database:
    - ownerType
    - catalogName
    - createTime
+   - managedLocationUri
   """
 
   thrift_spec = (
@@ -4042,9 +4043,10 @@ class Database:
     (7, TType.I32, 'ownerType', None, None, ), # 7
     (8, TType.STRING, 'catalogName', None, None, ), # 8
     (9, TType.I32, 'createTime', None, None, ), # 9
+    (10, TType.STRING, 'managedLocationUri', None, None, ), # 10
   )
 
-  def __init__(self, name=None, description=None, locationUri=None, parameters=None, privileges=None, ownerName=None, ownerType=None, catalogName=None, createTime=None,):
+  def __init__(self, name=None, description=None, locationUri=None, parameters=None, privileges=None, ownerName=None, ownerType=None, catalogName=None, createTime=None, managedLocationUri=None,):
     self.name = name
     self.description = description
     self.locationUri = locationUri
@@ -4054,6 +4056,7 @@ class Database:
     self.ownerType = ownerType
     self.catalogName = catalogName
     self.createTime = createTime
+    self.managedLocationUri = managedLocationUri
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -4116,6 +4119,11 @@ class Database:
           self.createTime = iprot.readI32()
         else:
           iprot.skip(ftype)
+      elif fid == 10:
+        if ftype == TType.STRING:
+          self.managedLocationUri = iprot.readString()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -4166,6 +4174,10 @@ class Database:
       oprot.writeFieldBegin('createTime', TType.I32, 9)
       oprot.writeI32(self.createTime)
       oprot.writeFieldEnd()
+    if self.managedLocationUri is not None:
+      oprot.writeFieldBegin('managedLocationUri', TType.STRING, 10)
+      oprot.writeString(self.managedLocationUri)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -4184,6 +4196,7 @@ class Database:
     value = (value * 31) ^ hash(self.ownerType)
     value = (value * 31) ^ hash(self.catalogName)
     value = (value * 31) ^ hash(self.createTime)
+    value = (value * 31) ^ hash(self.managedLocationUri)
     return value
 
   def __repr__(self):

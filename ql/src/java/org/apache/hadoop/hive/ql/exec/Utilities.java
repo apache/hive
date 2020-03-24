@@ -4726,4 +4726,9 @@ public final class Utilities {
           loader == null ? "null" : loader.getClass().getSimpleName());
     }
   }
+
+  public static boolean arePathsEqualOrWithin(Path p1, Path p2) {
+    return ((p1.toString().toLowerCase().indexOf(p2.toString().toLowerCase()) > -1) ||
+        (p2.toString().toLowerCase().indexOf(p1.toString().toLowerCase()) > -1)) ? true : false;
+  }
 }

@@ -160,8 +160,10 @@ public abstract class HCatMapReduceTest extends HCatBaseTest {
       client.dropTable(databaseName, tableName);
       // in case of external table, drop the table contents as well
       if (isTableExternal() && (externalTableLocation != null)) {
-        if (fs.exists(new Path(externalTableLocation))) {
-          fs.delete(new Path(externalTableLocation), true);
+        Path extPath = new Path(externalTableLocation);
+        FileSystem fileSystem = extPath.getFileSystem(new HiveConf());
+        if (fileSystem.exists(extPath)) {
+          fileSystem.delete(extPath, true);
         }
       }
     } catch (Exception e) {

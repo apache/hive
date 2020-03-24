@@ -35,16 +35,23 @@ public class CreateDatabaseDesc implements DDLDesc, Serializable {
   private final String databaseName;
   private final String comment;
   private final String locationUri;
+  private final String managedLocationUri;
   private final boolean ifNotExists;
   private final Map<String, String> dbProperties;
 
   public CreateDatabaseDesc(String databaseName, String comment, String locationUri, boolean ifNotExists,
       Map<String, String> dbProperties) {
+    this(databaseName, comment, locationUri, ifNotExists, dbProperties, null);
+  }
+
+  public CreateDatabaseDesc(String databaseName, String comment, String locationUri, boolean ifNotExists,
+      Map<String, String> dbProperties, String managedLocationUri) {
     this.databaseName = databaseName;
     this.comment = comment;
     this.locationUri = locationUri;
     this.ifNotExists = ifNotExists;
     this.dbProperties = dbProperties;
+    this.managedLocationUri = managedLocationUri;
   }
 
   @Explain(displayName="if not exists", displayOnlyOnTrue = true)
@@ -69,5 +76,10 @@ public class CreateDatabaseDesc implements DDLDesc, Serializable {
   @Explain(displayName="locationUri")
   public String getLocationUri() {
     return locationUri;
+  }
+
+  @Explain(displayName="managedLocationUri")
+  public String getManagedLocationUri() {
+    return managedLocationUri;
   }
 }
