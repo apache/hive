@@ -91,7 +91,6 @@ public class HiveCommandOperation extends ExecuteStatementOperation {
             new SessionStream(System.err, true, StandardCharsets.UTF_8.name());
       } catch (UnsupportedEncodingException ee) {
         LOG.error("Error creating PrintStream", e);
-        ee.printStackTrace();
         sessionState.out = null;
         sessionState.err = null;
       }
