@@ -55,8 +55,10 @@ import org.apache.pig.data.DataType;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 import org.apache.pig.impl.logicalLayer.schema.Schema.FieldSchema;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore("CDPD-9449 Ignore TestPigHBaseStorageHandler as it is flaky")
 public class TestPigHBaseStorageHandler extends SkeletonHBaseTest {
 
   private static HiveConf   hcatConf;
