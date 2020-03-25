@@ -184,7 +184,7 @@ public class DataSketchesFunctions implements HiveUDFPlugin {
 
     @Override
     public Optional<SqlFunction> getCalciteFunction() {
-      return Optional.of(calciteFunction);
+      return Optional.ofNullable(calciteFunction);
     }
 
     public void setCalciteFunction(SqlFunction calciteFunction) {
