@@ -4084,4 +4084,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       return KEY_CAPABILITIES;
     }
   }
+
+  @Override
+  public GetPartitionsResponse getPartitionsWithSpecs(GetPartitionsRequest request)
+      throws TException {
+    return client.get_partitions_with_specs(request);
+  }
 }

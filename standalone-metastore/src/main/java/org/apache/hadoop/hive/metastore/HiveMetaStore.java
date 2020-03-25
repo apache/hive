@@ -5320,7 +5320,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         List<Partition> partitions = get_partitions(db_name, tableName, (short) max_parts);
 
         if (is_partition_spec_grouping_enabled(table)) {
-          partitionSpecs = get_partitionspecs_grouped_by_storage_descriptor(table, partitions);
+          partitionSpecs = MetaStoreUtils
+              .getPartitionspecsGroupedByStorageDescriptor(table, partitions);
         }
         else {
           PartitionSpec pSpec = new PartitionSpec();
@@ -5339,122 +5340,41 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
-    private static class StorageDescriptorKey {
-
-      private final StorageDescriptor sd;
-
-      StorageDescriptorKey(StorageDescriptor sd) { this.sd = sd; }
-
-      StorageDescriptor getSd() {
-        return sd;
+    @Override
+    public GetPartitionsResponse get_partitions_with_specs(GetPartitionsRequest request)
+        throws MetaException, TException {
+      String catName = null;
+      if (request.isSetCatName()) {
+        catName = request.getCatName();
       }
-
-      private String hashCodeKey() {
-        return sd.getInputFormat() + "\t"
-            + sd.getOutputFormat() +  "\t"
-            + sd.getSerdeInfo().getSerializationLib() + "\t"
-            + sd.getCols();
+      String[] parsedDbName = parseDbName(request.getDbName(), conf);
+      String tableName = request.getTblName();
+      if (catName == null) {
+        // if catName is not provided in the request use the catName parsed from the dbName
+        catName = parsedDbName[CAT_NAME];
       }
-
-      @Override
-      public int hashCode() {
-        return hashCodeKey().hashCode();
+      startTableFunction("get_partitions_with_specs", catName, parsedDbName[DB_NAME],
+          tableName);
+      GetPartitionsResponse response = null;
+      Exception ex = null;
+      try {
+        Table table = get_table_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName);
+        List<Partition> partitions = getMS()
+            .getPartitionSpecsByFilterAndProjection(table, request.getProjectionSpec(),
+                request.getFilterSpec());
+        List<PartitionSpec> partitionSpecs =
+            MetaStoreUtils.getPartitionspecsGroupedByStorageDescriptor(table, partitions);
+        response = new GetPartitionsResponse();
+        response.setPartitionSpec(partitionSpecs);
+      } catch (Exception e) {
+        ex = e;
+        rethrowException(e);
+      } finally {
+        endFunction("get_partitions_with_specs", response != null, ex, tableName);
       }
-
-      @Override
-      public boolean equals(Object rhs) {
-        if (rhs == this) {
-          return true;
-        }
-
-        if (!(rhs instanceof StorageDescriptorKey)) {
-          return false;
-        }
-
-        return (hashCodeKey().equals(((StorageDescriptorKey) rhs).hashCodeKey()));
-      }
+      return response;
     }
 
-    private List<PartitionSpec> get_partitionspecs_grouped_by_storage_descriptor(Table table, List<Partition> partitions)
-      throws NoSuchObjectException, MetaException {
-
-      assert is_partition_spec_grouping_enabled(table);
-
-      final String tablePath = table.getSd().getLocation();
-
-      ImmutableListMultimap<Boolean, Partition> partitionsWithinTableDirectory
-          = Multimaps.index(partitions, new com.google.common.base.Function<Partition, Boolean>() {
-
-        @Override
-        public Boolean apply(Partition input) {
-          return input.getSd().getLocation().startsWith(tablePath);
-        }
-      });
-
-      List<PartitionSpec> partSpecs = new ArrayList<>();
-
-      // Classify partitions within the table directory into groups,
-      // based on shared SD properties.
-
-      Map<StorageDescriptorKey, List<PartitionWithoutSD>> sdToPartList
-          = new HashMap<>();
-
-      if (partitionsWithinTableDirectory.containsKey(true)) {
-
-        ImmutableList<Partition> partsWithinTableDir = partitionsWithinTableDirectory.get(true);
-        for (Partition partition : partsWithinTableDir) {
-
-          PartitionWithoutSD partitionWithoutSD
-              = new PartitionWithoutSD( partition.getValues(),
-              partition.getCreateTime(),
-              partition.getLastAccessTime(),
-              partition.getSd().getLocation().substring(tablePath.length()), partition.getParameters());
-
-          StorageDescriptorKey sdKey = new StorageDescriptorKey(partition.getSd());
-          if (!sdToPartList.containsKey(sdKey)) {
-            sdToPartList.put(sdKey, new ArrayList<>());
-          }
-
-          sdToPartList.get(sdKey).add(partitionWithoutSD);
-
-        } // for (partitionsWithinTableDirectory);
-
-        for (Map.Entry<StorageDescriptorKey, List<PartitionWithoutSD>> entry : sdToPartList.entrySet()) {
-          partSpecs.add(getSharedSDPartSpec(table, entry.getKey(), entry.getValue()));
-        }
-
-      } // Done grouping partitions within table-dir.
-
-      // Lump all partitions outside the tablePath into one PartSpec.
-      if (partitionsWithinTableDirectory.containsKey(false)) {
-        List<Partition> partitionsOutsideTableDir = partitionsWithinTableDirectory.get(false);
-        if (!partitionsOutsideTableDir.isEmpty()) {
-          PartitionSpec partListSpec = new PartitionSpec();
-          partListSpec.setDbName(table.getDbName());
-          partListSpec.setTableName(table.getTableName());
-          partListSpec.setPartitionList(new PartitionListComposingSpec(partitionsOutsideTableDir));
-          partSpecs.add(partListSpec);
-        }
-
-      }
-      return partSpecs;
-    }
-
-    private PartitionSpec getSharedSDPartSpec(Table table, StorageDescriptorKey sdKey, List<PartitionWithoutSD> partitions) {
-
-      StorageDescriptor sd = new StorageDescriptor(sdKey.getSd());
-      sd.setLocation(table.getSd().getLocation()); // Use table-dir as root-dir.
-      PartitionSpecWithSharedSD sharedSDPartSpec =
-          new PartitionSpecWithSharedSD(partitions, sd);
-
-      PartitionSpec ret = new PartitionSpec();
-      ret.setRootPath(sd.getLocation());
-      ret.setSharedSDPartitionSpec(sharedSDPartSpec);
-      ret.setDbName(table.getDbName());
-      ret.setTableName(table.getTableName());
-
-      return ret;
-    }
 
     private static boolean is_partition_spec_grouping_enabled(Table table) {
 
@@ -6868,7 +6788,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         List<Partition> partitions = get_partitions_by_filter(dbName, tblName, filter, (short) maxParts);
 
         if (is_partition_spec_grouping_enabled(table)) {
-          partitionSpecs = get_partitionspecs_grouped_by_storage_descriptor(table, partitions);
+          partitionSpecs = MetaStoreUtils.getPartitionspecsGroupedByStorageDescriptor(table, partitions);
         }
         else {
           PartitionSpec pSpec = new PartitionSpec();

@@ -282,6 +282,16 @@ struct QueryState {
 
 extern const std::map<int, const char*> _QueryState_VALUES_TO_NAMES;
 
+struct PartitionFilterMode {
+  enum type {
+    BY_NAMES = 0,
+    BY_VALUES = 1,
+    BY_EXPR = 2
+  };
+};
+
+extern const std::map<int, const char*> _PartitionFilterMode_VALUES_TO_NAMES;
+
 class Version;
 
 class FieldSchema;
@@ -763,6 +773,14 @@ class RenamePartitionResponse;
 class AlterTableRequest;
 
 class AlterTableResponse;
+
+class GetPartitionsProjectionSpec;
+
+class GetPartitionsFilterSpec;
+
+class GetPartitionsResponse;
+
+class GetPartitionsRequest;
 
 class MetaException;
 
@@ -15473,6 +15491,262 @@ class AlterTableResponse {
 void swap(AlterTableResponse &a, AlterTableResponse &b);
 
 inline std::ostream& operator<<(std::ostream& out, const AlterTableResponse& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _GetPartitionsProjectionSpec__isset {
+  _GetPartitionsProjectionSpec__isset() : fieldList(false), includeParamKeyPattern(false), excludeParamKeyPattern(false) {}
+  bool fieldList :1;
+  bool includeParamKeyPattern :1;
+  bool excludeParamKeyPattern :1;
+} _GetPartitionsProjectionSpec__isset;
+
+class GetPartitionsProjectionSpec {
+ public:
+
+  GetPartitionsProjectionSpec(const GetPartitionsProjectionSpec&);
+  GetPartitionsProjectionSpec& operator=(const GetPartitionsProjectionSpec&);
+  GetPartitionsProjectionSpec() : includeParamKeyPattern(), excludeParamKeyPattern() {
+  }
+
+  virtual ~GetPartitionsProjectionSpec() throw();
+  std::vector<std::string>  fieldList;
+  std::string includeParamKeyPattern;
+  std::string excludeParamKeyPattern;
+
+  _GetPartitionsProjectionSpec__isset __isset;
+
+  void __set_fieldList(const std::vector<std::string> & val);
+
+  void __set_includeParamKeyPattern(const std::string& val);
+
+  void __set_excludeParamKeyPattern(const std::string& val);
+
+  bool operator == (const GetPartitionsProjectionSpec & rhs) const
+  {
+    if (!(fieldList == rhs.fieldList))
+      return false;
+    if (!(includeParamKeyPattern == rhs.includeParamKeyPattern))
+      return false;
+    if (!(excludeParamKeyPattern == rhs.excludeParamKeyPattern))
+      return false;
+    return true;
+  }
+  bool operator != (const GetPartitionsProjectionSpec &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetPartitionsProjectionSpec & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GetPartitionsProjectionSpec &a, GetPartitionsProjectionSpec &b);
+
+inline std::ostream& operator<<(std::ostream& out, const GetPartitionsProjectionSpec& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _GetPartitionsFilterSpec__isset {
+  _GetPartitionsFilterSpec__isset() : filterMode(false), filters(false) {}
+  bool filterMode :1;
+  bool filters :1;
+} _GetPartitionsFilterSpec__isset;
+
+class GetPartitionsFilterSpec {
+ public:
+
+  GetPartitionsFilterSpec(const GetPartitionsFilterSpec&);
+  GetPartitionsFilterSpec& operator=(const GetPartitionsFilterSpec&);
+  GetPartitionsFilterSpec() : filterMode((PartitionFilterMode::type)0) {
+  }
+
+  virtual ~GetPartitionsFilterSpec() throw();
+  PartitionFilterMode::type filterMode;
+  std::vector<std::string>  filters;
+
+  _GetPartitionsFilterSpec__isset __isset;
+
+  void __set_filterMode(const PartitionFilterMode::type val);
+
+  void __set_filters(const std::vector<std::string> & val);
+
+  bool operator == (const GetPartitionsFilterSpec & rhs) const
+  {
+    if (__isset.filterMode != rhs.__isset.filterMode)
+      return false;
+    else if (__isset.filterMode && !(filterMode == rhs.filterMode))
+      return false;
+    if (__isset.filters != rhs.__isset.filters)
+      return false;
+    else if (__isset.filters && !(filters == rhs.filters))
+      return false;
+    return true;
+  }
+  bool operator != (const GetPartitionsFilterSpec &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetPartitionsFilterSpec & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GetPartitionsFilterSpec &a, GetPartitionsFilterSpec &b);
+
+inline std::ostream& operator<<(std::ostream& out, const GetPartitionsFilterSpec& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _GetPartitionsResponse__isset {
+  _GetPartitionsResponse__isset() : partitionSpec(false) {}
+  bool partitionSpec :1;
+} _GetPartitionsResponse__isset;
+
+class GetPartitionsResponse {
+ public:
+
+  GetPartitionsResponse(const GetPartitionsResponse&);
+  GetPartitionsResponse& operator=(const GetPartitionsResponse&);
+  GetPartitionsResponse() {
+  }
+
+  virtual ~GetPartitionsResponse() throw();
+  std::vector<PartitionSpec>  partitionSpec;
+
+  _GetPartitionsResponse__isset __isset;
+
+  void __set_partitionSpec(const std::vector<PartitionSpec> & val);
+
+  bool operator == (const GetPartitionsResponse & rhs) const
+  {
+    if (!(partitionSpec == rhs.partitionSpec))
+      return false;
+    return true;
+  }
+  bool operator != (const GetPartitionsResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetPartitionsResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GetPartitionsResponse &a, GetPartitionsResponse &b);
+
+inline std::ostream& operator<<(std::ostream& out, const GetPartitionsResponse& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _GetPartitionsRequest__isset {
+  _GetPartitionsRequest__isset() : catName(false), dbName(false), tblName(false), withAuth(false), user(false), groupNames(false), projectionSpec(false), filterSpec(false) {}
+  bool catName :1;
+  bool dbName :1;
+  bool tblName :1;
+  bool withAuth :1;
+  bool user :1;
+  bool groupNames :1;
+  bool projectionSpec :1;
+  bool filterSpec :1;
+} _GetPartitionsRequest__isset;
+
+class GetPartitionsRequest {
+ public:
+
+  GetPartitionsRequest(const GetPartitionsRequest&);
+  GetPartitionsRequest& operator=(const GetPartitionsRequest&);
+  GetPartitionsRequest() : catName(), dbName(), tblName(), withAuth(0), user() {
+  }
+
+  virtual ~GetPartitionsRequest() throw();
+  std::string catName;
+  std::string dbName;
+  std::string tblName;
+  bool withAuth;
+  std::string user;
+  std::vector<std::string>  groupNames;
+  GetPartitionsProjectionSpec projectionSpec;
+  GetPartitionsFilterSpec filterSpec;
+
+  _GetPartitionsRequest__isset __isset;
+
+  void __set_catName(const std::string& val);
+
+  void __set_dbName(const std::string& val);
+
+  void __set_tblName(const std::string& val);
+
+  void __set_withAuth(const bool val);
+
+  void __set_user(const std::string& val);
+
+  void __set_groupNames(const std::vector<std::string> & val);
+
+  void __set_projectionSpec(const GetPartitionsProjectionSpec& val);
+
+  void __set_filterSpec(const GetPartitionsFilterSpec& val);
+
+  bool operator == (const GetPartitionsRequest & rhs) const
+  {
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
+      return false;
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(tblName == rhs.tblName))
+      return false;
+    if (__isset.withAuth != rhs.__isset.withAuth)
+      return false;
+    else if (__isset.withAuth && !(withAuth == rhs.withAuth))
+      return false;
+    if (__isset.user != rhs.__isset.user)
+      return false;
+    else if (__isset.user && !(user == rhs.user))
+      return false;
+    if (__isset.groupNames != rhs.__isset.groupNames)
+      return false;
+    else if (__isset.groupNames && !(groupNames == rhs.groupNames))
+      return false;
+    if (!(projectionSpec == rhs.projectionSpec))
+      return false;
+    if (!(filterSpec == rhs.filterSpec))
+      return false;
+    return true;
+  }
+  bool operator != (const GetPartitionsRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetPartitionsRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GetPartitionsRequest &a, GetPartitionsRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const GetPartitionsRequest& obj)
 {
   obj.printTo(out);
   return out;

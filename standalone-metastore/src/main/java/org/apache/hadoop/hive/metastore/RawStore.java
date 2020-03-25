@@ -46,6 +46,8 @@ import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsProjectionSpec;
 import org.apache.hadoop.hive.metastore.api.ISchema;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
@@ -96,6 +98,13 @@ import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.ColStatsObjWithSourceInfo;
+import org.apache.hadoop.hive.metastore.api.CreationMetadata;
+import org.apache.hadoop.hive.metastore.api.ISchemaName;
+import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.SchemaVersionDescriptor;
+import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
+
 import org.apache.thrift.TException;
 
 public interface RawStore extends Configurable {
@@ -615,6 +624,39 @@ public interface RawStore extends Configurable {
    */
   List<Partition> getPartitionsByFilter(
       String catName, String dbName, String tblName, String filter, short maxParts)
+      throws MetaException, NoSuchObjectException;
+
+
+  /**
+   * Generic Partition request API, providing different kinds of filtering and controlling output.
+   *
+   * @param table          table for which whose partitions are requested
+   *                       * @param table table for which partitions are requested
+   * @param projectionSpec the projection spec from the <code>GetPartitionsRequest</code>
+   *                       This projection spec includes a fieldList which represents the fields which must be returned.
+   *                       Any other field which is not in the fieldList may be unset in the returned
+   *                       partitions (it is up to the implementation to decide whether it chooses to
+   *                       include or exclude such fields). E.g. setting the field list to <em>sd.location</em>,
+   *                       <em>serdeInfo.name</em>, <em>sd.cols.name</em>, <em>sd.cols.type</em> will
+   *                       return partitions which will have location field set in the storage descriptor.
+   *                       Also the serdeInf in the returned storage descriptor will only have name field
+   *                       set. This applies to multi-valued fields as well like sd.cols, so in the
+   *                       example above only name and type fields will be set for <em>sd.cols</em>.
+   *                       If the <em>fieldList</em> is empty or not present, all the fields will be set.
+   *                       Additionally, it also includes a includeParamKeyPattern and excludeParamKeyPattern
+   *                       which is a SQL-92 compliant regex pattern to include or exclude parameters. The paramKeyPattern
+   *                       supports _ or % wildcards which represent one character and 0 or more characters respectively
+   * @param filterSpec     The filter spec from <code>GetPartitionsRequest</code> which includes the filter mode
+   *                       and the list of filter strings. The filter mode could be BY_NAMES, BY_VALUES or BY_EXPR
+   *                       to filter by partition names, partition values or expression. The filter strings are provided
+   *                       in the list of filters within the filterSpec. When more than one filters are provided in the list
+   *                       they are logically AND together
+   * @return List of matching partitions which which may be partially filled according to fieldList.
+   * @throws MetaException         in case of errors
+   * @throws NoSuchObjectException when table isn't found
+   */
+  List<Partition> getPartitionSpecsByFilterAndProjection(Table table,
+      GetPartitionsProjectionSpec projectionSpec, GetPartitionsFilterSpec filterSpec)
       throws MetaException, NoSuchObjectException;
 
   /**

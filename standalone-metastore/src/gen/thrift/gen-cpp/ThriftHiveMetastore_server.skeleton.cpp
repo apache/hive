@@ -1157,6 +1157,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_runtime_stats\n");
   }
 
+  void get_partitions_with_specs(GetPartitionsResponse& _return, const GetPartitionsRequest& request) {
+    // Your implementation goes here
+    printf("get_partitions_with_specs\n");
+  }
+
   void scheduled_query_poll(ScheduledQueryPollResponse& _return, const ScheduledQueryPollRequest& request) {
     // Your implementation goes here
     printf("scheduled_query_poll\n");

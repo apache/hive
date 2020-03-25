@@ -3677,4 +3677,10 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   public void scheduledQueryMaintenance(ScheduledQueryMaintenanceRequest request) throws MetaException, TException {
     client.scheduled_query_maintenance(request);
   }
+
+  @Override
+  public GetPartitionsResponse getPartitionsWithSpecs(GetPartitionsRequest request)
+      throws TException {
+    throw new UnsupportedOperationException();
+  }
 }

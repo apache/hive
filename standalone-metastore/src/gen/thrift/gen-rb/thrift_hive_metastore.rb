@@ -3780,6 +3780,22 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_runtime_stats failed: unknown result')
     end
 
+    def get_partitions_with_specs(request)
+      send_get_partitions_with_specs(request)
+      return recv_get_partitions_with_specs()
+    end
+
+    def send_get_partitions_with_specs(request)
+      send_message('get_partitions_with_specs', Get_partitions_with_specs_args, :request => request)
+    end
+
+    def recv_get_partitions_with_specs()
+      result = receive_message(Get_partitions_with_specs_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_partitions_with_specs failed: unknown result')
+    end
+
     def scheduled_query_poll(request)
       send_scheduled_query_poll(request)
       return recv_scheduled_query_poll()
@@ -6673,6 +6689,17 @@ module ThriftHiveMetastore
         result.o1 = o1
       end
       write_result(result, oprot, 'get_runtime_stats', seqid)
+    end
+
+    def process_get_partitions_with_specs(seqid, iprot, oprot)
+      args = read_args(iprot, Get_partitions_with_specs_args)
+      result = Get_partitions_with_specs_result.new()
+      begin
+        result.success = @handler.get_partitions_with_specs(args.request)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'get_partitions_with_specs', seqid)
     end
 
     def process_scheduled_query_poll(seqid, iprot, oprot)
@@ -15083,6 +15110,40 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::RuntimeStat}},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_partitions_with_specs_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQUEST = 1
+
+    FIELDS = {
+      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::GetPartitionsRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_partitions_with_specs_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::GetPartitionsResponse},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
     }
 

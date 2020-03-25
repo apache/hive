@@ -329,6 +329,18 @@ const char* _kQueryStateNames[] = {
 };
 const std::map<int, const char*> _QueryState_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(5, _kQueryStateValues, _kQueryStateNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
 
+int _kPartitionFilterModeValues[] = {
+  PartitionFilterMode::BY_NAMES,
+  PartitionFilterMode::BY_VALUES,
+  PartitionFilterMode::BY_EXPR
+};
+const char* _kPartitionFilterModeNames[] = {
+  "BY_NAMES",
+  "BY_VALUES",
+  "BY_EXPR"
+};
+const std::map<int, const char*> _PartitionFilterMode_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(3, _kPartitionFilterModeValues, _kPartitionFilterModeNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
+
 
 Version::~Version() throw() {
 }
@@ -37113,6 +37125,644 @@ void AlterTableResponse::printTo(std::ostream& out) const {
 }
 
 
+GetPartitionsProjectionSpec::~GetPartitionsProjectionSpec() throw() {
+}
+
+
+void GetPartitionsProjectionSpec::__set_fieldList(const std::vector<std::string> & val) {
+  this->fieldList = val;
+}
+
+void GetPartitionsProjectionSpec::__set_includeParamKeyPattern(const std::string& val) {
+  this->includeParamKeyPattern = val;
+}
+
+void GetPartitionsProjectionSpec::__set_excludeParamKeyPattern(const std::string& val) {
+  this->excludeParamKeyPattern = val;
+}
+
+uint32_t GetPartitionsProjectionSpec::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->fieldList.clear();
+            uint32_t _size1403;
+            ::apache::thrift::protocol::TType _etype1406;
+            xfer += iprot->readListBegin(_etype1406, _size1403);
+            this->fieldList.resize(_size1403);
+            uint32_t _i1407;
+            for (_i1407 = 0; _i1407 < _size1403; ++_i1407)
+            {
+              xfer += iprot->readString(this->fieldList[_i1407]);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.fieldList = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->includeParamKeyPattern);
+          this->__isset.includeParamKeyPattern = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->excludeParamKeyPattern);
+          this->__isset.excludeParamKeyPattern = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t GetPartitionsProjectionSpec::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("GetPartitionsProjectionSpec");
+
+  xfer += oprot->writeFieldBegin("fieldList", ::apache::thrift::protocol::T_LIST, 1);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->fieldList.size()));
+    std::vector<std::string> ::const_iterator _iter1408;
+    for (_iter1408 = this->fieldList.begin(); _iter1408 != this->fieldList.end(); ++_iter1408)
+    {
+      xfer += oprot->writeString((*_iter1408));
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("includeParamKeyPattern", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->includeParamKeyPattern);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("excludeParamKeyPattern", ::apache::thrift::protocol::T_STRING, 3);
+  xfer += oprot->writeString(this->excludeParamKeyPattern);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(GetPartitionsProjectionSpec &a, GetPartitionsProjectionSpec &b) {
+  using ::std::swap;
+  swap(a.fieldList, b.fieldList);
+  swap(a.includeParamKeyPattern, b.includeParamKeyPattern);
+  swap(a.excludeParamKeyPattern, b.excludeParamKeyPattern);
+  swap(a.__isset, b.__isset);
+}
+
+GetPartitionsProjectionSpec::GetPartitionsProjectionSpec(const GetPartitionsProjectionSpec& other1409) {
+  fieldList = other1409.fieldList;
+  includeParamKeyPattern = other1409.includeParamKeyPattern;
+  excludeParamKeyPattern = other1409.excludeParamKeyPattern;
+  __isset = other1409.__isset;
+}
+GetPartitionsProjectionSpec& GetPartitionsProjectionSpec::operator=(const GetPartitionsProjectionSpec& other1410) {
+  fieldList = other1410.fieldList;
+  includeParamKeyPattern = other1410.includeParamKeyPattern;
+  excludeParamKeyPattern = other1410.excludeParamKeyPattern;
+  __isset = other1410.__isset;
+  return *this;
+}
+void GetPartitionsProjectionSpec::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "GetPartitionsProjectionSpec(";
+  out << "fieldList=" << to_string(fieldList);
+  out << ", " << "includeParamKeyPattern=" << to_string(includeParamKeyPattern);
+  out << ", " << "excludeParamKeyPattern=" << to_string(excludeParamKeyPattern);
+  out << ")";
+}
+
+
+GetPartitionsFilterSpec::~GetPartitionsFilterSpec() throw() {
+}
+
+
+void GetPartitionsFilterSpec::__set_filterMode(const PartitionFilterMode::type val) {
+  this->filterMode = val;
+__isset.filterMode = true;
+}
+
+void GetPartitionsFilterSpec::__set_filters(const std::vector<std::string> & val) {
+  this->filters = val;
+__isset.filters = true;
+}
+
+uint32_t GetPartitionsFilterSpec::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 7:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          int32_t ecast1411;
+          xfer += iprot->readI32(ecast1411);
+          this->filterMode = (PartitionFilterMode::type)ecast1411;
+          this->__isset.filterMode = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 8:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->filters.clear();
+            uint32_t _size1412;
+            ::apache::thrift::protocol::TType _etype1415;
+            xfer += iprot->readListBegin(_etype1415, _size1412);
+            this->filters.resize(_size1412);
+            uint32_t _i1416;
+            for (_i1416 = 0; _i1416 < _size1412; ++_i1416)
+            {
+              xfer += iprot->readString(this->filters[_i1416]);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.filters = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t GetPartitionsFilterSpec::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("GetPartitionsFilterSpec");
+
+  if (this->__isset.filterMode) {
+    xfer += oprot->writeFieldBegin("filterMode", ::apache::thrift::protocol::T_I32, 7);
+    xfer += oprot->writeI32((int32_t)this->filterMode);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.filters) {
+    xfer += oprot->writeFieldBegin("filters", ::apache::thrift::protocol::T_LIST, 8);
+    {
+      xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->filters.size()));
+      std::vector<std::string> ::const_iterator _iter1417;
+      for (_iter1417 = this->filters.begin(); _iter1417 != this->filters.end(); ++_iter1417)
+      {
+        xfer += oprot->writeString((*_iter1417));
+      }
+      xfer += oprot->writeListEnd();
+    }
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(GetPartitionsFilterSpec &a, GetPartitionsFilterSpec &b) {
+  using ::std::swap;
+  swap(a.filterMode, b.filterMode);
+  swap(a.filters, b.filters);
+  swap(a.__isset, b.__isset);
+}
+
+GetPartitionsFilterSpec::GetPartitionsFilterSpec(const GetPartitionsFilterSpec& other1418) {
+  filterMode = other1418.filterMode;
+  filters = other1418.filters;
+  __isset = other1418.__isset;
+}
+GetPartitionsFilterSpec& GetPartitionsFilterSpec::operator=(const GetPartitionsFilterSpec& other1419) {
+  filterMode = other1419.filterMode;
+  filters = other1419.filters;
+  __isset = other1419.__isset;
+  return *this;
+}
+void GetPartitionsFilterSpec::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "GetPartitionsFilterSpec(";
+  out << "filterMode="; (__isset.filterMode ? (out << to_string(filterMode)) : (out << "<null>"));
+  out << ", " << "filters="; (__isset.filters ? (out << to_string(filters)) : (out << "<null>"));
+  out << ")";
+}
+
+
+GetPartitionsResponse::~GetPartitionsResponse() throw() {
+}
+
+
+void GetPartitionsResponse::__set_partitionSpec(const std::vector<PartitionSpec> & val) {
+  this->partitionSpec = val;
+}
+
+uint32_t GetPartitionsResponse::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->partitionSpec.clear();
+            uint32_t _size1420;
+            ::apache::thrift::protocol::TType _etype1423;
+            xfer += iprot->readListBegin(_etype1423, _size1420);
+            this->partitionSpec.resize(_size1420);
+            uint32_t _i1424;
+            for (_i1424 = 0; _i1424 < _size1420; ++_i1424)
+            {
+              xfer += this->partitionSpec[_i1424].read(iprot);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.partitionSpec = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t GetPartitionsResponse::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("GetPartitionsResponse");
+
+  xfer += oprot->writeFieldBegin("partitionSpec", ::apache::thrift::protocol::T_LIST, 1);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->partitionSpec.size()));
+    std::vector<PartitionSpec> ::const_iterator _iter1425;
+    for (_iter1425 = this->partitionSpec.begin(); _iter1425 != this->partitionSpec.end(); ++_iter1425)
+    {
+      xfer += (*_iter1425).write(oprot);
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(GetPartitionsResponse &a, GetPartitionsResponse &b) {
+  using ::std::swap;
+  swap(a.partitionSpec, b.partitionSpec);
+  swap(a.__isset, b.__isset);
+}
+
+GetPartitionsResponse::GetPartitionsResponse(const GetPartitionsResponse& other1426) {
+  partitionSpec = other1426.partitionSpec;
+  __isset = other1426.__isset;
+}
+GetPartitionsResponse& GetPartitionsResponse::operator=(const GetPartitionsResponse& other1427) {
+  partitionSpec = other1427.partitionSpec;
+  __isset = other1427.__isset;
+  return *this;
+}
+void GetPartitionsResponse::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "GetPartitionsResponse(";
+  out << "partitionSpec=" << to_string(partitionSpec);
+  out << ")";
+}
+
+
+GetPartitionsRequest::~GetPartitionsRequest() throw() {
+}
+
+
+void GetPartitionsRequest::__set_catName(const std::string& val) {
+  this->catName = val;
+__isset.catName = true;
+}
+
+void GetPartitionsRequest::__set_dbName(const std::string& val) {
+  this->dbName = val;
+}
+
+void GetPartitionsRequest::__set_tblName(const std::string& val) {
+  this->tblName = val;
+}
+
+void GetPartitionsRequest::__set_withAuth(const bool val) {
+  this->withAuth = val;
+__isset.withAuth = true;
+}
+
+void GetPartitionsRequest::__set_user(const std::string& val) {
+  this->user = val;
+__isset.user = true;
+}
+
+void GetPartitionsRequest::__set_groupNames(const std::vector<std::string> & val) {
+  this->groupNames = val;
+__isset.groupNames = true;
+}
+
+void GetPartitionsRequest::__set_projectionSpec(const GetPartitionsProjectionSpec& val) {
+  this->projectionSpec = val;
+}
+
+void GetPartitionsRequest::__set_filterSpec(const GetPartitionsFilterSpec& val) {
+  this->filterSpec = val;
+}
+
+uint32_t GetPartitionsRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->catName);
+          this->__isset.catName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->dbName);
+          this->__isset.dbName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->tblName);
+          this->__isset.tblName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->withAuth);
+          this->__isset.withAuth = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->user);
+          this->__isset.user = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 6:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->groupNames.clear();
+            uint32_t _size1428;
+            ::apache::thrift::protocol::TType _etype1431;
+            xfer += iprot->readListBegin(_etype1431, _size1428);
+            this->groupNames.resize(_size1428);
+            uint32_t _i1432;
+            for (_i1432 = 0; _i1432 < _size1428; ++_i1432)
+            {
+              xfer += iprot->readString(this->groupNames[_i1432]);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.groupNames = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 7:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->projectionSpec.read(iprot);
+          this->__isset.projectionSpec = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 8:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->filterSpec.read(iprot);
+          this->__isset.filterSpec = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t GetPartitionsRequest::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("GetPartitionsRequest");
+
+  if (this->__isset.catName) {
+    xfer += oprot->writeFieldBegin("catName", ::apache::thrift::protocol::T_STRING, 1);
+    xfer += oprot->writeString(this->catName);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldBegin("dbName", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->dbName);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("tblName", ::apache::thrift::protocol::T_STRING, 3);
+  xfer += oprot->writeString(this->tblName);
+  xfer += oprot->writeFieldEnd();
+
+  if (this->__isset.withAuth) {
+    xfer += oprot->writeFieldBegin("withAuth", ::apache::thrift::protocol::T_BOOL, 4);
+    xfer += oprot->writeBool(this->withAuth);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.user) {
+    xfer += oprot->writeFieldBegin("user", ::apache::thrift::protocol::T_STRING, 5);
+    xfer += oprot->writeString(this->user);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.groupNames) {
+    xfer += oprot->writeFieldBegin("groupNames", ::apache::thrift::protocol::T_LIST, 6);
+    {
+      xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->groupNames.size()));
+      std::vector<std::string> ::const_iterator _iter1433;
+      for (_iter1433 = this->groupNames.begin(); _iter1433 != this->groupNames.end(); ++_iter1433)
+      {
+        xfer += oprot->writeString((*_iter1433));
+      }
+      xfer += oprot->writeListEnd();
+    }
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldBegin("projectionSpec", ::apache::thrift::protocol::T_STRUCT, 7);
+  xfer += this->projectionSpec.write(oprot);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("filterSpec", ::apache::thrift::protocol::T_STRUCT, 8);
+  xfer += this->filterSpec.write(oprot);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(GetPartitionsRequest &a, GetPartitionsRequest &b) {
+  using ::std::swap;
+  swap(a.catName, b.catName);
+  swap(a.dbName, b.dbName);
+  swap(a.tblName, b.tblName);
+  swap(a.withAuth, b.withAuth);
+  swap(a.user, b.user);
+  swap(a.groupNames, b.groupNames);
+  swap(a.projectionSpec, b.projectionSpec);
+  swap(a.filterSpec, b.filterSpec);
+  swap(a.__isset, b.__isset);
+}
+
+GetPartitionsRequest::GetPartitionsRequest(const GetPartitionsRequest& other1434) {
+  catName = other1434.catName;
+  dbName = other1434.dbName;
+  tblName = other1434.tblName;
+  withAuth = other1434.withAuth;
+  user = other1434.user;
+  groupNames = other1434.groupNames;
+  projectionSpec = other1434.projectionSpec;
+  filterSpec = other1434.filterSpec;
+  __isset = other1434.__isset;
+}
+GetPartitionsRequest& GetPartitionsRequest::operator=(const GetPartitionsRequest& other1435) {
+  catName = other1435.catName;
+  dbName = other1435.dbName;
+  tblName = other1435.tblName;
+  withAuth = other1435.withAuth;
+  user = other1435.user;
+  groupNames = other1435.groupNames;
+  projectionSpec = other1435.projectionSpec;
+  filterSpec = other1435.filterSpec;
+  __isset = other1435.__isset;
+  return *this;
+}
+void GetPartitionsRequest::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "GetPartitionsRequest(";
+  out << "catName="; (__isset.catName ? (out << to_string(catName)) : (out << "<null>"));
+  out << ", " << "dbName=" << to_string(dbName);
+  out << ", " << "tblName=" << to_string(tblName);
+  out << ", " << "withAuth="; (__isset.withAuth ? (out << to_string(withAuth)) : (out << "<null>"));
+  out << ", " << "user="; (__isset.user ? (out << to_string(user)) : (out << "<null>"));
+  out << ", " << "groupNames="; (__isset.groupNames ? (out << to_string(groupNames)) : (out << "<null>"));
+  out << ", " << "projectionSpec=" << to_string(projectionSpec);
+  out << ", " << "filterSpec=" << to_string(filterSpec);
+  out << ")";
+}
+
+
 MetaException::~MetaException() throw() {
 }
 
@@ -37182,13 +37832,13 @@ void swap(MetaException &a, MetaException &b) {
   swap(a.__isset, b.__isset);
 }
 
-MetaException::MetaException(const MetaException& other1403) : TException() {
-  message = other1403.message;
-  __isset = other1403.__isset;
+MetaException::MetaException(const MetaException& other1436) : TException() {
+  message = other1436.message;
+  __isset = other1436.__isset;
 }
-MetaException& MetaException::operator=(const MetaException& other1404) {
-  message = other1404.message;
-  __isset = other1404.__isset;
+MetaException& MetaException::operator=(const MetaException& other1437) {
+  message = other1437.message;
+  __isset = other1437.__isset;
   return *this;
 }
 void MetaException::printTo(std::ostream& out) const {
@@ -37279,13 +37929,13 @@ void swap(UnknownTableException &a, UnknownTableException &b) {
   swap(a.__isset, b.__isset);
 }
 
-UnknownTableException::UnknownTableException(const UnknownTableException& other1405) : TException() {
-  message = other1405.message;
-  __isset = other1405.__isset;
+UnknownTableException::UnknownTableException(const UnknownTableException& other1438) : TException() {
+  message = other1438.message;
+  __isset = other1438.__isset;
 }
-UnknownTableException& UnknownTableException::operator=(const UnknownTableException& other1406) {
-  message = other1406.message;
-  __isset = other1406.__isset;
+UnknownTableException& UnknownTableException::operator=(const UnknownTableException& other1439) {
+  message = other1439.message;
+  __isset = other1439.__isset;
   return *this;
 }
 void UnknownTableException::printTo(std::ostream& out) const {
@@ -37376,13 +38026,13 @@ void swap(UnknownDBException &a, UnknownDBException &b) {
   swap(a.__isset, b.__isset);
 }
 
-UnknownDBException::UnknownDBException(const UnknownDBException& other1407) : TException() {
-  message = other1407.message;
-  __isset = other1407.__isset;
+UnknownDBException::UnknownDBException(const UnknownDBException& other1440) : TException() {
+  message = other1440.message;
+  __isset = other1440.__isset;
 }
-UnknownDBException& UnknownDBException::operator=(const UnknownDBException& other1408) {
-  message = other1408.message;
-  __isset = other1408.__isset;
+UnknownDBException& UnknownDBException::operator=(const UnknownDBException& other1441) {
+  message = other1441.message;
+  __isset = other1441.__isset;
   return *this;
 }
 void UnknownDBException::printTo(std::ostream& out) const {
@@ -37473,13 +38123,13 @@ void swap(AlreadyExistsException &a, AlreadyExistsException &b) {
   swap(a.__isset, b.__isset);
 }
 
-AlreadyExistsException::AlreadyExistsException(const AlreadyExistsException& other1409) : TException() {
-  message = other1409.message;
-  __isset = other1409.__isset;
+AlreadyExistsException::AlreadyExistsException(const AlreadyExistsException& other1442) : TException() {
+  message = other1442.message;
+  __isset = other1442.__isset;
 }
-AlreadyExistsException& AlreadyExistsException::operator=(const AlreadyExistsException& other1410) {
-  message = other1410.message;
-  __isset = other1410.__isset;
+AlreadyExistsException& AlreadyExistsException::operator=(const AlreadyExistsException& other1443) {
+  message = other1443.message;
+  __isset = other1443.__isset;
   return *this;
 }
 void AlreadyExistsException::printTo(std::ostream& out) const {
@@ -37570,13 +38220,13 @@ void swap(InvalidPartitionException &a, InvalidPartitionException &b) {
   swap(a.__isset, b.__isset);
 }
 
-InvalidPartitionException::InvalidPartitionException(const InvalidPartitionException& other1411) : TException() {
-  message = other1411.message;
-  __isset = other1411.__isset;
+InvalidPartitionException::InvalidPartitionException(const InvalidPartitionException& other1444) : TException() {
+  message = other1444.message;
+  __isset = other1444.__isset;
 }
-InvalidPartitionException& InvalidPartitionException::operator=(const InvalidPartitionException& other1412) {
-  message = other1412.message;
-  __isset = other1412.__isset;
+InvalidPartitionException& InvalidPartitionException::operator=(const InvalidPartitionException& other1445) {
+  message = other1445.message;
+  __isset = other1445.__isset;
   return *this;
 }
 void InvalidPartitionException::printTo(std::ostream& out) const {
@@ -37667,13 +38317,13 @@ void swap(UnknownPartitionException &a, UnknownPartitionException &b) {
   swap(a.__isset, b.__isset);
 }
 
-UnknownPartitionException::UnknownPartitionException(const UnknownPartitionException& other1413) : TException() {
-  message = other1413.message;
-  __isset = other1413.__isset;
+UnknownPartitionException::UnknownPartitionException(const UnknownPartitionException& other1446) : TException() {
+  message = other1446.message;
+  __isset = other1446.__isset;
 }
-UnknownPartitionException& UnknownPartitionException::operator=(const UnknownPartitionException& other1414) {
-  message = other1414.message;
-  __isset = other1414.__isset;
+UnknownPartitionException& UnknownPartitionException::operator=(const UnknownPartitionException& other1447) {
+  message = other1447.message;
+  __isset = other1447.__isset;
   return *this;
 }
 void UnknownPartitionException::printTo(std::ostream& out) const {
@@ -37764,13 +38414,13 @@ void swap(InvalidObjectException &a, InvalidObjectException &b) {
   swap(a.__isset, b.__isset);
 }
 
-InvalidObjectException::InvalidObjectException(const InvalidObjectException& other1415) : TException() {
-  message = other1415.message;
-  __isset = other1415.__isset;
+InvalidObjectException::InvalidObjectException(const InvalidObjectException& other1448) : TException() {
+  message = other1448.message;
+  __isset = other1448.__isset;
 }
-InvalidObjectException& InvalidObjectException::operator=(const InvalidObjectException& other1416) {
-  message = other1416.message;
-  __isset = other1416.__isset;
+InvalidObjectException& InvalidObjectException::operator=(const InvalidObjectException& other1449) {
+  message = other1449.message;
+  __isset = other1449.__isset;
   return *this;
 }
 void InvalidObjectException::printTo(std::ostream& out) const {
@@ -37861,13 +38511,13 @@ void swap(NoSuchObjectException &a, NoSuchObjectException &b) {
   swap(a.__isset, b.__isset);
 }
 
-NoSuchObjectException::NoSuchObjectException(const NoSuchObjectException& other1417) : TException() {
-  message = other1417.message;
-  __isset = other1417.__isset;
+NoSuchObjectException::NoSuchObjectException(const NoSuchObjectException& other1450) : TException() {
+  message = other1450.message;
+  __isset = other1450.__isset;
 }
-NoSuchObjectException& NoSuchObjectException::operator=(const NoSuchObjectException& other1418) {
-  message = other1418.message;
-  __isset = other1418.__isset;
+NoSuchObjectException& NoSuchObjectException::operator=(const NoSuchObjectException& other1451) {
+  message = other1451.message;
+  __isset = other1451.__isset;
   return *this;
 }
 void NoSuchObjectException::printTo(std::ostream& out) const {
@@ -37958,13 +38608,13 @@ void swap(InvalidOperationException &a, InvalidOperationException &b) {
   swap(a.__isset, b.__isset);
 }
 
-InvalidOperationException::InvalidOperationException(const InvalidOperationException& other1419) : TException() {
-  message = other1419.message;
-  __isset = other1419.__isset;
+InvalidOperationException::InvalidOperationException(const InvalidOperationException& other1452) : TException() {
+  message = other1452.message;
+  __isset = other1452.__isset;
 }
-InvalidOperationException& InvalidOperationException::operator=(const InvalidOperationException& other1420) {
-  message = other1420.message;
-  __isset = other1420.__isset;
+InvalidOperationException& InvalidOperationException::operator=(const InvalidOperationException& other1453) {
+  message = other1453.message;
+  __isset = other1453.__isset;
   return *this;
 }
 void InvalidOperationException::printTo(std::ostream& out) const {
@@ -38055,13 +38705,13 @@ void swap(ConfigValSecurityException &a, ConfigValSecurityException &b) {
   swap(a.__isset, b.__isset);
 }
 
-ConfigValSecurityException::ConfigValSecurityException(const ConfigValSecurityException& other1421) : TException() {
-  message = other1421.message;
-  __isset = other1421.__isset;
+ConfigValSecurityException::ConfigValSecurityException(const ConfigValSecurityException& other1454) : TException() {
+  message = other1454.message;
+  __isset = other1454.__isset;
 }
-ConfigValSecurityException& ConfigValSecurityException::operator=(const ConfigValSecurityException& other1422) {
-  message = other1422.message;
-  __isset = other1422.__isset;
+ConfigValSecurityException& ConfigValSecurityException::operator=(const ConfigValSecurityException& other1455) {
+  message = other1455.message;
+  __isset = other1455.__isset;
   return *this;
 }
 void ConfigValSecurityException::printTo(std::ostream& out) const {
@@ -38152,13 +38802,13 @@ void swap(InvalidInputException &a, InvalidInputException &b) {
   swap(a.__isset, b.__isset);
 }
 
-InvalidInputException::InvalidInputException(const InvalidInputException& other1423) : TException() {
-  message = other1423.message;
-  __isset = other1423.__isset;
+InvalidInputException::InvalidInputException(const InvalidInputException& other1456) : TException() {
+  message = other1456.message;
+  __isset = other1456.__isset;
 }
-InvalidInputException& InvalidInputException::operator=(const InvalidInputException& other1424) {
-  message = other1424.message;
-  __isset = other1424.__isset;
+InvalidInputException& InvalidInputException::operator=(const InvalidInputException& other1457) {
+  message = other1457.message;
+  __isset = other1457.__isset;
   return *this;
 }
 void InvalidInputException::printTo(std::ostream& out) const {
@@ -38249,13 +38899,13 @@ void swap(NoSuchTxnException &a, NoSuchTxnException &b) {
   swap(a.__isset, b.__isset);
 }
 
-NoSuchTxnException::NoSuchTxnException(const NoSuchTxnException& other1425) : TException() {
-  message = other1425.message;
-  __isset = other1425.__isset;
+NoSuchTxnException::NoSuchTxnException(const NoSuchTxnException& other1458) : TException() {
+  message = other1458.message;
+  __isset = other1458.__isset;
 }
-NoSuchTxnException& NoSuchTxnException::operator=(const NoSuchTxnException& other1426) {
-  message = other1426.message;
-  __isset = other1426.__isset;
+NoSuchTxnException& NoSuchTxnException::operator=(const NoSuchTxnException& other1459) {
+  message = other1459.message;
+  __isset = other1459.__isset;
   return *this;
 }
 void NoSuchTxnException::printTo(std::ostream& out) const {
@@ -38346,13 +38996,13 @@ void swap(TxnAbortedException &a, TxnAbortedException &b) {
   swap(a.__isset, b.__isset);
 }
 
-TxnAbortedException::TxnAbortedException(const TxnAbortedException& other1427) : TException() {
-  message = other1427.message;
-  __isset = other1427.__isset;
+TxnAbortedException::TxnAbortedException(const TxnAbortedException& other1460) : TException() {
+  message = other1460.message;
+  __isset = other1460.__isset;
 }
-TxnAbortedException& TxnAbortedException::operator=(const TxnAbortedException& other1428) {
-  message = other1428.message;
-  __isset = other1428.__isset;
+TxnAbortedException& TxnAbortedException::operator=(const TxnAbortedException& other1461) {
+  message = other1461.message;
+  __isset = other1461.__isset;
   return *this;
 }
 void TxnAbortedException::printTo(std::ostream& out) const {
@@ -38443,13 +39093,13 @@ void swap(TxnOpenException &a, TxnOpenException &b) {
   swap(a.__isset, b.__isset);
 }
 
-TxnOpenException::TxnOpenException(const TxnOpenException& other1429) : TException() {
-  message = other1429.message;
-  __isset = other1429.__isset;
+TxnOpenException::TxnOpenException(const TxnOpenException& other1462) : TException() {
+  message = other1462.message;
+  __isset = other1462.__isset;
 }
-TxnOpenException& TxnOpenException::operator=(const TxnOpenException& other1430) {
-  message = other1430.message;
-  __isset = other1430.__isset;
+TxnOpenException& TxnOpenException::operator=(const TxnOpenException& other1463) {
+  message = other1463.message;
+  __isset = other1463.__isset;
   return *this;
 }
 void TxnOpenException::printTo(std::ostream& out) const {
@@ -38540,13 +39190,13 @@ void swap(NoSuchLockException &a, NoSuchLockException &b) {
   swap(a.__isset, b.__isset);
 }
 
-NoSuchLockException::NoSuchLockException(const NoSuchLockException& other1431) : TException() {
-  message = other1431.message;
-  __isset = other1431.__isset;
+NoSuchLockException::NoSuchLockException(const NoSuchLockException& other1464) : TException() {
+  message = other1464.message;
+  __isset = other1464.__isset;
 }
-NoSuchLockException& NoSuchLockException::operator=(const NoSuchLockException& other1432) {
-  message = other1432.message;
-  __isset = other1432.__isset;
+NoSuchLockException& NoSuchLockException::operator=(const NoSuchLockException& other1465) {
+  message = other1465.message;
+  __isset = other1465.__isset;
   return *this;
 }
 void NoSuchLockException::printTo(std::ostream& out) const {

@@ -3896,4 +3896,22 @@ public interface IMetaStoreClient {
    */
   void scheduledQueryProgress(ScheduledQueryProgressInfo info) throws TException;
 
+  /**
+   * Generic Partition request API, providing different ways of filtering and controlling output.
+   *
+   * The API entry point is getPartitionsWithSpecs(), which is based on a single
+   * request/response object model.
+   *
+   * The request (GetPartitionsRequest) defines any filtering that should be done for partitions
+   * as well as the list of fields that should be returned (this is called ProjectionSpec).
+   * Projection is simply a list of dot separated strings which represent the fields which should
+   * be returned. Projection may also include whitelist or blacklist of parameters to include in
+   * the partition. When both blacklist and whitelist are present, the blacklist supersedes the
+   * whitelist in case of conflicts.
+   *
+   * Partition filter spec is the generalization of various types of partition filtering.
+   * Partitions can be filtered by names, by values or by partition expressions.
+   */
+  GetPartitionsResponse getPartitionsWithSpecs(GetPartitionsRequest request) throws TException;
+
 }

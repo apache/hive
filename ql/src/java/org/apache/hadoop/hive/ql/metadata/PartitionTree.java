@@ -124,7 +124,8 @@ final class PartitionTree {
     if (partialPartVals == null || partialPartVals.isEmpty()) {
       throw new MetaException("Partition partial vals cannot be null or empty");
     }
-    String partNameMatcher = makePartNameMatcher(tTable, partialPartVals);
+    String partNameMatcher = makePartNameMatcher(tTable, partialPartVals, ".*");
+
     List<Partition> matchedPartitions = new ArrayList<>();
     for (Map.Entry<String, Partition> entry : parts.entrySet()) {
       if (entry.getKey().matches(partNameMatcher)) {

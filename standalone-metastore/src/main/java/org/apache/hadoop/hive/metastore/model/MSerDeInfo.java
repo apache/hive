@@ -51,6 +51,9 @@ public class MSerDeInfo {
     this.serdeType = serdeType;
   }
 
+  public MSerDeInfo() {
+    //default constructor used for deserialization
+  }
   /**
    * @return the serializationLib
    */

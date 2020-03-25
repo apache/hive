@@ -1827,6 +1827,67 @@ struct AlterTableRequest {
 struct AlterTableResponse {
 }
 
+/*
+* Generic Partition request API, providing different kinds of filtering and controlling output.
+*
+* The API entry point is get_partitions_with_specs(), which is based on a single
+* request/response object model.
+*
+* The request (GetPartitionsRequest) defines any filtering that should be done for partitions
+* as well as the list of fields that should be returned (this is called ProjectionSpec).
+* Projection is simply a list of dot separated strings which represent the fields which should
+* be returned. Projection may also include whitelist or blacklist of parameters to include in
+* the partition. When both blacklist and whitelist are present, the blacklist supersedes the
+* whitelist in case of conflicts.
+*
+* Partition filter spec is the generalization of various types of partition filtering.
+* Partitions can be filtered by names, by values or by partition expressions.
+*/
+
+struct GetPartitionsProjectionSpec {
+  // fieldList is a list of dot separated strings which represent the fields which must be returned.
+  // Any other field which is not in the fieldList may be unset in the returned partitions (it
+  //   is up to the implementation to decide whether it chooses to include or exclude such fields).
+  // E.g. setting the field list to sd.location, serdeInfo.name, sd.cols.name, sd.cols.type will
+  // return partitions which will have location field set in the storage descriptor. Also the serdeInfo
+  // in the returned storage descriptor will only have name field set. This applies to multi-valued
+  // fields as well like sd.cols, so in the example above only name and type fields will be set for sd.cols.
+  // If the fieldList is empty or not present, all the fields will be set
+  1: list<string> fieldList;
+  // SQL-92 compliant regex pattern for param keys to be included
+  // _ or % wildcards are supported. '_' represent one character and '%' represents 0 or more characters
+  2: string includeParamKeyPattern;
+  // SQL-92 compliant regex pattern for param keys to be excluded
+  // _ or % wildcards are supported. '_' represent one character and '%' represents 0 or more characters
+  3: string excludeParamKeyPattern;
+}
+
+enum PartitionFilterMode {
+  BY_NAMES,                 // filter by names
+  BY_VALUES,                // filter by values
+  BY_EXPR                   // filter by expression
+}
+
+struct GetPartitionsFilterSpec {
+  7: optional PartitionFilterMode filterMode,
+  8: optional list<string> filters //used as list of partitionNames or list of values or expressions depending on mode
+}
+
+struct GetPartitionsResponse {
+  1: list<PartitionSpec> partitionSpec
+}
+
+struct GetPartitionsRequest {
+  1: optional string catName,
+  2: string dbName,
+  3: string tblName,
+  4: optional bool withAuth,
+  5: optional string user,
+  6: optional list<string> groupNames,
+  7: GetPartitionsProjectionSpec projectionSpec
+  8: GetPartitionsFilterSpec filterSpec // TODO not yet implemented. Must be present but ignored
+}
+
 // Exceptions.
 
 exception MetaException {
@@ -2525,6 +2586,9 @@ service ThriftHiveMetastore extends fb303.FacebookService
   
   void add_runtime_stats(1: RuntimeStat stat) throws(1:MetaException o1)
   list<RuntimeStat> get_runtime_stats(1: GetRuntimeStatsRequest rqst) throws(1:MetaException o1)
+
+  // get_partitions with filter and projectspec
+  GetPartitionsResponse get_partitions_with_specs(1: GetPartitionsRequest request) throws(1:MetaException o1)
 
   ScheduledQueryPollResponse scheduled_query_poll(1: ScheduledQueryPollRequest request) throws(1:MetaException o1)
   void scheduled_query_maintenance(1: ScheduledQueryMaintenanceRequest request) throws(1:MetaException o1, 2:NoSuchObjectException o2, 3:AlreadyExistsException o3, 4:InvalidInputException o4)
