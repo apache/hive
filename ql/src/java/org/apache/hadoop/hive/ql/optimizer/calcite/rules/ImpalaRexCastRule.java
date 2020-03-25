@@ -220,7 +220,7 @@ public abstract class ImpalaRexCastRule extends RelOptRule {
         List<RexNode> currRexNode = Lists.newArrayList(operands.get(i));
         RelDataType currentOperandType = currentOperandTypes.get(i);
         SqlTypeName mappedOperandSqlType = mappedOperandSqlTypes.get(i);
-        if (currentOperandType.getSqlTypeName().equals(mappedOperandSqlType)) {
+        if (typesAreEquivalent(currentOperandType.getSqlTypeName(), mappedOperandSqlType)) {
           // no casting needed if the operand type matches what exists
           result.add(currRexNode.get(0));
         } else {
@@ -233,6 +233,13 @@ public abstract class ImpalaRexCastRule extends RelOptRule {
       return result;
     }
 
+    private boolean typesAreEquivalent(SqlTypeName currentType, SqlTypeName mappedType) {
+      // All INTERVAL_TYPES are mapped to a BIGINT when we convert to Impala.
+      if (SqlTypeName.INTERVAL_TYPES.contains(currentType)) {
+        return mappedType.equals(SqlTypeName.BIGINT);
+      }
+      return currentType.equals(mappedType);
+    }
 
     /**
      * Return the casted RelDatatype of the provided postCastSqlTypeName

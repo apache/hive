@@ -121,7 +121,7 @@ public abstract class ImpalaFunctionSignature {
       boolean hasVarArgs) {
     Preconditions.checkNotNull(func);
     this.func = func;
-    this.argTypes = ImmutableList.copyOf(argTypes);
+    this.argTypes = translateArgTypes(argTypes);
     this.retType = retType;
     this.hasVarArgs = hasVarArgs;
   }
@@ -212,12 +212,23 @@ public abstract class ImpalaFunctionSignature {
       }
     }
 
+    boolean retVal = true;
     for (int i = 0; i < argsToCheck; ++i) {
       if (!thisArgTypes.get(i).equals(otherArgTypes.get(i))) {
-        return false;
+        retVal = false;
       }
     }
-    return true;
+
+    // Some signatures allow the order of the two arguments to occur in either order.
+    // An example of this would be when adding a time interval to a date.
+    if (!retVal && (this.okToFlipArgs() || other.okToFlipArgs())) {
+      Preconditions.checkState(!this.hasVarArgs() && !other.hasVarArgs());
+      Preconditions.checkState(argsToCheck == 2);
+      retVal = (thisArgTypes.get(0).equals(otherArgTypes.get(1)) &&
+          thisArgTypes.get(1).equals(otherArgTypes.get(0)));
+    }
+
+    return retVal;
   }
 
   @Override
@@ -230,11 +241,44 @@ public abstract class ImpalaFunctionSignature {
     if (argTypes.size() == 0) {
       return Objects.hash(func, retType);
     }
-    return Objects.hash(func, argTypes.get(0), retType);
+    return Objects.hash(func, getPrimaryArg(), retType);
   }
 
   @Override
   public String toString() {
     return retType + " " + func + "(" + StringUtils.join(argTypes, ", ") + ")";
+  }
+
+  /**
+   * Method to check if it's ok for the arguments to occur in either order.
+   */
+  protected boolean okToFlipArgs() {
+    return false;
+  }
+
+  /**
+   * return the "primary" argument of the signature. The hash code only uses
+   * one argument when generating the hashcode. The default is to just take the
+   * first argument, but this can be overridden by a derived class.
+   */
+  protected SqlTypeName getPrimaryArg() {
+    Preconditions.checkState(argTypes.size() > 0);
+    return argTypes.get(0);
+  }
+
+  /**
+   * Translate SqlTypeNames to a common type supported by Impala.
+   */
+  private List<SqlTypeName> translateArgTypes(List<SqlTypeName> argTypes) {
+    ImmutableList.Builder<SqlTypeName> list = ImmutableList.builder();
+    for (SqlTypeName argType : argTypes) {
+      // Interval types are always mapped to BIGINT types.
+      if (SqlTypeName.INTERVAL_TYPES.contains(argType)) {
+        list.add(SqlTypeName.BIGINT);
+      } else {
+        list.add(argType);
+      }
+    }
+    return list.build();
   }
 }

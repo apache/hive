@@ -153,4 +153,16 @@ public class CaseFunctionSignature extends ImpalaFunctionSignature {
     }
     return new Pair<SqlTypeName, List<SqlTypeName>>(castCandidate.getRetType(), castArgTypes);
   }
+
+  /**
+   * The primary argument for case statements is the second argument. The first
+   * argument is always a boolean, but the second argument is the return type
+   * which will match the Impala signature in the resource file.
+   */
+  @Override
+  protected SqlTypeName getPrimaryArg() {
+    Preconditions.checkState(this.argTypes.size() > 1);
+    return this.argTypes.get(1);
+  }
+
 }

@@ -36,17 +36,21 @@ import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaIsNullExpr;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaFunctionSignatureFactory;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaNullLiteral;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaTupleIsNullExpr;
+import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaTimestampArithmeticExpr;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaFunctionSignature;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.DefaultFunctionSignature;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaTypeConverter;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ScalarFunctionDetails;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ScalarFunctionUtil;
+import org.apache.hadoop.hive.ql.plan.impala.funcmapper.TimeIntervalOpFunctionSignature;
 import org.apache.impala.analysis.Analyzer;
+import org.apache.impala.analysis.ArithmeticExpr;
 import org.apache.impala.analysis.BinaryPredicate;
 import org.apache.impala.analysis.BoolLiteral;
 import org.apache.impala.analysis.CaseWhenClause;
 import org.apache.impala.analysis.CompoundPredicate;
 import org.apache.impala.analysis.Expr;
+import org.apache.impala.analysis.NumericLiteral;
 import org.apache.impala.analysis.TupleId;
 import org.apache.impala.catalog.Function;
 import org.apache.impala.catalog.Type;
@@ -115,6 +119,12 @@ public class ImpalaRexCall {
           return new ImpalaFunctionCallExpr(analyzer, fn, params.subList(1,2), rexCall, impalaRetType);
         }
         // CDPD-8867: normal 'extract function currently uses default ImpalaFunctionCallExpr
+        break;
+      case PLUS:
+      case MINUS:
+        if (TimeIntervalOpFunctionSignature.isTimestampArithExpr(fn.getName())) {
+          return createTimestampArithExpr(analyzer, fn, params, rexCall, impalaRetType);
+        }
         break;
     }
     return new ImpalaFunctionCallExpr(analyzer, fn, params, rexCall, impalaRetType);
@@ -227,6 +237,18 @@ public class ImpalaRexCall {
         throw new RuntimeException("Unknown calcite op: " + sqlKind);
     }
     return new ImpalaBinaryCompExpr(analyzer, fn, op, params.get(0), params.get(1), retType);
+  }
+
+  private static Expr createTimestampArithExpr(Analyzer analyzer, Function fn, List<Expr> params,
+      RexCall rexCall, Type retType) throws HiveException {
+    Preconditions.checkArgument(params.size() == 2);
+    int intervalArg = (params.get(0) instanceof NumericLiteral) ? 0 : 1;
+    int timestampArg = (intervalArg + 1) % 2;
+
+    String timeUnitIdent = TimeIntervalOpFunctionSignature.getTimeUnitIdent(fn.getName());
+
+    return new ImpalaTimestampArithmeticExpr(analyzer, fn, params.get(timestampArg),
+        params.get(intervalArg), timeUnitIdent, retType);
   }
 
   /**

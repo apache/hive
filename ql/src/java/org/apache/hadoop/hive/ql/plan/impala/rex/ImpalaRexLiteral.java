@@ -56,6 +56,9 @@ public class ImpalaRexLiteral {
    */
   public static Expr getExpr(Analyzer analyzer, RexLiteral rexLiteral) throws HiveException {
     try {
+      if (SqlTypeName.INTERVAL_TYPES.contains(rexLiteral.getTypeName())) {
+        return new NumericLiteral(new BigDecimal(rexLiteral.getValueAs(Long.class)), Type.BIGINT);
+      }
       // TODO: CDPD-8266: need to support all getTypeName types.
       switch (rexLiteral.getTypeName()) {
         case NULL:

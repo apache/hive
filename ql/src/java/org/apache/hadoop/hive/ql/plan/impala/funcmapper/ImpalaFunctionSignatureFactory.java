@@ -63,6 +63,12 @@ public class ImpalaFunctionSignatureFactory {
         return new CaseFunctionSignature(argTypes, retType);
       case EXTRACT:
         return new ExtractFunctionSignature(func, argTypes, retType);
+      case PLUS:
+      case MINUS:
+        if (argTypes.contains(SqlTypeName.TIMESTAMP)) {
+          return new TimeIntervalOpFunctionSignature(kind, argTypes, retType);
+        }
+        return new DefaultFunctionSignature(func, argTypes, retType, false);
       default:
         return new DefaultFunctionSignature(func, argTypes, retType, false);
     }

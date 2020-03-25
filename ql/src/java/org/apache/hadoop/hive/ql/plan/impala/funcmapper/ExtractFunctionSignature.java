@@ -82,6 +82,15 @@ public class ExtractFunctionSignature extends ImpalaFunctionSignature {
     return defaultFuncSig.useSignatureTypes(functionDetailsMap);
   }
 
+  /**
+   * The primary argument for the extract statement is found in the default
+   * signature, which matches the Impala signature in the resource file.
+   */
+  @Override
+  protected SqlTypeName getPrimaryArg() {
+    return defaultFuncSig.getPrimaryArg();
+  }
+
   @Override
   public boolean canCastToCandidate(ImpalaFunctionSignature castCandidate) {
     return defaultFuncSig.canCastToCandidate(castCandidate);
