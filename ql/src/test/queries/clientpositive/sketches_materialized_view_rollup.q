@@ -35,3 +35,8 @@ select ds_hll_estimate(ds_hll_sketch(id)) from sketch_input group by category;
 explain
 select ds_hll_estimate(ds_hll_sketch(id)) from sketch_input;
 select ds_hll_estimate(ds_hll_sketch(id)) from sketch_input;
+
+-- also round the output
+explain
+select round(ds_hll_estimate(ds_hll_sketch(id))) from sketch_input;
+select round(ds_hll_estimate(ds_hll_sketch(id))) from sketch_input;
