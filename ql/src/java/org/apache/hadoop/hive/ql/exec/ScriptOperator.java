@@ -499,8 +499,7 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
           new_abort = true;
         }
       } catch (IOException e) {
-        LOG.error("Got ioexception: " + e.getMessage());
-        e.printStackTrace();
+        LOG.error("Got exception", e);
         new_abort = true;
       } catch (InterruptedException e) {
       }
