@@ -20,9 +20,11 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.sql.SqlAggFunction;
+import org.apache.calcite.sql.SqlFunction;
 import org.apache.calcite.sql.SqlFunctionCategory;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
@@ -80,6 +82,8 @@ import org.apache.hadoop.hive.serde2.typeinfo.TimestampLocalTZTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
+import org.apache.hive.plugin.api.HiveUDFPlugin;
+import org.apache.hive.plugin.api.HiveUDFPlugin.UDFDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -471,7 +475,19 @@ public class SqlFunctionConverter {
       registerFunction("date_add", HiveDateAddSqlOperator.INSTANCE, hToken(HiveParser.Identifier, "date_add"));
       registerFunction("date_sub", HiveDateSubSqlOperator.INSTANCE, hToken(HiveParser.Identifier, "date_sub"));
 
-      DataSketchesFunctions.registerCalciteFunctions(this);
+      registerPlugin(DataSketchesFunctions.INSTANCE);
+
+    }
+
+    private void registerPlugin(HiveUDFPlugin plugin) {
+      for (UDFDescriptor udfDesc : plugin.getDescriptors()) {
+        Optional<SqlFunction> calciteFunction = udfDesc.getCalciteFunction();
+        if (calciteFunction.isPresent()) {
+          registerDuplicateFunction(udfDesc.getFunctionName(), calciteFunction.get(),
+              hToken(HiveParser.Identifier, udfDesc.getFunctionName()));
+        }
+      }
+
     }
 
     @Override
