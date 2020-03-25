@@ -461,7 +461,7 @@ public class SQLOperation extends ExecuteStatementOperation {
       maxRows = 1;
       isBlobBased = true;
     }
-    driver.setMaxRows((int) maxRows);
+    driver.setMaxRows(Math.toIntExact(maxRows));
     RowSet rowSet = RowSetFactory.create(getResultSetSchema(), getProtocolVersion(), isBlobBased);
     try {
       /* if client is requesting fetch-from-start and its not the first time reading from this operation
@@ -471,7 +471,7 @@ public class SQLOperation extends ExecuteStatementOperation {
         driver.resetFetch();
       }
       fetchStarted = true;
-      driver.setMaxRows((int) maxRows);
+      driver.setMaxRows(Math.toIntExact(maxRows));
       if (driver.getResults(convey)) {
         return decode(convey, rowSet);
       }
