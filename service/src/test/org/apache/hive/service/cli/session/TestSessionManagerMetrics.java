@@ -309,6 +309,7 @@ public class TestSessionManagerMetrics {
     MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, MetricsConstant.HS2_ACTIVE_SESSIONS, 0);
   }
 
+  @Ignore("CDPD-9442 Ignore TestSessionManagerMetrics.testActiveSessionTimeMetrics as it is flaky")
   @Test
   public void testActiveSessionTimeMetrics() throws Exception {
 
