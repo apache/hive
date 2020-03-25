@@ -45,6 +45,8 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
  */
 public class DataSketchesFunctions {
 
+  private static final DataSketchesFunctions INSTANCE = new DataSketchesFunctions();
+
   private static final String DATASKETCHES_PREFIX = "ds";
 
   private static final String DATA_TO_SKETCH = "sketch";
@@ -74,7 +76,7 @@ public class DataSketchesFunctions {
 
   private List<SketchDescriptor> sketchClasses;
 
-  public DataSketchesFunctions() {
+  DataSketchesFunctions() {
     this.sketchClasses = new ArrayList<SketchDescriptor>();
     registerHll();
     registerCpc();
@@ -86,7 +88,7 @@ public class DataSketchesFunctions {
   }
 
   public static void registerHiveFunctions(Registry system) {
-    new DataSketchesFunctions().registerHiveFunctionsInternal(system);
+    INSTANCE.registerHiveFunctionsInternal(system);
   }
 
   /**
@@ -95,7 +97,7 @@ public class DataSketchesFunctions {
    * Mergability is exposed to Calcite; which enables to use it during rollup.
    */
   public static void registerCalciteFunctions(Consumer<Pair<String, SqlOperator>> r) {
-    new DataSketchesFunctions().registerCalciteInternal(r);
+    INSTANCE.registerCalciteInternal(r);
   }
 
   private void registerCalciteInternal(Consumer<Pair<String, SqlOperator>> r) {
@@ -132,8 +134,7 @@ public class DataSketchesFunctions {
   }
 
 
-  private void registerHiveFunctionsInternal(Registry system2) {
-    Registry system = system2;
+  private void registerHiveFunctionsInternal(Registry system) {
     for (SketchDescriptor sketchDescriptor : sketchClasses) {
       Collection<SketchFunctionDescriptor> functions = sketchDescriptor.fnMap.values();
       for (SketchFunctionDescriptor fn : functions) {
