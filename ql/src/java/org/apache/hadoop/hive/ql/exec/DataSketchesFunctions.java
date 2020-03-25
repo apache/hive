@@ -24,18 +24,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Consumer;
-
 import org.apache.calcite.rel.type.RelDataTypeImpl;
 import org.apache.calcite.rel.type.RelProtoDataType;
 import org.apache.calcite.sql.SqlFunction;
 import org.apache.calcite.sql.SqlKind;
-import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.type.InferTypes;
 import org.apache.calcite.sql.type.OperandTypes;
 import org.apache.calcite.sql.type.ReturnTypes;
 import org.apache.calcite.sql.type.SqlTypeName;
-import org.apache.calcite.util.Pair;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveMergeablAggregate;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver2;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
@@ -104,11 +100,6 @@ public class DataSketchesFunctions implements HiveUDFPlugin {
     for (SketchDescriptor sketchDescriptor : sketchClasses) {
       descriptors.addAll(sketchDescriptor.fnMap.values());
     }
-  }
-
-  @Deprecated
-  public static void registerCalciteFunctions(Consumer<Pair<String, SqlOperator>> r) {
-    throw new RuntimeException();
   }
 
   private void buildCalciteFns() {
