@@ -126,7 +126,7 @@ public class ThriftHttpCLIService extends ThriftCLIService {
               ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PATH.varname 
               + " Not configured for SSL connection");
         }
-        SslContextFactory sslContextFactory = new SslContextFactory();
+        SslContextFactory.Server sslContextFactory = new SslContextFactory.Server();
         String[] excludedProtocols = hiveConf.getVar(ConfVars.HIVE_SSL_PROTOCOL_BLACKLIST).split(",");
         LOG.info("HTTP Server SSL: adding excluded protocols: " + Arrays.toString(excludedProtocols));
         sslContextFactory.addExcludeProtocols(excludedProtocols);
