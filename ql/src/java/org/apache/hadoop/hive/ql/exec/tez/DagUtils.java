@@ -949,14 +949,9 @@ public class DagUtils {
    * Helper method to create a yarn local resource.
    */
   private LocalResource createLocalResource(FileSystem remoteFs, Path file,
-      LocalResourceType type, LocalResourceVisibility visibility) {
+      LocalResourceType type, LocalResourceVisibility visibility) throws IOException {
 
-    FileStatus fstat = null;
-    try {
-      fstat = remoteFs.getFileStatus(file);
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    final FileStatus fstat = remoteFs.getFileStatus(file);
 
     URL resourceURL = ConverterUtils.getYarnUrlFromPath(file);
     long resourceSize = fstat.getLen();

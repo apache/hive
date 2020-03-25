@@ -46,8 +46,12 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hive.common.util.ReflectionUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class JoinUtil {
+
+  private static final Logger LOG = LoggerFactory.getLogger(JoinUtil.class);
 
   /**
    * Represents the join result between two tables
@@ -304,7 +308,7 @@ public class JoinUtil {
     try {
       SerDeUtils.initializeSerDe(sd, null, desc.getProperties(), null);
     } catch (SerDeException e) {
-      e.printStackTrace();
+      LOG.warn("Error getting spill table", e);
       return null;
     }
     return sd;

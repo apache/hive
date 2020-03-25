@@ -234,6 +234,8 @@ public final class Utilities {
    */
   public static final Logger FILE_OP_LOGGER = LoggerFactory.getLogger("FileOperations");
 
+  public static final Logger LOGGER = LoggerFactory.getLogger(Utilities.class);
+
   /**
    * The object in the reducer are composed of these top level fields.
    */
@@ -846,7 +848,7 @@ public final class Utilities {
         }
       }
     } catch (FileNotFoundException e) {
-      e.printStackTrace();
+      LOG.warn("Could not compare files. One or both cannot be found", e);
     }
     return false;
   }
@@ -1935,7 +1937,7 @@ public final class Utilities {
     try {
       return bucketName.split(COPY_KEYWORD)[0];
     } catch (Exception e) {
-      e.printStackTrace();
+      LOG.warn("Invalid bucket file name", e);
       return bucketName;
     }
   }
