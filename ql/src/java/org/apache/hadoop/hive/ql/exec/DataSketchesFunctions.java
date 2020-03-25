@@ -23,27 +23,28 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
-
+import java.util.Optional;
 import org.apache.calcite.rel.type.RelDataTypeImpl;
 import org.apache.calcite.rel.type.RelProtoDataType;
+import org.apache.calcite.sql.SqlFunction;
 import org.apache.calcite.sql.SqlKind;
-import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.type.InferTypes;
 import org.apache.calcite.sql.type.OperandTypes;
 import org.apache.calcite.sql.type.ReturnTypes;
 import org.apache.calcite.sql.type.SqlTypeName;
-import org.apache.calcite.util.Pair;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveMergeablAggregate;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver2;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
+import org.apache.hive.plugin.api.HiveUDFPlugin;
 
 /**
  * Registers functions from the DataSketches library as builtin functions.
  *
  * In an effort to show a more consistent
  */
-public class DataSketchesFunctions {
+public class DataSketchesFunctions implements HiveUDFPlugin {
+
+  public static final DataSketchesFunctions INSTANCE = new DataSketchesFunctions();
 
   private static final String DATASKETCHES_PREFIX = "ds";
 
@@ -72,10 +73,12 @@ public class DataSketchesFunctions {
   private static final String SKETCH_TO_VARIANCES = "variances";
   private static final String SKETCH_TO_PERCENTILE = "percentile";
 
-  private List<SketchDescriptor> sketchClasses;
+  private final List<SketchDescriptor> sketchClasses;
+  private final ArrayList<UDFDescriptor> descriptors;
 
-  public DataSketchesFunctions() {
+  DataSketchesFunctions() {
     this.sketchClasses = new ArrayList<SketchDescriptor>();
+    this.descriptors = new ArrayList<HiveUDFPlugin.UDFDescriptor>();
     registerHll();
     registerCpc();
     registerKll();
@@ -83,24 +86,25 @@ public class DataSketchesFunctions {
     registerTuple();
     registerQuantiles();
     registerFrequencies();
+
+    buildCalciteFns();
+    buildDescritors();
   }
 
-  public static void registerHiveFunctions(Registry system) {
-    new DataSketchesFunctions().registerHiveFunctionsInternal(system);
+  @Override
+  public Iterable<UDFDescriptor> getDescriptors() {
+    return descriptors;
   }
 
-  /**
-   * Registers functions which should communicate special features of the functions.
-   *
-   * Mergability is exposed to Calcite; which enables to use it during rollup.
-   */
-  public static void registerCalciteFunctions(Consumer<Pair<String, SqlOperator>> r) {
-    new DataSketchesFunctions().registerCalciteInternal(r);
+  private void buildDescritors() {
+    for (SketchDescriptor sketchDescriptor : sketchClasses) {
+      descriptors.addAll(sketchDescriptor.fnMap.values());
+    }
   }
 
-  private void registerCalciteInternal(Consumer<Pair<String, SqlOperator>> r) {
-
+  private void buildCalciteFns() {
     for (SketchDescriptor sd : sketchClasses) {
+      // Mergability is exposed to Calcite; which enables to use it during rollup.
 
       RelProtoDataType sketchType = RelDataTypeImpl.proto(SqlTypeName.BINARY, true);
 
@@ -125,15 +129,13 @@ public class DataSketchesFunctions {
           OperandTypes.family(),
           unionFn);
 
-      r.accept(new Pair<String, SqlOperator>(unionSFD.name, unionFn));
-      r.accept(new Pair<String, SqlOperator>(sketchSFD.name, sketchFn));
+      unionSFD.setCalciteFunction(unionFn);
+      sketchSFD.setCalciteFunction(sketchFn);
     }
-
   }
 
 
-  private void registerHiveFunctionsInternal(Registry system2) {
-    Registry system = system2;
+  private void registerHiveFunctionsInternal(Registry system) {
     for (SketchDescriptor sketchDescriptor : sketchClasses) {
       Collection<SketchFunctionDescriptor> functions = sketchDescriptor.fnMap.values();
       for (SketchFunctionDescriptor fn : functions) {
@@ -160,13 +162,33 @@ public class DataSketchesFunctions {
 
   }
 
-  static class SketchFunctionDescriptor {
+  private static class SketchFunctionDescriptor implements HiveUDFPlugin.UDFDescriptor {
     String name;
     Class<?> udfClass;
+    private SqlFunction calciteFunction;
 
     public SketchFunctionDescriptor(String name, Class<?> udfClass) {
       this.name = name;
       this.udfClass = udfClass;
+    }
+
+    @Override
+    public Class<?> getUDFClass() {
+      return udfClass;
+    }
+
+    @Override
+    public String getFunctionName() {
+      return name;
+    }
+
+    @Override
+    public Optional<SqlFunction> getCalciteFunction() {
+      return Optional.ofNullable(calciteFunction);
+    }
+
+    public void setCalciteFunction(SqlFunction calciteFunction) {
+      this.calciteFunction = calciteFunction;
     }
   }
 
@@ -324,4 +346,5 @@ public class DataSketchesFunctions {
     sd.register(GET_QUANTILES, org.apache.datasketches.hive.quantiles.GetQuantilesFromDoublesSketchUDF.class);
     sketchClasses.add(sd);
   }
+
 }

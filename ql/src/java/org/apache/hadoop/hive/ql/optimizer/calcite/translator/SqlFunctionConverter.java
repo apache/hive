@@ -20,9 +20,10 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
+import java.util.Optional;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.sql.SqlAggFunction;
+import org.apache.calcite.sql.SqlFunction;
 import org.apache.calcite.sql.SqlFunctionCategory;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
@@ -35,7 +36,6 @@ import org.apache.calcite.sql.type.SqlOperandTypeChecker;
 import org.apache.calcite.sql.type.SqlOperandTypeInference;
 import org.apache.calcite.sql.type.SqlReturnTypeInference;
 import org.apache.calcite.sql.type.SqlTypeFamily;
-import org.apache.calcite.util.Pair;
 import org.apache.calcite.util.Util;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.ql.exec.DataSketchesFunctions;
@@ -80,6 +80,8 @@ import org.apache.hadoop.hive.serde2.typeinfo.TimestampLocalTZTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
+import org.apache.hive.plugin.api.HiveUDFPlugin;
+import org.apache.hive.plugin.api.HiveUDFPlugin.UDFDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -351,7 +353,7 @@ public class SqlFunctionConverter {
   /**
    * This class is used to build immutable hashmaps in the static block above.
    */
-  private static class StaticBlockBuilder implements Consumer<Pair<String, SqlOperator>> {
+  private static class StaticBlockBuilder {
     final Map<String, SqlOperator>    hiveToCalcite      = Maps.newHashMap();
     final Map<SqlOperator, HiveToken> calciteToHiveToken = Maps.newHashMap();
     final Map<SqlOperator, String>    reverseOperatorMap = Maps.newHashMap();
@@ -471,12 +473,18 @@ public class SqlFunctionConverter {
       registerFunction("date_add", HiveDateAddSqlOperator.INSTANCE, hToken(HiveParser.Identifier, "date_add"));
       registerFunction("date_sub", HiveDateSubSqlOperator.INSTANCE, hToken(HiveParser.Identifier, "date_sub"));
 
-      DataSketchesFunctions.registerCalciteFunctions(this);
+      registerPlugin(DataSketchesFunctions.INSTANCE);
     }
 
-    @Override
-    public void accept(Pair<String, SqlOperator> t) {
-      registerDuplicateFunction(t.left, t.right, hToken(HiveParser.Identifier, t.left));
+    private void registerPlugin(HiveUDFPlugin plugin) {
+      for (UDFDescriptor udfDesc : plugin.getDescriptors()) {
+        Optional<SqlFunction> calciteFunction = udfDesc.getCalciteFunction();
+        if (calciteFunction.isPresent()) {
+          registerDuplicateFunction(udfDesc.getFunctionName(), calciteFunction.get(),
+              hToken(HiveParser.Identifier, udfDesc.getFunctionName()));
+        }
+      }
+
     }
 
     private void registerFunction(String name, SqlOperator calciteFn, HiveToken hiveToken) {
