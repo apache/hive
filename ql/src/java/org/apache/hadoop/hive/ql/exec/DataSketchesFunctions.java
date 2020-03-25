@@ -91,15 +91,15 @@ public class DataSketchesFunctions {
     INSTANCE.registerHiveFunctionsInternal(system);
   }
 
+  public static void registerCalciteFunctions(Consumer<Pair<String, SqlOperator>> r) {
+    INSTANCE.registerCalciteInternal(r);
+  }
+
   /**
    * Registers functions which should communicate special features of the functions.
    *
    * Mergability is exposed to Calcite; which enables to use it during rollup.
    */
-  public static void registerCalciteFunctions(Consumer<Pair<String, SqlOperator>> r) {
-    INSTANCE.registerCalciteInternal(r);
-  }
-
   private void registerCalciteInternal(Consumer<Pair<String, SqlOperator>> r) {
 
     for (SketchDescriptor sd : sketchClasses) {
