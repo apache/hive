@@ -29,8 +29,8 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.api.ACLProvider;
 import org.apache.curator.framework.imps.CuratorFrameworkState;
-import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -57,12 +57,22 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
   protected static final String ZK_SEQ_FORMAT = "%010d";
   private static final String NODE_KEYS = "/keys";
   private static final String NODE_TOKENS = "/tokens";
+  private static final String WHEN_ZK_DSTORE_MSG = "when zookeeper based delegation token storage is enabled"
+      + "(hive.cluster.delegation.token.store.class=" + ZooKeeperTokenStore.class.getName() + ")";
 
   private String rootNode = "";
   private volatile CuratorFramework zkSession;
   private String zkConnectString;
   private int connectTimeoutMillis;
+  private boolean sslEnabled;
+  private String keyStoreLocation;
+  private String keyStorePassword;
+  private String trustStoreLocation;
+  private String trustStorePassword;
+
   private List<ACL> newNodeAcl;
+  private Configuration conf;
+  private HadoopThriftAuthBridge.Server.ServerMode serverMode;
 
   /**
    * ACLProvider permissions will be used in case parent dirs need to be created
@@ -110,12 +120,7 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
     }
   }
 
-  private final String WHEN_ZK_DSTORE_MSG = "when zookeeper based delegation token storage is enabled"
-      + "(hive.cluster.delegation.token.store.class=" + ZooKeeperTokenStore.class.getName() + ")";
 
-  private Configuration conf;
-
-  private HadoopThriftAuthBridge.Server.ServerMode serverMode;
 
   /**
    * Default constructor for dynamic instantiation w/ Configurable
@@ -124,14 +129,22 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
   protected ZooKeeperTokenStore() {
   }
 
-  private CuratorFramework getSession() {
+  public CuratorFramework getSession() {
     if (zkSession == null || zkSession.getState() == CuratorFrameworkState.STOPPED) {
       synchronized (this) {
         if (zkSession == null || zkSession.getState() == CuratorFrameworkState.STOPPED) {
-          zkSession =
-              CuratorFrameworkFactory.builder().connectString(zkConnectString)
-                  .connectionTimeoutMs(connectTimeoutMillis).aclProvider(aclDefaultProvider)
-                  .retryPolicy(new ExponentialBackoffRetry(1000, 3)).build();
+          ZooKeeperHiveHelper zkHelper = ZooKeeperHiveHelper.builder()
+              .quorum(zkConnectString)
+              .connectionTimeout(connectTimeoutMillis)
+              .maxRetries(3)
+              .baseSleepTime(1000)
+              .sslEnabled(sslEnabled)
+              .keyStoreLocation(keyStoreLocation)
+              .keyStorePassword(keyStorePassword)
+              .trustStoreLocation(trustStoreLocation)
+              .trustStorePassword(trustStorePassword)
+              .build();
+          zkSession = zkHelper.getNewZookeeperClient(aclDefaultProvider);
           zkSession.start();
         }
       }
@@ -478,10 +491,14 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
             + WHEN_ZK_DSTORE_MSG);
       }
     }
-    connectTimeoutMillis =
-        conf.getInt(
-            MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_CONNECT_TIMEOUTMILLIS,
-            CuratorFrameworkFactory.builder().getConnectionTimeoutMs());
+    connectTimeoutMillis = conf.getInt(MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_CONNECT_TIMEOUTMILLIS,
+        CuratorFrameworkFactory.builder().getConnectionTimeoutMs());
+
+    sslEnabled = conf.getBoolean(MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_SSL_ENABLE, false);
+    keyStoreLocation = conf.get(MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_KEYSTORE_LOCATION, "");
+    keyStorePassword = conf.get(MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_KEYSTORE_PASSWORD, "");
+    trustStoreLocation = conf.get(MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_TRUSTSTORE_LOCATION, "");
+    trustStorePassword = conf.get(MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_TRUSTSTORE_PASSWORD, "");
 
     String aclStr = conf.get(MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_ACL, null);
     this.newNodeAcl = StringUtils.isNotBlank(aclStr)? parseACLs(aclStr) : getDefaultAcl(conf);

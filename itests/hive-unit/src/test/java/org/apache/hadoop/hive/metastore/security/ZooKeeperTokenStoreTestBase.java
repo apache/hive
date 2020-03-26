@@ -25,67 +25,84 @@ import java.util.List;
 
 
 import org.apache.curator.framework.CuratorFramework;
-import org.apache.curator.framework.CuratorFrameworkFactory;
-import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge.Server.ServerMode;
-import org.apache.hadoop.hive.metastore.security.ZooKeeperTokenStore;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenSecretManager.DelegationTokenInformation;
 import org.apache.hadoop.security.token.delegation.HiveDelegationTokenSupport;
 import org.apache.hive.testutils.MiniZooKeeperCluster;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.data.ACL;
+import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Test;
+
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
-import org.junit.Before;
-import org.junit.After;
-import org.junit.Test;
 
 /**
  * TestZooKeeperTokenStore.
  */
-public class TestZooKeeperTokenStore {
+public abstract class ZooKeeperTokenStoreTestBase {
 
-  private MiniZooKeeperCluster zkCluster = null;
-  private CuratorFramework zkClient = null;
-  private int zkPort = -1;
-  private ZooKeeperTokenStore ts;
+  private static final String LOCALHOST_KEY_STORE_NAME = "keystore.jks";
+  private static final String TRUST_STORE_NAME = "truststore.jks";
+  private static final String KEY_STORE_TRUST_STORE_PASSWORD = "HiveJdbc";
 
-  @Before
-  public void setUp() throws Exception {
+  private static MiniZooKeeperCluster zkCluster = null;
+  private static int zkPort = -1;
+  private static ZooKeeperTokenStore ts;
+  private static boolean zkSslEnabled;
+
+  public static void setUpInternal(boolean sslEnabled) throws Exception{
     File zkDataDir = new File(System.getProperty("test.tmp.dir"));
-    if (this.zkCluster != null) {
+    if (zkCluster != null) {
       throw new IOException("Cluster already running");
     }
-    this.zkCluster = new MiniZooKeeperCluster();
-    this.zkPort = this.zkCluster.startup(zkDataDir);
-    this.zkClient =
-        CuratorFrameworkFactory.builder().connectString("localhost:" + zkPort)
-            .retryPolicy(new ExponentialBackoffRetry(1000, 3)).build();
-    this.zkClient.start();
+    zkCluster = new MiniZooKeeperCluster(sslEnabled);
+    zkPort = zkCluster.startup(zkDataDir);
+    zkSslEnabled = sslEnabled;
+  }
+
+  @AfterClass
+  public static void tearDown() throws Exception{
+    zkCluster.shutdown();
+    zkCluster = null;
   }
 
   @After
-  public void tearDown() throws Exception {
-    this.zkClient.close();
+  public void closeTokenStore() throws Exception{
     if (ts != null) {
       ts.close();
     }
-    this.zkCluster.shutdown();
-    this.zkCluster = null;
   }
 
   private Configuration createConf(String zkPath) {
     Configuration conf = new Configuration();
     conf.set(MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_CONNECT_STR, "localhost:"
-        + this.zkPort);
+        + zkPort);
     conf.set(MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_ZNODE, zkPath);
+    if(zkSslEnabled) {
+      String dataFileDir = !System.getProperty("test.data.files", "").isEmpty() ?
+          System.getProperty("test.data.files") :
+          (new HiveConf()).get("test.data.files").replace('\\', '/').replace("c:", "");
+      conf.set(MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_KEYSTORE_LOCATION,
+          dataFileDir + File.separator + LOCALHOST_KEY_STORE_NAME);
+      conf.set(MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_KEYSTORE_PASSWORD,
+          KEY_STORE_TRUST_STORE_PASSWORD);
+      conf.set(MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_TRUSTSTORE_LOCATION,
+          dataFileDir + File.separator + TRUST_STORE_NAME);
+      conf.set(MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_TRUSTSTORE_PASSWORD,
+          KEY_STORE_TRUST_STORE_PASSWORD);
+      conf.set(MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_SSL_ENABLE, "true");
+
+    }
     return conf;
   }
 
@@ -98,6 +115,7 @@ public class TestZooKeeperTokenStore {
     ts.setConf(conf);
     ts.init(null, HadoopThriftAuthBridge.Server.ServerMode.METASTORE);
 
+    CuratorFramework zkClient = ts.getSession();
 
     String metastore_zk_path = ZK_PATH + ServerMode.METASTORE;
     int keySeq = ts.addMasterKey("key1Data");
@@ -112,6 +130,7 @@ public class TestZooKeeperTokenStore {
 
     ts.removeMasterKey(keySeq);
     assertEquals("expected number keys", 1, ts.getMasterKeys().length);
+    ts.removeMasterKey(keySeq2);
 
     // tokens
     DelegationTokenIdentifier tokenId = new DelegationTokenIdentifier(
@@ -189,6 +208,8 @@ public class TestZooKeeperTokenStore {
     ts = new ZooKeeperTokenStore();
     ts.setConf(conf);
     ts.init(null, HadoopThriftAuthBridge.Server.ServerMode.METASTORE);
+
+    CuratorFramework zkClient = ts.getSession();
     List<ACL> acl = zkClient.getACL().forPath(ZK_PATH + ServerMode.METASTORE);
     assertEquals(2, acl.size());
   }
