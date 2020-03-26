@@ -23,12 +23,12 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.ql.DriverUtils;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -161,31 +161,6 @@ abstract class QueryCompactor {
       }
     }
 
-      /**
-       * Get a create temporary table query string with Orc ACID columns.
-       * @param tableName name of the new temporary table
-       * @param table the table where the compaction is running
-       * @return create query
-       */
-    static String getCreateTempTableQueryWithAcidColumns(String tableName, Table table) {
-      StringBuilder query = new StringBuilder("create temporary external table ").append(tableName).append(" (");
-      // Acid virtual columns
-      query.append("`operation` int, `originalTransaction` bigint, `bucket` int, `rowId` bigint, `currentTransaction` "
-              + "bigint, `row` struct<");
-      List<FieldSchema> cols = table.getSd().getCols();
-      boolean isFirst = true;
-      // Actual columns
-      for (FieldSchema col : cols) {
-        if (!isFirst) {
-          query.append(", ");
-        }
-        isFirst = false;
-        query.append("`").append(col.getName()).append("` ").append(":").append(col.getType());
-      }
-      query.append(">)");
-      return query.toString();
-    }
-
     /**
      * Remove the root directory of a table if it's empty.
      * @param conf the Hive configuration
@@ -201,6 +176,21 @@ abstract class QueryCompactor {
         if (!fs.listFiles(path, false).hasNext()) {
           fs.delete(path, true);
         }
+      }
+    }
+    /**
+     * Remove the delta directories of aborted transactions.
+     */
+    static void removeFilesForMmTable(HiveConf conf, AcidUtils.Directory dir) throws IOException {
+      List<Path> filesToDelete = dir.getAbortedDirectories();
+      if (filesToDelete.size() < 1) {
+        return;
+      }
+      LOG.info("About to remove " + filesToDelete.size() + " aborted directories from " + dir);
+      FileSystem fs = filesToDelete.get(0).getFileSystem(conf);
+      for (Path dead : filesToDelete) {
+        LOG.debug("Going to delete path " + dead.toString());
+        fs.delete(dead, true);
       }
     }
   }
