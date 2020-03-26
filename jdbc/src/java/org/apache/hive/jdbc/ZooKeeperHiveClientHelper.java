@@ -32,7 +32,6 @@ import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.curator.utils.ZKPaths;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.SSLZookeeperFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
 import org.apache.hive.service.server.HS2ActivePassiveHARegistry;
@@ -86,40 +85,11 @@ class ZooKeeperHiveClientHelper {
       JdbcConnectionParams.SERVICE_DISCOVERY_MODE_ZOOKEEPER_HA.equalsIgnoreCase(discoveryMode));
   }
 
-  /**
-   * Parse and set up the SSL communication related Zookeeper params in connParams from sessionVars.
-   * @param connParams
-   */
-  public static void setZkSSLParams(JdbcConnectionParams connParams) {
-    Map<String, String> sessionConf = connParams.getSessionVars();
-    boolean sslEnabled = false;
-    if (sessionConf.containsKey(JdbcConnectionParams.ZOOKEEPER_SSL_ENABLE)) {
-      sslEnabled = Boolean.parseBoolean(sessionConf.get(JdbcConnectionParams.ZOOKEEPER_SSL_ENABLE));
-      connParams.setZooKeeperSslEnabled(sslEnabled);
-    }
-    if (sslEnabled) {
-      connParams.setZookeeperKeyStoreLocation(
-          StringUtils.defaultString(sessionConf.get(JdbcConnectionParams.ZOOKEEPER_KEYSTORE_LOCATION), ""));
-      connParams.setZookeeperKeyStorePassword(
-          StringUtils.defaultString(sessionConf.get(JdbcConnectionParams.ZOOKEEPER_KEYSTORE_PASSWORD), ""));
-      connParams.setZookeeperTrustStoreLocation(
-          StringUtils.defaultString(sessionConf.get(JdbcConnectionParams.ZOOKEEPER_TRUSTSTORE_LOCATION), ""));
-      connParams.setZookeeperTrustStorePassword(
-          StringUtils.defaultString(sessionConf.get(JdbcConnectionParams.ZOOKEEPER_TRUSTSTORE_PASSWORD), ""));
-    }
-  }
-
   private static CuratorFramework getZkClient(JdbcConnectionParams connParams) throws Exception {
     String zooKeeperEnsemble = connParams.getZooKeeperEnsemble();
     CuratorFramework zooKeeperClient =
-        CuratorFrameworkFactory.builder()
-            .connectString(zooKeeperEnsemble)
-            .retryPolicy(new ExponentialBackoffRetry(1000, 3))
-            .zookeeperFactory(
-            new SSLZookeeperFactory(connParams.isZooKeeperSslEnabled(), connParams.getZookeeperKeyStoreLocation(),
-                connParams.getZookeeperKeyStorePassword(), connParams.getZookeeperTrustStoreLocation(),
-                connParams.getZookeeperTrustStorePassword()))
-            .build();
+        CuratorFrameworkFactory.builder().connectString(zooKeeperEnsemble)
+            .retryPolicy(new ExponentialBackoffRetry(1000, 3)).build();
     zooKeeperClient.start();
     return zooKeeperClient;
   }
