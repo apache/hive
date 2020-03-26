@@ -18,7 +18,7 @@ insert into sr0 values (NULL),(1),(2),(3),(4),(5),(6),(7),(8),(9),(10),
 insert into sr0 select a.* from sr0 a,sr0 b;
 -- |sr0| ~ 5112
 
-explain select 1
+explain analyze select 1
 from default.sr0  store_returns , default.rx0 reason
             where sr_reason_sk = r_reason_sk
               and r_reason_id = 'reason 66'
