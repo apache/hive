@@ -107,7 +107,7 @@ public class TestBuddyAllocator {
   }
 
   @Test
-  public void testMultipleLocation() throws Exception {
+  public void testMultipleSSDLocation() throws Exception {
     int max = 8, maxAlloc = 1 << max, allocLog2 = max - 1, arenaCount = 10;
     String baseLoc = tmpDir;
     String multiplePaths = baseLoc + "tmp1";
