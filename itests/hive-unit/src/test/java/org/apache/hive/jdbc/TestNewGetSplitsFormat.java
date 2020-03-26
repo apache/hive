@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 package org.apache.hive.jdbc;
 
 import org.apache.hadoop.hive.conf.HiveConf;

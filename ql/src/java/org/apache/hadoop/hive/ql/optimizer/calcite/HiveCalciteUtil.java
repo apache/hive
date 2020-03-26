@@ -627,11 +627,11 @@ public class HiveCalciteUtil {
   public static Pair<RelNode, RelNode> getTopLevelSelect(final RelNode rootRel) {
     RelNode tmpRel = rootRel;
     RelNode parentOforiginalProjRel = rootRel;
-    HiveProject originalProjRel = null;
+    RelNode originalProjRel = null;
 
     while (tmpRel != null) {
-      if (tmpRel instanceof HiveProject) {
-        originalProjRel = (HiveProject) tmpRel;
+      if (tmpRel instanceof HiveProject || tmpRel instanceof HiveTableFunctionScan) {
+        originalProjRel = tmpRel;
         break;
       }
       parentOforiginalProjRel = tmpRel;
