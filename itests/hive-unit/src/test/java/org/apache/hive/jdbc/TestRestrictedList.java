@@ -111,6 +111,10 @@ public class TestRestrictedList {
     addToExpectedRestrictedMap("spark.home");
     addToExpectedRestrictedMap("hive.privilege.synchronizer.interval");
     addToExpectedRestrictedMap("hive.driver.parallel.compilation.global.limit");
+    addToExpectedRestrictedMap("hive.zookeeper.ssl.keystore.location");
+    addToExpectedRestrictedMap("hive.zookeeper.ssl.keystore.password");
+    addToExpectedRestrictedMap("hive.zookeeper.ssl.truststore.location");
+    addToExpectedRestrictedMap("hive.zookeeper.ssl.truststore.password");
   }
 
   @AfterClass

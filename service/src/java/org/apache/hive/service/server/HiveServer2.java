@@ -43,14 +43,12 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.curator.framework.CuratorFramework;
-import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.api.ACLProvider;
 import org.apache.curator.framework.api.BackgroundCallback;
 import org.apache.curator.framework.api.CuratorEvent;
 import org.apache.curator.framework.api.CuratorEventType;
 import org.apache.curator.framework.recipes.leader.LeaderLatch;
 import org.apache.curator.framework.recipes.leader.LeaderLatchListener;
-import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.JvmPauseMonitor;
 import org.apache.hadoop.hive.common.LogUtils;
@@ -1078,14 +1076,9 @@ public class HiveServer2 extends CompositeService {
    */
   static void deleteServerInstancesFromZooKeeper(String versionNumber) throws Exception {
     HiveConf hiveConf = new HiveConf();
-    String zooKeeperEnsemble = hiveConf.getZKConfig().getQuorumServers();
-    String rootNamespace = hiveConf.getVar(HiveConf.ConfVars.HIVE_SERVER2_ZOOKEEPER_NAMESPACE);
-    int baseSleepTime = (int) hiveConf.getTimeVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_CONNECTION_BASESLEEPTIME, TimeUnit.MILLISECONDS);
-    int maxRetries = hiveConf.getIntVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_CONNECTION_MAX_RETRIES);
-    CuratorFramework zooKeeperClient =
-        CuratorFrameworkFactory.builder().connectString(zooKeeperEnsemble)
-            .retryPolicy(new ExponentialBackoffRetry(baseSleepTime, maxRetries)).build();
+    CuratorFramework zooKeeperClient = hiveConf.getZKConfig().getNewZookeeperClient();
     zooKeeperClient.start();
+    String rootNamespace = hiveConf.getVar(HiveConf.ConfVars.HIVE_SERVER2_ZOOKEEPER_NAMESPACE);
     List<String> znodePaths =
         zooKeeperClient.getChildren().forPath(
             ZooKeeperHiveHelper.ZOOKEEPER_PATH_SEPARATOR + rootNamespace);
