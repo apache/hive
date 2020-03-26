@@ -19,6 +19,7 @@
 package org.apache.hive.service.server;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -54,14 +55,14 @@ import org.apache.hive.service.cli.CLIServiceClient;
 import org.apache.hive.service.cli.OperationHandle;
 import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.SessionHandle;
+import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
  * Test restricted information schema with privilege synchronization
  */
-public class TestInformationSchemaWithPrivilege {
+public abstract class InformationSchemaWithPrivilegeTestBase {
 
   // Group mapping:
   // group_a: user1, user2
@@ -175,14 +176,18 @@ public class TestInformationSchemaWithPrivilege {
     }
   }
 
+  private static final String LOCALHOST_KEY_STORE_NAME = "keystore.jks";
+  private static final String TRUST_STORE_NAME = "truststore.jks";
+  private static final String KEY_STORE_TRUST_STORE_PASSWORD = "HiveJdbc";
+
   private static MiniHS2 miniHS2 = null;
   private static MiniZooKeeperCluster zkCluster = null;
   private static Map<String, String> confOverlay;
 
-  @BeforeClass
-  public static void beforeTest() throws Exception {
+
+  public static void setupInternal(boolean zookeeperSSLEnabled) throws Exception {
     File zkDataDir = new File(System.getProperty("test.tmp.dir"));
-    zkCluster = new MiniZooKeeperCluster();
+    zkCluster = new MiniZooKeeperCluster(zookeeperSSLEnabled);
     int zkPort = zkCluster.startup(zkDataDir);
 
     miniHS2 = new MiniHS2(new HiveConf());
@@ -206,7 +211,32 @@ public class TestInformationSchemaWithPrivilege {
     confOverlay.put(ConfVars.HIVE_AUTHENTICATOR_MANAGER.varname, FakeGroupAuthenticator.class.getName());
     confOverlay.put(ConfVars.HIVE_AUTHORIZATION_ENABLED.varname, "true");
     confOverlay.put(ConfVars.HIVE_AUTHORIZATION_SQL_STD_AUTH_CONFIG_WHITELIST.varname, ".*");
+
+    if(zookeeperSSLEnabled) {
+      String dataFileDir = !System.getProperty("test.data.files", "").isEmpty() ?
+          System.getProperty("test.data.files") :
+          (new HiveConf()).get("test.data.files").replace('\\', '/').replace("c:", "");
+      confOverlay.put(ConfVars.HIVE_ZOOKEEPER_SSL_KEYSTORE_LOCATION.varname,
+          dataFileDir + File.separator + LOCALHOST_KEY_STORE_NAME);
+      confOverlay.put(ConfVars.HIVE_ZOOKEEPER_SSL_KEYSTORE_PASSWORD.varname,
+          KEY_STORE_TRUST_STORE_PASSWORD);
+      confOverlay.put(ConfVars.HIVE_ZOOKEEPER_SSL_TRUSTSTORE_LOCATION.varname,
+          dataFileDir + File.separator + TRUST_STORE_NAME);
+      confOverlay.put(ConfVars.HIVE_ZOOKEEPER_SSL_TRUSTSTORE_PASSWORD.varname,
+          KEY_STORE_TRUST_STORE_PASSWORD);
+      confOverlay.put(ConfVars.HIVE_ZOOKEEPER_SSL_ENABLE.varname, "true");
+    }
     miniHS2.start(confOverlay);
+  }
+
+  @AfterClass
+  public static void tearDown() throws IOException {
+    if (miniHS2 != null) {
+      miniHS2.stop();
+    }
+    if (zkCluster != null) {
+      zkCluster.shutdown();
+    }
   }
 
   @Test
