@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
+package org.apache.hadoop.hive.ql.optimizer.calcite.translator.opconventer;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -45,7 +45,8 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveGroupingID;
-import org.apache.hadoop.hive.ql.optimizer.calcite.translator.HiveOpConverter.OpAttr;
+import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ExprNodeConverter;
+import org.apache.hadoop.hive.ql.optimizer.calcite.translator.opconventer.HiveOpConverter.OpAttr;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer.GenericUDAFInfo;
@@ -74,7 +75,11 @@ import com.google.common.collect.ImmutableList;
  * 4. VirtualColMap needs to be maintained
  *
  */
-public class HiveGBOpConvUtil {
+final class HiveGBOpConvUtil {
+
+  private HiveGBOpConvUtil() {
+    throw new UnsupportedOperationException("HiveGBOpConvUtil should not be instantiated!");
+  }
 
   private static enum HIVEGBPHYSICALMODE {
     MAP_SIDE_GB_NO_SKEW_NO_ADD_MR_JOB,
@@ -91,7 +96,6 @@ public class HiveGBOpConvUtil {
     private final ArrayList<ExprNodeDesc> udafParams                      = new ArrayList<ExprNodeDesc>();
     private List<Integer>           udafParamsIndxInGBInfoDistExprs = new ArrayList<Integer>();
     // We store the position of the argument for the function in the input.
-    private List<Integer> argList;
   };
 
   private static class GBInfo {
@@ -237,7 +241,6 @@ public class HiveGBOpConvUtil {
           inputOpAf.tabAlias);
       udafAttrs.udafParams.addAll(argExps);
       udafAttrs.udafName = aggCall.getAggregation().getName();
-      udafAttrs.argList = aggCall.getArgList();
       udafAttrs.isDistinctUDAF = aggCall.isDistinct();
       List<Integer> argLst = new ArrayList<Integer>(aggCall.getArgList());
       List<Integer> distColIndicesOfUDAF = new ArrayList<Integer>();
@@ -246,7 +249,7 @@ public class HiveGBOpConvUtil {
         // NOTE: distinct expr can be part of of GB key
         if (udafAttrs.isDistinctUDAF) {
           ExprNodeDesc argExpr = argExps.get(i);
-          Integer found = ExprNodeDescUtils.indexOf(argExpr, gbInfo.gbKeys);
+          int found = ExprNodeDescUtils.indexOf(argExpr, gbInfo.gbKeys);
           distColIndicesOfUDAF.add(found < 0 ? distParamInRefsToOutputPos.get(argLst.get(i)) + gbInfo.gbKeys.size() +
               (gbInfo.grpSets.size() > 0 ? 1 : 0) : found);
           distUDAFParamsIndxInDistExprs.add(distParamInRefsToOutputPos.get(argLst.get(i)));
@@ -1022,8 +1025,7 @@ public class HiveGBOpConvUtil {
     // i.e., their positions can be mixed.
     // so for all UDAF we first check to see if it is groupby key, if not is it distinct key
     // if not it should be value
-    List<Integer> distinctPositions = new ArrayList<>();
-    Map<Integer, ArrayList<ExprNodeDesc>> indexToParameter = new TreeMap<>();
+    Map<Integer, List<ExprNodeDesc>> indexToParameter = new TreeMap<>();
     for (int i = 0; i < gbInfo.udafAttrs.size(); i++) {
       UDAFAttrs udafAttr = gbInfo.udafAttrs.get(i);
       ArrayList<ExprNodeDesc> aggParameters = new ArrayList<ExprNodeDesc>();
@@ -1055,15 +1057,15 @@ public class HiveGBOpConvUtil {
         numDistinctUDFs++;
       }
     }
-    for(int index : indexToParameter.keySet()){
-      UDAFAttrs udafAttr = gbInfo.udafAttrs.get(index);
+    for(Map.Entry<Integer, List<ExprNodeDesc>> e : indexToParameter.entrySet()){
+      UDAFAttrs udafAttr = gbInfo.udafAttrs.get(e.getKey());
       Mode udafMode = SemanticAnalyzer.groupByDescModeToUDAFMode(gbMode, udafAttr.isDistinctUDAF);
       GenericUDAFInfo udaf = SemanticAnalyzer.getGenericUDAFInfo(udafAttr.udafEvaluator, udafMode,
-          indexToParameter.get(index));
+          e.getValue());
       aggregations.add(new AggregationDesc(udafAttr.udafName.toLowerCase(),
           udaf.genericUDAFEvaluator, udaf.convertedParameters, udafAttr.isDistinctUDAF, udafMode));
       if (useOriginalGBNames) {
-        colOutputName = gbInfo.outputColNames.get(udafColStartPosInOriginalGB + index);
+        colOutputName = gbInfo.outputColNames.get(udafColStartPosInOriginalGB + e.getKey());
       } else {
         colOutputName = SemanticAnalyzer.getColumnInternalName(gbKeys.size() + aggregations.size()
             - 1);
