@@ -4173,7 +4173,8 @@ public class HiveConf extends Configuration {
         "This is recommended to be used along-side NVDIMM (DAX) or NVMe flash storage."),
     LLAP_ALLOCATOR_MAPPED_PATH("hive.llap.io.allocator.mmap.path", "/tmp",
         new WritableDirectoryValidator(),
-        "The directory location for mapping NVDIMM/NVMe flash storage into the ORC low-level cache."),
+        "The directory of comma separated location for \n" +
+            "mapping NVDIMM/NVMe flash storage into the ORC low-level cache."),
     LLAP_ALLOCATOR_DISCARD_METHOD("hive.llap.io.allocator.discard.method", "both",
         new StringSet("freelist", "brute", "both"),
         "Which method to use to force-evict blocks to deal with fragmentation:\n" +

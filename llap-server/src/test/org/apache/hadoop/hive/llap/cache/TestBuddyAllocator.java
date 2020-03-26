@@ -107,6 +107,19 @@ public class TestBuddyAllocator {
   }
 
   @Test
+  public void testMultipleLocation() throws Exception {
+    int max = 8, maxAlloc = 1 << max, allocLog2 = max - 1, arenaCount = 10;
+    String baseLoc = tmpDir;
+    String multiplePaths = baseLoc + "tmp1";
+    multiplePaths = multiplePaths + "," + baseLoc + "tmp2";
+    BuddyAllocator a = new BuddyAllocator(isDirect, isMapped, 1 << 3, maxAlloc, maxAlloc,
+        maxAlloc * arenaCount, 0, multiplePaths, new DummyMemoryManager(),
+        LlapDaemonCacheMetrics.create("test", "1"), null, true);
+    allocSameSize(a, arenaCount * 2, allocLog2);
+  }
+
+
+  @Test
   public void testMTT() {
     final int min = 3, max = 8, maxAlloc = 1 << max, allocsPerSize = 3;
     final BuddyAllocator a = new BuddyAllocator(isDirect, isMapped, 1 << min, maxAlloc,

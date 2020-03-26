@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.conf;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -354,17 +356,23 @@ public interface Validator {
 
     @Override
     public String validate(String value) {
-      final Path path = FileSystems.getDefault().getPath(value);
-      if (path == null && value != null) {
+      if (StringUtils.isEmpty(value)) {
         return String.format("Path '%s' provided could not be located.", value);
       }
-      final boolean isDir = Files.isDirectory(path);
-      final boolean isWritable = Files.isWritable(path);
-      if (!isDir) {
-        return String.format("Path '%s' provided is not a directory.", value);
-      }
-      if (!isWritable) {
-        return String.format("Path '%s' provided is not writable.", value);
+      String[] allPaths = org.apache.hadoop.util.StringUtils.getStrings(value);
+      for (int i = 0; i < allPaths.length; i++) {
+        final Path path = FileSystems.getDefault().getPath(StringUtils.deleteWhitespace(allPaths[i]));
+        if (path == null && allPaths[i] != null) {
+          return String.format("Path '%s' provided could not be located.", allPaths[i]);
+        }
+        final boolean isDir = Files.isDirectory(path);
+        final boolean isWritable = Files.isWritable(path);
+        if (!isDir) {
+          return String.format("Path '%s' provided is not a directory.", allPaths[i]);
+        }
+        if (!isWritable) {
+          return String.format("Path '%s' provided is not writable.", allPaths[i]);
+        }
       }
       return null;
     }

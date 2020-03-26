@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.llap.cache;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -40,6 +42,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -80,13 +83,13 @@ public final class BuddyAllocator
   private static final int MAX_DISCARD_ATTEMPTS = 10, LOG_DISCARD_ATTEMPTS = 5;
 
   // Config settings
-  private final int minAllocLog2, maxAllocLog2, arenaSizeLog2, maxArenas;
+  private final int minAllocLog2, maxAllocLog2, arenaSizeLog2, maxArenas, maxArenasPerLoc;
   private final int minAllocation, maxAllocation, arenaSize;
   private final long maxSize;
   private final boolean isDirect;
   private final boolean isMapped;
   private final int maxForcedEvictionSize;
-  private final Path cacheDir;
+  private final List<Path> cacheDir = new ArrayList<>();
 
   // These are only used for tests.
   private boolean enableDefragShortcut = true, oomLogging = true;
@@ -190,19 +193,19 @@ public final class BuddyAllocator
     maxAllocation = maxAllocVal;
     if (isMapped) {
       try {
-        Path path = FileSystems.getDefault().getPath(mapPath);
-        if (!Files.exists(path)) {
-          Files.createDirectory(path);
+        String[] allMapPaths = org.apache.hadoop.util.StringUtils.getStrings(mapPath);
+        for (int i = 0; i < allMapPaths.length; i++) {
+          Path path = FileSystems.getDefault().getPath(StringUtils.deleteWhitespace(allMapPaths[i]));
+          if (!Files.exists(path)) {
+            Files.createDirectory(path);
+          }
+          cacheDir.add(Files.createTempDirectory(path, "llap-", RWX));
         }
-        cacheDir = Files.createTempDirectory(path, "llap-", RWX);
       } catch (IOException ioe) {
         // conf validator already checks this, so it will never trigger usually
         throw new AssertionError("Configured mmap directory should be writable", ioe);
       }
-    } else {
-      cacheDir = null;
     }
-
     arenaSize = validateAndDetermineArenaSize(arenaCount, maxSizeVal);
     maxSize = validateAndDetermineMaxSize(maxSizeVal);
     memoryManager.updateMaxSize(determineMaxMmSize(defragHeadroom, maxSize));
@@ -211,6 +214,8 @@ public final class BuddyAllocator
     maxAllocLog2 = 31 - Integer.numberOfLeadingZeros(maxAllocation);
     arenaSizeLog2 = 63 - Long.numberOfLeadingZeros(arenaSize);
     maxArenas = (int)(maxSize / arenaSize);
+    // Assuming cache size for every NVMe-SSD disks are same
+    maxArenasPerLoc = maxArenas/(Math.max(1, cacheDir.size()));
     arenas = new Arena[maxArenas];
     for (int i = 0; i < maxArenas; ++i) {
       arenas[i] = new Arena();
@@ -851,13 +856,13 @@ public final class BuddyAllocator
     return isDirect;
   }
 
-  private ByteBuffer preallocateArenaBuffer(int arenaSize) {
+  private ByteBuffer preallocateArenaBuffer(int arenaIx, int arenaSize) {
     if (isMapped) {
       RandomAccessFile rwf = null;
       File rf = null;
       Preconditions.checkArgument(isDirect, "All memory mapped allocations have to be direct buffers");
       try {
-        rf = File.createTempFile("arena-", ".cache", cacheDir.toFile());
+        rf = File.createTempFile("arena-", ".cache", cacheDir.get(arenaIx/maxArenasPerLoc).toFile());
         rwf = new RandomAccessFile(rf, "rw");
         rwf.setLength(arenaSize); // truncate (TODO: posix_fallocate?)
         // Use RW, not PRIVATE because the copy-on-write is irrelevant for a deleted file
@@ -895,7 +900,7 @@ public final class BuddyAllocator
     void init(int arenaIx) {
       this.arenaIx = arenaIx;
       try {
-        data = preallocateArenaBuffer(arenaSize);
+        data = preallocateArenaBuffer(arenaIx, arenaSize);
       } catch (OutOfMemoryError oom) {
         throw new OutOfMemoryError("Cannot allocate " + arenaSize + " bytes: " + oom.getMessage()
             + "; make sure your xmx and process size are set correctly.");
