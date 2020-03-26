@@ -30,18 +30,20 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.api.ACLProvider;
 import org.apache.curator.framework.imps.CuratorFrameworkState;
 import org.apache.curator.framework.recipes.cache.ChildData;
 import org.apache.curator.framework.recipes.cache.PathChildrenCache;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheListener;
-import org.apache.curator.framework.recipes.nodes.PersistentNode;
+import org.apache.curator.framework.recipes.nodes.PersistentEphemeralNode;
+import org.apache.curator.framework.recipes.nodes.PersistentEphemeralNode.Mode;
 import org.apache.curator.framework.state.ConnectionState;
 import org.apache.curator.framework.state.ConnectionStateListener;
+import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.curator.utils.CloseableUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.LlapUtil;
@@ -53,7 +55,6 @@ import org.apache.hadoop.registry.client.binding.RegistryUtils.ServiceRecordMars
 import org.apache.hadoop.registry.client.types.ServiceRecord;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
-import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException.InvalidACLException;
 import org.apache.zookeeper.KeeperException.NodeExistsException;
 import org.apache.zookeeper.ZooDefs;
@@ -110,7 +111,7 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
   private final Map<String, Set<InstanceType>> nodeToInstanceCache;
 
   // The registration znode.
-  private PersistentNode znode;
+  private PersistentEphemeralNode znode;
   private String znodePath; // unique identity for this instance
 
   private PathChildrenCache instancesCache; // Created on demand.
@@ -211,23 +212,28 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
   }
 
   private CuratorFramework getZookeeperClient(Configuration conf, String namespace, ACLProvider zooKeeperAclProvider) {
-    return ZooKeeperHiveHelper.builder()
-        .quorum(conf.get(ConfVars.HIVE_ZOOKEEPER_QUORUM.varname))
-        .clientPort(conf.get(ConfVars.HIVE_ZOOKEEPER_CLIENT_PORT.varname,
-            ConfVars.HIVE_ZOOKEEPER_CLIENT_PORT.getDefaultValue()))
-        .connectionTimeout(
-            (int) HiveConf.getTimeVar(conf, ConfVars.HIVE_ZOOKEEPER_CONNECTION_TIMEOUT, TimeUnit.MILLISECONDS))
-        .sessionTimeout(
-            (int) HiveConf.getTimeVar(conf, ConfVars.HIVE_ZOOKEEPER_SESSION_TIMEOUT, TimeUnit.MILLISECONDS))
-        .baseSleepTime(
-            (int) HiveConf.getTimeVar(conf, ConfVars.HIVE_ZOOKEEPER_CONNECTION_BASESLEEPTIME, TimeUnit.MILLISECONDS))
-        .maxRetries(HiveConf.getIntVar(conf, ConfVars.HIVE_ZOOKEEPER_CONNECTION_MAX_RETRIES))
-        .sslEnabled(HiveConf.getBoolVar(conf, ConfVars.HIVE_ZOOKEEPER_SSL_ENABLE))
-        .keyStoreLocation(HiveConf.getVar(conf, ConfVars.HIVE_ZOOKEEPER_SSL_KEYSTORE_LOCATION))
-        .keyStorePassword(HiveConf.getVar(conf, ConfVars.HIVE_ZOOKEEPER_SSL_KEYSTORE_PASSWORD))
-        .trustStoreLocation(HiveConf.getVar(conf, ConfVars.HIVE_ZOOKEEPER_SSL_TRUSTSTORE_LOCATION))
-        .trustStorePassword(HiveConf.getVar(conf, ConfVars.HIVE_ZOOKEEPER_SSL_TRUSTSTORE_PASSWORD))
-        .build().getNewZookeeperClient(zooKeeperAclProvider, namespace);
+    String zkEnsemble = getQuorumServers(conf);
+    int sessionTimeout = (int) HiveConf.getTimeVar(conf,
+      ConfVars.HIVE_ZOOKEEPER_SESSION_TIMEOUT, TimeUnit.MILLISECONDS);
+    int connectionTimeout = (int) HiveConf.getTimeVar(conf,
+      ConfVars.HIVE_ZOOKEEPER_CONNECTION_TIMEOUT, TimeUnit.MILLISECONDS);
+    int baseSleepTime = (int) HiveConf.getTimeVar(conf,
+      ConfVars.HIVE_ZOOKEEPER_CONNECTION_BASESLEEPTIME, TimeUnit.MILLISECONDS);
+    int maxRetries = HiveConf.getIntVar(conf, ConfVars.HIVE_ZOOKEEPER_CONNECTION_MAX_RETRIES);
+
+    LOG.info("Creating curator client with connectString: {} sessionTimeoutMs: {} connectionTimeoutMs: {}" +
+      " namespace: {} exponentialBackoff - sleepTime: {} maxRetries: {}", zkEnsemble, sessionTimeout,
+      connectionTimeout, namespace, baseSleepTime, maxRetries);
+    // Create a CuratorFramework instance to be used as the ZooKeeper client
+    // Use the zooKeeperAclProvider to create appropriate ACLs
+    return CuratorFrameworkFactory.builder()
+      .connectString(zkEnsemble)
+      .sessionTimeoutMs(sessionTimeout)
+      .connectionTimeoutMs(connectionTimeout)
+      .aclProvider(zooKeeperAclProvider)
+      .namespace(namespace)
+      .retryPolicy(new ExponentialBackoffRetry(baseSleepTime, maxRetries))
+      .build();
   }
 
   private static List<ACL> createSecureAcls() {
@@ -277,9 +283,9 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
 
     // Create a znode under the rootNamespace parent for this instance of the server
     try {
-      // PersistentNode will make sure the ephemeral node created on server will be present
+      // PersistentEphemeralNode will make sure the ephemeral node created on server will be present
       // even under connection or session interruption (will automatically handle retries)
-      znode = new PersistentNode(zooKeeperClient, CreateMode.EPHEMERAL_SEQUENTIAL, false,
+      znode = new PersistentEphemeralNode(zooKeeperClient, Mode.EPHEMERAL_SEQUENTIAL,
           workersPath + "/" + workerNodePrefix, encoder.toBytes(srv));
     
       // start the creation of znodes

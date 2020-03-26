@@ -258,11 +258,7 @@ public class MetastoreConf {
       ConfVars.SSL_TRUSTSTORE_PASSWORD.varname,
       ConfVars.SSL_TRUSTSTORE_PASSWORD.hiveName,
       ConfVars.DBACCESS_SSL_TRUSTSTORE_PASSWORD.varname,
-      ConfVars.DBACCESS_SSL_TRUSTSTORE_PASSWORD.hiveName,
-      ConfVars.THRIFT_ZOOKEEPER_SSL_KEYSTORE_PASSWORD.varname,
-      ConfVars.THRIFT_ZOOKEEPER_SSL_KEYSTORE_PASSWORD.hiveName,
-      ConfVars.THRIFT_ZOOKEEPER_SSL_TRUSTSTORE_PASSWORD.varname,
-      ConfVars.THRIFT_ZOOKEEPER_SSL_TRUSTSTORE_PASSWORD.hiveName
+      ConfVars.DBACCESS_SSL_TRUSTSTORE_PASSWORD.hiveName
   );
 
   public static ConfVars getMetaConf(String name) {
@@ -1076,56 +1072,32 @@ public class MetastoreConf {
             "If ZooKeeper is configured for Kerberos authentication. This could be useful when cluster\n" +
             "is kerberized, but Zookeeper is not."),
     THRIFT_ZOOKEEPER_CLIENT_PORT("metastore.zookeeper.client.port",
-            "hive.zookeeper.client.port", "2181",
+            "hive.metastore.zookeeper.client.port", "2181",
             "The port of ZooKeeper servers to talk to.\n" +
                     "If the list of Zookeeper servers specified in hive.metastore.thrift.uris" +
                     " does not contain port numbers, this value is used."),
     THRIFT_ZOOKEEPER_SESSION_TIMEOUT("metastore.zookeeper.session.timeout",
-            "hive.zookeeper.session.timeout", 120000L, TimeUnit.MILLISECONDS,
+            "hive.metastore.zookeeper.session.timeout", 120000L, TimeUnit.MILLISECONDS,
             new TimeValidator(TimeUnit.MILLISECONDS),
             "ZooKeeper client's session timeout (in milliseconds). The client is disconnected\n" +
                     "if a heartbeat is not sent in the timeout."),
     THRIFT_ZOOKEEPER_CONNECTION_TIMEOUT("metastore.zookeeper.connection.timeout",
-            "hive.zookeeper.connection.timeout", 15L, TimeUnit.SECONDS,
+            "hive.metastore.zookeeper.connection.timeout", 15L, TimeUnit.SECONDS,
             new TimeValidator(TimeUnit.SECONDS),
             "ZooKeeper client's connection timeout in seconds. " +
                     "Connection timeout * hive.metastore.zookeeper.connection.max.retries\n" +
                     "with exponential backoff is when curator client deems connection is lost to zookeeper."),
     THRIFT_ZOOKEEPER_NAMESPACE("metastore.zookeeper.namespace",
-            "hive.zookeeper.namespace", "hive_metastore",
+            "hive.metastore.zookeeper.namespace", "hive_metastore",
             "The parent node under which all ZooKeeper nodes for metastores are created."),
     THRIFT_ZOOKEEPER_CONNECTION_MAX_RETRIES("metastore.zookeeper.connection.max.retries",
-            "hive.zookeeper.connection.max.retries", 3,
+            "hive.metastore.zookeeper.connection.max.retries", 3,
             "Max number of times to retry when connecting to the ZooKeeper server."),
     THRIFT_ZOOKEEPER_CONNECTION_BASESLEEPTIME("metastore.zookeeper.connection.basesleeptime",
-            "hive.zookeeper.connection.basesleeptime", 1000L, TimeUnit.MILLISECONDS,
+            "hive.metastore.zookeeper.connection.basesleeptime", 1000L, TimeUnit.MILLISECONDS,
             new TimeValidator(TimeUnit.MILLISECONDS),
             "Initial amount of time (in milliseconds) to wait between retries\n" +
                     "when connecting to the ZooKeeper server when using ExponentialBackoffRetry policy."),
-    THRIFT_ZOOKEEPER_SSL_ENABLE("metastore.zookeeper.ssl.client.enable",
-        "hive.zookeeper.ssl.client.enable", false,
-        "Set client to use TLS when connecting to ZooKeeper.  An explicit value overrides any value set via the " +
-            "zookeeper.client.secure system property (note the different name).  Defaults to false if neither is set."),
-    THRIFT_ZOOKEEPER_SSL_KEYSTORE_LOCATION("metastore.zookeeper.ssl.keystore.location",
-        "hive.zookeeper.ssl.keystore.location", "",
-        "Keystore location when using a client-side certificate with TLS connectivity to ZooKeeper. " +
-            "Overrides any explicit value set via the zookeeper.ssl.keyStore.location " +
-            "system property (note the camelCase)."),
-    THRIFT_ZOOKEEPER_SSL_KEYSTORE_PASSWORD("metastore.zookeeper.ssl.keystore.password",
-        "hive.zookeeper.ssl.keystore.password", "",
-        "Keystore password when using a client-side certificate with TLS connectivity to ZooKeeper." +
-            "Overrides any explicit value set via the zookeeper.ssl.keyStore.password" +
-            "system property (note the camelCase)."),
-    THRIFT_ZOOKEEPER_SSL_TRUSTSTORE_LOCATION("metastore.zookeeper.ssl.truststore.location",
-        "hive.zookeeper.ssl.truststore.location", "",
-        "Truststore location when using a client-side certificate with TLS connectivity to ZooKeeper. " +
-            "Overrides any explicit value set via the zookeeper.ssl.trustStore.location " +
-            "system property (note the camelCase)."),
-    THRIFT_ZOOKEEPER_SSL_TRUSTSTORE_PASSWORD("metastore.zookeeper.ssl.truststore.password",
-        "hive.zookeeper.ssl.truststore.password", "",
-        "Truststore password when using a client-side certificate with TLS connectivity to ZooKeeper." +
-            "Overrides any explicit value set via the zookeeper.ssl.trustStore.password " +
-            "system property (note the camelCase)."),
     THRIFT_URI_SELECTION("metastore.thrift.uri.selection", "hive.metastore.uri.selection", "RANDOM",
         new StringSetValidator("RANDOM", "SEQUENTIAL"),
         "Determines the selection mechanism used by metastore client to connect to remote " +
@@ -2046,22 +2018,14 @@ public class MetastoreConf {
   }
 
   public static ZooKeeperHiveHelper getZKConfig(Configuration conf) {
-    return ZooKeeperHiveHelper.builder()
-        .quorum(MetastoreConf.getVar(conf, ConfVars.THRIFT_URIS))
-        .clientPort(MetastoreConf.getVar(conf, ConfVars.THRIFT_ZOOKEEPER_CLIENT_PORT))
-        .serverRegistryNameSpace(MetastoreConf.getVar(conf, ConfVars.THRIFT_ZOOKEEPER_NAMESPACE))
-        .connectionTimeout((int) getTimeVar(conf, ConfVars.THRIFT_ZOOKEEPER_CONNECTION_TIMEOUT,
-            TimeUnit.MILLISECONDS))
-        .sessionTimeout((int) MetastoreConf.getTimeVar(conf, ConfVars.THRIFT_ZOOKEEPER_SESSION_TIMEOUT,
-            TimeUnit.MILLISECONDS))
-        .baseSleepTime((int) MetastoreConf.getTimeVar(conf, ConfVars.THRIFT_ZOOKEEPER_CONNECTION_BASESLEEPTIME,
-            TimeUnit.MILLISECONDS))
-        .maxRetries(MetastoreConf.getIntVar(conf, ConfVars.THRIFT_ZOOKEEPER_CONNECTION_MAX_RETRIES))
-        .sslEnabled(MetastoreConf.getBoolVar(conf, ConfVars.THRIFT_ZOOKEEPER_SSL_ENABLE))
-        .keyStoreLocation(MetastoreConf.getVar(conf, ConfVars.THRIFT_ZOOKEEPER_SSL_KEYSTORE_LOCATION))
-        .keyStorePassword(MetastoreConf.getVar(conf, ConfVars.THRIFT_ZOOKEEPER_SSL_KEYSTORE_PASSWORD))
-        .trustStoreLocation(MetastoreConf.getVar(conf, ConfVars.THRIFT_ZOOKEEPER_SSL_TRUSTSTORE_LOCATION))
-        .trustStorePassword(MetastoreConf.getVar(conf, ConfVars.THRIFT_ZOOKEEPER_SSL_TRUSTSTORE_PASSWORD)).build();
+    return new ZooKeeperHiveHelper(MetastoreConf.getVar(conf, ConfVars.THRIFT_URIS),
+            MetastoreConf.getVar(conf, ConfVars.THRIFT_ZOOKEEPER_CLIENT_PORT),
+            MetastoreConf.getVar(conf, ConfVars.THRIFT_ZOOKEEPER_NAMESPACE),
+            (int) MetastoreConf.getTimeVar(conf, ConfVars.THRIFT_ZOOKEEPER_SESSION_TIMEOUT,
+                    TimeUnit.MILLISECONDS),
+            (int) MetastoreConf.getTimeVar(conf, ConfVars.THRIFT_ZOOKEEPER_CONNECTION_BASESLEEPTIME,
+                    TimeUnit.MILLISECONDS),
+            MetastoreConf.getIntVar(conf, ConfVars.THRIFT_ZOOKEEPER_CONNECTION_MAX_RETRIES));
   }
 
   /**

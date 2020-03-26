@@ -18,11 +18,14 @@
 
 package org.apache.hadoop.hive.ql.lockmgr.zookeeper;
 
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hive.common.util.ShutdownHookManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.hadoop.hive.conf.HiveConf;
 
 public class CuratorFrameworkSingleton {
@@ -47,8 +50,15 @@ public class CuratorFrameworkSingleton {
       } else {
         conf = hiveConf;
       }
+      int sessionTimeout =  (int) conf.getTimeVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_SESSION_TIMEOUT, TimeUnit.MILLISECONDS);
+      int baseSleepTime = (int) conf.getTimeVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_CONNECTION_BASESLEEPTIME, TimeUnit.MILLISECONDS);
+      int maxRetries = conf.getIntVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_CONNECTION_MAX_RETRIES);
+      String quorumServers = conf.getZKConfig().getQuorumServers();
 
-      sharedClient = conf.getZKConfig().getNewZookeeperClient();
+      sharedClient = CuratorFrameworkFactory.builder().connectString(quorumServers)
+          .sessionTimeoutMs(sessionTimeout)
+          .retryPolicy(new ExponentialBackoffRetry(baseSleepTime, maxRetries))
+          .build();
       sharedClient.start();
     }
 
