@@ -156,8 +156,12 @@ public class TestReplicationWithTableMigration {
 
   @AfterClass
   public static void classLevelTearDown() throws IOException {
-    primary.close();
-    replica.close();
+    if (primary != null) {
+      primary.close();
+    }
+    if (replica != null) {
+      replica.close();
+    }
   }
 
   @Before

@@ -116,6 +116,11 @@ public class Utils {
     public static final String SERVICE_DISCOVERY_MODE_ZOOKEEPER = "zooKeeper";
     public static final String SERVICE_DISCOVERY_MODE_ZOOKEEPER_HA = "zooKeeperHA";
     public static final String ZOOKEEPER_NAMESPACE = "zooKeeperNamespace";
+    public static final String ZOOKEEPER_SSL_ENABLE = "zooKeeperSSLEnable";
+    public static final String ZOOKEEPER_KEYSTORE_LOCATION = "zooKeeperKeystoreLocation";
+    public static final String ZOOKEEPER_KEYSTORE_PASSWORD= "zooKeeperKeystorePassword";
+    public static final String ZOOKEEPER_TRUSTSTORE_LOCATION  = "zooKeeperTruststoreLocation";
+    public static final String ZOOKEEPER_TRUSTSTORE_PASSWORD = "zooKeeperTruststorePassword";
     // Default namespace value on ZooKeeper.
     // This value is used if the param "zooKeeperNamespace" is not specified in the JDBC Uri.
     static final String ZOOKEEPER_DEFAULT_NAMESPACE = "hiveserver2";
@@ -168,6 +173,11 @@ public class Utils {
     private boolean isEmbeddedMode = false;
     private String suppliedURLAuthority;
     private String zooKeeperEnsemble = null;
+    private boolean zooKeeperSslEnabled = false;
+    private String zookeeperKeyStoreLocation = "";
+    private String zookeeperKeyStorePassword = "";
+    private String zookeeperTrustStoreLocation = "";
+    private String zookeeperTrustStorePassword = "";
     private String currentHostZnodePath;
     private final List<String> rejectedHostZnodePaths = new ArrayList<String>();
 
@@ -185,6 +195,12 @@ public class Utils {
       this.isEmbeddedMode = params.isEmbeddedMode;
       this.suppliedURLAuthority = params.suppliedURLAuthority;
       this.zooKeeperEnsemble = params.zooKeeperEnsemble;
+      this.zooKeeperSslEnabled = params.zooKeeperSslEnabled;
+      this.zookeeperKeyStoreLocation = params.zookeeperKeyStoreLocation;
+      this.zookeeperKeyStorePassword = params.zookeeperKeyStorePassword;
+      this.zookeeperTrustStoreLocation = params.zookeeperTrustStoreLocation;
+      this.zookeeperTrustStorePassword = params.zookeeperTrustStorePassword;
+
       this.currentHostZnodePath = params.currentHostZnodePath;
       this.rejectedHostZnodePaths.addAll(rejectedHostZnodePaths);
     }
@@ -227,6 +243,25 @@ public class Utils {
 
     public String getZooKeeperEnsemble() {
       return zooKeeperEnsemble;
+    }
+    public boolean isZooKeeperSslEnabled() {
+      return zooKeeperSslEnabled;
+    }
+
+    public String getZookeeperKeyStoreLocation() {
+      return zookeeperKeyStoreLocation;
+    }
+
+    public String getZookeeperKeyStorePassword() {
+      return zookeeperKeyStorePassword;
+    }
+
+    public String getZookeeperTrustStoreLocation() {
+      return zookeeperTrustStoreLocation;
+    }
+
+    public String getZookeeperTrustStorePassword() {
+      return zookeeperTrustStorePassword;
     }
 
     public List<String> getRejectedHostZnodePaths() {
@@ -275,6 +310,26 @@ public class Utils {
 
     public void setZooKeeperEnsemble(String zooKeeperEnsemble) {
       this.zooKeeperEnsemble = zooKeeperEnsemble;
+    }
+
+    public void setZooKeeperSslEnabled(boolean zooKeeperSslEnabled) {
+      this.zooKeeperSslEnabled = zooKeeperSslEnabled;
+    }
+
+    public void setZookeeperKeyStoreLocation(String zookeeperKeyStoreLocation) {
+      this.zookeeperKeyStoreLocation = zookeeperKeyStoreLocation;
+    }
+
+    public void setZookeeperKeyStorePassword(String zookeeperKeyStorePassword) {
+      this.zookeeperKeyStorePassword = zookeeperKeyStorePassword;
+    }
+
+    public void setZookeeperTrustStoreLocation(String zookeeperTrustStoreLocation) {
+      this.zookeeperTrustStoreLocation = zookeeperTrustStoreLocation;
+    }
+
+    public void setZookeeperTrustStorePassword(String zookeeperTrustStorePassword) {
+      this.zookeeperTrustStorePassword = zookeeperTrustStorePassword;
     }
 
     public void setCurrentHostZnodePath(String currentHostZnodePath) {
@@ -485,6 +540,7 @@ public class Utils {
         uri = uri.replace(dummyAuthorityString, authorityStr);
         // Set ZooKeeper ensemble in connParams for later use
         connParams.setZooKeeperEnsemble(authorityStr);
+        ZooKeeperHiveClientHelper.setZkSSLParams(connParams);
       } else {
         URI jdbcBaseURI = URI.create(URI_HIVE_PREFIX + "//" + authorityStr);
         // Check to prevent unintentional use of embedded mode. A missing "/"
@@ -576,7 +632,6 @@ public class Utils {
    * host:port pairs.
    *
    * @param uri
-   * @param connParams
    * @return
    * @throws JdbcUriParseException
    */
