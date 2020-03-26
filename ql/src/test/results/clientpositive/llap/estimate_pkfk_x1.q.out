@@ -63,7 +63,6 @@ PREHOOK: query: select 1
 from default.sr0  store_returns , default.rx0 reason
             where sr_reason_sk = r_reason_sk
               and r_reason_id = 'AAAAAAAAAAAAAAAA'
-limit 12
 PREHOOK: type: QUERY
 PREHOOK: Input: default@rx0
 PREHOOK: Input: default@sr0
@@ -72,7 +71,6 @@ POSTHOOK: query: select 1
 from default.sr0  store_returns , default.rx0 reason
             where sr_reason_sk = r_reason_sk
               and r_reason_id = 'AAAAAAAAAAAAAAAA'
-limit 12
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@rx0
 POSTHOOK: Input: default@sr0
@@ -81,7 +79,6 @@ PREHOOK: query: explain analyze select 1
 from default.sr0  store_returns , default.rx0 reason
             where sr_reason_sk = r_reason_sk
               and r_reason_id = 'AAAAAAAAAAAAAAAA'
-limit 12
 PREHOOK: type: QUERY
 PREHOOK: Input: default@rx0
 PREHOOK: Input: default@sr0
@@ -90,7 +87,6 @@ POSTHOOK: query: explain analyze select 1
 from default.sr0  store_returns , default.rx0 reason
             where sr_reason_sk = r_reason_sk
               and r_reason_id = 'AAAAAAAAAAAAAAAA'
-limit 12
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@rx0
 POSTHOOK: Input: default@sr0
@@ -102,32 +98,30 @@ Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
-    limit:12
+    limit:-1
     Stage-1
       Reducer 2 llap
-      File Output Operator [FS_11]
-        Limit [LIM_10] (rows=12/12 width=4)
-          Number of rows:12
-          Select Operator [SEL_9] (rows=5040/14 width=4)
-            Output:["_col0"]
-            Merge Join Operator [MERGEJOIN_26] (rows=5040/72 width=8)
-              Conds:RS_29._col0=RS_32._col0(Inner)
-            <-Map 1 [SIMPLE_EDGE] vectorized, llap
-              SHUFFLE [RS_29]
-                PartitionCols:_col0
-                Select Operator [SEL_28] (rows=5040/5040 width=7)
-                  Output:["_col0"]
-                  Filter Operator [FIL_27] (rows=5040/5040 width=7)
-                    predicate:sr_reason_sk is not null
-                    TableScan [TS_0] (rows=5112/5112 width=7)
-                      default@sr0,store_returns,Tbl:COMPLETE,Col:COMPLETE,Output:["sr_reason_sk"]
-            <-Map 3 [SIMPLE_EDGE] vectorized, llap
-              SHUFFLE [RS_32]
-                PartitionCols:_col0
-                Select Operator [SEL_31] (rows=1/1 width=8)
-                  Output:["_col0"]
-                  Filter Operator [FIL_30] (rows=1/1 width=108)
-                    predicate:((r_reason_id = 'AAAAAAAAAAAAAAAA') and r_reason_sk is not null)
-                    TableScan [TS_3] (rows=2/2 width=108)
-                      default@rx0,reason,Tbl:COMPLETE,Col:COMPLETE,Output:["r_reason_id","r_reason_sk"]
+      File Output Operator [FS_10]
+        Select Operator [SEL_9] (rows=5040/72 width=4)
+          Output:["_col0"]
+          Merge Join Operator [MERGEJOIN_25] (rows=5040/72 width=8)
+            Conds:RS_28._col0=RS_31._col0(Inner)
+          <-Map 1 [SIMPLE_EDGE] vectorized, llap
+            SHUFFLE [RS_28]
+              PartitionCols:_col0
+              Select Operator [SEL_27] (rows=5040/5040 width=7)
+                Output:["_col0"]
+                Filter Operator [FIL_26] (rows=5040/5040 width=7)
+                  predicate:sr_reason_sk is not null
+                  TableScan [TS_0] (rows=5112/5112 width=7)
+                    default@sr0,store_returns,Tbl:COMPLETE,Col:COMPLETE,Output:["sr_reason_sk"]
+          <-Map 3 [SIMPLE_EDGE] vectorized, llap
+            SHUFFLE [RS_31]
+              PartitionCols:_col0
+              Select Operator [SEL_30] (rows=1/1 width=8)
+                Output:["_col0"]
+                Filter Operator [FIL_29] (rows=1/1 width=108)
+                  predicate:((r_reason_id = 'AAAAAAAAAAAAAAAA') and r_reason_sk is not null)
+                  TableScan [TS_3] (rows=2/2 width=108)
+                    default@rx0,reason,Tbl:COMPLETE,Col:COMPLETE,Output:["r_reason_id","r_reason_sk"]
 

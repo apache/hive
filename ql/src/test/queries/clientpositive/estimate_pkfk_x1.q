@@ -22,5 +22,5 @@ explain analyze select 1
 from default.sr0  store_returns , default.rx0 reason
             where sr_reason_sk = r_reason_sk
               and r_reason_id = 'AAAAAAAAAAAAAAAA'
-limit 12;
+;
 
