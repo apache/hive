@@ -10937,6 +10937,21 @@
         "hdfsUriLoc": ""
     },
     {
+        "impalaFnName": "concat",
+        "fnName": "||",
+        "userVisible": "true",
+        "isAgg": "false",
+        "hasVarArgs": "true",
+        "retType": "STRING",
+        "isPersistent": "true",
+        "binaryType": "BUILTIN",
+        "argTypes": [
+            "STRING"
+        ],
+        "symbolName": "_ZN6impala15StringFunctions6ConcatEPN10impala_udf15FunctionContextEiPKNS1_9StringValE",
+        "hdfsUriLoc": ""
+    },
+    {
         "impalaFnName": "concat_ws",
         "fnName": "concat_ws",
         "userVisible": "true",
