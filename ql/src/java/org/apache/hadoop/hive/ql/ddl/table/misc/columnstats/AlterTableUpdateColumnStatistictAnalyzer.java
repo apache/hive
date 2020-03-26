@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
+import org.apache.hadoop.hive.ql.parse.HiveTableName;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsUpdateWork;
 
@@ -56,8 +57,7 @@ public class AlterTableUpdateColumnStatistictAnalyzer extends AbstractAlterTable
     String partitionName = getPartitionName(partitionSpec);
     String columnType = getColumnType(table, columnName);
 
-    ColumnStatsUpdateWork work = new ColumnStatsUpdateWork(partitionName, properties, table.getDbName(),
-        table.getTableName(), columnName, columnType);
+    ColumnStatsUpdateWork work = new ColumnStatsUpdateWork(partitionName, properties, HiveTableName.of(table), columnName, columnType);
     ColumnStatsUpdateTask task = (ColumnStatsUpdateTask) TaskFactory.get(work);
     // TODO: doesn't look like this path is actually ever exercised. Maybe this needs to be removed.
     addInputsOutputsAlterTable(tableName, partitionSpec, null, AlterTableType.UPDATESTATS, false);
