@@ -37,6 +37,7 @@ import org.apache.impala.planner.PlanNode;
 import org.apache.impala.planner.PlanRootSink;
 import org.apache.impala.planner.Planner;
 import org.apache.impala.service.BackendConfig;
+import org.apache.impala.service.FeSupport;
 import org.apache.impala.service.Frontend;
 import org.apache.impala.thrift.TBackendGflags;
 import org.apache.impala.thrift.TClientRequest;
@@ -56,6 +57,9 @@ import org.apache.impala.thrift.TSessionType;
 import org.apache.impala.thrift.TStmtType;
 import org.apache.impala.thrift.TUniqueId;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -72,6 +76,8 @@ import java.util.TimeZone;
  * that can be sent to backend for execution.
  */
 public class ImpalaPlanner {
+
+  private static final Logger LOG = LoggerFactory.getLogger(ImpalaPlanner.class);
 
   private ImpalaPlannerContext ctx_;
   private List<TNetworkAddress> hostLocations = new ArrayList<>();
@@ -351,6 +357,12 @@ public class ImpalaPlanner {
       // TODO: Determine the appropriate default value
       cfg.setMin_privilege_set_for_show_stmts("");
       cfg.setMt_dop_auto_fallback(false);
+
+      try {
+        FeSupport.loadLibrary(false);
+      } catch (RuntimeException e) {
+        LOG.warn("initBackendConfig", e);
+      }
       BackendConfig.create(cfg,
           false /* don't initialize SqlScanner or AuthToLocal */);
     }
