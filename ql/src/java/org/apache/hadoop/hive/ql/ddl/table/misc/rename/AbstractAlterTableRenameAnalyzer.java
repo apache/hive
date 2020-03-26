@@ -43,7 +43,7 @@ public abstract class AbstractAlterTableRenameAnalyzer extends AbstractAlterTabl
       throws SemanticException {
     TableName target = getQualifiedTableName((ASTNode) command.getChild(0));
 
-    AlterTableRenameDesc desc = new AlterTableRenameDesc(tableName, null, isView(), target.getNotEmptyDbTable());
+    AlterTableRenameDesc desc = new AlterTableRenameDesc(tableName, null, isView(), target);
     Table table = getTable(tableName.getNotEmptyDbTable(), true);
     if (AcidUtils.isTransactionalTable(table)) {
       setAcidDdlDesc(desc);
