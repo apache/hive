@@ -7,10 +7,6 @@
 package org.apache.hadoop.hive.ql.plan.api;
 
 
-import java.util.Map;
-import java.util.HashMap;
-import org.apache.thrift.TEnum;
-
 public enum StageType implements org.apache.thrift.TEnum {
   CONDITIONAL(0),
   COPY(1),
@@ -30,11 +26,11 @@ public enum StageType implements org.apache.thrift.TEnum {
   REPL_TXN(15),
   REPL_INCREMENTAL_LOAD(16),
   SCHEDULED_QUERY_MAINT(17),
-  REPL_LOAD_COMPLETE_ACK(18);
+  ACK(18);
 
   private final int value;
 
-  private StageType(int value) {
+  StageType(int value) {
     this.value = value;
   }
 

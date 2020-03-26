@@ -27,6 +27,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Arrays;
 import java.util.Set;
@@ -514,6 +515,20 @@ public class ReplicationTestUtils {
                     + externalTableLocation.toString() + "'",
             "'distcp.options.pugpb'=''"
     );
+  }
+
+  public static List<String> externalTableWithClause(List<String> externalTableBasePathWithClause, Boolean bootstrap,
+                                                     Boolean includeExtTbl) {
+    List<String> withClause = new ArrayList<>(externalTableBasePathWithClause);
+    if (bootstrap != null) {
+      withClause.add("'" + HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES + "'='" + Boolean.toString(bootstrap)
+              + "'");
+    }
+    if (includeExtTbl != null) {
+      withClause.add("'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES + "'='" + Boolean.toString(includeExtTbl)
+              + "'");
+    }
+    return withClause;
   }
 
   public static void assertExternalFileInfo(WarehouseInstance primary,
