@@ -28,11 +28,12 @@ import org.apache.kudu.Schema;
 import org.apache.kudu.Type;
 import org.apache.kudu.client.CreateTableOptions;
 import org.apache.kudu.client.PartialRow;
-import org.apache.kudu.shaded.com.google.common.collect.ImmutableList;
 import org.apache.kudu.test.KuduTestHarness;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+
+import com.google.common.collect.ImmutableList;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;

@@ -24,9 +24,9 @@ import com.cronutils.model.definition.CronDefinition;
 import com.cronutils.model.definition.CronDefinitionBuilder;
 import com.cronutils.model.field.expression.FieldExpression;
 import com.google.common.base.Objects;
+import com.google.common.collect.Lists;
 
 import org.antlr.runtime.tree.Tree;
-import org.apache.curator.shaded.com.google.common.collect.Lists;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
