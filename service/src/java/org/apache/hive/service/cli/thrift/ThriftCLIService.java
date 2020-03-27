@@ -28,7 +28,7 @@ import org.apache.hive.service.rpc.thrift.TSetClientInfoResp;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import javax.security.auth.login.LoginException;
@@ -321,17 +321,14 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
     LOG.info("Client protocol version: " + req.getClient_protocol());
     TOpenSessionResp resp = new TOpenSessionResp();
     try {
-      SessionHandle sessionHandle = getSessionHandle(req, resp);
+      final SessionHandle sessionHandle = getSessionHandle(req, resp);
+
+      final int fetchSize = hiveConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE);
+
       resp.setSessionHandle(sessionHandle.toTSessionHandle());
-      Map<String, String> configurationMap = new HashMap<String, String>();
-      // Set the updated fetch size from the server into the configuration map for the client
-      HiveConf sessionConf = cliService.getSessionConf(sessionHandle);
-      configurationMap.put(
-        HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE.varname,
-        Integer.toString(sessionConf != null ?
-          sessionConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE) :
-          hiveConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE)));
-      resp.setConfiguration(configurationMap);
+      resp.setConfiguration(Collections
+          .singletonMap(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE.varname,
+              Integer.toString(fetchSize)));
       resp.setStatus(OK_STATUS);
       ThriftCLIServerContext context =
         (ThriftCLIServerContext)currentServerContext.get();
