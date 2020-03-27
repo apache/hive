@@ -40,6 +40,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -170,6 +171,7 @@ public class TestWarehouseExternalDir {
     }
   }
 
+  @Ignore("CDPD-9556 Ignore TestWarehouseExternalDir.testExternalDefaultPaths as it is flaky")
   @Test
   public void testExternalDefaultPaths() throws Exception {
     try (Statement stmt = conn.createStatement()) {
