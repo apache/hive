@@ -463,12 +463,13 @@ public class StatsUtils {
   public static void inferAndSetPrimaryKey(long numRows, List<ColStatistics> colStats) {
     if (colStats != null) {
       for (ColStatistics cs : colStats) {
-        if (cs != null && cs.getCountDistint() >= numRows) {
+        long numNonNullRows = numRows - cs.getNumNulls();
+        if (cs != null && cs.getCountDistint() >= numNonNullRows) {
           cs.setPrimaryKey(true);
         }
         else if (cs != null && cs.getRange() != null && cs.getRange().minValue != null &&
             cs.getRange().maxValue != null) {
-          if (numRows ==
+          if (numNonNullRows ==
               ((cs.getRange().maxValue.longValue() - cs.getRange().minValue.longValue()) + 1)) {
             cs.setPrimaryKey(true);
           }

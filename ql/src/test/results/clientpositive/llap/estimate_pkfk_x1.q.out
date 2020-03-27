@@ -49,6 +49,25 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@sr0
 POSTHOOK: Lineage: sr0.sr_reason_sk SCRIPT []
+PREHOOK: query: desc formatted sr0 sr_reason_sk
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@sr0
+POSTHOOK: query: desc formatted sr0 sr_reason_sk
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@sr0
+col_name            	sr_reason_sk        
+data_type           	bigint              
+min                 	1                   
+max                 	70                  
+num_nulls           	1                   
+distinct_count      	70                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"sr_reason_sk\":\"true\"}}
 Warning: Shuffle Join MERGEJOIN[16][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: insert into sr0 select a.* from sr0 a,sr0 b
 PREHOOK: type: QUERY
@@ -59,6 +78,54 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sr0
 POSTHOOK: Output: default@sr0
 POSTHOOK: Lineage: sr0.sr_reason_sk SIMPLE [(sr0)a.FieldSchema(name:sr_reason_sk, type:bigint, comment:null), ]
+PREHOOK: query: desc formatted sr0 sr_reason_sk
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@sr0
+POSTHOOK: query: desc formatted sr0 sr_reason_sk
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@sr0
+col_name            	sr_reason_sk        
+data_type           	bigint              
+min                 	1                   
+max                 	70                  
+num_nulls           	72                  
+distinct_count      	70                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"sr_reason_sk\":\"true\"}}
+PREHOOK: query: analyze table sr0 compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@sr0
+PREHOOK: Output: default@sr0
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table sr0 compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@sr0
+POSTHOOK: Output: default@sr0
+#### A masked pattern was here ####
+PREHOOK: query: desc formatted sr0 sr_reason_sk
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@sr0
+POSTHOOK: query: desc formatted sr0 sr_reason_sk
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@sr0
+col_name            	sr_reason_sk        
+data_type           	bigint              
+min                 	1                   
+max                 	70                  
+num_nulls           	72                  
+distinct_count      	70                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"sr_reason_sk\":\"true\"}}
 PREHOOK: query: select 1
 from default.sr0  store_returns , default.rx0 reason
             where sr_reason_sk = r_reason_sk
