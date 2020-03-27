@@ -21,15 +21,14 @@ package org.apache.hadoop.hive.ql.ddl.table.partition.drop;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
-import org.apache.hadoop.hive.metastore.utils.ObjectPair;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
@@ -108,9 +107,9 @@ public class AlterTableDropPartitionOperation extends DDLOperation<AlterTableDro
     // ifExists is currently verified in AlterTableDropPartitionAnalyzer
     TableName tablenName = HiveTableName.of(desc.getTableName());
 
-    List<ObjectPair<Integer, byte[]>> partitionExpressions = new ArrayList<>(desc.getPartSpecs().size());
+    List<Pair<Integer, byte[]>> partitionExpressions = new ArrayList<>(desc.getPartSpecs().size());
     for (AlterTableDropPartitionDesc.PartitionDesc partSpec : desc.getPartSpecs()) {
-      partitionExpressions.add(new ObjectPair<>(partSpec.getPrefixLength(),
+      partitionExpressions.add(Pair.of(partSpec.getPrefixLength(),
           SerializationUtilities.serializeExpressionToKryo(partSpec.getPartSpec())));
     }
 

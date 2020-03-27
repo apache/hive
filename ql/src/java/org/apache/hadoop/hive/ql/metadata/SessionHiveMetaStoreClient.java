@@ -33,6 +33,7 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -75,7 +76,6 @@ import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
-import org.apache.hadoop.hive.metastore.utils.ObjectPair;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -1261,15 +1261,15 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
 
   @Override
   public List<Partition> dropPartitions(String catName, String dbName, String tblName,
-      List<ObjectPair<Integer, byte[]>> partExprs, PartitionDropOptions options) throws TException {
+      List<Pair<Integer, byte[]>> partExprs, PartitionDropOptions options) throws TException {
     org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbName, tblName);
     if (table == null) {
       return super.dropPartitions(catName, dbName, tblName, partExprs, options);
     }
     TempTable tt = getPartitionedTempTable(table);
     List<Partition> result = new ArrayList<>();
-    for (ObjectPair<Integer, byte[]> pair : partExprs) {
-      byte[] expr = pair.getSecond();
+    for (Pair<Integer, byte[]> pair : partExprs) {
+      byte[] expr = pair.getRight();
       String filter = generateJDOFilter(table, expr, conf.get(HiveConf.ConfVars.DEFAULTPARTITIONNAME.varname));
       List<Partition> partitions = tt.listPartitionsByFilter(filter);
       for (Partition p : partitions) {

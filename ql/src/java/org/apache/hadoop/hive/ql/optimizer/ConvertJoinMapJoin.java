@@ -522,7 +522,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       mapJoinDesc =
           new MapJoinDesc(
                   MapJoinProcessor.getKeys(joinOp.getConf().isLeftInputJoin(),
-                  joinOp.getConf().getBaseSrc(), joinOp).getSecond(),
+                  joinOp.getConf().getBaseSrc(), joinOp).getRight(),
                   null, joinDesc.getExprs(), null, null,
                   joinDesc.getOutputColumnNames(), mapJoinConversionPos, joinDesc.getConds(),
                   joinDesc.getFilters(), joinDesc.getNoOuterJoin(), null,

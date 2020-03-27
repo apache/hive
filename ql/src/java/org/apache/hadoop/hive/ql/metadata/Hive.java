@@ -80,6 +80,7 @@ import org.apache.calcite.rex.RexBuilder;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileChecksum;
 import org.apache.hadoop.fs.FileStatus;
@@ -90,7 +91,6 @@ import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
-import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
@@ -3625,7 +3625,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
   public List<Partition> dropPartitions(String dbName, String tableName,
-      List<org.apache.hadoop.hive.metastore.utils.ObjectPair<Integer, byte[]>> partitionExpressions,
+      List<Pair<Integer, byte[]>> partitionExpressions,
       PartitionDropOptions dropOptions) throws HiveException {
     try {
       Table table = getTable(dbName, tableName);
@@ -4113,7 +4113,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     if (!fullDestStatus.getFileStatus().isDirectory()) {
       throw new HiveException(destf + " is not a directory.");
     }
-    final List<Future<ObjectPair<Path, Path>>> futures = new LinkedList<>();
+    final List<Future<Pair<Path, Path>>> futures = new LinkedList<>();
     final ExecutorService pool = conf.getInt(ConfVars.HIVE_MOVE_FILES_THREAD_COUNT.varname, 25) > 0 ?
         Executors.newFixedThreadPool(conf.getInt(ConfVars.HIVE_MOVE_FILES_THREAD_COUNT.varname, 25),
         new ThreadFactoryBuilder().setDaemon(true).setNameFormat("Move-Thread-%d").build()) : null;
@@ -4167,9 +4167,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
         } else {
           // future only takes final or seemingly final values. Make a final copy of taskId
           final int finalTaskId = acidRename ? taskId++ : -1;
-          futures.add(pool.submit(new Callable<ObjectPair<Path, Path>>() {
+          futures.add(pool.submit(new Callable<Pair<Path, Path>>() {
             @Override
-            public ObjectPair<Path, Path> call() throws HiveException {
+            public Pair<Path, Path> call() throws HiveException {
               SessionState.setCurrentSessionState(parentSession);
 
               try {
@@ -4179,7 +4179,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
                 if (null != newFiles) {
                   newFiles.add(destPath);
                 }
-                return ObjectPair.create(srcP, destPath);
+                return Pair.of(srcP, destPath);
               } catch (Exception e) {
                 throw getHiveException(e, msg);
               }
@@ -4190,10 +4190,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
     if (null != pool) {
       pool.shutdown();
-      for (Future<ObjectPair<Path, Path>> future : futures) {
+      for (Future<Pair<Path, Path>> future : futures) {
         try {
-          ObjectPair<Path, Path> pair = future.get();
-          LOG.debug("Moved src: {}, to dest: {}", pair.getFirst().toString(), pair.getSecond().toString());
+          Pair<Path, Path> pair = future.get();
+          LOG.debug("Moved src: {}, to dest: {}", pair.getLeft().toString(), pair.getRight().toString());
         } catch (Exception e) {
           throw handlePoolException(pool, e);
         }

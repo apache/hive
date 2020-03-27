@@ -114,7 +114,6 @@ import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.ImmutableIntList;
 import org.apache.calcite.util.Pair;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -3251,9 +3250,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
         ASTNode subQueryAST = subQueries.get(i);
         //SubQueryUtils.rewriteParentQueryWhere(clonedSearchCond, subQueryAST);
-        Boolean orInSubquery = new Boolean(false);
-        Integer subqueryCount = new Integer(0);
-        ObjectPair<Boolean, Integer> subqInfo = new ObjectPair<Boolean, Integer>(false, 0);
 
         ASTNode outerQueryExpr = (ASTNode) subQueryAST.getChild(2);
 
@@ -3897,7 +3893,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         int groupingColsSize = gbExprNDescLst.size();
         List<Long> groupingSets = null;
         if (cubeRollupGrpSetPresent) {
-          groupingSets = getGroupByGroupingSetsForClause(qbp, detsClauseName).getSecond();
+          groupingSets = getGroupByGroupingSetsForClause(qbp, detsClauseName).getRight();
         }
 
         // 6. Construct aggregation function Info

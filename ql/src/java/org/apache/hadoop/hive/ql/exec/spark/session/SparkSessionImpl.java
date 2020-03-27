@@ -28,6 +28,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
@@ -36,7 +38,6 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.TaskQueue;
 import org.apache.hadoop.hive.ql.exec.spark.HiveSparkClient;
@@ -106,12 +107,12 @@ public class SparkSessionImpl implements SparkSession {
   }
 
   @Override
-  public ObjectPair<Long, Integer> getMemoryAndCores() throws Exception {
+  public Pair<Long, Integer> getMemoryAndCores() throws Exception {
     SparkConf sparkConf = hiveSparkClient.getSparkConf();
     int numExecutors = hiveSparkClient.getExecutorCount();
     // at start-up, we may be unable to get number of executors
     if (numExecutors <= 0) {
-      return new ObjectPair<Long, Integer>(-1L, -1);
+      return Pair.of(-1L, -1);
     }
     int executorMemoryInMB = Utils.memoryStringToMb(
         sparkConf.get("spark.executor.memory", "512m"));
@@ -134,8 +135,7 @@ public class SparkSessionImpl implements SparkSession {
     LOG.info("Spark cluster current has executors: " + numExecutors
         + ", total cores: " + totalCores + ", memory per executor: "
         + executorMemoryInMB + "M, memoryFraction: " + memoryFraction);
-    return new ObjectPair<Long, Integer>(Long.valueOf(memoryPerTaskInBytes),
-        Integer.valueOf(totalCores));
+    return Pair.of(Long.valueOf(memoryPerTaskInBytes), Integer.valueOf(totalCores));
   }
 
   @Override

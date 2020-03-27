@@ -30,8 +30,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
@@ -565,8 +565,6 @@ public class MapJoinProcessor extends Transform {
 
   public static boolean isFullOuterEnabledForDynamicPartitionHashJoin(HiveConf hiveConf, JoinOperator joinOp)
       throws SemanticException {
-    JoinDesc joinDesc = joinOp.getConf();
-
     return true;
   }
 
@@ -1238,7 +1236,7 @@ public class MapJoinProcessor extends Transform {
 
   }
 
-  public static ObjectPair<List<ReduceSinkOperator>, Map<Byte, List<ExprNodeDesc>>> getKeys(
+  public static Pair<List<ReduceSinkOperator>, Map<Byte, List<ExprNodeDesc>>> getKeys(
           boolean leftInputJoin, String[] baseSrc, JoinOperator op) {
 
     // Walk over all the sources (which are guaranteed to be reduce sink
@@ -1272,8 +1270,7 @@ public class MapJoinProcessor extends Transform {
       keyExprMap.put(pos, keyCols);
     }
 
-    return new ObjectPair<List<ReduceSinkOperator>, Map<Byte,List<ExprNodeDesc>>>(
-            oldReduceSinkParentOps, keyExprMap);
+    return Pair.of(oldReduceSinkParentOps, keyExprMap);
   }
 
   public static MapJoinDesc getMapJoinDesc(HiveConf hconf,
@@ -1295,9 +1292,8 @@ public class MapJoinProcessor extends Transform {
     Map<Byte, List<ExprNodeDesc>> valueExprs = op.getConf().getExprs();
     Map<Byte, List<ExprNodeDesc>> newValueExprs = new HashMap<Byte, List<ExprNodeDesc>>();
 
-    ObjectPair<List<ReduceSinkOperator>, Map<Byte,List<ExprNodeDesc>>> pair =
-            getKeys(leftInputJoin, baseSrc, op);
-    List<ReduceSinkOperator> oldReduceSinkParentOps = pair.getFirst();
+    Pair<List<ReduceSinkOperator>, Map<Byte, List<ExprNodeDesc>>> pair = getKeys(leftInputJoin, baseSrc, op);
+    List<ReduceSinkOperator> oldReduceSinkParentOps = pair.getLeft();
     for (Map.Entry<Byte, List<ExprNodeDesc>> entry : valueExprs.entrySet()) {
       byte tag = entry.getKey();
       Operator<?> terminal = oldReduceSinkParentOps.get(tag);
@@ -1326,7 +1322,7 @@ public class MapJoinProcessor extends Transform {
     Map<Byte, int[]> valueIndices = new HashMap<Byte, int[]>();
 
     // get the join keys from old parent ReduceSink operators
-    Map<Byte, List<ExprNodeDesc>> keyExprMap = pair.getSecond();
+    Map<Byte, List<ExprNodeDesc>> keyExprMap = pair.getRight();
 
     if (!adjustParentsChildren) {
       // Since we did not remove reduce sink parents, keep the original value expressions

@@ -28,9 +28,9 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.persistence.RowContainer;
@@ -696,7 +696,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
 
     // index of FetchOperator which is providing smallest one
     transient Integer currentMinSegment;
-    transient ObjectPair<List<Object>, InspectableObject>[] keys;
+    transient MutablePair<List<Object>, InspectableObject>[] keys;
 
     public MergeQueue(String alias, FetchWork fetchWork, JobConf jobConf,
         Operator<? extends OperatorDesc> forwardOp,
@@ -737,7 +737,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
     private FetchOperator[] segmentsForSize(int segmentLen) {
       if (segments == null || segments.length < segmentLen) {
         FetchOperator[] newSegments = new FetchOperator[segmentLen];
-        ObjectPair<List<Object>, InspectableObject>[] newKeys = new ObjectPair[segmentLen];
+        MutablePair<List<Object>, InspectableObject>[] newKeys = new MutablePair[segmentLen];
         if (segments != null) {
           System.arraycopy(segments, 0, newSegments, 0, segments.length);
           System.arraycopy(keys, 0, newKeys, 0, keys.length);
@@ -760,7 +760,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
 
     @Override
     protected boolean lessThan(Object a, Object b) {
-      return compareKeys(keys[(Integer) a].getFirst(), keys[(Integer)b].getFirst()) < 0;
+      return compareKeys(keys[(Integer) a].getLeft(), keys[(Integer)b].getLeft()) < 0;
     }
 
     public final InspectableObject getNextRow() throws IOException {
@@ -775,7 +775,8 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
         return null;
       }
       counter++;
-      return keys[currentMinSegment = current].getSecond();
+      currentMinSegment = current;
+      return keys[currentMinSegment].getRight();
     }
 
     private void adjustPriorityQueue(Integer current) throws IOException {
@@ -816,7 +817,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
       while (nextRow != null) {
         sinkOp.reset();
         if (keys[current] == null) {
-          keys[current] = new ObjectPair<List<Object>, InspectableObject>();
+          keys[current] = new MutablePair<List<Object>, InspectableObject>();
         }
 
         // Pass the row though the operator tree. It is guaranteed that not more than 1 row can
@@ -827,8 +828,8 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
         // It is possible that the row got absorbed in the operator tree.
         if (nextRow.o != null) {
           // todo this should be changed to be evaluated lazily, especially for single segment case
-          keys[current].setFirst(JoinUtil.computeKeys(nextRow.o, keyFields, keyFieldOIs));
-          keys[current].setSecond(nextRow);
+          keys[current].setLeft(JoinUtil.computeKeys(nextRow.o, keyFields, keyFieldOIs));
+          keys[current].setRight(nextRow);
           return true;
         }
         nextRow = segments[current].getNextRow();
