@@ -695,7 +695,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * @param dest destination clause
    * @return true or false
    */
-  private boolean isInsertInto(QBParseInfo qbp, String dest) {
+  protected boolean isInsertInto(QBParseInfo qbp, String dest) {
     // get the destination and check if it is TABLE
     if(qbp == null || dest == null ) return false;
     ASTNode destNode = qbp.getDestForClause(dest);

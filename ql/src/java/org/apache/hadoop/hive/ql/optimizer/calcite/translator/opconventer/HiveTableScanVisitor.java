@@ -108,6 +108,7 @@ class HiveTableScanVisitor extends HiveRelNodeVisitor<HiveTableScan> {
     // 2. Setup TableScan
     TableScanOperator ts = (TableScanOperator) OperatorFactory.get(
         hiveOpConverter.getSemanticAnalyzer().getOpContext(), tsd, new RowSchema(colInfos));
+    ts.setBucketingVersion(tsd.getTableMetadata().getBucketingVersion());
 
     //now that we let Calcite process subqueries we might have more than one
     // tablescan with same alias.
