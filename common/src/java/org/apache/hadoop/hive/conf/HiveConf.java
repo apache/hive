@@ -3410,6 +3410,10 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_TEZ_EXTERNAL_SESSIONS_REGISTRY_CLASS("hive.server2.tez.external.sessions.registry.class",
       "org.apache.hadoop.hive.ql.exec.tez.DummyExternalSessionsRegistry", "Tez external sessions\n" +
       "registry implementation to use"),
+    HIVE_SERVER2_TEZ_EXTERNAL_SESSIONS_HTTP_PORT_HEALTHCHECK("hive.server2.tez.external.sessions.http.port.healthcheck",
+        0,"Determines whether there needs to be a Tez AM port health check needed before set AM available"),
+    HIVE_SERVER2_TEZ_EXTERNAL_SESSIONS_WAIT_INTERVAL("hive.server2.tez.external.sessions.wait.interval", 1000,
+        "Wait interval in milliseconds used in calculating the timeout time along with wait attempts"),
     HIVE_SERVER2_EMIT_TEZ_SESSION_WAIT_METRICS("hive.server2.emit.tez.session.wait.metrics", true,
       "When set to true, the hiveserver2 background thread will emit metrics about tez session wait time"),
     HIVE_SERVER2_USE_PER_QUERY_TEZ_EXTERNAL_SESSION("hive.server2.use.per.query.tez.external.session",
