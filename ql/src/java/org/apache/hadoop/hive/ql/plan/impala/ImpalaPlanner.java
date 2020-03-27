@@ -78,7 +78,8 @@ public class ImpalaPlanner {
 
   public ImpalaPlanner(String dbname, String username) {
 
-    TQueryOptions options = createDefaultQueryOptions();
+    HiveConf conf = SessionState.get().getConf();
+    TQueryOptions options = createDefaultQueryOptions(conf);
 
     initBackendConfig();;
 
@@ -222,10 +223,12 @@ public class ImpalaPlanner {
     return TStmtType.QUERY;
   }
 
-  private TQueryOptions createDefaultQueryOptions() {
+  private TQueryOptions createDefaultQueryOptions(HiveConf conf) {
     TQueryOptions options = new TQueryOptions();
     // TODO: Fill in session options
     options.setNum_nodes(2);
+    options.setParquet_dictionary_filtering(
+            conf.getBoolVar(HiveConf.ConfVars.HIVE_IMPALA_PARQUET_DICTIONARY_FILTERING));
     return options;
   }
 

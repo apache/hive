@@ -4066,6 +4066,8 @@ public class HiveConf extends Configuration {
         "Maximum sleep time between retries of Impala RPCs in milliseconds"),
     HIVE_IMPALA_RPC_START_RETRY_SLEEP("hive.impala.rpc.start.sleep", 500,
         "Starting sleep time between retries of Impala RPCs in milliseconds"),
+    HIVE_IMPALA_PARQUET_DICTIONARY_FILTERING("hive.impala.parquet.dictionary.filtering", false,
+        "Determines if dictionary filtering is enabled for parquet files when generating Impala plans"),
 
     HIVE_JAR_DIRECTORY("hive.jar.directory", null,
         "This is the location hive in tez mode will look for to find a site wide \n" +
