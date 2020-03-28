@@ -36,15 +36,14 @@ public class ImpalaFunctionMapper {
 
   /*
    * For "this" signature, check if there exists a function signature which is compatible.
-   * Returns a pair of the return type and the operand types.
+   * Returns a list of the operand types.
    */
-  public Pair<SqlTypeName, List<SqlTypeName>> mapOperands(
+  public List<SqlTypeName> mapOperands(
       Map<ImpalaFunctionSignature, ? extends FunctionDetails> functionDetailsMap) {
     // if there is an exact match of name, args, ans return type existing in the builtins, we can
     // use the rexCall as/is.
     if (this.funcSig.useSignatureTypes(functionDetailsMap)) {
-      return new Pair<SqlTypeName, List<SqlTypeName>>(this.funcSig.getRetType(),
-          this.funcSig.getArgTypes());
+      return this.funcSig.getArgTypes();
     }
 
     // castCandidates contains a list of potential functions that can match "this" signature.
@@ -62,7 +61,7 @@ public class ImpalaFunctionMapper {
     // is a TINYINT, we should return a RexNode of "sum(CAST arg AS BIGINT)"
     for (ImpalaFunctionSignature castCandidate : castCandidates) {
       if (this.funcSig.canCastToCandidate(castCandidate)) {
-        return this.funcSig.getCastOpAndRetTypes(castCandidate);
+        return this.funcSig.getCastOperandTypes(castCandidate);
       }
     }
     throw new RuntimeException("Could not cast for function name " + this.funcSig.getFunc());

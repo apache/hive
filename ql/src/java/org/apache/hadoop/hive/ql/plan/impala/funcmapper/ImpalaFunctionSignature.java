@@ -168,14 +168,12 @@ public abstract class ImpalaFunctionSignature {
   public abstract boolean canCastToCandidate(ImpalaFunctionSignature castCandidate);
 
   /**
-   * Gets the full signature of the expected return type and all the cast operand types.
-   * The "left" part of the pair is the return type. The "right" part of the pair are the
-   * types of all the operands.
+   * Gets all the cast operand types.
    * It is possible that the cast candidate has a variable number of operands, and thus
    * can have less than the number of operands in "this" object. But in any case, the
    * number of operands returned should match the number of operands in "this" object.
-   **/ 
-  public abstract Pair<SqlTypeName, List<SqlTypeName>> getCastOpAndRetTypes(
+   **/
+  public abstract List<SqlTypeName> getCastOperandTypes(
       ImpalaFunctionSignature castCandidate);
 
   @Override

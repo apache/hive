@@ -97,16 +97,14 @@ public class ExtractFunctionSignature extends ImpalaFunctionSignature {
   }
 
   @Override
-  public Pair<SqlTypeName, List<SqlTypeName>> getCastOpAndRetTypes(
+  public List<SqlTypeName> getCastOperandTypes(
       ImpalaFunctionSignature castCandidate) {
     Preconditions.checkState(castCandidate.getArgTypes().size() == 1,
         "Num of arguments for " + this.func + " expected to be 1.");
     // first argument in candidate is "SYMBOL" and does not have to be cast, so we
     // grab it from this Calcite signature. The second argument needs to be
     // grabbed from the first argument of the cast candidate.
-    List<SqlTypeName> castArgTypes =
-       Lists.newArrayList(argTypes.get(0), castCandidate.getArgTypes().get(0));
-    return new Pair<SqlTypeName, List<SqlTypeName>>(castCandidate.getRetType(), castArgTypes);
+    return Lists.newArrayList(argTypes.get(0), castCandidate.getArgTypes().get(0));
   }
 
   static public boolean isExtract(String func) {

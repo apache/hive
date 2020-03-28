@@ -102,11 +102,16 @@ public class DefaultFunctionSignature extends ImpalaFunctionSignature {
   }
 
   /*
-   * Returns true if all of the given operands can be cast to the given function
-   * prototype
+   * Returns true if both the return type and all of the given operands can be cast to
+   * the given function prototype.
    */
   @Override
   public boolean canCastToCandidate(ImpalaFunctionSignature castCandidate) {
+    // Return types must match.
+    if (!castCandidate.getRetType().equals(retType)) {
+      return false;
+    }
+
     if (!castCandidate.hasVarArgs() &&
         argTypes.size() != castCandidate.getArgTypes().size()) {
       return false;
@@ -135,14 +140,13 @@ public class DefaultFunctionSignature extends ImpalaFunctionSignature {
   }
 
   @Override
-  public Pair<SqlTypeName, List<SqlTypeName>> getCastOpAndRetTypes(
+  public List<SqlTypeName> getCastOperandTypes(
       ImpalaFunctionSignature castCandidate) {
     // We need the arguments from the cast candidate signature, but "this" may contain
     // more arguments than the cast in the case where the cast candidate has a variable
     // number of arguments.  So we call "getAllVarArgs" with "this" number of arguments
     // so that the returned number of arguments matches what is expected.
-    return new Pair<SqlTypeName, List<SqlTypeName>>(castCandidate.getRetType(),
-        getAllVarArgs(castCandidate.getArgTypes(), argTypes.size()));
+    return getAllVarArgs(castCandidate.getArgTypes(), argTypes.size());
   }
 
   /**

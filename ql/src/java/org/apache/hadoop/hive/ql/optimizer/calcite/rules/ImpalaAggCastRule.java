@@ -217,18 +217,7 @@ public class ImpalaAggCastRule extends RelOptRule {
         new DefaultFunctionSignature(opName.toLowerCase(), currentSqlOperandTypes, currentSqlRetType);
     ImpalaFunctionMapper ifm = new ImpalaFunctionMapper(ifs);
 
-    // The main call to check if this AggCall maps to a known Impala function signature.
-    Pair<SqlTypeName, List<SqlTypeName>> pair =
-        ifm.mapOperands(ImpalaBuiltins.AGG_BUILTINS_INSTANCE);
-
-    SqlTypeName mappedSqlRetType = pair.left;
-    List<SqlTypeName> mappedSqlOperandTypes = pair.right;
-
-    // Only the SqlTypeNames have to match.  Decimal values don't need to be recast, and the
-    // type will be determined by Calcite.
-    if (!mappedSqlRetType.equals(currentSqlRetType)) {
-      throw new RuntimeException("Casting of aggregate return types is not supported for Impala");
-    }
+    List<SqlTypeName> mappedSqlOperandTypes = ifm.mapOperands(ImpalaBuiltins.AGG_BUILTINS_INSTANCE);
 
     // if the mapped oeprands are the same as the current ones, no cast is needed.
     if (mappedSqlOperandTypes.equals(currentSqlOperandTypes)) {

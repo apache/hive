@@ -3655,6 +3655,7 @@
     {
         "impalaFnName": "casttodouble",
         "fnName": "cast",
+        "castUp": "true",
         "userVisible": "true",
         "isAgg": "false",
         "hasVarArgs": "false",

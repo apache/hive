@@ -106,6 +106,11 @@ public class CaseFunctionSignature extends ImpalaFunctionSignature {
 
   @Override
   public boolean canCastToCandidate(ImpalaFunctionSignature castCandidate) {
+    // Return types must match.
+    if (!castCandidate.getRetType().equals(retType)) {
+      return false;
+    }
+
     SqlTypeName castTo = castCandidate.getArgTypes().get(0);
     // For loop constructs this signature's arguments in pairs.
     for (int i = 0; i < this.argTypes.size() / 2; ++i) {
@@ -136,8 +141,7 @@ public class CaseFunctionSignature extends ImpalaFunctionSignature {
   }
 
   @Override
-  public Pair<SqlTypeName, List<SqlTypeName>> getCastOpAndRetTypes(
-      ImpalaFunctionSignature castCandidate) {
+  public List<SqlTypeName> getCastOperandTypes(ImpalaFunctionSignature castCandidate) {
     List<SqlTypeName> castArgTypes = Lists.newArrayList();
 
     // For loop constructs this signature's arguments in pairs.
@@ -151,7 +155,7 @@ public class CaseFunctionSignature extends ImpalaFunctionSignature {
     if (this.argTypes.size() % 2 == 1) {
       castArgTypes.add(castCandidate.getArgTypes().get(0));
     }
-    return new Pair<SqlTypeName, List<SqlTypeName>>(castCandidate.getRetType(), castArgTypes);
+    return castArgTypes;
   }
 
   /**

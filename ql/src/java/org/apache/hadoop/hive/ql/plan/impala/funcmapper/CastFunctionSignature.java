@@ -72,7 +72,7 @@ public class CastFunctionSignature extends ImpalaFunctionSignature {
   }
 
   @Override
-  public Pair<SqlTypeName, List<SqlTypeName>> getCastOpAndRetTypes(
+  public List<SqlTypeName> getCastOperandTypes(
       ImpalaFunctionSignature castCandidate) {
     throw new RuntimeException("Not implemented");
   }

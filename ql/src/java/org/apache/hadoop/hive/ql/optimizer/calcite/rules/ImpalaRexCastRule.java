@@ -185,19 +185,10 @@ public abstract class ImpalaRexCastRule extends RelOptRule {
         throw new RuntimeException(e);
       }
       ImpalaFunctionMapper ifm = new ImpalaFunctionMapper(ifs);
-      // The main call to check if this RexCall maps to a known Impala function signature.
-      Pair<SqlTypeName, List<SqlTypeName>> pair =
-          ifm.mapOperands(ImpalaBuiltins.SCALAR_BUILTINS_INSTANCE);
 
-      SqlTypeName mappedRetType = pair.left;
-      List<SqlTypeName> mappedOperandTypes = pair.right;
-      // It involves a bit more work to make sure the return type casting matches.  This would involve
-      // making sure that propagation happens across RelNodes.  For now, we will punt this.
-      // Only the SqlTypeNames have to match.  Decimal values don't need to be recast, and the
-      // type will be determined by Calcite.
-      if (!mappedRetType.equals(currentRetSqlType)) {
-        throw new RuntimeException(UPCAST_NOT_ALLOWED + opName);
-      }
+      // The main call to check if this RexCall maps to a known Impala function signature.
+      List<SqlTypeName> mappedOperandTypes =
+          ifm.mapOperands(ImpalaBuiltins.SCALAR_BUILTINS_INSTANCE);
 
       // create the new RexNode operands.  These new operands will either have a cast of the
       // old operand or remain the same as the old operand.
