@@ -39,7 +39,11 @@ public class ImpalaThriftDecimalInspector extends AbstractPrimitiveObjectInspect
     @Override
     public HiveDecimal getPrimitiveJavaObject(Object o) {
         TColumnValue value = (TColumnValue) o;
-        return HiveDecimal.create(ImpalaResultInspector.getStringValue(value.getStringVal()));
+        String s = ImpalaResultInspector.getStringValue(value.getStringVal());
+        if (s == null) {
+          return null;
+        }
+        return HiveDecimal.create(s);
     }
 
     @Override
