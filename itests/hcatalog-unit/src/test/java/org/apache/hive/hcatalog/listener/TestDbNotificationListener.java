@@ -104,6 +104,7 @@ import org.apache.hive.hcatalog.data.Pair;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -1386,6 +1387,7 @@ public class TestDbNotificationListener {
     assertEquals(EventType.DROP_DATABASE.toString(), event.getEventType());
   }
 
+  @Ignore("CDPD-9589 Ignore TestDbNotificationListener.sqlInsertPartition as it is flaky")
   @Test
   public void sqlInsertPartition() throws Exception {
     String defaultDbName = "default";
