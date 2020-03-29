@@ -207,7 +207,6 @@ public class DataSketchesFunctions implements HiveUDFPlugin {
   }
 
   private void registerHll() {
-    String p = "asd";
     SketchDescriptor sd = new SketchDescriptor("hll");
     sd.register(DATA_TO_SKETCH, org.apache.datasketches.hive.hll.DataToSketchUDAF.class);
     sd.register(SKETCH_TO_ESTIMATE_WITH_ERROR_BOUNDS,
