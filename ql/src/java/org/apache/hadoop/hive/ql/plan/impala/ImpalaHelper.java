@@ -101,10 +101,8 @@ public class ImpalaHelper {
       TExecRequest execRequest = impalaPlanner.createExecRequest(rootImpalaNode);
       LOG.debug("Impala request is {}", execRequest);
       return new ImpalaCompiledPlan(execRequest);
-    } catch (ImpalaException e) {
-      throw new HiveException("Encountered Impala exception generating an Impala plan: ", e);
-    } catch (MetaException e) {
-      throw new HiveException("Encountered Meta exception generating an Impala plan: ", e);
+    } catch (ImpalaException | MetaException e) {
+      throw new HiveException(e);
     }
   }
 }

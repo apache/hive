@@ -538,13 +538,14 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
         disableJoinMerge = true;
         boolean reAnalyzeAST = false;
+        boolean isImpalaPlan = (impalaHelper != null);
         final boolean materializedView = getQB().isMaterializedView();
 
         try {
           // 0. Gen Optimized Plan
           RelNode newPlan = logicalPlan();
 
-          if (impalaHelper != null) {
+          if (isImpalaPlan) {
             sinkOp = getImpalaSinkOperator(newPlan);
             if (this.ctx.isExplainPlan()) {
               doExplainPlan(newPlan);
@@ -627,51 +628,47 @@ public class CalcitePlanner extends SemanticAnalyzer {
           }
         } catch (Exception e) {
           LOG.error("CBO failed, skipping CBO. ", e);
+
+          String cboMsg = "Plan not optimized by CBO.";
           boolean isMissingStats = noColsMissingStats.get() > 0;
           if (isMissingStats) {
             LOG.error("CBO failed due to missing column stats (see previous errors), skipping CBO");
-            this.ctx
-                .setCboInfo("Plan not optimized by CBO due to missing statistics. Please check log for more details.");
-          } else {
-            if (e instanceof CalciteSemanticException) {
-              CalciteSemanticException calciteSemanticException = (CalciteSemanticException) e;
-              UnsupportedFeature unsupportedFeature = calciteSemanticException
-                  .getUnsupportedFeature();
-              if (unsupportedFeature != null) {
-                this.ctx.setCboInfo("Plan not optimized by CBO due to missing feature ["
-                    + unsupportedFeature + "].");
-              } else {
-                this.ctx.setCboInfo("Plan not optimized by CBO.");
-              }
-            } else {
-              this.ctx.setCboInfo("Plan not optimized by CBO.");
+            cboMsg = "Plan not optimized by CBO due to missing statistics. Please check log for more details.";
+          } else if (e instanceof CalciteSemanticException) {
+            CalciteSemanticException cse = (CalciteSemanticException) e;
+            UnsupportedFeature unsupportedFeature = cse.getUnsupportedFeature();
+            if (unsupportedFeature != null) {
+              cboMsg = "Plan not optimized by CBO due to missing feature [" + unsupportedFeature + "].";
             }
           }
-          if( e instanceof CalciteSubquerySemanticException
-                || e instanceof CalciteSubqueryRuntimeException) {
-            // non-cbo path retries to execute subqueries and throws completely different exception/error
-            // to eclipse the original error message
-            // so avoid executing subqueries on non-cbo
+          this.ctx.setCboInfo(cboMsg);
+
+          // Determine if we should re-throw the exception OR if we try to mark plan as reAnayzeAST to retry
+          // planning as non-CBO.
+          if (e instanceof CalciteSubquerySemanticException
+              || e instanceof CalciteSubqueryRuntimeException
+              || e instanceof CalciteViewSemanticException) {
+            // Non-CBO path for CalciteSubquerySemanticException fails with completely different error
+            // and masks the original failure.
+            // Non-CBO path for CalciteViewSemanticException would fail in a similar way as CBO path.
             throw new SemanticException(e);
-          }
-          else if( e instanceof CalciteViewSemanticException) {
-            // non-cbo path retries to execute create view and
-            // we believe it will throw the same error message
-            throw new SemanticException(e);
-          }
-          else if (!conf.getBoolVar(ConfVars.HIVE_IN_TEST) || isMissingStats
-              || e instanceof CalciteSemanticException ) {
-              reAnalyzeAST = true;
-          } else if (e instanceof SemanticException && !conf.getBoolVar(ConfVars.HIVE_IN_TEST)) {
-            // although, its likely to be a valid exception, we will retry
-            // with cbo off anyway.
-            // for tests we would like to avoid retrying to catch cbo failures
-              reAnalyzeAST = true;
-          } else if (e instanceof RuntimeException) {
-            throw (RuntimeException) e;
-          } else if (e instanceof SemanticException) {
+          } else if (isImpalaPlan) {
+            // Non-CBO Impala plans are not supported, so propagate Impala exeception.
             throw e;
-          } else {
+          }
+
+          boolean isHiveTest = conf.getBoolVar(ConfVars.HIVE_IN_TEST);
+          // At this point we retry with CBO off:
+          // 1) If this is not test mode (common case)
+          // 2) If we are in test mode and we are missing stats
+          // 3) if we are in test mode and a CalciteSemanticException is generated
+          reAnalyzeAST = (!isHiveTest || isMissingStats ||  e instanceof CalciteSemanticException);
+          if (!reAnalyzeAST) {
+            if (e instanceof RuntimeException || e instanceof SemanticException) {
+              // These types of exceptions do not need wrapped
+              throw e;
+            }
+            // Wrap all other errors (Should only hit in tests)
             throw new SemanticException(e);
           }
         } finally {
@@ -679,6 +676,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           disableJoinMerge = defaultJoinMerge;
           disableSemJoinReordering = false;
           if (reAnalyzeAST) {
+            Preconditions.checkState(!isImpalaPlan, "Impala planning requires CBO plan");
             init(true);
             prunedPartitions.clear();
             // Assumption: At this point Parse Tree gen & resolution will always
@@ -1677,7 +1675,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
       return genFileSinkPlan(dest, getQB(), tableScanOp, compiledPlan);
     } catch (HiveException e) {
-      throw new RuntimeException("Encountered Hive exception generating an Impala plan: ", e);
+      throw new RuntimeException(e);
     }
   }
 
