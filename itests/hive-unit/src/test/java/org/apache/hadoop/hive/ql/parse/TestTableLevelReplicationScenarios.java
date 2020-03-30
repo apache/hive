@@ -866,7 +866,9 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
             "'" +  HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='true'",
             "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES.varname + "'='true'",
             "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES.varname + "'='true'",
-            "'" + ReplUtils.REPL_DUMP_INCLUDE_ACID_TABLES + "'='true'"
+            "'" + ReplUtils.REPL_DUMP_INCLUDE_ACID_TABLES + "'='true'",
+            "'" + HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname + "'='" + REPLICA_EXTERNAL_BASE + "'",
+            "'distcp.options.pugpb'=''"
     );
     replicatedTables = new String[] {"in1", "in2", "in3", "in4", "in5"};
     bootstrapTables = new String[] {"in2", "in3", "in4", "in5"};
@@ -892,10 +894,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
   @Test
   public void testRenameTableScenariosWithReplaceExternalTable() throws Throwable {
     List<String> loadWithClause = ReplicationTestUtils.externalTableBasePathWithClause(REPLICA_EXTERNAL_BASE, replica);
-    List<String> dumpWithClause = Arrays.asList(
-            "'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='true'",
-            "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES.varname + "'='true'"
-    );
+    List<String> dumpWithClause = ReplicationTestUtils.externalTableWithClause(loadWithClause, true, true);
     String replPolicy = primaryDbName + ".'(in[0-9]+)|(out4)|(out5)|(out1500)'";
     String lastReplId = replicateAndVerify(replPolicy, null, null, dumpWithClause,
             loadWithClause, new String[] {}, new String[] {});
@@ -918,7 +917,9 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     String newPolicy = primaryDbName + ".'(in[0-9]+)|(out1500)|(in2)'";
     dumpWithClause = Arrays.asList(
             "'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='true'",
-            "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES.varname + "'='false'"
+            "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES.varname + "'='false'",
+            "'" + HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname + "'='" + REPLICA_EXTERNAL_BASE + "'",
+            "'distcp.options.pugpb'=''"
     );
 
     // in2 should be dropped.
@@ -1044,7 +1045,9 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
             "'" +  HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='true'",
             "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES.varname + "'='true'",
             "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES.varname + "'='true'",
-            "'" + ReplUtils.REPL_DUMP_INCLUDE_ACID_TABLES + "'='true'"
+            "'" + ReplUtils.REPL_DUMP_INCLUDE_ACID_TABLES + "'='true'",
+            "'" + HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname + "'='" + REPLICA_EXTERNAL_BASE + "'",
+            "'distcp.options.pugpb'=''"
     );
 
     replicatedTables = new String[] {"in1", "in2", "in3", "in4", "in5", "in6", "in7", "in9"};
@@ -1059,7 +1062,9 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
 
     dumpWithClause = Arrays.asList(
             "'" +  HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='true'",
-            "'" + ReplUtils.REPL_DUMP_INCLUDE_ACID_TABLES + "'='true'"
+            "'" + ReplUtils.REPL_DUMP_INCLUDE_ACID_TABLES + "'='true'",
+            "'" + HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname + "'='" + REPLICA_EXTERNAL_BASE + "'",
+            "'distcp.options.pugpb'=''"
     );
 
     // Database replication with ACID and EXTERNAL table.

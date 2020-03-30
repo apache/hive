@@ -21,14 +21,12 @@ import com.google.common.collect.Lists;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import java.io.IOException;
 import java.util.List;
@@ -40,7 +38,7 @@ final class MajorQueryCompactor extends QueryCompactor {
 
   @Override
   void runCompaction(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
-      ValidWriteIdList writeIds, CompactionInfo compactionInfo) throws IOException, HiveException {
+      ValidWriteIdList writeIds, CompactionInfo compactionInfo) throws IOException {
     AcidUtils
         .setAcidOperationalProperties(hiveConf, true, AcidUtils.getAcidOperationalProperties(table.getParameters()));
 
@@ -83,57 +81,34 @@ final class MajorQueryCompactor extends QueryCompactor {
    * (current write id will be the same as original write id).
    * We will be achieving the ordering via a custom split grouper for compactor.
    * See {@link org.apache.hadoop.hive.conf.HiveConf.ConfVars#SPLIT_GROUPING_MODE} for the config description.
-   * See {@link org.apache.hadoop.hive.ql.exec.tez.SplitGrouper#getCompactorSplitGroups(InputSplit[], Configuration)}
-   *  for details on the mechanism.
    */
-  private List<String> getCreateQueries(String fullName, Table t, String tmpTableLocation) throws HiveException {
-    StringBuilder query = new StringBuilder(Util.getCreateTempTableQueryWithAcidColumns(fullName, t));
-    org.apache.hadoop.hive.ql.metadata.Table table = Hive.get().getTable(t.getDbName(), t.getTableName(), false);
-    int numBuckets = 1;
-    int bucketingVersion = 0;
-    if (table != null) {
-      numBuckets = Math.max(table.getNumBuckets(), numBuckets);
-      bucketingVersion = table.getBucketingVersion();
-    }
-    query.append(" clustered by (`bucket`) into ").append(numBuckets).append(" buckets");
-    query.append(" stored as orc");
-    query.append(" location '");
-    query.append(tmpTableLocation);
-    query.append("' tblproperties ('transactional'='false',");
-    query.append(" 'bucketing_version'='");
-    query.append(bucketingVersion);
-    query.append("','");
-    query.append(AcidUtils.COMPACTOR_TABLE_PROPERTY);
-    query.append("'='true'");
-    query.append(")");
-    return Lists.newArrayList(query.toString());
+  private List<String> getCreateQueries(String fullName, Table t, String tmpTableLocation) {
+    return Lists.newArrayList(new CompactionQueryBuilder(
+        CompactionQueryBuilder.CompactionType.MAJOR_CRUD,
+        CompactionQueryBuilder.Operation.CREATE,
+        fullName)
+        .setSourceTab(t)
+        .setLocation(tmpTableLocation)
+        .build());
   }
 
   private List<String> getCompactionQueries(Table t, Partition p, String tmpName) {
-    String fullName = t.getDbName() + "." + t.getTableName();
-    StringBuilder query = new StringBuilder("insert into table " + tmpName + " ");
-    StringBuilder filter = new StringBuilder();
-    if (p != null) {
-      filter.append(" where ");
-      List<String> vals = p.getValues();
-      List<FieldSchema> keys = t.getPartitionKeys();
-      assert keys.size() == vals.size();
-      for (int i = 0; i < keys.size(); ++i) {
-        filter.append(i == 0 ? "`" : " and `").append(keys.get(i).getName()).append("`='").append(vals.get(i))
-            .append("'");
-      }
-    }
-    query.append(" select validate_acid_sort_order(ROW__ID.writeId, ROW__ID.bucketId, ROW__ID.rowId), ROW__ID.writeId, "
-        + "ROW__ID.bucketId, ROW__ID.rowId, ROW__ID.writeId, NAMED_STRUCT(");
-    List<FieldSchema> cols = t.getSd().getCols();
-    for (int i = 0; i < cols.size(); ++i) {
-      query.append(i == 0 ? "'" : ", '").append(cols.get(i).getName()).append("', ").append(cols.get(i).getName());
-    }
-    query.append(") from ").append(fullName).append(filter);
-    return Lists.newArrayList(query.toString());
+    return Lists.newArrayList(
+        new CompactionQueryBuilder(
+            CompactionQueryBuilder.CompactionType.MAJOR_CRUD,
+            CompactionQueryBuilder.Operation.INSERT,
+            tmpName)
+            .setFromTableName(t.getTableName())
+            .setSourceTab(t)
+            .setSourcePartition(p)
+        .build());
   }
 
   private List<String> getDropQueries(String tmpTableName) {
-    return Lists.newArrayList("drop table if exists " + tmpTableName);
+    return Lists.newArrayList(
+        new CompactionQueryBuilder(
+            CompactionQueryBuilder.CompactionType.MAJOR_CRUD,
+            CompactionQueryBuilder.Operation.DROP,
+            tmpTableName).build());
   }
 }

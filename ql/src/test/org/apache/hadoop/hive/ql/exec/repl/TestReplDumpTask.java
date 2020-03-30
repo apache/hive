@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.repl.dump.HiveWrapper;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.junit.Test;
@@ -127,13 +128,15 @@ public class TestReplDumpTask {
       private int tableDumpCount = 0;
 
       @Override
-      void dumpTable(String dbName, String tblName, String validTxnList, Path dbRoot, Path replDataDir,
-                     long lastReplId, Hive hiveDb, HiveWrapper.Tuple<Table> tuple)
+      List<EximUtil.ManagedTableCopyPath> dumpTable(String dbName, String tblName, String validTxnList, Path dbRoot,
+                                               Path replDataDir, long lastReplId, Hive hiveDb,
+                                               HiveWrapper.Tuple<Table> tuple)
           throws Exception {
         tableDumpCount++;
         if (tableDumpCount > 1) {
           throw new TestException();
         }
+        return Collections.emptyList();
       }
     };
 

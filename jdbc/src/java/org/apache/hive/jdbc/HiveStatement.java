@@ -20,6 +20,7 @@ package org.apache.hive.jdbc;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.jdbc.logs.InPlaceUpdateStream;
 import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.RowSetFactory;
@@ -53,6 +54,7 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * HiveStatement.
@@ -60,13 +62,17 @@ import java.util.Map;
  */
 public class HiveStatement implements java.sql.Statement {
   public static final Logger LOG = LoggerFactory.getLogger(HiveStatement.class.getName());
-  public static final int DEFAULT_FETCH_SIZE = 1000;
+
+  private static final int DEFAULT_FETCH_SIZE =
+      HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE.defaultIntVal;
+
   private final HiveConnection connection;
   private TCLIService.Iface client;
   private TOperationHandle stmtHandle = null;
   private final TSessionHandle sessHandle;
   Map<String,String> sessConf = new HashMap<String,String>();
-  private int fetchSize = DEFAULT_FETCH_SIZE;
+  private int fetchSize;
+  private final int defaultFetchSize;
   private boolean isScrollableResultset = false;
   private boolean isOperationComplete = false;
   /**
@@ -122,26 +128,22 @@ public class HiveStatement implements java.sql.Statement {
 
   public HiveStatement(HiveConnection connection, TCLIService.Iface client,
       TSessionHandle sessHandle) {
-    this(connection, client, sessHandle, false, DEFAULT_FETCH_SIZE);
+    this(connection, client, sessHandle, false, 0, DEFAULT_FETCH_SIZE);
   }
 
-  public HiveStatement(HiveConnection connection, TCLIService.Iface client,
-      TSessionHandle sessHandle, int fetchSize) {
-    this(connection, client, sessHandle, false, fetchSize);
-  }
+  public HiveStatement(HiveConnection connection, TCLIService.Iface client, TSessionHandle sessHandle,
+      boolean isScrollableResultset, int initFetchSize, int defaultFetchSize) {
+    this.connection = Objects.requireNonNull(connection);
+    this.client = Objects.requireNonNull(client);
+    this.sessHandle = Objects.requireNonNull(sessHandle);
 
-  public HiveStatement(HiveConnection connection, TCLIService.Iface client,
-                       TSessionHandle sessHandle, boolean isScrollableResultset) {
-    this(connection, client, sessHandle, isScrollableResultset, DEFAULT_FETCH_SIZE);
-  }
+    if (initFetchSize < 0 || defaultFetchSize <= 0) {
+      throw new IllegalArgumentException();
+    }
 
-  public HiveStatement(HiveConnection connection, TCLIService.Iface client,
-      TSessionHandle sessHandle, boolean isScrollableResultset, int fetchSize) {
-    this.connection = connection;
-    this.client = client;
-    this.sessHandle = sessHandle;
     this.isScrollableResultset = isScrollableResultset;
-    this.fetchSize = fetchSize;
+    this.defaultFetchSize = defaultFetchSize;
+    this.fetchSize = (initFetchSize == 0) ? defaultFetchSize : initFetchSize;
   }
 
   /*
@@ -811,12 +813,9 @@ public class HiveStatement implements java.sql.Statement {
   public void setFetchSize(int rows) throws SQLException {
     checkConnection("setFetchSize");
     if (rows > 0) {
-      fetchSize = rows;
+      this.fetchSize = rows;
     } else if (rows == 0) {
-      // Javadoc for Statement interface states that if the value is zero
-      // then "fetch size" hint is ignored.
-      // In this case it means reverting it to the default value.
-      fetchSize = DEFAULT_FETCH_SIZE;
+      this.fetchSize = this.defaultFetchSize;
     } else {
       throw new SQLException("Fetch size must be greater or equal to 0");
     }

@@ -15,30 +15,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.hadoop.hive.metastore.security;
 
-package org.apache.hadoop.hive.ql.exec.repl;
-
-import org.apache.hadoop.hive.ql.plan.Explain;
-import org.apache.hadoop.hive.ql.plan.Explain.Level;
-
-import java.io.Serializable;
+import org.junit.BeforeClass;
 
 /**
- * ReplLoadCompleteAckWork.
- * FS based Acknowledgement for repl load complete
- *
+ * TestZookeeperTokenStore with zookeeper SSL communication disabled.
  */
-@Explain(displayName = "Repl Load Complete Ack", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class ReplLoadCompleteAckWork implements Serializable {
-  private static final long serialVersionUID = 1L;
-  private String dumpPath;
+public class TestZookeeperTokenStorePlain extends ZooKeeperTokenStoreTestBase {
 
-  public String getDumpPath() {
-    return dumpPath;
+  public TestZookeeperTokenStorePlain(){
+    super();
   }
 
-  public ReplLoadCompleteAckWork(String dumpPath) {
-    this.dumpPath = dumpPath;
+  @BeforeClass
+  public static void setUp() throws Exception {
+    setUpInternal(false);
   }
-
 }

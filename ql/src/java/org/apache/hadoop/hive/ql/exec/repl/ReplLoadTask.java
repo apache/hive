@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.exec.repl;
 
 import com.google.common.collect.Collections2;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -44,6 +45,7 @@ import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.table.TableContext;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.util.Context;
 import org.apache.hadoop.hive.ql.exec.repl.incremental.IncrementalLoadTasksBuilder;
 import org.apache.hadoop.hive.ql.exec.repl.util.AddDependencyToLeaves;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.TaskTracker;
 import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -126,16 +128,8 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       if (!iterator.hasNext() && constraintIterator.hasNext()) {
         loadingConstraint = true;
       }
-      while ((iterator.hasNext() || (loadingConstraint && constraintIterator.hasNext()) ||
-              (work.getPathsToCopyIterator().hasNext())) && loadTaskTracker.canAddMoreTasks()) {
-        // First start the distcp tasks to copy the files related to external table. The distcp tasks should be
-        // started first to avoid ddl task trying to create table/partition directory. Distcp task creates these
-        // directory with proper permission and owner.
-        if (work.getPathsToCopyIterator().hasNext()) {
-          scope.rootTasks.addAll(new ExternalTableCopyTaskBuilder(work, conf).tasks(loadTaskTracker));
-          break;
-        }
-
+      while ((iterator.hasNext() || (loadingConstraint && constraintIterator.hasNext()))
+              && loadTaskTracker.canAddMoreTasks()) {
         BootstrapEvent next;
         if (!loadingConstraint) {
           next = iterator.next();
@@ -252,8 +246,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
 
       boolean addAnotherLoadTask = iterator.hasNext()
           || loadTaskTracker.hasReplicationState()
-          || constraintIterator.hasNext()
-          || work.getPathsToCopyIterator().hasNext();
+          || constraintIterator.hasNext();
 
       if (addAnotherLoadTask) {
         createBuilderTask(scope.rootTasks);
@@ -262,8 +255,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       // Update last repl ID of the database only if the current dump is not incremental. If bootstrap
       // is combined with incremental dump, it contains only tables to bootstrap. So, needn't change
       // last repl ID of the database.
-      if (!iterator.hasNext() && !constraintIterator.hasNext() && !work.getPathsToCopyIterator().hasNext()
-              && !work.isIncrementalLoad()) {
+      if (!iterator.hasNext() && !constraintIterator.hasNext() && !work.isIncrementalLoad()) {
         loadTaskTracker.update(updateDatabaseLastReplID(maxTasks, loadContext, scope));
         work.updateDbEventState(null);
       }
@@ -320,18 +312,17 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
   }
 
   private void createReplLoadCompleteAckTask() {
-    if ((work.isIncrementalLoad() && !work.incrementalLoadTasksBuilder().hasMoreWork() && !work.hasBootstrapLoadTasks()
-            && !work.getPathsToCopyIterator().hasNext())
-            || (!work.isIncrementalLoad() && !work.hasBootstrapLoadTasks()
-            && !work.getPathsToCopyIterator().hasNext())) {
+    if ((work.isIncrementalLoad() && !work.incrementalLoadTasksBuilder().hasMoreWork() && !work.hasBootstrapLoadTasks())
+            || (!work.isIncrementalLoad() && !work.hasBootstrapLoadTasks())) {
       //All repl load tasks are executed and status is 0, create the task to add the acknowledgement
-      ReplLoadCompleteAckWork replLoadCompleteAckWork = new ReplLoadCompleteAckWork(work.dumpDirectory);
-      Task<ReplLoadCompleteAckWork> loadCompleteAckWorkTask = TaskFactory.get(replLoadCompleteAckWork, conf);
+      AckWork replLoadAckWork = new AckWork(
+              new Path(work.dumpDirectory, ReplUtils.LOAD_ACKNOWLEDGEMENT));
+      Task<AckWork> loadAckWorkTask = TaskFactory.get(replLoadAckWork, conf);
       if (this.childTasks.isEmpty()) {
-        this.childTasks.add(loadCompleteAckWorkTask);
+        this.childTasks.add(loadAckWorkTask);
       } else {
         DAGTraversal.traverse(this.childTasks,
-                new AddDependencyToLeaves(Collections.singletonList(loadCompleteAckWorkTask)));
+                new AddDependencyToLeaves(Collections.singletonList(loadAckWorkTask)));
       }
     }
   }
@@ -431,7 +422,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       IncrementalLoadTasksBuilder builder = work.incrementalLoadTasksBuilder();
 
       // If incremental events are already applied, then check and perform if need to bootstrap any tables.
-      if (!builder.hasMoreWork() && !work.getPathsToCopyIterator().hasNext()) {
+      if (!builder.hasMoreWork() && work.isLastReplIDUpdated()) {
         if (work.hasBootstrapLoadTasks()) {
           LOG.debug("Current incremental dump have tables to be bootstrapped. Switching to bootstrap "
                   + "mode after applying all events.");
@@ -442,20 +433,13 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       List<Task<?>> childTasks = new ArrayList<>();
       int maxTasks = conf.getIntVar(HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS);
 
-      // First start the distcp tasks to copy the files related to external table. The distcp tasks should be
-      // started first to avoid ddl task trying to create table/partition directory. Distcp task creates these
-      // directory with proper permission and owner.
       TaskTracker tracker = new TaskTracker(maxTasks);
-      if (work.getPathsToCopyIterator().hasNext()) {
-        childTasks.addAll(new ExternalTableCopyTaskBuilder(work, conf).tasks(tracker));
-      } else {
-        childTasks.add(builder.build(context, getHive(), LOG, tracker));
-      }
+      childTasks.add(builder.build(context, getHive(), LOG, tracker));
 
       // If there are no more events to be applied, add a task to update the last.repl.id of the
       // target database to the event id of the last event considered by the dump. Next
       // incremental cycle won't consider the events in this dump again if it starts from this id.
-      if (!builder.hasMoreWork() && !work.getPathsToCopyIterator().hasNext()) {
+      if (!builder.hasMoreWork()) {
         // The name of the database to be loaded into is either specified directly in REPL LOAD
         // command i.e. when dbNameToLoadIn has a valid dbname or is available through dump
         // metadata during table level replication.
@@ -484,14 +468,13 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
                   TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), alterDbDesc), conf);
 
           DAGTraversal.traverse(childTasks, new AddDependencyToLeaves(updateReplIdTask));
+          work.setLastReplIDUpdated(true);
           LOG.debug("Added task to set last repl id of db " + dbName + " to " + lastEventid);
         }
       }
 
-      // Either the incremental has more work or the external table file copy has more paths to process.
-      // Once all the incremental events are applied and external tables file copies are done, enable
-      // bootstrap of tables if exist.
-      if (builder.hasMoreWork() || work.getPathsToCopyIterator().hasNext() || work.hasBootstrapLoadTasks()) {
+      // Once all the incremental events are applied, enable bootstrap of tables if exist.
+      if (builder.hasMoreWork() || work.hasBootstrapLoadTasks()) {
         DAGTraversal.traverse(childTasks, new AddDependencyToLeaves(TaskFactory.get(work, conf)));
       }
       this.childTasks = childTasks;

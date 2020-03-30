@@ -892,11 +892,7 @@ public class Driver implements IDriver {
 
     while (numRows < maxRows) {
       if (driverContext.getResStream() == null) {
-        if (numRows > 0) {
-          return true;
-        } else {
-          return false;
-        }
+        return (numRows > 0);
       }
 
       bos.reset();

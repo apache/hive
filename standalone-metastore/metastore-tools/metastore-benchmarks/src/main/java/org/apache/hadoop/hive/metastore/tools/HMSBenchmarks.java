@@ -408,6 +408,15 @@ final class HMSBenchmarks {
     }
   }
 
+  static DescriptiveStatistics benchmarkOpenTxns(@NotNull MicroBenchmark bench,
+                                                 @NotNull BenchData data,
+                                                 int howMany) {
+    final HMSClient client = data.getClient();
+    return bench.measure(null,
+        () -> throwingSupplierWrapper(() -> client.openTxn(howMany)),
+        () -> throwingSupplierWrapper(() -> client.abortTxns(client.getOpenTxns())));
+  }
+
   private static void createManyTables(HMSClient client, int howMany, String dbName, String format) {
     List<FieldSchema> columns = createSchema(new ArrayList<>(Arrays.asList("name", "string")));
     List<FieldSchema> partitions = createSchema(new ArrayList<>(Arrays.asList("date", "string")));
@@ -443,5 +452,6 @@ final class HMSBenchmarks {
     return benchmark.measure(() ->
         throwingSupplierWrapper(client::getCurrentNotificationId));
   }
+
 
 }
