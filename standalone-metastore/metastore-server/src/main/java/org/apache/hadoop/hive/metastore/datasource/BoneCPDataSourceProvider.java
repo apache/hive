@@ -33,6 +33,7 @@ import com.jolbox.bonecp.BoneCPConfig;
 import com.jolbox.bonecp.BoneCPDataSource;
 import com.jolbox.bonecp.StatisticsMBean;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.slf4j.Logger;
@@ -54,12 +55,12 @@ public class BoneCPDataSourceProvider implements DataSourceProvider {
 
   @Override
   public DataSource create(Configuration hdpConfig) throws SQLException {
-
     LOG.debug("Creating BoneCP connection pool for the MetaStore");
 
     String driverUrl = DataSourceProvider.getMetastoreJdbcDriverUrl(hdpConfig);
     String user = DataSourceProvider.getMetastoreJdbcUser(hdpConfig);
     String passwd = DataSourceProvider.getMetastoreJdbcPasswd(hdpConfig);
+
     int maxPoolSize = MetastoreConf.getIntVar(hdpConfig,
         MetastoreConf.ConfVars.CONNECTION_POOLING_MAX_CONNECTIONS);
 
@@ -67,26 +68,38 @@ public class BoneCPDataSourceProvider implements DataSourceProvider {
     long connectionTimeout = hdpConfig.getLong(CONNECTION_TIMEOUT_PROPERTY, 30000L);
     String partitionCount = properties.getProperty(PARTITION_COUNT_PROPERTY, "1");
 
-    BoneCPConfig config = null;
+    BoneCPConfig config;
     try {
       config = new BoneCPConfig(properties);
     } catch (Exception e) {
       throw new SQLException("Cannot create BoneCP configuration: ", e);
     }
     config.setJdbcUrl(driverUrl);
+    config.setUser(user);
+    config.setPassword(passwd);
     // if we are waiting for connection for a long time, something is really wrong
     // better raise an error than hang forever
     // see DefaultConnectionStrategy.getConnectionInternal()
     config.setConnectionTimeoutInMs(connectionTimeout);
     config.setMaxConnectionsPerPartition(maxPoolSize);
     config.setPartitionCount(Integer.parseInt(partitionCount));
-    config.setUser(user);
-    config.setPassword(passwd);
 
-    if (determineDatabaseProduct(driverUrl) == MYSQL) {
+    Properties connProperties = new Properties();
+
+    DatabaseProduct dbProduct =  determineDatabaseProduct(driverUrl);
+    switch (dbProduct){
+      case MYSQL:
+        connProperties.put("rewriteBatchedStatements", true);
+        break;
+      case POSTGRES:
+        connProperties.put("reWriteBatchedInserts", true);
+        break;
+    }
+    config.setDriverProperties(connProperties);
+
+    if (dbProduct == MYSQL) {
       config.setInitSQL("SET @@session.sql_mode=ANSI_QUOTES");
     }
-
     return initMetrics(new BoneCPDataSource(config));
   }
 

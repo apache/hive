@@ -27,7 +27,6 @@ import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Savepoint;
 import java.sql.Statement;
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -178,12 +177,18 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   static final protected char LOCK_SHARED = 'r';
   static final protected char LOCK_SEMI_SHARED = 'w';
 
-  static final private int ALLOWED_REPEATED_DEADLOCKS = 10;
-  static final private Logger LOG = LoggerFactory.getLogger(TxnHandler.class.getName());
+  private static final int ALLOWED_REPEATED_DEADLOCKS = 10;
+  private static final Logger LOG = LoggerFactory.getLogger(TxnHandler.class.getName());
 
-  static private DataSource connPool;
+  private static DataSource connPool;
   private static DataSource connPoolMutex;
-  static private boolean doRetryOnConnPool = false;
+  private static boolean doRetryOnConnPool = false;
+
+  // Query definitions
+  private static final String HIVE_LOCKS_INSERT_QRY = "INSERT INTO \"HIVE_LOCKS\" ( " +
+      "\"HL_LOCK_EXT_ID\", \"HL_LOCK_INT_ID\", \"HL_TXNID\", \"HL_DB\", \"HL_TABLE\", \"HL_PARTITION\", " +
+      "\"HL_LOCK_STATE\", \"HL_LOCK_TYPE\", \"HL_LAST_HEARTBEAT\", \"HL_USER\", \"HL_HOST\", \"HL_AGENT_INFO\") " +
+      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, %s, ?, ?, ?)";
 
   private List<TransactionalMetaStoreEventListener> transactionalListeners;
 
@@ -611,11 +616,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       params.add(rqst.getUser());
       params.add(rqst.getHostname());
       List<List<String>> paramsList = new ArrayList<>(numTxns);
-      String dbEpochString = getDbEpochString();
+
       for (long i = first; i < first + numTxns; i++) {
         txnIds.add(i);
-        rows.add(i + "," + quoteChar(TXN_OPEN) + "," + dbEpochString + "," + dbEpochString + ",?,?,"
-                     + txnType.getValue());
+        rows.add(i + "," + quoteChar(TXN_OPEN) + "," + TxnDbUtil.getEpochFn(dbProduct) + ","
+                + TxnDbUtil.getEpochFn(dbProduct) + ",?,?," + txnType.getValue());
         paramsList.add(params);
       }
       insertPreparedStmts = sqlGenerator.createInsertValuesPreparedStmt(dbConn,
@@ -2520,73 +2525,59 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           }
           insertPreparedStmts = null;
         }
-        List<String> rows = new ArrayList<>();
-        List<List<String>> paramsList = new ArrayList<>();
+        String lastHB = isValidTxn(txnid) ? "0" : TxnDbUtil.getEpochFn(dbProduct);
+        String insertLocksQuery = String.format(HIVE_LOCKS_INSERT_QRY, lastHB);
+
+        int batchSize = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_VALUES_CLAUSE);
         long intLockId = 0;
-        String lastHBString = (isValidTxn(txnid) ? "0" : getDbEpochString());
-        for (LockComponent lc : rqst.getComponent()) {
-          if(lc.isSetOperationType() && lc.getOperationType() == DataOperationType.UNSET &&
-            (MetastoreConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST) || MetastoreConf.getBoolVar(conf, ConfVars.HIVE_IN_TEZ_TEST))) {
-            //old version of thrift client should have (lc.isSetOperationType() == false) but they do not
-            //If you add a default value to a variable, isSet() for that variable is true regardless of the where the
-            //message was created (for object variables.
-            // It works correctly for boolean vars, e.g. LockComponent.isTransactional).
-            //in test mode, upgrades are not tested, so client version and server version of thrift always matches so
-            //we see UNSET here it means something didn't set the appropriate value.
-            throw new IllegalStateException("Bug: operationType=" + lc.getOperationType() + " for component "
-              + lc + " agentInfo=" + rqst.getAgentInfo());
+
+        try (PreparedStatement pstmt = dbConn.prepareStatement(insertLocksQuery)) {
+          for (LockComponent lc : rqst.getComponent()) {
+            if (lc.isSetOperationType() && lc.getOperationType() == DataOperationType.UNSET &&
+              (MetastoreConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST) || MetastoreConf.getBoolVar(conf, ConfVars.HIVE_IN_TEZ_TEST))) {
+              //Old version of thrift client should have (lc.isSetOperationType() == false), but they do not
+              //If you add a default value to a variable, isSet() for that variable is true regardless of the where the
+              //message was created (for object variables).
+              //It works correctly for boolean vars, e.g. LockComponent.isTransactional).
+              //in test mode, upgrades are not tested, so client version and server version of thrift always matches so
+              //we see UNSET here it means something didn't set the appropriate value.
+              throw new IllegalStateException("Bug: operationType=" + lc.getOperationType() + " for component "
+                + lc + " agentInfo=" + rqst.getAgentInfo());
+            }
+            intLockId++;
+
+            char lockChar = 'z';
+            switch (lc.getType()) {
+              case EXCLUSIVE:
+                lockChar = LOCK_EXCLUSIVE;
+                break;
+              case SHARED_READ:
+                lockChar = LOCK_SHARED;
+                break;
+              case SHARED_WRITE:
+                lockChar = LOCK_SEMI_SHARED;
+                break;
+            }
+            pstmt.setLong(1, extLockId);
+            pstmt.setLong(2, intLockId);
+            pstmt.setLong(3, txnid);
+            pstmt.setString(4, normalizeCase(lc.getDbname()));
+            pstmt.setString(5, normalizeCase(lc.getTablename()));
+            pstmt.setString(6, normalizeCase(lc.getPartitionname()));
+            pstmt.setString(7, Character.toString(LOCK_WAITING));
+            pstmt.setString(8, Character.toString(lockChar));
+            pstmt.setString(9, rqst.getUser());
+            pstmt.setString(10, rqst.getHostname());
+            pstmt.setString(11, rqst.getAgentInfo());
+
+            pstmt.addBatch();
+            if (intLockId % batchSize == 0) {
+              pstmt.executeBatch();
+            }
           }
-          intLockId++;
-          String dbName = normalizeCase(lc.getDbname());
-          String tblName = normalizeCase(lc.getTablename());
-          String partName = normalizeCase(lc.getPartitionname());
-          LockType lockType = lc.getType();
-          char lockChar = 'z';
-          switch (lockType) {
-            case EXCLUSIVE:
-              lockChar = LOCK_EXCLUSIVE;
-              break;
-            case SHARED_READ:
-              lockChar = LOCK_SHARED;
-              break;
-            case SHARED_WRITE:
-              lockChar = LOCK_SEMI_SHARED;
-              break;
+          if (intLockId % batchSize != 0) {
+            pstmt.executeBatch();
           }
-          rows.add(extLockId + ", " + intLockId + "," + txnid + ", ?, " +
-                  ((tblName == null) ? "null" : "?") + ", " +
-                  ((partName == null) ? "null" : "?") + ", " +
-                  quoteChar(LOCK_WAITING) + ", " + quoteChar(lockChar) + ", " +
-                  //for locks associated with a txn, we always heartbeat txn and timeout based on that
-                  lastHBString + ", " +
-                  ((rqst.getUser() == null) ? "null" : "?")  + ", " +
-                  ((rqst.getHostname() == null) ? "null" : "?") + ", " +
-                  ((rqst.getAgentInfo() == null) ? "null" : "?"));// + ")";
-          List<String> params = new ArrayList<>();
-          params.add(dbName);
-          if (tblName != null) {
-            params.add(tblName);
-          }
-          if (partName != null) {
-            params.add(partName);
-          }
-          if (rqst.getUser() != null) {
-            params.add(rqst.getUser());
-          }
-          if (rqst.getHostname() != null) {
-            params.add(rqst.getHostname());
-          }
-          if (rqst.getAgentInfo() != null) {
-            params.add(rqst.getAgentInfo());
-          }
-          paramsList.add(params);
-        }
-        insertPreparedStmts = sqlGenerator.createInsertValuesPreparedStmt(dbConn,
-          "\"HIVE_LOCKS\" (\"HL_LOCK_EXT_ID\", \"HL_LOCK_INT_ID\", \"HL_TXNID\", \"HL_DB\", " +
-            "\"HL_TABLE\", \"HL_PARTITION\", \"HL_LOCK_STATE\", \"HL_LOCK_TYPE\", " +
-            "\"HL_LAST_HEARTBEAT\", \"HL_USER\", \"HL_HOST\", \"HL_AGENT_INFO\")", rows, paramsList);
-        for(PreparedStatement pst : insertPreparedStmts) {
-          int modCount = pst.executeUpdate();
         }
         dbConn.commit();
         success = true;
@@ -2961,7 +2952,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           txnIds.add(txn);
         }
         TxnUtils.buildQueryWithINClause(conf, queries,
-          new StringBuilder("UPDATE \"TXNS\" SET \"TXN_LAST_HEARTBEAT\" = " + getDbEpochString() +
+          new StringBuilder("UPDATE \"TXNS\" SET \"TXN_LAST_HEARTBEAT\" = " + TxnDbUtil.getEpochFn(dbProduct) +
             " WHERE \"TXN_STATE\" = " + quoteChar(TXN_OPEN) + " AND "),
           new StringBuilder(""), txnIds, "\"TXN_ID\"", true, false);
         int updateCnt = 0;
@@ -3926,37 +3917,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   }
 
   /**
-   * Returns the database specific query string representation which will return the milliseconds
-   * value after epoch.
-   * @return The string which will insert the current timestamp milliseconds value
-   * @throws MetaException For unknown database type
-   */
-  private static String epochInCurrentTimezone = null;
-  protected String getDbEpochString() throws MetaException {
-    switch (dbProduct) {
-      case DERBY:
-        if (epochInCurrentTimezone == null) {
-          epochInCurrentTimezone = new Timestamp(0).toString();
-        }
-        return "{ fn timestampdiff(sql_tsi_frac_second, timestamp('" + epochInCurrentTimezone +
-          "'), current_timestamp) } / 1000000";
-      case MYSQL:
-        return "round(unix_timestamp(curtime(4)) * 1000)";
-      case POSTGRES:
-        return "round(extract(epoch from current_timestamp) * 1000)";
-      case ORACLE:
-        return "(cast(systimestamp at time zone 'UTC' as date) - date '1970-01-01')*24*60*60*1000 " +
-          "+ cast(mod( extract( second from systimestamp ), 1 ) * 1000 as int)";
-      case SQLSERVER:
-        return "datediff_big(millisecond, '19700101', sysutcdatetime())";
-      default:
-        String msg = "Unknown database product: " + dbProduct.toString();
-        LOG.error(msg);
-        throw new MetaException(msg);
-    }
-  }
-
-  /**
    * Determine the current time, using the RDBMS as a source of truth
    * @param conn database connection
    * @return current time in milliseconds
@@ -4276,7 +4236,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       prefix.append("UPDATE \"TXNS\" SET \"TXN_STATE\" = " + quoteChar(TXN_ABORTED) +
         " WHERE \"TXN_STATE\" = " + quoteChar(TXN_OPEN) + " AND ");
       if(checkHeartbeat) {
-        suffix.append(" AND \"TXN_LAST_HEARTBEAT\" < ").append(getDbEpochString()).append("-").append(timeout);
+        suffix.append(" AND \"TXN_LAST_HEARTBEAT\" < ");
+        suffix.append(TxnDbUtil.getEpochFn(dbProduct)).append("-").append(timeout);
       }
 
       TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, txnids, "\"TXN_ID\"", true, false);
@@ -4524,8 +4485,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     long extLockId = locksBeingChecked.get(0).extLockId;
     String s = "UPDATE \"HIVE_LOCKS\" SET \"HL_LOCK_STATE\" = '" + LOCK_ACQUIRED + "', " +
       //if lock is part of txn, heartbeat info is in txn record
-      "\"HL_LAST_HEARTBEAT\" = " + (isValidTxn(txnId) ? 0 : getDbEpochString()) +
-      ", \"HL_ACQUIRED_AT\" = " + getDbEpochString() + ",\"HL_BLOCKEDBY_EXT_ID\"=NULL,\"HL_BLOCKEDBY_INT_ID\"=NULL" +
+      "\"HL_LAST_HEARTBEAT\" = " + (isValidTxn(txnId) ? 0 : TxnDbUtil.getEpochFn(dbProduct)) +
+      ",\"HL_ACQUIRED_AT\" = " + TxnDbUtil.getEpochFn(dbProduct) +
+      ",\"HL_BLOCKEDBY_EXT_ID\"=NULL,\"HL_BLOCKEDBY_INT_ID\"=NULL" +
       " WHERE \"HL_LOCK_EXT_ID\" = " +  extLockId;
     LOG.debug("Going to execute update <" + s + ">");
     int rc = stmt.executeUpdate(s);
@@ -4570,7 +4532,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       stmt = dbConn.createStatement();
 
       String s = "UPDATE \"HIVE_LOCKS\" SET \"HL_LAST_HEARTBEAT\" = " +
-        getDbEpochString() + " WHERE \"HL_LOCK_EXT_ID\" = " + extLockId;
+          TxnDbUtil.getEpochFn(dbProduct) + " WHERE \"HL_LOCK_EXT_ID\" = " + extLockId;
       LOG.debug("Going to execute update <" + s + ">");
       int rc = stmt.executeUpdate(s);
       if (rc < 1) {
@@ -4593,7 +4555,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     Statement stmt = null;
     try {
       stmt = dbConn.createStatement();
-      String s = "UPDATE \"TXNS\" SET \"TXN_LAST_HEARTBEAT\" = " + getDbEpochString() +
+      String s = "UPDATE \"TXNS\" SET \"TXN_LAST_HEARTBEAT\" = " + TxnDbUtil.getEpochFn(dbProduct) +
         " WHERE \"TXN_ID\" = " + txnid + " AND \"TXN_STATE\" = '" + TXN_OPEN + "'";
       LOG.debug("Going to execute update <" + s + ">");
       int rc = stmt.executeUpdate(s);
@@ -4849,8 +4811,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       stmt = dbConn.createStatement();
       //doing a SELECT first is less efficient but makes it easier to debug things
       String s = "SELECT DISTINCT \"HL_LOCK_EXT_ID\" FROM \"HIVE_LOCKS\" WHERE \"HL_LAST_HEARTBEAT\" < " +
-          getDbEpochString() + "-" + timeout + " AND \"HL_TXNID\" = 0"; //when txnid is <> 0, the lock is
-      //associated with a txn and is handled by performTimeOuts()
+          TxnDbUtil.getEpochFn(dbProduct) + "-" + timeout + " AND \"HL_TXNID\" = 0";
+      //when txnid is <> 0, the lock is associated with a txn and is handled by performTimeOuts()
       //want to avoid expiring locks for a txn w/o expiring the txn itself
       List<Long> extLockIDs = new ArrayList<>();
       rs = stmt.executeQuery(s);
@@ -4870,7 +4832,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
       //include same hl_last_heartbeat condition in case someone heartbeated since the select
       prefix.append("DELETE FROM \"HIVE_LOCKS\" WHERE \"HL_LAST_HEARTBEAT\" < ");
-      prefix.append(getDbEpochString()).append("-").append(timeout);
+      prefix.append(TxnDbUtil.getEpochFn(dbProduct)).append("-").append(timeout);
       prefix.append(" AND \"HL_TXNID\" = 0 AND ");
 
       TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, extLockIDs, "\"HL_LOCK_EXT_ID\"", true, false);
@@ -4927,7 +4889,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       while(true) {
         stmt = dbConn.createStatement();
         String s = " \"TXN_ID\" FROM \"TXNS\" WHERE \"TXN_STATE\" = '" + TXN_OPEN +
-            "' AND \"TXN_LAST_HEARTBEAT\" <  " + getDbEpochString() + "-" + timeout +
+            "' AND \"TXN_LAST_HEARTBEAT\" <  " + TxnDbUtil.getEpochFn(dbProduct) + "-" + timeout +
             " AND \"TXN_TYPE\" != " + TxnType.REPL_CREATED.getValue();
         //safety valve for extreme cases
         s = sqlGenerator.addLimitClause(10 * TIMED_OUT_TXN_ABORT_BATCH_SIZE, s);
@@ -5098,13 +5060,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   }
   private static String getMessage(SQLException ex) {
     return ex.getMessage() + " (SQLState=" + ex.getSQLState() + ", ErrorCode=" + ex.getErrorCode() + ")";
-  }
-  /**
-   * Useful for building SQL strings
-   * @param value may be {@code null}
-   */
-  private static String valueOrNullLiteral(String value) {
-    return value == null ? "null" : quoteString(value);
   }
   static String quoteString(String input) {
     return "'" + input + "'";
