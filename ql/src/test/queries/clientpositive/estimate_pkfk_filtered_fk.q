@@ -37,18 +37,3 @@ where
     and s.crew_size=2
     and ship_type_id=st.id
 ;
-
--- HIVE-23082: fk may contain null values; the estimation should be retained
-insert into ships values (-1,null,1);
-
-explain analyze
-select
-    s.id
-from
-    ships s,
-    ship_types st
-where
-    st.type_name='galaxy class' 
-    and s.crew_size=2
-    and ship_type_id=st.id
-;
