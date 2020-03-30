@@ -40,7 +40,7 @@ import org.apache.calcite.sql.type.ReturnTypes;
 import org.apache.calcite.sql.type.SqlOperandTypeInference;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
-import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveMergeablAggregate;
+import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveMergeableAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSqlFunction;
 import org.slf4j.Logger;
@@ -220,14 +220,14 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
 
   // FIXME move this to common place
   private SqlAggFunction getDS_FN(SqlAggFunction oldAggFunction) {
-HiveMergeablAggregate union = new HiveMergeablAggregate(
+      HiveMergeableAggregate union = new HiveMergeableAggregate(
     "ds_hll_union",
     SqlKind.OTHER_FUNCTION,
     oldAggFunction.getReturnTypeInference(),
     oldAggFunction.getOperandTypeInference(),
     oldAggFunction.getOperandTypeChecker()
     );
-    return new HiveMergeablAggregate(
+      return new HiveMergeableAggregate(
         "ds_hll_sketch",
         SqlKind.OTHER_FUNCTION,
         oldAggFunction.getReturnTypeInference(),
