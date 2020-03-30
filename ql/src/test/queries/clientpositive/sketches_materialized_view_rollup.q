@@ -21,15 +21,10 @@ create  materialized view mv_1 as
 
 -- see if we use the mv
 explain
-select category, ds_hll_estimate(ds_hll_sketch(id)) from sketch_input group by category;
-select category, ds_hll_estimate(ds_hll_sketch(id)) from sketch_input group by category;
+select category, round(ds_hll_estimate(ds_hll_sketch(id))) from sketch_input group by category;
+select category, round(ds_hll_estimate(ds_hll_sketch(id))) from sketch_input group by category;
 
 -- the mv should be used - the rollup should be possible
-explain
-select ds_hll_estimate(ds_hll_sketch(id)) from sketch_input;
-select ds_hll_estimate(ds_hll_sketch(id)) from sketch_input;
-
--- also round the output
 explain
 select round(ds_hll_estimate(ds_hll_sketch(id))) from sketch_input;
 select round(ds_hll_estimate(ds_hll_sketch(id))) from sketch_input;
