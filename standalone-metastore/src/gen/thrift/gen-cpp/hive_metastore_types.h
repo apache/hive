@@ -9353,19 +9353,30 @@ inline std::ostream& operator<<(std::ostream& out, const FireEventRequest& obj)
   return out;
 }
 
+typedef struct _FireEventResponse__isset {
+  _FireEventResponse__isset() : eventId(false) {}
+  bool eventId :1;
+} _FireEventResponse__isset;
 
 class FireEventResponse {
  public:
 
   FireEventResponse(const FireEventResponse&);
   FireEventResponse& operator=(const FireEventResponse&);
-  FireEventResponse() {
+  FireEventResponse() : eventId(0) {
   }
 
   virtual ~FireEventResponse() throw();
+  int64_t eventId;
 
-  bool operator == (const FireEventResponse & /* rhs */) const
+  _FireEventResponse__isset __isset;
+
+  void __set_eventId(const int64_t val);
+
+  bool operator == (const FireEventResponse & rhs) const
   {
+    if (!(eventId == rhs.eventId))
+      return false;
     return true;
   }
   bool operator != (const FireEventResponse &rhs) const {

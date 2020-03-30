@@ -22756,6 +22756,10 @@ FireEventResponse::~FireEventResponse() throw() {
 }
 
 
+void FireEventResponse::__set_eventId(const int64_t val) {
+  this->eventId = val;
+}
+
 uint32_t FireEventResponse::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
@@ -22775,7 +22779,20 @@ uint32_t FireEventResponse::read(::apache::thrift::protocol::TProtocol* iprot) {
     if (ftype == ::apache::thrift::protocol::T_STOP) {
       break;
     }
-    xfer += iprot->skip(ftype);
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->eventId);
+          this->__isset.eventId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
     xfer += iprot->readFieldEnd();
   }
 
@@ -22789,6 +22806,10 @@ uint32_t FireEventResponse::write(::apache::thrift::protocol::TProtocol* oprot) 
   apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
   xfer += oprot->writeStructBegin("FireEventResponse");
 
+  xfer += oprot->writeFieldBegin("eventId", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64(this->eventId);
+  xfer += oprot->writeFieldEnd();
+
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -22796,20 +22817,23 @@ uint32_t FireEventResponse::write(::apache::thrift::protocol::TProtocol* oprot) 
 
 void swap(FireEventResponse &a, FireEventResponse &b) {
   using ::std::swap;
-  (void) a;
-  (void) b;
+  swap(a.eventId, b.eventId);
+  swap(a.__isset, b.__isset);
 }
 
 FireEventResponse::FireEventResponse(const FireEventResponse& other887) {
-  (void) other887;
+  eventId = other887.eventId;
+  __isset = other887.__isset;
 }
 FireEventResponse& FireEventResponse::operator=(const FireEventResponse& other888) {
-  (void) other888;
+  eventId = other888.eventId;
+  __isset = other888.__isset;
   return *this;
 }
 void FireEventResponse::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
   out << "FireEventResponse(";
+  out << "eventId=" << to_string(eventId);
   out << ")";
 }
 

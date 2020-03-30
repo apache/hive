@@ -1138,7 +1138,7 @@ struct FireEventRequest {
 }
 
 struct FireEventResponse {
-    // NOP for now, this is just a place holder for future responses
+    1: i64 eventId
 }
 
 struct WriteNotificationLogRequest {
