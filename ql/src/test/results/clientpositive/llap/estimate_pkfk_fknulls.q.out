@@ -22,13 +22,11 @@ POSTHOOK: query: create table sr0 (sr_reason_sk bigint)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@sr0
-PREHOOK: query: insert into rx0 values ('AAAAAAAAAAAAAAAA',1),('AAAAAAAAGEAAAAAA',70),
-('A_2',2),('A_3',3),('A_4',4),('A_5',5),('A_6',6),('A_7',7),('A_8',8),('A_9',9),('A_10',10),('A_11',11),('A_12',12),('A_13',13),('A_14',14),('A_15',15),('A_16',16),('A_17',17),('A_18',18),('A_19',19),('A_20',20),('A_21',21),('A_22',22),('A_23',23),('A_24',24),('A_25',25),('A_26',26),('A_27',27),('A_28',28),('A_29',29),('A_30',30),('A_31',31),('A_32',32),('A_33',33),('A_34',34),('A_35',35),('A_36',36),('A_37',37),('A_38',38),('A_39',39),('A_40',40),('A_41',41),('A_42',42),('A_43',43),('A_44',44),('A_45',45),('A_46',46),('A_47',47),('A_48',48),('A_49',49),('A_50',50),('A_51',51),('A_52',52),('A_53',53),('A_54',54),('A_55',55),('A_56',56),('A_57',57),('A_58',58),('A_59',59),('A_60',60),('A_61',61),('A_62',62),('A_63',63),('A_64',64),('A_65',65),('A_66',66),('A_67',67),('A_68',68),('A_69',69)
+PREHOOK: query: insert into rx0 values ('AAAAAAAAAAAAAAAA',1),('AAAAAAAAGEAAAAAA',70)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@rx0
-POSTHOOK: query: insert into rx0 values ('AAAAAAAAAAAAAAAA',1),('AAAAAAAAGEAAAAAA',70),
-('A_2',2),('A_3',3),('A_4',4),('A_5',5),('A_6',6),('A_7',7),('A_8',8),('A_9',9),('A_10',10),('A_11',11),('A_12',12),('A_13',13),('A_14',14),('A_15',15),('A_16',16),('A_17',17),('A_18',18),('A_19',19),('A_20',20),('A_21',21),('A_22',22),('A_23',23),('A_24',24),('A_25',25),('A_26',26),('A_27',27),('A_28',28),('A_29',29),('A_30',30),('A_31',31),('A_32',32),('A_33',33),('A_34',34),('A_35',35),('A_36',36),('A_37',37),('A_38',38),('A_39',39),('A_40',40),('A_41',41),('A_42',42),('A_43',43),('A_44',44),('A_45',45),('A_46',46),('A_47',47),('A_48',48),('A_49',49),('A_50',50),('A_51',51),('A_52',52),('A_53',53),('A_54',54),('A_55',55),('A_56',56),('A_57',57),('A_58',58),('A_59',59),('A_60',60),('A_61',61),('A_62',62),('A_63',63),('A_64',64),('A_65',65),('A_66',66),('A_67',67),('A_68',68),('A_69',69)
+POSTHOOK: query: insert into rx0 values ('AAAAAAAAAAAAAAAA',1),('AAAAAAAAGEAAAAAA',70)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@rx0
@@ -71,12 +69,14 @@ bit_vector          	HL
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"sr_reason_sk\":\"true\"}}
 Warning: Shuffle Join MERGEJOIN[16][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: insert into sr0 select a.* from sr0 a,sr0 b
+PREHOOK: query: insert into sr0 select a.* from sr0 a,rx0 b
 PREHOOK: type: QUERY
+PREHOOK: Input: default@rx0
 PREHOOK: Input: default@sr0
 PREHOOK: Output: default@sr0
-POSTHOOK: query: insert into sr0 select a.* from sr0 a,sr0 b
+POSTHOOK: query: insert into sr0 select a.* from sr0 a,rx0 b
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@rx0
 POSTHOOK: Input: default@sr0
 POSTHOOK: Output: default@sr0
 POSTHOOK: Lineage: sr0.sr_reason_sk SIMPLE [(sr0)a.FieldSchema(name:sr_reason_sk, type:bigint, comment:null), ]
@@ -90,7 +90,35 @@ col_name            	sr_reason_sk
 data_type           	bigint              
 min                 	1                   
 max                 	70                  
-num_nulls           	72                  
+num_nulls           	3                   
+distinct_count      	70                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"sr_reason_sk\":\"true\"}}
+PREHOOK: query: insert into sr0 select * from sr0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sr0
+PREHOOK: Output: default@sr0
+POSTHOOK: query: insert into sr0 select * from sr0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sr0
+POSTHOOK: Output: default@sr0
+POSTHOOK: Lineage: sr0.sr_reason_sk SIMPLE [(sr0)sr0.FieldSchema(name:sr_reason_sk, type:bigint, comment:null), ]
+PREHOOK: query: desc formatted sr0 sr_reason_sk
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@sr0
+POSTHOOK: query: desc formatted sr0 sr_reason_sk
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@sr0
+col_name            	sr_reason_sk        
+data_type           	bigint              
+min                 	1                   
+max                 	70                  
+num_nulls           	6                   
 distinct_count      	73                  
 avg_col_len         	                    
 max_col_len         	                    
@@ -119,7 +147,7 @@ col_name            	sr_reason_sk
 data_type           	bigint              
 min                 	1                   
 max                 	70                  
-num_nulls           	72                  
+num_nulls           	6                   
 distinct_count      	73                  
 avg_col_len         	                    
 max_col_len         	                    
@@ -171,26 +199,26 @@ Stage-0
     Stage-1
       Reducer 2 llap
       File Output Operator [FS_10]
-        Select Operator [SEL_9] (rows=73/72 width=4)
+        Select Operator [SEL_9] (rows=420/6 width=4)
           Output:["_col0"]
-          Merge Join Operator [MERGEJOIN_25] (rows=73/72 width=8)
+          Merge Join Operator [MERGEJOIN_25] (rows=420/6 width=8)
             Conds:RS_28._col0=RS_31._col0(Inner)
           <-Map 1 [SIMPLE_EDGE] vectorized, llap
             SHUFFLE [RS_28]
               PartitionCols:_col0
-              Select Operator [SEL_27] (rows=5040/5040 width=7)
+              Select Operator [SEL_27] (rows=420/420 width=7)
                 Output:["_col0"]
-                Filter Operator [FIL_26] (rows=5040/5040 width=7)
+                Filter Operator [FIL_26] (rows=420/420 width=7)
                   predicate:sr_reason_sk is not null
-                  TableScan [TS_0] (rows=5112/5112 width=7)
+                  TableScan [TS_0] (rows=426/426 width=7)
                     default@sr0,store_returns,Tbl:COMPLETE,Col:COMPLETE,Output:["sr_reason_sk"]
           <-Map 3 [SIMPLE_EDGE] vectorized, llap
             SHUFFLE [RS_31]
               PartitionCols:_col0
               Select Operator [SEL_30] (rows=1/1 width=8)
                 Output:["_col0"]
-                Filter Operator [FIL_29] (rows=1/1 width=96)
+                Filter Operator [FIL_29] (rows=1/1 width=108)
                   predicate:((r_reason_id = 'AAAAAAAAAAAAAAAA') and r_reason_sk is not null)
-                  TableScan [TS_3] (rows=70/70 width=96)
+                  TableScan [TS_3] (rows=2/2 width=108)
                     default@rx0,reason,Tbl:COMPLETE,Col:COMPLETE,Output:["r_reason_id","r_reason_sk"]
 
