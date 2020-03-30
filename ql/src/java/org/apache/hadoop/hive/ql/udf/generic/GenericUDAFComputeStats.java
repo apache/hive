@@ -64,7 +64,7 @@ import org.slf4j.LoggerFactory;
 public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
 
   static final Logger LOG = LoggerFactory.getLogger(GenericUDAFComputeStats.class.getName());
-
+  
   @Override
   public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters)
       throws SemanticException {
@@ -335,7 +335,7 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
     protected transient Object[] result;
 
     protected abstract OI getValueObjectInspector();
-
+    
     protected abstract OI getValueObjectInspector(PrimitiveTypeInfo typeInfo);
 
     @Override
@@ -551,7 +551,7 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
         // Merge numDistinctValue Estimators
         Object numDistinct = soi.getStructFieldData(partial, ndvField);
         byte[] buf = ndvFieldOI.getPrimitiveJavaObject(numDistinct);
-
+        
         if (buf != null && buf.length != 0) {
           if (myagg.numDV == null) {
             myagg.numDV = NumDistinctValueEstimatorFactory.getNumDistinctValueEstimator(buf);
@@ -601,14 +601,7 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
           max = v;
         }
         // Add value to NumDistinctValue Estimator
-        if (numDV.estimateNumDistinctValues() == 70) {
-          int asd = 1;
-        }
         numDV.addToEstimator(v);
-        if (numDV.estimateNumDistinctValues() > 70) {
-          int asd = 1;
-        }
-
       }
 
       @Override
@@ -1251,9 +1244,9 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
 
     @Override
     protected HiveDecimalObjectInspector getValueObjectInspector(PrimitiveTypeInfo typeInfo) {
-      return (JavaHiveDecimalObjectInspector)PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(typeInfo);
+      return (JavaHiveDecimalObjectInspector)PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(typeInfo);    	
     }
-
+    
     @AggregationType(estimable = true)
     public class DecimalStatsAgg extends NumericStatsAgg {
       @Override
@@ -1454,7 +1447,7 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
       ((NumericStatsAgg)agg).reset("Timestamp");
     }
   }
-
+  
   @InterfaceAudience.LimitedPrivate(value = { "Hive" })
   static int lengthFor(JavaDataModel model, Integer numVector) {
     int length = model.object();
