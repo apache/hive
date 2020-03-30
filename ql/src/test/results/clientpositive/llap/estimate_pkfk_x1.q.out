@@ -169,9 +169,9 @@ Stage-0
     Stage-1
       Reducer 2 llap
       File Output Operator [FS_10]
-        Select Operator [SEL_9] (rows=5040/72 width=4)
+        Select Operator [SEL_9] (rows=2520/72 width=4)
           Output:["_col0"]
-          Merge Join Operator [MERGEJOIN_25] (rows=5040/72 width=8)
+          Merge Join Operator [MERGEJOIN_25] (rows=2520/72 width=8)
             Conds:RS_28._col0=RS_31._col0(Inner)
           <-Map 1 [SIMPLE_EDGE] vectorized, llap
             SHUFFLE [RS_28]
