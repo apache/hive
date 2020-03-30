@@ -35,7 +35,7 @@ import org.apache.calcite.tools.FrameworkConfig;
 import org.apache.calcite.tools.Frameworks;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.tools.RelBuilderFactory;
-import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveMergeablAggregate;
+import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveMergeableAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlCountAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlMinMaxAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlSumAggFunction;
@@ -140,8 +140,8 @@ public class HiveRelBuilder extends RelBuilder {
   }
 
   public static SqlAggFunction getRollup(SqlAggFunction aggregation) {
-    if (aggregation instanceof HiveMergeablAggregate) {
-      HiveMergeablAggregate mAgg = (HiveMergeablAggregate) aggregation;
+    if (aggregation instanceof HiveMergeableAggregate) {
+      HiveMergeableAggregate mAgg = (HiveMergeableAggregate) aggregation;
       return mAgg.getMergeAggFunction();
     }
     if (aggregation instanceof HiveSqlSumAggFunction

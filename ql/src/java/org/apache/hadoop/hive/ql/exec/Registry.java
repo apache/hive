@@ -818,7 +818,6 @@ public class Registry {
   public void registerUDFPlugin(HiveUDFPlugin instance) {
     Iterable<UDFDescriptor> x = instance.getDescriptors();
     for (UDFDescriptor fn : x) {
-
       if (UDF.class.isAssignableFrom(fn.getUDFClass())) {
         registerUDF(fn.getFunctionName(), (Class<? extends UDF>) fn.getUDFClass(), false);
         continue;

@@ -32,7 +32,7 @@ import org.apache.calcite.sql.type.InferTypes;
 import org.apache.calcite.sql.type.OperandTypes;
 import org.apache.calcite.sql.type.ReturnTypes;
 import org.apache.calcite.sql.type.SqlTypeName;
-import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveMergeablAggregate;
+import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveMergeableAggregate;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver2;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
 import org.apache.hive.plugin.api.HiveUDFPlugin;
@@ -42,7 +42,7 @@ import org.apache.hive.plugin.api.HiveUDFPlugin;
  *
  * In an effort to show a more consistent
  */
-public class DataSketchesFunctions implements HiveUDFPlugin {
+public final class DataSketchesFunctions implements HiveUDFPlugin {
 
   public static final DataSketchesFunctions INSTANCE = new DataSketchesFunctions();
 
@@ -76,7 +76,7 @@ public class DataSketchesFunctions implements HiveUDFPlugin {
   private final List<SketchDescriptor> sketchClasses;
   private final ArrayList<UDFDescriptor> descriptors;
 
-  DataSketchesFunctions() {
+  private DataSketchesFunctions() {
     this.sketchClasses = new ArrayList<SketchDescriptor>();
     this.descriptors = new ArrayList<HiveUDFPlugin.UDFDescriptor>();
     registerHll();
@@ -105,7 +105,6 @@ public class DataSketchesFunctions implements HiveUDFPlugin {
   private void buildCalciteFns() {
     for (SketchDescriptor sd : sketchClasses) {
       // Mergability is exposed to Calcite; which enables to use it during rollup.
-
       RelProtoDataType sketchType = RelDataTypeImpl.proto(SqlTypeName.BINARY, true);
 
       SketchFunctionDescriptor sketchSFD = sd.fnMap.get(DATA_TO_SKETCH);
@@ -115,14 +114,14 @@ public class DataSketchesFunctions implements HiveUDFPlugin {
         continue;
       }
 
-      HiveMergeablAggregate unionFn = new HiveMergeablAggregate(unionSFD.name,
+      HiveMergeableAggregate unionFn = new HiveMergeableAggregate(unionSFD.name,
           SqlKind.OTHER_FUNCTION,
           ReturnTypes.explicit(sketchType),
           InferTypes.ANY_NULLABLE,
           OperandTypes.family(),
           null);
 
-      HiveMergeablAggregate sketchFn = new HiveMergeablAggregate(sketchSFD.name,
+      HiveMergeableAggregate sketchFn = new HiveMergeableAggregate(sketchSFD.name,
           SqlKind.OTHER_FUNCTION,
           ReturnTypes.explicit(sketchType),
           InferTypes.ANY_NULLABLE,
@@ -192,7 +191,7 @@ public class DataSketchesFunctions implements HiveUDFPlugin {
     }
   }
 
-  static class SketchDescriptor {
+  private static class SketchDescriptor {
     Map<String, SketchFunctionDescriptor> fnMap;
     private String functionPrefix;
 
