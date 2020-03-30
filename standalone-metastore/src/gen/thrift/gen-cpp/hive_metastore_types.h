@@ -9123,7 +9123,7 @@ inline std::ostream& operator<<(std::ostream& out, const CompactionRequest& obj)
 }
 
 typedef struct _CompactionInfoStruct__isset {
-  _CompactionInfoStruct__isset() : partitionname(false), runas(false), properties(false), toomanyaborts(false), state(false), workerId(false), start(false), highestWriteId(false) {}
+  _CompactionInfoStruct__isset() : partitionname(false), runas(false), properties(false), toomanyaborts(false), state(false), workerId(false), start(false), highestWriteId(false), errorMessage(false) {}
   bool partitionname :1;
   bool runas :1;
   bool properties :1;
@@ -9132,6 +9132,7 @@ typedef struct _CompactionInfoStruct__isset {
   bool workerId :1;
   bool start :1;
   bool highestWriteId :1;
+  bool errorMessage :1;
 } _CompactionInfoStruct__isset;
 
 class CompactionInfoStruct {
@@ -9139,7 +9140,7 @@ class CompactionInfoStruct {
 
   CompactionInfoStruct(const CompactionInfoStruct&);
   CompactionInfoStruct& operator=(const CompactionInfoStruct&);
-  CompactionInfoStruct() : id(0), dbname(), tablename(), partitionname(), type((CompactionType::type)0), runas(), properties(), toomanyaborts(0), state(), workerId(), start(0), highestWriteId(0) {
+  CompactionInfoStruct() : id(0), dbname(), tablename(), partitionname(), type((CompactionType::type)0), runas(), properties(), toomanyaborts(0), state(), workerId(), start(0), highestWriteId(0), errorMessage() {
   }
 
   virtual ~CompactionInfoStruct() throw();
@@ -9155,6 +9156,7 @@ class CompactionInfoStruct {
   std::string workerId;
   int64_t start;
   int64_t highestWriteId;
+  std::string errorMessage;
 
   _CompactionInfoStruct__isset __isset;
 
@@ -9181,6 +9183,8 @@ class CompactionInfoStruct {
   void __set_start(const int64_t val);
 
   void __set_highestWriteId(const int64_t val);
+
+  void __set_errorMessage(const std::string& val);
 
   bool operator == (const CompactionInfoStruct & rhs) const
   {
@@ -9223,6 +9227,10 @@ class CompactionInfoStruct {
     if (__isset.highestWriteId != rhs.__isset.highestWriteId)
       return false;
     else if (__isset.highestWriteId && !(highestWriteId == rhs.highestWriteId))
+      return false;
+    if (__isset.errorMessage != rhs.__isset.errorMessage)
+      return false;
+    else if (__isset.errorMessage && !(errorMessage == rhs.errorMessage))
       return false;
     return true;
   }
@@ -9380,7 +9388,7 @@ inline std::ostream& operator<<(std::ostream& out, const ShowCompactRequest& obj
 }
 
 typedef struct _ShowCompactResponseElement__isset {
-  _ShowCompactResponseElement__isset() : partitionname(false), workerid(false), start(false), runAs(false), hightestTxnId(false), metaInfo(false), endTime(false), hadoopJobId(true), id(false) {}
+  _ShowCompactResponseElement__isset() : partitionname(false), workerid(false), start(false), runAs(false), hightestTxnId(false), metaInfo(false), endTime(false), hadoopJobId(true), id(false), errorMessage(false) {}
   bool partitionname :1;
   bool workerid :1;
   bool start :1;
@@ -9390,6 +9398,7 @@ typedef struct _ShowCompactResponseElement__isset {
   bool endTime :1;
   bool hadoopJobId :1;
   bool id :1;
+  bool errorMessage :1;
 } _ShowCompactResponseElement__isset;
 
 class ShowCompactResponseElement {
@@ -9397,7 +9406,7 @@ class ShowCompactResponseElement {
 
   ShowCompactResponseElement(const ShowCompactResponseElement&);
   ShowCompactResponseElement& operator=(const ShowCompactResponseElement&);
-  ShowCompactResponseElement() : dbname(), tablename(), partitionname(), type((CompactionType::type)0), state(), workerid(), start(0), runAs(), hightestTxnId(0), metaInfo(), endTime(0), hadoopJobId("None"), id(0) {
+  ShowCompactResponseElement() : dbname(), tablename(), partitionname(), type((CompactionType::type)0), state(), workerid(), start(0), runAs(), hightestTxnId(0), metaInfo(), endTime(0), hadoopJobId("None"), id(0), errorMessage() {
   }
 
   virtual ~ShowCompactResponseElement() throw();
@@ -9414,6 +9423,7 @@ class ShowCompactResponseElement {
   int64_t endTime;
   std::string hadoopJobId;
   int64_t id;
+  std::string errorMessage;
 
   _ShowCompactResponseElement__isset __isset;
 
@@ -9442,6 +9452,8 @@ class ShowCompactResponseElement {
   void __set_hadoopJobId(const std::string& val);
 
   void __set_id(const int64_t val);
+
+  void __set_errorMessage(const std::string& val);
 
   bool operator == (const ShowCompactResponseElement & rhs) const
   {
@@ -9488,6 +9500,10 @@ class ShowCompactResponseElement {
     if (__isset.id != rhs.__isset.id)
       return false;
     else if (__isset.id && !(id == rhs.id))
+      return false;
+    if (__isset.errorMessage != rhs.__isset.errorMessage)
+      return false;
+    else if (__isset.errorMessage && !(errorMessage == rhs.errorMessage))
       return false;
     return true;
   }
@@ -10255,19 +10271,30 @@ inline std::ostream& operator<<(std::ostream& out, const FireEventRequest& obj)
   return out;
 }
 
+typedef struct _FireEventResponse__isset {
+  _FireEventResponse__isset() : eventId(false) {}
+  bool eventId :1;
+} _FireEventResponse__isset;
 
 class FireEventResponse {
  public:
 
   FireEventResponse(const FireEventResponse&);
   FireEventResponse& operator=(const FireEventResponse&);
-  FireEventResponse() {
+  FireEventResponse() : eventId(0) {
   }
 
   virtual ~FireEventResponse() throw();
+  int64_t eventId;
 
-  bool operator == (const FireEventResponse & /* rhs */) const
+  _FireEventResponse__isset __isset;
+
+  void __set_eventId(const int64_t val);
+
+  bool operator == (const FireEventResponse & rhs) const
   {
+    if (!(eventId == rhs.eventId))
+      return false;
     return true;
   }
   bool operator != (const FireEventResponse &rhs) const {

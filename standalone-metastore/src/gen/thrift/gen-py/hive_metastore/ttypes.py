@@ -17171,9 +17171,18 @@ class FireEventRequest:
     return not (self == other)
 
 class FireEventResponse:
+  """
+  Attributes:
+   - eventId
+  """
 
   thrift_spec = (
+    None, # 0
+    (1, TType.I64, 'eventId', None, None, ), # 1
   )
+
+  def __init__(self, eventId=None,):
+    self.eventId = eventId
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -17184,6 +17193,11 @@ class FireEventResponse:
       (fname, ftype, fid) = iprot.readFieldBegin()
       if ftype == TType.STOP:
         break
+      if fid == 1:
+        if ftype == TType.I64:
+          self.eventId = iprot.readI64()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -17194,6 +17208,10 @@ class FireEventResponse:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('FireEventResponse')
+    if self.eventId is not None:
+      oprot.writeFieldBegin('eventId', TType.I64, 1)
+      oprot.writeI64(self.eventId)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -17203,6 +17221,7 @@ class FireEventResponse:
 
   def __hash__(self):
     value = 17
+    value = (value * 31) ^ hash(self.eventId)
     return value
 
   def __repr__(self):

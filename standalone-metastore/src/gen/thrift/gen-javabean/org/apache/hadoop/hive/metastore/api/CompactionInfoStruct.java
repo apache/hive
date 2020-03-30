@@ -79,7 +79,7 @@ import org.slf4j.LoggerFactory;
     TABLENAME((short)3, "tablename"),
     PARTITIONNAME((short)4, "partitionname"),
     /**
-     *
+     * 
      * @see CompactionType
      */
     TYPE((short)5, "type"),
@@ -105,34 +105,34 @@ import org.slf4j.LoggerFactory;
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-      case 1: // ID
-        return ID;
-      case 2: // DBNAME
-        return DBNAME;
-      case 3: // TABLENAME
-        return TABLENAME;
-      case 4: // PARTITIONNAME
-        return PARTITIONNAME;
-      case 5: // TYPE
-        return TYPE;
-      case 6: // RUNAS
-        return RUNAS;
-      case 7: // PROPERTIES
-        return PROPERTIES;
-      case 8: // TOOMANYABORTS
-        return TOOMANYABORTS;
-      case 9: // STATE
-        return STATE;
-      case 10: // WORKER_ID
-        return WORKER_ID;
-      case 11: // START
-        return START;
-      case 12: // HIGHEST_WRITE_ID
-        return HIGHEST_WRITE_ID;
-      case 13: // ERROR_MESSAGE
-        return ERROR_MESSAGE;
-      default:
-        return null;
+        case 1: // ID
+          return ID;
+        case 2: // DBNAME
+          return DBNAME;
+        case 3: // TABLENAME
+          return TABLENAME;
+        case 4: // PARTITIONNAME
+          return PARTITIONNAME;
+        case 5: // TYPE
+          return TYPE;
+        case 6: // RUNAS
+          return RUNAS;
+        case 7: // PROPERTIES
+          return PROPERTIES;
+        case 8: // TOOMANYABORTS
+          return TOOMANYABORTS;
+        case 9: // STATE
+          return STATE;
+        case 10: // WORKER_ID
+          return WORKER_ID;
+        case 11: // START
+          return START;
+        case 12: // HIGHEST_WRITE_ID
+          return HIGHEST_WRITE_ID;
+        case 13: // ERROR_MESSAGE
+          return ERROR_MESSAGE;
+        default:
+          return null;
       }
     }
 
@@ -176,35 +176,35 @@ import org.slf4j.LoggerFactory;
   private static final int __START_ISSET_ID = 2;
   private static final int __HIGHESTWRITEID_ISSET_ID = 3;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.PARTITIONNAME,_Fields.RUNAS,_Fields.PROPERTIES,_Fields.TOOMANYABORTS,_Fields.STATE,_Fields.WORKER_ID,_Fields.START,_Fields.HIGHEST_WRITE_ID, _Fields.ERROR_MESSAGE};
+  private static final _Fields optionals[] = {_Fields.PARTITIONNAME,_Fields.RUNAS,_Fields.PROPERTIES,_Fields.TOOMANYABORTS,_Fields.STATE,_Fields.WORKER_ID,_Fields.START,_Fields.HIGHEST_WRITE_ID,_Fields.ERROR_MESSAGE};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.ID, new org.apache.thrift.meta_data.FieldMetaData("id", org.apache.thrift.TFieldRequirementType.REQUIRED,
+    tmpMap.put(_Fields.ID, new org.apache.thrift.meta_data.FieldMetaData("id", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
-    tmpMap.put(_Fields.DBNAME, new org.apache.thrift.meta_data.FieldMetaData("dbname", org.apache.thrift.TFieldRequirementType.REQUIRED,
+    tmpMap.put(_Fields.DBNAME, new org.apache.thrift.meta_data.FieldMetaData("dbname", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.TABLENAME, new org.apache.thrift.meta_data.FieldMetaData("tablename", org.apache.thrift.TFieldRequirementType.REQUIRED,
+    tmpMap.put(_Fields.TABLENAME, new org.apache.thrift.meta_data.FieldMetaData("tablename", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.PARTITIONNAME, new org.apache.thrift.meta_data.FieldMetaData("partitionname", org.apache.thrift.TFieldRequirementType.OPTIONAL,
+    tmpMap.put(_Fields.PARTITIONNAME, new org.apache.thrift.meta_data.FieldMetaData("partitionname", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.TYPE, new org.apache.thrift.meta_data.FieldMetaData("type", org.apache.thrift.TFieldRequirementType.REQUIRED,
+    tmpMap.put(_Fields.TYPE, new org.apache.thrift.meta_data.FieldMetaData("type", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, CompactionType.class)));
-    tmpMap.put(_Fields.RUNAS, new org.apache.thrift.meta_data.FieldMetaData("runas", org.apache.thrift.TFieldRequirementType.OPTIONAL,
+    tmpMap.put(_Fields.RUNAS, new org.apache.thrift.meta_data.FieldMetaData("runas", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.PROPERTIES, new org.apache.thrift.meta_data.FieldMetaData("properties", org.apache.thrift.TFieldRequirementType.OPTIONAL,
+    tmpMap.put(_Fields.PROPERTIES, new org.apache.thrift.meta_data.FieldMetaData("properties", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.TOOMANYABORTS, new org.apache.thrift.meta_data.FieldMetaData("toomanyaborts", org.apache.thrift.TFieldRequirementType.OPTIONAL,
+    tmpMap.put(_Fields.TOOMANYABORTS, new org.apache.thrift.meta_data.FieldMetaData("toomanyaborts", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
-    tmpMap.put(_Fields.STATE, new org.apache.thrift.meta_data.FieldMetaData("state", org.apache.thrift.TFieldRequirementType.OPTIONAL,
+    tmpMap.put(_Fields.STATE, new org.apache.thrift.meta_data.FieldMetaData("state", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.WORKER_ID, new org.apache.thrift.meta_data.FieldMetaData("workerId", org.apache.thrift.TFieldRequirementType.OPTIONAL,
+    tmpMap.put(_Fields.WORKER_ID, new org.apache.thrift.meta_data.FieldMetaData("workerId", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.START, new org.apache.thrift.meta_data.FieldMetaData("start", org.apache.thrift.TFieldRequirementType.OPTIONAL,
+    tmpMap.put(_Fields.START, new org.apache.thrift.meta_data.FieldMetaData("start", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
-    tmpMap.put(_Fields.HIGHEST_WRITE_ID, new org.apache.thrift.meta_data.FieldMetaData("highestWriteId", org.apache.thrift.TFieldRequirementType.OPTIONAL,
+    tmpMap.put(_Fields.HIGHEST_WRITE_ID, new org.apache.thrift.meta_data.FieldMetaData("highestWriteId", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
-    tmpMap.put(_Fields.ERROR_MESSAGE, new org.apache.thrift.meta_data.FieldMetaData("errorMessage", org.apache.thrift.TFieldRequirementType.OPTIONAL,
+    tmpMap.put(_Fields.ERROR_MESSAGE, new org.apache.thrift.meta_data.FieldMetaData("errorMessage", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(CompactionInfoStruct.class, metaDataMap);
@@ -214,10 +214,10 @@ import org.slf4j.LoggerFactory;
   }
 
   public CompactionInfoStruct(
-      long id,
-      String dbname,
-      String tablename,
-      CompactionType type)
+    long id,
+    String dbname,
+    String tablename,
+    CompactionType type)
   {
     this();
     this.id = id;
@@ -382,7 +382,7 @@ import org.slf4j.LoggerFactory;
   }
 
   /**
-   *
+   * 
    * @see CompactionType
    */
   public CompactionType getType() {
@@ -390,7 +390,7 @@ import org.slf4j.LoggerFactory;
   }
 
   /**
-   *
+   * 
    * @see CompactionType
    */
   public void setType(CompactionType type) {
@@ -691,6 +691,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case ERROR_MESSAGE:
+      if (value == null) {
+        unsetErrorMessage();
+      } else {
+        setErrorMessage((String)value);
+      }
+      break;
+
     }
   }
 
@@ -732,6 +740,9 @@ import org.slf4j.LoggerFactory;
     case HIGHEST_WRITE_ID:
       return getHighestWriteId();
 
+    case ERROR_MESSAGE:
+      return getErrorMessage();
+
     }
     throw new IllegalStateException();
   }
@@ -767,6 +778,8 @@ import org.slf4j.LoggerFactory;
       return isSetStart();
     case HIGHEST_WRITE_ID:
       return isSetHighestWriteId();
+    case ERROR_MESSAGE:
+      return isSetErrorMessage();
     }
     throw new IllegalStateException();
   }
@@ -892,6 +905,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_errorMessage = true && this.isSetErrorMessage();
+    boolean that_present_errorMessage = true && that.isSetErrorMessage();
+    if (this_present_errorMessage || that_present_errorMessage) {
+      if (!(this_present_errorMessage && that_present_errorMessage))
+        return false;
+      if (!this.errorMessage.equals(that.errorMessage))
+        return false;
+    }
+
     return true;
   }
 
@@ -958,6 +980,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_highestWriteId);
     if (present_highestWriteId)
       list.add(highestWriteId);
+
+    boolean present_errorMessage = true && (isSetErrorMessage());
+    list.add(present_errorMessage);
+    if (present_errorMessage)
+      list.add(errorMessage);
 
     return list.hashCode();
   }
@@ -1090,6 +1117,16 @@ import org.slf4j.LoggerFactory;
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetErrorMessage()).compareTo(other.isSetErrorMessage());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetErrorMessage()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.errorMessage, other.errorMessage);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -1205,6 +1242,16 @@ import org.slf4j.LoggerFactory;
       sb.append(this.highestWriteId);
       first = false;
     }
+    if (isSetErrorMessage()) {
+      if (!first) sb.append(", ");
+      sb.append("errorMessage:");
+      if (this.errorMessage == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.errorMessage);
+      }
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -1262,108 +1309,116 @@ import org.slf4j.LoggerFactory;
       while (true)
       {
         schemeField = iprot.readFieldBegin();
-        if (schemeField.type == org.apache.thrift.protocol.TType.STOP) {
+        if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (schemeField.id) {
-        case 1: // ID
-          if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
-            struct.id = iprot.readI64();
-            struct.setIdIsSet(true);
-          } else {
+          case 1: // ID
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.id = iprot.readI64();
+              struct.setIdIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 2: // DBNAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.dbname = iprot.readString();
+              struct.setDbnameIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 3: // TABLENAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.tablename = iprot.readString();
+              struct.setTablenameIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 4: // PARTITIONNAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.partitionname = iprot.readString();
+              struct.setPartitionnameIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 5: // TYPE
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.type = org.apache.hadoop.hive.metastore.api.CompactionType.findByValue(iprot.readI32());
+              struct.setTypeIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 6: // RUNAS
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.runas = iprot.readString();
+              struct.setRunasIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 7: // PROPERTIES
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.properties = iprot.readString();
+              struct.setPropertiesIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 8: // TOOMANYABORTS
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.toomanyaborts = iprot.readBool();
+              struct.setToomanyabortsIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 9: // STATE
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.state = iprot.readString();
+              struct.setStateIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 10: // WORKER_ID
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.workerId = iprot.readString();
+              struct.setWorkerIdIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 11: // START
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.start = iprot.readI64();
+              struct.setStartIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 12: // HIGHEST_WRITE_ID
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.highestWriteId = iprot.readI64();
+              struct.setHighestWriteIdIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 13: // ERROR_MESSAGE
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.errorMessage = iprot.readString();
+              struct.setErrorMessageIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-          }
-          break;
-        case 2: // DBNAME
-          if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-            struct.dbname = iprot.readString();
-            struct.setDbnameIsSet(true);
-          } else {
-            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-          }
-          break;
-        case 3: // TABLENAME
-          if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-            struct.tablename = iprot.readString();
-            struct.setTablenameIsSet(true);
-          } else {
-            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-          }
-          break;
-        case 4: // PARTITIONNAME
-          if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-            struct.partitionname = iprot.readString();
-            struct.setPartitionnameIsSet(true);
-          } else {
-            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-          }
-          break;
-        case 5: // TYPE
-          if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
-            struct.type = org.apache.hadoop.hive.metastore.api.CompactionType.findByValue(iprot.readI32());
-            struct.setTypeIsSet(true);
-          } else {
-            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-          }
-          break;
-        case 6: // RUNAS
-          if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-            struct.runas = iprot.readString();
-            struct.setRunasIsSet(true);
-          } else {
-            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-          }
-          break;
-        case 7: // PROPERTIES
-          if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-            struct.properties = iprot.readString();
-            struct.setPropertiesIsSet(true);
-          } else {
-            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-          }
-          break;
-        case 8: // TOOMANYABORTS
-          if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
-            struct.toomanyaborts = iprot.readBool();
-            struct.setToomanyabortsIsSet(true);
-          } else {
-            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-          }
-          break;
-        case 9: // STATE
-          if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-            struct.state = iprot.readString();
-            struct.setStateIsSet(true);
-          } else {
-            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-          }
-          break;
-        case 10: // WORKER_ID
-          if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-            struct.workerId = iprot.readString();
-            struct.setWorkerIdIsSet(true);
-          } else {
-            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-          }
-          break;
-        case 11: // START
-          if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
-            struct.start = iprot.readI64();
-            struct.setStartIsSet(true);
-          } else {
-            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-          }
-          break;
-        case 12: // HIGHEST_WRITE_ID
-          if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
-            struct.highestWriteId = iprot.readI64();
-            struct.setHighestWriteIdIsSet(true);
-          } else {
-            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-          }
-          break;
-        default:
-          org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
         iprot.readFieldEnd();
       }
@@ -1443,6 +1498,13 @@ import org.slf4j.LoggerFactory;
         oprot.writeI64(struct.highestWriteId);
         oprot.writeFieldEnd();
       }
+      if (struct.errorMessage != null) {
+        if (struct.isSetErrorMessage()) {
+          oprot.writeFieldBegin(ERROR_MESSAGE_FIELD_DESC);
+          oprot.writeString(struct.errorMessage);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -1489,7 +1551,10 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetHighestWriteId()) {
         optionals.set(7);
       }
-      oprot.writeBitSet(optionals, 8);
+      if (struct.isSetErrorMessage()) {
+        optionals.set(8);
+      }
+      oprot.writeBitSet(optionals, 9);
       if (struct.isSetPartitionname()) {
         oprot.writeString(struct.partitionname);
       }
@@ -1514,6 +1579,9 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetHighestWriteId()) {
         oprot.writeI64(struct.highestWriteId);
       }
+      if (struct.isSetErrorMessage()) {
+        oprot.writeString(struct.errorMessage);
+      }
     }
 
     @Override
@@ -1527,7 +1595,7 @@ import org.slf4j.LoggerFactory;
       struct.setTablenameIsSet(true);
       struct.type = org.apache.hadoop.hive.metastore.api.CompactionType.findByValue(iprot.readI32());
       struct.setTypeIsSet(true);
-      BitSet incoming = iprot.readBitSet(8);
+      BitSet incoming = iprot.readBitSet(9);
       if (incoming.get(0)) {
         struct.partitionname = iprot.readString();
         struct.setPartitionnameIsSet(true);
@@ -1559,6 +1627,10 @@ import org.slf4j.LoggerFactory;
       if (incoming.get(7)) {
         struct.highestWriteId = iprot.readI64();
         struct.setHighestWriteIdIsSet(true);
+      }
+      if (incoming.get(8)) {
+        struct.errorMessage = iprot.readString();
+        struct.setErrorMessageIsSet(true);
       }
     }
   }

@@ -22100,6 +22100,11 @@ void CompactionInfoStruct::__set_highestWriteId(const int64_t val) {
 __isset.highestWriteId = true;
 }
 
+void CompactionInfoStruct::__set_errorMessage(const std::string& val) {
+  this->errorMessage = val;
+__isset.errorMessage = true;
+}
+
 uint32_t CompactionInfoStruct::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
@@ -22223,6 +22228,14 @@ uint32_t CompactionInfoStruct::read(::apache::thrift::protocol::TProtocol* iprot
           xfer += iprot->skip(ftype);
         }
         break;
+      case 13:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->errorMessage);
+          this->__isset.errorMessage = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -22304,6 +22317,11 @@ uint32_t CompactionInfoStruct::write(::apache::thrift::protocol::TProtocol* opro
     xfer += oprot->writeI64(this->highestWriteId);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.errorMessage) {
+    xfer += oprot->writeFieldBegin("errorMessage", ::apache::thrift::protocol::T_STRING, 13);
+    xfer += oprot->writeString(this->errorMessage);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -22323,6 +22341,7 @@ void swap(CompactionInfoStruct &a, CompactionInfoStruct &b) {
   swap(a.workerId, b.workerId);
   swap(a.start, b.start);
   swap(a.highestWriteId, b.highestWriteId);
+  swap(a.errorMessage, b.errorMessage);
   swap(a.__isset, b.__isset);
 }
 
@@ -22339,6 +22358,7 @@ CompactionInfoStruct::CompactionInfoStruct(const CompactionInfoStruct& other869)
   workerId = other869.workerId;
   start = other869.start;
   highestWriteId = other869.highestWriteId;
+  errorMessage = other869.errorMessage;
   __isset = other869.__isset;
 }
 CompactionInfoStruct& CompactionInfoStruct::operator=(const CompactionInfoStruct& other870) {
@@ -22354,6 +22374,7 @@ CompactionInfoStruct& CompactionInfoStruct::operator=(const CompactionInfoStruct
   workerId = other870.workerId;
   start = other870.start;
   highestWriteId = other870.highestWriteId;
+  errorMessage = other870.errorMessage;
   __isset = other870.__isset;
   return *this;
 }
@@ -22372,6 +22393,7 @@ void CompactionInfoStruct::printTo(std::ostream& out) const {
   out << ", " << "workerId="; (__isset.workerId ? (out << to_string(workerId)) : (out << "<null>"));
   out << ", " << "start="; (__isset.start ? (out << to_string(start)) : (out << "<null>"));
   out << ", " << "highestWriteId="; (__isset.highestWriteId ? (out << to_string(highestWriteId)) : (out << "<null>"));
+  out << ", " << "errorMessage="; (__isset.errorMessage ? (out << to_string(errorMessage)) : (out << "<null>"));
   out << ")";
 }
 
@@ -22723,6 +22745,11 @@ void ShowCompactResponseElement::__set_id(const int64_t val) {
 __isset.id = true;
 }
 
+void ShowCompactResponseElement::__set_errorMessage(const std::string& val) {
+  this->errorMessage = val;
+__isset.errorMessage = true;
+}
+
 uint32_t ShowCompactResponseElement::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
@@ -22854,6 +22881,14 @@ uint32_t ShowCompactResponseElement::read(::apache::thrift::protocol::TProtocol*
           xfer += iprot->skip(ftype);
         }
         break;
+      case 14:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->errorMessage);
+          this->__isset.errorMessage = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -22940,6 +22975,11 @@ uint32_t ShowCompactResponseElement::write(::apache::thrift::protocol::TProtocol
     xfer += oprot->writeI64(this->id);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.errorMessage) {
+    xfer += oprot->writeFieldBegin("errorMessage", ::apache::thrift::protocol::T_STRING, 14);
+    xfer += oprot->writeString(this->errorMessage);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -22960,6 +23000,7 @@ void swap(ShowCompactResponseElement &a, ShowCompactResponseElement &b) {
   swap(a.endTime, b.endTime);
   swap(a.hadoopJobId, b.hadoopJobId);
   swap(a.id, b.id);
+  swap(a.errorMessage, b.errorMessage);
   swap(a.__isset, b.__isset);
 }
 
@@ -22977,6 +23018,7 @@ ShowCompactResponseElement::ShowCompactResponseElement(const ShowCompactResponse
   endTime = other878.endTime;
   hadoopJobId = other878.hadoopJobId;
   id = other878.id;
+  errorMessage = other878.errorMessage;
   __isset = other878.__isset;
 }
 ShowCompactResponseElement& ShowCompactResponseElement::operator=(const ShowCompactResponseElement& other879) {
@@ -22993,6 +23035,7 @@ ShowCompactResponseElement& ShowCompactResponseElement::operator=(const ShowComp
   endTime = other879.endTime;
   hadoopJobId = other879.hadoopJobId;
   id = other879.id;
+  errorMessage = other879.errorMessage;
   __isset = other879.__isset;
   return *this;
 }
@@ -23012,6 +23055,7 @@ void ShowCompactResponseElement::printTo(std::ostream& out) const {
   out << ", " << "endTime="; (__isset.endTime ? (out << to_string(endTime)) : (out << "<null>"));
   out << ", " << "hadoopJobId="; (__isset.hadoopJobId ? (out << to_string(hadoopJobId)) : (out << "<null>"));
   out << ", " << "id="; (__isset.id ? (out << to_string(id)) : (out << "<null>"));
+  out << ", " << "errorMessage="; (__isset.errorMessage ? (out << to_string(errorMessage)) : (out << "<null>"));
   out << ")";
 }
 
@@ -24926,6 +24970,10 @@ FireEventResponse::~FireEventResponse() throw() {
 }
 
 
+void FireEventResponse::__set_eventId(const int64_t val) {
+  this->eventId = val;
+}
+
 uint32_t FireEventResponse::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
@@ -24945,7 +24993,20 @@ uint32_t FireEventResponse::read(::apache::thrift::protocol::TProtocol* iprot) {
     if (ftype == ::apache::thrift::protocol::T_STOP) {
       break;
     }
-    xfer += iprot->skip(ftype);
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->eventId);
+          this->__isset.eventId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
     xfer += iprot->readFieldEnd();
   }
 
@@ -24959,6 +25020,10 @@ uint32_t FireEventResponse::write(::apache::thrift::protocol::TProtocol* oprot) 
   apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
   xfer += oprot->writeStructBegin("FireEventResponse");
 
+  xfer += oprot->writeFieldBegin("eventId", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64(this->eventId);
+  xfer += oprot->writeFieldEnd();
+
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -24966,20 +25031,23 @@ uint32_t FireEventResponse::write(::apache::thrift::protocol::TProtocol* oprot) 
 
 void swap(FireEventResponse &a, FireEventResponse &b) {
   using ::std::swap;
-  (void) a;
-  (void) b;
+  swap(a.eventId, b.eventId);
+  swap(a.__isset, b.__isset);
 }
 
 FireEventResponse::FireEventResponse(const FireEventResponse& other953) {
-  (void) other953;
+  eventId = other953.eventId;
+  __isset = other953.__isset;
 }
 FireEventResponse& FireEventResponse::operator=(const FireEventResponse& other954) {
-  (void) other954;
+  eventId = other954.eventId;
+  __isset = other954.__isset;
   return *this;
 }
 void FireEventResponse::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
   out << "FireEventResponse(";
+  out << "eventId=" << to_string(eventId);
   out << ")";
 }
 

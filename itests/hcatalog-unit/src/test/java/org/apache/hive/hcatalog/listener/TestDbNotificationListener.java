@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FireEventRequest;
 import org.apache.hadoop.hive.metastore.api.FireEventRequestData;
+import org.apache.hadoop.hive.metastore.api.FireEventResponse;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.FunctionType;
 import org.apache.hadoop.hive.metastore.api.InsertEventRequestData;
@@ -102,6 +103,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.hcatalog.api.repl.ReplicationV1CompatRule;
 import org.apache.hive.hcatalog.data.Pair;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -1136,7 +1138,10 @@ public class TestDbNotificationListener {
     rqst.setDbName(defaultDbName);
     rqst.setTableName(tblName);
     // Event 2
-    msClient.fireListenerEvent(rqst);
+    FireEventResponse response = msClient.fireListenerEvent(rqst);
+    assertTrue("Event id must be set in the fireEvent response", response.isSetEventId());
+    Assert.assertNotNull(response.getEventId());
+    Assert.assertTrue(response.getEventId() != -1);
 
     // Get notifications from metastore
     NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
@@ -1204,7 +1209,10 @@ public class TestDbNotificationListener {
     rqst.setTableName(tblName);
     rqst.setPartitionVals(partCol1Vals);
     // Event 3
-    msClient.fireListenerEvent(rqst);
+    FireEventResponse response = msClient.fireListenerEvent(rqst);
+    assertTrue("Event id must be set in the fireEvent response", response.isSetEventId());
+    Assert.assertNotNull(response.getEventId());
+    Assert.assertTrue(response.getEventId() != -1);
 
     // Get notifications from metastore
     NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
