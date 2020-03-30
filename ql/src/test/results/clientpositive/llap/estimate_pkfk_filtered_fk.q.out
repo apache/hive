@@ -310,17 +310,27 @@ Stage-0
                 TableScan [TS_3] (rows=10/10 width=99)
                   default@ship_types,st,Tbl:COMPLETE,Col:COMPLETE,Output:["id","type_name"]
 
-PREHOOK: query: insert into ships values (-1,null,1)
+PREHOOK: query: insert into ships values (null,null,null)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@ships
-POSTHOOK: query: insert into ships values (-1,null,1)
+POSTHOOK: query: insert into ships values (null,null,null)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ships
-POSTHOOK: Lineage: ships.crew_size SCRIPT []
-POSTHOOK: Lineage: ships.id SCRIPT []
+POSTHOOK: Lineage: ships.crew_size EXPRESSION []
+POSTHOOK: Lineage: ships.id EXPRESSION []
 POSTHOOK: Lineage: ships.ship_type_id EXPRESSION []
+PREHOOK: query: analyze table ships compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@ships
+PREHOOK: Output: default@ships
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table ships compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@ships
+POSTHOOK: Output: default@ships
+#### A masked pattern was here ####
 PREHOOK: query: select
     s.id
 from

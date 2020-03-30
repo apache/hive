@@ -39,7 +39,9 @@ where
 ;
 
 -- HIVE-23082: fk may contain null values; the estimation should be retained
-insert into ships values (-1,null,1);
+insert into ships values (null,null,null);
+analyze table ships compute statistics for columns;
+
 
 explain analyze
 select
