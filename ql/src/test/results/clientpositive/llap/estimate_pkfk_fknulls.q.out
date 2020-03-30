@@ -1,0 +1,196 @@
+PREHOOK: query: drop table if exists default.rx0
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists default.rx0
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table if exists default.sr0
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists default.sr0
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table rx0 (r_reason_id string, r_reason_sk bigint)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@rx0
+POSTHOOK: query: create table rx0 (r_reason_id string, r_reason_sk bigint)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@rx0
+PREHOOK: query: create table sr0 (sr_reason_sk bigint)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sr0
+POSTHOOK: query: create table sr0 (sr_reason_sk bigint)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@sr0
+PREHOOK: query: insert into rx0 values ('AAAAAAAAAAAAAAAA',1),('AAAAAAAAGEAAAAAA',70),
+('A_2',2),('A_3',3),('A_4',4),('A_5',5),('A_6',6),('A_7',7),('A_8',8),('A_9',9),('A_10',10),('A_11',11),('A_12',12),('A_13',13),('A_14',14),('A_15',15),('A_16',16),('A_17',17),('A_18',18),('A_19',19),('A_20',20),('A_21',21),('A_22',22),('A_23',23),('A_24',24),('A_25',25),('A_26',26),('A_27',27),('A_28',28),('A_29',29),('A_30',30),('A_31',31),('A_32',32),('A_33',33),('A_34',34),('A_35',35),('A_36',36),('A_37',37),('A_38',38),('A_39',39),('A_40',40),('A_41',41),('A_42',42),('A_43',43),('A_44',44),('A_45',45),('A_46',46),('A_47',47),('A_48',48),('A_49',49),('A_50',50),('A_51',51),('A_52',52),('A_53',53),('A_54',54),('A_55',55),('A_56',56),('A_57',57),('A_58',58),('A_59',59),('A_60',60),('A_61',61),('A_62',62),('A_63',63),('A_64',64),('A_65',65),('A_66',66),('A_67',67),('A_68',68),('A_69',69)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@rx0
+POSTHOOK: query: insert into rx0 values ('AAAAAAAAAAAAAAAA',1),('AAAAAAAAGEAAAAAA',70),
+('A_2',2),('A_3',3),('A_4',4),('A_5',5),('A_6',6),('A_7',7),('A_8',8),('A_9',9),('A_10',10),('A_11',11),('A_12',12),('A_13',13),('A_14',14),('A_15',15),('A_16',16),('A_17',17),('A_18',18),('A_19',19),('A_20',20),('A_21',21),('A_22',22),('A_23',23),('A_24',24),('A_25',25),('A_26',26),('A_27',27),('A_28',28),('A_29',29),('A_30',30),('A_31',31),('A_32',32),('A_33',33),('A_34',34),('A_35',35),('A_36',36),('A_37',37),('A_38',38),('A_39',39),('A_40',40),('A_41',41),('A_42',42),('A_43',43),('A_44',44),('A_45',45),('A_46',46),('A_47',47),('A_48',48),('A_49',49),('A_50',50),('A_51',51),('A_52',52),('A_53',53),('A_54',54),('A_55',55),('A_56',56),('A_57',57),('A_58',58),('A_59',59),('A_60',60),('A_61',61),('A_62',62),('A_63',63),('A_64',64),('A_65',65),('A_66',66),('A_67',67),('A_68',68),('A_69',69)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@rx0
+POSTHOOK: Lineage: rx0.r_reason_id SCRIPT []
+POSTHOOK: Lineage: rx0.r_reason_sk SCRIPT []
+PREHOOK: query: insert into sr0 values (NULL),(1),(2),(3),(4),(5),(6),(7),(8),(9),(10),
+(11),(12),(13),(14),(15),(16),(17),(18),(19),(20),(21),(22),(23),(24),(25),
+(26),(27),(28),(29),(30),(31),(32),(33),(34),(35),(36),(37),(38),(39),(40),
+(41),(42),(43),(44),(45),(46),(47),(48),(49),(50),(51),(52),(53),(54),(55),
+(56),(57),(58),(59),(60),(61),(62),(63),(64),(65),(66),(67),(68),(69),(70)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@sr0
+POSTHOOK: query: insert into sr0 values (NULL),(1),(2),(3),(4),(5),(6),(7),(8),(9),(10),
+(11),(12),(13),(14),(15),(16),(17),(18),(19),(20),(21),(22),(23),(24),(25),
+(26),(27),(28),(29),(30),(31),(32),(33),(34),(35),(36),(37),(38),(39),(40),
+(41),(42),(43),(44),(45),(46),(47),(48),(49),(50),(51),(52),(53),(54),(55),
+(56),(57),(58),(59),(60),(61),(62),(63),(64),(65),(66),(67),(68),(69),(70)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@sr0
+POSTHOOK: Lineage: sr0.sr_reason_sk SCRIPT []
+PREHOOK: query: desc formatted sr0 sr_reason_sk
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@sr0
+POSTHOOK: query: desc formatted sr0 sr_reason_sk
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@sr0
+col_name            	sr_reason_sk        
+data_type           	bigint              
+min                 	1                   
+max                 	70                  
+num_nulls           	1                   
+distinct_count      	70                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"sr_reason_sk\":\"true\"}}
+Warning: Shuffle Join MERGEJOIN[16][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: insert into sr0 select a.* from sr0 a,sr0 b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sr0
+PREHOOK: Output: default@sr0
+POSTHOOK: query: insert into sr0 select a.* from sr0 a,sr0 b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sr0
+POSTHOOK: Output: default@sr0
+POSTHOOK: Lineage: sr0.sr_reason_sk SIMPLE [(sr0)a.FieldSchema(name:sr_reason_sk, type:bigint, comment:null), ]
+PREHOOK: query: desc formatted sr0 sr_reason_sk
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@sr0
+POSTHOOK: query: desc formatted sr0 sr_reason_sk
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@sr0
+col_name            	sr_reason_sk        
+data_type           	bigint              
+min                 	1                   
+max                 	70                  
+num_nulls           	72                  
+distinct_count      	73                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"sr_reason_sk\":\"true\"}}
+PREHOOK: query: analyze table sr0 compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@sr0
+PREHOOK: Output: default@sr0
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table sr0 compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@sr0
+POSTHOOK: Output: default@sr0
+#### A masked pattern was here ####
+PREHOOK: query: desc formatted sr0 sr_reason_sk
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@sr0
+POSTHOOK: query: desc formatted sr0 sr_reason_sk
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@sr0
+col_name            	sr_reason_sk        
+data_type           	bigint              
+min                 	1                   
+max                 	70                  
+num_nulls           	72                  
+distinct_count      	73                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"sr_reason_sk\":\"true\"}}
+PREHOOK: query: select 1
+from default.sr0  store_returns , default.rx0 reason
+            where sr_reason_sk = r_reason_sk
+              and r_reason_id = 'AAAAAAAAAAAAAAAA'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@rx0
+PREHOOK: Input: default@sr0
+#### A masked pattern was here ####
+POSTHOOK: query: select 1
+from default.sr0  store_returns , default.rx0 reason
+            where sr_reason_sk = r_reason_sk
+              and r_reason_id = 'AAAAAAAAAAAAAAAA'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@rx0
+POSTHOOK: Input: default@sr0
+#### A masked pattern was here ####
+PREHOOK: query: explain analyze select 1
+from default.sr0  store_returns , default.rx0 reason
+            where sr_reason_sk = r_reason_sk
+              and r_reason_id = 'AAAAAAAAAAAAAAAA'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@rx0
+PREHOOK: Input: default@sr0
+#### A masked pattern was here ####
+POSTHOOK: query: explain analyze select 1
+from default.sr0  store_returns , default.rx0 reason
+            where sr_reason_sk = r_reason_sk
+              and r_reason_id = 'AAAAAAAAAAAAAAAA'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@rx0
+POSTHOOK: Input: default@sr0
+#### A masked pattern was here ####
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 2 llap
+      File Output Operator [FS_10]
+        Select Operator [SEL_9] (rows=73/72 width=4)
+          Output:["_col0"]
+          Merge Join Operator [MERGEJOIN_25] (rows=73/72 width=8)
+            Conds:RS_28._col0=RS_31._col0(Inner)
+          <-Map 1 [SIMPLE_EDGE] vectorized, llap
+            SHUFFLE [RS_28]
+              PartitionCols:_col0
+              Select Operator [SEL_27] (rows=5040/5040 width=7)
+                Output:["_col0"]
+                Filter Operator [FIL_26] (rows=5040/5040 width=7)
+                  predicate:sr_reason_sk is not null
+                  TableScan [TS_0] (rows=5112/5112 width=7)
+                    default@sr0,store_returns,Tbl:COMPLETE,Col:COMPLETE,Output:["sr_reason_sk"]
+          <-Map 3 [SIMPLE_EDGE] vectorized, llap
+            SHUFFLE [RS_31]
+              PartitionCols:_col0
+              Select Operator [SEL_30] (rows=1/1 width=8)
+                Output:["_col0"]
+                Filter Operator [FIL_29] (rows=1/1 width=96)
+                  predicate:((r_reason_id = 'AAAAAAAAAAAAAAAA') and r_reason_sk is not null)
+                  TableScan [TS_3] (rows=70/70 width=96)
+                    default@rx0,reason,Tbl:COMPLETE,Col:COMPLETE,Output:["r_reason_id","r_reason_sk"]
+
