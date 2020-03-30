@@ -32,7 +32,7 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@rx0
 POSTHOOK: Lineage: rx0.r_reason_id SCRIPT []
 POSTHOOK: Lineage: rx0.r_reason_sk SCRIPT []
-PREHOOK: query: insert into sr0 values (NULL),(1),(2),(3),(4),(5),(6),(7),(8),(9),(10),
+PREHOOK: query: insert into sr0 values (1),(2),(3),(4),(5),(6),(7),(8),(9),(10),
 (11),(12),(13),(14),(15),(16),(17),(18),(19),(20),(21),(22),(23),(24),(25),
 (26),(27),(28),(29),(30),(31),(32),(33),(34),(35),(36),(37),(38),(39),(40),
 (41),(42),(43),(44),(45),(46),(47),(48),(49),(50),(51),(52),(53),(54),(55),
@@ -40,7 +40,7 @@ PREHOOK: query: insert into sr0 values (NULL),(1),(2),(3),(4),(5),(6),(7),(8),(9
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@sr0
-POSTHOOK: query: insert into sr0 values (NULL),(1),(2),(3),(4),(5),(6),(7),(8),(9),(10),
+POSTHOOK: query: insert into sr0 values (1),(2),(3),(4),(5),(6),(7),(8),(9),(10),
 (11),(12),(13),(14),(15),(16),(17),(18),(19),(20),(21),(22),(23),(24),(25),
 (26),(27),(28),(29),(30),(31),(32),(33),(34),(35),(36),(37),(38),(39),(40),
 (41),(42),(43),(44),(45),(46),(47),(48),(49),(50),(51),(52),(53),(54),(55),
@@ -59,7 +59,7 @@ col_name            	sr_reason_sk
 data_type           	bigint              
 min                 	1                   
 max                 	70                  
-num_nulls           	1                   
+num_nulls           	0                   
 distinct_count      	70                  
 avg_col_len         	                    
 max_col_len         	                    
@@ -90,7 +90,7 @@ col_name            	sr_reason_sk
 data_type           	bigint              
 min                 	1                   
 max                 	70                  
-num_nulls           	3                   
+num_nulls           	0                   
 distinct_count      	70                  
 avg_col_len         	                    
 max_col_len         	                    
@@ -118,7 +118,7 @@ col_name            	sr_reason_sk
 data_type           	bigint              
 min                 	1                   
 max                 	70                  
-num_nulls           	6                   
+num_nulls           	0                   
 distinct_count      	73                  
 avg_col_len         	                    
 max_col_len         	                    
@@ -147,7 +147,7 @@ col_name            	sr_reason_sk
 data_type           	bigint              
 min                 	1                   
 max                 	70                  
-num_nulls           	6                   
+num_nulls           	0                   
 distinct_count      	73                  
 avg_col_len         	                    
 max_col_len         	                    
@@ -199,18 +199,18 @@ Stage-0
     Stage-1
       Reducer 2 llap
       File Output Operator [FS_10]
-        Select Operator [SEL_9] (rows=420/6 width=4)
+        Select Operator [SEL_9] (rows=210/6 width=4)
           Output:["_col0"]
-          Merge Join Operator [MERGEJOIN_25] (rows=420/6 width=8)
+          Merge Join Operator [MERGEJOIN_25] (rows=210/6 width=8)
             Conds:RS_28._col0=RS_31._col0(Inner)
           <-Map 1 [SIMPLE_EDGE] vectorized, llap
             SHUFFLE [RS_28]
               PartitionCols:_col0
-              Select Operator [SEL_27] (rows=420/420 width=7)
+              Select Operator [SEL_27] (rows=420/420 width=8)
                 Output:["_col0"]
-                Filter Operator [FIL_26] (rows=420/420 width=7)
+                Filter Operator [FIL_26] (rows=420/420 width=8)
                   predicate:sr_reason_sk is not null
-                  TableScan [TS_0] (rows=426/426 width=7)
+                  TableScan [TS_0] (rows=420/420 width=8)
                     default@sr0,store_returns,Tbl:COMPLETE,Col:COMPLETE,Output:["sr_reason_sk"]
           <-Map 3 [SIMPLE_EDGE] vectorized, llap
             SHUFFLE [RS_31]
