@@ -22,11 +22,13 @@ POSTHOOK: query: create table sr0 (sr_reason_sk bigint)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@sr0
-PREHOOK: query: insert into rx0 values ('AAAAAAAAAAAAAAAA',1),('AAAAAAAAGEAAAAAA',70)
+PREHOOK: query: insert into rx0 values ('AAAAAAAAAAAAAAAA',1),('AAAAAAAAGEAAAAAA',70),
+('A_2',2),('A_3',3),('A_4',4),('A_5',5),('A_6',6),('A_7',7),('A_8',8),('A_9',9),('A_10',10),('A_11',11),('A_12',12),('A_13',13),('A_14',14),('A_15',15),('A_16',16),('A_17',17),('A_18',18),('A_19',19),('A_20',20),('A_21',21),('A_22',22),('A_23',23),('A_24',24),('A_25',25),('A_26',26),('A_27',27),('A_28',28),('A_29',29),('A_30',30),('A_31',31),('A_32',32),('A_33',33),('A_34',34),('A_35',35),('A_36',36),('A_37',37),('A_38',38),('A_39',39),('A_40',40),('A_41',41),('A_42',42),('A_43',43),('A_44',44),('A_45',45),('A_46',46),('A_47',47),('A_48',48),('A_49',49),('A_50',50),('A_51',51),('A_52',52),('A_53',53),('A_54',54),('A_55',55),('A_56',56),('A_57',57),('A_58',58),('A_59',59),('A_60',60),('A_61',61),('A_62',62),('A_63',63),('A_64',64),('A_65',65),('A_66',66),('A_67',67),('A_68',68),('A_69',69)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@rx0
-POSTHOOK: query: insert into rx0 values ('AAAAAAAAAAAAAAAA',1),('AAAAAAAAGEAAAAAA',70)
+POSTHOOK: query: insert into rx0 values ('AAAAAAAAAAAAAAAA',1),('AAAAAAAAGEAAAAAA',70),
+('A_2',2),('A_3',3),('A_4',4),('A_5',5),('A_6',6),('A_7',7),('A_8',8),('A_9',9),('A_10',10),('A_11',11),('A_12',12),('A_13',13),('A_14',14),('A_15',15),('A_16',16),('A_17',17),('A_18',18),('A_19',19),('A_20',20),('A_21',21),('A_22',22),('A_23',23),('A_24',24),('A_25',25),('A_26',26),('A_27',27),('A_28',28),('A_29',29),('A_30',30),('A_31',31),('A_32',32),('A_33',33),('A_34',34),('A_35',35),('A_36',36),('A_37',37),('A_38',38),('A_39',39),('A_40',40),('A_41',41),('A_42',42),('A_43',43),('A_44',44),('A_45',45),('A_46',46),('A_47',47),('A_48',48),('A_49',49),('A_50',50),('A_51',51),('A_52',52),('A_53',53),('A_54',54),('A_55',55),('A_56',56),('A_57',57),('A_58',58),('A_59',59),('A_60',60),('A_61',61),('A_62',62),('A_63',63),('A_64',64),('A_65',65),('A_66',66),('A_67',67),('A_68',68),('A_69',69)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@rx0
@@ -89,7 +91,7 @@ data_type           	bigint
 min                 	1                   
 max                 	70                  
 num_nulls           	72                  
-distinct_count      	70                  
+distinct_count      	73                  
 avg_col_len         	                    
 max_col_len         	                    
 num_trues           	                    
@@ -118,7 +120,7 @@ data_type           	bigint
 min                 	1                   
 max                 	70                  
 num_nulls           	72                  
-distinct_count      	70                  
+distinct_count      	73                  
 avg_col_len         	                    
 max_col_len         	                    
 num_trues           	                    
@@ -169,9 +171,9 @@ Stage-0
     Stage-1
       Reducer 2 llap
       File Output Operator [FS_10]
-        Select Operator [SEL_9] (rows=2520/2520 width=4)
+        Select Operator [SEL_9] (rows=5040/72 width=4)
           Output:["_col0"]
-          Merge Join Operator [MERGEJOIN_25] (rows=2520/2520 width=8)
+          Merge Join Operator [MERGEJOIN_25] (rows=5040/72 width=8)
             Conds:RS_28._col0=RS_31._col0(Inner)
           <-Map 1 [SIMPLE_EDGE] vectorized, llap
             SHUFFLE [RS_28]
@@ -187,8 +189,8 @@ Stage-0
               PartitionCols:_col0
               Select Operator [SEL_30] (rows=1/1 width=8)
                 Output:["_col0"]
-                Filter Operator [FIL_29] (rows=1/1 width=108)
+                Filter Operator [FIL_29] (rows=1/1 width=96)
                   predicate:((r_reason_id = 'AAAAAAAAAAAAAAAA') and r_reason_sk is not null)
-                  TableScan [TS_3] (rows=2/2 width=108)
+                  TableScan [TS_3] (rows=70/70 width=96)
                     default@rx0,reason,Tbl:COMPLETE,Col:COMPLETE,Output:["r_reason_id","r_reason_sk"]
 
