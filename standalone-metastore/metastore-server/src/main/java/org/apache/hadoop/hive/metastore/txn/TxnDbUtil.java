@@ -25,16 +25,21 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.SQLTransactionRollbackException;
 import java.sql.Statement;
+import java.sql.Timestamp;
+import java.util.EnumMap;
 import java.util.Properties;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
-import org.apache.zookeeper.txn.TxnHeader;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.apache.hadoop.hive.metastore.DatabaseProduct.*;
 
 /**
  * Utility methods for creating and destroying txn database/schema, plus methods for
@@ -43,8 +48,19 @@ import org.slf4j.LoggerFactory;
  */
 public final class TxnDbUtil {
 
-  static final private Logger LOG = LoggerFactory.getLogger(TxnDbUtil.class.getName());
+  private static final  Logger LOG = LoggerFactory.getLogger(TxnDbUtil.class.getName());
   private static final String TXN_MANAGER = "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager";
+
+  private static final EnumMap<DatabaseProduct, String> DB_EPOCH_FN =
+      new EnumMap<DatabaseProduct, String>(DatabaseProduct.class) {{
+        put(DERBY, "{ fn timestampdiff(sql_tsi_frac_second, timestamp('" + new Timestamp(0) +
+            "'), current_timestamp) } / 1000000");
+        put(MYSQL, "round(unix_timestamp(now(3)) * 1000)");
+        put(POSTGRES, "round(extract(epoch from current_timestamp) * 1000)");
+        put(ORACLE, "(cast(systimestamp at time zone 'UTC' as date) - date '1970-01-01')*24*60*60*1000 " +
+            "+ cast(mod( extract( second from systimestamp ), 1 ) * 1000 as int)");
+        put(SQLSERVER, "datediff_big(millisecond, '19700101', sysutcdatetime())");
+      }};
 
   private static int deadlockCnt = 0;
 
@@ -500,35 +516,6 @@ public final class TxnDbUtil {
   }
 
   /**
-   * Return true if the transaction of the given txnId is open.
-   * @param conf    HiveConf
-   * @param txnId   transaction id to search for
-   * @return
-   * @throws Exception
-   */
-  public static boolean isOpenOrAbortedTransaction(Configuration conf, long txnId) throws Exception {
-    Connection conn = null;
-    PreparedStatement stmt = null;
-    ResultSet rs = null;
-    try {
-      conn = getConnection(conf);
-      conn.setAutoCommit(false);
-      conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-
-      stmt = conn.prepareStatement("SELECT txn_id FROM TXNS WHERE txn_id = ?");
-      stmt.setLong(1, txnId);
-      rs = stmt.executeQuery();
-      if (!rs.next()) {
-        return false;
-      } else {
-        return true;
-      }
-    } finally {
-      closeResources(conn, stmt, rs);
-    }
-  }
-
-  /**
    * Utility method used to run COUNT queries like "select count(*) from ..." against metastore tables
    * @param countQuery countQuery text
    * @return count countQuery result
@@ -625,6 +612,21 @@ public final class TxnDbUtil {
       } catch (SQLException e) {
         System.err.println("Error closing Connection: " + e.getMessage());
       }
+    }
+  }
+
+  /**
+   * Get database specific function which returns the milliseconds value after the epoch.
+   * @throws MetaException For unknown database type.
+   */
+  static String getEpochFn(DatabaseProduct dbProduct) throws MetaException {
+    String epochFn = DB_EPOCH_FN.get(dbProduct);
+    if (epochFn != null) {
+      return epochFn;
+    } else {
+      String msg = "Unknown database product: " + dbProduct.toString();
+      LOG.error(msg);
+      throw new MetaException(msg);
     }
   }
 }

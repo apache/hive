@@ -4211,6 +4211,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                     ErrorMsg.HIVE_GROUPING_SETS_EXPR_NOT_IN_GROUPBY.getErrorCodedMsg()));
           }
           bitmap = unsetBit(bitmap, groupByExpr.size() - pos - 1);
+
+          // Add the copy translation for grouping set keys. This will make sure that same translation as
+          // group by key is applied on the grouping set key. If translation is added to group by key
+          // to add the table name to the column name (tbl.key), then same thing will be done for grouping
+          // set keys also.
+          unparseTranslator.addCopyTranslation((ASTNode)child.getChild(j), groupByExpr.get(pos));
         }
         result.add(bitmap);
       }
@@ -7761,7 +7767,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       boolean isDestTempFile = true;
-      if (!ctx.isMRTmpFileURI(destinationPath.toUri().toString())) {
+      if (ctx.isMRTmpFileURI(destinationPath.toUri().toString()) == false
+          && ctx.isResultCacheDir(destinationPath) == false) {
+        // not a temp dir and not a result cache dir
         idToTableNameMap.put(String.valueOf(destTableId), destinationPath.toUri().toString());
         currentTableId = destTableId;
         destTableId++;

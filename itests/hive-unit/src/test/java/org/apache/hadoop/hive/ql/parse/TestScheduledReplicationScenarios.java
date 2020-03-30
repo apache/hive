@@ -156,4 +156,53 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
       replica.run("drop scheduled query s2");
     }
   }
+
+  @Test
+  public void testExternalTablesReplLoadBootstrapIncr() throws Throwable {
+    // Bootstrap
+    String withClause = " WITH('" + HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname
+            + "'='/replica_external_base')";
+    primary.run("use " + primaryDbName)
+            .run("create external table t1 (id int)")
+            .run("insert into t1 values(1)")
+            .run("insert into t1 values(2)");
+    try (ScheduledQueryExecutionService schqS =
+                 ScheduledQueryExecutionService.startScheduledQueryExecutorService(primary.hiveConf)) {
+      int next = 0;
+      ReplDumpWork.injectNextDumpDirForTest(String.valueOf(next));
+      primary.run("create scheduled query s1 every 10 minutes as repl dump " + primaryDbName + withClause);
+      primary.run("alter scheduled query s1 execute");
+      Thread.sleep(80000);
+      replica.run("create scheduled query s2 every 10 minutes as repl load " + primaryDbName + " INTO "
+              + replicatedDbName);
+      replica.run("alter scheduled query s2 execute");
+      Thread.sleep(80000);
+      replica.run("use " + replicatedDbName)
+              .run("show tables like 't1'")
+              .verifyResult("t1")
+              .run("select id from t1 order by id")
+              .verifyResults(new String[]{"1", "2"});
+
+      // First incremental, after bootstrap
+      primary.run("use " + primaryDbName)
+              .run("insert into t1 values(3)")
+              .run("insert into t1 values(4)");
+      next++;
+      ReplDumpWork.injectNextDumpDirForTest(String.valueOf(next));
+      primary.run("alter scheduled query s1 execute");
+      Thread.sleep(80000);
+      replica.run("alter scheduled query s2 execute");
+      Thread.sleep(80000);
+      replica.run("use " + replicatedDbName)
+              .run("show tables like 't1'")
+              .verifyResult("t1")
+              .run("select id from t1 order by id")
+              .verifyResults(new String[]{"1", "2", "3", "4"});
+
+
+    } finally {
+      primary.run("drop scheduled query s1");
+      replica.run("drop scheduled query s2");
+    }
+  }
 }

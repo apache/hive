@@ -17,13 +17,14 @@
  */
 package org.apache.hadoop.hive.metastore.datasource;
 
-import com.codahale.metrics.MetricRegistry;
+import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.dbcp.ConnectionFactory;
-import org.apache.commons.dbcp.DriverManagerConnectionFactory;
+import org.apache.commons.dbcp.DataSourceConnectionFactory;
 import org.apache.commons.dbcp.PoolableConnectionFactory;
 import org.apache.commons.dbcp.PoolingDataSource;
 import org.apache.commons.pool.impl.GenericObjectPool;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,12 +57,26 @@ public class DbCPDataSourceProvider implements DataSourceProvider {
 
   @Override
   public DataSource create(Configuration hdpConfig) throws SQLException {
-
     LOG.debug("Creating dbcp connection pool for the MetaStore");
 
     String driverUrl = DataSourceProvider.getMetastoreJdbcDriverUrl(hdpConfig);
     String user = DataSourceProvider.getMetastoreJdbcUser(hdpConfig);
     String passwd = DataSourceProvider.getMetastoreJdbcPasswd(hdpConfig);
+
+    BasicDataSource dbcpDs = new BasicDataSource();
+    dbcpDs.setUrl(driverUrl);
+    dbcpDs.setUsername(user);
+    dbcpDs.setPassword(passwd);
+
+    DatabaseProduct dbProduct =  determineDatabaseProduct(driverUrl);
+    switch (dbProduct){
+      case MYSQL:
+        dbcpDs.setConnectionProperties("rewriteBatchedStatements=true");
+        break;
+      case POSTGRES:
+        dbcpDs.setConnectionProperties("reWriteBatchedInserts=true");
+        break;
+    }
     int maxPoolSize = hdpConfig.getInt(
             MetastoreConf.ConfVars.CONNECTION_POOLING_MAX_CONNECTIONS.getVarname(),
             ((Long) MetastoreConf.ConfVars.CONNECTION_POOLING_MAX_CONNECTIONS.getDefaultVal()).intValue());
@@ -97,17 +112,16 @@ public class DbCPDataSourceProvider implements DataSourceProvider {
     objectPool.setSoftMinEvictableIdleTimeMillis(softMinEvictableIdleTimeMillis);
     objectPool.setLifo(lifo);
 
-    ConnectionFactory connFactory = new DriverManagerConnectionFactory(driverUrl, user, passwd);
+    ConnectionFactory connFactory = new DataSourceConnectionFactory(dbcpDs);
     // This doesn't get used, but it's still necessary, see
     // https://git1-us-west.apache.org/repos/asf?p=commons-dbcp.git;a=blob;f=doc/ManualPoolingDataSourceExample.java;
     // h=f45af2b8481f030b27364e505984c0eef4f35cdb;hb=refs/heads/DBCP_1_5_x_BRANCH
     PoolableConnectionFactory poolableConnFactory =
         new PoolableConnectionFactory(connFactory, objectPool, null, null, false, true);
 
-    if (determineDatabaseProduct(driverUrl) == MYSQL) {
+    if (dbProduct == MYSQL) {
       poolableConnFactory.setValidationQuery("SET @@session.sql_mode=ANSI_QUOTES");
     }
-
     return new PoolingDataSource(objectPool);
   }
 

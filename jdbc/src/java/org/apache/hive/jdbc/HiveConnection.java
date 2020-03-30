@@ -28,6 +28,7 @@ import org.apache.hive.service.rpc.thrift.TSetClientInfoResp;
 import org.apache.hive.service.rpc.thrift.TSetClientInfoReq;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.auth.HiveAuthUtils;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
 import org.apache.hive.service.auth.HiveAuthConstants;
 import org.apache.hive.service.auth.KerberosSaslHelper;
@@ -70,6 +71,7 @@ import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
@@ -143,7 +145,8 @@ public class HiveConnection implements java.sql.Connection {
   private final List<TProtocolVersion> supportedProtocols = new LinkedList<TProtocolVersion>();
   private int loginTimeout = 0;
   private TProtocolVersion protocol;
-  private int fetchSize = HiveStatement.DEFAULT_FETCH_SIZE;
+  private final int initFetchSize;
+  private int defaultFetchSize;
   private String initFile = null;
   private String wmPool = null, wmApp = null;
   private Properties clientInfo;
@@ -261,9 +264,8 @@ public class HiveConnection implements java.sql.Connection {
     port = connParams.getPort();
     isEmbeddedMode = connParams.isEmbeddedMode();
 
-    if (sessConfMap.containsKey(JdbcConnectionParams.FETCH_SIZE)) {
-      fetchSize = Integer.parseInt(sessConfMap.get(JdbcConnectionParams.FETCH_SIZE));
-    }
+    initFetchSize = Integer.parseInt(sessConfMap.getOrDefault(JdbcConnectionParams.FETCH_SIZE, "0"));
+
     if (sessConfMap.containsKey(JdbcConnectionParams.INIT_FILE)) {
       initFile = sessConfMap.get(JdbcConnectionParams.INIT_FILE);
     }
@@ -832,9 +834,6 @@ public class HiveConnection implements java.sql.Connection {
     }
     // switch the database
     openConf.put("use:database", connParams.getDbName());
-    // set the fetchSize
-    openConf.put("set:hiveconf:hive.server2.thrift.resultset.default.fetch.size",
-      Integer.toString(fetchSize));
     if (wmPool != null) {
       openConf.put("set:hivevar:wmpool", wmPool);
     }
@@ -867,16 +866,19 @@ public class HiveConnection implements java.sql.Connection {
       protocol = openResp.getServerProtocolVersion();
       sessHandle = openResp.getSessionHandle();
 
-      // Update fetchSize if modified by server
-      String serverFetchSize =
-        openResp.getConfiguration().get("hive.server2.thrift.resultset.default.fetch.size");
-      if (serverFetchSize != null) {
-        fetchSize = Integer.parseInt(serverFetchSize);
+      final String serverFetchSizeString =
+          openResp.getConfiguration().get(ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE.varname);
+      if (serverFetchSizeString == null) {
+        throw new IllegalStateException("Server returned a null default fetch size. Check that "
+            + ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE.varname + " is configured correctly.");
+      }
+
+      this.defaultFetchSize = Integer.parseInt(serverFetchSizeString);
+      if (this.defaultFetchSize <= 0) {
+        throw new IllegalStateException("Default fetch size must be greater than 0");
       }
     } catch (TException e) {
-      LOG.error("Error opening session", e);
-      throw new SQLException("Could not establish connection to "
-          + jdbcUriString + ": " + e.getMessage(), " 08S01", e);
+      throw new SQLException("Could not establish connection to " + jdbcUriString + ": " + e.getMessage(), " 08S01", e);
     }
     isClosed = false;
   }
@@ -1107,7 +1109,7 @@ public class HiveConnection implements java.sql.Connection {
     if (isClosed) {
       throw new SQLException("Can't create Statement, connection is closed");
     }
-    return new HiveStatement(this, client, sessHandle, fetchSize);
+    return new HiveStatement(this, client, sessHandle, false, initFetchSize, defaultFetchSize);
   }
 
   /*
@@ -1127,8 +1129,8 @@ public class HiveConnection implements java.sql.Connection {
       throw new SQLException("Statement with resultset type " + resultSetType +
           " is not supported", "HYC00"); // Optional feature not implemented
     }
-    return new HiveStatement(this, client, sessHandle,
-        resultSetType == ResultSet.TYPE_SCROLL_INSENSITIVE, fetchSize);
+    return new HiveStatement(this, client, sessHandle, resultSetType == ResultSet.TYPE_SCROLL_INSENSITIVE,
+        initFetchSize, defaultFetchSize);
   }
 
   /*

@@ -145,7 +145,6 @@ public class SQLOperation extends ExecuteStatementOperation {
           new SessionStream(System.err, true, StandardCharsets.UTF_8.name());
     } catch (UnsupportedEncodingException e) {
         LOG.error("Error creating PrintStream", e);
-        e.printStackTrace();
         sessionState.out = null;
         sessionState.info = null;
         sessionState.err = null;
@@ -462,7 +461,7 @@ public class SQLOperation extends ExecuteStatementOperation {
       maxRows = 1;
       isBlobBased = true;
     }
-    driver.setMaxRows((int) maxRows);
+    driver.setMaxRows(Math.toIntExact(maxRows));
     RowSet rowSet = RowSetFactory.create(getResultSetSchema(), getProtocolVersion(), isBlobBased);
     try {
       /* if client is requesting fetch-from-start and its not the first time reading from this operation
@@ -472,7 +471,7 @@ public class SQLOperation extends ExecuteStatementOperation {
         driver.resetFetch();
       }
       fetchStarted = true;
-      driver.setMaxRows((int) maxRows);
+      driver.setMaxRows(Math.toIntExact(maxRows));
       if (driver.getResults(convey)) {
         return decode(convey, rowSet);
       }
@@ -594,7 +593,6 @@ public class SQLOperation extends ExecuteStatementOperation {
       SerDeUtils.initializeSerDe(serde, queryState.getConf(), props, null);
 
     } catch (Exception ex) {
-      ex.printStackTrace();
       throw new SQLException("Could not create ResultSet: " + ex.getMessage(), ex);
     }
     return serde;

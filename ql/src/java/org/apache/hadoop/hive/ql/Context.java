@@ -727,6 +727,22 @@ public class Context {
         (uriStr.indexOf(MR_PREFIX) != -1);
   }
 
+  /**
+   * Check if the path is a result cache dir for this query. This doesn't work unless the result
+   * paths have already been set in SemanticAnalyzer::getDestinationFilePath to prevent someone from
+   * overriding LOCATION in a create table command to overwrite cached results
+   *
+   * @param destinationPath
+   * @return true if the path is a result cache dir
+   */
+
+  public boolean isResultCacheDir(Path destinationPath) {
+    if (this.fsResultCacheDirs != null) {
+      return this.fsResultCacheDirs.equals(destinationPath);
+    }
+    return false;
+  }
+
   public Path getMRTmpPath(URI uri) {
     return new Path(getStagingDir(new Path(uri), !isExplainSkipExecution()), MR_PREFIX + nextPathId());
   }
