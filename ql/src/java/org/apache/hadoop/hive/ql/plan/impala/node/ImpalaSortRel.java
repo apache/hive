@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.plan.impala.node;
 import com.google.common.base.Preconditions;
 import org.apache.calcite.linq4j.Ord;
 import org.apache.calcite.plan.RelTraitSet;
-import org.apache.calcite.plan.hep.HepRelVertex;
 import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelWriter;
@@ -30,16 +29,14 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
-
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaPlannerContext;
-
 import org.apache.impala.analysis.Expr;
 import org.apache.impala.analysis.ExprSubstitutionMap;
 import org.apache.impala.analysis.SortInfo;
-import org.apache.impala.analysis.TupleDescriptor;
 import org.apache.impala.common.ImpalaException;
 import org.apache.impala.planner.PlanNode;
-import org.apache.impala.planner.PlanNodeId;
+import org.apache.impala.planner.SingleNodePlanner;
+import org.apache.impala.planner.SortNode;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -48,7 +45,7 @@ import java.util.Map;
 
 public class ImpalaSortRel extends ImpalaPlanRel {
 
-  private ImpalaSortNode sortNode = null;
+  private SortNode sortNode = null;
   private final HiveSortLimit sortLimit;
 
   public ImpalaSortRel(HiveSortLimit sortLimit, List<RelNode> inputs) {
@@ -61,7 +58,6 @@ public class ImpalaSortRel extends ImpalaPlanRel {
       return sortNode;
     }
 
-    PlanNodeId nodeId = ctx.getNextNodeId();
     ImpalaPlanRel sortInputRel = getImpalaRelInput(0);
 
     PlanNode sortInputNode = sortInputRel.getPlanNode(ctx);
@@ -90,14 +86,9 @@ public class ImpalaSortRel extends ImpalaPlanRel {
     this.outputExprs = createOutputExprs(sortInfo.getSortTupleDescriptor().getSlots());
 
     sortInfo.materializeRequiredSlots(ctx.getRootAnalyzer(), new ExprSubstitutionMap());
-    TupleDescriptor tupleDesc = sortInfo.getSortTupleDescriptor();
-    
-    this.nodeInfo = new ImpalaNodeInfo();
-    nodeInfo.setTupleDesc(tupleDesc);
 
-    sortNode = new ImpalaSortNode(nodeId, sortInputNode, sortInfo, offset, nodeInfo);
-    sortNode.setLimit(limit);
-    sortNode.init(ctx.getRootAnalyzer());
+    sortNode = SingleNodePlanner.createSortNode(ctx, ctx.getRootAnalyzer(), sortInputNode, sortInfo,
+        limit, offset, limit != -1, false /* don't disable outermost topN */);
 
     return sortNode;
   }
