@@ -43,8 +43,7 @@ public class HiveDriver implements Driver {
     try {
       java.sql.DriverManager.registerDriver(new HiveDriver());
     } catch (SQLException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      throw new RuntimeException("Failed to register driver", e);
     }
   }
 
