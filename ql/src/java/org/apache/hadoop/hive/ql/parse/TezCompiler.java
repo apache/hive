@@ -241,15 +241,7 @@ public class TezCompiler extends TaskCompiler {
     markOperatorsWithUnstableRuntimeStats(procCtx);
     perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "markOperatorsWithUnstableRuntimeStats");
 
-    // ATTENTION : DO NOT, I REPEAT, DO NOT WRITE ANYTHING AFTER updateBucketingVersionForUpgrade()
-    // ANYTHING WHICH NEEDS TO BE ADDED MUST BE ADDED ABOVE
-    // This call updates the bucketing version of final ReduceSinkOp based on
-    // the bucketing version of FileSinkOp. This operation must happen at the
-    // end to ensure there is no further rewrite of plan which may end up
-    // removing/updating the ReduceSinkOp as was the case with SortedDynPartitionOptimizer
-    // Update bucketing version of ReduceSinkOp if needed
-    updateBucketingVersionForUpgrade(procCtx);
-
+    bucketingVersionSanityCheck(procCtx);
   }
 
   private void runCycleAnalysisForPartitionPruning(OptimizeTezProcContext procCtx,
@@ -1970,7 +1962,7 @@ public class TezCompiler extends TaskCompiler {
     }
   }
 
-  private void updateBucketingVersionForUpgrade(OptimizeTezProcContext procCtx) throws SemanticException {
+  private void bucketingVersionSanityCheck(OptimizeTezProcContext procCtx) throws SemanticException {
     // Fetch all the FileSinkOperators.
     Set<FileSinkOperator> fsOpsAll = new HashSet<>();
     for (TableScanOperator ts : procCtx.parseContext.getTopOps().values()) {
@@ -2004,7 +1996,7 @@ public class TezCompiler extends TaskCompiler {
         }
         processedOperators.put(parent, bucketingVersion);
 
-        parent.getConf().setBucketingVersion(bucketingVersion);
+        //parent.getConf().setBucketingVersion(bucketingVersion);
         break;
       }
     }
