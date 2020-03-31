@@ -103,7 +103,7 @@ class JoinVisitor extends HiveRelNodeVisitor<RelNode> {
     // 4. Extract join key expressions from HiveSortExchange
     ExprNodeDesc[][] joinExpressions = new ExprNodeDesc[inputs.length][];
     for (int i = 0; i < inputs.length; i++) {
-      joinExpressions[i] = ((HiveSortExchange) joinRel.getInput(i)).getJoinExpressions();
+      joinExpressions[i] = ((HiveSortExchange) joinRel.getInput(i)).getKeyExpressions();
     }
 
     // 5. Extract rest of join predicate info. We infer the rest of join condition

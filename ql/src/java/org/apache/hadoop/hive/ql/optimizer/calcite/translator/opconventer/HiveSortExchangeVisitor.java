@@ -53,12 +53,12 @@ class HiveSortExchangeVisitor extends HiveRelNodeVisitor<HiveSortExchange> {
     if (distribution.getType() != Type.HASH_DISTRIBUTED) {
       throw new SemanticException("Only hash distribution supported for LogicalExchange");
     }
-    ExprNodeDesc[] expressions = new ExprNodeDesc[exchangeRel.getJoinKeys().size()];
-    for (int index = 0; index < exchangeRel.getJoinKeys().size(); index++) {
-      expressions[index] = HiveOpConverterUtils.convertToExprNode(exchangeRel.getJoinKeys().get(index),
+    ExprNodeDesc[] expressions = new ExprNodeDesc[exchangeRel.getKeys().size()];
+    for (int index = 0; index < exchangeRel.getKeys().size(); index++) {
+      expressions[index] = HiveOpConverterUtils.convertToExprNode(exchangeRel.getKeys().get(index),
           exchangeRel.getInput(), inputOpAf.tabAlias, inputOpAf.vcolsInCalcite);
     }
-    exchangeRel.setJoinExpressions(expressions);
+    exchangeRel.setKeyExpressions(expressions);
 
     ReduceSinkOperator rsOp = genReduceSink(inputOpAf.inputs.get(0), tabAlias, expressions,
         -1, -1, Operation.NOT_ACID, hiveOpConverter.getHiveConf());

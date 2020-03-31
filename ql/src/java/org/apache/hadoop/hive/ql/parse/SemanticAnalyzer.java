@@ -811,20 +811,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ASTNode selectExpr = (ASTNode) selectExprs.getChild(i);
       if (selectExpr.getChildCount() == 1 && selectExpr.getChild(0).getType() == HiveParser.TOK_TABLE_OR_COL) {
         //first child should be rowid
-        if (i == 0 && !selectExpr.getChild(0).getChild(0).getText().equals("ROW__ID")) {
-          throw new SemanticException("Unexpected element when replacing default keyword for UPDATE."
-                                          + " Expected ROW_ID, found: " + selectExpr.getChild(0).getChild(0).getText());
-        }
-        else if (selectExpr.getChild(0).getChild(0).getText().toLowerCase().equals("default")) {
-          if (defaultConstraints == null) {
-            defaultConstraints = getDefaultConstraints(targetTable, null);
-          }
-          ASTNode newNode = getNodeReplacementforDefault(defaultConstraints.get(i - 1));
-          // replace the node in place
-          selectExpr.replaceChildren(0, 0, newNode);
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("DEFAULT keyword replacement - Inserted {} for table: {}", newNode.getText(),
-                targetTable.getTableName());
+        if (i != 0 || selectExpr.getChild(0).getChild(0).getText().equals("ROW__ID")) {
+          if (selectExpr.getChild(0).getChild(0).getText().toLowerCase().equals("default")) {
+            if (defaultConstraints == null) {
+              defaultConstraints = getDefaultConstraints(targetTable, null);
+            }
+            ASTNode newNode = getNodeReplacementforDefault(defaultConstraints.get(i - 1));
+            // replace the node in place
+            selectExpr.replaceChildren(0, 0, newNode);
+            if (LOG.isDebugEnabled()) {
+              LOG.debug("DEFAULT keyword replacement - Inserted {} for table: {}", newNode.getText(),
+                  targetTable.getTableName());
+            }
           }
         }
       }
@@ -1809,6 +1807,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         break;
 
       case HiveParser.TOK_LIMIT:
+        queryProperties.setHasLimit(true);
         if (ast.getChildCount() == 2) {
           qbp.setDestLimit(ctx_1.dest,
               Integer.valueOf(ast.getChild(0).getText()), Integer.valueOf(ast.getChild(1).getText()));

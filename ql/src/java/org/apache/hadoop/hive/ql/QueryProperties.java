@@ -45,6 +45,7 @@ public class QueryProperties {
   boolean hasOrderBy = false;
   boolean hasOuterOrderBy = false;
   boolean hasSortBy = false;
+  boolean hasLimit = false;
   boolean hasJoinFollowedByGroupBy = false;
   boolean hasPTF = false;
   boolean hasWindowing = false;
@@ -182,6 +183,14 @@ public class QueryProperties {
 
   public void setHasSortBy(boolean hasSortBy) {
     this.hasSortBy = hasSortBy;
+  }
+
+  public void setHasLimit(boolean hasLimit) {
+    this.hasLimit = hasLimit;
+  }
+
+  public boolean hasLimit() {
+    return hasLimit;
   }
 
   public boolean hasJoinFollowedByGroupBy() {
