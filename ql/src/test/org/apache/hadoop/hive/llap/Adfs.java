@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.llap;
 
+import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimator;
 import org.apache.hadoop.hive.common.ndv.hll.HyperLogLog;
 import org.junit.Test;
 
@@ -27,6 +28,15 @@ public class Adfs {
   public void asd() {
 
     System.out.println("asd");
+    HyperLogLog h = b70();
+    HyperLogLog h2 = HyperLogLog.builder().build();
+    //h.squash(p0)
+    NumDistinctValueEstimator h3 = h2.deserialize(h.serialize());
+    h3.mergeEstimators(h2.deserialize(h.serialize()));
+    System.out.println(h3.estimateNumDistinctValues());
+  }
+
+  private HyperLogLog b70() {
     HyperLogLog h = HyperLogLog.builder().build();
     for (int ia = 0; ia <= 70; ia++)
     {
@@ -34,7 +44,7 @@ public class Adfs {
         h.addLong(i);
       }
     }
-    System.out.println(h.count());
+    return h;
   }
 
 }
