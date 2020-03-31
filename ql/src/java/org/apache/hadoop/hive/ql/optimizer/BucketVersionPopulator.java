@@ -69,6 +69,7 @@ public class BucketVersionPopulator extends Transform {
   public ParseContext transform(ParseContext pctx) throws SemanticException {
     pGraphContext = pctx;
     runBackPropagation();
+    runForwardPropagation();
     return pctx;
   }
 

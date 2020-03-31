@@ -1,5 +1,6 @@
 --! qt:dataset:src
 set hive.explain.user=false;
+-- set hive.optimize.reducededuplication=false;
 ;
 set hive.exec.reducers.max = 1;
 
