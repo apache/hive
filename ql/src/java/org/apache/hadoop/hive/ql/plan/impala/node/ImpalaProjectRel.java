@@ -102,6 +102,7 @@ public class ImpalaProjectRel extends ImpalaProjectRelBase {
     for (RelDataTypeField relDataTypeField : hiveProject.getRowType().getFieldList()) {
       SlotDescriptor slotDesc = analyzer.addSlotDescriptor(tupleDesc);
       slotDesc.setType(ImpalaTypeConverter.getImpalaType(relDataTypeField.getType()));
+      slotDesc.setLabel(relDataTypeField.getName());
       slotDesc.setIsMaterialized(true);
     }
     tupleDesc.computeMemLayout();
