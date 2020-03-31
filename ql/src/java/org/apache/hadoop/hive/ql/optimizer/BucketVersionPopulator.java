@@ -20,12 +20,14 @@ package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
@@ -33,6 +35,7 @@ import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
+import org.apache.hadoop.hive.ql.lib.PreOrderWalker;
 import org.apache.hadoop.hive.ql.lib.SemanticRule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.optimizer.Transform;
@@ -72,17 +75,38 @@ public class BucketVersionPopulator extends Transform {
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
     pGraphContext = pctx;
+    runBackPropagation();
+    return pctx;
+  }
+
+  private ParseContext runBackPropagation() throws SemanticException {
 
     NodeProcessorCtx ctx = new NodeProcessorCtx() {
     };
 
     Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
-    //    opRules.put(new RuleRegExp("TS", TableScanOperator.getOperatorName() + "%"), new TSRule());
     opRules.put(new RuleRegExp("RS", ReduceSinkOperator.getOperatorName() + "%"), new RSRule());
     opRules.put(new RuleRegExp("FS", FileSinkOperator.getOperatorName() + "%"), new FSRule());
 
     SemanticDispatcher disp = new DefaultRuleDispatcher(new DeduceBucketingVersionRule(), opRules, ctx);
     SemanticGraphWalker ogw = new DefaultGraphWalker(disp);
+
+    ArrayList<Node> topNodes = new ArrayList<Node>();
+    topNodes.addAll(pGraphContext.getTopOps().values());
+    ogw.startWalking(topNodes, null);
+    return pGraphContext;
+  }
+
+  private ParseContext runForwardPropagation() throws SemanticException {
+
+    NodeProcessorCtx ctx = new NodeProcessorCtx() {
+    };
+
+    Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
+    opRules.put(new RuleRegExp("TS", TableScanOperator.getOperatorName() + "%"), new TSRule());
+
+    SemanticDispatcher disp = new DefaultRuleDispatcher(new SetPreferredBucketingVersionRule(), opRules, ctx);
+    SemanticGraphWalker ogw = new PreOrderWalker(disp);
 
     ArrayList<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(pGraphContext.getTopOps().values());
@@ -123,16 +147,6 @@ public class BucketVersionPopulator extends Transform {
 
   }
 
-  static class TSRule implements SemanticNodeProcessor {
-
-    @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
-        throws SemanticException {
-      return null;
-    }
-
-  }
-
   static class RSRule extends DeduceBucketingVersionRule {
 
     @Override
@@ -144,9 +158,45 @@ public class BucketVersionPopulator extends Transform {
         // use version 2 if possible
         o.getConf().setBucketingVersion(2);
       }
+      // communicate that this node can accept data in any bucketing version
       return new BucketingVersionResult(-1);
     }
 
   }
+
+  static class TSRule implements SemanticNodeProcessor {
+
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
+        throws SemanticException {
+      TableScanOperator tso = (TableScanOperator) nd;
+      Integer version = tso.getConf().getTableMetadata().getBucketingVersion();
+      tso.getConf().setBucketingVersion(version);
+      return new BucketingVersionResult(version);
+    }
+
+  }
+
+  static class SetPreferredBucketingVersionRule implements SemanticNodeProcessor {
+
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
+        throws SemanticException {
+      Operator o = (Operator) nd;
+      List parents = o.getParentOperators();
+      BucketingVersionResult ret = new BucketingVersionResult(-1);
+      for (Object object : parents) {
+        //        procCtx.BucketingVersionResult r = res;
+        //        res = res.merge(r);
+      }
+      TableScanOperator tso = (TableScanOperator) nd;
+      Integer version = tso.getConf().getTableMetadata().getBucketingVersion();
+      tso.getConf().setBucketingVersion(version);
+      return new BucketingVersionResult(version);
+    }
+
+  }
+
+
 
 }
