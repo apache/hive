@@ -18,20 +18,14 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVECONVERTJOIN;
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVECONVERTJOINNOCONDITIONALTASK;
-
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Stack;
 
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
-import org.apache.hadoop.hive.ql.exec.GroupByOperator;
-import org.apache.hadoop.hive.ql.exec.JoinOperator;
+import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
-import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
@@ -58,53 +52,62 @@ public class BucketVersionPopulator extends Transform {
 
   protected static final Logger LOG = LoggerFactory.getLogger(BucketVersionPopulator.class);
 
-  private static final String RS = ReduceSinkOperator.getOperatorName();
-  private static final String GBY = GroupByOperator.getOperatorName();
-  private static final String JOIN = JoinOperator.getOperatorName();
-
   protected ParseContext pGraphContext;
+
+  static class BucketingVersionResult {
+    Integer bucketingVersion;
+
+    public BucketingVersionResult(Integer version) {
+      bucketingVersion = version;
+    }
+
+    public BucketingVersionResult merge(BucketingVersionResult r) throws SemanticException {
+      if (bucketingVersion == r.bucketingVersion || r.bucketingVersion == -1) {
+        return new BucketingVersionResult(bucketingVersion);
+      }
+      throw new SemanticException("invalid state; can't set bucketingVersion correctly");
+    }
+  }
 
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
     pGraphContext = pctx;
 
-    NodeProcessorCtx ctx=new NodeProcessorCtx() {
+    NodeProcessorCtx ctx = new NodeProcessorCtx() {
     };
 
-    // for auto convert map-joins, it not safe to dedup in here (todo)
-    boolean mergeJoins = !pctx.getConf().getBoolVar(HIVECONVERTJOIN) &&
-        !pctx.getConf().getBoolVar(HIVECONVERTJOINNOCONDITIONALTASK) &&
-        !pctx.getConf().getBoolVar(ConfVars.HIVE_CONVERT_JOIN_BUCKET_MAPJOIN_TEZ) &&
-        !pctx.getConf().getBoolVar(ConfVars.HIVEDYNAMICPARTITIONHASHJOIN);
-
-    // If multiple rules can be matched with same cost, last rule will be choosen as a processor
-    // see DefaultRuleDispatcher#dispatch()
     Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
-    opRules.put(new RuleRegExp("TS", TableScanOperator.getOperatorName() + "%"), new TSRule());
+    //    opRules.put(new RuleRegExp("TS", TableScanOperator.getOperatorName() + "%"), new TSRule());
     opRules.put(new RuleRegExp("RS", ReduceSinkOperator.getOperatorName() + "%"), new RSRule());
     opRules.put(new RuleRegExp("FS", FileSinkOperator.getOperatorName() + "%"), new FSRule());
-    // TODO RS+JOIN
 
-    // The dispatcher fires the processor corresponding to the closest matching
-    // rule and passes the context along
-    SemanticDispatcher disp = new DefaultRuleDispatcher(new DefaultRule(), opRules, ctx);
+    SemanticDispatcher disp = new DefaultRuleDispatcher(new DeduceBucketingVersionRule(), opRules, ctx);
     SemanticGraphWalker ogw = new DefaultGraphWalker(disp);
 
-    // Create a list of topop nodes
     ArrayList<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(pGraphContext.getTopOps().values());
     ogw.startWalking(topNodes, null);
     return pGraphContext;
   }
 
-  static class DefaultRule implements SemanticNodeProcessor {
+  static class DeduceBucketingVersionRule implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
         throws SemanticException {
-      return null;
+      Operator o = (Operator) nd;
+      BucketingVersionResult res = new BucketingVersionResult(-1);
+      try {
+        for (Object object : nodeOutputs) {
+          BucketingVersionResult r = res;
+          res = res.merge(r);
+        }
+        o.getConf().setBucketingVersion(res.bucketingVersion);
+        return res;
+      } catch (Exception e) {
+        throw new SemanticException("Error while processing: " + o, e);
+      }
     }
-
   }
 
   static class FSRule implements SemanticNodeProcessor {
@@ -113,9 +116,9 @@ public class BucketVersionPopulator extends Transform {
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
         throws SemanticException {
       FileSinkOperator fso = (FileSinkOperator) nd;
-      int version = fso.getConf().getTableInfo().getBucketingVersion();
+      Integer version = fso.getConf().getTableInfo().getBucketingVersion();
       fso.getConf().setBucketingVersion(version);
-      return null;
+      return new BucketingVersionResult(version);
     }
 
   }
@@ -130,12 +133,18 @@ public class BucketVersionPopulator extends Transform {
 
   }
 
-  static class RSRule implements SemanticNodeProcessor {
+  static class RSRule extends DeduceBucketingVersionRule {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
         throws SemanticException {
-      return null;
+      Operator o = (Operator) nd;
+      BucketingVersionResult pVersion = (BucketingVersionResult) super.process(nd, stack, procCtx, nodeOutputs);
+      if (pVersion.bucketingVersion == -1) {
+        // use version 2 if possible
+        o.getConf().setBucketingVersion(2);
+      }
+      return new BucketingVersionResult(-1);
     }
 
   }
