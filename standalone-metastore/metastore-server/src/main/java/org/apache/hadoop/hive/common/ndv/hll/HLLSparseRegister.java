@@ -149,7 +149,7 @@ public class HLLSparseRegister implements HLLRegister {
   }
 
   public boolean isSizeGreaterThan(int s) {
-    if (sparseMap.size() + tempListIdx >= s) {
+    if (sparseMap.size() + tempListIdx > s) {
       mergeTempListToSparseMap();
       return sparseMap.size() > s;
     }
