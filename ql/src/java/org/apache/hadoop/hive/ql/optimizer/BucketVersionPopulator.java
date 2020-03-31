@@ -44,13 +44,6 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * If two reducer sink operators share the same partition/sort columns and order,
- * they can be merged. This should happen after map join optimization because map
- * join optimization will remove reduce sink operators.
- *
- * This optimizer removes/replaces child-RS (not parent) which is safer way for DefaultGraphWalker.
- */
 public class BucketVersionPopulator extends Transform {
 
   protected static final Logger LOG = LoggerFactory.getLogger(BucketVersionPopulator.class);
