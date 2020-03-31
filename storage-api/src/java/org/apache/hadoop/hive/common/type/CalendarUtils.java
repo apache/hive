@@ -190,6 +190,20 @@ public class CalendarUtils {
         : HYBRID_DATE_FORMAT.get().format(millis);
   }
 
+  /**
+   *
+   * Formats epoch Millis to timestamp according to proleptic or hybrid calendar
+   *
+   * @param epochMillis  epoch Millis
+   * @param useProleptic if true - uses proleptic formatter, else uses hybrid formatter
+   * @return formatted timestamp
+   */
+  public static String formatTimestamp(long epochMillis, boolean useProleptic) {
+    final Date date = new Date(epochMillis);
+    return useProleptic ? PROLEPTIC_TIME_FORMAT.get().format(date)
+        : HYBRID_TIME_FORMAT.get().format(date);
+  }
+
   private CalendarUtils() {
     throw new UnsupportedOperationException();
   }
