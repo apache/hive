@@ -9157,10 +9157,11 @@ inline std::ostream& operator<<(std::ostream& out, const NotificationEventsCount
 }
 
 typedef struct _InsertEventRequestData__isset {
-  _InsertEventRequestData__isset() : replace(false), filesAddedChecksum(false), subDirectoryList(false) {}
+  _InsertEventRequestData__isset() : replace(false), filesAddedChecksum(false), subDirectoryList(false), partitionVal(false) {}
   bool replace :1;
   bool filesAddedChecksum :1;
   bool subDirectoryList :1;
+  bool partitionVal :1;
 } _InsertEventRequestData__isset;
 
 class InsertEventRequestData {
@@ -9176,6 +9177,7 @@ class InsertEventRequestData {
   std::vector<std::string>  filesAdded;
   std::vector<std::string>  filesAddedChecksum;
   std::vector<std::string>  subDirectoryList;
+  std::vector<std::string>  partitionVal;
 
   _InsertEventRequestData__isset __isset;
 
@@ -9186,6 +9188,8 @@ class InsertEventRequestData {
   void __set_filesAddedChecksum(const std::vector<std::string> & val);
 
   void __set_subDirectoryList(const std::vector<std::string> & val);
+
+  void __set_partitionVal(const std::vector<std::string> & val);
 
   bool operator == (const InsertEventRequestData & rhs) const
   {
@@ -9202,6 +9206,10 @@ class InsertEventRequestData {
     if (__isset.subDirectoryList != rhs.__isset.subDirectoryList)
       return false;
     else if (__isset.subDirectoryList && !(subDirectoryList == rhs.subDirectoryList))
+      return false;
+    if (__isset.partitionVal != rhs.__isset.partitionVal)
+      return false;
+    else if (__isset.partitionVal && !(partitionVal == rhs.partitionVal))
       return false;
     return true;
   }
@@ -9226,8 +9234,9 @@ inline std::ostream& operator<<(std::ostream& out, const InsertEventRequestData&
 }
 
 typedef struct _FireEventRequestData__isset {
-  _FireEventRequestData__isset() : insertData(false) {}
+  _FireEventRequestData__isset() : insertData(false), insertDatas(false) {}
   bool insertData :1;
+  bool insertDatas :1;
 } _FireEventRequestData__isset;
 
 class FireEventRequestData {
@@ -9240,14 +9249,19 @@ class FireEventRequestData {
 
   virtual ~FireEventRequestData() throw();
   InsertEventRequestData insertData;
+  std::vector<InsertEventRequestData>  insertDatas;
 
   _FireEventRequestData__isset __isset;
 
   void __set_insertData(const InsertEventRequestData& val);
 
+  void __set_insertDatas(const std::vector<InsertEventRequestData> & val);
+
   bool operator == (const FireEventRequestData & rhs) const
   {
     if (!(insertData == rhs.insertData))
+      return false;
+    if (!(insertDatas == rhs.insertDatas))
       return false;
     return true;
   }
@@ -9354,8 +9368,8 @@ inline std::ostream& operator<<(std::ostream& out, const FireEventRequest& obj)
 }
 
 typedef struct _FireEventResponse__isset {
-  _FireEventResponse__isset() : eventId(false) {}
-  bool eventId :1;
+  _FireEventResponse__isset() : eventIds(false) {}
+  bool eventIds :1;
 } _FireEventResponse__isset;
 
 class FireEventResponse {
@@ -9363,19 +9377,19 @@ class FireEventResponse {
 
   FireEventResponse(const FireEventResponse&);
   FireEventResponse& operator=(const FireEventResponse&);
-  FireEventResponse() : eventId(0) {
+  FireEventResponse() {
   }
 
   virtual ~FireEventResponse() throw();
-  int64_t eventId;
+  std::vector<int64_t>  eventIds;
 
   _FireEventResponse__isset __isset;
 
-  void __set_eventId(const int64_t val);
+  void __set_eventIds(const std::vector<int64_t> & val);
 
   bool operator == (const FireEventResponse & rhs) const
   {
-    if (!(eventId == rhs.eventId))
+    if (!(eventIds == rhs.eventIds))
       return false;
     return true;
   }
