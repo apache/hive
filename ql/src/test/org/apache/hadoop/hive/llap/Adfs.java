@@ -18,32 +18,50 @@
 
 package org.apache.hadoop.hive.llap;
 
+import java.io.File;
 import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimator;
 import org.apache.hadoop.hive.common.ndv.hll.HyperLogLog;
 import org.junit.Test;
 
+import com.google.common.io.Files;
+
 public class Adfs {
 
   @Test
-  public void asd() {
+  public void asd() throws Exception {
 
+    byte[] b0 = Files.toByteArray(new File("/home/dev/_hll0"));
     System.out.println("asd");
     HyperLogLog h = b70();
     HyperLogLog h2 = HyperLogLog.builder().build();
     //h.squash(p0)
+    System.out.println(h.estimateNumDistinctValues());
     NumDistinctValueEstimator h3 = h2.deserialize(h.serialize());
-    h3.mergeEstimators(h2.deserialize(h.serialize()));
+    //    h3.mergeEstimators(h2.deserialize(h.serialize()));
+    System.out.println(h3.estimateNumDistinctValues());
+    //    h3.mergeEstimators(h2.deserialize(b0));
     System.out.println(h3.estimateNumDistinctValues());
   }
 
   private HyperLogLog b70() {
-    HyperLogLog h = HyperLogLog.builder().build();
-    for (int ia = 0; ia <= 70; ia++)
-    {
-      for (int i = 1; i <= 70; i++) {
+    HyperLogLog h = HyperLogLog.builder().setSizeOptimized().build();
+    int threshold = h.getEncodingSwitchThreshold();
+
+    for (int ia = 0; ia <= 2; ia++) {
+      for (int i = 1; i <= 52; i++) {
+        if (ia > 1 && i > 49) {
+          int asdf = 1;
+        }
+
         h.addLong(i);
+        if (ia > 1 && i > 49) {
+          if (h.estimateNumDistinctValues() == 53) {
+            throw new RuntimeException("x" + i);
+          }
+        }
       }
     }
+    //    h.estimateNumDistinctValues();
     return h;
   }
 

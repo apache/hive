@@ -98,7 +98,7 @@ public class ColStatsProcessor implements IStatsProcessor {
 
     List<ColumnStatistics> stats = new ArrayList<ColumnStatistics>();
     InspectableObject packedRow;
-    while ((packedRow = ftOp.getNextRow()) != null) {
+     while ((packedRow = ftOp.getNextRow()) != null) {
       if (packedRow.oi.getCategory() != ObjectInspector.Category.STRUCT) {
         throw new HiveException("Unexpected object type encountered while unpacking row");
       }
