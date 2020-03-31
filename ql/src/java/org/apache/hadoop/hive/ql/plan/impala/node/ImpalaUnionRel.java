@@ -22,10 +22,12 @@ import com.google.common.collect.Lists;
 import org.apache.calcite.linq4j.Ord;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelWriter;
+import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.util.Pair;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
 
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaPlannerContext;
@@ -52,13 +54,38 @@ import java.util.List;
  */
 public class ImpalaUnionRel extends ImpalaPlanRel {
 
+  // The associated Hive RelNode can be a HiveTableScan when
+  // there is no "from" clause on the "select".
+  private enum NodeType {
+    SCAN("scan"),
+    UNION("union");
+    String type;
+    private NodeType(String type) {
+      this.type = type;
+    }
+
+    @Override
+    public String toString() {
+      return type;
+    }
+  }
+
   private UnionNode unionNode = null;
 
-  private final HiveUnion union;
+  private final RelNode relNode;
+
+  private final NodeType nodeType;
+
+  public ImpalaUnionRel(HiveTableScan scan) {
+    super(scan.getCluster(), scan.getTraitSet(), scan.getInputs(), scan.getRowType());
+    this.relNode = scan;
+    this.nodeType = NodeType.SCAN;
+  }
 
   public ImpalaUnionRel(HiveUnion union) {
     super(union.getCluster(), union.getTraitSet(), union.getInputs(), union.getRowType());
-    this.union = union;
+    this.relNode = union;
+    this.nodeType = NodeType.UNION;
   }
 
   @Override
@@ -69,7 +96,10 @@ public class ImpalaUnionRel extends ImpalaPlanRel {
     }
     PlanNodeId nodeId = ctx.getNextNodeId();
 
-    TupleDescriptor tupleDesc = createTupleDescriptor(ctx.getRootAnalyzer());
+    RelDataType rowType = (nodeType == NodeType.SCAN)
+        ? ((HiveTableScan) relNode).getPrunedRowType()
+        : relNode.getRowType();
+    TupleDescriptor tupleDesc = createTupleDescriptor(ctx.getRootAnalyzer(), rowType);
     // The outputexprs are the SlotRef exprs passed to the parent node.
     this.outputExprs = createOutputExprs(tupleDesc.getSlots());
 
@@ -81,17 +111,30 @@ public class ImpalaUnionRel extends ImpalaPlanRel {
       planNodeAndExprsList.add(Pair.of(unionInputNode, unionInputRel.getOutputExprs()));
     }
 
+    // The nonConstOutputExprs will contain the list of outputExprs except in the case
+    // where a TableScan is being used. The TableScan will only contain a list where
+    // every expression is a constant expression, since the TableScan here will not
+    // contain a "from" clause (e.g. select 3, 'hello').
+    List<Expr> nonConstOutputExprs = (nodeType == NodeType.SCAN)
+        ? Lists.newArrayList()
+        : getOutputExprs();
+
     unionNode =
-        new ImpalaUnionNode(nodeId, tupleDesc.getId(), getOutputExprs(), planNodeAndExprsList);
+          new ImpalaUnionNode(nodeId, tupleDesc.getId(), nonConstOutputExprs, planNodeAndExprsList);
+
+    if (nodeType == NodeType.SCAN) {
+      unionNode.addConstExprList(getOutputExprs());
+    }
+
     unionNode.init(ctx.getRootAnalyzer());
     return unionNode;
   }
 
-  private TupleDescriptor createTupleDescriptor(Analyzer analyzer) throws HiveException {
-    TupleDescriptor tupleDesc = analyzer.getDescTbl().createTupleDescriptor("union");
+  private TupleDescriptor createTupleDescriptor(Analyzer analyzer, RelDataType rowType) throws HiveException {
+    TupleDescriptor tupleDesc = analyzer.getDescTbl().createTupleDescriptor(nodeType.toString());
     tupleDesc.setIsMaterialized(true);
 
-    for (RelDataTypeField relDataTypeField : union.getRowType().getFieldList()) {
+    for (RelDataTypeField relDataTypeField : rowType.getFieldList()) {
       SlotDescriptor slotDesc = analyzer.addSlotDescriptor(tupleDesc);
       slotDesc.setType(ImpalaTypeConverter.getImpalaType(relDataTypeField.getType()));
       slotDesc.setIsMaterialized(true);
@@ -101,10 +144,21 @@ public class ImpalaUnionRel extends ImpalaPlanRel {
 
   @Override
   public RelWriter explainTerms(RelWriter pw) {
-    RelWriter rw = super.explainTerms(pw);
-    for (Ord<RelNode> ord : Ord.zip(getInputs())) {
-      rw.input("input#" + ord.i, ord.e);
+    RelWriter retWriter = null;
+    switch(nodeType) {
+      case SCAN: {
+        retWriter = super.explainTerms(pw);
+      }
+      break;
+      case UNION: {
+        RelWriter rw = super.explainTerms(pw);
+        for (Ord<RelNode> ord : Ord.zip(getInputs())) {
+          rw.input("input#" + ord.i, ord.e);
+        }
+        retWriter = rw.item("all", ((HiveUnion)relNode).all);
+      }
+      break;
     }
-    return rw.item("all", union.all);
+    return retWriter;
   }
 }

@@ -22,6 +22,7 @@ import com.google.common.collect.Lists;
 
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
+import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.tools.RelBuilderFactory;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -33,6 +34,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
+import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.plan.impala.node.ImpalaAggregateRel;
 import org.apache.hadoop.hive.ql.plan.impala.node.ImpalaHdfsScanRel;
 import org.apache.hadoop.hive.ql.plan.impala.node.ImpalaJoinRel;
@@ -86,10 +88,17 @@ public class HiveImpalaRules {
     public void onMatch(RelOptRuleCall call) {
       final HiveTableScan scan = call.rel(0);
 
-      // Only support HDFS for now.
-      ImpalaHdfsScanRel newScan = new ImpalaHdfsScanRel(scan, db);
+      String tableName = scan.getTable().getQualifiedName().get(1);
+      RelNode newRelNode = null;
+      // Impala uses the Union node for tables with no "from" clause.
+      if (SemanticAnalyzer.DUMMY_TABLE.equals(tableName)) {
+        newRelNode = new ImpalaUnionRel(scan);
+      } else {
+        // Only support HDFS for now.
+        newRelNode = new ImpalaHdfsScanRel(scan, db);
+      }
 
-      call.transformTo(newScan);
+      call.transformTo(newRelNode);
     }
   }
 
