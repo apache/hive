@@ -28,3 +28,5 @@ select category, round(ds_hll_estimate(ds_hll_sketch(id))) from sketch_input gro
 explain
 select round(ds_hll_estimate(ds_hll_sketch(id))) from sketch_input;
 select round(ds_hll_estimate(ds_hll_sketch(id))) from sketch_input;
+
+drop materialized view mv_1;
