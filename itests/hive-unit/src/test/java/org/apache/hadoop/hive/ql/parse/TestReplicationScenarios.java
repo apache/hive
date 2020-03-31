@@ -3835,4 +3835,75 @@ public class TestReplicationScenarios {
       }
     }
   }
+
+  @Test
+  public void testCheckPointing() throws IOException {
+    String dbName = createDB("db1", driver);
+    run("CREATE TABLE " + dbName + ".t1(a string) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + dbName + ".t2(a string) STORED AS TEXTFILE", driver);
+
+    run("insert into db1.t1 values (1)", driver);
+    run("insert into db1.t1 values (2)", driver);
+    run("insert into db1.t1 values (3)", driver);
+    run("insert into db1.t2 values (11)", driver);
+    run("insert into db1.t2 values (21)", driver);
+
+    String replicatedDbName = dbName + "_dupe";
+    Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replicatedDbName);
+
+    FileSystem fs = new Path(bootstrapDump.dumpLocation).getFileSystem(hconf);
+    Path dumpPath = new Path(bootstrapDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    assertTrue(fs.exists(new Path(dumpPath, ReplUtils.DUMP_ACKNOWLEDGEMENT)));
+    assertTrue(fs.exists(new Path(dumpPath, ReplUtils.LOAD_ACKNOWLEDGEMENT)));
+    Path dbPath = new Path(dumpPath + Path.SEPARATOR + dbName);
+    Path tablet1Path = new Path(dbPath, "t1");
+    assertTrue(fs.exists(new Path(new Path(tablet1Path, "data"), ReplUtils.COPY_ACKNOWLEDGEMENT)));
+    Path tablet2Path = new Path(dbPath, "t2");
+    assertTrue(fs.exists(new Path(new Path(tablet2Path, "data"), ReplUtils.COPY_ACKNOWLEDGEMENT)));
+
+    run("insert into db1.t1 values (3)", driver);
+    run("insert into db1.t1 values (4)", driver);
+    incrementalLoadAndVerify(dbName, replicatedDbName);
+  }
+
+  @Test
+  public void testCheckPointingInDumpFailure() throws IOException {
+    String dbName = createDB("db1", driver);
+    run("CREATE TABLE " + dbName + ".t1(a string) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + dbName + ".t2(a string) STORED AS TEXTFILE", driver);
+
+    run("insert into db1.t1 values (1)", driver);
+    run("insert into db1.t1 values (2)", driver);
+    run("insert into db1.t1 values (3)", driver);
+    run("insert into db1.t2 values (11)", driver);
+    run("insert into db1.t2 values (21)", driver);
+
+    String replicatedDbName = dbName + "_dupe";
+    Tuple bootstrapDump = replDumpDb(dbName);
+
+    FileSystem fs = new Path(bootstrapDump.dumpLocation).getFileSystem(hconf);
+    Path dumpPath = new Path(bootstrapDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    assertTrue(fs.exists(new Path(dumpPath, ReplUtils.DUMP_ACKNOWLEDGEMENT)));
+    Path dbPath = new Path(dumpPath + Path.SEPARATOR + dbName);
+    Path tablet1Path = new Path(dbPath, "t1");
+    assertTrue(fs.exists(new Path(new Path(tablet1Path, "data"), ReplUtils.COPY_ACKNOWLEDGEMENT)));
+    Path tablet2Path = new Path(dbPath, "t2");
+    assertTrue(fs.exists(new Path(new Path(tablet2Path, "data"), ReplUtils.COPY_ACKNOWLEDGEMENT)));
+    long modifiedTimeTable1 = fs.getFileStatus(new Path(tablet1Path, "data")).getModificationTime();
+    long modifiedTimeTable2 = fs.getFileStatus(new Path(tablet2Path, "data")).getModificationTime();
+    //Delete table 2 copy ack
+    fs.delete(new Path(new Path(tablet2Path, "data"), ReplUtils.COPY_ACKNOWLEDGEMENT), true);
+    fs.delete(new Path(dumpPath, ReplUtils.DUMP_ACKNOWLEDGEMENT), true);
+    assertFalse(fs.exists(new Path(dumpPath, ReplUtils.DUMP_ACKNOWLEDGEMENT)));
+    assertFalse(fs.exists(new Path(new Path(tablet2Path, "data"), ReplUtils.COPY_ACKNOWLEDGEMENT)));
+    //Do another dump. It should only dump table t2. Modification time of table t1 is same while t2 is greater
+    Tuple nextDump = incrementalLoadAndVerify(dbName, replicatedDbName);
+    assertEquals(nextDump.dumpLocation, bootstrapDump.dumpLocation);
+    assertTrue(fs.exists(new Path(dumpPath, ReplUtils.DUMP_ACKNOWLEDGEMENT)));
+    assertTrue(fs.exists(new Path(new Path(tablet1Path, "data"), ReplUtils.COPY_ACKNOWLEDGEMENT)));
+    assertTrue(fs.exists(new Path(new Path(tablet2Path, "data"), ReplUtils.COPY_ACKNOWLEDGEMENT)));
+    assertEquals(modifiedTimeTable1, fs.getFileStatus(new Path(tablet1Path, "data")).getModificationTime());
+    assertTrue(modifiedTimeTable2 < fs.getFileStatus(new Path(tablet2Path, "data"))
+            .getModificationTime());
+  }
 }

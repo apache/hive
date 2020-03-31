@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.exec.repl.util;
 
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.repl.ReplConst;
@@ -39,6 +40,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
+import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsUpdateWork;
 import org.apache.hadoop.hive.ql.plan.ReplTxnWork;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -98,6 +100,8 @@ public class ReplUtils {
   public static final String DUMP_ACKNOWLEDGEMENT = "_finished_dump";
   //Acknowledgement for repl load complete
   public static final String LOAD_ACKNOWLEDGEMENT = "_finished_load";
+  //Acknowledgement for data copy complete. Used for checkpointing
+  public static final String COPY_ACKNOWLEDGEMENT = "_finished_copy";
   /**
    * Bootstrap REPL LOAD operation type on the examined object based on ckpt state.
    */
@@ -295,5 +299,18 @@ public class ReplUtils {
 
   public static boolean tableIncludedInReplScope(ReplScope replScope, String tableName) {
     return ((replScope == null) || replScope.tableIncludedInReplScope(tableName));
+  }
+
+  public static boolean dataCopyCompleted(Path toPath, HiveConf conf) throws IOException {
+    FileSystem dstFs = null;
+    dstFs = toPath.getFileSystem(conf);
+    if (dstFs.exists(new Path(toPath, ReplUtils.COPY_ACKNOWLEDGEMENT))) {
+      return true;
+    }
+    return false;
+  }
+
+  public static void setDataCopyComplete(Path toPath, HiveConf conf) throws SemanticException {
+    Utils.create(new Path(toPath, ReplUtils.COPY_ACKNOWLEDGEMENT), conf);
   }
 }

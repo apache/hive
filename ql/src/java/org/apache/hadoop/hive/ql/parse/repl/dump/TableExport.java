@@ -296,13 +296,6 @@ public class TableExport {
             throw new SemanticException(
                 astRepresentationForErrorMsg + ": " + "Target is not a directory : "
                     + rootDirExportFile);
-          } else {
-            FileStatus[] files = fs.listStatus(toPath, FileUtils.HIDDEN_FILES_PATH_FILTER);
-            if (files != null && files.length != 0) {
-              throw new SemanticException(
-                  astRepresentationForErrorMsg + ": " + "Target is not an empty directory : "
-                      + rootDirExportFile);
-            }
           }
         } catch (FileNotFoundException ignored) {
         }

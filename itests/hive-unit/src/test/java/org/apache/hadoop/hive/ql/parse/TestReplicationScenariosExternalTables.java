@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
@@ -54,6 +55,7 @@ import javax.annotation.Nullable;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.FILE_NAME;
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME;
+import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.LOAD_ACKNOWLEDGEMENT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -904,6 +906,131 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
             .run("show tables like 't4_tables'")
             .verifyResults(new String[] {"t4_tables"})
             .verifyReplTargetProperty(replicatedDbName);
+  }
+
+  @Test
+  public void testCheckPointing() throws Throwable {
+    List<String> withClauseOptions = externalTableBasePathWithClause();
+    WarehouseInstance.Tuple bootstrapDump = primary.run("use " + primaryDbName)
+            .run("CREATE TABLE t1(a string) STORED AS TEXTFILE")
+            .run("CREATE EXTERNAL TABLE t2(a string) STORED AS TEXTFILE")
+            .run("insert into t1 values (1)")
+            .run("insert into t1 values (2)")
+            .run("insert into t2 values (11)")
+            .run("insert into t2 values (21)")
+            .dump(primaryDbName, withClauseOptions);
+
+    // verify that the external table info is written correctly for bootstrap
+    assertExternalFileInfo(Arrays.asList("t2"), bootstrapDump.dumpLocation, primaryDbName);
+
+    replica.load(replicatedDbName, primaryDbName, withClauseOptions)
+            .run("use " + replicatedDbName)
+            .run("show tables like 't1'")
+            .verifyResult("t1")
+            .run("show tables like 't2'")
+            .verifyResult("t2")
+            .run("repl status " + replicatedDbName)
+            .verifyResult(bootstrapDump.lastReplicationId)
+            .run("select a from t1")
+            .verifyResults(new String[]{"1", "2"})
+            .run("select a from t2")
+            .verifyResults(new String[]{"11", "21"});
+
+    FileSystem fs = new Path(bootstrapDump.dumpLocation).getFileSystem(conf);
+    Path dumpPath = new Path(bootstrapDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    assertTrue(fs.exists(new Path(dumpPath, ReplUtils.DUMP_ACKNOWLEDGEMENT)));
+    assertTrue(fs.exists(new Path(dumpPath, LOAD_ACKNOWLEDGEMENT)));
+    Path dbPath = new Path(dumpPath, primaryDbName);
+    Path tablet1Path = new Path(dbPath, "t1");
+    assertTrue(fs.exists(new Path(new Path(tablet1Path, "data"), ReplUtils.COPY_ACKNOWLEDGEMENT)));
+    Path tablet2Path = new Path(dbPath, "t2");
+    assertTrue(fs.exists(new Path(new Path(tablet2Path, "data"), ReplUtils.COPY_ACKNOWLEDGEMENT)));
+
+    WarehouseInstance.Tuple nextDump = primary.run("use " + primaryDbName)
+            .run("insert into t1 values (3)")
+            .run("insert into t1 values (4)")
+            .dump(primaryDbName, withClauseOptions);
+
+    replica.load(replicatedDbName, primaryDbName, withClauseOptions)
+            .run("use " + replicatedDbName)
+            .run("show tables like 't1'")
+            .verifyResult("t1")
+            .run("show tables like 't2'")
+            .verifyResult("t2")
+            .run("repl status " + replicatedDbName)
+            .verifyResult(nextDump.lastReplicationId)
+            .run("select a from t1")
+            .verifyResults(new String[]{"1", "2", "3", "4"})
+            .run("select a from t2")
+            .verifyResults(new String[]{"11", "21"});
+  }
+
+  @Test
+  public void testCheckPointingInDumpFailure() throws Throwable {
+    List<String> withClauseOptions = externalTableBasePathWithClause();
+    WarehouseInstance.Tuple bootstrapDump = primary.run("use " + primaryDbName)
+            .run("CREATE TABLE t1(a string) STORED AS TEXTFILE")
+            .run("CREATE EXTERNAL TABLE t2(a string) STORED AS TEXTFILE")
+            .run("insert into t1 values (1)")
+            .run("insert into t1 values (2)")
+            .run("insert into t2 values (11)")
+            .run("insert into t2 values (21)")
+            .dump(primaryDbName, withClauseOptions);
+
+    // verify that the external table info is written correctly for bootstrap
+    assertExternalFileInfo(Arrays.asList("t2"), bootstrapDump.dumpLocation, primaryDbName);
+
+    replica.load(replicatedDbName, primaryDbName, withClauseOptions)
+            .run("use " + replicatedDbName)
+            .run("show tables like 't1'")
+            .verifyResult("t1")
+            .run("show tables like 't2'")
+            .verifyResult("t2")
+            .run("repl status " + replicatedDbName)
+            .verifyResult(bootstrapDump.lastReplicationId)
+            .run("select a from t1")
+            .verifyResults(new String[]{"1", "2"})
+            .run("select a from t2")
+            .verifyResults(new String[]{"11", "21"});
+
+    FileSystem fs = new Path(bootstrapDump.dumpLocation).getFileSystem(conf);
+    Path dumpPath = new Path(bootstrapDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    assertTrue(fs.exists(new Path(dumpPath, ReplUtils.DUMP_ACKNOWLEDGEMENT)));
+    assertTrue(fs.exists(new Path(dumpPath, LOAD_ACKNOWLEDGEMENT)));
+    Path dbPath = new Path(dumpPath + Path.SEPARATOR + primaryDbName);
+    Path tablet1Path = new Path(dbPath, "t1");
+    assertTrue(fs.exists(new Path(new Path(tablet1Path, "data"), ReplUtils.COPY_ACKNOWLEDGEMENT)));
+    Path tablet2Path = new Path(dbPath, "t2");
+    assertTrue(fs.exists(new Path(new Path(tablet2Path, "data"), ReplUtils.COPY_ACKNOWLEDGEMENT)));
+    long modifiedTimeTable1 = fs.getFileStatus(new Path(tablet1Path, "data")).getModificationTime();
+    long modifiedTimeTable2 = fs.getFileStatus(new Path(tablet2Path, "data")).getModificationTime();
+    //Delete table 2 copy ack
+    fs.delete(new Path(new Path(tablet2Path, "data"), ReplUtils.COPY_ACKNOWLEDGEMENT), true);
+    fs.delete(new Path(dumpPath, ReplUtils.DUMP_ACKNOWLEDGEMENT), true);
+    assertFalse(fs.exists(new Path(dumpPath, ReplUtils.DUMP_ACKNOWLEDGEMENT)));
+    assertFalse(fs.exists(new Path(new Path(tablet2Path, "data"), ReplUtils.COPY_ACKNOWLEDGEMENT)));
+
+    //Do another dump. It should only dump table t2. Modification time of table t1 is same while t2 is greater
+    WarehouseInstance.Tuple nextDump = primary.dump(primaryDbName, withClauseOptions);
+    replica.load(replicatedDbName, primaryDbName, withClauseOptions)
+            .run("use " + replicatedDbName)
+            .run("show tables like 't1'")
+            .verifyResult("t1")
+            .run("show tables like 't2'")
+            .verifyResult("t2")
+            .run("repl status " + replicatedDbName)
+            .verifyResult(bootstrapDump.lastReplicationId)
+            .run("select a from t1")
+            .verifyResults(new String[]{"1", "2"})
+            .run("select a from t2")
+            .verifyResults(new String[]{"11", "21"});
+    assertEquals(nextDump.dumpLocation, bootstrapDump.dumpLocation);
+    assertTrue(fs.exists(new Path(dumpPath, ReplUtils.DUMP_ACKNOWLEDGEMENT)));
+    assertTrue(fs.exists(new Path(new Path(tablet1Path, "data"), ReplUtils.COPY_ACKNOWLEDGEMENT)));
+    assertTrue(fs.exists(new Path(new Path(tablet2Path, "data"), ReplUtils.COPY_ACKNOWLEDGEMENT)));
+    assertEquals(modifiedTimeTable1, fs.getFileStatus(new Path(tablet1Path, "data")).getModificationTime());
+    assertTrue(modifiedTimeTable2 < fs.getFileStatus(new Path(tablet2Path, "data"))
+            .getModificationTime());
   }
 
 

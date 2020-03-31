@@ -135,20 +135,20 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         Path dumpRoot = new Path(conf.getVar(HiveConf.ConfVars.REPLDIR),
                 Base64.getEncoder().encodeToString(work.dbNameOrPattern.toLowerCase()
                         .getBytes(StandardCharsets.UTF_8.name())));
-        Path previousHiveDumpPath = getPreviousDumpMetadataPath(dumpRoot);
+        Path previousValidHiveDumpPath = getPreviousValidDumpMetadataPath(dumpRoot);
         //If no previous dump is present or previous dump is already loaded, proceed with the dump operation.
-        if (shouldDump(previousHiveDumpPath)) {
-          Path currentDumpPath = new Path(dumpRoot, getNextDumpDir());
+        if (shouldDump(previousValidHiveDumpPath)) {
+          Path currentDumpPath = getCurrentDumpPath(dumpRoot);
           Path hiveDumpRoot = new Path(currentDumpPath, ReplUtils.REPL_HIVE_BASE_DIR);
           DumpMetaData dmd = new DumpMetaData(hiveDumpRoot, conf);
           // Initialize ReplChangeManager instance since we will require it to encode file URI.
           ReplChangeManager.getInstance(conf);
           Path cmRoot = new Path(conf.getVar(HiveConf.ConfVars.REPLCMDIR));
           Long lastReplId;
-          if (previousHiveDumpPath == null) {
+          if (previousValidHiveDumpPath == null) {
             lastReplId = bootStrapDump(hiveDumpRoot, dmd, cmRoot, hiveDb);
           } else {
-            work.setEventFrom(getEventFromPreviousDumpMetadata(previousHiveDumpPath));
+            work.setEventFrom(getEventFromPreviousDumpMetadata(previousValidHiveDumpPath));
             lastReplId = incrementalDump(hiveDumpRoot, dmd, cmRoot, hiveDb);
           }
           work.setResultValues(Arrays.asList(currentDumpPath.toUri().toString(), String.valueOf(lastReplId)));
@@ -164,6 +164,16 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       return ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
     }
     return 0;
+  }
+
+  private Path getCurrentDumpPath(Path dumpRoot) throws IOException {
+    Path previousDumpPath = getPreviousDumpPath(dumpRoot);
+    if (previousDumpPath != null && !validDump(previousDumpPath)) {
+      //Resume previous dump
+      return previousDumpPath;
+    } else {
+      return new Path(dumpRoot, getNextDumpDir());
+    }
   }
 
   private void initiateDataCopyTasks() throws SemanticException, IOException {
@@ -233,7 +243,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return 0L;
   }
 
-  private Path getPreviousDumpMetadataPath(Path dumpRoot) throws IOException {
+  private Path getPreviousValidDumpMetadataPath(Path dumpRoot) throws IOException {
     FileStatus latestValidStatus = null;
     FileSystem fs = dumpRoot.getFileSystem(conf);
     if (fs.exists(dumpRoot)) {
@@ -241,8 +251,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       for (FileStatus status : statuses) {
         LOG.info("Evaluating previous dump dir path:{}", status.getPath());
         if (latestValidStatus == null) {
-          latestValidStatus = validDump(fs, status.getPath()) ? status : null;
-        } else if (validDump(fs, status.getPath())
+          latestValidStatus = validDump(status.getPath()) ? status : null;
+        } else if (validDump(status.getPath())
                 && status.getModificationTime() > latestValidStatus.getModificationTime()) {
           latestValidStatus = status;
         }
@@ -254,10 +264,14 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return latestDumpDir;
   }
 
-  private boolean validDump(FileSystem fs, Path dumpDir) throws IOException {
+  private boolean validDump(Path dumpDir) throws IOException {
     //Check if it was a successful dump
-    Path hiveDumpDir = new Path(dumpDir, ReplUtils.REPL_HIVE_BASE_DIR);
-    return fs.exists(new Path(hiveDumpDir, ReplUtils.DUMP_ACKNOWLEDGEMENT));
+    if (dumpDir != null) {
+      FileSystem fs = dumpDir.getFileSystem(conf);
+      Path hiveDumpDir = new Path(dumpDir, ReplUtils.REPL_HIVE_BASE_DIR);
+      return fs.exists(new Path(hiveDumpDir, ReplUtils.DUMP_ACKNOWLEDGEMENT));
+    }
+    return false;
   }
 
   private boolean shouldDump(Path previousDumpPath) throws IOException {
@@ -825,6 +839,24 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       // We may also work in something the equivalent of pid, thrid and move to nanos to ensure
       // uniqueness.
     }
+  }
+
+  private Path getPreviousDumpPath(Path dumpRoot) throws IOException {
+    FileSystem fs = dumpRoot.getFileSystem(conf);
+    if (fs.exists(dumpRoot)) {
+      FileStatus[] statuses = fs.listStatus(dumpRoot);
+      if (statuses.length > 0) {
+        FileStatus latestValidStatus = statuses[0];
+        for (FileStatus status : statuses) {
+          LOG.info("Evaluating previous dump dir path:{}", status.getPath());
+          if (status.getModificationTime() > latestValidStatus.getModificationTime()) {
+            latestValidStatus = status;
+          }
+        }
+        return latestValidStatus.getPath();
+      }
+    }
+    return null;
   }
 
   void dumpFunctionMetadata(String dbName, Path dumpRoot, Hive hiveDb) throws Exception {
