@@ -67,18 +67,6 @@ public class HiveDriver implements Driver {
    */
   private static final String PORT_PROPERTY_KEY = "PORT";
 
-
-  /**
-   *
-   */
-  public HiveDriver() {
-    // TODO Auto-generated constructor stub
-    SecurityManager security = System.getSecurityManager();
-    if (security != null) {
-      security.checkWrite("foobah");
-    }
-  }
-
   /**
    * Checks whether a given url is in a valid format.
    *
