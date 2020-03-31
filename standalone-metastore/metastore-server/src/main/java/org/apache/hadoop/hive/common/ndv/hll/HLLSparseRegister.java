@@ -104,21 +104,21 @@ public class HLLSparseRegister implements HLLRegister {
   /**
    * <pre>
    * <b>Input:</b> 64 bit hashcode
-   * 
+   *
    * |---------w-------------| |------------p'----------|
    * 10101101.......1010101010 10101010101 01010101010101
    *                                       |------p-----|
-   *                                       
+   *
    * <b>Output:</b> 32 bit int
-   * 
+   *
    * |b| |-q'-|  |------------p'----------|
    *  1  010101  01010101010 10101010101010
    *                         |------p-----|
-   *                    
-   * 
+   *
+   *
    * The default values of p', q' and b are 25, 6, 1 (total 32 bits) respectively.
    * This function will return an int encoded in the following format
-   * 
+   *
    * p  - LSB p bits represent the register index
    * p' - LSB p' bits are used for increased accuracy in estimation
    * q' - q' bits after p' are left as such from the hashcode if b = 0 else
@@ -148,8 +148,12 @@ public class HLLSparseRegister implements HLLRegister {
     }
   }
 
-  public int getSize() {
-    return sparseMap.size() + tempListIdx;
+  public boolean isSizeGreaterThan(int s) {
+    if (sparseMap.size() + tempListIdx >= s) {
+      mergeTempListToSparseMap();
+      return sparseMap.size() > s;
+    }
+    return false;
   }
 
   public void merge(HLLRegister hllRegister) {
@@ -195,7 +199,7 @@ public class HLLSparseRegister implements HLLRegister {
       byte lr = entry.getValue(); // this can be a max of 65, never > 127
       if (lr != 0) {
         // should be a no-op for sparse
-        dest.add((long) ((1 << (p + lr - 1)) | idx));
+        dest.add((1 << (p + lr - 1)) | idx);
       }
     }
   }

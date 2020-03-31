@@ -259,7 +259,7 @@ public class HyperLogLog implements NumDistinctValueEstimator {
 
       // if size of sparse map excess the threshold convert the sparse map to
       // dense register and switch to DENSE encoding
-      if (sparseRegister.getSize() > encodingSwitchThreshold) {
+      if (sparseRegister.isSizeGreaterThan(encodingSwitchThreshold)) {
         encoding = EncodingType.DENSE;
         denseRegister = sparseToDenseRegister(sparseRegister);
         sparseRegister = null;
@@ -460,7 +460,7 @@ public class HyperLogLog implements NumDistinctValueEstimator {
       sparseRegister.merge(hll.getHLLSparseRegister());
       // if after merge the sparse switching threshold is exceeded then change
       // to dense encoding
-      if (sparseRegister.getSize() > encodingSwitchThreshold) {
+      if (sparseRegister.isSizeGreaterThan(encodingSwitchThreshold)) {
         encoding = EncodingType.DENSE;
         denseRegister = sparseToDenseRegister(sparseRegister);
         sparseRegister = null;
