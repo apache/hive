@@ -19,4 +19,4 @@ POSTHOOK: Output: default@cmv_basetable
 POSTHOOK: Lineage: cmv_basetable.a SCRIPT []
 POSTHOOK: Lineage: cmv_basetable.b SCRIPT []
 POSTHOOK: Lineage: cmv_basetable.c SCRIPT []
-FAILED: SemanticException Cannot enable automatic rewriting for materialized view. Plan not optimized by CBO because the statement has sort by
+FAILED: SemanticException Cannot enable automatic rewriting for materialized view. Unsupported RelNode type HiveSortExchange encountered in the query plan

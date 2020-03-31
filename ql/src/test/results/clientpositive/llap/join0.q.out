@@ -1,4 +1,4 @@
-Warning: Shuffle Join MERGEJOIN[15][tables = [src1, src2]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[15][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: EXPLAIN
 SELECT src1.key as k1, src1.value as v1, 
        src2.key as k2, src2.value as v2 FROM 
@@ -36,10 +36,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
-                  filterExpr: (key < 10) (type: boolean)
+                  filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (key < 10) (type: boolean)
+                    predicate: (UDFToDouble(key) < 10.0D) (type: boolean)
                     Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -56,10 +56,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
-                  filterExpr: (key < 10) (type: boolean)
+                  filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (key < 10) (type: boolean)
+                    predicate: (UDFToDouble(key) < 10.0D) (type: boolean)
                     Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -109,7 +109,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[15][tables = [src1, src2]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[15][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: EXPLAIN FORMATTED
 SELECT src1.key as k1, src1.value as v1, 
        src2.key as k2, src2.value as v2 FROM 
@@ -130,7 +130,7 @@ SELECT src1.key as k1, src1.value as v1,
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-Warning: Shuffle Join MERGEJOIN[15][tables = [src1, src2]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[15][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: SELECT src1.key as k1, src1.value as v1, 
        src2.key as k2, src2.value as v2 FROM 
   (SELECT * FROM src WHERE src.key < 10) src1 

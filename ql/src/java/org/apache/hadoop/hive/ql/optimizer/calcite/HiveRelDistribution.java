@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.calcite.plan.RelMultipleTrait;
@@ -25,14 +26,23 @@ import org.apache.calcite.plan.RelTrait;
 import org.apache.calcite.plan.RelTraitDef;
 import org.apache.calcite.rel.RelDistribution;
 import org.apache.calcite.rel.RelDistributionTraitDef;
+import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.util.mapping.Mappings.TargetMapping;
 
 import com.google.common.collect.Ordering;
 
 public class HiveRelDistribution implements RelDistribution {
 
-  private static final Ordering<Iterable<Integer>> ORDERING =
-      Ordering.<Integer>natural().lexicographical();
+  private static final Ordering<Iterable<Integer>> ORDERING = Ordering.<Integer>natural().lexicographical();
+
+  public static HiveRelDistribution from(
+          List<RelFieldCollation> fieldCollations, RelDistribution.Type distributionType) {
+    List<Integer> newDistributionKeys = new ArrayList<>(fieldCollations.size());
+    for (RelFieldCollation fieldCollation : fieldCollations) {
+      newDistributionKeys.add(fieldCollation.getFieldIndex());
+    }
+    return new HiveRelDistribution(distributionType, newDistributionKeys);
+  }
 
   List<Integer> keys;
   RelDistribution.Type type;
@@ -70,7 +80,11 @@ public class HiveRelDistribution implements RelDistribution {
     if (keys.isEmpty()) {
       return this;
     }
-    return new HiveRelDistribution(type, keys);
+    List<Integer> newKeys = new ArrayList<>(keys.size());
+    for (Integer key : keys) {
+      newKeys.add(mapping.getTargetOpt(key));
+    }
+    return new HiveRelDistribution(type, newKeys);
   }
 
   @Override
@@ -100,4 +114,12 @@ public class HiveRelDistribution implements RelDistribution {
     return type.compareTo(distribution.getType());
   }
 
+  @Override
+  public String toString() {
+    if (keys.isEmpty()) {
+      return type.shortName;
+    } else {
+      return type.shortName + keys;
+    }
+  }
 }
