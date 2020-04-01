@@ -63,7 +63,6 @@ public class DynamicSerDeTypeMap extends DynamicSerDeTypeBase {
       Map<?, ?> l = Collections.singletonMap(o, o2);
       return l.getClass();
     } catch (Exception e) {
-      e.printStackTrace();
       throw new RuntimeException(e);
     }
   }
