@@ -406,6 +406,12 @@ public class MetastoreConf {
         "match that configuration. Otherwise it should be same as the hostname returned by " +
         "InetAddress#getLocalHost#getHostName(). Given the uncertainty in the later " +
         "it is desirable to configure metastore.thrift.bind.host on the intended leader HMS."),
+    METASTORE_HOUSEKEEPING_THREADS_ON("metastore.housekeeping.threads.on",
+        "hive.metastore.housekeeping.threads.on", false,
+        "Whether to run the tasks under metastore.task.threads.remote on this metastore instance or not.\n" +
+            "Set this to true on one instance of the Thrift metastore service as part of turning\n" +
+            "on Hive transactions. For a complete list of parameters required for turning on\n" +
+            "transactions, see hive.txn.manager."),
     COMPACTOR_INITIATOR_ON("metastore.compactor.initiator.on", "hive.compactor.initiator.on", false,
         "Whether to run the initiator and cleaner threads on this metastore instance or not.\n" +
             "Set this to true on one instance of the Thrift metastore service as part of turning\n" +
