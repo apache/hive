@@ -198,12 +198,4 @@ public class ImpalaBasicAnalyzer extends Analyzer {
     result.setIsMaterialized(true);
     return result;
   }
-
-  /**
-   * TODO: CDPD-8182: This needs to be looked at in more detail for phase 3.
-   */
-  @Override
-  public boolean setsHaveValueTransfer(List<Expr> l1, List<Expr> l2, boolean mutual) {
-      return false;
-  }
 }
