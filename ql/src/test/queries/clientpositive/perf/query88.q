@@ -1,3 +1,5 @@
+set hive.strict.checks.cartesian.product=false;
+
 explain
 select  *
 from
