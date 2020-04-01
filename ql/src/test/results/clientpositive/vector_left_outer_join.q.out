@@ -97,7 +97,7 @@ STAGE PLANS:
                   keys:
                     0 _col0 (type: tinyint)
                     1 _col0 (type: tinyint)
-                  Statistics: Num rows: 1528346 Data size: 12226768 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1564475 Data size: 12515800 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count()
                     minReductionHashAggr: 0.99

@@ -55,7 +55,7 @@ STAGE PLANS:
                           outputColumnNames: _col3
                           input vertices:
                             1 Map 4
-                          Statistics: Num rows: 1389803 Data size: 11104552 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1433691 Data size: 11455656 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
                             aggregations: sum(_col3)
                             minReductionHashAggr: 0.99
