@@ -54,6 +54,7 @@ import org.apache.impala.catalog.BuiltinsDb;
 import org.apache.impala.catalog.Function;
 import org.apache.impala.catalog.Type;
 import org.apache.impala.common.ImpalaException;
+import org.apache.impala.planner.AggregationNode;
 import org.apache.impala.planner.PlanNode;
 import org.apache.impala.thrift.TPrimitiveType;
 
@@ -87,8 +88,6 @@ public class ImpalaAggregateRel extends ImpalaPlanRel {
    */
   @Override
   public PlanNode getPlanNode(ImpalaPlannerContext ctx) throws ImpalaException, HiveException, MetaException {
-    PlanNodeId nodeId = ctx.getNextNodeId();
-
     Preconditions.checkState(getInputs().size() == 1);
     ImpalaPlanRel relInput = getImpalaRelInput(0);
     PlanNode input = relInput.getPlanNode(ctx);
@@ -110,9 +109,7 @@ public class ImpalaAggregateRel extends ImpalaPlanRel {
     // takes care of that.
     multiAggInfo.materializeRequiredSlots(analyzer, new ExprSubstitutionMap());
 
-    this.nodeInfo = new ImpalaNodeInfo();
-    aggNode =
-        new ImpalaAggNode(nodeId, input, multiAggInfo, MultiAggregateInfo.AggPhase.FIRST, nodeInfo, ctx);
+    aggNode = getTopLevelAggNode(input, multiAggInfo, ctx);
 
     AggregateInfo aggInfo = multiAggInfo.getAggClasses().get(0);
     this.outputExprs = createOutputExprs(aggInfo.getOutputTupleDesc().getSlots());
@@ -135,6 +132,50 @@ public class ImpalaAggregateRel extends ImpalaPlanRel {
       exprs.add(input.getExpr(group));
     }
     return exprs;
+  }
+
+  /**
+   * Get the top level agg node and create the needed agg nodes along the way.
+   * Impala can break up the aggregation node up into multiple phases. This
+   * code is similar to code that is found in SingleNodePlanner with the exception
+   * that it creates ImpalaAggNode, a subclass of AggregationNode.
+   */
+  private PlanNode getTopLevelAggNode(PlanNode input, MultiAggregateInfo multiAggInfo,
+      ImpalaPlannerContext ctx) throws ImpalaException, HiveException, MetaException {
+    ImpalaBasicAnalyzer analyzer = (ImpalaBasicAnalyzer) ctx.getRootAnalyzer();
+
+    this.nodeInfo = new ImpalaNodeInfo();
+
+    AggregationNode firstPhaseAgg = new ImpalaAggNode(ctx.getNextNodeId(), input, multiAggInfo,
+        MultiAggregateInfo.AggPhase.FIRST, nodeInfo, ctx);
+
+    if (!multiAggInfo.hasSecondPhase()) {
+      // caller will call the "init" method
+      return firstPhaseAgg;
+    }
+
+    firstPhaseAgg.init(analyzer);
+    firstPhaseAgg.unsetNeedsFinalize();
+    firstPhaseAgg.setIntermediateTuple();
+
+    // A second phase aggregation is needed when there is an aggregation on two different
+    // groups but Calcite produces a single aggregation RelNode
+    // (e.g. select count(distinct c1), min(c2) from tbl).
+    AggregationNode secondPhaseAgg = new ImpalaAggNode(ctx.getNextNodeId(), firstPhaseAgg, multiAggInfo,
+        MultiAggregateInfo.AggPhase.SECOND, nodeInfo, ctx);
+    if (!multiAggInfo.hasTransposePhase()) {
+      // caller will call the "init" method
+      return secondPhaseAgg;
+    }
+    secondPhaseAgg.init(analyzer);
+
+    // A transpose aggregation is needed for grouping sets
+    // (e.g. select count(distinct c1), count(distincct c2) from tbl group by c1, c2).
+    AggregationNode transposePhaseAgg = new ImpalaAggNode(ctx.getNextNodeId(), secondPhaseAgg, multiAggInfo,
+
+        MultiAggregateInfo.AggPhase.TRANSPOSE, nodeInfo, ctx);
+    // caller will call the "init" method
+    return transposePhaseAgg;
   }
 
   private List<FunctionCallExpr> getAggregateExprs(ImpalaPlannerContext ctx) throws HiveException {
