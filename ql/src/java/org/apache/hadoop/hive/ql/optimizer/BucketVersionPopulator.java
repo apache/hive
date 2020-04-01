@@ -81,6 +81,8 @@ public class BucketVersionPopulator extends Transform {
   @Deprecated
   Set<OpGroup> groups = new HashSet<BucketVersionPopulator.OpGroup>();
 
+  Map<Operator<?>, OpGroup> b = new IdentityHashMap<>();
+
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
     pGraphContext = pctx;
@@ -107,6 +109,7 @@ public class BucketVersionPopulator extends Transform {
 
     SemanticDispatcher disp = new DefaultRuleDispatcher(new SetPreferredBucketingVersionRule(), opRules, ctx);
     SemanticGraphWalker ogw = new PreOrderWalker(disp);
+    //    SemanticGraphWalker ogw = new DefaultGraphWalker(disp);
 
     ArrayList<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(pGraphContext.getTopOps().values());
@@ -114,12 +117,13 @@ public class BucketVersionPopulator extends Transform {
     return pGraphContext;
   }
 
-  static class OpGroup {
+  class OpGroup {
     Set<Operator<?>> members = Sets.newIdentityHashSet();
     int version = -1;
 
     public void add(Operator o) {
       members.add(o);
+      b.put(o, this);
     }
 
     public void setBucketVersion() {
@@ -154,12 +158,18 @@ public class BucketVersionPopulator extends Transform {
       throw new RuntimeException("Unable to set version");
     }
 
+    public void merge(OpGroup opGroup) {
+      for (Operator<?> operator : opGroup.members) {
+        add(operator);
+      }
+      opGroup.members.clear();
+    }
+
   }
 
 
   class SetPreferredBucketingVersionRule implements SemanticNodeProcessor {
 
-    Map<Operator<?>, OpGroup> b = new IdentityHashMap<>();
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
@@ -169,17 +179,18 @@ public class BucketVersionPopulator extends Transform {
       if (o.getNumParent() == 0 || o instanceof ReduceSinkOperator) {
         groups.add(g = new OpGroup());
       } else {
-        if (o.getNumParent() != 1) {
-          throw new RuntimeException("unexpected");
-        }
-        g = b.get(o.getParentOperators().get(0));
-        if (g == null) {
-          throw new RuntimeException("no group for parent operator?");
-        }
+        g = getGroupFor(o);
       }
       g.add(o);
-      b.put(o, g);
       return null;
+    }
+
+    private OpGroup getGroupFor(Operator o) {
+      OpGroup g = b.get(o.getParentOperators().get(0));
+      for (int i = 1; i < o.getNumParent(); i++) {
+        g.merge(b.get(o.getParentOperators().get(i)));
+      }
+      return g;
     }
 
   }
