@@ -257,7 +257,7 @@ POSTHOOK: Input: default@t_test_grouping_sets
 7	8
 10	11
 10	NULL
-NULL	1
+NULL	NULL
 PREHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY a LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_test_grouping_sets
