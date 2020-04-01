@@ -154,7 +154,7 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
         if (!ReplUtils.dataCopyCompleted(toPath, conf)) {
           status = copyPaths(fromPath, toPath);
           if (status == 0) {
-            ReplUtils.setDataCopyComplete(toPath, conf);
+            ReplUtils.addCopyAck(toPath, conf);
           }
         }
       }
@@ -359,7 +359,7 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
     Task<?> copyTask = null;
     LOG.debug("ReplCopyTask:getLoadCopyTask: {}=>{}", srcPath, dstPath);
     if ((replicationSpec != null) && replicationSpec.isInReplicationScope()){
-      ReplCopyWork rcwork = new ReplCopyWork(srcPath, dstPath, false);
+      ReplCopyWork rcwork = new ReplCopyWork(srcPath, dstPath, false, shouldCheckpoint);
       rcwork.setReadSrcAsFilesList(readSourceAsFileList);
       if (replicationSpec.isReplace() && (conf.getBoolVar(REPL_ENABLE_MOVE_OPTIMIZATION) || copyToMigratedTxnTable)) {
         rcwork.setDeleteDestIfExist(true);
@@ -371,7 +371,6 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
       // data invisible. Doing duplicate check and ignoring copy will cause consistency issue if there are multiple
       // replace events getting replayed in the first incremental load.
       rcwork.setCheckDuplicateCopy(replicationSpec.needDupCopyCheck() && !replicationSpec.isReplace());
-      rcwork.setCheckpointEnabled(shouldCheckpoint);
       LOG.debug("ReplCopyTask:\trcwork");
       String distCpDoAsUser = conf.getVar(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER);
       rcwork.setDistCpDoAsUser(distCpDoAsUser);

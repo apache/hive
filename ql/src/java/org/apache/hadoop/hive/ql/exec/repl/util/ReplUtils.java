@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.ddl.table.misc.properties.AlterTableSetProperti
 import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.exec.repl.ReplAck;
 import org.apache.hadoop.hive.ql.exec.repl.ReplStateLogWork;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -96,12 +97,6 @@ public class ReplUtils {
   // Configuration to enable/disable dumping ACID tables. Used only for testing and shouldn't be
   // seen in production or in case of tests other than the ones where it's required.
   public static final String REPL_DUMP_INCLUDE_ACID_TABLES = "hive.repl.dump.include.acid.tables";
-  //Acknowledgement for repl dump complete
-  public static final String DUMP_ACKNOWLEDGEMENT = "_finished_dump";
-  //Acknowledgement for repl load complete
-  public static final String LOAD_ACKNOWLEDGEMENT = "_finished_load";
-  //Acknowledgement for data copy complete. Used for checkpointing
-  public static final String COPY_ACKNOWLEDGEMENT = "_finished_copy";
   /**
    * Bootstrap REPL LOAD operation type on the examined object based on ckpt state.
    */
@@ -302,15 +297,11 @@ public class ReplUtils {
   }
 
   public static boolean dataCopyCompleted(Path toPath, HiveConf conf) throws IOException {
-    FileSystem dstFs = null;
-    dstFs = toPath.getFileSystem(conf);
-    if (dstFs.exists(new Path(toPath, ReplUtils.COPY_ACKNOWLEDGEMENT))) {
-      return true;
-    }
-    return false;
+    FileSystem dstFs = toPath.getFileSystem(conf);
+    return (dstFs.exists(new Path(toPath, ReplAck.COPY_ACKNOWLEDGEMENT.toString())));
   }
 
-  public static void setDataCopyComplete(Path toPath, HiveConf conf) throws SemanticException {
-    Utils.create(new Path(toPath, ReplUtils.COPY_ACKNOWLEDGEMENT), conf);
+  public static void addCopyAck(Path toPath, HiveConf conf) throws SemanticException {
+    Utils.create(new Path(toPath, ReplAck.COPY_ACKNOWLEDGEMENT.toString()), conf);
   }
 }

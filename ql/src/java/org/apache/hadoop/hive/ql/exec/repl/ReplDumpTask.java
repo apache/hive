@@ -93,6 +93,7 @@ import java.util.UUID;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.Writer;
+import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 
 public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   private static final long serialVersionUID = 1L;
@@ -193,7 +194,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   private void finishRemainingTasks() throws SemanticException, IOException {
     prepareReturnValues(work.getResultValues());
     Path dumpAckFile = new Path(work.getCurrentDumpPath(),
-            ReplUtils.REPL_HIVE_BASE_DIR + File.separator + ReplUtils.DUMP_ACKNOWLEDGEMENT);
+            ReplUtils.REPL_HIVE_BASE_DIR + File.separator
+                    + ReplAck.DUMP_ACKNOWLEDGEMENT.toString());
     Utils.create(dumpAckFile, conf);
     deleteAllPreviousDumpMeta(work.getCurrentDumpPath());
   }
@@ -269,7 +271,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     if (dumpDir != null) {
       FileSystem fs = dumpDir.getFileSystem(conf);
       Path hiveDumpDir = new Path(dumpDir, ReplUtils.REPL_HIVE_BASE_DIR);
-      return fs.exists(new Path(hiveDumpDir, ReplUtils.DUMP_ACKNOWLEDGEMENT));
+      return fs.exists(new Path(hiveDumpDir, ReplAck.DUMP_ACKNOWLEDGEMENT.toString()));
     }
     return false;
   }
@@ -281,7 +283,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       return true;
     } else {
       FileSystem fs = previousDumpPath.getFileSystem(conf);
-      return fs.exists(new Path(previousDumpPath, ReplUtils.LOAD_ACKNOWLEDGEMENT));
+      return fs.exists(new Path(previousDumpPath, LOAD_ACKNOWLEDGEMENT.toString()));
     }
   }
 
@@ -620,7 +622,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     // Last repl id would've been captured during compile phase in queryState configs before opening txn.
     // This is needed as we dump data on ACID/MM tables based on read snapshot or else we may lose data from
     // concurrent txns when bootstrap dump in progress. If it is not available, then get it from metastore.
-    Long bootDumpBeginReplId = queryState.getConf().getLong(ReplUtils.LAST_REPL_ID_KEY, -1L);
+    Long bootDumpBeginReplId = getBootDumpBeginReplId(dmd);
     assert (bootDumpBeginReplId >= 0L);
     List<String> tableList;
 
@@ -709,6 +711,18 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     work.setDirCopyIterator(extTableCopyWorks.iterator());
     work.setManagedTableCopyPathIterator(managedTableCopyPaths.iterator());
     return bootDumpBeginReplId;
+  }
+
+  private Long getBootDumpBeginReplId(DumpMetaData dmd) {
+    try {
+      //This will happen in case of bootstrap dump resumed from previous dump dir
+      if (dmd.getEventFrom() != 0) {
+        return dmd.getEventFrom();
+      }
+    } catch (SemanticException e) {
+      LOG.info("No previous dump present");
+    }
+    return queryState.getConf().getLong(ReplUtils.LAST_REPL_ID_KEY, -1L);
   }
 
   long currentNotificationId(Hive hiveDb) throws TException {

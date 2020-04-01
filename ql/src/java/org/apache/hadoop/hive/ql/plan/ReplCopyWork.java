@@ -67,6 +67,11 @@ public class ReplCopyWork extends CopyWork {
     super(srcPath, destPath, errorOnSrcEmpty);
   }
 
+  public ReplCopyWork(final Path srcPath, final Path destPath, boolean errorOnSrcEmpty, boolean checkpointEnabled) {
+    this(srcPath, destPath, errorOnSrcEmpty);
+    this.checkpointEnabled = checkpointEnabled;
+  }
+
   public void setReadSrcAsFilesList(boolean readSrcAsFilesList) {
     this.readSrcAsFilesList = readSrcAsFilesList;
   }
@@ -125,9 +130,5 @@ public class ReplCopyWork extends CopyWork {
 
   public boolean isCheckpointEnabled() {
     return checkpointEnabled;
-  }
-
-  public void setCheckpointEnabled(boolean checkpointEnabled) {
-    this.checkpointEnabled = checkpointEnabled;
   }
 }

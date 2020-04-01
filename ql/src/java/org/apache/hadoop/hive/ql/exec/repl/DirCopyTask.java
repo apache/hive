@@ -22,8 +22,6 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
-import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.CopyUtils;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -133,30 +131,14 @@ public class DirCopyTask extends Task<DirCopyWork> implements Serializable {
 
   @Override
   public int execute() {
-    Path targetPath = work.getFullyQualifiedTargetPath();
+    String distCpDoAsUser = conf.getVar(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER);
+
     Path sourcePath = work.getFullyQualifiedSourcePath();
+    Path targetPath = work.getFullyQualifiedTargetPath();
     if (conf.getBoolVar(HiveConf.ConfVars.REPL_ADD_RAW_RESERVED_NAMESPACE)) {
       sourcePath = reservedRawPath(work.getFullyQualifiedSourcePath().toUri());
       targetPath = reservedRawPath(work.getFullyQualifiedTargetPath().toUri());
     }
-    int status = 0;
-    try {
-      if (!ReplUtils.dataCopyCompleted(targetPath, conf)) {
-        status = copyDir(sourcePath, targetPath);
-        if (status == 0) {
-          ReplUtils.setDataCopyComplete(targetPath, conf);
-        }
-      }
-    } catch (Exception e) {
-      LOG.error("failed", e);
-      setException(e);
-      return ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
-    }
-    return status;
-  }
-
-  private int copyDir(Path sourcePath, Path targetPath) {
-    String distCpDoAsUser = conf.getVar(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER);
     int currentRetry = 0;
     int error = 0;
     UserGroupInformation proxyUser = null;
