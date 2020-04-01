@@ -19,16 +19,18 @@
 package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 
+import org.apache.curator.shaded.com.google.common.collect.Sets;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
-import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
 import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
@@ -37,7 +39,6 @@ import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.PreOrderWalker;
 import org.apache.hadoop.hive.ql.lib.SemanticRule;
-import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.optimizer.Transform;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -47,6 +48,8 @@ import org.slf4j.LoggerFactory;
 public class BucketVersionPopulator extends Transform {
 
   protected static final Logger LOG = LoggerFactory.getLogger(BucketVersionPopulator.class);
+
+  @Deprecated
 
   protected ParseContext pGraphContext;
 
@@ -75,40 +78,32 @@ public class BucketVersionPopulator extends Transform {
     }
   }
 
+  @Deprecated
+  Set<OpGroup> groups = new HashSet<BucketVersionPopulator.OpGroup>();
+
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
     pGraphContext = pctx;
-    runBackPropagation();
-    runForwardPropagation();
+    findOpGroups();
+    assignGroupVersions();
     return pctx;
   }
 
-  private ParseContext runBackPropagation() throws SemanticException {
+  private void assignGroupVersions() {
+    Set<OpGroup> g = groups;
+    for (OpGroup opGroup : g) {
+      opGroup.analyzeBucketVersion();
+      opGroup.setBucketVersion();
+    }
 
-    NodeProcessorCtx ctx = new NodeProcessorCtx() {
-    };
-
-    Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
-    opRules.put(new RuleRegExp("RS", ReduceSinkOperator.getOperatorName() + "%"), new RSRule());
-    opRules.put(new RuleRegExp("FS", FileSinkOperator.getOperatorName() + "%"), new FSRule());
-
-    SemanticDispatcher disp = new DefaultRuleDispatcher(new DeduceBucketingVersionRule(), opRules, ctx);
-    SemanticGraphWalker ogw = new DefaultGraphWalker(disp);
-
-    ArrayList<Node> topNodes = new ArrayList<Node>();
-    topNodes.addAll(pGraphContext.getTopOps().values());
-    ogw.startWalking(topNodes, null);
-    return pGraphContext;
   }
 
-  private ParseContext runForwardPropagation() throws SemanticException {
+  private ParseContext findOpGroups() throws SemanticException {
 
     NodeProcessorCtx ctx = new NodeProcessorCtx() {
     };
 
     Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
-    opRules.put(new RuleRegExp("TS", TableScanOperator.getOperatorName() + "%"), new TSRule());
-    opRules.put(new RuleRegExp("RS", ReduceSinkOperator.getOperatorName() + "%"), new RSRule2());
 
     SemanticDispatcher disp = new DefaultRuleDispatcher(new SetPreferredBucketingVersionRule(), opRules, ctx);
     SemanticGraphWalker ogw = new PreOrderWalker(disp);
@@ -119,111 +114,73 @@ public class BucketVersionPopulator extends Transform {
     return pGraphContext;
   }
 
-  static class DeduceBucketingVersionRule implements SemanticNodeProcessor {
+  static class OpGroup {
+    Set<Operator<?>> members = Sets.newIdentityHashSet();
+    int version = -1;
 
-    @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
-        throws SemanticException {
-      Operator o = (Operator) nd;
-      BucketingVersionResult res = new BucketingVersionResult(-1);
-      try {
-        for (Object object : nodeOutputs) {
-          BucketingVersionResult r = res;
-          res = res.merge(r);
+    public void add(Operator o) {
+      members.add(o);
+    }
+
+    public void setBucketVersion() {
+      for (Operator<?> operator : members) {
+        operator.getConf().setBucketingVersion(version);
+
+      }
+    }
+
+    public void analyzeBucketVersion() {
+      for (Operator<?> operator : members) {
+        if (operator instanceof TableScanOperator) {
+          TableScanOperator tso = (TableScanOperator) operator;
+          setVersion(tso.getConf().getTableMetadata().getBucketingVersion());
         }
-        o.getConf().setBucketingVersion(res.bucketingVersion);
-        return res;
-      } catch (Exception e) {
-        throw new SemanticException("Error while processing: " + o, e);
-      }
-    }
-  }
-
-  static class FSRule implements SemanticNodeProcessor {
-
-    @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
-        throws SemanticException {
-      FileSinkOperator fso = (FileSinkOperator) nd;
-      Integer version = fso.getConf().getTableInfo().getBucketingVersion();
-      fso.getConf().setBucketingVersion(version);
-      return new BucketingVersionResult(version);
-    }
-
-  }
-
-  static class RSRule extends DeduceBucketingVersionRule {
-
-    @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
-        throws SemanticException {
-      Operator o = (Operator) nd;
-      BucketingVersionResult pVersion = (BucketingVersionResult) super.process(nd, stack, procCtx, nodeOutputs);
-      if (pVersion.bucketingVersion == -1) {
-        // use version 2 if possible
-        o.getConf().setBucketingVersion(2);
-      }
-      // communicate that this node can accept data in any bucketing version
-      return new BucketingVersionResult(-1);
-    }
-
-  }
-
-  static class TSRule implements SemanticNodeProcessor {
-
-    @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
-        throws SemanticException {
-      TableScanOperator tso = (TableScanOperator) nd;
-      Integer version = tso.getConf().getTableMetadata().getBucketingVersion();
-      tso.getConf().setBucketingVersion(version);
-      return new BucketingVersionResult(version);
-    }
-
-  }
-
-  static class SetPreferredBucketingVersionRule implements SemanticNodeProcessor {
-
-    @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
-        throws SemanticException {
-      Operator o = (Operator) nd;
-      List parents = o.getParentOperators();
-      BucketingVersionResult ret = new BucketingVersionResult(o.getConf().getBucketingVersion());
-      if (ret.bucketingVersion == -1) {
-        for (Object object : parents) {
-          Operator p = (Operator) object;
-          ret = ret.merge(new BucketingVersionResult(p.getConf().getBucketingVersion()));
-          //        procCtx.BucketingVersionResult r = res;
-          //        res = res.merge(r);
+        if (operator instanceof FileSinkOperator) {
+          FileSinkOperator fso = (FileSinkOperator) operator;
+          setVersion(fso.getConf().getTableInfo().getBucketingVersion());
         }
       }
-      o.getConf().setBucketingVersion(ret.bucketingVersion);
-      return ret;
+
+    }
+
+    private void setVersion(int newVersion) {
+      if (version == newVersion) {
+        return;
+      }
+      if (version == -1) {
+        version = newVersion;
+        return;
+      }
+      throw new RuntimeException("Unable to set version");
     }
 
   }
 
-  static class RSRule2 implements SemanticNodeProcessor {
+
+  class SetPreferredBucketingVersionRule implements SemanticNodeProcessor {
+
+    Map<Operator<?>, OpGroup> b = new IdentityHashMap<>();
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
         throws SemanticException {
       Operator o = (Operator) nd;
-      List parents = o.getParentOperators();
-      BucketingVersionResult ret = new BucketingVersionResult(o.getConf().getBucketingVersion());
-      for (Object object : parents) {
-        Operator p = (Operator) object;
-        ret = ret.merge2(new BucketingVersionResult(p.getConf().getBucketingVersion()));
-        //        procCtx.BucketingVersionResult r = res;
-        //        res = res.merge(r);
+      OpGroup g;
+      if (o.getNumParent() == 0 || o instanceof ReduceSinkOperator) {
+        groups.add(g = new OpGroup());
+      } else {
+        if (o.getNumParent() != 1) {
+          throw new RuntimeException("unexpected");
+        }
+        g = b.get(o.getParentOperators().get(0));
+        if (g == null) {
+          throw new RuntimeException("no group for parent operator?");
+        }
       }
-      o.getConf().setBucketingVersion(ret.bucketingVersion);
-      return ret;
+      g.add(o);
+      b.put(o, g);
+      return null;
     }
 
   }
-
-
-
 }
