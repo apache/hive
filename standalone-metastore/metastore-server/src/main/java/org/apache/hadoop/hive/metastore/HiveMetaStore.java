@@ -10493,7 +10493,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   }
 
   private static void startRemoteOnlyTasks(Configuration conf) throws Exception {
-    if(!MetastoreConf.getBoolVar(conf, ConfVars.COMPACTOR_INITIATOR_ON)) {
+    if(!MetastoreConf.getBoolVar(conf, ConfVars.METASTORE_HOUSEKEEPING_THREADS_ON)) {
       return;
     }
 
