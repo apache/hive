@@ -19,13 +19,10 @@ package org.apache.hadoop.hive.ql.exec.repl;
 
 import com.google.common.collect.Collections2;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.database.alter.poperties.AlterDatabaseSetPropertiesDesc;
@@ -39,7 +36,6 @@ import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.PartitionEvent;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.TableEvent;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.filesystem.BootstrapEventsIterator;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.filesystem.ConstraintEventsIterator;
-import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.filesystem.FSTableEvent;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.LoadConstraint;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.LoadDatabase;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.LoadFunction;
@@ -54,15 +50,12 @@ import org.apache.hadoop.hive.ql.exec.repl.util.TaskTracker;
 import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -135,16 +128,8 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       if (!iterator.hasNext() && constraintIterator.hasNext()) {
         loadingConstraint = true;
       }
-      while ((iterator.hasNext() || (loadingConstraint && constraintIterator.hasNext()) ||
-              (work.getPathsToCopyIterator().hasNext())) && loadTaskTracker.canAddMoreTasks()) {
-        // First start the distcp tasks to copy the files related to external table. The distcp tasks should be
-        // started first to avoid ddl task trying to create table/partition directory. Distcp task creates these
-        // directory with proper permission and owner.
-        if (work.getPathsToCopyIterator().hasNext()) {
-          scope.rootTasks.addAll(new ExternalTableCopyTaskBuilder(work, conf).tasks(loadTaskTracker));
-          break;
-        }
-
+      while ((iterator.hasNext() || (loadingConstraint && constraintIterator.hasNext()))
+              && loadTaskTracker.canAddMoreTasks()) {
         BootstrapEvent next;
         if (!loadingConstraint) {
           next = iterator.next();
@@ -261,8 +246,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
 
       boolean addAnotherLoadTask = iterator.hasNext()
           || loadTaskTracker.hasReplicationState()
-          || constraintIterator.hasNext()
-          || work.getPathsToCopyIterator().hasNext();
+          || constraintIterator.hasNext();
 
       if (addAnotherLoadTask) {
         createBuilderTask(scope.rootTasks);
@@ -271,8 +255,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       // Update last repl ID of the database only if the current dump is not incremental. If bootstrap
       // is combined with incremental dump, it contains only tables to bootstrap. So, needn't change
       // last repl ID of the database.
-      if (!iterator.hasNext() && !constraintIterator.hasNext() && !work.getPathsToCopyIterator().hasNext()
-              && !work.isIncrementalLoad()) {
+      if (!iterator.hasNext() && !constraintIterator.hasNext() && !work.isIncrementalLoad()) {
         loadTaskTracker.update(updateDatabaseLastReplID(maxTasks, loadContext, scope));
         work.updateDbEventState(null);
       }
@@ -286,6 +269,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
 
       // Populate the driver context with the scratch dir info from the repl context, so that the temp dirs will be cleaned up later
       context.getFsScratchDirs().putAll(loadContext.pathInfo.getFsScratchDirs());
+      createReplLoadCompleteAckTask();
     }  catch (RuntimeException e) {
       LOG.error("replication failed with run time exception", e);
       throw e;
@@ -296,77 +280,6 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     }
     LOG.info("completed load task run : {}", work.executedLoadTask());
     return 0;
-  }
-
-  /**
-   * Cleanup/drop tables from the given database which are bootstrapped by input dump dir.
-   * @throws HiveException Failed to drop the tables.
-   * @throws IOException File operations failure.
-   * @throws InvalidInputException Invalid input dump directory.
-   */
-  private void cleanTablesFromBootstrap() throws HiveException, IOException, InvalidInputException {
-    Path bootstrapDirectory = new PathBuilder(work.bootstrapDumpToCleanTables)
-            .addDescendant(ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME).build();
-    FileSystem fs = bootstrapDirectory.getFileSystem(conf);
-
-    if (!fs.exists(bootstrapDirectory)) {
-      throw new InvalidInputException("Input bootstrap dump directory specified to clean tables from is invalid: "
-              + bootstrapDirectory);
-    }
-
-    FileStatus[] fileStatuses = fs.listStatus(bootstrapDirectory, EximUtil.getDirectoryFilter(fs));
-    if ((fileStatuses == null) || (fileStatuses.length == 0)) {
-      throw new InvalidInputException("Input bootstrap dump directory specified to clean tables from is empty: "
-              + bootstrapDirectory);
-    }
-
-    if (StringUtils.isNotBlank(work.dbNameToLoadIn) && (fileStatuses.length > 1)) {
-      throw new InvalidInputException("Input bootstrap dump directory specified to clean tables from has multiple"
-              + " DB dirs in the dump: " + bootstrapDirectory
-              + " which is not allowed on single target DB: " + work.dbNameToLoadIn);
-    }
-
-    // Iterate over the DBs and tables listed in the input bootstrap dump directory to clean tables from.
-    BootstrapEventsIterator bootstrapEventsIterator
-            = new BootstrapEventsIterator(bootstrapDirectory.toString(), work.dbNameToLoadIn, false, conf);
-
-    // This map will have only one entry if target database is renamed using input DB name from REPL LOAD.
-    // For multiple DBs case, this map maintains the table names list against each DB.
-    Map<String, List<String>> dbToTblsListMap = new HashMap<>();
-    while (bootstrapEventsIterator.hasNext()) {
-      BootstrapEvent event = bootstrapEventsIterator.next();
-      if (event.eventType().equals(BootstrapEvent.EventType.Table)) {
-        FSTableEvent tableEvent = (FSTableEvent) event;
-        String dbName = (StringUtils.isBlank(work.dbNameToLoadIn) ? tableEvent.getDbName() : work.dbNameToLoadIn);
-        List<String> tableNames;
-        if (dbToTblsListMap.containsKey(dbName)) {
-          tableNames = dbToTblsListMap.get(dbName);
-        } else {
-          tableNames = new ArrayList<>();
-          dbToTblsListMap.put(dbName, tableNames);
-        }
-        tableNames.add(tableEvent.getTableName());
-      }
-    }
-
-    // No tables listed in the given bootstrap dump directory specified to clean tables.
-    if (dbToTblsListMap.isEmpty()) {
-      LOG.info("No DB/tables are listed in the bootstrap dump: {} specified to clean tables.",
-              bootstrapDirectory);
-      return;
-    }
-
-    Hive db = getHive();
-    for (Map.Entry<String, List<String>> dbEntry : dbToTblsListMap.entrySet()) {
-      String dbName = dbEntry.getKey();
-      List<String> tableNames = dbEntry.getValue();
-
-      for (String table : tableNames) {
-        db.dropTable(dbName + "." + table, true);
-      }
-      LOG.info("Tables listed in the Database: {} in the bootstrap dump: {} are cleaned",
-              dbName, bootstrapDirectory);
-    }
   }
 
   /**
@@ -396,6 +309,22 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     }
     LOG.info("Tables in the Database: {} that are excluded in the replication scope are dropped.",
             dbName);
+  }
+
+  private void createReplLoadCompleteAckTask() {
+    if ((work.isIncrementalLoad() && !work.incrementalLoadTasksBuilder().hasMoreWork() && !work.hasBootstrapLoadTasks())
+            || (!work.isIncrementalLoad() && !work.hasBootstrapLoadTasks())) {
+      //All repl load tasks are executed and status is 0, create the task to add the acknowledgement
+      AckWork replLoadAckWork = new AckWork(
+              new Path(work.dumpDirectory, ReplUtils.LOAD_ACKNOWLEDGEMENT));
+      Task<AckWork> loadAckWorkTask = TaskFactory.get(replLoadAckWork, conf);
+      if (this.childTasks.isEmpty()) {
+        this.childTasks.add(loadAckWorkTask);
+      } else {
+        DAGTraversal.traverse(this.childTasks,
+                new AddDependencyToLeaves(Collections.singletonList(loadAckWorkTask)));
+      }
+    }
   }
 
   private void createEndReplLogTask(Context context, Scope scope,
@@ -485,11 +414,6 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
 
   private int executeIncrementalLoad() {
     try {
-      // If user has requested to cleanup any bootstrap dump, then just do it before incremental load.
-      if (work.needCleanTablesFromBootstrap) {
-        cleanTablesFromBootstrap();
-        work.needCleanTablesFromBootstrap = false;
-      }
 
       // If replication policy is changed between previous and current repl load, then drop the tables
       // that are excluded in the new replication policy.
@@ -498,7 +422,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       IncrementalLoadTasksBuilder builder = work.incrementalLoadTasksBuilder();
 
       // If incremental events are already applied, then check and perform if need to bootstrap any tables.
-      if (!builder.hasMoreWork() && !work.getPathsToCopyIterator().hasNext()) {
+      if (!builder.hasMoreWork() && work.isLastReplIDUpdated()) {
         if (work.hasBootstrapLoadTasks()) {
           LOG.debug("Current incremental dump have tables to be bootstrapped. Switching to bootstrap "
                   + "mode after applying all events.");
@@ -509,20 +433,13 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       List<Task<?>> childTasks = new ArrayList<>();
       int maxTasks = conf.getIntVar(HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS);
 
-      // First start the distcp tasks to copy the files related to external table. The distcp tasks should be
-      // started first to avoid ddl task trying to create table/partition directory. Distcp task creates these
-      // directory with proper permission and owner.
       TaskTracker tracker = new TaskTracker(maxTasks);
-      if (work.getPathsToCopyIterator().hasNext()) {
-        childTasks.addAll(new ExternalTableCopyTaskBuilder(work, conf).tasks(tracker));
-      } else {
-        childTasks.add(builder.build(context, getHive(), LOG, tracker));
-      }
+      childTasks.add(builder.build(context, getHive(), LOG, tracker));
 
       // If there are no more events to be applied, add a task to update the last.repl.id of the
       // target database to the event id of the last event considered by the dump. Next
       // incremental cycle won't consider the events in this dump again if it starts from this id.
-      if (!builder.hasMoreWork() && !work.getPathsToCopyIterator().hasNext()) {
+      if (!builder.hasMoreWork()) {
         // The name of the database to be loaded into is either specified directly in REPL LOAD
         // command i.e. when dbNameToLoadIn has a valid dbname or is available through dump
         // metadata during table level replication.
@@ -551,17 +468,17 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
                   TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), alterDbDesc), conf);
 
           DAGTraversal.traverse(childTasks, new AddDependencyToLeaves(updateReplIdTask));
+          work.setLastReplIDUpdated(true);
           LOG.debug("Added task to set last repl id of db " + dbName + " to " + lastEventid);
         }
       }
 
-      // Either the incremental has more work or the external table file copy has more paths to process.
-      // Once all the incremental events are applied and external tables file copies are done, enable
-      // bootstrap of tables if exist.
-      if (builder.hasMoreWork() || work.getPathsToCopyIterator().hasNext() || work.hasBootstrapLoadTasks()) {
+      // Once all the incremental events are applied, enable bootstrap of tables if exist.
+      if (builder.hasMoreWork() || work.hasBootstrapLoadTasks()) {
         DAGTraversal.traverse(childTasks, new AddDependencyToLeaves(TaskFactory.get(work, conf)));
       }
       this.childTasks = childTasks;
+      createReplLoadCompleteAckTask();
       return 0;
     } catch (Exception e) {
       LOG.error("failed replication", e);

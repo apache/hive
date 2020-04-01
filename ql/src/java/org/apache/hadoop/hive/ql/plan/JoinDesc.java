@@ -749,6 +749,7 @@ public class JoinDesc extends AbstractOperatorDesc {
           Objects.equals(getFiltersStringMap(), otherDesc.getFiltersStringMap()) &&
           Objects.equals(getOutputColumnNames(), otherDesc.getOutputColumnNames()) &&
           Objects.equals(getCondsList(), otherDesc.getCondsList()) &&
+          Objects.equals(getResidualFilterExprsString(), otherDesc.getResidualFilterExprsString()) &&
           getHandleSkewJoin() == otherDesc.getHandleSkewJoin() &&
           Objects.equals(getNullSafeString(), otherDesc.getNullSafeString());
     }

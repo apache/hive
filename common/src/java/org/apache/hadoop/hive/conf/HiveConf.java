@@ -2672,6 +2672,25 @@ public class HiveConf extends Configuration {
         new TimeValidator(TimeUnit.MILLISECONDS),
         "Initial amount of time (in milliseconds) to wait between retries\n" +
         "when connecting to the ZooKeeper server when using ExponentialBackoffRetry policy."),
+    HIVE_ZOOKEEPER_SSL_ENABLE("hive.zookeeper.ssl.client.enable", false,
+        "Set client to use TLS when connecting to ZooKeeper.  An explicit value overrides any value set via the " +
+            "zookeeper.client.secure system property (note the different name).  Defaults to false if neither is set."),
+    HIVE_ZOOKEEPER_SSL_KEYSTORE_LOCATION("hive.zookeeper.ssl.keystore.location", "",
+        "Keystore location when using a client-side certificate with TLS connectivity to ZooKeeper. " +
+            "Overrides any explicit value set via the zookeeper.ssl.keyStore.location " +
+            "system property (note the camelCase)."),
+    HIVE_ZOOKEEPER_SSL_KEYSTORE_PASSWORD("hive.zookeeper.ssl.keystore.password", "",
+        "Keystore password when using a client-side certificate with TLS connectivity to ZooKeeper." +
+            "Overrides any explicit value set via the zookeeper.ssl.keyStore.password " +
+             "system property (note the camelCase)."),
+    HIVE_ZOOKEEPER_SSL_TRUSTSTORE_LOCATION("hive.zookeeper.ssl.truststore.location", "",
+        "Truststore location when using a client-side certificate with TLS connectivity to ZooKeeper. " +
+            "Overrides any explicit value set via the zookeeper.ssl.trustStore.location" +
+            "system property (note the camelCase)."),
+    HIVE_ZOOKEEPER_SSL_TRUSTSTORE_PASSWORD("hive.zookeeper.ssl.truststore.password", "",
+        "Truststore password when using a client-side certificate with TLS connectivity to ZooKeeper." +
+            "Overrides any explicit value set via the zookeeper.ssl.trustStore.password " +
+             "system property (note the camelCase)."),
 
     // Transactions
     HIVE_TXN_MANAGER("hive.txn.manager",
@@ -4619,6 +4638,9 @@ public class HiveConf extends Configuration {
       "If LLAP external clients submits ORDER BY queries, force return a single split to guarantee reading\n" +
         "data out in ordered way. Setting this to false will let external clients read data out in parallel\n" +
         "losing the ordering (external clients are responsible for guaranteeing the ordering)"),
+    LLAP_EXTERNAL_CLIENT_USE_HYBRID_CALENDAR("hive.llap.external.client.use.hybrid.calendar",
+        false,
+        "Whether to use hybrid calendar for parsing of data/timestamps."),
     LLAP_ENABLE_GRACE_JOIN_IN_LLAP("hive.llap.enable.grace.join.in.llap", false,
         "Override if grace join should be allowed to run in llap."),
 
@@ -4791,17 +4813,22 @@ public class HiveConf extends Configuration {
             "hive.spark.client.rpc.max.size," +
             "hive.spark.client.rpc.threads," +
             "hive.spark.client.secret.bits," +
+            "hive.query.max.length," +
             "hive.spark.client.rpc.server.address," +
             "hive.spark.client.rpc.server.port," +
             "hive.spark.client.rpc.sasl.mechanisms," +
-            "bonecp.,"+
-            "hive.druid.broker.address.default,"+
-            "hive.druid.coordinator.address.default,"+
-            "hikaricp.,"+
-            "hadoop.bin.path,"+
-            "yarn.bin.path,"+
-            "spark.home,"+
-            "hive.driver.parallel.compilation.global.limit",
+            "bonecp.," +
+            "hive.druid.broker.address.default," +
+            "hive.druid.coordinator.address.default," +
+            "hikaricp.," +
+            "hadoop.bin.path," +
+            "yarn.bin.path," +
+            "spark.home," +
+            "hive.driver.parallel.compilation.global.limit," +
+            "hive.zookeeper.ssl.keystore.location," +
+            "hive.zookeeper.ssl.keystore.password," +
+            "hive.zookeeper.ssl.truststore.location," +
+            "hive.zookeeper.ssl.truststore.password",
         "Comma separated list of configuration options which are immutable at runtime"),
     HIVE_CONF_HIDDEN_LIST("hive.conf.hidden.list",
         METASTOREPWD.varname + "," + HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname
@@ -4816,7 +4843,11 @@ public class HiveConf extends Configuration {
         + ",fs.s3a.proxy.password"
         + ",dfs.adls.oauth2.credential"
         + ",fs.adl.oauth2.credential"
-        + ",fs.azure.account.oauth2.client.secret",
+        + ",fs.azure.account.oauth2.client.secret"
+        + ",hive.zookeeper.ssl.keystore.location"
+        + ",hive.zookeeper.ssl.keystore.password"
+        + ",hive.zookeeper.ssl.truststore.location"
+        + ",hive.zookeeper.ssl.truststore.password",
         "Comma separated list of configuration options which should not be read by normal user like passwords"),
     HIVE_CONF_INTERNAL_VARIABLE_LIST("hive.conf.internal.variable.list",
         "hive.added.files.path,hive.added.jars.path,hive.added.archives.path",
@@ -4827,6 +4858,8 @@ public class HiveConf extends Configuration {
         SPARK_CLIENT_TYPE.varname,
         "Comma separated list of variables which are related to remote spark context.\n" +
             "Changing these variables will result in re-creating the spark session."),
+    HIVE_QUERY_MAX_LENGTH("hive.query.max.length", "10Mb", new SizeValidator(), "The maximum" +
+            " size of a query string. Enforced after variable substitutions."),
     HIVE_QUERY_TIMEOUT_SECONDS("hive.query.timeout.seconds", "0s",
         new TimeValidator(TimeUnit.SECONDS),
         "Timeout for Running Query in seconds. A nonpositive value means infinite. " +
@@ -5616,14 +5649,22 @@ public class HiveConf extends Configuration {
    * given HiveConf.
    */
   public ZooKeeperHiveHelper getZKConfig() {
-    return new ZooKeeperHiveHelper(getVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_QUORUM),
-            getVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_CLIENT_PORT),
-            getVar(HiveConf.ConfVars.HIVE_SERVER2_ZOOKEEPER_NAMESPACE),
-            (int) getTimeVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_SESSION_TIMEOUT,
-                    TimeUnit.MILLISECONDS),
-            (int) getTimeVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_CONNECTION_BASESLEEPTIME,
-                    TimeUnit.MILLISECONDS),
-            getIntVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_CONNECTION_MAX_RETRIES));
+    return ZooKeeperHiveHelper.builder()
+      .quorum(getVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_QUORUM))
+      .clientPort(getVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_CLIENT_PORT))
+      .serverRegistryNameSpace(getVar(HiveConf.ConfVars.HIVE_SERVER2_ZOOKEEPER_NAMESPACE))
+      .connectionTimeout((int) getTimeVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_CONNECTION_TIMEOUT,
+          TimeUnit.MILLISECONDS))
+      .sessionTimeout((int) getTimeVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_SESSION_TIMEOUT,
+          TimeUnit.MILLISECONDS))
+      .baseSleepTime((int) getTimeVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_CONNECTION_BASESLEEPTIME,
+          TimeUnit.MILLISECONDS))
+      .maxRetries(getIntVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_CONNECTION_MAX_RETRIES))
+      .sslEnabled(getBoolVar(ConfVars.HIVE_ZOOKEEPER_SSL_ENABLE))
+      .keyStoreLocation(getVar(ConfVars.HIVE_ZOOKEEPER_SSL_KEYSTORE_LOCATION))
+      .keyStorePassword(getVar(ConfVars.HIVE_ZOOKEEPER_SSL_KEYSTORE_PASSWORD))
+      .trustStoreLocation(getVar(ConfVars.HIVE_ZOOKEEPER_SSL_TRUSTSTORE_LOCATION))
+      .trustStorePassword(getVar(ConfVars.HIVE_ZOOKEEPER_SSL_TRUSTSTORE_PASSWORD)).build();
   }
 
   public HiveConf() {

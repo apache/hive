@@ -1474,7 +1474,6 @@ public class AcidUtils {
       }
       return dirToSnapshots;
     } catch (IOException e) {
-      e.printStackTrace();
       throw new IOException(e);
     }
   }
@@ -1936,22 +1935,26 @@ public class AcidUtils {
 
   private static List<HdfsFileStatusWithId> tryListLocatedHdfsStatus(Ref<Boolean> useFileIds, FileSystem fs,
       Path directory) {
-    List<HdfsFileStatusWithId> childrenWithId = null;
     if (useFileIds == null) {
-      return childrenWithId;
+      return null;
     }
-    Boolean val = useFileIds.value;
+
+    List<HdfsFileStatusWithId> childrenWithId = null;
+    final Boolean val = useFileIds.value;
     if (val == null || val) {
       try {
         childrenWithId = SHIMS.listLocatedHdfsStatus(fs, directory, hiddenFileFilter);
         if (val == null) {
           useFileIds.value = true;
         }
-      } catch (Throwable t) {
-        LOG.error("Failed to get files with ID; using regular API: " + t.getMessage());
-        if (val == null && t instanceof UnsupportedOperationException) {
+      } catch (UnsupportedOperationException uoe) {
+        LOG.info("Failed to get files with ID; using regular API: " + uoe.getMessage());
+        if (val == null) {
           useFileIds.value = false;
         }
+      } catch (IOException ioe) {
+        LOG.info("Failed to get files with ID; using regular API: " + ioe.getMessage());
+        LOG.debug("Failed to get files with ID", ioe);
       }
     }
     return childrenWithId;
@@ -3137,11 +3140,14 @@ public class AcidUtils {
           useFileIds.value = true; // The call succeeded, so presumably the API is there.
         }
         return result;
-      } catch (Throwable t) {
-        LOG.error("Failed to get files with ID; using regular API: " + t.getMessage());
-        if (val == null && t instanceof UnsupportedOperationException) {
+      } catch (UnsupportedOperationException uoe) {
+        LOG.warn("Failed to get files with ID; using regular API: " + uoe.getMessage());
+        if (val == null) {
           useFileIds.value = false;
         }
+      } catch (IOException ioe) {
+        LOG.info("Failed to get files with ID; using regular API: " + ioe.getMessage());
+        LOG.debug("Failed to get files with ID", ioe);
       }
     }
 

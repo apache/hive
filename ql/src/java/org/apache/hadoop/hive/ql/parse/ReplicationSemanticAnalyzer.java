@@ -33,7 +33,6 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
-import org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables;
 import org.apache.hadoop.hive.ql.exec.repl.ReplLoadWork;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -43,24 +42,18 @@ import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Base64;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Collections;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVEQUERYID;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_ENABLE_MOVE_OPTIMIZATION;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_MOVE_OPTIMIZED_FILE_SCHEMES;
-import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.Reader;
-import static org.apache.hadoop.hive.ql.exec.repl.ExternalTableCopyTaskBuilder.DirCopyWork;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_DBNAME;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPLACE;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_CONFIG;
@@ -83,7 +76,6 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   // By default, this will be same as that of super class BaseSemanticAnalyzer. But need to obtain again
   // if the Hive configs are received from WITH clause in REPL LOAD or REPL STATUS commands.
   private Hive db;
-  private boolean isTargetAlreadyLoaded;
 
   private static final String dumpSchema = "dump_dir,last_repl_id#string,string";
 
@@ -390,7 +382,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       // tells us what is inside that dumpdir.
 
       //If repl status of target is greater than dumps, don't do anything as the load for the latest dump is done
-      if (!isTargetAlreadyLoaded) {
+      if (loadPath != null) {
         DumpMetaData dmd = new DumpMetaData(loadPath, conf);
 
         boolean evDump = false;
@@ -403,9 +395,10 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         ReplLoadWork replLoadWork = new ReplLoadWork(conf, loadPath.toString(), replScope.getDbName(),
                 dmd.getReplScope(),
-                queryState.getLineageState(), evDump, dmd.getEventTo(),
-                dirLocationsToCopy(loadPath, evDump));
+                queryState.getLineageState(), evDump, dmd.getEventTo());
         rootTasks.add(TaskFactory.get(replLoadWork, conf));
+      } else {
+        LOG.warn("Previous Dump Already Loaded");
       }
     } catch (Exception e) {
       // TODO : simple wrap & rethrow for now, clean up with error codes
@@ -416,68 +409,28 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   private Path getCurrentLoadPath() throws IOException, SemanticException {
     Path loadPathBase = new Path(conf.getVar(HiveConf.ConfVars.REPLDIR),
             Base64.getEncoder().encodeToString(sourceDbNameOrPattern.toLowerCase()
-            .getBytes(StandardCharsets.UTF_8.name())));
+                    .getBytes(StandardCharsets.UTF_8.name())));
     final FileSystem fs = loadPathBase.getFileSystem(conf);
-
     // Make fully qualified path for further use.
     loadPathBase = fs.makeQualified(loadPathBase);
-
-    if (!fs.exists(loadPathBase)) {
-      // supposed dump path does not exist.
-      LOG.error("File not found " + loadPathBase.toUri().toString());
-      throw new FileNotFoundException(ErrorMsg.REPL_LOAD_PATH_NOT_FOUND.getMsg());
-    }
-    FileStatus[] statuses = loadPathBase.getFileSystem(conf).listStatus(loadPathBase);
-    if (statuses.length > 0) {
-      //sort based on last modified. Recent one is at the end
-      Arrays.sort(statuses, new Comparator<FileStatus>() {
-        public int compare(FileStatus f1, FileStatus f2) {
-          return Long.compare(f1.getModificationTime(), f2.getModificationTime());
-        }
-      });
-      if (replScope.getDbName() != null) {
-        String currentReplStatusOfTarget
-                = getReplStatus(replScope.getDbName());
-        if (currentReplStatusOfTarget == null) { //bootstrap
-          return new Path(statuses[0].getPath(), ReplUtils.REPL_HIVE_BASE_DIR);
-        } else {
-          DumpMetaData latestDump = new DumpMetaData(
-                  new Path(statuses[statuses.length - 1].getPath(), ReplUtils.REPL_HIVE_BASE_DIR), conf);
-          if (Long.parseLong(currentReplStatusOfTarget.trim()) >= latestDump.getEventTo()) {
-            isTargetAlreadyLoaded = true;
-          } else {
-            for (FileStatus status : statuses) {
-              Path hiveLoadPath = new Path(status.getPath(), ReplUtils.REPL_HIVE_BASE_DIR);
-              DumpMetaData dmd = new DumpMetaData(hiveLoadPath, conf);
-              if (dmd.isIncrementalDump()
-                      && Long.parseLong(currentReplStatusOfTarget.trim()) < dmd.getEventTo()) {
-                return hiveLoadPath;
-              }
-            }
+    if (fs.exists(loadPathBase)) {
+      FileStatus[] statuses = loadPathBase.getFileSystem(conf).listStatus(loadPathBase);
+      if (statuses.length > 0) {
+        //sort based on last modified. Recent one is at the beginning
+        FileStatus latestUpdatedStatus = statuses[0];
+        for (FileStatus status : statuses) {
+          if (status.getModificationTime() > latestUpdatedStatus.getModificationTime()) {
+            latestUpdatedStatus = status;
           }
         }
-      } else {
-        //If dbname is null(in case of repl load *), can't get repl status of target, return unsupported
-        throw new UnsupportedOperationException("REPL LOAD * is not supported");
+        Path hiveDumpPath = new Path(latestUpdatedStatus.getPath(), ReplUtils.REPL_HIVE_BASE_DIR);
+        if (loadPathBase.getFileSystem(conf).exists(new Path(hiveDumpPath, ReplUtils.DUMP_ACKNOWLEDGEMENT))
+                && !loadPathBase.getFileSystem(conf).exists(new Path(hiveDumpPath, ReplUtils.LOAD_ACKNOWLEDGEMENT))) {
+          return hiveDumpPath;
+        }
       }
     }
     return null;
-  }
-
-  private List<DirCopyWork> dirLocationsToCopy(Path loadPath, boolean isIncrementalPhase)
-      throws HiveException, IOException {
-    List<DirCopyWork> list = new ArrayList<>();
-    String baseDir = conf.get(HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname);
-    // this is done to remove any scheme related information that will be present in the base path
-    // specifically when we are replicating to cloud storage
-    Path basePath = new Path(baseDir);
-
-    for (String location : new Reader(conf, loadPath, isIncrementalPhase).sourceLocationsToCopy()) {
-      Path sourcePath = new Path(location);
-      Path targetPath = ReplExternalTables.externalTableDataPath(conf, basePath, sourcePath);
-      list.add(new DirCopyWork(sourcePath, targetPath));
-    }
-    return list;
   }
 
   private void setConfigs(ASTNode node) throws SemanticException {

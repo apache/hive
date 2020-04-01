@@ -301,7 +301,6 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     CompactorTestUtil.runCompaction(conf, dbName, tableName, CompactionType.MINOR, true);
     CompactorTestUtil.runCleaner(conf);
     verifySuccessulTxn(1);
-    List<ShowCompactResponseElement> compacts;
     // Insert test data into test table
     dataProvider.insertMmTestData(tableName);
     // Run a compaction
@@ -341,7 +340,6 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     CompactorTestUtil.runCompaction(conf, dbName, tableName, CompactionType.MINOR, true);
     CompactorTestUtil.runCleaner(conf);
     verifySuccessulTxn(1);
-    List<ShowCompactResponseElement> compacts;
     // Verify delta directories after compaction
     Assert.assertEquals("Delta directories does not match after minor compaction",
         Collections.singletonList("delta_0000001_0000003_v0000007"),
@@ -382,7 +380,6 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     CompactorTestUtil.runCompaction(conf, dbName, tableName, CompactionType.MAJOR, true);
     CompactorTestUtil.runCleaner(conf);
     verifySuccessulTxn(1);
-    List<ShowCompactResponseElement> compacts;
     // Verify base directory after compaction
     Assert.assertEquals("Base directory does not match after major compaction",
         Collections.singletonList("base_0000003_v0000007"),

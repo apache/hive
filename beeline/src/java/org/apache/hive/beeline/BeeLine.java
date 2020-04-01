@@ -2347,6 +2347,13 @@ public class BeeLine implements Closeable {
     if (signalHandler != null) {
       signalHandler.setStatement(stmnt);
     }
+
+    // If no fetch size is specified in beeline, let the driver figure it out
+    final int fetchSize = getOpts().getFetchSize();
+    if (fetchSize >= 0) {
+      stmnt.setFetchSize(fetchSize);
+    }
+
     return stmnt;
   }
 

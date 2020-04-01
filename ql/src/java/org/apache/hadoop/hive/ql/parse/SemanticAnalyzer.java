@@ -811,20 +811,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ASTNode selectExpr = (ASTNode) selectExprs.getChild(i);
       if (selectExpr.getChildCount() == 1 && selectExpr.getChild(0).getType() == HiveParser.TOK_TABLE_OR_COL) {
         //first child should be rowid
-        if (i == 0 && !selectExpr.getChild(0).getChild(0).getText().equals("ROW__ID")) {
-          throw new SemanticException("Unexpected element when replacing default keyword for UPDATE."
-                                          + " Expected ROW_ID, found: " + selectExpr.getChild(0).getChild(0).getText());
-        }
-        else if (selectExpr.getChild(0).getChild(0).getText().toLowerCase().equals("default")) {
-          if (defaultConstraints == null) {
-            defaultConstraints = getDefaultConstraints(targetTable, null);
-          }
-          ASTNode newNode = getNodeReplacementforDefault(defaultConstraints.get(i - 1));
-          // replace the node in place
-          selectExpr.replaceChildren(0, 0, newNode);
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("DEFAULT keyword replacement - Inserted {} for table: {}", newNode.getText(),
-                targetTable.getTableName());
+        if (i != 0 || selectExpr.getChild(0).getChild(0).getText().equals("ROW__ID")) {
+          if (selectExpr.getChild(0).getChild(0).getText().toLowerCase().equals("default")) {
+            if (defaultConstraints == null) {
+              defaultConstraints = getDefaultConstraints(targetTable, null);
+            }
+            ASTNode newNode = getNodeReplacementforDefault(defaultConstraints.get(i - 1));
+            // replace the node in place
+            selectExpr.replaceChildren(0, 0, newNode);
+            if (LOG.isDebugEnabled()) {
+              LOG.debug("DEFAULT keyword replacement - Inserted {} for table: {}", newNode.getText(),
+                  targetTable.getTableName());
+            }
           }
         }
       }
@@ -1809,6 +1807,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         break;
 
       case HiveParser.TOK_LIMIT:
+        queryProperties.setHasLimit(true);
         if (ast.getChildCount() == 2) {
           qbp.setDestLimit(ctx_1.dest,
               Integer.valueOf(ast.getChild(0).getText()), Integer.valueOf(ast.getChild(1).getText()));
@@ -4211,6 +4210,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                     ErrorMsg.HIVE_GROUPING_SETS_EXPR_NOT_IN_GROUPBY.getErrorCodedMsg()));
           }
           bitmap = unsetBit(bitmap, groupByExpr.size() - pos - 1);
+
+          // Add the copy translation for grouping set keys. This will make sure that same translation as
+          // group by key is applied on the grouping set key. If translation is added to group by key
+          // to add the table name to the column name (tbl.key), then same thing will be done for grouping
+          // set keys also.
+          unparseTranslator.addCopyTranslation((ASTNode)child.getChild(j), groupByExpr.get(pos));
         }
         result.add(bitmap);
       }
@@ -7761,7 +7766,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       boolean isDestTempFile = true;
-      if (!ctx.isMRTmpFileURI(destinationPath.toUri().toString())) {
+      if (ctx.isMRTmpFileURI(destinationPath.toUri().toString()) == false
+          && ctx.isResultCacheDir(destinationPath) == false) {
+        // not a temp dir and not a result cache dir
         idToTableNameMap.put(String.valueOf(destTableId), destinationPath.toUri().toString());
         currentTableId = destTableId;
         destTableId++;

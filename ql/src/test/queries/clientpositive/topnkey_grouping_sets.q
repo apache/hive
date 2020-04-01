@@ -20,6 +20,7 @@ INSERT INTO t_test_grouping_sets VALUES
 
 set hive.optimize.topnkey=true;
 EXPLAIN
+<<<<<<< HEAD
 SELECT a, b, grouping(a), grouping(b), grouping(a, b) FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY a,b LIMIT 3;
 SELECT a, b, grouping(a), grouping(b), grouping(a, b) FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY a,b LIMIT 3;
 
@@ -57,38 +58,77 @@ SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a), (b)) ORDE
 
 set hive.optimize.topnkey=false;
 SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a), (b)) ORDER BY a,b LIMIT 7;
+=======
+SELECT a, b, grouping(a), grouping(b), grouping(a, b) FROM t_test_grouping_sets GROUP BY a, b GROUPING SETS ((a, b), (a), (b), ()) ORDER BY a, b LIMIT 3;
+SELECT a, b, grouping(a), grouping(b), grouping(a, b) FROM t_test_grouping_sets GROUP BY a, b GROUPING SETS ((a, b), (a), (b), ()) ORDER BY a, b LIMIT 3;
+
+set hive.optimize.topnkey=false;
+SELECT a, b, grouping(a), grouping(b), grouping(a, b) FROM t_test_grouping_sets GROUP BY a, b GROUPING SETS ((a, b), (a), (b), ()) ORDER BY a, b LIMIT 3;
 
 set hive.optimize.topnkey=true;
 EXPLAIN
-SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a)) ORDER BY a DESC, b ASC LIMIT 7;
-SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a)) ORDER BY a DESC, b ASC LIMIT 7;
+SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), (a), (b), ()) ORDER BY a, b LIMIT 10;
+SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), (a), (b), ()) ORDER BY a, b LIMIT 10;
 
 set hive.optimize.topnkey=false;
-SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a)) ORDER BY a DESC, b ASC LIMIT 7;
+SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), (a), (b), ()) ORDER BY a, b LIMIT 10;
 
 set hive.optimize.topnkey=true;
 EXPLAIN
-SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (b)) ORDER BY a DESC, b ASC LIMIT 7;
-SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (b)) ORDER BY a DESC, b ASC LIMIT 7;
+SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), (a), (b), ()) ORDER BY b, a LIMIT 3;
+SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), (a), (b), ()) ORDER BY b, a LIMIT 3;
 
 set hive.optimize.topnkey=false;
-SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (b)) ORDER BY a DESC, b ASC LIMIT 7;
+SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), (a), (b), ()) ORDER BY b, a LIMIT 3;
 
 set hive.optimize.topnkey=true;
 EXPLAIN
-SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), ()) ORDER BY a DESC, b ASC LIMIT 7;
-SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), ()) ORDER BY a DESC, b ASC LIMIT 7;
+SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), (a), (b), ()) ORDER BY b, a LIMIT 1;
+SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), (a), (b), ()) ORDER BY b, a LIMIT 1;
 
 set hive.optimize.topnkey=false;
-SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), ()) ORDER BY a DESC, b ASC LIMIT 7;
+SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), (a), (b), ()) ORDER BY b, a LIMIT 1;
 
 set hive.optimize.topnkey=true;
 EXPLAIN
-SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((), (a,b)) ORDER BY a DESC, b ASC LIMIT 7;
-SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((), (a,b)) ORDER BY a DESC, b ASC LIMIT 7;
+SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a), (b)) ORDER BY b, a LIMIT 7;
+SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a), (b)) ORDER BY b, a LIMIT 7;
 
 set hive.optimize.topnkey=false;
-SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((), (a,b)) ORDER BY a DESC, b ASC LIMIT 7;
+SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a), (b)) ORDER BY b, a LIMIT 7;
+>>>>>>> apache/master
+
+set hive.optimize.topnkey=true;
+EXPLAIN
+SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), (a)) ORDER BY a DESC, b ASC LIMIT 7;
+SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), (a)) ORDER BY a DESC, b ASC LIMIT 7;
+
+set hive.optimize.topnkey=false;
+SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), (a)) ORDER BY a DESC, b ASC LIMIT 7;
+
+set hive.optimize.topnkey=true;
+EXPLAIN
+SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), (b)) ORDER BY a DESC, b ASC LIMIT 7;
+SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), (b)) ORDER BY a DESC, b ASC LIMIT 7;
+
+set hive.optimize.topnkey=false;
+SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), (b)) ORDER BY a DESC, b ASC LIMIT 7;
+
+set hive.optimize.topnkey=true;
+EXPLAIN
+SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), ()) ORDER BY a DESC, b ASC LIMIT 7;
+SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), ()) ORDER BY a DESC, b ASC LIMIT 7;
+
+set hive.optimize.topnkey=false;
+SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a, b), ()) ORDER BY a DESC, b ASC LIMIT 7;
+
+set hive.optimize.topnkey=true;
+EXPLAIN
+SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((), (a, b)) ORDER BY a DESC, b ASC LIMIT 7;
+SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((), (a, b)) ORDER BY a DESC, b ASC LIMIT 7;
+
+set hive.optimize.topnkey=false;
+SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((), (a, b)) ORDER BY a DESC, b ASC LIMIT 7;
 
 
 set hive.optimize.topnkey=true;

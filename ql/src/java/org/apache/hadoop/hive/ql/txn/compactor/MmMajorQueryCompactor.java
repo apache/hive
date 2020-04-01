@@ -22,7 +22,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -52,7 +51,7 @@ final class MmMajorQueryCompactor extends QueryCompactor {
     AcidUtils.Directory dir = AcidUtils
         .getAcidState(null, new Path(storageDescriptor.getLocation()), hiveConf, writeIds, Ref.from(false), false,
             table.getParameters(), false);
-    MmQueryCompactorUtils.removeFilesForMmTable(hiveConf, dir);
+    QueryCompactor.Util.removeFilesForMmTable(hiveConf, dir);
 
     String tmpLocation = Util.generateTmpPath(storageDescriptor);
     Path baseLocation = new Path(tmpLocation, "_base");
@@ -106,42 +105,36 @@ final class MmMajorQueryCompactor extends QueryCompactor {
 
   private List<String> getCreateQueries(String tmpTableName, Table table,
       StorageDescriptor storageDescriptor, String baseLocation) {
-    return Lists.newArrayList(MmQueryCompactorUtils
-        .getCreateQuery(tmpTableName, table, storageDescriptor, baseLocation, false, false));
+    return Lists.newArrayList(
+        new CompactionQueryBuilder(
+            CompactionQueryBuilder.CompactionType.MAJOR_INSERT_ONLY,
+            CompactionQueryBuilder.Operation.CREATE,
+            tmpTableName)
+            .setSourceTab(table)
+            .setStorageDescriptor(storageDescriptor)
+            .setLocation(baseLocation)
+            .build()
+    );
   }
 
   private List<String> getCompactionQueries(Table t, Partition p, String tmpName) {
-    String fullName = t.getDbName() + "." + t.getTableName();
-    // ideally we should make a special form of insert overwrite so that we:
-    // 1) Could use fast merge path for ORC and RC.
-    // 2) Didn't have to create a table.
-
-    StringBuilder query = new StringBuilder("insert overwrite table " + tmpName + " ");
-    StringBuilder filter = new StringBuilder();
-    if (p != null) {
-      filter = new StringBuilder(" where ");
-      List<String> vals = p.getValues();
-      List<FieldSchema> keys = t.getPartitionKeys();
-      assert keys.size() == vals.size();
-      for (int i = 0; i < keys.size(); ++i) {
-        filter.append(i == 0 ? "`" : " and `").append(keys.get(i).getName()).append("`='").append(vals.get(i))
-            .append("'");
-      }
-      query.append(" select ");
-      // Use table descriptor for columns.
-      List<FieldSchema> cols = t.getSd().getCols();
-      for (int i = 0; i < cols.size(); ++i) {
-        query.append(i == 0 ? "`" : ", `").append(cols.get(i).getName()).append("`");
-      }
-    } else {
-      query.append("select *");
-    }
-    query.append(" from ").append(fullName).append(filter);
-    return Lists.newArrayList(query.toString());
+    return Lists.newArrayList(
+        new CompactionQueryBuilder(
+            CompactionQueryBuilder.CompactionType.MAJOR_INSERT_ONLY,
+            CompactionQueryBuilder.Operation.INSERT,
+            tmpName)
+            .setSourceTab(t)
+            .setFromTableName(t.getTableName())
+            .setSourcePartition(p)
+            .build()
+    );
   }
 
   private List<String> getDropQueries(String tmpTableName) {
-    return Lists.newArrayList(MmQueryCompactorUtils.DROP_IF_EXISTS + tmpTableName);
+    return Lists.newArrayList(
+        new CompactionQueryBuilder(
+            CompactionQueryBuilder.CompactionType.MAJOR_INSERT_ONLY,
+            CompactionQueryBuilder.Operation.DROP,
+            tmpTableName).build());
   }
-
 }

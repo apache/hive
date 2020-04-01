@@ -311,7 +311,7 @@ public class LlapServiceDriver {
 
     rc = runPackagePy(tmpDir, scriptParent, version, outputDir);
     if (rc == 0) {
-      String tarballName = "llap-" + version + ".tar.gz";
+      String tarballName = cl.getName() + "-" + version + ".tar.gz";
       startCluster(conf, cl.getName(), tarballName, packageDir, conf.getVar(ConfVars.LLAP_DAEMON_QUEUE_NAME));
     }
     return rc;

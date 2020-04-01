@@ -259,12 +259,12 @@ val_11
 val_111
 val_113
 val_114
-PREHOOK: query: select key from v_n10 sort by key limit 10
+PREHOOK: query: select key from v_n10 cluster by key limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_autho_test_n9
 PREHOOK: Input: default@v_n10
 #### A masked pattern was here ####
-POSTHOOK: query: select key from v_n10 sort by key limit 10
+POSTHOOK: query: select key from v_n10 cluster by key limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_autho_test_n9
 POSTHOOK: Input: default@v_n10

@@ -678,7 +678,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     } catch (HiveException e) {
       throw e;
     } catch (Exception e) {
-      e.printStackTrace();
       throw new HiveException(e);
     }
   }
@@ -797,7 +796,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         autoDelete = fs.deleteOnExit(fsp.outPaths[0]);
       }
     } catch (Exception e) {
-      e.printStackTrace();
       throw new HiveException(e);
     }
 

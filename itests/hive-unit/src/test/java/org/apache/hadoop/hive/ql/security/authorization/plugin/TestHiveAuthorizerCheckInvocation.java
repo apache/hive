@@ -98,6 +98,7 @@ public class TestHiveAuthorizerCheckInvocation {
     conf.setBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);
     conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, true);
     conf.setVar(ConfVars.HIVE_TXN_MANAGER, DbTxnManager.class.getName());
+    conf.setBoolVar(ConfVars.HIVE_QUERY_RESULTS_CACHE_ENABLED, true);
     conf.setVar(HiveConf.ConfVars.HIVEMAPREDMODE, "nonstrict");
 
     SessionState.start(conf);
@@ -158,6 +159,19 @@ public class TestHiveAuthorizerCheckInvocation {
     assertEquals("no of columns used", 3, tableObj.getColumns().size());
     assertEquals("Columns used", Arrays.asList("city", "i", "k"),
         getSortedList(tableObj.getColumns()));
+  }
+
+  @Test
+  public void testQueryCacheIgnored() throws Exception {
+
+    reset(mockedAuthorizer);
+    int status = driver.compile("select i from " + acidTableName
+        + " where i > 0 ", true);
+    assertEquals(0, status);
+    List<HivePrivilegeObject> outputs = getHivePrivilegeObjectInputs().getRight();
+    List<HivePrivilegeObject> inputs = getHivePrivilegeObjectInputs().getLeft();
+    assertEquals("No outputs for a select", 0, outputs.size());
+    assertEquals("One input for this select", 1, inputs.size());
   }
 
   @Test

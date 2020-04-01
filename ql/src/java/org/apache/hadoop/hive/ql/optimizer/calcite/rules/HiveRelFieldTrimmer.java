@@ -31,6 +31,9 @@ import org.apache.calcite.adapter.druid.DruidQuery;
 import org.apache.calcite.linq4j.Ord;
 import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.plan.RelOptUtil;
+import org.apache.calcite.rel.RelCollation;
+import org.apache.calcite.rel.RelDistribution;
+import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.AggregateCall;
@@ -67,6 +70,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveMultiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortExchange;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableFunctionScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.parse.ColumnAccessInfo;
@@ -876,5 +880,49 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
       // LOG it but do not fail
       LOG.warn("Error initializing field trimmer instance", t);
     }
+  }
+
+  public TrimResult trimFields(
+          HiveSortExchange exchange,
+          ImmutableBitSet fieldsUsed,
+          Set<RelDataTypeField> extraFields) {
+    final RelDataType rowType = exchange.getRowType();
+    final int fieldCount = rowType.getFieldCount();
+    final RelCollation collation = exchange.getCollation();
+    final RelDistribution distribution = exchange.getDistribution();
+    final RelNode input = exchange.getInput();
+
+    // We use the fields used by the consumer, plus any fields used as exchange
+    // keys.
+    final ImmutableBitSet.Builder inputFieldsUsed = fieldsUsed.rebuild();
+    for (RelFieldCollation field : collation.getFieldCollations()) {
+      inputFieldsUsed.set(field.getFieldIndex());
+    }
+    for (int keyIndex : distribution.getKeys()) {
+      inputFieldsUsed.set(keyIndex);
+    }
+
+    // Create input with trimmed columns.
+    final Set<RelDataTypeField> inputExtraFields = Collections.emptySet();
+    TrimResult trimResult =
+            trimChild(exchange, input, inputFieldsUsed.build(), inputExtraFields);
+    RelNode newInput = trimResult.left;
+    final Mapping inputMapping = trimResult.right;
+
+    // If the input is unchanged, and we need to project all columns,
+    // there's nothing we can do.
+    if (newInput == input
+            && inputMapping.isIdentity()
+            && fieldsUsed.cardinality() == fieldCount) {
+      return result(exchange, Mappings.createIdentity(fieldCount));
+    }
+
+    final RelBuilder relBuilder = REL_BUILDER.get();
+    relBuilder.push(newInput);
+    RelCollation newCollation = RexUtil.apply(inputMapping, collation);
+    RelDistribution newDistribution = distribution.apply(inputMapping);
+    relBuilder.sortExchange(newDistribution, newCollation);
+
+    return result(relBuilder.build(), inputMapping);
   }
 }
