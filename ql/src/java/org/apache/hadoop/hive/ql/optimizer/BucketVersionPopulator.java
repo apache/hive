@@ -61,7 +61,17 @@ public class BucketVersionPopulator extends Transform {
       if (bucketingVersion == r.bucketingVersion || r.bucketingVersion == -1) {
         return new BucketingVersionResult(bucketingVersion);
       }
+      if (bucketingVersion == -1) {
+        return new BucketingVersionResult(r.bucketingVersion);
+      }
       throw new SemanticException("invalid state; can't set bucketingVersion correctly");
+    }
+
+    public BucketingVersionResult merge2(BucketingVersionResult r) {
+      if (bucketingVersion == r.bucketingVersion || r.bucketingVersion == -1) {
+        return new BucketingVersionResult(bucketingVersion);
+      }
+      return new BucketingVersionResult(2);
     }
   }
 
@@ -98,6 +108,7 @@ public class BucketVersionPopulator extends Transform {
 
     Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
     opRules.put(new RuleRegExp("TS", TableScanOperator.getOperatorName() + "%"), new TSRule());
+    opRules.put(new RuleRegExp("RS", ReduceSinkOperator.getOperatorName() + "%"), new RSRule2());
 
     SemanticDispatcher disp = new DefaultRuleDispatcher(new SetPreferredBucketingVersionRule(), opRules, ctx);
     SemanticGraphWalker ogw = new PreOrderWalker(disp);
@@ -178,15 +189,37 @@ public class BucketVersionPopulator extends Transform {
         throws SemanticException {
       Operator o = (Operator) nd;
       List parents = o.getParentOperators();
-      BucketingVersionResult ret = new BucketingVersionResult(-1);
+      BucketingVersionResult ret = new BucketingVersionResult(o.getConf().getBucketingVersion());
+      if (ret.bucketingVersion == -1) {
+        for (Object object : parents) {
+          Operator p = (Operator) object;
+          ret = ret.merge(new BucketingVersionResult(p.getConf().getBucketingVersion()));
+          //        procCtx.BucketingVersionResult r = res;
+          //        res = res.merge(r);
+        }
+      }
+      o.getConf().setBucketingVersion(ret.bucketingVersion);
+      return ret;
+    }
+
+  }
+
+  static class RSRule2 implements SemanticNodeProcessor {
+
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
+        throws SemanticException {
+      Operator o = (Operator) nd;
+      List parents = o.getParentOperators();
+      BucketingVersionResult ret = new BucketingVersionResult(o.getConf().getBucketingVersion());
       for (Object object : parents) {
+        Operator p = (Operator) object;
+        ret = ret.merge2(new BucketingVersionResult(p.getConf().getBucketingVersion()));
         //        procCtx.BucketingVersionResult r = res;
         //        res = res.merge(r);
       }
-      TableScanOperator tso = (TableScanOperator) nd;
-      Integer version = tso.getConf().getTableMetadata().getBucketingVersion();
-      tso.getConf().setBucketingVersion(version);
-      return new BucketingVersionResult(version);
+      o.getConf().setBucketingVersion(ret.bucketingVersion);
+      return ret;
     }
 
   }
