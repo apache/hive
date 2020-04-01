@@ -4191,7 +4191,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       prefix.append("update TXNS set txn_state = " + quoteChar(TXN_ABORTED) +
         " where txn_state = " + quoteChar(TXN_OPEN) + " and ");
       if(checkHeartbeat) {
-        suffix.append(" AND \"TXN_LAST_HEARTBEAT\" < ").append(getDbEpochString()).append("-").append(timeout);
+        suffix.append(" AND txn_last_heartbeat < ").append(getDbEpochString()).append("-").append(timeout);
       }
 
       TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, txnids, "txn_id", true, false);
