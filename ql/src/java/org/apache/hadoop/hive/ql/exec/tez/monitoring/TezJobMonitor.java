@@ -112,9 +112,11 @@ public class TezJobMonitor {
   private final Context context;
   private long executionStartTime = 0;
   private final RenderStrategy.UpdateFunction updateFunction;
+  // compile time tez counters
+  private final TezCounters counters;
 
   public TezJobMonitor(List<BaseWork> topSortedWorks, final DAGClient dagClient, HiveConf conf, DAG dag,
-                       Context ctx) {
+    Context ctx, final TezCounters counters) {
     this.topSortedWorks = topSortedWorks;
     this.dagClient = dagClient;
     this.hiveConf = conf;
@@ -122,6 +124,7 @@ public class TezJobMonitor {
     this.context = ctx;
     console = SessionState.getConsole();
     updateFunction = updateFunction();
+    this.counters = counters;
   }
 
   private RenderStrategy.UpdateFunction updateFunction() {
@@ -185,6 +188,12 @@ public class TezJobMonitor {
         if (wmContext != null) {
           Set<String> desiredCounters = wmContext.getSubscribedCounters();
           TezCounters dagCounters = status.getDAGCounters();
+          // if initial counters exists, merge it with dag counters to get aggregated view
+          if (dagCounters != null && counters != null) {
+            for (String counterGroup : counters.getGroupNames()) {
+              dagCounters.addGroup(counters.getGroup(counterGroup));
+            }
+          }
           if (dagCounters != null && desiredCounters != null && !desiredCounters.isEmpty()) {
             Map<String, Long> currentCounters = getCounterValues(dagCounters, vertexNames, vertexProgressMap,
               desiredCounters, done);
