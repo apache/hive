@@ -24,6 +24,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -40,6 +41,7 @@ import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
@@ -668,5 +670,31 @@ public class TestPartitionManagement {
       this.colName = colName;
       this.colType = colType;
     }
+  }
+
+
+  @Test
+  public void testPartitionExpressionFilter(){
+    String dbName = "db_repl1";
+    String tableName = "tbl_repl1";
+    Map<String, Column> colMap = buildAllColumns();
+    List<String> partKeys = Lists.newArrayList("state", "dt");
+    List<String> partKeyTypes = Lists.newArrayList("string", "date");
+    List<List<String>> partVals = Lists.newArrayList(
+        Lists.newArrayList("__HIVE_DEFAULT_PARTITION__", "1990-01-01"),
+        Lists.newArrayList("CA", "1986-04-28"),
+        Lists.newArrayList("MN", "2018-11-31"));
+    Map<String, String> spec = new HashMap<>();
+    spec.put("Year", "2020");
+    spec.put("Month", "1");
+    byte[] expr;
+    try {
+      String pe = Msck.makePartExpr(spec);
+      expr = pe.getBytes(StandardCharsets.UTF_8);
+    }catch (MetaException me){
+
+    }
+    
+
   }
 }

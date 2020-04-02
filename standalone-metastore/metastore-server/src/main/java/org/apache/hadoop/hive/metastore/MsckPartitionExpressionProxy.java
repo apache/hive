@@ -26,6 +26,7 @@ import java.util.Set;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
@@ -53,15 +54,17 @@ public class MsckPartitionExpressionProxy implements PartitionExpressionProxy {
   public boolean filterPartitionsByExpr(List<FieldSchema> partColumns, byte[] expr, String
     defaultPartitionName, List<String> partitionNames) throws MetaException {
     String partExpr = new String(expr, StandardCharsets.UTF_8);
-    LOG.debug(StringUtils.format("Partition expr: %s", expr));
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Partition expr: {}", expr);
+    }
     //This is to find in partitionNames all that match expr
     //reverse of the Msck.makePartExpr
     Set<String> partValueSet = new HashSet<>();
     String[] parts = partExpr.split(" AND ");
     for ( String part : parts){
       String[] colAndValue = part.split("=");
-      String key = colAndValue[0];
-      String value = colAndValue[1].replace("'", "");
+      String key = FileUtils.unescapePathName(colAndValue[0]);
+      String value = FileUtils.unescapePathName(colAndValue[1].substring(1, colAndValue[1].length()));
       partValueSet.add(key+"="+value);
     }
 
@@ -69,6 +72,9 @@ public class MsckPartitionExpressionProxy implements PartitionExpressionProxy {
     for (String partition : partitionNames){
       boolean isMatch = true;
       for ( String col : partValueSet){
+        //list of partitions [year=2001/month=1, year=2002/month=2, year=2001/month=3]
+        //Given expr: e.g. year='2001' AND month='1'. Only when all the expressions in the expr can be found,
+        //do we add the partition to the filtered result [year=2001/month=1]
         if (partition.indexOf(col) == -1){
           isMatch = false;
           break;
@@ -80,9 +86,11 @@ public class MsckPartitionExpressionProxy implements PartitionExpressionProxy {
     }
     partitionNames.clear();
     partitionNames.addAll(partNamesSeq);
-    LOG.info(StringUtils.format("The returned partition list is of size: %d", partitionNames.size()));
+    LOG.info("The returned partition list is of size: {}", partitionNames.size());
     for(String s : partitionNames){
-      LOG.debug("Matched partition: %s", s);
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Matched partition: {}", s);
+      }
     }
     return false;
   }
