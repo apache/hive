@@ -44,6 +44,4 @@ public interface OperatorDesc extends Serializable, Cloneable {
   public void setBucketingVersion(int bucketingVersion);
 
   public int getBucketingVersion();
-
-  public void setName1(String identifier);
 }

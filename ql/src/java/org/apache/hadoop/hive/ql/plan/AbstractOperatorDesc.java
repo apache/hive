@@ -183,15 +183,4 @@ public abstract class AbstractOperatorDesc implements OperatorDesc {
   public void setBucketingVersion(int bucketingVersion) {
     this.bucketingVersion = bucketingVersion;
   }
-
-  @Override
-  public final void setName1(String identifier) {
-    myName = identifier;
-
-  }
-  @Explain(displayName = "operatorName", explainLevels = { Level.EXTENDED })
-  public final String getIdentifierForXfv() {
-    return myName;
-  }
-
 }
