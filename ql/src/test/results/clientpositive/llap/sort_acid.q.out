@@ -59,6 +59,21 @@ POSTHOOK: Input: default@acidtlb
 #### A masked pattern was here ####
 10	6	200
 30	6	500
+PREHOOK: query: explain cbo
+update acidtlb set b=777
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acidtlb
+PREHOOK: Output: default@acidtlb
+POSTHOOK: query: explain cbo
+update acidtlb set b=777
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acidtlb
+POSTHOOK: Output: default@acidtlb
+CBO PLAN:
+HiveSortExchange(distribution=[any], collation=[[0]])
+  HiveProject(row__id=[$4], a=[$0], _o__c2=[777])
+    HiveTableScan(table=[[default, acidtlb]], table:alias=[acidtlb])
+
 PREHOOK: query: update acidtlb set b=777
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acidtlb
@@ -77,6 +92,32 @@ POSTHOOK: Input: default@acidtlb
 #### A masked pattern was here ####
 10	777
 30	777
+Warning: Shuffle Join MERGEJOIN[23][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: explain cbo
+update acidtlb set b=350
+where a in (select a from acidtlb where a = 30)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acidtlb
+PREHOOK: Output: default@acidtlb
+POSTHOOK: query: explain cbo
+update acidtlb set b=350
+where a in (select a from acidtlb where a = 30)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acidtlb
+POSTHOOK: Output: default@acidtlb
+CBO PLAN:
+HiveSortExchange(distribution=[any], collation=[[0]])
+  HiveProject(row__id=[$0], a=[CAST(30):INTEGER], _o__c2=[350])
+    HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveProject(ROW__ID=[$4])
+        HiveFilter(condition=[=($0, 30)])
+          HiveTableScan(table=[[default, acidtlb]], table:alias=[acidtlb])
+      HiveProject($f0=[$0])
+        HiveAggregate(group=[{0}])
+          HiveProject($f0=[true])
+            HiveFilter(condition=[=($0, 30)])
+              HiveTableScan(table=[[default, acidtlb]], table:alias=[acidtlb])
+
 Warning: Shuffle Join MERGEJOIN[23][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: update acidtlb set b=350
 where a in (select a from acidtlb where a = 30)
@@ -98,6 +139,31 @@ POSTHOOK: Input: default@acidtlb
 #### A masked pattern was here ####
 10	777
 30	350
+PREHOOK: query: explain cbo
+update acidtlb set b=450
+where a in (select c from othertlb where c < 65)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acidtlb
+PREHOOK: Input: default@othertlb
+PREHOOK: Output: default@acidtlb
+POSTHOOK: query: explain cbo
+update acidtlb set b=450
+where a in (select c from othertlb where c < 65)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acidtlb
+POSTHOOK: Input: default@othertlb
+POSTHOOK: Output: default@acidtlb
+CBO PLAN:
+HiveSortExchange(distribution=[any], collation=[[0]])
+  HiveProject(row__id=[$1], a=[$0], _o__c2=[450])
+    HiveSemiJoin(condition=[=($0, $2)], joinType=[semi])
+      HiveProject(a=[$0], ROW__ID=[$4])
+        HiveFilter(condition=[<($0, 65)])
+          HiveTableScan(table=[[default, acidtlb]], table:alias=[acidtlb])
+      HiveProject(c=[$0])
+        HiveFilter(condition=[<($0, 65)])
+          HiveTableScan(table=[[default, othertlb]], table:alias=[othertlb])
+
 PREHOOK: query: update acidtlb set b=450
 where a in (select c from othertlb where c < 65)
 PREHOOK: type: QUERY
@@ -120,6 +186,42 @@ POSTHOOK: Input: default@acidtlb
 #### A masked pattern was here ####
 10	450
 30	450
+PREHOOK: query: explain cbo
+delete from acidtlb
+where a in (
+    select a from acidtlb a
+             join othertlb o on a.a = o.c
+             where o.d = 21)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acidtlb
+PREHOOK: Input: default@othertlb
+PREHOOK: Output: default@acidtlb
+POSTHOOK: query: explain cbo
+delete from acidtlb
+where a in (
+    select a from acidtlb a
+             join othertlb o on a.a = o.c
+             where o.d = 21)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acidtlb
+POSTHOOK: Input: default@othertlb
+POSTHOOK: Output: default@acidtlb
+CBO PLAN:
+HiveSortExchange(distribution=[any], collation=[[0]])
+  HiveProject(ROW__ID=[$1])
+    HiveSemiJoin(condition=[=($0, $2)], joinType=[semi])
+      HiveProject(a=[$0], ROW__ID=[$4])
+        HiveFilter(condition=[IS NOT NULL($0)])
+          HiveTableScan(table=[[default, acidtlb]], table:alias=[acidtlb])
+      HiveProject(a=[$0])
+        HiveJoin(condition=[=($0, $1)], joinType=[inner], algorithm=[none], cost=[not available])
+          HiveProject(a=[$0])
+            HiveFilter(condition=[IS NOT NULL($0)])
+              HiveTableScan(table=[[default, acidtlb]], table:alias=[a])
+          HiveProject(c=[$0])
+            HiveFilter(condition=[AND(=($1, 21), IS NOT NULL($0))])
+              HiveTableScan(table=[[default, othertlb]], table:alias=[o])
+
 PREHOOK: query: delete from acidtlb
 where a in (
     select a from acidtlb a
