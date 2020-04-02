@@ -98,7 +98,6 @@ final class MajorQueryCompactor extends QueryCompactor {
             CompactionQueryBuilder.CompactionType.MAJOR_CRUD,
             CompactionQueryBuilder.Operation.INSERT,
             tmpName)
-            .setFromTableName(t.getTableName())
             .setSourceTab(t)
             .setSourcePartition(p)
         .build());

@@ -124,7 +124,6 @@ final class MmMajorQueryCompactor extends QueryCompactor {
             CompactionQueryBuilder.Operation.INSERT,
             tmpName)
             .setSourceTab(t)
-            .setFromTableName(t.getTableName())
             .setSourcePartition(p)
             .build()
     );
