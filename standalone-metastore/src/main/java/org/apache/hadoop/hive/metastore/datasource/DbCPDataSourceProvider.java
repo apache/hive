@@ -71,6 +71,7 @@ public class DbCPDataSourceProvider implements DataSourceProvider {
     DatabaseProduct dbProduct =  determineDatabaseProduct(driverUrl);
     switch (dbProduct){
       case MYSQL:
+        dbcpDs.setConnectionProperties("allowMultiQueries=true");
         dbcpDs.setConnectionProperties("rewriteBatchedStatements=true");
         break;
       case POSTGRES:
