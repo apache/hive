@@ -44,8 +44,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.DataOutputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.FileNotFoundException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -80,6 +82,56 @@ public class Utils {
       throw new SemanticException(e);
     } finally {
       IOUtils.closeStream(outStream);
+    }
+  }
+
+  public static void write(Object listValues, Path outputFile, HiveConf hiveConf)
+          throws SemanticException {
+    Retry<Void> retriable = new Retry<Void>(IOException.class) {
+      @Override
+      public Void execute() throws IOException {
+        ObjectOutputStream outStream = null;
+        try {
+          FileSystem fs = outputFile.getFileSystem(hiveConf);
+          outStream = new ObjectOutputStream(fs.create(outputFile));
+          outStream.writeObject(listValues);
+          return null;
+        } finally {
+          IOUtils.closeStream(outStream);
+        }
+      }
+    };
+    try {
+      retriable.run();
+    } catch (Exception e) {
+      throw new SemanticException(e);
+    }
+  }
+
+  public static boolean exists(Path path, HiveConf conf) throws IOException {
+    FileSystem fs = path.getFileSystem(conf);
+    return fs.exists(path);
+  }
+
+  public static Object read(Path file, HiveConf hiveConf)
+          throws SemanticException {
+    Retry<Object> retriable = new Retry<Object>(Exception.class) {
+      @Override
+      public Object execute() throws Exception {
+        ObjectInputStream inputStream = null;
+        try {
+          FileSystem fs = file.getFileSystem(hiveConf);
+          inputStream = new ObjectInputStream(fs.open(file));
+          return inputStream.readObject();
+        } finally {
+          IOUtils.closeStream(inputStream);
+        }
+      }
+    };
+    try {
+      return retriable.run();
+    } catch (Exception e) {
+      throw new SemanticException(e);
     }
   }
 

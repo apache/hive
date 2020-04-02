@@ -24,7 +24,7 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 
 import javax.annotation.Nullable;
-import java.text.Collator;
+import java.io.Serializable;
 import java.util.Map;
 
 /**
@@ -35,8 +35,8 @@ import java.util.Map;
  * Typically, this corresponds to the replicationClause definition
  * in the parser.
  */
-public class ReplicationSpec {
-
+public class ReplicationSpec implements Serializable {
+  private static final long serialVersionUID = 1L;
   private boolean isInReplicationScope = false; // default is that it's not in a repl scope
   private boolean isMetadataOnly = false; // default is full export/import, not metadata-only
   private String eventId = null;

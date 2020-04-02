@@ -169,7 +169,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
 
   private Path getCurrentDumpPath(Path dumpRoot) throws IOException {
     Path previousDumpPath = getPreviousDumpPath(dumpRoot);
-    if (previousDumpPath != null && !validDump(previousDumpPath)) {
+    if (previousDumpPath != null && !validDump(previousDumpPath) && shouldResumePreviousDump(previousDumpPath)) {
       //Resume previous dump
       return previousDumpPath;
     } else {
@@ -627,90 +627,123 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     List<String> tableList;
 
     LOG.info("Bootstrap Dump for db {}", work.dbNameOrPattern);
-    long timeoutInMs = HiveConf.getTimeVar(conf,
-            HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_OPEN_TXN_TIMEOUT, TimeUnit.MILLISECONDS);
-    long waitUntilTime = System.currentTimeMillis() + timeoutInMs;
-
-    String validTxnList = getValidTxnListForReplDump(hiveDb, waitUntilTime);
     List<DirCopyWork> extTableCopyWorks = new ArrayList<>();
     List<ManagedTableCopyPath> managedTableCopyPaths = new ArrayList<>();
-    for (String dbName : Utils.matchesDb(hiveDb, work.dbNameOrPattern)) {
-      LOG.debug("Dumping db: " + dbName);
-
-      // TODO : Currently we don't support separate table list for each database.
-      tableList = work.replScope.includeAllTables() ? null : new ArrayList<>();
-      Database db = hiveDb.getDatabase(dbName);
-      if ((db != null) && (ReplUtils.isFirstIncPending(db.getParameters()))) {
-        // For replicated (target) database, until after first successful incremental load, the database will not be
-        // in a consistent state. Avoid allowing replicating this database to a new target.
-        throw new HiveException("Replication dump not allowed for replicated database" +
-                " with first incremental dump pending : " + dbName);
+    if (shouldResumePreviousDump(dmd)) {
+      if (Utils.exists(new Path(dumpRoot, EximUtil.EXTERNAL_TABLE_LIST_FILE_NAME), conf)) {
+        extTableCopyWorks = (List<DirCopyWork>) Utils.read(new Path(dumpRoot, EximUtil.EXTERNAL_TABLE_LIST_FILE_NAME),
+                conf);
       }
-      replLogger = new BootstrapDumpLogger(dbName, dumpRoot.toString(),
-              Utils.getAllTables(hiveDb, dbName, work.replScope).size(),
-              hiveDb.getAllFunctions().size());
-      replLogger.startLog();
-      Path dbRoot = dumpDbMetadata(dbName, dumpRoot, bootDumpBeginReplId, hiveDb);
-      dumpFunctionMetadata(dbName, dumpRoot, hiveDb);
+      if (Utils.exists(new Path(dumpRoot, EximUtil.MANAGED_TABLE_LIST_FILE_NAME), conf)) {
+        managedTableCopyPaths = (List<ManagedTableCopyPath>) Utils.read(new Path(dumpRoot,
+                EximUtil.MANAGED_TABLE_LIST_FILE_NAME), conf);
+      }
+    } else {
+      long timeoutInMs = HiveConf.getTimeVar(conf,
+              HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_OPEN_TXN_TIMEOUT, TimeUnit.MILLISECONDS);
+      long waitUntilTime = System.currentTimeMillis() + timeoutInMs;
 
-      String uniqueKey = Utils.setDbBootstrapDumpState(hiveDb, dbName);
-      Exception caught = null;
-      try (Writer writer = new Writer(dbRoot, conf)) {
-        List<Path> extTableLocations = new LinkedList<>();
-        for (String tblName : Utils.matchesTbl(hiveDb, dbName, work.replScope)) {
-          LOG.debug("Dumping table: " + tblName + " to db root " + dbRoot.toUri());
-          Table table = null;
+      String validTxnList = getValidTxnListForReplDump(hiveDb, waitUntilTime);
+      for (String dbName : Utils.matchesDb(hiveDb, work.dbNameOrPattern)) {
+        LOG.debug("Dumping db: " + dbName);
 
-          try {
-            HiveWrapper.Tuple<Table> tableTuple = new HiveWrapper(hiveDb, dbName).table(tblName, conf);
-            table = tableTuple != null ? tableTuple.object : null;
-            if (shouldDumpExternalTableLocation()
-                    && TableType.EXTERNAL_TABLE.equals(tableTuple.object.getTableType())) {
-              LOG.debug("Adding table {} to external tables list", tblName);
-              extTableLocations.addAll(writer.dataLocationDump(tableTuple.object));
-            }
-            managedTableCopyPaths.addAll(dumpTable(dbName, tblName, validTxnList, dbRoot, dumpRoot, bootDumpBeginReplId,
-                    hiveDb, tableTuple));
-          } catch (InvalidTableException te) {
-            // Bootstrap dump shouldn't fail if the table is dropped/renamed while dumping it.
-            // Just log a debug message and skip it.
-            LOG.debug(te.getMessage());
-          }
-          dumpConstraintMetadata(dbName, tblName, dbRoot, hiveDb);
-          if (tableList != null && isTableSatifiesConfig(table)) {
-            tableList.add(tblName);
-          }
+        // TODO : Currently we don't support separate table list for each database.
+        tableList = work.replScope.includeAllTables() ? null : new ArrayList<>();
+        Database db = hiveDb.getDatabase(dbName);
+        if ((db != null) && (ReplUtils.isFirstIncPending(db.getParameters()))) {
+          // For replicated (target) database, until after first successful incremental load, the database will not be
+          // in a consistent state. Avoid allowing replicating this database to a new target.
+          throw new HiveException("Replication dump not allowed for replicated database" +
+                  " with first incremental dump pending : " + dbName);
         }
-        dumpTableListToDumpLocation(tableList, dumpRoot, dbName, conf);
-        extTableCopyWorks = dirLocationsToCopy(extTableLocations);
-      } catch (Exception e) {
-        caught = e;
-      } finally {
-        try {
-          Utils.resetDbBootstrapDumpState(hiveDb, dbName, uniqueKey);
+        replLogger = new BootstrapDumpLogger(dbName, dumpRoot.toString(),
+                Utils.getAllTables(hiveDb, dbName, work.replScope).size(),
+                hiveDb.getAllFunctions().size());
+        replLogger.startLog();
+        Path dbRoot = dumpDbMetadata(dbName, dumpRoot, bootDumpBeginReplId, hiveDb);
+        dumpFunctionMetadata(dbName, dumpRoot, hiveDb);
+
+        String uniqueKey = Utils.setDbBootstrapDumpState(hiveDb, dbName);
+        Exception caught = null;
+        try (Writer writer = new Writer(dbRoot, conf)) {
+          List<Path> extTableLocations = new LinkedList<>();
+          for (String tblName : Utils.matchesTbl(hiveDb, dbName, work.replScope)) {
+            LOG.debug("Dumping table: " + tblName + " to db root " + dbRoot.toUri());
+            Table table = null;
+
+            try {
+              HiveWrapper.Tuple<Table> tableTuple = new HiveWrapper(hiveDb, dbName).table(tblName, conf);
+              table = tableTuple != null ? tableTuple.object : null;
+              if (shouldDumpExternalTableLocation()
+                      && TableType.EXTERNAL_TABLE.equals(tableTuple.object.getTableType())) {
+                LOG.debug("Adding table {} to external tables list", tblName);
+                extTableLocations.addAll(writer.dataLocationDump(tableTuple.object));
+              }
+              managedTableCopyPaths.addAll(dumpTable(dbName, tblName, validTxnList, dbRoot, dumpRoot,
+                      bootDumpBeginReplId,
+                      hiveDb, tableTuple));
+            } catch (InvalidTableException te) {
+              // Bootstrap dump shouldn't fail if the table is dropped/renamed while dumping it.
+              // Just log a debug message and skip it.
+              LOG.debug(te.getMessage());
+            }
+            dumpConstraintMetadata(dbName, tblName, dbRoot, hiveDb);
+            if (tableList != null && isTableSatifiesConfig(table)) {
+              tableList.add(tblName);
+            }
+          }
+          dumpTableListToDumpLocation(tableList, dumpRoot, dbName, conf);
+          extTableCopyWorks = dirLocationsToCopy(extTableLocations);
         } catch (Exception e) {
-          if (caught == null) {
-            throw e;
-          } else {
-            LOG.error("failed to reset the db state for " + uniqueKey
-                + " on failure of repl dump", e);
+          caught = e;
+        } finally {
+          try {
+            Utils.resetDbBootstrapDumpState(hiveDb, dbName, uniqueKey);
+          } catch (Exception e) {
+            if (caught == null) {
+              throw e;
+            } else {
+              LOG.error("failed to reset the db state for " + uniqueKey
+                      + " on failure of repl dump", e);
+              throw caught;
+            }
+          }
+          if (caught != null) {
             throw caught;
           }
         }
-        if(caught != null) {
-          throw caught;
-        }
+        replLogger.endLog(bootDumpBeginReplId.toString());
       }
-      replLogger.endLog(bootDumpBeginReplId.toString());
+      //Dump the managed and external table lists in a file to resume the dump from there in case copy data fails
+      if (!extTableCopyWorks.isEmpty()) {
+        Utils.write(extTableCopyWorks, new Path(dumpRoot, EximUtil.EXTERNAL_TABLE_LIST_FILE_NAME), conf);
+      }
+      if (!managedTableCopyPaths.isEmpty()) {
+        Utils.write(managedTableCopyPaths, new Path(dumpRoot, EximUtil.MANAGED_TABLE_LIST_FILE_NAME), conf);
+      }
+      Long bootDumpEndReplId = currentNotificationId(hiveDb);
+      LOG.info("Preparing to return {},{}->{}",
+              dumpRoot.toUri(), bootDumpBeginReplId, bootDumpEndReplId);
+      dmd.setDump(DumpType.BOOTSTRAP, bootDumpBeginReplId, bootDumpEndReplId, cmRoot);
+      dmd.write();
     }
-    Long bootDumpEndReplId = currentNotificationId(hiveDb);
-    LOG.info("Preparing to return {},{}->{}",
-        dumpRoot.toUri(), bootDumpBeginReplId, bootDumpEndReplId);
-    dmd.setDump(DumpType.BOOTSTRAP, bootDumpBeginReplId, bootDumpEndReplId, cmRoot);
-    dmd.write();
     work.setDirCopyIterator(extTableCopyWorks.iterator());
     work.setManagedTableCopyPathIterator(managedTableCopyPaths.iterator());
     return bootDumpBeginReplId;
+  }
+
+  private boolean shouldResumePreviousDump(DumpMetaData dumpMetaData) {
+    try {
+      return dumpMetaData.getEventFrom() != null;
+    } catch (Exception e) {
+      LOG.info("No previous dump present");
+      return false;
+    }
+  }
+
+  private boolean shouldResumePreviousDump(Path dumpPath) {
+    Path hiveDumpPath = new Path(dumpPath, ReplUtils.REPL_HIVE_BASE_DIR);
+    return shouldResumePreviousDump(new DumpMetaData(hiveDumpPath, conf));
   }
 
   private Long getBootDumpBeginReplId(DumpMetaData dmd) {
@@ -719,7 +752,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       if (dmd.getEventFrom() != 0) {
         return dmd.getEventFrom();
       }
-    } catch (SemanticException e) {
+    } catch (Exception e) {
       LOG.info("No previous dump present");
     }
     return queryState.getConf().getLong(ReplUtils.LAST_REPL_ID_KEY, -1L);

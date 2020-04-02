@@ -51,6 +51,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
@@ -74,6 +75,8 @@ public class EximUtil {
   public static final String METADATA_NAME = "_metadata";
   public static final String FILES_NAME = "_files";
   public static final String DATA_PATH_NAME = "data";
+  public static final String MANAGED_TABLE_LIST_FILE_NAME = "_managed";
+  public static final String EXTERNAL_TABLE_LIST_FILE_NAME = "_external";
 
   private static final Logger LOG = LoggerFactory.getLogger(EximUtil.class);
 
@@ -159,7 +162,8 @@ public class EximUtil {
   /**
    * Wrapper class for mapping source and target path for copying managed table data.
    */
-  public static class ManagedTableCopyPath {
+  public static class ManagedTableCopyPath implements Serializable {
+    private static final long serialVersionUID = 1L;
     private ReplicationSpec replicationSpec;
     private static boolean nullSrcPathForTest = false;
     private Path srcPath;
