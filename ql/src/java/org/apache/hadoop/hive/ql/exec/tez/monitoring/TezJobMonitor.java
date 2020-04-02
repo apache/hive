@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
+import org.apache.hadoop.hive.ql.exec.tez.Utils;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -189,13 +190,9 @@ public class TezJobMonitor {
           Set<String> desiredCounters = wmContext.getSubscribedCounters();
           TezCounters dagCounters = status.getDAGCounters();
           // if initial counters exists, merge it with dag counters to get aggregated view
-          if (dagCounters != null && counters != null) {
-            for (String counterGroup : counters.getGroupNames()) {
-              dagCounters.addGroup(counters.getGroup(counterGroup));
-            }
-          }
-          if (dagCounters != null && desiredCounters != null && !desiredCounters.isEmpty()) {
-            Map<String, Long> currentCounters = getCounterValues(dagCounters, vertexNames, vertexProgressMap,
+          TezCounters mergedCounters = counters == null ? dagCounters : Utils.mergeTezCounters(dagCounters, counters);
+          if (mergedCounters != null && desiredCounters != null && !desiredCounters.isEmpty()) {
+            Map<String, Long> currentCounters = getCounterValues(mergedCounters, vertexNames, vertexProgressMap,
               desiredCounters, done);
             if (LOG.isDebugEnabled()) {
               LOG.debug("Requested DAG status. checkInterval: {}. currentCounters: {}", checkInterval, currentCounters);

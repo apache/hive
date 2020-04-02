@@ -250,12 +250,8 @@ public class TezTask extends Task<TezWork> {
           Set<StatusGetOpts> statusGetOpts = EnumSet.of(StatusGetOpts.GET_COUNTERS);
           TezCounters dagCounters = dagClient.getDAGStatus(statusGetOpts).getDAGCounters();
           // if initial counters exists, merge it with dag counters to get aggregated view
-          if (dagCounters != null && counters != null) {
-            for (String counterGroup : counters.getGroupNames()) {
-              dagCounters.addGroup(counters.getGroup(counterGroup));
-            }
-          }
-          counters = dagCounters;
+          TezCounters mergedCounters = counters == null ? dagCounters : Utils.mergeTezCounters(dagCounters, counters);
+          counters = mergedCounters;
         } catch (Exception err) {
           // Don't fail execution due to counters - just don't print summary info
           LOG.warn("Failed to get counters. Ignoring, summary info will be incomplete. " + err, err);
