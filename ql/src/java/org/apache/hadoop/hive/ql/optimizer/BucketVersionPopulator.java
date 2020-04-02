@@ -129,7 +129,6 @@ public class BucketVersionPopulator extends Transform {
     public void setBucketVersion() {
       for (Operator<?> operator : members) {
         operator.getConf().setBucketingVersion(version);
-
       }
     }
 
@@ -144,6 +143,10 @@ public class BucketVersionPopulator extends Transform {
           int bucketingVersion = fso.getConf().getTableInfo().getBucketingVersion();
           setVersion(bucketingVersion);
         }
+      }
+      if (version == -1) {
+        // use version 2 if possible
+        version = 2;
       }
 
     }

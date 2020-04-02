@@ -617,6 +617,10 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
     return isMmCtas;
   }
 
+  @Explain(displayName = "bucketingVersion", explainLevels = { Level.EXTENDED })
+  public int getBucketingVersionForExplain() {
+    return getBucketingVersion();
+  }
   /**
    * Whether this is CREATE TABLE SELECT or CREATE MATERIALIZED VIEW statemet
    * Set by semantic analyzer this is required because CTAS/CM requires some special logic
