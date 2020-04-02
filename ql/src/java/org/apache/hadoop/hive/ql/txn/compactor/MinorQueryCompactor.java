@@ -221,7 +221,7 @@ final class MinorQueryCompactor extends QueryCompactor {
         CompactionQueryBuilder.CompactionType.MINOR_CRUD,
         CompactionQueryBuilder.Operation.INSERT,
         resultTableName)
-        .setFromTableName(sourceTableName)
+        .setSourceTabForInsert(sourceTableName)
         .setSourceTab(table)
         .setValidWriteIdList(validWriteIdList)
         .build();
