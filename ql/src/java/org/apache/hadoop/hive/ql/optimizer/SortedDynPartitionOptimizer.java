@@ -284,6 +284,7 @@ public class SortedDynPartitionOptimizer extends Transform {
       // Create ReduceSink operator
       ReduceSinkOperator rsOp = getReduceSinkOp(partitionPositions, sortPositions, sortOrder, sortNullOrder,
         allRSCols, bucketColumns, numBuckets, fsParent, fsOp.getConf().getWriteType());
+      rsOp.getConf().setBucketingVersion(fsOp.getConf().getBucketingVersion());
 
       List<ExprNodeDesc> descs = new ArrayList<ExprNodeDesc>(allRSCols.size());
       List<String> colNames = new ArrayList<String>();
@@ -633,7 +634,6 @@ public class SortedDynPartitionOptimizer extends Transform {
           valueTable, writeType);
       rsConf.setBucketCols(bucketColumns);
       rsConf.setNumBuckets(numBuckets);
-      rsConf.setBucketingVersion(parent.getConf().getBucketingVersion());
 
       ArrayList<ColumnInfo> signature = new ArrayList<>();
       for (int index = 0; index < parent.getSchema().getSignature().size(); index++) {

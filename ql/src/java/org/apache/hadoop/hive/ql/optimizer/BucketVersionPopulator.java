@@ -150,7 +150,7 @@ public class BucketVersionPopulator extends Transform {
       }
       if (version == -1) {
         // use version 2 if possible
-        version = 2;
+        version = -3;
       }
 
     }
