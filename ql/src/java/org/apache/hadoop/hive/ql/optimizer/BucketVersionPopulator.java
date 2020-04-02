@@ -141,7 +141,8 @@ public class BucketVersionPopulator extends Transform {
         }
         if (operator instanceof FileSinkOperator) {
           FileSinkOperator fso = (FileSinkOperator) operator;
-          setVersion(fso.getConf().getTableInfo().getBucketingVersion());
+          int bucketingVersion = fso.getConf().getTableInfo().getBucketingVersion();
+          setVersion(bucketingVersion);
         }
       }
 

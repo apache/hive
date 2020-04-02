@@ -800,6 +800,7 @@ public final class Utilities {
         serdeConstants.SERIALIZATION_FORMAT, "" + Utilities.ctrlaCode,
         serdeConstants.LIST_COLUMNS, cols,
         serdeConstants.LIST_COLUMN_TYPES, colTypes,
+            hive_metastoreConstants.TABLE_BUCKETING_VERSION, "-1",
         serdeConstants.SERIALIZATION_LIB,LazySimpleSerDe.class.getName())));
   }
 
