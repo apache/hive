@@ -459,6 +459,7 @@ public class SortedDynPartitionTimeGranularityOptimizer extends Transform {
       final ReduceSinkDesc rsConf = new ReduceSinkDesc(keyCols, keyCols.size(), valCols,
           keyColNames, distinctColumnIndices, valColNames, -1, partCols, -1, keyTable,
           valueTable, writeType);
+      rsConf.setBucketingVersion(parent.getConf().getBucketingVersion());
 
       final ArrayList<ColumnInfo> signature =
           parent.getSchema().getSignature()

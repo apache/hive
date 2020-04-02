@@ -38,7 +38,7 @@ public abstract class AbstractOperatorDesc implements OperatorDesc {
   protected long memNeeded = 0;
   protected long memAvailable = 0;
   protected String runtimeStatsTmpDir;
-  protected int bucketingVersion = -1;
+  protected int bucketingVersion = -2;
 
   /**
    * A map of output column name to input expression map. This is used by
@@ -46,6 +46,8 @@ public abstract class AbstractOperatorDesc implements OperatorDesc {
    * reduce sink and group by op
    */
   protected Map<String, ExprNodeDesc> colExprMap;
+
+  private String myName = "N/A";
 
   @Override
   @Explain(skipHeader = true, displayName = "Statistics")
@@ -180,6 +182,16 @@ public abstract class AbstractOperatorDesc implements OperatorDesc {
   @Override
   public void setBucketingVersion(int bucketingVersion) {
     this.bucketingVersion = bucketingVersion;
+  }
+
+  @Override
+  public final void setName1(String identifier) {
+    myName = identifier;
+
+  }
+  @Explain(displayName = "operatorName", explainLevels = { Level.EXTENDED })
+  public final String getIdentifierForXfv() {
+    return myName;
   }
 
 }

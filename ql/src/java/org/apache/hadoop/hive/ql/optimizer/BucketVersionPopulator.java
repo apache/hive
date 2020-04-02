@@ -121,6 +121,10 @@ public class BucketVersionPopulator extends Transform {
     Set<Operator<?>> members = Sets.newIdentityHashSet();
     int version = -1;
 
+    public OpGroup() {
+      groups.add(this);
+    }
+
     public void add(Operator o) {
       members.add(o);
       b.put(o, this);
@@ -182,7 +186,6 @@ public class BucketVersionPopulator extends Transform {
       OpGroup g;
       if (nodeOutputs.length == 0) {
         g = new OpGroup();
-        groups.add(g);
       } else {
         g = (OpGroup) nodeOutputs[0];
       }

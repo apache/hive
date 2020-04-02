@@ -196,6 +196,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
   public void setConf(T conf) {
     this.conf = conf;
+    conf.setName1(toString());
   }
 
   @Explain
