@@ -46,7 +46,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -68,7 +67,7 @@ class CompactionQueryBuilder {
   private ValidWriteIdList validWriteIdList; // for Alter/Insert in minor and CRUD
   private AcidUtils.Directory dir; // for Alter in minor
   private Partition sourcePartition; // for Insert in major and insert-only minor
-  private String fromTableName; // for Insert
+  private String sourceTabForInsert; // for Insert
 
   // settable booleans
   private boolean isPartitioned; // for Create
@@ -158,10 +157,10 @@ class CompactionQueryBuilder {
    * Set table to select from.
    * Required for Insert operations.
    *
-   * @param fromTableName name of table to select from, not null
+   * @param sourceTabForInsert name of table to select from, not null
    */
-  CompactionQueryBuilder setFromTableName(String fromTableName) {
-    this.fromTableName = fromTableName;
+  CompactionQueryBuilder setSourceTabForInsert(String sourceTabForInsert) {
+    this.sourceTabForInsert = sourceTabForInsert;
     return this;
   }
 
@@ -247,8 +246,8 @@ class CompactionQueryBuilder {
     case INSERT:
       query.append(" select ");
       buildSelectClauseForInsert(query);
-      query.append(" from ")
-          .append(fromTableName);
+      query.append(" from ");
+      getSourceForInsert(query);
       buildWhereClauseForInsert(query);
       break;
     case DROP:
@@ -323,6 +322,14 @@ class CompactionQueryBuilder {
           query.append(i == 0 ? "`" : ", `").append(cols.get(i).getName()).append("`");
         }
       }
+    }
+  }
+
+  private void getSourceForInsert(StringBuilder query) {
+    if (sourceTabForInsert != null) {
+      query.append(sourceTabForInsert);
+    } else {
+      query.append(sourceTab.getDbName()).append(".").append(sourceTab.getTableName());
     }
   }
 
