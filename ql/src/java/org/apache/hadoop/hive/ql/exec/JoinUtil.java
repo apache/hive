@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.persistence.RowContainer;
 import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -215,7 +216,7 @@ public class JoinUtil {
 
     // Compute the values
     int reserve = hasFilter ? valueFields.size() + 1 : valueFields.size();
-    List<Object> nr = new ArrayList<Object>(reserve);   
+    List<Object> nr = new ArrayList<Object>(reserve);
     for (int i = 0; i < valueFields.size(); i++) {
       nr.add(ObjectInspectorUtils.copyToStandardObject(valueFields.get(i)
           .evaluate(row), valueFieldsOI.get(i),
@@ -350,6 +351,7 @@ public class JoinUtil {
           + Utilities.ctrlaCode,
           org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMNS, colNames
           .toString(),
+              hive_metastoreConstants.TABLE_BUCKETING_VERSION, "-1",
           org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMN_TYPES,
           colTypes.toString(),
           serdeConstants.SERIALIZATION_LIB,LazyBinarySerDe.class.getName()));

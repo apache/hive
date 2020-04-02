@@ -30,10 +30,10 @@ import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
-import org.apache.hadoop.hive.ql.lib.PreOrderWalker;
 import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
 import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
 import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
@@ -108,8 +108,8 @@ public class BucketVersionPopulator extends Transform {
     Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
 
     SemanticDispatcher disp = new DefaultRuleDispatcher(new SetPreferredBucketingVersionRule(), opRules, ctx);
-    SemanticGraphWalker ogw = new PreOrderWalker(disp);
-    //    SemanticGraphWalker ogw = new DefaultGraphWalker(disp);
+    //    SemanticGraphWalker ogw = new PreOrderWalker(disp);
+    SemanticGraphWalker ogw = new DefaultGraphWalker(disp);
 
     ArrayList<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(pGraphContext.getTopOps().values());
@@ -176,13 +176,22 @@ public class BucketVersionPopulator extends Transform {
         throws SemanticException {
       Operator o = (Operator) nd;
       OpGroup g;
-      if (o.getNumParent() == 0 || o instanceof ReduceSinkOperator) {
-        groups.add(g = new OpGroup());
+      if (nodeOutputs.length == 0) {
+        g = new OpGroup();
+        groups.add(g);
       } else {
-        g = getGroupFor(o);
+        g = (OpGroup) nodeOutputs[0];
+      }
+      for (int i = 1; i < nodeOutputs.length; i++) {
+        g.merge((OpGroup) nodeOutputs[i]);
       }
       g.add(o);
-      return null;
+      if (o instanceof ReduceSinkOperator) {
+        // start a new group before the reduceSinkOperator
+        return new OpGroup();
+      } else {
+        return g;
+      }
     }
 
     private OpGroup getGroupFor(Operator o) {
