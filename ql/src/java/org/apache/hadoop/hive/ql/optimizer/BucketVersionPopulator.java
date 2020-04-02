@@ -149,7 +149,7 @@ public class BucketVersionPopulator extends Transform {
     }
 
     private void setVersion(int newVersion) {
-      if (version == newVersion) {
+      if (version == newVersion || newVersion == -1) {
         return;
       }
       if (version == -1) {
