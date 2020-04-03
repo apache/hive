@@ -4,6 +4,7 @@ set hive.strict.checks.bucketing=false;
 
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
+set hive.auto.convert.join=true;
 set hive.auto.convert.join.noconditionaltask=true;
 set hive.auto.convert.join.noconditionaltask.size=30000;
 
@@ -54,6 +55,8 @@ analyze table tab_n10 compute statistics for columns;
 explain extended
 select t1.key, t1.value, t2.key, t2.value from srcbucket_mapjoin_n18 t1, srcbucket_mapjoin_part_n20 t2 where t1.key = t2.key order by t1.key, t1.value, t2.key, t2.value;
 select t1.key, t1.value, t2.key, t2.value from srcbucket_mapjoin_n18 t1, srcbucket_mapjoin_part_n20 t2 where t1.key = t2.key order by t1.key, t1.value, t2.key, t2.value;
+
+set hive.auto.convert.join=false;
 
 explain extended
 select t1.key, t1.value, t2.key, t2.value from tab_part_n11 t1, tab_n10 t2 where t1.key = t2.key order by t1.key, t1.value, t2.key, t2.value;
