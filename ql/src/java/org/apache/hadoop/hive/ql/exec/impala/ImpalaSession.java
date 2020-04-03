@@ -182,7 +182,8 @@ public class ImpalaSession {
             case SUCCESS_WITH_INFO_STATUS:
                 return false;
             case ERROR_STATUS:
-                throw new HiveException("Thrift call failed for server " + connection);
+                throw new HiveException(String.format("Thrift call failed for server %s error: %s",
+                    connection, status.getErrorMessage()));
             case INVALID_HANDLE_STATUS:
                 throw new HiveException("Invalid handle for server " + connection);
             case STILL_EXECUTING_STATUS:

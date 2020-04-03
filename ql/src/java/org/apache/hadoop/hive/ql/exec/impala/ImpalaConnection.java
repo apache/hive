@@ -74,7 +74,7 @@ class ImpalaConnection {
     }
 
     public String toString() {
-        return "ImpalaConnection{socket: " + socket + " isOpen: " + socket.isOpen() + "}";
+        return "ImpalaConnection{" + socketAddress + " isOpen: " + socket.isOpen() + "}";
     }
 
     /**

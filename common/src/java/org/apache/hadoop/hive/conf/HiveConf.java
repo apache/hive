@@ -4045,7 +4045,7 @@ public class HiveConf extends Configuration {
         "Chooses whether query fragments will run in container or in llap"),
 
     // Impala specific configuration properties
-    HIVE_IMPALA_ADDRESS("hive.impala.address", "localhost:21050", "Address for Impala execution engine."),
+    HIVE_IMPALA_ADDRESS("hive.impala.address", "localhost:21150", "Address for Impala execution engine."),
     HIVE_IMPALA_EXECUTION_MODE("hive.impala.execution.mode", "plan", new StringSet("plan", "query"),
             "Chooses whether Impala will execute a provided plan or a query string"),
     HIVE_IMPALA_REQUEST_POOL("hive.impala.request.pool", "default-pool",
