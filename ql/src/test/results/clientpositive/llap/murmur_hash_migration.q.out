@@ -615,8 +615,8 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Map 1 <- Map 3 (CUSTOM_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -634,17 +634,28 @@ STAGE PLANS:
                       expressions: key (type: int), value (type: string)
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 150 Data size: 14250 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        bucketingVersion: -3
-                        key expressions: _col0 (type: int)
-                        null sort order: z
-                        numBuckets: -1
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 150 Data size: 14250 Basic stats: COMPLETE Column stats: COMPLETE
-                        tag: 0
-                        value expressions: _col1 (type: string)
-                        auto parallelism: true
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        Estimated key counts: Map 3 => 75
+                        keys:
+                          0 _col0 (type: int)
+                          1 _col0 (type: int)
+                        outputColumnNames: _col0, _col1, _col2, _col3
+                        input vertices:
+                          1 Map 3
+                        Position of Big Table: 0
+                        Statistics: Num rows: 220 Data size: 41800 Basic stats: COMPLETE Column stats: COMPLETE
+                        BucketMapJoin: true
+                        Reduce Output Operator
+                          bucketingVersion: -3
+                          key expressions: _col0 (type: int), _col1 (type: string), _col2 (type: int), _col3 (type: string)
+                          null sort order: zzzz
+                          numBuckets: -1
+                          sort order: ++++
+                          Statistics: Num rows: 220 Data size: 41800 Basic stats: COMPLETE Column stats: COMPLETE
+                          tag: -1
+                          auto parallelism: false
             Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
@@ -702,7 +713,7 @@ STAGE PLANS:
                   name: default.srcbucket_mapjoin_n18
             Truncated Path -> Alias:
               /srcbucket_mapjoin_n18/ds=2008-04-08 [t1]
-        Map 4 
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: t2
@@ -718,7 +729,7 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 150 Data size: 14250 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        bucketingVersion: -3
+                        bucketingVersion: 1
                         key expressions: _col0 (type: int)
                         null sort order: z
                         numBuckets: -1
@@ -727,7 +738,7 @@ STAGE PLANS:
                         Statistics: Num rows: 150 Data size: 14250 Basic stats: COMPLETE Column stats: COMPLETE
                         tag: 1
                         value expressions: _col1 (type: string)
-                        auto parallelism: true
+                        auto parallelism: false
             Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
@@ -786,28 +797,6 @@ STAGE PLANS:
             Truncated Path -> Alias:
               /srcbucket_mapjoin_part_n20/ds=2008-04-08 [t2]
         Reducer 2 
-            Execution mode: llap
-            Needs Tagging: false
-            Reduce Operator Tree:
-              Merge Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                keys:
-                  0 _col0 (type: int)
-                  1 _col0 (type: int)
-                outputColumnNames: _col0, _col1, _col2, _col3
-                Position of Big Table: 0
-                Statistics: Num rows: 220 Data size: 41800 Basic stats: COMPLETE Column stats: COMPLETE
-                Reduce Output Operator
-                  bucketingVersion: -3
-                  key expressions: _col0 (type: int), _col1 (type: string), _col2 (type: int), _col3 (type: string)
-                  null sort order: zzzz
-                  numBuckets: -1
-                  sort order: ++++
-                  Statistics: Num rows: 220 Data size: 41800 Basic stats: COMPLETE Column stats: COMPLETE
-                  tag: -1
-                  auto parallelism: false
-        Reducer 3 
             Execution mode: vectorized, llap
             Needs Tagging: false
             Reduce Operator Tree:
