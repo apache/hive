@@ -48,3 +48,16 @@ where a in (
              where o.d = 21);
 
 select * from acidtlb;
+
+explain cbo
+merge into acidtlb as t using othertlb as s on t.a = s.c
+when matched and s.c < 60 then delete
+when matched and s.c = 60 then update set b = 1000
+when not matched then insert values (s.c, 2000 + s.d);
+
+merge into acidtlb as t using othertlb as s on t.a = s.c
+when matched and s.c < 30 then delete
+when matched and s.c = 30 then update set b = 1000
+when not matched then insert values (s.c, 2000 + s.d);
+
+select * from acidtlb;
