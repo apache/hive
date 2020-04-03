@@ -854,7 +854,7 @@ group by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cbo_t3
 #### A masked pattern was here ####
-_c0	_c1	_c2
+_c0	_c1	percent_rank_window_2
 1	1	0.0
 1	1	0.0
 1	1	0.0

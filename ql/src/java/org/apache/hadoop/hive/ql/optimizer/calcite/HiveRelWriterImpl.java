@@ -39,6 +39,15 @@ public class HiveRelWriterImpl extends RelJsonWriter {
 
   public HiveRelWriterImpl() {
     super();
+
+    // Upgrade to Calcite 1.23.0 to remove this
+    try {
+      final Field fieldRelJson = RelJsonWriter.class.getDeclaredField("relJson");
+      fieldRelJson.setAccessible(true);
+      fieldRelJson.set(this, new HiveRelJson(jsonBuilder));
+    } catch (IllegalAccessException | NoSuchFieldException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   //~ Methods ------------------------------------------------------------------

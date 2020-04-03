@@ -94,7 +94,7 @@ POSTHOOK: Input: default@mydim
 #### A masked pattern was here ####
 1	bob	95136	true
 2	joe	70068	true
-Warning: Shuffle Join JOIN[20][tables = [mydim, sq_1_notin_nullcheck]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[20][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: update mydim set is_current = false
 where mydim.key not in(select kv from updates_staging_view)
 PREHOOK: type: QUERY

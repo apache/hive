@@ -455,7 +455,7 @@ POSTHOOK: query: select sum(sum(c1)) over() from e011_01_n0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@e011_01_n0
 #### A masked pattern was here ####
-_c0
+sum_window_0
 16.00
 PREHOOK: query: explain vectorization detail
 select sum(sum(c1)) over(
@@ -692,7 +692,7 @@ POSTHOOK: query: select sum(sum(c1)) over(
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@e011_01_n0
 #### A masked pattern was here ####
-_c0
+sum_window_0
 1.00
 3.00
 5.00
@@ -1014,7 +1014,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@e011_01_n0
 POSTHOOK: Input: default@e011_03_n0
 #### A masked pattern was here ####
-_c0
+sum_window_0
 1.00
 3.00
 5.00
@@ -1336,7 +1336,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@e011_01_n0
 POSTHOOK: Input: default@e011_03_n0
 #### A masked pattern was here ####
-_c0
+sum_window_0
 1.00
 3.00
 5.00
@@ -1585,7 +1585,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@e011_01_n0
 POSTHOOK: Input: default@e011_03_n0
 #### A masked pattern was here ####
-_c0
+sum_window_0
 NULL
 NULL
 NULL
@@ -1805,7 +1805,7 @@ POSTHOOK: query: select sum(sum(c1)) over() from e011_01_small
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@e011_01_small
 #### A masked pattern was here ####
-_c0
+sum_window_0
 16.00
 PREHOOK: query: explain vectorization detail
 select sum(sum(c1)) over(
@@ -2042,7 +2042,7 @@ POSTHOOK: query: select sum(sum(c1)) over(
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@e011_01_small
 #### A masked pattern was here ####
-_c0
+sum_window_0
 1.00
 3.00
 5.00
@@ -2364,7 +2364,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@e011_01_small
 POSTHOOK: Input: default@e011_03_small
 #### A masked pattern was here ####
-_c0
+sum_window_0
 1.00
 3.00
 5.00
@@ -2686,7 +2686,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@e011_01_small
 POSTHOOK: Input: default@e011_03_small
 #### A masked pattern was here ####
-_c0
+sum_window_0
 1.00
 3.00
 5.00
@@ -2935,7 +2935,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@e011_01_small
 POSTHOOK: Input: default@e011_03_small
 #### A masked pattern was here ####
-_c0
+sum_window_0
 NULL
 NULL
 NULL

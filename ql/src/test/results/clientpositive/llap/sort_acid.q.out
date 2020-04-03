@@ -1,0 +1,149 @@
+PREHOOK: query: create table acidtlb(a int, b int) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@acidtlb
+POSTHOOK: query: create table acidtlb(a int, b int) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@acidtlb
+PREHOOK: query: create table othertlb(c int, d int) stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@othertlb
+POSTHOOK: query: create table othertlb(c int, d int) stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@othertlb
+PREHOOK: query: insert into acidtlb values(10,200),(30,500)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@acidtlb
+POSTHOOK: query: insert into acidtlb values(10,200),(30,500)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@acidtlb
+POSTHOOK: Lineage: acidtlb.a SCRIPT []
+POSTHOOK: Lineage: acidtlb.b SCRIPT []
+PREHOOK: query: insert into othertlb values(10, 21),(30, 22),(60, 23),(70, 24),(80, 25)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@othertlb
+POSTHOOK: query: insert into othertlb values(10, 21),(30, 22),(60, 23),(70, 24),(80, 25)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@othertlb
+POSTHOOK: Lineage: othertlb.c SCRIPT []
+POSTHOOK: Lineage: othertlb.d SCRIPT []
+PREHOOK: query: explain cbo
+select a, 6 as c, b from acidtlb sort by a, c, b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acidtlb
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select a, 6 as c, b from acidtlb sort by a, c, b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acidtlb
+#### A masked pattern was here ####
+CBO PLAN:
+HiveSortExchange(distribution=[any], collation=[[0, 2]])
+  HiveProject(a=[$0], c=[6], b=[$1])
+    HiveTableScan(table=[[default, acidtlb]], table:alias=[acidtlb])
+
+PREHOOK: query: select a, 6 as c, b from acidtlb sort by a, c, b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acidtlb
+#### A masked pattern was here ####
+POSTHOOK: query: select a, 6 as c, b from acidtlb sort by a, c, b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acidtlb
+#### A masked pattern was here ####
+10	6	200
+30	6	500
+PREHOOK: query: update acidtlb set b=777
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acidtlb
+PREHOOK: Output: default@acidtlb
+POSTHOOK: query: update acidtlb set b=777
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acidtlb
+POSTHOOK: Output: default@acidtlb
+PREHOOK: query: select * from acidtlb
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acidtlb
+#### A masked pattern was here ####
+POSTHOOK: query: select * from acidtlb
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acidtlb
+#### A masked pattern was here ####
+10	777
+30	777
+Warning: Shuffle Join MERGEJOIN[23][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: update acidtlb set b=350
+where a in (select a from acidtlb where a = 30)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acidtlb
+PREHOOK: Output: default@acidtlb
+POSTHOOK: query: update acidtlb set b=350
+where a in (select a from acidtlb where a = 30)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acidtlb
+POSTHOOK: Output: default@acidtlb
+PREHOOK: query: select * from acidtlb
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acidtlb
+#### A masked pattern was here ####
+POSTHOOK: query: select * from acidtlb
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acidtlb
+#### A masked pattern was here ####
+10	777
+30	350
+PREHOOK: query: update acidtlb set b=450
+where a in (select c from othertlb where c < 65)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acidtlb
+PREHOOK: Input: default@othertlb
+PREHOOK: Output: default@acidtlb
+POSTHOOK: query: update acidtlb set b=450
+where a in (select c from othertlb where c < 65)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acidtlb
+POSTHOOK: Input: default@othertlb
+POSTHOOK: Output: default@acidtlb
+PREHOOK: query: select * from acidtlb
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acidtlb
+#### A masked pattern was here ####
+POSTHOOK: query: select * from acidtlb
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acidtlb
+#### A masked pattern was here ####
+10	450
+30	450
+PREHOOK: query: delete from acidtlb
+where a in (
+    select a from acidtlb a
+             join othertlb o on a.a = o.c
+             where o.d = 21)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acidtlb
+PREHOOK: Input: default@othertlb
+PREHOOK: Output: default@acidtlb
+POSTHOOK: query: delete from acidtlb
+where a in (
+    select a from acidtlb a
+             join othertlb o on a.a = o.c
+             where o.d = 21)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acidtlb
+POSTHOOK: Input: default@othertlb
+POSTHOOK: Output: default@acidtlb
+PREHOOK: query: select * from acidtlb
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acidtlb
+#### A masked pattern was here ####
+POSTHOOK: query: select * from acidtlb
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acidtlb
+#### A masked pattern was here ####
+30	450

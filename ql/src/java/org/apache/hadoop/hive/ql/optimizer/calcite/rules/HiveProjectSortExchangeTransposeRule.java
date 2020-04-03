@@ -7,7 +7,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,11 +17,12 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
+import static org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil.getNewRelDistributionKeys;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil.getNewRelFieldCollations;
 
-import org.apache.calcite.plan.RelOptCluster;
 import java.util.List;
 
+import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelOptRuleOperand;
@@ -30,29 +31,42 @@ import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelCollationImpl;
 import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.core.SortExchange;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelDistribution;
+import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortExchange;
 
 import com.google.common.collect.ImmutableList;
 
-public class HiveProjectSortTransposeRule extends RelOptRule {
-
-  public static final HiveProjectSortTransposeRule INSTANCE = new HiveProjectSortTransposeRule();
+/**
+ * Push down Projection above SortExchange.
+ * HiveProject
+ *   HiveSortExchange
+ *     ...
+ *
+ * =>
+ *
+ * HiveSortExchange
+ *   HiveProject
+ *     ...
+ */
+public final class HiveProjectSortExchangeTransposeRule extends RelOptRule {
+  public static final HiveProjectSortExchangeTransposeRule INSTANCE = new HiveProjectSortExchangeTransposeRule();
 
   //~ Constructors -----------------------------------------------------------
 
   /**
    * Creates a HiveProjectSortTransposeRule.
    */
-  private HiveProjectSortTransposeRule() {
+  private HiveProjectSortExchangeTransposeRule() {
     super(
         operand(
             HiveProject.class,
-            operand(HiveSortLimit.class, any())));
+            operand(HiveSortExchange.class, any())));
   }
 
-  protected HiveProjectSortTransposeRule(RelOptRuleOperand operand) {
+  protected HiveProjectSortExchangeTransposeRule(RelOptRuleOperand operand) {
     super(operand);
   }
 
@@ -61,21 +75,27 @@ public class HiveProjectSortTransposeRule extends RelOptRule {
   // implement RelOptRule
   public void onMatch(RelOptRuleCall call) {
     final HiveProject project = call.rel(0);
-    final HiveSortLimit sort = call.rel(1);
+    final HiveSortExchange sortExchange = call.rel(1);
     final RelOptCluster cluster = project.getCluster();
-    List<RelFieldCollation> fieldCollations = getNewRelFieldCollations(project, sort.getCollation(), cluster);
+
+    List<RelFieldCollation> fieldCollations = getNewRelFieldCollations(project, sortExchange.getCollation(), cluster);
     if (fieldCollations == null) {
       return;
     }
 
-    RelTraitSet traitSet = sort.getCluster().traitSetOf(HiveRelNode.CONVENTION);
-    RelCollation newCollation = traitSet.canonize(RelCollationImpl.of(fieldCollations));
+    RelTraitSet newTraitSet = TraitsUtil.getDefaultTraitSet(sortExchange.getCluster());
+    RelCollation newCollation = newTraitSet.canonize(RelCollationImpl.of(fieldCollations));
+    newTraitSet = newTraitSet.replace(newCollation);
+    List<Integer> newDistributionKeys = getNewRelDistributionKeys(project, sortExchange.getDistribution());
 
     // New operators
-    final RelNode newProject = project.copy(sort.getInput().getTraitSet(),
-        ImmutableList.of(sort.getInput()));
-    final HiveSortLimit newSort = sort.copy(newProject.getTraitSet(),
-        newProject, newCollation, sort.offset, sort.fetch);
+    final RelNode newProject = project.copy(sortExchange.getInput().getTraitSet(),
+        ImmutableList.of(sortExchange.getInput()));
+    final SortExchange newSort = sortExchange.copy(
+        newTraitSet,
+        newProject,
+        new HiveRelDistribution(sortExchange.getDistribution().getType(), newDistributionKeys),
+        newCollation);
 
     call.transformTo(newSort);
   }
