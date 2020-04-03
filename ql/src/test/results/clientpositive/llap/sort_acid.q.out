@@ -249,3 +249,74 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acidtlb
 #### A masked pattern was here ####
 30	450
+PREHOOK: query: explain cbo
+merge into acidtlb as t using othertlb as s on t.a = s.c
+when matched and s.c < 60 then delete
+when matched and s.c = 60 then update set b = 1000
+when not matched then insert values (s.c, 2000 + s.d)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acidtlb
+PREHOOK: Input: default@othertlb
+PREHOOK: Output: default@acidtlb
+PREHOOK: Output: default@acidtlb
+PREHOOK: Output: default@acidtlb
+PREHOOK: Output: default@merge_tmp_table
+POSTHOOK: query: explain cbo
+merge into acidtlb as t using othertlb as s on t.a = s.c
+when matched and s.c < 60 then delete
+when matched and s.c = 60 then update set b = 1000
+when not matched then insert values (s.c, 2000 + s.d)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acidtlb
+POSTHOOK: Input: default@othertlb
+POSTHOOK: Output: default@acidtlb
+POSTHOOK: Output: default@acidtlb
+POSTHOOK: Output: default@acidtlb
+POSTHOOK: Output: default@merge_tmp_table
+CBO PLAN:
+HiveProject(col0=[$3], col1=[$0], col2=[$1], col3=[$2])
+  HiveJoin(condition=[=($2, $0)], joinType=[left], algorithm=[none], cost=[not available])
+    HiveProject(c=[$0], d=[$1])
+      HiveTableScan(table=[[default, othertlb]], table:alias=[s])
+    HiveProject(a=[$0], ROW__ID=[$4])
+      HiveFilter(condition=[IS NOT NULL($0)])
+        HiveTableScan(table=[[default, acidtlb]], table:alias=[t])
+
+PREHOOK: query: merge into acidtlb as t using othertlb as s on t.a = s.c
+when matched and s.c < 30 then delete
+when matched and s.c = 30 then update set b = 1000
+when not matched then insert values (s.c, 2000 + s.d)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acidtlb
+PREHOOK: Input: default@othertlb
+PREHOOK: Output: default@acidtlb
+PREHOOK: Output: default@acidtlb
+PREHOOK: Output: default@acidtlb
+PREHOOK: Output: default@merge_tmp_table
+POSTHOOK: query: merge into acidtlb as t using othertlb as s on t.a = s.c
+when matched and s.c < 30 then delete
+when matched and s.c = 30 then update set b = 1000
+when not matched then insert values (s.c, 2000 + s.d)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acidtlb
+POSTHOOK: Input: default@othertlb
+POSTHOOK: Output: default@acidtlb
+POSTHOOK: Output: default@acidtlb
+POSTHOOK: Output: default@acidtlb
+POSTHOOK: Output: default@merge_tmp_table
+POSTHOOK: Lineage: acidtlb.a SIMPLE [(othertlb)s.FieldSchema(name:c, type:int, comment:null), ]
+POSTHOOK: Lineage: acidtlb.b EXPRESSION [(othertlb)s.FieldSchema(name:d, type:int, comment:null), ]
+POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(acidtlb)t.FieldSchema(name:ROW__ID, type:struct<writeId:bigint,bucketId:int,rowId:bigint>, comment:), ]
+PREHOOK: query: select * from acidtlb
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acidtlb
+#### A masked pattern was here ####
+POSTHOOK: query: select * from acidtlb
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acidtlb
+#### A masked pattern was here ####
+10	2021
+60	2023
+70	2024
+80	2025
+30	1000
