@@ -264,6 +264,7 @@ STAGE PLANS:
             Offset of rows: 400
             Statistics: Num rows: 10 Data size: 5410 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
+              bucketingVersion: 2
               compressed: false
               GlobalTableId: 0
 #### A masked pattern was here ####
@@ -274,6 +275,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   properties:
+                    bucketing_version -1
                     columns _col0,_col1,_col2,_col3
                     columns.types string:string:string:string
                     escape.delim \
@@ -584,6 +586,7 @@ STAGE PLANS:
             Offset of rows: 490
             Statistics: Num rows: 10 Data size: 5410 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
+              bucketingVersion: 2
               compressed: false
               GlobalTableId: 0
 #### A masked pattern was here ####
@@ -594,6 +597,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   properties:
+                    bucketing_version -1
                     columns _col0,_col1,_col2,_col3
                     columns.types string:string:string:string
                     escape.delim \
@@ -904,6 +908,7 @@ STAGE PLANS:
             Offset of rows: 490
             Statistics: Num rows: 20 Data size: 10820 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
+              bucketingVersion: 2
               compressed: false
               GlobalTableId: 0
 #### A masked pattern was here ####
@@ -914,6 +919,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   properties:
+                    bucketing_version -1
                     columns _col0,_col1,_col2,_col3
                     columns.types string:string:string:string
                     escape.delim \
@@ -1234,6 +1240,7 @@ STAGE PLANS:
             Offset of rows: 490
             Statistics: Num rows: 600 Data size: 324600 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
+              bucketingVersion: 2
               compressed: false
               GlobalTableId: 0
 #### A masked pattern was here ####
@@ -1244,6 +1251,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   properties:
+                    bucketing_version -1
                     columns _col0,_col1,_col2,_col3
                     columns.types string:string:string:string
                     escape.delim \
@@ -2139,6 +2147,7 @@ STAGE PLANS:
             Offset of rows: 400
             Statistics: Num rows: 10 Data size: 5410 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
+              bucketingVersion: 2
               compressed: false
               GlobalTableId: 0
 #### A masked pattern was here ####
@@ -2149,6 +2158,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   properties:
+                    bucketing_version -1
                     columns _col0,_col1,_col2,_col3
                     columns.types string:string:string:string
                     escape.delim \
@@ -2454,6 +2464,7 @@ STAGE PLANS:
             Offset of rows: 490
             Statistics: Num rows: 10 Data size: 5410 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
+              bucketingVersion: 2
               compressed: false
               GlobalTableId: 0
 #### A masked pattern was here ####
@@ -2464,6 +2475,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   properties:
+                    bucketing_version -1
                     columns _col0,_col1,_col2,_col3
                     columns.types string:string:string:string
                     escape.delim \
@@ -2769,6 +2781,7 @@ STAGE PLANS:
             Offset of rows: 490
             Statistics: Num rows: 20 Data size: 10820 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
+              bucketingVersion: 2
               compressed: false
               GlobalTableId: 0
 #### A masked pattern was here ####
@@ -2779,6 +2792,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   properties:
+                    bucketing_version -1
                     columns _col0,_col1,_col2,_col3
                     columns.types string:string:string:string
                     escape.delim \
@@ -3094,6 +3108,7 @@ STAGE PLANS:
             Offset of rows: 490
             Statistics: Num rows: 600 Data size: 324600 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
+              bucketingVersion: 2
               compressed: false
               GlobalTableId: 0
 #### A masked pattern was here ####
@@ -3104,6 +3119,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   properties:
+                    bucketing_version -1
                     columns _col0,_col1,_col2,_col3
                     columns.types string:string:string:string
                     escape.delim \

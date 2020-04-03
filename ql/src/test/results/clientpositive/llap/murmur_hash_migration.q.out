@@ -648,7 +648,7 @@ STAGE PLANS:
                         Statistics: Num rows: 220 Data size: 41800 Basic stats: COMPLETE Column stats: COMPLETE
                         BucketMapJoin: true
                         Reduce Output Operator
-                          bucketingVersion: -3
+                          bucketingVersion: 2
                           key expressions: _col0 (type: int), _col1 (type: string), _col2 (type: int), _col3 (type: string)
                           null sort order: zzzz
                           numBuckets: -1
@@ -805,7 +805,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 220 Data size: 41800 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
-                  bucketingVersion: -3
+                  bucketingVersion: 2
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
@@ -942,7 +942,7 @@ STAGE PLANS:
                         Statistics: Num rows: 220 Data size: 41800 Basic stats: COMPLETE Column stats: COMPLETE
                         BucketMapJoin: true
                         Reduce Output Operator
-                          bucketingVersion: -3
+                          bucketingVersion: 2
                           key expressions: _col0 (type: int), _col1 (type: string), _col2 (type: int), _col3 (type: string)
                           null sort order: zzzz
                           numBuckets: -1
@@ -1099,7 +1099,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 220 Data size: 41800 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
-                  bucketingVersion: -3
+                  bucketingVersion: 2
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####

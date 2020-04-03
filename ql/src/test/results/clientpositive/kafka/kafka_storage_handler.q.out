@@ -1109,7 +1109,7 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        bucketingVersion: 1
+                        bucketingVersion: 2
                         key expressions: _col0 (type: bigint), _col1 (type: timestamp), _col2 (type: binary)
                         null sort order: zzz
                         numBuckets: -1
@@ -1336,6 +1336,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
+                  bucketingVersion: 2
                   compressed: false
                   GlobalTableId: 0
                   directory: hdfs://### HDFS PATH ###
@@ -1346,6 +1347,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       properties:
+                        bucketing_version -1
                         columns _col0,_col1,_col2
                         columns.types bigint:timestamp:binary
                         escape.delim \
@@ -1434,7 +1436,7 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        bucketingVersion: 1
+                        bucketingVersion: 2
                         key expressions: _col0 (type: bigint), _col1 (type: timestamp), _col2 (type: binary)
                         null sort order: zzz
                         numBuckets: -1
@@ -1661,6 +1663,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
+                  bucketingVersion: 2
                   compressed: false
                   GlobalTableId: 0
                   directory: hdfs://### HDFS PATH ###
@@ -1671,6 +1674,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       properties:
+                        bucketing_version -1
                         columns _col0,_col1,_col2
                         columns.types bigint:timestamp:binary
                         escape.delim \

@@ -163,6 +163,7 @@ STAGE PLANS:
           expressions: KEY._col0 (type: int), KEY._col1 (type: string), KEY._bucket_number (type: string)
           outputColumnNames: _col0, _col1, _bucket_number
           File Output Operator
+            bucketingVersion: 2
             compressed: false
             GlobalTableId: 1
             directory: ### BLOBSTORE_STAGING_PATH ###
