@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.slf4j.Logger;
@@ -46,6 +47,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
   public static final Logger LOG = LoggerFactory.getLogger(MetastoreDefaultTransformer.class);
   private IHMSHandler hmsHandler = null;
   private String defaultCatalog = null;
+  private boolean isTenantBasedStorage = false;
 
   private static final String CONNECTORREAD = "CONNECTORREAD".intern();
   private static final String CONNECTORWRITE = "CONNECTORWRITE".intern();
@@ -79,6 +81,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
   public MetastoreDefaultTransformer(IHMSHandler handler) throws HiveMetaException {
     this.hmsHandler = handler;
     this.defaultCatalog = MetaStoreUtils.getDefaultCatalog(handler.getConf());
+    this.isTenantBasedStorage = hmsHandler.getConf().getBoolean(MetastoreConf.ConfVars.ALLOW_TENANT_BASED_STORAGE.getVarname(), false);
 
     acidWriteList.addAll(ACIDCOMMONWRITELIST);
     acidList.addAll(acidWriteList);
@@ -565,7 +568,15 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
     String txn_properties = null;
     boolean isInsertAcid = false;
 
-    if (TableType.MANAGED_TABLE.name().equals(tableType)) {
+    String dbName = table.getDbName();
+    Database db = null;
+    try {
+      db = hmsHandler.get_database_core(table.getCatName(), table.getDbName());
+    } catch (NoSuchObjectException e) {
+      throw new MetaException("Database " + dbName + " for table " + table.getTableName() + " could not be found");
+    }
+
+      if (TableType.MANAGED_TABLE.name().equals(tableType)) {
       LOG.debug("Table is a MANAGED_TABLE");
       txnal = params.get(TABLE_IS_TRANSACTIONAL);
       txn_properties = params.get(TABLE_TRANSACTIONAL_PROPERTIES);
@@ -580,9 +591,10 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
         params.put("TRANSLATED_TO_EXTERNAL", "TRUE");
         newTable.setParameters(params);
         LOG.info("Modified table params are:" + params.toString());
+
         if (!table.isSetSd() || table.getSd().getLocation() == null) {
           try {
-            Path newPath = hmsHandler.getWh().getDefaultTablePath(table.getDbName(), table.getTableName(), true);
+            Path newPath = hmsHandler.getWh().getDefaultTablePath(db, table.getTableName(), true);
             newTable.getSd().setLocation(newPath.toString());
             LOG.info("Modified location from null to " + newPath);
           } catch (Exception e) {
@@ -593,9 +605,11 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
         if (processorCapabilities == null || processorCapabilities.isEmpty()) {
           throw new MetaException("Processor has no capabilities, cannot create an ACID table.");
         }
+
+        newTable = validateTablePaths(table);
         if (isInsertAcid) { // MICRO_MANAGED Tables
           if (processorCapabilities.contains(HIVEMANAGEDINSERTWRITE)) {
-            LOG.info("Processor has required capabilities to be able to create INSERT-only tables");
+            LOG.debug("Processor has required capabilities to be able to create INSERT-only tables");
             return newTable;
           } else {
             throw new MetaException("Processor does not have capabilities to create a INSERT ACID table:" +
@@ -603,7 +617,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
           }
         } else { // FULL-ACID table
           if (processorCapabilities.contains(HIVEFULLACIDWRITE)) {
-            LOG.info("Processor has required capabilities to be able to create FULLACID tables.");
+            LOG.debug("Processor has required capabilities to be able to create FULLACID tables.");
             return newTable;
           } else {
             throw new MetaException("Processor does not have capabilities to create a FULL ACID table:" +
@@ -612,18 +626,8 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
         }
       }
     } else if (TableType.EXTERNAL_TABLE.name().equals(tableType)) {
-      LOG.info("Table to be created is of type " + tableType + " but not " + TableType.MANAGED_TABLE.toString());
-      String tableLocation = table.isSetSd()? table.getSd().getLocation() : null;
-      Path whRootPath = Path.getPathWithoutSchemeAndAuthority(hmsHandler.getWh().getWhRoot());
-
-      if (tableLocation != null) {
-        Path tablePath = Path.getPathWithoutSchemeAndAuthority(new Path(tableLocation));
-        if (FileUtils.isSubdirectory(whRootPath.toString(), tablePath.toString())) {
-          throw new MetaException(
-            "An external table's location should not be located within managed warehouse root directory," + "table:"
-                + table.getTableName() + ",location:" + tablePath + ",Hive managed warehouse:" + whRootPath);
-        }
-      }
+      LOG.debug("Table to be created is of type " + tableType);
+      newTable = validateTablePaths(table);
     }
     LOG.info("Transformer returning table:" + newTable.toString());
     return newTable;
@@ -638,37 +642,10 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
 
     LOG.info("Starting translation for Alter table for processor " + processorId + " with " + processorCapabilities
         + " on table " + table.getTableName());
-    String tableType = table.getTableType();
-    Path tableLocation = null;
-    Path whRootPath = null;
 
-    if (TableType.MANAGED_TABLE.name().equals(tableType)) {
-      LOG.debug("Table is a MANAGED_TABLE");
-      if (table.isSetSd()) {
-        tableLocation = Path.getPathWithoutSchemeAndAuthority(new Path(table.getSd().getLocation()));
-      }
-      whRootPath = Path.getPathWithoutSchemeAndAuthority(hmsHandler.getWh().getWhRoot());
-      if (tableLocation != null && tableLocationChanged(table) && !FileUtils.isSubdirectory(whRootPath.toString(), tableLocation.toString())) {
-        throw new MetaException(
-            "A managed table's location needs to be under the hive warehouse root directory," + "table:"
-                + table.getTableName() + ",location:" + tableLocation + ",Hive warehouse:" + whRootPath);
-      }
-    } else if (TableType.EXTERNAL_TABLE.name().equals(tableType)) {
-      if (table.isSetSd()) {
-        tableLocation = Path.getPathWithoutSchemeAndAuthority(new Path(table.getSd().getLocation()));
-      }
-      whRootPath = Path.getPathWithoutSchemeAndAuthority(hmsHandler.getWh().getWhRoot());
-      if (tableLocation != null) {
-        LOG.debug("Table is an EXTERNAL TABLE:tableLocation={}, whroot={}", tableLocation, whRootPath);
-        if (tableLocationChanged(table) && FileUtils.isSubdirectory(whRootPath.toString(), tableLocation.toString())) {
-          throw new MetaException(
-              "An external table's location should not be located within managed warehouse root directory," + "table:"
-              + table.getTableName() + ",location:" + tableLocation + ",Hive managed warehouse:" + whRootPath);
-        }
-      } else {
-        LOG.debug("Table is an EXTERNAL TABLE:tableLocation=null");
-      }
-    }
+    if (tableLocationChanged(table))
+      validateTablePaths(table);
+
     LOG.debug("Transformer returning table:" + table.toString());
     return table;
   }
@@ -702,12 +679,13 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
     LOG.info("Starting translation for transformDatabase for processor " + processorId + " with " + processorCapabilities
         + " on database " + db.getName());
 
-    if (processorCapabilities == null || (!processorCapabilities.contains(HIVEMANAGEDINSERTWRITE) &&
-            !processorCapabilities.contains(HIVEFULLACIDWRITE))) {
+    if (!isTenantBasedStorage && (processorCapabilities == null || (!processorCapabilities.contains(HIVEMANAGEDINSERTWRITE) &&
+            !processorCapabilities.contains(HIVEFULLACIDWRITE)))) {
       LOG.info("Processor does not have any of ACID write capabilities, changing current location from " +
               db.getLocationUri() + " to external warehouse location");
       Path extWhLocation = hmsHandler.getWh().getDefaultExternalDatabasePath(db.getName());
       LOG.debug("Setting DBLocation to " + extWhLocation.toString());
+      // TODO should not alter database now.
       db.setLocationUri(extWhLocation.toString());
     }
     LOG.info("Transformer returning database:" + db.toString());
@@ -766,5 +744,79 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
       }
     }
     return reads;
+  }
+
+  private Table validateTablePaths(Table table) throws MetaException {
+    Database db = null;
+    String tableLocation = table.isSetSd()? table.getSd().getLocation() : null;
+    try {
+      db = hmsHandler.get_database_core(table.getCatName(), table.getDbName());
+    } catch (NoSuchObjectException e) {
+      throw new MetaException("Database " + table.getTableName() + " for table " + table.getTableName() + " could not be found");
+    }
+
+    if (TableType.MANAGED_TABLE.name().equals(table.getTableType())) {
+      if (db.getManagedLocationUri() != null) {
+        if (tableLocation != null) {
+          throw new MetaException("Location for managed table is derived from the database's managedLocationUri, "
+              + "it cannot be specified by the user");
+        } else {
+          Path path = hmsHandler.getWh().getDefaultTablePath(db, table.getTableName(), false);
+          table.getSd().setLocation(path.toString());
+          return table;
+        }
+      } else {
+        if (tableLocation != null) {
+          Path tablePath = Path.getPathWithoutSchemeAndAuthority(new Path(tableLocation));
+          if (!FileUtils.isSubdirectory(hmsHandler.getWh().getWhRoot().toString(), tableLocation)) {
+            throw new MetaException(
+                "A managed table's location should be located within managed warehouse root directory or within its database's "
+                    + "managedLocationUri. Table " + table.getTableName() + "'s location is not valid:" + tableLocation
+                    + ", managed warehouse:" + hmsHandler.getWh().getWhRoot());
+          }
+        } else {
+          Path path = hmsHandler.getWh().getDefaultManagedTablePath(db, table.getTableName());
+          table.getSd().setLocation(path.toString());
+        }
+      }
+    } else { // EXTERNAL TABLE
+      Path whRootPath = Path.getPathWithoutSchemeAndAuthority(hmsHandler.getWh().getWhRoot());
+      Path dbLocation = Path.getPathWithoutSchemeAndAuthority(new Path(db.getLocationUri()));
+      LOG.debug("ValidateTablePaths: whRoot={} dbLocation={} tableLocation={} ", whRootPath.toString(), dbLocation.toString(), tableLocation);
+      if (tableLocation != null) {
+        Path tablePath = Path.getPathWithoutSchemeAndAuthority(new Path(tableLocation));
+        if (isTenantBasedStorage) {
+          if (!FileUtils.isSubdirectory(dbLocation.toString(), tablePath.toString())) { // location outside dblocation
+            throw new MetaException(
+                "An external table's location should not be located outside the location specified on its database, table:"
+                    + table.getTableName() + ",location:" + tablePath + ",Database location for external tables:" + dbLocation);
+          }
+
+          dbLocation = Path.getPathWithoutSchemeAndAuthority(new Path(db.getManagedLocationUri()));
+          if (dbLocation != null && FileUtils.isSubdirectory(dbLocation.toString(), tablePath.toString())) {
+            throw new MetaException(
+                "An external table's location should not be located within managed warehouse root directory of its database, table:"
+                    + table.getTableName() + ",location:" + tablePath + ",Database's managed warehouse:" + dbLocation);
+          }
+        } else {
+          if (FileUtils.isSubdirectory(whRootPath.toString(), tablePath.toString())) {
+            throw new MetaException(
+                "An external table's location should not be located within managed warehouse root directory, table:"
+                    + table.getTableName() + ",location:" + tablePath + ",managed warehouse:" + whRootPath);
+          }
+          return table;
+        }
+      } else {
+        dbLocation = Path.getPathWithoutSchemeAndAuthority(new Path(db.getLocationUri()));
+        Path tablePath = null;
+        if (!FileUtils.isSubdirectory(whRootPath.toString(), dbLocation.toString())) {
+          tablePath = new Path(db.getLocationUri(), table.getTableName());
+        } else {
+          tablePath = hmsHandler.getWh().getDefaultTablePath(db, table.getTableName(), true);
+        }
+        table.getSd().setLocation(tablePath.toString());
+      }
+    }
+    return table;
   }
 }

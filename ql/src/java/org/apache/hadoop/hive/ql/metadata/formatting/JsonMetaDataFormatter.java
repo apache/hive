@@ -616,10 +616,13 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
    */
   @Override
   public void showDatabaseDescription(DataOutputStream out, String database, String comment,
-      String location, String ownerName, PrincipalType ownerType, Map<String, String> params)
+      String location, String managedLocation, String ownerName, PrincipalType ownerType, Map<String, String> params)
           throws HiveException {
     MapBuilder builder = MapBuilder.create().put("database", database).put("comment", comment)
         .put("location", location);
+    if (null != managedLocation) {
+      builder.put("managedLocation", managedLocation);
+    }
     if (null != ownerName) {
       builder.put("owner", ownerName);
     }

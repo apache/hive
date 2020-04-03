@@ -127,6 +127,7 @@ class MetastoreHousekeepingLeaderTestBase {
             RemoteMetastoreTaskThreadTestImpl1.class.getCanonicalName() + "," +
                     RemoteMetastoreTaskThreadTestImpl2.class.getCanonicalName();
 
+    MetastoreConf.setBoolVar(conf, ConfVars.METASTORE_HOUSEKEEPING_THREADS_ON, true);
     MetastoreConf.setVar(conf, ConfVars.TASK_THREADS_REMOTE_ONLY, remoteTaskClassPaths);
 
     threadNames.put(RemoteMetastoreTaskThreadTestImpl1.TASK_NAME, false);

@@ -72,6 +72,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
 
     conf = new HiveConf(clazz);
     conf.set("dfs.client.use.datanode.hostname", "true");
+    conf.set("metastore.warehouse.tenant.colocation", "true");
     conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     MiniDFSCluster miniDFSCluster =
         new MiniDFSCluster.Builder(conf).numDataNodes(1).format(true).build();
@@ -85,6 +86,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
         put("hive.mapred.mode", "nonstrict");
         put("mapred.input.dir.recursive", "true");
         put("hive.metastore.disallow.incompatible.col.type.changes", "false");
+        put("metastore.warehouse.tenant.colocation", "true");
         put("hive.in.repl.test", "true");
       }};
 

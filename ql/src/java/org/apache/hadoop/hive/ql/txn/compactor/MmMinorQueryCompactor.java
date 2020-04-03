@@ -182,7 +182,7 @@ final class MmMinorQueryCompactor extends QueryCompactor {
             CompactionQueryBuilder.CompactionType.MINOR_INSERT_ONLY,
             CompactionQueryBuilder.Operation.INSERT,
             resultTmpTableName)
-        .setFromTableName(sourceTmpTableName)
+        .setSourceTabForInsert(sourceTmpTableName)
         .setSourceTab(sourceTable)
         .build()
     );

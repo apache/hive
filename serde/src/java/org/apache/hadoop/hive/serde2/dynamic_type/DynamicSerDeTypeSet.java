@@ -57,7 +57,6 @@ public class DynamicSerDeTypeSet extends DynamicSerDeTypeBase {
       Set<?> l = Collections.singleton(o);
       return l.getClass();
     } catch (Exception e) {
-      e.printStackTrace();
       throw new RuntimeException(e);
     }
   }

@@ -69,6 +69,10 @@
         <!-- allows null is true to keep backwards compatibility with old releases -->
         <column name="CREATE_TIME" jdbc-type="integer" allows-null="true"/>
       </field>
+      <field name="managedLocationUri">
+        <column name="DB_MANAGED_LOCATION_URI" length="4000" jdbc-type="VARCHAR" allows-null="true"/>
+      </field>
+
     </class>
 
     <class name="MCatalog" identity-type="datastore" table="CTLGS" detachable="true">
