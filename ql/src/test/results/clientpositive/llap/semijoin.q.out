@@ -1930,22 +1930,22 @@ STAGE PLANS:
                   0 _col5 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 24 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 17 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   null sort order: z
                   sort order: +
-                  Statistics: Num rows: 24 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 17 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 4 
             Execution mode: llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 24 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 17 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 24 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 17 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2288,22 +2288,22 @@ STAGE PLANS:
                   0 _col5 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   null sort order: z
                   sort order: +
-                  Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 4 
             Execution mode: llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

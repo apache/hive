@@ -1846,12 +1846,12 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         input vertices:
                           1 Map 4
-                        Statistics: Num rows: 24 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 17 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int)
                           null sort order: z
                           sort order: +
-                          Statistics: Num rows: 24 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 17 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
             LLAP IO: all inputs
         Map 3 
@@ -1900,10 +1900,10 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 24 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 17 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 24 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 17 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2060,22 +2060,22 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     input vertices:
                       1 Map 5
-                    Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
                       null sort order: z
                       sort order: +
-                      Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2235,22 +2235,22 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     input vertices:
                       1 Map 5
-                    Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
                       null sort order: z
                       sort order: +
-                      Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -5025,13 +5025,13 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         input vertices:
                           1 Map 4
-                        Statistics: Num rows: 24 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 17 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
                         HybridGraceHashJoin: true
                         Reduce Output Operator
                           key expressions: _col0 (type: int)
                           null sort order: z
                           sort order: +
-                          Statistics: Num rows: 24 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 17 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
             LLAP IO: all inputs
         Map 3 
@@ -5080,10 +5080,10 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 24 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 17 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 24 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 17 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -5240,23 +5240,23 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     input vertices:
                       1 Map 5
-                    Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     HybridGraceHashJoin: true
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
                       null sort order: z
                       sort order: +
-                      Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -5416,23 +5416,23 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     input vertices:
                       1 Map 5
-                    Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     HybridGraceHashJoin: true
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
                       null sort order: z
                       sort order: +
-                      Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -8265,12 +8265,12 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     input vertices:
                       1 Map 5
-                    Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
                       null sort order: z
                       sort order: +
-                      Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
             MergeJoin Vectorization:
                 enabled: false
                 enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
@@ -8289,13 +8289,13 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -8511,12 +8511,12 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     input vertices:
                       1 Map 5
-                    Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
                       null sort order: z
                       sort order: +
-                      Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
             MergeJoin Vectorization:
                 enabled: false
                 enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
@@ -8535,13 +8535,13 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -11942,7 +11942,7 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         input vertices:
                           1 Map 4
-                        Statistics: Num rows: 24 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 17 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
                         HybridGraceHashJoin: true
                         Reduce Output Operator
                           key expressions: _col0 (type: int)
@@ -11952,7 +11952,7 @@ STAGE PLANS:
                               className: VectorReduceSinkObjectHashOperator
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          Statistics: Num rows: 24 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 17 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -12060,13 +12060,13 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                Statistics: Num rows: 24 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 17 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 24 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 17 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -12279,13 +12279,13 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     input vertices:
                       1 Map 5
-                    Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     HybridGraceHashJoin: true
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
                       null sort order: z
                       sort order: +
-                      Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
             MergeJoin Vectorization:
                 enabled: false
                 enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
@@ -12304,13 +12304,13 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -12526,13 +12526,13 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     input vertices:
                       1 Map 5
-                    Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     HybridGraceHashJoin: true
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
                       null sort order: z
                       sort order: +
-                      Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
             MergeJoin Vectorization:
                 enabled: false
                 enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
@@ -12551,13 +12551,13 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -16398,7 +16398,7 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         input vertices:
                           1 Map 4
-                        Statistics: Num rows: 24 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 17 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int)
                           null sort order: z
@@ -16407,7 +16407,7 @@ STAGE PLANS:
                               className: VectorReduceSinkObjectHashOperator
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          Statistics: Num rows: 24 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 17 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -16515,13 +16515,13 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                Statistics: Num rows: 24 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 17 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 24 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 17 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -16734,12 +16734,12 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     input vertices:
                       1 Map 5
-                    Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
                       null sort order: z
                       sort order: +
-                      Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
             MergeJoin Vectorization:
                 enabled: false
                 enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
@@ -16758,13 +16758,13 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -16980,12 +16980,12 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     input vertices:
                       1 Map 5
-                    Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
                       null sort order: z
                       sort order: +
-                      Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
             MergeJoin Vectorization:
                 enabled: false
                 enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
@@ -17004,13 +17004,13 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -20846,7 +20846,7 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         input vertices:
                           1 Map 4
-                        Statistics: Num rows: 24 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 17 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
                         HybridGraceHashJoin: true
                         Reduce Output Operator
                           key expressions: _col0 (type: int)
@@ -20856,7 +20856,7 @@ STAGE PLANS:
                               className: VectorReduceSinkObjectHashOperator
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          Statistics: Num rows: 24 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 17 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -20964,13 +20964,13 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                Statistics: Num rows: 24 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 17 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 24 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 17 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -21183,13 +21183,13 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     input vertices:
                       1 Map 5
-                    Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     HybridGraceHashJoin: true
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
                       null sort order: z
                       sort order: +
-                      Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
             MergeJoin Vectorization:
                 enabled: false
                 enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
@@ -21208,13 +21208,13 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -21430,13 +21430,13 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     input vertices:
                       1 Map 5
-                    Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     HybridGraceHashJoin: true
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
                       null sort order: z
                       sort order: +
-                      Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
             MergeJoin Vectorization:
                 enabled: false
                 enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
@@ -21455,13 +21455,13 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 24 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 17 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
