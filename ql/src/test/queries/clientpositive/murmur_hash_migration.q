@@ -36,14 +36,14 @@ analyze table srcbucket_mapjoin_part_n20 compute statistics for columns;
 
 
 CREATE TABLE tab_part_n11 (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE;
-explain
+explain extended
 insert overwrite table tab_part_n11 partition (ds='2008-04-08')
   select key,value from srcbucket_mapjoin_part_n20;
 insert overwrite table tab_part_n11 partition (ds='2008-04-08')
   select key,value from srcbucket_mapjoin_part_n20;
 
 CREATE TABLE tab_n10(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE;
-explain
+explain extended
 insert overwrite table tab_n10 partition (ds='2008-04-08')
   select key,value from srcbucket_mapjoin_n18;
 insert overwrite table tab_n10 partition (ds='2008-04-08')
@@ -52,11 +52,11 @@ insert overwrite table tab_n10 partition (ds='2008-04-08')
 analyze table tab_part_n11 compute statistics for columns;
 analyze table tab_n10 compute statistics for columns;
 
-explain
+explain extended
 select t1.key, t1.value, t2.key, t2.value from srcbucket_mapjoin_n18 t1, srcbucket_mapjoin_part_n20 t2 where t1.key = t2.key order by t1.key, t1.value, t2.key, t2.value;
 select t1.key, t1.value, t2.key, t2.value from srcbucket_mapjoin_n18 t1, srcbucket_mapjoin_part_n20 t2 where t1.key = t2.key order by t1.key, t1.value, t2.key, t2.value;
 
-explain
+explain extended
 select t1.key, t1.value, t2.key, t2.value from tab_part_n11 t1, tab_n10 t2 where t1.key = t2.key order by t1.key, t1.value, t2.key, t2.value;
 select t1.key, t1.value, t2.key, t2.value from tab_part_n11 t1, tab_n10 t2 where t1.key = t2.key order by t1.key, t1.value, t2.key, t2.value;
 
