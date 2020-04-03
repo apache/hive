@@ -386,6 +386,7 @@ struct Database {
   7: optional PrincipalType ownerType,
   8: optional string catalogName,
   9: optional i32 createTime               // creation time of database in seconds since epoch
+  10: optional string managedLocationUri // directory for managed tables
 }
 
 // This object holds the information needed by SerDes

@@ -42,14 +42,14 @@ PREHOOK: Input: database:escape_comments_db
 POSTHOOK: query: describe database extended escape_comments_db
 POSTHOOK: type: DESCDATABASE
 POSTHOOK: Input: database:escape_comments_db
-escape_comments_db	a\nb	location/in/test	hive_test_user	USER	
+escape_comments_db	a\nb	location/in/test		hive_test_user	USER	
 PREHOOK: query: describe database escape_comments_db
 PREHOOK: type: DESCDATABASE
 PREHOOK: Input: database:escape_comments_db
 POSTHOOK: query: describe database escape_comments_db
 POSTHOOK: type: DESCDATABASE
 POSTHOOK: Input: database:escape_comments_db
-escape_comments_db	a\nb	location/in/test	hive_test_user	USER	
+escape_comments_db	a\nb	location/in/test		hive_test_user	USER	
 PREHOOK: query: show create table escape_comments_tbl1
 PREHOOK: type: SHOW_CREATETABLE
 PREHOOK: Input: escape_comments_db@escape_comments_tbl1

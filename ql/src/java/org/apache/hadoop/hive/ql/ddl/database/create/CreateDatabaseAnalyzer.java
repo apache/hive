@@ -46,7 +46,7 @@ public class CreateDatabaseAnalyzer extends BaseSemanticAnalyzer {
 
     boolean ifNotExists = false;
     String comment = null;
-    String locationUri = null;
+    String locationUri = null, managedLocationUri = null;
     Map<String, String> props = null;
 
     for (int i = 1; i < root.getChildCount(); i++) {
@@ -65,15 +65,21 @@ public class CreateDatabaseAnalyzer extends BaseSemanticAnalyzer {
         locationUri = unescapeSQLString(childNode.getChild(0).getText());
         outputs.add(toWriteEntity(locationUri));
         break;
+      case HiveParser.TOK_DATABASE_MANAGEDLOCATION:
+        managedLocationUri = unescapeSQLString(childNode.getChild(0).getText());
+        outputs.add(toWriteEntity(managedLocationUri));
+        break;
       default:
         throw new SemanticException("Unrecognized token in CREATE DATABASE statement");
       }
     }
 
-    CreateDatabaseDesc desc = new CreateDatabaseDesc(databaseName, comment, locationUri, ifNotExists, props);
+    CreateDatabaseDesc desc = new CreateDatabaseDesc(databaseName, comment, locationUri, ifNotExists, props, managedLocationUri);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
 
     Database database = new Database(databaseName, comment, locationUri, props);
+    if (managedLocationUri != null)
+      database.setManagedLocationUri(managedLocationUri);
     outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_NO_LOCK));
   }
 }

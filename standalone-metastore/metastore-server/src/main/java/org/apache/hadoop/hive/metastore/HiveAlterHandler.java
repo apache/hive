@@ -239,8 +239,8 @@ public class HiveAlterHandler implements AlterHandler {
           // in the table rename, its data location should not be changed. We can check
           // if the table directory was created directly under its database directory to tell
           // if it is such a table
-          String oldtRelativePath = (new Path(olddb.getLocationUri()).toUri())
-                  .relativize(srcPath.toUri()).toString();
+          String oldtRelativePath = wh.getDatabasePath(olddb).toUri()
+              .relativize(srcPath.toUri()).toString();
           boolean tableInSpecifiedLoc = !oldtRelativePath.equalsIgnoreCase(name)
                   && !oldtRelativePath.equalsIgnoreCase(name + Path.SEPARATOR);
           if (!tableInSpecifiedLoc) {
