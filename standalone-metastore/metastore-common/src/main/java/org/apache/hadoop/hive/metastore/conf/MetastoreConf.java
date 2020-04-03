@@ -303,6 +303,11 @@ public class MetastoreConf {
     AGGREGATE_STATS_CACHE_TTL("metastore.aggregate.stats.cache.ttl",
         "hive.metastore.aggregate.stats.cache.ttl", 600, TimeUnit.SECONDS,
         "Number of seconds for a cached node to be active in the cache before they become stale."),
+    ALLOW_TENANT_BASED_STORAGE("metastore.warehouse.tenant.colocation", "hive.metastore.warehouse.tenant.colocation", false,
+        "Allows managed and external tables for a tenant to have a common parent directory\n" +
+        "For example: /user/warehouse/user1/managed and /user/warehouse/user1/external\n" +
+        "This allows users to be able to set quotas on user1 directory. These locations have to be defined on the\n" +
+        "database object explicitly when creating the DB or via alter database."),
     ALTER_HANDLER("metastore.alter.handler", "hive.metastore.alter.impl",
         HIVE_ALTER_HANDLE_CLASS,
         "Alter handler.  For now defaults to the Hive one.  Really need a better default option"),

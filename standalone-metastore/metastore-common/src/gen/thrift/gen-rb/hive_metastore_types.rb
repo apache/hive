@@ -999,6 +999,7 @@ class Database
   OWNERTYPE = 7
   CATALOGNAME = 8
   CREATETIME = 9
+  MANAGEDLOCATIONURI = 10
 
   FIELDS = {
     NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
@@ -1009,7 +1010,8 @@ class Database
     OWNERNAME => {:type => ::Thrift::Types::STRING, :name => 'ownerName', :optional => true},
     OWNERTYPE => {:type => ::Thrift::Types::I32, :name => 'ownerType', :optional => true, :enum_class => ::PrincipalType},
     CATALOGNAME => {:type => ::Thrift::Types::STRING, :name => 'catalogName', :optional => true},
-    CREATETIME => {:type => ::Thrift::Types::I32, :name => 'createTime', :optional => true}
+    CREATETIME => {:type => ::Thrift::Types::I32, :name => 'createTime', :optional => true},
+    MANAGEDLOCATIONURI => {:type => ::Thrift::Types::STRING, :name => 'managedLocationUri', :optional => true}
   }
 
   def struct_fields; FIELDS; end

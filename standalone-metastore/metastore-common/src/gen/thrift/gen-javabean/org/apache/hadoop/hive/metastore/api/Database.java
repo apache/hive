@@ -47,6 +47,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField OWNER_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("ownerType", org.apache.thrift.protocol.TType.I32, (short)7);
   private static final org.apache.thrift.protocol.TField CATALOG_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("catalogName", org.apache.thrift.protocol.TType.STRING, (short)8);
   private static final org.apache.thrift.protocol.TField CREATE_TIME_FIELD_DESC = new org.apache.thrift.protocol.TField("createTime", org.apache.thrift.protocol.TType.I32, (short)9);
+  private static final org.apache.thrift.protocol.TField MANAGED_LOCATION_URI_FIELD_DESC = new org.apache.thrift.protocol.TField("managedLocationUri", org.apache.thrift.protocol.TType.STRING, (short)10);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -63,6 +64,7 @@ import org.slf4j.LoggerFactory;
   private PrincipalType ownerType; // optional
   private String catalogName; // optional
   private int createTime; // optional
+  private String managedLocationUri; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -78,7 +80,8 @@ import org.slf4j.LoggerFactory;
      */
     OWNER_TYPE((short)7, "ownerType"),
     CATALOG_NAME((short)8, "catalogName"),
-    CREATE_TIME((short)9, "createTime");
+    CREATE_TIME((short)9, "createTime"),
+    MANAGED_LOCATION_URI((short)10, "managedLocationUri");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -111,6 +114,8 @@ import org.slf4j.LoggerFactory;
           return CATALOG_NAME;
         case 9: // CREATE_TIME
           return CREATE_TIME;
+        case 10: // MANAGED_LOCATION_URI
+          return MANAGED_LOCATION_URI;
         default:
           return null;
       }
@@ -153,7 +158,7 @@ import org.slf4j.LoggerFactory;
   // isset id assignments
   private static final int __CREATETIME_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.PRIVILEGES,_Fields.OWNER_NAME,_Fields.OWNER_TYPE,_Fields.CATALOG_NAME,_Fields.CREATE_TIME};
+  private static final _Fields optionals[] = {_Fields.PRIVILEGES,_Fields.OWNER_NAME,_Fields.OWNER_TYPE,_Fields.CATALOG_NAME,_Fields.CREATE_TIME,_Fields.MANAGED_LOCATION_URI};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -177,6 +182,8 @@ import org.slf4j.LoggerFactory;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.CREATE_TIME, new org.apache.thrift.meta_data.FieldMetaData("createTime", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+    tmpMap.put(_Fields.MANAGED_LOCATION_URI, new org.apache.thrift.meta_data.FieldMetaData("managedLocationUri", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Database.class, metaDataMap);
   }
@@ -228,6 +235,9 @@ import org.slf4j.LoggerFactory;
       this.catalogName = other.catalogName;
     }
     this.createTime = other.createTime;
+    if (other.isSetManagedLocationUri()) {
+      this.managedLocationUri = other.managedLocationUri;
+    }
   }
 
   public Database deepCopy() {
@@ -246,6 +256,7 @@ import org.slf4j.LoggerFactory;
     this.catalogName = null;
     setCreateTimeIsSet(false);
     this.createTime = 0;
+    this.managedLocationUri = null;
   }
 
   public String getName() {
@@ -473,6 +484,29 @@ import org.slf4j.LoggerFactory;
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __CREATETIME_ISSET_ID, value);
   }
 
+  public String getManagedLocationUri() {
+    return this.managedLocationUri;
+  }
+
+  public void setManagedLocationUri(String managedLocationUri) {
+    this.managedLocationUri = managedLocationUri;
+  }
+
+  public void unsetManagedLocationUri() {
+    this.managedLocationUri = null;
+  }
+
+  /** Returns true if field managedLocationUri is set (has been assigned a value) and false otherwise */
+  public boolean isSetManagedLocationUri() {
+    return this.managedLocationUri != null;
+  }
+
+  public void setManagedLocationUriIsSet(boolean value) {
+    if (!value) {
+      this.managedLocationUri = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case NAME:
@@ -547,6 +581,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case MANAGED_LOCATION_URI:
+      if (value == null) {
+        unsetManagedLocationUri();
+      } else {
+        setManagedLocationUri((String)value);
+      }
+      break;
+
     }
   }
 
@@ -579,6 +621,9 @@ import org.slf4j.LoggerFactory;
     case CREATE_TIME:
       return getCreateTime();
 
+    case MANAGED_LOCATION_URI:
+      return getManagedLocationUri();
+
     }
     throw new IllegalStateException();
   }
@@ -608,6 +653,8 @@ import org.slf4j.LoggerFactory;
       return isSetCatalogName();
     case CREATE_TIME:
       return isSetCreateTime();
+    case MANAGED_LOCATION_URI:
+      return isSetManagedLocationUri();
     }
     throw new IllegalStateException();
   }
@@ -706,6 +753,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_managedLocationUri = true && this.isSetManagedLocationUri();
+    boolean that_present_managedLocationUri = true && that.isSetManagedLocationUri();
+    if (this_present_managedLocationUri || that_present_managedLocationUri) {
+      if (!(this_present_managedLocationUri && that_present_managedLocationUri))
+        return false;
+      if (!this.managedLocationUri.equals(that.managedLocationUri))
+        return false;
+    }
+
     return true;
   }
 
@@ -757,6 +813,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_createTime);
     if (present_createTime)
       list.add(createTime);
+
+    boolean present_managedLocationUri = true && (isSetManagedLocationUri());
+    list.add(present_managedLocationUri);
+    if (present_managedLocationUri)
+      list.add(managedLocationUri);
 
     return list.hashCode();
   }
@@ -859,6 +920,16 @@ import org.slf4j.LoggerFactory;
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetManagedLocationUri()).compareTo(other.isSetManagedLocationUri());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetManagedLocationUri()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.managedLocationUri, other.managedLocationUri);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -954,6 +1025,16 @@ import org.slf4j.LoggerFactory;
       if (!first) sb.append(", ");
       sb.append("createTime:");
       sb.append(this.createTime);
+      first = false;
+    }
+    if (isSetManagedLocationUri()) {
+      if (!first) sb.append(", ");
+      sb.append("managedLocationUri:");
+      if (this.managedLocationUri == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.managedLocationUri);
+      }
       first = false;
     }
     sb.append(")");
@@ -1089,6 +1170,14 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 10: // MANAGED_LOCATION_URI
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.managedLocationUri = iprot.readString();
+              struct.setManagedLocationUriIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -1163,6 +1252,13 @@ import org.slf4j.LoggerFactory;
         oprot.writeI32(struct.createTime);
         oprot.writeFieldEnd();
       }
+      if (struct.managedLocationUri != null) {
+        if (struct.isSetManagedLocationUri()) {
+          oprot.writeFieldBegin(MANAGED_LOCATION_URI_FIELD_DESC);
+          oprot.writeString(struct.managedLocationUri);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -1208,7 +1304,10 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetCreateTime()) {
         optionals.set(8);
       }
-      oprot.writeBitSet(optionals, 9);
+      if (struct.isSetManagedLocationUri()) {
+        optionals.set(9);
+      }
+      oprot.writeBitSet(optionals, 10);
       if (struct.isSetName()) {
         oprot.writeString(struct.name);
       }
@@ -1243,12 +1342,15 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetCreateTime()) {
         oprot.writeI32(struct.createTime);
       }
+      if (struct.isSetManagedLocationUri()) {
+        oprot.writeString(struct.managedLocationUri);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, Database struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(9);
+      BitSet incoming = iprot.readBitSet(10);
       if (incoming.get(0)) {
         struct.name = iprot.readString();
         struct.setNameIsSet(true);
@@ -1296,6 +1398,10 @@ import org.slf4j.LoggerFactory;
       if (incoming.get(8)) {
         struct.createTime = iprot.readI32();
         struct.setCreateTimeIsSet(true);
+      }
+      if (incoming.get(9)) {
+        struct.managedLocationUri = iprot.readString();
+        struct.setManagedLocationUriIsSet(true);
       }
     }
   }

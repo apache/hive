@@ -657,6 +657,7 @@ public class ObjectStore implements RawStore, Configurable {
     assert mdb.getCatalogName() != null;
     mdb.setName(db.getName().toLowerCase());
     mdb.setLocationUri(db.getLocationUri());
+    mdb.setManagedLocationUri(db.getManagedLocationUri());
     mdb.setDescription(db.getDescription());
     mdb.setParameters(db.getParameters());
     mdb.setOwnerName(db.getOwnerName());
@@ -751,6 +752,7 @@ public class ObjectStore implements RawStore, Configurable {
     db.setName(mdb.getName());
     db.setDescription(mdb.getDescription());
     db.setLocationUri(mdb.getLocationUri());
+    db.setManagedLocationUri(org.apache.commons.lang3.StringUtils.defaultIfBlank(mdb.getManagedLocationUri(), null));
     db.setParameters(convertMap(mdb.getParameters()));
     db.setOwnerName(mdb.getOwnerName());
     String type = org.apache.commons.lang3.StringUtils.defaultIfBlank(mdb.getOwnerType(), null);
@@ -785,6 +787,9 @@ public class ObjectStore implements RawStore, Configurable {
       }
       if (org.apache.commons.lang3.StringUtils.isNotBlank(db.getLocationUri())) {
         mdb.setLocationUri(db.getLocationUri());
+      }
+      if (org.apache.commons.lang3.StringUtils.isNotBlank(db.getManagedLocationUri())) {
+        mdb.setManagedLocationUri(db.getManagedLocationUri());
       }
       openTransaction();
       pm.makePersistent(mdb);
