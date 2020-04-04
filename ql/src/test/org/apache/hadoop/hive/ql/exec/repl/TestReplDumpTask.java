@@ -84,11 +84,11 @@ public class TestReplDumpTask {
     }
 
     @Override
-    void dumpFunctionMetadata(String dbName, Path dumpRoot, Hive hiveDb) {
+    void dumpFunctionMetadata(String dbName, Path metadataRoot, Hive hiveDb) {
     }
 
     @Override
-    Path dumpDbMetadata(String dbName, Path dumpRoot, long lastReplId, Hive hiveDb) {
+    Path dumpDbMetadata(String dbName, Path metadataRoot, long lastReplId, Hive hiveDb) {
       return Mockito.mock(Path.class);
     }
 
@@ -129,7 +129,7 @@ public class TestReplDumpTask {
 
       @Override
       List<EximUtil.ManagedTableCopyPath> dumpTable(String dbName, String tblName, String validTxnList, Path dbRoot,
-                                               Path replDataDir, long lastReplId, Hive hiveDb,
+                                               long lastReplId, Hive hiveDb,
                                                HiveWrapper.Tuple<Table> tuple)
           throws Exception {
         tableDumpCount++;

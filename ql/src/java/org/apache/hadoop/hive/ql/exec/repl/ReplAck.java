@@ -22,8 +22,7 @@ package org.apache.hadoop.hive.ql.exec.repl;
  */
 public enum ReplAck {
     DUMP_ACKNOWLEDGEMENT("_finished_dump"),
-    LOAD_ACKNOWLEDGEMENT("_finished_load"),
-    COPY_ACKNOWLEDGEMENT("_finished_copy");
+    LOAD_ACKNOWLEDGEMENT("_finished_load");
   private String ack;
   ReplAck(String ack) {
     this.ack = ack;

@@ -61,15 +61,8 @@ public class ReplCopyWork extends CopyWork {
 
   private boolean checkDuplicateCopy = false;
 
-  private boolean checkpointEnabled = false;
-
   public ReplCopyWork(final Path srcPath, final Path destPath, boolean errorOnSrcEmpty) {
     super(srcPath, destPath, errorOnSrcEmpty);
-  }
-
-  public ReplCopyWork(final Path srcPath, final Path destPath, boolean errorOnSrcEmpty, boolean checkpointEnabled) {
-    this(srcPath, destPath, errorOnSrcEmpty);
-    this.checkpointEnabled = checkpointEnabled;
   }
 
   public void setReadSrcAsFilesList(boolean readSrcAsFilesList) {
@@ -126,9 +119,5 @@ public class ReplCopyWork extends CopyWork {
 
   public void setCheckDuplicateCopy(boolean flag) {
     checkDuplicateCopy = flag;
-  }
-
-  public boolean isCheckpointEnabled() {
-    return checkpointEnabled;
   }
 }

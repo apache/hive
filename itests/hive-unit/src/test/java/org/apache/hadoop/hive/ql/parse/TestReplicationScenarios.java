@@ -99,7 +99,6 @@ import java.util.Map;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
-import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.COPY_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.DUMP_ACKNOWLEDGEMENT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -1442,8 +1441,9 @@ public class TestReplicationScenarios {
     Path path = new Path(System.getProperty("test.warehouse.dir", ""));
     String tableRelativeSrcPath = dbName.toLowerCase()+".db" + File.separator + "unptned";
     Path srcFileLocation = new Path(path, tableRelativeSrcPath + File.separator + unptnedFileName1);
-    String tgtFileRelativePath = ReplUtils.REPL_HIVE_BASE_DIR + File.separator + dbName.toLowerCase() + File.separator
-            + "unptned" + File.separator + EximUtil.DATA_PATH_NAME +File.separator + unptnedFileName1;
+    String tgtFileRelativePath = ReplUtils.REPL_HIVE_BASE_DIR + File.separator + dbName.toLowerCase()
+            + File.separator + EximUtil.DATA_PATH_NAME + File.separator
+            + "unptned" +File.separator + unptnedFileName1;
     Path tgtFileLocation = new Path(dump.dumpLocation, tgtFileRelativePath);
     //A file in table at src location should be copied to $dumplocation/hive/<db>/<table>/data/<unptned_fileName>
     verifyChecksum(srcFileLocation, tgtFileLocation, true);
@@ -1453,8 +1453,9 @@ public class TestReplicationScenarios {
     String partitionRelativeSrcPath = dbName.toLowerCase()+".db" + File.separator + "ptned" + File.separator + "b=1";
     srcFileLocation = new Path(path, partitionRelativeSrcPath + File.separator + ptnedFileName1);
     tgtFileRelativePath = ReplUtils.REPL_HIVE_BASE_DIR + File.separator + dbName.toLowerCase()
-            + File.separator + "ptned" + File.separator + "b=1" + File.separator
-            + EximUtil.DATA_PATH_NAME +File.separator + ptnedFileName1;
+            + File.separator + EximUtil.DATA_PATH_NAME +File.separator
+            + "ptned" + File.separator + "b=1" + File.separator
+            + ptnedFileName1;
     tgtFileLocation = new Path(dump.dumpLocation, tgtFileRelativePath);
     //A partitioned file in table at src location should be copied to
     // $dumplocation/hive/<db>/<table>/<partition>/data/<unptned_fileName>
@@ -3838,290 +3839,5 @@ public class TestReplicationScenarios {
         writer.close();
       }
     }
-  }
-
-  @Test
-  public void testCheckPointing() throws IOException {
-    String testname = testName.getMethodName();
-    String dbName = createDB(testname, driver);
-    run("CREATE TABLE " + dbName + ".t1(a string) STORED AS TEXTFILE", driver);
-    run("CREATE TABLE " + dbName + ".t2(a string) STORED AS TEXTFILE", driver);
-
-    run("insert into "+ dbName +".t1 values (1)", driver);
-    run("insert into "+ dbName +".t1 values (2)", driver);
-    run("insert into "+ dbName +".t1 values (3)", driver);
-    run("insert into "+ dbName +".t2 values (11)", driver);
-    run("insert into "+ dbName +".t2 values (21)", driver);
-
-    String replicatedDbName = dbName + "_dupe";
-    Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replicatedDbName);
-
-    FileSystem fs = new Path(bootstrapDump.dumpLocation).getFileSystem(hconf);
-    Path dumpPath = new Path(bootstrapDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
-    assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
-    assertTrue(fs.exists(new Path(dumpPath, LOAD_ACKNOWLEDGEMENT.toString())));
-    Path dbPath = new Path(dumpPath + Path.SEPARATOR + dbName);
-    Path tablet1Path = new Path(dbPath, "t1");
-    assertTrue(fs.exists(new Path(new Path(tablet1Path, "data"),
-            COPY_ACKNOWLEDGEMENT.toString())));
-    Path tablet2Path = new Path(dbPath, "t2");
-    assertTrue(fs.exists(new Path(new Path(tablet2Path, "data"),
-            COPY_ACKNOWLEDGEMENT.toString())));
-
-    run("insert into "+ dbName +".t1 values (3)", driver);
-    run("insert into "+ dbName +".t1 values (4)", driver);
-    incrementalLoadAndVerify(dbName, replicatedDbName);
-  }
-
-  @Test
-  public void testCheckPointingInDumpFailure() throws IOException {
-    String testname = testName.getMethodName();
-    String dbName = createDB(testname, driver);
-    run("CREATE TABLE " + dbName + ".t1(a string) STORED AS TEXTFILE", driver);
-    run("CREATE TABLE " + dbName + ".t2(a string) STORED AS TEXTFILE", driver);
-
-    run("insert into "+ dbName +".t1 values (1)", driver);
-    run("insert into "+ dbName +".t1 values (2)", driver);
-    run("insert into "+ dbName +".t1 values (3)", driver);
-    run("insert into "+ dbName +".t2 values (11)", driver);
-    run("insert into "+ dbName +".t2 values (21)", driver);
-
-    String replicatedDbName = dbName + "_dupe";
-    Tuple bootstrapDump = replDumpDb(dbName);
-
-    FileSystem fs = new Path(bootstrapDump.dumpLocation).getFileSystem(hconf);
-    Path dumpPath = new Path(bootstrapDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
-    assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
-    Path dbPath = new Path(dumpPath + Path.SEPARATOR + dbName);
-    Path tablet1Path = new Path(dbPath, "t1");
-    assertTrue(fs.exists(new Path(new Path(tablet1Path, "data"),
-            COPY_ACKNOWLEDGEMENT.toString())));
-    Path tablet2Path = new Path(dbPath, "t2");
-    assertTrue(fs.exists(new Path(new Path(tablet2Path, "data"),
-            COPY_ACKNOWLEDGEMENT.toString())));
-    long modifiedTimeTable1 = fs.getFileStatus(new Path(tablet1Path, "data")).getModificationTime();
-    long modifiedTimeTable2 = fs.getFileStatus(new Path(tablet2Path, "data")).getModificationTime();
-    //Delete table 2 copy ack
-    fs.delete(new Path(new Path(tablet2Path, "data"),
-            COPY_ACKNOWLEDGEMENT.toString()), true);
-    fs.delete(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString()), true);
-    assertFalse(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
-    assertFalse(fs.exists(new Path(new Path(tablet2Path, "data"),
-            COPY_ACKNOWLEDGEMENT.toString())));
-    //Do another dump. It should only dump table t2. Modification time of table t1 is same while t2 is greater
-    Tuple nextDump = incrementalLoadAndVerify(dbName, replicatedDbName);
-    assertEquals(nextDump.dumpLocation, bootstrapDump.dumpLocation);
-    assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
-    assertTrue(fs.exists(new Path(new Path(tablet1Path, "data"), COPY_ACKNOWLEDGEMENT.toString())));
-    assertTrue(fs.exists(new Path(new Path(tablet2Path, "data"), COPY_ACKNOWLEDGEMENT.toString())));
-    assertEquals(modifiedTimeTable1, fs.getFileStatus(new Path(tablet1Path, "data")).getModificationTime());
-    assertTrue(modifiedTimeTable2 < fs.getFileStatus(new Path(tablet2Path, "data"))
-            .getModificationTime());
-  }
-
-  @Test
-  public void testCheckPointingWithSourceTableDataInserted() throws IOException {
-    String testname = testName.getMethodName();
-    String dbName = createDB(testname, driver);
-    run("CREATE TABLE " + dbName + ".t1(a string) STORED AS TEXTFILE", driver);
-    run("CREATE TABLE " + dbName + ".t2(a string) STORED AS TEXTFILE", driver);
-
-    run("insert into "+ dbName +".t1 values (1)", driver);
-    run("insert into "+ dbName +".t1 values (2)", driver);
-    run("insert into "+ dbName +".t1 values (3)", driver);
-    run("insert into "+ dbName +".t2 values (11)", driver);
-    run("insert into "+ dbName +".t2 values (21)", driver);
-
-    String replicatedDbName = dbName + "_dupe";
-    Tuple bootstrapDump = replDumpDb(dbName);
-
-    FileSystem fs = new Path(bootstrapDump.dumpLocation).getFileSystem(hconf);
-    Path dumpPath = new Path(bootstrapDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
-    assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
-    Path dbPath = new Path(dumpPath + Path.SEPARATOR + dbName);
-    Path tablet1Path = new Path(dbPath, "t1");
-    Path tablet2Path = new Path(dbPath, "t2");
-    //Delete table 2 copy ack
-    fs.delete(new Path(new Path(tablet2Path, "data"),
-            COPY_ACKNOWLEDGEMENT.toString()), true);
-    fs.delete(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString()), true);
-    //Do a load. It shouldn't contain any data
-    run("REPL LOAD " + dbName + " INTO " + replicatedDbName, driverMirror);
-    verifySetup("select tables in " + replicatedDbName, new String[]{}, driver);
-
-    //Do another dump. It should only dump table t2. Also insert new data. New data will not be there in target
-    run("insert into "+ dbName +".t2 values (13)", driver);
-    run("insert into "+ dbName +".t2 values (24)", driver);
-
-    incrementalLoadAndVerify(dbName, replicatedDbName);
-    String[] t1Data = new String[]{"1" , "2", "3"};
-    String[] t2Data = new String[]{"11" , "21"};
-    verifySetup("select * from " + replicatedDbName + ".t1", t1Data, driver);
-    verifySetup("select * from " + replicatedDbName + ".t2", t2Data, driver);
-
-    incrementalLoadAndVerify(dbName, replicatedDbName);
-    t1Data = new String[]{"1" , "2", "3"};
-    t2Data = new String[]{"11" , "21", "13", "24"};
-    verifySetup("select * from " + replicatedDbName + ".t1", t1Data, driver);
-    verifySetup("select * from " + replicatedDbName + ".t2", t2Data, driver);
-  }
-
-  @Test
-  public void testCheckPointingWithNewTablesAdded() throws IOException {
-    String testname = testName.getMethodName();
-    String dbName = createDB(testname, driver);
-    run("CREATE TABLE " + dbName + ".t1(a string) STORED AS TEXTFILE", driver);
-    run("CREATE TABLE " + dbName + ".t2(a string) STORED AS TEXTFILE", driver);
-
-    run("insert into "+ dbName +".t1 values (1)", driver);
-    run("insert into "+ dbName +".t1 values (2)", driver);
-    run("insert into "+ dbName +".t1 values (3)", driver);
-    run("insert into "+ dbName +".t2 values (11)", driver);
-    run("insert into "+ dbName +".t2 values (21)", driver);
-
-    String replicatedDbName = dbName + "_dupe";
-    Tuple bootstrapDump = replDumpDb(dbName);
-
-    FileSystem fs = new Path(bootstrapDump.dumpLocation).getFileSystem(hconf);
-    Path dumpPath = new Path(bootstrapDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
-    assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
-    Path dbPath = new Path(dumpPath + Path.SEPARATOR + dbName);
-    Path tablet1Path = new Path(dbPath, "t1");
-    Path tablet2Path = new Path(dbPath, "t2");
-    //Delete table 2 copy ack
-    fs.delete(new Path(new Path(tablet2Path, "data"),
-            COPY_ACKNOWLEDGEMENT.toString()), true);
-    fs.delete(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString()), true);
-    //Do a load. It shouldn't contain any data
-    run("REPL LOAD " + dbName + " INTO " + replicatedDbName, driverMirror);
-    verifySetup("select tables in " + replicatedDbName, new String[]{}, driver);
-
-    //Do another dump. It should only dump table t2. Also insert new data. New data will not be there in target
-    run("insert into "+ dbName +".t2 values (13)", driver);
-    run("insert into "+ dbName +".t2 values (24)", driver);
-    run("CREATE TABLE " + dbName + ".t3(a string) STORED AS TEXTFILE", driver);
-    run("insert into "+ dbName +".t3 values (1)", driver);
-    run("insert into "+ dbName +".t3 values (2)", driver);
-
-    incrementalLoadAndVerify(dbName, replicatedDbName);
-    String[] t1Data = new String[]{"1" , "2", "3"};
-    String[] t2Data = new String[]{"11" , "21"};
-    String[] tableList = new String[]{"t1", "t2"};
-    verifySetup("select * from " + replicatedDbName + ".t1", t1Data, driver);
-    verifySetup("select * from " + replicatedDbName + ".t2", t2Data, driver);
-    verifySetup("show tables in " + replicatedDbName, tableList, driver);
-
-    incrementalLoadAndVerify(dbName, replicatedDbName);
-    t1Data = new String[]{"1" , "2", "3"};
-    t2Data = new String[]{"11" , "21", "13", "24"};
-    tableList = new String[]{"t1", "t2", "t3"};
-    String[] t3Data = new String[]{"1" , "2", "3"};
-    verifySetup("select * from " + replicatedDbName + ".t1", t1Data, driver);
-    verifySetup("select * from " + replicatedDbName + ".t2", t2Data, driver);
-    verifySetup("show tables in " + replicatedDbName, tableList, driver);
-    verifySetup("select * from " + replicatedDbName + ".t3", t3Data, driver);
-  }
-
-  @Test
-  public void testCheckPointingWithSourceTableDeleted() throws IOException {
-    String testname = testName.getMethodName();
-    String dbName = createDB(testname, driver);
-    run("CREATE TABLE " + dbName + ".t1(a string) STORED AS TEXTFILE", driver);
-    run("CREATE TABLE " + dbName + ".t2(a string) STORED AS TEXTFILE", driver);
-
-    run("insert into "+ dbName +".t1 values (1)", driver);
-    run("insert into "+ dbName +".t1 values (2)", driver);
-    run("insert into "+ dbName +".t1 values (3)", driver);
-    run("insert into "+ dbName +".t2 values (11)", driver);
-    run("insert into "+ dbName +".t2 values (21)", driver);
-
-    String replicatedDbName = dbName + "_dupe";
-    Tuple bootstrapDump = replDumpDb(dbName);
-
-    FileSystem fs = new Path(bootstrapDump.dumpLocation).getFileSystem(hconf);
-    Path dumpPath = new Path(bootstrapDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
-    assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
-    Path dbPath = new Path(dumpPath + Path.SEPARATOR + dbName);
-    Path tablet1Path = new Path(dbPath, "t1");
-    Path tablet2Path = new Path(dbPath, "t2");
-    //Delete table 2 copy ack
-    fs.delete(new Path(new Path(tablet2Path, "data"),
-            COPY_ACKNOWLEDGEMENT.toString()), true);
-    fs.delete(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString()), true);
-
-    //Do another dump. It should only dump table t2. Also drop table. New data will not be there in target
-    run("drop "+ dbName +".t1", driver);
-
-    incrementalLoadAndVerify(dbName, replicatedDbName);
-    String[] t1Data = new String[]{"1" , "2", "3"};
-    String[] t2Data = new String[]{"11" , "21"};
-    verifySetup("select * from " + replicatedDbName + ".t1", t1Data, driver);
-    verifySetup("select * from " + replicatedDbName + ".t2", t2Data, driver);
-
-    //Previous drop table refected in next incremental dump
-    incrementalLoadAndVerify(dbName, replicatedDbName);
-    String[] tableList = new String[]{"t2"};
-    t2Data = new String[]{"11" , "21"};
-    verifySetup("show tables in " + replicatedDbName, tableList, driver);
-    verifySetup("select * from " + replicatedDbName + ".t2", t2Data, driver);
-  }
-
-  @Test
-  public void testCheckPointingMetadataDumpFailure() throws IOException {
-    String testname = testName.getMethodName();
-    String dbName = createDB(testname, driver);
-    run("CREATE TABLE " + dbName + ".t1(a string) STORED AS TEXTFILE", driver);
-    run("CREATE TABLE " + dbName + ".t2(a string) STORED AS TEXTFILE", driver);
-
-    run("insert into "+ dbName +".t1 values (1)", driver);
-    run("insert into "+ dbName +".t1 values (2)", driver);
-    run("insert into "+ dbName +".t1 values (3)", driver);
-    run("insert into "+ dbName +".t2 values (11)", driver);
-    run("insert into "+ dbName +".t2 values (21)", driver);
-
-    String replicatedDbName = dbName + "_dupe";
-    Tuple bootstrapDump = replDumpDb(dbName);
-
-    FileSystem fs = new Path(bootstrapDump.dumpLocation).getFileSystem(hconf);
-    Path dumpPath = new Path(bootstrapDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
-    assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
-    Path dbPath = new Path(dumpPath + Path.SEPARATOR + dbName);
-    Path tablet1Path = new Path(dbPath, "t1");
-    assertTrue(fs.exists(new Path(new Path(tablet1Path, "data"),
-            COPY_ACKNOWLEDGEMENT.toString())));
-    Path tablet2Path = new Path(dbPath, "t2");
-    assertTrue(fs.exists(new Path(new Path(tablet2Path, "data"),
-            COPY_ACKNOWLEDGEMENT.toString())));
-    long modifiedTimeTable1 = fs.getFileStatus(new Path(tablet1Path, "data")).getModificationTime();
-    long modifiedTimeTable2 = fs.getFileStatus(new Path(tablet2Path, "data")).getModificationTime();
-    //Delete table t2 copy ack and metadata ack also
-    fs.delete(new Path(new Path(tablet2Path, "data"),
-            COPY_ACKNOWLEDGEMENT.toString()), true);
-    fs.delete(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString()), true);
-    fs.delete(new Path(dumpPath, "_dumpmetadata"), true);
-    assertFalse(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
-    assertFalse(fs.exists(new Path(new Path(tablet2Path, "data"),
-            COPY_ACKNOWLEDGEMENT.toString())));
-    //Insert new data
-    run("insert into "+ dbName +".t1 values (12)", driver);
-    run("insert into "+ dbName +".t1 values (13)", driver);
-    //Do another dump. It should be treated as a new dump and shouldn't resume as metadata dump failed
-    // checkpointing will not be used
-    Tuple nextDump = incrementalLoadAndVerify(dbName, replicatedDbName);
-    Path nextDumpPath = new Path(nextDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
-    Path nextDbPath = new Path(nextDumpPath + Path.SEPARATOR + dbName);
-    Path nextTablet1Path = new Path(nextDbPath, "t1");
-    Path nextTablet2Path = new Path(nextDbPath, "t2");
-    assertTrue(fs.exists(new Path(nextDumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
-    assertTrue(fs.exists(new Path(new Path(nextTablet1Path, "data"), COPY_ACKNOWLEDGEMENT.toString())));
-    assertTrue(fs.exists(new Path(new Path(nextTablet2Path, "data"), COPY_ACKNOWLEDGEMENT.toString())));
-    assertTrue(modifiedTimeTable1 < fs.getFileStatus(new Path(nextTablet1Path, "data"))
-            .getModificationTime());
-    assertTrue(modifiedTimeTable2 < fs.getFileStatus(new Path(nextTablet2Path, "data"))
-            .getModificationTime());
-    String[] t1Data = new String[]{"1" , "2", "3", "12", "13"};
-    String[] t2Data = new String[]{"11" , "21"};
-    verifySetup("select * from " + replicatedDbName + ".t2", t2Data, driver);
-    verifySetup("select * from " + replicatedDbName + ".t1", t1Data, driver);
   }
 }

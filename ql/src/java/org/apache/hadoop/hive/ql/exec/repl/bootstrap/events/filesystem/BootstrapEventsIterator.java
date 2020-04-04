@@ -162,11 +162,12 @@ public class BootstrapEventsIterator implements Iterator<BootstrapEvent> {
   private void initReplLogger() {
     try {
       Path dbDumpPath = currentDatabaseIterator.dbLevelPath();
+      Path metadataPath = new Path(dbDumpPath, EximUtil.METADATA_PATH_NAME);
       FileSystem fs = dbDumpPath.getFileSystem(hiveConf);
 
-      long numTables = getSubDirs(fs, dbDumpPath).length;
+      long numTables = getSubDirs(fs, metadataPath).length;
       long numFunctions = 0;
-      Path funcPath = new Path(dbDumpPath, ReplUtils.FUNCTIONS_ROOT_DIR_NAME);
+      Path funcPath = new Path(metadataPath, ReplUtils.FUNCTIONS_ROOT_DIR_NAME);
       if (fs.exists(funcPath)) {
         numFunctions = getSubDirs(fs, funcPath).length;
       }

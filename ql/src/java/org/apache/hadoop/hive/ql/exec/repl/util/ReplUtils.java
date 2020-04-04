@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.ql.exec.repl.util;
 
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.repl.ReplConst;
@@ -34,14 +33,12 @@ import org.apache.hadoop.hive.ql.ddl.table.misc.properties.AlterTableSetProperti
 import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
-import org.apache.hadoop.hive.ql.exec.repl.ReplAck;
 import org.apache.hadoop.hive.ql.exec.repl.ReplStateLogWork;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
-import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsUpdateWork;
 import org.apache.hadoop.hive.ql.plan.ReplTxnWork;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -239,7 +236,8 @@ public class ReplUtils {
       try {
         return fs.isDirectory(p) && !p.getName().equalsIgnoreCase(ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME)
                 && !p.getName().equalsIgnoreCase(ReplUtils.REPL_TABLE_LIST_DIR_NAME)
-                && !p.getName().equalsIgnoreCase(EximUtil.DATA_PATH_NAME);
+                && !p.getName().equalsIgnoreCase(EximUtil.DATA_PATH_NAME)
+                && !p.getName().equalsIgnoreCase(EximUtil.METADATA_PATH_NAME);
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
@@ -250,7 +248,8 @@ public class ReplUtils {
     return p -> {
       try {
         return fs.isDirectory(p) && !p.getName().equalsIgnoreCase(ReplUtils.REPL_TABLE_LIST_DIR_NAME)
-                && !p.getName().equalsIgnoreCase(EximUtil.DATA_PATH_NAME);
+                && !p.getName().equalsIgnoreCase(EximUtil.DATA_PATH_NAME)
+                && !p.getName().equalsIgnoreCase(EximUtil.METADATA_PATH_NAME);
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
@@ -294,14 +293,5 @@ public class ReplUtils {
 
   public static boolean tableIncludedInReplScope(ReplScope replScope, String tableName) {
     return ((replScope == null) || replScope.tableIncludedInReplScope(tableName));
-  }
-
-  public static boolean dataCopyCompleted(Path toPath, HiveConf conf) throws IOException {
-    FileSystem dstFs = toPath.getFileSystem(conf);
-    return (dstFs.exists(new Path(toPath, ReplAck.COPY_ACKNOWLEDGEMENT.toString())));
-  }
-
-  public static void addCopyAck(Path toPath, HiveConf conf) throws SemanticException {
-    Utils.create(new Path(toPath, ReplAck.COPY_ACKNOWLEDGEMENT.toString()), conf);
   }
 }
