@@ -934,16 +934,14 @@ public class QTestUtil {
     String outFileName = outPath(outDir, tname + outFileExtension);
 
     File f = new File(logDir, tname + outFileExtension);
-
     qOutProcessor.maskPatterns(f.getPath(), tname);
-    QTestProcessExecResult exitVal = qTestResultProcessor.executeDiffCommand(f.getPath(), outFileName, false, tname);
 
     if (QTestSystemProperties.shouldOverwriteResults()) {
       qTestResultProcessor.overwriteResults(f.getPath(), outFileName);
       return QTestProcessExecResult.createWithoutOutput(0);
+    } else {
+      return qTestResultProcessor.executeDiffCommand(f.getPath(), outFileName, false, tname);
     }
-
-    return exitVal;
   }
 
   public QTestProcessExecResult checkCompareCliDriverResults(String tname, List<String> outputs) throws Exception {
