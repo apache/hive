@@ -127,6 +127,9 @@ public class TezTask extends Task<TezWork> {
     return counters;
   }
 
+  public void setTezCounters(final TezCounters counters) {
+    this.counters = counters;
+  }
 
   @Override
   public int execute() {
@@ -246,7 +249,7 @@ public class TezTask extends Task<TezWork> {
         }
 
         // finally monitor will print progress until the job is done
-        TezJobMonitor monitor = new TezJobMonitor(work.getAllWork(), dagClient, conf, dag, ctx);
+        TezJobMonitor monitor = new TezJobMonitor(work.getAllWork(), dagClient, conf, dag, ctx, counters);
         rc = monitor.monitorExecution();
 
         if (rc != 0) {
@@ -256,7 +259,10 @@ public class TezTask extends Task<TezWork> {
         // fetch the counters
         try {
           Set<StatusGetOpts> statusGetOpts = EnumSet.of(StatusGetOpts.GET_COUNTERS);
-          counters = dagClient.getDAGStatus(statusGetOpts).getDAGCounters();
+          TezCounters dagCounters = dagClient.getDAGStatus(statusGetOpts).getDAGCounters();
+          // if initial counters exists, merge it with dag counters to get aggregated view
+          TezCounters mergedCounters = counters == null ? dagCounters : Utils.mergeTezCounters(dagCounters, counters);
+          counters = mergedCounters;
         } catch (Exception err) {
           // Don't fail execution due to counters - just don't print summary info
           LOG.warn("Failed to get counters. Ignoring, summary info will be incomplete. " + err, err);
