@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.hooks;
 import java.util.List;
 
 import org.apache.hadoop.hive.llap.counters.LlapIOCounters;
+import org.apache.hadoop.hive.ql.exec.tez.CompileTimeCounters;
 import org.apache.hadoop.hive.ql.exec.tez.HiveInputCounters;
 import org.apache.tez.common.counters.FileSystemCounter;
 import org.apache.tez.dag.api.client.DAGClient;
@@ -89,6 +90,11 @@ public class PostExecTezSummaryPrinter implements ExecuteWithHookContext {
               if (testSafeCounters.contains(counter.getDisplayName())) {
                 console.printInfo("   " + counter.getDisplayName() + ": " + counter.getValue(), false);
               }
+            }
+          } else if (group.getName().equals(CompileTimeCounters.class.getName())) {
+            console.printInfo(tezTask.getId() + " COMPILE TIME COUNTERS:", false);
+            for (TezCounter counter : group) {
+              console.printInfo("   " + counter.getDisplayName() + ": " + counter.getValue(), false);
             }
           }
         }
