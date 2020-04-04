@@ -50,6 +50,8 @@ import org.apache.hadoop.hive.ql.udf.ptf.TableFunctionResolver;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hive.common.util.ReflectionUtil;
+import org.apache.hive.plugin.api.HiveUDFPlugin;
+import org.apache.hive.plugin.api.HiveUDFPlugin.UDFDescriptor;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -811,5 +813,29 @@ public class Registry {
       LOG.info("Unable to look up " + functionName + " in metastore", e);
     }
     return null;
+  }
+
+  public void registerUDFPlugin(HiveUDFPlugin instance) {
+    Iterable<UDFDescriptor> x = instance.getDescriptors();
+    for (UDFDescriptor fn : x) {
+      if (UDF.class.isAssignableFrom(fn.getUDFClass())) {
+        registerUDF(fn.getFunctionName(), (Class<? extends UDF>) fn.getUDFClass(), false);
+        continue;
+      }
+      if (GenericUDAFResolver2.class.isAssignableFrom(fn.getUDFClass())) {
+        String name = fn.getFunctionName();
+        try {
+          registerGenericUDAF(name, ((Class<? extends GenericUDAFResolver2>) fn.getUDFClass()).newInstance());
+        } catch (InstantiationException | IllegalAccessException e) {
+          throw new RuntimeException("Unable to register: " + name, e);
+        }
+        continue;
+      }
+      if (GenericUDTF.class.isAssignableFrom(fn.getUDFClass())) {
+        registerGenericUDTF(fn.getFunctionName(), (Class<? extends GenericUDTF>) fn.getUDFClass());
+        continue;
+      }
+      throw new RuntimeException("Don't know how to register: " + fn.getFunctionName());
+    }
   }
 }
