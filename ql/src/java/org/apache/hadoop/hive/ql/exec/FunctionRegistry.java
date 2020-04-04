@@ -464,7 +464,7 @@ public final class FunctionRegistry {
     system.registerGenericUDAF("bloom_filter", new GenericUDAFBloomFilter());
     system.registerUDAF("percentile", UDAFPercentile.class);
 
-    DataSketchesFunctions.register(system);
+    system.registerUDFPlugin(DataSketchesFunctions.INSTANCE);
 
     // Generic UDFs
     system.registerGenericUDF("reflect", GenericUDFReflect.class);
