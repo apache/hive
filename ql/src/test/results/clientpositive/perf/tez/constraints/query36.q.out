@@ -108,11 +108,11 @@ Stage-0
                           <-Reducer 4 [SIMPLE_EDGE]
                             SHUFFLE [RS_23]
                               PartitionCols:_col0, _col1, _col2
-                              Group By Operator [GBY_22] (rows=2487780 width=414)
+                              Group By Operator [GBY_22] (rows=85680 width=414)
                                 Output:["_col0","_col1","_col2","_col3","_col4"],aggregations:["sum(_col2)","sum(_col3)"],keys:_col0, _col1, 0L
-                                Select Operator [SEL_20] (rows=525329897 width=395)
+                                Select Operator [SEL_20] (rows=30601888 width=232)
                                   Output:["_col0","_col1","_col2","_col3"]
-                                  Merge Join Operator [MERGEJOIN_82] (rows=525329897 width=395)
+                                  Merge Join Operator [MERGEJOIN_82] (rows=30601888 width=232)
                                     Conds:RS_17._col1=RS_98._col0(Inner),Output:["_col3","_col4","_col8","_col9"]
                                   <-Map 11 [SIMPLE_EDGE] vectorized
                                     SHUFFLE [RS_98]
@@ -124,7 +124,7 @@ Stage-0
                                   <-Reducer 3 [SIMPLE_EDGE]
                                     SHUFFLE [RS_17]
                                       PartitionCols:_col1
-                                      Merge Join Operator [MERGEJOIN_81] (rows=525329897 width=217)
+                                      Merge Join Operator [MERGEJOIN_81] (rows=30601888 width=54)
                                         Conds:RS_14._col2=RS_96._col0(Inner),Output:["_col1","_col3","_col4"]
                                       <-Map 10 [SIMPLE_EDGE] vectorized
                                         SHUFFLE [RS_96]
@@ -138,7 +138,7 @@ Stage-0
                                       <-Reducer 2 [SIMPLE_EDGE]
                                         SHUFFLE [RS_14]
                                           PartitionCols:_col2
-                                          Merge Join Operator [MERGEJOIN_80] (rows=525329897 width=221)
+                                          Merge Join Operator [MERGEJOIN_80] (rows=187574154 width=203)
                                             Conds:RS_93._col0=RS_85._col0(Inner),Output:["_col1","_col2","_col3","_col4"]
                                           <-Map 8 [SIMPLE_EDGE] vectorized
                                             PARTITION_ONLY_SHUFFLE [RS_85]

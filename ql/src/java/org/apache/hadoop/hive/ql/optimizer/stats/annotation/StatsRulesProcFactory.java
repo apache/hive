@@ -883,9 +883,6 @@ public class StatsRulesProcFactory {
         if (cs != null) {
           tmpNoNulls = cs.getNumNulls();
         }
-        if (cs == null || tmpNoNulls > 0) {
-          aspCtx.addAffectedColumn(encd);
-        }
       } else if (pred instanceof ExprNodeGenericFuncDesc || pred instanceof ExprNodeColumnListDesc) {
         long noNullsOfChild = 0;
         for (ExprNodeDesc childExpr : pred.getChildren()) {
