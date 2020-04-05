@@ -49,6 +49,7 @@ import org.apache.calcite.rex.RexLocalRef;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexOver;
 import org.apache.calcite.rex.RexPatternFieldRef;
+import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.rex.RexTableInputRef;
 import org.apache.calcite.rex.RexRangeRef;
 import org.apache.calcite.rex.RexSubQuery;
@@ -59,6 +60,8 @@ import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
+import org.apache.calcite.sql.type.SqlTypeFamily;
+import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.sql.validate.SqlValidatorUtil;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
@@ -80,8 +83,6 @@ import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
@@ -97,9 +98,6 @@ import com.google.common.collect.Sets;
  */
 
 public class HiveCalciteUtil {
-
-  private static final Logger LOG = LoggerFactory.getLogger(HiveCalciteUtil.class);
-
 
   /**
    * Get list of virtual columns from the given list of projections.
@@ -1062,6 +1060,25 @@ public class HiveCalciteUtil {
     return HiveProject.create(input, copyInputRefs, null);
   }
 
+  public static boolean isConstant(RexNode expr) {
+    if (expr instanceof RexCall) {
+      RexCall call = (RexCall) expr;
+      if (call.getOperator() == SqlStdOperatorTable.ROW ||
+          call.getOperator() == SqlStdOperatorTable.ARRAY_VALUE_CONSTRUCTOR ||
+          call.getOperator() == SqlStdOperatorTable.MAP_VALUE_CONSTRUCTOR) {
+        // We check all operands
+        for (RexNode node : ((RexCall) expr).getOperands()) {
+          if (!isConstant(node)) {
+            return false;
+          }
+        }
+        // All literals
+        return true;
+      }
+    }
+    return expr.isA(SqlKind.LITERAL);
+  }
+
   /**
    * Walks over an expression and determines whether it is constant.
    */
@@ -1157,4 +1174,112 @@ public class HiveCalciteUtil {
       return inputRefSet;
     }
   }
+
+  /** Fixes up the type of all {@link RexInputRef}s in an
+   * expression to match differences in nullability.
+   *
+   * <p>Throws if there any greater inconsistencies of type. */
+  public static List<RexNode> fixUp(final RexBuilder rexBuilder,
+      List<RexNode> nodes, final List<RelDataType> fieldTypes) {
+    return new FixNullabilityShuttle(rexBuilder, fieldTypes).apply(nodes);
+  }
+
+  /** Fixes up the type of all {@link RexInputRef}s in an
+   * expression to match differences in nullability.
+   *
+   * <p>Throws if there any greater inconsistencies of type. */
+  public static RexNode fixUp(final RexBuilder rexBuilder,
+      RexNode node, final List<RelDataType> fieldTypes) {
+    return new FixNullabilityShuttle(rexBuilder, fieldTypes).apply(node);
+  }
+
+  /** Shuttle that fixes up an expression to match changes in nullability of
+   * input fields. */
+  public static class FixNullabilityShuttle extends RexShuttle {
+    private final List<RelDataType> typeList;
+    private final RexBuilder rexBuilder;
+
+    public FixNullabilityShuttle(RexBuilder rexBuilder,
+          List<RelDataType> typeList) {
+      this.typeList = typeList;
+      this.rexBuilder = rexBuilder;
+    }
+
+    @Override public RexNode visitInputRef(RexInputRef ref) {
+      final RelDataType rightType = typeList.get(ref.getIndex());
+      final RelDataType refType = ref.getType();
+      if (refType == rightType) {
+        return ref;
+      }
+      final RelDataType refType2 =
+          rexBuilder.getTypeFactory().createTypeWithNullability(refType,
+              rightType.isNullable());
+      // This is a validation check which can become quite handy debugging type
+      // issues. Basically, we need both types to be equal, only difference should
+      // be nullability.
+      // However, we make an exception for Hive wrt CHAR type because Hive encodes
+      // the STRING type for literals within CHAR value (see {@link HiveNlsString})
+      // while Calcite always considers these literals to be a CHAR, which means
+      // that the reference may be created as a STRING or VARCHAR from AST node
+      // at parsing time but the actual type referenced is a CHAR.
+      if (refType2 == rightType) {
+        return new RexInputRef(ref.getIndex(), refType2);
+      } else if (refType2.getFamily() == SqlTypeFamily.CHARACTER &&
+          rightType.getSqlTypeName() == SqlTypeName.CHAR && !rightType.isNullable()) {
+        return new RexInputRef(ref.getIndex(), rightType);
+      }
+      throw new AssertionError("mismatched type " + ref + " " + rightType);
+    }
+  }
+
+  public static List<RexNode> transformIntoOrAndClause(List<RexNode> operands, RexBuilder rexBuilder) {
+    final List<RexNode> disjuncts = new ArrayList<>(operands.size() - 2);
+    if (operands.get(0).getKind() != SqlKind.ROW) {
+      final RexNode columnExpression = operands.get(0);
+      if (!isDeterministic(columnExpression)) {
+        // Bail out
+        return null;
+      }
+      for (int i = 1; i < operands.size(); i++) {
+        final RexNode valueExpression = operands.get(i);
+        if (!isDeterministic(valueExpression)) {
+          // Bail out
+          return null;
+        }
+        disjuncts.add(rexBuilder.makeCall(
+            SqlStdOperatorTable.EQUALS,
+            columnExpression,
+            valueExpression));
+      }
+    } else {
+      final RexCall columnExpressions = (RexCall) operands.get(0);
+      if (!isDeterministic(columnExpressions)) {
+        // Bail out
+        return null;
+      }
+      for (int i = 1; i < operands.size(); i++) {
+        List<RexNode> conjuncts = new ArrayList<>(columnExpressions.getOperands().size() - 1);
+        RexCall valueExpressions = (RexCall) operands.get(i);
+        if (!isDeterministic(valueExpressions)) {
+          // Bail out
+          return null;
+        }
+        for (int j = 0; j < columnExpressions.getOperands().size(); j++) {
+          conjuncts.add(rexBuilder.makeCall(
+              SqlStdOperatorTable.EQUALS,
+              columnExpressions.getOperands().get(j),
+              valueExpressions.getOperands().get(j)));
+        }
+        if (conjuncts.size() > 1) {
+          disjuncts.add(rexBuilder.makeCall(
+              SqlStdOperatorTable.AND,
+              conjuncts));
+        } else {
+          disjuncts.add(conjuncts.get(0));
+        }
+      }
+    }
+    return disjuncts;
+  }
+
 }

@@ -20,10 +20,11 @@ package org.apache.hadoop.hive.ql.parse.type;
 import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.util.List;
+import org.apache.calcite.rex.RexNode;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
-import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSubquerySemanticException;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.SubqueryType;
@@ -33,8 +34,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hive.common.util.DateUtils;
 
 /**
- * Generic expressions factory. Currently, the only implementation produces
- * Hive {@link ExprNodeDesc}.
+ * Generic expressions factory.
  */
 public abstract class ExprFactory<T> {
 
@@ -50,7 +50,8 @@ public abstract class ExprFactory<T> {
    * Generates an expression from the input column. This may not necessarily
    * be a column expression, e.g., if the column is a constant.
    */
-  protected abstract T toExpr(ColumnInfo colInfo);
+  protected abstract T toExpr(ColumnInfo colInfo, RowResolver rowResolver, int offset)
+      throws SemanticException;
 
   /* FIELD REFERENCES */
   /**
@@ -61,12 +62,19 @@ public abstract class ExprFactory<T> {
   /**
    * Creates column expression.
    */
-  protected abstract T createColumnRefExpr(ColumnInfo colInfo);
+  protected abstract T createColumnRefExpr(ColumnInfo colInfo, RowResolver rowResolver, int offset)
+      throws SemanticException;
+
+  /**
+   * Creates column expression.
+   */
+  protected abstract T createColumnRefExpr(ColumnInfo colInfo, List<RowResolver> rowResolverList)
+      throws SemanticException;
 
   /**
    * Returns column name referenced by a column expression.
    */
-  protected abstract String getColumnName(T expr);
+  protected abstract String getColumnName(T expr, RowResolver rowResolver);
 
   /* CONSTANT EXPRESSIONS */
   /**
@@ -130,7 +138,7 @@ public abstract class ExprFactory<T> {
   /**
    * Creates a double constant expression from input value.
    */
-  protected abstract T createDoubleConstantExpr(String value);
+  protected abstract T createDoubleConstantExpr(String value) throws SemanticException;
 
   /**
    * Creates a decimal constant expression from input value.
@@ -205,7 +213,7 @@ public abstract class ExprFactory<T> {
    * Default generator for constant expression when type cannot be inferred
    * from input query.
    */
-  protected T createConstantExpr(String value) {
+  protected T createConstantExpr(String value) throws SemanticException {
     // The expression can be any one of Double, Long and Integer. We
     // try to parse the expression in that order to ensure that the
     // most specific type is used for conversion.
@@ -228,9 +236,16 @@ public abstract class ExprFactory<T> {
   }
 
   /**
+   * Creates a struct with given type.
+   */
+  protected abstract T createStructExpr(TypeInfo typeInfo, List<T> operands)
+      throws SemanticException;
+
+  /**
    * Creates a constant expression from input value with given type.
    */
-  protected abstract T createConstantExpr(TypeInfo typeInfo, Object constantValue);
+  protected abstract T createConstantExpr(TypeInfo typeInfo, Object constantValue)
+      throws SemanticException;
 
   /**
    * Adjust type of constant value based on input type, e.g., adjust precision and scale
@@ -249,12 +264,18 @@ public abstract class ExprFactory<T> {
    */
   protected abstract Object getConstantValue(T expr);
 
+  /**
+   * Returns value stored in a constant expression as String.
+   */
+  protected abstract String getConstantValueAsString(T expr);
+
   /* METHODS FOR NESTED FIELD REFERENCES CREATION */
   /**
    * Creates a reference to a nested field.
    */
   protected abstract T createNestedColumnRefExpr(
-      TypeInfo typeInfo, T expr, String fieldName, Boolean isList);
+      TypeInfo typeInfo, T expr, String fieldName, Boolean isList)
+      throws SemanticException;
 
   /* FUNCTIONS */
   /**
@@ -266,13 +287,13 @@ public abstract class ExprFactory<T> {
    * Creates function call expression.
    */
   protected abstract T createFuncCallExpr(TypeInfo typeInfo, GenericUDF genericUDF,
-      List<T> inputs);
+      List<T> inputs) throws SemanticException;
 
   /**
    * Creates function call expression.
    */
   protected abstract T createFuncCallExpr(GenericUDF genericUDF, String funcText,
-      List<T> inputs) throws UDFArgumentException;
+      List<T> inputs) throws SemanticException;
 
   /**
    * Returns whether the input expression is an OR function call.
@@ -290,15 +311,14 @@ public abstract class ExprFactory<T> {
   protected abstract boolean isPOSITIVEFuncCallExpr(T expr);
 
   /**
+   * Returns whether the input expression is a NEGATIVE function call.
+   */
+  protected abstract boolean isNEGATIVEFuncCallExpr(T expr);
+
+  /**
    * Returns whether the input expression is a STRUCT function call.
    */
   protected abstract boolean isSTRUCTFuncCallExpr(T expr);
-
-  /**
-   * The method tries to rewrite an IN function call into an OR/AND function call.
-   * Returns null if the transformation fails.
-   */
-  protected abstract List<T> rewriteINIntoORFuncCallExpr(List<T> inOperands) throws SemanticException;
 
   /**
    * Returns true if a CASE expression can be converted into a COALESCE function call.
@@ -310,7 +330,7 @@ public abstract class ExprFactory<T> {
    * Creates subquery expression.
    */
   protected abstract T createSubqueryExpr(TypeCheckCtx ctx, ASTNode subqueryOp, SubqueryType subqueryType,
-      Object[] inputs) throws CalciteSubquerySemanticException;
+      Object[] inputs) throws SemanticException;
 
   /* LIST OF EXPRESSIONS */
   /**
@@ -324,12 +344,10 @@ public abstract class ExprFactory<T> {
   protected abstract T createExprsListExpr();
 
   /**
-   * Adds expression to list of expressions and returns resulting
-   * list.
-   * If column list is mutable, it will not create a copy
-   * of the input list.
+   * Adds expression to list of expressions (list needs to be
+   * mutable).
    */
-  protected abstract T addExprToExprsList(T columnList, T expr);
+  protected abstract void addExprToExprsList(T columnList, T expr);
 
   /* TYPE SYSTEM */
   /**
@@ -338,12 +356,17 @@ public abstract class ExprFactory<T> {
   protected abstract TypeInfo getTypeInfo(T expr);
 
   /**
+   * Returns the list of types in the input struct expression.
+   */
+  protected abstract List<TypeInfo> getStructTypeInfoList(T expr);
+
+  /**
    * Changes the type of the input expression to the input type and
    * returns resulting expression.
    * If the input expression is mutable, it will not create a copy
    * of the expression.
    */
-  protected abstract T setTypeInfo(T expr, TypeInfo type);
+  protected abstract T setTypeInfo(T expr, TypeInfo type) throws SemanticException;
 
   /* MISC */
   /**
@@ -357,5 +380,10 @@ public abstract class ExprFactory<T> {
    * Returns the children from the input expression (if any).
    */
   protected abstract List<T> getExprChildren(T expr);
+
+  /**
+   * Returns the list of names in the input struct expression.
+   */
+  protected abstract List<String> getStructNameList(T expr);
 
 }

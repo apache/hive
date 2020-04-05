@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
 import org.junit.Assert;
 
@@ -94,7 +95,7 @@ public class TestGenericUDFRound extends BaseScalarUdfTest {
   }
 
   @Override
-  public List<ExprNodeDesc> getExpressionList() throws UDFArgumentException {
+  public List<ExprNodeDesc> getExpressionList() throws SemanticException {
     List<ExprNodeDesc> exprs = new ArrayList<ExprNodeDesc>(cols.length);
     for (int i = 0; i < cols.length; i++) {
       exprs.add(OperatorTestUtils.getStringColumn(cols[i]));

@@ -23,6 +23,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.calcite.avatica.util.ByteString;
 import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
@@ -58,7 +59,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.RexVisitor;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.Schema;
-import org.apache.hadoop.hive.ql.optimizer.calcite.translator.RexNodeConverter.HiveNlsString;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.NullOrder;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.Order;
@@ -73,6 +73,7 @@ import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowFrameSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowFunctionSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowType;
+import org.apache.hadoop.hive.ql.parse.type.RexNodeExprFactory.HiveNlsString;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -227,160 +228,165 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
 
   @Override
   public ExprNodeDesc visitLiteral(RexLiteral literal) {
+    return toExprNodeConstantDesc(literal);
+  }
+
+  public static ExprNodeConstantDesc toExprNodeConstantDesc(RexLiteral literal) {
     RelDataType lType = literal.getType();
 
     if (RexLiteral.value(literal) == null) {
       switch (literal.getType().getSqlTypeName()) {
-      case BOOLEAN:
-        return new ExprNodeConstantDesc(TypeInfoFactory.booleanTypeInfo, null);
-      case TINYINT:
-        return new ExprNodeConstantDesc(TypeInfoFactory.byteTypeInfo, null);
-      case SMALLINT:
-        return new ExprNodeConstantDesc(TypeInfoFactory.shortTypeInfo, null);
-      case INTEGER:
-        return new ExprNodeConstantDesc(TypeInfoFactory.intTypeInfo, null);
-      case BIGINT:
-        return new ExprNodeConstantDesc(TypeInfoFactory.longTypeInfo, null);
-      case FLOAT:
-      case REAL:
-        return new ExprNodeConstantDesc(TypeInfoFactory.floatTypeInfo, null);
-      case DOUBLE:
-        return new ExprNodeConstantDesc(TypeInfoFactory.doubleTypeInfo, null);
-      case DATE:
-        return new ExprNodeConstantDesc(TypeInfoFactory.dateTypeInfo, null);
-      case TIME:
-      case TIMESTAMP:
-        return new ExprNodeConstantDesc(TypeInfoFactory.timestampTypeInfo, null);
-      case TIMESTAMP_WITH_LOCAL_TIME_ZONE:
-        HiveConf conf;
-        try {
-          conf = Hive.get().getConf();
-        } catch (HiveException e) {
-          throw new RuntimeException(e);
-        }
-        return new ExprNodeConstantDesc(
-                TypeInfoFactory.getTimestampTZTypeInfo(conf.getLocalTimeZone()), null);
-      case BINARY:
-        return new ExprNodeConstantDesc(TypeInfoFactory.binaryTypeInfo, null);
-      case DECIMAL:
-        return new ExprNodeConstantDesc(
-                TypeInfoFactory.getDecimalTypeInfo(lType.getPrecision(), lType.getScale()), null);
-      case VARCHAR:
-      case CHAR:
-        return new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, null);
-      case INTERVAL_YEAR:
-      case INTERVAL_MONTH:
-      case INTERVAL_YEAR_MONTH:
-        return new ExprNodeConstantDesc(TypeInfoFactory.intervalYearMonthTypeInfo, null);
-      case INTERVAL_DAY:
-      case INTERVAL_DAY_HOUR:
-      case INTERVAL_DAY_MINUTE:
-      case INTERVAL_DAY_SECOND:
-      case INTERVAL_HOUR:
-      case INTERVAL_HOUR_MINUTE:
-      case INTERVAL_HOUR_SECOND:
-      case INTERVAL_MINUTE:
-      case INTERVAL_MINUTE_SECOND:
-      case INTERVAL_SECOND:
-        return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo, null);
-      default:
-        return new ExprNodeConstantDesc(TypeInfoFactory.voidTypeInfo, null);
+        case BOOLEAN:
+          return new ExprNodeConstantDesc(TypeInfoFactory.booleanTypeInfo, null);
+        case TINYINT:
+          return new ExprNodeConstantDesc(TypeInfoFactory.byteTypeInfo, null);
+        case SMALLINT:
+          return new ExprNodeConstantDesc(TypeInfoFactory.shortTypeInfo, null);
+        case INTEGER:
+          return new ExprNodeConstantDesc(TypeInfoFactory.intTypeInfo, null);
+        case BIGINT:
+          return new ExprNodeConstantDesc(TypeInfoFactory.longTypeInfo, null);
+        case FLOAT:
+        case REAL:
+          return new ExprNodeConstantDesc(TypeInfoFactory.floatTypeInfo, null);
+        case DOUBLE:
+          return new ExprNodeConstantDesc(TypeInfoFactory.doubleTypeInfo, null);
+        case DATE:
+          return new ExprNodeConstantDesc(TypeInfoFactory.dateTypeInfo, null);
+        case TIME:
+        case TIMESTAMP:
+          return new ExprNodeConstantDesc(TypeInfoFactory.timestampTypeInfo, null);
+        case TIMESTAMP_WITH_LOCAL_TIME_ZONE:
+          HiveConf conf;
+          try {
+            conf = Hive.get().getConf();
+          } catch (HiveException e) {
+            throw new RuntimeException(e);
+          }
+          return new ExprNodeConstantDesc(
+              TypeInfoFactory.getTimestampTZTypeInfo(conf.getLocalTimeZone()), null);
+        case BINARY:
+          return new ExprNodeConstantDesc(TypeInfoFactory.binaryTypeInfo, null);
+        case DECIMAL:
+          return new ExprNodeConstantDesc(
+              TypeInfoFactory.getDecimalTypeInfo(lType.getPrecision(), lType.getScale()), null);
+        case VARCHAR:
+        case CHAR:
+          return new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, null);
+        case INTERVAL_YEAR:
+        case INTERVAL_MONTH:
+        case INTERVAL_YEAR_MONTH:
+          return new ExprNodeConstantDesc(TypeInfoFactory.intervalYearMonthTypeInfo, null);
+        case INTERVAL_DAY:
+        case INTERVAL_DAY_HOUR:
+        case INTERVAL_DAY_MINUTE:
+        case INTERVAL_DAY_SECOND:
+        case INTERVAL_HOUR:
+        case INTERVAL_HOUR_MINUTE:
+        case INTERVAL_HOUR_SECOND:
+        case INTERVAL_MINUTE:
+        case INTERVAL_MINUTE_SECOND:
+        case INTERVAL_SECOND:
+          return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo, null);
+        default:
+          return new ExprNodeConstantDesc(TypeInfoFactory.voidTypeInfo, null);
       }
     } else {
       switch (literal.getType().getSqlTypeName()) {
-      case BOOLEAN:
-        return new ExprNodeConstantDesc(TypeInfoFactory.booleanTypeInfo, Boolean.valueOf(RexLiteral
-            .booleanValue(literal)));
-      case TINYINT:
-        return new ExprNodeConstantDesc(TypeInfoFactory.byteTypeInfo, Byte.valueOf(((Number) literal
-            .getValue3()).byteValue()));
-      case SMALLINT:
-        return new ExprNodeConstantDesc(TypeInfoFactory.shortTypeInfo,
-            Short.valueOf(((Number) literal.getValue3()).shortValue()));
-      case INTEGER:
-        return new ExprNodeConstantDesc(TypeInfoFactory.intTypeInfo,
-            Integer.valueOf(((Number) literal.getValue3()).intValue()));
-      case BIGINT:
-        return new ExprNodeConstantDesc(TypeInfoFactory.longTypeInfo, Long.valueOf(((Number) literal
-            .getValue3()).longValue()));
-      case FLOAT:
-      case REAL:
-        return new ExprNodeConstantDesc(TypeInfoFactory.floatTypeInfo,
-            Float.valueOf(((Number) literal.getValue3()).floatValue()));
-      case DOUBLE:
-        return new ExprNodeConstantDesc(TypeInfoFactory.doubleTypeInfo,
-            Double.valueOf(((Number) literal.getValue3()).doubleValue()));
-      case DATE:
-        return new ExprNodeConstantDesc(TypeInfoFactory.dateTypeInfo,
-            Date.valueOf(literal.getValueAs(DateString.class).toString()));
-      case TIME:
-        return new ExprNodeConstantDesc(TypeInfoFactory.timestampTypeInfo,
-            Timestamp.valueOf(literal.getValueAs(TimeString.class).toString()));
-      case TIMESTAMP:
-        return new ExprNodeConstantDesc(TypeInfoFactory.timestampTypeInfo,
-            Timestamp.valueOf(literal.getValueAs(TimestampString.class).toString()));
-      case TIMESTAMP_WITH_LOCAL_TIME_ZONE:
-        HiveConf conf;
-        try {
-          conf = Hive.get().getConf();
-        } catch (HiveException e) {
-          throw new RuntimeException(e);
+        case BOOLEAN:
+          return new ExprNodeConstantDesc(TypeInfoFactory.booleanTypeInfo, Boolean.valueOf(RexLiteral
+              .booleanValue(literal)));
+        case TINYINT:
+          return new ExprNodeConstantDesc(TypeInfoFactory.byteTypeInfo, Byte.valueOf(((Number) literal
+              .getValue3()).byteValue()));
+        case SMALLINT:
+          return new ExprNodeConstantDesc(TypeInfoFactory.shortTypeInfo,
+              Short.valueOf(((Number) literal.getValue3()).shortValue()));
+        case INTEGER:
+          return new ExprNodeConstantDesc(TypeInfoFactory.intTypeInfo,
+              Integer.valueOf(((Number) literal.getValue3()).intValue()));
+        case BIGINT:
+          return new ExprNodeConstantDesc(TypeInfoFactory.longTypeInfo, Long.valueOf(((Number) literal
+              .getValue3()).longValue()));
+        case FLOAT:
+        case REAL:
+          return new ExprNodeConstantDesc(TypeInfoFactory.floatTypeInfo,
+              Float.valueOf(((Number) literal.getValue3()).floatValue()));
+        case DOUBLE:
+          return new ExprNodeConstantDesc(TypeInfoFactory.doubleTypeInfo,
+              Double.valueOf(((Number) literal.getValue3()).doubleValue()));
+        case DATE:
+          return new ExprNodeConstantDesc(TypeInfoFactory.dateTypeInfo,
+              Date.valueOf(literal.getValueAs(DateString.class).toString()));
+        case TIME:
+          return new ExprNodeConstantDesc(TypeInfoFactory.timestampTypeInfo,
+              Timestamp.valueOf(literal.getValueAs(TimeString.class).toString()));
+        case TIMESTAMP:
+          return new ExprNodeConstantDesc(TypeInfoFactory.timestampTypeInfo,
+              Timestamp.valueOf(literal.getValueAs(TimestampString.class).toString()));
+        case TIMESTAMP_WITH_LOCAL_TIME_ZONE:
+          HiveConf conf;
+          try {
+            conf = Hive.get().getConf();
+          } catch (HiveException e) {
+            throw new RuntimeException(e);
+          }
+          // Calcite stores timestamp with local time-zone in UTC internally, thus
+          // when we bring it back, we need to add the UTC suffix.
+          return new ExprNodeConstantDesc(TypeInfoFactory.getTimestampTZTypeInfo(conf.getLocalTimeZone()),
+              TimestampTZUtil.parse(literal.getValueAs(TimestampString.class).toString() + " UTC"));
+        case BINARY:
+          return new ExprNodeConstantDesc(TypeInfoFactory.binaryTypeInfo,
+              literal.getValueAs(ByteString.class).getBytes());
+        case DECIMAL:
+          return new ExprNodeConstantDesc(TypeInfoFactory.getDecimalTypeInfo(lType.getPrecision(),
+              lType.getScale()), HiveDecimal.create((BigDecimal)literal.getValue3()));
+        case VARCHAR:
+        case CHAR: {
+          if (literal.getValue() instanceof HiveNlsString) {
+            HiveNlsString mxNlsString = (HiveNlsString) literal.getValue();
+            switch (mxNlsString.interpretation) {
+              case STRING:
+                return new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, literal.getValue3());
+              case CHAR: {
+                int precision = lType.getPrecision();
+                HiveChar value = new HiveChar((String) literal.getValue3(), precision);
+                return new ExprNodeConstantDesc(new CharTypeInfo(precision), value);
+              }
+              case VARCHAR: {
+                int precision = lType.getPrecision();
+                HiveVarchar value = new HiveVarchar((String) literal.getValue3(), precision);
+                return new ExprNodeConstantDesc(new VarcharTypeInfo(precision), value);
+              }
+            }
+          }
+          throw new RuntimeException("varchar/string/char values must use HiveNlsString for correctness");
         }
-        // Calcite stores timestamp with local time-zone in UTC internally, thus
-        // when we bring it back, we need to add the UTC suffix.
-        return new ExprNodeConstantDesc(TypeInfoFactory.getTimestampTZTypeInfo(conf.getLocalTimeZone()),
-            TimestampTZUtil.parse(literal.getValueAs(TimestampString.class).toString() + " UTC"));
-      case BINARY:
-        return new ExprNodeConstantDesc(TypeInfoFactory.binaryTypeInfo, literal.getValue3());
-      case DECIMAL:
-        return new ExprNodeConstantDesc(TypeInfoFactory.getDecimalTypeInfo(lType.getPrecision(),
-            lType.getScale()), HiveDecimal.create((BigDecimal)literal.getValue3()));
-      case VARCHAR:
-      case CHAR: {
-        if (literal.getValue() instanceof HiveNlsString) {
-          HiveNlsString mxNlsString = (HiveNlsString) literal.getValue();
-          switch (mxNlsString.interpretation) {
-          case STRING:
-            return new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, literal.getValue3());
-          case CHAR: {
-            int precision = lType.getPrecision();
-            HiveChar value = new HiveChar((String) literal.getValue3(), precision);
-            return new ExprNodeConstantDesc(new CharTypeInfo(precision), value);
-          }
-          case VARCHAR: {
-            int precision = lType.getPrecision();
-            HiveVarchar value = new HiveVarchar((String) literal.getValue3(), precision);
-            return new ExprNodeConstantDesc(new VarcharTypeInfo(precision), value);
-          }
-          }
+        case INTERVAL_YEAR:
+        case INTERVAL_MONTH:
+        case INTERVAL_YEAR_MONTH: {
+          BigDecimal monthsBd = (BigDecimal) literal.getValue();
+          return new ExprNodeConstantDesc(TypeInfoFactory.intervalYearMonthTypeInfo,
+              new HiveIntervalYearMonth(monthsBd.intValue()));
         }
-        throw new RuntimeException("varchar/string/char values must use HiveNlsString for correctness");
-      }
-      case INTERVAL_YEAR:
-      case INTERVAL_MONTH:
-      case INTERVAL_YEAR_MONTH: {
-        BigDecimal monthsBd = (BigDecimal) literal.getValue();
-        return new ExprNodeConstantDesc(TypeInfoFactory.intervalYearMonthTypeInfo,
-                new HiveIntervalYearMonth(monthsBd.intValue()));
-      }
-      case INTERVAL_DAY:
-      case INTERVAL_DAY_HOUR:
-      case INTERVAL_DAY_MINUTE:
-      case INTERVAL_DAY_SECOND:
-      case INTERVAL_HOUR:
-      case INTERVAL_HOUR_MINUTE:
-      case INTERVAL_HOUR_SECOND:
-      case INTERVAL_MINUTE:
-      case INTERVAL_MINUTE_SECOND:
-      case INTERVAL_SECOND: {
-        BigDecimal millisBd = (BigDecimal) literal.getValue();
-        // Calcite literal is in millis, we need to convert to seconds
-        BigDecimal secsBd = millisBd.divide(BigDecimal.valueOf(1000));
-        return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo,
-                new HiveIntervalDayTime(secsBd));
-      }
-      default:
-        return new ExprNodeConstantDesc(TypeInfoFactory.voidTypeInfo, literal.getValue3());
+        case INTERVAL_DAY:
+        case INTERVAL_DAY_HOUR:
+        case INTERVAL_DAY_MINUTE:
+        case INTERVAL_DAY_SECOND:
+        case INTERVAL_HOUR:
+        case INTERVAL_HOUR_MINUTE:
+        case INTERVAL_HOUR_SECOND:
+        case INTERVAL_MINUTE:
+        case INTERVAL_MINUTE_SECOND:
+        case INTERVAL_SECOND: {
+          BigDecimal millisBd = (BigDecimal) literal.getValue();
+          // Calcite literal is in millis, we need to convert to seconds
+          BigDecimal secsBd = millisBd.divide(BigDecimal.valueOf(1000));
+          return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo,
+              new HiveIntervalDayTime(secsBd));
+        }
+        default:
+          return new ExprNodeConstantDesc(TypeInfoFactory.voidTypeInfo, literal.getValue3());
       }
     }
   }

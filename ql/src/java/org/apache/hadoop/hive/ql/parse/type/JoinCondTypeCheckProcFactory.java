@@ -86,7 +86,7 @@ public class JoinCondTypeCheckProcFactory<T> extends TypeCheckProcFactory<T> {
       if (!qualifiedAccess) {
         colInfo = getColInfo(ctx, null, tableOrCol, expr);
         // It's a column.
-        return exprFactory.createColumnRefExpr(colInfo);
+        return exprFactory.createColumnRefExpr(colInfo, ctx.getInputRRList());
       } else if (hasTableAlias(ctx, tableOrCol, expr)) {
         return null;
       } else {
@@ -160,12 +160,13 @@ public class JoinCondTypeCheckProcFactory<T> extends TypeCheckProcFactory<T> {
     @Override
     protected T processQualifiedColRef(TypeCheckCtx ctx, ASTNode expr,
         Object... nodeOutputs) throws SemanticException {
+      JoinTypeCheckCtx jctx = (JoinTypeCheckCtx) ctx;
       String tableAlias = BaseSemanticAnalyzer.unescapeIdentifier(expr.getChild(0).getChild(0)
           .getText());
       // NOTE: tableAlias must be a valid non-ambiguous table alias,
       // because we've checked that in TOK_TABLE_OR_COL's process method.
       ColumnInfo colInfo = getColInfo((JoinTypeCheckCtx) ctx, tableAlias,
-          exprFactory.getConstantValue((T) nodeOutputs[1]).toString(), expr);
+          exprFactory.getConstantValueAsString((T) nodeOutputs[1]), expr);
 
       if (colInfo == null) {
         ctx.setError(ASTErrorUtils.getMsg(
@@ -174,7 +175,7 @@ public class JoinCondTypeCheckProcFactory<T> extends TypeCheckProcFactory<T> {
       }
       ColumnInfo newColumnInfo = new ColumnInfo(colInfo);
       newColumnInfo.setTabAlias(tableAlias);
-      return exprFactory.createColumnRefExpr(newColumnInfo);
+      return exprFactory.createColumnRefExpr(newColumnInfo, jctx.getInputRRList());
     }
 
     private ColumnInfo getColInfo(JoinTypeCheckCtx ctx, String tabName, String colAlias,
