@@ -1362,6 +1362,13 @@ public final class FunctionRegistry {
   }
 
   /**
+   * Returns whether the exprNodeDesc is a node of "negative".
+   */
+  public static boolean isOpNegative(ExprNodeDesc desc) {
+    return GenericUDFOPNegative.class == getGenericUDFClassFromExprDesc(desc);
+  }
+
+  /**
    * Returns whether the exprNodeDesc is node of "cast".
    */
   public static boolean isOpCast(ExprNodeDesc desc) {

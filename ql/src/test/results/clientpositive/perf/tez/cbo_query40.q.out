@@ -86,6 +86,6 @@ HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
                 HiveFilter(condition=[AND(BETWEEN(false, CAST($2):TIMESTAMP(9), 1998-03-09 00:00:00:TIMESTAMP(9), 1998-05-08 00:00:00:TIMESTAMP(9)), IS NOT NULL($0))])
                   HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
             HiveProject(i_item_sk=[$0], i_item_id=[$1])
-              HiveFilter(condition=[AND(BETWEEN(false, $5, 0.99:DECIMAL(3, 2), 1.49:DECIMAL(3, 2)), IS NOT NULL($0))])
+              HiveFilter(condition=[AND(BETWEEN(false, $5, 0.99:DECIMAL(2, 2), 1.49:DECIMAL(3, 2)), IS NOT NULL($0))])
                 HiveTableScan(table=[[default, item]], table:alias=[item])
 
