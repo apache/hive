@@ -656,6 +656,45 @@ public class TestPartitionManagement {
     assertEquals(3, partitions.size());
   }
 
+  @Test
+  public void testPartitionExprFilter() throws TException, IOException {
+    String dbName = "db4";
+    String tableName = "tbl4";
+    Map<String, Column> colMap = buildAllColumns();
+    List<String> partKeys = Lists.newArrayList("state", "dt");
+    List<String> partKeyTypes = Lists.newArrayList("string", "date");
+    List<List<String>> partVals = Lists.newArrayList(
+        Lists.newArrayList("__HIVE_DEFAULT_PARTITION__", "1990-01-01"),
+        Lists.newArrayList("CA", "1986-04-28"),
+        Lists.newArrayList("MN", "2018-11-31"));
+    createMetadata(DEFAULT_CATALOG_NAME, dbName, tableName, partKeys, partKeyTypes, partVals, colMap, false);
+    Table table = client.getTable(dbName, tableName);
+    List<Partition> partitions = client.listPartitions(dbName, tableName, (short) -1);
+    assertEquals(3, partitions.size());
+    String tableLocation = table.getSd().getLocation();
+    URI location = URI.create(tableLocation);
+    Path tablePath = new Path(location);
+    FileSystem fs = FileSystem.get(location, conf);
+    Path newPart1 = new Path(tablePath, "state=WA/dt=2018-12-01");
+    Path newPart2 = new Path(tablePath, "state=UT/dt=2018-12-02");
+    fs.mkdirs(newPart1);
+    fs.mkdirs(newPart2);
+    assertEquals(5, fs.listStatus(tablePath).length);
+    table.getParameters().put(PartitionManagementTask.DISCOVER_PARTITIONS_TBLPROPERTY, "true");
+    client.alter_table(dbName, tableName, table);
+    // no match for this db pattern, so we will see only 3 partitions
+    conf.set(MetastoreConf.ConfVars.PARTITION_MANAGEMENT_DATABASE_PATTERN.getVarname(), "*dbfoo*");
+    runPartitionManagementTask(conf);
+    partitions = client.listPartitions(dbName, tableName, (short) -1);
+    assertEquals(3, partitions.size());
+
+    // matching db pattern, we will see all 5 partitions now
+    conf.set(MetastoreConf.ConfVars.PARTITION_MANAGEMENT_DATABASE_PATTERN.getVarname(), "*db4*");
+    runPartitionManagementTask(conf);
+    partitions = client.listPartitions(dbName, tableName, (short) -1);
+    assertEquals(5, partitions.size());
+  }
+
   private void runPartitionManagementTask(Configuration conf) {
     PartitionManagementTask task = new PartitionManagementTask();
     task.setConf(conf);
@@ -673,28 +712,4 @@ public class TestPartitionManagement {
   }
 
 
-  @Test
-  public void testPartitionExpressionFilter(){
-    String dbName = "db_repl1";
-    String tableName = "tbl_repl1";
-    Map<String, Column> colMap = buildAllColumns();
-    List<String> partKeys = Lists.newArrayList("state", "dt");
-    List<String> partKeyTypes = Lists.newArrayList("string", "date");
-    List<List<String>> partVals = Lists.newArrayList(
-        Lists.newArrayList("__HIVE_DEFAULT_PARTITION__", "1990-01-01"),
-        Lists.newArrayList("CA", "1986-04-28"),
-        Lists.newArrayList("MN", "2018-11-31"));
-    Map<String, String> spec = new HashMap<>();
-    spec.put("Year", "2020");
-    spec.put("Month", "1");
-    byte[] expr;
-    try {
-      String pe = Msck.makePartExpr(spec);
-      expr = pe.getBytes(StandardCharsets.UTF_8);
-    }catch (MetaException me){
-
-    }
-    
-
-  }
 }
