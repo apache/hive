@@ -249,7 +249,7 @@ STAGE PLANS:
                       Map-reduce partition columns: tw_code (type: string)
                       Statistics: Num rows: 26 Data size: 1969 Basic stats: COMPLETE Column stats: COMPLETE
                       TopN Hash Memory Usage: 0.1
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: vectorized, llap
@@ -616,7 +616,7 @@ STAGE PLANS:
                       TopN Hash Memory Usage: 0.1
                       value expressions: tw_code (type: string)
                       auto parallelism: true
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
@@ -830,7 +830,7 @@ STAGE PLANS:
                       Map-reduce partition columns: tw_code (type: string)
                       Statistics: Num rows: 26 Data size: 1969 Basic stats: COMPLETE Column stats: COMPLETE
                       TopN Hash Memory Usage: 0.1
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: vectorized, llap
