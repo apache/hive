@@ -39,6 +39,7 @@ import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.mapping.Mapping;
 import org.apache.calcite.util.mapping.MappingType;
 import org.apache.calcite.util.mapping.Mappings;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil.RewritablePKFKJoinInfo;
@@ -222,7 +223,7 @@ public class HiveJoinConstraintsRule extends RelOptRule {
               .collect(Collectors.toList());
         }
         // Fix nullability in references to the input node
-        topProjExprs = RexUtil.fixUp(rexBuilder, topProjExprs, RelOptUtil.getFieldTypeList(fkInput.getRowType()));
+        topProjExprs = HiveCalciteUtil.fixNullability(rexBuilder, topProjExprs, RelOptUtil.getFieldTypeList(fkInput.getRowType()));
         // Trigger transformation
         if (nullableNodes.isEmpty()) {
           call.transformTo(call.builder()
