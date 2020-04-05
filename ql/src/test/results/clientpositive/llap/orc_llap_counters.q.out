@@ -111,15 +111,15 @@ POSTHOOK: query: insert into orc_ppd_staging_n0 select -10,-321,-65680,-42949674
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@staging_n6
 POSTHOOK: Output: default@orc_ppd_staging_n0
-POSTHOOK: Lineage: orc_ppd_staging_n0.b EXPRESSION []
+POSTHOOK: Lineage: orc_ppd_staging_n0.b SIMPLE []
 POSTHOOK: Lineage: orc_ppd_staging_n0.bin EXPRESSION []
 POSTHOOK: Lineage: orc_ppd_staging_n0.bo SIMPLE []
 POSTHOOK: Lineage: orc_ppd_staging_n0.c EXPRESSION []
 POSTHOOK: Lineage: orc_ppd_staging_n0.d EXPRESSION []
 POSTHOOK: Lineage: orc_ppd_staging_n0.da EXPRESSION []
-POSTHOOK: Lineage: orc_ppd_staging_n0.dec EXPRESSION []
+POSTHOOK: Lineage: orc_ppd_staging_n0.dec SIMPLE []
 POSTHOOK: Lineage: orc_ppd_staging_n0.f EXPRESSION []
-POSTHOOK: Lineage: orc_ppd_staging_n0.i EXPRESSION []
+POSTHOOK: Lineage: orc_ppd_staging_n0.i SIMPLE []
 POSTHOOK: Lineage: orc_ppd_staging_n0.s SIMPLE []
 POSTHOOK: Lineage: orc_ppd_staging_n0.si EXPRESSION []
 POSTHOOK: Lineage: orc_ppd_staging_n0.t EXPRESSION []
@@ -920,16 +920,16 @@ Stage-1 HIVE COUNTERS:
    RECORDS_OUT_0: 1
    RECORDS_OUT_INTERMEDIATE_Map_1: 0
    RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
-   RECORDS_OUT_OPERATOR_FIL_8: 0
-   RECORDS_OUT_OPERATOR_FS_12: 1
-   RECORDS_OUT_OPERATOR_GBY_11: 1
+   RECORDS_OUT_OPERATOR_FIL_7: 0
+   RECORDS_OUT_OPERATOR_FS_9: 1
+   RECORDS_OUT_OPERATOR_GBY_8: 1
    RECORDS_OUT_OPERATOR_MAP_0: 0
-   RECORDS_OUT_OPERATOR_RS_10: 0
-   RECORDS_OUT_OPERATOR_SEL_9: 0
+   RECORDS_OUT_OPERATOR_RS_3: 0
+   RECORDS_OUT_OPERATOR_SEL_2: 0
    RECORDS_OUT_OPERATOR_TS_0: 2100
    TOTAL_TABLE_ROWS_WRITTEN: 0
 Stage-1 LLAP IO COUNTERS:
-   CACHE_HIT_BYTES: 354
+   CACHE_HIT_BYTES: 1071
    CACHE_MISS_BYTES: 0
    METADATA_CACHE_HIT: 2
    NUM_DECODED_BATCHES: 3

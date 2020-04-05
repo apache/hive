@@ -75,6 +75,6 @@ HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
                 HiveFilter(condition=[=($6, 2001)])
                   HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
             HiveProject(s_store_sk=[$0], s_state=[$24])
-              HiveFilter(condition=[IN($24, _UTF-16LE'SD', _UTF-16LE'FL', _UTF-16LE'MI', _UTF-16LE'LA', _UTF-16LE'MO', _UTF-16LE'SC')])
+              HiveFilter(condition=[IN($24, _UTF-16LE'SD':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'FL':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'MI':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'LA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'MO':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'SC':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")])
                 HiveTableScan(table=[[default, store]], table:alias=[store])
 

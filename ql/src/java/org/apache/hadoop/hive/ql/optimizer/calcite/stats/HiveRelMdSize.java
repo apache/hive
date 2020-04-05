@@ -38,7 +38,7 @@ import com.google.common.collect.ImmutableList;
 
 public class HiveRelMdSize extends RelMdSize {
 
-  private static final HiveRelMdSize INSTANCE = new HiveRelMdSize();
+  public static final HiveRelMdSize INSTANCE = new HiveRelMdSize();
 
   public static final RelMetadataProvider SOURCE =
           ReflectiveRelMetadataProvider.reflectiveSource(INSTANCE,
@@ -137,10 +137,6 @@ public class HiveRelMdSize extends RelMdSize {
   //       supports all types
   @Override
   public Double averageTypeValueSize(RelDataType type) {
-    return averageTypeSize(type);
-  }
-
-  public static Double averageTypeSize(RelDataType type) {
     switch (type.getSqlTypeName()) {
     case BOOLEAN:
     case TINYINT:
@@ -153,10 +149,14 @@ public class HiveRelMdSize extends RelMdSize {
     case DECIMAL:
     case DATE:
     case TIME:
+    case INTERVAL_YEAR:
+    case INTERVAL_YEAR_MONTH:
+    case INTERVAL_MONTH:
       return 4d;
     case BIGINT:
     case DOUBLE:
     case TIMESTAMP:
+    case TIMESTAMP_WITH_LOCAL_TIME_ZONE:
     case INTERVAL_DAY:
     case INTERVAL_DAY_HOUR:
     case INTERVAL_DAY_MINUTE:
@@ -166,10 +166,7 @@ public class HiveRelMdSize extends RelMdSize {
     case INTERVAL_HOUR_SECOND:
     case INTERVAL_MINUTE:
     case INTERVAL_MINUTE_SECOND:
-    case INTERVAL_MONTH:
     case INTERVAL_SECOND:
-    case INTERVAL_YEAR:
-    case INTERVAL_YEAR_MONTH:
       return 8d;
     case BINARY:
       return (double) type.getPrecision();
@@ -183,12 +180,11 @@ public class HiveRelMdSize extends RelMdSize {
     case ROW:
       Double average = 0.0;
       for (RelDataTypeField field : type.getFieldList()) {
-        average += averageTypeSize(field.getType());
+        average += averageTypeValueSize(field.getType());
       }
       return average;
     default:
       return null;
     }
   }
-
 }

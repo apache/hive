@@ -111,15 +111,15 @@ POSTHOOK: query: insert into orc_ppd_staging_n2 select -10,-321,-65680,-42949674
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@staging_n8
 POSTHOOK: Output: default@orc_ppd_staging_n2
-POSTHOOK: Lineage: orc_ppd_staging_n2.b EXPRESSION []
+POSTHOOK: Lineage: orc_ppd_staging_n2.b SIMPLE []
 POSTHOOK: Lineage: orc_ppd_staging_n2.bin EXPRESSION []
 POSTHOOK: Lineage: orc_ppd_staging_n2.bo SIMPLE []
 POSTHOOK: Lineage: orc_ppd_staging_n2.c EXPRESSION []
 POSTHOOK: Lineage: orc_ppd_staging_n2.d EXPRESSION []
 POSTHOOK: Lineage: orc_ppd_staging_n2.da EXPRESSION []
-POSTHOOK: Lineage: orc_ppd_staging_n2.dec EXPRESSION []
+POSTHOOK: Lineage: orc_ppd_staging_n2.dec SIMPLE []
 POSTHOOK: Lineage: orc_ppd_staging_n2.f EXPRESSION []
-POSTHOOK: Lineage: orc_ppd_staging_n2.i EXPRESSION []
+POSTHOOK: Lineage: orc_ppd_staging_n2.i SIMPLE []
 POSTHOOK: Lineage: orc_ppd_staging_n2.s SIMPLE []
 POSTHOOK: Lineage: orc_ppd_staging_n2.si EXPRESSION []
 POSTHOOK: Lineage: orc_ppd_staging_n2.t EXPRESSION []

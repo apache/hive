@@ -90,7 +90,7 @@ public class TestGenericUDFRound extends BaseScalarUdfTest {
   }
 
   @Override
-  public List<ExprNodeDesc> getExpressionList() throws UDFArgumentException {
+  public List<ExprNodeDesc> getExpressionList() throws Exception {
     List<ExprNodeDesc> exprs = new ArrayList<ExprNodeDesc>(cols.length);
     for (int i = 0; i < cols.length; i++) {
       exprs.add(OperatorTestUtils.getStringColumn(cols[i]));

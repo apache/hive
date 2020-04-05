@@ -77,7 +77,7 @@ HiveProject(i_item_desc=[$0], i_category=[$1], i_class=[$2], i_current_price=[$3
       HiveAggregate(group=[{1, 2, 3, 4, 5}], agg#0=[sum($8)])
         HiveJoin(condition=[=($7, $0)], joinType=[inner], algorithm=[none], cost=[not available])
           HiveProject(i_item_sk=[$0], i_item_id=[$1], i_item_desc=[$4], i_current_price=[$5], i_class=[$10], i_category=[$12])
-            HiveFilter(condition=[AND(IN($12, _UTF-16LE'Jewelry', _UTF-16LE'Sports', _UTF-16LE'Books'), IS NOT NULL($0))])
+            HiveFilter(condition=[AND(IN($12, _UTF-16LE'Jewelry':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Sports':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Books':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IS NOT NULL($0))])
               HiveTableScan(table=[[default, item]], table:alias=[item])
           HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
             HiveProject(ws_sold_date_sk=[$0], ws_item_sk=[$3], ws_ext_sales_price=[$23])

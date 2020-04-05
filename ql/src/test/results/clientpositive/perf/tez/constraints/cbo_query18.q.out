@@ -92,7 +92,7 @@ HiveSortLimit(sort0=[$1], sort1=[$2], sort2=[$3], sort3=[$0], dir0=[ASC], dir1=[
                 HiveFilter(condition=[AND(IN($12, 9, 5, 12, 4, 1, 10), IS NOT NULL($2), IS NOT NULL($4))])
                   HiveTableScan(table=[[default, customer]], table:alias=[customer])
               HiveProject(ca_address_sk=[$0], ca_county=[$7], ca_state=[$8], ca_country=[$10])
-                HiveFilter(condition=[IN($8, _UTF-16LE'ND', _UTF-16LE'WI', _UTF-16LE'AL', _UTF-16LE'NC', _UTF-16LE'OK', _UTF-16LE'MS', _UTF-16LE'TN')])
+                HiveFilter(condition=[IN($8, _UTF-16LE'ND':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'WI':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'AL':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'NC':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'OK':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'MS':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'TN':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")])
                   HiveTableScan(table=[[default, customer_address]], table:alias=[customer_address])
             HiveProject(cs_sold_date_sk=[$0], cs_bill_customer_sk=[$1], cs_bill_cdemo_sk=[$2], cs_item_sk=[$3], CAST=[$4], CAST5=[$5], CAST6=[$6], CAST7=[$7], CAST8=[$8], d_date_sk=[$9], cd_demo_sk=[$10], CAST0=[$11])
               HiveJoin(condition=[=($2, $10)], joinType=[inner], algorithm=[none], cost=[not available])

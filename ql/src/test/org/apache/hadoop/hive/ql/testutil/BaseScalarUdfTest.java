@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.mapred.JobConf;
 import org.junit.Ignore;
+import org.junit.Test;
 
 /**
  *
@@ -70,7 +71,7 @@ public abstract class BaseScalarUdfTest extends TestCase {
    * @return A list of expressions
    * @throws UDFArgumentException if the UDF has been formulated incorrectly
    */
-  public abstract List<ExprNodeDesc> getExpressionList() throws UDFArgumentException;
+  public abstract List<ExprNodeDesc> getExpressionList() throws Exception;
 
   /**
    * This method drives the test. It takes the data from getBaseTable() and
@@ -79,7 +80,8 @@ public abstract class BaseScalarUdfTest extends TestCase {
    * and if every row is the expected result the method completes without asserting.
    * @throws HiveException
    */
-  public final void testUdf() throws HiveException {
+  @Test
+  public final void testUdf() throws Exception {
     InspectableObject [] data = getBaseTable();
     List<ExprNodeDesc> expressionList = getExpressionList();
     SelectDesc selectCtx = new SelectDesc(expressionList,

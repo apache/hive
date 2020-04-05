@@ -64,6 +64,9 @@ public class CliConfigs {
         excludesFrom(testConfigProps, "erasurecoding.shared.query.files");
         excludesFrom(testConfigProps, "beeline.positive.include");
 
+        excludeQuery("fouter_join_ppr.q"); // Disabled in HIVE-19509
+        excludeQuery("constprog_cast.q"); // TODO: Enable when we move to Calcite 1.23
+
         setResultsDir("ql/src/test/results/clientpositive");
         setLogDir("itests/qtest/target/qfile-results/clientpositive");
 

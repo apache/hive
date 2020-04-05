@@ -15,44 +15,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.hadoop.hive.ql.optimizer.calcite;
 
 import java.util.HashSet;
 import java.util.List;
 
-import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexExecutorImpl;
 import org.apache.calcite.rex.RexNode;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ExprNodeConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.RexNodeConverter;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-
+/**
+ * Executor for {@link RexNode} based on Hive semantics.
+ */
 public class HiveRexExecutorImpl extends RexExecutorImpl {
 
   private static final Logger LOG = LoggerFactory.getLogger(HiveRexExecutorImpl.class);
 
-  private final RelOptCluster cluster;
 
-  public HiveRexExecutorImpl(RelOptCluster cluster) {
+  public HiveRexExecutorImpl() {
     super(null);
-    this.cluster = cluster;
   }
 
   @Override
   public void reduce(RexBuilder rexBuilder, List<RexNode> constExps, List<RexNode> reducedValues) {
-    RexNodeConverter rexNodeConverter = new RexNodeConverter(cluster);
+    RexNodeConverter rexNodeConverter = new RexNodeConverter(rexBuilder, rexBuilder.getTypeFactory());
     for (RexNode rexNode : constExps) {
       // initialize the converter
       ExprNodeConverter converter = new ExprNodeConverter("", null, null, null,
-          new HashSet<Integer>(), cluster.getTypeFactory());
+          new HashSet<>(), rexBuilder.getTypeFactory());
       // convert RexNode to ExprNodeGenericFuncDesc
       ExprNodeDesc expr = rexNode.accept(converter);
       if (expr instanceof ExprNodeGenericFuncDesc) {
@@ -60,19 +59,26 @@ public class HiveRexExecutorImpl extends RexExecutorImpl {
         ExprNodeDesc constant = ConstantPropagateProcFactory
             .foldExpr((ExprNodeGenericFuncDesc) expr);
         if (constant != null) {
-          try {
-            // convert constant back to RexNode
-            reducedValues.add(rexNodeConverter.convert(constant));
-          } catch (Exception e) {
-            LOG.warn(e.getMessage());
-            reducedValues.add(rexNode);
-          }
+          addExpressionToList(constant, rexNode, rexNodeConverter, reducedValues);
         } else {
           reducedValues.add(rexNode);
         }
+      } else if (expr instanceof ExprNodeConstantDesc) {
+        addExpressionToList(expr, rexNode, rexNodeConverter, reducedValues);
       } else {
         reducedValues.add(rexNode);
       }
+    }
+  }
+
+  private void addExpressionToList(ExprNodeDesc reducedExpr, RexNode originalExpr,
+      RexNodeConverter rexNodeConverter, List<RexNode> reducedValues) {
+    try {
+      // convert constant back to RexNode
+      reducedValues.add(rexNodeConverter.convert(reducedExpr));
+    } catch (Exception e) {
+      LOG.warn(e.getMessage());
+      reducedValues.add(originalExpr);
     }
   }
 

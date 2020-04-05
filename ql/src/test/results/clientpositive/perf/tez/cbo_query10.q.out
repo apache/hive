@@ -144,7 +144,7 @@ HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$4], sort4=[$6], sort5=
                     HiveFilter(condition=[AND(IS NOT NULL($2), IS NOT NULL($4), IS NOT NULL($0))])
                       HiveTableScan(table=[[default, customer]], table:alias=[c])
                   HiveProject(ca_address_sk=[$0], ca_county=[$7])
-                    HiveFilter(condition=[AND(IN($7, _UTF-16LE'Walker County', _UTF-16LE'Richland County', _UTF-16LE'Gaines County', _UTF-16LE'Douglas County', _UTF-16LE'Dona Ana County'), IS NOT NULL($0))])
+                    HiveFilter(condition=[AND(IN($7, _UTF-16LE'Walker County':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Richland County':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Gaines County':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Douglas County':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Dona Ana County':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IS NOT NULL($0))])
                       HiveTableScan(table=[[default, customer_address]], table:alias=[ca])
                 HiveProject(cd_demo_sk=[$0], cd_gender=[$1], cd_marital_status=[$2], cd_education_status=[$3], cd_purchase_estimate=[$4], cd_credit_rating=[$5], cd_dep_count=[$6], cd_dep_employed_count=[$7], cd_dep_college_count=[$8])
                   HiveFilter(condition=[IS NOT NULL($0)])

@@ -1404,7 +1404,7 @@ POSTHOOK: Input: default@pcs_t1@ds=2000-04-10
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `ds`
 FROM `default`.`pcs_t1`
-WHERE `ds` <> '2000-04-08' AND `key` = 3 OR (`ds` = '2000-04-08' OR `key` IS NOT NULL) AND `key` = 2
+WHERE (`ds` = '2000-04-08' OR `key` IS NOT NULL) AND `key` = 2 OR `ds` <> '2000-04-08' AND `key` <> 2 AND `key` = 3
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1415,12 +1415,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcs_t1
-            filterExpr: (((ds <> '2000-04-08') and (key = 3)) or (((ds = '2000-04-08') or key is not null) and (key = 2))) (type: boolean)
+            filterExpr: ((((ds = '2000-04-08') or key is not null) and (key = 2)) or ((ds <> '2000-04-08') and (key <> 2) and (key = 3))) (type: boolean)
             Statistics: Num rows: 60 Data size: 480 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: (((ds <> '2000-04-08') and (key = 3)) or (((ds = '2000-04-08') or key is not null) and (key = 2))) (type: boolean)
+              predicate: ((((ds = '2000-04-08') or key is not null) and (key = 2)) or ((ds <> '2000-04-08') and (key <> 2) and (key = 3))) (type: boolean)
               Statistics: Num rows: 60 Data size: 480 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ds (type: string)
@@ -1604,7 +1604,7 @@ POSTHOOK: Input: default@pcs_t1@ds=2000-04-10
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `ds`
 FROM `default`.`pcs_t1`
-WHERE `key` = 3 OR ((`ds` = '2000-04-08' OR `key` IS NOT NULL) AND `key` = 2 OR `ds` <> '2000-04-08' AND `key` = 3) AND `key` + 5 > 0
+WHERE `key` = 3 OR ((`ds` = '2000-04-08' OR `key` IS NOT NULL) AND `key` = 2 OR `ds` <> '2000-04-08' AND `key` <> 2 AND `key` = 3) AND `key` + 5 > 0
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1615,12 +1615,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcs_t1
-            filterExpr: ((key = 3) or (((((ds = '2000-04-08') or key is not null) and (key = 2)) or ((ds <> '2000-04-08') and (key = 3))) and ((key + 5) > 0))) (type: boolean)
+            filterExpr: ((key = 3) or (((((ds = '2000-04-08') or key is not null) and (key = 2)) or ((ds <> '2000-04-08') and (key <> 2) and (key = 3))) and ((key + 5) > 0))) (type: boolean)
             Statistics: Num rows: 60 Data size: 480 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: ((key = 3) or (((((ds = '2000-04-08') or key is not null) and (key = 2)) or ((ds <> '2000-04-08') and (key = 3))) and ((key + 5) > 0))) (type: boolean)
+              predicate: ((key = 3) or (((((ds = '2000-04-08') or key is not null) and (key = 2)) or ((ds <> '2000-04-08') and (key <> 2) and (key = 3))) and ((key + 5) > 0))) (type: boolean)
               Statistics: Num rows: 50 Data size: 400 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ds (type: string)

@@ -33,6 +33,7 @@ import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.rex.RexVisitorImpl;
+import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.util.Pair;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.FilterSelectivityEstimator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdSize;
@@ -223,7 +224,13 @@ public class HiveFilterSortPredicates extends RelOptRule {
           return null;
         }
         cost += operandCost;
-        Double size = HiveRelMdSize.averageTypeSize(operand.getType());
+        Double size;
+        if (operand.isA(SqlKind.LITERAL)) {
+          size = HiveRelMdSize.INSTANCE.typeValueSize(operand.getType(),
+              ((RexLiteral) operand).getValueAs(Comparable.class));
+        } else {
+          size = HiveRelMdSize.INSTANCE.averageTypeValueSize(operand.getType());
+        }
         if (size == null) {
           return null;
         }

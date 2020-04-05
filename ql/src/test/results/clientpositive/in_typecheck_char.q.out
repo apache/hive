@@ -108,13 +108,13 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: ax
-            filterExpr: (struct(s,t)) IN (const struct('a','a         '), const struct('b','bb        ')) (type: boolean)
+            filterExpr: (struct(CAST( s AS STRING),CAST( t AS STRING))) IN (const struct('a','a'), const struct('b','bb')) (type: boolean)
             Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (struct(s,t)) IN (const struct('a','a         '), const struct('b','bb        ')) (type: boolean)
-              Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+              predicate: (struct(CAST( s AS STRING),CAST( t AS STRING))) IN (const struct('a','a'), const struct('b','bb')) (type: boolean)
+              Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   minReductionHashAggr: 0.99
@@ -126,6 +126,7 @@ STAGE PLANS:
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -213,10 +214,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: ax
-            filterExpr: (((s = 'a') and (t = 'a         ')) or (null and (t = 'bb        '))) is null (type: boolean)
+            filterExpr: ((null and (CAST( t AS STRING) = 'bb')) or ((CAST( s AS STRING) = 'a') and (CAST( t AS STRING) = 'a'))) is null (type: boolean)
             Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((s = 'a') and (t = 'a         ')) or (null and (t = 'bb        '))) is null (type: boolean)
+              predicate: ((null and (CAST( t AS STRING) = 'bb')) or ((CAST( s AS STRING) = 'a') and (CAST( t AS STRING) = 'a'))) is null (type: boolean)
               Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE

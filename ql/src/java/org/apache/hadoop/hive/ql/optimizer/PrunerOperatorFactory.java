@@ -111,7 +111,7 @@ public abstract class PrunerOperatorFactory {
      * @throws UDFArgumentException
      */
     protected void addPruningPred(Map<TableScanOperator, ExprNodeDesc> opToPrunner,
-        TableScanOperator top, ExprNodeDesc new_pruner_pred) throws UDFArgumentException {
+        TableScanOperator top, ExprNodeDesc new_pruner_pred) throws SemanticException {
       ExprNodeDesc old_pruner_pred = opToPrunner.get(top);
       ExprNodeDesc pruner_pred = null;
       if (old_pruner_pred != null) {
@@ -139,7 +139,7 @@ public abstract class PrunerOperatorFactory {
      */
     protected void addPruningPred(Map<TableScanOperator, Map<String, ExprNodeDesc>> opToPrunner,
         TableScanOperator top, ExprNodeDesc new_pruner_pred, Partition part)
-        throws UDFArgumentException {
+        throws SemanticException {
       Map<String, ExprNodeDesc> oldPartToPruner = opToPrunner.get(top);
       Map<String, ExprNodeDesc> partToPruner = null;
       ExprNodeDesc pruner_pred = null;
