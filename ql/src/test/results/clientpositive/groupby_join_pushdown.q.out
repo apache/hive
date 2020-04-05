@@ -651,14 +651,14 @@ STAGE PLANS:
             0 _col1 (type: int)
             1 _col1 (type: int)
           outputColumnNames: _col0, _col2, _col3
-          Statistics: Num rows: 18464 Data size: 258240 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 13785 Data size: 183376 Basic stats: COMPLETE Column stats: COMPLETE
           Group By Operator
             aggregations: sum(_col2)
             keys: _col0 (type: tinyint), _col3 (type: tinyint)
             minReductionHashAggr: 0.99
             mode: hash
             outputColumnNames: _col0, _col1, _col2
-            Statistics: Num rows: 9232 Data size: 138416 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 6892 Data size: 100984 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
               table:
@@ -675,7 +675,7 @@ STAGE PLANS:
               null sort order: zz
               sort order: ++
               Map-reduce partition columns: _col0 (type: tinyint), _col1 (type: tinyint)
-              Statistics: Num rows: 9232 Data size: 138416 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 6892 Data size: 100984 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col2 (type: bigint)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -684,10 +684,10 @@ STAGE PLANS:
           keys: KEY._col0 (type: tinyint), KEY._col1 (type: tinyint)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 9232 Data size: 138416 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 6892 Data size: 100984 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 9232 Data size: 138416 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 6892 Data size: 100984 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -740,13 +740,13 @@ STAGE PLANS:
                   minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 4419 Data size: 44076 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 4586 Data size: 45744 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: bigint)
                     null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col0 (type: bigint)
-                    Statistics: Num rows: 4419 Data size: 44076 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 4586 Data size: 45744 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: int)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -755,7 +755,7 @@ STAGE PLANS:
           keys: KEY._col0 (type: bigint)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 4419 Data size: 44076 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 4586 Data size: 45744 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
             table:
@@ -772,7 +772,7 @@ STAGE PLANS:
               null sort order: z
               sort order: +
               Map-reduce partition columns: _col0 (type: bigint)
-              Statistics: Num rows: 4419 Data size: 44076 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 4586 Data size: 45744 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col1 (type: int)
           TableScan
             Reduce Output Operator
@@ -780,7 +780,7 @@ STAGE PLANS:
               null sort order: z
               sort order: +
               Map-reduce partition columns: _col0 (type: bigint)
-              Statistics: Num rows: 4419 Data size: 26400 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 4586 Data size: 27400 Basic stats: COMPLETE Column stats: COMPLETE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -789,14 +789,14 @@ STAGE PLANS:
             0 _col0 (type: bigint)
             1 _col0 (type: bigint)
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 4420 Data size: 70496 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 4586 Data size: 73144 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: _col0 (type: bigint), _col2 (type: bigint), _col1 (type: int)
             outputColumnNames: _col0, _col1, _col2
-            Statistics: Num rows: 4420 Data size: 70496 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 4586 Data size: 73144 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 4420 Data size: 70496 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 4586 Data size: 73144 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -821,20 +821,20 @@ STAGE PLANS:
                   minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 4419 Data size: 26400 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 4586 Data size: 27400 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: bigint)
                     null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col0 (type: bigint)
-                    Statistics: Num rows: 4419 Data size: 26400 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 4586 Data size: 27400 Basic stats: COMPLETE Column stats: COMPLETE
       Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: bigint)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 4419 Data size: 26400 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 4586 Data size: 27400 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
             table:
@@ -889,13 +889,13 @@ STAGE PLANS:
                   minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 99 Data size: 696 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 131 Data size: 920 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: tinyint)
                     null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col0 (type: tinyint)
-                    Statistics: Num rows: 99 Data size: 696 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 131 Data size: 920 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: tinyint)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -904,7 +904,7 @@ STAGE PLANS:
           keys: KEY._col0 (type: tinyint)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 99 Data size: 696 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 131 Data size: 920 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
             table:
@@ -921,7 +921,7 @@ STAGE PLANS:
               null sort order: z
               sort order: +
               Map-reduce partition columns: _col0 (type: tinyint)
-              Statistics: Num rows: 99 Data size: 696 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 131 Data size: 920 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col1 (type: tinyint)
           TableScan
             Reduce Output Operator
@@ -929,7 +929,7 @@ STAGE PLANS:
               null sort order: z
               sort order: +
               Map-reduce partition columns: _col0 (type: tinyint)
-              Statistics: Num rows: 99 Data size: 300 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 131 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -938,14 +938,14 @@ STAGE PLANS:
             0 _col0 (type: tinyint)
             1 _col0 (type: tinyint)
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 100 Data size: 1008 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 132 Data size: 1328 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: _col0 (type: tinyint), _col2 (type: tinyint), _col1 (type: tinyint)
             outputColumnNames: _col0, _col1, _col2
-            Statistics: Num rows: 100 Data size: 1008 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 132 Data size: 1328 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 100 Data size: 1008 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 132 Data size: 1328 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -970,20 +970,20 @@ STAGE PLANS:
                   minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 99 Data size: 300 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 131 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: tinyint)
                     null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col0 (type: tinyint)
-                    Statistics: Num rows: 99 Data size: 300 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 131 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
       Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: tinyint)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 99 Data size: 300 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 131 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
             table:
@@ -1038,13 +1038,13 @@ STAGE PLANS:
                   minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 99 Data size: 696 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 131 Data size: 920 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: tinyint)
                     null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col0 (type: tinyint)
-                    Statistics: Num rows: 99 Data size: 696 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 131 Data size: 920 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: int)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -1053,7 +1053,7 @@ STAGE PLANS:
           keys: KEY._col0 (type: tinyint)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 99 Data size: 696 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 131 Data size: 920 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
             table:
@@ -1070,7 +1070,7 @@ STAGE PLANS:
               null sort order: z
               sort order: +
               Map-reduce partition columns: _col0 (type: tinyint)
-              Statistics: Num rows: 99 Data size: 696 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 131 Data size: 920 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col1 (type: int)
           TableScan
             Reduce Output Operator
@@ -1078,7 +1078,7 @@ STAGE PLANS:
               null sort order: z
               sort order: +
               Map-reduce partition columns: _col0 (type: tinyint)
-              Statistics: Num rows: 99 Data size: 300 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 131 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -1087,14 +1087,14 @@ STAGE PLANS:
             0 _col0 (type: tinyint)
             1 _col0 (type: tinyint)
           outputColumnNames: _col1
-          Statistics: Num rows: 100 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 132 Data size: 528 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: _col1 (type: int)
             outputColumnNames: _col0
-            Statistics: Num rows: 100 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 132 Data size: 528 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 100 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 132 Data size: 528 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1119,20 +1119,20 @@ STAGE PLANS:
                   minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 99 Data size: 300 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 131 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: tinyint)
                     null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col0 (type: tinyint)
-                    Statistics: Num rows: 99 Data size: 300 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 131 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
       Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: tinyint)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 99 Data size: 300 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 131 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
             table:
@@ -1187,13 +1187,13 @@ STAGE PLANS:
                   minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 99 Data size: 1092 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 131 Data size: 1444 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: tinyint)
                     null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col0 (type: tinyint)
-                    Statistics: Num rows: 99 Data size: 1092 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 131 Data size: 1444 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: bigint)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -1202,7 +1202,7 @@ STAGE PLANS:
           keys: KEY._col0 (type: tinyint)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 99 Data size: 1092 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 131 Data size: 1444 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
             table:
@@ -1219,7 +1219,7 @@ STAGE PLANS:
               null sort order: z
               sort order: +
               Map-reduce partition columns: _col0 (type: tinyint)
-              Statistics: Num rows: 99 Data size: 1092 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 131 Data size: 1444 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col1 (type: bigint)
           TableScan
             Reduce Output Operator
@@ -1227,7 +1227,7 @@ STAGE PLANS:
               null sort order: z
               sort order: +
               Map-reduce partition columns: _col0 (type: tinyint)
-              Statistics: Num rows: 99 Data size: 1092 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 131 Data size: 1444 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col1 (type: bigint)
       Reduce Operator Tree:
         Join Operator
@@ -1237,14 +1237,14 @@ STAGE PLANS:
             0 _col0 (type: tinyint)
             1 _col0 (type: tinyint)
           outputColumnNames: _col1, _col3
-          Statistics: Num rows: 100 Data size: 1600 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 132 Data size: 2112 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: (_col1 * _col3) (type: bigint)
             outputColumnNames: _col0
-            Statistics: Num rows: 100 Data size: 800 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 132 Data size: 1056 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 100 Data size: 800 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 132 Data size: 1056 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1270,13 +1270,13 @@ STAGE PLANS:
                   minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 99 Data size: 1092 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 131 Data size: 1444 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: tinyint)
                     null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col0 (type: tinyint)
-                    Statistics: Num rows: 99 Data size: 1092 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 131 Data size: 1444 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: bigint)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -1285,7 +1285,7 @@ STAGE PLANS:
           keys: KEY._col0 (type: tinyint)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 99 Data size: 1092 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 131 Data size: 1444 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
             table:
@@ -1340,13 +1340,13 @@ STAGE PLANS:
                   minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 99 Data size: 1092 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 131 Data size: 1444 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: tinyint)
                     null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col0 (type: tinyint)
-                    Statistics: Num rows: 99 Data size: 1092 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 131 Data size: 1444 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: bigint)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -1355,7 +1355,7 @@ STAGE PLANS:
           keys: KEY._col0 (type: tinyint)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 99 Data size: 1092 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 131 Data size: 1444 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
             table:
@@ -1372,7 +1372,7 @@ STAGE PLANS:
               null sort order: z
               sort order: +
               Map-reduce partition columns: _col0 (type: tinyint)
-              Statistics: Num rows: 99 Data size: 1092 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 131 Data size: 1444 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col1 (type: bigint)
           TableScan
             Reduce Output Operator
@@ -1380,7 +1380,7 @@ STAGE PLANS:
               null sort order: z
               sort order: +
               Map-reduce partition columns: _col0 (type: tinyint)
-              Statistics: Num rows: 99 Data size: 1092 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 131 Data size: 1444 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col1 (type: bigint)
       Reduce Operator Tree:
         Join Operator
@@ -1390,14 +1390,14 @@ STAGE PLANS:
             0 _col0 (type: tinyint)
             1 _col0 (type: tinyint)
           outputColumnNames: _col0, _col1, _col3
-          Statistics: Num rows: 100 Data size: 1904 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 132 Data size: 2512 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: (_col1 * _col3) (type: bigint), _col0 (type: tinyint)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 100 Data size: 1104 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 132 Data size: 1456 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 100 Data size: 1104 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 132 Data size: 1456 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1423,13 +1423,13 @@ STAGE PLANS:
                   minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 99 Data size: 1092 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 131 Data size: 1444 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: tinyint)
                     null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col0 (type: tinyint)
-                    Statistics: Num rows: 99 Data size: 1092 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 131 Data size: 1444 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: bigint)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -1438,7 +1438,7 @@ STAGE PLANS:
           keys: KEY._col0 (type: tinyint)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 99 Data size: 1092 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 131 Data size: 1444 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
             table:
@@ -1493,13 +1493,13 @@ STAGE PLANS:
                   minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 99 Data size: 1092 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 131 Data size: 1444 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: tinyint)
                     null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col0 (type: tinyint)
-                    Statistics: Num rows: 99 Data size: 1092 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 131 Data size: 1444 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: bigint)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -1508,7 +1508,7 @@ STAGE PLANS:
           keys: KEY._col0 (type: tinyint)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 99 Data size: 1092 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 131 Data size: 1444 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
             table:
@@ -1525,7 +1525,7 @@ STAGE PLANS:
               null sort order: z
               sort order: +
               Map-reduce partition columns: _col0 (type: tinyint)
-              Statistics: Num rows: 99 Data size: 1092 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 131 Data size: 1444 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col1 (type: bigint)
           TableScan
             Reduce Output Operator
@@ -1533,7 +1533,7 @@ STAGE PLANS:
               null sort order: z
               sort order: +
               Map-reduce partition columns: _col0 (type: tinyint)
-              Statistics: Num rows: 99 Data size: 1092 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 131 Data size: 1444 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col1 (type: bigint)
       Reduce Operator Tree:
         Join Operator
@@ -1543,14 +1543,14 @@ STAGE PLANS:
             0 _col0 (type: tinyint)
             1 _col0 (type: tinyint)
           outputColumnNames: _col0, _col1, _col3
-          Statistics: Num rows: 100 Data size: 1904 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 132 Data size: 2512 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: (_col1 * _col3) (type: bigint), _col0 (type: tinyint)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 100 Data size: 1104 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 132 Data size: 1456 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 100 Data size: 1104 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 132 Data size: 1456 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1576,13 +1576,13 @@ STAGE PLANS:
                   minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 99 Data size: 1092 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 131 Data size: 1444 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: tinyint)
                     null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col0 (type: tinyint)
-                    Statistics: Num rows: 99 Data size: 1092 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 131 Data size: 1444 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: bigint)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -1591,7 +1591,7 @@ STAGE PLANS:
           keys: KEY._col0 (type: tinyint)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 99 Data size: 1092 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 131 Data size: 1444 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
             table:
@@ -1793,14 +1793,14 @@ STAGE PLANS:
             0 _col0 (type: tinyint)
             1 _col0 (type: tinyint)
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 858611 Data size: 10275444 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 647260 Data size: 7739232 Basic stats: COMPLETE Column stats: COMPLETE
           Group By Operator
             aggregations: sum(_col1)
             keys: _col0 (type: tinyint), _col2 (type: tinyint)
             minReductionHashAggr: 0.99
             mode: hash
             outputColumnNames: _col0, _col1, _col2
-            Statistics: Num rows: 9801 Data size: 156608 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 17161 Data size: 274088 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
               table:
@@ -1817,7 +1817,7 @@ STAGE PLANS:
               null sort order: zz
               sort order: ++
               Map-reduce partition columns: _col0 (type: tinyint), _col1 (type: tinyint)
-              Statistics: Num rows: 9801 Data size: 156608 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 17161 Data size: 274088 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col2 (type: bigint)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -1826,14 +1826,14 @@ STAGE PLANS:
           keys: KEY._col0 (type: tinyint), KEY._col1 (type: tinyint)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 9801 Data size: 156608 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 17161 Data size: 274088 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: _col2 (type: bigint), _col0 (type: tinyint)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 9801 Data size: 117508 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 17161 Data size: 205688 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 9801 Data size: 117508 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 17161 Data size: 205688 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
