@@ -33,10 +33,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: constcasttest
-            filterExpr: (CAST( CAST( id AS varchar(9)) AS STRING) = '2019-11-0') (type: boolean)
+            filterExpr: (CAST( id AS varchar(9)) = '2019-11-0') (type: boolean)
             Statistics: Num rows: 1 Data size: 103 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (CAST( CAST( id AS varchar(9)) AS STRING) = '2019-11-0') (type: boolean)
+              predicate: (CAST( id AS varchar(9)) = '2019-11-0') (type: boolean)
               Statistics: Num rows: 1 Data size: 103 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: id (type: string), CAST( id AS varchar(10)) (type: varchar(10))

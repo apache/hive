@@ -235,6 +235,7 @@ POSTHOOK: Input: default@partcoltypenum
 POSTHOOK: Input: default@partcoltypenum@tint=110/sint=22000/bint=330000000000
 #### A masked pattern was here ####
 30
+WARNING: Comparing a bigint and a string may result in a loss of precision.
 PREHOOK: query: select count(1) from partcoltypenum where tint=110Y and sint=22000 and bint='330000000000'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partcoltypenum
