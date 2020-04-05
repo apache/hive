@@ -20,19 +20,19 @@ INSERT INTO t_test_grouping_sets VALUES
 
 set hive.optimize.topnkey=true;
 EXPLAIN
-SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY b NULLS FIRST LIMIT 7;
-SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY b NULLS FIRST LIMIT 7;
+SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY b NULLS FIRST, a LIMIT 7;
+SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY b NULLS FIRST, a LIMIT 7;
 
 set hive.optimize.topnkey=false;
-SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY b NULLS FIRST LIMIT 7;
+SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY b NULLS FIRST, a LIMIT 7;
 
 set hive.optimize.topnkey=true;
 EXPLAIN
-SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY b NULLS LAST LIMIT 7;
-SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY b NULLS LAST LIMIT 7;
+SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY b NULLS LAST, a LIMIT 7;
+SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY b NULLS LAST, a LIMIT 7;
 
 set hive.optimize.topnkey=false;
-SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY b NULLS LAST LIMIT 7;
+SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY b NULLS LAST, a LIMIT 7;
 
 set hive.optimize.topnkey=true;
 EXPLAIN
