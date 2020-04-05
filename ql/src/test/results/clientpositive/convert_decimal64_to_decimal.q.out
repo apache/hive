@@ -212,7 +212,7 @@ STAGE PLANS:
                       nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
                       nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
                   outputColumnNames: _col1
-                  Statistics: Num rows: 958 Data size: 3480 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 894 Data size: 3224 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count(_col1)
                     Group By Vectorization:
@@ -372,7 +372,7 @@ STAGE PLANS:
                       nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
                       nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
                   outputColumnNames: _col1
-                  Statistics: Num rows: 958 Data size: 3480 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 894 Data size: 3224 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count(_col1)
                     Group By Vectorization:
