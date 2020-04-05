@@ -43,6 +43,8 @@ import org.apache.hadoop.hive.ql.plan.impala.node.ImpalaProjectRel;
 import org.apache.hadoop.hive.ql.plan.impala.node.ImpalaSortRel;
 import org.apache.hadoop.hive.ql.plan.impala.node.ImpalaUnionRel;
 
+import java.util.List;
+
 /**
  * Impala specific transformation rules.
  */
@@ -189,42 +191,6 @@ public class HiveImpalaRules {
     }
   }
 
-  public static class ImpalaSortLimitProjectRule extends RelOptRule {
-
-    public ImpalaSortLimitProjectRule(RelBuilderFactory relBuilderFactory) {
-      super(operand(HiveSortLimit.class, operand(HiveProject.class, any())),
-              relBuilderFactory, "ImpalaSortLimitProjectRule");
-    }
-
-    @Override
-    public void onMatch(RelOptRuleCall call) {
-      final HiveSortLimit sort = call.rel(0);
-      final HiveProject project = call.rel(1);
-
-      ImpalaProjectRel newProject = new ImpalaProjectRel(project);
-      ImpalaSortRel newSort = new ImpalaSortRel(sort, ImmutableList.of(newProject));
-
-      call.transformTo(newSort);
-    }
-  }
-
-  public static class ImpalaSortLimitRule extends RelOptRule {
-
-    public ImpalaSortLimitRule(RelBuilderFactory relBuilderFactory) {
-      super(operand(HiveSortLimit.class, any()),
-          relBuilderFactory, "ImpalaSortLimitRule");
-    }
-
-    @Override
-    public void onMatch(RelOptRuleCall call) {
-      final HiveSortLimit sort = call.rel(0);
-
-      ImpalaSortRel newSort = new ImpalaSortRel(sort, sort.getInputs());
-
-      call.transformTo(newSort);
-    }
-  }
-
   public static class ImpalaJoinRule extends RelOptRule {
 
     public ImpalaJoinRule(RelBuilderFactory relBuilderFactory) {
@@ -278,5 +244,51 @@ public class HiveImpalaRules {
     }
   }
 
+  public static class ImpalaSortRule extends RelOptRule {
+    public ImpalaSortRule(RelBuilderFactory relBuilderFactory) {
+      super(operand(HiveSortLimit.class, operand(RelNode.class, any())),
+          relBuilderFactory, "ImpalaSortRule");
+    }
+
+    @Override
+    public void onMatch(RelOptRuleCall call) {
+      final HiveSortLimit sort = call.rel(0);
+      final RelNode inputNode = call.rel(1);
+
+      List<RelNode> inputNodes = sort.getInputs();
+      if (inputNode instanceof HiveProject) {
+        ImpalaProjectRel newProject = new ImpalaProjectRel((HiveProject) inputNode);
+        inputNodes = ImmutableList.of(newProject);
+      }
+
+      RelNode newSort  = new ImpalaSortRel(sort, inputNodes, null);
+
+      call.transformTo(newSort);
+    }
+  }
+
+  public static class ImpalaFilterSortRule extends RelOptRule {
+    public ImpalaFilterSortRule(RelBuilderFactory relBuilderFactory) {
+      super(operand(HiveFilter.class, operand(HiveSortLimit.class, operand(RelNode.class, any()))),
+          relBuilderFactory, "ImpalaFilterSortRule");
+    }
+
+    @Override
+    public void onMatch(RelOptRuleCall call) {
+      final HiveFilter filter = call.rel(0);
+      final HiveSortLimit sort = call.rel(1);
+      final RelNode inputNode = call.rel(2);
+
+      List<RelNode> inputNodes = sort.getInputs();
+      if (inputNode instanceof HiveProject) {
+        ImpalaProjectRel newProject = new ImpalaProjectRel((HiveProject) inputNode);
+        inputNodes = ImmutableList.of(newProject);
+      }
+
+      RelNode newSort = new ImpalaSortRel(sort, inputNodes, filter);
+
+      call.transformTo(newSort);
+    }
+  }
 
 }

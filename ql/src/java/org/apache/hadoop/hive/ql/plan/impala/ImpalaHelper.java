@@ -64,21 +64,21 @@ public class ImpalaHelper {
     programBuilder.addRuleInstance(ImpalaRexCastRule.JOIN_INSTANCE);
     programBuilder.addRuleInstance(ImpalaRexCastRule.PROJECT_INSTANCE);
     programBuilder.addRuleInstance(
+        new HiveImpalaRules.ImpalaFilterSortRule(HiveRelFactories.HIVE_BUILDER));
+    programBuilder.addRuleInstance(
         new HiveImpalaRules.ImpalaFilterScanRule(HiveRelFactories.HIVE_BUILDER, db));
     programBuilder.addRuleInstance(
         new HiveImpalaRules.ImpalaFilterAggRule(HiveRelFactories.HIVE_BUILDER));
-    programBuilder.addRuleInstance(
-        new HiveImpalaRules.ImpalaSortLimitProjectRule(HiveRelFactories.HIVE_BUILDER));
     programBuilder.addRuleInstance(
         new HiveImpalaRules.ImpalaFilterProjectRule(HiveRelFactories.HIVE_BUILDER));
     programBuilder.addRuleInstance(
         new HiveImpalaRules.ImpalaFilterJoinRule(HiveRelFactories.HIVE_BUILDER));
     programBuilder.addRuleInstance(
+        new HiveImpalaRules.ImpalaSortRule(HiveRelFactories.HIVE_BUILDER));
+    programBuilder.addRuleInstance(
         new HiveImpalaRules.ImpalaScanRule(HiveRelFactories.HIVE_BUILDER, db));
     programBuilder.addRuleInstance(
         new HiveImpalaRules.ImpalaProjectRule(HiveRelFactories.HIVE_BUILDER));
-    programBuilder.addRuleInstance(
-        new HiveImpalaRules.ImpalaSortLimitRule(HiveRelFactories.HIVE_BUILDER));
     programBuilder.addRuleInstance(
         new HiveImpalaRules.ImpalaAggRule(HiveRelFactories.HIVE_BUILDER));
     programBuilder.addRuleInstance(

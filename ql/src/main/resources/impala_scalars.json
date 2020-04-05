@@ -14965,5 +14965,34 @@
         ],
         "symbolName": "notsupported",
         "hdfsUriLoc": ""
+    },
+    {
+        "impalaFnName": "sq_count_check",
+        "fnName": "sq_count_check",
+        "userVisible": "false",
+        "isAgg": "false",
+        "hasVarArgs": "false",
+        "retType": "BIGINT",
+        "binaryType": "BUILTIN",
+        "argTypes": [
+            "BIGINT"
+        ],
+        "symbolName": "_ZN6impala27SubqueryValidationFunctions12SqCountCheckEPN10impala_udf15FunctionContextERKNS1_9BigIntValE",
+        "hdfsUriLoc": ""
+    },
+    {
+        "impalaFnName": "sq_count_check",
+        "fnName": "sq_count_check",
+        "userVisible": "false",
+        "isAgg": "false",
+        "hasVarArgs": "false",
+        "retType": "BIGINT",
+        "binaryType": "BUILTIN",
+        "argTypes": [
+            "BIGINT",
+            "BOOLEAN"
+        ],
+        "symbolName": "_ZN6impala27SubqueryValidationFunctions12SqCountCheckEPN10impala_udf15FunctionContextERKNS1_9BigIntValERKNS1_10BooleanValE",
+        "hdfsUriLoc": ""
     }
 ]

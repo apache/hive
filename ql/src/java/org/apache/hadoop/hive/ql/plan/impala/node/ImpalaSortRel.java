@@ -28,6 +28,7 @@ import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaPlannerContext;
 import org.apache.impala.analysis.Expr;
@@ -45,17 +46,21 @@ import java.util.Map;
 
 public class ImpalaSortRel extends ImpalaPlanRel {
 
-  private SortNode sortNode = null;
+  private PlanNode retNode = null;
+
   private final HiveSortLimit sortLimit;
 
-  public ImpalaSortRel(HiveSortLimit sortLimit, List<RelNode> inputs) {
+  public final HiveFilter filter;
+
+  public ImpalaSortRel(HiveSortLimit sortLimit, List<RelNode> inputs, HiveFilter filter) {
     super(sortLimit.getCluster(), sortLimit.getTraitSet(), inputs, sortLimit.getRowType());
     this.sortLimit = sortLimit;
+    this.filter = filter;
   }
 
   public PlanNode getPlanNode(ImpalaPlannerContext ctx) throws ImpalaException, HiveException, MetaException {
-    if (sortNode != null) {
-      return sortNode;
+    if (retNode != null) {
+      return retNode;
     }
 
     ImpalaPlanRel sortInputRel = getImpalaRelInput(0);
@@ -87,15 +92,25 @@ public class ImpalaSortRel extends ImpalaPlanRel {
 
     sortInfo.materializeRequiredSlots(ctx.getRootAnalyzer(), new ExprSubstitutionMap());
 
-    sortNode = SingleNodePlanner.createSortNode(ctx, ctx.getRootAnalyzer(), sortInputNode, sortInfo,
-        limit, offset, limit != -1, false /* don't disable outermost topN */);
+    SortNode sortNode = SingleNodePlanner.createSortNode(ctx, ctx.getRootAnalyzer(),
+        sortInputNode, sortInfo, limit, offset, limit != -1,
+        false /* don't disable outermost topN */); 
 
-    return sortNode;
+    retNode = sortNode;
+
+    if (filter != null) {
+      List<Expr> conjuncts = getConjuncts(filter, ctx.getRootAnalyzer(), this);
+      ImpalaSelectNode selectNode = new ImpalaSelectNode(ctx.getNextNodeId(), sortNode, conjuncts);
+      selectNode.init(ctx.getRootAnalyzer());
+      retNode = selectNode;
+    }
+
+    return retNode;
   }
 
   @Override
   public ImpalaSortRel copy(RelTraitSet traitSet, List<RelNode> inputs) {
-    return new ImpalaSortRel(sortLimit, inputs);
+    return new ImpalaSortRel(sortLimit, inputs, filter);
   }
 
   @Override
