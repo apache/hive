@@ -23,6 +23,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexCall;
+import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.type.SqlTypeName;
@@ -64,7 +65,6 @@ public class ImpalaRexCall {
    */
   public static Expr getExpr(Analyzer analyzer, RexCall rexCall,
       List<Expr> params, List<TupleId> tupleIds) throws HiveException {
-
     Type impalaRetType = ImpalaTypeConverter.getImpalaType(rexCall.getType());
 
     Function fn = getFunction(rexCall);
@@ -115,6 +115,8 @@ public class ImpalaRexCall {
           return createTimestampArithExpr(analyzer, fn, params, rexCall, impalaRetType);
         }
         break;
+      case BETWEEN:
+        return createBetweenExpr(analyzer, rexCall, params);
     }
     return new ImpalaFunctionCallExpr(analyzer, fn, params, rexCall, impalaRetType);
   }
@@ -256,6 +258,52 @@ public class ImpalaRexCall {
       returnRexCall = rexCall.getOperands().get(0);
     }
     return returnRexCall;
+  }
+
+  /**
+   * Need to convert the 'between' calcite operator into its components, since
+   * Impala does not support 'between' directly. The "invert" parameter is true
+   * if it is "not between'
+   */
+  private static Expr createBetweenExpr(Analyzer analyzer, RexCall rexCall, List<Expr> params
+       ) throws HiveException {
+    Preconditions.checkState(rexCall.getOperands().size() == 4);
+    Preconditions.checkState(rexCall.getOperands().get(0) instanceof RexLiteral);
+    RexLiteral invertLiteral = (RexLiteral) rexCall.getOperands().get(0);
+    Boolean invert = invertLiteral.getValueAs(Boolean.class);
+    SqlTypeName sqlRetType = SqlTypeName.BOOLEAN;
+
+    Type retType = ImpalaTypeConverter.getImpalaType(rexCall.getType());
+    List<RexNode> operands = rexCall.getOperands();
+    List<SqlTypeName> operandTypes = ImpalaTypeConverter.getSqlTypeNamesFromNodes(operands);
+
+    // get all parameters to create the lower expression
+    SqlKind lowerKind = invert ? SqlKind.LESS_THAN : SqlKind.GREATER_THAN_OR_EQUAL;
+    String lowerName = invert ? "<" : ">=";
+    List<SqlTypeName> lowerArgs = Lists.newArrayList(operandTypes.get(1), operandTypes.get(2));
+    List<Expr> lowerParams = Lists.newArrayList(params.get(1), params.get(2));
+    Function lowerFn = getFunction(lowerKind, lowerName, lowerArgs, rexCall.getType());
+    Preconditions.checkNotNull(lowerFn);
+    Expr lowerExpr = createBinaryCompExpr(analyzer, lowerFn, lowerParams, lowerKind, retType);
+
+    // get all parameters to create the upper expression
+    SqlKind upperKind = invert ? SqlKind.GREATER_THAN : SqlKind.LESS_THAN_OR_EQUAL;
+    String upperName = invert ? ">" : "<=";
+    List<SqlTypeName> upperArgs = Lists.newArrayList(operandTypes.get(1), operandTypes.get(3));
+    List<Expr> upperParams = Lists.newArrayList(params.get(1), params.get(3));
+    Function upperFn = getFunction(upperKind, upperName, upperArgs, rexCall.getType());
+    Preconditions.checkNotNull(upperFn);
+    Expr upperExpr = createBinaryCompExpr(analyzer, upperFn, upperParams, upperKind, retType);
+
+    // create the compound expression with the lower and upper expression
+    List<Expr> impalaExprList = Lists.newArrayList(lowerExpr, upperExpr);
+    SqlKind fnKind = invert ? SqlKind.OR : SqlKind.AND;
+    CompoundPredicate.Operator op =
+        invert ? CompoundPredicate.Operator.OR : CompoundPredicate.Operator.AND;
+    List<SqlTypeName> fnArgs = Lists.newArrayList(SqlTypeName.BOOLEAN, SqlTypeName.BOOLEAN);
+    Function fnCompound =
+        getFunction(fnKind, fnKind.toString().toLowerCase(), fnArgs, rexCall.getType());
+    return createCompoundExpr(analyzer, op, fnCompound, impalaExprList, retType);
   }
 
   private static boolean isBinaryComparison(SqlKind sqlKind) {
