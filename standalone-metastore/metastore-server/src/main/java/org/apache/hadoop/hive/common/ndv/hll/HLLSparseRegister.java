@@ -24,7 +24,7 @@ import java.util.TreeMap;
 
 public class HLLSparseRegister implements HLLRegister {
 
-  private TreeMap<Integer,Byte> sparseMap;
+  private Map<Integer, Byte> sparseMap;
 
   // for a better insertion performance values are added to temporary unsorted
   // list which will be merged to sparse map after a threshold
@@ -181,11 +181,11 @@ public class HLLSparseRegister implements HLLRegister {
     return false;
   }
 
-  public TreeMap<Integer,Byte> getSparseMap() {
+  public Map<Integer, Byte> getSparseMap() {
     return getMergedSparseMap();
   }
 
-  private TreeMap<Integer,Byte> getMergedSparseMap() {
+  private Map<Integer, Byte> getMergedSparseMap() {
     if (tempListIdx != 0) {
       mergeTempListToSparseMap();
     }
