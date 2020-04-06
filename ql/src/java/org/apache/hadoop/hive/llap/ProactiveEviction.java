@@ -55,6 +55,8 @@ import org.slf4j.LoggerFactory;
  */
 public final class ProactiveEviction {
 
+  private static final Logger LOG = LoggerFactory.getLogger(ProactiveEviction.class);
+
   static {
     ShutdownHookManager.addShutdownHook(new Runnable() {
       @Override
@@ -90,6 +92,11 @@ public final class ProactiveEviction {
         // Not in LLAP mode.
         return;
       }
+      LOG.info("Requesting proactive LLAP cache eviction.");
+      if (LOG.isDebugEnabled()) {
+        LOG.debug(request.toString());
+      }
+      // Fire and forget - requests are enqueued on the single threaded executor and this (caller) thread won't wait.
       for (LlapServiceInstance instance : instances) {
         Task task = new Task(conf, instance, request);
         EXECUTOR.execute(task);
@@ -104,7 +111,6 @@ public final class ProactiveEviction {
    * The executable task to carry out request sending.
    */
   public static class Task implements Runnable {
-    private static final Logger LOG = LoggerFactory.getLogger(Task.class);
     private final Request request;
     private Configuration conf;
     private LlapServiceInstance instance;
@@ -132,10 +138,16 @@ public final class ProactiveEviction {
 
         List<LlapDaemonProtocolProtos.EvictEntityRequestProto> protoRequests = request.toProtoRequests();
 
+        long evictedBytes = 0;
         for (LlapDaemonProtocolProtos.EvictEntityRequestProto protoRequest : protoRequests) {
-          client.evictEntity(null, protoRequest);
+          LOG.debug("Requesting proactive eviction for entities in database {}", protoRequest.getDbName());
+          LlapDaemonProtocolProtos.EvictEntityResponseProto response = client.evictEntity(null, protoRequest);
+          evictedBytes += response.getEvictedBytes();
+          LOG.debug("Proactively evicted {} bytes", response.getEvictedBytes());
         }
-        LOG.info("Requested proactive eviction.");
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Proactive eviction freed {} bytes on LLAP daemon {} in total", evictedBytes, instance.toString());
+        }
       } catch (Exception e) {
         LOG.warn("Exception while requesting proactive eviction.", e);
       }
@@ -147,6 +159,8 @@ public final class ProactiveEviction {
    */
   public static final class Request {
 
+    // Holds a hierarchical structure of DBs, tables and partitions such as:
+    // { testdb : { testtab0 : [], testtab1 : [ {pk0 : p0v0, pk1 : p0v1}, {pk0 : p1v0, pk1 : p1v1} ] }, testdb2 : {} }
     private final Map<String, Map<String, Set<LinkedHashMap<String, String>>>> entities;
 
     private Request(Map<String, Map<String, Set<LinkedHashMap<String, String>>>> entities) {
@@ -222,6 +236,11 @@ public final class ProactiveEviction {
     public boolean isTagMatch(CacheTag cacheTag) {
       // TODO: implement this
       return false;
+    }
+
+    @Override
+    public String toString() {
+      return "Request { entities = " + entities + " }";
     }
 
     /**

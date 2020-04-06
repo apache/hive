@@ -258,15 +258,16 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
     final ProactiveEviction.Request request = ProactiveEviction.Request.Builder.create()
         .fromProtoRequest(protoRequest).build();
     Predicate<LlapCacheableBuffer> predicate = buffer -> request.isTagMatch(buffer.getTag());
+    LOG.debug("Starting proactive eviction.");
     long evictedBytes = memoryManager.evictEntity(predicate);
-    StringBuilder sb = new StringBuilder();
-    sb.append("Evicted ").append(evictedBytes).append(" bytes from LLAP cache buffers that " +
-        "belong to table(s): ");
-    for (String table : request.getEntities().get(request.getSingleDbName()).keySet()) {
-      sb.append(table).append(" ");
+    if (LOG.isDebugEnabled()) {
+      StringBuilder sb = new StringBuilder();
+      sb.append("Evicted ").append(evictedBytes).append(" bytes from LLAP cache buffers that belong to table(s): ");
+      for (String table : request.getEntities().get(request.getSingleDbName()).keySet()) {
+        sb.append(table).append(" ");
+      }
+      LOG.debug(sb.toString());
     }
-    sb.append("in DB: ").append(protoRequest.getDbName());
-    LOG.info(sb.toString());
     return evictedBytes;
   }
 

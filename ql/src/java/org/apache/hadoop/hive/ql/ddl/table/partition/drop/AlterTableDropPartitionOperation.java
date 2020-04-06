@@ -129,10 +129,6 @@ public class AlterTableDropPartitionOperation extends DDLOperation<AlterTableDro
       // We have already locked the table, don't lock the partitions.
       DDLUtils.addIfAbsentByName(new WriteEntity(partition, WriteEntity.WriteType.DDL_NO_LOCK), context);
 
-      context.getConsole().printInfo("Dropped the partition " + partition.getName());
-      // We have already locked the table, don't lock the partitions.
-      DDLUtils.addIfAbsentByName(new WriteEntity(partition, WriteEntity.WriteType.DDL_NO_LOCK), context);
-
       if (llapEvictRequestBuilder != null) {
         llapEvictRequestBuilder.addPartitionOfATable(tablenName.getDb(), tablenName.getTable(), partition.getSpec());
       }
