@@ -18,9 +18,11 @@
 
 package org.apache.hadoop.hive.common.ndv.hll;
 
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import it.unimi.dsi.fastutil.ints.Int2ByteLinkedOpenHashMap;
 
 public class HLLSparseRegister implements HLLRegister {
 
@@ -42,7 +44,7 @@ public class HLLSparseRegister implements HLLRegister {
 
   public HLLSparseRegister(int p, int pp, int qp) {
     this.p = p;
-    this.sparseMap = new HashMap<>();
+    this.sparseMap = new Int2ByteLinkedOpenHashMap(200);
     this.pPrime = pp;
     this.qPrime = qp;
     this.mask = ((1 << pPrime) - 1) ^ ((1 << p) - 1);
