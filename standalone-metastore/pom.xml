@@ -104,6 +104,7 @@
     <curator.version>4.2.0</curator.version>
     <zookeeper.version>3.5.5</zookeeper.version>
     <cron-utils.version>8.1.1</cron-utils.version>
+    <fastutil.version>8.3.1</fastutil.version>
 
     <!-- Thrift properties -->
     <thrift.home>you-must-set-this-to-run-thrift</thrift.home>
@@ -314,6 +315,11 @@
         <groupId>com.cronutils</groupId>
         <artifactId>cron-utils</artifactId>
         <version>${cron-utils.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>it.unimi.dsi</groupId>
+        <artifactId>fastutil</artifactId>
+        <version>${fastutil.version}</version>
       </dependency>
 
       <!-- test scope dependencies -->
