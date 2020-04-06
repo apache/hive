@@ -86,7 +86,7 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
   private String schemaEvolutionColumns;
   private String schemaEvolutionColumnsTypes;
 
-  private Set<ProbeDecodeContext> probeDecodeContextSet = new HashSet<>();
+  private ProbeDecodeContext probeDecodeContextSet;
 
   /**
    * Inner wrapper class for TS ProbeDecode optimization
@@ -96,11 +96,14 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
     private final String mjSmallTableCacheKey;
     private final String mjBigTableKeyColName;
     private final byte mjSmallTablePos;
+    private final double keyRatio;
 
-    public ProbeDecodeContext(String mjSmallTableCacheKey, byte mjSmallTablePos, String mjBigTableKeyColName) {
+    public ProbeDecodeContext(String mjSmallTableCacheKey, byte mjSmallTablePos, String mjBigTableKeyColName,
+        double keyRatio) {
       this.mjSmallTableCacheKey = mjSmallTableCacheKey;
       this.mjSmallTablePos = mjSmallTablePos;
       this.mjBigTableKeyColName = mjBigTableKeyColName;
+      this.keyRatio = keyRatio;
     }
 
     public String getMjSmallTableCacheKey() {
@@ -113,6 +116,16 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
 
     public String getMjBigTableKeyColName() {
       return mjBigTableKeyColName;
+    }
+
+    public double getKeyRatio() {
+      return keyRatio;
+    }
+
+    @Override
+    public String toString() {
+      return "cacheKey:" + mjSmallTableCacheKey + ", bigKeyColName:" + mjBigTableKeyColName +
+          ", smallTablePos:" + mjSmallTablePos + ", keyRatio:" + keyRatio;
     }
   }
 
@@ -468,12 +481,12 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
     return taskVectorizationContext;
   }
 
-  public Set<ProbeDecodeContext> getProbeDecodeContextSet() {
+  public ProbeDecodeContext getProbeDecodeContext() {
     return probeDecodeContextSet;
   }
 
-  public void addProbeDecodeContext(ProbeDecodeContext probeDecodeContext) {
-    this.probeDecodeContextSet.add(probeDecodeContext);
+  public void setProbeDecodeContext(ProbeDecodeContext probeDecodeContext) {
+    this.probeDecodeContextSet = probeDecodeContext;
   }
 
 }
