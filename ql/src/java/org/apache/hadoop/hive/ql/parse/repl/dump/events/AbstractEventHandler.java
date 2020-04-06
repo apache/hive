@@ -119,7 +119,7 @@ abstract class AbstractEventHandler<T extends EventMessage> implements EventHand
       if (decodedURISplits[3] != null) {
         finalTargetPath = finalTargetPath.getParent();
       }
-      if (qltn != null && !qltn.equals(finalTargetPath.getName())) {
+      if (qltn != null && !finalTargetPath.toString().endsWith(qltn)) {
         finalTargetPath = new Path(finalTargetPath, qltn);
       }
       CopyUtils copyUtils = new CopyUtils(distCpDoAsUser, hiveConf, dstFs);
