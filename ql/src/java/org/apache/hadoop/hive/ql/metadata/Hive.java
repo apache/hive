@@ -1235,13 +1235,6 @@ public class Hive {
       if (!ignoreUnknownTab) {
         throw new HiveException(e);
       }
-    } catch (MetaException e) {
-      int idx = ExceptionUtils.indexOfType(e, SQLIntegrityConstraintViolationException.class);
-      if (idx != -1 && ExceptionUtils.getThrowables(e)[idx].getMessage().contains("MV_TABLES_USED")) {
-        throw new HiveException("Cannot drop table since it is used by at least one materialized view definition. " +
-            "Please drop any materialized view that uses the table before dropping it", e);
-      }
-      throw new HiveException(e);
     } catch (Exception e) {
       throw new HiveException(e);
     }

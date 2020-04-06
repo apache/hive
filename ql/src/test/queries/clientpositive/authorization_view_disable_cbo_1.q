@@ -64,7 +64,7 @@ set hive.cbo.enable=true;
 
 --although cbo is enabled, it will not succeed.
 
-select key from v_n10 sort by key limit 10;
+select key from v_n10 cluster by key limit 10;
 
 select key from
 (select key as key from src_autho_test_n9 union all select key from v_n10 cluster by key)subq

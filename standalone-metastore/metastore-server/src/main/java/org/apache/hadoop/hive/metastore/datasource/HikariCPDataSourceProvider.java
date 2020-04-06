@@ -76,6 +76,7 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
     switch (dbProduct){
       case MYSQL:
         config.setConnectionInitSql("SET @@session.sql_mode=ANSI_QUOTES");
+        config.addDataSourceProperty("allowMultiQueries", true);
         config.addDataSourceProperty("rewriteBatchedStatements", true);
         break;
       case POSTGRES:

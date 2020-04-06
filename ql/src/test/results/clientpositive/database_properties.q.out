@@ -28,14 +28,14 @@ PREHOOK: Input: database:db2
 POSTHOOK: query: describe database db2
 POSTHOOK: type: DESCDATABASE
 POSTHOOK: Input: database:db2
-db2		location/in/test	hive_test_user	USER	
+db2		location/in/test		hive_test_user	USER	
 PREHOOK: query: describe database extended db2
 PREHOOK: type: DESCDATABASE
 PREHOOK: Input: database:db2
 POSTHOOK: query: describe database extended db2
 POSTHOOK: type: DESCDATABASE
 POSTHOOK: Input: database:db2
-db2		location/in/test	hive_test_user	USER	{hive.warehouse.dir=/user/hive/warehouse, mapred.jobtracker.url=http://my.jobtracker.com:53000, mapred.scratch.dir=hdfs://### HDFS PATH ###}
+db2		location/in/test		hive_test_user	USER	{hive.warehouse.dir=/user/hive/warehouse, mapred.jobtracker.url=http://my.jobtracker.com:53000, mapred.scratch.dir=hdfs://### HDFS PATH ###}
 PREHOOK: query: alter database db2 set dbproperties (
   'new.property' = 'some new props',
   'hive.warehouse.dir' = 'new/warehouse/dir')
@@ -52,4 +52,4 @@ PREHOOK: Input: database:db2
 POSTHOOK: query: describe database extended db2
 POSTHOOK: type: DESCDATABASE
 POSTHOOK: Input: database:db2
-db2		location/in/test	hive_test_user	USER	{hive.warehouse.dir=new/warehouse/dir, mapred.jobtracker.url=http://my.jobtracker.com:53000, mapred.scratch.dir=hdfs://### HDFS PATH ###, new.property=some new props}
+db2		location/in/test		hive_test_user	USER	{hive.warehouse.dir=new/warehouse/dir, mapred.jobtracker.url=http://my.jobtracker.com:53000, mapred.scratch.dir=hdfs://### HDFS PATH ###, new.property=some new props}

@@ -28,6 +28,7 @@ import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.SingleRel;
 import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.AggregateCall;
+import org.apache.calcite.rel.core.Exchange;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.Project;
@@ -47,6 +48,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortExchange;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
@@ -70,7 +72,7 @@ public class PlanModifierForASTConv {
       LOG.debug("Original plan for PlanModifier\n " + RelOptUtil.toString(newTopNode));
     }
 
-    if (!(newTopNode instanceof Project) && !(newTopNode instanceof Sort)) {
+    if (!(newTopNode instanceof Project) && !(newTopNode instanceof Sort) && !(newTopNode instanceof Exchange)) {
       newTopNode = introduceDerivedTable(newTopNode);
       if (LOG.isDebugEnabled()) {
         LOG.debug("Plan after top-level introduceDerivedTable\n "
@@ -173,6 +175,10 @@ public class PlanModifierForASTConv {
         }
         if (!validSortChild((HiveSortLimit) rel)) {
           introduceDerivedTable(((HiveSortLimit) rel).getInput(), rel);
+        }
+      } else if (rel instanceof HiveSortExchange) {
+        if (!validExchangeChild((HiveSortExchange) rel)) {
+          introduceDerivedTable(((HiveSortExchange) rel).getInput(), rel);
         }
       } else if (rel instanceof HiveAggregate) {
         RelNode newParent = parent;
@@ -356,6 +362,10 @@ public class PlanModifierForASTConv {
     }
 
     return validChild;
+  }
+
+  private static boolean validExchangeChild(HiveSortExchange sortNode) {
+    return sortNode.getInput() instanceof Project;
   }
 
   private static boolean validSetopParent(RelNode setop, RelNode parent) {

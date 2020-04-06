@@ -341,10 +341,12 @@ TOK_SHOWDBLOCKS;
 TOK_DESCDATABASE;
 TOK_DATABASEPROPERTIES;
 TOK_DATABASELOCATION;
+TOK_DATABASE_MANAGEDLOCATION;
 TOK_DBPROPLIST;
 TOK_ALTERDATABASE_PROPERTIES;
 TOK_ALTERDATABASE_OWNER;
 TOK_ALTERDATABASE_LOCATION;
+TOK_ALTERDATABASE_MANAGEDLOCATION;
 TOK_DBNAME;
 TOK_TABNAME;
 TOK_TABSRC;
@@ -585,6 +587,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_INPUTFORMAT", "INPUTFORMAT");
     xlateMap.put("KW_OUTPUTFORMAT", "OUTPUTFORMAT");
     xlateMap.put("KW_LOCATION", "LOCATION");
+    xlateMap.put("KW_MANAGEDLOCATION", "MANAGEDLOCATION");
     xlateMap.put("KW_TABLESAMPLE", "TABLESAMPLE");
     xlateMap.put("KW_BUCKET", "BUCKET");
     xlateMap.put("KW_OUT", "OUT");
@@ -1089,8 +1092,9 @@ createDatabaseStatement
         name=identifier
         databaseComment?
         dbLocation?
+        dbManagedLocation?
         (KW_WITH KW_DBPROPERTIES dbprops=dbProperties)?
-    -> ^(TOK_CREATEDATABASE $name ifNotExists? dbLocation? databaseComment? $dbprops?)
+    -> ^(TOK_CREATEDATABASE $name ifNotExists? dbLocation? dbManagedLocation? databaseComment? $dbprops?)
     ;
 
 dbLocation
@@ -1098,6 +1102,13 @@ dbLocation
 @after { popMsg(state); }
     :
       KW_LOCATION locn=StringLiteral -> ^(TOK_DATABASELOCATION $locn)
+    ;
+
+dbManagedLocation
+@init { pushMsg("database managed location specification", state); }
+@after { popMsg(state); }
+    :
+      KW_MANAGEDLOCATION locn=StringLiteral -> ^(TOK_DATABASE_MANAGEDLOCATION $locn)
     ;
 
 dbProperties
@@ -1296,6 +1307,15 @@ alterDatabaseSuffixSetLocation
 @after { popMsg(state); }
     : dbName=identifier KW_SET KW_LOCATION newLocation=StringLiteral
     -> ^(TOK_ALTERDATABASE_LOCATION $dbName $newLocation)
+    | dbName=identifier KW_SET KW_MANAGEDLOCATION newLocation=StringLiteral
+    -> ^(TOK_ALTERDATABASE_MANAGEDLOCATION $dbName $newLocation)
+    ;
+
+alterDatabaseSuffixSetManagedLocation
+@init { pushMsg("alter database set managed location", state); }
+@after { popMsg(state); }
+    : dbName=identifier KW_SET KW_MANAGEDLOCATION newLocation=StringLiteral
+    -> ^(TOK_ALTERDATABASE_MANAGEDLOCATION $dbName $newLocation)
     ;
 
 alterStatementSuffixRename[boolean table]

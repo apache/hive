@@ -162,11 +162,11 @@ Stage-0
           PARTITION_ONLY_SHUFFLE [RS_24]
             Group By Operator [GBY_23] (rows=1 width=8)
               Output:["_col0"],aggregations:["sum(_col3)"]
-              Select Operator [SEL_22] (rows=6953964 width=24)
+              Select Operator [SEL_22] (rows=170127 width=24)
                 Output:["_col3"]
-                Filter Operator [FIL_21] (rows=6953964 width=24)
+                Filter Operator [FIL_21] (rows=170127 width=24)
                   predicate:((_col10 and _col4) or (_col11 and _col5) or (_col12 and _col6))
-                  Merge Join Operator [MERGEJOIN_73] (rows=9271954 width=24)
+                  Merge Join Operator [MERGEJOIN_73] (rows=226838 width=24)
                     Conds:RS_18._col2=RS_90._col0(Inner),Output:["_col3","_col4","_col5","_col6","_col10","_col11","_col12"]
                   <-Map 9 [SIMPLE_EDGE] vectorized
                     SHUFFLE [RS_90]
@@ -180,7 +180,7 @@ Stage-0
                   <-Reducer 3 [SIMPLE_EDGE]
                     SHUFFLE [RS_18]
                       PartitionCols:_col2
-                      Merge Join Operator [MERGEJOIN_72] (rows=9271954 width=13)
+                      Merge Join Operator [MERGEJOIN_72] (rows=2570826 width=12)
                         Conds:RS_15._col1=RS_87._col0(Inner),Output:["_col2","_col3","_col4","_col5","_col6"]
                       <-Map 8 [SIMPLE_EDGE] vectorized
                         SHUFFLE [RS_87]
@@ -194,7 +194,7 @@ Stage-0
                       <-Reducer 2 [SIMPLE_EDGE]
                         SHUFFLE [RS_15]
                           PartitionCols:_col1
-                          Merge Join Operator [MERGEJOIN_71] (rows=159705894 width=23)
+                          Merge Join Operator [MERGEJOIN_71] (rows=57024544 width=22)
                             Conds:RS_84._col0=RS_76._col0(Inner),Output:["_col1","_col2","_col3","_col4","_col5","_col6"]
                           <-Map 6 [SIMPLE_EDGE] vectorized
                             PARTITION_ONLY_SHUFFLE [RS_76]

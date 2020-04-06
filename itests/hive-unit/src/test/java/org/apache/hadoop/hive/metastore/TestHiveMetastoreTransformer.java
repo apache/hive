@@ -1380,7 +1380,7 @@ public class TestHiveMetastoreTransformer {
       setHMSClient("TestGetDatabaseACIDWRITE", (String[])(capabilities.toArray(new String[0])));
 
       db = client.getDatabase(dbName);
-      assertFalse("Database location not expected to be external warehouse:actual=" + db.getLocationUri(),
+      assertTrue("Database location expected to be external warehouse:actual=" + db.getLocationUri(),
           db.getLocationUri().contains(conf.get(MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL.getVarname())));
       resetHMSClient();
 
@@ -1389,7 +1389,7 @@ public class TestHiveMetastoreTransformer {
       setHMSClient("TestGetDatabaseINSERTWRITE", (String[])(capabilities.toArray(new String[0])));
 
       db = client.getDatabase(dbName);
-      assertFalse("Database location not expected to be external warehouse:actual=" + db.getLocationUri(),
+      assertTrue("Database location expected to be external warehouse:actual=" + db.getLocationUri(),
           db.getLocationUri().contains(conf.get(MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL.getVarname())));
       resetHMSClient();
     } catch (Exception e) {

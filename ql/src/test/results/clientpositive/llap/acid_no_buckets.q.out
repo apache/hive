@@ -137,21 +137,21 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_acid
-                  filterExpr: (((UDFToInteger(key) = 413) or (UDFToInteger(key) = 43)) and (hr = '11')) (type: boolean)
+                  filterExpr: ((UDFToInteger(key)) IN (413, 43) and (hr = '11')) (type: boolean)
                   Statistics: Num rows: 1000 Data size: 362000 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
-                    predicate: ((UDFToInteger(key) = 413) or (UDFToInteger(key) = 43)) (type: boolean)
-                    Statistics: Num rows: 1000 Data size: 362000 Basic stats: COMPLETE Column stats: PARTIAL
+                    predicate: (UDFToInteger(key)) IN (413, 43) (type: boolean)
+                    Statistics: Num rows: 500 Data size: 181000 Basic stats: COMPLETE Column stats: PARTIAL
                     Select Operator
                       expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), key (type: string), concat(value, 'updated') (type: string), ds (type: string)
                       outputColumnNames: _col0, _col1, _col2, _col3
-                      Statistics: Num rows: 1000 Data size: 617000 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 500 Data size: 308500 Basic stats: COMPLETE Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: UDFToInteger(_col0) (type: int)
-                        Statistics: Num rows: 1000 Data size: 617000 Basic stats: COMPLETE Column stats: PARTIAL
+                        Statistics: Num rows: 500 Data size: 308500 Basic stats: COMPLETE Column stats: PARTIAL
                         value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string)
             Execution mode: llap
             LLAP IO: may be used (ACID table)
@@ -161,10 +161,10 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), '11' (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                Statistics: Num rows: 1000 Data size: 617000 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 500 Data size: 308500 Basic stats: COMPLETE Column stats: PARTIAL
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1000 Data size: 617000 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 500 Data size: 308500 Basic stats: COMPLETE Column stats: PARTIAL
                   table:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -812,21 +812,21 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_acidb
-                  filterExpr: (((UDFToInteger(key) = 413) or (UDFToInteger(key) = 43)) and (hr = '11')) (type: boolean)
+                  filterExpr: ((UDFToInteger(key)) IN (413, 43) and (hr = '11')) (type: boolean)
                   Statistics: Num rows: 1000 Data size: 362000 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
-                    predicate: ((UDFToInteger(key) = 413) or (UDFToInteger(key) = 43)) (type: boolean)
-                    Statistics: Num rows: 1000 Data size: 362000 Basic stats: COMPLETE Column stats: PARTIAL
+                    predicate: (UDFToInteger(key)) IN (413, 43) (type: boolean)
+                    Statistics: Num rows: 500 Data size: 181000 Basic stats: COMPLETE Column stats: PARTIAL
                     Select Operator
                       expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), key (type: string), concat(value, 'updated') (type: string), ds (type: string)
                       outputColumnNames: _col0, _col1, _col2, _col3
-                      Statistics: Num rows: 1000 Data size: 617000 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 500 Data size: 308500 Basic stats: COMPLETE Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: UDFToInteger(_col0) (type: int)
-                        Statistics: Num rows: 1000 Data size: 617000 Basic stats: COMPLETE Column stats: PARTIAL
+                        Statistics: Num rows: 500 Data size: 308500 Basic stats: COMPLETE Column stats: PARTIAL
                         value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string)
             Execution mode: llap
             LLAP IO: may be used (ACID table)
@@ -836,10 +836,10 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), '11' (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                Statistics: Num rows: 1000 Data size: 617000 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 500 Data size: 308500 Basic stats: COMPLETE Column stats: PARTIAL
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1000 Data size: 617000 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 500 Data size: 308500 Basic stats: COMPLETE Column stats: PARTIAL
                   table:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -1371,19 +1371,19 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprOrExpr(children: FilterLongColEqualLongScalar(col 5:int, val 413)(children: CastStringToLong(col 0:string) -> 5:int), FilterLongColEqualLongScalar(col 6:int, val 43)(children: CastStringToLong(col 0:string) -> 6:int))
+                        predicateExpression: FilterLongColumnInList(col 5:int, values [413, 43])(children: CastStringToLong(col 0:string) -> 5:int)
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [4, 0, 7, 2]
-                          selectExpressions: StringGroupColConcatStringScalar(col 1:string, val updated) -> 7:string
+                          projectedOutputColumnNums: [4, 0, 6, 2]
+                          selectExpressions: StringGroupColConcatStringScalar(col 1:string, val updated) -> 6:string
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
                             keyColumns: 4:struct<writeid:bigint,bucketid:int,rowid:bigint>
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             partitionColumns: 5:int
-                            valueColumns: 0:string, 7:string, 2:string
+                            valueColumns: 0:string, 6:string, 2:string
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
             Map Vectorization:
@@ -1402,7 +1402,7 @@ STAGE PLANS:
                     neededVirtualColumns: [ROWID]
                     partitionColumnCount: 2
                     partitionColumns: ds:string, hr:string
-                    scratchColumnTypeNames: [bigint, bigint, string]
+                    scratchColumnTypeNames: [bigint, string]
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Vectorization:
@@ -1758,25 +1758,63 @@ STAGE DEPENDENCIES:
   Stage-5 depends on stages: Stage-4
   Stage-0 depends on stages: Stage-5
   Stage-6 depends on stages: Stage-0
-  Stage-2 depends on stages: Stage-5
-  Stage-7 depends on stages: Stage-2
-  Stage-3 depends on stages: Stage-5
-  Stage-8 depends on stages: Stage-3
   Stage-1 depends on stages: Stage-5
-  Stage-9 depends on stages: Stage-1
+  Stage-7 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-5
+  Stage-8 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-5
+  Stage-9 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-4
     Tez
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
-        Reducer 3 <- Map 8 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
-        Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
-        Reducer 5 <- Reducer 3 (SIMPLE_EDGE)
-        Reducer 6 <- Reducer 3 (SIMPLE_EDGE)
-        Reducer 7 <- Reducer 3 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 8 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 5 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 6 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 8 <- Map 7 (SIMPLE_EDGE)
       Vertices:
         Map 1 
+            Map Operator Tree:
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 0:string), SelectColumnIsNotNull(col 1:string))
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [0, 1, 2, 3, 4]
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkMultiKeyOperator
+                            keyColumns: 0:string, 1:string, 2:string, 3:string
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: 4:struct<writeid:bigint,bucketid:int,rowid:bigint>
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 2
+                    includeColumns: [0, 1]
+                    dataColumns: key:string, value:string
+                    neededVirtualColumns: [ROWID]
+                    partitionColumnCount: 2
+                    partitionColumns: ds:string, hr:string
+                    scratchColumnTypeNames: []
+        Map 7 
             Map Operator Tree:
                   TableScan Vectorization:
                       native: true
@@ -1788,7 +1826,7 @@ STAGE PLANS:
                       Group By Vectorization:
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          keyExpressions: col 2:string, col 3:string, col 0:string, col 1:string
+                          keyExpressions: col 0:string, col 1:string, col 2:string, col 3:string
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: []
@@ -1815,97 +1853,11 @@ STAGE PLANS:
                     partitionColumnCount: 2
                     partitionColumns: ds:string, hr:string
                     scratchColumnTypeNames: []
-        Map 8 
-            Map Operator Tree:
-                  TableScan Vectorization:
-                      native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
-                    Reduce Sink Vectorization:
-                        className: VectorReduceSinkMultiKeyOperator
-                        keyColumns: 2:string, 3:string, 0:string, 1:string
-                        native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        valueColumns: 4:struct<writeid:bigint,bucketid:int,rowid:bigint>
-            Execution mode: vectorized, llap
-            LLAP IO: may be used (ACID table)
-            Map Vectorization:
-                enabled: true
-                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: [DECIMAL_64]
-                featureSupportInUse: [DECIMAL_64]
-                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                allNative: true
-                usesVectorUDFAdaptor: false
-                vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 2
-                    includeColumns: [0, 1]
-                    dataColumns: key:string, value:string
-                    neededVirtualColumns: [ROWID]
-                    partitionColumnCount: 2
-                    partitionColumns: ds:string, hr:string
-                    scratchColumnTypeNames: []
         Reducer 2 
-            Execution mode: vectorized, llap
-            Reduce Vectorization:
-                enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: zzzz
-                reduceColumnSortOrder: ++++
-                allNative: false
-                usesVectorUDFAdaptor: false
-                vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 4
-                    dataColumns: KEY._col0:string, KEY._col1:string, KEY._col2:string, KEY._col3:string
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: []
-            Reduce Operator Tree:
-                Group By Vectorization:
-                    className: VectorGroupByOperator
-                    groupByMode: MERGEPARTIAL
-                    keyExpressions: col 0:string, col 1:string, col 2:string, col 3:string
-                    native: false
-                    vectorProcessingMode: MERGE_PARTIAL
-                    projectedOutputColumnNums: []
-                  Reduce Sink Vectorization:
-                      className: VectorReduceSinkMultiKeyOperator
-                      keyColumns: 0:string, 1:string, 2:string, 3:string
-                      native: true
-                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                  Select Vectorization:
-                      className: VectorSelectOperator
-                      native: true
-                      projectedOutputColumnNums: [0]
-                    Group By Vectorization:
-                        className: VectorGroupByOperator
-                        groupByMode: HASH
-                        keyExpressions: col 0:string
-                        native: false
-                        vectorProcessingMode: HASH
-                        projectedOutputColumnNums: []
-                      App Master Event Vectorization:
-                          className: VectorAppMasterEventOperator
-                          native: true
-                  Select Vectorization:
-                      className: VectorSelectOperator
-                      native: true
-                      projectedOutputColumnNums: [1]
-                    Group By Vectorization:
-                        className: VectorGroupByOperator
-                        groupByMode: HASH
-                        keyExpressions: col 1:string
-                        native: false
-                        vectorProcessingMode: HASH
-                        projectedOutputColumnNums: []
-                      App Master Event Vectorization:
-                          className: VectorAppMasterEventOperator
-                          native: true
-        Reducer 3 
             MergeJoin Vectorization:
                 enabled: false
                 enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
-        Reducer 4 
+        Reducer 3 
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
@@ -1928,6 +1880,14 @@ STAGE PLANS:
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
+        Reducer 4 
+            Execution mode: llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                notVectorizedReason: Aggregation Function expression for GROUPBY operator: UDF compute_stats not supported
+                vectorized: false
+            Reduce Operator Tree:
         Reducer 5 
             Execution mode: vectorized, llap
             Reduce Vectorization:
@@ -1959,14 +1919,66 @@ STAGE PLANS:
                 notVectorizedReason: Key expression for GROUPBY operator: Vectorizing complex type STRUCT not supported
                 vectorized: false
             Reduce Operator Tree:
-        Reducer 7 
-            Execution mode: llap
+        Reducer 8 
+            Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: Aggregation Function expression for GROUPBY operator: UDF compute_stats not supported
-                vectorized: false
+                reduceColumnNullOrder: zzzz
+                reduceColumnSortOrder: ++++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 4
+                    dataColumns: KEY._col0:string, KEY._col1:string, KEY._col2:string, KEY._col3:string
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
             Reduce Operator Tree:
+                Group By Vectorization:
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    keyExpressions: col 0:string, col 1:string, col 2:string, col 3:string
+                    native: false
+                    vectorProcessingMode: MERGE_PARTIAL
+                    projectedOutputColumnNums: []
+                  Select Vectorization:
+                      className: VectorSelectOperator
+                      native: true
+                      projectedOutputColumnNums: [2, 3, 0, 1]
+                    Reduce Sink Vectorization:
+                        className: VectorReduceSinkMultiKeyOperator
+                        keyColumns: 0:string, 1:string, 2:string, 3:string
+                        native: true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [2]
+                      Group By Vectorization:
+                          className: VectorGroupByOperator
+                          groupByMode: HASH
+                          keyExpressions: col 2:string
+                          native: false
+                          vectorProcessingMode: HASH
+                          projectedOutputColumnNums: []
+                        App Master Event Vectorization:
+                            className: VectorAppMasterEventOperator
+                            native: true
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [3]
+                      Group By Vectorization:
+                          className: VectorGroupByOperator
+                          groupByMode: HASH
+                          keyExpressions: col 3:string
+                          native: false
+                          vectorProcessingMode: HASH
+                          projectedOutputColumnNums: []
+                        App Master Event Vectorization:
+                            className: VectorAppMasterEventOperator
+                            native: true
 
   Stage: Stage-5
 
@@ -1974,15 +1986,15 @@ STAGE PLANS:
 
   Stage: Stage-6
 
-  Stage: Stage-2
+  Stage: Stage-1
 
   Stage: Stage-7
 
-  Stage: Stage-3
+  Stage: Stage-2
 
   Stage: Stage-8
 
-  Stage: Stage-1
+  Stage: Stage-3
 
   Stage: Stage-9
 
@@ -2230,19 +2242,19 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprOrExpr(children: FilterLongColEqualLongScalar(col 5:int, val 413)(children: CastStringToLong(col 0:string) -> 5:int), FilterLongColEqualLongScalar(col 6:int, val 43)(children: CastStringToLong(col 0:string) -> 6:int))
+                        predicateExpression: FilterLongColumnInList(col 5:int, values [413, 43])(children: CastStringToLong(col 0:string) -> 5:int)
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [4, 0, 7, 2]
-                          selectExpressions: StringGroupColConcatStringScalar(col 1:string, val updated) -> 7:string
+                          projectedOutputColumnNums: [4, 0, 6, 2]
+                          selectExpressions: StringGroupColConcatStringScalar(col 1:string, val updated) -> 6:string
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
                             keyColumns: 4:struct<writeid:bigint,bucketid:int,rowid:bigint>
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             partitionColumns: 5:int
-                            valueColumns: 0:string, 7:string, 2:string
+                            valueColumns: 0:string, 6:string, 2:string
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
             Map Vectorization:
@@ -2261,7 +2273,7 @@ STAGE PLANS:
                     neededVirtualColumns: [ROWID]
                     partitionColumnCount: 2
                     partitionColumns: ds:string, hr:string
-                    scratchColumnTypeNames: [bigint, bigint, string]
+                    scratchColumnTypeNames: [bigint, string]
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Vectorization:
@@ -2617,26 +2629,64 @@ STAGE DEPENDENCIES:
   Stage-5 depends on stages: Stage-4
   Stage-0 depends on stages: Stage-5
   Stage-6 depends on stages: Stage-0
-  Stage-2 depends on stages: Stage-5
-  Stage-7 depends on stages: Stage-2
-  Stage-3 depends on stages: Stage-5
-  Stage-8 depends on stages: Stage-3
   Stage-1 depends on stages: Stage-5
-  Stage-9 depends on stages: Stage-1
+  Stage-7 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-5
+  Stage-8 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-5
+  Stage-9 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-4
     Tez
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
-        Reducer 3 <- Map 9 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
-        Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
-        Reducer 5 <- Reducer 3 (SIMPLE_EDGE)
-        Reducer 6 <- Reducer 3 (SIMPLE_EDGE)
-        Reducer 7 <- Reducer 3 (SIMPLE_EDGE)
-        Reducer 8 <- Reducer 7 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 9 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
+        Reducer 6 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 7 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 9 <- Map 8 (SIMPLE_EDGE)
       Vertices:
         Map 1 
+            Map Operator Tree:
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 0:string), SelectColumnIsNotNull(col 1:string))
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [0, 1, 2, 3, 4]
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkMultiKeyOperator
+                            keyColumns: 0:string, 1:string, 2:string, 3:string
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: 4:struct<writeid:bigint,bucketid:int,rowid:bigint>
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 2
+                    includeColumns: [0, 1]
+                    dataColumns: key:string, value:string
+                    neededVirtualColumns: [ROWID]
+                    partitionColumnCount: 2
+                    partitionColumns: ds:string, hr:string
+                    scratchColumnTypeNames: []
+        Map 8 
             Map Operator Tree:
                   TableScan Vectorization:
                       native: true
@@ -2648,7 +2698,7 @@ STAGE PLANS:
                       Group By Vectorization:
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          keyExpressions: col 2:string, col 3:string, col 0:string, col 1:string
+                          keyExpressions: col 0:string, col 1:string, col 2:string, col 3:string
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: []
@@ -2675,97 +2725,11 @@ STAGE PLANS:
                     partitionColumnCount: 2
                     partitionColumns: ds:string, hr:string
                     scratchColumnTypeNames: []
-        Map 9 
-            Map Operator Tree:
-                  TableScan Vectorization:
-                      native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
-                    Reduce Sink Vectorization:
-                        className: VectorReduceSinkMultiKeyOperator
-                        keyColumns: 2:string, 3:string, 0:string, 1:string
-                        native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        valueColumns: 4:struct<writeid:bigint,bucketid:int,rowid:bigint>
-            Execution mode: vectorized, llap
-            LLAP IO: may be used (ACID table)
-            Map Vectorization:
-                enabled: true
-                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: [DECIMAL_64]
-                featureSupportInUse: [DECIMAL_64]
-                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                allNative: true
-                usesVectorUDFAdaptor: false
-                vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 2
-                    includeColumns: [0, 1]
-                    dataColumns: key:string, value:string
-                    neededVirtualColumns: [ROWID]
-                    partitionColumnCount: 2
-                    partitionColumns: ds:string, hr:string
-                    scratchColumnTypeNames: []
         Reducer 2 
-            Execution mode: vectorized, llap
-            Reduce Vectorization:
-                enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: zzzz
-                reduceColumnSortOrder: ++++
-                allNative: false
-                usesVectorUDFAdaptor: false
-                vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 4
-                    dataColumns: KEY._col0:string, KEY._col1:string, KEY._col2:string, KEY._col3:string
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: []
-            Reduce Operator Tree:
-                Group By Vectorization:
-                    className: VectorGroupByOperator
-                    groupByMode: MERGEPARTIAL
-                    keyExpressions: col 0:string, col 1:string, col 2:string, col 3:string
-                    native: false
-                    vectorProcessingMode: MERGE_PARTIAL
-                    projectedOutputColumnNums: []
-                  Reduce Sink Vectorization:
-                      className: VectorReduceSinkMultiKeyOperator
-                      keyColumns: 0:string, 1:string, 2:string, 3:string
-                      native: true
-                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                  Select Vectorization:
-                      className: VectorSelectOperator
-                      native: true
-                      projectedOutputColumnNums: [0]
-                    Group By Vectorization:
-                        className: VectorGroupByOperator
-                        groupByMode: HASH
-                        keyExpressions: col 0:string
-                        native: false
-                        vectorProcessingMode: HASH
-                        projectedOutputColumnNums: []
-                      App Master Event Vectorization:
-                          className: VectorAppMasterEventOperator
-                          native: true
-                  Select Vectorization:
-                      className: VectorSelectOperator
-                      native: true
-                      projectedOutputColumnNums: [1]
-                    Group By Vectorization:
-                        className: VectorGroupByOperator
-                        groupByMode: HASH
-                        keyExpressions: col 1:string
-                        native: false
-                        vectorProcessingMode: HASH
-                        projectedOutputColumnNums: []
-                      App Master Event Vectorization:
-                          className: VectorAppMasterEventOperator
-                          native: true
-        Reducer 3 
             MergeJoin Vectorization:
                 enabled: false
                 enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
-        Reducer 4 
+        Reducer 3 
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
@@ -2788,7 +2752,23 @@ STAGE PLANS:
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
+        Reducer 4 
+            Execution mode: llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                notVectorizedReason: Aggregation Function expression for GROUPBY operator: UDF compute_stats not supported
+                vectorized: false
+            Reduce Operator Tree:
         Reducer 5 
+            Execution mode: llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                notVectorizedReason: Aggregation Function expression for GROUPBY operator: UDF compute_stats not supported
+                vectorized: false
+            Reduce Operator Tree:
+        Reducer 6 
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
@@ -2811,7 +2791,7 @@ STAGE PLANS:
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-        Reducer 6 
+        Reducer 7 
             Execution mode: llap
             Reduce Vectorization:
                 enabled: true
@@ -2819,22 +2799,66 @@ STAGE PLANS:
                 notVectorizedReason: Key expression for GROUPBY operator: Vectorizing complex type STRUCT not supported
                 vectorized: false
             Reduce Operator Tree:
-        Reducer 7 
-            Execution mode: llap
+        Reducer 9 
+            Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: Aggregation Function expression for GROUPBY operator: UDF compute_stats not supported
-                vectorized: false
+                reduceColumnNullOrder: zzzz
+                reduceColumnSortOrder: ++++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 4
+                    dataColumns: KEY._col0:string, KEY._col1:string, KEY._col2:string, KEY._col3:string
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
             Reduce Operator Tree:
-        Reducer 8 
-            Execution mode: llap
-            Reduce Vectorization:
-                enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: Aggregation Function expression for GROUPBY operator: UDF compute_stats not supported
-                vectorized: false
-            Reduce Operator Tree:
+                Group By Vectorization:
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    keyExpressions: col 0:string, col 1:string, col 2:string, col 3:string
+                    native: false
+                    vectorProcessingMode: MERGE_PARTIAL
+                    projectedOutputColumnNums: []
+                  Select Vectorization:
+                      className: VectorSelectOperator
+                      native: true
+                      projectedOutputColumnNums: [2, 3, 0, 1]
+                    Reduce Sink Vectorization:
+                        className: VectorReduceSinkMultiKeyOperator
+                        keyColumns: 0:string, 1:string, 2:string, 3:string
+                        native: true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [2]
+                      Group By Vectorization:
+                          className: VectorGroupByOperator
+                          groupByMode: HASH
+                          keyExpressions: col 2:string
+                          native: false
+                          vectorProcessingMode: HASH
+                          projectedOutputColumnNums: []
+                        App Master Event Vectorization:
+                            className: VectorAppMasterEventOperator
+                            native: true
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [3]
+                      Group By Vectorization:
+                          className: VectorGroupByOperator
+                          groupByMode: HASH
+                          keyExpressions: col 3:string
+                          native: false
+                          vectorProcessingMode: HASH
+                          projectedOutputColumnNums: []
+                        App Master Event Vectorization:
+                            className: VectorAppMasterEventOperator
+                            native: true
 
   Stage: Stage-5
 
@@ -2842,15 +2866,15 @@ STAGE PLANS:
 
   Stage: Stage-6
 
-  Stage: Stage-2
+  Stage: Stage-1
 
   Stage: Stage-7
 
-  Stage: Stage-3
+  Stage: Stage-2
 
   Stage: Stage-8
 
-  Stage: Stage-1
+  Stage: Stage-3
 
   Stage: Stage-9
 
