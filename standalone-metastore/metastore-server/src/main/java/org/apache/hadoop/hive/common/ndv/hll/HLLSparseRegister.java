@@ -22,12 +22,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.eclipse.collections.api.map.primitive.MutableIntByteMap;
-import org.eclipse.collections.impl.map.mutable.primitive.IntByteHashMap;
-
 public class HLLSparseRegister implements HLLRegister {
 
-  private IntByteHashMap sparseMap;
+  private Map<Integer, Byte> sparseMap;
 
   // number of register bits
   private final int p;
@@ -45,7 +42,7 @@ public class HLLSparseRegister implements HLLRegister {
 
   public HLLSparseRegister(int p, int pp, int qp) {
     this.p = p;
-    this.sparseMap = new IntByteHashMap();//new HashMap<>();
+    this.sparseMap = new HashMap<>();
     this.pPrime = pp;
     this.qPrime = qp;
     this.mask = ((1 << pPrime) - 1) ^ ((1 << p) - 1);
@@ -152,11 +149,11 @@ public class HLLSparseRegister implements HLLRegister {
     return false;
   }
 
-  public IntByteHashMap getSparseMap() {
+  public Map<Integer, Byte> getSparseMap() {
     return getMergedSparseMap();
   }
 
-  private IntByteHashMap getMergedSparseMap() {
+  private Map<Integer, Byte> getMergedSparseMap() {
     return sparseMap;
   }
 
