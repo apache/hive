@@ -60,9 +60,11 @@ public class HyperLogLogBench {
 
     private HyperLogLog hll;
     private final int stressN;
+    private final int numIterations;
 
     public SizeOptimizedSparseStressN(int stressN) {
       this.stressN = stressN;
+      numIterations = DEFAULT_ITER_TIME / stressN;
     }
 
     @Override
@@ -72,7 +74,7 @@ public class HyperLogLogBench {
 
     @Override
     public void bench() {
-      for (int i = 0; i < DEFAULT_ITER_TIME; i++) {
+      for (int i = 0; i < numIterations; i++) {
         for (int j = 0; j < stressN; j++) {
           hll.addInt(j);
         }
