@@ -166,7 +166,7 @@ public class HLLSparseRegister implements HLLRegister {
       byte lr = entry.getValue(); // this can be a max of 65, never > 127
       if (lr != 0) {
         // should be a no-op for sparse
-        dest.add((1 << (p + lr - 1)) | idx);
+        dest.add((1L << (p + lr - 1)) | idx);
       }
     }
   }
