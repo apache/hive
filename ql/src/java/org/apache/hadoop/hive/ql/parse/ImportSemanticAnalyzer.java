@@ -598,7 +598,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     } else {
       String srcLocation = partSpec.getLocation();
       if (replicationSpec.isInReplicationScope()
-        && !ReplicationSpec.Type.IMPORT.equals(replicationSpec.getReplSpecType())) {
+          && !ReplicationSpec.Type.IMPORT.equals(replicationSpec.getReplSpecType())) {
         Path partLocation = new Path(partSpec.getLocation());
         Path dataDirBase = partLocation.getParent();
         String bucketDir = partLocation.getName();

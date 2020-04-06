@@ -231,12 +231,20 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
             return 0;
           }
         }
-
+        if (work.isCopyToMigratedTxnTable()) {
+          Long writeId = ReplUtils.getMigrationCurrentTblWriteId(conf);
+          if (writeId == null) {
+            console.printError("ReplCopyTask : Write id is not set in the config by open txn task for migration");
+            return 6;
+          }
+          int stmtId = (writeId.equals(ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID))
+              ? ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_STMT_ID : context.getHiveTxnManager().getStmtIdAndIncrement();
+          toPath = new Path(toPath, AcidUtils.baseOrDeltaSubdir(work.getDeleteDestIfExist(), writeId, writeId, stmtId));
+        }
         for (FileStatus oneSrc : srcs) {
           console.printInfo("Copying file: " + oneSrc.getPath().toString());
           LOG.debug("ReplCopyTask :cp:{}=>{}", oneSrc.getPath(), toPath);
-          srcFiles.add(new ReplChangeManager.FileInfo(oneSrc.getPath().getFileSystem(conf),
-                                                      oneSrc.getPath(), null));
+          srcFiles.add(new ReplChangeManager.FileInfo(oneSrc.getPath().getFileSystem(conf), oneSrc.getPath(), null));
         }
       }
 

@@ -80,10 +80,16 @@ class InsertHandler extends AbstractEventHandler<InsertMessage> {
         withinContext.hiveConf);
     Iterable<String> files = eventMessage.getFiles();
 
+    /*
+      * Insert into/overwrite operation shall operate on one or more partitions or even partitions from multiple tables.
+      * But, Insert event is generated for each partition to which the data is inserted.
+      * So, qlPtns list will have only one entry.
+     */
+    String qlPtn = (null == qlPtns || qlPtns.isEmpty()) ? null : qlPtns.get(0).getName();
     if (files != null) {
       // encoded filename/checksum of files, write into _files
       for (String file : files) {
-        writeFileEntry(qlMdTable, file, withinContext);
+        writeFileEntry(qlMdTable, qlPtn, file, withinContext);
       }
     }
 

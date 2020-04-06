@@ -88,7 +88,7 @@ abstract class AbstractEventHandler<T extends EventMessage> implements EventHand
     return event.getEventId();
   }
 
-  protected void writeFileEntry(Table table, String file, Context withinContext)
+  protected void writeFileEntry(Table table, String qltn, String file, Context withinContext)
           throws IOException, LoginException, MetaException, HiveFatalException {
     HiveConf hiveConf = withinContext.hiveConf;
     String distCpDoAsUser = hiveConf.getVar(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER);
@@ -118,6 +118,9 @@ abstract class AbstractEventHandler<T extends EventMessage> implements EventHand
       Path finalTargetPath = targetPath.getParent();
       if (decodedURISplits[3] != null) {
         finalTargetPath = finalTargetPath.getParent();
+      }
+      if (qltn != null && !qltn.equals(finalTargetPath.getName())) {
+        finalTargetPath = new Path(finalTargetPath, qltn);
       }
       CopyUtils copyUtils = new CopyUtils(distCpDoAsUser, hiveConf, dstFs);
       copyUtils.copyAndVerify(finalTargetPath, filePaths, srcDataPath);
