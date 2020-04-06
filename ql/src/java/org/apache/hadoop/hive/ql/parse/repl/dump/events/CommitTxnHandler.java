@@ -68,10 +68,8 @@ class CommitTxnHandler extends AbstractEventHandler<CommitTxnMessage> {
   private void writeDumpFiles(Table qlMdTable, Context withinContext, Iterable<String> files, Path dataPath)
           throws IOException, LoginException, MetaException, HiveFatalException {
     // encoded filename/checksum of files, write into _files
-    try (BufferedWriter fileListWriter = writer(withinContext, dataPath)) {
-      for (String file : files) {
-        writeFileEntry(qlMdTable.getDbName(), qlMdTable, file, fileListWriter, withinContext);
-      }
+    for (String file : files) {
+      writeFileEntry(qlMdTable, file, withinContext);
     }
   }
 
