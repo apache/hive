@@ -18,18 +18,13 @@
 
 package org.apache.hadoop.hive.common.ndv.hll;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.TreeMap;
 
 public class HLLSparseRegister implements HLLRegister {
 
   private Map<Integer, Byte> sparseMap;
-
-  // for a better insertion performance values are added to temporary unsorted
-  // list which will be merged to sparse map after a threshold
-  private int[] tempList;
-  private int tempListIdx;
 
   // number of register bits
   private final int p;
@@ -47,9 +42,7 @@ public class HLLSparseRegister implements HLLRegister {
 
   public HLLSparseRegister(int p, int pp, int qp) {
     this.p = p;
-    this.sparseMap = new TreeMap<>();
-    this.tempList = new int[HLLConstants.TEMP_LIST_DEFAULT_SIZE];
-    this.tempListIdx = 0;
+    this.sparseMap = new HashMap<>();
     this.pPrime = pp;
     this.qPrime = qp;
     this.mask = ((1 << pPrime) - 1) ^ ((1 << p) - 1);
@@ -60,44 +53,23 @@ public class HLLSparseRegister implements HLLRegister {
   public boolean add(long hashcode) {
     boolean updated = false;
 
-    // fill the temp list before merging to sparse map
-    if (tempListIdx < tempList.length) {
-      int encodedHash = encodeHash(hashcode);
-      tempList[tempListIdx++] = encodedHash;
-      updated = true;
+    int encodedHash = encodeHash(hashcode);
+
+    //      int encodedHash = tempList[i];
+    int key = encodedHash & pPrimeMask;
+    byte value = (byte) (encodedHash >>> pPrime);
+    byte nr = 0;
+    // if MSB is set to 1 then next qPrime MSB bits contains the value of
+    // number of zeroes.
+    // if MSB is set to 0 then number of zeroes is contained within pPrime - p
+    // bits.
+    if (encodedHash < 0) {
+      nr = (byte) (value & qPrimeMask);
     } else {
-      updated = mergeTempListToSparseMap();
+      nr = (byte) (Integer.numberOfTrailingZeros(encodedHash >>> p) + 1);
     }
+    updated = set(key, nr);
 
-    return updated;
-  }
-
-  /**
-   * Adds temp list to sparse map. The key for sparse map entry is the register
-   * index determined by pPrime and value is the number of trailing zeroes.
-   * @return
-   */
-  private boolean mergeTempListToSparseMap() {
-    boolean updated = false;
-    for (int i = 0; i < tempListIdx; i++) {
-      int encodedHash = tempList[i];
-      int key = encodedHash & pPrimeMask;
-      byte value = (byte) (encodedHash >>> pPrime);
-      byte nr = 0;
-      // if MSB is set to 1 then next qPrime MSB bits contains the value of
-      // number of zeroes.
-      // if MSB is set to 0 then number of zeroes is contained within pPrime - p
-      // bits.
-      if (encodedHash < 0) {
-        nr = (byte) (value & qPrimeMask);
-      } else {
-        nr = (byte) (Integer.numberOfTrailingZeros(encodedHash >>> p) + 1);
-      }
-      updated = set(key, nr);
-    }
-
-    // reset temp list index
-    tempListIdx = 0;
     return updated;
   }
 
@@ -149,11 +121,7 @@ public class HLLSparseRegister implements HLLRegister {
   }
 
   public boolean isSizeGreaterThan(int s) {
-    if (sparseMap.size() + tempListIdx > s) {
-      mergeTempListToSparseMap();
-      return sparseMap.size() > s;
-    }
-    return false;
+    return sparseMap.size() > s;
   }
 
   public void merge(HLLRegister hllRegister) {
@@ -186,9 +154,6 @@ public class HLLSparseRegister implements HLLRegister {
   }
 
   private Map<Integer, Byte> getMergedSparseMap() {
-    if (tempListIdx != 0) {
-      mergeTempListToSparseMap();
-    }
     return sparseMap;
   }
 
@@ -235,15 +200,8 @@ public class HLLSparseRegister implements HLLRegister {
       return false;
     }
     HLLSparseRegister other = (HLLSparseRegister) obj;
-    boolean result = p == other.p && pPrime == other.pPrime && qPrime == other.qPrime
-        && tempListIdx == other.tempListIdx;
+    boolean result = p == other.p && pPrime == other.pPrime && qPrime == other.qPrime;
     if (result) {
-      for (int i = 0; i < tempListIdx; i++) {
-        if (tempList[i] != other.tempList[i]) {
-          return false;
-        }
-      }
-
       result = result && sparseMap.equals(other.sparseMap);
     }
     return result;
@@ -255,9 +213,6 @@ public class HLLSparseRegister implements HLLRegister {
     hashcode += 31 * p;
     hashcode += 31 * pPrime;
     hashcode += 31 * qPrime;
-    for (int i = 0; i < tempListIdx; i++) {
-      hashcode += 31 * tempList[tempListIdx];
-    }
     hashcode += sparseMap.hashCode();
     return hashcode;
   }
