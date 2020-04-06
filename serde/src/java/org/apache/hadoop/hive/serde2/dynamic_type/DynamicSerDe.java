@@ -163,7 +163,6 @@ public class DynamicSerDe extends AbstractSerDe {
       deserializeReuse = bt.deserialize(deserializeReuse, iprot_);
       return deserializeReuse;
     } catch (Exception e) {
-      e.printStackTrace();
       throw new SerDeException(e);
     }
   }
@@ -220,7 +219,6 @@ public class DynamicSerDe extends AbstractSerDe {
       bt.serialize(obj, objInspector, oprot_);
       oprot_.getTransport().flush();
     } catch (Exception e) {
-      e.printStackTrace();
       throw new SerDeException(e);
     }
     ret.set(bos_.getData(), 0, bos_.getLength());

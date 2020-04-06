@@ -303,6 +303,11 @@ public class MetastoreConf {
     AGGREGATE_STATS_CACHE_TTL("metastore.aggregate.stats.cache.ttl",
         "hive.metastore.aggregate.stats.cache.ttl", 600, TimeUnit.SECONDS,
         "Number of seconds for a cached node to be active in the cache before they become stale."),
+    ALLOW_TENANT_BASED_STORAGE("metastore.warehouse.tenant.colocation", "hive.metastore.warehouse.tenant.colocation", false,
+        "Allows managed and external tables for a tenant to have a common parent directory\n" +
+        "For example: /user/warehouse/user1/managed and /user/warehouse/user1/external\n" +
+        "This allows users to be able to set quotas on user1 directory. These locations have to be defined on the\n" +
+        "database object explicitly when creating the DB or via alter database."),
     ALTER_HANDLER("metastore.alter.handler", "hive.metastore.alter.impl",
         HIVE_ALTER_HANDLE_CLASS,
         "Alter handler.  For now defaults to the Hive one.  Really need a better default option"),
@@ -406,6 +411,12 @@ public class MetastoreConf {
         "match that configuration. Otherwise it should be same as the hostname returned by " +
         "InetAddress#getLocalHost#getHostName(). Given the uncertainty in the later " +
         "it is desirable to configure metastore.thrift.bind.host on the intended leader HMS."),
+    METASTORE_HOUSEKEEPING_THREADS_ON("metastore.housekeeping.threads.on",
+        "hive.metastore.housekeeping.threads.on", false,
+        "Whether to run the tasks under metastore.task.threads.remote on this metastore instance or not.\n" +
+            "Set this to true on one instance of the Thrift metastore service as part of turning\n" +
+            "on Hive transactions. For a complete list of parameters required for turning on\n" +
+            "transactions, see hive.txn.manager."),
     COMPACTOR_INITIATOR_ON("metastore.compactor.initiator.on", "hive.compactor.initiator.on", false,
         "Whether to run the initiator and cleaner threads on this metastore instance or not.\n" +
             "Set this to true on one instance of the Thrift metastore service as part of turning\n" +

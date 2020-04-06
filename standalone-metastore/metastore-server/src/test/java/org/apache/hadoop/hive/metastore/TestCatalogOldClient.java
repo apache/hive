@@ -39,6 +39,6 @@ public class TestCatalogOldClient extends NonCatCallsWithCatalog {
 
   @Override
   protected String expectedBaseDir() throws MetaException {
-    return new Warehouse(conf).getWhRoot().toUri().getPath();
+    return new Warehouse(conf).getWhRootExternal().toUri().getPath();
   }
 }

@@ -89,6 +89,7 @@ public class BoneCPDataSourceProvider implements DataSourceProvider {
     DatabaseProduct dbProduct =  determineDatabaseProduct(driverUrl);
     switch (dbProduct){
       case MYSQL:
+        connProperties.put("allowMultiQueries", true);
         connProperties.put("rewriteBatchedStatements", true);
         break;
       case POSTGRES:

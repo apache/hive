@@ -79,32 +79,32 @@ Stage-0
     Stage-1
       Reducer 6 vectorized
       File Output Operator [FS_107]
-        Limit [LIM_106] (rows=100 width=228)
+        Limit [LIM_106] (rows=25 width=228)
           Number of rows:100
-          Select Operator [SEL_105] (rows=130 width=228)
+          Select Operator [SEL_105] (rows=25 width=228)
             Output:["_col0","_col1","_col2"]
           <-Reducer 5 [SIMPLE_EDGE]
             SHUFFLE [RS_33]
-              Select Operator [SEL_30] (rows=130 width=228)
+              Select Operator [SEL_30] (rows=25 width=228)
                 Output:["_col0","_col1","_col2"]
-                Top N Key Operator [TNK_52] (rows=130 width=228)
+                Top N Key Operator [TNK_52] (rows=25 width=228)
                   keys:avg_window_0, _col2, _col0,top n:100
-                  Filter Operator [FIL_46] (rows=130 width=228)
+                  Filter Operator [FIL_46] (rows=25 width=228)
                     predicate:CASE WHEN ((avg_window_0 > 0)) THEN (((abs((_col2 - avg_window_0)) / avg_window_0) > 0.1)) ELSE (false) END
-                    Select Operator [SEL_29] (rows=260 width=116)
+                    Select Operator [SEL_29] (rows=50 width=116)
                       Output:["avg_window_0","_col0","_col2"]
-                      PTF Operator [PTF_28] (rows=260 width=116)
+                      PTF Operator [PTF_28] (rows=50 width=116)
                         Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col0 ASC NULLS FIRST","partition by:":"_col0"}]
-                        Select Operator [SEL_25] (rows=260 width=116)
+                        Select Operator [SEL_25] (rows=50 width=116)
                           Output:["_col0","_col2"]
-                          Group By Operator [GBY_24] (rows=260 width=120)
+                          Group By Operator [GBY_24] (rows=50 width=120)
                             Output:["_col0","_col1","_col2"],aggregations:["sum(VALUE._col0)"],keys:KEY._col0, KEY._col1
                           <-Reducer 4 [SIMPLE_EDGE]
                             SHUFFLE [RS_23]
                               PartitionCols:_col0
-                              Group By Operator [GBY_22] (rows=260 width=120)
+                              Group By Operator [GBY_22] (rows=50 width=120)
                                 Output:["_col0","_col1","_col2"],aggregations:["sum(_col3)"],keys:_col5, _col7
-                                Merge Join Operator [MERGEJOIN_85] (rows=569118 width=8)
+                                Merge Join Operator [MERGEJOIN_85] (rows=98800 width=8)
                                   Conds:RS_18._col2=RS_102._col0(Inner),Output:["_col3","_col5","_col7"]
                                 <-Map 10 [SIMPLE_EDGE] vectorized
                                   SHUFFLE [RS_102]
@@ -118,7 +118,7 @@ Stage-0
                                 <-Reducer 3 [SIMPLE_EDGE]
                                   SHUFFLE [RS_18]
                                     PartitionCols:_col2
-                                    Merge Join Operator [MERGEJOIN_84] (rows=569118 width=8)
+                                    Merge Join Operator [MERGEJOIN_84] (rows=98800 width=8)
                                       Conds:RS_15._col0=RS_99._col0(Inner),Output:["_col2","_col3","_col5","_col7"]
                                     <-Map 9 [SIMPLE_EDGE] vectorized
                                       SHUFFLE [RS_99]

@@ -796,13 +796,13 @@ import org.slf4j.LoggerFactory;
           case 4: // PART_VALS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list1120 = iprot.readListBegin();
-                struct.partVals = new ArrayList<String>(_list1120.size);
-                String _elem1121;
-                for (int _i1122 = 0; _i1122 < _list1120.size; ++_i1122)
+                org.apache.thrift.protocol.TList _list1144 = iprot.readListBegin();
+                struct.partVals = new ArrayList<String>(_list1144.size);
+                String _elem1145;
+                for (int _i1146 = 0; _i1146 < _list1144.size; ++_i1146)
                 {
-                  _elem1121 = iprot.readString();
-                  struct.partVals.add(_elem1121);
+                  _elem1145 = iprot.readString();
+                  struct.partVals.add(_elem1145);
                 }
                 iprot.readListEnd();
               }
@@ -862,9 +862,9 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(PART_VALS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.partVals.size()));
-          for (String _iter1123 : struct.partVals)
+          for (String _iter1147 : struct.partVals)
           {
-            oprot.writeString(_iter1123);
+            oprot.writeString(_iter1147);
           }
           oprot.writeListEnd();
         }
@@ -903,9 +903,9 @@ import org.slf4j.LoggerFactory;
       oprot.writeString(struct.tableName);
       {
         oprot.writeI32(struct.partVals.size());
-        for (String _iter1124 : struct.partVals)
+        for (String _iter1148 : struct.partVals)
         {
-          oprot.writeString(_iter1124);
+          oprot.writeString(_iter1148);
         }
       }
       struct.newPart.write(oprot);
@@ -933,13 +933,13 @@ import org.slf4j.LoggerFactory;
       struct.tableName = iprot.readString();
       struct.setTableNameIsSet(true);
       {
-        org.apache.thrift.protocol.TList _list1125 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-        struct.partVals = new ArrayList<String>(_list1125.size);
-        String _elem1126;
-        for (int _i1127 = 0; _i1127 < _list1125.size; ++_i1127)
+        org.apache.thrift.protocol.TList _list1149 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+        struct.partVals = new ArrayList<String>(_list1149.size);
+        String _elem1150;
+        for (int _i1151 = 0; _i1151 < _list1149.size; ++_i1151)
         {
-          _elem1126 = iprot.readString();
-          struct.partVals.add(_elem1126);
+          _elem1150 = iprot.readString();
+          struct.partVals.add(_elem1150);
         }
       }
       struct.setPartValsIsSet(true);

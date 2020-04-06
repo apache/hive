@@ -96,6 +96,7 @@ public class SQLOperation extends ExecuteStatementOperation {
   private ScheduledExecutorService timeoutExecutor;
   private final boolean runAsync;
   private final long operationLogCleanupDelayMs;
+  private final ArrayList<Object> convey = new ArrayList<>();
 
   /**
    * A map to track query count running by each user
@@ -444,8 +445,6 @@ public class SQLOperation extends ExecuteStatementOperation {
     return resultSchema;
   }
 
-  private transient final List<Object> convey = new ArrayList<Object>();
-
   @Override
   public RowSet getNextRowSet(FetchOrientation orientation, long maxRows)
     throws HiveSQLException {
@@ -461,7 +460,6 @@ public class SQLOperation extends ExecuteStatementOperation {
       maxRows = 1;
       isBlobBased = true;
     }
-    driver.setMaxRows(Math.toIntExact(maxRows));
     RowSet rowSet = RowSetFactory.create(getResultSetSchema(), getProtocolVersion(), isBlobBased);
     try {
       /* if client is requesting fetch-from-start and its not the first time reading from this operation
@@ -471,15 +469,19 @@ public class SQLOperation extends ExecuteStatementOperation {
         driver.resetFetch();
       }
       fetchStarted = true;
-      driver.setMaxRows(Math.toIntExact(maxRows));
+
+      final int capacity = Math.toIntExact(maxRows);
+      convey.ensureCapacity(capacity);
+      driver.setMaxRows(capacity);
       if (driver.getResults(convey)) {
+        if (convey.size() == capacity) {
+          LOG.info("Result set buffer filled to capacity [{}]", capacity);
+        }
         return decode(convey, rowSet);
       }
       return rowSet;
-    } catch (IOException e) {
-      throw new HiveSQLException(e);
     } catch (Exception e) {
-      throw new HiveSQLException(e);
+      throw new HiveSQLException("Unable to get the next row set", e);
     } finally {
       convey.clear();
     }

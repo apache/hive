@@ -21,6 +21,7 @@ import com.google.common.collect.Lists;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
@@ -525,6 +526,48 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
         Collections.singletonList("delta_0000001_0000009_v0000014"),
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deltaFileFilter, table, null));
     verifyAllContents(tableName, testDataProvider, expectedData);
+  }
+
+  @Test public void testMmMajorCompactionDb() throws Exception {
+    testMmCompactionDb(CompactionType.MAJOR, "base_0000003_v0000009");
+  }
+
+  @Test public void testMmMinorCompactionDb() throws Exception {
+    testMmCompactionDb(CompactionType.MINOR, "delta_0000001_0000003_v0000009");
+  }
+
+  /**
+   * Make sure db is specified in compaction queries.
+   */
+  private void testMmCompactionDb(CompactionType compactionType, String resultDirName) throws Exception {
+    String dbName = "myDb";
+    String tableName = "testMmCompactionDb";
+    // Create test table
+    TestDataProvider dataProvider = new TestDataProvider();
+    dataProvider.createDb(dbName);
+    dataProvider.createMmTable(dbName, tableName, false, false, "orc");
+    // Find the location of the table
+    IMetaStoreClient metaStoreClient = new HiveMetaStoreClient(conf);
+    Table table = metaStoreClient.getTable(dbName, tableName);
+    FileSystem fs = FileSystem.get(conf);
+    // Insert test data into test table
+    dataProvider.insertMmTestData(dbName, tableName);
+    // Get all data before compaction is run
+    List<String> expectedData = dataProvider.getAllData(dbName, tableName);
+    Collections.sort(expectedData);
+    // Run a compaction
+    CompactorTestUtil.runCompaction(conf, dbName, tableName, compactionType, true);
+    CompactorTestUtil.runCleaner(conf);
+    verifySuccessulTxn(1);
+    // Verify directories after compaction
+    PathFilter pathFilter = compactionType == CompactionType.MAJOR ? AcidUtils.baseFileFilter :
+        AcidUtils.deltaFileFilter;
+    Assert.assertEquals("Result directories does not match after " + compactionType.name()
+            + " compaction", Collections.singletonList(resultDirName),
+        CompactorTestUtil.getBaseOrDeltaNames(fs, pathFilter, table, null));
+    List<String> actualData = dataProvider.getAllData(dbName, tableName);
+    Collections.sort(actualData);
+    Assert.assertEquals(expectedData, actualData);
   }
 
   /**

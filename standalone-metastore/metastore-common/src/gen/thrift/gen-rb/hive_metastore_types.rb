@@ -999,6 +999,7 @@ class Database
   OWNERTYPE = 7
   CATALOGNAME = 8
   CREATETIME = 9
+  MANAGEDLOCATIONURI = 10
 
   FIELDS = {
     NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
@@ -1009,7 +1010,8 @@ class Database
     OWNERNAME => {:type => ::Thrift::Types::STRING, :name => 'ownerName', :optional => true},
     OWNERTYPE => {:type => ::Thrift::Types::I32, :name => 'ownerType', :optional => true, :enum_class => ::PrincipalType},
     CATALOGNAME => {:type => ::Thrift::Types::STRING, :name => 'catalogName', :optional => true},
-    CREATETIME => {:type => ::Thrift::Types::I32, :name => 'createTime', :optional => true}
+    CREATETIME => {:type => ::Thrift::Types::I32, :name => 'createTime', :optional => true},
+    MANAGEDLOCATIONURI => {:type => ::Thrift::Types::STRING, :name => 'managedLocationUri', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -3818,12 +3820,14 @@ class InsertEventRequestData
   FILESADDED = 2
   FILESADDEDCHECKSUM = 3
   SUBDIRECTORYLIST = 4
+  PARTITIONVAL = 5
 
   FIELDS = {
     REPLACE => {:type => ::Thrift::Types::BOOL, :name => 'replace', :optional => true},
     FILESADDED => {:type => ::Thrift::Types::LIST, :name => 'filesAdded', :element => {:type => ::Thrift::Types::STRING}},
     FILESADDEDCHECKSUM => {:type => ::Thrift::Types::LIST, :name => 'filesAddedChecksum', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
-    SUBDIRECTORYLIST => {:type => ::Thrift::Types::LIST, :name => 'subDirectoryList', :element => {:type => ::Thrift::Types::STRING}, :optional => true}
+    SUBDIRECTORYLIST => {:type => ::Thrift::Types::LIST, :name => 'subDirectoryList', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
+    PARTITIONVAL => {:type => ::Thrift::Types::LIST, :name => 'partitionVal', :element => {:type => ::Thrift::Types::STRING}, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -3841,12 +3845,18 @@ class FireEventRequestData < ::Thrift::Union
     def insertData(val)
       FireEventRequestData.new(:insertData, val)
     end
+
+    def insertDatas(val)
+      FireEventRequestData.new(:insertDatas, val)
+    end
   end
 
   INSERTDATA = 1
+  INSERTDATAS = 2
 
   FIELDS = {
-    INSERTDATA => {:type => ::Thrift::Types::STRUCT, :name => 'insertData', :class => ::InsertEventRequestData}
+    INSERTDATA => {:type => ::Thrift::Types::STRUCT, :name => 'insertData', :class => ::InsertEventRequestData},
+    INSERTDATAS => {:type => ::Thrift::Types::LIST, :name => 'insertDatas', :element => {:type => ::Thrift::Types::STRUCT, :class => ::InsertEventRequestData}}
   }
 
   def struct_fields; FIELDS; end
@@ -3888,10 +3898,10 @@ end
 
 class FireEventResponse
   include ::Thrift::Struct, ::Thrift::Struct_Union
-  EVENTID = 1
+  EVENTIDS = 1
 
   FIELDS = {
-    EVENTID => {:type => ::Thrift::Types::I64, :name => 'eventId'}
+    EVENTIDS => {:type => ::Thrift::Types::LIST, :name => 'eventIds', :element => {:type => ::Thrift::Types::I64}}
   }
 
   def struct_fields; FIELDS; end

@@ -37,10 +37,12 @@ import org.slf4j.LoggerFactory;
 @org.apache.hadoop.classification.InterfaceAudience.Public @org.apache.hadoop.classification.InterfaceStability.Stable public class FireEventRequestData extends org.apache.thrift.TUnion<FireEventRequestData, FireEventRequestData._Fields> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("FireEventRequestData");
   private static final org.apache.thrift.protocol.TField INSERT_DATA_FIELD_DESC = new org.apache.thrift.protocol.TField("insertData", org.apache.thrift.protocol.TType.STRUCT, (short)1);
+  private static final org.apache.thrift.protocol.TField INSERT_DATAS_FIELD_DESC = new org.apache.thrift.protocol.TField("insertDatas", org.apache.thrift.protocol.TType.LIST, (short)2);
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    INSERT_DATA((short)1, "insertData");
+    INSERT_DATA((short)1, "insertData"),
+    INSERT_DATAS((short)2, "insertDatas");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -57,6 +59,8 @@ import org.slf4j.LoggerFactory;
       switch(fieldId) {
         case 1: // INSERT_DATA
           return INSERT_DATA;
+        case 2: // INSERT_DATAS
+          return INSERT_DATAS;
         default:
           return null;
       }
@@ -101,6 +105,9 @@ import org.slf4j.LoggerFactory;
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.INSERT_DATA, new org.apache.thrift.meta_data.FieldMetaData("insertData", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, InsertEventRequestData.class)));
+    tmpMap.put(_Fields.INSERT_DATAS, new org.apache.thrift.meta_data.FieldMetaData("insertDatas", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, InsertEventRequestData.class))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(FireEventRequestData.class, metaDataMap);
   }
@@ -126,6 +133,12 @@ import org.slf4j.LoggerFactory;
     return x;
   }
 
+  public static FireEventRequestData insertDatas(List<InsertEventRequestData> value) {
+    FireEventRequestData x = new FireEventRequestData();
+    x.setInsertDatas(value);
+    return x;
+  }
+
 
   @Override
   protected void checkType(_Fields setField, Object value) throws ClassCastException {
@@ -135,6 +148,11 @@ import org.slf4j.LoggerFactory;
           break;
         }
         throw new ClassCastException("Was expecting value of type InsertEventRequestData for field 'insertData', but got " + value.getClass().getSimpleName());
+      case INSERT_DATAS:
+        if (value instanceof List) {
+          break;
+        }
+        throw new ClassCastException("Was expecting value of type List<InsertEventRequestData> for field 'insertDatas', but got " + value.getClass().getSimpleName());
       default:
         throw new IllegalArgumentException("Unknown field id " + setField);
     }
@@ -155,6 +173,26 @@ import org.slf4j.LoggerFactory;
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             return null;
           }
+        case INSERT_DATAS:
+          if (field.type == INSERT_DATAS_FIELD_DESC.type) {
+            List<InsertEventRequestData> insertDatas;
+            {
+              org.apache.thrift.protocol.TList _list828 = iprot.readListBegin();
+              insertDatas = new ArrayList<InsertEventRequestData>(_list828.size);
+              InsertEventRequestData _elem829;
+              for (int _i830 = 0; _i830 < _list828.size; ++_i830)
+              {
+                _elem829 = new InsertEventRequestData();
+                _elem829.read(iprot);
+                insertDatas.add(_elem829);
+              }
+              iprot.readListEnd();
+            }
+            return insertDatas;
+          } else {
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            return null;
+          }
         default:
           throw new IllegalStateException("setField wasn't null, but didn't match any of the case statements!");
       }
@@ -171,6 +209,17 @@ import org.slf4j.LoggerFactory;
         InsertEventRequestData insertData = (InsertEventRequestData)value_;
         insertData.write(oprot);
         return;
+      case INSERT_DATAS:
+        List<InsertEventRequestData> insertDatas = (List<InsertEventRequestData>)value_;
+        {
+          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, insertDatas.size()));
+          for (InsertEventRequestData _iter831 : insertDatas)
+          {
+            _iter831.write(oprot);
+          }
+          oprot.writeListEnd();
+        }
+        return;
       default:
         throw new IllegalStateException("Cannot write union with unknown field " + setField_);
     }
@@ -186,6 +235,21 @@ import org.slf4j.LoggerFactory;
           insertData = new InsertEventRequestData();
           insertData.read(iprot);
           return insertData;
+        case INSERT_DATAS:
+          List<InsertEventRequestData> insertDatas;
+          {
+            org.apache.thrift.protocol.TList _list832 = iprot.readListBegin();
+            insertDatas = new ArrayList<InsertEventRequestData>(_list832.size);
+            InsertEventRequestData _elem833;
+            for (int _i834 = 0; _i834 < _list832.size; ++_i834)
+            {
+              _elem833 = new InsertEventRequestData();
+              _elem833.read(iprot);
+              insertDatas.add(_elem833);
+            }
+            iprot.readListEnd();
+          }
+          return insertDatas;
         default:
           throw new IllegalStateException("setField wasn't null, but didn't match any of the case statements!");
       }
@@ -201,6 +265,17 @@ import org.slf4j.LoggerFactory;
         InsertEventRequestData insertData = (InsertEventRequestData)value_;
         insertData.write(oprot);
         return;
+      case INSERT_DATAS:
+        List<InsertEventRequestData> insertDatas = (List<InsertEventRequestData>)value_;
+        {
+          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, insertDatas.size()));
+          for (InsertEventRequestData _iter835 : insertDatas)
+          {
+            _iter835.write(oprot);
+          }
+          oprot.writeListEnd();
+        }
+        return;
       default:
         throw new IllegalStateException("Cannot write union with unknown field " + setField_);
     }
@@ -211,6 +286,8 @@ import org.slf4j.LoggerFactory;
     switch (setField) {
       case INSERT_DATA:
         return INSERT_DATA_FIELD_DESC;
+      case INSERT_DATAS:
+        return INSERT_DATAS_FIELD_DESC;
       default:
         throw new IllegalArgumentException("Unknown field id " + setField);
     }
@@ -245,8 +322,27 @@ import org.slf4j.LoggerFactory;
     value_ = value;
   }
 
+  public List<InsertEventRequestData> getInsertDatas() {
+    if (getSetField() == _Fields.INSERT_DATAS) {
+      return (List<InsertEventRequestData>)getFieldValue();
+    } else {
+      throw new RuntimeException("Cannot get field 'insertDatas' because union is currently set to " + getFieldDesc(getSetField()).name);
+    }
+  }
+
+  public void setInsertDatas(List<InsertEventRequestData> value) {
+    if (value == null) throw new NullPointerException();
+    setField_ = _Fields.INSERT_DATAS;
+    value_ = value;
+  }
+
   public boolean isSetInsertData() {
     return setField_ == _Fields.INSERT_DATA;
+  }
+
+
+  public boolean isSetInsertDatas() {
+    return setField_ == _Fields.INSERT_DATAS;
   }
 
 
