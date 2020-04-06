@@ -658,8 +658,8 @@ public class TestPartitionManagement {
 
   @Test
   public void testPartitionExprFilter() throws TException, IOException {
-    String dbName = "db4";
-    String tableName = "tbl4";
+    String dbName = "db10";
+    String tableName = "tbl10";
     Map<String, Column> colMap = buildAllColumns();
     List<String> partKeys = Lists.newArrayList("state", "dt");
     List<String> partKeyTypes = Lists.newArrayList("string", "date");
@@ -669,30 +669,27 @@ public class TestPartitionManagement {
         Lists.newArrayList("MN", "2018-11-31"));
     createMetadata(DEFAULT_CATALOG_NAME, dbName, tableName, partKeys, partKeyTypes, partVals, colMap, false);
     Table table = client.getTable(dbName, tableName);
+
+    table.getParameters().put(PartitionManagementTask.DISCOVER_PARTITIONS_TBLPROPERTY, "true");
+    table.getParameters().put("EXTERNAL", "true");
+    table.setTableType(TableType.EXTERNAL_TABLE.name());
+    client.alter_table(dbName, tableName, table);
+
     List<Partition> partitions = client.listPartitions(dbName, tableName, (short) -1);
     assertEquals(3, partitions.size());
+
     String tableLocation = table.getSd().getLocation();
     URI location = URI.create(tableLocation);
     Path tablePath = new Path(location);
     FileSystem fs = FileSystem.get(location, conf);
-    Path newPart1 = new Path(tablePath, "state=WA/dt=2018-12-01");
-    Path newPart2 = new Path(tablePath, "state=UT/dt=2018-12-02");
-    fs.mkdirs(newPart1);
-    fs.mkdirs(newPart2);
-    assertEquals(5, fs.listStatus(tablePath).length);
-    table.getParameters().put(PartitionManagementTask.DISCOVER_PARTITIONS_TBLPROPERTY, "true");
-    client.alter_table(dbName, tableName, table);
-    // no match for this db pattern, so we will see only 3 partitions
-    conf.set(MetastoreConf.ConfVars.PARTITION_MANAGEMENT_DATABASE_PATTERN.getVarname(), "*dbfoo*");
-    runPartitionManagementTask(conf);
-    partitions = client.listPartitions(dbName, tableName, (short) -1);
-    assertEquals(3, partitions.size());
+    Path newPart1 = new Path(tablePath, "state=MN/dt=2018-11-31");
+    fs.delete(newPart1);
 
-    // matching db pattern, we will see all 5 partitions now
-    conf.set(MetastoreConf.ConfVars.PARTITION_MANAGEMENT_DATABASE_PATTERN.getVarname(), "*db4*");
+    conf.set(MetastoreConf.ConfVars.PARTITION_MANAGEMENT_DATABASE_PATTERN.getVarname(), "*db10*");
+    conf.set(ConfVars.PARTITION_MANAGEMENT_TABLE_TYPES.getVarname(), TableType.EXTERNAL_TABLE.name());
     runPartitionManagementTask(conf);
     partitions = client.listPartitions(dbName, tableName, (short) -1);
-    assertEquals(5, partitions.size());
+    assertEquals(2, partitions.size());
   }
 
   private void runPartitionManagementTask(Configuration conf) {

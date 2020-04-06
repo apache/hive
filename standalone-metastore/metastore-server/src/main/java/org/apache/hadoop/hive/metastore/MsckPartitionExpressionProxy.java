@@ -64,7 +64,8 @@ public class MsckPartitionExpressionProxy implements PartitionExpressionProxy {
     for ( String part : parts){
       String[] colAndValue = part.split("=");
       String key = FileUtils.unescapePathName(colAndValue[0]);
-      String value = FileUtils.unescapePathName(colAndValue[1].substring(1, colAndValue[1].length()));
+      //take the value inside without the single quote marks '2018-10-30' becomes 2018-10-31
+      String value = FileUtils.unescapePathName(colAndValue[1].substring(1, colAndValue[1].length()-1));
       partValueSet.add(key+"="+value);
     }
 
