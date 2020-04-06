@@ -113,6 +113,18 @@ public class HyperLogLogBench {
     }
   }
 
+  public static class SizeOptimizedDenseStress2T extends SizeOptimizedSparseStressN {
+    public SizeOptimizedDenseStress2T() {
+      super(2 * HyperLogLog.builder().setSizeOptimized().build().getEncodingSwitchThreshold());
+    }
+  }
+
+  public static class SizeOptimizedDenseStress8T extends SizeOptimizedSparseStressN {
+    public SizeOptimizedDenseStress8T() {
+      super(8*HyperLogLog.builder().setSizeOptimized().build().getEncodingSwitchThreshold());
+    }
+  }
+
   public static void main(String[] args) throws RunnerException {
     Options opt = new OptionsBuilder().include(".*" + HyperLogLogBench.class.getSimpleName() + ".*").build();
     new Runner(opt).run();
