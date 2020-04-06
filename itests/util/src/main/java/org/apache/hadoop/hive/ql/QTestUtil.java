@@ -1697,18 +1697,15 @@ public class QTestUtil {
     String outFileName = outPath(outDir, tname + outFileExtension);
 
     File f = new File(logDir, tname + outFileExtension);
+    qOutProcessor.maskPatterns(f.getPath(), qMaskStatsQuerySet.contains(tname), qMaskDataSizeQuerySet.contains(tname),
+        qMaskLineageQuerySet.contains(tname));
 
-    qOutProcessor.maskPatterns(f.getPath(),
-        qMaskStatsQuerySet.contains(tname), qMaskDataSizeQuerySet.contains(tname), qMaskLineageQuerySet.contains(tname));
-    QTestProcessExecResult exitVal = executeDiffCommand(f.getPath(),
-                                     outFileName, false,
-                                     qSortSet.contains(tname));
     if (overWrite) {
       overwriteResults(f.getPath(), outFileName);
       return QTestProcessExecResult.createWithoutOutput(0);
+    } else {
+      return executeDiffCommand(f.getPath(), outFileName, false, qSortSet.contains(tname));
     }
-
-    return exitVal;
   }
 
   public QTestProcessExecResult checkCompareCliDriverResults(String tname, List<String> outputs)
