@@ -661,12 +661,13 @@ public class TestPartitionManagement {
     String dbName = "db10";
     String tableName = "tbl10";
     Map<String, Column> colMap = buildAllColumns();
-    List<String> partKeys = Lists.newArrayList("state", "dt");
-    List<String> partKeyTypes = Lists.newArrayList("string", "date");
+    List<String> partKeys = Lists.newArrayList("state", "dt", "modts");
+    List<String> partKeyTypes = Lists.newArrayList("string", "date", "timestamp");
+
     List<List<String>> partVals = Lists.newArrayList(
-        Lists.newArrayList("__HIVE_DEFAULT_PARTITION__", "1990-01-01"),
-        Lists.newArrayList("CA", "1986-04-28"),
-        Lists.newArrayList("MN", "2018-11-31"));
+        Lists.newArrayList("__HIVE_DEFAULT_PARTITION__", "1990-01-01", "__HIVE_DEFAULT_PARTITION__"),
+        Lists.newArrayList("CA", "1986-04-28", "2020-02-21 08:30:01"),
+        Lists.newArrayList("MN", "2018-11-31", "2020-02-21 08:19:01"));
     createMetadata(DEFAULT_CATALOG_NAME, dbName, tableName, partKeys, partKeyTypes, partVals, colMap, false);
     Table table = client.getTable(dbName, tableName);
 
@@ -682,7 +683,8 @@ public class TestPartitionManagement {
     URI location = URI.create(tableLocation);
     Path tablePath = new Path(location);
     FileSystem fs = FileSystem.get(location, conf);
-    Path newPart1 = new Path(tablePath, "state=MN/dt=2018-11-31");
+    String partPath = partitions.get(1).getSd().getLocation();
+    Path newPart1 = new Path(tablePath, partPath);
     fs.delete(newPart1);
 
     conf.set(MetastoreConf.ConfVars.PARTITION_MANAGEMENT_DATABASE_PATTERN.getVarname(), "*db10*");

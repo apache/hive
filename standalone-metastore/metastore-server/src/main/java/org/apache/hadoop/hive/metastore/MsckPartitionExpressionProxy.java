@@ -72,11 +72,12 @@ public class MsckPartitionExpressionProxy implements PartitionExpressionProxy {
     List<String> partNamesSeq =  new ArrayList<>();
     for (String partition : partitionNames){
       boolean isMatch = true;
-      for ( String col : partValueSet){
-        //list of partitions [year=2001/month=1, year=2002/month=2, year=2001/month=3]
-        //Given expr: e.g. year='2001' AND month='1'. Only when all the expressions in the expr can be found,
-        //do we add the partition to the filtered result [year=2001/month=1]
-        if (partition.indexOf(col) == -1){
+      //list of partitions [year=2001/month=1, year=2002/month=2, year=2001/month=3]
+      //Given expr: e.g. year='2001' AND month='1'. Only when all the expressions in the expr can be found,
+      //do we add the partition to the filtered result [year=2001/month=1]
+      String [] partnames = partition.split("/");
+      for (String part: partnames) {
+        if (!partValueSet.contains(FileUtils.unescapePathName(part))){
           isMatch = false;
           break;
         }
