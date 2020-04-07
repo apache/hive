@@ -499,8 +499,15 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       throw new RuntimeException(
           "Current Parquet Vectorization reader doesn't support nested type");
     }
-    return type.asGroupType().getFields().get(0).asGroupType().getFields().get(0)
-        .asPrimitiveType();
+
+    Type childType = type.asGroupType().getFields().get(0);
+
+    // Parquet file generated using thrift may have child type as PrimitiveType
+    if (childType.isPrimitive()) {
+      return childType.asPrimitiveType();
+    } else {
+      return childType.asGroupType().getFields().get(0).asPrimitiveType();
+    }
   }
 
   // Build VectorizedParquetColumnReader via Hive typeInfo and Parquet schema
