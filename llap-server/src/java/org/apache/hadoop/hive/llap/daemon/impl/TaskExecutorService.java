@@ -579,6 +579,31 @@ public class TaskExecutorService extends AbstractService
       if (LOG.isInfoEnabled()) {
         LOG.info("{} evicted from wait queue in favor of {} because of lower priority",
             evictedTask.getRequestId(), task.getRequestId());
+      } else if (LOG.isDebugEnabled()) { // detailed info about the decision
+        FragmentRuntimeInfo evictedInfo =
+            evictedTask.getTaskRunnerCallable().getFragmentRuntimeInfo();
+        FragmentRuntimeInfo taskInfo = task.getFragmentRuntimeInfo();
+
+        int knownPendingTasksForEvicted = evictedInfo.getNumSelfAndUpstreamTasks()
+            - evictedInfo.getNumSelfAndUpstreamCompletedTasks();
+        int knownPendingTasksForCurrent =
+            taskInfo.getNumSelfAndUpstreamTasks() - taskInfo.getNumSelfAndUpstreamCompletedTasks();
+
+        long firstAttemptStartTimeEvicted = evictedInfo.getFirstAttemptStartTime();
+        long firstAttemptStartTimeCurrent = taskInfo.getFirstAttemptStartTime();
+
+        LOG.debug(
+            "{} (guaranteed: {}, canFinishForPriority: {}, withinDagPriority: {}, currentAttemptStartTime: {}, "
+                + "firstAttemptStartTime: {}, knownPending: {}) evicted from wait queue"
+                + "in favor of {} (guaranteed: {}, canFinishForPriority: {}, withinDagPriority: {},"
+                + " currentAttemptStartTime: {}, firstAttemptStartTime: {}, knownPending: {})"
+                + "because of lower priority",
+            evictedTask.getRequestId(), evictedTask.isGuaranteed(), evictedTask.canFinishForPriority(),
+            evictedInfo.getWithinDagPriority(), evictedInfo.getCurrentAttemptStartTime(),
+            firstAttemptStartTimeEvicted, knownPendingTasksForEvicted, task.getRequestId(),
+            taskWrapper.isGuaranteed(), taskWrapper.canFinishForPriority(), taskInfo.getWithinDagPriority(),
+            taskInfo.getCurrentAttemptStartTime(), firstAttemptStartTimeCurrent,
+            knownPendingTasksForCurrent);
       }
       try {
         knownTasks.remove(evictedTask.getRequestId());
