@@ -371,7 +371,7 @@ public class ImpalaPlanner {
       cfg.setMt_dop_auto_fallback(false);
 
       try {
-        FeSupport.loadLibrary(false);
+        FeSupport.loadLibrary(true);
       } catch (RuntimeException e) {
         LOG.warn("initBackendConfig", e);
       }
