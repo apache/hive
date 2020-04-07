@@ -26,7 +26,10 @@ import java.sql.SQLException;
 import java.sql.SQLTransactionRollbackException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Properties;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -628,5 +631,34 @@ public final class TxnDbUtil {
       LOG.error(msg);
       throw new MetaException(msg);
     }
+  }
+
+  /**
+   * @param stmt Statement which will be used for batching and execution.
+   * @param queries List of sql queries to execute in a Statement batch.
+   * @param conf Configuration for retrieving max batch size param
+   * @return A list with the number of rows affected by each query in queries.
+   * @throws SQLException Thrown if an execution error occurs.
+   */
+  static List<Integer> executeQueriesInBatch(Statement stmt, List<String> queries, Configuration conf) throws SQLException {
+    List<Integer> affectedRowsByQuery = new ArrayList<>();
+    int queryCounter = 0;
+    int batchSize = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_VALUES_CLAUSE);
+    for (String query : queries) {
+      LOG.debug("Adding query to batch: <" + query + ">");
+      queryCounter++;
+      stmt.addBatch(query);
+      if (queryCounter % batchSize == 0) {
+        LOG.debug("Going to execute queries in batch. Batch size: " + batchSize);
+        int[] affectedRecordsByQuery = stmt.executeBatch();
+        Arrays.stream(affectedRecordsByQuery).forEach(affectedRowsByQuery::add);
+      }
+    }
+    if (queryCounter % batchSize != 0) {
+      LOG.debug("Going to execute queries in batch. Batch size: " + queryCounter % batchSize);
+      int[] affectedRecordsByQuery = stmt.executeBatch();
+      Arrays.stream(affectedRecordsByQuery).forEach(affectedRowsByQuery::add);
+    }
+    return affectedRowsByQuery;
   }
 }
