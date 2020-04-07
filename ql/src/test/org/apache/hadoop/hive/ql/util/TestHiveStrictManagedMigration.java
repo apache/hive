@@ -25,6 +25,7 @@ import static org.apache.hadoop.hive.ql.TxnCommandsBaseForTests.Table.NONACIDORC
 import static org.apache.hadoop.hive.ql.TxnCommandsBaseForTests.Table.NONACIDORCTBL2;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,12 +35,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.ql.TxnCommandsBaseForTests;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
+
+import com.google.common.collect.ImmutableMap;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -64,6 +69,13 @@ public class TestHiveStrictManagedMigration extends TxnCommandsBaseForTests {
 
     runStatementOnDriver(
             "CREATE EXTERNAL TABLE texternal (a int, b int)");
+
+    // Case for table having null location
+    runStatementOnDriver("CREATE EXTERNAL TABLE test.sysdbtest(tbl_id bigint)");
+    org.apache.hadoop.hive.ql.metadata.Table table = Hive.get(hiveConf).getTable("test", "sysdbtest");
+    table.getSd().unsetLocation();
+    Hive.get(hiveConf).alterTable(table, false,
+        new EnvironmentContext(ImmutableMap.of(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE)), false);
 
     String oldWarehouse = getWarehouseDir();
     String[] args = {"--hiveconf", "hive.strict.managed.tables=true", "-m",  "automatic", "--modifyManagedTables",
@@ -138,6 +150,9 @@ public class TestHiveStrictManagedMigration extends TxnCommandsBaseForTests {
     HiveStrictManagedMigration.hiveConf = hiveConf;
     HiveStrictManagedMigration.scheme = "file";
     HiveStrictManagedMigration.main(args);
+    if (HiveStrictManagedMigration.RC != 0) {
+      fail("HiveStrictManagedMigration failed with error(s)");
+    }
   }
 
   private void setupExternalTableTest() throws Exception {
