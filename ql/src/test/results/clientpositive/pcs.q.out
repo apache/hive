@@ -1171,12 +1171,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x
-            filterExpr: ((struct(ds,key)) IN (const struct('2000-04-08',1), const struct('2000-04-09',2)) and (struct(ds)) IN (const struct('2000-04-08'), const struct('2000-04-09')) and (ds = '2008-04-08')) (type: boolean)
+            filterExpr: ((struct(key,ds)) IN (const struct(1,'2000-04-08'), const struct(2,'2000-04-09')) and (struct(ds)) IN (const struct('2000-04-08'), const struct('2000-04-09')) and (ds = '2008-04-08')) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: ((struct(ds,key)) IN (const struct('2000-04-08',1), const struct('2000-04-09',2)) and (struct(ds)) IN (const struct('2000-04-08'), const struct('2000-04-09')) and (ds = '2008-04-08')) (type: boolean)
+              predicate: ((struct(key,ds)) IN (const struct(1,'2000-04-08'), const struct(2,'2000-04-09')) and (struct(ds)) IN (const struct('2000-04-08'), const struct('2000-04-09')) and (ds = '2008-04-08')) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: key (type: int), value (type: string)
@@ -1197,12 +1197,12 @@ STAGE PLANS:
                       auto parallelism: false
           TableScan
             alias: y
-            filterExpr: ((struct(ds,key)) IN (const struct('2000-04-08',1), const struct('2000-04-09',2)) and (struct(ds)) IN (const struct('2000-04-08'), const struct('2000-04-09')) and (ds = '2008-04-08')) (type: boolean)
+            filterExpr: ((struct(key,ds)) IN (const struct(1,'2000-04-08'), const struct(2,'2000-04-09')) and (struct(ds)) IN (const struct('2000-04-08'), const struct('2000-04-09')) and (ds = '2008-04-08')) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: ((struct(ds,key)) IN (const struct('2000-04-08',1), const struct('2000-04-09',2)) and (struct(ds)) IN (const struct('2000-04-08'), const struct('2000-04-09')) and (ds = '2008-04-08')) (type: boolean)
+              predicate: ((struct(key,ds)) IN (const struct(1,'2000-04-08'), const struct(2,'2000-04-09')) and (struct(ds)) IN (const struct('2000-04-08'), const struct('2000-04-09')) and (ds = '2008-04-08')) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: key (type: int), value (type: string)
