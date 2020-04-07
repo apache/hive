@@ -51,7 +51,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
@@ -161,8 +160,7 @@ public class EximUtil {
   /**
    * Wrapper class for mapping source and target path for copying managed table data.
    */
-  public static class ManagedTableCopyPath implements Serializable {
-    private static final long serialVersionUID = 1L;
+  public static class ManagedTableCopyPath {
     private ReplicationSpec replicationSpec;
     private static boolean nullSrcPathForTest = false;
     private Path srcPath;

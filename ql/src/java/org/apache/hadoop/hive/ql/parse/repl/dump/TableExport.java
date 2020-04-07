@@ -205,15 +205,14 @@ public class TableExport {
     private final FileSystem exportFileSystem;
     private boolean writeData, metadataExportRootDirCreated = false, dataExportRootDirCreated = false;
 
-    public Paths(String astRepresentationForErrorMsg, Path dbRoot, String tblName, HiveConf conf,
+    public Paths(String astRepresentationForErrorMsg, Path dbMetadataRoot, Path dbDataRoot,
+                 String tblName, HiveConf conf,
         boolean shouldWriteData) throws SemanticException {
       this.astRepresentationForErrorMsg = astRepresentationForErrorMsg;
       this.conf = conf;
       this.writeData = shouldWriteData;
-      Path metadataRoot = new Path(dbRoot, EximUtil.METADATA_PATH_NAME);
-      Path dataRoot = new Path(dbRoot, EximUtil.DATA_PATH_NAME);
-      Path tableRootForMetadataDump = new Path(metadataRoot, tblName);
-      Path tableRootForDataDump = new Path(dataRoot, tblName);
+      Path tableRootForMetadataDump = new Path(dbMetadataRoot, tblName);
+      Path tableRootForDataDump = new Path(dbDataRoot, tblName);
       URI metadataExportRootDirUri = EximUtil.getValidatedURI(conf, tableRootForMetadataDump.toUri().toString());
       validateTargetDir(metadataExportRootDirUri);
       URI dataExportRootDirUri = EximUtil.getValidatedURI(conf, tableRootForDataDump.toUri().toString());

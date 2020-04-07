@@ -684,12 +684,12 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     FileSystem fs = new Path(bootstrapDump.dumpLocation).getFileSystem(conf);
     Path dumpPath = new Path(bootstrapDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
     assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
-    Path dbPath = new Path(dumpPath, primaryDbName.toLowerCase());
-    Path metadataPath = new Path(dbPath, EximUtil.METADATA_PATH_NAME);
+    Path metadataPath = new Path(dumpPath, EximUtil.METADATA_PATH_NAME);
     long modifiedTimeMetadata = fs.getFileStatus(metadataPath).getModificationTime();
-    Path dataPath = new Path(dbPath, EximUtil.DATA_PATH_NAME);
-    Path tablet1Path = new Path(dataPath, "t1");
-    Path tablet2Path = new Path(dataPath, "t2");
+    Path dataPath = new Path(dumpPath, EximUtil.DATA_PATH_NAME);
+    Path dbDataPath = new Path(dataPath, primaryDbName.toLowerCase());
+    Path tablet1Path = new Path(dbDataPath, "t1");
+    Path tablet2Path = new Path(dbDataPath, "t2");
     //Delete dump ack and t2 data, metadata should be rewritten, data should be same for t1 but rewritten for t2
     fs.delete(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString()), true);
     assertFalse(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
@@ -728,12 +728,12 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     FileSystem fs = new Path(bootstrapDump.dumpLocation).getFileSystem(conf);
     Path dumpPath = new Path(bootstrapDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
     assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
-    Path dbPath = new Path(dumpPath, primaryDbName.toLowerCase());
-    Path metadataPath = new Path(dbPath, EximUtil.METADATA_PATH_NAME);
+    Path metadataPath = new Path(dumpPath, EximUtil.METADATA_PATH_NAME);
     long modifiedTimeMetadata = fs.getFileStatus(metadataPath).getModificationTime();
-    Path dataPath = new Path(dbPath, EximUtil.DATA_PATH_NAME);
-    Path tablet1Path = new Path(dataPath, "t1");
-    Path tablet2Path = new Path(dataPath, "t2");
+    Path dataPath = new Path(dumpPath, EximUtil.DATA_PATH_NAME);
+    Path dbPath = new Path(dataPath, primaryDbName.toLowerCase());
+    Path tablet1Path = new Path(dbPath, "t1");
+    Path tablet2Path = new Path(dbPath, "t2");
     //Delete dump ack and t2 data, metadata should be rewritten, data should be same for t1 but rewritten for t2
     fs.delete(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString()), true);
     assertFalse(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
@@ -782,10 +782,10 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     FileSystem fs = new Path(bootstrapDump.dumpLocation).getFileSystem(conf);
     Path dumpPath = new Path(bootstrapDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
     assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
-    Path dbPath = new Path(dumpPath, primaryDbName.toLowerCase());
-    Path dataPath = new Path(dbPath, EximUtil.DATA_PATH_NAME);
-    Path tablet1Path = new Path(dataPath, "t1");
-    Path tablet2Path = new Path(dataPath, "t2");
+    Path dataPath = new Path(dumpPath, EximUtil.DATA_PATH_NAME);
+    Path dbPath = new Path(dataPath, primaryDbName.toLowerCase());
+    Path tablet1Path = new Path(dbPath, "t1");
+    Path tablet2Path = new Path(dbPath, "t2");
     long modifiedTimeTable2 = fs.getFileStatus(tablet2Path).getModificationTime();
     //Delete table 2 data
     FileStatus[] statuses = fs.listStatus(tablet2Path);
@@ -835,10 +835,10 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     FileSystem fs = new Path(bootstrapDump.dumpLocation).getFileSystem(conf);
     Path dumpPath = new Path(bootstrapDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
     assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
-    Path dbPath = new Path(dumpPath, primaryDbName.toLowerCase());
-    Path dataPath = new Path(dbPath, EximUtil.DATA_PATH_NAME);
-    Path tablet1Path = new Path(dataPath, "t1");
-    Path tablet2Path = new Path(dataPath, "t2");
+    Path dataPath = new Path(dumpPath, EximUtil.DATA_PATH_NAME);
+    Path dbPath = new Path(dataPath, primaryDbName.toLowerCase());
+    Path tablet1Path = new Path(dbPath, "t1");
+    Path tablet2Path = new Path(dbPath, "t2");
     long modifiedTimeTable1 = fs.getFileStatus(tablet1Path).getModificationTime();
     long modifiedTimeTable2 = fs.getFileStatus(tablet2Path).getModificationTime();
     //Delete table 2 data
@@ -896,13 +896,14 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     FileSystem fs = new Path(bootstrapDump.dumpLocation).getFileSystem(conf);
     Path dumpPath = new Path(bootstrapDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
     assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
-    Path dbPath = new Path(dumpPath, primaryDbName.toLowerCase());
+
 
     //Delete dump ack and t2 data, Also drop table. New data will be there in target
     fs.delete(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString()), true);
     assertFalse(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
-    Path dataPath = new Path(dbPath, EximUtil.DATA_PATH_NAME);
-    Path tablet2Path = new Path(dataPath, "t2");
+    Path dataPath = new Path(dumpPath, EximUtil.DATA_PATH_NAME);
+    Path dbPath = new Path(dataPath, primaryDbName.toLowerCase());
+    Path tablet2Path = new Path(dbPath, "t2");
     FileStatus[] statuses = fs.listStatus(tablet2Path);
     //Delete t2 data.
     fs.delete(statuses[0].getPath(), true);

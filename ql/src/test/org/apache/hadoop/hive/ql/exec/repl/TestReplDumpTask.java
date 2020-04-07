@@ -84,7 +84,7 @@ public class TestReplDumpTask {
     }
 
     @Override
-    void dumpFunctionMetadata(String dbName, Path metadataRoot, Hive hiveDb) {
+    void dumpFunctionMetadata(String dbName, Path dbMetadataRoot, Hive hiveDb) {
     }
 
     @Override
@@ -128,7 +128,8 @@ public class TestReplDumpTask {
       private int tableDumpCount = 0;
 
       @Override
-      List<EximUtil.ManagedTableCopyPath> dumpTable(String dbName, String tblName, String validTxnList, Path dbRoot,
+      List<EximUtil.ManagedTableCopyPath> dumpTable(String dbName, String tblName, String validTxnList,
+                                                    Path dbRootMetadata, Path dbRootData,
                                                long lastReplId, Hive hiveDb,
                                                HiveWrapper.Tuple<Table> tuple)
           throws Exception {
@@ -146,7 +147,7 @@ public class TestReplDumpTask {
     );
 
     try {
-      task.bootStrapDump(mock(Path.class), null, mock(Path.class), hive);
+      task.bootStrapDump(new Path("mock"), null, mock(Path.class), hive);
     } finally {
       verifyStatic();
       Utils.resetDbBootstrapDumpState(same(hive), eq("default"), eq(dbRandomKey));

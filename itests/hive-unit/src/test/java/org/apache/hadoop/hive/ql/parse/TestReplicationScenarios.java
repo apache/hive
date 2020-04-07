@@ -1441,9 +1441,8 @@ public class TestReplicationScenarios {
     Path path = new Path(System.getProperty("test.warehouse.dir", ""));
     String tableRelativeSrcPath = dbName.toLowerCase()+".db" + File.separator + "unptned";
     Path srcFileLocation = new Path(path, tableRelativeSrcPath + File.separator + unptnedFileName1);
-    String tgtFileRelativePath = ReplUtils.REPL_HIVE_BASE_DIR + File.separator + dbName.toLowerCase()
-            + File.separator + EximUtil.DATA_PATH_NAME + File.separator
-            + "unptned" +File.separator + unptnedFileName1;
+    String tgtFileRelativePath = ReplUtils.REPL_HIVE_BASE_DIR + File.separator + EximUtil.DATA_PATH_NAME
+            + File.separator + dbName.toLowerCase() + File.separator + "unptned" +File.separator + unptnedFileName1;
     Path tgtFileLocation = new Path(dump.dumpLocation, tgtFileRelativePath);
     //A file in table at src location should be copied to $dumplocation/hive/<db>/<table>/data/<unptned_fileName>
     verifyChecksum(srcFileLocation, tgtFileLocation, true);
@@ -1452,9 +1451,9 @@ public class TestReplicationScenarios {
 
     String partitionRelativeSrcPath = dbName.toLowerCase()+".db" + File.separator + "ptned" + File.separator + "b=1";
     srcFileLocation = new Path(path, partitionRelativeSrcPath + File.separator + ptnedFileName1);
-    tgtFileRelativePath = ReplUtils.REPL_HIVE_BASE_DIR + File.separator + dbName.toLowerCase()
-            + File.separator + EximUtil.DATA_PATH_NAME +File.separator
-            + "ptned" + File.separator + "b=1" + File.separator
+    tgtFileRelativePath = ReplUtils.REPL_HIVE_BASE_DIR + File.separator + EximUtil.DATA_PATH_NAME
+            + File.separator + dbName.toLowerCase()
+            + File.separator + "ptned" + File.separator + "b=1" + File.separator
             + ptnedFileName1;
     tgtFileLocation = new Path(dump.dumpLocation, tgtFileRelativePath);
     //A partitioned file in table at src location should be copied to

@@ -23,7 +23,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.ReplicationState;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.BootstrapEvent;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
-import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.repl.load.log.BootstrapLoadLogger;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 
@@ -82,8 +81,11 @@ public class BootstrapEventsIterator implements Iterator<BootstrapEvent> {
           throws IOException {
     Path path = new Path(dumpDirectory);
     FileSystem fileSystem = path.getFileSystem(hiveConf);
+    if (!fileSystem.exists(path)) {
+      throw new IllegalArgumentException("No data to load in path " + dumpDirectory);
+    }
     FileStatus[] fileStatuses =
-        fileSystem.listStatus(new Path(dumpDirectory), ReplUtils.getBootstrapDirectoryFilter(fileSystem));
+        fileSystem.listStatus(path, ReplUtils.getBootstrapDirectoryFilter(fileSystem));
     if ((fileStatuses == null) || (fileStatuses.length == 0)) {
       throw new IllegalArgumentException("No data to load in path " + dumpDirectory);
     }
@@ -162,12 +164,11 @@ public class BootstrapEventsIterator implements Iterator<BootstrapEvent> {
   private void initReplLogger() {
     try {
       Path dbDumpPath = currentDatabaseIterator.dbLevelPath();
-      Path metadataPath = new Path(dbDumpPath, EximUtil.METADATA_PATH_NAME);
       FileSystem fs = dbDumpPath.getFileSystem(hiveConf);
 
-      long numTables = getSubDirs(fs, metadataPath).length;
+      long numTables = getSubDirs(fs, dbDumpPath).length;
       long numFunctions = 0;
-      Path funcPath = new Path(metadataPath, ReplUtils.FUNCTIONS_ROOT_DIR_NAME);
+      Path funcPath = new Path(dbDumpPath, ReplUtils.FUNCTIONS_ROOT_DIR_NAME);
       if (fs.exists(funcPath)) {
         numFunctions = getSubDirs(fs, funcPath).length;
       }

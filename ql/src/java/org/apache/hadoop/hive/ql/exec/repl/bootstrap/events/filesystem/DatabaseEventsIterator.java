@@ -57,7 +57,7 @@ class DatabaseEventsIterator implements Iterator<BootstrapEvent> {
     this.hiveConf = hiveConf;
     FileSystem fileSystem = dbLevelPath.getFileSystem(hiveConf);
     // this is only there for the use case where we are doing table only replication and not database level
-    if (!fileSystem.exists(new Path(new Path(dbLevelPath, EximUtil.METADATA_PATH_NAME), EximUtil.METADATA_NAME))) {
+    if (!fileSystem.exists(new Path(dbLevelPath, EximUtil.METADATA_NAME))) {
       databaseEventProcessed = true;
     }
 
@@ -80,7 +80,7 @@ class DatabaseEventsIterator implements Iterator<BootstrapEvent> {
         }
       };
     } else {
-      remoteIterator = fileSystem.listFiles(new Path(dbLevelPath, EximUtil.METADATA_PATH_NAME), true);
+      remoteIterator = fileSystem.listFiles(dbLevelPath, true);
     }
   }
 
@@ -115,7 +115,7 @@ class DatabaseEventsIterator implements Iterator<BootstrapEvent> {
   public boolean hasNext() {
     try {
       if (!databaseEventProcessed) {
-        next = new Path(dbLevelPath, EximUtil.METADATA_PATH_NAME);
+        next = dbLevelPath;
         return true;
       }
 
@@ -130,7 +130,7 @@ class DatabaseEventsIterator implements Iterator<BootstrapEvent> {
           }
           if (next.getPath().toString().endsWith(EximUtil.METADATA_NAME)) {
             String replacedString = next.getPath().toString()
-                    .replace(new Path(dbLevelPath, EximUtil.METADATA_PATH_NAME).toString(), "");
+                    .replace(dbLevelPath.toString(), "");
             List<String> filteredNames = Arrays.stream(replacedString.split(Path.SEPARATOR))
                 .filter(StringUtils::isNotBlank)
                 .collect(Collectors.toList());
@@ -176,7 +176,14 @@ class DatabaseEventsIterator implements Iterator<BootstrapEvent> {
       return postProcessing(new FSFunctionEvent(next));
     }
     return postProcessing(new FSTableEvent(hiveConf, next.toString(),
-            new Path(new Path(dbLevelPath, EximUtil.DATA_PATH_NAME), next.getName()).toString()));
+            new Path(getDbLevelDataPath(), next.getName()).toString()));
+  }
+
+  private Path getDbLevelDataPath() {
+    if (dbLevelPath.toString().contains(Path.SEPARATOR + ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME + Path.SEPARATOR)) {
+      return new Path(dbLevelPath, EximUtil.DATA_PATH_NAME);
+    }
+    return new Path(new Path(dbLevelPath.getParent().getParent(), EximUtil.DATA_PATH_NAME), dbLevelPath.getName());
   }
 
   private BootstrapEvent postProcessing(BootstrapEvent bootstrapEvent) {
@@ -190,7 +197,7 @@ class DatabaseEventsIterator implements Iterator<BootstrapEvent> {
     if (replicationState.partitionState != null) {
       BootstrapEvent
           bootstrapEvent = new FSPartitionEvent(hiveConf, previous.toString(),
-              new Path(new Path(dbLevelPath, EximUtil.DATA_PATH_NAME), previous.getName()).toString(),
+              new Path(getDbLevelDataPath(), previous.getName()).toString(),
               replicationState);
       replicationState = null;
       return bootstrapEvent;
