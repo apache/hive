@@ -29,6 +29,7 @@ import org.apache.hive.service.rpc.thrift.TExecuteStatementReq;
 import org.apache.hive.service.rpc.thrift.TExecuteStatementResp;
 import org.apache.hive.service.rpc.thrift.TFetchResultsReq;
 import org.apache.hive.service.rpc.thrift.TFetchResultsResp;
+import org.apache.hive.service.rpc.thrift.THandleIdentifier;
 import org.apache.hive.service.rpc.thrift.TOpenSessionReq;
 import org.apache.hive.service.rpc.thrift.TOpenSessionResp;
 import org.apache.hive.service.rpc.thrift.TOperationHandle;
@@ -36,6 +37,9 @@ import org.apache.hive.service.rpc.thrift.TProtocolVersion;
 import org.apache.hive.service.rpc.thrift.TRowSet;
 import org.apache.hive.service.rpc.thrift.TSessionHandle;
 import org.apache.hive.service.rpc.thrift.TStatus;
+import org.apache.impala.thrift.TBackendGflags;
+import org.apache.impala.thrift.TGetBackendConfigReq;
+import org.apache.impala.thrift.TGetBackendConfigResp;
 import org.apache.impala.thrift.ImpalaHiveServer2Service;
 import org.apache.impala.thrift.TExecRequest;
 import org.apache.impala.thrift.TExecutePlannedStatementReq;
@@ -43,6 +47,8 @@ import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.stream.Collectors;
+import java.util.Map;
 import java.util.Random;
 
 /**
@@ -57,26 +63,29 @@ public class ImpalaSession {
     private ImpalaHiveServer2Service.Client client;
     /* Session handle. Only valid after successful open */
     private TSessionHandle sessionHandle;
+    /* Query options */
+    private Map<String,String> sessionConfig;
     /* Address of server this session was created for */
-    private final String address;
+    private String address;
     /* Generates random numbers for RPC retry sleeps */
     private final Random randGen = new Random();
     /* Initial starting point for sleeps (in milliseconds) */
-    private final int startSleep;
+    private int startSleep;
     /* Maximum sleep time (in milliseconds) */
-    private final int maxSleep;
+    private int maxSleep;
     /* Max retries */
-    private final int maxRetries;
+    private int maxRetries;
     /* Sleep between row fetch status checks */
-    private final int rowFetchSleep;
+    private int rowFetchSleep;
     /* Max retries for row fetching */
-    private final int rowFetchMaxRetries;
+    private int rowFetchMaxRetries;
     /* Underlying configured TSocket timeout */
-    private final int connectionTimeout;
+    private int connectionTimeout;
 
 
-    ImpalaSession(HiveConf conf) {
-        this(conf.getVar(HiveConf.ConfVars.HIVE_IMPALA_ADDRESS),
+    public ImpalaSession(HiveConf conf) { init(conf); }
+    public void init(HiveConf conf) {
+        init(conf.getVar(HiveConf.ConfVars.HIVE_IMPALA_ADDRESS),
                 conf.getIntVar(HiveConf.ConfVars.HIVE_IMPALA_RPC_START_RETRY_SLEEP),
                 conf.getIntVar(HiveConf.ConfVars.HIVE_IMPALA_RPC_MAX_RETRY_SLEEP),
                 conf.getIntVar(HiveConf.ConfVars.HIVE_IMPALA_RPC_RETRY_LIMIT),
@@ -85,7 +94,7 @@ public class ImpalaSession {
                 conf.getIntVar(HiveConf.ConfVars.HIVE_IMPALA_RPC_TIMEOUT));
     }
 
-    ImpalaSession(String address, int startSleep, int maxSleep, int maxRetries, int rowFetchSleep,
+    void init(String address, int startSleep, int maxSleep, int maxRetries, int rowFetchSleep,
                   int rowFetchMaxRetries, int connectionTimeout) {
         this.address = address;
         this.startSleep = startSleep;
@@ -177,15 +186,21 @@ public class ImpalaSession {
      * an HiveException if an error is encountered.
      */
     private boolean checkThriftStatus(TStatus status) throws HiveException {
+        String errmsg;
         switch (status.getStatusCode()) {
             case SUCCESS_STATUS:
             case SUCCESS_WITH_INFO_STATUS:
                 return false;
             case ERROR_STATUS:
-                throw new HiveException(String.format("Thrift call failed for server %s error: %s",
-                    connection, status.getErrorMessage()));
+                errmsg = String.format(
+                    "Thrift call failed for server %s error: %s",
+                    connection, status.getErrorMessage());
+                closeImpl();
+                throw new HiveException(errmsg);
             case INVALID_HANDLE_STATUS:
-                throw new HiveException("Invalid handle for server " + connection);
+                errmsg = "Invalid handle for server " + connection;
+                closeImpl();
+                throw new HiveException(errmsg);
             case STILL_EXECUTING_STATUS:
                 return true;
         }
@@ -193,7 +208,7 @@ public class ImpalaSession {
     }
 
     /* Given a valid TOperationHandle attempts to retrieve rows from Impala. */
-    public TRowSet fetch(TOperationHandle opHandle, int fetchSize) throws HiveException {
+    public TRowSet fetch(TOperationHandle opHandle, long fetchSize) throws HiveException {
         Preconditions.checkNotNull(opHandle);
         Preconditions.checkNotNull(client);
         Preconditions.checkNotNull(sessionHandle);
@@ -270,7 +285,27 @@ public class ImpalaSession {
         connection = new ImpalaConnection(address, connectionTimeout);
         client = connection.getClient();
     }
+    /* Retrieve BackendConfig from impalad */
+    public TBackendGflags getBackendConfig() throws HiveException {
+        Preconditions.checkNotNull(client);
+        Preconditions.checkNotNull(sessionHandle);
 
+        TGetBackendConfigReq req = new TGetBackendConfigReq();
+        req.setSessionHandle(sessionHandle);
+        TGetBackendConfigResp resp;
+        try {
+            resp = client.GetBackendConfig(req);
+        } catch (Exception e) {
+            throw new HiveException(e);
+        }
+
+        checkThriftStatus(resp.getStatus());
+        return resp.getBackend_config();
+    }
+
+    public boolean isOpen() {
+        return client != null;
+    }
     /* Opens an Impala session */
     public void open() throws HiveException {
         // we've already called open
@@ -282,6 +317,13 @@ public class ImpalaSession {
 
         TOpenSessionReq req = new TOpenSessionReq();
         req.setUsername(SessionState.get().getUserName());
+
+        // Copy Impala conf variables to Open request
+        req.setConfiguration(
+             SessionState.get().getConf().subtree("impala").entrySet().stream()
+             .filter(e -> !e.getKey().equals("core-site.overridden"))
+             .collect(Collectors.toMap(Map.Entry::getKey,Map.Entry::getValue)));
+
         // CDPD-6958: Investigate columnar vs row oriented result sets from Impala
         // This is to force Impala to send back row oriented data (V6 and above returns columnar
         req.setClient_protocol(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V5);
@@ -289,10 +331,20 @@ public class ImpalaSession {
         TOpenSessionResp resp = RetryRPC("OpenSession", (c) -> c.OpenSession(req));
         checkThriftStatus(resp.getStatus());
         sessionHandle = resp.getSessionHandle();
+        sessionConfig = resp.getConfiguration();
     }
 
     private void closeImpl() {
+        client = null;
         connection.close();
+        connection = null;
+    }
+
+    public THandleIdentifier getSessionId() {
+        return sessionHandle.getSessionId();
+    }
+    public Map<String,String> getSessionConfig() {
+        return sessionConfig;
     }
 
     /* Closes an Impala session */
@@ -308,7 +360,7 @@ public class ImpalaSession {
             checkThriftStatus(resp.getStatus());
         } catch (Exception e) {
             // ignore TStatus error on close because there is nothing user actionable, but report it in log
-            LOG.warn("Failed to close session ({}) to Impala coordinator ({})", sessionHandle.getSessionId(), address,
+            LOG.warn("Failed to close session ({}) to Impala coordinator ({})", getSessionId(), address,
                     e);
         }
         if (connection != null) {

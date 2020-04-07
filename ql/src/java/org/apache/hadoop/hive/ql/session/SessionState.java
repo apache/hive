@@ -77,6 +77,8 @@ import org.apache.hadoop.hive.ql.exec.AddToClassPathAction;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.Registry;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.impala.ImpalaSession;
+import org.apache.hadoop.hive.ql.exec.impala.ImpalaSessionManager;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSession;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManagerImpl;
 import org.apache.hadoop.hive.ql.exec.tez.ExternalSessionsRegistry;
@@ -256,6 +258,8 @@ public class SessionState {
       "hive.internal.ss.authz.settings.applied.marker";
 
   private String userIpAddress;
+
+  private ImpalaSession impalaSession;
 
   private SparkSession sparkSession;
 
@@ -1890,6 +1894,7 @@ public class SessionState {
 
     try {
       closeSparkSession();
+      closeImpalaSession();
       registry.closeCUDFLoaders();
       dropSessionPaths(sessionConf);
       unCacheDataNucleusClassLoaders();
@@ -1933,6 +1938,18 @@ public class SessionState {
         LOG.error("Error closing spark session.", ex);
       } finally {
         sparkSession = null;
+      }
+    }
+  }
+
+  public void closeImpalaSession() {
+    if (impalaSession != null) {
+      try {
+        ImpalaSessionManager.getInstance().closeSession(impalaSession);
+      } catch (Exception ex) {
+        LOG.error("Error closing impala session.", ex);
+      } finally {
+        impalaSession = null;
       }
     }
   }
@@ -2035,6 +2052,14 @@ public class SessionState {
    */
   public void setUserIpAddress(String userIpAddress) {
     this.userIpAddress = userIpAddress;
+  }
+
+  public ImpalaSession getImpalaSession() {
+    return impalaSession;
+  }
+
+  public void setImpalaSession(ImpalaSession impalaSession) {
+    this.impalaSession = impalaSession;
   }
 
   public SparkSession getSparkSession() {

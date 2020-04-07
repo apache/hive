@@ -46,9 +46,9 @@ public class ImpalaCompiler extends TaskCompiler {
     /* When isPlanned is true, a fully planned ExecRequest is expected, otherwise we expect only a query string */
     private boolean isPlanned;
     /* Number of rows fetch from Impala per fetch when streaming */
-    private int requestedFetchSize;
+    private long requestedFetchSize;
 
-    ImpalaCompiler(boolean isPlanned, int requestedFetchSize) {
+    ImpalaCompiler(boolean isPlanned, long requestedFetchSize) {
         this.isPlanned = isPlanned;
         this.requestedFetchSize = requestedFetchSize;
     }

@@ -266,6 +266,9 @@ public class SetProcessor implements CommandProcessor {
       if (!"spark".equals(value)) {
         ss.closeSparkSession();
       }
+      if (!"impala".equals(value)) {
+        ss.closeImpalaSession();
+      }
     }
     if (HiveConf.ConfVars.CREATE_TABLE_AS_EXTERNAL.varname.equals(key)) {
       result = HiveConf.generateDeprecationWarning();

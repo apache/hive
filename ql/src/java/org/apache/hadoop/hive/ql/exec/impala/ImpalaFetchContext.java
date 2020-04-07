@@ -17,7 +17,12 @@
  */
 package org.apache.hadoop.hive.ql.exec.impala;
 
+import com.google.common.base.Preconditions;
+
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+
 import org.apache.hive.service.rpc.thrift.TOperationHandle;
+import org.apache.hive.service.rpc.thrift.TRowSet;
 
 /**
  * Context with information required to stream results from an Impala coordinator.
@@ -28,27 +33,25 @@ public class ImpalaFetchContext {
     /* Operation handled associated with requested execution mode */
     private TOperationHandle operationHandle;
     /* Desired fetch size */
-    private final int fetchSize;
+    private final long fetchSize;
 
-    ImpalaFetchContext(ImpalaSession session, TOperationHandle operationHandle, int fetchSize) {
+    ImpalaFetchContext(ImpalaSession session, TOperationHandle operationHandle, long fetchSize) {
+        Preconditions.checkNotNull(session);
+        Preconditions.checkNotNull(operationHandle);
+        Preconditions.checkArgument(fetchSize > 0);
         this.session = session;
         this.operationHandle = operationHandle;
         this.fetchSize = fetchSize;
     }
 
-    public ImpalaSession getSession() {
-        return session;
+    public TRowSet fetch() throws HiveException {
+        return session.fetch(operationHandle, fetchSize);
     }
 
-    public int getFetchSize() {
-        return fetchSize;
-    }
-
-    public TOperationHandle getOperationHandle() {
-        return operationHandle;
-    }
-
-    public void clearOperationHandle() {
-        operationHandle = null;
+    public void close() throws HiveException {
+        if (operationHandle != null) {
+            session.closeOperation(operationHandle);
+            operationHandle = null;
+        }
     }
 }

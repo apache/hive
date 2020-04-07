@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.exec.impala;
 
-import com.google.common.base.Preconditions;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
@@ -55,8 +54,6 @@ public class ImpalaStreamingFetchOperator extends FetchOperator {
     private TRowSet rowSet = null;
     /* Next position in rowSet */
     private int rowSetPosition = 0;
-    /* Close operator called */
-    private boolean operatorClosed = false;
 
     public ImpalaStreamingFetchOperator(FetchWork work, JobConf job, Operator<?> operator,
                                         List<VirtualColumn> vcCols, Schema resultSchema) throws HiveException {
@@ -112,16 +109,10 @@ public class ImpalaStreamingFetchOperator extends FetchOperator {
 
     @Override
     public InspectableObject getNextRow() throws IOException {
-        // We've already called closeOperator
-        if (context.getOperationHandle() == null) {
-            Preconditions.checkState(operatorClosed == true);
-            return null;
-        }
-
         try {
             if (rowSet == null || rowSetPosition >= rowSet.getRowsSize()) {
                 rowSetPosition = 0;
-                rowSet = context.getSession().fetch(context.getOperationHandle(), context.getFetchSize());
+                rowSet = context.fetch();
             }
         } catch (Exception e) {
             return null;
@@ -145,13 +136,8 @@ public class ImpalaStreamingFetchOperator extends FetchOperator {
     public void closeOperator() throws HiveException {
         // Fetch driver ends up calling closeOperator multiple times to flush results. In streaming mode we want to
         // only call close once.
-        if (context.getOperationHandle() != null) {
-            ImpalaSession session = context.getSession();
-            session.closeOperation(context.getOperationHandle());
-            context.clearOperationHandle();
-            session.close();
-            operatorClosed = true;
-        }
+        context.close();
+        rowSet = null;
     }
 
     @Override

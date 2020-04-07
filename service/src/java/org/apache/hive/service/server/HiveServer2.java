@@ -68,6 +68,7 @@ import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
+import org.apache.hadoop.hive.ql.exec.impala.ImpalaSessionManager;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManagerImpl;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
 import org.apache.hadoop.hive.ql.exec.tez.WorkloadManager;
@@ -953,11 +954,21 @@ public class HiveServer2 extends CompositeService {
 
     stopOrDisconnectTezSessions(true);
 
-    if (hiveConf != null && hiveConf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
-      try {
-        SparkSessionManagerImpl.getInstance().shutdown();
-      } catch(Exception ex) {
-        LOG.error("Spark session pool manager failed to stop during HiveServer2 shutdown.", ex);
+    if (hiveConf != null) {
+      if (hiveConf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
+        try {
+          SparkSessionManagerImpl.getInstance().shutdown();
+        } catch(Exception ex) {
+          LOG.error("Spark session pool manager failed to stop during HiveServer2 shutdown.", ex);
+        }
+      }
+
+      if (hiveConf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("impala")) {
+        try {
+          ImpalaSessionManager.getInstance().shutdown();
+        } catch(Exception ex) {
+          LOG.error("Impala session pool manager failed to stop during HiveServer2 shutdown.", ex);
+        }
       }
     }
 
@@ -1095,6 +1106,8 @@ public class HiveServer2 extends CompositeService {
 
         if (hiveConf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
           SparkSessionManagerImpl.getInstance().setup(hiveConf);
+        } else if (hiveConf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("impala")) {
+          ImpalaSessionManager.getInstance().setup(hiveConf);
         }
         break;
       } catch (Throwable throwable) {

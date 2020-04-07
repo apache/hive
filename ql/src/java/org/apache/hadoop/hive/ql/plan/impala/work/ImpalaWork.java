@@ -36,16 +36,16 @@ public class ImpalaWork implements Serializable {
     /* Fetch task associated with this work. */
     private final FetchTask fetch;
     /* Desired row batch size (number of rows returned in each request) */
-    private int fetchSize;
+    private long fetchSize;
 
-    public ImpalaWork(TExecRequest execRequest, String query, FetchTask fetch, int fetchSize) {
+    public ImpalaWork(TExecRequest execRequest, String query, FetchTask fetch, long fetchSize) {
         this.execRequest = execRequest;
         this.query = query;
         this.fetch = fetch;
         this.fetchSize = fetchSize;
     }
 
-    public ImpalaWork(String query, FetchTask fetch, int rowBatchSize) {
+    public ImpalaWork(String query, FetchTask fetch, long rowBatchSize) {
         this(null, query, fetch, rowBatchSize);
     }
 
@@ -70,7 +70,7 @@ public class ImpalaWork implements Serializable {
         return fetch;
     }
 
-    public int getFetchSize() {
+    public long getFetchSize() {
         return fetchSize;
     }
 }

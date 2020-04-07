@@ -22,21 +22,23 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.exec.impala.ImpalaSession;
+import org.apache.hadoop.hive.ql.exec.impala.ImpalaSessionManager;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.impala.analysis.Expr;
 import org.apache.impala.analysis.StmtMetadataLoader;
 import org.apache.impala.authorization.AuthorizationFactory;
 import org.apache.impala.authorization.NoopAuthorizationFactory;
 import org.apache.impala.common.ImpalaException;
+import org.apache.impala.common.InternalException;
 import org.apache.impala.planner.DistributedPlanner;
 import org.apache.impala.planner.PlanFragment;
 import org.apache.impala.planner.PlanNode;
 import org.apache.impala.planner.PlanRootSink;
 import org.apache.impala.planner.Planner;
 import org.apache.impala.planner.RuntimeFilterGenerator;
-import org.apache.impala.service.BackendConfig;
 import org.apache.impala.service.FeSupport;
 import org.apache.impala.service.Frontend;
-import org.apache.impala.thrift.TBackendGflags;
 import org.apache.impala.thrift.TClientRequest;
 import org.apache.impala.thrift.TColumn;
 import org.apache.impala.thrift.TExecRequest;
@@ -66,6 +68,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
+import java.util.stream.Collectors;
 
 /**
  * The ImpalaPlanner encapsulates selected functionality from Impala's Frontend and
@@ -81,12 +84,11 @@ public class ImpalaPlanner {
   private ImpalaPlannerContext ctx_;
   private List<TNetworkAddress> hostLocations = new ArrayList<>();
 
-  public ImpalaPlanner(String dbname, String username) {
+  public ImpalaPlanner(String dbname, String username) throws HiveException {
 
     HiveConf conf = SessionState.get().getConf();
-    TQueryOptions options = createDefaultQueryOptions(conf);
 
-    initBackendConfig();;
+    TQueryOptions options = createDefaultQueryOptions(conf);
 
     // TODO: replace hostname and port with configured parameter settings
     hostLocations.add(new TNetworkAddress("127.0.0.1", 22000));
@@ -112,13 +114,14 @@ public class ImpalaPlanner {
    */
   public TExecRequest createExecRequest(PlanNode planNodeRoot) throws ImpalaException {
     // Create the values transfer graph in the Analyzer. Note that FENG plans
-    // don't register equijoin predicates in the Analyzer's GlobalState since 
+    // don't register equijoin predicates in the Analyzer's GlobalState since
     // Hive/Calcite should have already done the predicate inferencing analysis.
     // Hence, the GlobalState's registeredValueTransfers will be empty. It is
     // still necessary to instantiate the graph because otherwise
     // RuntimeFilterGenerator tries to de-reference it and encounters NPE.
     // TODO: CDPD-9689 tracks if we are missing any runtime filters compared
     // to Impala
+
     ctx_.getRootAnalyzer().computeValueTransferGraph();
     List<PlanFragment> fragments = createPlanFragments(planNodeRoot);
     Preconditions.checkArgument(fragments.size() > 0);
@@ -241,8 +244,28 @@ public class ImpalaPlanner {
     return TStmtType.QUERY;
   }
 
-  private TQueryOptions createDefaultQueryOptions(HiveConf conf) {
-    TQueryOptions options = new TQueryOptions();
+  private TQueryOptions createDefaultQueryOptions(HiveConf conf) throws HiveException {
+
+
+    ImpalaSession session = ImpalaSessionManager.getInstance().getSession(conf);
+
+    // Collect the option settings that are returned in the HS2 session
+    // config and generate a comma separated string apply using FeSupport
+    // http_addr is added by HS2 and will cause an error if not removed
+    String csvQueryOptions = session.getSessionConfig().entrySet().stream()
+       .filter(e -> !e.getKey().equals("http_addr"))
+       .map(e -> e.getKey() + "=" + e.getValue())
+       .collect(Collectors.joining(","));
+
+    // Overlay defaults from Impala backend option settings
+    TQueryOptions options;
+    try {
+        options = FeSupport.ParseQueryOptions(csvQueryOptions,
+            new TQueryOptions());
+    } catch (InternalException e) {
+        throw new HiveException("createDefaultQueryOptions", e);
+    }
+
     // TODO: Fill in session options
     options.setNum_nodes(2);
     options.setParquet_dictionary_filtering(
@@ -305,80 +328,4 @@ public class ImpalaPlanner {
     return queryCtx;
   }
 
-  private void initBackendConfig() {
-    if (BackendConfig.INSTANCE == null) {
-      // TODO: CDPD-7427: Retrieve BackendConfig from Impalad
-      final TBackendGflags cfg = new TBackendGflags();
-      cfg.setSentry_config("");
-      cfg.setLoad_auth_to_local_rules(false);
-      cfg.setNon_impala_java_vlog(3);
-      cfg.setImpala_log_lvl(2);
-      cfg.setInc_stats_size_limit_bytes(209715200);
-      cfg.setLineage_event_log_dir("");
-      cfg.setLoad_catalog_in_background(false);
-      cfg.setNum_metadata_loading_threads(16);
-      cfg.setPrincipal("");
-      cfg.setServer_name("");
-      cfg.setAuthorization_policy_provider_class("org.apache.sentry.provider.common.HadoopGroupResourceAuthorizationProvider");
-      cfg.setKudu_master_hosts("localhost");
-      cfg.setLocal_library_path("/tmp");
-      cfg.setRead_size(8388608);
-      cfg.setKudu_operation_timeout_ms(180000);
-      cfg.setInitial_hms_cnxn_timeout_s(120);
-      cfg.setEnable_stats_extrapolation(false);
-      cfg.setSentry_catalog_polling_frequency_s(60);
-      cfg.setMax_hdfs_partitions_parallel_load(5);
-      cfg.setMax_nonhdfs_partitions_parallel_load(20);
-      cfg.setReserved_words_version(TReservedWordsVersion.IMPALA_3_0);
-      cfg.setMax_filter_error_rate(0.75);
-      cfg.setMin_buffer_size(8192);
-      cfg.setEnable_orc_scanner(true);
-      cfg.setAuthorized_proxy_group_config("");
-      cfg.setUse_local_catalog(false);
-      cfg.setDisable_catalog_data_ops_debug_only(false);
-      cfg.setLocal_catalog_cache_mb(-1);
-      cfg.setLocal_catalog_cache_expiration_s(3600);
-      cfg.setCatalog_topic_mode("full");
-      cfg.setInvalidate_tables_timeout_s(0);
-      cfg.setInvalidate_tables_on_memory_pressure(false);
-      cfg.setInvalidate_tables_gc_old_gen_full_threshold(0.6);
-      cfg.setInvalidate_tables_fraction_on_memory_pressure(0.1);
-      cfg.setLocal_catalog_max_fetch_retries(40);
-      cfg.setKudu_scanner_thread_estimated_bytes_per_column(393216);
-      cfg.setKudu_scanner_thread_max_estimated_bytes(33554432);
-      cfg.setCatalog_max_parallel_partial_fetch_rpc(32);
-      cfg.setCatalog_partial_fetch_rpc_queue_timeout_s(Long.MAX_VALUE);
-      cfg.setExchg_node_buffer_size_bytes(10485760);
-      cfg.setKudu_mutation_buffer_size(10485760);
-      cfg.setKudu_error_buffer_size(10485760);
-      cfg.setHms_event_polling_interval_s(0);
-      cfg.setImpala_build_version("3.4.0-SNAPSHOT");
-      cfg.setAuthorization_factory_class("");
-      cfg.setUnlock_mt_dop(false);
-      cfg.setRanger_service_type("hive");
-      cfg.setRanger_app_id("");
-      cfg.setAuthorization_provider("ranger");
-      cfg.setRecursively_list_partitions(true);
-      cfg.setQuery_event_hook_classes("");
-      cfg.setQuery_event_hook_nthreads(1);
-      cfg.setIs_executor(true);
-      cfg.setUse_dedicated_coordinator_estimates(true);
-      cfg.setBlacklisted_dbs("sys,information_schema");
-      cfg.setBlacklisted_tables("");
-      cfg.setUnlock_zorder_sort(false);
-      // TODO: Determine the appropriate default value
-      cfg.setMin_privilege_set_for_show_stmts("");
-      cfg.setMt_dop_auto_fallback(false);
-
-      try {
-        FeSupport.loadLibrary(true);
-      } catch (RuntimeException e) {
-        LOG.warn("initBackendConfig", e);
-      }
-      BackendConfig.create(cfg,
-          false /* don't initialize SqlScanner or AuthToLocal */);
-    }
-  }
-
 }
-

@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.TaskQueue;
 import org.apache.hadoop.hive.ql.exec.FetchOperator;
+import org.apache.hadoop.hive.ql.exec.impala.ImpalaSessionManager;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -35,15 +36,6 @@ import org.apache.hive.service.rpc.thrift.TOperationHandle;
  * or plan and passes the context required for the ImpalaStreamingFetchOperator to retrieve the execution results.
  */
 public class ImpalaTask extends Task<ImpalaWork> {
-    ImpalaSession session = null;
-
-    @Override
-    public void shutdown() {
-        LOG.info("ImpalaTask shutdown()");
-        if (session != null) {
-            session.close();
-        }
-    }
 
     @Override
     public void initialize(QueryState queryState, QueryPlan queryPlan, TaskQueue taskQueue, Context context) {
@@ -54,13 +46,11 @@ public class ImpalaTask extends Task<ImpalaWork> {
     public int execute() {
         // zero is success, non-zero is failure
         int rc = 0;
+        ImpalaSessionManager impalaSessionManager = null;
         try {
-            // CDPD-6966: Cache Impala Session connection for a user
-            // Currently this is recreated with each query.
-            session = new ImpalaSession(getQueryState().getConf());
-            session.open();
-
-            ImpalaWork work = getWork();
+            ImpalaSession session =
+                ImpalaSessionManager.getInstance().getSession(
+                    getQueryState().getConf());
             TOperationHandle opHandle = null;
             if (work.hasPlannedWork()) {
                 opHandle = session.executePlan(work.getQuery(), work.getExecRequest());

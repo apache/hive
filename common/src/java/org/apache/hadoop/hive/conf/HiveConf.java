@@ -99,14 +99,23 @@ public class HiveConf extends Configuration {
 
   private Pattern modWhiteListPattern = null;
   private volatile boolean isSparkConfigUpdated = false;
+  private volatile boolean isImpalaConfigUpdated = false;
   private static final int LOG_PREFIX_LENGTH = 64;
 
   public boolean getSparkConfigUpdated() {
     return isSparkConfigUpdated;
   }
 
+  public boolean getImpalaConfigUpdated() {
+    return isImpalaConfigUpdated;
+  }
+
   public void setSparkConfigUpdated(boolean isSparkConfigUpdated) {
     this.isSparkConfigUpdated = isSparkConfigUpdated;
+  }
+
+  public void setImpalaConfigUpdated(boolean isImpalaConfigUpdated) {
+    this.isImpalaConfigUpdated = isImpalaConfigUpdated;
   }
 
   /**
@@ -4050,7 +4059,8 @@ public class HiveConf extends Configuration {
             "Chooses whether Impala will execute a provided plan or a query string"),
     HIVE_IMPALA_REQUEST_POOL("hive.impala.request.pool", "default-pool",
              new StringSet(true, "default-pool", "root.default"), "Admission pool used for Impala queries"),
-    HIVE_IMPALA_FETCH_SIZE("hive.impala.fetch.size", 1024,
+    HIVE_IMPALA_FETCH_SIZE("hive.impala.fetch.size", 1024L,
+        new RangeValidator(1L, (long)Long.MAX_VALUE),
         "Determines the number of rows per fetch when streaming results from an Impala coordinator"),
     HIVE_IMPALA_ROW_FETCH_RETRY_SLEEP("hive.impala.fetch.sleep", 500,
         "Sleep in milliseconds between attempts to fetch rows when streaming results from Impala"),
@@ -5511,6 +5521,9 @@ public class HiveConf extends Configuration {
       if (isSparkRelatedConfig(name)) {
         isSparkConfigUpdated = true;
       }
+      if (isImpalaRelatedConfig(name)) {
+        isImpalaConfigUpdated = true;
+      }
     }
   }
 
@@ -5552,6 +5565,15 @@ public class HiveConf extends Configuration {
     }
 
     return result;
+  }
+
+  /**
+   * check whether impala related property is updated
+   * @param name
+   * @return
+   */
+  private boolean isImpalaRelatedConfig(String name) {
+    return name.startsWith("impala");
   }
 
   public static int getIntVar(Configuration conf, ConfVars var) {
@@ -5954,6 +5976,7 @@ public class HiveConf extends Configuration {
     hiveJar = other.hiveJar;
     auxJars = other.auxJars;
     isSparkConfigUpdated = other.isSparkConfigUpdated;
+    isImpalaConfigUpdated = other.isImpalaConfigUpdated;
     origProp = (Properties)other.origProp.clone();
     restrictList.addAll(other.restrictList);
     hiddenSet.addAll(other.hiddenSet);
