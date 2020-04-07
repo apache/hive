@@ -34,6 +34,7 @@ import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -80,6 +81,8 @@ import static org.apache.hadoop.hive.metastore.TableType.MANAGED_TABLE;
 public class HiveStrictManagedMigration {
 
   private static final Logger LOG = LoggerFactory.getLogger(HiveStrictManagedMigration.class);
+  @VisibleForTesting
+  static int RC = 0;
 
   public enum TableMigrationOption {
     NONE,      // Do nothing
@@ -194,6 +197,7 @@ public class HiveStrictManagedMigration {
 
   public static void main(String[] args) throws Exception {
     RunOptions runOptions;
+    RC = 0;
 
     try {
       Options opts = createOptions();
@@ -210,7 +214,6 @@ public class HiveStrictManagedMigration {
       throw new Exception("Error processing options", err);
     }
 
-    int rc = 0;
     HiveStrictManagedMigration migration = null;
     try {
       HiveConf conf = hiveConf == null ? new HiveConf() : hiveConf;
@@ -227,7 +230,7 @@ public class HiveStrictManagedMigration {
       migration.run();
     } catch (Exception err) {
       LOG.error("Failed with error", err);
-      rc = -1;
+      RC = -1;
     } finally {
       if (migration != null) {
         migration.cleanup();
@@ -236,7 +239,7 @@ public class HiveStrictManagedMigration {
 
     // TODO: Something is preventing the process from terminating after main(), adding exit() as hacky solution.
     if (hiveConf == null) {
-      System.exit(rc);
+      System.exit(RC);
     }
   }
 
@@ -747,7 +750,13 @@ public class HiveStrictManagedMigration {
         return true;
       }
 
-      Path tablePath = new Path(tableObj.getSd().getLocation());
+      String tablePathString = tableObj.getSd().getLocation();
+      if (StringUtils.isEmpty(tablePathString)) {
+        // When using this tool in full automatic mode (no DB/table regexes and automatic migration option) we may
+        // encounter sysdb / information_schema databases. These should not be moved, they have null location.
+        return true;
+      }
+      Path tablePath = new Path(tablePathString);
 
       boolean shouldMoveTable = modifyLocation && (
           (MANAGED_TABLE.name().equals(tableObj.getTableType()) && runOptions.shouldModifyManagedTableLocation) ||
