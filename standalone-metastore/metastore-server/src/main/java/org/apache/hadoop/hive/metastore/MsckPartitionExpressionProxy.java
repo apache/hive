@@ -89,8 +89,8 @@ public class MsckPartitionExpressionProxy implements PartitionExpressionProxy {
     partitionNames.clear();
     partitionNames.addAll(partNamesSeq);
     LOG.info("The returned partition list is of size: {}", partitionNames.size());
-    for(String s : partitionNames){
-      if (LOG.isDebugEnabled()) {
+    if (LOG.isDebugEnabled()) {
+      for(String s : partitionNames){
         LOG.debug("Matched partition: {}", s);
       }
     }
