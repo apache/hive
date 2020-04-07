@@ -111,20 +111,23 @@ abstract class AbstractEventHandler<T extends EventMessage> implements EventHand
         srcDataFileRelativePath = srcDataFileRelativePath + File.separator + srcDataPath.getName();
       }
       Path targetPath = new Path(dataPath, srcDataFileRelativePath);
-      ReplChangeManager.FileInfo f = ReplChangeManager.getFileInfo(new Path(decodedURISplits[0]),
+      ReplChangeManager.FileInfo fileInfo = ReplChangeManager.getFileInfo(new Path(decodedURISplits[0]),
                   decodedURISplits[1], decodedURISplits[2], decodedURISplits[3], hiveConf);
-      filePaths.add(f);
+      filePaths.add(fileInfo);
       FileSystem dstFs = targetPath.getFileSystem(hiveConf);
       Path finalTargetPath = targetPath.getParent();
-      if (decodedURISplits[3] != null) {
-        finalTargetPath = finalTargetPath.getParent();
+      if (fileInfo.getSubDir() != null) {
+        for (String subDir: fileInfo.getSubDir().split(File.separator)) {
+          LOG.debug("Advancing parent to subDir {}:", subDir);
+          finalTargetPath = finalTargetPath.getParent();
+        }
       }
       if (qltn != null && !finalTargetPath.toString().endsWith(qltn)) {
         finalTargetPath = new Path(finalTargetPath, qltn);
       }
       CopyUtils copyUtils = new CopyUtils(distCpDoAsUser, hiveConf, dstFs);
       copyUtils.copyAndVerify(finalTargetPath, filePaths, srcDataPath);
-      copyUtils.renameFileCopiedFromCmPath(dataPath, dstFs, filePaths);
+      copyUtils.renameFileCopiedFromCmPath(finalTargetPath, dstFs, filePaths);
     }
   }
 }
