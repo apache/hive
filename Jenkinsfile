@@ -82,6 +82,13 @@ podTemplate(
 spec:
   securityContext:
     fsGroup: 1000
+  tolerations:
+    - key: "type"
+      operator: "Equal"
+      value: "slave"
+      effect: "PreferNoSchedule"
+  nodeSelector:
+    type: slave
 ''') {
 
 properties([
