@@ -1589,12 +1589,7 @@ public final class Utilities {
           // for CTAS or Create MV statements
           perfLogger.PerfLogBegin("FileSinkOperator", "moveSpecifiedFileStatus");
           LOG.debug("CTAS/Create MV: Files being renamed:  " + filesKept.toString());
-          if (emptyBuckets.isEmpty()) {
-            fs.rename(tmpPath, specPath);
-          } else {
-            LOG.info("Duplicate files present. Moving files sequentially");
-            Utilities.moveSpecifiedFileStatus(fs, tmpPath, specPath, filesKept);
-          }
+          Utilities.moveSpecifiedFileStatus(fs, tmpPath, specPath, filesKept);
           perfLogger.PerfLogEnd("FileSinkOperator", "moveSpecifiedFileStatus");
         } else {
           // for rest of the statement e.g. INSERT, LOAD etc
@@ -4730,10 +4725,5 @@ public final class Utilities {
       logger.info("{} class path = unavailable for {}", prefix,
           loader == null ? "null" : loader.getClass().getSimpleName());
     }
-  }
-
-  public static boolean arePathsEqualOrWithin(Path p1, Path p2) {
-    return ((p1.toString().toLowerCase().indexOf(p2.toString().toLowerCase()) > -1) ||
-        (p2.toString().toLowerCase().indexOf(p1.toString().toLowerCase()) > -1)) ? true : false;
   }
 }
