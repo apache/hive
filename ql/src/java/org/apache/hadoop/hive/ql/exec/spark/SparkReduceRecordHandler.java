@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.hadoop.hive.ql.exec.vector.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
@@ -32,11 +33,6 @@ import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper.ReportStats;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
-import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.VectorDeserializeRow;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedBatchUtil;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
@@ -96,6 +92,7 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
   private VectorDeserializeRow<LazyBinaryDeserializeRead> valueLazyBinaryDeserializeToRow;
 
   private VectorizedRowBatch batch;
+  private VectorizedRowBatchCtx batchContext;
   private long batchBytes = 0;
   private boolean handleGroupKey = true;  // For now.
 
@@ -131,6 +128,7 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
     reducer = gWork.getReducer();
     vectorized = gWork.getVectorMode();
     reducer.setParentOperators(null); // clear out any parents as reducer is the
+    batchContext = gWork.getVectorizedRowBatchCtx();
     // root
     isTagged = gWork.getNeedsTagging();
     try {
@@ -180,24 +178,32 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
           BinarySortableSerDe binarySortableSerDe = (BinarySortableSerDe) inputKeyDeserializer;
 
           keyBinarySortableDeserializeToRow =
-                    new VectorDeserializeRow<BinarySortableDeserializeRead>(
-                          new BinarySortableDeserializeRead(
-                                    VectorizedBatchUtil.typeInfosFromStructObjectInspector(
-                                        keyStructInspector),
-                                    /* useExternalBuffer */ true,
-                                    binarySortableSerDe.getSortOrders(),
-                                    binarySortableSerDe.getNullMarkers(),
-                                    binarySortableSerDe.getNotNullMarkers()));
+              new VectorDeserializeRow<BinarySortableDeserializeRead>(
+                  new BinarySortableDeserializeRead(
+                      VectorizedBatchUtil.typeInfosFromStructObjectInspector(
+                          keyStructInspector),
+                      (batchContext.getRowdataTypePhysicalVariations().length > firstValueColumnOffset)
+                          ? Arrays.copyOfRange(batchContext.getRowdataTypePhysicalVariations(), 0,
+                              firstValueColumnOffset)
+                          : batchContext.getRowdataTypePhysicalVariations(),
+                      /* useExternalBuffer */ true,
+                      binarySortableSerDe.getSortOrders(),
+                      binarySortableSerDe.getNullMarkers(),
+                      binarySortableSerDe.getNotNullMarkers()));
           keyBinarySortableDeserializeToRow.init(0);
 
           final int valuesSize = valueStructInspector.getAllStructFieldRefs().size();
           if (valuesSize > 0) {
             valueLazyBinaryDeserializeToRow =
-                    new VectorDeserializeRow<LazyBinaryDeserializeRead>(
-                          new LazyBinaryDeserializeRead(
-                              VectorizedBatchUtil.typeInfosFromStructObjectInspector(
-                                         valueStructInspector),
-                              /* useExternalBuffer */ true));
+                new VectorDeserializeRow<LazyBinaryDeserializeRead>(
+                    new LazyBinaryDeserializeRead(
+                        VectorizedBatchUtil.typeInfosFromStructObjectInspector(
+                            valueStructInspector),
+                        (batchContext.getRowdataTypePhysicalVariations().length >= totalColumns)
+                            ? Arrays.copyOfRange(batchContext.getRowdataTypePhysicalVariations(),
+                                firstValueColumnOffset, totalColumns)
+                            : null,
+                        /* useExternalBuffer */ true));
             valueLazyBinaryDeserializeToRow.init(firstValueColumnOffset);
 
             // Create data buffers for value bytes column vectors.
