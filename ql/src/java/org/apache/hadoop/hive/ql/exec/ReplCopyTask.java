@@ -203,6 +203,14 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
           }
         }
         if (work.isCopyToMigratedTxnTable()) {
+          if (work.isNeedCheckDuplicateCopy()) {
+            updateSrcFileListForDupCopy(dstFs, toPath, srcFiles,
+                    ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID, ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_STMT_ID);
+            if (srcFiles.isEmpty()) {
+              LOG.info("All files are already present in the base directory. Skipping copy task.");
+              return 0;
+            }
+          }
           Long writeId = ReplUtils.getMigrationCurrentTblWriteId(conf);
           if (writeId == null) {
             console.printError("ReplCopyTask : Write id is not set in the config by open txn task for migration");
