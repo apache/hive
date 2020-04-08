@@ -85,11 +85,11 @@ class InsertHandler extends AbstractEventHandler<InsertMessage> {
       * But, Insert event is generated for each partition to which the data is inserted.
       * So, qlPtns list will have only one entry.
      */
-    String qlPtn = (null == qlPtns || qlPtns.isEmpty()) ? null : qlPtns.get(0).getName();
+    Partition ptn = (null == qlPtns || qlPtns.isEmpty()) ? null : qlPtns.get(0);
     if (files != null) {
       // encoded filename/checksum of files, write into _files
       for (String file : files) {
-        writeFileEntry(qlMdTable, qlPtn, file, withinContext);
+        writeFileEntry(qlMdTable, ptn, file, withinContext);
       }
     }
 

@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.metastore.messaging.MessageEncoder;
 import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONMessageEncoder;
 import org.apache.hadoop.hive.ql.metadata.HiveFatalException;
+import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.repl.CopyUtils;
@@ -88,46 +89,28 @@ abstract class AbstractEventHandler<T extends EventMessage> implements EventHand
     return event.getEventId();
   }
 
-  protected void writeFileEntry(Table table, String qltn, String file, Context withinContext)
+  protected void writeFileEntry(Table table, Partition ptn, String file, Context withinContext)
           throws IOException, LoginException, MetaException, HiveFatalException {
     HiveConf hiveConf = withinContext.hiveConf;
     String distCpDoAsUser = hiveConf.getVar(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER);
     if (!Utils.shouldDumpMetaDataOnly(withinContext.hiveConf)) {
       Path dataPath = new Path(withinContext.eventRoot, EximUtil.DATA_PATH_NAME);
-      List<ReplChangeManager.FileInfo> filePaths = new ArrayList<>();
+      if (table.isPartitioned()) {
+        dataPath = new Path(dataPath, ptn.getName());
+      }
       String[] decodedURISplits = ReplChangeManager.decodeFileUri(file);
-      String srcDataFile = decodedURISplits[0];
-      Path srcDataPath = new Path(srcDataFile);
+      Path srcDataPath = new Path(decodedURISplits[0]);
       if (dataPath.toUri().getScheme() == null) {
         dataPath = new Path(srcDataPath.toUri().getScheme(), srcDataPath.toUri().getAuthority(), dataPath.toString());
       }
-
-      String srcDataFileRelativePath = null;
-      if (srcDataFile.contains(table.getPath().toString())) {
-        srcDataFileRelativePath = srcDataFile.substring(table.getPath().toString().length() + 1);
-      } else if (decodedURISplits[3] == null) {
-        srcDataFileRelativePath = srcDataPath.getName();
-      } else {
-        srcDataFileRelativePath = srcDataFileRelativePath + File.separator + srcDataPath.getName();
-      }
-      Path targetPath = new Path(dataPath, srcDataFileRelativePath);
+      List<ReplChangeManager.FileInfo> filePaths = new ArrayList<>();
       ReplChangeManager.FileInfo fileInfo = ReplChangeManager.getFileInfo(new Path(decodedURISplits[0]),
                   decodedURISplits[1], decodedURISplits[2], decodedURISplits[3], hiveConf);
       filePaths.add(fileInfo);
-      FileSystem dstFs = targetPath.getFileSystem(hiveConf);
-      Path finalTargetPath = targetPath.getParent();
-      if (fileInfo.getSubDir() != null) {
-        for (String subDir: fileInfo.getSubDir().split(File.separator)) {
-          LOG.debug("Advancing parent to subDir {}:", subDir);
-          finalTargetPath = finalTargetPath.getParent();
-        }
-      }
-      if (qltn != null && !finalTargetPath.toString().endsWith(qltn)) {
-        finalTargetPath = new Path(finalTargetPath, qltn);
-      }
+      FileSystem dstFs = dataPath.getFileSystem(hiveConf);
       CopyUtils copyUtils = new CopyUtils(distCpDoAsUser, hiveConf, dstFs);
-      copyUtils.copyAndVerify(finalTargetPath, filePaths, srcDataPath);
-      copyUtils.renameFileCopiedFromCmPath(finalTargetPath, dstFs, filePaths);
+      copyUtils.copyAndVerify(dataPath, filePaths, srcDataPath);
+      copyUtils.renameFileCopiedFromCmPath(dataPath, dstFs, filePaths);
     }
   }
 }

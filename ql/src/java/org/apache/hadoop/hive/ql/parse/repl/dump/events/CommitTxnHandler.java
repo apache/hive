@@ -59,17 +59,11 @@ class CommitTxnHandler extends AbstractEventHandler<CommitTxnMessage> {
     return deserializer.getCommitTxnMessage(stringRepresentation);
   }
 
-  private BufferedWriter writer(Context withinContext, Path dataPath) throws IOException {
-    Path filesPath = new Path(dataPath, EximUtil.FILES_NAME);
-    FileSystem fs = dataPath.getFileSystem(withinContext.hiveConf);
-    return new BufferedWriter(new OutputStreamWriter(fs.create(filesPath)));
-  }
-
-  private void writeDumpFiles(Table qlMdTable, Context withinContext, Iterable<String> files, Path dataPath)
+  private void writeDumpFiles(Table qlMdTable,Partition ptn, Iterable<String> files, Context withinContext)
           throws IOException, LoginException, MetaException, HiveFatalException {
     // encoded filename/checksum of files, write into _files
     for (String file : files) {
-      writeFileEntry(qlMdTable, null, file, withinContext);
+      writeFileEntry(qlMdTable, ptn, file, withinContext);
     }
   }
 
@@ -90,12 +84,10 @@ class CommitTxnHandler extends AbstractEventHandler<CommitTxnMessage> {
             withinContext.hiveConf);
 
     if ((null == qlPtns) || qlPtns.isEmpty()) {
-      Path dataPath = new Path(withinContext.eventRoot, EximUtil.DATA_PATH_NAME);
-      writeDumpFiles(qlMdTable, withinContext, fileListArray.get(0), dataPath);
+      writeDumpFiles(qlMdTable, null, fileListArray.get(0), withinContext);
     } else {
       for (int idx = 0; idx < qlPtns.size(); idx++) {
-        Path dataPath = new Path(withinContext.eventRoot, qlPtns.get(idx).getName());
-        writeDumpFiles(qlMdTable, withinContext, fileListArray.get(idx), dataPath);
+        writeDumpFiles(qlMdTable, qlPtns.get(idx), fileListArray.get(idx), withinContext);
       }
     }
   }

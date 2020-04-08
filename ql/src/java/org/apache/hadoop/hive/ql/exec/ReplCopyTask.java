@@ -102,35 +102,6 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
     }
   }
 
-  private void renameFileCopiedFromCmPath(Path toPath, FileSystem dstFs, List<ReplChangeManager.FileInfo> srcFiles)
-          throws IOException {
-    for (ReplChangeManager.FileInfo srcFile : srcFiles) {
-      if (srcFile.isUseSourcePath()) {
-        continue;
-      }
-      String destFileName = srcFile.getCmPath().getName();
-      Path destRoot = CopyUtils.getCopyDestination(srcFile, toPath);
-      Path destFile = new Path(destRoot, destFileName);
-      if (dstFs.exists(destFile)) {
-        String destFileWithSourceName = srcFile.getSourcePath().getName();
-        Path newDestFile = new Path(destRoot, destFileWithSourceName);
-
-        // if the new file exist then delete it before renaming, to avoid rename failure. If the copy is done
-        // directly to table path (bypassing staging directory) then there might be some stale files from previous
-        // incomplete/failed load. No need of recycle as this is a case of stale file.
-        if (dstFs.exists(newDestFile)) {
-          LOG.debug(" file " + newDestFile + " is deleted before renaming");
-          dstFs.delete(newDestFile, true);
-        }
-        boolean result = dstFs.rename(destFile, newDestFile);
-        if (!result) {
-          throw new IllegalStateException(
-                  "could not rename " + destFile.getName() + " to " + newDestFile.getName());
-        }
-      }
-    }
-  }
-
   @Override
   public int execute() {
     LOG.debug("ReplCopyTask.execute()");
@@ -269,7 +240,7 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
       // If a file is copied from CM path, then need to rename them using original source file name
       // This is needed to avoid having duplicate files in target if same event is applied twice
       // where the first event refers to source path and  second event refers to CM path
-      renameFileCopiedFromCmPath(toPath, dstFs, srcFiles);
+      copyUtils.renameFileCopiedFromCmPath(toPath, dstFs, srcFiles);
       return 0;
     } catch (Exception e) {
       LOG.error(StringUtils.stringifyException(e));

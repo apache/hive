@@ -109,7 +109,7 @@ class AddPartitionHandler extends AbstractEventHandler {
         if (files != null) {
           // encoded filename/checksum of files, write into _files
           for (String file : files) {
-            writeFileEntry(qlMdTable, null, file, withinContext);
+            writeFileEntry(qlMdTable, qlPtn, file, withinContext);
           }
         }
       }
