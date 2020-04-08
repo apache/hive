@@ -854,6 +854,19 @@
               <goal>exec</goal>
             </goals>
           </execution>
+
+          <execution>
+            <id>validate-md5-checksum</id>
+            <phase>package</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <executable>
+                ${project.basedir}/checkVersionMap.sh
+              </executable>
+            </configuration>
+          </execution>
         </executions>
         <configuration>
           <executable>java</executable>
