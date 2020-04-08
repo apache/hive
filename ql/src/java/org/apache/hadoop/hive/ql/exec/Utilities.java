@@ -1498,7 +1498,12 @@ public final class Utilities {
           // for CTAS or Create MV statements
           perfLogger.PerfLogBegin("FileSinkOperator", "moveSpecifiedFileStatus");
           LOG.debug("CTAS/Create MV: Files being renamed:  " + filesKept.toString());
-          Utilities.moveSpecifiedFileStatus(fs, tmpPath, specPath, filesKept);
+          if (emptyBuckets.isEmpty()) {
+            fs.rename(tmpPath, specPath);
+          } else {
+            LOG.info("Duplicate files present. Moving files sequentially");
+            Utilities.moveSpecifiedFileStatus(fs, tmpPath, specPath, filesKept);
+          }
           perfLogger.PerfLogEnd("FileSinkOperator", "moveSpecifiedFileStatus");
         } else {
           // for rest of the statement e.g. INSERT, LOAD etc
