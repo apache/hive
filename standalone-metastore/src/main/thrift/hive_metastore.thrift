@@ -29,7 +29,7 @@ namespace php metastore
 namespace cpp Apache.Hadoop.Hive
 
 const string DDL_TIME = "transient_lastDdlTime"
-const string HMS_API = "1.0.0"
+const string HMS_API = "1.1.0"
 const byte ACCESSTYPE_NONE       = 1;
 const byte ACCESSTYPE_READONLY   = 2;
 const byte ACCESSTYPE_WRITEONLY  = 4;

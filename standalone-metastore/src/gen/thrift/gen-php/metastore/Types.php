@@ -37409,7 +37409,7 @@ final class Constant extends \Thrift\Type\TConstant {
   }
 
   static protected function init_HMS_API() {
-    return "1.0.0";
+    return "1.1.0";
   }
 
   static protected function init_ACCESSTYPE_NONE() {
