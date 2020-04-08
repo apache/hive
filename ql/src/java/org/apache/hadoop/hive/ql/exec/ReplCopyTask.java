@@ -161,32 +161,16 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
         }
 
         if (work.isCopyToMigratedTxnTable()) {
-          if (work.isNeedCheckDuplicateCopy()) {
-            updateSrcFileListForDupCopy(dstFs, toPath, srcFiles,
-                    ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID, ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_STMT_ID);
-            if (srcFiles.isEmpty()) {
-              LOG.info("All files are already present in the base directory. Skipping copy task.");
-              return 0;
-            }
+          if (isDuplicateCopy(dstFs, toPath, srcFiles)) {
+            return 0;
           }
-          // If direct (move optimized) copy is triggered for data to a migrated transactional table, then it
-          // should have a write ID allocated by parent ReplTxnTask. Use it to create the base or delta directory.
-          // The toPath received in ReplCopyWork is pointing to table/partition base location.
-          // So, just need to append the base or delta directory.
-          // getDeleteDestIfExist returns true if it is repl load for replace/insert overwrite event and
-          // hence need to create base directory. If false, then it is repl load for regular insert into or
-          // load flow and hence just create delta directory.
-          Long writeId = ReplUtils.getMigrationCurrentTblWriteId(conf);
-          if (writeId == null) {
+
+          Path modifiedToPath = getModifiedToPath(toPath);
+          if (modifiedToPath == null) {
             console.printError("ReplCopyTask : Write id is not set in the config by open txn task for migration");
             return 6;
           }
-          // Set stmt id 0 for bootstrap load as the directory needs to be searched during incremental load to avoid any
-          // duplicate copy from the source. Check HIVE-21197 for more detail.
-          int stmtId = (writeId.equals(ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID)) ?
-                  ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_STMT_ID :
-                    context.getHiveTxnManager().getStmtIdAndIncrement();
-          toPath = new Path(toPath, AcidUtils.baseOrDeltaSubdir(work.getDeleteDestIfExist(), writeId, writeId, stmtId));
+          toPath = modifiedToPath;
         }
       } else {
         // This flow is usually taken for IMPORT command
@@ -203,22 +187,16 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
           }
         }
         if (work.isCopyToMigratedTxnTable()) {
-          if (work.isNeedCheckDuplicateCopy()) {
-            updateSrcFileListForDupCopy(dstFs, toPath, srcFiles,
-                    ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID, ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_STMT_ID);
-            if (srcFiles.isEmpty()) {
-              LOG.info("All files are already present in the base directory. Skipping copy task.");
-              return 0;
-            }
+          if (isDuplicateCopy(dstFs, toPath, srcFiles)) {
+            return 0;
           }
-          Long writeId = ReplUtils.getMigrationCurrentTblWriteId(conf);
-          if (writeId == null) {
+
+          Path modifiedToPath = getModifiedToPath(toPath);
+          if (modifiedToPath == null) {
             console.printError("ReplCopyTask : Write id is not set in the config by open txn task for migration");
             return 6;
           }
-          int stmtId = (writeId.equals(ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID))
-              ? ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_STMT_ID : context.getHiveTxnManager().getStmtIdAndIncrement();
-          toPath = new Path(toPath, AcidUtils.baseOrDeltaSubdir(work.getDeleteDestIfExist(), writeId, writeId, stmtId));
+          toPath = modifiedToPath;
         }
         for (FileStatus oneSrc : srcs) {
           console.printInfo("Copying file: " + oneSrc.getPath().toString());
@@ -257,6 +235,38 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
     }
   }
 
+  private boolean isDuplicateCopy(FileSystem dstFs, Path toPath, List<ReplChangeManager.FileInfo> srcFiles)
+          throws IOException {
+    if (work.isNeedCheckDuplicateCopy()) {
+      updateSrcFileListForDupCopy(dstFs, toPath, srcFiles,
+              ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID, ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_STMT_ID);
+      if (srcFiles.isEmpty()) {
+        LOG.info("All files are already present in the base directory. Skipping copy task.");
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private Path getModifiedToPath(Path toPath) {
+    // If direct (move optimized) copy is triggered for data to a migrated transactional table, then it
+    // should have a write ID allocated by parent ReplTxnTask. Use it to create the base or delta directory.
+    // The toPath received in ReplCopyWork is pointing to table/partition base location.
+    // So, just need to append the base or delta directory.
+    // getDeleteDestIfExist returns true if it is repl load for replace/insert overwrite event and
+    // hence need to create base directory. If false, then it is repl load for regular insert into or
+    // load flow and hence just create delta directory.
+    Long writeId = ReplUtils.getMigrationCurrentTblWriteId(conf);
+    if (writeId == null) {
+      return null;
+    }
+    // Set stmt id 0 for bootstrap load as the directory needs to be searched during incremental load to avoid any
+    // duplicate copy from the source. Check HIVE-21197 for more detail.
+    int stmtId = (writeId.equals(ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID)) ?
+            ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_STMT_ID :
+            context.getHiveTxnManager().getStmtIdAndIncrement();
+    return new Path(toPath, AcidUtils.baseOrDeltaSubdir(work.getDeleteDestIfExist(), writeId, writeId, stmtId));
+  }
   private List<ReplChangeManager.FileInfo> filesInFileListing(FileSystem fs, Path dataPath)
       throws IOException {
     Path fileListing = new Path(dataPath, EximUtil.FILES_NAME);
