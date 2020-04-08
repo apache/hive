@@ -186,6 +186,11 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
             return 0;
           }
         }
+        for (FileStatus oneSrc : srcs) {
+          console.printInfo("Copying file: " + oneSrc.getPath().toString());
+          LOG.debug("ReplCopyTask :cp:{}=>{}", oneSrc.getPath(), toPath);
+          srcFiles.add(new ReplChangeManager.FileInfo(oneSrc.getPath().getFileSystem(conf), oneSrc.getPath(), null));
+        }
         if (work.isCopyToMigratedTxnTable()) {
           if (isDuplicateCopy(dstFs, toPath, srcFiles)) {
             return 0;
@@ -197,11 +202,6 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
             return 6;
           }
           toPath = modifiedToPath;
-        }
-        for (FileStatus oneSrc : srcs) {
-          console.printInfo("Copying file: " + oneSrc.getPath().toString());
-          LOG.debug("ReplCopyTask :cp:{}=>{}", oneSrc.getPath(), toPath);
-          srcFiles.add(new ReplChangeManager.FileInfo(oneSrc.getPath().getFileSystem(conf), oneSrc.getPath(), null));
         }
       }
 

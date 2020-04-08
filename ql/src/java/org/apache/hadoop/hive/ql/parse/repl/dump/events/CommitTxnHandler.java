@@ -39,12 +39,9 @@ import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
-import org.apache.hadoop.fs.FileSystem;
 
 import javax.security.auth.login.LoginException;
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -59,7 +56,7 @@ class CommitTxnHandler extends AbstractEventHandler<CommitTxnMessage> {
     return deserializer.getCommitTxnMessage(stringRepresentation);
   }
 
-  private void writeDumpFiles(Table qlMdTable,Partition ptn, Iterable<String> files, Context withinContext)
+  private void writeDumpFiles(Table qlMdTable, Partition ptn, Iterable<String> files, Context withinContext)
           throws IOException, LoginException, MetaException, HiveFatalException {
     // encoded filename/checksum of files, write into _files
     for (String file : files) {
