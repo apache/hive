@@ -69,7 +69,8 @@ import com.google.common.collect.Sets;
 public class ShowCreateTableOperation extends DDLOperation<ShowCreateTableDesc> {
   private static final String EXTERNAL = "external";
   private static final String TEMPORARY = "temporary";
-  private static final String NAME = "name";
+  private static final String DATABASE_NAME = "databaseName";
+  private static final String TABLE_NAME = "tableName";
   private static final String LIST_COLUMNS = "columns";
   private static final String COMMENT = "comment";
   private static final String PARTITIONS = "partitions";
@@ -88,28 +89,38 @@ public class ShowCreateTableOperation extends DDLOperation<ShowCreateTableDesc> 
   public int execute() throws HiveException {
     // get the create table statement for the table and populate the output
     try (DataOutputStream outStream = DDLUtils.getOutputStream(new Path(desc.getResFile()), context)) {
-      Table table = context.getDb().getTable(desc.getTableName(), false);
-      String command = table.isView() ?
-          getCreateViewCommand(table) :
-          getCreateTableCommand(table);
+      Table table = context.getDb().getTable(desc.getDatabaseName(), desc.getTableName());
+      String command = table.isView() ? getCreateViewCommand(table, desc.isRelative())
+          : getCreateTableCommand(table, desc.isRelative());
+
       outStream.write(command.getBytes(StandardCharsets.UTF_8));
       return 0;
     } catch (IOException e) {
-      LOG.info("show create table: ", e);
+      LOG.info("Show create table failed", e);
       return 1;
     } catch (Exception e) {
       throw new HiveException(e);
     }
   }
 
-  private static final String CREATE_VIEW_COMMAND = "CREATE VIEW `%s` AS %s";
+  private static final String CREATE_VIEW_TEMPLATE =
+      "CREATE VIEW <if(" + DATABASE_NAME + ")>`<" + DATABASE_NAME + ">`.<endif>" + "`<" + TABLE_NAME + ">`" + " AS <SQL>";
 
-  private String getCreateViewCommand(Table table) {
-    return String.format(CREATE_VIEW_COMMAND, desc.getTableName(), table.getViewExpandedText());
+  private String getCreateViewCommand(Table table, boolean isRelative) {
+    ST command = new ST(CREATE_VIEW_TEMPLATE);
+
+    if (!isRelative) {
+      command.add(DATABASE_NAME, table.getDbName());
+    }
+    command.add(TABLE_NAME, table.getTableName());
+    command.add("SQL", table.getViewExpandedText());
+
+    return command.render();
   }
 
   private static final String CREATE_TABLE_TEMPLATE =
-      "CREATE <" + TEMPORARY + "><" + EXTERNAL + ">TABLE `<" + NAME + ">`(\n" +
+      "CREATE <" + TEMPORARY + "><" + EXTERNAL + ">TABLE <if(" + DATABASE_NAME + ")>`<" + DATABASE_NAME + ">`.<endif>"
+          + "`<" + TABLE_NAME + ">`(\n" +
       "<" + LIST_COLUMNS + ">)\n" +
       "<" + COMMENT + ">\n" +
       "<" + PARTITIONS + ">\n" +
@@ -120,10 +131,13 @@ public class ShowCreateTableOperation extends DDLOperation<ShowCreateTableDesc> 
       "TBLPROPERTIES (\n" +
       "<" + PROPERTIES + ">)\n";
 
-  private String getCreateTableCommand(Table table) {
+  private String getCreateTableCommand(Table table, boolean isRelative) {
     ST command = new ST(CREATE_TABLE_TEMPLATE);
 
-    command.add(NAME, desc.getTableName());
+    if (!isRelative) {
+      command.add(DATABASE_NAME, table.getDbName());
+    }
+    command.add(TABLE_NAME, table.getTableName());
     command.add(TEMPORARY, getTemporary(table));
     command.add(EXTERNAL, getExternal(table));
     command.add(LIST_COLUMNS, getColumns(table));
