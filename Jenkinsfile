@@ -121,6 +121,10 @@ EOF
 cat rsyncd.conf
 '''
     sh '''rsync --daemon --config=rsyncd.conf --port 9873'''
+    sh '''#!/bin/bash -e
+# make parallel-test-execution plugins source scanner happy ~ better results for 1st run
+find . -name '*.java'|grep /Test|grep -v src/test/java|grep org/apache|while read f;do t="`echo $f|sed 's|.*org/apache|happy/src/test/java/org/apache|'`";mkdir -p  "${t%/*}";touch "$t";done
+'''
 }
   stage('Compile') {
     buildHive("install -Dtest=noMatches")
@@ -133,10 +137,6 @@ cat rsyncd.conf
 stage('Testing') {
   testInParallel(count(Integer.parseInt(params.SPLIT)), 'inclusions.txt', 'exclusions.txt', '**/target/surefire-reports/TEST-*.xml', 'maven:3.5.0-jdk-8', {
     sh  'rsync -arvvq --stats rsync://$S:9873/ws .'
-    sh '''#!/bin/bash -e
-# make parallel-test-execution plugins source scanner happy ~ better results for 1st run
-find . -name '*.java'|grep /Test|grep -v src/test/java|grep org/apache|while read f;do t="`echo $f|sed 's|.*org/apache|x/src/test/java/org/apache|'`";mkdir -p  "${t%/*}";touch "$t";done
-'''
   }, {
     sh '''
 echo "@INC"
