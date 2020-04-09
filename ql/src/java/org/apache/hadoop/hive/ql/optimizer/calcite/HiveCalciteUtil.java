@@ -1067,7 +1067,7 @@ public class HiveCalciteUtil {
           call.getOperator() == SqlStdOperatorTable.ARRAY_VALUE_CONSTRUCTOR ||
           call.getOperator() == SqlStdOperatorTable.MAP_VALUE_CONSTRUCTOR) {
         // We check all operands
-        for (RexNode node : ((RexCall) expr).getOperands()) {
+        for (RexNode node : call.getOperands()) {
           if (!isConstant(node)) {
             return false;
           }
@@ -1179,7 +1179,7 @@ public class HiveCalciteUtil {
    * expression to match differences in nullability.
    *
    * <p>Throws if there any greater inconsistencies of type. */
-  public static List<RexNode> fixUp(final RexBuilder rexBuilder,
+  public static List<RexNode> fixNullability(final RexBuilder rexBuilder,
       List<RexNode> nodes, final List<RelDataType> fieldTypes) {
     return new FixNullabilityShuttle(rexBuilder, fieldTypes).apply(nodes);
   }
@@ -1188,7 +1188,7 @@ public class HiveCalciteUtil {
    * expression to match differences in nullability.
    *
    * <p>Throws if there any greater inconsistencies of type. */
-  public static RexNode fixUp(final RexBuilder rexBuilder,
+  public static RexNode fixNullability(final RexBuilder rexBuilder,
       RexNode node, final List<RelDataType> fieldTypes) {
     return new FixNullabilityShuttle(rexBuilder, fieldTypes).apply(node);
   }
@@ -1232,6 +1232,20 @@ public class HiveCalciteUtil {
     }
   }
 
+  /**
+   * The method tries to rewrite an IN function call into an OR/AND function call.
+   * For instance:
+   * <pre>
+   * (c) IN ( v1, v2, ...) =&gt; c=v1 || c=v2 || ...
+   * </pre>
+   * Or:
+   * <pre>
+   * (c,d) IN ( (v1,v2), (v3,v4), ...) =&gt; (c=v1 && d=v2) || (c=v3 && d=v4) || ...
+   * </pre>
+   *
+   * Returns null if the transformation fails, e.g., when non-deterministic
+   * calls are found in the expressions.
+   */
   public static List<RexNode> transformIntoOrAndClause(List<RexNode> operands, RexBuilder rexBuilder) {
     final List<RexNode> disjuncts = new ArrayList<>(operands.size() - 2);
     if (operands.get(0).getKind() != SqlKind.ROW) {

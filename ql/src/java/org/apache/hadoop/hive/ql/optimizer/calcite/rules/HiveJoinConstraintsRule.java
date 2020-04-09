@@ -223,7 +223,7 @@ public class HiveJoinConstraintsRule extends RelOptRule {
               .collect(Collectors.toList());
         }
         // Fix nullability in references to the input node
-        topProjExprs = HiveCalciteUtil.fixUp(rexBuilder, topProjExprs, RelOptUtil.getFieldTypeList(fkInput.getRowType()));
+        topProjExprs = HiveCalciteUtil.fixNullability(rexBuilder, topProjExprs, RelOptUtil.getFieldTypeList(fkInput.getRowType()));
         // Trigger transformation
         if (nullableNodes.isEmpty()) {
           call.transformTo(call.builder()

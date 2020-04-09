@@ -226,10 +226,10 @@ public class HiveFilterSortPredicates extends RelOptRule {
         cost += operandCost;
         Double size;
         if (operand.isA(SqlKind.LITERAL)) {
-          size = HiveRelMdSize.typeSize(operand.getType(),
+          size = HiveRelMdSize.INSTANCE.typeValueSize(operand.getType(),
               ((RexLiteral) operand).getValueAs(Comparable.class));
         } else {
-          size = HiveRelMdSize.averageTypeSize(operand.getType());
+          size = HiveRelMdSize.INSTANCE.averageTypeValueSize(operand.getType());
         }
         if (size == null) {
           return null;

@@ -2820,7 +2820,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
             null, ImmutableList.of());
         topRel = HiveSemiJoin.getSemiJoin(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
             inputRels[0], inputRels[1],
-            HiveCalciteUtil.fixUp(cluster.getRexBuilder(),
+            HiveCalciteUtil.fixNullability(cluster.getRexBuilder(),
                 calciteJoinCond, RelOptUtil.getFieldTypeList(combinedRowType)));
 
         // Create join RR: we need to check whether we need to update left RR in case
@@ -2868,7 +2868,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
             null, ImmutableList.of());
         topRel = HiveJoin.getJoin(
             cluster, leftRel, rightRel,
-            HiveCalciteUtil.fixUp(cluster.getRexBuilder(),
+            HiveCalciteUtil.fixNullability(cluster.getRexBuilder(),
                 calciteJoinCond, RelOptUtil.getFieldTypeList(combinedRowType)),
             calciteJoinType);
         topRR = RowResolver.getCombinedRR(leftRR, rightRR);
@@ -3285,7 +3285,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       RexNode factoredFilterExpression = RexUtil
           .pullFactors(cluster.getRexBuilder(), filterExpression);
       RelNode filterRel = new HiveFilter(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), srcRel,
-          HiveCalciteUtil.fixUp(cluster.getRexBuilder(),
+          HiveCalciteUtil.fixNullability(cluster.getRexBuilder(),
               factoredFilterExpression, RelOptUtil.getFieldTypeList(srcRel.getRowType())));
       this.relToHiveColNameCalcitePosMap.put(filterRel, hiveColNameCalcitePosMap);
       relToHiveRR.put(filterRel, relToHiveRR.get(srcRel));
@@ -3666,7 +3666,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // Create input project fixing up nullability of inputs
       RelNode gbInputRel = HiveProject.create(
           srcRel,
-          HiveCalciteUtil.fixUp(cluster.getRexBuilder(), gbChildProjLst, RelOptUtil.getFieldTypeList(srcRel.getRowType())),
+          HiveCalciteUtil.fixNullability(cluster.getRexBuilder(), gbChildProjLst, RelOptUtil.getFieldTypeList(srcRel.getRowType())),
           null);
 
       HiveRelNode aggregateRel = new HiveAggregate(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
@@ -4483,7 +4483,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // names. Fix nullability
       HiveRelNode selRel = HiveProject.create(
           srcRel,
-          HiveCalciteUtil.fixUp(cluster.getRexBuilder(), calciteColLst, RelOptUtil.getFieldTypeList(srcRel.getRowType())),
+          HiveCalciteUtil.fixNullability(cluster.getRexBuilder(), calciteColLst, RelOptUtil.getFieldTypeList(srcRel.getRowType())),
           columnNames);
 
       // 4. Keep track of colname-to-posmap && RR for new select
