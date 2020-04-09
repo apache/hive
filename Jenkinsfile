@@ -1,3 +1,4 @@
+
 def executorNode(run) {
     node(POD_LABEL) {
       container('maven') {
@@ -71,8 +72,8 @@ podTemplate(
   //kgyrtkirk/hive-dev-box:executor
     containerTemplate(name: 'maven', image: 'kgyrtkirk/tx1:x', ttyEnabled: true, command: 'cat',
         alwaysPullImage: true,
-        resourceRequestCpu: '150m',
-        resourceLimitCpu: '1000m',
+        resourceRequestCpu: '1500m',
+        resourceLimitCpu: '2500m',
         resourceRequestMemory: '3000Mi',
         resourceLimitMemory: '8000Mi'
     ),
