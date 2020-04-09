@@ -925,7 +925,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     Path path = new Path(hiveDumpDir);
     FileSystem fs = path.getFileSystem(conf);
     FileStatus[] fileStatus = fs.listStatus(path);
-    int numEvents = fileStatus.length - 3; //one is metadata file and one data dir and one is _dump ack
+    int numEvents = fileStatus.length - 2; //one is metadata file and one is _dump ack
 
     replica.load(replicatedDbName, primaryDbName,
         Collections.singletonList("'hive.repl.approx.max.load.tasks'='1'"))
