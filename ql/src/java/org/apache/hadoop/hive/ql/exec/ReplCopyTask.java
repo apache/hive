@@ -102,35 +102,6 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
     }
   }
 
-  private void renameFileCopiedFromCmPath(Path toPath, FileSystem dstFs, List<ReplChangeManager.FileInfo> srcFiles)
-          throws IOException {
-    for (ReplChangeManager.FileInfo srcFile : srcFiles) {
-      if (srcFile.isUseSourcePath()) {
-        continue;
-      }
-      String destFileName = srcFile.getCmPath().getName();
-      Path destRoot = CopyUtils.getCopyDestination(srcFile, toPath);
-      Path destFile = new Path(destRoot, destFileName);
-      if (dstFs.exists(destFile)) {
-        String destFileWithSourceName = srcFile.getSourcePath().getName();
-        Path newDestFile = new Path(destRoot, destFileWithSourceName);
-
-        // if the new file exist then delete it before renaming, to avoid rename failure. If the copy is done
-        // directly to table path (bypassing staging directory) then there might be some stale files from previous
-        // incomplete/failed load. No need of recycle as this is a case of stale file.
-        if (dstFs.exists(newDestFile)) {
-          LOG.debug(" file " + newDestFile + " is deleted before renaming");
-          dstFs.delete(newDestFile, true);
-        }
-        boolean result = dstFs.rename(destFile, newDestFile);
-        if (!result) {
-          throw new IllegalStateException(
-                  "could not rename " + destFile.getName() + " to " + newDestFile.getName());
-        }
-      }
-    }
-  }
-
   @Override
   public int execute() {
     LOG.debug("ReplCopyTask.execute()");
@@ -190,32 +161,16 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
         }
 
         if (work.isCopyToMigratedTxnTable()) {
-          if (work.isNeedCheckDuplicateCopy()) {
-            updateSrcFileListForDupCopy(dstFs, toPath, srcFiles,
-                    ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID, ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_STMT_ID);
-            if (srcFiles.isEmpty()) {
-              LOG.info("All files are already present in the base directory. Skipping copy task.");
-              return 0;
-            }
+          if (isDuplicateCopy(dstFs, toPath, srcFiles)) {
+            return 0;
           }
-          // If direct (move optimized) copy is triggered for data to a migrated transactional table, then it
-          // should have a write ID allocated by parent ReplTxnTask. Use it to create the base or delta directory.
-          // The toPath received in ReplCopyWork is pointing to table/partition base location.
-          // So, just need to append the base or delta directory.
-          // getDeleteDestIfExist returns true if it is repl load for replace/insert overwrite event and
-          // hence need to create base directory. If false, then it is repl load for regular insert into or
-          // load flow and hence just create delta directory.
-          Long writeId = ReplUtils.getMigrationCurrentTblWriteId(conf);
-          if (writeId == null) {
+
+          Path modifiedToPath = getModifiedToPath(toPath);
+          if (modifiedToPath == null) {
             console.printError("ReplCopyTask : Write id is not set in the config by open txn task for migration");
             return 6;
           }
-          // Set stmt id 0 for bootstrap load as the directory needs to be searched during incremental load to avoid any
-          // duplicate copy from the source. Check HIVE-21197 for more detail.
-          int stmtId = (writeId.equals(ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID)) ?
-                  ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_STMT_ID :
-                    context.getHiveTxnManager().getStmtIdAndIncrement();
-          toPath = new Path(toPath, AcidUtils.baseOrDeltaSubdir(work.getDeleteDestIfExist(), writeId, writeId, stmtId));
+          toPath = modifiedToPath;
         }
       } else {
         // This flow is usually taken for IMPORT command
@@ -231,12 +186,22 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
             return 0;
           }
         }
-
         for (FileStatus oneSrc : srcs) {
           console.printInfo("Copying file: " + oneSrc.getPath().toString());
           LOG.debug("ReplCopyTask :cp:{}=>{}", oneSrc.getPath(), toPath);
-          srcFiles.add(new ReplChangeManager.FileInfo(oneSrc.getPath().getFileSystem(conf),
-                                                      oneSrc.getPath(), null));
+          srcFiles.add(new ReplChangeManager.FileInfo(oneSrc.getPath().getFileSystem(conf), oneSrc.getPath(), null));
+        }
+        if (work.isCopyToMigratedTxnTable()) {
+          if (isDuplicateCopy(dstFs, toPath, srcFiles)) {
+            return 0;
+          }
+
+          Path modifiedToPath = getModifiedToPath(toPath);
+          if (modifiedToPath == null) {
+            console.printError("ReplCopyTask : Write id is not set in the config by open txn task for migration");
+            return 6;
+          }
+          toPath = modifiedToPath;
         }
       }
 
@@ -255,12 +220,13 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
         return 2;
       }
       // Copy the files from different source file systems to one destination directory
-      new CopyUtils(rwork.distCpDoAsUser(), conf, dstFs).copyAndVerify(toPath, srcFiles, fromPath);
+      CopyUtils copyUtils = new CopyUtils(rwork.distCpDoAsUser(), conf, dstFs);
+      copyUtils.copyAndVerify(toPath, srcFiles, fromPath);
 
       // If a file is copied from CM path, then need to rename them using original source file name
       // This is needed to avoid having duplicate files in target if same event is applied twice
       // where the first event refers to source path and  second event refers to CM path
-      renameFileCopiedFromCmPath(toPath, dstFs, srcFiles);
+      copyUtils.renameFileCopiedFromCmPath(toPath, dstFs, srcFiles);
       return 0;
     } catch (Exception e) {
       LOG.error(StringUtils.stringifyException(e));
@@ -269,6 +235,38 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
     }
   }
 
+  private boolean isDuplicateCopy(FileSystem dstFs, Path toPath, List<ReplChangeManager.FileInfo> srcFiles)
+          throws IOException {
+    if (work.isNeedCheckDuplicateCopy()) {
+      updateSrcFileListForDupCopy(dstFs, toPath, srcFiles,
+              ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID, ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_STMT_ID);
+      if (srcFiles.isEmpty()) {
+        LOG.info("All files are already present in the base directory. Skipping copy task.");
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private Path getModifiedToPath(Path toPath) {
+    // If direct (move optimized) copy is triggered for data to a migrated transactional table, then it
+    // should have a write ID allocated by parent ReplTxnTask. Use it to create the base or delta directory.
+    // The toPath received in ReplCopyWork is pointing to table/partition base location.
+    // So, just need to append the base or delta directory.
+    // getDeleteDestIfExist returns true if it is repl load for replace/insert overwrite event and
+    // hence need to create base directory. If false, then it is repl load for regular insert into or
+    // load flow and hence just create delta directory.
+    Long writeId = ReplUtils.getMigrationCurrentTblWriteId(conf);
+    if (writeId == null) {
+      return null;
+    }
+    // Set stmt id 0 for bootstrap load as the directory needs to be searched during incremental load to avoid any
+    // duplicate copy from the source. Check HIVE-21197 for more detail.
+    int stmtId = (writeId.equals(ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID)) ?
+            ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_STMT_ID :
+            context.getHiveTxnManager().getStmtIdAndIncrement();
+    return new Path(toPath, AcidUtils.baseOrDeltaSubdir(work.getDeleteDestIfExist(), writeId, writeId, stmtId));
+  }
   private List<ReplChangeManager.FileInfo> filesInFileListing(FileSystem fs, Path dataPath)
       throws IOException {
     Path fileListing = new Path(dataPath, EximUtil.FILES_NAME);

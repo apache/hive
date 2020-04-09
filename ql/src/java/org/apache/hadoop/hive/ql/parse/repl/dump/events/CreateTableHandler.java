@@ -79,14 +79,11 @@ class CreateTableHandler extends AbstractEventHandler<CreateTableMessage> {
         withinContext.replicationSpec,
         withinContext.hiveConf);
 
-    Path dataPath = new Path(withinContext.eventRoot, "data");
     Iterable<String> files = eventMessage.getFiles();
     if (files != null) {
       // encoded filename/checksum of files, write into _files
-      try (BufferedWriter fileListWriter = writer(withinContext, dataPath)) {
-        for (String file : files) {
-          writeFileEntry(qlMdTable.getDbName(), qlMdTable, file, fileListWriter, withinContext);
-        }
+      for (String file : files) {
+        writeFileEntry(qlMdTable, null, file, withinContext);
       }
     }
 

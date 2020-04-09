@@ -1506,6 +1506,13 @@ public class TestReplicationScenarios {
 
     Tuple incrementalDump = incrementalLoadAndVerify(dbName, replDbName);
 
+    //Verify dump data structure
+    Path hiveDumpDir = new Path(incrementalDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    FileSystem fs = FileSystem.get(hiveDumpDir.toUri(), hconf);
+    verifyDataFileExist(fs, hiveDumpDir, null, new Path(unptnLocn).getName());
+    verifyDataListFileDoesNotExist(fs, hiveDumpDir, null);
+
+
     verifyRun("SELECT * from " + replDbName + ".unptned_late", unptnData, driverMirror);
 
     run("ALTER TABLE " + dbName + ".ptned ADD PARTITION (b=1)", driver);
@@ -1526,7 +1533,13 @@ public class TestReplicationScenarios {
             + ".ptned WHERE b=2", driver);
     verifySetup("SELECT a from " + dbName + ".ptned_late WHERE b=2", ptnData2, driver);
 
-    incrementalLoadAndVerify(dbName, replDbName);
+    incrementalDump = incrementalLoadAndVerify(dbName, replDbName);
+    hiveDumpDir = new Path(incrementalDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    verifyDataFileExist(fs, hiveDumpDir, "b=1", new Path(ptnLocn1).getName());
+    verifyDataFileExist(fs, hiveDumpDir, "b=2", new Path(ptnLocn2).getName());
+    verifyDataListFileDoesNotExist(fs, hiveDumpDir, "b=1");
+    verifyDataListFileDoesNotExist(fs, hiveDumpDir, "b=2");
+
     verifyRun("SELECT a from " + replDbName + ".ptned_late WHERE b=1", ptnData1, driverMirror);
     verifyRun("SELECT a from " + replDbName + ".ptned_late WHERE b=2", ptnData2, driverMirror);
     verifyRun("SELECT a from " + replDbName + ".ptned WHERE b=1", ptnData1, driverMirror);
@@ -3786,6 +3799,43 @@ public class TestReplicationScenarios {
       success = false;
     }
     assertFalse(success);
+  }
+
+  private void verifyDataFileExist(FileSystem fs, Path hiveDumpDir, String part, String dataFile) throws IOException {
+    FileStatus[] eventFileStatuses = fs.listStatus(hiveDumpDir);
+    boolean dataFileFound = false;
+    for (FileStatus eventFileStatus: eventFileStatuses) {
+      String dataRelativePath = null;
+      if (part == null) {
+        dataRelativePath = EximUtil.DATA_PATH_NAME + File.separator + dataFile;
+      } else {
+        dataRelativePath = EximUtil.DATA_PATH_NAME + File.separator + part + File.separator + dataFile;
+      }
+      if (fs.exists(new Path(eventFileStatus.getPath(), dataRelativePath))) {
+        dataFileFound = true;
+        break;
+      }
+    }
+    assertTrue(dataFileFound);
+  }
+
+  private void verifyDataListFileDoesNotExist(FileSystem fs, Path hiveDumpDir, String part)
+          throws IOException {
+    FileStatus[] eventFileStatuses = fs.listStatus(hiveDumpDir);
+    boolean dataListFileFound = false;
+    for (FileStatus eventFileStatus: eventFileStatuses) {
+      String dataRelativePath = null;
+      if (part == null) {
+        dataRelativePath = EximUtil.DATA_PATH_NAME + File.separator + EximUtil.FILES_NAME;
+      } else {
+        dataRelativePath = part + File.separator + EximUtil.FILES_NAME;
+      }
+      if (fs.exists(new Path(eventFileStatus.getPath(), dataRelativePath))) {
+        dataListFileFound = true;
+        break;
+      }
+    }
+    assertFalse(dataListFileFound);
   }
 
   private void verifyRunWithPatternMatch(String cmd, String key, String pattern, IDriver myDriver) throws IOException {
