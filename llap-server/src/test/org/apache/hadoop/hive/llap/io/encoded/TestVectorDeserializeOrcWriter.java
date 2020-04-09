@@ -17,11 +17,13 @@
  */
 package org.apache.hadoop.hive.llap.io.encoded;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch;
+import org.apache.hadoop.hive.llap.TestReflectionUtils;
 import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
 import org.apache.hadoop.hive.llap.io.decode.EncodedDataConsumer;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
@@ -38,8 +40,6 @@ import static org.junit.Assert.assertNotEquals;
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.withSettings;
-import static org.mockito.internal.util.reflection.Whitebox.getInternalState;
-import static org.mockito.internal.util.reflection.Whitebox.setInternalState;
 
 /**
  * Unit tests for VectorDeserializeOrcWriter.
@@ -53,8 +53,10 @@ public class TestVectorDeserializeOrcWriter {
 
     //Setup////////////////////////////////////////////////////////////////////////////////////////
     EncodedDataConsumer consumer = createBlankEncodedDataConsumer();
+    Field cvbPoolField = EncodedDataConsumer.class.getDeclaredField("cvbPool");
+    cvbPoolField.setAccessible(true);
     FixedSizedObjectPool<ColumnVectorBatch> cvbPool = (FixedSizedObjectPool<ColumnVectorBatch>)
-            getInternalState(consumer, "cvbPool");
+        cvbPoolField.get(consumer);
 
     ColumnVectorBatch cvb = new ColumnVectorBatch(TEST_NUM_COLS);
     VectorizedRowBatch vrb = new VectorizedRowBatch(TEST_NUM_COLS);
@@ -104,12 +106,13 @@ public class TestVectorDeserializeOrcWriter {
   private static VectorDeserializeOrcWriter createOrcWriter(
           Queue<VectorDeserializeOrcWriter.WriteOperation> writeOpQueue, VectorizedRowBatch vrb) {
     VectorDeserializeOrcWriter orcWriter = mock(VectorDeserializeOrcWriter.class,
-            withSettings().defaultAnswer(CALLS_REAL_METHODS));
-    setInternalState(orcWriter, "sourceBatch", vrb);
-    setInternalState(orcWriter, "destinationBatch", vrb);
-    setInternalState(orcWriter, "currentBatches", new ArrayList<VectorizedRowBatch>());
-    setInternalState(orcWriter, "queue", writeOpQueue);
-    setInternalState(orcWriter, "isAsync", true);
+        withSettings().defaultAnswer(CALLS_REAL_METHODS));
+
+    TestReflectionUtils.reflectSetValue(orcWriter,"sourceBatch", vrb);
+    TestReflectionUtils.reflectSetValue(orcWriter,"destinationBatch", vrb);
+    TestReflectionUtils.reflectSetValue(orcWriter,"currentBatches",  new ArrayList<VectorizedRowBatch>());
+    TestReflectionUtils.reflectSetValue(orcWriter,"queue", writeOpQueue);
+    TestReflectionUtils.reflectSetValue(orcWriter,"isAsync", true);
     return orcWriter;
   }
 
