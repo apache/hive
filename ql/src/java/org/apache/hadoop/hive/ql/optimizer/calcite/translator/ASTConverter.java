@@ -35,7 +35,6 @@ import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.core.Exchange;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.Join;
-import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.Sort;
 import org.apache.calcite.rel.core.TableFunctionScan;
@@ -402,24 +401,8 @@ public class ASTConverter {
       QueryBlockInfo right = convertSource(join.getRight());
       s = new Schema(left.schema, right.schema);
       ASTNode cond = join.getCondition().accept(new RexVisitor(s, false, r.getCluster().getRexBuilder()));
-      boolean semiJoin = join.isSemiJoin();
-      if (join.getRight() instanceof Join && !semiJoin) {
-          // should not be done for semijoin since it will change the semantics
-        // Invert join inputs; this is done because otherwise the SemanticAnalyzer
-        // methods to merge joins will not kick in
-        JoinRelType type;
-        if (join.getJoinType() == JoinRelType.LEFT) {
-          type = JoinRelType.RIGHT;
-        } else if (join.getJoinType() == JoinRelType.RIGHT) {
-          type = JoinRelType.LEFT;
-        } else {
-          type = join.getJoinType();
-        }
-        ast = ASTBuilder.join(right.ast, left.ast, type, cond);
-      } else {
-        ast = ASTBuilder.join(left.ast, right.ast, join.getJoinType(), cond);
-      }
-      if (semiJoin) {
+      ast = ASTBuilder.join(left.ast, right.ast, join.getJoinType(), cond);
+      if (join.isSemiJoin()) {
         s = left.schema;
       }
     } else if (r instanceof Union) {

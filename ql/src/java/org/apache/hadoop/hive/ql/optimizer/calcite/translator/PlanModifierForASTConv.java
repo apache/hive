@@ -50,7 +50,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortExchange;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.HiveJdbcConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRelColumnsAlignment;
@@ -282,17 +281,7 @@ public class PlanModifierForASTConv {
     boolean validParent = true;
 
     if (parent instanceof Join) {
-      // In Hive AST, right child of join cannot be another join,
-      // thus we need to introduce a project on top of it.
-      // But we only need the additional project if the left child
-      // is another join too; if it is not, ASTConverter will swap
-      // the join inputs, leaving the join operator on the left.
-      // we also do it if parent is HiveSemiJoin since ASTConverter won't
-      // swap inputs then
-      // This will help triggering multijoin recognition methods that
-      // are embedded in SemanticAnalyzer.
-      if (((Join) parent).getRight() == joinNode &&
-            (((Join) parent).getLeft() instanceof Join || parent instanceof HiveSemiJoin) ) {
+      if (((Join) parent).getRight() == joinNode) {
         validParent = false;
       }
     } else if (parent instanceof SetOp) {

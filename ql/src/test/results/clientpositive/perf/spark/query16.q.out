@@ -80,7 +80,27 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 8 
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: call_center
+                  filterExpr: (cc_call_center_sk is not null and (cc_county) IN ('Ziebach County', 'Levy County', 'Huron County', 'Franklin Parish', 'Daviess County')) (type: boolean)
+                  Statistics: Num rows: 60 Data size: 122700 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (cc_call_center_sk is not null and (cc_county) IN ('Ziebach County', 'Levy County', 'Huron County', 'Franklin Parish', 'Daviess County')) (type: boolean)
+                    Statistics: Num rows: 60 Data size: 122700 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: cc_call_center_sk (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 60 Data size: 122700 Basic stats: COMPLETE Column stats: NONE
+                      Spark HashTable Sink Operator
+                        keys:
+                          0 _col0 (type: int)
+                          1 _col2 (type: int)
+            Execution mode: vectorized
+            Local Work:
+              Map Reduce Local Work
+        Map 9 
             Map Operator Tree:
                 TableScan
                   alias: date_dim
@@ -100,59 +120,18 @@ STAGE PLANS:
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-        Map 9 
-            Map Operator Tree:
-                TableScan
-                  alias: call_center
-                  filterExpr: (cc_call_center_sk is not null and (cc_county) IN ('Ziebach County', 'Levy County', 'Huron County', 'Franklin Parish', 'Daviess County')) (type: boolean)
-                  Statistics: Num rows: 60 Data size: 122700 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (cc_call_center_sk is not null and (cc_county) IN ('Ziebach County', 'Levy County', 'Huron County', 'Franklin Parish', 'Daviess County')) (type: boolean)
-                    Statistics: Num rows: 60 Data size: 122700 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: cc_call_center_sk (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 60 Data size: 122700 Basic stats: COMPLETE Column stats: NONE
-                      Spark HashTable Sink Operator
-                        keys:
-                          0 _col2 (type: int)
-                          1 _col0 (type: int)
-            Execution mode: vectorized
-            Local Work:
-              Map Reduce Local Work
 
   Stage: Stage-1
     Spark
       Edges:
         Reducer 12 <- Map 11 (GROUP, 24)
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 464), Map 7 (PARTITION-LEVEL SORT, 464)
-        Reducer 3 <- Map 10 (PARTITION-LEVEL SORT, 711), Reducer 2 (PARTITION-LEVEL SORT, 711)
-        Reducer 4 <- Reducer 12 (PARTITION-LEVEL SORT, 459), Reducer 3 (PARTITION-LEVEL SORT, 459)
-        Reducer 5 <- Reducer 4 (GROUP, 246)
-        Reducer 6 <- Reducer 5 (GROUP, 1)
+        Reducer 3 <- Map 2 (PARTITION-LEVEL SORT, 464), Map 8 (PARTITION-LEVEL SORT, 464)
+        Reducer 4 <- Map 10 (PARTITION-LEVEL SORT, 711), Reducer 3 (PARTITION-LEVEL SORT, 711)
+        Reducer 5 <- Reducer 12 (PARTITION-LEVEL SORT, 459), Reducer 4 (PARTITION-LEVEL SORT, 459)
+        Reducer 6 <- Reducer 5 (GROUP, 246)
+        Reducer 7 <- Reducer 6 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: cs1
-                  filterExpr: (cs_ship_date_sk is not null and cs_ship_addr_sk is not null and cs_call_center_sk is not null and cs_order_number is not null) (type: boolean)
-                  Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (cs_ship_date_sk is not null and cs_ship_addr_sk is not null and cs_call_center_sk is not null and cs_order_number is not null) (type: boolean)
-                    Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: cs_ship_date_sk (type: int), cs_ship_addr_sk (type: int), cs_call_center_sk (type: int), cs_warehouse_sk (type: int), cs_order_number (type: int), cs_ext_ship_cost (type: decimal(7,2)), cs_net_profit (type: decimal(7,2))
-                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-                      Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col1 (type: int)
-                        null sort order: z
-                        sort order: +
-                        Map-reduce partition columns: _col1 (type: int)
-                        Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col0 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: decimal(7,2)), _col6 (type: decimal(7,2))
-            Execution mode: vectorized
         Map 10 
             Map Operator Tree:
                 TableScan
@@ -202,7 +181,28 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 28798881 Data size: 3057234680 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
-        Map 7 
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: cs1
+                  filterExpr: (cs_ship_date_sk is not null and cs_ship_addr_sk is not null and cs_call_center_sk is not null and cs_order_number is not null) (type: boolean)
+                  Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (cs_ship_date_sk is not null and cs_ship_addr_sk is not null and cs_call_center_sk is not null and cs_order_number is not null) (type: boolean)
+                    Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: cs_ship_date_sk (type: int), cs_ship_addr_sk (type: int), cs_call_center_sk (type: int), cs_warehouse_sk (type: int), cs_order_number (type: int), cs_ext_ship_cost (type: decimal(7,2)), cs_net_profit (type: decimal(7,2))
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                      Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col1 (type: int)
+                        Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: decimal(7,2)), _col6 (type: decimal(7,2))
+            Execution mode: vectorized
+        Map 8 
             Map Operator Tree:
                 TableScan
                   alias: customer_address
@@ -241,7 +241,7 @@ STAGE PLANS:
                     Map-reduce partition columns: _col1 (type: int)
                     Statistics: Num rows: 14399440 Data size: 1528617286 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: boolean)
-        Reducer 2 
+        Reducer 3 
             Local Work:
               Map Reduce Local Work
             Reduce Operator Tree:
@@ -261,26 +261,30 @@ STAGE PLANS:
                     1 _col0 (type: int)
                   outputColumnNames: _col2, _col3, _col4, _col5, _col6
                   input vertices:
-                    1 Map 8
+                    1 Map 9
                   Statistics: Num rows: 348467716 Data size: 47189528877 Basic stats: COMPLETE Column stats: NONE
                   Map Join Operator
                     condition map:
                          Inner Join 0 to 1
                     keys:
-                      0 _col2 (type: int)
-                      1 _col0 (type: int)
-                    outputColumnNames: _col3, _col4, _col5, _col6
+                      0 _col0 (type: int)
+                      1 _col2 (type: int)
+                    outputColumnNames: _col5, _col6, _col7, _col8
                     input vertices:
-                      1 Map 9
+                      0 Map 1
                     Statistics: Num rows: 383314495 Data size: 51908482889 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col4 (type: int)
-                      null sort order: z
-                      sort order: +
-                      Map-reduce partition columns: _col4 (type: int)
+                    Select Operator
+                      expressions: _col5 (type: int), _col6 (type: int), _col7 (type: decimal(7,2)), _col8 (type: decimal(7,2))
+                      outputColumnNames: _col3, _col4, _col5, _col6
                       Statistics: Num rows: 383314495 Data size: 51908482889 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col3 (type: int), _col5 (type: decimal(7,2)), _col6 (type: decimal(7,2))
-        Reducer 3 
+                      Reduce Output Operator
+                        key expressions: _col4 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col4 (type: int)
+                        Statistics: Num rows: 383314495 Data size: 51908482889 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col3 (type: int), _col5 (type: decimal(7,2)), _col6 (type: decimal(7,2))
+        Reducer 4 
             Reduce Operator Tree:
               Join Operator
                 condition map:
@@ -302,7 +306,7 @@ STAGE PLANS:
                     Map-reduce partition columns: _col4 (type: int)
                     Statistics: Num rows: 421645953 Data size: 57099332415 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col5 (type: decimal(7,2)), _col6 (type: decimal(7,2))
-        Reducer 4 
+        Reducer 5 
             Reduce Operator Tree:
               Join Operator
                 condition map:
@@ -333,7 +337,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 231905279 Data size: 31404633508 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: decimal(17,2)), _col3 (type: decimal(17,2))
-        Reducer 5 
+        Reducer 6 
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
@@ -352,7 +356,7 @@ STAGE PLANS:
                     sort order: 
                     Statistics: Num rows: 1 Data size: 344 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint), _col1 (type: decimal(17,2)), _col2 (type: decimal(17,2))
-        Reducer 6 
+        Reducer 7 
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator

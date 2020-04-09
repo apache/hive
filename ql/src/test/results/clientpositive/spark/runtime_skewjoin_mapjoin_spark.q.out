@@ -35,22 +35,24 @@ POSTHOOK: Input: default@src
 POSTHOOK: Input: default@t1_n94
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
-  Stage-8 is a root stage
-  Stage-1 depends on stages: Stage-8
-  Stage-5 depends on stages: Stage-1 , consists of Stage-6, Stage-7, Stage-2
-  Stage-6
-  Stage-3 depends on stages: Stage-6
-  Stage-2 depends on stages: Stage-3, Stage-4
-  Stage-7
-  Stage-4 depends on stages: Stage-7
+  Stage-10 is a root stage
+  Stage-1 depends on stages: Stage-10
+  Stage-7 depends on stages: Stage-1 , consists of Stage-9, Stage-5
+  Stage-9
+  Stage-6 depends on stages: Stage-9
+  Stage-5 depends on stages: Stage-6
+  Stage-4 depends on stages: Stage-5 , consists of Stage-8, Stage-2
+  Stage-8
+  Stage-3 depends on stages: Stage-8
+  Stage-2 depends on stages: Stage-3
   Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
-  Stage: Stage-8
+  Stage: Stage-10
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 5 
+        Map 7 
             Map Operator Tree:
                 TableScan
                   alias: t1_n94
@@ -74,10 +76,10 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 4 (PARTITION-LEVEL SORT, 2), Map 6 (PARTITION-LEVEL SORT, 2)
+        Reducer 5 <- Map 4 (PARTITION-LEVEL SORT, 2), Map 6 (PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: src1
@@ -97,7 +99,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
-        Map 4 
+        Map 6 
             Map Operator Tree:
                 TableScan
                   alias: src
@@ -118,7 +120,7 @@ STAGE PLANS:
                           1 _col0 (type: string)
                         outputColumnNames: _col0
                         input vertices:
-                          1 Map 5
+                          1 Map 7
                         Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: string)
@@ -129,7 +131,71 @@ STAGE PLANS:
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-        Map 6 
+        Reducer 5 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                handleSkewJoin: true
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-7
+    Conditional Operator
+
+  Stage: Stage-9
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 13 
+            Map Operator Tree:
+                TableScan
+                  Spark HashTable Sink Operator
+                    keys:
+                      0 reducesinkkey0 (type: string)
+                      1 reducesinkkey0 (type: string)
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-6
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 12 
+            Map Operator Tree:
+                TableScan
+                  Map Join Operator
+                    condition map:
+                         Inner Join 0 to 1
+                    keys:
+                      0 reducesinkkey0 (type: string)
+                      1 reducesinkkey0 (type: string)
+                    outputColumnNames: _col0
+                    File Output Operator
+                      compressed: false
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-5
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 11 (PARTITION-LEVEL SORT, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: src2
@@ -149,18 +215,26 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
+        Map 11 
+            Map Operator Tree:
+                TableScan
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string)
+                    null sort order: z
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: string)
+                    Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
                 condition map:
                      Inner Join 0 to 1
-                     Inner Join 0 to 2
                 handleSkewJoin: true
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
-                  2 _col0 (type: string)
-                Statistics: Num rows: 1210 Data size: 12854 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 665 Data size: 7069 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   minReductionHashAggr: 0.99
@@ -174,10 +248,10 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-  Stage: Stage-5
+  Stage: Stage-4
     Conditional Operator
 
-  Stage: Stage-6
+  Stage: Stage-8
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -188,17 +262,6 @@ STAGE PLANS:
                     keys:
                       0 reducesinkkey0 (type: string)
                       1 reducesinkkey0 (type: string)
-                      2 reducesinkkey0 (type: string)
-            Local Work:
-              Map Reduce Local Work
-        Map 9 
-            Map Operator Tree:
-                TableScan
-                  Spark HashTable Sink Operator
-                    keys:
-                      0 reducesinkkey0 (type: string)
-                      1 reducesinkkey0 (type: string)
-                      2 reducesinkkey0 (type: string)
             Local Work:
               Map Reduce Local Work
 
@@ -206,17 +269,15 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 8 
+        Map 9 
             Map Operator Tree:
                 TableScan
                   Map Join Operator
                     condition map:
                          Inner Join 0 to 1
-                         Inner Join 0 to 2
                     keys:
                       0 reducesinkkey0 (type: string)
                       1 reducesinkkey0 (type: string)
-                      2 reducesinkkey0 (type: string)
                     Group By Operator
                       aggregations: count()
                       minReductionHashAggr: 0.99
@@ -236,10 +297,10 @@ STAGE PLANS:
   Stage: Stage-2
     Spark
       Edges:
-        Reducer 3 <- Map 7 (GROUP, 1)
+        Reducer 3 <- Map 8 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
-        Map 7 
+        Map 8 
             Map Operator Tree:
                 TableScan
                   Reduce Output Operator
@@ -263,62 +324,6 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
-  Stage: Stage-7
-    Spark
-#### A masked pattern was here ####
-      Vertices:
-        Map 11 
-            Map Operator Tree:
-                TableScan
-                  Spark HashTable Sink Operator
-                    keys:
-                      0 reducesinkkey0 (type: string)
-                      1 reducesinkkey0 (type: string)
-                      2 reducesinkkey0 (type: string)
-            Local Work:
-              Map Reduce Local Work
-        Map 13 
-            Map Operator Tree:
-                TableScan
-                  Spark HashTable Sink Operator
-                    keys:
-                      0 reducesinkkey0 (type: string)
-                      1 reducesinkkey0 (type: string)
-                      2 reducesinkkey0 (type: string)
-            Local Work:
-              Map Reduce Local Work
-
-  Stage: Stage-4
-    Spark
-#### A masked pattern was here ####
-      Vertices:
-        Map 12 
-            Map Operator Tree:
-                TableScan
-                  Map Join Operator
-                    condition map:
-                         Inner Join 0 to 1
-                         Inner Join 0 to 2
-                    keys:
-                      0 reducesinkkey0 (type: string)
-                      1 reducesinkkey0 (type: string)
-                      2 reducesinkkey0 (type: string)
-                    Group By Operator
-                      aggregations: count()
-                      minReductionHashAggr: 0.99
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                      File Output Operator
-                        compressed: false
-                        table:
-                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                            serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-            Execution mode: vectorized
-            Local Work:
-              Map Reduce Local Work
 
   Stage: Stage-0
     Fetch Operator

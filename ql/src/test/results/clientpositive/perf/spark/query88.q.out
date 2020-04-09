@@ -1,4 +1,4 @@
-Warning: Map Join MAPJOIN[251][bigTable=?] in task 'Stage-1:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[259][bigTable=?] in task 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: explain
 select  *
 from
@@ -214,6 +214,26 @@ STAGE PLANS:
         Map 10 
             Map Operator Tree:
                 TableScan
+                  alias: time_dim
+                  filterExpr: ((t_hour = 12) and (t_minute < 30) and t_time_sk is not null) (type: boolean)
+                  Statistics: Num rows: 86400 Data size: 40694400 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((t_hour = 12) and (t_minute < 30) and t_time_sk is not null) (type: boolean)
+                    Statistics: Num rows: 14400 Data size: 6782400 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: t_time_sk (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 14400 Data size: 6782400 Basic stats: COMPLETE Column stats: NONE
+                      Spark HashTable Sink Operator
+                        keys:
+                          0 _col0 (type: int)
+                          1 _col0 (type: int)
+            Execution mode: vectorized
+            Local Work:
+              Map Reduce Local Work
+        Map 6 
+            Map Operator Tree:
+                TableScan
                   alias: store
                   filterExpr: (s_store_sk is not null and (s_store_name = 'ese')) (type: boolean)
                   Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
@@ -226,12 +246,12 @@ STAGE PLANS:
                       Statistics: Num rows: 852 Data size: 1628138 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
-                          0 _col2 (type: int)
-                          1 _col0 (type: int)
+                          0 _col0 (type: int)
+                          1 _col2 (type: int)
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-        Map 8 
+        Map 9 
             Map Operator Tree:
                 TableScan
                   alias: household_demographics
@@ -251,40 +271,20 @@ STAGE PLANS:
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-        Map 9 
-            Map Operator Tree:
-                TableScan
-                  alias: time_dim
-                  filterExpr: ((t_hour = 12) and (t_minute < 30) and t_time_sk is not null) (type: boolean)
-                  Statistics: Num rows: 86400 Data size: 40694400 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: ((t_hour = 12) and (t_minute < 30) and t_time_sk is not null) (type: boolean)
-                    Statistics: Num rows: 14400 Data size: 6782400 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: t_time_sk (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 14400 Data size: 6782400 Basic stats: COMPLETE Column stats: NONE
-                      Spark HashTable Sink Operator
-                        keys:
-                          0 _col0 (type: int)
-                          1 _col0 (type: int)
-            Execution mode: vectorized
-            Local Work:
-              Map Reduce Local Work
 
   Stage: Stage-2
     Spark
       Edges:
-        Reducer 12 <- Map 11 (GROUP, 1)
-        Reducer 17 <- Map 16 (GROUP, 1)
-        Reducer 22 <- Map 21 (GROUP, 1)
-        Reducer 27 <- Map 26 (GROUP, 1)
-        Reducer 32 <- Map 31 (GROUP, 1)
-        Reducer 37 <- Map 36 (GROUP, 1)
-        Reducer 7 <- Map 6 (GROUP, 1)
+        Reducer 13 <- Map 12 (GROUP, 1)
+        Reducer 18 <- Map 17 (GROUP, 1)
+        Reducer 23 <- Map 22 (GROUP, 1)
+        Reducer 28 <- Map 27 (GROUP, 1)
+        Reducer 33 <- Map 32 (GROUP, 1)
+        Reducer 38 <- Map 37 (GROUP, 1)
+        Reducer 8 <- Map 7 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
-        Map 11 
+        Map 12 
             Map Operator Tree:
                 TableScan
                   alias: store_sales
@@ -305,7 +305,7 @@ STAGE PLANS:
                           1 _col0 (type: int)
                         outputColumnNames: _col0, _col2
                         input vertices:
-                          1 Map 13
+                          1 Map 14
                         Statistics: Num rows: 633595212 Data size: 55895953508 Basic stats: COMPLETE Column stats: NONE
                         Map Join Operator
                           condition map:
@@ -315,16 +315,16 @@ STAGE PLANS:
                             1 _col0 (type: int)
                           outputColumnNames: _col2
                           input vertices:
-                            1 Map 14
+                            1 Map 15
                           Statistics: Num rows: 696954748 Data size: 61485550191 Basic stats: COMPLETE Column stats: NONE
                           Map Join Operator
                             condition map:
                                  Inner Join 0 to 1
                             keys:
-                              0 _col2 (type: int)
-                              1 _col0 (type: int)
+                              0 _col0 (type: int)
+                              1 _col2 (type: int)
                             input vertices:
-                              1 Map 15
+                              0 Map 11
                             Statistics: Num rows: 766650239 Data size: 67634106676 Basic stats: COMPLETE Column stats: NONE
                             Group By Operator
                               aggregations: count()
@@ -340,7 +340,7 @@ STAGE PLANS:
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-        Map 16 
+        Map 17 
             Map Operator Tree:
                 TableScan
                   alias: store_sales
@@ -361,7 +361,7 @@ STAGE PLANS:
                           1 _col0 (type: int)
                         outputColumnNames: _col0, _col2
                         input vertices:
-                          1 Map 18
+                          1 Map 19
                         Statistics: Num rows: 633595212 Data size: 55895953508 Basic stats: COMPLETE Column stats: NONE
                         Map Join Operator
                           condition map:
@@ -371,16 +371,16 @@ STAGE PLANS:
                             1 _col0 (type: int)
                           outputColumnNames: _col2
                           input vertices:
-                            1 Map 19
+                            1 Map 20
                           Statistics: Num rows: 696954748 Data size: 61485550191 Basic stats: COMPLETE Column stats: NONE
                           Map Join Operator
                             condition map:
                                  Inner Join 0 to 1
                             keys:
-                              0 _col2 (type: int)
-                              1 _col0 (type: int)
+                              0 _col0 (type: int)
+                              1 _col2 (type: int)
                             input vertices:
-                              1 Map 20
+                              0 Map 16
                             Statistics: Num rows: 766650239 Data size: 67634106676 Basic stats: COMPLETE Column stats: NONE
                             Group By Operator
                               aggregations: count()
@@ -396,7 +396,7 @@ STAGE PLANS:
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-        Map 21 
+        Map 22 
             Map Operator Tree:
                 TableScan
                   alias: store_sales
@@ -417,7 +417,7 @@ STAGE PLANS:
                           1 _col0 (type: int)
                         outputColumnNames: _col0, _col2
                         input vertices:
-                          1 Map 23
+                          1 Map 24
                         Statistics: Num rows: 633595212 Data size: 55895953508 Basic stats: COMPLETE Column stats: NONE
                         Map Join Operator
                           condition map:
@@ -427,16 +427,16 @@ STAGE PLANS:
                             1 _col0 (type: int)
                           outputColumnNames: _col2
                           input vertices:
-                            1 Map 24
+                            1 Map 25
                           Statistics: Num rows: 696954748 Data size: 61485550191 Basic stats: COMPLETE Column stats: NONE
                           Map Join Operator
                             condition map:
                                  Inner Join 0 to 1
                             keys:
-                              0 _col2 (type: int)
-                              1 _col0 (type: int)
+                              0 _col0 (type: int)
+                              1 _col2 (type: int)
                             input vertices:
-                              1 Map 25
+                              0 Map 21
                             Statistics: Num rows: 766650239 Data size: 67634106676 Basic stats: COMPLETE Column stats: NONE
                             Group By Operator
                               aggregations: count()
@@ -452,7 +452,7 @@ STAGE PLANS:
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-        Map 26 
+        Map 27 
             Map Operator Tree:
                 TableScan
                   alias: store_sales
@@ -473,7 +473,7 @@ STAGE PLANS:
                           1 _col0 (type: int)
                         outputColumnNames: _col0, _col2
                         input vertices:
-                          1 Map 28
+                          1 Map 29
                         Statistics: Num rows: 633595212 Data size: 55895953508 Basic stats: COMPLETE Column stats: NONE
                         Map Join Operator
                           condition map:
@@ -483,16 +483,16 @@ STAGE PLANS:
                             1 _col0 (type: int)
                           outputColumnNames: _col2
                           input vertices:
-                            1 Map 29
+                            1 Map 30
                           Statistics: Num rows: 696954748 Data size: 61485550191 Basic stats: COMPLETE Column stats: NONE
                           Map Join Operator
                             condition map:
                                  Inner Join 0 to 1
                             keys:
-                              0 _col2 (type: int)
-                              1 _col0 (type: int)
+                              0 _col0 (type: int)
+                              1 _col2 (type: int)
                             input vertices:
-                              1 Map 30
+                              0 Map 26
                             Statistics: Num rows: 766650239 Data size: 67634106676 Basic stats: COMPLETE Column stats: NONE
                             Group By Operator
                               aggregations: count()
@@ -508,7 +508,7 @@ STAGE PLANS:
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-        Map 31 
+        Map 32 
             Map Operator Tree:
                 TableScan
                   alias: store_sales
@@ -529,7 +529,7 @@ STAGE PLANS:
                           1 _col0 (type: int)
                         outputColumnNames: _col0, _col2
                         input vertices:
-                          1 Map 33
+                          1 Map 34
                         Statistics: Num rows: 633595212 Data size: 55895953508 Basic stats: COMPLETE Column stats: NONE
                         Map Join Operator
                           condition map:
@@ -539,16 +539,16 @@ STAGE PLANS:
                             1 _col0 (type: int)
                           outputColumnNames: _col2
                           input vertices:
-                            1 Map 34
+                            1 Map 35
                           Statistics: Num rows: 696954748 Data size: 61485550191 Basic stats: COMPLETE Column stats: NONE
                           Map Join Operator
                             condition map:
                                  Inner Join 0 to 1
                             keys:
-                              0 _col2 (type: int)
-                              1 _col0 (type: int)
+                              0 _col0 (type: int)
+                              1 _col2 (type: int)
                             input vertices:
-                              1 Map 35
+                              0 Map 31
                             Statistics: Num rows: 766650239 Data size: 67634106676 Basic stats: COMPLETE Column stats: NONE
                             Group By Operator
                               aggregations: count()
@@ -564,7 +564,7 @@ STAGE PLANS:
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-        Map 36 
+        Map 37 
             Map Operator Tree:
                 TableScan
                   alias: store_sales
@@ -585,7 +585,7 @@ STAGE PLANS:
                           1 _col0 (type: int)
                         outputColumnNames: _col0, _col2
                         input vertices:
-                          1 Map 38
+                          1 Map 39
                         Statistics: Num rows: 633595212 Data size: 55895953508 Basic stats: COMPLETE Column stats: NONE
                         Map Join Operator
                           condition map:
@@ -595,16 +595,16 @@ STAGE PLANS:
                             1 _col0 (type: int)
                           outputColumnNames: _col2
                           input vertices:
-                            1 Map 39
+                            1 Map 40
                           Statistics: Num rows: 696954748 Data size: 61485550191 Basic stats: COMPLETE Column stats: NONE
                           Map Join Operator
                             condition map:
                                  Inner Join 0 to 1
                             keys:
-                              0 _col2 (type: int)
-                              1 _col0 (type: int)
+                              0 _col0 (type: int)
+                              1 _col2 (type: int)
                             input vertices:
-                              1 Map 40
+                              0 Map 36
                             Statistics: Num rows: 766650239 Data size: 67634106676 Basic stats: COMPLETE Column stats: NONE
                             Group By Operator
                               aggregations: count()
@@ -620,7 +620,7 @@ STAGE PLANS:
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-        Map 6 
+        Map 7 
             Map Operator Tree:
                 TableScan
                   alias: store_sales
@@ -641,7 +641,7 @@ STAGE PLANS:
                           1 _col0 (type: int)
                         outputColumnNames: _col0, _col2
                         input vertices:
-                          1 Map 8
+                          1 Map 9
                         Statistics: Num rows: 633595212 Data size: 55895953508 Basic stats: COMPLETE Column stats: NONE
                         Map Join Operator
                           condition map:
@@ -651,16 +651,16 @@ STAGE PLANS:
                             1 _col0 (type: int)
                           outputColumnNames: _col2
                           input vertices:
-                            1 Map 9
+                            1 Map 10
                           Statistics: Num rows: 696954748 Data size: 61485550191 Basic stats: COMPLETE Column stats: NONE
                           Map Join Operator
                             condition map:
                                  Inner Join 0 to 1
                             keys:
-                              0 _col2 (type: int)
-                              1 _col0 (type: int)
+                              0 _col0 (type: int)
+                              1 _col2 (type: int)
                             input vertices:
-                              1 Map 10
+                              0 Map 6
                             Statistics: Num rows: 766650239 Data size: 67634106676 Basic stats: COMPLETE Column stats: NONE
                             Group By Operator
                               aggregations: count()
@@ -676,7 +676,7 @@ STAGE PLANS:
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-        Reducer 12 
+        Reducer 13 
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
@@ -696,7 +696,7 @@ STAGE PLANS:
                     5 
                     6 
                     7 
-        Reducer 17 
+        Reducer 18 
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
@@ -716,7 +716,7 @@ STAGE PLANS:
                     5 
                     6 
                     7 
-        Reducer 22 
+        Reducer 23 
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
@@ -736,7 +736,7 @@ STAGE PLANS:
                     5 
                     6 
                     7 
-        Reducer 27 
+        Reducer 28 
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
@@ -756,7 +756,7 @@ STAGE PLANS:
                     5 
                     6 
                     7 
-        Reducer 32 
+        Reducer 33 
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
@@ -776,7 +776,7 @@ STAGE PLANS:
                     5 
                     6 
                     7 
-        Reducer 37 
+        Reducer 38 
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
@@ -796,7 +796,7 @@ STAGE PLANS:
                     5 
                     6 
                     7 
-        Reducer 7 
+        Reducer 8 
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
@@ -821,7 +821,27 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 3 
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: store
+                  filterExpr: (s_store_sk is not null and (s_store_name = 'ese')) (type: boolean)
+                  Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (s_store_sk is not null and (s_store_name = 'ese')) (type: boolean)
+                    Statistics: Num rows: 852 Data size: 1628138 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: s_store_sk (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 852 Data size: 1628138 Basic stats: COMPLETE Column stats: NONE
+                      Spark HashTable Sink Operator
+                        keys:
+                          0 _col0 (type: int)
+                          1 _col2 (type: int)
+            Execution mode: vectorized
+            Local Work:
+              Map Reduce Local Work
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: household_demographics
@@ -841,7 +861,7 @@ STAGE PLANS:
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-        Map 4 
+        Map 5 
             Map Operator Tree:
                 TableScan
                   alias: time_dim
@@ -861,34 +881,14 @@ STAGE PLANS:
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-        Map 5 
-            Map Operator Tree:
-                TableScan
-                  alias: store
-                  filterExpr: (s_store_sk is not null and (s_store_name = 'ese')) (type: boolean)
-                  Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (s_store_sk is not null and (s_store_name = 'ese')) (type: boolean)
-                    Statistics: Num rows: 852 Data size: 1628138 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: s_store_sk (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 852 Data size: 1628138 Basic stats: COMPLETE Column stats: NONE
-                      Spark HashTable Sink Operator
-                        keys:
-                          0 _col2 (type: int)
-                          1 _col0 (type: int)
-            Execution mode: vectorized
-            Local Work:
-              Map Reduce Local Work
 
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (GROUP, 1)
+        Reducer 3 <- Map 2 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: store_sales
@@ -909,7 +909,7 @@ STAGE PLANS:
                           1 _col0 (type: int)
                         outputColumnNames: _col0, _col2
                         input vertices:
-                          1 Map 3
+                          1 Map 4
                         Statistics: Num rows: 633595212 Data size: 55895953508 Basic stats: COMPLETE Column stats: NONE
                         Map Join Operator
                           condition map:
@@ -919,16 +919,16 @@ STAGE PLANS:
                             1 _col0 (type: int)
                           outputColumnNames: _col2
                           input vertices:
-                            1 Map 4
+                            1 Map 5
                           Statistics: Num rows: 696954748 Data size: 61485550191 Basic stats: COMPLETE Column stats: NONE
                           Map Join Operator
                             condition map:
                                  Inner Join 0 to 1
                             keys:
-                              0 _col2 (type: int)
-                              1 _col0 (type: int)
+                              0 _col0 (type: int)
+                              1 _col2 (type: int)
                             input vertices:
-                              1 Map 5
+                              0 Map 1
                             Statistics: Num rows: 766650239 Data size: 67634106676 Basic stats: COMPLETE Column stats: NONE
                             Group By Operator
                               aggregations: count()
@@ -944,7 +944,7 @@ STAGE PLANS:
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-        Reducer 2 
+        Reducer 3 
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
@@ -974,13 +974,13 @@ STAGE PLANS:
                     7 
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
                   input vertices:
-                    1 Reducer 7
-                    2 Reducer 12
-                    3 Reducer 17
-                    4 Reducer 22
-                    5 Reducer 27
-                    6 Reducer 32
-                    7 Reducer 37
+                    1 Reducer 8
+                    2 Reducer 13
+                    3 Reducer 18
+                    4 Reducer 23
+                    5 Reducer 28
+                    6 Reducer 33
+                    7 Reducer 38
                   Statistics: Num rows: 1 Data size: 65 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col0 (type: bigint), _col7 (type: bigint), _col6 (type: bigint), _col5 (type: bigint), _col4 (type: bigint), _col3 (type: bigint), _col2 (type: bigint), _col1 (type: bigint)
@@ -998,7 +998,27 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 13 
+        Map 11 
+            Map Operator Tree:
+                TableScan
+                  alias: store
+                  filterExpr: (s_store_sk is not null and (s_store_name = 'ese')) (type: boolean)
+                  Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (s_store_sk is not null and (s_store_name = 'ese')) (type: boolean)
+                    Statistics: Num rows: 852 Data size: 1628138 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: s_store_sk (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 852 Data size: 1628138 Basic stats: COMPLETE Column stats: NONE
+                      Spark HashTable Sink Operator
+                        keys:
+                          0 _col0 (type: int)
+                          1 _col2 (type: int)
+            Execution mode: vectorized
+            Local Work:
+              Map Reduce Local Work
+        Map 14 
             Map Operator Tree:
                 TableScan
                   alias: household_demographics
@@ -1018,7 +1038,7 @@ STAGE PLANS:
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-        Map 14 
+        Map 15 
             Map Operator Tree:
                 TableScan
                   alias: time_dim
@@ -1038,7 +1058,12 @@ STAGE PLANS:
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-        Map 15 
+
+  Stage: Stage-5
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 16 
             Map Operator Tree:
                 TableScan
                   alias: store
@@ -1053,17 +1078,12 @@ STAGE PLANS:
                       Statistics: Num rows: 852 Data size: 1628138 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
-                          0 _col2 (type: int)
-                          1 _col0 (type: int)
+                          0 _col0 (type: int)
+                          1 _col2 (type: int)
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-
-  Stage: Stage-5
-    Spark
-#### A masked pattern was here ####
-      Vertices:
-        Map 18 
+        Map 19 
             Map Operator Tree:
                 TableScan
                   alias: household_demographics
@@ -1083,7 +1103,7 @@ STAGE PLANS:
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-        Map 19 
+        Map 20 
             Map Operator Tree:
                 TableScan
                   alias: time_dim
@@ -1103,7 +1123,12 @@ STAGE PLANS:
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-        Map 20 
+
+  Stage: Stage-6
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 21 
             Map Operator Tree:
                 TableScan
                   alias: store
@@ -1118,17 +1143,12 @@ STAGE PLANS:
                       Statistics: Num rows: 852 Data size: 1628138 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
-                          0 _col2 (type: int)
-                          1 _col0 (type: int)
+                          0 _col0 (type: int)
+                          1 _col2 (type: int)
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-
-  Stage: Stage-6
-    Spark
-#### A masked pattern was here ####
-      Vertices:
-        Map 23 
+        Map 24 
             Map Operator Tree:
                 TableScan
                   alias: household_demographics
@@ -1148,7 +1168,7 @@ STAGE PLANS:
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-        Map 24 
+        Map 25 
             Map Operator Tree:
                 TableScan
                   alias: time_dim
@@ -1168,7 +1188,12 @@ STAGE PLANS:
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-        Map 25 
+
+  Stage: Stage-7
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 26 
             Map Operator Tree:
                 TableScan
                   alias: store
@@ -1183,17 +1208,12 @@ STAGE PLANS:
                       Statistics: Num rows: 852 Data size: 1628138 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
-                          0 _col2 (type: int)
-                          1 _col0 (type: int)
+                          0 _col0 (type: int)
+                          1 _col2 (type: int)
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-
-  Stage: Stage-7
-    Spark
-#### A masked pattern was here ####
-      Vertices:
-        Map 28 
+        Map 29 
             Map Operator Tree:
                 TableScan
                   alias: household_demographics
@@ -1213,7 +1233,7 @@ STAGE PLANS:
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-        Map 29 
+        Map 30 
             Map Operator Tree:
                 TableScan
                   alias: time_dim
@@ -1233,7 +1253,12 @@ STAGE PLANS:
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-        Map 30 
+
+  Stage: Stage-8
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 31 
             Map Operator Tree:
                 TableScan
                   alias: store
@@ -1248,17 +1273,12 @@ STAGE PLANS:
                       Statistics: Num rows: 852 Data size: 1628138 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
-                          0 _col2 (type: int)
-                          1 _col0 (type: int)
+                          0 _col0 (type: int)
+                          1 _col2 (type: int)
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-
-  Stage: Stage-8
-    Spark
-#### A masked pattern was here ####
-      Vertices:
-        Map 33 
+        Map 34 
             Map Operator Tree:
                 TableScan
                   alias: household_demographics
@@ -1278,7 +1298,7 @@ STAGE PLANS:
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-        Map 34 
+        Map 35 
             Map Operator Tree:
                 TableScan
                   alias: time_dim
@@ -1298,7 +1318,12 @@ STAGE PLANS:
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-        Map 35 
+
+  Stage: Stage-9
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 36 
             Map Operator Tree:
                 TableScan
                   alias: store
@@ -1313,17 +1338,12 @@ STAGE PLANS:
                       Statistics: Num rows: 852 Data size: 1628138 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
-                          0 _col2 (type: int)
-                          1 _col0 (type: int)
+                          0 _col0 (type: int)
+                          1 _col2 (type: int)
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-
-  Stage: Stage-9
-    Spark
-#### A masked pattern was here ####
-      Vertices:
-        Map 38 
+        Map 39 
             Map Operator Tree:
                 TableScan
                   alias: household_demographics
@@ -1343,7 +1363,7 @@ STAGE PLANS:
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-        Map 39 
+        Map 40 
             Map Operator Tree:
                 TableScan
                   alias: time_dim
@@ -1359,26 +1379,6 @@ STAGE PLANS:
                       Spark HashTable Sink Operator
                         keys:
                           0 _col0 (type: int)
-                          1 _col0 (type: int)
-            Execution mode: vectorized
-            Local Work:
-              Map Reduce Local Work
-        Map 40 
-            Map Operator Tree:
-                TableScan
-                  alias: store
-                  filterExpr: (s_store_sk is not null and (s_store_name = 'ese')) (type: boolean)
-                  Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (s_store_sk is not null and (s_store_name = 'ese')) (type: boolean)
-                    Statistics: Num rows: 852 Data size: 1628138 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: s_store_sk (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 852 Data size: 1628138 Basic stats: COMPLETE Column stats: NONE
-                      Spark HashTable Sink Operator
-                        keys:
-                          0 _col2 (type: int)
                           1 _col0 (type: int)
             Execution mode: vectorized
             Local Work:

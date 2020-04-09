@@ -76,7 +76,27 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 6 
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: warehouse
+                  filterExpr: w_warehouse_sk is not null (type: boolean)
+                  Statistics: Num rows: 27 Data size: 27802 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: w_warehouse_sk is not null (type: boolean)
+                    Statistics: Num rows: 27 Data size: 27802 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: w_warehouse_sk (type: int), w_warehouse_name (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 27 Data size: 27802 Basic stats: COMPLETE Column stats: NONE
+                      Spark HashTable Sink Operator
+                        keys:
+                          0 _col0 (type: int)
+                          1 _col2 (type: int)
+            Execution mode: vectorized
+            Local Work:
+              Map Reduce Local Work
+        Map 7 
             Map Operator Tree:
                 TableScan
                   alias: date_dim
@@ -96,36 +116,16 @@ STAGE PLANS:
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-        Map 7 
-            Map Operator Tree:
-                TableScan
-                  alias: warehouse
-                  filterExpr: w_warehouse_sk is not null (type: boolean)
-                  Statistics: Num rows: 27 Data size: 27802 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: w_warehouse_sk is not null (type: boolean)
-                    Statistics: Num rows: 27 Data size: 27802 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: w_warehouse_sk (type: int), w_warehouse_name (type: string)
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 27 Data size: 27802 Basic stats: COMPLETE Column stats: NONE
-                      Spark HashTable Sink Operator
-                        keys:
-                          0 _col2 (type: int)
-                          1 _col0 (type: int)
-            Execution mode: vectorized
-            Local Work:
-              Map Reduce Local Work
 
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 6), Map 5 (PARTITION-LEVEL SORT, 6)
-        Reducer 3 <- Reducer 2 (GROUP, 7)
-        Reducer 4 <- Reducer 3 (SORT, 1)
+        Reducer 3 <- Map 2 (PARTITION-LEVEL SORT, 6), Map 6 (PARTITION-LEVEL SORT, 6)
+        Reducer 4 <- Reducer 3 (GROUP, 7)
+        Reducer 5 <- Reducer 4 (SORT, 1)
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: inventory
@@ -146,7 +146,7 @@ STAGE PLANS:
                         Statistics: Num rows: 37584000 Data size: 593821104 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: int), _col2 (type: int), _col3 (type: int)
             Execution mode: vectorized
-        Map 5 
+        Map 6 
             Map Operator Tree:
                 TableScan
                   alias: item
@@ -167,7 +167,7 @@ STAGE PLANS:
                         Statistics: Num rows: 51333 Data size: 73728460 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: string)
             Execution mode: vectorized
-        Reducer 2 
+        Reducer 3 
             Local Work:
               Map Reduce Local Work
             Reduce Operator Tree:
@@ -187,20 +187,20 @@ STAGE PLANS:
                     1 _col0 (type: int)
                   outputColumnNames: _col2, _col3, _col5, _col7, _col8
                   input vertices:
-                    1 Map 6
+                    1 Map 7
                   Statistics: Num rows: 45476640 Data size: 718523566 Basic stats: COMPLETE Column stats: NONE
                   Map Join Operator
                     condition map:
                          Inner Join 0 to 1
                     keys:
-                      0 _col2 (type: int)
-                      1 _col0 (type: int)
-                    outputColumnNames: _col3, _col5, _col7, _col8, _col10
+                      0 _col0 (type: int)
+                      1 _col2 (type: int)
+                    outputColumnNames: _col1, _col5, _col7, _col9, _col10
                     input vertices:
-                      1 Map 7
+                      0 Map 1
                     Statistics: Num rows: 50024305 Data size: 790375939 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: _col10 (type: string), _col5 (type: string), CASE WHEN (_col7) THEN (_col3) ELSE (0) END (type: int), CASE WHEN (_col8) THEN (_col3) ELSE (0) END (type: int)
+                      expressions: _col1 (type: string), _col7 (type: string), CASE WHEN (_col9) THEN (_col5) ELSE (0) END (type: int), CASE WHEN (_col10) THEN (_col5) ELSE (0) END (type: int)
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 50024305 Data size: 790375939 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
@@ -217,7 +217,7 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                           Statistics: Num rows: 50024305 Data size: 790375939 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col2 (type: bigint), _col3 (type: bigint)
-        Reducer 3 
+        Reducer 4 
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
@@ -236,7 +236,7 @@ STAGE PLANS:
                     Statistics: Num rows: 6253038 Data size: 98796990 Basic stats: COMPLETE Column stats: NONE
                     TopN Hash Memory Usage: 0.1
                     value expressions: _col2 (type: bigint), _col3 (type: bigint)
-        Reducer 4 
+        Reducer 5 
             Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator

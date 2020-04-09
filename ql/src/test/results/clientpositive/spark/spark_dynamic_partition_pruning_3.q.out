@@ -1637,49 +1637,17 @@ POSTHOOK: Input: default@regular_table1
 POSTHOOK: Input: default@regular_table2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
-  Stage-2 is a root stage
+  Stage-3 is a root stage
+  Stage-2 depends on stages: Stage-3
   Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-2
+  Stage: Stage-3
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: regular_table1
-                  filterExpr: col1 is not null (type: boolean)
-                  Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: col1 is not null (type: boolean)
-                    Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: col1 (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
-                      Spark HashTable Sink Operator
-                        keys:
-                          0 _col0 (type: int)
-                          1 _col0 (type: int)
-                          2 _col0 (type: int)
-                      Select Operator
-                        expressions: _col0 (type: int)
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          keys: _col0 (type: int)
-                          minReductionHashAggr: 0.99
-                          mode: hash
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
-                          Spark Partition Pruning Sink Operator
-                            Target Columns: [Map 3 -> [part_col:int (part_col)]]
-                            Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
-            Local Work:
-              Map Reduce Local Work
-        Map 2 
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: regular_table2
@@ -1696,7 +1664,6 @@ STAGE PLANS:
                         keys:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
-                          2 _col0 (type: int)
                       Select Operator
                         expressions: _col0 (type: int)
                         outputColumnNames: _col0
@@ -1708,18 +1675,65 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target Columns: [Map 3 -> [part_col:int (part_col)]]
+                            Target Columns: [Map 1 -> [part_col:int (part_col)]]
                             Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-2
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: regular_table1
+                  filterExpr: col1 is not null (type: boolean)
+                  Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: col1 is not null (type: boolean)
+                    Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: col1 (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: int)
+                          1 _col0 (type: int)
+                        outputColumnNames: _col0
+                        input vertices:
+                          1 Map 4
+                        Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+                        Spark HashTable Sink Operator
+                          keys:
+                            0 _col0 (type: int)
+                            1 _col0 (type: int)
+                        Select Operator
+                          expressions: _col0 (type: int)
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+                          Group By Operator
+                            keys: _col0 (type: int)
+                            minReductionHashAggr: 0.99
+                            mode: hash
+                            outputColumnNames: _col0
+                            Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+                            Spark Partition Pruning Sink Operator
+                              Target Columns: [Map 1 -> [part_col:int (part_col)]]
+                              Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
             Local Work:
               Map Reduce Local Work
 
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 4 <- Map 3 (GROUP, 1)
+        Reducer 2 <- Map 1 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
-        Map 3 
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: partitioned_table1
@@ -1731,15 +1745,12 @@ STAGE PLANS:
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
-                           Inner Join 0 to 2
                       keys:
                         0 _col0 (type: int)
                         1 _col0 (type: int)
-                        2 _col0 (type: int)
                       input vertices:
-                        0 Map 1
-                        1 Map 2
-                      Statistics: Num rows: 39 Data size: 39 Basic stats: COMPLETE Column stats: NONE
+                        1 Map 3
+                      Statistics: Num rows: 19 Data size: 19 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
                         minReductionHashAggr: 0.99
@@ -1753,7 +1764,7 @@ STAGE PLANS:
                           value expressions: _col0 (type: bigint)
             Local Work:
               Map Reduce Local Work
-        Reducer 4 
+        Reducer 2 
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)

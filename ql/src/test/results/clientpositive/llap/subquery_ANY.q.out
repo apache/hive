@@ -320,8 +320,8 @@ POSTHOOK: Input: default@part
 POSTHOOK: Input: default@part_null_n0
 #### A masked pattern was here ####
 26
-Warning: Shuffle Join MERGEJOIN[39][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
-Warning: Shuffle Join MERGEJOIN[40][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Stage 'Reducer 4' is a cross product
+Warning: Shuffle Join MERGEJOIN[40][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 6' is a cross product
+Warning: Shuffle Join MERGEJOIN[41][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select count(*) from part where (p_partkey = ANY (select p_partkey from part_null_n0 where p_partkey is null)) is null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
@@ -376,7 +376,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 26
-Warning: Shuffle Join MERGEJOIN[43][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[44][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 6' is a cross product
 PREHOOK: query: explain cbo select count(*) from part where p_partkey >= ANY (select p_partkey from part) 
 	AND p_size = ANY (select p_size from part group by p_size)
 PREHOOK: type: QUERY
@@ -393,16 +393,17 @@ HiveAggregate(group=[{}], agg#0=[count()])
     HiveProject(p_partkey=[$0], p_size=[$5])
       HiveFilter(condition=[IS NOT NULL($5)])
         HiveTableScan(table=[[default, part]], table:alias=[part])
-    HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
-      HiveProject(p_size=[$0])
-        HiveAggregate(group=[{5}])
-          HiveFilter(condition=[IS NOT NULL($5)])
+    HiveProject(p_size=[$0], m=[$1], c=[$2], d=[$3])
+      HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+        HiveProject(p_size=[$0])
+          HiveAggregate(group=[{5}])
+            HiveFilter(condition=[IS NOT NULL($5)])
+              HiveTableScan(table=[[default, part]], table:alias=[part])
+        HiveProject(m=[$0], c=[$1], d=[$2])
+          HiveAggregate(group=[{}], m=[MIN($0)], c=[COUNT()], d=[COUNT($0)])
             HiveTableScan(table=[[default, part]], table:alias=[part])
-      HiveProject(m=[$0], c=[$1], d=[$2])
-        HiveAggregate(group=[{}], m=[MIN($0)], c=[COUNT()], d=[COUNT($0)])
-          HiveTableScan(table=[[default, part]], table:alias=[part])
 
-Warning: Shuffle Join MERGEJOIN[43][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[44][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 6' is a cross product
 PREHOOK: query: select count(*) from part where p_partkey >= ANY (select p_partkey from part) 
 	AND p_size = ANY (select p_size from part group by p_size)
 PREHOOK: type: QUERY
