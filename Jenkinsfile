@@ -29,8 +29,11 @@ def testInParallel(parallelism, inclusionsFile, exclusionsFile, results, image, 
             writeFile file: (split.includes ? exclusionsFile : inclusionsFile), text: ''
   //        }
         //  stage('Main') {
-            realtimeJUnit(results) {
+//            realtimeJUnit(results)
+            try {
               run()
+            } finally {
+              junit '**/TEST-*.xml'
             }
 //          }
         }
