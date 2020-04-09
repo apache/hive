@@ -98,6 +98,8 @@ import java.util.Map;
 
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
+import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
+import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.DUMP_ACKNOWLEDGEMENT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -315,8 +317,8 @@ public class TestReplicationScenarios {
 
     FileSystem fs = new Path(bootstrapDump.dumpLocation).getFileSystem(hconf);
     Path dumpPath = new Path(bootstrapDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
-    assertTrue(fs.exists(new Path(dumpPath, ReplUtils.DUMP_ACKNOWLEDGEMENT)));
-    assertTrue(fs.exists(new Path(dumpPath, ReplUtils.LOAD_ACKNOWLEDGEMENT)));
+    assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
+    assertTrue(fs.exists(new Path(dumpPath, LOAD_ACKNOWLEDGEMENT.toString())));
 
     verifyRun("SELECT * from " + replicatedDbName + ".unptned", unptn_data, driverMirror);
     verifyRun("SELECT a from " + replicatedDbName + ".ptned WHERE b=1", ptn_data_1, driverMirror);
@@ -367,8 +369,8 @@ public class TestReplicationScenarios {
     advanceDumpDir();
     FileSystem fs = new Path(bootstrapDump.dumpLocation).getFileSystem(hconf);
     Path dumpPath = new Path(bootstrapDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
-    assertTrue(fs.exists(new Path(dumpPath, ReplUtils.DUMP_ACKNOWLEDGEMENT)));
-    assertTrue(fs.exists(new Path(dumpPath, ReplUtils.LOAD_ACKNOWLEDGEMENT)));
+    assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
+    assertTrue(fs.exists(new Path(dumpPath, LOAD_ACKNOWLEDGEMENT.toString())));
 
     verifyRun("SELECT * from " + replicatedDbName + ".unptned", unptnData, driverMirror);
     verifyRun("SELECT a from " + replicatedDbName + ".ptned WHERE b=1", ptnData1, driverMirror);
@@ -452,7 +454,7 @@ public class TestReplicationScenarios {
 
     Path loadPath = new Path(dump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
     //delete load ack to reload the same dump
-    loadPath.getFileSystem(hconf).delete(new Path(loadPath, ReplUtils.LOAD_ACKNOWLEDGEMENT), true);
+    loadPath.getFileSystem(hconf).delete(new Path(loadPath, LOAD_ACKNOWLEDGEMENT.toString()), true);
     loadAndVerify(dbNameReplica, dbName, dump.lastReplId);
 
     run("insert into table " + dbName + ".t2 partition(country='india') values ('delhi')", driver);
@@ -466,7 +468,7 @@ public class TestReplicationScenarios {
 
     loadPath = new Path(dump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
     //delete load ack to reload the same dump
-    loadPath.getFileSystem(hconf).delete(new Path(loadPath, ReplUtils.LOAD_ACKNOWLEDGEMENT), true);
+    loadPath.getFileSystem(hconf).delete(new Path(loadPath, LOAD_ACKNOWLEDGEMENT.toString()), true);
     loadAndVerify(dbNameReplica, dbName, dump.lastReplId);
 
     run("insert into table " + dbName + ".t2 partition(country='us') values ('sf')", driver);
@@ -902,8 +904,8 @@ public class TestReplicationScenarios {
     Tuple incrementalDump = incrementalLoadAndVerify(dbName, replDbName);
     FileSystem fs = new Path(bootstrapDump.dumpLocation).getFileSystem(hconf);
     Path dumpPath = new Path(incrementalDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
-    assertTrue(fs.exists(new Path(dumpPath, ReplUtils.DUMP_ACKNOWLEDGEMENT)));
-    assertTrue(fs.exists(new Path(dumpPath, ReplUtils.LOAD_ACKNOWLEDGEMENT)));
+    assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
+    assertTrue(fs.exists(new Path(dumpPath, LOAD_ACKNOWLEDGEMENT.toString())));
 
     // VERIFY tables and partitions on destination for equivalence.
     verifyRun("SELECT * from " + replDbName + ".unptned_empty", empty, driverMirror);
@@ -1439,8 +1441,8 @@ public class TestReplicationScenarios {
     Path path = new Path(System.getProperty("test.warehouse.dir", ""));
     String tableRelativeSrcPath = dbName.toLowerCase()+".db" + File.separator + "unptned";
     Path srcFileLocation = new Path(path, tableRelativeSrcPath + File.separator + unptnedFileName1);
-    String tgtFileRelativePath = ReplUtils.REPL_HIVE_BASE_DIR + File.separator + dbName.toLowerCase() + File.separator
-            + "unptned" + File.separator + EximUtil.DATA_PATH_NAME +File.separator + unptnedFileName1;
+    String tgtFileRelativePath = ReplUtils.REPL_HIVE_BASE_DIR + File.separator + EximUtil.DATA_PATH_NAME
+            + File.separator + dbName.toLowerCase() + File.separator + "unptned" +File.separator + unptnedFileName1;
     Path tgtFileLocation = new Path(dump.dumpLocation, tgtFileRelativePath);
     //A file in table at src location should be copied to $dumplocation/hive/<db>/<table>/data/<unptned_fileName>
     verifyChecksum(srcFileLocation, tgtFileLocation, true);
@@ -1449,9 +1451,10 @@ public class TestReplicationScenarios {
 
     String partitionRelativeSrcPath = dbName.toLowerCase()+".db" + File.separator + "ptned" + File.separator + "b=1";
     srcFileLocation = new Path(path, partitionRelativeSrcPath + File.separator + ptnedFileName1);
-    tgtFileRelativePath = ReplUtils.REPL_HIVE_BASE_DIR + File.separator + dbName.toLowerCase()
+    tgtFileRelativePath = ReplUtils.REPL_HIVE_BASE_DIR + File.separator + EximUtil.DATA_PATH_NAME
+            + File.separator + dbName.toLowerCase()
             + File.separator + "ptned" + File.separator + "b=1" + File.separator
-            + EximUtil.DATA_PATH_NAME +File.separator + ptnedFileName1;
+            + ptnedFileName1;
     tgtFileLocation = new Path(dump.dumpLocation, tgtFileRelativePath);
     //A partitioned file in table at src location should be copied to
     // $dumplocation/hive/<db>/<table>/<partition>/data/<unptned_fileName>
@@ -1723,7 +1726,8 @@ public class TestReplicationScenarios {
     Tuple incrementalDump = replDumpDb(dbName);
 
     //Remove the dump ack file, so that dump is treated as an invalid dump.
-    String ackFileRelativePath = ReplUtils.REPL_HIVE_BASE_DIR + File.separator + ReplUtils.DUMP_ACKNOWLEDGEMENT;
+    String ackFileRelativePath = ReplUtils.REPL_HIVE_BASE_DIR + File.separator
+            + DUMP_ACKNOWLEDGEMENT.toString();
     Path dumpFinishedAckFilePath = new Path(incrementalDump.dumpLocation, ackFileRelativePath);
     Path tmpDumpFinishedAckFilePath = new Path(dumpFinishedAckFilePath.getParent(),
             "old_" + dumpFinishedAckFilePath.getName());
@@ -1809,7 +1813,7 @@ public class TestReplicationScenarios {
     FileSystem fs = FileSystem.get(fileToDelete.toUri(), hconf);
     fs.delete(fileToDelete, true);
     assertTrue(fs.exists(bootstrapDumpDir));
-    assertTrue(fs.exists(new Path(bootstrapDumpDir, ReplUtils.DUMP_ACKNOWLEDGEMENT)));
+    assertTrue(fs.exists(new Path(bootstrapDumpDir, DUMP_ACKNOWLEDGEMENT.toString())));
 
     loadAndVerify(replDbName, dbName, incrDump.lastReplId);
 

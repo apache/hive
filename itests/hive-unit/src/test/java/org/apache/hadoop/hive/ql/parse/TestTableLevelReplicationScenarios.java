@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.parse;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
@@ -242,7 +243,12 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
 
     // Check if the DB dump path have any tables other than the ones listed in bootstrappedTables.
     Path dbPath = new Path(dumpPath, primaryDbName);
-    FileStatus[] fileStatuses = primary.miniDFSCluster.getFileSystem().listStatus(dbPath);
+    FileStatus[] fileStatuses = primary.miniDFSCluster.getFileSystem().listStatus(dbPath, new PathFilter() {
+      @Override
+      public boolean accept(Path path) {
+        return !path.getName().equalsIgnoreCase(EximUtil.DATA_PATH_NAME);
+      }
+    });
     Assert.assertEquals(fileStatuses.length, bootstrappedTables.length);
 
     // Eg: _bootstrap/<db_name>/t2, _bootstrap/<db_name>/t3 etc
@@ -500,13 +506,14 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
             .dump(replPolicy, dumpWithClause);
 
     String hiveDumpDir = tuple.dumpLocation + File.separator + ReplUtils.REPL_HIVE_BASE_DIR;
+    Path metaDataPath = new Path(hiveDumpDir, EximUtil.METADATA_PATH_NAME);
     // the _external_tables_file info should be created as external tables are to be replicated.
     Assert.assertTrue(primary.miniDFSCluster.getFileSystem()
-            .exists(new Path(new Path(hiveDumpDir, primaryDbName.toLowerCase()), FILE_NAME)));
+            .exists(new Path(new Path(metaDataPath, primaryDbName.toLowerCase()), FILE_NAME)));
 
     // Verify that the external table info contains only table "a2".
     ReplicationTestUtils.assertExternalFileInfo(primary, Arrays.asList("a2"),
-            new Path(new Path(hiveDumpDir, primaryDbName.toLowerCase()), FILE_NAME));
+            new Path(new Path(metaDataPath, primaryDbName.toLowerCase()), FILE_NAME));
 
     replica.load(replicatedDbName, replPolicy, loadWithClause)
             .run("use " + replicatedDbName)
