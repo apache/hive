@@ -1381,13 +1381,16 @@ public class TezCompiler extends TaskCompiler {
 
           parallelEdges = true;
 
-          // Add the semijoin branch to the map
-          semijoins.put(rs, ts);
-          // Add mapJoin branch to probeDecode table
+          // Keep track of Mj to probeDecode TS
           if (!probeDecodeMJoins.containsKey(ts)){
             probeDecodeMJoins.put(ts, new ArrayList<>());
           }
           probeDecodeMJoins.get(ts).add((MapJoinOperator) mapjoin);
+
+          // Skip adding to SJ removal map when created by hint
+          if (!sjInfo.getIsHint() && sjInfo.getShouldRemove()) {
+            semijoins.put(rs, ts);
+          }
         }
       }
     }
@@ -1494,11 +1497,6 @@ public class TezCompiler extends TaskCompiler {
     if (!procCtx.conf.getBoolVar(ConfVars.TEZ_DYNAMIC_SEMIJOIN_REDUCTION_FOR_MAPJOIN)) {
       if (semijoins.size() > 0) {
         for (Entry<ReduceSinkOperator, TableScanOperator> semiEntry : semijoins.entrySet()) {
-          SemiJoinBranchInfo sjInfo = procCtx.parseContext.getRsToSemiJoinBranchInfo().get(semiEntry.getKey());
-          if (sjInfo.getIsHint() || !sjInfo.getShouldRemove()) {
-            // Created by hint, skip it
-            continue;
-          }
           if (LOG.isDebugEnabled()) {
             LOG.debug("Semijoin optimization with parallel edge to map join. Removing semijoin " +
                 OperatorUtils.getOpNamePretty(semiEntry.getKey()) + " - " + OperatorUtils.getOpNamePretty(semiEntry.getValue()));
