@@ -4360,8 +4360,20 @@ public final class Utilities {
 
 
   public static void writeCommitManifest(List<Path> commitPaths, Path specPath, FileSystem fs,
-      String taskId, Long writeId, int stmtId, String unionSuffix, boolean isInsertOverwrite) throws HiveException {
-    if (commitPaths.isEmpty()) {
+      String taskId, Long writeId, int stmtId, String unionSuffix, boolean isInsertOverwrite,
+      boolean hasDynamicPartitions, Set<String> dynamicPartitionSpecs) throws HiveException {
+
+    // When doing a multi-statement insert overwrite with dynamic partitioning,
+    // the partition information will be written to the manifest file.
+    // This is needed because in this use case each FileSinkOperator should clean-up
+    // only the partition directories written by the same FileSinkOperator and do not
+    // clean-up the partition directories written by the other FileSinkOperators.
+    // If a statement from the insert overwrite query, doesn't produce any data,
+    // a manifest file will still be written, otherwise the missing manifest file
+    // would result a clean-up on table level which could delete the data written by
+    // the other FileSinkOperators. (For further details please see HIVE-23114.)
+    boolean writeDynamicPartitionsToManifest = isInsertOverwrite && hasDynamicPartitions;
+    if (commitPaths.isEmpty() && !writeDynamicPartitionsToManifest) {
       return;
     }
     // We assume one FSOP per task (per specPath), so we create it in specPath.
@@ -4374,6 +4386,14 @@ public final class Utilities {
         if (out == null) {
           throw new HiveException("Failed to create manifest at " + manifestPath);
         }
+
+        if (writeDynamicPartitionsToManifest) {
+          out.writeInt(dynamicPartitionSpecs.size());
+          for (String dynamicPartitionSpec : dynamicPartitionSpecs) {
+            out.writeUTF(dynamicPartitionSpec.toString());
+          }
+        }
+
         out.writeInt(commitPaths.size());
         for (Path path : commitPaths) {
           out.writeUTF(path.toString());
@@ -4384,11 +4404,16 @@ public final class Utilities {
     }
   }
 
-  // TODO: we should get rid of isInsertOverwrite here too.
   private static Path getManifestDir(
       Path specPath, long writeId, int stmtId, String unionSuffix, boolean isInsertOverwrite) {
     Path manifestPath = new Path(specPath, "_tmp." +
       AcidUtils.baseOrDeltaSubdir(isInsertOverwrite, writeId, writeId, stmtId));
+    if (isInsertOverwrite) {
+      // When doing a multi-statement insert overwrite query with dynamic partitioning, the
+      // generated manifest directory is the same for each FileSinkOperator.
+      // To resolve this name collision, extending the manifest path with the statement id.
+      manifestPath = new Path(manifestPath + "_" + stmtId);
+    }
 
     return (unionSuffix == null) ? manifestPath : new Path(manifestPath, unionSuffix);
   }
@@ -4431,38 +4456,54 @@ public final class Utilities {
         }
       }
     } else {
-      Utilities.FILE_OP_LOGGER.info("No manifests found - query produced no output");
+      Utilities.FILE_OP_LOGGER.info("No manifests found in directory {} - query produced no output", manifestDir);
       manifestDir = null;
     }
 
-    Utilities.FILE_OP_LOGGER.debug("Looking for files in: {}", specPath);
-    AcidUtils.IdPathFilter filter = new AcidUtils.IdPathFilter(writeId, stmtId);
-    if (!fs.exists(specPath)) {
-      Utilities.FILE_OP_LOGGER.info("Creating directory with no output at {}", specPath);
-      FileUtils.mkdir(fs, specPath, hconf);
-    }
-    Path[] files = getDirectInsertDirectoryCandidates(
-        fs, specPath, dpLevels, filter, writeId, stmtId, hconf, isInsertOverwrite);
-    ArrayList<Path> directInsertDirectories = new ArrayList<>();
-    if (files != null) {
-      for (Path path : files) {
-        Utilities.FILE_OP_LOGGER.trace("Looking at path: {}", path);
-        directInsertDirectories.add(path);
-      }
-    }
-
+    Set<String> dynamicPartitionSpecs = new HashSet<>();
     Set<Path> committed = Collections.newSetFromMap(new ConcurrentHashMap<>());
     for (Path mfp : manifests) {
+      Utilities.FILE_OP_LOGGER.info("Looking at manifest file: {}", mfp);
       try (FSDataInputStream mdis = fs.open(mfp)) {
+        if (isInsertOverwrite && dpLevels > 0) {
+          int partitionCount = mdis.readInt();
+          for (int i = 0; i < partitionCount; ++i) {
+            String nextPart = mdis.readUTF();
+            Utilities.FILE_OP_LOGGER.debug("Looking at dynamic partition {}", nextPart);
+            dynamicPartitionSpecs.add(nextPart);
+          }
+        }
+
         int fileCount = mdis.readInt();
         for (int i = 0; i < fileCount; ++i) {
           String nextFile = mdis.readUTF();
-          Utilities.FILE_OP_LOGGER.trace("Looking at committed file: {}", nextFile);
+          Utilities.FILE_OP_LOGGER.debug("Looking at committed file {}", nextFile);
           Path path = fs.makeQualified(new Path(nextFile));
           if (!committed.add(path)) {
             throw new HiveException(nextFile + " was specified in multiple manifests");
           }
         }
+      }
+    }
+
+    Utilities.FILE_OP_LOGGER.debug("Looking for files in: {}", specPath);
+    AcidUtils.IdPathFilter filter = new AcidUtils.IdPathFilter(writeId, stmtId, dynamicPartitionSpecs, dpLevels);
+    if (!fs.exists(specPath)) {
+      Utilities.FILE_OP_LOGGER.info("Creating directory with no output at {}", specPath);
+      FileUtils.mkdir(fs, specPath, hconf);
+    }
+
+    Path[] files = null;
+    if (!isInsertOverwrite || dpLevels == 0 || !dynamicPartitionSpecs.isEmpty()) {
+      files = getDirectInsertDirectoryCandidates(
+          fs, specPath, dpLevels, filter, writeId, stmtId, hconf, isInsertOverwrite);
+    }
+
+    ArrayList<Path> directInsertDirectories = new ArrayList<>();
+    if (files != null) {
+      for (Path path : files) {
+        Utilities.FILE_OP_LOGGER.info("Looking at path: {}", path);
+        directInsertDirectories.add(path);
       }
     }
 
