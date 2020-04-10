@@ -257,8 +257,8 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
           assert finalPath.equals(outPath);
           // There's always just one file that we have merged.
           // The union/DP/etc. should already be account for in the path.
-          Utilities.writeCommitManifest(Lists.newArrayList(outPath),
-              tmpPath.getParent(), fs, taskId, conf.getWriteId(), conf.getStmtId(), null, false);
+          Utilities.writeCommitManifest(Lists.newArrayList(outPath), tmpPath.getParent(), fs, taskId, conf.getWriteId(),
+              conf.getStmtId(), null, false, hasDynamicPartitions, new HashSet<>());
           LOG.info("Merged into " + finalPath + "(" + fss.getLen() + " bytes).");
         }
       }

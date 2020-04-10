@@ -2796,8 +2796,14 @@ public class AcidUtils {
   public static class IdPathFilter implements PathFilter {
     private String baseDirName, deltaDirName;
     private final boolean isDeltaPrefix;
+    private final Set<String> dpSpecs;
+    private final int dpLevel;
 
     public IdPathFilter(long writeId, int stmtId) {
+      this(writeId, stmtId, null, 0);
+    }
+
+    public IdPathFilter(long writeId, int stmtId, Set<String> dpSpecs, int dpLevel) {
       String deltaDirName = null;
       deltaDirName = DELTA_PREFIX + String.format(DELTA_DIGITS, writeId) + "_" +
               String.format(DELTA_DIGITS, writeId);
@@ -2808,13 +2814,32 @@ public class AcidUtils {
 
       this.baseDirName = BASE_PREFIX + String.format(DELTA_DIGITS, writeId);
       this.deltaDirName = deltaDirName;
+      this.dpSpecs = dpSpecs;
+      this.dpLevel = dpLevel;
     }
 
     @Override
     public boolean accept(Path path) {
       String name = path.getName();
-      return name.equals(baseDirName) || (isDeltaPrefix && name.startsWith(deltaDirName))
-          || (!isDeltaPrefix && name.equals(deltaDirName));
+      // Extending the path filter with optional dynamic partition specifications.
+      // This is needed for the use case when doing multi-statement insert overwrite with
+      // dynamic partitioning with direct insert or with insert-only tables.
+      // In this use-case, each FileSinkOperator should only clean-up the directories written
+      // by the same FileSinkOperator and do not clean-up the partition directories
+      // written by the other FileSinkOperators. (For further details please see HIVE-23114.)
+      if (dpLevel > 0 && dpSpecs != null && !dpSpecs.isEmpty()) {
+        Path parent = path.getParent();
+        String partitionSpec = parent.getName();
+        for (int i = 1; i < dpLevel; i++) {
+          parent = parent.getParent();
+          partitionSpec = parent.getName() + "/" + partitionSpec;
+        }
+        return (name.equals(baseDirName) && dpSpecs.contains(partitionSpec));
+      }
+      else {
+        return name.equals(baseDirName) || (isDeltaPrefix && name.startsWith(deltaDirName))
+            || (!isDeltaPrefix && name.equals(deltaDirName));
+      }
     }
   }
 
