@@ -1381,7 +1381,8 @@ public class DagUtils {
     hiveConf.setBoolean("mapred.mapper.new-api", false);
 
     Predicate<String> findDefaults =
-        (s) -> ((s != null) && (s.endsWith(".xml") || (s.endsWith(".java") && !"HiveConf.java".equals(s))));
+        (s) -> ((s != null) && ((s.endsWith(".xml") && !s.endsWith("hive-site.xml")) ||
+            (s.endsWith(".java") && !"HiveConf.java".equals(s))));
 
     // since this is an inclusion filter, negate the predicate
     JobConf conf =
