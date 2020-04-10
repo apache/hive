@@ -2279,7 +2279,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    */
   private TxnRecord lockTransactionRecord(Statement stmt, long txnId, Character txnState) throws SQLException, MetaException {
     String query = "SELECT \"TXN_TYPE\" FROM \"TXNS\" WHERE \"TXN_ID\" = " + txnId
-      + (txnState != null ? " and TXN_STATE = " + quoteChar(txnState) : "");
+      + (txnState != null ? " and \"TXN_STATE\" = " + quoteChar(txnState) : "");
     try (ResultSet rs = stmt.executeQuery(sqlGenerator.addForUpdateClause(query))) {
       return rs.next() ? new TxnRecord(rs.getInt(1)) : null;
     }
