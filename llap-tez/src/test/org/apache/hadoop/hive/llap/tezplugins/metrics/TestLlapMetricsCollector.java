@@ -82,7 +82,7 @@ public class TestLlapMetricsCollector {
           .thenReturn(MockListener.class.getName());
     when(mockClientFactory.create(any(LlapServiceInstance.class))).thenReturn(mockClient);
     when(mockClient.getDaemonMetrics(
-            any(RpcController.class),
+            any(), // can be NULL
             any(LlapDaemonProtocolProtos.GetDaemonMetricsRequestProto.class))).thenReturn(TEST_RESPONSE);
     collector = new LlapMetricsCollector(mockConf, mockExecutor, mockClientFactory);
   }
@@ -92,6 +92,8 @@ public class TestLlapMetricsCollector {
     // Given
     LlapServiceInstance mockService = mock(LlapServiceInstance.class);
     when(mockService.getWorkerIdentity()).thenReturn(TEST_IDENTITY_1);
+
+    assertTrue(collector != null);
 
     // When
     collector.onCreate(mockService, TEST_SEQ_VERSION);
