@@ -51,11 +51,7 @@
       <exclusions>
         <exclusion>
           <groupId>io.netty</groupId>
-          <artifactId>netty-all</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>io.netty</groupId>
-          <artifactId>netty</artifactId>
+          <artifactId>*</artifactId>
         </exclusion>
         <exclusion>
           <groupId>com.google.guava</groupId>
@@ -92,6 +88,11 @@
       <version>${joda.version}</version>
     </dependency>
     <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty</artifactId>
+      <version>${netty3.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.apache.druid</groupId>
       <artifactId>druid-server</artifactId>
       <version>${druid.version}</version>
@@ -119,6 +120,10 @@
         <exclusion>
           <groupId>com.google.inject.extensions</groupId>
           <artifactId>guice-servlet</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>io.netty</groupId>
+          <artifactId>*</artifactId>
         </exclusion>
       </exclusions>
       <optional>true</optional>
@@ -226,7 +231,7 @@
         </exclusion>
         <exclusion>
           <groupId>io.netty</groupId>
-          <artifactId>netty</artifactId>
+          <artifactId>*</artifactId>
         </exclusion>
         <exclusion>
           <groupId>com.google.guava</groupId>

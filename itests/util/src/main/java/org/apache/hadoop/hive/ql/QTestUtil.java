@@ -494,6 +494,8 @@ public class QTestUtil {
         testArgs.getOutDir(), testArgs.getLogDir(), testArgs.getClusterType(), testArgs.getConfDir(),
         testArgs.getInitScript(), testArgs.getCleanupScript(), testArgs.isWithLlapIo(), testArgs.getFsType());
 
+    logClassPath();
+
     Preconditions.checkNotNull(testArgs.getClusterType(), "ClusterType cannot be null");
 
     this.fsType = testArgs.getFsType();
@@ -572,6 +574,12 @@ public class QTestUtil {
     init();
     savedConf = new HiveConf(conf);
 
+  }
+
+  private void logClassPath() {
+    String classpath = System.getProperty("java.class.path");
+    String[] classpathEntries = classpath.split(File.pathSeparator);
+    LOG.info("QTestUtil classpath: " + String.join("\n", Arrays.asList(classpathEntries)));
   }
 
   private String getScriptsDir() {
