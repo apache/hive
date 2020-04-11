@@ -71,8 +71,8 @@ public class TestHiveAuthorizerShowFilters {
    * HiveAuthorizer.filterListCmdObjects, and stores the list argument in
    * filterArguments
    */
-  protected static class MockedHiveAuthorizerFactory implements HiveAuthorizerFactory {
-    protected abstract class AuthorizerWithFilterCmdImpl implements HiveAuthorizer {
+  public static class MockedHiveAuthorizerFactory implements HiveAuthorizerFactory {
+    public abstract class AuthorizerWithFilterCmdImpl implements HiveAuthorizer {
       @Override
       public List<HivePrivilegeObject> filterListCmdObjects(List<HivePrivilegeObject> listObjs,
           HiveAuthzContext context) throws HiveAuthzPluginException, HiveAccessControlException {
