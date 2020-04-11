@@ -25,17 +25,17 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.net.InetAddress;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -99,9 +99,10 @@ public class TestLock {
     when(mockMetaStoreClient.lock(any(LockRequest.class))).thenReturn(mockLockResponse);
     when(mockLockResponse.getLockid()).thenReturn(LOCK_ID);
     when(mockLockResponse.getState()).thenReturn(ACQUIRED);
-    when(
-        mockHeartbeatFactory.newInstance(any(IMetaStoreClient.class), any(LockFailureListener.class), any(Long.class),
-            any(Collection.class), anyLong(), anyInt())).thenReturn(mockHeartbeat);
+    //  Transaction IDs can also be null
+    when(mockHeartbeatFactory.newInstance(
+        any(IMetaStoreClient.class), any(LockFailureListener.class), any(), anyCollection(),  any(Long.class), anyInt())
+    ).thenReturn(mockHeartbeat);
 
     readLock = new Lock(mockMetaStoreClient, mockHeartbeatFactory, configuration, mockListener, USER, SOURCES,
         Collections.<Table> emptySet(), 3, 0);
@@ -138,7 +139,7 @@ public class TestLock {
     configuration.set("hive.txn.timeout", "100s");
     readLock.acquire();
 
-    verify(mockHeartbeatFactory).newInstance(eq(mockMetaStoreClient), eq(mockListener), any(Long.class), eq(SOURCES),
+    verify(mockHeartbeatFactory).newInstance(eq(mockMetaStoreClient), eq(mockListener), any(), eq(SOURCES),
         eq(LOCK_ID), eq(75));
   }
 
@@ -321,11 +322,11 @@ public class TestLock {
   @Test
   public void testHeartbeatContinuesTException() throws Exception {
     Throwable t = new TException();
-    doThrow(t).when(mockMetaStoreClient).heartbeat(0, LOCK_ID);
+    lenient().doThrow(t).when(mockMetaStoreClient).heartbeat(0, LOCK_ID);
     HeartbeatTimerTask task = new HeartbeatTimerTask(mockMetaStoreClient, mockListener, TRANSACTION_ID, SOURCES,
         LOCK_ID);
     task.run();
-    verifyZeroInteractions(mockListener);
+    verifyNoInteractions(mockListener);
   }
 
   private static Table createTable(String databaseName, String tableName) {
