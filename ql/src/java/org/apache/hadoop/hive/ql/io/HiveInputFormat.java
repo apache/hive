@@ -24,6 +24,8 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.s3a.S3AFileSystem;
+import org.apache.hadoop.fs.s3a.S3AInputPolicy;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
@@ -39,6 +41,8 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.spark.SparkDynamicPartitionPruner;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
+import org.apache.hadoop.hive.ql.io.parquet.VectorizedParquetInputFormat;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
@@ -91,6 +95,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import static java.lang.Integer.min;
+import static org.apache.hadoop.hive.common.FileUtils.isS3a;
 
 /**
  * HiveInputFormat is a parameterized InputFormat which looks at the path name
@@ -379,6 +384,19 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     return instance;
   }
 
+  /**
+   * Returns true if the inputFormat performs random seek+read
+   * @param inputFormat
+   * @return
+   */
+  private static boolean isRandomAccessInputFormat(InputFormat inputFormat) {
+    if (inputFormat instanceof OrcInputFormat ||
+        inputFormat instanceof VectorizedParquetInputFormat) {
+      return true;
+    }
+    return false;
+  }
+
   @Override
   public RecordReader getRecordReader(InputSplit split, JobConf job,
       Reporter reporter) throws IOException {
@@ -429,6 +447,13 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       innerReader = HiveIOExceptionHandlerUtil
           .handleRecordReaderCreationException(e, job);
     }
+
+    FileSystem splitFileSystem = splitPath.getFileSystem(job);
+    if (isS3a(splitFileSystem) && isRandomAccessInputFormat(inputFormat)) {
+      LOG.debug("Changing S3A input policy to RANDOM for split {}", splitPath);
+      ((S3AFileSystem) splitFileSystem).setInputPolicy(S3AInputPolicy.Random);
+    }
+
     HiveRecordReader<K,V> rr = new HiveRecordReader(innerReader, job);
     rr.initIOContext(hsplit, job, inputFormatClass, innerReader);
     return rr;
