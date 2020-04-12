@@ -49,7 +49,6 @@ import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.TezEdgeProperty;
 import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
 import org.apache.hadoop.hive.ql.plan.TezWork;
-import org.apache.hadoop.hive.ql.plan.TezWork.VertexType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.mapred.JobConf;
@@ -95,8 +94,7 @@ public class TestTezTask {
     when(utils.getTezDir(any(Path.class))).thenReturn(path);
     when(
         utils.createVertex(any(JobConf.class), any(BaseWork.class), any(Path.class),
-            any(FileSystem.class), any(Context.class),
-            anyBoolean(), any(TezWork.class), any(VertexType.class), any(Map.class))).thenAnswer(
+            any(TezWork.class), any(Map.class))).thenAnswer(
         new Answer<Vertex>() {
 
           @Override
