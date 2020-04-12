@@ -142,7 +142,7 @@ public class TestGroupFilter {
       throws AuthenticationException, NamingException, IOException {
     conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPFILTER, "hiveusers,containsg1");
 
-    when(search.findGroupsForUser(eq("user1"))).thenReturn(Arrays.asList("SuperUsers", "Office1", "G1", "G2"));
+    lenient().when(search.findGroupsForUser(eq("user1"))).thenReturn(Arrays.asList("SuperUsers", "Office1", "G1", "G2"));
 
     Filter filter = factory.getInstance(conf);
     filter.apply(search, "user1");
@@ -153,7 +153,7 @@ public class TestGroupFilter {
       throws AuthenticationException, NamingException, IOException {
     conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPFILTER, "HiveUsers");
 
-    when(search.findGroupsForUser(eq("user1"))).thenReturn(Arrays.asList("SuperUsers", "Office1", "G1", "G2"));
+    lenient().when(search.findGroupsForUser(eq("user1"))).thenReturn(Arrays.asList("SuperUsers", "Office1", "G1", "G2"));
 
     Filter filter = factory.getInstance(conf);
     filter.apply(search, "user1");
