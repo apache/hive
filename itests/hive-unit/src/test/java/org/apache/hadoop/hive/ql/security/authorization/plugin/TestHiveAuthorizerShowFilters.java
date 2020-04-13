@@ -72,6 +72,9 @@ public class TestHiveAuthorizerShowFilters {
    * filterArguments
    */
   public static class MockedHiveAuthorizerFactory implements HiveAuthorizerFactory {
+    /**
+     * Abstracts HiveAuthorizer interface for hive authorization plugins
+     */
     public abstract class AuthorizerWithFilterCmdImpl implements HiveAuthorizer {
       @Override
       public List<HivePrivilegeObject> filterListCmdObjects(List<HivePrivilegeObject> listObjs,

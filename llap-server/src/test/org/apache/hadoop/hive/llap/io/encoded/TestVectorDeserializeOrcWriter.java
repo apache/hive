@@ -48,7 +48,7 @@ public class TestVectorDeserializeOrcWriter {
 
   private static final int TEST_NUM_COLS = 2;
 
-  public static Field reflectField(Class<?> classToReflect, String fieldNameValueToFetch) {
+  private static Field reflectField(Class<?> classToReflect, String fieldNameValueToFetch) {
     try {
       Field reflectField = null;
       Class<?> classForReflect = classToReflect;
@@ -58,7 +58,7 @@ public class TestVectorDeserializeOrcWriter {
         } catch (NoSuchFieldException e) {
           classForReflect = classForReflect.getSuperclass();
         }
-      } while (reflectField==null || classForReflect==null);
+      } while (reflectField == null || classForReflect == null);
       reflectField.setAccessible(true);
       return reflectField;
     } catch (Exception e) {
@@ -67,9 +67,9 @@ public class TestVectorDeserializeOrcWriter {
     return null;
   }
 
-  public static void reflectSetValue(Object objToReflect, String fieldNameToSet, Object valueToSet) {
+  private static void reflectSetValue(Object objToReflect, String fieldNameToSet, Object valueToSet) {
     try {
-      Field reflectField  = reflectField(objToReflect.getClass(), fieldNameToSet);
+      Field reflectField = reflectField(objToReflect.getClass(), fieldNameToSet);
       reflectField.set(objToReflect, valueToSet);
     } catch (Exception e) {
       fail("Failed to reflectively set " + fieldNameToSet + "=" + valueToSet);
@@ -136,11 +136,11 @@ public class TestVectorDeserializeOrcWriter {
     VectorDeserializeOrcWriter orcWriter = mock(VectorDeserializeOrcWriter.class,
         withSettings().defaultAnswer(CALLS_REAL_METHODS));
 
-    reflectSetValue(orcWriter,"sourceBatch", vrb);
-    reflectSetValue(orcWriter,"destinationBatch", vrb);
-    reflectSetValue(orcWriter,"currentBatches",  new ArrayList<VectorizedRowBatch>());
-    reflectSetValue(orcWriter,"queue", writeOpQueue);
-    reflectSetValue(orcWriter,"isAsync", true);
+    reflectSetValue(orcWriter, "sourceBatch", vrb);
+    reflectSetValue(orcWriter, "destinationBatch", vrb);
+    reflectSetValue(orcWriter, "currentBatches", new ArrayList<VectorizedRowBatch>());
+    reflectSetValue(orcWriter, "queue", writeOpQueue);
+    reflectSetValue(orcWriter, "isAsync", true);
     return orcWriter;
   }
 

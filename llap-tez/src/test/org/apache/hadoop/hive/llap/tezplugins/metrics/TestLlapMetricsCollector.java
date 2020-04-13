@@ -15,7 +15,6 @@
 package org.apache.hadoop.hive.llap.tezplugins.metrics;
 
 import com.google.common.collect.Lists;
-import com.google.protobuf.RpcController;
 import com.google.protobuf.ServiceException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;

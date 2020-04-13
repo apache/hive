@@ -211,7 +211,7 @@ public class TestMsckDropPartitionsInBatches {
 
         // only first call throws exception
         doThrow(MetaException.class).doCallRealMethod().doCallRealMethod().when(spyDb)
-          .dropPartitions(eq(table.getCatName()), eq(table.getDbName()),
+            .dropPartitions(eq(table.getCatName()), eq(table.getDbName()),
             eq(table.getTableName()), anyList(), any(PartitionDropOptions.class));
       }
 
@@ -248,7 +248,7 @@ public class TestMsckDropPartitionsInBatches {
       }
       // all calls fail
       doThrow(MetaException.class).when(spyDb)
-        .dropPartitions(eq(table.getCatName()), eq(table.getDbName()), eq(table.getTableName()),
+          .dropPartitions(eq(table.getCatName()), eq(table.getDbName()), eq(table.getTableName()),
             anyList(), any(PartitionDropOptions.class));
 
       Exception ex = null;
@@ -266,7 +266,7 @@ public class TestMsckDropPartitionsInBatches {
     // actualBatchSize
     ArgumentCaptor<List> argument = ArgumentCaptor.forClass(List.class);
     verify(spyDb, times(expectedCallCount))
-      .dropPartitions(eq(table.getCatName()), eq(table.getDbName()), eq(table.getTableName()),
+        .dropPartitions(eq(table.getCatName()), eq(table.getDbName()), eq(table.getTableName()),
         argument.capture(), any(PartitionDropOptions.class));
 
     // confirm the batch sizes were as expected
