@@ -188,8 +188,9 @@
     <mockito-all.version>1.10.19</mockito-all.version>
     <powermock.version>1.7.4</powermock.version>
     <mina.version>2.0.0-M5</mina.version>
-    <netty.version>4.1.69.Final</netty.version>
+    <netty.version>4.1.48.Final</netty.version>
     <netty3.version>3.10.5.Final</netty3.version>
+    <netty.hadoop.version>4.0.52.Final</netty.hadoop.version>
     <parquet.version>1.10.0</parquet.version>
     <pig.version>0.16.0</pig.version>
     <plexus.version>1.5.6</plexus.version>
@@ -500,6 +501,10 @@
             <groupId>org.apache.hive</groupId>
             <artifactId>hive-storage-api</artifactId>
           </exclusion>
+          <exclusion>
+            <groupId>io.netty</groupId>
+            <artifactId>*</artifactId>
+          </exclusion>
         </exclusions>
       </dependency>
       <dependency>
@@ -554,8 +559,8 @@
             <artifactId>httpclient</artifactId>
           </exclusion>
          <exclusion>
-            <groupId>org.jboss.netty</groupId>
-            <artifactId>netty</artifactId>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
           </exclusion>
         </exclusions>
       </dependency>
@@ -743,6 +748,12 @@
         <groupId>org.apache.hadoop</groupId>
         <artifactId>hadoop-hdfs</artifactId>
         <version>${hadoop.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>io.netty</groupId>
+            <artifactId>*</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.hadoop</groupId>
@@ -856,8 +867,8 @@
             <artifactId>jruby-complete</artifactId>
           </exclusion>
           <exclusion>
-            <groupId>org.jboss.netty</groupId>
-            <artifactId>netty</artifactId>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
           </exclusion>
           <exclusion>
             <groupId>io.netty</groupId>
@@ -969,9 +980,20 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty</artifactId>
+      <version>${netty3.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-all</artifactId>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>io.netty</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
   </dependencies>
 

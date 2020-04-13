@@ -243,6 +243,10 @@
           <groupId>javax.servlet</groupId>
           <artifactId>servlet-api</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>io.netty</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
       </exclusions>
       <optional>true</optional>
     </dependency>
@@ -290,6 +294,12 @@
       <groupId>org.apache.zookeeper</groupId>
       <artifactId>zookeeper</artifactId>
       <version>${zookeeper.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>io.netty</groupId>
+          <artifactId>netty-all</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.curator</groupId>
@@ -959,6 +969,14 @@
                   <include>org.apache.orc:orc-shims</include>
                   <include>org.apache.orc:orc-tools</include>
                   <include>joda-time:joda-time</include>
+                  <include>io.netty:*</include>
+                  <!-- some netty-based classes are included in arrow jars with original
+                 io.netty package name (e.g. io.netty.buffer.ArrowBuf in arrow-memory)
+                 so we should include them in the shaded jars in order to make shade plugin
+                 be triggered on them, but we should not relocate arrow (this is why arrow
+                 is not included in relocations)
+                 -->
+                  <include>org.apache.arrow:*</include>
                 </includes>
               </artifactSet>
               <relocations>
@@ -969,6 +987,10 @@
                 <relocation>
                   <pattern>org.objenesis</pattern>
                   <shadedPattern>org.apache.hive.org.objenesis</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>io.netty</pattern>
+                  <shadedPattern>org.apache.hive.io.netty</shadedPattern>
                 </relocation>
               </relocations>
             </configuration>

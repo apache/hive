@@ -63,6 +63,10 @@
               <artifactId>jersey-core</artifactId>
               <groupId>com.sun.jersey</groupId>
             </exclusion>
+            <exclusion>
+              <groupId>org.jboss.netty</groupId>
+              <artifactId>*</artifactId>
+            </exclusion>
           </exclusions>
         </dependency>
         <dependency>
@@ -81,6 +85,10 @@
             <exclusion>
               <artifactId>jersey-core</artifactId>
               <groupId>com.sun.jersey</groupId>
+            </exclusion>
+            <exclusion>
+              <groupId>org.jboss.netty</groupId>
+              <artifactId>*</artifactId>
             </exclusion>
           </exclusions>
         </dependency>
@@ -245,6 +253,12 @@
                   <exclude>*:jsp-api*</exclude>
                 </excludes>
               </artifactSet>
+              <relocations>
+                <relocation>
+                  <pattern>org.jboss.netty</pattern>
+                  <shadedPattern>org.apache.hive.druid.org.jboss.netty</shadedPattern>
+                </relocation>
+              </relocations>
               <filters>
                 <filter>
                   <artifact>*:*</artifact>

@@ -93,8 +93,8 @@
       <version>${zookeeper.version}</version>
       <exclusions>
         <exclusion>
-          <groupId>org.jboss.netty</groupId>
-            <artifactId>netty</artifactId>
+          <groupId>io.netty</groupId>
+          <artifactId>*</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -255,7 +255,6 @@
                       <exclude>com.zaxxer:*</exclude>
                       <exclude>io.airlift:*</exclude>
                       <exclude>io.dropwizard.metrics:*</exclude>
-                      <exclude>io.netty:*</exclude>
                       <exclude>javax.activation:*</exclude>
                       <exclude>javax.inject:*</exclude>
                       <exclude>javax.jdo:*</exclude>
@@ -372,6 +371,10 @@
                     <relocation>
                       <pattern>javolution</pattern>
                       <shadedPattern>org.apache.hive.javolution</shadedPattern>
+                    </relocation>
+                    <relocation>
+                      <pattern>io.netty</pattern>
+                      <shadedPattern>org.apache.hive.io.netty</shadedPattern>
                     </relocation>
                   </relocations>
                 </configuration>

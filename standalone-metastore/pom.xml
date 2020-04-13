@@ -106,6 +106,10 @@
           <groupId>org.apache.hive</groupId>
           <artifactId>hive-storage-api</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>io.netty</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -213,6 +217,10 @@
         <exclusion>
           <groupId>commmons-logging</groupId>
           <artifactId>commons-logging</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>io.netty</groupId>
+          <artifactId>*</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
