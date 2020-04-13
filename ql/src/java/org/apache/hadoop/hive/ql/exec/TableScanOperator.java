@@ -21,8 +21,10 @@ package org.apache.hadoop.hive.ql.exec;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -83,6 +85,50 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
    */
   private String schemaEvolutionColumns;
   private String schemaEvolutionColumnsTypes;
+
+  private ProbeDecodeContext probeDecodeContextSet;
+
+  /**
+   * Inner wrapper class for TS ProbeDecode optimization
+   */
+  public static class ProbeDecodeContext {
+
+    private final String mjSmallTableCacheKey;
+    private final String mjBigTableKeyColName;
+    private final byte mjSmallTablePos;
+    private final double keyRatio;
+
+    public ProbeDecodeContext(String mjSmallTableCacheKey, byte mjSmallTablePos, String mjBigTableKeyColName,
+        double keyRatio) {
+      this.mjSmallTableCacheKey = mjSmallTableCacheKey;
+      this.mjSmallTablePos = mjSmallTablePos;
+      this.mjBigTableKeyColName = mjBigTableKeyColName;
+      this.keyRatio = keyRatio;
+    }
+
+    public String getMjSmallTableCacheKey() {
+      return mjSmallTableCacheKey;
+    }
+
+    public byte getMjSmallTablePos() {
+      return mjSmallTablePos;
+    }
+
+    public String getMjBigTableKeyColName() {
+      return mjBigTableKeyColName;
+    }
+
+    public double getKeyRatio() {
+      return keyRatio;
+    }
+
+    @Override
+    public String toString() {
+      return "cacheKey:" + mjSmallTableCacheKey + ", bigKeyColName:" + mjBigTableKeyColName +
+          ", smallTablePos:" + mjSmallTablePos + ", keyRatio:" + keyRatio;
+    }
+  }
+
 
   public TableDesc getTableDescSkewJoin() {
     return tableDesc;
@@ -433,6 +479,14 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
   @Override
   public VectorizationContext getOutputVectorizationContext() {
     return taskVectorizationContext;
+  }
+
+  public ProbeDecodeContext getProbeDecodeContext() {
+    return probeDecodeContextSet;
+  }
+
+  public void setProbeDecodeContext(ProbeDecodeContext probeDecodeContext) {
+    this.probeDecodeContextSet = probeDecodeContext;
   }
 
 }
