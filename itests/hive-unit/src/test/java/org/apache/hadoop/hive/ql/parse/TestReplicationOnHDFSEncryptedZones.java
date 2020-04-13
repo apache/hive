@@ -99,6 +99,7 @@ public class TestReplicationOnHDFSEncryptedZones {
         new HashMap<String, String>() {{
           put(HiveConf.ConfVars.HIVE_IN_TEST.varname, "false");
           put(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS.varname, "false");
+          put(HiveConf.ConfVars.REPLDIR.varname, primary.repldDir);
           put(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname,
                   UserGroupInformation.getCurrentUser().getUserName());
         }}, "test_key123");
@@ -110,9 +111,8 @@ public class TestReplicationOnHDFSEncryptedZones {
             .run("insert into table encrypted_table values (2,'value2')")
             .dump(primaryDbName);
 
-    replica
-        .run("repl load " + replicatedDbName + " from '" + tuple.dumpLocation
-                + "' with('hive.repl.add.raw.reserved.namespace'='true', "
+    replica.run("repl load " + primaryDbName + " into " + replicatedDbName
+                + " with('hive.repl.add.raw.reserved.namespace'='true', "
                 + "'hive.repl.replica.external.table.base.dir'='" + replica.externalTableWarehouseRoot + "', "
                 + "'distcp.options.pugpbx'='', 'distcp.options.skipcrccheck'='', 'distcp.options.update'='')")
         .run("use " + replicatedDbName)
@@ -139,9 +139,8 @@ public class TestReplicationOnHDFSEncryptedZones {
             .run("insert into table encrypted_table values (2,'value2')")
             .dump(primaryDbName);
 
-    replica
-        .run("repl load " + replicatedDbName + " from '" + tuple.dumpLocation
-            + "' with('hive.repl.add.raw.reserved.namespace'='true')")
+    replica.run("repl load " + primaryDbName + " into " + replicatedDbName
+            + " with('hive.repl.add.raw.reserved.namespace'='true')")
         .run("use " + replicatedDbName)
         .run("repl status " + replicatedDbName)
         .verifyResult(tuple.lastReplicationId)

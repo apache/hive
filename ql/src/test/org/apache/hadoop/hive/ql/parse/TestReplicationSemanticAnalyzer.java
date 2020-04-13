@@ -112,40 +112,6 @@ public class TestReplicationSemanticAnalyzer {
       assertDatabase(2, root);
       assertTableName(root);
     }
-
-    @Test
-    public void parseFromEventId() throws ParseException {
-      ASTNode root = parse("repl dump testDb.'test_table' from 100");
-      assertDatabase(3, root);
-      assertTableName(root);
-      assertFromEvent(1, root);
-    }
-
-    @Test
-    public void parseToEventId() throws ParseException {
-      ASTNode root = parse("repl dump testDb.'test_table' from 100 to 200");
-      assertDatabase(3, root);
-      assertTableName(root);
-      ASTNode fromClauseRootNode = assertFromEvent(3, root);
-      assertToEventId(fromClauseRootNode);
-    }
-
-    @Test
-    public void parseLimit() throws ParseException {
-      ASTNode root = parse("repl dump testDb.'test_table' from 100 to 200 limit 10");
-      assertDatabase(3, root);
-      assertTableName(root);
-      ASTNode fromClauseRootNode = assertFromEvent(5, root);
-      assertToEventId(fromClauseRootNode);
-
-      ASTNode child = (ASTNode) fromClauseRootNode.getChild(3);
-      assertEquals("TOK_LIMIT", child.getText());
-      assertEquals(0, child.getChildCount());
-
-      child = (ASTNode) fromClauseRootNode.getChild(4);
-      assertEquals("10", child.getText());
-      assertEquals(0, child.getChildCount());
-    }
   }
 
   public static class ReplDumpWithClause {
@@ -165,66 +131,26 @@ public class TestReplicationSemanticAnalyzer {
       assertTableName(root);
       assertWithClause(root, 2);
     }
-
-    @Test
-    public void parseFromEventId() throws ParseException {
-      ASTNode root = parse("repl dump testDb.'test_table' from 100 "
-          + "with ('key.1'='value.1','key.2'='value.2')");
-      assertDatabase(4, root);
-      assertTableName(root);
-      assertFromEvent(1, root);
-      assertWithClause(root, 3);
-    }
-
-    @Test
-    public void parseToEventId() throws ParseException {
-      ASTNode root = parse("repl dump testDb.'test_table' from 100 to 200 "
-          + "with ('key.1'='value.1','key.2'='value.2')");
-      assertDatabase(4, root);
-      assertTableName(root);
-      ASTNode fromClauseRootNode = assertFromEvent(3, root);
-      assertToEventId(fromClauseRootNode);
-      assertWithClause(root, 3);
-    }
-
-    @Test
-    public void parseLimit() throws ParseException {
-      ASTNode root = parse("repl dump testDb.'test_table' from 100 to 200 limit 10 "
-          + "with ('key.1'='value.1','key.2'='value.2')");
-      assertDatabase(4, root);
-      assertTableName(root);
-      ASTNode fromClauseRootNode = assertFromEvent(5, root);
-      assertToEventId(fromClauseRootNode);
-      assertWithClause(root, 3);
-
-      ASTNode child = (ASTNode) fromClauseRootNode.getChild(3);
-      assertEquals("TOK_LIMIT", child.getText());
-      assertEquals(0, child.getChildCount());
-
-      child = (ASTNode) fromClauseRootNode.getChild(4);
-      assertEquals("10", child.getText());
-      assertEquals(0, child.getChildCount());
-    }
   }
 
   public static class ReplLoad {
 
     @Test
     public void parseFromLocation() throws ParseException {
-      ASTNode root = parse("repl load  from '/some/location/in/hdfs/'");
+      ASTNode root = parse("repl load testDbName");
       assertFromLocation(1, root);
     }
 
     @Test
     public void parseTargetDbName() throws ParseException {
-      ASTNode root = parse("repl load targetTestDbName from '/some/location/in/hdfs/'");
+      ASTNode root = parse("repl load testDbName into targetTestDbName");
       assertFromLocation(2, root);
       assertTargetDatabaseName(root);
     }
 
     @Test
     public void parseWithClause() throws ParseException {
-      ASTNode root = parse("repl load targetTestDbName from '/some/location/in/hdfs/'"
+      ASTNode root = parse("repl load testDbName into targetTestDbName"
           + " with ('mapred.job.queue.name'='repl','hive.repl.approx.max.load.tasks'='100')");
       assertFromLocation(3, root);
       assertTargetDatabaseName(root);
@@ -251,7 +177,7 @@ public class TestReplicationSemanticAnalyzer {
       assertEquals("TOK_REPL_LOAD", root.getText());
       assertEquals(expectedNumberOfChildren, root.getChildCount());
       ASTNode child = (ASTNode) root.getChild(0);
-      assertEquals("'/some/location/in/hdfs/'", child.getText());
+      assertEquals("testDbName", child.getText());
       assertEquals(0, child.getChildCount());
     }
 
