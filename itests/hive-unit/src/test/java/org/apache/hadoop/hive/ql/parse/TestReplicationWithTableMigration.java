@@ -230,7 +230,7 @@ public class TestReplicationWithTableMigration {
                 + "stored as avro tblproperties ('avro.schema.url'='" + avroSchemaFile.toUri()
                 .toString() + "')")
         .run("insert into avro_table_part partition (country='india') values ('another', 13)")
-        .dump(primaryDbName, fromReplId);
+        .dump(primaryDbName);
     assertFalse(isTransactionalTable(primary.getTable(primaryDbName, "tacid")));
     assertFalse(isTransactionalTable(primary.getTable(primaryDbName, "tacidpart")));
     assertFalse(isTransactionalTable(primary.getTable(primaryDbName, "tflat")));
@@ -348,7 +348,7 @@ public class TestReplicationWithTableMigration {
 
   @Test
   public void testIncrementalLoadMigrationManagedToAcid() throws Throwable {
-    WarehouseInstance.Tuple tuple = primary.dump(primaryDbName, null);
+    WarehouseInstance.Tuple tuple = primary.dump(primaryDbName);
     replica.load(replicatedDbName, tuple.dumpLocation);
     tuple = prepareDataAndDump(primaryDbName, tuple.lastReplicationId);
     replica.load(replicatedDbName, tuple.dumpLocation);
@@ -357,7 +357,7 @@ public class TestReplicationWithTableMigration {
 
   @Test
   public void testIncrementalLoadMigrationManagedToAcidFailure() throws Throwable {
-    WarehouseInstance.Tuple tuple = primary.dump(primaryDbName, null);
+    WarehouseInstance.Tuple tuple = primary.dump(primaryDbName);
     replica.load(replicatedDbName, tuple.dumpLocation);
     tuple = prepareDataAndDump(primaryDbName, tuple.lastReplicationId);
     loadWithFailureInAddNotification("tacid", tuple.dumpLocation);
@@ -370,7 +370,7 @@ public class TestReplicationWithTableMigration {
 
   @Test
   public void testIncrementalLoadMigrationManagedToAcidFailurePart() throws Throwable {
-    WarehouseInstance.Tuple tuple = primary.dump(primaryDbName, null);
+    WarehouseInstance.Tuple tuple = primary.dump(primaryDbName);
     replica.load(replicatedDbName, tuple.dumpLocation);
     tuple = prepareDataAndDump(primaryDbName, tuple.lastReplicationId);
     loadWithFailureInAddNotification("tacidpart", tuple.dumpLocation);
@@ -383,7 +383,7 @@ public class TestReplicationWithTableMigration {
 
   @Test
   public void testIncrementalLoadMigrationManagedToAcidAllOp() throws Throwable {
-    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, null);
+    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName);
     replica.load(replicatedDbName, bootStrapDump.dumpLocation)
             .run("REPL STATUS " + replicatedDbName)
             .verifyResult(bootStrapDump.lastReplicationId);
@@ -422,14 +422,14 @@ public class TestReplicationWithTableMigration {
                     + "'org.apache.hadoop.hive.serde2.avro.AvroSerDe' stored as avro "
                     + "tblproperties ('avro.schema.url'='" + avroSchemaFile.toUri().toString() + "')")
             .run("insert into avro_tbl partition (country='india') values ('another', 13)")
-            .dump(primaryDbName, null);
+            .dump(primaryDbName);
 
     replica.load(replicatedDbName, bootstrap.dumpLocation);
     Path dataLocation = assertTablePath(replicatedDbName, "avro_tbl");
 
     WarehouseInstance.Tuple incremental = primary.run("use " + primaryDbName)
             .run("drop table avro_tbl")
-            .dump(primaryDbName, bootstrap.lastReplicationId);
+            .dump(primaryDbName);
     replica.load(replicatedDbName, incremental.dumpLocation);
 
     // After drop, the external table data location should be auto deleted as it is converted one.
@@ -438,7 +438,7 @@ public class TestReplicationWithTableMigration {
 
   @Test
   public void testIncConvertedExternalTableAutoDeleteDataDirOnDrop() throws Throwable {
-    WarehouseInstance.Tuple bootstrap = primary.dump(primaryDbName, null);
+    WarehouseInstance.Tuple bootstrap = primary.dump(primaryDbName);
     replica.load(replicatedDbName, bootstrap.dumpLocation);
 
     WarehouseInstance.Tuple incremental = primary.run("use " + primaryDbName)
@@ -446,7 +446,7 @@ public class TestReplicationWithTableMigration {
                     + "'org.apache.hadoop.hive.serde2.avro.AvroSerDe' stored as avro "
                     + "tblproperties ('avro.schema.url'='" + avroSchemaFile.toUri().toString() + "')")
             .run("insert into avro_tbl values ('str', 13)")
-            .dump(primaryDbName, bootstrap.lastReplicationId);
+            .dump(primaryDbName);
     replica.load(replicatedDbName, incremental.dumpLocation);
 
     // Data location is valid and is under default external warehouse directory.
@@ -457,7 +457,7 @@ public class TestReplicationWithTableMigration {
 
     incremental = primary.run("use " + primaryDbName)
             .run("drop table avro_tbl")
-            .dump(primaryDbName, incremental.lastReplicationId);
+            .dump(primaryDbName);
     replica.load(replicatedDbName, incremental.dumpLocation);
 
     // After drop, the external table data location should be auto deleted as it is converted one.
@@ -477,7 +477,7 @@ public class TestReplicationWithTableMigration {
   public void testIncrementalLoadMigrationToAcidWithMoveOptimization() throws Throwable {
     List<String> withConfigs =
             Collections.singletonList("'hive.repl.enable.move.optimization'='true'");
-    WarehouseInstance.Tuple tuple = primary.dump(primaryDbName, null);
+    WarehouseInstance.Tuple tuple = primary.dump(primaryDbName);
     replica.load(replicatedDbName, tuple.dumpLocation);
     tuple = prepareDataAndDump(primaryDbName, tuple.lastReplicationId);
     replica.load(replicatedDbName, tuple.dumpLocation, withConfigs);
@@ -519,7 +519,7 @@ public class TestReplicationWithTableMigration {
             .run("insert into tacid values (3)")
             .run("create table texternal (id int) ")
             .run("insert into texternal values (1)")
-            .dump(primaryDbName, null);
+            .dump(primaryDbName);
     replica.load(replicatedDbName, tuple.dumpLocation)
             .run("use " + replicatedDbName)
             .run("repl status " + replicatedDbName)
@@ -563,7 +563,7 @@ public class TestReplicationWithTableMigration {
     withConfigs.add("'hive.repl.dump.include.acid.tables'='true'");
     withConfigs.add("'hive.repl.include.external.tables'='true'");
     withConfigs.add("'hive.distcp.privileged.doAs' = '" + UserGroupInformation.getCurrentUser().getUserName() + "'");
-    tuple = primary.dump(primaryDbName, tuple.lastReplicationId, withConfigs);
+    tuple = primary.dump(primaryDbName, withConfigs);
     replica.load(replicatedDbName, tuple.dumpLocation, withConfigs);
     replica.run("use " + replicatedDbName)
             .run("repl status " + replicatedDbName)

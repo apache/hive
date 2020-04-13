@@ -175,7 +175,7 @@ public class TestReplicationWithTableMigrationEx {
 
     InjectableBehaviourObjectStore.setGetCurrentNotificationEventIdBehaviour(callerVerifier);
     try {
-      return primary.dump(primaryDbName, null);
+      return primary.dump(primaryDbName);
     } finally {
       InjectableBehaviourObjectStore.resetGetCurrentNotificationEventIdBehaviour();
       callerVerifier.assertInjectionsPerformed(true, false);
@@ -193,7 +193,7 @@ public class TestReplicationWithTableMigrationEx {
     assertTrue(ReplUtils.isFirstIncPending(replica.getDatabase(replicatedDbName).getParameters()));
 
     // next incremental dump
-    tuple = primary.dump(primaryDbName, tuple.lastReplicationId);
+    tuple = primary.dump(primaryDbName);
     replica.loadWithoutExplain(replicatedDbName, tuple.dumpLocation);
     verifyLoadExecution(replicatedDbName, tuple.lastReplicationId);
     assertFalse(ReplUtils.isFirstIncPending(replica.getDatabase(replicatedDbName).getParameters()));
@@ -210,7 +210,7 @@ public class TestReplicationWithTableMigrationEx {
     assertTrue(ReplUtils.isFirstIncPending(replica.getDatabase(replicatedDbName).getParameters()));
 
     // next incremental dump
-    tuple = primary.dump(primaryDbName, tuple.lastReplicationId);
+    tuple = primary.dump(primaryDbName);
     replica.loadWithoutExplain(replicatedDbName, tuple.dumpLocation);
     verifyLoadExecution(replicatedDbName, tuple.lastReplicationId);
     assertFalse(ReplUtils.isFirstIncPending(replica.getDatabase(replicatedDbName).getParameters()));
@@ -221,14 +221,14 @@ public class TestReplicationWithTableMigrationEx {
     WarehouseInstance.Tuple tuple = primary
             .run("use " + primaryDbName)
             .run("create table t1 (i int, j int)")
-            .dump(primaryDbName+".'t1'", null);
+            .dump(primaryDbName+".'t1'");
     replica.run("create database " + replicatedDbName);
     replica.loadWithoutExplain(replicatedDbName, tuple.dumpLocation);
     assertTrue(ReplUtils.isFirstIncPending(replica.getDatabase(replicatedDbName).getParameters()));
 
     tuple = primary.run("use " + primaryDbName)
             .run("insert into t1 values (1, 2)")
-            .dump(primaryDbName+".'t1'", tuple.lastReplicationId);
+            .dump(primaryDbName+".'t1'");
     replica.loadWithoutExplain(replicatedDbName, tuple.dumpLocation);
     assertFalse(ReplUtils.isFirstIncPending(replica.getDatabase(replicatedDbName).getParameters()));
   }
@@ -258,7 +258,7 @@ public class TestReplicationWithTableMigrationEx {
     assertTrue(ReplUtils.isFirstIncPending(replica.getDatabase(replicatedDbName).getParameters()));
 
     // next incremental dump
-    tuple = primary.dump(primaryDbName, tuple.lastReplicationId);
+    tuple = primary.dump(primaryDbName);
     replica.loadWithoutExplain(replicatedDbName, tuple.dumpLocation);
     replica.run("use " + replicatedDbName)
             .run("show tables")
@@ -316,8 +316,8 @@ public class TestReplicationWithTableMigrationEx {
 
     tuple = primary.run("use " + primaryDbName)
             .run("alter database " + primaryDbName + " set dbproperties('dummy_key'='dummy_val')")
-           .run("create table tbl_temp (fld int)")
-            .dump(primaryDbName, tuple.lastReplicationId);
+            .run("create table tbl_temp (fld int)")
+            .dump(primaryDbName);
 
     loadWithFailureInAddNotification("tbl_temp", tuple.dumpLocation);
     Database replDb = replica.getDatabase(replicatedDbName);
@@ -326,7 +326,7 @@ public class TestReplicationWithTableMigrationEx {
     assertTrue(replDb.getParameters().get("dummy_key").equalsIgnoreCase("dummy_val"));
 
     // next incremental dump
-    tuple = primary.dump(primaryDbName, tuple.lastReplicationId);
+    tuple = primary.dump(primaryDbName);
     replica.loadWithoutExplain(replicatedDbName, tuple.dumpLocation);
     assertFalse(ReplUtils.isFirstIncPending(replica.getDatabase(replicatedDbName).getParameters()));
   }
@@ -344,7 +344,7 @@ public class TestReplicationWithTableMigrationEx {
     assertTrue(ReplUtils.isFirstIncPending(replica.getDatabase(replicatedDbName).getParameters()));
 
     // next incremental dump
-    tuple = primary.dump(primaryDbName, tuple.lastReplicationId);
+    tuple = primary.dump(primaryDbName);
     replica.load(replicatedDbName, tuple.dumpLocation, withClause);
     assertFalse(ReplUtils.isFirstIncPending(replica.getDatabase(replicatedDbName).getParameters()));
   }
@@ -384,20 +384,20 @@ public class TestReplicationWithTableMigrationEx {
 
     // test bootstrap
     alterUserName("hive");
-    WarehouseInstance.Tuple tuple = primary.dump(primaryDbName, null);
+    WarehouseInstance.Tuple tuple = primary.dump(primaryDbName);
     replica.loadWithoutExplain(replicatedDbName, tuple.dumpLocation);
     verifyUserName("hive");
 
     // test incremental
     alterUserName("hive1");
-    tuple = primary.dump(primaryDbName, tuple.lastReplicationId);
+    tuple = primary.dump(primaryDbName);
     replica.loadWithoutExplain(replicatedDbName, tuple.dumpLocation);
     verifyUserName("hive1");
   }
 
   @Test
   public void testOnwerPropagationInc() throws Throwable {
-    WarehouseInstance.Tuple tuple = primary.dump(primaryDbName, null);
+    WarehouseInstance.Tuple tuple = primary.dump(primaryDbName);
     replica.loadWithoutExplain(replicatedDbName, tuple.dumpLocation);
 
     primary.run("use " + primaryDbName)
@@ -411,7 +411,7 @@ public class TestReplicationWithTableMigrationEx {
 
     // test incremental when table is getting created in the same load
     alterUserName("hive");
-    tuple = primary.dump(primaryDbName, tuple.lastReplicationId);
+    tuple = primary.dump(primaryDbName);
     replica.loadWithoutExplain(replicatedDbName, tuple.dumpLocation);
     verifyUserName("hive");
   }
