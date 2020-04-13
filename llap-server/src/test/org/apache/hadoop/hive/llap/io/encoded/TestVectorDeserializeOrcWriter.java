@@ -23,7 +23,6 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch;
-import org.apache.hadoop.hive.llap.TestReflectionUtils;
 import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
 import org.apache.hadoop.hive.llap.io.decode.EncodedDataConsumer;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
@@ -37,6 +36,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.withSettings;
@@ -47,6 +47,34 @@ import static org.mockito.Mockito.withSettings;
 public class TestVectorDeserializeOrcWriter {
 
   private static final int TEST_NUM_COLS = 2;
+
+  public static Field reflectField(Class<?> classToReflect, String fieldNameValueToFetch) {
+    try {
+      Field reflectField = null;
+      Class<?> classForReflect = classToReflect;
+      do {
+        try {
+          reflectField = classForReflect.getDeclaredField(fieldNameValueToFetch);
+        } catch (NoSuchFieldException e) {
+          classForReflect = classForReflect.getSuperclass();
+        }
+      } while (reflectField==null || classForReflect==null);
+      reflectField.setAccessible(true);
+      return reflectField;
+    } catch (Exception e) {
+      fail("Failed to reflect " + fieldNameValueToFetch + " from " + classToReflect);
+    }
+    return null;
+  }
+
+  public static void reflectSetValue(Object objToReflect, String fieldNameToSet, Object valueToSet) {
+    try {
+      Field reflectField  = reflectField(objToReflect.getClass(), fieldNameToSet);
+      reflectField.set(objToReflect, valueToSet);
+    } catch (Exception e) {
+      fail("Failed to reflectively set " + fieldNameToSet + "=" + valueToSet);
+    }
+  }
 
   @Test
   public void testConcurrencyIssueWhileWriting() throws Exception {
@@ -108,11 +136,11 @@ public class TestVectorDeserializeOrcWriter {
     VectorDeserializeOrcWriter orcWriter = mock(VectorDeserializeOrcWriter.class,
         withSettings().defaultAnswer(CALLS_REAL_METHODS));
 
-    TestReflectionUtils.reflectSetValue(orcWriter,"sourceBatch", vrb);
-    TestReflectionUtils.reflectSetValue(orcWriter,"destinationBatch", vrb);
-    TestReflectionUtils.reflectSetValue(orcWriter,"currentBatches",  new ArrayList<VectorizedRowBatch>());
-    TestReflectionUtils.reflectSetValue(orcWriter,"queue", writeOpQueue);
-    TestReflectionUtils.reflectSetValue(orcWriter,"isAsync", true);
+    reflectSetValue(orcWriter,"sourceBatch", vrb);
+    reflectSetValue(orcWriter,"destinationBatch", vrb);
+    reflectSetValue(orcWriter,"currentBatches",  new ArrayList<VectorizedRowBatch>());
+    reflectSetValue(orcWriter,"queue", writeOpQueue);
+    reflectSetValue(orcWriter,"isAsync", true);
     return orcWriter;
   }
 
