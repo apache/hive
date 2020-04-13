@@ -213,7 +213,7 @@ public class TestDatabases extends MetaStoreClientTest {
     Assert.assertEquals("Default database name", "default", database.getName());
     Assert.assertEquals("Default database description", "Default Hive database",
         database.getDescription());
-    Assert.assertEquals("Default database location", metaStore.getWarehouseRoot(),
+    Assert.assertEquals("Default database location", metaStore.getExternalWarehouseRoot(),
         new Path(database.getLocationUri()));
     Assert.assertEquals("Default database parameters", new HashMap<String, String>(),
         database.getParameters());
