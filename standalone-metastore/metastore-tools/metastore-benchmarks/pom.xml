@@ -68,6 +68,10 @@
           <groupId>org.apache.curator</groupId>
           <artifactId>curator-recipes</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>io.netty</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-log4j12 -->
