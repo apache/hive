@@ -18,10 +18,6 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.create.show;
 
-import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
-import org.apache.hadoop.hive.ql.ddl.DDLUtils;
-import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableOperation;
-
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
 
 import java.io.DataOutputStream;
@@ -47,6 +43,9 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
+import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
+import org.apache.hadoop.hive.ql.ddl.DDLUtils;
+import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableOperation;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.util.DirectionUtils;
@@ -322,7 +321,8 @@ public class ShowCreateTableOperation extends DDLOperation<ShowCreateTableDesc> 
     SortedMap<String, String> sortedSerdeParams = new TreeMap<String, String>(serdeParams);
     List<String> serdeCols = new ArrayList<String>();
     for (Entry<String, String> entry : sortedSerdeParams.entrySet()) {
-      serdeCols.add("  '" + entry.getKey() + "'='" + HiveStringUtils.escapeHiveCommand(entry.getValue()) + "'");
+      serdeCols.add("  '" + entry.getKey() + "'='" +
+          HiveStringUtils.escapeUnicode(HiveStringUtils.escapeHiveCommand(entry.getValue())) + "'");
     }
 
     builder
