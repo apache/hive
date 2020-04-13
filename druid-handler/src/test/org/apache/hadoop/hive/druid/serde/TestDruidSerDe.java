@@ -83,7 +83,6 @@ import com.google.common.util.concurrent.SettableFuture;
 import org.apache.druid.data.input.Row;
 import org.apache.druid.query.Query;
 import org.apache.druid.query.Result;
-import org.apache.druid.query.select.SelectResultValue;
 import org.apache.druid.query.timeseries.TimeseriesResultValue;
 import org.apache.druid.query.topn.TopNResultValue;
 import org.junit.rules.ExpectedException;
@@ -449,163 +448,22 @@ import org.junit.rules.ExpectedException;
 
   private static final String GB_TIME_EXTRACTIONS_COLUMN_NAMES = "timestamp,extract,$f1";
   private static final String
-      GB_TIME_EXTRACTIONS_COLUMN_TYPES =
-      "timestamp with local time zone,timestamp with local time zone,bigint";
+      GB_TIME_EXTRACTIONS_COLUMN_TYPES = "timestamp with local time zone,timestamp with local time zone,bigint";
 
   private static final String GB_MONTH_EXTRACTIONS_COLUMN_NAMES = "timestamp,extract_month,$f1";
   private static final String GB_MONTH_EXTRACTIONS_COLUMN_TYPES = "timestamp with local time zone,int,bigint";
 
-  // Select query
-  private static final String
-      SELECT_QUERY =
-      "{   \"queryType\": \"select\",  "
-          + " \"dataSource\": \"wikipedia\",   \"descending\": \"false\",  "
-          + " \"dimensions\":[\"robot\",\"namespace\",\"anonymous\",\"unpatrolled\",\"page\",\"language\","
-          + "\"newpage\",\"user\"],  "
-          + " \"metrics\":[\"count\",\"added\",\"delta\",\"variation\",\"deleted\"],  "
-          + " \"granularity\": \"all\",  "
-          + " \"intervals\": [     \"2013-01-01/2013-01-02\"   ],  "
-          + " \"pagingSpec\":{\"pagingIdentifiers\": {}, \"threshold\":5} }";
-
-  // Select query results
-  private static final String
-      SELECT_QUERY_RESULTS =
-      "[{ "
-          + " \"timestamp\" : \"2013-01-01T00:00:00.000Z\", "
-          + " \"result\" : {  "
-          + "  \"pagingIdentifiers\" : {   "
-          + "   \"wikipedia_2012-12-29T00:00:00.000Z_2013-01-10T08:00:00.000Z_2013-01-10T08:13:47.830Z_v9\" : 4    }, "
-          + "   \"events\" : [ {  "
-          + "    \"segmentId\" : \"wikipedia_editstream_2012-12-29T00:00:00.000Z_2013-01-10T08:00:00"
-          + ".000Z_2013-01-10T08:13:47.830Z_v9\",  "
-          + "    \"offset\" : 0,  "
-          + "    \"event\" : {   "
-          + "     \"timestamp\" : \"2013-01-01T00:00:00.000Z\",   "
-          + "     \"robot\" : 1,   "
-          + "     \"namespace\" : \"article\",   "
-          + "     \"anonymous\" : \"0\",   "
-          + "     \"unpatrolled\" : \"0\",   "
-          + "     \"page\" : \"11._korpus_(NOVJ)\",   "
-          + "     \"language\" : \"sl\",   "
-          + "     \"newpage\" : \"0\",   "
-          + "     \"user\" : \"EmausBot\",   "
-          + "     \"count\" : 1.0,   "
-          + "     \"added\" : 39.0,   "
-          + "     \"delta\" : 39.0,   "
-          + "     \"variation\" : 39.0,   "
-          + "     \"deleted\" : 0.0  "
-          + "    } "
-          + "   }, {  "
-          + "    \"segmentId\" : \"wikipedia_2012-12-29T00:00:00.000Z_2013-01-10T08:00:00.000Z_2013-01-10T08:13:47"
-          + ".830Z_v9\",  "
-          + "    \"offset\" : 1,  "
-          + "    \"event\" : {   "
-          + "     \"timestamp\" : \"2013-01-01T00:00:00.000Z\",   "
-          + "     \"robot\" : 0,   "
-          + "     \"namespace\" : \"article\",   "
-          + "     \"anonymous\" : \"0\",   "
-          + "     \"unpatrolled\" : \"0\",   "
-          + "     \"page\" : \"112_U.S._580\",   "
-          + "     \"language\" : \"en\",   "
-          + "     \"newpage\" : \"1\",   "
-          + "     \"user\" : \"MZMcBride\",   "
-          + "     \"count\" : 1.0,   "
-          + "     \"added\" : 70.0,   "
-          + "     \"delta\" : 70.0,   "
-          + "     \"variation\" : 70.0,   "
-          + "     \"deleted\" : 0.0  "
-          + "    } "
-          + "   }, {  "
-          + "    \"segmentId\" : \"wikipedia_2012-12-29T00:00:00.000Z_2013-01-10T08:00:00.000Z_2013-01-10T08:13:47"
-          + ".830Z_v9\",  "
-          + "    \"offset\" : 2,  "
-          + "    \"event\" : {   "
-          + "     \"timestamp\" : \"2013-01-01T00:00:12.000Z\",   "
-          + "     \"robot\" : 0,   "
-          + "     \"namespace\" : \"article\",   "
-          + "     \"anonymous\" : \"0\",   "
-          + "     \"unpatrolled\" : \"0\",   "
-          + "     \"page\" : \"113_U.S._243\",   "
-          + "     \"language\" : \"en\",   "
-          + "     \"newpage\" : \"1\",   "
-          + "     \"user\" : \"MZMcBride\",   "
-          + "     \"count\" : 1.0,   "
-          + "     \"added\" : 77.0,   "
-          + "     \"delta\" : 77.0,   "
-          + "     \"variation\" : 77.0,   "
-          + "     \"deleted\" : 0.0  "
-          + "    } "
-          + "   }, {  "
-          + "    \"segmentId\" : \"wikipedia_2012-12-29T00:00:00.000Z_2013-01-10T08:00:00.000Z_2013-01-10T08:13:47"
-          + ".830Z_v9\",  "
-          + "    \"offset\" : 3,  "
-          + "    \"event\" : {   "
-          + "     \"timestamp\" : \"2013-01-01T00:00:12.000Z\",   "
-          + "     \"robot\" : 0,   "
-          + "     \"namespace\" : \"article\",   "
-          + "     \"anonymous\" : \"0\",   "
-          + "     \"unpatrolled\" : \"0\",   "
-          + "     \"page\" : \"113_U.S._73\",   "
-          + "     \"language\" : \"en\",   "
-          + "     \"newpage\" : \"1\",   "
-          + "     \"user\" : \"MZMcBride\",   "
-          + "     \"count\" : 1.0,   "
-          + "     \"added\" : 70.0,   "
-          + "     \"delta\" : 70.0,   "
-          + "     \"variation\" : 70.0,   "
-          + "     \"deleted\" : 0.0  "
-          + "    } "
-          + "   }, {  "
-          + "    \"segmentId\" : \"wikipedia_2012-12-29T00:00:00.000Z_2013-01-10T08:00:00.000Z_2013-01-10T08:13:47"
-          + ".830Z_v9\",  "
-          + "    \"offset\" : 4,  "
-          + "    \"event\" : {   "
-          + "     \"timestamp\" : \"2013-01-01T00:00:12.000Z\",   "
-          + "     \"robot\" : 0,   "
-          + "     \"namespace\" : \"article\",   "
-          + "     \"anonymous\" : \"0\",   "
-          + "     \"unpatrolled\" : \"0\",   "
-          + "     \"page\" : \"113_U.S._756\",   "
-          + "     \"language\" : \"en\",   "
-          + "     \"newpage\" : \"1\",   "
-          + "     \"user\" : \"MZMcBride\",   "
-          + "     \"count\" : 1.0,   "
-          + "     \"added\" : 68.0,   "
-          + "     \"delta\" : 68.0,   "
-          + "     \"variation\" : 68.0,   "
-          + "     \"deleted\" : 0.0  "
-          + "    } "
-          + "   } ]  }} ]";
-
-  // Select query results as records (types defined by metastore)
-  private static final String
-      SELECT_COLUMN_NAMES =
+  private static final String SCAN_COLUMN_NAMES =
       "__time,robot,namespace,anonymous,unpatrolled,page,language,newpage,user,count,added,delta,variation,deleted";
-  private static final String
-      SELECT_COLUMN_TYPES =
+  private static final String SCAN_COLUMN_TYPES =
       "timestamp with local time zone,boolean,string,string,string,string,string,string,string,double,double,float,"
           + "float,float";
-  private static final Object[][] SELECT_QUERY_RESULTS_RECORDS = new Object[][]{
-      new Object[]{
-          (new TimestampTZ(Instant.ofEpochMilli(1356998400000L).atZone(ZoneOffset.UTC))), Boolean.TRUE,
-          "article",
-          "0",
-          "0",
-          "11._korpus_(NOVJ)",
-          "sl",
-          "0",
-          "EmausBot", 1.0d, 39.0d, 39.0F, 39.0F, 0.0F },
-      new Object[]{
-          (new TimestampTZ(Instant.ofEpochMilli(1356998400000L).atZone(ZoneOffset.UTC))), Boolean.FALSE,
-          "article",
-          "0",
-          "0",
-          "112_U.S._580",
-          "en",
-          "1",
-          "MZMcBride", 1.0d, 70.0d, 70.0F, 70.0F, 0.0F },
-      new Object[]{
-          (new TimestampTZ(Instant.ofEpochMilli(1356998412000L).atZone(ZoneOffset.UTC))), Boolean.FALSE,
+  private static final Object[][] SCAN_QUERY_RESULTS_RECORDS = new Object[][] {
+      new Object[] { (new TimestampTZ(Instant.ofEpochMilli(1356998400000L).atZone(ZoneOffset.UTC))), Boolean.TRUE,
+          "article", "0", "0", "11._korpus_(NOVJ)", "sl", "0", "EmausBot", 1.0d, 39.0d, 39.0F, 39.0F, 0.0F },
+      new Object[] { (new TimestampTZ(Instant.ofEpochMilli(1356998400000L).atZone(ZoneOffset.UTC))), Boolean.FALSE,
+          "article", "0", "0", "112_U.S._580", "en", "1", "MZMcBride", 1.0d, 70.0d, 70.0F, 70.0F, 0.0F },
+      new Object[] { (new TimestampTZ(Instant.ofEpochMilli(1356998412000L).atZone(ZoneOffset.UTC))), Boolean.FALSE,
           "article",
           "0",
           "0",
@@ -691,12 +549,6 @@ import org.junit.rules.ExpectedException;
             GB_MONTH_EXTRACTIONS_RESULTS,
             new TypeReference<List<Row>>() {
             }));
-    selectQueryResults =
-        DruidStorageHandlerUtils.SMILE_MAPPER.writeValueAsBytes(DruidStorageHandlerUtils.JSON_MAPPER.readValue(
-            SELECT_QUERY_RESULTS,
-            new TypeReference<List<Result<SelectResultValue>>>() {
-            }));
-
     scanQueryResults =
         DruidStorageHandlerUtils.SMILE_MAPPER.writeValueAsBytes(DruidStorageHandlerUtils.JSON_MAPPER.readValue(
             SCAN_QUERY_RESULTS,
@@ -765,15 +617,11 @@ import org.junit.rules.ExpectedException;
         GB_MONTH_EXTRACTIONS,
         groupByMonthExtractQueryResults,
         GB_MONTH_EXTRACTION_RESULTS_RECORDS);
-    // Select query
-    tbl = createPropertiesQuery("wikipedia", Query.SELECT, SELECT_QUERY, SELECT_COLUMN_NAMES, SELECT_COLUMN_TYPES);
-    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
-    deserializeQueryResults(serDe, Query.SELECT, SELECT_QUERY, selectQueryResults, SELECT_QUERY_RESULTS_RECORDS);
 
     // Scan query -- results should be same as select query
-    tbl = createPropertiesQuery("wikipedia", Query.SCAN, SCAN_QUERY, SELECT_COLUMN_NAMES, SELECT_COLUMN_TYPES);
+    tbl = createPropertiesQuery("wikipedia", Query.SCAN, SCAN_QUERY, SCAN_COLUMN_NAMES, SCAN_COLUMN_TYPES);
     SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
-    deserializeQueryResults(serDe, Query.SCAN, SCAN_QUERY, scanQueryResults, SELECT_QUERY_RESULTS_RECORDS);
+    deserializeQueryResults(serDe, Query.SCAN, SCAN_QUERY, scanQueryResults, SCAN_QUERY_RESULTS_RECORDS);
   }
 
   private static Properties createPropertiesQuery(String dataSource,

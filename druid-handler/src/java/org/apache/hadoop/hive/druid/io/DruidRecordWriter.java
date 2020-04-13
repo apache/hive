@@ -98,18 +98,13 @@ public class DruidRecordWriter implements RecordWriter<NullWritable, DruidWritab
       final Path segmentsDescriptorsDir,
       final FileSystem fileSystem) {
     File basePersistDir = new File(realtimeTuningConfig.getBasePersistDirectory(), UUID.randomUUID().toString());
-    this.tuningConfig =
-        Preconditions.checkNotNull(realtimeTuningConfig.withBasePersistDirectory(basePersistDir),
-            "realtimeTuningConfig is null");
+    this.tuningConfig = Preconditions
+        .checkNotNull(realtimeTuningConfig.withBasePersistDirectory(basePersistDir), "realtimeTuningConfig is null");
     this.dataSchema = Preconditions.checkNotNull(dataSchema, "data schema is null");
 
-    appenderator =
-        Appenderators.createOffline(this.dataSchema,
-            tuningConfig,
-            new FireDepartmentMetrics(),
-            dataSegmentPusher,
-            DruidStorageHandlerUtils.JSON_MAPPER,
-            DruidStorageHandlerUtils.INDEX_IO,
+    appenderator = Appenderators
+        .createOffline("hive-offline-appenderator", this.dataSchema, tuningConfig, false, new FireDepartmentMetrics(),
+            dataSegmentPusher, DruidStorageHandlerUtils.JSON_MAPPER, DruidStorageHandlerUtils.INDEX_IO,
             DruidStorageHandlerUtils.INDEX_MERGER_V9);
     this.maxPartitionSize = maxPartitionSize;
     appenderator.startJob();

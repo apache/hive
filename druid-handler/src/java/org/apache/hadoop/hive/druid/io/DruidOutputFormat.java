@@ -144,40 +144,22 @@ public class DruidOutputFormat implements HiveOutputFormat<NullWritable, DruidWr
 
     final String workingPath = jc.get(DruidConstants.DRUID_JOB_WORKING_DIRECTORY);
     final String version = jc.get(DruidConstants.DRUID_SEGMENT_VERSION);
-    String basePersistDirectory = HiveConf
-            .getVar(jc, HiveConf.ConfVars.HIVE_DRUID_BASE_PERSIST_DIRECTORY);
+    String basePersistDirectory = HiveConf.getVar(jc, HiveConf.ConfVars.HIVE_DRUID_BASE_PERSIST_DIRECTORY);
     if (Strings.isNullOrEmpty(basePersistDirectory)) {
       basePersistDirectory = System.getProperty("java.io.tmpdir");
     }
     Integer maxRowInMemory = HiveConf.getIntVar(jc, HiveConf.ConfVars.HIVE_DRUID_MAX_ROW_IN_MEMORY);
 
     IndexSpec indexSpec = DruidStorageHandlerUtils.getIndexSpec(jc);
-    RealtimeTuningConfig realtimeTuningConfig = new RealtimeTuningConfig(maxRowInMemory,
-            null,
-            null,
-            null,
-            new File(basePersistDirectory, dataSource),
-            new CustomVersioningPolicy(version),
-            null,
-            null,
-            null,
-            indexSpec,
-            true,
-            0,
-            0,
-            true,
-            null,
-            0L,
-        null,
-            null
-    );
+    RealtimeTuningConfig realtimeTuningConfig =
+        new RealtimeTuningConfig(maxRowInMemory, null, null, null, new File(basePersistDirectory, dataSource),
+            new CustomVersioningPolicy(version), null, null, null, indexSpec, null, true, 0, 0, true, null, 0L, null,
+            null);
 
     LOG.debug(String.format("running with Data schema [%s] ", dataSchema));
     return new DruidRecordWriter(dataSchema, realtimeTuningConfig,
-            DruidStorageHandlerUtils.createSegmentPusherForDirectory(segmentDirectory, jc),
-            maxPartitionSize, new Path(workingPath, SEGMENTS_DESCRIPTOR_DIR_NAME),
-            finalOutPath.getFileSystem(jc)
-    );
+        DruidStorageHandlerUtils.createSegmentPusherForDirectory(segmentDirectory, jc), maxPartitionSize,
+        new Path(workingPath, SEGMENTS_DESCRIPTOR_DIR_NAME), finalOutPath.getFileSystem(jc));
   }
 
   @Override

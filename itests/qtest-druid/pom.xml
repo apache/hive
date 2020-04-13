@@ -38,8 +38,9 @@
   <properties>
     <hive.path.to.root>../..</hive.path.to.root>
     <druid.curator.version>4.1.0</druid.curator.version>
+    <druid.avatica.version>1.15.0</druid.avatica.version>
     <druid.jersey.version>1.19.3</druid.jersey.version>
-    <druid.jetty.version>9.4.10.v20180503</druid.jetty.version>
+    <druid.jetty.version>9.4.26.v20200117</druid.jetty.version>
     <druid.derby.version>10.11.1.1</druid.derby.version>
     <druid.guava.version>28.1-jre</druid.guava.version>
     <druid.guice.version>4.1.0</druid.guice.version>
@@ -162,6 +163,26 @@
           <groupId>org.apache.curator</groupId>
           <artifactId>curator-recipes</artifactId>
           <version>${druid.curator.version}</version>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.calcite.avatica</groupId>
+          <artifactId>avatica</artifactId>
+          <version>${avatica.version}</version>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.calcite.avatica</groupId>
+          <artifactId>avatica-core</artifactId>
+          <version>${avatica.version}</version>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.calcite.avatica</groupId>
+          <artifactId>avatica-metrics</artifactId>
+          <version>${avatica.version}</version>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.calcite.avatica</groupId>
+          <artifactId>avatica-server</artifactId>
+          <version>${avatica.version}</version>
         </dependency>
        <dependency>
           <groupId>com.sun.jersey</groupId>

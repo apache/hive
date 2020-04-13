@@ -149,24 +149,8 @@ import java.util.stream.Collectors;
     IndexSpec indexSpec = new IndexSpec(new RoaringBitmapSerdeFactory(true), null, null, null);
     RealtimeTuningConfig
         tuningConfig =
-        new RealtimeTuningConfig(null,
-            null,
-            null,
-            null,
-            temporaryFolder.newFolder(),
-            null,
-            null,
-            null,
-            null,
-            indexSpec,
-            null,
-            0,
-            0,
-            null,
-            null,
-            0L,
-            null,
-                null);
+        new RealtimeTuningConfig(null, null, null, null, temporaryFolder.newFolder(), null, null, null, null, indexSpec,
+            null, null, 0, 0, null, null, 0L, null, null);
     LocalFileSystem localFileSystem = FileSystem.getLocal(config);
     DataSegmentPusher dataSegmentPusher = new LocalDataSegmentPusher(new LocalDataSegmentPusherConfig() {
       @Override public File getStorageDirectory() {

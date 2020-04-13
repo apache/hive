@@ -45,31 +45,8 @@ import java.util.Map;
       @JsonProperty("context") Map<String, Object> context) {
     this.dataSchema = Preconditions.checkNotNull(dataSchema, "dataSchema");
     this.tuningConfig =
-        tuningConfig != null ?
-            tuningConfig :
-            new KafkaSupervisorTuningConfig(null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null);
+        tuningConfig != null ? tuningConfig : new KafkaSupervisorTuningConfig(null, null, null, null, null, null, null,
+            null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
     this.ioConfig = Preconditions.checkNotNull(ioConfig, "ioConfig");
     this.context = context;
   }

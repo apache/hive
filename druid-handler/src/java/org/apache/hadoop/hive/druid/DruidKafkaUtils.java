@@ -29,18 +29,13 @@ import org.apache.druid.data.input.impl.JSONParseSpec;
 import org.apache.druid.data.input.impl.StringInputRowParser;
 import org.apache.druid.data.input.impl.TimestampSpec;
 import org.apache.druid.java.util.http.client.Request;
-import org.apache.druid.java.util.http.client.response.FullResponseHandler;
-import org.apache.druid.java.util.http.client.response.FullResponseHolder;
+import org.apache.druid.java.util.http.client.response.StringFullResponseHandler;
+import org.apache.druid.java.util.http.client.response.StringFullResponseHolder;
 import org.apache.druid.segment.IndexSpec;
 import org.apache.druid.segment.indexing.DataSchema;
 import org.apache.druid.segment.writeout.TmpFileSegmentWriteOutMediumFactory;
 import org.apache.hadoop.hive.druid.conf.DruidConstants;
-import org.apache.hadoop.hive.druid.json.AvroParseSpec;
-import org.apache.hadoop.hive.druid.json.AvroStreamInputRowParser;
-import org.apache.hadoop.hive.druid.json.InlineSchemaAvroBytesDecoder;
-import org.apache.hadoop.hive.druid.json.KafkaSupervisorIOConfig;
-import org.apache.hadoop.hive.druid.json.KafkaSupervisorSpec;
-import org.apache.hadoop.hive.druid.json.KafkaSupervisorTuningConfig;
+import org.apache.hadoop.hive.druid.json.*;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.jboss.netty.handler.codec.http.HttpMethod;
@@ -72,23 +67,21 @@ final class DruidKafkaUtils {
       DataSchema dataSchema,
       IndexSpec indexSpec) {
     return new KafkaSupervisorSpec(dataSchema,
-        new KafkaSupervisorTuningConfig(DruidStorageHandlerUtils.getIntegerProperty(table,
-            DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "maxRowsInMemory"),
-                DruidStorageHandlerUtils.getLongProperty(table,
-                        DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "maxBytesInMemory"),
+        new KafkaSupervisorTuningConfig(DruidStorageHandlerUtils
+            .getIntegerProperty(table, DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "maxRowsInMemory"),
+            DruidStorageHandlerUtils
+                .getLongProperty(table, DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "maxBytesInMemory"),
 
-            DruidStorageHandlerUtils.getIntegerProperty(table,
-                DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "maxRowsPerSegment"),
-                DruidStorageHandlerUtils.getLongProperty(table,
-                        DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "maxTotalRows"),
+            DruidStorageHandlerUtils
+                .getIntegerProperty(table, DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "maxRowsPerSegment"),
+            DruidStorageHandlerUtils
+                .getLongProperty(table, DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "maxTotalRows"),
             DruidStorageHandlerUtils.getPeriodProperty(table,
-                DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "intermediatePersistPeriod"),
-            null,
+                DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "intermediatePersistPeriod"), null,
             // basePersistDirectory - use druid default, no need to be configured by user
-            DruidStorageHandlerUtils.getIntegerProperty(table,
-                DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "maxPendingPersists"),
-            indexSpec,
-            null,
+            DruidStorageHandlerUtils
+                .getIntegerProperty(table, DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "maxPendingPersists"),
+            indexSpec, null, null,
             // buildV9Directly - use druid default, no need to be configured by user
             DruidStorageHandlerUtils.getBooleanProperty(table,
                 DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "reportParseExceptions"),
@@ -96,19 +89,18 @@ final class DruidKafkaUtils {
                 DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "handoffConditionTimeout"),
             DruidStorageHandlerUtils.getBooleanProperty(table,
                 DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "resetOffsetAutomatically"),
-                TmpFileSegmentWriteOutMediumFactory.instance(),
-                DruidStorageHandlerUtils.getIntegerProperty(table,
-                DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "workerThreads"),
-            DruidStorageHandlerUtils.getIntegerProperty(table,
-                DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "chatThreads"),
-            DruidStorageHandlerUtils.getLongProperty(table,
-                DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "chatRetries"),
-            DruidStorageHandlerUtils.getPeriodProperty(table,
-                DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "httpTimeout"),
-            DruidStorageHandlerUtils.getPeriodProperty(table,
-                DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "shutdownTimeout"),
-            DruidStorageHandlerUtils.getPeriodProperty(table,
-                DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "offsetFetchPeriod"),
+            TmpFileSegmentWriteOutMediumFactory.instance(), DruidStorageHandlerUtils
+            .getIntegerProperty(table, DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "workerThreads"),
+            DruidStorageHandlerUtils
+                .getIntegerProperty(table, DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "chatThreads"),
+            DruidStorageHandlerUtils
+                .getLongProperty(table, DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "chatRetries"),
+            DruidStorageHandlerUtils
+                .getPeriodProperty(table, DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "httpTimeout"),
+            DruidStorageHandlerUtils
+                .getPeriodProperty(table, DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "shutdownTimeout"),
+            DruidStorageHandlerUtils
+                .getPeriodProperty(table, DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "offsetFetchPeriod"),
             DruidStorageHandlerUtils.getPeriodProperty(table,
                     DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "intermediateHandoffPeriod"),
     DruidStorageHandlerUtils.getBooleanProperty(table,
@@ -161,19 +153,14 @@ final class DruidKafkaUtils {
       String task = JSON_MAPPER.writeValueAsString(spec);
       CONSOLE.printInfo("submitting kafka Spec {}", task);
       LOG.info("submitting kafka Supervisor Spec {}", task);
-      FullResponseHolder
-          response =
-          DruidStorageHandlerUtils.getResponseFromCurrentLeader(DruidStorageHandler.getHttpClient(),
-              new Request(HttpMethod.POST,
-                  new URL(String.format("http://%s/druid/indexer/v1/supervisor", overlordAddress))).setContent(
-                  "application/json",
-                  JSON_MAPPER.writeValueAsBytes(spec)),
-              new FullResponseHandler(Charset.forName("UTF-8")));
+      StringFullResponseHolder response = DruidStorageHandlerUtils
+          .getResponseFromCurrentLeader(DruidStorageHandler.getHttpClient(), new Request(HttpMethod.POST,
+                  new URL(String.format("http://%s/druid/indexer/v1/supervisor", overlordAddress)))
+                  .setContent("application/json", JSON_MAPPER.writeValueAsBytes(spec)),
+              new StringFullResponseHandler(Charset.forName("UTF-8")));
       if (response.getStatus().equals(HttpResponseStatus.OK)) {
-        String
-            msg =
-            String.format("Kafka Supervisor for [%s] Submitted Successfully to druid.",
-                spec.getDataSchema().getDataSource());
+        String msg = String
+            .format("Kafka Supervisor for [%s] Submitted Successfully to druid.", spec.getDataSchema().getDataSource());
         LOG.info(msg);
         CONSOLE.printInfo(msg);
       } else {

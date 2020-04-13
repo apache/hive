@@ -33,6 +33,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 import org.apache.calcite.adapter.druid.DruidQuery;
 import org.apache.calcite.sql.validate.SqlValidatorUtil;
+import org.apache.druid.common.config.NullHandling;
 import org.apache.druid.data.input.impl.DimensionSchema;
 import org.apache.druid.data.input.impl.StringDimensionSchema;
 import org.apache.druid.guice.BloomFilterSerializersModule;
@@ -46,9 +47,9 @@ import org.apache.druid.java.util.emitter.core.NoopEmitter;
 import org.apache.druid.java.util.emitter.service.ServiceEmitter;
 import org.apache.druid.java.util.http.client.HttpClient;
 import org.apache.druid.java.util.http.client.Request;
-import org.apache.druid.java.util.http.client.response.FullResponseHandler;
-import org.apache.druid.java.util.http.client.response.FullResponseHolder;
 import org.apache.druid.java.util.http.client.response.InputStreamResponseHandler;
+import org.apache.druid.java.util.http.client.response.StringFullResponseHandler;
+import org.apache.druid.java.util.http.client.response.StringFullResponseHolder;
 import org.apache.druid.math.expr.ExprMacroTable;
 import org.apache.druid.metadata.MetadataStorageTablesConfig;
 import org.apache.druid.metadata.SQLMetadataConnector;
@@ -68,6 +69,7 @@ import org.apache.druid.query.expression.TimestampFormatExprMacro;
 import org.apache.druid.query.expression.TimestampParseExprMacro;
 import org.apache.druid.query.expression.TimestampShiftExprMacro;
 import org.apache.druid.query.expression.TrimExprMacro;
+import org.apache.druid.query.extraction.StringFormatExtractionFn;
 import org.apache.druid.query.filter.AndDimFilter;
 import org.apache.druid.query.filter.BloomDimFilter;
 import org.apache.druid.query.filter.BloomKFilter;
@@ -79,8 +81,6 @@ import org.apache.druid.query.groupby.GroupByQuery;
 import org.apache.druid.query.ordering.StringComparator;
 import org.apache.druid.query.ordering.StringComparators;
 import org.apache.druid.query.scan.ScanQuery;
-import org.apache.druid.query.select.SelectQuery;
-import org.apache.druid.query.select.SelectQueryConfig;
 import org.apache.druid.query.spec.MultipleIntervalSegmentSpec;
 import org.apache.druid.query.timeseries.TimeseriesQuery;
 import org.apache.druid.query.topn.TopNQuery;
@@ -225,25 +225,18 @@ public final class DruidStorageHandlerUtils {
   private static final int DEFAULT_MAX_TRIES = 10;
 
   static {
+    // This is needed to initliaze NullHandling for druid without guice.
+    NullHandling.initializeForTests();
     // This is needed for serde of PagingSpec as it uses JacksonInject for injecting SelectQueryConfig
-    InjectableValues.Std
-        injectableValues =
-        new InjectableValues.Std().addValue(SelectQueryConfig.class, new SelectQueryConfig(false))
-            // Expressions macro table used when we deserialize the query from calcite plan
-            .addValue(ExprMacroTable.class,
-                new ExprMacroTable(ImmutableList.of(new LikeExprMacro(),
-                    new RegexpExtractExprMacro(),
-                    new TimestampCeilExprMacro(),
-                    new TimestampExtractExprMacro(),
-                    new TimestampFormatExprMacro(),
-                    new TimestampParseExprMacro(),
-                    new TimestampShiftExprMacro(),
-                    new TimestampFloorExprMacro(),
-                    new TrimExprMacro.BothTrimExprMacro(),
-                    new TrimExprMacro.LeftTrimExprMacro(),
-                    new TrimExprMacro.RightTrimExprMacro())))
-            .addValue(ObjectMapper.class, JSON_MAPPER)
-            .addValue(DataSegment.PruneLoadSpecHolder.class, DataSegment.PruneLoadSpecHolder.DEFAULT);
+    InjectableValues.Std injectableValues = new InjectableValues.Std()
+        // Expressions macro table used when we deserialize the query from calcite plan
+        .addValue(ExprMacroTable.class, new ExprMacroTable(ImmutableList
+            .of(new LikeExprMacro(), new RegexpExtractExprMacro(), new TimestampCeilExprMacro(),
+                new TimestampExtractExprMacro(), new TimestampFormatExprMacro(), new TimestampParseExprMacro(),
+                new TimestampShiftExprMacro(), new TimestampFloorExprMacro(), new TrimExprMacro.BothTrimExprMacro(),
+                new TrimExprMacro.LeftTrimExprMacro(), new TrimExprMacro.RightTrimExprMacro())))
+        .addValue(ObjectMapper.class, JSON_MAPPER)
+        .addValue(DataSegment.PruneSpecsHolder.class, DataSegment.PruneSpecsHolder.DEFAULT);
 
     JSON_MAPPER.setInjectableValues(injectableValues);
     SMILE_MAPPER.setInjectableValues(injectableValues);
@@ -331,10 +324,9 @@ public final class DruidStorageHandlerUtils {
 
   }
 
-  static FullResponseHolder getResponseFromCurrentLeader(HttpClient client,
-      Request request,
-      FullResponseHandler fullResponseHandler) throws ExecutionException, InterruptedException {
-    FullResponseHolder responseHolder = client.go(request, fullResponseHandler).get();
+  static StringFullResponseHolder getResponseFromCurrentLeader(HttpClient client, Request request,
+      StringFullResponseHandler fullResponseHandler) throws ExecutionException, InterruptedException {
+    StringFullResponseHolder responseHolder = client.go(request, fullResponseHandler).get();
     if (HttpResponseStatus.TEMPORARY_REDIRECT.equals(responseHolder.getStatus())) {
       String redirectUrlStr = responseHolder.getResponse().headers().get("Location");
       LOG.debug("Request[%s] received redirect response to location [%s].", request.getUrl(), redirectUrlStr);
@@ -342,10 +334,9 @@ public final class DruidStorageHandlerUtils {
       try {
         redirectUrl = new URL(redirectUrlStr);
       } catch (MalformedURLException ex) {
-        throw new ExecutionException(String.format(
-            "Malformed redirect location is found in response from url[%s], new location[%s].",
-            request.getUrl(),
-            redirectUrlStr), ex);
+        throw new ExecutionException(String
+            .format("Malformed redirect location is found in response from url[%s], new location[%s].",
+                request.getUrl(), redirectUrlStr), ex);
       }
       responseHolder = client.go(withUrl(request, redirectUrl), fullResponseHandler).get();
     }
@@ -980,10 +971,6 @@ public final class DruidStorageHandlerUtils {
         rv = Druids.ScanQueryBuilder.copy((ScanQuery) query).filters(filter)
                                     .virtualColumns(VirtualColumns.create(virtualColumns)).build();
         break;
-      case org.apache.druid.query.Query.SELECT:
-        rv = Druids.SelectQueryBuilder.copy((SelectQuery) query).filters(filter)
-            .virtualColumns(VirtualColumns.create(virtualColumns)).build();
-        break;
       default:
         throw new UnsupportedOperationException("Unsupported Query type " + type);
       }
@@ -1140,8 +1127,6 @@ public final class DruidStorageHandlerUtils {
       return ((GroupByQuery) query).getVirtualColumns();
     case org.apache.druid.query.Query.SCAN:
       return ((ScanQuery) query).getVirtualColumns();
-    case org.apache.druid.query.Query.SELECT:
-      return ((SelectQuery) query).getVirtualColumns();
     default:
       throw new UnsupportedOperationException("Unsupported Query type " + query);
     }
