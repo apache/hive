@@ -52,24 +52,8 @@ import java.util.Map;
                 null,
                 null,
                 null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null);
+                null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+                null, null);
     this.ioConfig = Preconditions.checkNotNull(ioConfig, "ioConfig");
     this.context = context;
   }
