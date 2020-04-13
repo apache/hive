@@ -196,6 +196,11 @@ public class GenTezUtils {
       mapWork.setIncludedBuckets(ts.getConf().getIncludedBuckets());
     }
 
+    if (ts.getProbeDecodeContext() != null) {
+      // TODO: some operators like VectorPTFEvaluator do not allow the use of Selected take this into account here?
+      mapWork.setProbeDecodeContext(ts.getProbeDecodeContext());
+    }
+
     // add new item to the tez work
     tezWork.add(mapWork);
 

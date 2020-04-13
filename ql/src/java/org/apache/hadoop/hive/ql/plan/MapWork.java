@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import org.apache.hadoop.hive.common.StringInternUtils;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator.ProbeDecodeContext;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 
 import java.util.ArrayList;
@@ -174,6 +175,8 @@ public class MapWork extends BaseWork {
   private LlapIODescriptor llapIoDesc;
 
   private boolean isMergeFromResolver;
+
+  private ProbeDecodeContext probeDecodeContext = null;
 
   public MapWork() {}
 
@@ -847,6 +850,14 @@ public class MapWork extends BaseWork {
 
   public List<String> getVectorizationEnabledConditionsNotMet() {
     return vectorizationEnabledConditionsNotMet;
+  }
+
+  public ProbeDecodeContext getProbeDecodeContext() {
+    return probeDecodeContext;
+  }
+
+  public void setProbeDecodeContext(ProbeDecodeContext probeDecodeContext) {
+    this.probeDecodeContext = probeDecodeContext;
   }
 
   public class MapExplainVectorization extends BaseExplainVectorization {
