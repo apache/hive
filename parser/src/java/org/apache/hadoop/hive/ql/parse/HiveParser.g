@@ -1185,7 +1185,7 @@ createTableStatement
 truncateTableStatement
 @init { pushMsg("truncate table statement", state); }
 @after { popMsg(state); }
-    : KW_TRUNCATE KW_TABLE tablePartitionPrefix (KW_COLUMNS LPAREN columnNameList RPAREN)? force?
+    : KW_TRUNCATE KW_TABLE? tablePartitionPrefix (KW_COLUMNS LPAREN columnNameList RPAREN)? force?
     -> ^(TOK_TRUNCATETABLE tablePartitionPrefix columnNameList? force?);
 
 dropTableStatement
