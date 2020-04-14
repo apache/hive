@@ -63,6 +63,11 @@ public class VectorMapJoinFastLongHashMultiSet
     }
   }
 
+  @Override
+  public boolean containsLongKey(long currentKey) {
+    return containsKey(currentKey);
+  }
+
   /*
    * A Unit Test convenience method for putting the key into the hash table using the
    * actual type.
