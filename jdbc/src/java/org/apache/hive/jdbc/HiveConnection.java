@@ -541,13 +541,15 @@ public class HiveConnection implements java.sql.Connection {
                 public boolean retryRequest(final HttpResponse response, final int executionCount,
                     final HttpContext context) {
                   int statusCode = response.getStatusLine().getStatusCode();
-                  boolean ret = statusCode == 401 && executionCount <= 1;
+                  boolean sentCredentials = context.getAttribute(Utils.HIVE_SERVER2_SENT_CREDENTIALS) != null &&
+                      context.getAttribute(Utils.HIVE_SERVER2_SENT_CREDENTIALS).equals(Utils.HIVE_SERVER2_CONST_TRUE);
+                  boolean ret = statusCode == 401 && executionCount <= 1 && !sentCredentials;
 
                   // Set the context attribute to true which will be interpreted by the request
                   // interceptor
                   if (ret) {
                     context.setAttribute(Utils.HIVE_SERVER2_RETRY_KEY,
-                        Utils.HIVE_SERVER2_RETRY_TRUE);
+                        Utils.HIVE_SERVER2_CONST_TRUE);
                   }
                   return ret;
                 }

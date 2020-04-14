@@ -319,8 +319,10 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
   public TOpenSessionResp OpenSession(TOpenSessionReq req) throws TException {
     LOG.info("Client protocol version: " + req.getClient_protocol());
     TOpenSessionResp resp = new TOpenSessionResp();
+    String userName = null;
     try {
-      final SessionHandle sessionHandle = getSessionHandle(req, resp);
+      userName = getUserName(req);
+      final SessionHandle sessionHandle = getSessionHandle(req, resp, userName);
 
       final int fetchSize = hiveConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE);
 
@@ -334,7 +336,9 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       if (context != null) {
         context.setSessionHandle(sessionHandle);
       }
+      LOG.info("Login attempt is successful for user : " + userName);
     } catch (Exception e) {
+      LOG.error("Login attempt is failed for user : " + userName + ". Error Messsage :" + e.getMessage());
       LOG.warn("Error opening session: ", e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
@@ -462,9 +466,8 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
    * @throws LoginException
    * @throws IOException
    */
-  SessionHandle getSessionHandle(TOpenSessionReq req, TOpenSessionResp res)
+  SessionHandle getSessionHandle(TOpenSessionReq req, TOpenSessionResp res, String userName)
       throws HiveSQLException, LoginException, IOException {
-    String userName = getUserName(req);
     String ipAddress = getIpAddress();
     TProtocolVersion protocol = getMinVersion(CLIService.SERVER_VERSION,
         req.getClient_protocol());

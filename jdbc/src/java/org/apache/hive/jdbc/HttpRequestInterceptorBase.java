@@ -70,11 +70,14 @@ public abstract class HttpRequestInterceptorBase implements HttpRequestIntercept
           Utils.needToSendCredentials(cookieStore, cookieName, isSSL)))) ||
           (httpContext.getAttribute(Utils.HIVE_SERVER2_RETRY_KEY) != null &&
           httpContext.getAttribute(Utils.HIVE_SERVER2_RETRY_KEY).
-          equals(Utils.HIVE_SERVER2_RETRY_TRUE)))) {
+          equals(Utils.HIVE_SERVER2_CONST_TRUE)))) {
         addHttpAuthHeader(httpRequest, httpContext);
+        httpContext.setAttribute(Utils.HIVE_SERVER2_SENT_CREDENTIALS, Utils.HIVE_SERVER2_CONST_TRUE);
+      } else {
+        httpContext.setAttribute(Utils.HIVE_SERVER2_SENT_CREDENTIALS, Utils.HIVE_SERVER2_CONST_FALSE);
       }
       if (isCookieEnabled) {
-        httpContext.setAttribute(Utils.HIVE_SERVER2_RETRY_KEY, Utils.HIVE_SERVER2_RETRY_FALSE);
+        httpContext.setAttribute(Utils.HIVE_SERVER2_RETRY_KEY, Utils.HIVE_SERVER2_CONST_FALSE);
       }
       // Insert the additional http headers
       if (additionalHeaders != null) {
