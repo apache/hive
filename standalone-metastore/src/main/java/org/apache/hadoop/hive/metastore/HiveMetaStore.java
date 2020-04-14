@@ -1453,7 +1453,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       boolean madeManagedDir = false;
       boolean madeExternalDir = false;
       boolean isReplicated = isDbReplicationTarget(db);
-      final Path effectiveDbMgdPath = (dbMgdPath != null) ? dbMgdPath : defaultDbMgdPath;
       Map<String, String> transactionalListenersResponses = Collections.emptyMap();
       try {
         firePreEvent(new PreCreateDatabaseEvent(db, this));
@@ -1474,28 +1473,29 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             madeExternalDir = true;
           }
         } else {
-          try {
-            // Since this may be done as random user (if doAs=true) he may not have access
-            // to the managed directory. We run this as an admin user
-            madeManagedDir = UserGroupInformation.getLoginUser().doAs(new PrivilegedExceptionAction<Boolean>() {
-              @Override public Boolean run() throws MetaException {
-                if (!wh.isDir(effectiveDbMgdPath)) {
-                  LOG.info("Creating database path in managed directory " + effectiveDbMgdPath);
-                  if (!wh.mkdirs(effectiveDbMgdPath)) {
-                    throw new MetaException(
-                        "Unable to create database managed path " + effectiveDbMgdPath + ", failed to create database " + db.getName());
+          if (dbMgdPath != null) {
+            try {
+              // Since this may be done as random user (if doAs=true) he may not have access
+              // to the managed directory. We run this as an admin user
+              madeManagedDir = UserGroupInformation.getLoginUser().doAs(new PrivilegedExceptionAction<Boolean>() {
+                @Override public Boolean run() throws MetaException {
+                  if (!wh.isDir(dbMgdPath)) {
+                    LOG.info("Creating database path in managed directory " + dbMgdPath);
+                    if (!wh.mkdirs(dbMgdPath)) {
+                      throw new MetaException("Unable to create database managed path " + dbMgdPath + ", failed to create database " + db.getName());
+                    }
+                    return true;
                   }
-                  return true;
+                  return false;
                 }
-                return false;
+              });
+              if (madeManagedDir) {
+                LOG.info("Created database path in managed directory " + dbMgdPath);
               }
-            });
-            if (madeManagedDir) {
-              LOG.info("Created database path in managed directory " + effectiveDbMgdPath);
+            } catch (IOException | InterruptedException e) {
+              throw new MetaException(
+                  "Unable to create database managed directory " + dbMgdPath + ", failed to create database " + db.getName());
             }
-          } catch (IOException | InterruptedException e) {
-            throw new MetaException(
-                "Unable to create database managed directory " + dbMgdPath + ", failed to create database " + db.getName());
           }
           if (dbExtPath != null) {
             try {
