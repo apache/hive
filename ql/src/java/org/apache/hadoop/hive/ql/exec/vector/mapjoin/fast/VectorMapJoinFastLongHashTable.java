@@ -216,6 +216,11 @@ public abstract class VectorMapJoinFastLongHashTable
     metricExpands++;
   }
 
+  protected boolean containsKey(long key) {
+    long hashCode = HashCodeUtil.calculateLongHashCode(key);
+    return findReadSlot(key, hashCode) != -1;
+  }
+
   protected int findReadSlot(long key, long hashCode) {
 
     int intHashCode = (int) hashCode;
