@@ -48,7 +48,7 @@ import static org.apache.hadoop.hive.ql.parse.repl.load.message.MessageHandler.C
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
@@ -87,7 +87,7 @@ public class TestPrimaryToReplicaResourceFunction {
     when(mockFs.getScheme()).thenReturn("hdfs");
     when(mockFs.getUri()).thenReturn(new URI("hdfs", "somehost:9000", null, null, null));
     mockStatic(System.class);
-    when(System.nanoTime()).thenReturn(Long.MAX_VALUE);
+//    when(System.nanoTime()).thenReturn(Long.MAX_VALUE);
     when(functionObj.getFunctionName()).thenReturn("someFunctionName");
     mockStatic(ReplCopyTask.class);
     Task mock = mock(Task.class);
@@ -100,6 +100,6 @@ public class TestPrimaryToReplicaResourceFunction {
     assertThat(resourceUri.getUri(),
         is(equalTo(
             "hdfs://somehost:9000/someBasePath/withADir/replicadbname/somefunctionname/" + String
-                .valueOf(Long.MAX_VALUE) + "/ab.jar")));
+                .valueOf(0L) + "/ab.jar")));
   }
 }

@@ -27,10 +27,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.ArgumentMatcher;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -151,7 +151,7 @@ public class TestQueryHooks {
     return driver;
   }
 
-  private static final class QueryLifeTimeHookContextMatcher extends ArgumentMatcher<QueryLifeTimeHookContext> {
+  private static final class QueryLifeTimeHookContextMatcher implements ArgumentMatcher<QueryLifeTimeHookContext> {
 
     private final String command;
 
@@ -160,8 +160,8 @@ public class TestQueryHooks {
     }
 
     @Override
-    public boolean matches(Object o) {
-      return ((QueryLifeTimeHookContext) o).getCommand().equals(this.command);
+    public boolean matches(QueryLifeTimeHookContext queryLifeTimeHookContext) {
+      return queryLifeTimeHookContext.getCommand().equals(this.command);
     }
   }
 }

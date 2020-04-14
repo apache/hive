@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.llap.io.encoded;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -35,11 +36,10 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.withSettings;
-import static org.mockito.internal.util.reflection.Whitebox.getInternalState;
-import static org.mockito.internal.util.reflection.Whitebox.setInternalState;
 
 /**
  * Unit tests for VectorDeserializeOrcWriter.
@@ -48,13 +48,43 @@ public class TestVectorDeserializeOrcWriter {
 
   private static final int TEST_NUM_COLS = 2;
 
+  private static Field reflectField(Class<?> classToReflect, String fieldNameValueToFetch) {
+    try {
+      Field reflectField = null;
+      Class<?> classForReflect = classToReflect;
+      do {
+        try {
+          reflectField = classForReflect.getDeclaredField(fieldNameValueToFetch);
+        } catch (NoSuchFieldException e) {
+          classForReflect = classForReflect.getSuperclass();
+        }
+      } while (reflectField == null || classForReflect == null);
+      reflectField.setAccessible(true);
+      return reflectField;
+    } catch (Exception e) {
+      fail("Failed to reflect " + fieldNameValueToFetch + " from " + classToReflect);
+    }
+    return null;
+  }
+
+  private static void reflectSetValue(Object objToReflect, String fieldNameToSet, Object valueToSet) {
+    try {
+      Field reflectField = reflectField(objToReflect.getClass(), fieldNameToSet);
+      reflectField.set(objToReflect, valueToSet);
+    } catch (Exception e) {
+      fail("Failed to reflectively set " + fieldNameToSet + "=" + valueToSet);
+    }
+  }
+
   @Test
   public void testConcurrencyIssueWhileWriting() throws Exception {
 
     //Setup////////////////////////////////////////////////////////////////////////////////////////
     EncodedDataConsumer consumer = createBlankEncodedDataConsumer();
+    Field cvbPoolField = EncodedDataConsumer.class.getDeclaredField("cvbPool");
+    cvbPoolField.setAccessible(true);
     FixedSizedObjectPool<ColumnVectorBatch> cvbPool = (FixedSizedObjectPool<ColumnVectorBatch>)
-            getInternalState(consumer, "cvbPool");
+        cvbPoolField.get(consumer);
 
     ColumnVectorBatch cvb = new ColumnVectorBatch(TEST_NUM_COLS);
     VectorizedRowBatch vrb = new VectorizedRowBatch(TEST_NUM_COLS);
@@ -104,12 +134,13 @@ public class TestVectorDeserializeOrcWriter {
   private static VectorDeserializeOrcWriter createOrcWriter(
           Queue<VectorDeserializeOrcWriter.WriteOperation> writeOpQueue, VectorizedRowBatch vrb) {
     VectorDeserializeOrcWriter orcWriter = mock(VectorDeserializeOrcWriter.class,
-            withSettings().defaultAnswer(CALLS_REAL_METHODS));
-    setInternalState(orcWriter, "sourceBatch", vrb);
-    setInternalState(orcWriter, "destinationBatch", vrb);
-    setInternalState(orcWriter, "currentBatches", new ArrayList<VectorizedRowBatch>());
-    setInternalState(orcWriter, "queue", writeOpQueue);
-    setInternalState(orcWriter, "isAsync", true);
+        withSettings().defaultAnswer(CALLS_REAL_METHODS));
+
+    reflectSetValue(orcWriter, "sourceBatch", vrb);
+    reflectSetValue(orcWriter, "destinationBatch", vrb);
+    reflectSetValue(orcWriter, "currentBatches", new ArrayList<VectorizedRowBatch>());
+    reflectSetValue(orcWriter, "queue", writeOpQueue);
+    reflectSetValue(orcWriter, "isAsync", true);
     return orcWriter;
   }
 
