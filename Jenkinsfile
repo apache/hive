@@ -75,10 +75,10 @@ podTemplate(
   //kgyrtkirk/hive-dev-box:executor
     containerTemplate(name: 'maven', image: 'kgyrtkirk/tx1:x', ttyEnabled: true, command: 'cat',
         alwaysPullImage: true,
-        resourceRequestCpu: '1500m',
-        resourceLimitCpu: '2500m',
-        resourceRequestMemory: '3000Mi',
-        resourceLimitMemory: '8000Mi'
+        resourceRequestCpu: '900m',
+        resourceLimitCpu: '3000m',
+        resourceRequestMemory: '4900Mi',
+        resourceLimitMemory: '10000Mi'
     ),
 //    containerTemplate(name: 'maven', image: 'maven:3.3.9-jdk-8-alpine', ttyEnabled: true, command: 'cat'),
 //    containerTemplate(name: 'golang', image: 'golang:1.8.0', ttyEnabled: true, command: 'cat')
@@ -91,6 +91,10 @@ spec:
       operator: "Equal"
       value: "slave"
       effect: "PreferNoSchedule"
+    - key: "type"
+      operator: "Equal"
+      value: "slave"
+      effect: "NoSchedule"
   nodeSelector:
     type: slave
 ''') {
