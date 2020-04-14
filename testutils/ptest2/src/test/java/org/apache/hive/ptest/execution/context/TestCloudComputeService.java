@@ -27,7 +27,8 @@ import org.junit.Before;
 
 import com.google.common.collect.Sets;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class TestCloudComputeService {
   private static final String GROUP_NAME = "grp";
