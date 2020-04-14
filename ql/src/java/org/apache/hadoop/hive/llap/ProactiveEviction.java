@@ -98,7 +98,7 @@ public final class ProactiveEviction {
       }
       // Fire and forget - requests are enqueued on the single threaded executor and this (caller) thread won't wait.
       for (LlapServiceInstance instance : instances) {
-        Task task = new Task(conf, instance, request);
+        EvictionRequestTask task = new EvictionRequestTask(conf, instance, request);
         EXECUTOR.execute(task);
       }
 
@@ -110,14 +110,14 @@ public final class ProactiveEviction {
   /**
    * The executable task to carry out request sending.
    */
-  public static class Task implements Runnable {
+  public static class EvictionRequestTask implements Runnable {
     private final Request request;
     private Configuration conf;
     private LlapServiceInstance instance;
     private SocketFactory socketFactory;
     private RetryPolicy retryPolicy;
 
-    Task(Configuration conf, LlapServiceInstance llapServiceInstance, Request request) {
+    EvictionRequestTask(Configuration conf, LlapServiceInstance llapServiceInstance, Request request) {
       this.conf = conf;
       this.instance = llapServiceInstance;
       this.socketFactory = NetUtils.getDefaultSocketFactory(conf);
@@ -234,7 +234,7 @@ public final class ProactiveEviction {
      * @return true if cacheTag matches and the related buffer is eligible for proactive eviction, false otherwise.
      */
     public boolean isTagMatch(CacheTag cacheTag) {
-      // TODO: implement this
+      // TODO: HIVE-23198
       return false;
     }
 

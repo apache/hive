@@ -243,7 +243,7 @@ public final class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
 
   @Override
   public long evictEntity(Predicate<LlapCacheableBuffer> predicate) {
-    // TODO
+    // TODO: HIVE-23197
     return 0;
   }
 
