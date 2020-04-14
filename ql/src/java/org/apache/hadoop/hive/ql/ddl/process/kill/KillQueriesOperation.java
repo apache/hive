@@ -31,11 +31,13 @@ public class KillQueriesOperation extends DDLOperation<KillQueriesDesc> {
     super(context, desc);
   }
 
+  public static final String KILL_QUERY_MESSAGE = "User invoked KILL QUERY";
+
   @Override
   public int execute() throws HiveException {
     SessionState sessionState = SessionState.get();
     for (String queryId : desc.getQueryIds()) {
-      sessionState.getKillQuery().killQuery(queryId, "User invoked KILL QUERY", context.getDb().getConf());
+      sessionState.getKillQuery().killQuery(queryId, KILL_QUERY_MESSAGE, context.getDb().getConf());
     }
     LOG.info("kill query called ({})", desc.getQueryIds());
     return 0;
