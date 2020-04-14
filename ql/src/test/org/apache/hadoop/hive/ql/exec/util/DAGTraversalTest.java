@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.exec.util;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.Serializable;
 import java.util.Arrays;
