@@ -64,10 +64,14 @@ public class Utils {
 
   private static final String URI_HIVE_PREFIX = "hive2:";
 
-  // This value is set to true by the setServiceUnavailableRetryStrategy() when the server returns 401
+  // This value is set to true by the setServiceUnavailableRetryStrategy() when the server returns 401.
+  // This value is used only when cookie is sent for authorization. In case the cookie is expired,
+  // client will send the actual credentials in the next connection request.
+  // If credentials are sent in the first request it self, then no need to retry.
   static final String HIVE_SERVER2_RETRY_KEY = "hive.server2.retryserver";
-  static final String HIVE_SERVER2_RETRY_TRUE = "true";
-  static final String HIVE_SERVER2_RETRY_FALSE = "false";
+  static final String HIVE_SERVER2_SENT_CREDENTIALS = "hive.server2.sentCredentials";
+  static final String HIVE_SERVER2_CONST_TRUE = "true";
+  static final String HIVE_SERVER2_CONST_FALSE = "false";
 
   public static class JdbcConnectionParams {
     // Note on client side parameter naming convention:
