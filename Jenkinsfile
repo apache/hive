@@ -77,7 +77,7 @@ podTemplate(
         alwaysPullImage: true,
         resourceRequestCpu: '900m',
         resourceLimitCpu: '3000m',
-        resourceRequestMemory: '4900Mi',
+        resourceRequestMemory: '4500Mi',
         resourceLimitMemory: '10000Mi'
     ),
 //    containerTemplate(name: 'maven', image: 'maven:3.3.9-jdk-8-alpine', ttyEnabled: true, command: 'cat'),
