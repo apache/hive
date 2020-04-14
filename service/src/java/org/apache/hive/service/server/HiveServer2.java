@@ -645,7 +645,7 @@ public class HiveServer2 extends CompositeService {
     return false;
   }
 
-  private String getServerInstanceURI() throws Exception {
+  public String getServerInstanceURI() throws Exception {
     if ((thriftCLIService == null) || (thriftCLIService.getServerIPAddress() == null)) {
       throw new Exception("Unable to get the server address; it hasn't been initialized yet.");
     }

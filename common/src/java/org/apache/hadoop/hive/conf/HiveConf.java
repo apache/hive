@@ -2697,6 +2697,11 @@ public class HiveConf extends Configuration {
         "Truststore password when using a client-side certificate with TLS connectivity to ZooKeeper." +
             "Overrides any explicit value set via the zookeeper.ssl.trustStore.password " +
              "system property (note the camelCase)."),
+    HIVE_ZOOKEEPER_KILLQUERY_ENABLE("hive.zookeeper.killquery.enable", true,
+        "Whether enabled kill query coordination with zookeeper, " +
+            "when hive.server2.support.dynamic.service.discovery is enabled."),
+    HIVE_ZOOKEEPER_KILLQUERY_NAMESPACE("hive.zookeeper.killquery.namespace", "killQueries",
+        "When kill query coordination is enabled, uses this namespace for registering queries to kill with zookeeper"),
 
     // Transactions
     HIVE_TXN_MANAGER("hive.txn.manager",
