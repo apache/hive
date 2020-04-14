@@ -60,7 +60,7 @@ OPTS+=" -Dmaven.repo.local=$PWD/.m2"
 OPTS+=" $M_OPTS "
 if [ -s inclusions.txt ]; then OPTS+=" -Dsurefire.includesFile=$PWD/inclusions.txt";fi
 if [ -s exclusions.txt ]; then OPTS+=" -Dsurefire.excludesFile=$PWD/exclusions.txt";fi
-cd hive
+#cd hive
 mvn $OPTS '''+args+'''
 du -h --max-depth=1
 '''
