@@ -1504,7 +1504,7 @@ public class DagUtils {
     if (endVertex) {
       vertex.addDataSink("out_"+workUnit.getName(), new DataSinkDescriptor(
           OutputDescriptor.create(outputKlass.getName())
-          .setUserPayload(TezUtils.createUserPayloadFromConf(conf)), null, null));
+          .setUserPayload(vertex.getProcessorDescriptor().getUserPayload()), null, null));
     }
 
     return vertex;
