@@ -228,7 +228,6 @@
     <rs-api.version>2.0.1</rs-api.version>
     <json-path.version>2.4.0</json-path.version>
     <janino.version>3.0.11</janino.version>
-    <snakeyaml.version>1.23</snakeyaml.version>
     <datasketches.version>1.0.0-incubating</datasketches.version>
   </properties>
 
@@ -1026,11 +1025,6 @@
         <groupId>org.codehaus.janino</groupId>
         <artifactId>janino</artifactId>
         <version>${janino.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.yaml</groupId>
-        <artifactId>snakeyaml</artifactId>
-        <version>${snakeyaml.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
