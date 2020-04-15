@@ -1009,12 +1009,28 @@ public class MetaStoreServerUtils {
                                                                                 Collection<Partition> partitions) {
     final String tablePath = table.getSd().getLocation();
 
+
     ImmutableListMultimap<StorageDescriptorKey, Partition> partitionsWithinTableDirectory =
         Multimaps.index(partitions, input -> {
           // if sd is not in the list of projected fields, all the partitions
           // can be just grouped in PartitionSpec object
           if (input.getSd() == null) {
             return StorageDescriptorKey.UNSET_KEY;
+          }
+
+          // if sd has skewed columns we better not group partition, since different partitions
+          // could have different skewed info like skewed location
+          if (input.getSd().getSkewedInfo() != null
+              && input.getSd().getSkewedInfo().getSkewedColNames() != null
+              && !input.getSd().getSkewedInfo().getSkewedColNames().isEmpty()) {
+            return new StorageDescriptorKey(input.getSd());
+          }
+
+          // if partitions don't have the same number of buckets we can not group their SD,
+          // this could lead to incorrect number of buckets
+          if (input.getSd().getNumBuckets()
+              != partitions.iterator().next().getSd().getNumBuckets()) {
+            return new StorageDescriptorKey(input.getSd());
           }
           // if the partition is within table, use the tableSDKey to group it with other partitions
           // within the table directory

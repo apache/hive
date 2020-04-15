@@ -1325,6 +1325,41 @@ public interface IMetaStoreClient {
       throws MetaException, NoSuchObjectException, TException;
 
   /**
+   * Get list of {@link PartitionSpec} matching specified serialized expression
+   * @param db_name the database name
+   * @param tbl_name the table name
+   * @param expr expression, serialized from ExprNodeDesc
+   * @param max_parts the maximum number of partitions to return,
+   *    all partitions are returned if -1 is passed
+   * @param default_partition_name Default partition name from configuration. If blank, the
+   *    metastore server-side configuration is used.
+   * @param result the resulting list of partitions
+   * @return whether the resulting list contains partitions which may or may not match the expr
+   * @throws TException thrift transport error or error executing the filter.
+   */
+  boolean listPartitionsSpecByExpr(String dbName, String tblName,
+      byte[] expr, String defaultPartName, short maxParts, List<PartitionSpec> result)
+          throws TException;
+
+  /**
+   * Get list of {@link PartitionSpec} matching specified serialized expression
+   * @param catName the catalog name
+   * @param dbName the database name
+   * @param tblName the table name
+   * @param expr expression, serialized from ExprNodeDesc
+   * @param maxParts the maximum number of partitions to return,
+   *    all partitions are returned if -1 is passed
+   * @param defaultPartitionName Default partition name from configuration. If blank, the
+   *    metastore server-side configuration is used.
+   * @param result the resulting list of partitions
+   * @return whether the resulting list contains partitions which may or may not match the expr
+   * @throws TException thrift transport error or error executing the filter.
+   */
+  boolean listPartitionsSpecByExpr(String catName, String dbName, String tblName,
+      byte[] expr, String defaultPartitionName, short maxParts, List<PartitionSpec> result)
+      throws TException;
+
+  /**
    * Get list of partitions matching specified serialized expression
    * @param db_name the database name
    * @param tbl_name the table name
@@ -1339,7 +1374,7 @@ public interface IMetaStoreClient {
    */
   boolean listPartitionsByExpr(String db_name, String tbl_name,
       byte[] expr, String default_partition_name, short max_parts, List<Partition> result)
-          throws TException;
+      throws TException;
 
   /**
    * Get list of partitions matching specified serialized expression

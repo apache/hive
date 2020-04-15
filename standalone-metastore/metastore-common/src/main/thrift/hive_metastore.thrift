@@ -759,6 +759,13 @@ struct PartitionsByExprResult {
   2: required bool hasUnknownPartitions
 }
 
+// Return type for get_partitions_spec_by_expr
+struct PartitionsSpecByExprResult {
+1: required list<PartitionSpec> partitionsSpec,
+// Whether the results has any (currently, all) partitions which may or may not match
+2: required bool hasUnknownPartitions
+}
+
 struct PartitionsByExprRequest {
   1: required string dbName,
   2: required string tblName,
@@ -2256,6 +2263,12 @@ service ThriftHiveMetastore extends fb303.FacebookService
                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
 
   // get the partitions matching the given partition filter
+  // unlike get_partitions_by_expr, this returns PartitionSpec which contains deduplicated
+  // storage descriptor
+  PartitionsSpecByExprResult get_partitions_spec_by_expr(1:PartitionsByExprRequest req)
+  throws(1:MetaException o1, 2:NoSuchObjectException o2)
+
+    // get the partitions matching the given partition filter
   i32 get_num_partitions_by_filter(1:string db_name 2:string tbl_name 3:string filter)
                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
 

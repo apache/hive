@@ -1079,14 +1079,14 @@ import org.slf4j.LoggerFactory;
           case 8: // RESOURCE_URIS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list602 = iprot.readListBegin();
-                struct.resourceUris = new ArrayList<ResourceUri>(_list602.size);
-                ResourceUri _elem603;
-                for (int _i604 = 0; _i604 < _list602.size; ++_i604)
+                org.apache.thrift.protocol.TList _list610 = iprot.readListBegin();
+                struct.resourceUris = new ArrayList<ResourceUri>(_list610.size);
+                ResourceUri _elem611;
+                for (int _i612 = 0; _i612 < _list610.size; ++_i612)
                 {
-                  _elem603 = new ResourceUri();
-                  _elem603.read(iprot);
-                  struct.resourceUris.add(_elem603);
+                  _elem611 = new ResourceUri();
+                  _elem611.read(iprot);
+                  struct.resourceUris.add(_elem611);
                 }
                 iprot.readListEnd();
               }
@@ -1153,9 +1153,9 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(RESOURCE_URIS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.resourceUris.size()));
-          for (ResourceUri _iter605 : struct.resourceUris)
+          for (ResourceUri _iter613 : struct.resourceUris)
           {
-            _iter605.write(oprot);
+            _iter613.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -1238,9 +1238,9 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetResourceUris()) {
         {
           oprot.writeI32(struct.resourceUris.size());
-          for (ResourceUri _iter606 : struct.resourceUris)
+          for (ResourceUri _iter614 : struct.resourceUris)
           {
-            _iter606.write(oprot);
+            _iter614.write(oprot);
           }
         }
       }
@@ -1283,14 +1283,14 @@ import org.slf4j.LoggerFactory;
       }
       if (incoming.get(7)) {
         {
-          org.apache.thrift.protocol.TList _list607 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.resourceUris = new ArrayList<ResourceUri>(_list607.size);
-          ResourceUri _elem608;
-          for (int _i609 = 0; _i609 < _list607.size; ++_i609)
+          org.apache.thrift.protocol.TList _list615 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.resourceUris = new ArrayList<ResourceUri>(_list615.size);
+          ResourceUri _elem616;
+          for (int _i617 = 0; _i617 < _list615.size; ++_i617)
           {
-            _elem608 = new ResourceUri();
-            _elem608.read(iprot);
-            struct.resourceUris.add(_elem608);
+            _elem616 = new ResourceUri();
+            _elem616.read(iprot);
+            struct.resourceUris.add(_elem616);
           }
         }
         struct.setResourceUrisIsSet(true);

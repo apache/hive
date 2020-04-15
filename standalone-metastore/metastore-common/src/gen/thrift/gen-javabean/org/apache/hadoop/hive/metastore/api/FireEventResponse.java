@@ -347,13 +347,13 @@ import org.slf4j.LoggerFactory;
           case 1: // EVENT_IDS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list844 = iprot.readListBegin();
-                struct.eventIds = new ArrayList<Long>(_list844.size);
-                long _elem845;
-                for (int _i846 = 0; _i846 < _list844.size; ++_i846)
+                org.apache.thrift.protocol.TList _list852 = iprot.readListBegin();
+                struct.eventIds = new ArrayList<Long>(_list852.size);
+                long _elem853;
+                for (int _i854 = 0; _i854 < _list852.size; ++_i854)
                 {
-                  _elem845 = iprot.readI64();
-                  struct.eventIds.add(_elem845);
+                  _elem853 = iprot.readI64();
+                  struct.eventIds.add(_elem853);
                 }
                 iprot.readListEnd();
               }
@@ -379,9 +379,9 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(EVENT_IDS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, struct.eventIds.size()));
-          for (long _iter847 : struct.eventIds)
+          for (long _iter855 : struct.eventIds)
           {
-            oprot.writeI64(_iter847);
+            oprot.writeI64(_iter855);
           }
           oprot.writeListEnd();
         }
@@ -412,9 +412,9 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetEventIds()) {
         {
           oprot.writeI32(struct.eventIds.size());
-          for (long _iter848 : struct.eventIds)
+          for (long _iter856 : struct.eventIds)
           {
-            oprot.writeI64(_iter848);
+            oprot.writeI64(_iter856);
           }
         }
       }
@@ -426,13 +426,13 @@ import org.slf4j.LoggerFactory;
       BitSet incoming = iprot.readBitSet(1);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TList _list849 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-          struct.eventIds = new ArrayList<Long>(_list849.size);
-          long _elem850;
-          for (int _i851 = 0; _i851 < _list849.size; ++_i851)
+          org.apache.thrift.protocol.TList _list857 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+          struct.eventIds = new ArrayList<Long>(_list857.size);
+          long _elem858;
+          for (int _i859 = 0; _i859 < _list857.size; ++_i859)
           {
-            _elem850 = iprot.readI64();
-            struct.eventIds.add(_elem850);
+            _elem858 = iprot.readI64();
+            struct.eventIds.add(_elem858);
           }
         }
         struct.setEventIdsIsSet(true);

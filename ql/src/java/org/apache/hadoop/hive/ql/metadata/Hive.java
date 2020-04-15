@@ -147,6 +147,8 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.MetadataPpdResult;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NotNullConstraintsRequest;
+import org.apache.hadoop.hive.metastore.api.PartitionSpec;
+import org.apache.hadoop.hive.metastore.api.PartitionWithoutSD;
 import org.apache.hadoop.hive.metastore.api.PrimaryKeysRequest;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
@@ -3835,6 +3837,62 @@ private void constructOneLBLocationMap(FileStatus fSta,
     return results;
   }
 
+  private List<Partition> convertFromPartSpec(Iterator<PartitionSpec> iterator, Table tbl)
+      throws HiveException, TException {
+    if(!iterator.hasNext()) {
+      return Collections.emptyList();
+    }
+    List<Partition> results = new ArrayList<>();
+
+    while (iterator.hasNext()) {
+      PartitionSpec partitionSpec = iterator.next();
+      if (partitionSpec.getPartitionList() != null) {
+        // partitions outside table location
+        Iterator<org.apache.hadoop.hive.metastore.api.Partition> externalPartItr =
+            partitionSpec.getPartitionList().getPartitions().iterator();
+        while(externalPartItr.hasNext()) {
+          org.apache.hadoop.hive.metastore.api.Partition msPart =
+              externalPartItr.next();
+          results.add(new Partition(tbl, msPart));
+        }
+      } else {
+        // partitions within table location
+        for(PartitionWithoutSD partitionWithoutSD:partitionSpec.getSharedSDPartitionSpec().getPartitions()) {
+          org.apache.hadoop.hive.metastore.api.Partition part = new org.apache.hadoop.hive.metastore.api.Partition();
+          part.setTableName(partitionSpec.getTableName());
+          part.setDbName(partitionSpec.getDbName());
+          part.setCatName(partitionSpec.getCatName());
+          part.setCreateTime(partitionWithoutSD.getCreateTime());
+          part.setLastAccessTime(partitionWithoutSD.getLastAccessTime());
+          part.setParameters(partitionWithoutSD.getParameters());
+          part.setPrivileges(partitionWithoutSD.getPrivileges());
+          part.setSd(partitionSpec.getSharedSDPartitionSpec().getSd().deepCopy());
+          String partitionLocation = null;
+          if(partitionWithoutSD.getRelativePath() == null
+              || partitionWithoutSD.getRelativePath().isEmpty()) {
+            if (tbl.getDataLocation() != null) {
+              Path partPath = new Path(tbl.getDataLocation(),
+                  Warehouse.makePartName(tbl.getPartCols(),
+                      partitionWithoutSD.getValues()));
+              partitionLocation = partPath.toString();
+            }
+          } else {
+            partitionLocation = tbl.getSd().getLocation();
+            partitionLocation += partitionWithoutSD.getRelativePath();
+          }
+          part.getSd().setLocation(partitionLocation);
+          part.setValues(partitionWithoutSD.getValues());
+          part.setWriteId(partitionSpec.getWriteId());
+          Partition hivePart = new Partition(tbl, part);
+          //assert(partitionWithoutSD.getRelativePath() != null);
+          //hivePart.setRelativePath(partitionWithoutSD.getRelativePath());
+          results.add(hivePart);
+        }
+      }
+    }
+    return results;
+  }
+
   /**
    * Get a list of Partitions by expr.
    * @param tbl The table containing the partitions.
@@ -3848,11 +3906,11 @@ private void constructOneLBLocationMap(FileStatus fSta,
     assert result != null;
     byte[] exprBytes = SerializationUtilities.serializeExpressionToKryo(expr);
     String defaultPartitionName = HiveConf.getVar(conf, ConfVars.DEFAULTPARTITIONNAME);
-    List<org.apache.hadoop.hive.metastore.api.Partition> msParts =
-        new ArrayList<org.apache.hadoop.hive.metastore.api.Partition>();
-    boolean hasUnknownParts = getMSC().listPartitionsByExpr(tbl.getDbName(),
+    List<org.apache.hadoop.hive.metastore.api.PartitionSpec> msParts =
+        new ArrayList<>();
+    boolean hasUnknownParts = getMSC().listPartitionsSpecByExpr(tbl.getDbName(),
         tbl.getTableName(), exprBytes, defaultPartitionName, (short)-1, msParts);
-    result.addAll(convertFromMetastore(tbl, msParts));
+    result.addAll(convertFromPartSpec(msParts.iterator(), tbl));
     return hasUnknownParts;
   }
 

@@ -6713,6 +6713,33 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
+    public PartitionsSpecByExprResult get_partitions_spec_by_expr(
+        PartitionsByExprRequest req) throws TException {
+      String dbName = req.getDbName(), tblName = req.getTblName();
+      String catName = req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf);
+      startTableFunction("get_partitions_spec_by_expr", catName, dbName, tblName);
+      fireReadTablePreEvent(catName, dbName, tblName);
+      PartitionsSpecByExprResult ret = null;
+      Exception ex = null;
+      try {
+        checkLimitNumberOfPartitionsByExpr(catName, dbName, tblName, req.getExpr(), UNLIMITED_MAX_PARTITIONS);
+        List<Partition> partitions = new LinkedList<>();
+        boolean hasUnknownPartitions = getMS().getPartitionsByExpr(catName, dbName, tblName,
+            req.getExpr(), req.getDefaultPartitionName(), req.getMaxParts(), partitions);
+        Table table = get_table_core(catName, dbName, tblName);
+        List<PartitionSpec> partitionSpecs =
+            MetaStoreServerUtils.getPartitionspecsGroupedByStorageDescriptor(table, partitions);
+        ret = new PartitionsSpecByExprResult(partitionSpecs, hasUnknownPartitions);
+      } catch (Exception e) {
+        ex = e;
+        rethrowException(e);
+      } finally {
+        endFunction("get_partitions_spec_by_expr", ret != null, ex, tblName);
+      }
+      return ret;
+    }
+
+    @Override
     public PartitionsByExprResult get_partitions_by_expr(
         PartitionsByExprRequest req) throws TException {
       String dbName = req.getDbName(), tblName = req.getTblName();

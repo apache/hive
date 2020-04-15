@@ -101,56 +101,6 @@ POSTHOOK: Input: default@partition_test_partitioned@dt=100
 POSTHOOK: Input: default@partition_test_partitioned@dt=101
 POSTHOOK: Input: default@partition_test_partitioned@dt=102
 #### A masked pattern was here ####
-238	val_238	100
-		100
-311	val_311	100
-	val_27	100
-	val_165	100
-	val_409	100
-255	val_255	100
-278	val_278	100
-98	val_98	100
-	val_484	100
-	val_265	100
-	val_193	100
-401	val_401	100
-150	val_150	100
-273	val_273	100
-224		100
-369		100
-66	val_66	100
-128		100
-213	val_213	100
-146	val_146	100
-406	val_406	100
-		100
-		100
-		100
-238	val_238	101
-		101
-311	val_311	101
-	val_27	101
-	val_165	101
-	val_409	101
-255	val_255	101
-278	val_278	101
-98	val_98	101
-	val_484	101
-	val_265	101
-	val_193	101
-401	val_401	101
-150	val_150	101
-273	val_273	101
-224		101
-369		101
-66	val_66	101
-128		101
-213	val_213	101
-146	val_146	101
-406	val_406	101
-		101
-		101
-		101
 238	val_238	102
 		102
 311	val_311	102
@@ -176,6 +126,56 @@ POSTHOOK: Input: default@partition_test_partitioned@dt=102
 		102
 		102
 		102
+238	val_238	101
+		101
+311	val_311	101
+	val_27	101
+	val_165	101
+	val_409	101
+255	val_255	101
+278	val_278	101
+98	val_98	101
+	val_484	101
+	val_265	101
+	val_193	101
+401	val_401	101
+150	val_150	101
+273	val_273	101
+224		101
+369		101
+66	val_66	101
+128		101
+213	val_213	101
+146	val_146	101
+406	val_406	101
+		101
+		101
+		101
+238	val_238	100
+		100
+311	val_311	100
+	val_27	100
+	val_165	100
+	val_409	100
+255	val_255	100
+278	val_278	100
+98	val_98	100
+	val_484	100
+	val_265	100
+	val_193	100
+401	val_401	100
+150	val_150	100
+273	val_273	100
+224		100
+369		100
+66	val_66	100
+128		100
+213	val_213	100
+146	val_146	100
+406	val_406	100
+		100
+		100
+		100
 PREHOOK: query: explain select *, BLOCK__OFFSET__INSIDE__FILE from partition_test_partitioned where dt >=100 and dt <= 102
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_partitioned
@@ -225,56 +225,6 @@ POSTHOOK: Input: default@partition_test_partitioned@dt=100
 POSTHOOK: Input: default@partition_test_partitioned@dt=101
 POSTHOOK: Input: default@partition_test_partitioned@dt=102
 #### A masked pattern was here ####
-238	val_238	100
-		100
-311	val_311	100
-	val_27	100
-	val_165	100
-	val_409	100
-255	val_255	100
-278	val_278	100
-98	val_98	100
-	val_484	100
-	val_265	100
-	val_193	100
-401	val_401	100
-150	val_150	100
-273	val_273	100
-224		100
-369		100
-66	val_66	100
-128		100
-213	val_213	100
-146	val_146	100
-406	val_406	100
-		100
-		100
-		100
-238	val_238	101
-		101
-311	val_311	101
-	val_27	101
-	val_165	101
-	val_409	101
-255	val_255	101
-278	val_278	101
-98	val_98	101
-	val_484	101
-	val_265	101
-	val_193	101
-401	val_401	101
-150	val_150	101
-273	val_273	101
-224		101
-369		101
-66	val_66	101
-128		101
-213	val_213	101
-146	val_146	101
-406	val_406	101
-		101
-		101
-		101
 238	val_238	102
 		102
 311	val_311	102
@@ -300,3 +250,53 @@ POSTHOOK: Input: default@partition_test_partitioned@dt=102
 		102
 		102
 		102
+238	val_238	101
+		101
+311	val_311	101
+	val_27	101
+	val_165	101
+	val_409	101
+255	val_255	101
+278	val_278	101
+98	val_98	101
+	val_484	101
+	val_265	101
+	val_193	101
+401	val_401	101
+150	val_150	101
+273	val_273	101
+224		101
+369		101
+66	val_66	101
+128		101
+213	val_213	101
+146	val_146	101
+406	val_406	101
+		101
+		101
+		101
+238	val_238	100
+		100
+311	val_311	100
+	val_27	100
+	val_165	100
+	val_409	100
+255	val_255	100
+278	val_278	100
+98	val_98	100
+	val_484	100
+	val_265	100
+	val_193	100
+401	val_401	100
+150	val_150	100
+273	val_273	100
+224		100
+369		100
+66	val_66	100
+128		100
+213	val_213	100
+146	val_146	100
+406	val_406	100
+		100
+		100
+		100
