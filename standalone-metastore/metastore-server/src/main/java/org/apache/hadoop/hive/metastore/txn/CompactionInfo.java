@@ -225,6 +225,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     cr.setWorkerId(ci.workerId);
     cr.setHighestWriteId(ci.highestWriteId);
     cr.setErrorMessage(ci.errorMessage);
+
     return cr;
   }
 

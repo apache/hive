@@ -2045,13 +2045,10 @@ public class TestTxnCommands2 {
 
     // All inserts are committed and hence would expect in TXN_TO_WRITE_ID, 3 entries for acidTbl
     // and 2 entries for acidTblPart as each insert would have allocated a writeid.
-    // Also MIN_HISTORY_LEVEL won't have any entries as no reference for open txns.
     String acidTblWhereClause = " where t2w_database = " + quoteString("default")
             + " and t2w_table = " + quoteString(Table.ACIDTBL.name().toLowerCase());
     String acidTblPartWhereClause = " where t2w_database = " + quoteString("default")
             + " and t2w_table = " + quoteString(Table.ACIDTBLPART.name().toLowerCase());
-    Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from MIN_HISTORY_LEVEL"),
-            0, TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from MIN_HISTORY_LEVEL"));
     Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from TXN_TO_WRITE_ID" + acidTblWhereClause),
             3, TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_TO_WRITE_ID" + acidTblWhereClause));
     Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from TXN_TO_WRITE_ID" + acidTblPartWhereClause),
@@ -2091,13 +2088,10 @@ public class TestTxnCommands2 {
 
     // We would expect 4 entries in TXN_TO_WRITE_ID as each insert would have allocated a writeid
     // including aborted one.
-    // Also MIN_HISTORY_LEVEL will have 1 entry for the open txn.
     Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from TXN_TO_WRITE_ID" + acidTblWhereClause),
             3, TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_TO_WRITE_ID" + acidTblWhereClause));
     Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from TXN_TO_WRITE_ID" + acidTblPartWhereClause),
             1, TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_TO_WRITE_ID" + acidTblPartWhereClause));
-    Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from MIN_HISTORY_LEVEL"),
-            1, TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from MIN_HISTORY_LEVEL"));
 
     // The entry relevant to aborted txns shouldn't be removed from TXN_TO_WRITE_ID as
     // aborted txn would be removed from TXNS only after the compaction. Also, committed txn > open txn is retained.
@@ -2112,7 +2106,6 @@ public class TestTxnCommands2 {
     // The cleaner will removed aborted txns data/metadata but cannot remove aborted txn2 from TXN_TO_WRITE_ID
     // as there is a open txn < aborted txn2. The aborted txn1 < open txn and will be removed.
     // Also, committed txn > open txn is retained.
-    // MIN_HISTORY_LEVEL will have 1 entry for the open txn.
     txnHandler.compact(new CompactionRequest("default", Table.ACIDTBL.name().toLowerCase(), CompactionType.MAJOR));
     runWorker(hiveConf);
     runCleaner(hiveConf);
@@ -2120,18 +2113,13 @@ public class TestTxnCommands2 {
     txnHandler.cleanTxnToWriteIdTable();
     Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from TXN_TO_WRITE_ID"),
             2, TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_TO_WRITE_ID"));
-    Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from MIN_HISTORY_LEVEL"),
-            1, TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from MIN_HISTORY_LEVEL"));
 
     // Commit the open txn, which lets the cleanup on TXN_TO_WRITE_ID.
-    // Now all txns are removed from MIN_HISTORY_LEVEL. So, all entries from TXN_TO_WRITE_ID would be cleaned.
     txnMgr.commitTxn();
     txnHandler.cleanTxnToWriteIdTable();
 
     Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from TXN_TO_WRITE_ID"),
             0, TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_TO_WRITE_ID"));
-    Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from MIN_HISTORY_LEVEL"),
-            0, TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from MIN_HISTORY_LEVEL"));
   }
 
   private void verifyDirAndResult(int expectedDeltas) throws Exception {

@@ -92,7 +92,7 @@ public class Cleaner extends MetaStoreCompactorThread {
       try {
         handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.Cleaner.name());
         startedAt = System.currentTimeMillis();
-        long minOpenTxnId = txnHandler.findMinOpenTxnId();
+        long minOpenTxnId = txnHandler.findMinOpenTxnIdForCleaner();
         for(CompactionInfo compactionInfo : txnHandler.findReadyToClean()) {
           clean(compactionInfo, minOpenTxnId);
         }
