@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.metastore.messaging.MessageEncoder;
 import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONMessageEncoder;
 import org.apache.hadoop.hive.ql.metadata.HiveFatalException;
+import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.repl.CopyUtils;
@@ -37,8 +38,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.security.auth.login.LoginException;
-import java.io.BufferedWriter;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -89,42 +88,28 @@ abstract class AbstractEventHandler<T extends EventMessage> implements EventHand
     return event.getEventId();
   }
 
-  protected void writeFileEntry(String dbName, Table table, String file, BufferedWriter fileListWriter,
-                                Context withinContext)
+  protected void writeFileEntry(Table table, Partition ptn, String file, Context withinContext)
           throws IOException, LoginException, MetaException, HiveFatalException {
     HiveConf hiveConf = withinContext.hiveConf;
     String distCpDoAsUser = hiveConf.getVar(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER);
     if (!Utils.shouldDumpMetaDataOnly(withinContext.hiveConf)) {
-      Path dataPath = new Path(withinContext.dumpRoot.toString(), EximUtil.DATA_PATH_NAME);
-      List<ReplChangeManager.FileInfo> filePaths = new ArrayList<>();
+      Path dataPath = new Path(withinContext.eventRoot, EximUtil.DATA_PATH_NAME);
+      if (table.isPartitioned()) {
+        dataPath = new Path(dataPath, ptn.getName());
+      }
       String[] decodedURISplits = ReplChangeManager.decodeFileUri(file);
-      String srcDataFile = decodedURISplits[0];
-      Path srcDataPath = new Path(srcDataFile);
+      Path srcDataPath = new Path(decodedURISplits[0]);
       if (dataPath.toUri().getScheme() == null) {
         dataPath = new Path(srcDataPath.toUri().getScheme(), srcDataPath.toUri().getAuthority(), dataPath.toString());
       }
-      String eventTblPath = event.getEventId() + File.separator + dbName + File.separator + table.getTableName();
-      String srcDataFileRelativePath = null;
-      if (srcDataFile.contains(table.getPath().toString())) {
-        srcDataFileRelativePath = srcDataFile.substring(table.getPath().toString().length() + 1);
-      } else if (decodedURISplits[3] == null) {
-        srcDataFileRelativePath = srcDataPath.getName();
-      } else {
-        srcDataFileRelativePath = srcDataFileRelativePath + File.separator + srcDataPath.getName();
-      }
-      Path targetPath = new Path(dataPath, eventTblPath + File.separator + srcDataFileRelativePath);
-      String encodedTargetPath = ReplChangeManager.encodeFileUri(
-              targetPath.toString(), decodedURISplits[1], decodedURISplits[3]);
-      ReplChangeManager.FileInfo f = ReplChangeManager.getFileInfo(new Path(decodedURISplits[0]),
+      List<ReplChangeManager.FileInfo> filePaths = new ArrayList<>();
+      ReplChangeManager.FileInfo fileInfo = ReplChangeManager.getFileInfo(new Path(decodedURISplits[0]),
                   decodedURISplits[1], decodedURISplits[2], decodedURISplits[3], hiveConf);
-      filePaths.add(f);
-      FileSystem dstFs = targetPath.getFileSystem(hiveConf);
-      Path finalTargetPath = targetPath.getParent();
-      if (decodedURISplits[3] != null) {
-        finalTargetPath = finalTargetPath.getParent();
-      }
-      new CopyUtils(distCpDoAsUser, hiveConf, dstFs).copyAndVerify(finalTargetPath, filePaths, srcDataPath);
-      fileListWriter.write(encodedTargetPath + "\n");
+      filePaths.add(fileInfo);
+      FileSystem dstFs = dataPath.getFileSystem(hiveConf);
+      CopyUtils copyUtils = new CopyUtils(distCpDoAsUser, hiveConf, dstFs);
+      copyUtils.copyAndVerify(dataPath, filePaths, srcDataPath);
+      copyUtils.renameFileCopiedFromCmPath(dataPath, dstFs, filePaths);
     }
   }
 }

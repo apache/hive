@@ -51,7 +51,7 @@ import static org.apache.hadoop.hive.ql.parse.WindowingSpec.Direction.FOLLOWING;
 import static org.apache.hadoop.hive.ql.parse.WindowingSpec.Direction.PRECEDING;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -227,7 +227,7 @@ public class TestBoundaryCache {
           AtomicInteger readCounter) throws Exception {
     PTFPartition partitionMock = mock(PTFPartition.class);
     doAnswer(invocationOnMock -> {
-      int idx = invocationOnMock.getArgumentAt(0, Integer.class);
+      int idx = invocationOnMock.getArgument(0, Integer.class);
       return partition.get(idx);
     }).when(partitionMock).getAt(any(Integer.class));
     doAnswer(invocationOnMock -> {
@@ -242,18 +242,18 @@ public class TestBoundaryCache {
     ValueBoundaryScanner scannerSpy = spy(scan);
     doAnswer(invocationOnMock -> {
       readCounter.incrementAndGet();
-      List<IntWritable> row = invocationOnMock.getArgumentAt(0, List.class);
+      List<IntWritable> row = invocationOnMock.getArgument(0, List.class);
       return row.get(orderByCol);
     }).when(scannerSpy).computeValue(any(Object.class));
     doAnswer(invocationOnMock -> {
-      IntWritable v1 = invocationOnMock.getArgumentAt(0, IntWritable.class);
-      IntWritable v2 = invocationOnMock.getArgumentAt(1, IntWritable.class);
+      IntWritable v1 = invocationOnMock.getArgument(0, IntWritable.class);
+      IntWritable v2 = invocationOnMock.getArgument(1, IntWritable.class);
       return (v1 != null && v2 != null) ? v1.get() == v2.get() : v1 == null && v2 == null;
     }).when(scannerSpy).isEqual(any(Object.class), any(Object.class));
     doAnswer(invocationOnMock -> {
-      IntWritable v1 = invocationOnMock.getArgumentAt(0, IntWritable.class);
-      IntWritable v2 = invocationOnMock.getArgumentAt(1, IntWritable.class);
-      Integer amt = invocationOnMock.getArgumentAt(2, Integer.class);
+      IntWritable v1 = invocationOnMock.getArgument(0, IntWritable.class);
+      IntWritable v2 = invocationOnMock.getArgument(1, IntWritable.class);
+      Integer amt = invocationOnMock.getArgument(2, Integer.class);
       return (v1 != null && v2 != null) ? (v1.get() - v2.get()) > amt :  v1 != null || v2 != null;
     }).when(scannerSpy).isDistanceGreater(any(Object.class), any(Object.class), any(Integer.class));
 

@@ -55,6 +55,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
+import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -924,7 +925,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     Path path = new Path(hiveDumpDir);
     FileSystem fs = path.getFileSystem(conf);
     FileStatus[] fileStatus = fs.listStatus(path);
-    int numEvents = fileStatus.length - 3; //one is metadata file and one data dir and one is _dump ack
+    int numEvents = fileStatus.length - 2; //one is metadata file and one is _dump ack
 
     replica.load(replicatedDbName, primaryDbName,
         Collections.singletonList("'hive.repl.approx.max.load.tasks'='1'"))
@@ -1093,13 +1094,13 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
 
     // To retry with same dump delete the load ack
     new Path(tuple.dumpLocation).getFileSystem(conf).delete(new Path(
-            hiveDumpLocation, ReplUtils.LOAD_ACKNOWLEDGEMENT), true);
+            hiveDumpLocation, LOAD_ACKNOWLEDGEMENT.toString()), true);
     // Retry with same dump with which it was already loaded also fails.
     replica.loadFailure(replicatedDbName, primaryDbName);
 
     // To retry with same dump delete the load ack
     new Path(tuple.dumpLocation).getFileSystem(conf).delete(new Path(
-            hiveDumpLocation, ReplUtils.LOAD_ACKNOWLEDGEMENT), true);
+            hiveDumpLocation, LOAD_ACKNOWLEDGEMENT.toString()), true);
     // Retry from same dump when the database is empty is also not allowed.
     replica.run("drop table t1")
             .run("drop table t2")
@@ -1344,7 +1345,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     //delete load ack to reuse the dump
     new Path(tuple.dumpLocation).getFileSystem(conf).delete(new Path(tuple.dumpLocation
             + Path.SEPARATOR + ReplUtils.REPL_HIVE_BASE_DIR + Path.SEPARATOR
-            + ReplUtils.LOAD_ACKNOWLEDGEMENT), true);
+            + LOAD_ACKNOWLEDGEMENT.toString()), true);
 
     replica.load(replicatedDbName_CM, primaryDbName, withConfigs);
     replica.run("alter database " + replicatedDbName + " set DBPROPERTIES ('" + SOURCE_OF_REPLICATION + "' = '1,2,3')")
@@ -1370,7 +1371,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     replica.load(replicatedDbName, primaryDbName, withConfigs);
     //delete load ack to reuse the dump
     new Path(bootstrapDump.dumpLocation).getFileSystem(conf).delete(new Path(bootstrapDump.dumpLocation
-            + Path.SEPARATOR + ReplUtils.REPL_HIVE_BASE_DIR + Path.SEPARATOR + ReplUtils.LOAD_ACKNOWLEDGEMENT), true);
+            + Path.SEPARATOR + ReplUtils.REPL_HIVE_BASE_DIR + Path.SEPARATOR + LOAD_ACKNOWLEDGEMENT.toString()), true);
     replica.load(replicatedDbName_CM, primaryDbName, withConfigs);
     replica.run("alter database " + replicatedDbName + " set DBPROPERTIES ('" + SOURCE_OF_REPLICATION + "' = '1,2,3')")
         .run("alter database " + replicatedDbName_CM + " set DBPROPERTIES ('" + SOURCE_OF_REPLICATION + "' = '1,2,3')");
@@ -1423,7 +1424,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     //delete load ack to reuse the dump
     new Path(tuple.dumpLocation).getFileSystem(conf).delete(new Path(tuple.dumpLocation
             + Path.SEPARATOR + ReplUtils.REPL_HIVE_BASE_DIR + Path.SEPARATOR
-            + ReplUtils.LOAD_ACKNOWLEDGEMENT), true);
+            + LOAD_ACKNOWLEDGEMENT.toString()), true);
 
 
     InjectableBehaviourObjectStore.setAddNotificationModifier(callerVerifier);

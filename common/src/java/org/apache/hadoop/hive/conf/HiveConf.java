@@ -2457,6 +2457,12 @@ public class HiveConf extends Configuration {
         "The comma-separated list of SerDe classes that are considered when enhancing table-properties \n" +
             "during logical optimization."),
 
+    HIVE_OPTIMIZE_SCAN_PROBEDECODE("hive.optimize.scan.probedecode", false,
+        "Whether to find suitable table scan operators that could reduce the number of decoded rows at runtime by probing extra available information. \n"
+            + "The probe side for the row-level filtering is generated either statically in the case of expressions or dynamically for joins"
+            + "e.g., use the cached MapJoin hashtable created on the small table side to filter out row columns that are not going "
+            + "to be used when reading the large table data. This will result less CPU cycles spent for decoding unused data."),
+
     // CTE
     HIVE_CTE_MATERIALIZE_THRESHOLD("hive.optimize.cte.materialize.threshold", -1,
         "If the number of references to a CTE clause exceeds this threshold, Hive will materialize it\n" +
@@ -2691,6 +2697,11 @@ public class HiveConf extends Configuration {
         "Truststore password when using a client-side certificate with TLS connectivity to ZooKeeper." +
             "Overrides any explicit value set via the zookeeper.ssl.trustStore.password " +
              "system property (note the camelCase)."),
+    HIVE_ZOOKEEPER_KILLQUERY_ENABLE("hive.zookeeper.killquery.enable", true,
+        "Whether enabled kill query coordination with zookeeper, " +
+            "when hive.server2.support.dynamic.service.discovery is enabled."),
+    HIVE_ZOOKEEPER_KILLQUERY_NAMESPACE("hive.zookeeper.killquery.namespace", "killQueries",
+        "When kill query coordination is enabled, uses this namespace for registering queries to kill with zookeeper"),
 
     // Transactions
     HIVE_TXN_MANAGER("hive.txn.manager",
@@ -3329,7 +3340,10 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_GLOBAL_INIT_FILE_LOCATION("hive.server2.global.init.file.location", "${env:HIVE_CONF_DIR}",
         "Either the location of a HS2 global init file or a directory containing a .hiverc file. If the \n" +
         "property is set, the value must be a valid path to an init file or directory where the init file is located."),
-    HIVE_SERVER2_TRANSPORT_MODE("hive.server2.transport.mode", "binary", new StringSet("binary", "http"),
+    HIVE_SERVER2_TRANSPORT_MODE("hive.server2.transport.mode",
+        HiveServer2TransportMode.binary.toString(),
+        new StringSet(HiveServer2TransportMode.binary.toString(),
+            HiveServer2TransportMode.http.toString(), HiveServer2TransportMode.all.toString()),
         "Transport mode of HiveServer2."),
     HIVE_SERVER2_THRIFT_BIND_HOST("hive.server2.thrift.bind.host", "",
         "Bind host on which to run the HiveServer2 Thrift service."),
@@ -4461,7 +4475,7 @@ public class HiveConf extends Configuration {
       "llap.daemon.vcpus.per.instance"),
     LLAP_DAEMON_NUM_FILE_CLEANER_THREADS("hive.llap.daemon.num.file.cleaner.threads", 1,
       "Number of file cleaner threads in LLAP.", "llap.daemon.num.file.cleaner.threads"),
-    LLAP_FILE_CLEANUP_DELAY_SECONDS("hive.llap.file.cleanup.delay.seconds", "300s",
+    LLAP_FILE_CLEANUP_DELAY_SECONDS("hive.llap.file.cleanup.delay.seconds", "0s",
        new TimeValidator(TimeUnit.SECONDS),
       "How long to delay before cleaning up query files in LLAP (in seconds, for debugging).",
       "llap.file.cleanup.delay-seconds"),

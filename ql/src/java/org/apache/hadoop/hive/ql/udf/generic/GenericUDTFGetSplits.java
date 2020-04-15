@@ -440,7 +440,6 @@ public class GenericUDTFGetSplits extends GenericUDTF {
     JobConf wxConf = utils.initializeVertexConf(job, ctx, mapWork);
     // TODO: should we also whitelist input formats here? from mapred.input.format.class
     Path scratchDir = utils.createTezDir(ctx.getMRScratchDir(), job);
-    FileSystem fs = scratchDir.getFileSystem(job);
     try {
       LocalResource appJarLr = createJarLocalResource(utils.getExecJarPathLocal(ctx.getConf()), utils, job);
 
@@ -453,8 +452,8 @@ public class GenericUDTFGetSplits extends GenericUDTF {
       // Update the queryId to use the generated applicationId. See comment below about
       // why this is done.
       HiveConf.setVar(wxConf, HiveConf.ConfVars.HIVEQUERYID, applicationId.toString());
-      Vertex wx = utils.createVertex(wxConf, mapWork, scratchDir, fs, ctx, false, work,
-          work.getVertexType(mapWork), DagUtils.createTezLrMap(appJarLr, null));
+      Vertex wx = utils.createVertex(wxConf, mapWork, scratchDir, work,
+          DagUtils.createTezLrMap(appJarLr, null));
       String vertexName = wx.getName();
       dag.addVertex(wx);
       utils.addCredentials(mapWork, dag);

@@ -28,6 +28,7 @@ import java.io.Serializable;
         Explain.Level.DEFAULT,
         Explain.Level.EXTENDED })
 public class DirCopyWork implements Serializable {
+  private static final long serialVersionUID = 1L;
   private final Path fullyQualifiedSourcePath;
   private final Path fullyQualifiedTargetPath;
 

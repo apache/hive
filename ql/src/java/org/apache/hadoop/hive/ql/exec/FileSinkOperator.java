@@ -138,6 +138,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   private transient String counterGroup;
   private transient BiFunction<Object[], ObjectInspector[], Integer> hashFunc;
   public static final String TOTAL_TABLE_ROWS_WRITTEN = "TOTAL_TABLE_ROWS_WRITTEN";
+  private transient Set<String> dynamicPartitionSpecs = new HashSet<>();
 
   /**
    * Counters.
@@ -1011,6 +1012,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
               HiveConf.ConfVars.METASTORE_PARTITION_NAME_WHITELIST_PATTERN.varname + ")");
         }
         fpaths = getDynOutPaths(dpVals, lbDirName);
+        dynamicPartitionSpecs.add(fpaths.dpDirForCounters);
 
         // use SubStructObjectInspector to serialize the non-partitioning columns in the input row
         recordValue = serializer.serialize(row, subSetOI);
@@ -1409,7 +1411,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       }
       if (conf.isMmTable() || conf.isDirectInsert()) {
         Utilities.writeCommitManifest(commitPaths, specPath, fs, originalTaskId, conf.getTableWriteId(), conf
-            .getStatementId(), unionPath, conf.getInsertOverwrite());
+            .getStatementId(), unionPath, conf.getInsertOverwrite(), bDynParts, dynamicPartitionSpecs);
       }
       // Only publish stats if this operator's flag was set to gather stats
       if (conf.isGatherStats()) {

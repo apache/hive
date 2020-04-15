@@ -63,6 +63,7 @@ import java.util.Objects;
 public class HiveStatement implements java.sql.Statement {
   public static final Logger LOG = LoggerFactory.getLogger(HiveStatement.class.getName());
 
+  public static final String QUERY_CANCELLED_MESSAGE = "Query was cancelled.";
   private static final int DEFAULT_FETCH_SIZE =
       HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE.defaultIntVal;
 
@@ -394,9 +395,9 @@ public class HiveStatement implements java.sql.Statement {
             // 01000 -> warning
             String errMsg = statusResp.getErrorMessage();
             if (errMsg != null && !errMsg.isEmpty()) {
-              throw new SQLException("Query was cancelled. " + errMsg, "01000");
+              throw new SQLException(QUERY_CANCELLED_MESSAGE + " " + errMsg, "01000");
             } else {
-              throw new SQLException("Query was cancelled", "01000");
+              throw new SQLException(QUERY_CANCELLED_MESSAGE, "01000");
             }
           case TIMEDOUT_STATE:
             throw new SQLTimeoutException("Query timed out after " + queryTimeout + " seconds");

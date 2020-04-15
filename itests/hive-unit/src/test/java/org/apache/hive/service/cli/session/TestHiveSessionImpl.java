@@ -18,6 +18,9 @@
 
 package org.apache.hive.service.cli.session;
 
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.same;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.OperationHandle;
@@ -27,7 +30,6 @@ import org.apache.hive.service.rpc.thrift.TProtocolVersion;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
-import static org.mockito.Matchers.*;
 
 import java.util.Arrays;
 import java.util.HashMap;
