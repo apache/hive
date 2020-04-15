@@ -7,6 +7,8 @@ pipeline {
    stages {
       stage('Hello') {
          steps {
+   sh 'set'
+
                 build job: 'def2', parameters: [
                 string(name: 'param1', value: "value1")
                 ]         
