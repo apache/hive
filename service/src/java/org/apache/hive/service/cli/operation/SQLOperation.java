@@ -26,6 +26,7 @@ import java.security.PrivilegedExceptionAction;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -450,7 +451,7 @@ public class SQLOperation extends ExecuteStatementOperation {
     throws HiveSQLException {
 
     validateDefaultFetchOrientation(orientation);
-    assertState(new ArrayList<OperationState>(Arrays.asList(OperationState.FINISHED)));
+    assertState(Collections.singleton(OperationState.FINISHED));
 
     FetchTask fetchTask = driver.getFetchTask();
     boolean isBlobBased = false;
