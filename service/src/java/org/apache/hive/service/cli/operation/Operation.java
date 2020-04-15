@@ -18,8 +18,8 @@
 package org.apache.hive.service.cli.operation;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.EnumSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -200,10 +200,9 @@ public abstract class Operation {
     this.operationException = operationException;
   }
 
-  protected final void assertState(List<OperationState> states) throws HiveSQLException {
+  protected final void assertState(final Collection<OperationState> states) throws HiveSQLException {
     if (!states.contains(state)) {
-      throw new HiveSQLException("Expected states: " + states.toString() + ", but found "
-          + this.state);
+      throw new HiveSQLException("Expected states: " + states + ", but found " + this.state);
     }
     this.lastAccessTime = System.currentTimeMillis();
   }
