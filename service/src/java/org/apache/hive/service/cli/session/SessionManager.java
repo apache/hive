@@ -612,12 +612,15 @@ public class SessionManager extends CompositeService {
     return true;
   }
 
-  public synchronized void closeSession(SessionHandle sessionHandle) throws HiveSQLException {
-    HiveSession session = handleToSession.remove(sessionHandle);
-    if (session == null) {
-      throw new HiveSQLException("Session does not exist: " + sessionHandle);
+  public void closeSession(SessionHandle sessionHandle) throws HiveSQLException {
+    final HiveSession session;
+    synchronized(sessionAddLock) {
+      session = handleToSession.remove(sessionHandle);
+      if (session == null) {
+        throw new HiveSQLException("Session does not exist: " + sessionHandle);
+      }
+      LOG.info("Session closed, " + sessionHandle + ", current sessions:" + getOpenSessionCount());
     }
-    LOG.info("Session closed, " + sessionHandle + ", current sessions:" + getOpenSessionCount());
     closeSessionInternal(session);
   }
 
