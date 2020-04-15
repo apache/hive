@@ -47,9 +47,12 @@ public class CliConfigs {
         setQueryDir("ql/src/test/queries/clientpositive");
 
         excludesFrom(testConfigProps, "minillap.query.files");
+        excludesFrom(testConfigProps, "minillap.shared.query.files");
         excludesFrom(testConfigProps, "minillaplocal.query.files");
+        excludesFrom(testConfigProps, "minillaplocal.shared.query.files");
         excludesFrom(testConfigProps, "minimr.query.files");
         excludesFrom(testConfigProps, "minitez.query.files");
+        excludesFrom(testConfigProps, "minitez.query.files.shared");
         excludesFrom(testConfigProps, "encrypted.query.files");
         excludesFrom(testConfigProps, "spark.only.query.files");
         excludesFrom(testConfigProps, "miniSparkOnYarn.only.query.files");
@@ -59,6 +62,8 @@ public class CliConfigs {
         excludesFrom(testConfigProps, "druid.kafka.query.files");
         excludesFrom(testConfigProps, "hive.kafka.query.files");
         excludesFrom(testConfigProps, "erasurecoding.only.query.files");
+        excludesFrom(testConfigProps, "erasurecoding.shared.query.files");
+        excludesFrom(testConfigProps, "beeline.positive.include");
 
         excludeQuery("fouter_join_ppr.q"); // Disabled in HIVE-19509
 
