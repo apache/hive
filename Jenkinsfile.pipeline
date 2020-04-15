@@ -1,0 +1,23 @@
+pipeline {
+   agent any
+
+   stages {
+      stage('Hello') {
+         steps {
+                build job: 'def2', parameters: [
+                string(name: 'param1', value: "value1")
+                ]         
+                build job: 'def2', parameters: [
+                string(name: 'param1', value: "value1")
+                ]         
+                build job: 'def', parameters: [
+                string(name: 'param1', value: "value1")
+                ]         
+                build job: 'def2', parameters: [
+                string(name: 'param1', value: "value1")
+                ]         
+             
+         }
+      }
+   }
+}
