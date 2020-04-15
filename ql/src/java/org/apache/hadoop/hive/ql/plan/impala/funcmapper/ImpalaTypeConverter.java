@@ -137,15 +137,20 @@ public class ImpalaTypeConverter {
   }
 
   static public Type getImpalaType(TPrimitiveType argType, int precision, int scale) {
-    // Char, varchar, and decimal contain precisions and need to be treated separately
-    if (argType == TPrimitiveType.CHAR) {
-      return ScalarType.createCharType(precision);
-    } else if (argType == TPrimitiveType.VARCHAR) {
-      return ScalarType.createVarcharType(precision);
-    } else if (argType == TPrimitiveType.DECIMAL) {
-      return ScalarType.createDecimalType(precision, scale);
+    // Char, varchar, ldecimal, and fixed_uda_intermediate contain precisions and need to be
+    // treated separately.
+    switch (argType) {
+      case CHAR:
+        return ScalarType.createCharType(precision);
+      case VARCHAR:
+        return ScalarType.createVarcharType(precision);
+      case DECIMAL:
+        return ScalarType.createDecimalType(precision, scale);
+      case FIXED_UDA_INTERMEDIATE:
+        return ScalarType.createFixedUdaIntermediateType(precision);
+      default:
+        return ScalarType.createType(PrimitiveType.fromThrift(argType));
     }
-    return ScalarType.createType(PrimitiveType.fromThrift(argType));
   }
 
   static public Type getImpalaType(TPrimitiveType argType) {

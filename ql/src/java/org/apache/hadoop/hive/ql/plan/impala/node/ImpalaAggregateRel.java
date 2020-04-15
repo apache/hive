@@ -175,16 +175,29 @@ public class ImpalaAggregateRel extends ImpalaPlanRel {
       throw new SemanticException("Could not find function \"" + ifs + "\"");
     }
 
-    FunctionName impalaFuncName = new FunctionName(BuiltinsDb.NAME, aggFunction.getName());
     List<Type> argTypes = ImpalaTypeConverter.getImpalaTypesList(funcDetails.argTypes);
     Type impalaRetType =
         ImpalaTypeConverter.getImpalaType(funcDetails.retType, retType.getPrecision(), retType.getScale());
-    Type intermediateType =
-        ImpalaTypeConverter.getImpalaType(funcDetails.intermediateType, retType.getPrecision(), retType.getScale());
-    return new AggregateFunction(impalaFuncName, argTypes, impalaRetType, intermediateType, null,
-            funcDetails.updateFnSymbol, funcDetails.initFnSymbol, funcDetails.serializeFnSymbol,
-            funcDetails.mergeFnSymbol, funcDetails.getValueFnSymbol, funcDetails.removeFnSymbol,
-            funcDetails.finalizeFnSymbol);
+    Integer intermediateTypePrecision = funcDetails.intermediateTypeLength != null
+         ? funcDetails.intermediateTypeLength
+         : retType.getPrecision();
+    Type intermediateType = ImpalaTypeConverter.getImpalaType(funcDetails.intermediateType,
+        intermediateTypePrecision, retType.getScale());
+
+    Preconditions.checkState(funcDetails.isAgg || funcDetails.isAnalyticFn);
+    if (!funcDetails.isAgg) {
+      return AggregateFunction.createAnalyticBuiltin(BuiltinsDb.getInstance(true), aggFunction.getName(),
+          argTypes, impalaRetType, intermediateType, funcDetails.initFnSymbol,
+          funcDetails.updateFnSymbol, funcDetails.removeFnSymbol, funcDetails.getValueFnSymbol,
+          funcDetails.finalizeFnSymbol);
+    }
+    // Some agg functions are used both in analytic functions and regular aggregations (e.g. count)
+    // We can treat them both as a regular builtin.
+    return AggregateFunction.createBuiltin(BuiltinsDb.getInstance(true), aggFunction.getName(),
+        argTypes, impalaRetType, intermediateType, funcDetails.initFnSymbol,
+        funcDetails.updateFnSymbol, funcDetails.mergeFnSymbol, funcDetails.serializeFnSymbol,
+        funcDetails.getValueFnSymbol, funcDetails.removeFnSymbol, funcDetails.finalizeFnSymbol,
+        funcDetails.ignoresDistinct, funcDetails.isAnalyticFn, funcDetails.returnsNonNullOnEmpty);
   }
 
   @Override

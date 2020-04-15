@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
@@ -87,6 +88,7 @@ public class ImpalaBuiltins {
 
     try {
       for (AggFunctionDetails afd : aggDetails) {
+        Preconditions.checkState(afd.isAgg || afd.isAnalyticFn);
         List<SqlTypeName> argTypes = (afd.argTypes == null)
             ? Lists.newArrayList()
             : ImpalaTypeConverter.getSqlTypeNames(afd.argTypes);

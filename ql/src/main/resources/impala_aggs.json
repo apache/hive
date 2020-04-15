@@ -8,6 +8,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions15CountStarUpdateEPN10impala_udf15FunctionContextEPNS1_9BigIntValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitZeroIN10impala_udf9BigIntValEEEvPNS2_15FunctionContextEPT_",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "BIGINT"
     },
     {
@@ -19,6 +22,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions11CountUpdateEPN10impala_udf15FunctionContextERKNS1_6AnyValEPNS1_9BigIntValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitZeroIN10impala_udf9BigIntValEEEvPNS2_15FunctionContextEPT_",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "BIGINT",
         "argTypes": [
             "BOOLEAN"
@@ -32,6 +38,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions3MinIN10impala_udf10BooleanValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "BOOLEAN",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "BOOLEAN",
         "argTypes": [
             "BOOLEAN"
@@ -45,6 +54,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions3MaxIN10impala_udf10BooleanValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "BOOLEAN",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "BOOLEAN",
         "argTypes": [
             "BOOLEAN"
@@ -59,6 +71,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions23ReservoirSampleFinalizeIN10impala_udf10BooleanValEEENS2_9StringValEPNS2_15FunctionContextERKS4_",
         "retType": "STRING",
         "initFnSymbol": "_ZN6impala18AggregateFunctions19ReservoirSampleInitIN10impala_udf10BooleanValEEEvPNS2_15FunctionContextEPNS2_9StringValE",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "STRING",
         "argTypes": [
             "BOOLEAN"
@@ -74,6 +89,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions18AppxMedianFinalizeIN10impala_udf10BooleanValEEET_PNS2_15FunctionContextERKNS2_9StringValE",
         "retType": "BOOLEAN",
         "initFnSymbol": "_ZN6impala18AggregateFunctions19ReservoirSampleInitIN10impala_udf10BooleanValEEEvPNS2_15FunctionContextEPNS2_9StringValE",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "STRING",
         "argTypes": [
             "BOOLEAN"
@@ -89,6 +107,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions17HistogramFinalizeIN10impala_udf10BooleanValEEENS2_9StringValEPNS2_15FunctionContextERKS4_",
         "retType": "STRING",
         "initFnSymbol": "_ZN6impala18AggregateFunctions19ReservoirSampleInitIN10impala_udf10BooleanValEEEvPNS2_15FunctionContextEPNS2_9StringValE",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "STRING",
         "argTypes": [
             "BOOLEAN"
@@ -104,7 +125,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions11HllFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions7HllInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(1024)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 1024,
         "argTypes": [
             "BOOLEAN"
         ]
@@ -118,7 +143,11 @@
         "finalizeFnSymbol": "_Z20IncrementNdvFinalizePN10impala_udf15FunctionContextERKNS_9StringValE",
         "retType": "STRING",
         "initFnSymbol": "_ZN6impala18AggregateFunctions7HllInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(1024)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 1024,
         "argTypes": [
             "BOOLEAN"
         ]
@@ -132,7 +161,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions18SampledNdvFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions14SampledNdvInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(33040)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 33040,
         "argTypes": [
             "BOOLEAN",
             "DOUBLE"
@@ -147,6 +180,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions13AggIfFinalizeIN10impala_udf10BooleanValEEET_PNS2_15FunctionContextERKS4_",
         "retType": "BOOLEAN",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "BOOLEAN",
         "argTypes": [
             "BOOLEAN",
@@ -162,7 +198,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions10PcFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions6PcInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(256)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 256,
         "argTypes": [
             "BOOLEAN"
         ]
@@ -176,7 +216,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions12PcsaFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions6PcInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(256)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 256,
         "argTypes": [
             "BOOLEAN"
         ]
@@ -190,6 +234,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions11CountUpdateEPN10impala_udf15FunctionContextERKNS1_6AnyValEPNS1_9BigIntValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitZeroIN10impala_udf9BigIntValEEEvPNS2_15FunctionContextEPT_",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "BIGINT",
         "argTypes": [
             "TINYINT"
@@ -203,6 +250,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions3MinIN10impala_udf10TinyIntValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "TINYINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "TINYINT",
         "argTypes": [
             "TINYINT"
@@ -216,6 +266,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions3MaxIN10impala_udf10TinyIntValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "TINYINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "TINYINT",
         "argTypes": [
             "TINYINT"
@@ -230,6 +283,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions23ReservoirSampleFinalizeIN10impala_udf10TinyIntValEEENS2_9StringValEPNS2_15FunctionContextERKS4_",
         "retType": "STRING",
         "initFnSymbol": "_ZN6impala18AggregateFunctions19ReservoirSampleInitIN10impala_udf10TinyIntValEEEvPNS2_15FunctionContextEPNS2_9StringValE",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "STRING",
         "argTypes": [
             "TINYINT"
@@ -245,6 +301,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions18AppxMedianFinalizeIN10impala_udf10TinyIntValEEET_PNS2_15FunctionContextERKNS2_9StringValE",
         "retType": "TINYINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions19ReservoirSampleInitIN10impala_udf10TinyIntValEEEvPNS2_15FunctionContextEPNS2_9StringValE",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "STRING",
         "argTypes": [
             "TINYINT"
@@ -260,6 +319,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions17HistogramFinalizeIN10impala_udf10TinyIntValEEENS2_9StringValEPNS2_15FunctionContextERKS4_",
         "retType": "STRING",
         "initFnSymbol": "_ZN6impala18AggregateFunctions19ReservoirSampleInitIN10impala_udf10TinyIntValEEEvPNS2_15FunctionContextEPNS2_9StringValE",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "STRING",
         "argTypes": [
             "TINYINT"
@@ -275,7 +337,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions11HllFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions7HllInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(1024)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 1024,
         "argTypes": [
             "TINYINT"
         ]
@@ -289,7 +355,11 @@
         "finalizeFnSymbol": "_Z20IncrementNdvFinalizePN10impala_udf15FunctionContextERKNS_9StringValE",
         "retType": "STRING",
         "initFnSymbol": "_ZN6impala18AggregateFunctions7HllInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(1024)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 1024,
         "argTypes": [
             "TINYINT"
         ]
@@ -303,7 +373,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions18SampledNdvFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions14SampledNdvInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(33040)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 33040,
         "argTypes": [
             "TINYINT",
             "DOUBLE"
@@ -318,6 +392,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions13AggIfFinalizeIN10impala_udf10TinyIntValEEET_PNS2_15FunctionContextERKS4_",
         "retType": "TINYINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "TINYINT",
         "argTypes": [
             "BOOLEAN",
@@ -333,7 +410,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions10PcFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions6PcInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(256)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 256,
         "argTypes": [
             "TINYINT"
         ]
@@ -347,7 +428,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions12PcsaFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions6PcInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(256)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 256,
         "argTypes": [
             "TINYINT"
         ]
@@ -361,7 +446,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions19KnuthStddevFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12KnuthVarInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(24)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 24,
         "argTypes": [
             "TINYINT"
         ]
@@ -375,7 +464,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions19KnuthStddevFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12KnuthVarInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(24)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 24,
         "argTypes": [
             "TINYINT"
         ]
@@ -389,7 +482,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions22KnuthStddevPopFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12KnuthVarInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(24)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 24,
         "argTypes": [
             "TINYINT"
         ]
@@ -403,7 +500,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions16KnuthVarFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12KnuthVarInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(24)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 24,
         "argTypes": [
             "TINYINT"
         ]
@@ -417,7 +518,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions16KnuthVarFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12KnuthVarInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(24)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 24,
         "argTypes": [
             "TINYINT"
         ]
@@ -431,7 +536,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions16KnuthVarFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12KnuthVarInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(24)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 24,
         "argTypes": [
             "TINYINT"
         ]
@@ -445,7 +554,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions19KnuthVarPopFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12KnuthVarInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(24)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 24,
         "argTypes": [
             "TINYINT"
         ]
@@ -459,7 +572,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions19KnuthVarPopFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12KnuthVarInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(24)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 24,
         "argTypes": [
             "TINYINT"
         ]
@@ -473,6 +590,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions11CountUpdateEPN10impala_udf15FunctionContextERKNS1_6AnyValEPNS1_9BigIntValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitZeroIN10impala_udf9BigIntValEEEvPNS2_15FunctionContextEPT_",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "BIGINT",
         "argTypes": [
             "SMALLINT"
@@ -486,6 +606,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions3MinIN10impala_udf11SmallIntValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "SMALLINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "SMALLINT",
         "argTypes": [
             "SMALLINT"
@@ -499,6 +622,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions3MaxIN10impala_udf11SmallIntValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "SMALLINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "SMALLINT",
         "argTypes": [
             "SMALLINT"
@@ -513,6 +639,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions23ReservoirSampleFinalizeIN10impala_udf11SmallIntValEEENS2_9StringValEPNS2_15FunctionContextERKS4_",
         "retType": "STRING",
         "initFnSymbol": "_ZN6impala18AggregateFunctions19ReservoirSampleInitIN10impala_udf11SmallIntValEEEvPNS2_15FunctionContextEPNS2_9StringValE",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "STRING",
         "argTypes": [
             "SMALLINT"
@@ -528,6 +657,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions18AppxMedianFinalizeIN10impala_udf11SmallIntValEEET_PNS2_15FunctionContextERKNS2_9StringValE",
         "retType": "SMALLINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions19ReservoirSampleInitIN10impala_udf11SmallIntValEEEvPNS2_15FunctionContextEPNS2_9StringValE",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "STRING",
         "argTypes": [
             "SMALLINT"
@@ -543,6 +675,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions17HistogramFinalizeIN10impala_udf11SmallIntValEEENS2_9StringValEPNS2_15FunctionContextERKS4_",
         "retType": "STRING",
         "initFnSymbol": "_ZN6impala18AggregateFunctions19ReservoirSampleInitIN10impala_udf11SmallIntValEEEvPNS2_15FunctionContextEPNS2_9StringValE",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "STRING",
         "argTypes": [
             "SMALLINT"
@@ -558,7 +693,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions11HllFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions7HllInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(1024)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 1024,
         "argTypes": [
             "SMALLINT"
         ]
@@ -572,7 +711,11 @@
         "finalizeFnSymbol": "_Z20IncrementNdvFinalizePN10impala_udf15FunctionContextERKNS_9StringValE",
         "retType": "STRING",
         "initFnSymbol": "_ZN6impala18AggregateFunctions7HllInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(1024)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 1024,
         "argTypes": [
             "SMALLINT"
         ]
@@ -586,7 +729,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions18SampledNdvFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions14SampledNdvInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(33040)",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 33040,
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "true",
         "argTypes": [
             "SMALLINT",
             "DOUBLE"
@@ -601,6 +748,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions13AggIfFinalizeIN10impala_udf11SmallIntValEEET_PNS2_15FunctionContextERKS4_",
         "retType": "SMALLINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "SMALLINT",
         "argTypes": [
             "BOOLEAN",
@@ -616,7 +766,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions10PcFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions6PcInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(256)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 256,
         "argTypes": [
             "SMALLINT"
         ]
@@ -630,7 +784,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions12PcsaFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions6PcInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(256)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 256,
         "argTypes": [
             "SMALLINT"
         ]
@@ -644,7 +802,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions19KnuthStddevFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12KnuthVarInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(24)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 24,
         "argTypes": [
             "SMALLINT"
         ]
@@ -658,7 +820,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions19KnuthStddevFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12KnuthVarInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(24)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 24,
         "argTypes": [
             "SMALLINT"
         ]
@@ -672,7 +838,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions22KnuthStddevPopFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12KnuthVarInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(24)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 24,
         "argTypes": [
             "SMALLINT"
         ]
@@ -686,7 +856,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions16KnuthVarFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12KnuthVarInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(24)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 24,
         "argTypes": [
             "SMALLINT"
         ]
@@ -700,7 +874,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions16KnuthVarFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12KnuthVarInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(24)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 24,
         "argTypes": [
             "SMALLINT"
         ]
@@ -714,7 +892,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions16KnuthVarFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12KnuthVarInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(24)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 24,
         "argTypes": [
             "SMALLINT"
         ]
@@ -728,7 +910,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions19KnuthVarPopFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12KnuthVarInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(24)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 24,
         "argTypes": [
             "SMALLINT"
         ]
@@ -742,7 +928,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions19KnuthVarPopFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12KnuthVarInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(24)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 24,
         "argTypes": [
             "SMALLINT"
         ]
@@ -756,6 +946,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions11CountUpdateEPN10impala_udf15FunctionContextERKNS1_6AnyValEPNS1_9BigIntValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitZeroIN10impala_udf9BigIntValEEEvPNS2_15FunctionContextEPT_",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "BIGINT",
         "argTypes": [
             "INT"
@@ -769,6 +962,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions3MinIN10impala_udf6IntValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "INT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "INT",
         "argTypes": [
             "INT"
@@ -782,6 +978,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions3MaxIN10impala_udf6IntValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "INT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "INT",
         "argTypes": [
             "INT"
@@ -796,6 +995,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions23ReservoirSampleFinalizeIN10impala_udf6IntValEEENS2_9StringValEPNS2_15FunctionContextERKS4_",
         "retType": "STRING",
         "initFnSymbol": "_ZN6impala18AggregateFunctions19ReservoirSampleInitIN10impala_udf6IntValEEEvPNS2_15FunctionContextEPNS2_9StringValE",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "STRING",
         "argTypes": [
             "INT"
@@ -811,6 +1013,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions18AppxMedianFinalizeIN10impala_udf6IntValEEET_PNS2_15FunctionContextERKNS2_9StringValE",
         "retType": "INT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions19ReservoirSampleInitIN10impala_udf6IntValEEEvPNS2_15FunctionContextEPNS2_9StringValE",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "STRING",
         "argTypes": [
             "INT"
@@ -826,6 +1031,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions17HistogramFinalizeIN10impala_udf6IntValEEENS2_9StringValEPNS2_15FunctionContextERKS4_",
         "retType": "STRING",
         "initFnSymbol": "_ZN6impala18AggregateFunctions19ReservoirSampleInitIN10impala_udf6IntValEEEvPNS2_15FunctionContextEPNS2_9StringValE",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "STRING",
         "argTypes": [
             "INT"
@@ -841,7 +1049,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions11HllFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions7HllInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(1024)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 1024,
         "argTypes": [
             "INT"
         ]
@@ -855,7 +1067,11 @@
         "finalizeFnSymbol": "_Z20IncrementNdvFinalizePN10impala_udf15FunctionContextERKNS_9StringValE",
         "retType": "STRING",
         "initFnSymbol": "_ZN6impala18AggregateFunctions7HllInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(1024)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 1024,
         "argTypes": [
             "INT"
         ]
@@ -869,7 +1085,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions18SampledNdvFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions14SampledNdvInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(33040)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 33040,
         "argTypes": [
             "INT",
             "DOUBLE"
@@ -884,6 +1104,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions13AggIfFinalizeIN10impala_udf6IntValEEET_PNS2_15FunctionContextERKS4_",
         "retType": "INT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "INT",
         "argTypes": [
             "BOOLEAN",
@@ -899,7 +1122,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions10PcFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions6PcInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(256)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 256,
         "argTypes": [
             "INT"
         ]
@@ -913,7 +1140,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions12PcsaFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions6PcInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(256)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 256,
         "argTypes": [
             "INT"
         ]
@@ -927,7 +1158,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions19KnuthStddevFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12KnuthVarInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(24)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 24,
         "argTypes": [
             "INT"
         ]
@@ -941,7 +1176,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions19KnuthStddevFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12KnuthVarInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(24)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 24,
         "argTypes": [
             "INT"
         ]
@@ -955,7 +1194,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions22KnuthStddevPopFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12KnuthVarInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(24)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 24,
         "argTypes": [
             "INT"
         ]
@@ -969,7 +1212,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions16KnuthVarFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12KnuthVarInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(24)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 24,
         "argTypes": [
             "INT"
         ]
@@ -983,7 +1230,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions16KnuthVarFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12KnuthVarInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(24)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 24,
         "argTypes": [
             "INT"
         ]
@@ -997,7 +1248,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions16KnuthVarFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12KnuthVarInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(24)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 24,
         "argTypes": [
             "INT"
         ]
@@ -1011,7 +1266,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions19KnuthVarPopFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12KnuthVarInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(24)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 24,
         "argTypes": [
             "INT"
         ]
@@ -1025,7 +1284,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions19KnuthVarPopFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12KnuthVarInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(24)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 24,
         "argTypes": [
             "INT"
         ]
@@ -1039,6 +1302,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions11CountUpdateEPN10impala_udf15FunctionContextERKNS1_6AnyValEPNS1_9BigIntValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitZeroIN10impala_udf9BigIntValEEEvPNS2_15FunctionContextEPT_",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "BIGINT",
         "argTypes": [
             "BIGINT"
@@ -1052,6 +1318,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions3MinIN10impala_udf9BigIntValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "BIGINT",
         "argTypes": [
             "BIGINT"
@@ -1065,6 +1334,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions3MaxIN10impala_udf9BigIntValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "BIGINT",
         "argTypes": [
             "BIGINT"
@@ -1079,6 +1351,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions23ReservoirSampleFinalizeIN10impala_udf9BigIntValEEENS2_9StringValEPNS2_15FunctionContextERKS4_",
         "retType": "STRING",
         "initFnSymbol": "_ZN6impala18AggregateFunctions19ReservoirSampleInitIN10impala_udf9BigIntValEEEvPNS2_15FunctionContextEPNS2_9StringValE",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "STRING",
         "argTypes": [
             "BIGINT"
@@ -1094,6 +1369,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions18AppxMedianFinalizeIN10impala_udf9BigIntValEEET_PNS2_15FunctionContextERKNS2_9StringValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions19ReservoirSampleInitIN10impala_udf9BigIntValEEEvPNS2_15FunctionContextEPNS2_9StringValE",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "STRING",
         "argTypes": [
             "BIGINT"
@@ -1109,6 +1387,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions17HistogramFinalizeIN10impala_udf9BigIntValEEENS2_9StringValEPNS2_15FunctionContextERKS4_",
         "retType": "STRING",
         "initFnSymbol": "_ZN6impala18AggregateFunctions19ReservoirSampleInitIN10impala_udf9BigIntValEEEvPNS2_15FunctionContextEPNS2_9StringValE",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "STRING",
         "argTypes": [
             "BIGINT"
@@ -1124,7 +1405,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions11HllFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions7HllInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(1024)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 1024,
         "argTypes": [
             "BIGINT"
         ]
@@ -1138,7 +1423,11 @@
         "finalizeFnSymbol": "_Z20IncrementNdvFinalizePN10impala_udf15FunctionContextERKNS_9StringValE",
         "retType": "STRING",
         "initFnSymbol": "_ZN6impala18AggregateFunctions7HllInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(1024)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 1024,
         "argTypes": [
             "BIGINT"
         ]
@@ -1152,7 +1441,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions18SampledNdvFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions14SampledNdvInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(33040)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 33040,
         "argTypes": [
             "BIGINT",
             "DOUBLE"
@@ -1167,6 +1460,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions13AggIfFinalizeIN10impala_udf9BigIntValEEET_PNS2_15FunctionContextERKS4_",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "BIGINT",
         "argTypes": [
             "BOOLEAN",
@@ -1182,7 +1478,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions10PcFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions6PcInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(256)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 256,
         "argTypes": [
             "BIGINT"
         ]
@@ -1196,7 +1496,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions12PcsaFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions6PcInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(256)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 256,
         "argTypes": [
             "BIGINT"
         ]
@@ -1210,7 +1514,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions19KnuthStddevFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12KnuthVarInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(24)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 24,
         "argTypes": [
             "BIGINT"
         ]
@@ -1224,7 +1532,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions19KnuthStddevFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12KnuthVarInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(24)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 24,
         "argTypes": [
             "BIGINT"
         ]
@@ -1238,7 +1550,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions22KnuthStddevPopFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12KnuthVarInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(24)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 24,
         "argTypes": [
             "BIGINT"
         ]
@@ -1252,7 +1568,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions16KnuthVarFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12KnuthVarInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(24)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 24,
         "argTypes": [
             "BIGINT"
         ]
@@ -1266,7 +1586,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions16KnuthVarFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12KnuthVarInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(24)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 24,
         "argTypes": [
             "BIGINT"
         ]
@@ -1280,7 +1604,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions16KnuthVarFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12KnuthVarInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(24)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 24,
         "argTypes": [
             "BIGINT"
         ]
@@ -1294,7 +1622,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions19KnuthVarPopFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12KnuthVarInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(24)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 24,
         "argTypes": [
             "BIGINT"
         ]
@@ -1308,7 +1640,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions19KnuthVarPopFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12KnuthVarInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(24)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 24,
         "argTypes": [
             "BIGINT"
         ]
@@ -1322,6 +1658,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions11CountUpdateEPN10impala_udf15FunctionContextERKNS1_6AnyValEPNS1_9BigIntValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitZeroIN10impala_udf9BigIntValEEEvPNS2_15FunctionContextEPT_",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "BIGINT",
         "argTypes": [
             "FLOAT"
@@ -1335,6 +1674,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions3MinIN10impala_udf8FloatValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "FLOAT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "FLOAT",
         "argTypes": [
             "FLOAT"
@@ -1348,6 +1690,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions3MaxIN10impala_udf8FloatValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "FLOAT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "FLOAT",
         "argTypes": [
             "FLOAT"
@@ -1362,6 +1707,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions23ReservoirSampleFinalizeIN10impala_udf8FloatValEEENS2_9StringValEPNS2_15FunctionContextERKS4_",
         "retType": "STRING",
         "initFnSymbol": "_ZN6impala18AggregateFunctions19ReservoirSampleInitIN10impala_udf8FloatValEEEvPNS2_15FunctionContextEPNS2_9StringValE",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "STRING",
         "argTypes": [
             "FLOAT"
@@ -1377,6 +1725,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions18AppxMedianFinalizeIN10impala_udf8FloatValEEET_PNS2_15FunctionContextERKNS2_9StringValE",
         "retType": "FLOAT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions19ReservoirSampleInitIN10impala_udf8FloatValEEEvPNS2_15FunctionContextEPNS2_9StringValE",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "STRING",
         "argTypes": [
             "FLOAT"
@@ -1392,6 +1743,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions17HistogramFinalizeIN10impala_udf8FloatValEEENS2_9StringValEPNS2_15FunctionContextERKS4_",
         "retType": "STRING",
         "initFnSymbol": "_ZN6impala18AggregateFunctions19ReservoirSampleInitIN10impala_udf8FloatValEEEvPNS2_15FunctionContextEPNS2_9StringValE",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "STRING",
         "argTypes": [
             "FLOAT"
@@ -1407,7 +1761,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions11HllFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions7HllInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(1024)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 1024,
         "argTypes": [
             "FLOAT"
         ]
@@ -1421,7 +1779,11 @@
         "finalizeFnSymbol": "_Z20IncrementNdvFinalizePN10impala_udf15FunctionContextERKNS_9StringValE",
         "retType": "STRING",
         "initFnSymbol": "_ZN6impala18AggregateFunctions7HllInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(1024)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 1024,
         "argTypes": [
             "FLOAT"
         ]
@@ -1435,7 +1797,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions18SampledNdvFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions14SampledNdvInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(33040)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 33040,
         "argTypes": [
             "FLOAT",
             "DOUBLE"
@@ -1450,6 +1816,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions13AggIfFinalizeIN10impala_udf8FloatValEEET_PNS2_15FunctionContextERKS4_",
         "retType": "FLOAT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "FLOAT",
         "argTypes": [
             "BOOLEAN",
@@ -1465,7 +1834,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions10PcFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions6PcInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(256)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 256,
         "argTypes": [
             "FLOAT"
         ]
@@ -1479,7 +1852,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions12PcsaFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions6PcInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(256)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 256,
         "argTypes": [
             "FLOAT"
         ]
@@ -1493,7 +1870,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions19KnuthStddevFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12KnuthVarInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(24)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 24,
         "argTypes": [
             "FLOAT"
         ]
@@ -1507,7 +1888,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions19KnuthStddevFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12KnuthVarInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(24)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 24,
         "argTypes": [
             "FLOAT"
         ]
@@ -1521,7 +1906,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions22KnuthStddevPopFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12KnuthVarInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(24)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 24,
         "argTypes": [
             "FLOAT"
         ]
@@ -1535,7 +1924,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions16KnuthVarFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12KnuthVarInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(24)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 24,
         "argTypes": [
             "FLOAT"
         ]
@@ -1549,7 +1942,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions16KnuthVarFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12KnuthVarInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(24)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 24,
         "argTypes": [
             "FLOAT"
         ]
@@ -1563,7 +1960,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions16KnuthVarFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12KnuthVarInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(24)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 24,
         "argTypes": [
             "FLOAT"
         ]
@@ -1577,7 +1978,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions19KnuthVarPopFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12KnuthVarInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(24)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 24,
         "argTypes": [
             "FLOAT"
         ]
@@ -1591,7 +1996,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions19KnuthVarPopFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12KnuthVarInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(24)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 24,
         "argTypes": [
             "FLOAT"
         ]
@@ -1605,6 +2014,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions11CountUpdateEPN10impala_udf15FunctionContextERKNS1_6AnyValEPNS1_9BigIntValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitZeroIN10impala_udf9BigIntValEEEvPNS2_15FunctionContextEPT_",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "BIGINT",
         "argTypes": [
             "DOUBLE"
@@ -1618,6 +2030,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions3MinIN10impala_udf9DoubleValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "DOUBLE",
         "argTypes": [
             "DOUBLE"
@@ -1631,6 +2046,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions3MaxIN10impala_udf9DoubleValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "DOUBLE",
         "argTypes": [
             "DOUBLE"
@@ -1645,6 +2063,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions23ReservoirSampleFinalizeIN10impala_udf9DoubleValEEENS2_9StringValEPNS2_15FunctionContextERKS4_",
         "retType": "STRING",
         "initFnSymbol": "_ZN6impala18AggregateFunctions19ReservoirSampleInitIN10impala_udf9DoubleValEEEvPNS2_15FunctionContextEPNS2_9StringValE",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "STRING",
         "argTypes": [
             "DOUBLE"
@@ -1660,6 +2081,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions18AppxMedianFinalizeIN10impala_udf9DoubleValEEET_PNS2_15FunctionContextERKNS2_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions19ReservoirSampleInitIN10impala_udf9DoubleValEEEvPNS2_15FunctionContextEPNS2_9StringValE",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "STRING",
         "argTypes": [
             "DOUBLE"
@@ -1675,6 +2099,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions17HistogramFinalizeIN10impala_udf9DoubleValEEENS2_9StringValEPNS2_15FunctionContextERKS4_",
         "retType": "STRING",
         "initFnSymbol": "_ZN6impala18AggregateFunctions19ReservoirSampleInitIN10impala_udf9DoubleValEEEvPNS2_15FunctionContextEPNS2_9StringValE",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "STRING",
         "argTypes": [
             "DOUBLE"
@@ -1690,7 +2117,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions11HllFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions7HllInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(1024)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 1024,
         "argTypes": [
             "DOUBLE"
         ]
@@ -1704,7 +2135,11 @@
         "finalizeFnSymbol": "_Z20IncrementNdvFinalizePN10impala_udf15FunctionContextERKNS_9StringValE",
         "retType": "STRING",
         "initFnSymbol": "_ZN6impala18AggregateFunctions7HllInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(1024)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 1024,
         "argTypes": [
             "DOUBLE"
         ]
@@ -1718,7 +2153,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions18SampledNdvFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions14SampledNdvInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(33040)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 33040,
         "argTypes": [
             "DOUBLE",
             "DOUBLE"
@@ -1733,6 +2172,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions13AggIfFinalizeIN10impala_udf9DoubleValEEET_PNS2_15FunctionContextERKS4_",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "DOUBLE",
         "argTypes": [
             "BOOLEAN",
@@ -1748,7 +2190,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions10PcFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions6PcInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(256)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 256,
         "argTypes": [
             "DOUBLE"
         ]
@@ -1762,7 +2208,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions12PcsaFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions6PcInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(256)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 256,
         "argTypes": [
             "DOUBLE"
         ]
@@ -1776,7 +2226,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions19KnuthStddevFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12KnuthVarInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(24)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 24,
         "argTypes": [
             "DOUBLE"
         ]
@@ -1790,7 +2244,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions19KnuthStddevFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12KnuthVarInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(24)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 24,
         "argTypes": [
             "DOUBLE"
         ]
@@ -1804,7 +2262,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions22KnuthStddevPopFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12KnuthVarInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(24)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 24,
         "argTypes": [
             "DOUBLE"
         ]
@@ -1818,7 +2280,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions16KnuthVarFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12KnuthVarInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(24)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 24,
         "argTypes": [
             "DOUBLE"
         ]
@@ -1832,7 +2298,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions16KnuthVarFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12KnuthVarInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(24)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 24,
         "argTypes": [
             "DOUBLE"
         ]
@@ -1846,7 +2316,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions16KnuthVarFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12KnuthVarInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(24)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 24,
         "argTypes": [
             "DOUBLE"
         ]
@@ -1860,7 +2334,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions19KnuthVarPopFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12KnuthVarInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(24)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 24,
         "argTypes": [
             "DOUBLE"
         ]
@@ -1874,7 +2352,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions19KnuthVarPopFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12KnuthVarInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(24)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 24,
         "argTypes": [
             "DOUBLE"
         ]
@@ -1888,6 +2370,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions11CountUpdateEPN10impala_udf15FunctionContextERKNS1_6AnyValEPNS1_9BigIntValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitZeroIN10impala_udf9BigIntValEEEvPNS2_15FunctionContextEPT_",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "BIGINT",
         "argTypes": [
             "STRING"
@@ -1903,6 +2388,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions28StringValSerializeOrFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "STRING",
         "initFnSymbol": "_ZN6impala18AggregateFunctions14InitNullStringEPN10impala_udf15FunctionContextEPNS1_9StringValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "STRING",
         "argTypes": [
             "STRING"
@@ -1919,6 +2407,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions28StringValSerializeOrFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "STRING",
         "initFnSymbol": "_ZN6impala18AggregateFunctions14InitNullStringEPN10impala_udf15FunctionContextEPNS1_9StringValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "STRING",
         "argTypes": [
             "STRING"
@@ -1934,6 +2425,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions23ReservoirSampleFinalizeIN10impala_udf9StringValEEES3_PNS2_15FunctionContextERKS3_",
         "retType": "STRING",
         "initFnSymbol": "_ZN6impala18AggregateFunctions19ReservoirSampleInitIN10impala_udf9StringValEEEvPNS2_15FunctionContextEPS3_",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "STRING",
         "argTypes": [
             "STRING"
@@ -1949,6 +2443,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions18AppxMedianFinalizeIN10impala_udf9StringValEEET_PNS2_15FunctionContextERKS3_",
         "retType": "STRING",
         "initFnSymbol": "_ZN6impala18AggregateFunctions19ReservoirSampleInitIN10impala_udf9StringValEEEvPNS2_15FunctionContextEPS3_",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "STRING",
         "argTypes": [
             "STRING"
@@ -1964,6 +2461,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions17HistogramFinalizeIN10impala_udf9StringValEEES3_PNS2_15FunctionContextERKS3_",
         "retType": "STRING",
         "initFnSymbol": "_ZN6impala18AggregateFunctions19ReservoirSampleInitIN10impala_udf9StringValEEEvPNS2_15FunctionContextEPS3_",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "STRING",
         "argTypes": [
             "STRING"
@@ -1979,7 +2479,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions11HllFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions7HllInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(1024)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 1024,
         "argTypes": [
             "STRING"
         ]
@@ -1993,7 +2497,11 @@
         "finalizeFnSymbol": "_Z20IncrementNdvFinalizePN10impala_udf15FunctionContextERKNS_9StringValE",
         "retType": "STRING",
         "initFnSymbol": "_ZN6impala18AggregateFunctions7HllInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(1024)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 1024,
         "argTypes": [
             "STRING"
         ]
@@ -2007,7 +2515,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions18SampledNdvFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions14SampledNdvInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(33040)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 33040,
         "argTypes": [
             "STRING",
             "DOUBLE"
@@ -2022,6 +2534,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions13AggIfFinalizeIN10impala_udf9StringValEEET_PNS2_15FunctionContextERKS4_",
         "retType": "STRING",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "STRING",
         "argTypes": [
             "BOOLEAN",
@@ -2037,7 +2552,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions10PcFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions6PcInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(256)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 256,
         "argTypes": [
             "STRING"
         ]
@@ -2051,7 +2570,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions12PcsaFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions6PcInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(256)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 256,
         "argTypes": [
             "STRING"
         ]
@@ -2065,6 +2588,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions11CountUpdateEPN10impala_udf15FunctionContextERKNS1_6AnyValEPNS1_9BigIntValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitZeroIN10impala_udf9BigIntValEEEvPNS2_15FunctionContextEPT_",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "BIGINT",
         "argTypes": [
             "TIMESTAMP"
@@ -2078,6 +2604,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions3MinIN10impala_udf12TimestampValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "TIMESTAMP",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "TIMESTAMP",
         "argTypes": [
             "TIMESTAMP"
@@ -2091,6 +2620,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions3MaxIN10impala_udf12TimestampValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "TIMESTAMP",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "TIMESTAMP",
         "argTypes": [
             "TIMESTAMP"
@@ -2105,6 +2637,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions23ReservoirSampleFinalizeIN10impala_udf12TimestampValEEENS2_9StringValEPNS2_15FunctionContextERKS4_",
         "retType": "STRING",
         "initFnSymbol": "_ZN6impala18AggregateFunctions19ReservoirSampleInitIN10impala_udf12TimestampValEEEvPNS2_15FunctionContextEPNS2_9StringValE",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "STRING",
         "argTypes": [
             "TIMESTAMP"
@@ -2120,6 +2655,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions18AppxMedianFinalizeIN10impala_udf12TimestampValEEET_PNS2_15FunctionContextERKNS2_9StringValE",
         "retType": "TIMESTAMP",
         "initFnSymbol": "_ZN6impala18AggregateFunctions19ReservoirSampleInitIN10impala_udf12TimestampValEEEvPNS2_15FunctionContextEPNS2_9StringValE",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "STRING",
         "argTypes": [
             "TIMESTAMP"
@@ -2135,6 +2673,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions17HistogramFinalizeIN10impala_udf12TimestampValEEENS2_9StringValEPNS2_15FunctionContextERKS4_",
         "retType": "STRING",
         "initFnSymbol": "_ZN6impala18AggregateFunctions19ReservoirSampleInitIN10impala_udf12TimestampValEEEvPNS2_15FunctionContextEPNS2_9StringValE",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "STRING",
         "argTypes": [
             "TIMESTAMP"
@@ -2150,7 +2691,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions11HllFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions7HllInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(1024)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 1024,
         "argTypes": [
             "TIMESTAMP"
         ]
@@ -2164,7 +2709,11 @@
         "finalizeFnSymbol": "_Z20IncrementNdvFinalizePN10impala_udf15FunctionContextERKNS_9StringValE",
         "retType": "STRING",
         "initFnSymbol": "_ZN6impala18AggregateFunctions7HllInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(1024)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 1024,
         "argTypes": [
             "TIMESTAMP"
         ]
@@ -2178,7 +2727,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions18SampledNdvFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions14SampledNdvInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(33040)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 33040,
         "argTypes": [
             "TIMESTAMP",
             "DOUBLE"
@@ -2193,6 +2746,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions13AggIfFinalizeIN10impala_udf12TimestampValEEET_PNS2_15FunctionContextERKS4_",
         "retType": "TIMESTAMP",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "TIMESTAMP",
         "argTypes": [
             "BOOLEAN",
@@ -2208,7 +2764,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions10PcFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions6PcInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(256)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 256,
         "argTypes": [
             "TIMESTAMP"
         ]
@@ -2222,7 +2782,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions12PcsaFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions6PcInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(256)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 256,
         "argTypes": [
             "TIMESTAMP"
         ]
@@ -2236,6 +2800,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions11CountUpdateEPN10impala_udf15FunctionContextERKNS1_6AnyValEPNS1_9BigIntValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitZeroIN10impala_udf9BigIntValEEEvPNS2_15FunctionContextEPT_",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "BIGINT",
         "argTypes": [
             "DECIMAL"
@@ -2249,6 +2816,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions3MinIN10impala_udf10DecimalValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "DECIMAL",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "DECIMAL",
         "argTypes": [
             "DECIMAL"
@@ -2262,6 +2832,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions3MaxIN10impala_udf10DecimalValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "DECIMAL",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "DECIMAL",
         "argTypes": [
             "DECIMAL"
@@ -2276,6 +2849,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions23ReservoirSampleFinalizeIN10impala_udf10DecimalValEEENS2_9StringValEPNS2_15FunctionContextERKS4_",
         "retType": "STRING",
         "initFnSymbol": "_ZN6impala18AggregateFunctions19ReservoirSampleInitIN10impala_udf10DecimalValEEEvPNS2_15FunctionContextEPNS2_9StringValE",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "STRING",
         "argTypes": [
             "DECIMAL"
@@ -2291,6 +2867,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions18AppxMedianFinalizeIN10impala_udf10DecimalValEEET_PNS2_15FunctionContextERKNS2_9StringValE",
         "retType": "DECIMAL",
         "initFnSymbol": "_ZN6impala18AggregateFunctions19ReservoirSampleInitIN10impala_udf10DecimalValEEEvPNS2_15FunctionContextEPNS2_9StringValE",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "STRING",
         "argTypes": [
             "DECIMAL"
@@ -2306,6 +2885,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions17HistogramFinalizeIN10impala_udf10DecimalValEEENS2_9StringValEPNS2_15FunctionContextERKS4_",
         "retType": "STRING",
         "initFnSymbol": "_ZN6impala18AggregateFunctions19ReservoirSampleInitIN10impala_udf10DecimalValEEEvPNS2_15FunctionContextEPNS2_9StringValE",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "STRING",
         "argTypes": [
             "DECIMAL"
@@ -2321,7 +2903,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions11HllFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions7HllInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(1024)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 1024,
         "argTypes": [
             "DECIMAL"
         ]
@@ -2335,7 +2921,11 @@
         "finalizeFnSymbol": "_Z20IncrementNdvFinalizePN10impala_udf15FunctionContextERKNS_9StringValE",
         "retType": "STRING",
         "initFnSymbol": "_ZN6impala18AggregateFunctions7HllInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(1024)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 1024,
         "argTypes": [
             "DECIMAL"
         ]
@@ -2349,7 +2939,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions18SampledNdvFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions14SampledNdvInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(33040)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 33040,
         "argTypes": [
             "DECIMAL",
             "DOUBLE"
@@ -2364,6 +2958,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions13AggIfFinalizeIN10impala_udf10DecimalValEEET_PNS2_15FunctionContextERKS4_",
         "retType": "DECIMAL",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "DECIMAL",
         "argTypes": [
             "BOOLEAN",
@@ -2379,7 +2976,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions10PcFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions6PcInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(256)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 256,
         "argTypes": [
             "DECIMAL"
         ]
@@ -2393,7 +2994,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions12PcsaFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions6PcInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(256)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 256,
         "argTypes": [
             "DECIMAL"
         ]
@@ -2407,6 +3012,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions11CountUpdateEPN10impala_udf15FunctionContextERKNS1_6AnyValEPNS1_9BigIntValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitZeroIN10impala_udf9BigIntValEEEvPNS2_15FunctionContextEPT_",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "BIGINT",
         "argTypes": [
             "DATE"
@@ -2420,6 +3028,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions3MinIN10impala_udf7DateValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "DATE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "DATE",
         "argTypes": [
             "DATE"
@@ -2433,6 +3044,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions3MaxIN10impala_udf7DateValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "DATE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "DATE",
         "argTypes": [
             "DATE"
@@ -2447,6 +3061,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions23ReservoirSampleFinalizeIN10impala_udf7DateValEEENS2_9StringValEPNS2_15FunctionContextERKS4_",
         "retType": "STRING",
         "initFnSymbol": "_ZN6impala18AggregateFunctions19ReservoirSampleInitIN10impala_udf7DateValEEEvPNS2_15FunctionContextEPNS2_9StringValE",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "STRING",
         "argTypes": [
             "DATE"
@@ -2462,6 +3079,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions18AppxMedianFinalizeIN10impala_udf7DateValEEET_PNS2_15FunctionContextERKNS2_9StringValE",
         "retType": "DATE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions19ReservoirSampleInitIN10impala_udf7DateValEEEvPNS2_15FunctionContextEPNS2_9StringValE",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "STRING",
         "argTypes": [
             "DATE"
@@ -2477,6 +3097,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions17HistogramFinalizeIN10impala_udf7DateValEEENS2_9StringValEPNS2_15FunctionContextERKS4_",
         "retType": "STRING",
         "initFnSymbol": "_ZN6impala18AggregateFunctions19ReservoirSampleInitIN10impala_udf7DateValEEEvPNS2_15FunctionContextEPNS2_9StringValE",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "STRING",
         "argTypes": [
             "DATE"
@@ -2492,7 +3115,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions11HllFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions7HllInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(1024)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 1024,
         "argTypes": [
             "DATE"
         ]
@@ -2506,7 +3133,11 @@
         "finalizeFnSymbol": "_Z20IncrementNdvFinalizePN10impala_udf15FunctionContextERKNS_9StringValE",
         "retType": "STRING",
         "initFnSymbol": "_ZN6impala18AggregateFunctions7HllInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(1024)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 1024,
         "argTypes": [
             "DATE"
         ]
@@ -2520,7 +3151,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions18SampledNdvFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions14SampledNdvInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(33040)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 33040,
         "argTypes": [
             "DATE",
             "DOUBLE"
@@ -2535,6 +3170,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions13AggIfFinalizeIN10impala_udf7DateValEEET_PNS2_15FunctionContextERKS4_",
         "retType": "DATE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "DATE",
         "argTypes": [
             "BOOLEAN",
@@ -2550,7 +3188,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions10PcFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions6PcInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(256)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 256,
         "argTypes": [
             "DATE"
         ]
@@ -2564,7 +3206,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions12PcsaFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions6PcInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(256)",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 256,
         "argTypes": [
             "DATE"
         ]
@@ -2578,6 +3224,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions9SumUpdateIN10impala_udf9BigIntValES3_EEvPNS2_15FunctionContextERKT_PT0_",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "BIGINT",
         "argTypes": [
             "BIGINT"
@@ -2592,6 +3241,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions9SumUpdateIN10impala_udf9DoubleValES3_EEvPNS2_15FunctionContextERKT_PT0_",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "DOUBLE",
         "argTypes": [
             "DOUBLE"
@@ -2606,6 +3258,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions16SumDecimalUpdateEPN10impala_udf15FunctionContextERKNS1_10DecimalValEPS4_",
         "retType": "DECIMAL",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "DECIMAL",
         "argTypes": [
             "DECIMAL"
@@ -2620,6 +3275,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions9SumUpdateIN10impala_udf9BigIntValES3_EEvPNS2_15FunctionContextERKT_PT0_",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitZeroIN10impala_udf9BigIntValEEEvPNS2_15FunctionContextEPT_",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "true",
         "intermediateType": "BIGINT",
         "argTypes": [
             "BIGINT"
@@ -2636,7 +3294,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions11AvgFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions7AvgInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(16)",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 16,
         "argTypes": [
             "BIGINT"
         ]
@@ -2652,7 +3314,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions11AvgFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions7AvgInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(16)",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 16,
         "argTypes": [
             "DOUBLE"
         ]
@@ -2668,7 +3334,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions18DecimalAvgFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "DECIMAL",
         "initFnSymbol": "_ZN6impala18AggregateFunctions14DecimalAvgInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(24)",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 24,
         "argTypes": [
             "DECIMAL"
         ]
@@ -2684,7 +3354,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions20TimestampAvgFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "TIMESTAMP",
         "initFnSymbol": "_ZN6impala18AggregateFunctions7AvgInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(16)",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 16,
         "argTypes": [
             "TIMESTAMP"
         ]
@@ -2698,6 +3372,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions20StringConcatFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "STRING",
         "initFnSymbol": "_ZN6impala18AggregateFunctions14InitNullStringEPN10impala_udf15FunctionContextEPNS1_9StringValE",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "STRING",
         "argTypes": [
             "STRING"
@@ -2713,6 +3390,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions20StringConcatFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "STRING",
         "initFnSymbol": "_ZN6impala18AggregateFunctions14InitNullStringEPN10impala_udf15FunctionContextEPNS1_9StringValE",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "STRING",
         "argTypes": [
             "STRING",
@@ -2728,7 +3408,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions12RankFinalizeEPN10impala_udf15FunctionContextERNS1_9StringValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8RankInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(16)",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 16,
         "getValueFnSymbol": "_ZN6impala18AggregateFunctions12RankGetValueEPN10impala_udf15FunctionContextERNS1_9StringValE"
     },
     {
@@ -2739,7 +3423,11 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions12RankFinalizeEPN10impala_udf15FunctionContextERNS1_9StringValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8RankInitEPN10impala_udf15FunctionContextEPNS1_9StringValE",
-        "intermediateType": "FIXED_UDA_INTERMEDIATE(16)",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "FIXED_UDA_INTERMEDIATE",
+        "intermediateTypeLength" : 16,
         "getValueFnSymbol": "_ZN6impala18AggregateFunctions17DenseRankGetValueEPN10impala_udf15FunctionContextERNS1_9StringValE"
     },
     {
@@ -2750,6 +3438,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions15CountStarUpdateEPN10impala_udf15FunctionContextEPNS1_9BigIntValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitZeroIN10impala_udf9BigIntValEEEvPNS2_15FunctionContextEPT_",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "BIGINT"
     },
     {
@@ -2757,6 +3448,9 @@
         "impalaFnName": "percent_rank",
         "isAgg": "false",
         "retType": "DOUBLE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "STRING"
     },
     {
@@ -2764,6 +3458,9 @@
         "impalaFnName": "cume_dist",
         "isAgg": "false",
         "retType": "DOUBLE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "STRING"
     },
     {
@@ -2771,6 +3468,9 @@
         "impalaFnName": "ntile",
         "isAgg": "false",
         "retType": "BIGINT",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "STRING",
         "argTypes": [
             "BIGINT"
@@ -2783,6 +3483,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions14FirstValUpdateIN10impala_udf10BooleanValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "BOOLEAN",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "BOOLEAN",
         "argTypes": [
             "BOOLEAN"
@@ -2795,6 +3498,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions21FirstValRewriteUpdateIN10impala_udf10BooleanValEEEvPNS2_15FunctionContextERKT_RKNS2_9BigIntValEPS6_",
         "retType": "BOOLEAN",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "BOOLEAN",
         "argTypes": [
             "BOOLEAN",
@@ -2808,6 +3514,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions25FirstValIgnoreNullsUpdateIN10impala_udf10BooleanValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "BOOLEAN",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "BOOLEAN",
         "argTypes": [
             "BOOLEAN"
@@ -2821,6 +3530,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions9UpdateValIN10impala_udf10BooleanValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "BOOLEAN",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "BOOLEAN",
         "argTypes": [
             "BOOLEAN"
@@ -2836,6 +3548,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions26LastValIgnoreNullsFinalizeIN10impala_udf10BooleanValEEET_PNS2_15FunctionContextERKNS2_9StringValE",
         "retType": "BOOLEAN",
         "initFnSymbol": "_ZN6impala18AggregateFunctions22LastValIgnoreNullsInitIN10impala_udf10BooleanValEEEvPNS2_15FunctionContextEPNS2_9StringValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "STRING",
         "argTypes": [
             "BOOLEAN"
@@ -2848,6 +3563,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions14OffsetFnUpdateIN10impala_udf10BooleanValEEEvPNS2_15FunctionContextERKT_RKNS2_9BigIntValES8_PS6_",
         "retType": "BOOLEAN",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12OffsetFnInitIN10impala_udf10BooleanValEEEvPNS2_15FunctionContextEPT_",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "BOOLEAN",
         "argTypes": [
             "BOOLEAN",
@@ -2862,6 +3580,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions14OffsetFnUpdateIN10impala_udf10BooleanValEEEvPNS2_15FunctionContextERKT_RKNS2_9BigIntValES8_PS6_",
         "retType": "BOOLEAN",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12OffsetFnInitIN10impala_udf10BooleanValEEEvPNS2_15FunctionContextEPT_",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "BOOLEAN",
         "argTypes": [
             "BOOLEAN",
@@ -2874,6 +3595,9 @@
         "impalaFnName": "lag",
         "isAgg": "false",
         "retType": "BOOLEAN",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "BOOLEAN",
         "argTypes": [
             "BOOLEAN"
@@ -2884,6 +3608,9 @@
         "impalaFnName": "lag",
         "isAgg": "false",
         "retType": "BOOLEAN",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "BOOLEAN",
         "argTypes": [
             "BOOLEAN",
@@ -2895,6 +3622,9 @@
         "impalaFnName": "lead",
         "isAgg": "false",
         "retType": "BOOLEAN",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "BOOLEAN",
         "argTypes": [
             "BOOLEAN"
@@ -2905,6 +3635,9 @@
         "impalaFnName": "lead",
         "isAgg": "false",
         "retType": "BOOLEAN",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "BOOLEAN",
         "argTypes": [
             "BOOLEAN",
@@ -2918,6 +3651,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions14FirstValUpdateIN10impala_udf10TinyIntValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "TINYINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "TINYINT",
         "argTypes": [
             "TINYINT"
@@ -2930,6 +3666,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions21FirstValRewriteUpdateIN10impala_udf10TinyIntValEEEvPNS2_15FunctionContextERKT_RKNS2_9BigIntValEPS6_",
         "retType": "TINYINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "TINYINT",
         "argTypes": [
             "TINYINT",
@@ -2943,6 +3682,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions25FirstValIgnoreNullsUpdateIN10impala_udf10TinyIntValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "TINYINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "TINYINT",
         "argTypes": [
             "TINYINT"
@@ -2956,6 +3698,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions9UpdateValIN10impala_udf10TinyIntValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "TINYINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "TINYINT",
         "argTypes": [
             "TINYINT"
@@ -2971,6 +3716,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions26LastValIgnoreNullsFinalizeIN10impala_udf10TinyIntValEEET_PNS2_15FunctionContextERKNS2_9StringValE",
         "retType": "TINYINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions22LastValIgnoreNullsInitIN10impala_udf10TinyIntValEEEvPNS2_15FunctionContextEPNS2_9StringValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "STRING",
         "argTypes": [
             "TINYINT"
@@ -2983,6 +3731,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions14OffsetFnUpdateIN10impala_udf10TinyIntValEEEvPNS2_15FunctionContextERKT_RKNS2_9BigIntValES8_PS6_",
         "retType": "TINYINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12OffsetFnInitIN10impala_udf10TinyIntValEEEvPNS2_15FunctionContextEPT_",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "TINYINT",
         "argTypes": [
             "TINYINT",
@@ -2997,6 +3748,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions14OffsetFnUpdateIN10impala_udf10TinyIntValEEEvPNS2_15FunctionContextERKT_RKNS2_9BigIntValES8_PS6_",
         "retType": "TINYINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12OffsetFnInitIN10impala_udf10TinyIntValEEEvPNS2_15FunctionContextEPT_",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "TINYINT",
         "argTypes": [
             "TINYINT",
@@ -3009,6 +3763,9 @@
         "impalaFnName": "lag",
         "isAgg": "false",
         "retType": "TINYINT",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "TINYINT",
         "argTypes": [
             "TINYINT"
@@ -3019,6 +3776,9 @@
         "impalaFnName": "lag",
         "isAgg": "false",
         "retType": "TINYINT",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "TINYINT",
         "argTypes": [
             "TINYINT",
@@ -3030,6 +3790,9 @@
         "impalaFnName": "lead",
         "isAgg": "false",
         "retType": "TINYINT",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "TINYINT",
         "argTypes": [
             "TINYINT"
@@ -3040,6 +3803,9 @@
         "impalaFnName": "lead",
         "isAgg": "false",
         "retType": "TINYINT",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "TINYINT",
         "argTypes": [
             "TINYINT",
@@ -3053,6 +3819,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions14FirstValUpdateIN10impala_udf11SmallIntValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "SMALLINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "SMALLINT",
         "argTypes": [
             "SMALLINT"
@@ -3065,6 +3834,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions21FirstValRewriteUpdateIN10impala_udf11SmallIntValEEEvPNS2_15FunctionContextERKT_RKNS2_9BigIntValEPS6_",
         "retType": "SMALLINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "SMALLINT",
         "argTypes": [
             "SMALLINT",
@@ -3078,6 +3850,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions25FirstValIgnoreNullsUpdateIN10impala_udf11SmallIntValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "SMALLINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "SMALLINT",
         "argTypes": [
             "SMALLINT"
@@ -3091,6 +3866,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions9UpdateValIN10impala_udf11SmallIntValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "SMALLINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "SMALLINT",
         "argTypes": [
             "SMALLINT"
@@ -3106,6 +3884,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions26LastValIgnoreNullsFinalizeIN10impala_udf11SmallIntValEEET_PNS2_15FunctionContextERKNS2_9StringValE",
         "retType": "SMALLINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions22LastValIgnoreNullsInitIN10impala_udf11SmallIntValEEEvPNS2_15FunctionContextEPNS2_9StringValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "STRING",
         "argTypes": [
             "SMALLINT"
@@ -3118,6 +3899,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions14OffsetFnUpdateIN10impala_udf11SmallIntValEEEvPNS2_15FunctionContextERKT_RKNS2_9BigIntValES8_PS6_",
         "retType": "SMALLINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12OffsetFnInitIN10impala_udf11SmallIntValEEEvPNS2_15FunctionContextEPT_",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "SMALLINT",
         "argTypes": [
             "SMALLINT",
@@ -3132,6 +3916,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions14OffsetFnUpdateIN10impala_udf11SmallIntValEEEvPNS2_15FunctionContextERKT_RKNS2_9BigIntValES8_PS6_",
         "retType": "SMALLINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12OffsetFnInitIN10impala_udf11SmallIntValEEEvPNS2_15FunctionContextEPT_",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "SMALLINT",
         "argTypes": [
             "SMALLINT",
@@ -3144,6 +3931,9 @@
         "impalaFnName": "lag",
         "isAgg": "false",
         "retType": "SMALLINT",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "SMALLINT",
         "argTypes": [
             "SMALLINT"
@@ -3154,6 +3944,9 @@
         "impalaFnName": "lag",
         "isAgg": "false",
         "retType": "SMALLINT",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "SMALLINT",
         "argTypes": [
             "SMALLINT",
@@ -3165,6 +3958,9 @@
         "impalaFnName": "lead",
         "isAgg": "false",
         "retType": "SMALLINT",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "SMALLINT",
         "argTypes": [
             "SMALLINT"
@@ -3175,6 +3971,9 @@
         "impalaFnName": "lead",
         "isAgg": "false",
         "retType": "SMALLINT",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "SMALLINT",
         "argTypes": [
             "SMALLINT",
@@ -3188,6 +3987,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions14FirstValUpdateIN10impala_udf6IntValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "INT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "INT",
         "argTypes": [
             "INT"
@@ -3200,6 +4002,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions21FirstValRewriteUpdateIN10impala_udf6IntValEEEvPNS2_15FunctionContextERKT_RKNS2_9BigIntValEPS6_",
         "retType": "INT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "INT",
         "argTypes": [
             "INT",
@@ -3213,6 +4018,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions25FirstValIgnoreNullsUpdateIN10impala_udf6IntValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "INT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "INT",
         "argTypes": [
             "INT"
@@ -3226,6 +4034,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions9UpdateValIN10impala_udf6IntValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "INT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "INT",
         "argTypes": [
             "INT"
@@ -3241,6 +4052,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions26LastValIgnoreNullsFinalizeIN10impala_udf6IntValEEET_PNS2_15FunctionContextERKNS2_9StringValE",
         "retType": "INT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions22LastValIgnoreNullsInitIN10impala_udf6IntValEEEvPNS2_15FunctionContextEPNS2_9StringValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "STRING",
         "argTypes": [
             "INT"
@@ -3253,6 +4067,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions14OffsetFnUpdateIN10impala_udf6IntValEEEvPNS2_15FunctionContextERKT_RKNS2_9BigIntValES8_PS6_",
         "retType": "INT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12OffsetFnInitIN10impala_udf6IntValEEEvPNS2_15FunctionContextEPT_",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "INT",
         "argTypes": [
             "INT",
@@ -3267,6 +4084,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions14OffsetFnUpdateIN10impala_udf6IntValEEEvPNS2_15FunctionContextERKT_RKNS2_9BigIntValES8_PS6_",
         "retType": "INT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12OffsetFnInitIN10impala_udf6IntValEEEvPNS2_15FunctionContextEPT_",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "INT",
         "argTypes": [
             "INT",
@@ -3279,6 +4099,9 @@
         "impalaFnName": "lag",
         "isAgg": "false",
         "retType": "INT",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "INT",
         "argTypes": [
             "INT"
@@ -3289,6 +4112,9 @@
         "impalaFnName": "lag",
         "isAgg": "false",
         "retType": "INT",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "INT",
         "argTypes": [
             "INT",
@@ -3300,6 +4126,9 @@
         "impalaFnName": "lead",
         "isAgg": "false",
         "retType": "INT",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "INT",
         "argTypes": [
             "INT"
@@ -3310,6 +4139,9 @@
         "impalaFnName": "lead",
         "isAgg": "false",
         "retType": "INT",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "INT",
         "argTypes": [
             "INT",
@@ -3323,6 +4155,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions14FirstValUpdateIN10impala_udf9BigIntValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "BIGINT",
         "argTypes": [
             "BIGINT"
@@ -3335,6 +4170,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions21FirstValRewriteUpdateIN10impala_udf9BigIntValEEEvPNS2_15FunctionContextERKT_RKS3_PS6_",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "BIGINT",
         "argTypes": [
             "BIGINT",
@@ -3348,6 +4186,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions25FirstValIgnoreNullsUpdateIN10impala_udf9BigIntValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "BIGINT",
         "argTypes": [
             "BIGINT"
@@ -3361,6 +4202,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions9UpdateValIN10impala_udf9BigIntValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "BIGINT",
         "argTypes": [
             "BIGINT"
@@ -3376,6 +4220,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions26LastValIgnoreNullsFinalizeIN10impala_udf9BigIntValEEET_PNS2_15FunctionContextERKNS2_9StringValE",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions22LastValIgnoreNullsInitIN10impala_udf9BigIntValEEEvPNS2_15FunctionContextEPNS2_9StringValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "STRING",
         "argTypes": [
             "BIGINT"
@@ -3388,6 +4235,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions14OffsetFnUpdateIN10impala_udf9BigIntValEEEvPNS2_15FunctionContextERKT_RKS3_S8_PS6_",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12OffsetFnInitIN10impala_udf9BigIntValEEEvPNS2_15FunctionContextEPT_",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "BIGINT",
         "argTypes": [
             "BIGINT",
@@ -3402,6 +4252,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions14OffsetFnUpdateIN10impala_udf9BigIntValEEEvPNS2_15FunctionContextERKT_RKS3_S8_PS6_",
         "retType": "BIGINT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12OffsetFnInitIN10impala_udf9BigIntValEEEvPNS2_15FunctionContextEPT_",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "BIGINT",
         "argTypes": [
             "BIGINT",
@@ -3414,6 +4267,9 @@
         "impalaFnName": "lag",
         "isAgg": "false",
         "retType": "BIGINT",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "BIGINT",
         "argTypes": [
             "BIGINT"
@@ -3424,6 +4280,9 @@
         "impalaFnName": "lag",
         "isAgg": "false",
         "retType": "BIGINT",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "BIGINT",
         "argTypes": [
             "BIGINT",
@@ -3435,6 +4294,9 @@
         "impalaFnName": "lead",
         "isAgg": "false",
         "retType": "BIGINT",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "BIGINT",
         "argTypes": [
             "BIGINT"
@@ -3445,6 +4307,9 @@
         "impalaFnName": "lead",
         "isAgg": "false",
         "retType": "BIGINT",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "BIGINT",
         "argTypes": [
             "BIGINT",
@@ -3458,6 +4323,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions14FirstValUpdateIN10impala_udf8FloatValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "FLOAT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "FLOAT",
         "argTypes": [
             "FLOAT"
@@ -3470,6 +4338,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions21FirstValRewriteUpdateIN10impala_udf8FloatValEEEvPNS2_15FunctionContextERKT_RKNS2_9BigIntValEPS6_",
         "retType": "FLOAT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "FLOAT",
         "argTypes": [
             "FLOAT",
@@ -3483,6 +4354,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions25FirstValIgnoreNullsUpdateIN10impala_udf8FloatValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "FLOAT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "FLOAT",
         "argTypes": [
             "FLOAT"
@@ -3496,6 +4370,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions9UpdateValIN10impala_udf8FloatValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "FLOAT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "FLOAT",
         "argTypes": [
             "FLOAT"
@@ -3511,6 +4388,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions26LastValIgnoreNullsFinalizeIN10impala_udf8FloatValEEET_PNS2_15FunctionContextERKNS2_9StringValE",
         "retType": "FLOAT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions22LastValIgnoreNullsInitIN10impala_udf8FloatValEEEvPNS2_15FunctionContextEPNS2_9StringValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "STRING",
         "argTypes": [
             "FLOAT"
@@ -3523,6 +4403,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions14OffsetFnUpdateIN10impala_udf8FloatValEEEvPNS2_15FunctionContextERKT_RKNS2_9BigIntValES8_PS6_",
         "retType": "FLOAT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12OffsetFnInitIN10impala_udf8FloatValEEEvPNS2_15FunctionContextEPT_",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "FLOAT",
         "argTypes": [
             "FLOAT",
@@ -3537,6 +4420,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions14OffsetFnUpdateIN10impala_udf8FloatValEEEvPNS2_15FunctionContextERKT_RKNS2_9BigIntValES8_PS6_",
         "retType": "FLOAT",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12OffsetFnInitIN10impala_udf8FloatValEEEvPNS2_15FunctionContextEPT_",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "FLOAT",
         "argTypes": [
             "FLOAT",
@@ -3549,6 +4435,9 @@
         "impalaFnName": "lag",
         "isAgg": "false",
         "retType": "FLOAT",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "FLOAT",
         "argTypes": [
             "FLOAT"
@@ -3559,6 +4448,9 @@
         "impalaFnName": "lag",
         "isAgg": "false",
         "retType": "FLOAT",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "FLOAT",
         "argTypes": [
             "FLOAT",
@@ -3570,6 +4462,9 @@
         "impalaFnName": "lead",
         "isAgg": "false",
         "retType": "FLOAT",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "FLOAT",
         "argTypes": [
             "FLOAT"
@@ -3580,6 +4475,9 @@
         "impalaFnName": "lead",
         "isAgg": "false",
         "retType": "FLOAT",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "FLOAT",
         "argTypes": [
             "FLOAT",
@@ -3593,6 +4491,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions14FirstValUpdateIN10impala_udf9DoubleValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "DOUBLE",
         "argTypes": [
             "DOUBLE"
@@ -3605,6 +4506,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions21FirstValRewriteUpdateIN10impala_udf9DoubleValEEEvPNS2_15FunctionContextERKT_RKNS2_9BigIntValEPS6_",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "DOUBLE",
         "argTypes": [
             "DOUBLE",
@@ -3618,6 +4522,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions25FirstValIgnoreNullsUpdateIN10impala_udf9DoubleValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "DOUBLE",
         "argTypes": [
             "DOUBLE"
@@ -3631,6 +4538,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions9UpdateValIN10impala_udf9DoubleValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "DOUBLE",
         "argTypes": [
             "DOUBLE"
@@ -3646,6 +4556,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions26LastValIgnoreNullsFinalizeIN10impala_udf9DoubleValEEET_PNS2_15FunctionContextERKNS2_9StringValE",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions22LastValIgnoreNullsInitIN10impala_udf9DoubleValEEEvPNS2_15FunctionContextEPNS2_9StringValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "STRING",
         "argTypes": [
             "DOUBLE"
@@ -3658,6 +4571,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions14OffsetFnUpdateIN10impala_udf9DoubleValEEEvPNS2_15FunctionContextERKT_RKNS2_9BigIntValES8_PS6_",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12OffsetFnInitIN10impala_udf9DoubleValEEEvPNS2_15FunctionContextEPT_",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "DOUBLE",
         "argTypes": [
             "DOUBLE",
@@ -3672,6 +4588,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions14OffsetFnUpdateIN10impala_udf9DoubleValEEEvPNS2_15FunctionContextERKT_RKNS2_9BigIntValES8_PS6_",
         "retType": "DOUBLE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12OffsetFnInitIN10impala_udf9DoubleValEEEvPNS2_15FunctionContextEPT_",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "DOUBLE",
         "argTypes": [
             "DOUBLE",
@@ -3685,6 +4604,9 @@
         "isAgg": "false",
         "retType": "DOUBLE",
         "intermediateType": "DOUBLE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "argTypes": [
             "DOUBLE"
         ]
@@ -3694,6 +4616,9 @@
         "impalaFnName": "lag",
         "isAgg": "false",
         "retType": "DOUBLE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "DOUBLE",
         "argTypes": [
             "DOUBLE",
@@ -3705,6 +4630,9 @@
         "impalaFnName": "lead",
         "isAgg": "false",
         "retType": "DOUBLE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "DOUBLE",
         "argTypes": [
             "DOUBLE"
@@ -3715,6 +4643,9 @@
         "impalaFnName": "lead",
         "isAgg": "false",
         "retType": "DOUBLE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "DOUBLE",
         "argTypes": [
             "DOUBLE",
@@ -3730,6 +4661,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions28StringValSerializeOrFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "STRING",
         "initFnSymbol": "_ZN6impala18AggregateFunctions14InitNullStringEPN10impala_udf15FunctionContextEPNS1_9StringValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "STRING",
         "argTypes": [
             "STRING"
@@ -3744,6 +4678,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions28StringValSerializeOrFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "STRING",
         "initFnSymbol": "_ZN6impala18AggregateFunctions14InitNullStringEPN10impala_udf15FunctionContextEPNS1_9StringValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "STRING",
         "argTypes": [
             "STRING",
@@ -3759,6 +4696,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions28StringValSerializeOrFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "STRING",
         "initFnSymbol": "_ZN6impala18AggregateFunctions14InitNullStringEPN10impala_udf15FunctionContextEPNS1_9StringValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "STRING",
         "argTypes": [
             "STRING"
@@ -3774,6 +4714,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions28StringValSerializeOrFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "STRING",
         "initFnSymbol": "_ZN6impala18AggregateFunctions14InitNullStringEPN10impala_udf15FunctionContextEPNS1_9StringValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "STRING",
         "argTypes": [
             "STRING"
@@ -3789,6 +4732,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions26LastValIgnoreNullsFinalizeIN10impala_udf9StringValEEET_PNS2_15FunctionContextERKS3_",
         "retType": "STRING",
         "initFnSymbol": "_ZN6impala18AggregateFunctions22LastValIgnoreNullsInitIN10impala_udf9StringValEEEvPNS2_15FunctionContextEPS3_",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "STRING",
         "argTypes": [
             "STRING"
@@ -3803,6 +4749,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions28StringValSerializeOrFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "STRING",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12OffsetFnInitIN10impala_udf9StringValEEEvPNS2_15FunctionContextEPT_",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "STRING",
         "argTypes": [
             "STRING",
@@ -3819,6 +4768,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions28StringValSerializeOrFinalizeEPN10impala_udf15FunctionContextERKNS1_9StringValE",
         "retType": "STRING",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12OffsetFnInitIN10impala_udf9StringValEEEvPNS2_15FunctionContextEPT_",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "STRING",
         "argTypes": [
             "STRING",
@@ -3831,6 +4783,9 @@
         "impalaFnName": "lag",
         "isAgg": "false",
         "retType": "STRING",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "STRING",
         "argTypes": [
             "STRING"
@@ -3841,6 +4796,9 @@
         "impalaFnName": "lag",
         "isAgg": "false",
         "retType": "STRING",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "STRING",
         "argTypes": [
             "STRING",
@@ -3852,6 +4810,9 @@
         "impalaFnName": "lead",
         "isAgg": "false",
         "retType": "STRING",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "STRING",
         "argTypes": [
             "STRING"
@@ -3862,6 +4823,9 @@
         "impalaFnName": "lead",
         "isAgg": "false",
         "retType": "STRING",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "STRING",
         "argTypes": [
             "STRING",
@@ -3875,6 +4839,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions14FirstValUpdateIN10impala_udf12TimestampValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "TIMESTAMP",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "TIMESTAMP",
         "argTypes": [
             "TIMESTAMP"
@@ -3887,6 +4854,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions21FirstValRewriteUpdateIN10impala_udf12TimestampValEEEvPNS2_15FunctionContextERKT_RKNS2_9BigIntValEPS6_",
         "retType": "TIMESTAMP",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "TIMESTAMP",
         "argTypes": [
             "TIMESTAMP",
@@ -3900,6 +4870,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions25FirstValIgnoreNullsUpdateIN10impala_udf12TimestampValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "TIMESTAMP",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "TIMESTAMP",
         "argTypes": [
             "TIMESTAMP"
@@ -3913,6 +4886,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions9UpdateValIN10impala_udf12TimestampValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "TIMESTAMP",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "TIMESTAMP",
         "argTypes": [
             "TIMESTAMP"
@@ -3928,6 +4904,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions26LastValIgnoreNullsFinalizeIN10impala_udf12TimestampValEEET_PNS2_15FunctionContextERKNS2_9StringValE",
         "retType": "TIMESTAMP",
         "initFnSymbol": "_ZN6impala18AggregateFunctions22LastValIgnoreNullsInitIN10impala_udf12TimestampValEEEvPNS2_15FunctionContextEPNS2_9StringValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "STRING",
         "argTypes": [
             "TIMESTAMP"
@@ -3940,6 +4919,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions14OffsetFnUpdateIN10impala_udf12TimestampValEEEvPNS2_15FunctionContextERKT_RKNS2_9BigIntValES8_PS6_",
         "retType": "TIMESTAMP",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12OffsetFnInitIN10impala_udf12TimestampValEEEvPNS2_15FunctionContextEPT_",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "TIMESTAMP",
         "argTypes": [
             "TIMESTAMP",
@@ -3954,6 +4936,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions14OffsetFnUpdateIN10impala_udf12TimestampValEEEvPNS2_15FunctionContextERKT_RKNS2_9BigIntValES8_PS6_",
         "retType": "TIMESTAMP",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12OffsetFnInitIN10impala_udf12TimestampValEEEvPNS2_15FunctionContextEPT_",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "TIMESTAMP",
         "argTypes": [
             "TIMESTAMP",
@@ -3966,6 +4951,9 @@
         "impalaFnName": "lag",
         "isAgg": "false",
         "retType": "TIMESTAMP",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "TIMESTAMP",
         "argTypes": [
             "TIMESTAMP"
@@ -3976,6 +4964,9 @@
         "impalaFnName": "lag",
         "isAgg": "false",
         "retType": "TIMESTAMP",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "TIMESTAMP",
         "argTypes": [
             "TIMESTAMP",
@@ -3987,6 +4978,9 @@
         "impalaFnName": "lead",
         "isAgg": "false",
         "retType": "TIMESTAMP",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "TIMESTAMP",
         "argTypes": [
             "TIMESTAMP"
@@ -3997,6 +4991,9 @@
         "impalaFnName": "lead",
         "isAgg": "false",
         "retType": "TIMESTAMP",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "TIMESTAMP",
         "argTypes": [
             "TIMESTAMP",
@@ -4010,6 +5007,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions14FirstValUpdateIN10impala_udf10DecimalValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "DECIMAL",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "DECIMAL",
         "argTypes": [
             "DECIMAL"
@@ -4022,6 +5022,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions21FirstValRewriteUpdateIN10impala_udf10DecimalValEEEvPNS2_15FunctionContextERKT_RKNS2_9BigIntValEPS6_",
         "retType": "DECIMAL",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "DECIMAL",
         "argTypes": [
             "DECIMAL",
@@ -4035,6 +5038,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions25FirstValIgnoreNullsUpdateIN10impala_udf10DecimalValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "DECIMAL",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "DECIMAL",
         "argTypes": [
             "DECIMAL"
@@ -4048,6 +5054,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions9UpdateValIN10impala_udf10DecimalValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "DECIMAL",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "DECIMAL",
         "argTypes": [
             "DECIMAL"
@@ -4063,6 +5072,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions26LastValIgnoreNullsFinalizeIN10impala_udf10DecimalValEEET_PNS2_15FunctionContextERKNS2_9StringValE",
         "retType": "DECIMAL",
         "initFnSymbol": "_ZN6impala18AggregateFunctions22LastValIgnoreNullsInitIN10impala_udf10DecimalValEEEvPNS2_15FunctionContextEPNS2_9StringValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "STRING",
         "argTypes": [
             "DECIMAL"
@@ -4075,6 +5087,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions14OffsetFnUpdateIN10impala_udf10DecimalValEEEvPNS2_15FunctionContextERKT_RKNS2_9BigIntValES8_PS6_",
         "retType": "DECIMAL",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12OffsetFnInitIN10impala_udf10DecimalValEEEvPNS2_15FunctionContextEPT_",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "DECIMAL",
         "argTypes": [
             "DECIMAL",
@@ -4089,6 +5104,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions14OffsetFnUpdateIN10impala_udf10DecimalValEEEvPNS2_15FunctionContextERKT_RKNS2_9BigIntValES8_PS6_",
         "retType": "DECIMAL",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12OffsetFnInitIN10impala_udf10DecimalValEEEvPNS2_15FunctionContextEPT_",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "DECIMAL",
         "argTypes": [
             "DECIMAL",
@@ -4101,6 +5119,9 @@
         "impalaFnName": "lag",
         "isAgg": "false",
         "retType": "DECIMAL",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "DECIMAL",
         "argTypes": [
             "DECIMAL"
@@ -4111,6 +5132,9 @@
         "impalaFnName": "lag",
         "isAgg": "false",
         "retType": "DECIMAL",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "DECIMAL",
         "argTypes": [
             "DECIMAL",
@@ -4122,6 +5146,9 @@
         "impalaFnName": "lead",
         "isAgg": "false",
         "retType": "DECIMAL",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "DECIMAL",
         "argTypes": [
             "DECIMAL"
@@ -4132,6 +5159,9 @@
         "impalaFnName": "lead",
         "isAgg": "false",
         "retType": "DECIMAL",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "DECIMAL",
         "argTypes": [
             "DECIMAL",
@@ -4145,6 +5175,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions14FirstValUpdateIN10impala_udf7DateValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "DATE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "DATE",
         "argTypes": [
             "DATE"
@@ -4157,6 +5190,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions21FirstValRewriteUpdateIN10impala_udf7DateValEEEvPNS2_15FunctionContextERKT_RKNS2_9BigIntValEPS6_",
         "retType": "DATE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "DATE",
         "argTypes": [
             "DATE",
@@ -4170,6 +5206,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions25FirstValIgnoreNullsUpdateIN10impala_udf7DateValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "DATE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "DATE",
         "argTypes": [
             "DATE"
@@ -4183,6 +5222,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions9UpdateValIN10impala_udf7DateValEEEvPNS2_15FunctionContextERKT_PS6_",
         "retType": "DATE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions8InitNullEPN10impala_udf15FunctionContextEPNS1_6AnyValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "DATE",
         "argTypes": [
             "DATE"
@@ -4198,6 +5240,9 @@
         "finalizeFnSymbol": "_ZN6impala18AggregateFunctions26LastValIgnoreNullsFinalizeIN10impala_udf7DateValEEET_PNS2_15FunctionContextERKNS2_9StringValE",
         "retType": "DATE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions22LastValIgnoreNullsInitIN10impala_udf7DateValEEEvPNS2_15FunctionContextEPNS2_9StringValE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "STRING",
         "argTypes": [
             "DATE"
@@ -4210,6 +5255,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions14OffsetFnUpdateIN10impala_udf7DateValEEEvPNS2_15FunctionContextERKT_RKNS2_9BigIntValES8_PS6_",
         "retType": "DATE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12OffsetFnInitIN10impala_udf7DateValEEEvPNS2_15FunctionContextEPT_",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "DATE",
         "argTypes": [
             "DATE",
@@ -4224,6 +5272,9 @@
         "updateFnSymbol": "_ZN6impala18AggregateFunctions14OffsetFnUpdateIN10impala_udf7DateValEEEvPNS2_15FunctionContextERKT_RKNS2_9BigIntValES8_PS6_",
         "retType": "DATE",
         "initFnSymbol": "_ZN6impala18AggregateFunctions12OffsetFnInitIN10impala_udf7DateValEEEvPNS2_15FunctionContextEPT_",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "DATE",
         "argTypes": [
             "DATE",
@@ -4236,6 +5287,9 @@
         "impalaFnName": "lag",
         "isAgg": "false",
         "retType": "DATE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "DATE",
         "argTypes": [
             "DATE"
@@ -4246,6 +5300,9 @@
         "impalaFnName": "lag",
         "isAgg": "false",
         "retType": "DATE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "DATE",
         "argTypes": [
             "DATE",
@@ -4257,6 +5314,9 @@
         "impalaFnName": "lead",
         "isAgg": "false",
         "retType": "DATE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "DATE",
         "argTypes": [
             "DATE"
@@ -4267,6 +5327,9 @@
         "impalaFnName": "lead",
         "isAgg": "false",
         "retType": "DATE",
+        "isAnalyticFn": "true",
+        "ignoresDistinct": "false",
+        "returnsNonNullOnEmpty": "false",
         "intermediateType": "DATE",
         "argTypes": [
             "DATE",

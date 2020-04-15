@@ -33,7 +33,8 @@ public class AggFunctionDetails implements FunctionDetails {
   public TPrimitiveType retType;
   public TPrimitiveType[] argTypes;
   public TPrimitiveType intermediateType;
-  public boolean isAnalyticOnlyFn;
+  public Integer intermediateTypeLength;
+  public boolean isAnalyticFn;
   public String updateFnSymbol;
   public String initFnSymbol;
   public String mergeFnSymbol;
@@ -42,6 +43,7 @@ public class AggFunctionDetails implements FunctionDetails {
   public String removeFnSymbol;
   public String serializeFnSymbol;
   public boolean ignoresDistinct;
+  public boolean returnsNonNullOnEmpty;
   public boolean isAgg;
   public ImpalaFunctionSignature ifs;
 
@@ -65,8 +67,12 @@ public class AggFunctionDetails implements FunctionDetails {
     this.intermediateType = intermediateType;
   }
 
-  public void setIsAnalyticOnlyFn(boolean isAnalyticOnlyFn) {
-    this.isAnalyticOnlyFn = isAnalyticOnlyFn;
+  public void setIntermediateTypeLength(int intermediateTypeLength) {
+    this.intermediateTypeLength = intermediateTypeLength;
+  }
+
+  public void setIsAnalyticFn(boolean isAnalyticFn) {
+    this.isAnalyticFn = isAnalyticFn;
   }
 
   public void setUpdateFnSymbol(String updateFnSymbol) {
@@ -95,6 +101,10 @@ public class AggFunctionDetails implements FunctionDetails {
 
   public void setIgnoresDistinct(boolean ignoresDistinct) {
     this.ignoresDistinct = ignoresDistinct;
+  }
+
+  public void setReturnsNonNullOnEmpty(boolean returnsNonNullOnEmpty) {
+    this.returnsNonNullOnEmpty = returnsNonNullOnEmpty;
   }
 
   public void setIsAgg(boolean isAgg) {
