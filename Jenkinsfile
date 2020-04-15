@@ -101,8 +101,8 @@ spec:
 
 properties([
     parameters([
-        string(name: 'SPLIT', defaultValue: '3', description: 'Number of buckets to split tests into.'),
-        string(name: 'OPTS', defaultValue: '-pl ql -am', description: 'additional maven opts'),
+        string(name: 'SPLIT', defaultValue: '29', description: 'Number of buckets to split tests into.'),
+        string(name: 'OPTS', defaultValue: '', description: 'additional maven opts'),
         string(name: 'SCRIPT', defaultValue: '', description: 'custom build script'),
     ])
 ])
