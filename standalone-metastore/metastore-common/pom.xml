@@ -585,7 +585,6 @@
           <additionalClasspathElements>
             <additionalClasspathElement>${log4j.conf.dir}</additionalClasspathElement>
           </additionalClasspathElements>
-          <groups>${test.groups}</groups>
         </configuration>
       </plugin>
       <plugin>
