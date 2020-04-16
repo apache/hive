@@ -14,11 +14,11 @@ OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_orc_n0_temp
-PREHOOK: query: INSERT OVERWRITE TABLE test_orc_n0_temp PARTITION (part = '1') SELECT key FROM src tablesample (5 rows)
+PREHOOK: query: INSERT OVERWRITE TABLE test_orc_n0_temp PARTITION (part = '1') SELECT key FROM src tablesample (5 rows) ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@test_orc_n0_temp@part=1
-POSTHOOK: query: INSERT OVERWRITE TABLE test_orc_n0_temp PARTITION (part = '1') SELECT key FROM src tablesample (5 rows)
+POSTHOOK: query: INSERT OVERWRITE TABLE test_orc_n0_temp PARTITION (part = '1') SELECT key FROM src tablesample (5 rows) ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_orc_n0_temp@part=1
@@ -31,11 +31,11 @@ POSTHOOK: query: ALTER TABLE test_orc_n0_temp ADD COLUMNS (cnt INT)
 POSTHOOK: type: ALTERTABLE_ADDCOLS
 POSTHOOK: Input: default@test_orc_n0_temp
 POSTHOOK: Output: default@test_orc_n0_temp
-PREHOOK: query: INSERT OVERWRITE TABLE test_orc_n0_temp PARTITION (part = '2') SELECT key, count(*) FROM src GROUP BY key LIMIT 5
+PREHOOK: query: INSERT OVERWRITE TABLE test_orc_n0_temp PARTITION (part = '2') SELECT key, count(*) FROM src GROUP BY key ORDER BY key LIMIT 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@test_orc_n0_temp@part=2
-POSTHOOK: query: INSERT OVERWRITE TABLE test_orc_n0_temp PARTITION (part = '2') SELECT key, count(*) FROM src GROUP BY key LIMIT 5
+POSTHOOK: query: INSERT OVERWRITE TABLE test_orc_n0_temp PARTITION (part = '2') SELECT key, count(*) FROM src GROUP BY key ORDER BY key LIMIT 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_orc_n0_temp@part=2
