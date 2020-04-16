@@ -67,27 +67,35 @@ public class TestDanglingQOuts {
       if (clz == CliConfigs.DummyConfig.class) {
         continue;
       }
-      AbstractCliConfig config = (AbstractCliConfig) clz.newInstance();
-      Set<File> qfiles = config.getQueryFiles();
-      for (File file : qfiles) {
-        String baseName = file.getName();
-        String rd = config.getResultsDir();
-        File of = new File(rd, baseName + ".out");
-        if (outsNeeded.containsKey(of)) {
-          System.err.printf("duplicate: [%s;%s] %s\n", config.getClass().getSimpleName(), outsNeeded.get(of).getClass().getSimpleName(), of);
-          // throw new RuntimeException("duplicate?!");
-        }
-        outsNeeded.put(of, config);
-      }
-
-      File od = new File(config.getResultsDir());
-      for (File file : od.listFiles(new QOutFilter())) {
-        outsFound.add(file);
+      if (clz == CliConfigs.TezPerfCliConfig.class) {
+        handleCliConfig(new CliConfigs.TezPerfCliConfig(true));
+        handleCliConfig(new CliConfigs.TezPerfCliConfig(false));
+      } else {
+        handleCliConfig((AbstractCliConfig) clz.newInstance());
       }
     }
   }
 
-  @Ignore("Disabling till HIVE-19509 gets solved")
+  private void handleCliConfig(AbstractCliConfig config) throws Exception {
+    Set<File> qfiles = config.getQueryFiles();
+    for (File file : qfiles) {
+      String baseName = file.getName();
+      String rd = config.getResultsDir();
+      File of = new File(rd, baseName + ".out");
+      if (outsNeeded.containsKey(of)) {
+        System.err.printf("duplicate: [%s;%s] %s\n", config.getClass().getSimpleName(),
+            outsNeeded.get(of).getClass().getSimpleName(), of);
+        // throw new RuntimeException("duplicate?!");
+      }
+      outsNeeded.put(of, config);
+    }
+
+    File od = new File(config.getResultsDir());
+    for (File file : od.listFiles(new QOutFilter())) {
+      outsFound.add(file);
+    }
+  }
+
   @Test
   public void checkDanglingQOut() {
     SetView<File> dangling = Sets.difference(outsFound, outsNeeded.keySet());

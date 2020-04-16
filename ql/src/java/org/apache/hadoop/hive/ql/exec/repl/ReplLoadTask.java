@@ -45,7 +45,6 @@ import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.table.TableContext;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.util.Context;
 import org.apache.hadoop.hive.ql.exec.repl.incremental.IncrementalLoadTasksBuilder;
 import org.apache.hadoop.hive.ql.exec.repl.util.AddDependencyToLeaves;
-import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.TaskTracker;
 import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -65,6 +64,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.LoadDatabase.AlterDatabase;
+import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 
 public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
   private final static int ZERO_TASKS = 0;
@@ -316,7 +316,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
             || (!work.isIncrementalLoad() && !work.hasBootstrapLoadTasks())) {
       //All repl load tasks are executed and status is 0, create the task to add the acknowledgement
       AckWork replLoadAckWork = new AckWork(
-              new Path(work.dumpDirectory, ReplUtils.LOAD_ACKNOWLEDGEMENT));
+              new Path(work.dumpDirectory, LOAD_ACKNOWLEDGEMENT.toString()));
       Task<AckWork> loadAckWorkTask = TaskFactory.get(replLoadAckWork, conf);
       if (this.childTasks.isEmpty()) {
         this.childTasks.add(loadAckWorkTask);

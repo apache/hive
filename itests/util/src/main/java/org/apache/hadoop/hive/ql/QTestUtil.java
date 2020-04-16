@@ -30,6 +30,7 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -183,6 +184,8 @@ public class QTestUtil {
         testArgs.isWithLlapIo(),
         testArgs.getFsType());
 
+    logClassPath();
+
     Preconditions.checkNotNull(testArgs.getClusterType(), "ClusterType cannot be null");
 
     this.fsType = testArgs.getFsType();
@@ -227,6 +230,12 @@ public class QTestUtil {
 
     savedConf = new HiveConf(conf);
 
+  }
+
+  private void logClassPath() {
+    String classpath = System.getProperty("java.class.path");
+    String[] classpathEntries = classpath.split(File.pathSeparator);
+    LOG.info("QTestUtil classpath: " + String.join("\n", Arrays.asList(classpathEntries)));
   }
 
   private void setMetaStoreProperties() {

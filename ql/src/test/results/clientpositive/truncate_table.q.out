@@ -14,6 +14,22 @@ POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' into table sr
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@src_truncate
+PREHOOK: query: create table src_truncate_alt (key string, value string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_truncate_alt
+POSTHOOK: query: create table src_truncate_alt (key string, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_truncate_alt
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt' into table src_truncate_alt
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@src_truncate_alt
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' into table src_truncate_alt
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@src_truncate_alt
 PREHOOK: query: create table srcpart_truncate (key string, value string) partitioned by (ds string, hr string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -149,6 +165,43 @@ PREHOOK: Input: default@src_truncate
 POSTHOOK: query: select count (*) from src_truncate
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_truncate
+#### A masked pattern was here ####
+0
+PREHOOK: query: explain TRUNCATE src_truncate_alt
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@src_truncate_alt
+POSTHOOK: query: explain TRUNCATE src_truncate_alt
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@src_truncate_alt
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Truncate Table or Partition
+      table name: default.src_truncate_alt
+
+PREHOOK: query: TRUNCATE src_truncate_alt
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@src_truncate_alt
+POSTHOOK: query: TRUNCATE src_truncate_alt
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@src_truncate_alt
+PREHOOK: query: select * from src_truncate_alt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_truncate_alt
+#### A masked pattern was here ####
+POSTHOOK: query: select * from src_truncate_alt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_truncate_alt
+#### A masked pattern was here ####
+PREHOOK: query: select count (*) from src_truncate_alt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_truncate_alt
+#### A masked pattern was here ####
+POSTHOOK: query: select count (*) from src_truncate_alt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_truncate_alt
 #### A masked pattern was here ####
 0
 PREHOOK: query: explain TRUNCATE TABLE srcpart_truncate partition (ds='2008-04-08', hr='11')

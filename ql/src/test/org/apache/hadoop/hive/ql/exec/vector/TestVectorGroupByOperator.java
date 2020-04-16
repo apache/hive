@@ -441,6 +441,99 @@ public class TestVectorGroupByOperator {
   }
 
   @Test
+  public void testMaxHTEntriesFlush() throws HiveException {
+
+    List<String> mapColumnNames = new ArrayList<String>();
+    mapColumnNames.add("Key");
+    mapColumnNames.add("Value");
+    VectorizationContext ctx = new VectorizationContext("name", mapColumnNames);
+
+    Pair<GroupByDesc,VectorGroupByDesc> pair = buildKeyGroupByDesc (ctx, "max",
+        "Value", TypeInfoFactory.longTypeInfo,
+        "Key", TypeInfoFactory.longTypeInfo);
+    GroupByDesc desc = pair.fst;
+    VectorGroupByDesc vectorDesc = pair.snd;
+
+    // Set the memory treshold so that we get 100Kb before we need to flush.
+    MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
+    long maxMemory = memoryMXBean.getHeapMemoryUsage().getMax();
+
+    // 1 MB should be able to store 1M/16bytes(key+data) = 62500 entries
+    float treshold = 10 * 100.0f*1024.0f/maxMemory;
+    desc.setMemoryThreshold(treshold);
+
+    // Set really low MAXENTRIES setting
+    hconf.set("hive.vectorized.groupby.maxentries", "100");
+
+    CompilationOpContext cCtx = new CompilationOpContext();
+
+    Operator<? extends OperatorDesc> groupByOp = OperatorFactory.get(cCtx, desc);
+
+    VectorGroupByOperator vgo =
+        (VectorGroupByOperator) Vectorizer.vectorizeGroupByOperator(groupByOp, ctx, vectorDesc);
+
+    FakeCaptureVectorToRowOutputOperator out = FakeCaptureVectorToRowOutputOperator.addCaptureOutputChild(cCtx, vgo);
+    vgo.initialize(hconf, null);
+
+    long expected = vgo.getMaxMemory();
+    assertEquals(expected, maxMemory);
+
+    this.outputRowCount = 0;
+    out.setOutputInspector(new FakeCaptureVectorToRowOutputOperator.OutputInspector() {
+      @Override
+      public void inspectRow(Object row, int tag) throws HiveException {
+        ++outputRowCount;
+      }
+    });
+
+    Iterable<Object> it = new Iterable<Object>() {
+      @Override
+      public Iterator<Object> iterator() {
+        return new Iterator<Object> () {
+          long value = 0;
+
+          @Override
+          public boolean hasNext() {
+            return true;
+          }
+
+          @Override
+          public Object next() {
+            return ++value;
+          }
+
+          @Override
+          public void remove() {
+          }
+        };
+      }
+    };
+
+    FakeVectorRowBatchFromObjectIterables data = new FakeVectorRowBatchFromObjectIterables(
+        100,
+        new String[] {"long", "long"},
+        it,
+        it);
+
+    // The 'it' data source will produce data w/o ever ending
+    // We want to see that VGBY entries are NOT flushed when reaching 100
+    // (misconfigured threshold) but when we reach about 30% of maxMemory
+    long countRowsProduced = 0;
+    for (VectorizedRowBatch unit: data) {
+      countRowsProduced += 100;
+      vgo.process(unit,  0);
+      if (0 < outputRowCount) {
+        break;
+      }
+
+    }
+    // Make sure that we did not flush at the low entry threshold
+    assertTrue( countRowsProduced > 100);
+    // Make sure we did not go above 30% of available memory
+    assertTrue(countRowsProduced < 0.3 * (1000 * 1024 / 16));
+  }
+
+  @Test
   public void testMultiKeyIntStringInt() throws HiveException {
     testMultiKey(
         "sum",

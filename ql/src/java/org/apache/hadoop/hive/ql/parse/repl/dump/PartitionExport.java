@@ -23,7 +23,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
-import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.EximUtil.ManagedTableCopyPath;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.repl.dump.io.FileOperations;
@@ -118,12 +117,13 @@ class PartitionExport {
           // this the data copy
           List<Path> dataPathList = Utils.getDataPathList(partition.getDataLocation(),
                   forReplicationSpec, hiveConf);
-          Path rootDataDumpDir = paths.partitionExportDir(partitionName);
+          Path rootDataDumpDir = paths.partitionMetadataExportDir(partitionName);
           new FileOperations(dataPathList, rootDataDumpDir, distCpDoAsUser, hiveConf, mmCtx)
                   .export(isExportTask);
+          Path dataDumpDir = new Path(paths.dataExportRootDir(), partitionName);
           LOG.debug("Thread: {}, finish partition dump {}", threadName, partitionName);
           return new ManagedTableCopyPath(forReplicationSpec, partition.getDataLocation(),
-                  new Path(rootDataDumpDir, EximUtil.DATA_PATH_NAME));
+                  dataDumpDir);
         } catch (Exception e) {
           throw new RuntimeException(e.getMessage(), e);
         }

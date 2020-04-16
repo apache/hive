@@ -76,6 +76,7 @@ import org.apache.hive.service.cli.operation.Operation;
 import org.apache.hive.service.cli.operation.OperationManager;
 import org.apache.hive.service.rpc.thrift.TProtocolVersion;
 import org.apache.hive.service.server.KillQueryImpl;
+import org.apache.hive.service.server.KillQueryZookeeperManager;
 import org.apache.hive.service.server.ThreadWithGarbageCleanup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -167,7 +168,11 @@ public class HiveSessionImpl implements HiveSession {
     } catch (Exception e) {
       throw new HiveSQLException(e);
     }
-    sessionState.setKillQuery(new KillQueryImpl(operationManager));
+    KillQueryZookeeperManager killQueryZookeeperManager = null;
+    if (sessionManager != null) {
+      killQueryZookeeperManager = sessionManager.getKillQueryZookeeperManager();
+    }
+    sessionState.setKillQuery(new KillQueryImpl(operationManager, killQueryZookeeperManager));
     SessionState.start(sessionState);
     try {
       sessionState.loadAuxJars();

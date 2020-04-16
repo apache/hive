@@ -74,6 +74,7 @@ public class EximUtil {
   public static final String METADATA_NAME = "_metadata";
   public static final String FILES_NAME = "_files";
   public static final String DATA_PATH_NAME = "data";
+  public static final String METADATA_PATH_NAME = "metadata";
 
   private static final Logger LOG = LoggerFactory.getLogger(EximUtil.class);
 

@@ -645,48 +645,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         pst.execute();
       }
 
-      // Need to register minimum open txnid for current transactions into MIN_HISTORY table.
-      // For a single txn we can do it in a single insert. With multiple txns calculating the
-      // minOpenTxnId for every insert is not cost effective, so caching the value
-      if (txnIds.size() == 1) {
-        s = "INSERT INTO \"MIN_HISTORY_LEVEL\" (\"MHL_TXNID\",\"MHL_MIN_OPEN_TXNID\") " +
-                "SELECT ?, MIN(\"TXN_ID\") FROM \"TXNS\" WHERE \"TXN_STATE\" = " + quoteChar(TXN_OPEN);
-        LOG.debug("Going to execute query <" + s + ">");
-        try (PreparedStatement pstmt = dbConn.prepareStatement(s)) {
-          pstmt.setLong(1, txnIds.get(0));
-          pstmt.execute();
-        }
-        LOG.info("Added entries to MIN_HISTORY_LEVEL with a single query for current txn: " + txnIds);
-      } else {
-        s = "SELECT MIN(\"TXN_ID\") FROM \"TXNS\" WHERE \"TXN_STATE\" = " + quoteChar(TXN_OPEN);
-        LOG.debug("Going to execute query <" + s + ">");
-        long minOpenTxnId = -1L;
-        try(ResultSet minOpenTxnIdRs = stmt.executeQuery(s)) {
-          if (!minOpenTxnIdRs.next()) {
-            throw new IllegalStateException("Scalar query returned no rows?!?!!");
-          }
-          // TXNS table should have at least one entry because we just inserted the newly opened txns.
-          // So, min(txn_id) would be a non-zero txnid.
-          minOpenTxnId = minOpenTxnIdRs.getLong(1);
-        }
-
-        assert (minOpenTxnId > 0);
-        rows.clear();
-        for (long txnId = first; txnId < first + numTxns; txnId++) {
-          rows.add(txnId + ", " + minOpenTxnId);
-        }
-
-        // Insert transaction entries into MIN_HISTORY_LEVEL.
-        List<String> inserts = sqlGenerator.createInsertValuesStmt(
-            "\"MIN_HISTORY_LEVEL\" (\"MHL_TXNID\", \"MHL_MIN_OPEN_TXNID\")", rows);
-        for (String insert : inserts) {
-          LOG.debug("Going to execute insert <" + insert + ">");
-          stmt.execute(insert);
-        }
-        LOG.info("Added entries to MIN_HISTORY_LEVEL for current txns: (" + txnIds
-                     + ") with min_open_txn: " + minOpenTxnId);
-      }
-
       if (rqst.isSetReplPolicy()) {
         List<String> rowsRepl = new ArrayList<>();
         for (PreparedStatement pst : insertPreparedStmts) {
@@ -1330,7 +1288,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           deleteReplTxnMapEntry(dbConn, sourceTxnId, rqst.getReplPolicy());
         }
         cleanUpTxnRelatedMetadata(txnid, stmt);
-
         // update the key/value associated with the transaction if it has been
         // set
         if (rqst.isSetKeyValue()) {
@@ -1391,10 +1348,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         "DELETE FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\" = " + txnid,
         "DELETE FROM \"HIVE_LOCKS\" WHERE \"HL_TXNID\" = " + txnid,
         "DELETE FROM \"TXNS\" WHERE \"TXN_ID\" = " + txnid,
-        "DELETE FROM \"MIN_HISTORY_LEVEL\" WHERE \"MHL_TXNID\" = " + txnid,
         "DELETE FROM \"MATERIALIZATION_REBUILD_LOCKS\" WHERE \"MRL_TXN_ID\" = " + txnid);
     executeQueriesInBatch(stmt, queries, conf);
-    LOG.info("Removed committed transaction: (" + txnid + ") from MIN_HISTORY_LEVEL");
   }
 
   /**
@@ -4280,20 +4235,14 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, txnids, "\"TXN_ID\"", true, false);
       int numUpdateQueries = queries.size();
 
-      // add delete min history queries to query list
-      prefix.setLength(0);
-      suffix.setLength(0);
-      prefix.append("DELETE FROM \"MIN_HISTORY_LEVEL\" WHERE ");
-      TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, txnids, "\"MHL_TXNID\"", false, false);
-
       // add delete hive locks queries to query list
       prefix.setLength(0);
+      suffix.setLength(0);
       prefix.append("DELETE FROM \"HIVE_LOCKS\" WHERE ");
       TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, txnids, "\"HL_TXNID\"", false, false);
 
       // execute all queries in the list in one batch
       List<Integer> affectedRowsByQuery = executeQueriesInBatch(stmt, queries, conf);
-      LOG.info("Removed aborted transactions: (" + txnids + ") from MIN_HISTORY_LEVEL");
       return getUpdateCount(numUpdateQueries, affectedRowsByQuery);
     } finally {
       closeStmt(stmt);

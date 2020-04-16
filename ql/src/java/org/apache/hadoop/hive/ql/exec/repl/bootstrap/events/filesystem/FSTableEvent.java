@@ -52,16 +52,19 @@ import java.util.Map;
 import static org.apache.hadoop.hive.ql.util.HiveStrictManagedMigration.getHiveUpdater;
 
 public class FSTableEvent implements TableEvent {
-  private final Path fromPath;
+  private final Path fromPathMetadata;
+  private final Path fromPathData;
   private final MetaData metadata;
   private final HiveConf hiveConf;
 
-  FSTableEvent(HiveConf hiveConf, String metadataDir) {
+  FSTableEvent(HiveConf hiveConf, String metadataDir, String dataDir) {
     try {
       URI fromURI = EximUtil.getValidatedURI(hiveConf, PlanUtils.stripQuotes(metadataDir));
-      fromPath = new Path(fromURI.getScheme(), fromURI.getAuthority(), fromURI.getPath());
+      fromPathMetadata = new Path(fromURI.getScheme(), fromURI.getAuthority(), fromURI.getPath());
+      URI fromURIData = EximUtil.getValidatedURI(hiveConf, PlanUtils.stripQuotes(dataDir));
+      fromPathData = new Path(fromURIData.getScheme(), fromURIData.getAuthority(), fromURIData.getPath());
       FileSystem fs = FileSystem.get(fromURI, hiveConf);
-      metadata = EximUtil.readMetaData(fs, new Path(fromPath, EximUtil.METADATA_NAME));
+      metadata = EximUtil.readMetaData(fs, new Path(fromPathMetadata, EximUtil.METADATA_NAME));
       this.hiveConf = hiveConf;
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -82,7 +85,12 @@ public class FSTableEvent implements TableEvent {
 
   @Override
   public Path metadataPath() {
-    return fromPath;
+    return fromPathMetadata;
+  }
+
+  @Override
+  public Path dataPath() {
+    return fromPathData;
   }
 
   /**
@@ -150,7 +158,7 @@ public class FSTableEvent implements TableEvent {
     //TODO: if partitions are loaded lazily via the iterator then we will have to avoid conversion of everything here as it defeats the purpose.
     for (Partition partition : metadata.getPartitions()) {
       // TODO: this should ideally not create AddPartitionDesc per partition
-      AlterTableAddPartitionDesc partsDesc = addPartitionDesc(fromPath, tblDesc, partition);
+      AlterTableAddPartitionDesc partsDesc = addPartitionDesc(fromPathMetadata, tblDesc, partition);
       descs.add(partsDesc);
     }
     return descs;

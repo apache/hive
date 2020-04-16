@@ -253,6 +253,13 @@ public class ThriftHttpServlet extends TServlet {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       if(isKerberosAuthMode(authType)) {
         response.addHeader(HttpAuthUtils.WWW_AUTHENTICATE, HttpAuthUtils.NEGOTIATE);
+      } else {
+        try {
+          LOG.error("Login attempt is failed for user : " +
+              getUsername(request, authType) + ". Error Messsage :" + e.getMessage());
+        } catch (Exception ex) {
+          // Ignore Exception
+        }
       }
       response.getWriter().println("Authentication Error: " + e.getMessage());
     }
@@ -511,6 +518,15 @@ public class ThriftHttpServlet extends TServlet {
         }
       }
       catch (GSSException e) {
+        if (gssContext != null) {
+          try {
+            LOG.error("Login attempt is failed for user : " +
+                getPrincipalWithoutRealmAndHost(gssContext.getSrcName().toString()) +
+                ". Error Messsage :" + e.getMessage());
+          } catch (Exception ex) {
+            // Ignore Exception
+          }
+        }
         throw new HttpAuthenticationException("Kerberos authentication failed: ", e);
       }
       finally {
