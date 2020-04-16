@@ -346,14 +346,14 @@ public class TestShortestJobFirstComparator {
 
     // Single task DAG with different start and attempt time
     r1 = createTaskWrapper(createSubmitWorkRequestProto(1, 1, 800, 1000, "q11"), true, 1000);
-    // Multi-task DAG with 10 out of 12
-    r2 = createTaskWrapper(createSubmitWorkRequestProto(2, 12, 1000, 1500, "q12", 10), true, 1000);
+    // Multi-task DAG with 5 out of 12
+    r2 = createTaskWrapper(createSubmitWorkRequestProto(2, 12, 1000, 1500, "q12", 5), true, 1000);
 
-    // pending/wait-time -> r2 has again priority
+    // pending/wait-time -> r2 has lower priority because it has more pending tasks!
     assertNull(queue.offer(r1, 0));
     assertEquals(r1, queue.peek()); // Task1 ratio = 1/200 = 0.005
     assertNull(queue.offer(r2, 0));
-    assertEquals(r2, queue.peek()); // Task2 ratio = 2/500 = 0.004
+    assertEquals(r1, queue.peek()); // Task2 ratio = 7/500 = 0.014
   }
 
   @Test(timeout = 60000)
