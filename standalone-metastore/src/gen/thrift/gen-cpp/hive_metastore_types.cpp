@@ -90,14 +90,16 @@ const std::map<int, const char*> _LockState_VALUES_TO_NAMES(::apache::thrift::TE
 int _kLockTypeValues[] = {
   LockType::SHARED_READ,
   LockType::SHARED_WRITE,
-  LockType::EXCLUSIVE
+  LockType::EXCLUSIVE,
+  LockType::EXCL_WRITE
 };
 const char* _kLockTypeNames[] = {
   "SHARED_READ",
   "SHARED_WRITE",
-  "EXCLUSIVE"
+  "EXCLUSIVE",
+  "EXCL_WRITE"
 };
-const std::map<int, const char*> _LockType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(3, _kLockTypeValues, _kLockTypeNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
+const std::map<int, const char*> _LockType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(4, _kLockTypeValues, _kLockTypeNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
 
 int _kCompactionTypeValues[] = {
   CompactionType::MINOR,

@@ -1065,7 +1065,7 @@ public class HiveEndPoint {
       LockComponentBuilder lockCompBuilder = new LockComponentBuilder()
               .setDbName(hiveEndPoint.database)
               .setTableName(hiveEndPoint.table)
-              .setShared()
+              .setSharedRead()
               .setOperationType(DataOperationType.INSERT);
       if (partNameForLock!=null && !partNameForLock.isEmpty() ) {
           lockCompBuilder.setPartitionName(partNameForLock);

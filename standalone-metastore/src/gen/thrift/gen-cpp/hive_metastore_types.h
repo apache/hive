@@ -85,7 +85,8 @@ struct LockType {
   enum type {
     SHARED_READ = 1,
     SHARED_WRITE = 2,
-    EXCLUSIVE = 3
+    EXCLUSIVE = 3,
+    EXCL_WRITE = 4
   };
 };
 

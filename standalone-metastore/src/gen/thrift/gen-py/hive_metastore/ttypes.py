@@ -127,17 +127,20 @@ class LockType:
   SHARED_READ = 1
   SHARED_WRITE = 2
   EXCLUSIVE = 3
+  EXCL_WRITE = 4
 
   _VALUES_TO_NAMES = {
     1: "SHARED_READ",
     2: "SHARED_WRITE",
     3: "EXCLUSIVE",
+    4: "EXCL_WRITE",
   }
 
   _NAMES_TO_VALUES = {
     "SHARED_READ": 1,
     "SHARED_WRITE": 2,
     "EXCLUSIVE": 3,
+    "EXCL_WRITE": 4,
   }
 
 class CompactionType:
