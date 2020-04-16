@@ -52,7 +52,8 @@ ls -l
 set -x
 . /etc/profile.d/confs.sh
 export USER="`whoami`"
-export HIVE_HOME="$PWD"
+export -n HIVE_CONF_DIR
+#export HIVE_HOME="$PWD"
 OPTS=" -s $SETTINGS -B -Dmaven.test.failure.ignore -Dtest.groups= "
 OPTS+=" -Pitests,qsplits"
 OPTS+=" -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugin.surefire.SurefirePlugin=INFO"
