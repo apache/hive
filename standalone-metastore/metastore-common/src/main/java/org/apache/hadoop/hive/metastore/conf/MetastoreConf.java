@@ -1603,7 +1603,6 @@ public class MetastoreConf {
 
   private static URL seeIfConfAtThisLocation(String envVar, String name, boolean inConfDir) {
     String path = System.getenv(envVar);
-    LOG.warn("the-path-stuff-for-envvar:" + envVar+" for name: " +name +" -> " + path);
     if (path == null) {
       // Workaround for testing since tests can't set the env vars.
       path = System.getProperty(TEST_ENV_WORKAROUND + envVar);
