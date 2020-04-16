@@ -87,12 +87,12 @@ public class TestShortestJobFirstComparator {
     // q2 can not finish thus q1 remains in top
     assertEquals(r1, queue.peek());
     assertNull(queue.offer(r3, 0));
-    // q3 is a single-task vertex tha started before q1 so it will take its place
+    // q3 is a single-task vertex that started before q1 so it will take its place
     assertEquals(r3, queue.peek());
     assertNull(queue.offer(r4, 0));
     // q4 can not finish thus q3 remains in top
     assertEquals(r3, queue.peek());
-    // offer accepted and r2 gets evicted (latest start-time than q4)
+    // offer accepted and r2 gets evicted (later start-time than q4)
     assertEquals(r2, queue.offer(r5, 0));
     assertEquals(r3, queue.take());
     assertEquals(r1, queue.take());
@@ -315,30 +315,30 @@ public class TestShortestJobFirstComparator {
   }
 
   @Test(timeout = 60000)
-  public void testWaitQueueAgingMutli() throws InterruptedException {
+  public void testWaitQueueAgingMulti() throws InterruptedException {
     // Make sure we dont have evictions triggered (maxSize = taskSize)
     EvictingPriorityBlockingQueue<TaskWrapper> queue =
             new EvictingPriorityBlockingQueue<>(new ShortestJobFirstComparator(), 10);
 
-    // Single task DAG with same start and attempt time
+    // Single task DAG with same start and attempt time (wait-time zero)
     TaskWrapper r1 = createTaskWrapper(createSubmitWorkRequestProto(1, 1, 1000, 1000, "q11"), true, 1000);
     // Multi task DAG with same start-time as above but 11 out of 12 task completed!
     TaskWrapper r2 = createTaskWrapper(createSubmitWorkRequestProto(2, 12, 1000, 1500, "q12", 11), true, 1000);
     assertNull(queue.offer(r1, 0));
     assertEquals(r1, queue.peek());
     assertNull(queue.offer(r2, 0));
-    assertEquals(r2, queue.peek());
+    assertEquals(r2, queue.peek()); // same number of pending tasks
 
     queue.remove(r1);
     queue.remove(r2);
     assertTrue(queue.isEmpty());
 
-    // Single task DAG with different start and attempt time (longer waitime first when tasks have same size)
+    // Single task DAG with different start and attempt time
     r1 = createTaskWrapper(createSubmitWorkRequestProto(1, 1, 800, 1000, "q11"), true, 1000);
     assertNull(queue.offer(r1, 0));
-    assertEquals(r1, queue.peek()); // Task1 ratio = 1/200 = 0.005
+    assertEquals(r1, queue.peek()); // ratio = 1/200 = 0.005
     assertNull(queue.offer(r2, 0));
-    assertEquals(r2, queue.peek()); // Task2 ratio = 1/500 = 0.002
+    assertEquals(r2, queue.peek()); // ratio = 1/500 = 0.002
 
     queue.remove(r1);
     queue.remove(r2);
@@ -349,11 +349,11 @@ public class TestShortestJobFirstComparator {
     // Multi-task DAG with 5 out of 12
     r2 = createTaskWrapper(createSubmitWorkRequestProto(2, 12, 1000, 1500, "q12", 5), true, 1000);
 
-    // pending/wait-time -> r2 has lower priority because it has more pending tasks!
+    // pending/wait-time -> r2 has lower priority because it has more pending tasks
     assertNull(queue.offer(r1, 0));
-    assertEquals(r1, queue.peek()); // Task1 ratio = 1/200 = 0.005
+    assertEquals(r1, queue.peek()); // ratio = 1/200 = 0.005
     assertNull(queue.offer(r2, 0));
-    assertEquals(r1, queue.peek()); // Task2 ratio = 7/500 = 0.014
+    assertEquals(r1, queue.peek()); // ratio = 7/500 = 0.014
   }
 
   @Test(timeout = 60000)
@@ -402,11 +402,11 @@ public class TestShortestJobFirstComparator {
     TaskWrapper prev = queue.take();
     for (int i = 1; i < 10; i++) {
       TaskWrapper curr = queue.take();
-      // Single Task vertices have lower ratio (negative waitime) so they are always scheduled first
+      // Single Task vertices have lower ratio so they are always scheduled first (1/wait-time instead of 10/wait-time)
       if (i <= 5) {
         assertTrue(curr.getRequestId().compareTo(prev.getRequestId()) > 0);
       }
-      // Multi-task vertices are scheduled based on wait time ( so 10->5 in descending order)
+      // Multi-task vertices are scheduled based on wait time (so 10->5 in descending order)
       else {
         assertTrue(curr.getRequestId().compareTo(prev.getRequestId()) < 0);
       }
