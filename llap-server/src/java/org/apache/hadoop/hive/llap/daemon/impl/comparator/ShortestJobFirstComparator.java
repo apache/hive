@@ -26,7 +26,7 @@ public class ShortestJobFirstComparator extends LlapQueueComparatorBase {
     LlapDaemonProtocolProtos.FragmentRuntimeInfo fri1 = o1.getFragmentRuntimeInfo();
     LlapDaemonProtocolProtos.FragmentRuntimeInfo fri2 = o2.getFragmentRuntimeInfo();
 
-    // Check if these belong to the same task, and work with withinDagPriority
+    // Check if these belong to the same DAG, and work with withinDagPriority
     if (o1.getQueryId().equals(o2.getQueryId())) {
       // Same Query
 
@@ -44,9 +44,12 @@ public class ShortestJobFirstComparator extends LlapQueueComparatorBase {
     // it's parent hierarchy. selfAndUpstreamComplete indicates how many of these have completed.
     int knownPending1 = fri1.getNumSelfAndUpstreamTasks() - fri1.getNumSelfAndUpstreamCompletedTasks();
     int knownPending2 = fri2.getNumSelfAndUpstreamTasks() - fri2.getNumSelfAndUpstreamCompletedTasks();
-    // longer the wait time for an attempt wrt to its start time, higher the priority it gets
-    long waitTime1 = fri1.getCurrentAttemptStartTime() - fri1.getFirstAttemptStartTime();
-    long waitTime2 = fri2.getCurrentAttemptStartTime() - fri2.getFirstAttemptStartTime();
+    // WaitTime: multi-task vertex attempt with longer wait-time wrt to its start time -> higher priority
+    // WaitTime: single-task vertex attempt with earlier start-time -> higher priority
+    long waitTime1 = fri1.getNumSelfAndUpstreamTasks() == 1 ?
+            -1 * fri1.getCurrentAttemptStartTime() : fri1.getCurrentAttemptStartTime() - fri1.getFirstAttemptStartTime();
+    long waitTime2 = fri2.getNumSelfAndUpstreamTasks() == 1 ?
+            -1 * fri2.getCurrentAttemptStartTime() : fri2.getCurrentAttemptStartTime() - fri2.getFirstAttemptStartTime();
 
     if (waitTime1 == 0 || waitTime2 == 0) {
       return knownPending1 - knownPending2;

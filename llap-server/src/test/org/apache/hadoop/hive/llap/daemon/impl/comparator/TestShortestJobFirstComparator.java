@@ -18,9 +18,11 @@ import static org.apache.hadoop.hive.llap.daemon.impl.TaskExecutorTestHelpers.cr
 import static org.apache.hadoop.hive.llap.daemon.impl.TaskExecutorTestHelpers.createTaskWrapper;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.hadoop.hive.llap.daemon.impl.EvictingPriorityBlockingQueue;
 import org.apache.hadoop.hive.llap.daemon.impl.TaskExecutorService.TaskWrapper;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.junit.Test;
 
 public class TestShortestJobFirstComparator {
@@ -82,17 +84,20 @@ public class TestShortestJobFirstComparator {
     assertNull(queue.offer(r1, 0));
     assertEquals(r1, queue.peek());
     assertNull(queue.offer(r2, 0));
+    // q2 can not finish thus q1 remains in top
     assertEquals(r1, queue.peek());
     assertNull(queue.offer(r3, 0));
-    assertEquals(r1, queue.peek());
+    // q3 is a single-task vertex tha started before q1 so it will take its place
+    assertEquals(r3, queue.peek());
     assertNull(queue.offer(r4, 0));
-    assertEquals(r1, queue.peek());
-    // offer accepted and r4 gets evicted
-    assertEquals(r4, queue.offer(r5, 0));
-    assertEquals(r1, queue.take());
+    // q4 can not finish thus q3 remains in top
+    assertEquals(r3, queue.peek());
+    // offer accepted and r2 gets evicted (latest start-time than q4)
+    assertEquals(r2, queue.offer(r5, 0));
     assertEquals(r3, queue.take());
+    assertEquals(r1, queue.take());
     assertEquals(r5, queue.take());
-    assertEquals(r2, queue.take());
+    assertEquals(r4, queue.take());
 
     r1 = createTaskWrapper(createSubmitWorkRequestProto(1, 2, 100, 200, "q1"), true, 100000);
     r2 = createTaskWrapper(createSubmitWorkRequestProto(2, 4, 200, 300, "q2"), false, 100000);
@@ -277,5 +282,93 @@ public class TestShortestJobFirstComparator {
     assertEquals(r2, queue.take());
     assertEquals(r3, queue.take());
     assertEquals(r1, queue.take());
+  }
+
+  @Test(timeout = 60000)
+  public void testWaitQueueAging() throws InterruptedException {
+    // Different Queries (DAGs) where all (different) fragments have
+    // upstream parallelism of 1. They also have 1 task, which means first
+    // & current attempt time would be the same.
+    TaskWrapper[] r = new TaskWrapper[50];
+
+    for (int i = 0; i < 50; i++) {
+      LlapDaemonProtocolProtos.SubmitWorkRequestProto proto =
+              createSubmitWorkRequestProto(i, 1, 100, 100 + i, "q" + i);
+      r[i] = createTaskWrapper(proto, true, 100000);
+    }
+
+    // Make sure we dont have evictions triggered (maxSize = taskSize)
+    EvictingPriorityBlockingQueue<TaskWrapper> queue =
+            new EvictingPriorityBlockingQueue<>(new ShortestJobFirstComparator(), 50);
+
+    for (int i = 0; i < 50; i++) {
+      assertNull(queue.offer(r[i], 0));
+    }
+
+    TaskWrapper prev = queue.take();
+    for (int i = 1; i < 50; i++) {
+      TaskWrapper curr = queue.take();
+      // Make sure that earlier requests were scheduled first
+      assertTrue(curr.getRequestId().compareTo(prev.getRequestId()) > 0);
+      prev = curr;
+    }
+  }
+
+  @Test(timeout = 60000)
+  public void testWaitQueueAgingComplex() throws InterruptedException {
+    // Make sure we dont have evictions triggered (maxSize = taskSize)
+    EvictingPriorityBlockingQueue<TaskWrapper> queue =
+            new EvictingPriorityBlockingQueue<>(new ShortestJobFirstComparator(), 10);
+
+    // Single-Task DAGs
+    TaskWrapper r1 = createTaskWrapper(createSubmitWorkRequestProto(5, 1, 100, 1000, "q5"), true, 1000);
+    TaskWrapper r2 = createTaskWrapper(createSubmitWorkRequestProto(4, 1, 200, 900, "q4"), true, 1000);
+    TaskWrapper r3 = createTaskWrapper(createSubmitWorkRequestProto(3, 1, 300, 800, "q3"), true, 1000);
+    TaskWrapper r4 = createTaskWrapper(createSubmitWorkRequestProto(2, 1, 400, 700, "q2"), true, 1000);
+    TaskWrapper r5 = createTaskWrapper(createSubmitWorkRequestProto(1, 1, 500, 600, "q1"), true, 1000);
+
+    assertNull(queue.offer(r1, 0));
+    assertEquals(r1, queue.peek());
+    assertNull(queue.offer(r2, 0));
+    assertEquals(r2, queue.peek());
+    assertNull(queue.offer(r3, 0));
+    assertEquals(r3, queue.peek());
+    assertNull(queue.offer(r4, 0));
+    assertEquals(r4, queue.peek());
+    assertNull(queue.offer(r5, 0));
+    assertEquals(r5, queue.peek());
+
+    // Multi-Task DAGs
+    TaskWrapper r6 = createTaskWrapper(createSubmitWorkRequestProto(10, 10, 100, 1000, "q10"), true, 1000);
+    TaskWrapper r7 = createTaskWrapper(createSubmitWorkRequestProto(9, 10, 200, 900, "q9"), true, 1000);
+    TaskWrapper r8 = createTaskWrapper(createSubmitWorkRequestProto(8, 10, 300, 800, "q8"), true, 1000);
+    TaskWrapper r9 = createTaskWrapper(createSubmitWorkRequestProto(7, 10, 400, 700, "q7"), true, 1000);
+    TaskWrapper r10 = createTaskWrapper(createSubmitWorkRequestProto(6, 10, 500, 600, "q6"), true, 1000);
+
+    assertNull(queue.offer(r6, 0));
+    assertEquals(r5, queue.peek());
+    assertNull(queue.offer(r7, 0));
+    assertEquals(r5, queue.peek());
+    assertNull(queue.offer(r8, 0));
+    assertEquals(r5, queue.peek());
+    assertNull(queue.offer(r9, 0));
+    assertEquals(r5, queue.peek());
+    assertNull(queue.offer(r10, 0));
+    assertEquals(r5, queue.peek());
+
+
+    TaskWrapper prev = queue.take();
+    for (int i = 1; i < 10; i++) {
+      TaskWrapper curr = queue.take();
+      // Single Task vertices have lower ratio (negative waitime) so they are always scheduled first
+      if (i <= 5) {
+        assertTrue(curr.getRequestId().compareTo(prev.getRequestId()) > 0);
+      }
+      // Multi-task vertices are scheduled based on wait time ( so 10->5 in descending order)
+      else {
+        assertTrue(curr.getRequestId().compareTo(prev.getRequestId()) < 0);
+      }
+      prev = curr;
+    }
   }
 }
