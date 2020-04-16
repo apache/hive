@@ -32,7 +32,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.Serializable;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -234,6 +233,8 @@ public final class Utilities {
    * various files and directories while committing writes, as well as reading.
    */
   public static final Logger FILE_OP_LOGGER = LoggerFactory.getLogger("FileOperations");
+
+  public static final Logger LOGGER = LoggerFactory.getLogger(Utilities.class);
 
   /**
    * The object in the reducer are composed of these top level fields.
@@ -847,7 +848,7 @@ public final class Utilities {
         }
       }
     } catch (FileNotFoundException e) {
-      e.printStackTrace();
+      LOG.warn("Could not compare files. One or both cannot be found", e);
     }
     return false;
   }
@@ -1110,43 +1111,6 @@ public final class Utilities {
     }
   }
 
-  /**
-   * Moves files from src to dst if it is within the specified set of paths
-   * @param fs
-   * @param src
-   * @param dst
-   * @param filesToMove
-   * @throws IOException
-   * @throws HiveException
-   */
-  private static void moveSpecifiedFiles(FileSystem fs, Path src, Path dst, Set<Path> filesToMove)
-      throws IOException, HiveException {
-    if (!fs.exists(dst)) {
-      fs.mkdirs(dst);
-    }
-
-    FileStatus[] files = fs.listStatus(src);
-    for (FileStatus file : files) {
-      if (filesToMove.contains(file.getPath())) {
-        Utilities.moveFile(fs, file, dst);
-      } else if (file.isDir()) {
-        // Traverse directory contents.
-        // Directory nesting for dst needs to match src.
-        Path nestedDstPath = new Path(dst, file.getPath().getName());
-        Utilities.moveSpecifiedFiles(fs, file.getPath(), nestedDstPath, filesToMove);
-      }
-    }
-  }
-
-  private static void moveSpecifiedFileStatus(FileSystem fs, Path src, Path dst,
-      Set<FileStatus> filesToMove) throws IOException, HiveException {
-    Set<Path> filePaths = new HashSet<>();
-    for (FileStatus fstatus : filesToMove) {
-      filePaths.add(fstatus.getPath());
-    }
-    moveSpecifiedFiles(fs, src, dst, filePaths);
-  }
-
   private static void moveFile(FileSystem fs, FileStatus file, Path dst) throws IOException,
       HiveException {
     Path srcFilePath = file.getPath();
@@ -1193,6 +1157,53 @@ public final class Utilities {
       for (FileStatus file : files) {
         Utilities.moveFile(fs, file, dst);
       }
+    }
+  }
+
+  /**
+   * Rename src to dst, or in the case dst already exists, move files in src
+   * to dst. If there is an existing file with the same name, the new file's
+   * name will be appended with "_1", "_2", etc. Happens in parallel mode.
+   *
+   * @param conf
+   *
+   * @param fs
+   *          the FileSystem where src and dst are on.
+   * @param src
+   *          the src directory
+   * @param dst
+   *          the target directory
+   * @throws IOException
+   */
+  public static void renameOrMoveFilesInParallel(Configuration conf,
+      FileSystem fs, Path src, Path dst) throws IOException, HiveException {
+    if (!fs.exists(dst)) {
+      if (!fs.rename(src, dst)) {
+        throw new HiveException("Unable to move: " + src + " to: " + dst);
+      }
+    } else {
+      // move files in parallel
+      LOG.info("Moving files from {}  to {}", src, dst);
+      final ExecutorService pool = createMoveThreadPool(conf);
+      List<Future<Void>> futures = new LinkedList<>();
+
+      final FileStatus[] files = fs.listStatus(src);
+      for (FileStatus file : files) {
+        futures.add(pool.submit(new Callable<Void>() {
+          @Override
+          public Void call() throws HiveException {
+            try {
+              Utilities.moveFile(fs, file, dst);
+            } catch (Exception e) {
+              throw new HiveException(e);
+            }
+            return null;
+          }
+        }));
+      }
+
+      shutdownAndCleanup(pool, futures);
+      LOG.info("Rename files from {}  to {} is complete", src, dst);
     }
   }
 
@@ -1496,13 +1507,13 @@ public final class Utilities {
           // for CTAS or Create MV statements
           perfLogger.PerfLogBegin("FileSinkOperator", "moveSpecifiedFileStatus");
           LOG.debug("CTAS/Create MV: Files being renamed:  " + filesKept.toString());
-          Utilities.moveSpecifiedFileStatus(fs, tmpPath, specPath, filesKept);
+          moveSpecifiedFilesInParallel(hconf, fs, tmpPath, specPath, filesKept);
           perfLogger.PerfLogEnd("FileSinkOperator", "moveSpecifiedFileStatus");
         } else {
           // for rest of the statement e.g. INSERT, LOAD etc
           perfLogger.PerfLogBegin("FileSinkOperator", "RenameOrMoveFiles");
           LOG.debug("Final renaming/moving. Source: " + tmpPath + " .Destination: " + specPath);
-          Utilities.renameOrMoveFiles(fs, tmpPath, specPath);
+          renameOrMoveFilesInParallel(hconf, fs, tmpPath, specPath);
           perfLogger.PerfLogEnd("FileSinkOperator", "RenameOrMoveFiles");
         }
       }
@@ -1513,6 +1524,118 @@ public final class Utilities {
     Utilities.FILE_OP_LOGGER.trace("deleting taskTmpPath {}", taskTmpPath);
     fs.delete(taskTmpPath, true);
   }
+
+  /**
+   * move specified files to destination in parallel mode.
+   * Spins up multiple threads, schedules transfer and shuts down the pool.
+   *
+   * @param conf
+   * @param fs
+   * @param srcPath
+   * @param destPath
+   * @param filesToMove
+   * @throws HiveException
+   * @throws IOException
+   */
+  private static void moveSpecifiedFilesInParallel(Configuration conf, FileSystem fs,
+      Path srcPath, Path destPath, Set<FileStatus> filesToMove)
+      throws HiveException, IOException {
+
+    LOG.info("rename {} files from {} to dest {}",
+        filesToMove.size(), srcPath, destPath);
+    PerfLogger perfLogger = SessionState.getPerfLogger();
+    perfLogger.PerfLogBegin("FileSinkOperator", "moveSpecifiedFileStatus");
+
+    final ExecutorService pool = createMoveThreadPool(conf);
+
+    List<Future<Void>> futures = new LinkedList<>();
+    moveSpecifiedFilesInParallel(fs, srcPath, destPath, filesToMove, futures, pool);
+
+    shutdownAndCleanup(pool, futures);
+    LOG.info("Completed rename from {} to {}", srcPath, destPath);
+
+    perfLogger.PerfLogEnd("FileSinkOperator", "moveSpecifiedFileStatus");
+  }
+
+  /**
+   * Moves files from src to dst if it is within the specified set of paths
+   * @param fs
+   * @param src
+   * @param dst
+   * @param filesToMove
+   * @param futures List of futures
+   * @param pool thread pool
+   * @throws IOException
+   */
+  private static void moveSpecifiedFilesInParallel(FileSystem fs,
+      Path src, Path dst, Set<FileStatus> filesToMove, List<Future<Void>> futures,
+      ExecutorService pool) throws IOException {
+    if (!fs.exists(dst)) {
+      LOG.info("Creating {}", dst);
+      fs.mkdirs(dst);
+    }
+
+    FileStatus[] files = fs.listStatus(src);
+    for (FileStatus fileStatus : files) {
+      if (filesToMove.contains(fileStatus)) {
+        futures.add(pool.submit(new Callable<Void>() {
+          @Override
+          public Void call() throws HiveException {
+            try {
+              LOG.debug("Moving from {} to {} ", fileStatus.getPath(), dst);
+              Utilities.moveFile(fs, fileStatus, dst);
+            } catch (Exception e) {
+              throw new HiveException(e);
+            }
+            return null;
+          }
+        }));
+      } else if (fileStatus.isDir()) {
+        // Traverse directory contents.
+        // Directory nesting for dst needs to match src.
+        Path nestedDstPath = new Path(dst, fileStatus.getPath().getName());
+        moveSpecifiedFilesInParallel(fs, fileStatus.getPath(), nestedDstPath,
+            filesToMove, futures, pool);
+      }
+    }
+  }
+
+  private static ExecutorService createMoveThreadPool(Configuration conf) {
+    int threads = Math.max(conf.getInt(ConfVars.HIVE_MOVE_FILES_THREAD_COUNT.varname, 15), 1);
+    return Executors.newFixedThreadPool(threads,
+        new ThreadFactoryBuilder().setDaemon(true).setNameFormat("Move-Thread-%d").build());
+  }
+
+  private static void shutdownAndCleanup(ExecutorService pool,
+      List<Future<Void>> futures) throws HiveException {
+    if (pool == null) {
+      return;
+    }
+    pool.shutdown();
+
+    futures = (futures != null) ? futures : Collections.emptyList();
+    for (Future<Void> future : futures) {
+      try {
+        future.get();
+      } catch (InterruptedException | ExecutionException e) {
+        LOG.error("Error in moving files to destination", e);
+        cancelTasks(futures);
+        throw new HiveException(e);
+      }
+    }
+  }
+
+  /**
+   * cancel all futures.
+   *
+   * @param futureList
+   */
+  private static void cancelTasks(List<Future<Void>> futureList) {
+    for (Future future : futureList) {
+      future.cancel(true);
+    }
+  }
+
 
 
   /**
@@ -1936,7 +2059,7 @@ public final class Utilities {
     try {
       return bucketName.split(COPY_KEYWORD)[0];
     } catch (Exception e) {
-      e.printStackTrace();
+      LOG.warn("Invalid bucket file name", e);
       return bucketName;
     }
   }
@@ -4237,8 +4360,20 @@ public final class Utilities {
 
 
   public static void writeCommitManifest(List<Path> commitPaths, Path specPath, FileSystem fs,
-      String taskId, Long writeId, int stmtId, String unionSuffix, boolean isInsertOverwrite) throws HiveException {
-    if (commitPaths.isEmpty()) {
+      String taskId, Long writeId, int stmtId, String unionSuffix, boolean isInsertOverwrite,
+      boolean hasDynamicPartitions, Set<String> dynamicPartitionSpecs) throws HiveException {
+
+    // When doing a multi-statement insert overwrite with dynamic partitioning,
+    // the partition information will be written to the manifest file.
+    // This is needed because in this use case each FileSinkOperator should clean-up
+    // only the partition directories written by the same FileSinkOperator and do not
+    // clean-up the partition directories written by the other FileSinkOperators.
+    // If a statement from the insert overwrite query, doesn't produce any data,
+    // a manifest file will still be written, otherwise the missing manifest file
+    // would result a clean-up on table level which could delete the data written by
+    // the other FileSinkOperators. (For further details please see HIVE-23114.)
+    boolean writeDynamicPartitionsToManifest = isInsertOverwrite && hasDynamicPartitions;
+    if (commitPaths.isEmpty() && !writeDynamicPartitionsToManifest) {
       return;
     }
     // We assume one FSOP per task (per specPath), so we create it in specPath.
@@ -4251,6 +4386,14 @@ public final class Utilities {
         if (out == null) {
           throw new HiveException("Failed to create manifest at " + manifestPath);
         }
+
+        if (writeDynamicPartitionsToManifest) {
+          out.writeInt(dynamicPartitionSpecs.size());
+          for (String dynamicPartitionSpec : dynamicPartitionSpecs) {
+            out.writeUTF(dynamicPartitionSpec.toString());
+          }
+        }
+
         out.writeInt(commitPaths.size());
         for (Path path : commitPaths) {
           out.writeUTF(path.toString());
@@ -4261,11 +4404,16 @@ public final class Utilities {
     }
   }
 
-  // TODO: we should get rid of isInsertOverwrite here too.
   private static Path getManifestDir(
       Path specPath, long writeId, int stmtId, String unionSuffix, boolean isInsertOverwrite) {
     Path manifestPath = new Path(specPath, "_tmp." +
       AcidUtils.baseOrDeltaSubdir(isInsertOverwrite, writeId, writeId, stmtId));
+    if (isInsertOverwrite) {
+      // When doing a multi-statement insert overwrite query with dynamic partitioning, the
+      // generated manifest directory is the same for each FileSinkOperator.
+      // To resolve this name collision, extending the manifest path with the statement id.
+      manifestPath = new Path(manifestPath + "_" + stmtId);
+    }
 
     return (unionSuffix == null) ? manifestPath : new Path(manifestPath, unionSuffix);
   }
@@ -4308,38 +4456,54 @@ public final class Utilities {
         }
       }
     } else {
-      Utilities.FILE_OP_LOGGER.info("No manifests found - query produced no output");
+      Utilities.FILE_OP_LOGGER.info("No manifests found in directory {} - query produced no output", manifestDir);
       manifestDir = null;
     }
 
-    Utilities.FILE_OP_LOGGER.debug("Looking for files in: {}", specPath);
-    AcidUtils.IdPathFilter filter = new AcidUtils.IdPathFilter(writeId, stmtId);
-    if (!fs.exists(specPath)) {
-      Utilities.FILE_OP_LOGGER.info("Creating directory with no output at {}", specPath);
-      FileUtils.mkdir(fs, specPath, hconf);
-    }
-    Path[] files = getDirectInsertDirectoryCandidates(
-        fs, specPath, dpLevels, filter, writeId, stmtId, hconf, isInsertOverwrite);
-    ArrayList<Path> directInsertDirectories = new ArrayList<>();
-    if (files != null) {
-      for (Path path : files) {
-        Utilities.FILE_OP_LOGGER.trace("Looking at path: {}", path);
-        directInsertDirectories.add(path);
-      }
-    }
-
-    HashSet<Path> committed = new HashSet<>();
+    Set<String> dynamicPartitionSpecs = new HashSet<>();
+    Set<Path> committed = Collections.newSetFromMap(new ConcurrentHashMap<>());
     for (Path mfp : manifests) {
+      Utilities.FILE_OP_LOGGER.info("Looking at manifest file: {}", mfp);
       try (FSDataInputStream mdis = fs.open(mfp)) {
+        if (isInsertOverwrite && dpLevels > 0) {
+          int partitionCount = mdis.readInt();
+          for (int i = 0; i < partitionCount; ++i) {
+            String nextPart = mdis.readUTF();
+            Utilities.FILE_OP_LOGGER.debug("Looking at dynamic partition {}", nextPart);
+            dynamicPartitionSpecs.add(nextPart);
+          }
+        }
+
         int fileCount = mdis.readInt();
         for (int i = 0; i < fileCount; ++i) {
           String nextFile = mdis.readUTF();
-          Utilities.FILE_OP_LOGGER.trace("Looking at committed file: {}", nextFile);
+          Utilities.FILE_OP_LOGGER.debug("Looking at committed file {}", nextFile);
           Path path = fs.makeQualified(new Path(nextFile));
           if (!committed.add(path)) {
             throw new HiveException(nextFile + " was specified in multiple manifests");
           }
         }
+      }
+    }
+
+    Utilities.FILE_OP_LOGGER.debug("Looking for files in: {}", specPath);
+    AcidUtils.IdPathFilter filter = new AcidUtils.IdPathFilter(writeId, stmtId, dynamicPartitionSpecs, dpLevels);
+    if (!fs.exists(specPath)) {
+      Utilities.FILE_OP_LOGGER.info("Creating directory with no output at {}", specPath);
+      FileUtils.mkdir(fs, specPath, hconf);
+    }
+
+    Path[] files = null;
+    if (!isInsertOverwrite || dpLevels == 0 || !dynamicPartitionSpecs.isEmpty()) {
+      files = getDirectInsertDirectoryCandidates(
+          fs, specPath, dpLevels, filter, writeId, stmtId, hconf, isInsertOverwrite);
+    }
+
+    ArrayList<Path> directInsertDirectories = new ArrayList<>();
+    if (files != null) {
+      for (Path path : files) {
+        Utilities.FILE_OP_LOGGER.info("Looking at path: {}", path);
+        directInsertDirectories.add(path);
       }
     }
 
@@ -4357,8 +4521,8 @@ public final class Utilities {
       }
     }
 
-    for (Path path : directInsertDirectories) {
-      cleanDirectInsertDirectory(path, fs, unionSuffix, lbLevels, committed);
+    if (!directInsertDirectories.isEmpty()) {
+      cleanDirectInsertDirectoriesConcurrently(directInsertDirectories, committed, fs, hconf, unionSuffix, lbLevels);
     }
 
     if (!committed.isEmpty()) {
@@ -4393,14 +4557,62 @@ public final class Utilities {
     }
   }
 
+  private static void cleanDirectInsertDirectoriesConcurrently(
+          List<Path> directInsertDirectories, Set<Path> committed, FileSystem fs, Configuration hconf, String unionSuffix, int lbLevels)
+          throws IOException, HiveException {
+
+    ExecutorService executor = createCleanTaskExecutor(hconf, directInsertDirectories.size());
+    List<Future<Void>> cleanTaskFutures = submitCleanTasksForExecution(executor, directInsertDirectories, committed, fs, unionSuffix, lbLevels);
+    waitForCleanTasksToComplete(executor, cleanTaskFutures);
+  }
+
+  private static ExecutorService createCleanTaskExecutor(Configuration hconf, int numOfDirectories) {
+    int threadCount = Math.min(numOfDirectories, HiveConf.getIntVar(hconf, ConfVars.HIVE_MOVE_FILES_THREAD_COUNT));
+    threadCount = threadCount <= 0 ? 1 : threadCount;
+    return Executors.newFixedThreadPool(threadCount,
+            new ThreadFactoryBuilder().setDaemon(true).setNameFormat("Clean-Direct-Insert-Dirs-Thread-%d").build());
+  }
+
+  private static List<Future<Void>> submitCleanTasksForExecution(ExecutorService executor, List<Path> directInsertDirectories,
+                                                                    Set<Path> committed, FileSystem fs, String unionSuffix, int lbLevels) {
+    List<Future<Void>> cleanTaskFutures = new ArrayList<>(directInsertDirectories.size());
+    for (Path directory : directInsertDirectories) {
+      Future<Void> cleanTaskFuture = executor.submit(() -> {
+        cleanDirectInsertDirectory(directory, fs, unionSuffix, lbLevels, committed);
+        return null;
+      });
+      cleanTaskFutures.add(cleanTaskFuture);
+    }
+    return cleanTaskFutures;
+  }
+
+  private static void waitForCleanTasksToComplete(ExecutorService executor, List<Future<Void>> cleanTaskFutures)
+          throws IOException, HiveException {
+    executor.shutdown();
+    for (Future<Void> cleanFuture : cleanTaskFutures) {
+      try {
+        cleanFuture.get();
+      } catch (InterruptedException | ExecutionException e) {
+        executor.shutdownNow();
+        if (e.getCause() instanceof IOException) {
+          throw (IOException) e.getCause();
+        }
+        if (e.getCause() instanceof HiveException) {
+          throw (HiveException) e.getCause();
+        }
+      }
+    }
+  }
+
+
   private static final class PathOnlyFileStatus extends FileStatus {
     public PathOnlyFileStatus(Path path) {
       super(0, true, 0, 0, 0, path);
     }
   }
 
-  private static void cleanDirectInsertDirectory(Path dir, FileSystem fs, String unionSuffix,
-      int lbLevels, HashSet<Path> committed) throws IOException, HiveException {
+  private static void cleanDirectInsertDirectory(Path dir, FileSystem fs, String unionSuffix, int lbLevels, Set<Path> committed)
+          throws IOException, HiveException {
     for (FileStatus child : fs.listStatus(dir)) {
       Path childPath = child.getPath();
       if (lbLevels > 0) {
@@ -4611,5 +4823,10 @@ public final class Utilities {
     } catch (IOException e) {
       throw new SemanticException(e);
     }
+  }
+
+  public static boolean arePathsEqualOrWithin(Path p1, Path p2) {
+    return ((p1.toString().toLowerCase().indexOf(p2.toString().toLowerCase()) > -1) ||
+        (p2.toString().toLowerCase().indexOf(p1.toString().toLowerCase()) > -1)) ? true : false;
   }
 }

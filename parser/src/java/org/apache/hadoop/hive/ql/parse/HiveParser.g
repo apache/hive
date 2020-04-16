@@ -341,10 +341,12 @@ TOK_SHOWDBLOCKS;
 TOK_DESCDATABASE;
 TOK_DATABASEPROPERTIES;
 TOK_DATABASELOCATION;
+TOK_DATABASE_MANAGEDLOCATION;
 TOK_DBPROPLIST;
 TOK_ALTERDATABASE_PROPERTIES;
 TOK_ALTERDATABASE_OWNER;
 TOK_ALTERDATABASE_LOCATION;
+TOK_ALTERDATABASE_MANAGEDLOCATION;
 TOK_DBNAME;
 TOK_TABNAME;
 TOK_TABSRC;
@@ -585,6 +587,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_INPUTFORMAT", "INPUTFORMAT");
     xlateMap.put("KW_OUTPUTFORMAT", "OUTPUTFORMAT");
     xlateMap.put("KW_LOCATION", "LOCATION");
+    xlateMap.put("KW_MANAGEDLOCATION", "MANAGEDLOCATION");
     xlateMap.put("KW_TABLESAMPLE", "TABLESAMPLE");
     xlateMap.put("KW_BUCKET", "BUCKET");
     xlateMap.put("KW_OUT", "OUT");
@@ -924,12 +927,8 @@ replDumpStatement
       : KW_REPL KW_DUMP
         (dbPolicy=replDbPolicy)
         (KW_REPLACE oldDbPolicy=replDbPolicy)?
-        (KW_FROM (eventId=Number)
-          (KW_TO (rangeEnd=Number))?
-          (KW_LIMIT (batchSize=Number))?
-        )?
         (KW_WITH replConf=replConfigs)?
-    -> ^(TOK_REPL_DUMP $dbPolicy ^(TOK_REPLACE $oldDbPolicy)? ^(TOK_FROM $eventId (TOK_TO $rangeEnd)? (TOK_LIMIT $batchSize)?)? $replConf?)
+    -> ^(TOK_REPL_DUMP $dbPolicy ^(TOK_REPLACE $oldDbPolicy)? $replConf?)
     ;
 
 replDbPolicy
@@ -943,10 +942,10 @@ replLoadStatement
 @init { pushMsg("Replication load statement", state); }
 @after { popMsg(state); }
       : KW_REPL KW_LOAD
-        (dbName=identifier)?
-        KW_FROM (path=StringLiteral)
-        (KW_WITH replConf=replConfigs)?
-      -> ^(TOK_REPL_LOAD $path ^(TOK_DBNAME $dbName)? $replConf?)
+      (sourceDbPolicy=replDbPolicy)
+      (KW_INTO dbName=identifier)?
+      (KW_WITH replConf=replConfigs)?
+      -> ^(TOK_REPL_LOAD $sourceDbPolicy ^(TOK_DBNAME $dbName)? $replConf?)
       ;
 
 replConfigs
@@ -1093,8 +1092,9 @@ createDatabaseStatement
         name=identifier
         databaseComment?
         dbLocation?
+        dbManagedLocation?
         (KW_WITH KW_DBPROPERTIES dbprops=dbProperties)?
-    -> ^(TOK_CREATEDATABASE $name ifNotExists? dbLocation? databaseComment? $dbprops?)
+    -> ^(TOK_CREATEDATABASE $name ifNotExists? dbLocation? dbManagedLocation? databaseComment? $dbprops?)
     ;
 
 dbLocation
@@ -1102,6 +1102,13 @@ dbLocation
 @after { popMsg(state); }
     :
       KW_LOCATION locn=StringLiteral -> ^(TOK_DATABASELOCATION $locn)
+    ;
+
+dbManagedLocation
+@init { pushMsg("database managed location specification", state); }
+@after { popMsg(state); }
+    :
+      KW_MANAGEDLOCATION locn=StringLiteral -> ^(TOK_DATABASE_MANAGEDLOCATION $locn)
     ;
 
 dbProperties
@@ -1178,7 +1185,7 @@ createTableStatement
 truncateTableStatement
 @init { pushMsg("truncate table statement", state); }
 @after { popMsg(state); }
-    : KW_TRUNCATE KW_TABLE tablePartitionPrefix (KW_COLUMNS LPAREN columnNameList RPAREN)? force?
+    : KW_TRUNCATE KW_TABLE? tablePartitionPrefix (KW_COLUMNS LPAREN columnNameList RPAREN)? force?
     -> ^(TOK_TRUNCATETABLE tablePartitionPrefix columnNameList? force?);
 
 dropTableStatement
@@ -1300,6 +1307,15 @@ alterDatabaseSuffixSetLocation
 @after { popMsg(state); }
     : dbName=identifier KW_SET KW_LOCATION newLocation=StringLiteral
     -> ^(TOK_ALTERDATABASE_LOCATION $dbName $newLocation)
+    | dbName=identifier KW_SET KW_MANAGEDLOCATION newLocation=StringLiteral
+    -> ^(TOK_ALTERDATABASE_MANAGEDLOCATION $dbName $newLocation)
+    ;
+
+alterDatabaseSuffixSetManagedLocation
+@init { pushMsg("alter database set managed location", state); }
+@after { popMsg(state); }
+    : dbName=identifier KW_SET KW_MANAGEDLOCATION newLocation=StringLiteral
+    -> ^(TOK_ALTERDATABASE_MANAGEDLOCATION $dbName $newLocation)
     ;
 
 alterStatementSuffixRename[boolean table]

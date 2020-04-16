@@ -2862,6 +2862,10 @@ public class CachedStore implements RawStore, Configurable {
     return rawStore.getPartitionColsWithStats(catName, dbName, tableName);
   }
 
+  @Override public List<String> isPartOfMaterializedView(String catName, String dbName, String tblName) {
+     return rawStore.isPartOfMaterializedView(catName, dbName, tblName);
+   }
+
   @Override
   public ScheduledQueryPollResponse scheduledQueryPoll(ScheduledQueryPollRequest request) throws MetaException {
     return rawStore.scheduledQueryPoll(request);

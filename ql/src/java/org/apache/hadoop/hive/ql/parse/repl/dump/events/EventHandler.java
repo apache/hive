@@ -36,6 +36,7 @@ public interface EventHandler {
   DumpType dumpType();
 
   class Context {
+    Path dumpRoot;
     Path eventRoot;
     final Path  cmRoot;
     final Hive db;
@@ -45,8 +46,10 @@ public interface EventHandler {
     final ReplScope oldReplScope;
     private Set<String> tablesForBootstrap;
 
-    public Context(Path eventRoot, Path cmRoot, Hive db, HiveConf hiveConf, ReplicationSpec replicationSpec,
-                   ReplScope replScope, ReplScope oldReplScope, Set<String> tablesForBootstrap) {
+    public Context(Path eventRoot, Path dumpRoot, Path cmRoot, Hive db, HiveConf hiveConf,
+                   ReplicationSpec replicationSpec, ReplScope replScope, ReplScope oldReplScope,
+                   Set<String> tablesForBootstrap) {
+      this.dumpRoot = dumpRoot;
       this.eventRoot = eventRoot;
       this.cmRoot = cmRoot;
       this.db = db;
@@ -58,6 +61,7 @@ public interface EventHandler {
     }
 
     public Context(Context other) {
+      this.dumpRoot = other.dumpRoot;
       this.eventRoot = other.eventRoot;
       this.cmRoot = other.cmRoot;
       this.db = other.db;

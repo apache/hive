@@ -126,7 +126,7 @@ public class TestDbTxnManager2 {
   @Test
   public void testMetadataOperationLocks() throws Exception {
     boolean isStrict = conf.getBoolVar(HiveConf.ConfVars.HIVE_TXN_STRICT_LOCKING_MODE);
-    //to make insert into non-acid take shared lock
+    //to make insert into non-acid take shared_read lock
     conf.setBoolVar(HiveConf.ConfVars.HIVE_TXN_STRICT_LOCKING_MODE, false);
     dropTable(new String[] {"T"});
     driver.run("create table if not exists T (a int, b int)");
@@ -134,7 +134,7 @@ public class TestDbTxnManager2 {
     txnMgr.acquireLocks(driver.getPlan(), ctx, "Fifer");
     List<ShowLocksResponseElement> locks = getLocks();
     Assert.assertEquals("Unexpected lock count", 1, locks.size());
-    //since LM is using non strict mode we get shared lock
+    //since LM is using non strict mode we get shared_read lock
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T", null, locks);
 
     //simulate concurrent session

@@ -1978,6 +1978,57 @@ public class TestTxnCommands2 {
   }
 
   /**
+   * Create a table with schema evolution, and verify that no data is lost during (MR major)
+   * compaction.
+   *
+   * @throws Exception if a query fails
+   */
+  @Test
+  public void testSchemaEvolutionCompaction() throws Exception {
+    String tblName = "schemaevolutioncompaction";
+    runStatementOnDriver("drop table if exists " + tblName);
+    runStatementOnDriver("CREATE TABLE " + tblName + "(a INT) " +
+        " PARTITIONED BY(part string)" +
+        " STORED AS ORC TBLPROPERTIES ('transactional'='true')");
+
+    // First INSERT round.
+    runStatementOnDriver("insert into " + tblName + " partition (part='aa') values (1)");
+
+    // ALTER TABLE ... ADD COLUMNS
+    runStatementOnDriver("ALTER TABLE " + tblName + " ADD COLUMNS(b int)");
+
+    // Second INSERT round.
+    runStatementOnDriver("insert into " + tblName + " partition (part='aa') values (2, 2000)");
+
+    // Validate data
+    List<String> res = runStatementOnDriver("SELECT * FROM " + tblName + " ORDER BY a");
+    Assert.assertEquals(2, res.size());
+    Assert.assertEquals("1\tNULL\taa", res.get(0));
+    Assert.assertEquals("2\t2000\taa", res.get(1));
+
+    // Compact
+    TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
+    CompactionRequest compactionRequest =
+        new CompactionRequest("default", tblName, CompactionType.MAJOR);
+    compactionRequest.setPartitionname("part=aa");
+    txnHandler.compact(compactionRequest);
+    runWorker(hiveConf);
+    runCleaner(hiveConf);
+
+    // Verify successful compaction
+    List<ShowCompactResponseElement> compacts =
+        txnHandler.showCompact(new ShowCompactRequest()).getCompacts();
+    Assert.assertEquals(1, compacts.size());
+    Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, compacts.get(0).getState());
+
+    // Validate data after compaction
+    res = runStatementOnDriver("SELECT * FROM " + tblName + " ORDER BY a");
+    Assert.assertEquals(2, res.size());
+    Assert.assertEquals("1\tNULL\taa", res.get(0));
+    Assert.assertEquals("2\t2000\taa", res.get(1));
+  }
+
+  /**
    * Test cleaner for TXN_TO_WRITE_ID table.
    * @throws Exception
    */
@@ -1994,13 +2045,10 @@ public class TestTxnCommands2 {
 
     // All inserts are committed and hence would expect in TXN_TO_WRITE_ID, 3 entries for acidTbl
     // and 2 entries for acidTblPart as each insert would have allocated a writeid.
-    // Also MIN_HISTORY_LEVEL won't have any entries as no reference for open txns.
     String acidTblWhereClause = " where t2w_database = " + quoteString("default")
             + " and t2w_table = " + quoteString(Table.ACIDTBL.name().toLowerCase());
     String acidTblPartWhereClause = " where t2w_database = " + quoteString("default")
             + " and t2w_table = " + quoteString(Table.ACIDTBLPART.name().toLowerCase());
-    Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from MIN_HISTORY_LEVEL"),
-            0, TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from MIN_HISTORY_LEVEL"));
     Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from TXN_TO_WRITE_ID" + acidTblWhereClause),
             3, TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_TO_WRITE_ID" + acidTblWhereClause));
     Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from TXN_TO_WRITE_ID" + acidTblPartWhereClause),
@@ -2040,13 +2088,10 @@ public class TestTxnCommands2 {
 
     // We would expect 4 entries in TXN_TO_WRITE_ID as each insert would have allocated a writeid
     // including aborted one.
-    // Also MIN_HISTORY_LEVEL will have 1 entry for the open txn.
     Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from TXN_TO_WRITE_ID" + acidTblWhereClause),
             3, TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_TO_WRITE_ID" + acidTblWhereClause));
     Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from TXN_TO_WRITE_ID" + acidTblPartWhereClause),
             1, TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_TO_WRITE_ID" + acidTblPartWhereClause));
-    Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from MIN_HISTORY_LEVEL"),
-            1, TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from MIN_HISTORY_LEVEL"));
 
     // The entry relevant to aborted txns shouldn't be removed from TXN_TO_WRITE_ID as
     // aborted txn would be removed from TXNS only after the compaction. Also, committed txn > open txn is retained.
@@ -2061,7 +2106,6 @@ public class TestTxnCommands2 {
     // The cleaner will removed aborted txns data/metadata but cannot remove aborted txn2 from TXN_TO_WRITE_ID
     // as there is a open txn < aborted txn2. The aborted txn1 < open txn and will be removed.
     // Also, committed txn > open txn is retained.
-    // MIN_HISTORY_LEVEL will have 1 entry for the open txn.
     txnHandler.compact(new CompactionRequest("default", Table.ACIDTBL.name().toLowerCase(), CompactionType.MAJOR));
     runWorker(hiveConf);
     runCleaner(hiveConf);
@@ -2069,18 +2113,13 @@ public class TestTxnCommands2 {
     txnHandler.cleanTxnToWriteIdTable();
     Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from TXN_TO_WRITE_ID"),
             2, TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_TO_WRITE_ID"));
-    Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from MIN_HISTORY_LEVEL"),
-            1, TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from MIN_HISTORY_LEVEL"));
 
     // Commit the open txn, which lets the cleanup on TXN_TO_WRITE_ID.
-    // Now all txns are removed from MIN_HISTORY_LEVEL. So, all entries from TXN_TO_WRITE_ID would be cleaned.
     txnMgr.commitTxn();
     txnHandler.cleanTxnToWriteIdTable();
 
     Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from TXN_TO_WRITE_ID"),
             0, TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_TO_WRITE_ID"));
-    Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from MIN_HISTORY_LEVEL"),
-            0, TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from MIN_HISTORY_LEVEL"));
   }
 
   private void verifyDirAndResult(int expectedDeltas) throws Exception {

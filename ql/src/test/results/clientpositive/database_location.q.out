@@ -10,7 +10,7 @@ PREHOOK: Input: database:db1
 POSTHOOK: query: DESCRIBE DATABASE EXTENDED db1
 POSTHOOK: type: DESCDATABASE
 POSTHOOK: Input: database:db1
-db1		location/in/test	hive_test_user	USER	
+db1		location/in/test		hive_test_user	USER	
 PREHOOK: query: USE db1
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:db1
@@ -85,7 +85,7 @@ PREHOOK: Input: database:db2
 POSTHOOK: query: DESCRIBE DATABASE EXTENDED db2
 POSTHOOK: type: DESCDATABASE
 POSTHOOK: Input: database:db2
-db2	database 2	location/in/test	hive_test_user	USER	
+db2	database 2	location/in/test		hive_test_user	USER	
 PREHOOK: query: USE db2
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:db2

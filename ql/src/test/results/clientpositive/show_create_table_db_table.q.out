@@ -54,7 +54,7 @@ PREHOOK: Input: tmp_feng@tmp_showcrt1
 POSTHOOK: query: SHOW CREATE TABLE tmp_feng.tmp_showcrt1
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: tmp_feng@tmp_showcrt1
-CREATE TABLE `tmp_feng.tmp_showcrt1`(
+CREATE TABLE `tmp_feng`.`tmp_showcrt1`(
   `key` string, 
   `value` int)
 ROW FORMAT SERDE 
@@ -74,7 +74,7 @@ PREHOOK: Input: tmp_feng@tmp_showcrt2
 POSTHOOK: query: SHOW CREATE TABLE tmp_feng.tmp_showcrt2
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: tmp_feng@tmp_showcrt2
-CREATE TABLE `tmp_feng.tmp_showcrt2`(
+CREATE TABLE `tmp_feng`.`tmp_showcrt2`(
   `key` string, 
   `value` int)
 SKEWED BY (key)
@@ -96,7 +96,7 @@ PREHOOK: Input: tmp_feng@tmp_showcrt3
 POSTHOOK: query: SHOW CREATE TABLE tmp_feng.tmp_showcrt3
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: tmp_feng@tmp_showcrt3
-CREATE TABLE `tmp_feng.tmp_showcrt3`(
+CREATE TABLE `tmp_feng`.`tmp_showcrt3`(
   `key` string, 
   `value` int)
 SKEWED BY (key)
@@ -119,7 +119,7 @@ PREHOOK: Input: tmp_feng@tmp_showcrt4
 POSTHOOK: query: SHOW CREATE TABLE tmp_feng.tmp_showcrt4
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: tmp_feng@tmp_showcrt4
-CREATE TABLE `tmp_feng.tmp_showcrt4`(
+CREATE TABLE `tmp_feng`.`tmp_showcrt4`(
   `s1` struct<`p1`:string>, 
   `s2` struct<`p2`:array<map<int,uniontype<struct<`a`:int, `b`:string>, array<struct<`c`:int, `d`:string>>>>>>)
 ROW FORMAT SERDE 

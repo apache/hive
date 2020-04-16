@@ -1,0 +1,74 @@
+PREHOOK: query: CREATE TABLE constant_prop(start_dt timestamp, stop_dt timestamp) STORED AS ORC TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@constant_prop
+POSTHOOK: query: CREATE TABLE constant_prop(start_dt timestamp, stop_dt timestamp) STORED AS ORC TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@constant_prop
+PREHOOK: query: explain UPDATE constant_prop SET stop_dt = CURRENT_TIMESTAMP WHERE CAST(start_dt AS DATE) = CURRENT_DATE
+PREHOOK: type: QUERY
+PREHOOK: Input: default@constant_prop
+PREHOOK: Output: default@constant_prop
+POSTHOOK: query: explain UPDATE constant_prop SET stop_dt = CURRENT_TIMESTAMP WHERE CAST(start_dt AS DATE) = CURRENT_DATE
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@constant_prop
+POSTHOOK: Output: default@constant_prop
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: constant_prop
+            filterExpr: (CAST( start_dt AS DATE) = DATE'2020-03-05') (type: boolean)
+            Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (CAST( start_dt AS DATE) = DATE'2020-03-05') (type: boolean)
+              Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), start_dt (type: timestamp)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                  null sort order: z
+                  sort order: +
+                  Map-reduce partition columns: UDFToInteger(_col0) (type: int)
+                  Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: timestamp)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: timestamp), TIMESTAMP'2020-03-05 14:16:57' (type: timestamp)
+          outputColumnNames: _col0, _col1, _col2
+          Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                name: default.constant_prop
+            Write Type: UPDATE
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.constant_prop
+          Write Type: UPDATE
+
+  Stage: Stage-2
+    Stats Work
+      Basic Stats Work:
+

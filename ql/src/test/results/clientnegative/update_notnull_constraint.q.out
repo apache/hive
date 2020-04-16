@@ -21,4 +21,9 @@ POSTHOOK: Output: default@acid_uami
 POSTHOOK: Lineage: acid_uami.de SCRIPT []
 POSTHOOK: Lineage: acid_uami.i SCRIPT []
 POSTHOOK: Lineage: acid_uami.vc SCRIPT []
-FAILED: DataConstraintViolationError org.apache.hadoop.hive.ql.exec.errors.DataConstraintViolationError: Either CHECK or NOT NULL constraint violated!
+PREHOOK: query: UPDATE acid_uami set de=null where i=1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid_uami
+PREHOOK: Output: default@acid_uami
+#### A masked pattern was here ####
+FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.mr.MapRedTask

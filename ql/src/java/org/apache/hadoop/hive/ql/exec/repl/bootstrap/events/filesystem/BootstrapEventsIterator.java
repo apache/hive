@@ -23,7 +23,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.ReplicationState;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.BootstrapEvent;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
-import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.repl.load.log.BootstrapLoadLogger;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 
@@ -82,8 +81,11 @@ public class BootstrapEventsIterator implements Iterator<BootstrapEvent> {
           throws IOException {
     Path path = new Path(dumpDirectory);
     FileSystem fileSystem = path.getFileSystem(hiveConf);
+    if (!fileSystem.exists(path)) {
+      throw new IllegalArgumentException("No data to load in path " + dumpDirectory);
+    }
     FileStatus[] fileStatuses =
-        fileSystem.listStatus(new Path(dumpDirectory), ReplUtils.getBootstrapDirectoryFilter(fileSystem));
+        fileSystem.listStatus(path, ReplUtils.getBootstrapDirectoryFilter(fileSystem));
     if ((fileStatuses == null) || (fileStatuses.length == 0)) {
       throw new IllegalArgumentException("No data to load in path " + dumpDirectory);
     }

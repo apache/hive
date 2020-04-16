@@ -27,12 +27,14 @@ import com.google.common.collect.Lists;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
@@ -918,6 +920,64 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     Assert.assertEquals("compacted read", expectedRsPtnYesterday, rsCompactPtnYesterday);
     // Clean up
     executeStatementOnDriver("drop table " + tblName, driver);
+  }
+
+  @Test public void testMajorCompactionDb() throws Exception {
+    testCompactionDb(CompactionType.MAJOR, "base_0000005_v0000011");
+  }
+
+  @Test public void testMinorCompactionDb() throws Exception {
+    testCompactionDb(CompactionType.MINOR, "delta_0000001_0000005_v0000011");
+  }
+
+  /**
+   * Make sure db is specified in compaction queries.
+   */
+  private void testCompactionDb(CompactionType compactionType, String resultDirName)
+      throws Exception {
+    String dbName = "myDb";
+    String tableName = "testCompactionDb";
+    // Create test table
+    TestDataProvider dataProvider = new TestDataProvider();
+    dataProvider.createDb(dbName);
+    dataProvider.createFullAcidTable(dbName, tableName, false, false);
+    // Find the location of the table
+    IMetaStoreClient metaStoreClient = new HiveMetaStoreClient(conf);
+    Table table = metaStoreClient.getTable(dbName, tableName);
+    FileSystem fs = FileSystem.get(conf);
+    // Insert test data into test table
+    dataProvider.insertTestData(dbName, tableName);
+    // Get all data before compaction is run
+    List<String> expectedData = dataProvider.getAllData(dbName, tableName);
+    Collections.sort(expectedData);
+    // Run a compaction
+    CompactorTestUtil.runCompaction(conf, dbName, tableName, compactionType, true);
+    CompactorTestUtil.runCleaner(conf);
+    verifySuccessulTxn(1);
+    // Verify directories after compaction
+    PathFilter pathFilter = compactionType == CompactionType.MAJOR ? AcidUtils.baseFileFilter :
+        AcidUtils.deltaFileFilter;
+    Assert.assertEquals("Result directory does not match after " + compactionType.name()
+            + " compaction", Collections.singletonList(resultDirName),
+        CompactorTestUtil.getBaseOrDeltaNames(fs, pathFilter, table, null));
+    // Verify all contents
+    List<String> actualData = dataProvider.getAllData(dbName, tableName);
+    Assert.assertEquals(expectedData, actualData);
+  }
+
+  /**
+   * Verify that the expected number of transactions have run, and their state is "succeeded".
+   *
+   * @param expectedCompleteCompacts number of compactions already run
+   * @throws MetaException
+   */
+  private void verifySuccessulTxn(int expectedCompleteCompacts) throws MetaException {
+    List<ShowCompactResponseElement> compacts =
+        TxnUtils.getTxnStore(conf).showCompact(new ShowCompactRequest()).getCompacts();
+    Assert.assertEquals("Completed compaction queue must contain one element",
+        expectedCompleteCompacts, compacts.size());
+    compacts.forEach(
+        c -> Assert.assertEquals("Compaction state is not succeeded", "succeeded", c.getState()));
   }
 
   /**

@@ -178,14 +178,15 @@ public class VectorTopNKeyOperator extends Operator<TopNKeyDesc> implements Vect
     batch.selectedInUse = selectedInUseBackup;
 
     if (incomingBatches % conf.getCheckEfficiencyNumBatches() == 0) {
-      checkTopNFilterEfficiency(topNKeyFilters, disabledPartitions, conf.getEfficiencyThreshold(), LOG);
+      checkTopNFilterEfficiency(
+        topNKeyFilters, disabledPartitions, conf.getEfficiencyThreshold(), LOG, conf.getCheckEfficiencyNumRows());
     }
   }
 
   public static void checkTopNFilterEfficiency(Map<KeyWrapper, TopNKeyFilter> filters,
-                                                Set<KeyWrapper> disabledPartitions,
-                                                float efficiencyThreshold,
-                                                Logger log)
+                                               Set<KeyWrapper> disabledPartitions,
+                                               float efficiencyThreshold,
+                                               Logger log, long checkEfficiencyNumRows)
   {
     Iterator<Map.Entry<KeyWrapper, TopNKeyFilter>> iterator = filters.entrySet().iterator();
     while (iterator.hasNext()) {
@@ -193,7 +194,7 @@ public class VectorTopNKeyOperator extends Operator<TopNKeyDesc> implements Vect
       KeyWrapper partitionKey = each.getKey();
       TopNKeyFilter filter = each.getValue();
       log.debug("Checking TopN Filter efficiency {}, threshold: {}", filter, efficiencyThreshold);
-      if (filter.forwardingRatio() >= efficiencyThreshold) {
+      if (filter.getTotal() >= checkEfficiencyNumRows && filter.forwardingRatio() >= efficiencyThreshold) {
         log.info("Disabling TopN Filter {}", filter);
         disabledPartitions.add(partitionKey);
       }

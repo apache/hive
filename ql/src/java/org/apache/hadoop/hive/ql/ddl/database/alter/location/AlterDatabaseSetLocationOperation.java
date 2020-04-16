@@ -41,15 +41,32 @@ public class AlterDatabaseSetLocationOperation extends AbstractAlterDatabaseOper
   protected void doAlteration(Database database, Map<String, String> params) throws HiveException {
     try {
       String newLocation = desc.getLocation();
-      URI locationURI = new URI(newLocation);
-      if (!locationURI.isAbsolute() || StringUtils.isBlank(locationURI.getScheme())) {
-        throw new HiveException(ErrorMsg.BAD_LOCATION_VALUE, newLocation);
+      if (newLocation != null) {
+        URI locationURI = new URI(newLocation);
+        if (!locationURI.isAbsolute() || StringUtils.isBlank(locationURI.getScheme())) {
+          throw new HiveException(ErrorMsg.BAD_LOCATION_VALUE, newLocation);
+        }
+
+        if (newLocation.equals(database.getLocationUri())) {
+          LOG.info("AlterDatabase skipped. No change in location.");
+        } else {
+          database.setLocationUri(newLocation);
+        }
+        return;
       }
 
-      if (newLocation.equals(database.getLocationUri())) {
-        LOG.info("AlterDatabase skipped. No change in location.");
-      } else {
-        database.setLocationUri(newLocation);
+      newLocation = desc.getManagedLocation();
+      if (newLocation != null) {
+        URI locationURI = new URI(newLocation);
+        if (!locationURI.isAbsolute() || StringUtils.isBlank(locationURI.getScheme())) {
+          throw new HiveException(ErrorMsg.BAD_LOCATION_VALUE, newLocation);
+        }
+
+        if (newLocation.equals(database.getManagedLocationUri())) {
+          LOG.info("AlterDatabase skipped. No change in location.");
+        } else {
+          database.setManagedLocationUri(newLocation);
+        }
       }
     } catch (URISyntaxException e) {
       throw new HiveException(e);

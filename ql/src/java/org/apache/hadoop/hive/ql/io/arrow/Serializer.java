@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.DateColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.Decimal64ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
@@ -87,6 +88,7 @@ import java.util.List;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ARROW_BATCH_SIZE;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ARROW_BATCH_ALLOCATOR_LIMIT;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.LLAP_EXTERNAL_CLIENT_USE_HYBRID_CALENDAR;
 import static org.apache.hadoop.hive.ql.exec.vector.VectorizedBatchUtil.createColumnVector;
 import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.MICROS_PER_MILLIS;
 import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.MILLIS_PER_SECOND;
@@ -111,6 +113,7 @@ public class Serializer {
   private List<String> fieldNames;
   private int fieldSize;
 
+  private boolean useHybridCalendar;
   private final StructVector rootVector;
   private final DecimalHolder decimalHolder = new DecimalHolder();
 
@@ -119,6 +122,7 @@ public class Serializer {
     this.fieldTypeInfos = typeInfos;
     this.fieldNames = fieldNames;
     long childAllocatorLimit = HiveConf.getLongVar(conf, HIVE_ARROW_BATCH_ALLOCATOR_LIMIT);
+    this.useHybridCalendar = HiveConf.getBoolVar(conf, LLAP_EXTERNAL_CLIENT_USE_HYBRID_CALENDAR);
     //Use per-task allocator for accounting only, no need to reserve per-task memory
     long childAllocatorReservation = 0L;
     //Break out accounting of direct memory per-task, so we can check no memory is leaked when task is completed
@@ -136,6 +140,7 @@ public class Serializer {
   Serializer(ArrowColumnarBatchSerDe serDe) throws SerDeException {
     MAX_BUFFERED_ROWS = HiveConf.getIntVar(serDe.conf, HIVE_ARROW_BATCH_SIZE);
     long childAllocatorLimit = HiveConf.getLongVar(serDe.conf, HIVE_ARROW_BATCH_ALLOCATOR_LIMIT);
+    this.useHybridCalendar = HiveConf.getBoolVar(serDe.conf, LLAP_EXTERNAL_CLIENT_USE_HYBRID_CALENDAR);
     ArrowColumnarBatchSerDe.LOG.info("ArrowColumnarBatchSerDe max number of buffered columns: " + MAX_BUFFERED_ROWS);
     String childAllocatorName = Thread.currentThread().getName();
     //Use per-task allocator for accounting only, no need to reserve per-task memory
@@ -313,16 +318,15 @@ public class Serializer {
 
     write(arrowVector, structListVector, structListTypeInfo, size, vectorizedRowBatch, isNative);
 
-    final ArrowBuf validityBuffer = arrowVector.getValidityBuffer();
     for (int rowIndex = 0; rowIndex < size; rowIndex++) {
       int selectedIndex = rowIndex;
       if (vectorizedRowBatch.selectedInUse) {
         selectedIndex = vectorizedRowBatch.selected[rowIndex];
       }
       if (hiveVector.isNull[selectedIndex]) {
-        BitVectorHelper.setValidityBit(validityBuffer, rowIndex, 0);
+        BitVectorHelper.setValidityBit(arrowVector.getValidityBuffer(), rowIndex, 0);
       } else {
-        BitVectorHelper.setValidityBitToOne(validityBuffer, rowIndex);
+        BitVectorHelper.setValidityBitToOne(arrowVector.getValidityBuffer(), rowIndex);
       }
     }
   }
@@ -360,12 +364,11 @@ public class Serializer {
       write(arrowFieldVector, hiveFieldVector, fieldTypeInfo, size, vectorizedRowBatch, isNative);
     }
 
-    final ArrowBuf validityBuffer = arrowVector.getValidityBuffer();
     for (int rowIndex = 0; rowIndex < size; rowIndex++) {
       if (hiveVector.isNull[rowIndex]) {
-        BitVectorHelper.setValidityBit(validityBuffer, rowIndex, 0);
+        BitVectorHelper.setValidityBit(arrowVector.getValidityBuffer(), rowIndex, 0);
       } else {
-        BitVectorHelper.setValidityBitToOne(validityBuffer, rowIndex);
+        BitVectorHelper.setValidityBitToOne(arrowVector.getValidityBuffer(), rowIndex);
       }
     }
   }
@@ -426,7 +429,6 @@ public class Serializer {
 
     write(arrowElementVector, hiveElementVector, elementTypeInfo, correctedSize, correctedVrb, isNative);
 
-    final ArrowBuf offsetBuffer = arrowVector.getOffsetBuffer();
     int nextOffset = 0;
 
     for (int rowIndex = 0; rowIndex < size; rowIndex++) {
@@ -435,14 +437,14 @@ public class Serializer {
         selectedIndex = vectorizedRowBatch.selected[rowIndex];
       }
       if (hiveVector.isNull[selectedIndex]) {
-        offsetBuffer.setInt(rowIndex * OFFSET_WIDTH, nextOffset);
+        arrowVector.getOffsetBuffer().setInt(rowIndex * OFFSET_WIDTH, nextOffset);
       } else {
-        offsetBuffer.setInt(rowIndex * OFFSET_WIDTH, nextOffset);
+        arrowVector.getOffsetBuffer().setInt(rowIndex * OFFSET_WIDTH, nextOffset);
         nextOffset += (int) hiveVector.lengths[selectedIndex];
         arrowVector.setNotNull(rowIndex);
       }
     }
-    offsetBuffer.setInt(size * OFFSET_WIDTH, nextOffset);
+    arrowVector.getOffsetBuffer().setInt(size * OFFSET_WIDTH, nextOffset);
   }
 
   //Handle cases for both internally constructed
@@ -595,6 +597,9 @@ public class Serializer {
     break;
     case DATE:
     {
+      // and since hive always provides data in proleptic calendar format
+      // set the usingProlepticCalendar flag for conversion to hybrid if required in dateValueSetter
+      ((DateColumnVector) hiveVector).setUsingProlepticCalendar(true);
       if(isNative) {
         writeGeneric(arrowVector, hiveVector, size, vectorizedRowBatch.selectedInUse, vectorizedRowBatch.selected, dateNullSetter, dateValueSetter, typeInfo);
         return;
@@ -610,6 +615,9 @@ public class Serializer {
     break;
     case TIMESTAMP:
     {
+      // and since hive always provides data in proleptic calendar format
+      // set the usingProlepticCalendar flag for conversion to hybrid if required in timestampValueSetter
+      ((TimestampColumnVector) hiveVector).setUsingProlepticCalendar(true);
       if(isNative) {
         writeGeneric(arrowVector, hiveVector, size, vectorizedRowBatch.selectedInUse, vectorizedRowBatch.selected, timestampNullSetter, timestampValueSetter, typeInfo);
         return;
@@ -857,16 +865,31 @@ public class Serializer {
   //date
   private static final IntAndVectorsConsumer dateNullSetter = (i, arrowVector, hiveVector)
       -> ((DateDayVector) arrowVector).setNull(i);
-  private static final IntIntAndVectorsConsumer dateValueSetter = (i, j, arrowVector, hiveVector, typeInfo)
-      -> ((DateDayVector) arrowVector).set(i, (int) ((LongColumnVector) hiveVector).vector[j]);
+
+  private final IntIntAndVectorsConsumer dateValueSetter = (i, j, arrowVector, hiveVector, typeInfo) -> {
+
+    DateColumnVector dateColumnVector = (DateColumnVector) hiveVector;
+    // useHybridCalendar - means the client wants data in hybrid calendar format
+    if (useHybridCalendar && dateColumnVector.isUsingProlepticCalendar()) {
+      dateColumnVector.changeCalendar(false, true);
+    }
+
+    ((DateDayVector) arrowVector).set(i, (int) (dateColumnVector).vector[j]);
+  };
 
   //timestamp
   private static final IntAndVectorsConsumer timestampNullSetter = (i, arrowVector, hiveVector)
       -> ((TimeStampMicroTZVector) arrowVector).setNull(i);
-  private static final IntIntAndVectorsConsumer timestampValueSetter = (i, j, arrowVector, hiveVector, typeInfo)
+  private final IntIntAndVectorsConsumer timestampValueSetter = (i, j, arrowVector, hiveVector, typeInfo)
       -> {
     final TimeStampMicroTZVector timeStampMicroTZVector = (TimeStampMicroTZVector) arrowVector;
     final TimestampColumnVector timestampColumnVector = (TimestampColumnVector) hiveVector;
+
+    // useHybridCalendar - means the client wants data in hybrid calendar format
+    if (useHybridCalendar && timestampColumnVector.usingProlepticCalendar()) {
+      timestampColumnVector.changeCalendar(false  , true);
+    }
+
     // Time = second + sub-second
     final long secondInMillis = timestampColumnVector.getTime(j);
     final long nanos = timestampColumnVector.getNanos(j);

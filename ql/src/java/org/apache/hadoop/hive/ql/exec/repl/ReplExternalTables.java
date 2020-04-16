@@ -43,6 +43,7 @@ import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -120,11 +121,12 @@ public final class ReplExternalTables {
     /**
      * this will dump a single line per external table. it can include additional lines for the same
      * table if the table is partitioned and the partition location is outside the table.
+     * It returns list of all the external table locations.
      */
-    void dataLocationDump(Table table)
-        throws InterruptedException, IOException, HiveException {
+    List<Path> dataLocationDump(Table table) throws InterruptedException, IOException, HiveException {
+      List<Path> extTableLocations = new LinkedList<>();
       if (!shouldWrite()) {
-        return;
+        return extTableLocations;
       }
       if (!TableType.EXTERNAL_TABLE.equals(table.getTableType())) {
         throw new IllegalArgumentException(
@@ -134,6 +136,7 @@ public final class ReplExternalTables {
       Path fullyQualifiedDataLocation =
           PathBuilder.fullyQualifiedHDFSUri(table.getDataLocation(), FileSystem.get(hiveConf));
       write(lineFor(table.getTableName(), fullyQualifiedDataLocation, hiveConf));
+      extTableLocations.add(fullyQualifiedDataLocation);
       if (table.isPartitioned()) {
         List<Partition> partitions;
         try {
@@ -142,7 +145,7 @@ public final class ReplExternalTables {
           if (e.getCause() instanceof NoSuchObjectException) {
             // If table is dropped when dump in progress, just skip partitions data location dump
             LOG.debug(e.getMessage());
-            return;
+            return extTableLocations;
           }
           throw e;
         }
@@ -155,9 +158,11 @@ public final class ReplExternalTables {
             fullyQualifiedDataLocation = PathBuilder
                 .fullyQualifiedHDFSUri(partition.getDataLocation(), FileSystem.get(hiveConf));
             write(lineFor(table.getTableName(), fullyQualifiedDataLocation, hiveConf));
+            extTableLocations.add(fullyQualifiedDataLocation);
           }
         }
       }
+      return extTableLocations;
     }
 
     private static String lineFor(String tableName, Path dataLoc, HiveConf hiveConf)

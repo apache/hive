@@ -593,20 +593,23 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
 
     /**
      * Returns true if the memory threshold for the hash table was reached.
+     * WARN: Frequent flushing can reduce Op throughput
      */
     private boolean shouldFlush(VectorizedRowBatch batch) {
       if (batch.size == 0) {
         return false;
       }
-      //numEntriesSinceCheck is the number of entries added to the hash table
+      // numEntriesSinceCheck is the number of entries added to the hash table
       // since the last time we checked the average variable size
       if (numEntriesSinceCheck >= this.checkInterval) {
         // Were going to update the average variable row size by sampling the current batch
         updateAvgVariableSize(batch);
         numEntriesSinceCheck = 0;
       }
-      if (numEntriesHashTable > this.maxHtEntries ||
-          numEntriesHashTable * (fixedHashEntrySize + avgVariableSize) > maxHashTblMemory) {
+      long currMemUsed = numEntriesHashTable * (fixedHashEntrySize + avgVariableSize);
+      // Protect against low maxHtEntries setting: if memory usage is below 30% avoid flushing
+      if ( ((numEntriesHashTable > this.maxHtEntries) && (currMemUsed > 0.3 * maxHashTblMemory))  ||
+          currMemUsed > maxHashTblMemory) {
         return true;
       }
       if (gcCanary.get() == null) {

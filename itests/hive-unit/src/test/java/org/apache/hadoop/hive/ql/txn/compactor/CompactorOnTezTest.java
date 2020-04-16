@@ -110,7 +110,12 @@ public class CompactorOnTezTest {
 
     void createFullAcidTable(String tblName, boolean isPartitioned, boolean isBucketed)
         throws Exception {
-      createTable(tblName, isPartitioned, isBucketed, false, "orc");
+      createFullAcidTable(null, tblName, isPartitioned, isBucketed);
+    }
+
+    void createFullAcidTable(String dbName, String tblName, boolean isPartitioned, boolean isBucketed)
+        throws Exception {
+      createTable(dbName, tblName, isPartitioned, isBucketed, false, "orc");
     }
 
     void createMmTable(String tblName, boolean isPartitioned, boolean isBucketed)
@@ -120,12 +125,19 @@ public class CompactorOnTezTest {
 
     void createMmTable(String tblName, boolean isPartitioned, boolean isBucketed, String fileFormat)
         throws Exception {
-      createTable(tblName, isPartitioned, isBucketed, true, fileFormat);
+      createMmTable(null, tblName, isPartitioned, isBucketed, fileFormat);
     }
 
-    private void createTable(String tblName, boolean isPartitioned, boolean isBucketed,
-        boolean insertOnly, String fileFormat) throws Exception {
+    void createMmTable(String dbName, String tblName, boolean isPartitioned, boolean isBucketed, String fileFormat)
+        throws Exception {
+      createTable(dbName, tblName, isPartitioned, isBucketed, true, fileFormat);
+    }
 
+    private void createTable(String dbName, String tblName, boolean isPartitioned, boolean isBucketed,
+        boolean insertOnly, String fileFormat) throws Exception {
+      if (dbName != null) {
+        tblName = dbName + "." + tblName;
+      }
       executeStatementOnDriver("drop table if exists " + tblName, driver);
       StringBuilder query = new StringBuilder();
       query.append("create table ").append(tblName).append(" (a string, b int)");
@@ -143,6 +155,11 @@ public class CompactorOnTezTest {
         query.append(" 'transactional_properties'='default')");
       }
       executeStatementOnDriver(query.toString(), driver);
+    }
+
+    void createDb(String dbName) throws Exception {
+      executeStatementOnDriver("drop database if exists " + dbName + " cascade", driver);
+      executeStatementOnDriver("create database " + dbName, driver);
     }
 
     /**
@@ -178,7 +195,17 @@ public class CompactorOnTezTest {
     /**
      * 5 txns.
      */
-    protected void insertTestData(String tblName) throws Exception {
+    void insertTestData(String tblName) throws Exception {
+      insertTestData(null, tblName);
+    }
+
+    /**
+     * 5 txns.
+     */
+    void insertTestData(String dbName, String tblName) throws Exception {
+      if (dbName != null) {
+        tblName = dbName + "." + tblName;
+      }
       executeStatementOnDriver("insert into " + tblName + " values('1',2),('1',3),('1',4),('2',2),('2',3),('2',4)",
           driver);
       executeStatementOnDriver("insert into " + tblName + " values('3',2),('3',3),('3',4),('4',2),('4',3),('4',4)",
@@ -190,9 +217,19 @@ public class CompactorOnTezTest {
     }
 
     /**
+     * 5 txns.
+     */
+    void insertMmTestData(String tblName) throws Exception {
+      insertMmTestData(null, tblName);
+    }
+
+    /**
      * 3 txns.
      */
-    protected void insertMmTestData(String tblName) throws Exception {
+    void insertMmTestData(String dbName, String tblName) throws Exception {
+      if (dbName != null) {
+        tblName = dbName + "." + tblName;
+      }
       executeStatementOnDriver("insert into " + tblName + " values('1',2),('1',3),('1',4),('2',2),('2',3),('2',4)",
           driver);
       executeStatementOnDriver("insert into " + tblName + " values('3',2),('3',3),('3',4),('4',2),('4',3),('4',4)",
@@ -222,7 +259,14 @@ public class CompactorOnTezTest {
       }
     }
 
-    protected List<String> getAllData(String tblName) throws Exception {
+    List<String> getAllData(String tblName) throws Exception {
+      return getAllData(null, tblName);
+    }
+
+    List<String> getAllData(String dbName, String tblName) throws Exception {
+      if (dbName != null) {
+        tblName = dbName + "." + tblName;
+      }
       List<String> result = executeStatementOnDriverAndReturnResults("select * from " + tblName, driver);
       Collections.sort(result);
       return result;

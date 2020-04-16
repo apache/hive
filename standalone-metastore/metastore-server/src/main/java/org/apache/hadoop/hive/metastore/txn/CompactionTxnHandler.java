@@ -221,8 +221,10 @@ class CompactionTxnHandler extends TxnHandler {
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
-        String s = "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_STATE\" = '" + READY_FOR_CLEANING + "', " +
-          "\"CQ_WORKER_ID\" = NULL WHERE \"CQ_ID\" = " + info.id;
+        String s = "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_STATE\" = '" + READY_FOR_CLEANING + "', "
+            + "\"CQ_WORKER_ID\" = NULL, \"CQ_NEXT_TXN_ID\" = "
+            + "(SELECT \"NTXN_NEXT\" FROM \"NEXT_TXN_ID\")"
+            + " WHERE \"CQ_ID\" = " + info.id;
         LOG.debug("Going to execute update <" + s + ">");
         int updCnt = stmt.executeUpdate(s);
         if (updCnt != 1) {
@@ -301,57 +303,6 @@ class CompactionTxnHandler extends TxnHandler {
     } catch (RetryException e) {
       return findReadyToClean();
     }
-  }
-  @Override
-  public long findMinOpenTxnId() throws MetaException {
-    Connection dbConn = null;
-    Statement stmt = null;
-    ResultSet rs = null;
-    try {
-      try {
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
-        stmt = dbConn.createStatement();
-        return findMinOpenTxnGLB(stmt);
-      } catch (SQLException e) {
-        LOG.error("Unable to findMinOpenTxnId() due to:" + e.getMessage());
-        rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "findMinOpenTxnId");
-        throw new MetaException("Unable to execute findMinOpenTxnId() " +
-            StringUtils.stringifyException(e));
-      } finally {
-        close(rs, stmt, dbConn);
-      }
-    } catch (RetryException e) {
-      return findMinOpenTxnId();
-    }
-  }
-
-  /**
-   * See doc at {@link TxnStore#findMinOpenTxnId()}
-   * Note that {@link #openTxns(OpenTxnRequest)} makes update of NEXT_TXN and MIN_HISTORY_LEVEL
-   * a single atomic operation (and no one else should update these tables except the cleaner
-   * which deletes rows from MIN_HISTORY_LEVEL which can only allow minOpenTxn to move higher)
-   */
-  private long findMinOpenTxnGLB(Statement stmt) throws MetaException, SQLException {
-    String s = "SELECT \"NTXN_NEXT\" FROM \"NEXT_TXN_ID\"";
-    LOG.debug("Going to execute query <" + s + ">");
-    ResultSet rs = stmt.executeQuery(s);
-    if (!rs.next()) {
-      throw new MetaException("Transaction tables not properly " +
-          "initialized, no record found in next_txn_id");
-    }
-    long hwm = rs.getLong(1);
-    s = "SELECT MIN(\"MHL_MIN_OPEN_TXNID\") FROM \"MIN_HISTORY_LEVEL\"";
-    LOG.debug("Going to execute query <" + s + ">");
-    rs = stmt.executeQuery(s);
-    rs.next();
-    long minOpenTxnId = rs.getLong(1);
-    if(rs.wasNull()) {
-      return hwm;
-    }
-    //since generating new txnid uses select for update on single row in NEXT_TXN_ID
-    assert hwm >= minOpenTxnId : "(hwm, minOpenTxnId)=(" + hwm + "," + minOpenTxnId + ")";
-    return minOpenTxnId;
   }
 
   /**
@@ -523,7 +474,7 @@ class CompactionTxnHandler extends TxnHandler {
   }
   /**
    * Clean up entries from TXN_TO_WRITE_ID table less than min_uncommited_txnid as found by
-   * min(NEXT_TXN_ID.ntxn_next, min(MIN_HISTORY_LEVEL.mhl_min_open_txnid), min(Aborted TXNS.txn_id)).
+   * min(NEXT_TXN_ID.ntxn_next, min(WRITE_SET.WS_COMMIT_ID), min(Aborted TXNS.txn_id)).
    */
   @Override
   @RetrySemantics.SafeToRetry
@@ -542,25 +493,27 @@ class CompactionTxnHandler extends TxnHandler {
         // First need to find the min_uncommitted_txnid which is currently seen by any open transactions.
         // If there are no txns which are currently open or aborted in the system, then current value of
         // NEXT_TXN_ID.ntxn_next could be min_uncommitted_txnid.
-        long minUncommittedTxnId = findMinOpenTxnGLB(stmt);
-
-        // If there are aborted txns, then the minimum aborted txnid could be the min_uncommitted_txnid
-        // if lesser than both NEXT_TXN_ID.ntxn_next and min(MIN_HISTORY_LEVEL .mhl_min_open_txnid).
-        String s = "SELECT MIN(\"TXN_ID\") FROM \"TXNS\" WHERE \"TXN_STATE\" = " + quoteChar(TXN_ABORTED);
+        String s = "SELECT MIN(\"RES\".\"ID\") AS \"ID\" FROM (" +
+            "SELECT MIN(\"NTXN_NEXT\") AS \"ID\" FROM \"NEXT_TXN_ID\" " +
+            "UNION " +
+            "SELECT MIN(\"WS_COMMIT_ID\") AS \"ID\" FROM \"WRITE_SET\" " +
+            "UNION " +
+            "SELECT MIN(\"TXN_ID\") AS \"ID\" FROM \"TXNS\" WHERE \"TXN_STATE\" = " + quoteChar(TXN_ABORTED) +
+            " OR \"TXN_STATE\" = " + quoteChar(TXN_OPEN) +
+            ") \"RES\"";
         LOG.debug("Going to execute query <" + s + ">");
         rs = stmt.executeQuery(s);
-        if (rs.next()) {
-          long minAbortedTxnId = rs.getLong(1);
-          if (minAbortedTxnId > 0) {
-            minUncommittedTxnId = Math.min(minAbortedTxnId, minUncommittedTxnId);
-          }
+        if (!rs.next()) {
+          throw new MetaException("Transaction tables not properly initialized, no record found in NEXT_TXN_ID");
         }
+        long minUncommitedTxnid = rs.getLong(1);
+
         // As all txns below min_uncommitted_txnid are either committed or empty_aborted, we are allowed
         // to cleanup the entries less than min_uncommitted_txnid from the TXN_TO_WRITE_ID table.
-        s = "DELETE FROM \"TXN_TO_WRITE_ID\" WHERE \"T2W_TXNID\" < " + minUncommittedTxnId;
+        s = "DELETE FROM \"TXN_TO_WRITE_ID\" WHERE \"T2W_TXNID\" < " + minUncommitedTxnid;
         LOG.debug("Going to execute delete <" + s + ">");
         int rc = stmt.executeUpdate(s);
-        LOG.info("Removed " + rc + " rows from TXN_TO_WRITE_ID with Txn Low-Water-Mark: " + minUncommittedTxnId);
+        LOG.info("Removed " + rc + " rows from TXN_TO_WRITE_ID with Txn Low-Water-Mark: " + minUncommitedTxnid);
 
         LOG.debug("Going to commit");
         dbConn.commit();
@@ -1166,6 +1119,53 @@ class CompactionTxnHandler extends TxnHandler {
       }
     } catch (RetryException e) {
       setHadoopJobId(hadoopJobId, id);
+    }
+  }
+
+  @Override
+  @RetrySemantics.Idempotent
+  public long findMinOpenTxnIdForCleaner() throws MetaException{
+    Connection dbConn = null;
+    Statement stmt = null;
+    ResultSet rs = null;
+    try {
+      try {
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        stmt = dbConn.createStatement();
+        String query = "SELECT COUNT(\"TXN_ID\") FROM \"TXNS\" WHERE \"TXN_STATE\" = " + quoteChar(TXN_OPEN);
+        LOG.debug("Going to execute query <" + query + ">");
+        rs = stmt.executeQuery(query);
+        if (!rs.next()) {
+          throw new MetaException("Transaction tables not properly initialized.");
+        }
+        long numOpenTxns = rs.getLong(1);
+        if (numOpenTxns > 0) {
+          query = "SELECT MIN(\"RES\".\"ID\") FROM (" +
+              "SELECT MIN(\"TXN_ID\") AS \"ID\" FROM \"TXNS\" WHERE \"TXN_STATE\" = " + quoteChar(TXN_OPEN) +
+              " UNION " +
+              "SELECT MAX(\"CQ_NEXT_TXN_ID\") AS \"ID\" FROM \"COMPACTION_QUEUE\" WHERE \"CQ_STATE\" = "
+              + quoteChar(READY_FOR_CLEANING) +
+              ") \"RES\"";
+        } else {
+          query = "SELECT \"NTXN_NEXT\" FROM \"NEXT_TXN_ID\"";
+        }
+        LOG.debug("Going to execute query <" + query + ">");
+        rs = stmt.executeQuery(query);
+        if (!rs.next()) {
+          throw new MetaException("Transaction tables not properly initialized, no record found in NEXT_TXN_ID");
+        }
+        return rs.getLong(1);
+      } catch (SQLException e) {
+        LOG.error("Unable to getMinOpenTxnIdForCleaner", e);
+        rollbackDBConn(dbConn);
+        checkRetryable(dbConn, e, "getMinOpenTxnForCleaner");
+        throw new MetaException("Unable to execute getMinOpenTxnIfForCleaner() " +
+            StringUtils.stringifyException(e));
+      } finally {
+        close(rs, stmt, dbConn);
+      }
+    } catch (RetryException e) {
+      return findMinOpenTxnIdForCleaner();
     }
   }
 }

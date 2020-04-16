@@ -30,6 +30,7 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -79,6 +80,7 @@ import org.apache.hadoop.hive.ql.qoption.QTestAuthorizerHandler;
 import org.apache.hadoop.hive.ql.qoption.QTestOptionDispatcher;
 import org.apache.hadoop.hive.ql.qoption.QTestReplaceHandler;
 import org.apache.hadoop.hive.ql.qoption.QTestSysDbHandler;
+import org.apache.hadoop.hive.ql.qoption.QTestTransactional;
 import org.apache.hadoop.hive.ql.scheduled.QTestScheduledQueryCleaner;
 import org.apache.hadoop.hive.ql.scheduled.QTestScheduledQueryServiceProvider;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -182,6 +184,8 @@ public class QTestUtil {
         testArgs.isWithLlapIo(),
         testArgs.getFsType());
 
+    logClassPath();
+
     Preconditions.checkNotNull(testArgs.getClusterType(), "ClusterType cannot be null");
 
     this.fsType = testArgs.getFsType();
@@ -214,6 +218,7 @@ public class QTestUtil {
     dispatcher.register("dataset", datasetHandler);
     dispatcher.register("replace", replaceHandler);
     dispatcher.register("sysdb", new QTestSysDbHandler());
+    dispatcher.register("transactional", new QTestTransactional());
     dispatcher.register("scheduledqueryservice", new QTestScheduledQueryServiceProvider(conf));
     dispatcher.register("scheduledquerycleaner", new QTestScheduledQueryCleaner());
     dispatcher.register("authorizer", new QTestAuthorizerHandler());
@@ -225,6 +230,12 @@ public class QTestUtil {
 
     savedConf = new HiveConf(conf);
 
+  }
+
+  private void logClassPath() {
+    String classpath = System.getProperty("java.class.path");
+    String[] classpathEntries = classpath.split(File.pathSeparator);
+    LOG.info("QTestUtil classpath: " + String.join("\n", Arrays.asList(classpathEntries)));
   }
 
   private void setMetaStoreProperties() {
@@ -932,16 +943,14 @@ public class QTestUtil {
     String outFileName = outPath(outDir, tname + outFileExtension);
 
     File f = new File(logDir, tname + outFileExtension);
-
     qOutProcessor.maskPatterns(f.getPath(), tname);
-    QTestProcessExecResult exitVal = qTestResultProcessor.executeDiffCommand(f.getPath(), outFileName, false, tname);
 
     if (QTestSystemProperties.shouldOverwriteResults()) {
       qTestResultProcessor.overwriteResults(f.getPath(), outFileName);
       return QTestProcessExecResult.createWithoutOutput(0);
+    } else {
+      return qTestResultProcessor.executeDiffCommand(f.getPath(), outFileName, false, tname);
     }
-
-    return exitVal;
   }
 
   public QTestProcessExecResult checkCompareCliDriverResults(String tname, List<String> outputs) throws Exception {

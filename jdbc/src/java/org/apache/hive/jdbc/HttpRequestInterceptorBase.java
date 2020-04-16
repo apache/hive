@@ -27,7 +27,6 @@ import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.client.CookieStore;
-import org.apache.http.client.protocol.ClientContext;
 import org.apache.http.protocol.HttpContext;
 
 public abstract class HttpRequestInterceptorBase implements HttpRequestInterceptor {
@@ -60,9 +59,7 @@ public abstract class HttpRequestInterceptorBase implements HttpRequestIntercept
       // The necessary condition is either when there are no server side cookies in the
       // cookiestore which can be send back or when the server returns a 401 error code
       // indicating that the previous cookie has expired.
-      if (isCookieEnabled) {
-        httpContext.setAttribute(ClientContext.COOKIE_STORE, cookieStore);
-      }
+
       // Generate the kerberos ticket under the following scenarios:
       // 1. Cookie Authentication is disabled OR
       // 2. The first time when the request is sent OR
@@ -73,11 +70,14 @@ public abstract class HttpRequestInterceptorBase implements HttpRequestIntercept
           Utils.needToSendCredentials(cookieStore, cookieName, isSSL)))) ||
           (httpContext.getAttribute(Utils.HIVE_SERVER2_RETRY_KEY) != null &&
           httpContext.getAttribute(Utils.HIVE_SERVER2_RETRY_KEY).
-          equals(Utils.HIVE_SERVER2_RETRY_TRUE)))) {
+          equals(Utils.HIVE_SERVER2_CONST_TRUE)))) {
         addHttpAuthHeader(httpRequest, httpContext);
+        httpContext.setAttribute(Utils.HIVE_SERVER2_SENT_CREDENTIALS, Utils.HIVE_SERVER2_CONST_TRUE);
+      } else {
+        httpContext.setAttribute(Utils.HIVE_SERVER2_SENT_CREDENTIALS, Utils.HIVE_SERVER2_CONST_FALSE);
       }
       if (isCookieEnabled) {
-        httpContext.setAttribute(Utils.HIVE_SERVER2_RETRY_KEY, Utils.HIVE_SERVER2_RETRY_FALSE);
+        httpContext.setAttribute(Utils.HIVE_SERVER2_RETRY_KEY, Utils.HIVE_SERVER2_CONST_FALSE);
       }
       // Insert the additional http headers
       if (additionalHeaders != null) {

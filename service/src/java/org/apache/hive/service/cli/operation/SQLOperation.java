@@ -26,6 +26,7 @@ import java.security.PrivilegedExceptionAction;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -96,6 +97,7 @@ public class SQLOperation extends ExecuteStatementOperation {
   private ScheduledExecutorService timeoutExecutor;
   private final boolean runAsync;
   private final long operationLogCleanupDelayMs;
+  private final ArrayList<Object> convey = new ArrayList<>();
 
   /**
    * A map to track query count running by each user
@@ -145,7 +147,6 @@ public class SQLOperation extends ExecuteStatementOperation {
           new SessionStream(System.err, true, StandardCharsets.UTF_8.name());
     } catch (UnsupportedEncodingException e) {
         LOG.error("Error creating PrintStream", e);
-        e.printStackTrace();
         sessionState.out = null;
         sessionState.info = null;
         sessionState.err = null;
@@ -445,14 +446,12 @@ public class SQLOperation extends ExecuteStatementOperation {
     return resultSchema;
   }
 
-  private transient final List<Object> convey = new ArrayList<Object>();
-
   @Override
   public RowSet getNextRowSet(FetchOrientation orientation, long maxRows)
     throws HiveSQLException {
 
     validateDefaultFetchOrientation(orientation);
-    assertState(new ArrayList<OperationState>(Arrays.asList(OperationState.FINISHED)));
+    assertState(Collections.singleton(OperationState.FINISHED));
 
     FetchTask fetchTask = driver.getFetchTask();
     boolean isBlobBased = false;
@@ -462,7 +461,6 @@ public class SQLOperation extends ExecuteStatementOperation {
       maxRows = 1;
       isBlobBased = true;
     }
-    driver.setMaxRows((int) maxRows);
     RowSet rowSet = RowSetFactory.create(getResultSetSchema(), getProtocolVersion(), isBlobBased);
     try {
       /* if client is requesting fetch-from-start and its not the first time reading from this operation
@@ -472,15 +470,19 @@ public class SQLOperation extends ExecuteStatementOperation {
         driver.resetFetch();
       }
       fetchStarted = true;
-      driver.setMaxRows((int) maxRows);
+
+      final int capacity = Math.toIntExact(maxRows);
+      convey.ensureCapacity(capacity);
+      driver.setMaxRows(capacity);
       if (driver.getResults(convey)) {
+        if (convey.size() == capacity) {
+          LOG.info("Result set buffer filled to capacity [{}]", capacity);
+        }
         return decode(convey, rowSet);
       }
       return rowSet;
-    } catch (IOException e) {
-      throw new HiveSQLException(e);
     } catch (Exception e) {
-      throw new HiveSQLException(e);
+      throw new HiveSQLException("Unable to get the next row set", e);
     } finally {
       convey.clear();
     }
@@ -594,7 +596,6 @@ public class SQLOperation extends ExecuteStatementOperation {
       SerDeUtils.initializeSerDe(serde, queryState.getConf(), props, null);
 
     } catch (Exception ex) {
-      ex.printStackTrace();
       throw new SQLException("Could not create ResultSet: " + ex.getMessage(), ex);
     }
     return serde;

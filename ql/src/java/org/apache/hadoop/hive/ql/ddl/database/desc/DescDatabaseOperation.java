@@ -58,7 +58,7 @@ public class DescDatabaseOperation extends DDLOperation<DescDatabaseDesc> {
       }
 
       context.getFormatter().showDatabaseDescription(outStream, database.getName(), database.getDescription(),
-          location, database.getOwnerName(), database.getOwnerType(), params);
+          location, database.getManagedLocationUri(), database.getOwnerName(), database.getOwnerType(), params);
     } catch (Exception e) {
       throw new HiveException(e, ErrorMsg.GENERIC_ERROR);
     }

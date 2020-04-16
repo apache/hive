@@ -194,7 +194,6 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
           MRInputUserPayloadProto.newBuilder(protoPayload).setGroupingEnabled(true).build();
       inputDescriptor.setUserPayload(UserPayload.create(updatedPayload.toByteString().asReadOnlyByteBuffer()));
     } catch (IOException e) {
-      e.printStackTrace();
       throw new RuntimeException(e);
     }
 

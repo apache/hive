@@ -33,16 +33,16 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -54,6 +54,7 @@ import javax.sql.DataSource;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
@@ -83,13 +84,16 @@ import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
+import org.apache.hadoop.hive.metastore.utils.LockTypeUtil;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.StringableMap;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import static org.apache.hadoop.hive.metastore.DatabaseProduct.MYSQL;
+import static org.apache.hadoop.hive.metastore.txn.TxnDbUtil.executeQueriesInBatch;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
@@ -174,17 +178,30 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   static final protected char LOCK_ACQUIRED = 'a';
   static final protected char LOCK_WAITING = 'w';
 
-  // Lock types
-  static final protected char LOCK_EXCLUSIVE = 'e';
-  static final protected char LOCK_SHARED = 'r';
-  static final protected char LOCK_SEMI_SHARED = 'w';
+  private static final int ALLOWED_REPEATED_DEADLOCKS = 10;
+  private static final Logger LOG = LoggerFactory.getLogger(TxnHandler.class.getName());
+  private static final Long TEMP_HIVE_LOCK_ID = -1L;
+  private static final Long TEMP_COMMIT_ID = -1L;
 
-  static final private int ALLOWED_REPEATED_DEADLOCKS = 10;
-  static final private Logger LOG = LoggerFactory.getLogger(TxnHandler.class.getName());
-
-  static private DataSource connPool;
+  private static DataSource connPool;
   private static DataSource connPoolMutex;
-  static private boolean doRetryOnConnPool = false;
+  private static boolean doRetryOnConnPool = false;
+
+  // Query definitions
+  private static final String HIVE_LOCKS_INSERT_QRY = "INSERT INTO \"HIVE_LOCKS\" ( " +
+      "\"HL_LOCK_EXT_ID\", \"HL_LOCK_INT_ID\", \"HL_TXNID\", \"HL_DB\", \"HL_TABLE\", \"HL_PARTITION\", " +
+      "\"HL_LOCK_STATE\", \"HL_LOCK_TYPE\", \"HL_LAST_HEARTBEAT\", \"HL_USER\", \"HL_HOST\", \"HL_AGENT_INFO\") " +
+      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, %s, ?, ?, ?)";
+  private static final String TXN_COMPONENTS_INSERT_QUERY = "INSERT INTO \"TXN_COMPONENTS\" (" +
+          "\"TC_TXNID\", \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", \"TC_OPERATION_TYPE\", \"TC_WRITEID\")" +
+          " VALUES (?, ?, ?, ?, ?, ?)";
+  private static final String INCREMENT_NEXT_LOCK_ID_QUERY = "UPDATE \"NEXT_LOCK_ID\" SET \"NL_NEXT\" = %s";
+  private static final String UPDATE_HIVE_LOCKS_EXT_ID_QUERY = "UPDATE \"HIVE_LOCKS\" SET \"HL_LOCK_EXT_ID\" = %s WHERE \"HL_LOCK_EXT_ID\" = %s";
+  private static final String SELECT_WRITE_ID_QUERY = "SELECT \"T2W_WRITEID\" FROM \"TXN_TO_WRITE_ID\" WHERE"
+          + " \"T2W_DATABASE\" = ? AND \"T2W_TABLE\" = ? AND \"T2W_TXNID\" = ?";
+  private static final String COMPL_TXN_COMPONENTS_INSERT_QUERY = "INSERT INTO \"COMPLETED_TXN_COMPONENTS\" " +
+          "(\"CTC_TXNID\"," + " \"CTC_DATABASE\", \"CTC_TABLE\", \"CTC_PARTITION\", \"CTC_WRITEID\", \"CTC_UPDATE_DELETE\")" +
+          " VALUES (%s, ?, ?, ?, ?, %s)";
 
   private List<TransactionalMetaStoreEventListener> transactionalListeners;
 
@@ -324,7 +341,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     numOpenTxns = Metrics.getOrCreateGauge(MetricsConstants.NUM_OPEN_TXNS);
 
     timeout = MetastoreConf.getTimeVar(conf, ConfVars.TXN_TIMEOUT, TimeUnit.MILLISECONDS);
-    buildJumpTable();
     retryInterval = MetastoreConf.getTimeVar(conf, ConfVars.HMS_HANDLER_INTERVAL,
         TimeUnit.MILLISECONDS);
     retryLimit = MetastoreConf.getIntVar(conf, ConfVars.HMS_HANDLER_ATTEMPTS);
@@ -606,7 +622,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       LOG.debug("Going to execute update <" + s + ">");
       stmt.executeUpdate(s);
 
-      long now = getDbTime(dbConn);
       List<Long> txnIds = new ArrayList<>(numTxns);
 
       List<String> rows = new ArrayList<>();
@@ -614,9 +629,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       params.add(rqst.getUser());
       params.add(rqst.getHostname());
       List<List<String>> paramsList = new ArrayList<>(numTxns);
+
       for (long i = first; i < first + numTxns; i++) {
         txnIds.add(i);
-        rows.add(i + "," + quoteChar(TXN_OPEN) + "," + now + "," + now + ",?,?," + txnType.getValue());
+        rows.add(i + "," + quoteChar(TXN_OPEN) + "," + TxnDbUtil.getEpochFn(dbProduct) + ","
+                + TxnDbUtil.getEpochFn(dbProduct) + ",?,?," + txnType.getValue());
         paramsList.add(params);
       }
       insertPreparedStmts = sqlGenerator.createInsertValuesPreparedStmt(dbConn,
@@ -626,33 +643,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       for (PreparedStatement pst : insertPreparedStmts) {
         pst.execute();
       }
-
-      // Need to register minimum open txnid for current transactions into MIN_HISTORY table.
-      s = "SELECT MIN(\"TXN_ID\") FROM \"TXNS\" WHERE \"TXN_STATE\" = " + quoteChar(TXN_OPEN);
-      LOG.debug("Going to execute query <" + s + ">");
-      rs = stmt.executeQuery(s);
-      if (!rs.next()) {
-        throw new IllegalStateException("Scalar query returned no rows?!?!!");
-      }
-
-      // TXNS table should have atleast one entry because we just inserted the newly opened txns.
-      // So, min(txn_id) would be a non-zero txnid.
-      long minOpenTxnId = rs.getLong(1);
-      assert (minOpenTxnId > 0);
-      rows.clear();
-      for (long txnId = first; txnId < first + numTxns; txnId++) {
-        rows.add(txnId + ", " + minOpenTxnId);
-      }
-
-      // Insert transaction entries into MIN_HISTORY_LEVEL.
-      List<String> inserts = sqlGenerator.createInsertValuesStmt(
-              "\"MIN_HISTORY_LEVEL\" (\"MHL_TXNID\", \"MHL_MIN_OPEN_TXNID\")", rows);
-      for (String insert : inserts) {
-        LOG.debug("Going to execute insert <" + insert + ">");
-        stmt.execute(insert);
-      }
-      LOG.info("Added entries to MIN_HISTORY_LEVEL for current txns: (" + txnIds
-              + ") with min_open_txn: " + minOpenTxnId);
 
       if (rqst.isSetReplPolicy()) {
         List<String> rowsRepl = new ArrayList<>();
@@ -1057,25 +1047,25 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   /**
    * Concurrency/isolation notes:
    * This is mutexed with {@link #openTxns(OpenTxnRequest)} and other {@link #commitTxn(CommitTxnRequest)}
-   * operations using select4update on NEXT_TXN_ID.  Also, mutexes on TXNX table for specific txnid:X
+   * operations using select4update on NEXT_TXN_ID. Also, mutexes on TXNS table for specific txnid:X
    * see more notes below.
    * In order to prevent lost updates, we need to determine if any 2 transactions overlap.  Each txn
    * is viewed as an interval [M,N]. M is the txnid and N is taken from the same NEXT_TXN_ID sequence
    * so that we can compare commit time of txn T with start time of txn S.  This sequence can be thought of
-   * as a logical time counter.  If S.commitTime < T.startTime, T and S do NOT overlap.
+   * as a logical time counter. If S.commitTime < T.startTime, T and S do NOT overlap.
    *
    * Motivating example:
    * Suppose we have multi-statment transactions T and S both of which are attempting x = x + 1
-   * In order to prevent lost update problem, the the non-overlapping txns must lock in the snapshot
-   * that they read appropriately.  In particular, if txns do not overlap, then one follows the other
-   * (assumig they write the same entity), and thus the 2nd must see changes of the 1st.  We ensure
+   * In order to prevent lost update problem, then the non-overlapping txns must lock in the snapshot
+   * that they read appropriately. In particular, if txns do not overlap, then one follows the other
+   * (assuming they write the same entity), and thus the 2nd must see changes of the 1st.  We ensure
    * this by locking in snapshot after
    * {@link #openTxns(OpenTxnRequest)} call is made (see org.apache.hadoop.hive.ql.Driver.acquireLocksAndOpenTxn)
-   * and mutexing openTxn() with commit().  In other words, once a S.commit() starts we must ensure
+   * and mutexing openTxn() with commit(). In other words, once a S.commit() starts we must ensure
    * that txn T which will be considered a later txn, locks in a snapshot that includes the result
    * of S's commit (assuming no other txns).
    * As a counter example, suppose we have S[3,3] and T[4,4] (commitId=txnid means no other transactions
-   * were running in parallel).  If T and S both locked in the same snapshot (for example commit of
+   * were running in parallel). If T and S both locked in the same snapshot (for example commit of
    * txnid:2, which is possible if commitTxn() and openTxnx() is not mutexed)
    * 'x' would be updated to the same value by both, i.e. lost update.
    */
@@ -1090,8 +1080,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     try {
       Connection dbConn = null;
       Statement stmt = null;
-      List<PreparedStatement> insertPreparedStmts = null;
-      ResultSet commitIdRs = null, rs;
+      Long commitId = null;
       try {
         lockInternal();
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
@@ -1141,45 +1130,47 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           raiseTxnUnexpectedState(actualTxnStatus, txnid);
         }
 
-        String conflictSQLSuffix = null;
-        if (rqst.isSetReplPolicy()) {
-          rs = null;
-        } else {
-          conflictSQLSuffix = "FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\"=" + txnid + " AND \"TC_OPERATION_TYPE\" IN(" +
-                  quoteChar(OperationType.UPDATE.sqlConst) + "," + quoteChar(OperationType.DELETE.sqlConst) + ")";
-          rs = stmt.executeQuery(sqlGenerator.addLimitClause(1,
-                  "\"TC_OPERATION_TYPE\" " + conflictSQLSuffix));
-        }
-        if (rs != null && rs.next()) {
+        String conflictSQLSuffix = "FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\"=" + txnid + " AND \"TC_OPERATION_TYPE\" IN(" +
+                quoteChar(OperationType.UPDATE.sqlConst) + "," + quoteChar(OperationType.DELETE.sqlConst) + ")";
+
+        if (txnRecord.type != TxnType.READ_ONLY
+                && !rqst.isSetReplPolicy()
+                && isUpdateOrDelete(stmt, conflictSQLSuffix)) {
+
           isUpdateDelete = 'Y';
-          close(rs);
           //if here it means currently committing txn performed update/delete and we should check WW conflict
+          /**
+           * "select distinct" is used below because
+           * 1. once we get to multi-statement txns, we only care to record that something was updated once
+           * 2. if {@link #addDynamicPartitions(AddDynamicPartitions)} is retried by caller it may create
+           *  duplicate entries in TXN_COMPONENTS
+           * but we want to add a PK on WRITE_SET which won't have unique rows w/o this distinct
+           * even if it includes all of its columns
+           *
+           * First insert into write_set using a temporary commitID, which will be updated in a separate call,
+           * see: {@link #updateCommitIdAndCleanUpMetadata(Statement, long, TxnType, Long)}}.
+           * This should decrease the scope of the S4U lock on the next_txn_id table.
+           */
+          Savepoint undoWriteSetForCurrentTxn = dbConn.setSavepoint();
+          stmt.executeUpdate("INSERT INTO \"WRITE_SET\" (\"WS_DATABASE\", \"WS_TABLE\", \"WS_PARTITION\", \"WS_TXNID\", \"WS_COMMIT_ID\", \"WS_OPERATION_TYPE\")" +
+                          " SELECT DISTINCT \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", \"TC_TXNID\", " + TEMP_COMMIT_ID + ", \"TC_OPERATION_TYPE\" " + conflictSQLSuffix);
+
           /**
            * This S4U will mutex with other commitTxn() and openTxns().
            * -1 below makes txn intervals look like [3,3] [4,4] if all txns are serial
            * Note: it's possible to have several txns have the same commit id.  Suppose 3 txns start
            * at the same time and no new txns start until all 3 commit.
-           * We could've incremented the sequence for commitId is well but it doesn't add anything functionally.
+           * We could've incremented the sequence for commitId as well but it doesn't add anything functionally.
            */
-          commitIdRs = stmt.executeQuery(sqlGenerator.addForUpdateClause("SELECT \"NTXN_NEXT\" - 1 FROM \"NEXT_TXN_ID\""));
-          if (!commitIdRs.next()) {
-            throw new IllegalStateException("No rows found in NEXT_TXN_ID");
+          try (ResultSet commitIdRs = stmt.executeQuery(sqlGenerator.addForUpdateClause("SELECT \"NTXN_NEXT\" - 1 FROM \"NEXT_TXN_ID\""))) {
+            if (!commitIdRs.next()) {
+              throw new IllegalStateException("No rows found in NEXT_TXN_ID");
+            }
+            commitId = commitIdRs.getLong(1);
           }
-          long commitId = commitIdRs.getLong(1);
-          Savepoint undoWriteSetForCurrentTxn = dbConn.setSavepoint();
+
           /**
-           * "select distinct" is used below because
-           * 1. once we get to multi-statement txns, we only care to record that something was updated once
-           * 2. if {@link #addDynamicPartitions(AddDynamicPartitions)} is retried by caller it my create
-           *  duplicate entries in TXN_COMPONENTS
-           * but we want to add a PK on WRITE_SET which won't have unique rows w/o this distinct
-           * even if it includes all of it's columns
-           */
-          stmt.executeUpdate(
-            "INSERT INTO \"WRITE_SET\" (\"WS_DATABASE\", \"WS_TABLE\", \"WS_PARTITION\", \"WS_TXNID\", \"WS_COMMIT_ID\", \"WS_OPERATION_TYPE\")" +
-            " SELECT DISTINCT \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", \"TC_TXNID\", " + commitId + ", \"TC_OPERATION_TYPE\" " + conflictSQLSuffix);
-          /**
-           * see if there are any overlapping txns wrote the same element, i.e. have a conflict
+           * see if there are any overlapping txns that wrote the same element, i.e. have a conflict
            * Since entire commit operation is mutexed wrt other start/commit ops,
            * committed.ws_commit_id <= current.ws_commit_id for all txns
            * thus if committed.ws_commit_id < current.ws_txnid, transactions do NOT overlap
@@ -1187,55 +1178,27 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
            * [17,20] committed and [21,21] committing now - these do not overlap.
            * [17,18] committed and [18,19] committing now - these overlap  (here 18 started while 17 was still running)
            */
-          rs = stmt.executeQuery
-            (sqlGenerator.addLimitClause(1, "\"COMMITTED\".\"WS_TXNID\", \"COMMITTED\".\"WS_COMMIT_ID\", " +
-              "\"COMMITTED\".\"WS_DATABASE\", \"COMMITTED\".\"WS_TABLE\", \"COMMITTED\".\"WS_PARTITION\", " +
-              "\"CUR\".\"WS_COMMIT_ID\" \"CUR_WS_COMMIT_ID\", \"CUR\".\"WS_OPERATION_TYPE\" \"CUR_OP\", " +
-              "\"COMMITTED\".\"WS_OPERATION_TYPE\" \"COMMITTED_OP\" FROM \"WRITE_SET\" \"COMMITTED\" INNER JOIN \"WRITE_SET\" \"CUR\" " +
-              "ON \"COMMITTED\".\"WS_DATABASE\"=\"CUR\".\"WS_DATABASE\" AND \"COMMITTED\".\"WS_TABLE\"=\"CUR\".\"WS_TABLE\" " +
-              //For partitioned table we always track writes at partition level (never at table)
-              //and for non partitioned - always at table level, thus the same table should never
-              //have entries with partition key and w/o
-              "AND (\"COMMITTED\".\"WS_PARTITION\"=\"CUR\".\"WS_PARTITION\" OR (\"COMMITTED\".\"WS_PARTITION\" IS NULL AND \"CUR\".\"WS_PARTITION\" IS NULL)) " +
-              "WHERE \"CUR\".\"WS_TXNID\" <= \"COMMITTED\".\"WS_COMMIT_ID\"" + //txns overlap; could replace ws_txnid
-              // with txnid, though any decent DB should infer this
-              " AND \"CUR\".\"WS_TXNID\"=" + txnid + //make sure RHS of join only has rows we just inserted as
-              // part of this commitTxn() op
-              " AND \"COMMITTED\".\"WS_TXNID\" <> " + txnid + //and LHS only has committed txns
-              //U+U and U+D and D+D is a conflict and we don't currently track I in WRITE_SET at all
-                //it may seem like D+D should not be in conflict but consider 2 multi-stmt txns
-                //where each does "delete X + insert X, where X is a row with the same PK.  This is
-                //equivalent to an update of X but won't be in conflict unless D+D is in conflict.
-                //The same happens when Hive splits U=I+D early so it looks like 2 branches of a
-                //multi-insert stmt (an Insert and a Delete branch).  It also 'feels'
-                // un-serializable to allow concurrent deletes
-              " and (\"COMMITTED\".\"WS_OPERATION_TYPE\" IN(" + quoteChar(OperationType.UPDATE.sqlConst) +
-                ", " + quoteChar(OperationType.DELETE.sqlConst) +
-              ") AND \"CUR\".\"WS_OPERATION_TYPE\" IN(" + quoteChar(OperationType.UPDATE.sqlConst) + ", "
-                + quoteChar(OperationType.DELETE.sqlConst) + "))"));
-          if (rs.next()) {
-            //found a conflict
-            String committedTxn = "[" + JavaUtils.txnIdToString(rs.getLong(1)) + "," + rs.getLong(2) + "]";
-            StringBuilder resource = new StringBuilder(rs.getString(3)).append("/").append(rs.getString(4));
-            String partitionName = rs.getString(5);
-            if (partitionName != null) {
-              resource.append('/').append(partitionName);
+          try (ResultSet rs = checkForWriteConflict(stmt, txnid)) {
+            if (rs.next()) {
+              //found a conflict, so let's abort the txn
+              String committedTxn = "[" + JavaUtils.txnIdToString(rs.getLong(1)) + "," + rs.getLong(2) + "]";
+              StringBuilder resource = new StringBuilder(rs.getString(3)).append("/").append(rs.getString(4));
+              String partitionName = rs.getString(5);
+              if (partitionName != null) {
+                resource.append('/').append(partitionName);
+              }
+              String msg = "Aborting [" + JavaUtils.txnIdToString(txnid) + "," + commitId + "]" + " due to a write conflict on " + resource +
+                      " committed by " + committedTxn + " " + rs.getString(7) + "/" + rs.getString(8);
+              //remove WRITE_SET info for current txn since it's about to abort
+              dbConn.rollback(undoWriteSetForCurrentTxn);
+              LOG.info(msg);
+              //todo: should make abortTxns() write something into TXNS.TXN_META_INFO about this
+              if (abortTxns(dbConn, Collections.singletonList(txnid), true) != 1) {
+                throw new IllegalStateException(msg + " FAILED!");
+              }
+              dbConn.commit();
+              throw new TxnAbortedException(msg);
             }
-            String msg = "Aborting [" + JavaUtils.txnIdToString(txnid) + "," + rs.getLong(6) + "]" + " due to a write conflict on " + resource +
-              " committed by " + committedTxn + " " + rs.getString(7) + "/" + rs.getString(8);
-            close(rs);
-            //remove WRITE_SET info for current txn since it's about to abort
-            dbConn.rollback(undoWriteSetForCurrentTxn);
-            LOG.info(msg);
-            //todo: should make abortTxns() write something into TXNS.TXN_META_INFO about this
-            if (abortTxns(dbConn, Collections.singletonList(txnid), true) != 1) {
-              throw new IllegalStateException(msg + " FAILED!");
-            }
-            dbConn.commit();
-            close(null, stmt, dbConn);
-            throw new TxnAbortedException(msg);
-          } else {
-            //no conflicting operations, proceed with the rest of commit sequence
           }
         }
         else {
@@ -1251,99 +1214,38 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
            */
         }
 
-        String s;
-        if (!rqst.isSetReplPolicy()) {
-          // Move the record from txn_components into completed_txn_components so that the compactor
-          // knows where to look to compact.
-          s = "INSERT INTO \"COMPLETED_TXN_COMPONENTS\" (\"CTC_TXNID\", \"CTC_DATABASE\", " +
-                  "\"CTC_TABLE\", \"CTC_PARTITION\", \"CTC_WRITEID\", \"CTC_UPDATE_DELETE\") SELECT \"TC_TXNID\"," +
-              " \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", \"TC_WRITEID\", '" + isUpdateDelete +
-              "' FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\" = " + txnid +
-              //we only track compactor activity in TXN_COMPONENTS to handle the case where the
-              //compactor txn aborts - so don't bother copying it to COMPLETED_TXN_COMPONENTS
-              " AND \"TC_OPERATION_TYPE\" <> " + quoteChar(OperationType.COMPACT.sqlConst);
-          LOG.debug("Going to execute insert <" + s + ">");
-
-          if ((stmt.executeUpdate(s)) < 1) {
-            //this can be reasonable for an empty txn START/COMMIT or read-only txn
-            //also an IUD with DP that didn't match any rows.
-            LOG.info("Expected to move at least one record from txn_components to " +
-                    "completed_txn_components when committing txn! " + JavaUtils.txnIdToString(txnid));
-          }
-        } else {
+        if (txnRecord.type != TxnType.READ_ONLY && !rqst.isSetReplPolicy()) {
+          moveTxnComponentsToCompleted(stmt, txnid, isUpdateDelete);
+        } else if (rqst.isSetReplPolicy()) {
           if (rqst.isSetWriteEventInfos()) {
-            List<String> rows = new ArrayList<>();
-            List<List<String>> paramsList = new ArrayList<>();
-            for (WriteEventInfo writeEventInfo : rqst.getWriteEventInfos()) {
-              rows.add(txnid + ", ?, ?, ?," +
-                      writeEventInfo.getWriteId() + "," +
-                      quoteChar(isUpdateDelete));
-              List<String> params = new ArrayList<>();
-              params.add(writeEventInfo.getDatabase());
-              params.add(writeEventInfo.getTable());
-              params.add(writeEventInfo.getPartition());
-              paramsList.add(params);
-            }
-            insertPreparedStmts = sqlGenerator.createInsertValuesPreparedStmt(dbConn,
-                    "\"COMPLETED_TXN_COMPONENTS\" " +
-                   "(\"CTC_TXNID\"," + " \"CTC_DATABASE\", \"CTC_TABLE\", \"CTC_PARTITION\", \"CTC_WRITEID\", \"CTC_UPDATE_DELETE\")",
-                    rows, paramsList);
-            for (PreparedStatement pst : insertPreparedStmts) {
-              pst.execute();
+            String sql = String.format(COMPL_TXN_COMPONENTS_INSERT_QUERY, txnid, quoteChar(isUpdateDelete));
+            try (PreparedStatement pstmt = dbConn.prepareStatement(sql)) {
+              int insertCounter = 0;
+              int batchSize = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_VALUES_CLAUSE);
+              for (WriteEventInfo writeEventInfo : rqst.getWriteEventInfos()) {
+                pstmt.setString(1, writeEventInfo.getDatabase());
+                pstmt.setString(2, writeEventInfo.getTable());
+                pstmt.setString(3, writeEventInfo.getPartition());
+                pstmt.setLong(4, writeEventInfo.getWriteId());
+
+                pstmt.addBatch();
+                insertCounter++;
+                if (insertCounter % batchSize == 0) {
+                  LOG.debug("Executing a batch of <" + sql + "> queries. Batch size: " + batchSize);
+                  pstmt.executeBatch();
+                }
+              }
+              if (insertCounter % batchSize != 0) {
+                LOG.debug("Executing a batch of <" + sql + "> queries. Batch size: " + insertCounter % batchSize);
+                pstmt.executeBatch();
+              }
             }
           }
           deleteReplTxnMapEntry(dbConn, sourceTxnId, rqst.getReplPolicy());
         }
-
-        // cleanup all txn related metadata
-        s = "DELETE FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\" = " + txnid;
-        LOG.debug("Going to execute update <" + s + ">");
-        stmt.executeUpdate(s);
-        s = "DELETE FROM \"HIVE_LOCKS\" WHERE \"HL_TXNID\" = " + txnid;
-        LOG.debug("Going to execute update <" + s + ">");
-        stmt.executeUpdate(s);
-        s = "DELETE FROM \"TXNS\" WHERE \"TXN_ID\" = " + txnid;
-        LOG.debug("Going to execute update <" + s + ">");
-        stmt.executeUpdate(s);
-        s = "DELETE FROM \"MIN_HISTORY_LEVEL\" WHERE \"MHL_TXNID\" = " + txnid;
-        LOG.debug("Going to execute update <" + s + ">");
-        stmt.executeUpdate(s);
-        LOG.info("Removed committed transaction: (" + txnid + ") from MIN_HISTORY_LEVEL");
-
-        s = "DELETE FROM \"MATERIALIZATION_REBUILD_LOCKS\" WHERE \"MRL_TXN_ID\" = " + txnid;
-        LOG.debug("Going to execute update <" + s + ">");
-        stmt.executeUpdate(s);
-
-        // update the key/value associated with the transaction if it has been
-        // set
+        updateCommitIdAndCleanUpMetadata(stmt, txnid, txnRecord.type, commitId);
         if (rqst.isSetKeyValue()) {
-          if (!rqst.getKeyValue().getKey().startsWith(TxnStore.TXN_KEY_START)) {
-            String errorMsg = "Error updating key/value in the sql backend with"
-                + " txnId=" + rqst.getTxnid() + ","
-                + " tableId=" + rqst.getKeyValue().getTableId() + ","
-                + " key=" + rqst.getKeyValue().getKey() + ","
-                + " value=" + rqst.getKeyValue().getValue() + "."
-                + " key should start with " + TXN_KEY_START + ".";
-            LOG.warn(errorMsg);
-            throw new IllegalArgumentException(errorMsg);
-          }
-          s = "UPDATE \"TABLE_PARAMS\" SET"
-              + " \"PARAM_VALUE\" = " + quoteString(rqst.getKeyValue().getValue())
-              + " WHERE \"TBL_ID\" = " + rqst.getKeyValue().getTableId()
-              + " AND \"PARAM_KEY\" = " + quoteString(rqst.getKeyValue().getKey());
-          LOG.debug("Going to execute update <" + s + ">");
-          int affectedRows = stmt.executeUpdate(s);
-          if (affectedRows != 1) {
-            String errorMsg = "Error updating key/value in the sql backend with"
-                + " txnId=" + rqst.getTxnid() + ","
-                + " tableId=" + rqst.getKeyValue().getTableId() + ","
-                + " key=" + rqst.getKeyValue().getKey() + ","
-                + " value=" + rqst.getKeyValue().getValue() + "."
-                + " Only one row should have been affected but "
-                + affectedRows + " rows where affected.";
-            LOG.warn(errorMsg);
-            throw new IllegalStateException(errorMsg);
-          }
+          updateKeyValueAssociatedWithTxn(rqst, stmt);
         }
 
         if (transactionalListeners != null) {
@@ -1352,7 +1254,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
 
         LOG.debug("Going to commit");
-        close(rs);
         dbConn.commit();
       } catch (SQLException e) {
         LOG.debug("Going to rollback");
@@ -1361,16 +1262,118 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         throw new MetaException("Unable to update transaction database "
           + StringUtils.stringifyException(e));
       } finally {
-        if (insertPreparedStmts != null) {
-          for (PreparedStatement pst : insertPreparedStmts) {
-            closeStmt(pst);
-          }
-        }
-        close(commitIdRs, stmt, dbConn);
+        closeStmt(stmt);
+        closeDbConn(dbConn);
         unlockInternal();
       }
     } catch (RetryException e) {
       commitTxn(rqst);
+    }
+  }
+
+  private boolean isUpdateOrDelete(Statement stmt, String conflictSQLSuffix) throws SQLException, MetaException {
+    try (ResultSet rs = stmt.executeQuery(sqlGenerator.addLimitClause(1,
+            "\"TC_OPERATION_TYPE\" " + conflictSQLSuffix))) {
+      return rs.next();
+    }
+  }
+
+  private ResultSet checkForWriteConflict(Statement stmt, long txnid) throws SQLException, MetaException {
+    String writeConflictQuery = sqlGenerator.addLimitClause(1, "\"COMMITTED\".\"WS_TXNID\", \"COMMITTED\".\"WS_COMMIT_ID\", " +
+            "\"COMMITTED\".\"WS_DATABASE\", \"COMMITTED\".\"WS_TABLE\", \"COMMITTED\".\"WS_PARTITION\", " +
+            "\"CUR\".\"WS_COMMIT_ID\" \"CUR_WS_COMMIT_ID\", \"CUR\".\"WS_OPERATION_TYPE\" \"CUR_OP\", " +
+            "\"COMMITTED\".\"WS_OPERATION_TYPE\" \"COMMITTED_OP\" FROM \"WRITE_SET\" \"COMMITTED\" INNER JOIN \"WRITE_SET\" \"CUR\" " +
+            "ON \"COMMITTED\".\"WS_DATABASE\"=\"CUR\".\"WS_DATABASE\" AND \"COMMITTED\".\"WS_TABLE\"=\"CUR\".\"WS_TABLE\" " +
+            //For partitioned table we always track writes at partition level (never at table)
+            //and for non partitioned - always at table level, thus the same table should never
+            //have entries with partition key and w/o
+            "AND (\"COMMITTED\".\"WS_PARTITION\"=\"CUR\".\"WS_PARTITION\" OR (\"COMMITTED\".\"WS_PARTITION\" IS NULL AND \"CUR\".\"WS_PARTITION\" IS NULL)) " +
+            "WHERE \"CUR\".\"WS_TXNID\" <= \"COMMITTED\".\"WS_COMMIT_ID\"" + //txns overlap; could replace ws_txnid
+            // with txnid, though any decent DB should infer this
+            " AND \"CUR\".\"WS_TXNID\"=" + txnid + //make sure RHS of join only has rows we just inserted as
+            // part of this commitTxn() op
+            " AND \"COMMITTED\".\"WS_TXNID\" <> " + txnid + //and LHS only has committed txns
+            //U+U and U+D and D+D is a conflict and we don't currently track I in WRITE_SET at all
+            //it may seem like D+D should not be in conflict but consider 2 multi-stmt txns
+            //where each does "delete X + insert X, where X is a row with the same PK.  This is
+            //equivalent to an update of X but won't be in conflict unless D+D is in conflict.
+            //The same happens when Hive splits U=I+D early so it looks like 2 branches of a
+            //multi-insert stmt (an Insert and a Delete branch).  It also 'feels'
+            // un-serializable to allow concurrent deletes
+            " and (\"COMMITTED\".\"WS_OPERATION_TYPE\" IN(" + quoteChar(OperationType.UPDATE.sqlConst) +
+            ", " + quoteChar(OperationType.DELETE.sqlConst) +
+            ") AND \"CUR\".\"WS_OPERATION_TYPE\" IN(" + quoteChar(OperationType.UPDATE.sqlConst) + ", "
+            + quoteChar(OperationType.DELETE.sqlConst) + "))");
+    LOG.debug("Going to execute query: <" + writeConflictQuery + ">");
+    return stmt.executeQuery(writeConflictQuery);
+  }
+
+  private void moveTxnComponentsToCompleted(Statement stmt, long txnid, char isUpdateDelete) throws SQLException {
+    // Move the record from txn_components into completed_txn_components so that the compactor
+    // knows where to look to compact.
+    String s = "INSERT INTO \"COMPLETED_TXN_COMPONENTS\" (\"CTC_TXNID\", \"CTC_DATABASE\", " +
+            "\"CTC_TABLE\", \"CTC_PARTITION\", \"CTC_WRITEID\", \"CTC_UPDATE_DELETE\") SELECT \"TC_TXNID\"," +
+        " \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", \"TC_WRITEID\", '" + isUpdateDelete +
+        "' FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\" = " + txnid +
+        //we only track compactor activity in TXN_COMPONENTS to handle the case where the
+        //compactor txn aborts - so don't bother copying it to COMPLETED_TXN_COMPONENTS
+        " AND \"TC_OPERATION_TYPE\" <> " + quoteChar(OperationType.COMPACT.sqlConst);
+    LOG.debug("Going to execute insert <" + s + ">");
+
+    if ((stmt.executeUpdate(s)) < 1) {
+      //this can be reasonable for an empty txn START/COMMIT or read-only txn
+      //also an IUD with DP that didn't match any rows.
+      LOG.info("Expected to move at least one record from txn_components to " +
+              "completed_txn_components when committing txn! " + JavaUtils.txnIdToString(txnid));
+    }
+  }
+
+  private void updateCommitIdAndCleanUpMetadata(Statement stmt, long txnid, TxnType txnType, Long commitId) throws SQLException {
+    List<String> queryBatch = new ArrayList<>(5);
+    // update write_set with real commitId
+    if (commitId != null) {
+      queryBatch.add("UPDATE \"WRITE_SET\" SET \"WS_COMMIT_ID\" = " + commitId +
+              " WHERE \"WS_COMMIT_ID\" = " + TEMP_COMMIT_ID + " AND \"WS_TXNID\" = " + txnid);
+    }
+    // clean up txn related metadata
+    if (txnType != TxnType.READ_ONLY) {
+      queryBatch.add("DELETE FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\" = " + txnid);
+    }
+    queryBatch.add("DELETE FROM \"HIVE_LOCKS\" WHERE \"HL_TXNID\" = " + txnid);
+    queryBatch.add("DELETE FROM \"TXNS\" WHERE \"TXN_ID\" = " + txnid);
+    queryBatch.add("DELETE FROM \"MATERIALIZATION_REBUILD_LOCKS\" WHERE \"MRL_TXN_ID\" = " + txnid);
+
+    // execute all in one batch
+    executeQueriesInBatch(stmt, queryBatch, conf);
+  }
+
+  private void updateKeyValueAssociatedWithTxn(CommitTxnRequest rqst, Statement stmt) throws SQLException {
+    if (!rqst.getKeyValue().getKey().startsWith(TxnStore.TXN_KEY_START)) {
+      String errorMsg = "Error updating key/value in the sql backend with"
+          + " txnId=" + rqst.getTxnid() + ","
+          + " tableId=" + rqst.getKeyValue().getTableId() + ","
+          + " key=" + rqst.getKeyValue().getKey() + ","
+          + " value=" + rqst.getKeyValue().getValue() + "."
+          + " key should start with " + TXN_KEY_START + ".";
+      LOG.warn(errorMsg);
+      throw new IllegalArgumentException(errorMsg);
+    }
+    String s = "UPDATE \"TABLE_PARAMS\" SET"
+        + " \"PARAM_VALUE\" = " + quoteString(rqst.getKeyValue().getValue())
+        + " WHERE \"TBL_ID\" = " + rqst.getKeyValue().getTableId()
+        + " AND \"PARAM_KEY\" = " + quoteString(rqst.getKeyValue().getKey());
+    LOG.debug("Going to execute update <" + s + ">");
+    int affectedRows = stmt.executeUpdate(s);
+    if (affectedRows != 1) {
+      String errorMsg = "Error updating key/value in the sql backend with"
+          + " txnId=" + rqst.getTxnid() + ","
+          + " tableId=" + rqst.getKeyValue().getTableId() + ","
+          + " key=" + rqst.getKeyValue().getKey() + ","
+          + " value=" + rqst.getKeyValue().getValue() + "."
+          + " Only one row should have been affected but "
+          + affectedRows + " rows where affected.";
+      LOG.warn(errorMsg);
+      throw new IllegalStateException(errorMsg);
     }
   }
 
@@ -2375,9 +2378,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     Connection dbConn = null;
     try {
       Statement stmt = null;
-      PreparedStatement pStmt = null;
-      List<PreparedStatement> insertPreparedStmts = null;
-      ResultSet rs = null;
       try {
         lockInternal();
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
@@ -2391,189 +2391,20 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             shouldNeverHappen(txnid);
           }
         }
+        /* Insert txn components and hive locks (with a temp extLockId) first, before getting the next lock ID in a select-for-update.
+           This should minimize the scope of the S4U and decrease the table lock duration. */
+        insertTxnComponents(txnid, rqst, dbConn);
+        insertHiveLocksWithTemporaryExtLockId(txnid, dbConn, rqst);
+
         /** Get the next lock id.
          * This has to be atomic with adding entries to HIVE_LOCK entries (1st add in W state) to prevent a race.
          * Suppose ID gen is a separate txn and 2 concurrent lock() methods are running.  1st one generates nl_next=7,
          * 2nd nl_next=8.  Then 8 goes first to insert into HIVE_LOCKS and acquires the locks.  Then 7 unblocks,
          * and add it's W locks but it won't see locks from 8 since to be 'fair' {@link #checkLock(java.sql.Connection, long)}
          * doesn't block on locks acquired later than one it's checking*/
-        String s = sqlGenerator.addForUpdateClause("SELECT \"NL_NEXT\" FROM \"NEXT_LOCK_ID\"");
-        LOG.debug("Going to execute query <" + s + ">");
-        rs = stmt.executeQuery(s);
-        if (!rs.next()) {
-          LOG.debug("Going to rollback");
-          dbConn.rollback();
-          throw new MetaException("Transaction tables not properly " +
-            "initialized, no record found in next_lock_id");
-        }
-        long extLockId = rs.getLong(1);
-        s = "UPDATE \"NEXT_LOCK_ID\" SET \"NL_NEXT\" = " + (extLockId + 1);
-        LOG.debug("Going to execute update <" + s + ">");
-        stmt.executeUpdate(s);
+        long extLockId = getNextLockIdForUpdate(dbConn, stmt);
+        incrementLockIdAndUpdateHiveLocks(stmt, extLockId);
 
-        if (txnid > 0) {
-          List<String> rows = new ArrayList<>();
-          List<List<String>> paramsList = new ArrayList<>();
-          // For each component in this lock request,
-          // add an entry to the txn_components table
-          for (LockComponent lc : rqst.getComponent()) {
-            if(lc.isSetIsTransactional() && !lc.isIsTransactional()) {
-              //we don't prevent using non-acid resources in a txn but we do lock them
-              continue;
-            }
-            boolean updateTxnComponents;
-            if(!lc.isSetOperationType()) {
-              //request came from old version of the client
-              updateTxnComponents = true;//this matches old behavior
-            }
-            else {
-              switch (lc.getOperationType()) {
-                case INSERT:
-                case UPDATE:
-                case DELETE:
-                  if(!lc.isSetIsDynamicPartitionWrite()) {
-                    //must be old client talking, i.e. we don't know if it's DP so be conservative
-                    updateTxnComponents = true;
-                  }
-                  else {
-                    /**
-                     * we know this is part of DP operation and so we'll get
-                     * {@link #addDynamicPartitions(AddDynamicPartitions)} call with the list
-                     * of partitions actually chaged.
-                     */
-                    updateTxnComponents = !lc.isIsDynamicPartitionWrite();
-                  }
-                  break;
-                case SELECT:
-                  updateTxnComponents = false;
-                  break;
-                case NO_TXN:
-                  /*this constant is a bit of a misnomer since we now always have a txn context.  It
-                   just means the operation is such that we don't care what tables/partitions it
-                   affected as it doesn't trigger a compaction or conflict detection.  A better name
-                   would be NON_TRANSACTIONAL.*/
-                  updateTxnComponents = false;
-                  break;
-                default:
-                  //since we have an open transaction, only 4 values above are expected
-                  throw new IllegalStateException("Unexpected DataOperationType: " + lc.getOperationType()
-                    + " agentInfo=" + rqst.getAgentInfo() + " " + JavaUtils.txnIdToString(txnid));
-              }
-            }
-            if(!updateTxnComponents) {
-              continue;
-            }
-            String dbName = normalizeCase(lc.getDbname());
-            String tblName = normalizeCase(lc.getTablename());
-            String partName = normalizeCase(lc.getPartitionname());
-            Long writeId = null;
-            if (tblName != null) {
-              // It is assumed the caller have already allocated write id for adding/updating data to
-              // the acid tables. However, DDL operatons won't allocate write id and hence this query
-              // may return empty result sets.
-              // Get the write id allocated by this txn for the given table writes
-              s = "SELECT \"T2W_WRITEID\" FROM \"TXN_TO_WRITE_ID\" WHERE"
-                      + " \"T2W_DATABASE\" = ? AND \"T2W_TABLE\" = ? AND \"T2W_TXNID\" = " + txnid;
-              pStmt = sqlGenerator.prepareStmtWithParameters(dbConn, s, Arrays.asList(dbName, tblName));
-              LOG.debug("Going to execute query <" + s.replaceAll("\\?", "{}") + ">",
-                      quoteString(dbName), quoteString(tblName));
-              rs = pStmt.executeQuery();
-              if (rs.next()) {
-                writeId = rs.getLong(1);
-              }
-            }
-            rows.add(txnid + ", ?, " +
-                    (tblName == null ? "null" : "?") + ", " +
-                    (partName == null ? "null" : "?")+ "," +
-                    quoteString(OperationType.fromDataOperationType(lc.getOperationType()).toString())+ "," +
-                    (writeId == null ? "null" : writeId));
-            List<String> params = new ArrayList<>();
-            params.add(dbName);
-            if (tblName != null) {
-              params.add(tblName);
-            }
-            if (partName != null) {
-              params.add(partName);
-            }
-            paramsList.add(params);
-          }
-          insertPreparedStmts = sqlGenerator.createInsertValuesPreparedStmt(dbConn,
-              "\"TXN_COMPONENTS\" (\"TC_TXNID\", \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", \"TC_OPERATION_TYPE\", \"TC_WRITEID\")",
-                  rows, paramsList);
-          for(PreparedStatement pst : insertPreparedStmts) {
-            int modCount = pst.executeUpdate();
-            closeStmt(pst);
-          }
-          insertPreparedStmts = null;
-        }
-        List<String> rows = new ArrayList<>();
-        List<List<String>> paramsList = new ArrayList<>();
-        long intLockId = 0;
-        long lastHB = (isValidTxn(txnid) ? 0 : getDbTime(dbConn));
-        for (LockComponent lc : rqst.getComponent()) {
-          if(lc.isSetOperationType() && lc.getOperationType() == DataOperationType.UNSET &&
-            (MetastoreConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST) || MetastoreConf.getBoolVar(conf, ConfVars.HIVE_IN_TEZ_TEST))) {
-            //old version of thrift client should have (lc.isSetOperationType() == false) but they do not
-            //If you add a default value to a variable, isSet() for that variable is true regardless of the where the
-            //message was created (for object variables.
-            // It works correctly for boolean vars, e.g. LockComponent.isTransactional).
-            //in test mode, upgrades are not tested, so client version and server version of thrift always matches so
-            //we see UNSET here it means something didn't set the appropriate value.
-            throw new IllegalStateException("Bug: operationType=" + lc.getOperationType() + " for component "
-              + lc + " agentInfo=" + rqst.getAgentInfo());
-          }
-          intLockId++;
-          String dbName = normalizeCase(lc.getDbname());
-          String tblName = normalizeCase(lc.getTablename());
-          String partName = normalizeCase(lc.getPartitionname());
-          LockType lockType = lc.getType();
-          char lockChar = 'z';
-          switch (lockType) {
-            case EXCLUSIVE:
-              lockChar = LOCK_EXCLUSIVE;
-              break;
-            case SHARED_READ:
-              lockChar = LOCK_SHARED;
-              break;
-            case SHARED_WRITE:
-              lockChar = LOCK_SEMI_SHARED;
-              break;
-          }
-          rows.add(extLockId + ", " + intLockId + "," + txnid + ", ?, " +
-                  ((tblName == null) ? "null" : "?") + ", " +
-                  ((partName == null) ? "null" : "?") + ", " +
-            quoteChar(LOCK_WAITING) + ", " + quoteChar(lockChar) + ", " +
-            //for locks associated with a txn, we always heartbeat txn and timeout based on that
-            lastHB + ", " +
-                  ((rqst.getUser() == null) ? "null" : "?")  + ", " +
-                  ((rqst.getHostname() == null) ? "null" : "?") + ", " +
-                  ((rqst.getAgentInfo() == null) ? "null" : "?"));// + ")";
-          List<String> params = new ArrayList<>();
-          params.add(dbName);
-          if (tblName != null) {
-            params.add(tblName);
-          }
-          if (partName != null) {
-            params.add(partName);
-          }
-          if (rqst.getUser() != null) {
-            params.add(rqst.getUser());
-          }
-          if (rqst.getHostname() != null) {
-            params.add(rqst.getHostname());
-          }
-          if (rqst.getAgentInfo() != null) {
-            params.add(rqst.getAgentInfo());
-          }
-          paramsList.add(params);
-        }
-        insertPreparedStmts = sqlGenerator.createInsertValuesPreparedStmt(dbConn,
-          "\"HIVE_LOCKS\" (\"HL_LOCK_EXT_ID\", \"HL_LOCK_INT_ID\", \"HL_TXNID\", \"HL_DB\", " +
-            "\"HL_TABLE\", \"HL_PARTITION\", \"HL_LOCK_STATE\", \"HL_LOCK_TYPE\", " +
-            "\"HL_LAST_HEARTBEAT\", \"HL_USER\", \"HL_HOST\", \"HL_AGENT_INFO\")", rows, paramsList);
-        for(PreparedStatement pst : insertPreparedStmts) {
-          int modCount = pst.executeUpdate();
-        }
         dbConn.commit();
         success = true;
         return new ConnectionLockIdPair(dbConn, extLockId);
@@ -2584,13 +2415,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         throw new MetaException("Unable to update transaction database " +
           StringUtils.stringifyException(e));
       } finally {
-        if (insertPreparedStmts != null) {
-          for (PreparedStatement pst : insertPreparedStmts) {
-            closeStmt(pst);
-          }
-        }
-        closeStmt(pStmt);
-        close(rs, stmt, null);
+        closeStmt(stmt);
         if (!success) {
           /* This needs to return a "live" connection to be used by operation that follows it.
           Thus it only closes Connection on failure/retry. */
@@ -2603,12 +2428,200 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       return enqueueLockWithRetry(rqst);
     }
   }
+
+  private long getNextLockIdForUpdate(Connection dbConn, Statement stmt) throws SQLException, MetaException {
+    String s = sqlGenerator.addForUpdateClause("SELECT \"NL_NEXT\" FROM \"NEXT_LOCK_ID\"");
+    LOG.debug("Going to execute query <" + s + ">");
+    try (ResultSet rs = stmt.executeQuery(s)) {
+      if (!rs.next()) {
+        LOG.debug("Going to rollback");
+        dbConn.rollback();
+        throw new MetaException("Transaction tables not properly " +
+                "initialized, no record found in next_lock_id");
+      }
+      return rs.getLong(1);
+    }
+  }
+
+  private void incrementLockIdAndUpdateHiveLocks(Statement stmt, long extLockId) throws SQLException {
+    String incrCmd = String.format(INCREMENT_NEXT_LOCK_ID_QUERY, (extLockId + 1));
+    // update hive locks entries with the real EXT_LOCK_ID (replace temp ID)
+    String updateLocksCmd = String.format(UPDATE_HIVE_LOCKS_EXT_ID_QUERY, extLockId, TEMP_HIVE_LOCK_ID);
+    LOG.debug("Going to execute updates in batch: <" + incrCmd + ">, and <" + updateLocksCmd + ">");
+    stmt.addBatch(incrCmd);
+    stmt.addBatch(updateLocksCmd);
+    stmt.executeBatch();
+  }
+
+  private void insertTxnComponents(long txnid, LockRequest rqst, Connection dbConn) throws SQLException {
+    if (txnid > 0) {
+      Map<Pair<String, String>, Optional<Long>> writeIdCache = new HashMap<>();
+      try (PreparedStatement pstmt = dbConn.prepareStatement(TXN_COMPONENTS_INSERT_QUERY)) {
+        // For each component in this lock request,
+        // add an entry to the txn_components table
+        int insertCounter = 0;
+        int batchSize = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_VALUES_CLAUSE);
+        for (LockComponent lc : rqst.getComponent()) {
+          if (lc.isSetIsTransactional() && !lc.isIsTransactional()) {
+            //we don't prevent using non-acid resources in a txn but we do lock them
+            continue;
+          }
+          if (!shouldUpdateTxnComponent(txnid, rqst, lc)) {
+            continue;
+          }
+          String dbName = normalizeCase(lc.getDbname());
+          String tblName = normalizeCase(lc.getTablename());
+          String partName = normalizeCase(lc.getPartitionname());
+          Optional<Long> writeId = getWriteId(writeIdCache, dbName, tblName, txnid, dbConn);
+
+          pstmt.setLong(1, txnid);
+          pstmt.setString(2, dbName);
+          pstmt.setString(3, tblName);
+          pstmt.setString(4, partName);
+          pstmt.setString(5, OperationType.fromDataOperationType(lc.getOperationType()).toString());
+          pstmt.setObject(6, writeId.orElse(null));
+
+          pstmt.addBatch();
+          insertCounter++;
+          if (insertCounter % batchSize == 0) {
+            LOG.debug("Executing a batch of <" + TXN_COMPONENTS_INSERT_QUERY + "> queries. Batch size: " + batchSize);
+            pstmt.executeBatch();
+          }
+        }
+        if (insertCounter % batchSize != 0) {
+          LOG.debug("Executing a batch of <" + TXN_COMPONENTS_INSERT_QUERY + "> queries. Batch size: " + insertCounter % batchSize);
+          pstmt.executeBatch();
+        }
+      }
+    }
+  }
+
+  private Optional<Long> getWriteId(Map<Pair<String, String>, Optional<Long>> writeIdCache, String dbName, String tblName, long txnid, Connection dbConn) throws SQLException {
+    /* we can cache writeIDs based on dbName and tblName because txnid is invariant and
+    partitionName is not part of the writeID select query */
+    Pair<String, String> dbAndTable = Pair.of(dbName, tblName);
+    if (writeIdCache.containsKey(dbAndTable)) {
+      return writeIdCache.get(dbAndTable);
+    } else {
+      Optional<Long> writeId = getWriteIdFromDb(txnid, dbConn, dbName, tblName);
+      writeIdCache.put(dbAndTable, writeId);
+      return writeId;
+    }
+  }
+
+  private Optional<Long> getWriteIdFromDb(long txnid, Connection dbConn, String dbName, String tblName) throws SQLException {
+    if (tblName != null) {
+      // It is assumed the caller have already allocated write id for adding/updating data to
+      // the acid tables. However, DDL operatons won't allocate write id and hence this query
+      // may return empty result sets.
+      // Get the write id allocated by this txn for the given table writes
+      try (PreparedStatement pstmt = dbConn.prepareStatement(SELECT_WRITE_ID_QUERY)) {
+        pstmt.setString(1, dbName);
+        pstmt.setString(2, tblName);
+        pstmt.setLong(3, txnid);
+        LOG.debug("Going to execute query <" + SELECT_WRITE_ID_QUERY + ">");
+        try (ResultSet rs = pstmt.executeQuery()) {
+          if (rs.next()) {
+            return Optional.of(rs.getLong(1));
+          }
+        }
+      }
+    }
+    return Optional.empty();
+  }
+
+  private boolean shouldUpdateTxnComponent(long txnid, LockRequest rqst, LockComponent lc) {
+    if(!lc.isSetOperationType()) {
+      //request came from old version of the client
+      return true; //this matches old behavior
+    }
+    else {
+      switch (lc.getOperationType()) {
+        case INSERT:
+        case UPDATE:
+        case DELETE:
+          if(!lc.isSetIsDynamicPartitionWrite()) {
+            //must be old client talking, i.e. we don't know if it's DP so be conservative
+            return true;
+          }
+          else {
+            /**
+             * we know this is part of DP operation and so we'll get
+             * {@link #addDynamicPartitions(AddDynamicPartitions)} call with the list
+             * of partitions actually chaged.
+             */
+            return !lc.isIsDynamicPartitionWrite();
+          }
+        case SELECT:
+          return false;
+        case NO_TXN:
+              /*this constant is a bit of a misnomer since we now always have a txn context.  It
+               just means the operation is such that we don't care what tables/partitions it
+               affected as it doesn't trigger a compaction or conflict detection.  A better name
+               would be NON_TRANSACTIONAL.*/
+          return false;
+        default:
+          //since we have an open transaction, only 4 values above are expected
+          throw new IllegalStateException("Unexpected DataOperationType: " + lc.getOperationType()
+                  + " agentInfo=" + rqst.getAgentInfo() + " " + JavaUtils.txnIdToString(txnid));
+      }
+    }
+  }
+
+  private void insertHiveLocksWithTemporaryExtLockId(long txnid, Connection dbConn, LockRequest rqst) throws MetaException, SQLException {
+
+    String lastHB = isValidTxn(txnid) ? "0" : TxnDbUtil.getEpochFn(dbProduct);
+    String insertLocksQuery = String.format(HIVE_LOCKS_INSERT_QRY, lastHB);
+    int batchSize = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_VALUES_CLAUSE);
+    long intLockId = 0;
+
+    try (PreparedStatement pstmt = dbConn.prepareStatement(insertLocksQuery)) {
+      for (LockComponent lc : rqst.getComponent()) {
+        if (lc.isSetOperationType() && lc.getOperationType() == DataOperationType.UNSET &&
+                (MetastoreConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST) || MetastoreConf.getBoolVar(conf, ConfVars.HIVE_IN_TEZ_TEST))) {
+          //Old version of thrift client should have (lc.isSetOperationType() == false), but they do not
+          //If you add a default value to a variable, isSet() for that variable is true regardless of the where the
+          //message was created (for object variables).
+          //It works correctly for boolean vars, e.g. LockComponent.isTransactional).
+          //in test mode, upgrades are not tested, so client version and server version of thrift always matches so
+          //we see UNSET here it means something didn't set the appropriate value.
+          throw new IllegalStateException("Bug: operationType=" + lc.getOperationType() + " for component "
+                  + lc + " agentInfo=" + rqst.getAgentInfo());
+        }
+        intLockId++;
+        String lockType = LockTypeUtil.getEncodingAsStr(lc.getType());
+
+        pstmt.setLong(1, TEMP_HIVE_LOCK_ID);
+        pstmt.setLong(2, intLockId);
+        pstmt.setLong(3, txnid);
+        pstmt.setString(4, normalizeCase(lc.getDbname()));
+        pstmt.setString(5, normalizeCase(lc.getTablename()));
+        pstmt.setString(6, normalizeCase(lc.getPartitionname()));
+        pstmt.setString(7, Character.toString(LOCK_WAITING));
+        pstmt.setString(8, lockType);
+        pstmt.setString(9, rqst.getUser());
+        pstmt.setString(10, rqst.getHostname());
+        pstmt.setString(11, rqst.getAgentInfo());
+
+        pstmt.addBatch();
+        if (intLockId % batchSize == 0) {
+          LOG.debug("Executing HIVE_LOCKS inserts in batch. Batch size: " + batchSize);
+          pstmt.executeBatch();
+        }
+      }
+      if (intLockId % batchSize != 0) {
+        LOG.debug("Executing HIVE_LOCKS inserts in batch. Batch size: " + intLockId % batchSize);
+        pstmt.executeBatch();
+      }
+    }
+  }
+
   private static String normalizeCase(String s) {
     return s == null ? null : s.toLowerCase();
   }
 
   private LockResponse checkLockWithRetry(Connection dbConn, long extLockId, long txnId)
-    throws NoSuchLockException, NoSuchTxnException, TxnAbortedException, MetaException {
+    throws NoSuchLockException, TxnAbortedException, MetaException {
     try {
       try {
         lockInternal();
@@ -2616,7 +2629,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           //should only get here if retrying this op
           dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         }
-        return checkLock(dbConn, extLockId);
+        return checkLock(dbConn, extLockId, txnId);
       } catch (SQLException e) {
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);
@@ -2643,12 +2656,12 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * The clients that operate in blocking mode, can't heartbeat a lock until the lock is acquired.
    * We should make CheckLockRequest include timestamp or last request to skip unnecessary heartbeats. Thrift change.
    *
-   * {@link #checkLock(java.sql.Connection, long)}  must run at SERIALIZABLE (make sure some lock we are checking
+   * {@link #checkLock(java.sql.Connection, long, long)}  must run at SERIALIZABLE (make sure some lock we are checking
    * against doesn't move from W to A in another txn) but this method can heartbeat in
    * separate txn at READ_COMMITTED.
    *
    * Retry-by-caller note:
-   * Retryable because {@link #checkLock(Connection, long)} is
+   * Retryable because {@link #checkLock(Connection, long, long)} is
    */
   @Override
   @RetrySemantics.SafeToRetry
@@ -2676,7 +2689,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         //todo: strictly speaking there is a bug here.  heartbeat*() commits but both heartbeat and
         //checkLock() are in the same retry block, so if checkLock() throws, heartbeat is also retired
         //extra heartbeat is logically harmless, but ...
-        return checkLock(dbConn, extLockId);
+        return checkLock(dbConn, extLockId, info.txnId);
       } catch (SQLException e) {
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);
@@ -2845,12 +2858,12 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             case LOCK_WAITING: e.setState(LockState.WAITING); break;
             default: throw new MetaException("Unknown lock state " + rs.getString(6).charAt(0));
           }
-          switch (rs.getString(7).charAt(0)) {
-            case LOCK_SEMI_SHARED: e.setType(LockType.SHARED_WRITE); break;
-            case LOCK_EXCLUSIVE: e.setType(LockType.EXCLUSIVE); break;
-            case LOCK_SHARED: e.setType(LockType.SHARED_READ); break;
-            default: throw new MetaException("Unknown lock type " + rs.getString(6).charAt(0));
-          }
+
+          char lockChar = rs.getString(7).charAt(0);
+          LockType lockType = LockTypeUtil.getLockTypeFromEncoding(lockChar)
+                  .orElseThrow(() -> new MetaException("Unknown lock type: " + lockChar));
+          e.setType(lockType);
+
           e.setLastheartbeat(rs.getLong(8));
           long acquiredAt = rs.getLong(9);
           if (!rs.wasNull()) e.setAcquiredat(acquiredAt);
@@ -2947,7 +2960,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           txnIds.add(txn);
         }
         TxnUtils.buildQueryWithINClause(conf, queries,
-          new StringBuilder("UPDATE \"TXNS\" SET \"TXN_LAST_HEARTBEAT\" = " + getDbTime(dbConn) +
+          new StringBuilder("UPDATE \"TXNS\" SET \"TXN_LAST_HEARTBEAT\" = " + TxnDbUtil.getEpochFn(dbProduct) +
             " WHERE \"TXN_STATE\" = " + quoteChar(TXN_OPEN) + " AND "),
           new StringBuilder(""), txnIds, "\"TXN_ID\"", true, false);
         int updateCnt = 0;
@@ -3266,7 +3279,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       throws NoSuchTxnException,  TxnAbortedException, MetaException {
     Connection dbConn = null;
     Statement stmt = null;
-    List<PreparedStatement> insertPreparedStmts = null;
     try {
       try {
         lockInternal();
@@ -3285,23 +3297,28 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
 
         Long writeId = rqst.getWriteid();
-        List<String> rows = new ArrayList<>();
-        List<List<String>> paramsList = new ArrayList<>();
-        for (String partName : rqst.getPartitionnames()) {
-          rows.add(rqst.getTxnid() + ",?,?,?," + quoteChar(ot.sqlConst) + "," + writeId);
-          List<String> params = new ArrayList<>();
-          params.add(normalizeCase(rqst.getDbname()));
-          params.add(normalizeCase(rqst.getTablename()));
-          params.add(partName);
-          paramsList.add(params);
-        }
-        int modCount = 0;
-        //record partitions that were written to
-        insertPreparedStmts = sqlGenerator.createInsertValuesPreparedStmt(dbConn,
-            "\"TXN_COMPONENTS\" (\"TC_TXNID\", \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", \"TC_OPERATION_TYPE\", \"TC_WRITEID\")",
-                rows, paramsList);
-        for(PreparedStatement pst : insertPreparedStmts) {
-          modCount = pst.executeUpdate();
+        try (PreparedStatement pstmt = dbConn.prepareStatement(TXN_COMPONENTS_INSERT_QUERY)) {
+          int insertCounter = 0;
+          int batchSize = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_VALUES_CLAUSE);
+          for (String partName : rqst.getPartitionnames()) {
+            pstmt.setLong(1, rqst.getTxnid());
+            pstmt.setString(2, normalizeCase(rqst.getDbname()));
+            pstmt.setString(3, normalizeCase(rqst.getTablename()));
+            pstmt.setString(4, partName);
+            pstmt.setString(5, Character.toString(ot.sqlConst));
+            pstmt.setObject(6, writeId);
+
+            pstmt.addBatch();
+            insertCounter++;
+            if (insertCounter % batchSize == 0) {
+              LOG.debug("Executing a batch of <" + TXN_COMPONENTS_INSERT_QUERY + "> queries. Batch size: " + batchSize);
+              pstmt.executeBatch();
+            }
+          }
+          if (insertCounter % batchSize != 0) {
+            LOG.debug("Executing a batch of <" + TXN_COMPONENTS_INSERT_QUERY + "> queries. Batch size: " + insertCounter % batchSize);
+            pstmt.executeBatch();
+          }
         }
         LOG.debug("Going to commit");
         dbConn.commit();
@@ -3312,11 +3329,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         throw new MetaException("Unable to insert into from transaction database " +
           StringUtils.stringifyException(e));
       } finally {
-        if (insertPreparedStmts != null) {
-          for(PreparedStatement pst : insertPreparedStmts) {
-            closeStmt(pst);
-          }
-        }
         close(null, stmt, dbConn);
         unlockInternal();
       }
@@ -4037,13 +4049,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         default:
           throw new MetaException("Unknown lock state " + rs.getString("HL_LOCK_STATE").charAt(0));
       }
-      switch (rs.getString("HL_LOCK_TYPE").charAt(0)) {
-        case LOCK_EXCLUSIVE: type = LockType.EXCLUSIVE; break;
-        case LOCK_SHARED: type = LockType.SHARED_READ; break;
-        case LOCK_SEMI_SHARED: type = LockType.SHARED_WRITE; break;
-        default:
-          throw new MetaException("Unknown lock type " + rs.getString("HL_LOCK_TYPE").charAt(0));
-      }
+      char lockChar = rs.getString("HL_LOCK_TYPE").charAt(0);
+      type = LockTypeUtil.getLockTypeFromEncoding(lockChar)
+              .orElseThrow(() -> new MetaException("Unknown lock type: " + lockChar));
       txnId = rs.getLong("HL_TXNID");//returns 0 if value is NULL
     }
     LockInfo(ShowLocksResponseElement e) {
@@ -4131,37 +4139,32 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * be acquired once it sees S(DB).  So need to check stricter locks first.
    */
   private final static class LockTypeComparator implements Comparator<LockType> {
+    // the higher the integer value, the more restrictive the lock type is
+    private static final Map<LockType, Integer> orderOfRestrictiveness = new EnumMap<>(LockType.class);
+    static {
+        orderOfRestrictiveness.put(LockType.SHARED_READ, 1);
+        orderOfRestrictiveness.put(LockType.SHARED_WRITE, 2);
+        orderOfRestrictiveness.put(LockType.EXCL_WRITE, 3);
+        orderOfRestrictiveness.put(LockType.EXCLUSIVE, 4);
+    }
+    @Override
     public boolean equals(Object other) {
       return this == other;
     }
+    @Override
     public int compare(LockType t1, LockType t2) {
-      switch (t1) {
-        case EXCLUSIVE:
-          if(t2 == LockType.EXCLUSIVE) {
-            return 0;
-          }
-          return 1;
-        case SHARED_WRITE:
-          switch (t2) {
-            case EXCLUSIVE:
-              return -1;
-            case SHARED_WRITE:
-              return 0;
-            case SHARED_READ:
-              return 1;
-            default:
-              throw new RuntimeException("Unexpected LockType: " + t2);
-          }
-        case SHARED_READ:
-          if(t2 == LockType.SHARED_READ) {
-            return 0;
-          }
-          return -1;
-        default:
-          throw new RuntimeException("Unexpected LockType: " + t1);
+      Integer t1Restrictiveness = orderOfRestrictiveness.get(t1);
+      Integer t2Restrictiveness = orderOfRestrictiveness.get(t2);
+      if (t1Restrictiveness == null) {
+        throw new RuntimeException("Unexpected LockType: " + t1);
       }
+      if (t2Restrictiveness == null) {
+        throw new RuntimeException("Unexpected LockType: " + t2);
+      }
+      return Integer.compare(t1Restrictiveness, t2Restrictiveness);
     }
   }
+
   private enum LockAction {ACQUIRE, WAIT, KEEP_LOOKING}
 
   // A jump table to figure out whether to wait, acquire,
@@ -4192,8 +4195,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
 
-  private int abortTxns(Connection dbConn, List<Long> txnids, boolean isStrict) throws SQLException {
-    return abortTxns(dbConn, txnids, -1, isStrict);
+  private int abortTxns(Connection dbConn, List<Long> txnids, boolean isStrict) throws SQLException, MetaException {
+    return abortTxns(dbConn, txnids, false, isStrict);
   }
   /**
    * TODO: expose this as an operation to client.  Useful for streaming API to abort all remaining
@@ -4203,8 +4206,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    *
    * @param dbConn An active connection
    * @param txnids list of transactions to abort
-   * @param max_heartbeat value used by {@link #performTimeOuts()} to ensure this doesn't Abort txn which were
-   *                      hearbetated after #performTimeOuts() select and this operation.
+   * @param checkHeartbeat value used by {@link #performTimeOuts()} to ensure this doesn't Abort txn which were
+   *                      heartbeated after #performTimeOuts() select and this operation.
    * @param isStrict true for strict mode, false for best-effort mode.
    *                 In strict mode, if all txns are not successfully aborted, then the count of
    *                 updated ones will be returned and the caller will roll back.
@@ -4212,10 +4215,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * @return Number of aborted transactions
    * @throws SQLException
    */
-  private int abortTxns(Connection dbConn, List<Long> txnids, long max_heartbeat, boolean isStrict)
-      throws SQLException {
+  private int abortTxns(Connection dbConn, List<Long> txnids, boolean checkHeartbeat, boolean isStrict)
+      throws SQLException, MetaException {
     Statement stmt = null;
-    int updateCnt = 0;
     if (txnids.isEmpty()) {
       return 0;
     }
@@ -4224,73 +4226,38 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       //This is an update statement, thus at any Isolation level will take Write locks so will block
       //all other ops using S4U on TXNS row.
       List<String> queries = new ArrayList<>();
-
       StringBuilder prefix = new StringBuilder();
       StringBuilder suffix = new StringBuilder();
 
-      prefix.append("UPDATE \"TXNS\" SET \"TXN_STATE\" = " + quoteChar(TXN_ABORTED) +
-        " WHERE \"TXN_STATE\" = " + quoteChar(TXN_OPEN) + " AND ");
-      if(max_heartbeat > 0) {
-        suffix.append(" AND \"TXN_LAST_HEARTBEAT\" < ").append(max_heartbeat);
-      } else {
-        suffix.append("");
+      // add update txns queries to query list
+      prefix.append("UPDATE \"TXNS\" SET \"TXN_STATE\" = ").append(quoteChar(TXN_ABORTED))
+              .append(" WHERE \"TXN_STATE\" = ").append(quoteChar(TXN_OPEN)).append(" AND ");
+      if (checkHeartbeat) {
+        suffix.append(" AND \"TXN_LAST_HEARTBEAT\" < ")
+                .append(TxnDbUtil.getEpochFn(dbProduct)).append("-").append(timeout);
       }
-
       TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, txnids, "\"TXN_ID\"", true, false);
+      int numUpdateQueries = queries.size();
 
-      for (String query : queries) {
-        LOG.debug("Going to execute update <" + query + ">");
-        updateCnt += stmt.executeUpdate(query);
-      }
-
-      // As current txn is aborted, this won't read any data from other txns. So, it is safe to unregister
-      // the min_open_txnid from MIN_HISTORY_LEVEL for the aborted txns. Even if the txns in the list are
-      // partially aborted, it is safe to delete from MIN_HISTORY_LEVEL as the remaining txns are either
-      // already committed or aborted.
-      queries.clear();
+      // add delete hive locks queries to query list
       prefix.setLength(0);
       suffix.setLength(0);
-
-      prefix.append("DELETE FROM \"MIN_HISTORY_LEVEL\" WHERE ");
-      suffix.append("");
-
-      TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, txnids, "\"MHL_TXNID\"", false, false);
-
-      for (String query : queries) {
-        LOG.debug("Going to execute update <" + query + ">");
-        int rc = stmt.executeUpdate(query);
-        LOG.debug("Deleted " + rc + " records from MIN_HISTORY_LEVEL");
-      }
-      LOG.info("Removed aborted transactions: (" + txnids + ") from MIN_HISTORY_LEVEL");
-
-      if (updateCnt < txnids.size() && isStrict) {
-        /**
-         * have to bail in this case since we don't know which transactions were not Aborted and
-         * thus don't know which locks to delete
-         * This may happen due to a race between {@link #heartbeat(HeartbeatRequest)}  operation and
-         * {@link #performTimeOuts()}
-         */
-        return updateCnt;
-      }
-
-      queries.clear();
-      prefix.setLength(0);
-      suffix.setLength(0);
-
       prefix.append("DELETE FROM \"HIVE_LOCKS\" WHERE ");
-      suffix.append("");
-
       TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, txnids, "\"HL_TXNID\"", false, false);
 
-      for (String query : queries) {
-        LOG.debug("Going to execute update <" + query + ">");
-        int rc = stmt.executeUpdate(query);
-        LOG.debug("Removed " + rc + " records from HIVE_LOCKS");
-      }
+      // execute all queries in the list in one batch
+      List<Integer> affectedRowsByQuery = executeQueriesInBatch(stmt, queries, conf);
+      return getUpdateCount(numUpdateQueries, affectedRowsByQuery);
     } finally {
       closeStmt(stmt);
     }
-    return updateCnt;
+  }
+
+  private int getUpdateCount(int numUpdateQueries, List<Integer> affectedRowsByQuery) {
+    return affectedRowsByQuery.stream()
+            .limit(numUpdateQueries)
+            .mapToInt(Integer::intValue)
+            .sum();
   }
 
   private static boolean isValidTxn(long txnId) {
@@ -4310,9 +4277,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * checkLock() will in the worst case keep locks in Waiting state a little longer.
    */
   @RetrySemantics.SafeToRetry("See @SafeToRetry")
-  private LockResponse checkLock(Connection dbConn, long extLockId)
-    throws NoSuchLockException, NoSuchTxnException, TxnAbortedException, MetaException, SQLException {
-    TxnStore.MutexAPI.LockHandle handle =  null;
+  private LockResponse checkLock(Connection dbConn, long extLockId, long txnId)
+      throws NoSuchLockException, TxnAbortedException, MetaException, SQLException {
     Statement stmt = null;
     ResultSet rs = null;
     LockResponse response = new LockResponse();
@@ -4328,27 +4294,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
      */
     boolean isPartOfDynamicPartitionInsert = true;
     try {
-      /**
-       * checkLock() must be mutex'd against any other checkLock to make sure 2 conflicting locks
-       * are not granted by parallel checkLock() calls.
-       */
-      handle = getMutexAPI().acquireLock(MUTEX_KEY.CheckLock.name());
-      List<LockInfo> locksBeingChecked = getLockInfoFromLockId(dbConn, extLockId);//being acquired now
+      List<LockInfo> locksBeingChecked = getLockInfoFromLockId(dbConn, extLockId); //being acquired now
       response.setLockid(extLockId);
-
-      LOG.debug("checkLock(): Setting savepoint. extLockId=" + JavaUtils.lockIdToString(extLockId));
-      Savepoint save = dbConn.setSavepoint();
-      StringBuilder query = new StringBuilder("SELECT \"HL_LOCK_EXT_ID\", " +
-        "\"HL_LOCK_INT_ID\", \"HL_DB\", \"HL_TABLE\", \"HL_PARTITION\", \"HL_LOCK_STATE\", " +
-        "\"HL_LOCK_TYPE\", \"HL_TXNID\" FROM \"HIVE_LOCKS\" WHERE \"HL_DB\" IN (");
-
-      Set<String> strings = new HashSet<>(locksBeingChecked.size());
 
       //This the set of entities that the statement represented by extLockId wants to update
       List<LockInfo> writeSet = new ArrayList<>();
 
       for (LockInfo info : locksBeingChecked) {
-        strings.add(info.db);
         if(!isPartOfDynamicPartitionInsert && info.type == LockType.SHARED_WRITE) {
           writeSet.add(info);
         }
@@ -4406,171 +4358,89 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         close(rs, stmt, null);
       }
 
-      boolean first = true;
-      for (String s : strings) {
-        if (first) first = false;
-        else query.append(", ");
-        query.append('\'');
-        query.append(s);
-        query.append('\'');
-      }
-      query.append(")");
+      String queryStr =
+        " \"EX\".*, \"REQ\".\"HL_LOCK_INT_ID\" AS \"REQ_LOCK_INT_ID\" FROM (" +
+            " SELECT \"HL_LOCK_EXT_ID\", \"HL_LOCK_INT_ID\", \"HL_TXNID\", \"HL_DB\", \"HL_TABLE\", \"HL_PARTITION\"," +
+                " \"HL_LOCK_STATE\", \"HL_LOCK_TYPE\" FROM \"HIVE_LOCKS\"" +
+            " WHERE \"HL_LOCK_EXT_ID\" < " + extLockId + ") \"EX\"" +
+        " INNER JOIN (" +
+            " SELECT \"HL_LOCK_INT_ID\", \"HL_TXNID\", \"HL_DB\", \"HL_TABLE\", \"HL_PARTITION\"," +
+                " \"HL_LOCK_TYPE\" FROM \"HIVE_LOCKS\"" +
+            " WHERE \"HL_LOCK_EXT_ID\" = " + extLockId + ") \"REQ\"" +
+        " ON \"EX\".\"HL_DB\" = \"REQ\".\"HL_DB\"" +
+            " AND (\"EX\".\"HL_TABLE\" IS NULL OR \"REQ\".\"HL_TABLE\" IS NULL" +
+                " OR \"EX\".\"HL_TABLE\" = \"REQ\".\"HL_TABLE\"" +
+                " AND (\"EX\".\"HL_PARTITION\" IS NULL OR \"REQ\".\"HL_PARTITION\" IS NULL" +
+                " OR \"EX\".\"HL_PARTITION\" = \"REQ\".\"HL_PARTITION\"))" +
+        /*different locks from same txn should not conflict with each other,
+          txnId=0 means it's a select or IUD which does not write to ACID table*/
+        " WHERE (\"REQ\".\"HL_TXNID\" = 0 OR \"EX\".\"HL_TXNID\" != \"REQ\".\"HL_TXNID\")" +
+            " AND ";
 
-      // If any of the table requests are null, then I need to pull all the
-      // table locks for this db.
-      boolean sawNull = false;
-      strings.clear();
-      for (LockInfo info : locksBeingChecked) {
-        if (info.table == null) {
-          sawNull = true;
-          break;
-        } else {
-          strings.add(info.table);
-        }
-      }
-      if (!sawNull) {
-        query.append(" AND (\"HL_TABLE\" IS NULL OR \"HL_TABLE\" IN(");
-        first = true;
-        for (String s : strings) {
-          if (first) first = false;
-          else query.append(", ");
-          query.append('\'');
-          query.append(s);
-          query.append('\'');
-        }
-        query.append("))");
+      /*EXCLUSIVE lock on partition should prevent SHARED_READ on the table, however there is no reason
+        for an EXCLUSIVE on a table to prevent SHARED_READ on a database. Similarly, EXCLUSIVE on a partition
+        should not conflict with SHARED_READ on a database.
+        SHARED_READ is usually acquired on a database to make sure it's not dropped, while some operation
+        is performed on that db (e.g. show tables, created table, etc).
+        EXCLUSIVE on an object may mean it's being dropped or overwritten.*/
+      String[] whereStr = {
+        // exclusive
+        " \"REQ\".\"HL_LOCK_TYPE\"='e'" +
+        " AND NOT (\"EX\".\"HL_TABLE\" IS NULL AND \"EX\".\"HL_LOCK_TYPE\"='r' AND \"REQ\".\"HL_TABLE\" IS NOT NULL)",
+        // shared-write
+        " \"REQ\".\"HL_LOCK_TYPE\"='w' AND \"EX\".\"HL_LOCK_TYPE\" IN ('w','e')",
+        // shared-read
+        " \"REQ\".\"HL_LOCK_TYPE\"='r' AND \"EX\".\"HL_LOCK_TYPE\"='e'" +
+        " AND NOT (\"EX\".\"HL_TABLE\" IS NOT NULL AND \"REQ\".\"HL_TABLE\" IS NULL)",
+      };
 
-        // If any of the partition requests are null, then I need to pull all
-        // partition locks for this table.
-        sawNull = false;
-        strings.clear();
-        for (LockInfo info : locksBeingChecked) {
-          if (info.partition == null) {
-            sawNull = true;
-            break;
-          } else {
-            strings.add(info.partition);
-          }
-        }
-        if (!sawNull) {
-          query.append(" AND (\"HL_PARTITION\" IS NULL OR \"HL_PARTITION\" IN(");
-          first = true;
-          for (String s : strings) {
-            if (first) first = false;
-            else query.append(", ");
-            query.append('\'');
-            query.append(s);
-            query.append('\'');
-          }
-          query.append("))");
-        }
+      List<String> subQuery = new ArrayList<>();
+      for (String subCond : whereStr) {
+        subQuery.add("(" + sqlGenerator.addLimitClause(1, queryStr + subCond) + ")");
       }
-      query.append(" AND \"HL_LOCK_EXT_ID\" < ").append(extLockId);
+      String query = String.join(" UNION ALL ", subQuery);
 
-      LOG.debug("Going to execute query <" + query.toString() + ">");
       stmt = dbConn.createStatement();
-      rs = stmt.executeQuery(query.toString());
-      SortedSet<LockInfo> lockSet = new TreeSet<LockInfo>(new LockInfoComparator());
-      while (rs.next()) {
-        lockSet.add(new LockInfo(rs));
-      }
-      // Turn the tree set into an array so we can move back and forth easily
-      // in it.
-      LockInfo[] locks = lockSet.toArray(new LockInfo[lockSet.size()]);
-      if(LOG.isTraceEnabled()) {
-        LOG.trace("Locks to check(full): ");
-        for(LockInfo info : locks) {
-          LOG.trace("  " + info);
+      LOG.debug("Going to execute query <" + query + ">");
+      rs = stmt.executeQuery(query);
+
+      if (rs.next()) {
+        // We acquire all locks for a given query atomically; if 1 blocks, all remain in Waiting state.
+        LockInfo blockedBy = new LockInfo(rs);
+        long intLockId = rs.getLong("REQ_LOCK_INT_ID");
+
+        String sqlText = "UPDATE \"HIVE_LOCKS\"" +
+          " SET \"HL_BLOCKEDBY_EXT_ID\" = " + blockedBy.extLockId +
+              ", \"HL_BLOCKEDBY_INT_ID\" = " + blockedBy.intLockId +
+          " WHERE \"HL_LOCK_EXT_ID\" = " + extLockId + " AND \"HL_LOCK_INT_ID\" = " + intLockId;
+
+        LOG.debug("Executing sql: " + sqlText);
+        int updCnt = stmt.executeUpdate(sqlText);
+
+        if (updCnt != 1) {
+          shouldNeverHappen(txnId, extLockId, intLockId);
         }
+        LOG.debug("Going to commit");
+        dbConn.commit();
+
+        LOG.debug("Lock({} intLockId:{} {}) is blocked by Lock({}})", JavaUtils.lockIdToString(extLockId),
+          intLockId, JavaUtils.txnIdToString(txnId), blockedBy);
+        response.setState(LockState.WAITING);
+        return response;
       }
-
-      for (LockInfo info : locksBeingChecked) {
-        // If we've found it and it's already been marked acquired,
-        // then just look at the other locks.
-        if (info.state == LockState.ACQUIRED) {
-          /**this is what makes this method @SafeToRetry*/
-          continue;
-        }
-
-        // Look at everything in front of this lock to see if it should block
-        // it or not.
-        for (int i = locks.length - 1; i >= 0; i--) {
-          // Check if we're operating on the same database, if not, move on
-          if (!info.db.equals(locks[i].db)) {
-            continue;
-          }
-
-          // If table is null on either of these, then they are claiming to
-          // lock the whole database and we need to check it.  Otherwise,
-          // check if they are operating on the same table, if not, move on.
-          if (info.table != null && locks[i].table != null
-            && !info.table.equals(locks[i].table)) {
-            continue;
-          }
-          // if here, we may be checking a DB level lock against a Table level lock.  Alternatively,
-          // we could have used Intention locks (for example a request for S lock on table would
-          // cause an IS lock DB that contains the table).  Similarly, at partition level.
-
-          // If partition is null on either of these, then they are claiming to
-          // lock the whole table and we need to check it.  Otherwise,
-          // check if they are operating on the same partition, if not, move on.
-          if (info.partition != null && locks[i].partition != null
-            && !info.partition.equals(locks[i].partition)) {
-            continue;
-          }
-
-          // We've found something that matches what we're trying to lock,
-          // so figure out if we can lock it too.
-          LockAction lockAction = jumpTable.get(info.type).get(locks[i].type).get(locks[i].state);
-          LOG.debug("desired Lock: " + info + " checked Lock: " + locks[i] + " action: " + lockAction);
-          switch (lockAction) {
-            case WAIT:
-              if(!ignoreConflict(info, locks[i])) {
-                /*we acquire all locks for a given query atomically; if 1 blocks, all go into (remain) in
-                * Waiting state.  wait() will undo any 'acquire()' which may have happened as part of
-                * this (metastore db) transaction and then we record which lock blocked the lock
-                * we were testing ('info').*/
-                wait(dbConn, save);
-                String sqlText = "UPDATE \"HIVE_LOCKS\"" +
-                  " SET \"HL_BLOCKEDBY_EXT_ID\"=" + locks[i].extLockId +
-                  ", \"HL_BLOCKEDBY_INT_ID\"=" + locks[i].intLockId +
-                  " WHERE \"HL_LOCK_EXT_ID\"=" + info.extLockId + " AND \"HL_LOCK_INT_ID\"=" + info.intLockId;
-                LOG.debug("Executing sql: " + sqlText);
-                int updCnt = stmt.executeUpdate(sqlText);
-                if(updCnt != 1) {
-                  shouldNeverHappen(info.txnId, info.extLockId, info.intLockId);
-                }
-                LOG.debug("Going to commit");
-                dbConn.commit();
-                response.setState(LockState.WAITING);
-                LOG.debug("Lock(" + info + ") waiting for Lock(" + locks[i] + ")");
-                return response;
-              }
-              //fall through to ACQUIRE
-            case ACQUIRE:
-              break;
-            case KEEP_LOOKING:
-              continue;
-          }
-          //if we got here, it means it's ok to acquire 'info' lock
-          break;// so exit the loop and check next lock
-        }
-      }
-      //if here, ther were no locks that blocked any locks in 'locksBeingChecked' - acquire them all
+      // If here, there were no locks that would block any item from 'locksBeingChecked' - acquire them all
       acquire(dbConn, stmt, locksBeingChecked);
 
-      // We acquired all of the locks, so commit and return acquired.
+      // We acquired all the locks, so commit and return acquired.
       LOG.debug("Going to commit");
       dbConn.commit();
       response.setState(LockState.ACQUIRED);
     } finally {
       close(rs, stmt, null);
-      if(handle != null) {
-        handle.releaseLocks();
-      }
     }
     return response;
   }
+
   private void acquire(Connection dbConn, Statement stmt, List<LockInfo> locksBeingChecked)
     throws SQLException, NoSuchLockException, MetaException {
     if(locksBeingChecked == null || locksBeingChecked.isEmpty()) {
@@ -4578,11 +4448,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
     long txnId = locksBeingChecked.get(0).txnId;
     long extLockId = locksBeingChecked.get(0).extLockId;
-    long now = getDbTime(dbConn);
     String s = "UPDATE \"HIVE_LOCKS\" SET \"HL_LOCK_STATE\" = '" + LOCK_ACQUIRED + "', " +
       //if lock is part of txn, heartbeat info is in txn record
-      "\"HL_LAST_HEARTBEAT\" = " + (isValidTxn(txnId) ? 0 : now) +
-      ", \"HL_ACQUIRED_AT\" = " + now + ",\"HL_BLOCKEDBY_EXT_ID\"=NULL,\"HL_BLOCKEDBY_INT_ID\"=NULL" +
+      "\"HL_LAST_HEARTBEAT\" = " + (isValidTxn(txnId) ? 0 : TxnDbUtil.getEpochFn(dbProduct)) +
+      ",\"HL_ACQUIRED_AT\" = " + TxnDbUtil.getEpochFn(dbProduct) +
+      ",\"HL_BLOCKEDBY_EXT_ID\"=NULL,\"HL_BLOCKEDBY_INT_ID\"=NULL" +
       " WHERE \"HL_LOCK_EXT_ID\" = " +  extLockId;
     LOG.debug("Going to execute update <" + s + ">");
     int rc = stmt.executeUpdate(s);
@@ -4615,47 +4485,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   }
 
   /**
-   * the {@link #jumpTable} only deals with LockState/LockType.  In some cases it's not
-   * sufficient.  For example, an EXCLUSIVE lock on partition should prevent SHARED_READ
-   * on the table, but there is no reason for EXCLUSIVE on a table to prevent SHARED_READ
-   * on a database.  Similarly, EXCLUSIVE on a partition should not conflict with SHARED_READ on
-   * a database.  (SHARED_READ is usually acquired on a database to make sure it's not dropped
-   * while some operation is performed on that db (e.g. show tables, created table, etc)
-   * EXCLUSIVE on an object may mean it's being dropped or overwritten (for non-acid tables,
-   * an Insert uses EXCLUSIVE as well)).
-   */
-  private boolean ignoreConflict(LockInfo desiredLock, LockInfo existingLock) {
-    return
-      ((desiredLock.isDbLock() && desiredLock.type == LockType.SHARED_READ &&
-          existingLock.isTableLock() && existingLock.type == LockType.EXCLUSIVE) ||
-        (existingLock.isDbLock() && existingLock.type == LockType.SHARED_READ &&
-          desiredLock.isTableLock() && desiredLock.type == LockType.EXCLUSIVE) ||
-
-        (desiredLock.isDbLock() && desiredLock.type == LockType.SHARED_READ &&
-          existingLock.isPartitionLock() && existingLock.type == LockType.EXCLUSIVE) ||
-        (existingLock.isDbLock() && existingLock.type == LockType.SHARED_READ &&
-          desiredLock.isPartitionLock() && desiredLock.type == LockType.EXCLUSIVE))
-        ||
-
-      //different locks from same txn should not conflict with each other
-      (desiredLock.txnId != 0 && desiredLock.txnId == existingLock.txnId) ||
-      //txnId=0 means it's a select or IUD which does not write to ACID table, e.g
-      //insert overwrite table T partition(p=1) select a,b from T and autoCommit=true
-      // todo: fix comment as of HIVE-14988
-      (desiredLock.txnId == 0 &&  desiredLock.extLockId == existingLock.extLockId);
-  }
-
-  private void wait(Connection dbConn, Savepoint save) throws SQLException {
-    // Need to rollback because we did a select that acquired locks but we didn't
-    // actually update anything.  Also, we may have locked some locks as
-    // acquired that we now want to not acquire.  It's ok to rollback because
-    // once we see one wait, we're done, we won't look for more.
-    // Only rollback to savepoint because we want to commit our heartbeat
-    // changes.
-    LOG.debug("Going to rollback to savepoint");
-    dbConn.rollback(save);
-  }
-  /**
    * Heartbeats on the lock table.  This commits, so do not enter it with any state.
    * Should not be called on a lock that belongs to transaction.
    */
@@ -4666,10 +4495,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     Statement stmt = null;
     try {
       stmt = dbConn.createStatement();
-      long now = getDbTime(dbConn);
 
       String s = "UPDATE \"HIVE_LOCKS\" SET \"HL_LAST_HEARTBEAT\" = " +
-        now + " WHERE \"HL_LOCK_EXT_ID\" = " + extLockId;
+          TxnDbUtil.getEpochFn(dbProduct) + " WHERE \"HL_LOCK_EXT_ID\" = " + extLockId;
       LOG.debug("Going to execute update <" + s + ">");
       int rc = stmt.executeUpdate(s);
       if (rc < 1) {
@@ -4692,8 +4520,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     Statement stmt = null;
     try {
       stmt = dbConn.createStatement();
-      long now = getDbTime(dbConn);
-      String s = "UPDATE \"TXNS\" SET \"TXN_LAST_HEARTBEAT\" = " + now +
+      String s = "UPDATE \"TXNS\" SET \"TXN_LAST_HEARTBEAT\" = " + TxnDbUtil.getEpochFn(dbProduct) +
         " WHERE \"TXN_ID\" = " + txnid + " AND \"TXN_STATE\" = '" + TXN_OPEN + "'";
       LOG.debug("Going to execute update <" + s + ">");
       int rc = stmt.executeUpdate(s);
@@ -4942,16 +4769,15 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   // for read-only autoCommit=true statements.  This does a commit,
   // and thus should be done before any calls to heartbeat that will leave
   // open transactions.
-  private void timeOutLocks(Connection dbConn, long now) {
+  private void timeOutLocks(Connection dbConn) {
     Statement stmt = null;
     ResultSet rs = null;
     try {
       stmt = dbConn.createStatement();
-      long maxHeartbeatTime = now - timeout;
       //doing a SELECT first is less efficient but makes it easier to debug things
       String s = "SELECT DISTINCT \"HL_LOCK_EXT_ID\" FROM \"HIVE_LOCKS\" WHERE \"HL_LAST_HEARTBEAT\" < " +
-        maxHeartbeatTime + " AND \"HL_TXNID\" = 0";//when txnid is <> 0, the lock is
-      //associated with a txn and is handled by performTimeOuts()
+          TxnDbUtil.getEpochFn(dbProduct) + "-" + timeout + " AND \"HL_TXNID\" = 0";
+      //when txnid is <> 0, the lock is associated with a txn and is handled by performTimeOuts()
       //want to avoid expiring locks for a txn w/o expiring the txn itself
       List<Long> extLockIDs = new ArrayList<>();
       rs = stmt.executeQuery(s);
@@ -4971,9 +4797,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
       //include same hl_last_heartbeat condition in case someone heartbeated since the select
       prefix.append("DELETE FROM \"HIVE_LOCKS\" WHERE \"HL_LAST_HEARTBEAT\" < ");
-      prefix.append(maxHeartbeatTime);
+      prefix.append(TxnDbUtil.getEpochFn(dbProduct)).append("-").append(timeout);
       prefix.append(" AND \"HL_TXNID\" = 0 AND ");
-      suffix.append("");
 
       TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, extLockIDs, "\"HL_LOCK_EXT_ID\"", true, false);
 
@@ -4985,7 +4810,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       if(deletedLocks > 0) {
         Collections.sort(extLockIDs);//easier to read logs
         LOG.info("Deleted " + deletedLocks + " int locks from HIVE_LOCKS due to timeout (" +
-          "HL_LOCK_EXT_ID list:  " + extLockIDs + ") maxHeartbeatTime=" + maxHeartbeatTime);
+          "HL_LOCK_EXT_ID list:  " + extLockIDs + ")");
       }
       LOG.debug("Going to commit");
       dbConn.commit();
@@ -5025,12 +4850,12 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       //is made, in which case heartbeat will succeed but txn will still be Aborted.
       //Solving this corner case is not worth the perf penalty.  The client should heartbeat in a
       //timely way.
-      long now = getDbTime(dbConn);
-      timeOutLocks(dbConn, now);
+      timeOutLocks(dbConn);
       while(true) {
         stmt = dbConn.createStatement();
         String s = " \"TXN_ID\" FROM \"TXNS\" WHERE \"TXN_STATE\" = '" + TXN_OPEN +
-            "' AND \"TXN_LAST_HEARTBEAT\" <  " + (now - timeout) + " AND \"TXN_TYPE\" != " + TxnType.REPL_CREATED.getValue();
+            "' AND \"TXN_LAST_HEARTBEAT\" <  " + TxnDbUtil.getEpochFn(dbProduct) + "-" + timeout +
+            " AND \"TXN_TYPE\" != " + TxnType.REPL_CREATED.getValue();
         //safety valve for extreme cases
         s = sqlGenerator.addLimitClause(10 * TIMED_OUT_TXN_ABORT_BATCH_SIZE, s);
         LOG.debug("Going to execute query <" + s + ">");
@@ -5052,7 +4877,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         close(rs, stmt, null);
         int numTxnsAborted = 0;
         for(List<Long> batchToAbort : timedOutTxns) {
-          if(abortTxns(dbConn, batchToAbort, now - timeout, true) == batchToAbort.size()) {
+          if(abortTxns(dbConn, batchToAbort, true, true) == batchToAbort.size()) {
             dbConn.commit();
             numTxnsAborted += batchToAbort.size();
             //todo: add TXNS.COMMENT filed and set it to 'aborted by system due to timeout'
@@ -5071,10 +4896,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         LOG.info("Aborted " + numTxnsAborted + " transactions due to timeout");
       }
     } catch (SQLException ex) {
-      LOG.warn("Aborting timedout transactions failed due to " + getMessage(ex), ex);
-    }
-    catch(MetaException e) {
-      LOG.warn("Aborting timedout transactions failed due to " + e.getMessage(), e);
+      LOG.warn("Aborting timed out transactions failed due to " + getMessage(ex), ex);
+    } catch(MetaException e) {
+      LOG.warn("Aborting timed out transactions failed due to " + e.getMessage(), e);
     }
     finally {
       close(rs, stmt, dbConn);
@@ -5134,114 +4958,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
 
-  private static synchronized void buildJumpTable() {
-    if (jumpTable != null) return;
-
-    jumpTable = new HashMap<>(3);
-
-    // SR: Lock we are trying to acquire is shared read
-    Map<LockType, Map<LockState, LockAction>> m = new HashMap<>(3);
-    jumpTable.put(LockType.SHARED_READ, m);
-
-    // SR.SR: Lock we are examining is shared read
-    Map<LockState, LockAction> m2 = new HashMap<>(2);
-    m.put(LockType.SHARED_READ, m2);
-
-    // SR.SR.acquired Lock we are examining is acquired;  We can acquire
-    // because two shared reads can acquire together and there must be
-    // nothing in front of this one to prevent acquisition.
-    m2.put(LockState.ACQUIRED, LockAction.ACQUIRE);
-
-    // SR.SR.wait Lock we are examining is waiting.  In this case we keep
-    // looking, as it's possible that something in front is blocking it or
-    // that the other locker hasn't checked yet and he could lock as well.
-    m2.put(LockState.WAITING, LockAction.KEEP_LOOKING);
-
-    // SR.SW: Lock we are examining is shared write
-    m2 = new HashMap<>(2);
-    m.put(LockType.SHARED_WRITE, m2);
-
-    // SR.SW.acquired Lock we are examining is acquired;  We can acquire
-    // because a read can share with a write, and there must be
-    // nothing in front of this one to prevent acquisition.
-    m2.put(LockState.ACQUIRED, LockAction.ACQUIRE);
-
-    // SR.SW.wait Lock we are examining is waiting.  In this case we keep
-    // looking, as it's possible that something in front is blocking it or
-    // that the other locker hasn't checked yet and he could lock as well or
-    // that something is blocking it that would not block a read.
-    m2.put(LockState.WAITING, LockAction.KEEP_LOOKING);
-
-    // SR.E: Lock we are examining is exclusive
-    m2 = new HashMap<>(2);
-    m.put(LockType.EXCLUSIVE, m2);
-
-    // No matter whether it has acquired or not, we cannot pass an exclusive.
-    m2.put(LockState.ACQUIRED, LockAction.WAIT);
-    m2.put(LockState.WAITING, LockAction.WAIT);
-
-    // SW: Lock we are trying to acquire is shared write
-    m = new HashMap<>(3);
-    jumpTable.put(LockType.SHARED_WRITE, m);
-
-    // SW.SR: Lock we are examining is shared read
-    m2 = new HashMap<>(2);
-    m.put(LockType.SHARED_READ, m2);
-
-    // SW.SR.acquired Lock we are examining is acquired;  We need to keep
-    // looking, because there may or may not be another shared write in front
-    // that would block us.
-    m2.put(LockState.ACQUIRED, LockAction.KEEP_LOOKING);
-
-    // SW.SR.wait Lock we are examining is waiting.  In this case we keep
-    // looking, as it's possible that something in front is blocking it or
-    // that the other locker hasn't checked yet and he could lock as well.
-    m2.put(LockState.WAITING, LockAction.KEEP_LOOKING);
-
-    // SW.SW: Lock we are examining is shared write
-    m2 = new HashMap<>(2);
-    m.put(LockType.SHARED_WRITE, m2);
-
-    // Regardless of acquired or waiting, one shared write cannot pass another.
-    m2.put(LockState.ACQUIRED, LockAction.WAIT);
-    m2.put(LockState.WAITING, LockAction.WAIT);
-
-    // SW.E: Lock we are examining is exclusive
-    m2 = new HashMap<>(2);
-    m.put(LockType.EXCLUSIVE, m2);
-
-    // No matter whether it has acquired or not, we cannot pass an exclusive.
-    m2.put(LockState.ACQUIRED, LockAction.WAIT);
-    m2.put(LockState.WAITING, LockAction.WAIT);
-
-    // E: Lock we are trying to acquire is exclusive
-    m = new HashMap<>(3);
-    jumpTable.put(LockType.EXCLUSIVE, m);
-
-    // E.SR: Lock we are examining is shared read
-    m2 = new HashMap<>(2);
-    m.put(LockType.SHARED_READ, m2);
-
-    // Exclusives can never pass
-    m2.put(LockState.ACQUIRED, LockAction.WAIT);
-    m2.put(LockState.WAITING, LockAction.WAIT);
-
-    // E.SW: Lock we are examining is shared write
-    m2 = new HashMap<>(2);
-    m.put(LockType.SHARED_WRITE, m2);
-
-    // Exclusives can never pass
-    m2.put(LockState.ACQUIRED, LockAction.WAIT);
-    m2.put(LockState.WAITING, LockAction.WAIT);
-
-    // E.E: Lock we are examining is exclusive
-    m2 = new HashMap<>(2);
-    m.put(LockType.EXCLUSIVE, m2);
-
-    // No matter whether it has acquired or not, we cannot pass an exclusive.
-    m2.put(LockState.ACQUIRED, LockAction.WAIT);
-    m2.put(LockState.WAITING, LockAction.WAIT);
-  }
   /**
    * Returns true if {@code ex} should be retried
    */
@@ -5309,13 +5025,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   }
   private static String getMessage(SQLException ex) {
     return ex.getMessage() + " (SQLState=" + ex.getSQLState() + ", ErrorCode=" + ex.getErrorCode() + ")";
-  }
-  /**
-   * Useful for building SQL strings
-   * @param value may be {@code null}
-   */
-  private static String valueOrNullLiteral(String value) {
-    return value == null ? "null" : quoteString(value);
   }
   static String quoteString(String input) {
     return "'" + input + "'";

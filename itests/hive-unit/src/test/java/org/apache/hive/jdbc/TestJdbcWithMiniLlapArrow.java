@@ -31,6 +31,7 @@ import java.util.List;
 import org.apache.hadoop.hive.llap.FieldDesc;
 import org.apache.hadoop.hive.llap.LlapBaseInputFormat;
 import org.apache.hadoop.hive.llap.Row;
+import org.apache.hadoop.hive.ql.ddl.process.kill.KillQueriesOperation;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
@@ -412,6 +413,8 @@ public class TestJdbcWithMiniLlapArrow extends BaseJdbcWithMiniLlap {
     testKillQueryInternal(System.getProperty("user.name"), System.getProperty("user.name"), false,
             tExecuteHolder, tKillHolder);
     assertNotNull("tExecute", tExecuteHolder.throwable);
+    assertEquals(HiveStatement.QUERY_CANCELLED_MESSAGE + " "+ KillQueriesOperation.KILL_QUERY_MESSAGE,
+        tExecuteHolder.throwable.getMessage());
     assertNull("tCancel", tKillHolder.throwable);
   }
 
@@ -431,6 +434,8 @@ public class TestJdbcWithMiniLlapArrow extends BaseJdbcWithMiniLlap {
     ExceptionHolder tKillHolder = new ExceptionHolder();
     testKillQueryInternal("user1", System.getProperty("user.name"), true, tExecuteHolder, tKillHolder);
     assertNotNull("tExecute", tExecuteHolder.throwable);
+    assertEquals(HiveStatement.QUERY_CANCELLED_MESSAGE + " "+ KillQueriesOperation.KILL_QUERY_MESSAGE,
+        tExecuteHolder.throwable.getMessage());
     assertNull("tCancel", tKillHolder.throwable);
   }
 
@@ -440,6 +445,8 @@ public class TestJdbcWithMiniLlapArrow extends BaseJdbcWithMiniLlap {
     ExceptionHolder tKillHolder = new ExceptionHolder();
     testKillQueryInternal("user1", "user1", true, tExecuteHolder, tKillHolder);
     assertNotNull("tExecute", tExecuteHolder.throwable);
+    assertEquals(HiveStatement.QUERY_CANCELLED_MESSAGE + " "+ KillQueriesOperation.KILL_QUERY_MESSAGE,
+        tExecuteHolder.throwable.getMessage());
     assertNull("tCancel", tKillHolder.throwable);
   }
 

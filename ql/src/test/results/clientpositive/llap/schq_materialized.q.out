@@ -290,4 +290,4 @@ POSTHOOK: query: select state,error_message from sys.scheduled_executions
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@scheduled_executions
 #### A masked pattern was here ####
-FAILED	FAILED: SemanticException [Error 10265]: This command is not allowed on an ACID table default.emps with a non-ACID transaction manager. Failed command: /* schedule: d */alter materialized view `default`.`mv1` rebuild
+FINISHED	NULL

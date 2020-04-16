@@ -437,7 +437,12 @@ public class QueryTracker extends AbstractService {
 
   @Override
   public void serviceStop() {
-    executorService.shutdownNow();
+    executorService.shutdown();
+    try {
+      executorService.awaitTermination(10000, TimeUnit.MILLISECONDS);
+    } catch (InterruptedException e) {
+      LOG.warn("cannot finish QueryTracker cleanup because of InterruptedException", e);
+    }
     LOG.info(getName() + " stopped");
   }
 

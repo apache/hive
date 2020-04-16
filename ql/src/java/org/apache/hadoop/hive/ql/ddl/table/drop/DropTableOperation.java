@@ -44,7 +44,7 @@ public class DropTableOperation extends DDLOperation<DropTableDesc> {
   public int execute() throws HiveException {
     Table table = getTable();
     if (table == null) {
-      return 0; // dropping not existing table is handled by DDLSemanticAnalyzer
+      return 0; // dropping not existing table is handled by DropTableAnalyzer
     }
 
     if (desc.getValidationRequired()) {

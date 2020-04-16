@@ -1333,6 +1333,26 @@ public class TestHiveMetastoreTransformer {
   }
 
   @Test
+  public void testTransformerAlterTableWithoutLocationChangeDoesntValidateLocation() throws Exception {
+    try {
+      resetHMSClient();
+      String dbName = "dbalter";
+      String tblName = "test_alter_mgd_table";
+      TableType type = TableType.MANAGED_TABLE;
+      Map<String, Object> tProps = new HashMap<>();
+      tProps.put("DBNAME", dbName);
+      tProps.put("TBLNAME", tblName);
+      tProps.put("TBLTYPE", type);
+      tProps.put("LOCATION", wh.getAbsolutePath().concat(File.separator).concat(dbName).concat(File.separator).concat(tblName));
+      createTableWithCapabilities(tProps);
+      client.alter_table(dbName, tblName, client.getTable(dbName, tblName));
+    } finally {
+      resetHMSClient();
+    }
+  }
+
+
+  @Test
   public void testTransformerDatabase() throws Exception {
     try {
       resetHMSClient();
@@ -1360,7 +1380,7 @@ public class TestHiveMetastoreTransformer {
       setHMSClient("TestGetDatabaseACIDWRITE", (String[])(capabilities.toArray(new String[0])));
 
       db = client.getDatabase(dbName);
-      assertFalse("Database location not expected to be external warehouse:actual=" + db.getLocationUri(),
+      assertTrue("Database location expected to be external warehouse:actual=" + db.getLocationUri(),
           db.getLocationUri().contains(conf.get(MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL.getVarname())));
       resetHMSClient();
 
@@ -1369,7 +1389,7 @@ public class TestHiveMetastoreTransformer {
       setHMSClient("TestGetDatabaseINSERTWRITE", (String[])(capabilities.toArray(new String[0])));
 
       db = client.getDatabase(dbName);
-      assertFalse("Database location not expected to be external warehouse:actual=" + db.getLocationUri(),
+      assertTrue("Database location expected to be external warehouse:actual=" + db.getLocationUri(),
           db.getLocationUri().contains(conf.get(MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL.getVarname())));
       resetHMSClient();
     } catch (Exception e) {

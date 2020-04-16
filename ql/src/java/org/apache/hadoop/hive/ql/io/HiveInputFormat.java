@@ -18,11 +18,14 @@
 
 package org.apache.hadoop.hive.ql.io;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.s3a.S3AFileSystem;
+import org.apache.hadoop.fs.s3a.S3AInputPolicy;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
@@ -37,6 +40,8 @@ import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
+import org.apache.hadoop.hive.ql.io.parquet.VectorizedParquetInputFormat;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
@@ -72,6 +77,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -80,6 +86,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
+import static java.lang.Integer.min;
+import static org.apache.hadoop.hive.common.FileUtils.isS3a;
 
 /**
  * HiveInputFormat is a parameterized InputFormat which looks at the path name
@@ -368,6 +381,19 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     return instance;
   }
 
+  /**
+   * Returns true if the inputFormat performs random seek+read
+   * @param inputFormat
+   * @return
+   */
+  private static boolean isRandomAccessInputFormat(InputFormat inputFormat) {
+    if (inputFormat instanceof OrcInputFormat ||
+        inputFormat instanceof VectorizedParquetInputFormat) {
+      return true;
+    }
+    return false;
+  }
+
   @Override
   public RecordReader getRecordReader(InputSplit split, JobConf job,
       Reporter reporter) throws IOException {
@@ -420,6 +446,13 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       innerReader = HiveIOExceptionHandlerUtil
           .handleRecordReaderCreationException(e, job);
     }
+
+    FileSystem splitFileSystem = splitPath.getFileSystem(job);
+    if (isS3a(splitFileSystem) && isRandomAccessInputFormat(inputFormat)) {
+      LOG.debug("Changing S3A input policy to RANDOM for split {}", splitPath);
+      ((S3AFileSystem) splitFileSystem).setInputPolicy(S3AInputPolicy.Random);
+    }
+
     HiveRecordReader<K,V> rr = new HiveRecordReader(innerReader, job);
     rr.initIOContext(hsplit, job, inputFormatClass, innerReader);
     return rr;
@@ -478,7 +511,8 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       pushFilters(conf, tableScan, this.mrwork);
     }
 
-    List<Path> dirsWithFileOriginals = new ArrayList<>(), finalDirs = new ArrayList<>();
+    List<Path> dirsWithFileOriginals = Collections.synchronizedList(new ArrayList<>()),
+            finalDirs = Collections.synchronizedList(new ArrayList<>());
     processPathsForMmRead(dirs, conf, validMmWriteIdList, finalDirs, dirsWithFileOriginals);
     if (finalDirs.isEmpty() && dirsWithFileOriginals.isEmpty()) {
       // This is for transactional tables.
@@ -577,9 +611,41 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       return;
     }
     boolean allowOriginals = HiveConf.getBoolVar(conf, ConfVars.HIVE_MM_ALLOW_ORIGINALS);
-    for (Path dir : dirs) {
-      processForWriteIdsForMmRead(
-          dir, conf, validWriteIdList, allowOriginals, finalPaths, pathsWithFileOriginals);
+
+    int numThreads = min(HiveConf.getIntVar(conf, ConfVars.HIVE_COMPUTE_SPLITS_NUM_THREADS), dirs.size());
+    List<Future<Void>> pathFutures = new ArrayList<>();
+    ExecutorService pool = null;
+    if (numThreads > 1) {
+      pool = Executors.newFixedThreadPool(numThreads,
+              new ThreadFactoryBuilder().setDaemon(true).setNameFormat("MM-Split-Paths-%d").build());
+    }
+
+    try {
+      for (Path dir : dirs) {
+        if (pool != null) {
+          Future<Void> pathFuture = pool.submit(() -> {
+            processForWriteIdsForMmRead(dir, conf, validWriteIdList, allowOriginals, finalPaths, pathsWithFileOriginals);
+            return null;
+          });
+          pathFutures.add(pathFuture);
+        } else {
+          processForWriteIdsForMmRead(dir, conf, validWriteIdList, allowOriginals, finalPaths, pathsWithFileOriginals);
+        }
+      }
+      try {
+        for (Future<Void> pathFuture : pathFutures) {
+          pathFuture.get();
+        }
+      } catch (InterruptedException | ExecutionException e) {
+        for (Future<Void> future : pathFutures) {
+          future.cancel(true);
+        }
+        throw new IOException(e);
+      }
+    } finally {
+      if (pool != null) {
+        pool.shutdown();
+      }
     }
   }
 

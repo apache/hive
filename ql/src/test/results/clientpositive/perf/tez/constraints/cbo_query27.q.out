@@ -56,7 +56,7 @@ POSTHOOK: Input: default@store_sales
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
-  HiveProject(i_item_id=[$0], s_state=[$1], g_state=[grouping($10, 0:BIGINT)], agg1=[/(CAST($2):DOUBLE, $3)], agg2=[/($4, $5)], agg3=[/($6, $7)], agg4=[/($8, $9)])
+  HiveProject(i_item_id=[$0], s_state=[$1], g_state=[grouping($10, 0:BIGINT)], agg1=[/(CAST($2):DOUBLE, $3)], agg2=[CAST(/($4, $5)):DECIMAL(11, 6)], agg3=[CAST(/($6, $7)):DECIMAL(11, 6)], agg4=[CAST(/($8, $9)):DECIMAL(11, 6)])
     HiveAggregate(group=[{0, 1}], groups=[[{0, 1}, {0}, {}]], agg#0=[sum($2)], agg#1=[count($2)], agg#2=[sum($3)], agg#3=[count($3)], agg#4=[sum($4)], agg#5=[count($4)], agg#6=[sum($5)], agg#7=[count($5)], GROUPING__ID=[GROUPING__ID()])
       HiveProject($f0=[$1], $f1=[$13], $f2=[$6], $f3=[$7], $f4=[$9], $f5=[$8])
         HiveJoin(condition=[=($3, $0)], joinType=[inner], algorithm=[none], cost=[not available])

@@ -29,7 +29,7 @@
 
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
-    <powermock.version>1.6.6</powermock.version>
+    <powermock.version>2.0.2</powermock.version>
     <reflections.version>0.9.10</reflections.version>
   </properties>
 
@@ -275,6 +275,11 @@
       <optional>true</optional>
     </dependency>
     <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-aws</artifactId>
+      <version>${hadoop.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.apache.orc</groupId>
       <artifactId>orc-tools</artifactId>
       <version>${orc.version}</version>
@@ -311,6 +316,11 @@
       <artifactId>curator-test</artifactId>
       <version>${curator.version}</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+       <groupId>org.apache.datasketches</groupId>
+       <artifactId>datasketches-hive</artifactId>
+       <version>${datasketches.version}</version>
     </dependency>
     <dependency>
       <groupId>com.lmax</groupId>
@@ -752,7 +762,7 @@
     </dependency>
     <dependency>
       <groupId>org.powermock</groupId>
-      <artifactId>powermock-api-mockito</artifactId>
+      <artifactId>powermock-api-mockito2</artifactId>
       <version>${powermock.version}</version>
       <scope>test</scope>
     </dependency>
@@ -777,6 +787,18 @@
           <artifactId>annotations</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>com.jayway.jsonpath</groupId>
+      <artifactId>json-path</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.janino</groupId>
+      <artifactId>commons-compiler</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.janino</groupId>
+      <artifactId>janino</artifactId>
     </dependency>
   </dependencies>
 
@@ -991,6 +1013,17 @@
                   <include>io.dropwizard.metrics:metrics-jvm</include>
                   <include>io.dropwizard.metrics:metrics-json</include>
                   <include>com.zaxxer:HikariCP</include>
+                  <include>org.apache.datasketches:*</include>
+                  <include>org.apache.calcite:*</include>
+                  <include>org.apache.calcite.avatica:avatica</include>
+                  <include>io.netty:*</include>
+                   <!-- some netty-based classes are included in arrow jars with original
+                  io.netty package name (e.g. io.netty.buffer.ArrowBuf in arrow-memory)
+                  so we should include them in the shaded jars in order to make shade plugin
+                  be triggered on them, but we should not relocate arrow (this is why arrow
+                  is not included in relocations)
+                  -->
+                  <include>org.apache.arrow:*</include>
                 </includes>
               </artifactSet>
               <relocations>
@@ -1015,8 +1048,20 @@
                   <shadedPattern>org.apache.hive.com.zaxxer.hikari</shadedPattern>
                 </relocation>
                 <relocation>
-                  <pattern>com.google.guava</pattern>
-                  <shadedPattern>org.apache.hive.com.google.guava</shadedPattern>
+                  <pattern>com.google.common</pattern>
+                  <shadedPattern>org.apache.hive.com.google.common</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>com.google.thirdparty.publicsuffix</pattern>
+                  <shadedPattern>org.apache.hive.com.google.thirdparty.publicsuffix</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>org.apache.datasketches</pattern>
+                  <shadedPattern>org.apache.hive.org.apache.datasketches</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>io.netty</pattern>
+                  <shadedPattern>org.apache.hive.io.netty</shadedPattern>
                 </relocation>
               </relocations>
             </configuration>

@@ -23,6 +23,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_COMMEN
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.metastore.Warehouse.getCatalogQualifiedTableName;
+import static org.apache.hadoop.hive.metastore.api.FireEventRequestData._Fields.INSERT_DATA;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.parseDbName;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.CAT_NAME;
@@ -88,6 +89,7 @@ import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.common.ZKDeRegisterWatcher;
 import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.metastore.api.*;
+import org.apache.hadoop.hive.metastore.api.FireEventRequestData._Fields;
 import org.apache.hadoop.hive.metastore.events.AddForeignKeyEvent;
 import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -2040,9 +2042,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
       }
       if (tbl.isSetId()) {
-        throw new InvalidObjectException("Id shouldn't be set but table "
-            + tbl.getDbName() + "." + tbl.getTableName() + " has the Id set to "
-            + tbl.getId() + ". It's a read-only option");
+        LOG.debug("Id shouldn't be set but table {}.{} has the Id set to {}. Id is ignored.", tbl.getDbName(),
+            tbl.getTableName(), tbl.getId());
+        tbl.unsetId();
       }
       SkewedInfo skew = tbl.getSd().getSkewedInfo();
       if (skew != null) {
@@ -2762,6 +2764,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (tbl == null) {
           throw new NoSuchObjectException(name + " doesn't exist");
         }
+
+        // Check if table is part of a materialized view.
+        // If it is, it cannot be dropped.
+        List<String> isPartOfMV = ms.isPartOfMaterializedView(catName, dbname, name);
+        if (!isPartOfMV.isEmpty()) {
+            throw new MetaException(String.format("Cannot drop table as it is used in the following materialized" +
+                    " views %s%n", isPartOfMV));
+        }
+
         if (tbl.getSd() == null) {
           throw new MetaException("Table metadata is corrupted");
         }
@@ -8603,22 +8614,60 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public FireEventResponse fire_listener_event(FireEventRequest rqst) throws TException {
       switch (rqst.getData().getSetField()) {
-      case INSERT_DATA:
-        String catName = rqst.isSetCatName() ? rqst.getCatName() : getDefaultCatalog(conf);
-        InsertEvent event =
-            new InsertEvent(catName, rqst.getDbName(), rqst.getTableName(), rqst.getPartitionVals(),
-                rqst.getData().getInsertData(), rqst.isSuccessful(), this);
-
-        /*
-         * The transactional listener response will be set already on the event, so there is not need
-         * to pass the response to the non-transactional listener.
-         */
-        MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventType.INSERT, event);
-        MetaStoreListenerNotifier.notifyEvent(listeners, EventType.INSERT, event);
-
-        return new FireEventResponse();
-
-      default:
+        case INSERT_DATA:
+        case INSERT_DATAS:
+        String catName =
+            rqst.isSetCatName() ? rqst.getCatName() : getDefaultCatalog(conf);
+        String dbName = rqst.getDbName();
+        String tblName = rqst.getTableName();
+        boolean isSuccessful = rqst.isSuccessful();
+        List<InsertEvent> events = new ArrayList<>();
+        if (rqst.getData().isSetInsertData()) {
+          events.add(new InsertEvent(catName, dbName, tblName,
+              rqst.getPartitionVals(),
+              rqst.getData().getInsertData(), isSuccessful, this));
+        } else {
+          // this is a bulk fire insert event operation
+          // we use the partition values field from the InsertEventRequestData object
+          // instead of the FireEventRequest object
+          for (InsertEventRequestData insertData : rqst.getData().getInsertDatas()) {
+            if (!insertData.isSetPartitionVal()) {
+              throw new MetaException(
+                  "Partition values must be set when firing multiple insert events");
+            }
+            events.add(new InsertEvent(catName, dbName, tblName,
+                insertData.getPartitionVal(),
+                insertData, isSuccessful, this));
+          }
+        }
+        FireEventResponse response = new FireEventResponse();
+        for (InsertEvent event : events) {
+          /*
+           * The transactional listener response will be set already on the event, so there is not need
+           * to pass the response to the non-transactional listener.
+           */
+          MetaStoreListenerNotifier
+              .notifyEvent(transactionalListeners, EventType.INSERT, event);
+          MetaStoreListenerNotifier.notifyEvent(listeners, EventType.INSERT, event);
+          if (event.getParameters() != null && event.getParameters()
+              .containsKey(
+                  MetaStoreEventListenerConstants.DB_NOTIFICATION_EVENT_ID_KEY_NAME)) {
+            response.addToEventIds(Long.valueOf(event.getParameters()
+                .get(MetaStoreEventListenerConstants.DB_NOTIFICATION_EVENT_ID_KEY_NAME)));
+          } else {
+            String msg = "Insert event id not generated for ";
+            if (event.getPartitionObj() != null) {
+              msg += "partition " + Arrays
+                  .toString(event.getPartitionObj().getValues().toArray()) + " of ";
+            }
+            msg +=
+                " of table " + event.getTableObj().getDbName() + "." + event.getTableObj()
+                    .getTableName();
+            LOG.warn(msg);
+          }
+        }
+        return response;
+        default:
         throw new TException("Event type " + rqst.getData().getSetField().toString()
             + " not currently supported.");
       }
@@ -10453,7 +10502,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   }
 
   private static void startRemoteOnlyTasks(Configuration conf) throws Exception {
-    if(!MetastoreConf.getBoolVar(conf, ConfVars.COMPACTOR_INITIATOR_ON)) {
+    if(!MetastoreConf.getBoolVar(conf, ConfVars.METASTORE_HOUSEKEEPING_THREADS_ON)) {
       return;
     }
 

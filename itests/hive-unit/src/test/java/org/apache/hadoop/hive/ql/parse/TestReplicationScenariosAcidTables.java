@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
@@ -32,10 +33,12 @@ import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.Behaviour
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.IDriver;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.Utils;
 
+import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -51,6 +54,11 @@ import java.util.Collections;
 import java.util.Map;
 
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
+import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.DUMP_ACKNOWLEDGEMENT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * TestReplicationScenariosAcidTables - test replication for ACID tables.
@@ -71,6 +79,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
 
     conf = new HiveConf(clazz);
     conf.set("dfs.client.use.datanode.hostname", "true");
+    conf.set("metastore.warehouse.tenant.colocation", "true");
     conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     MiniDFSCluster miniDFSCluster =
         new MiniDFSCluster.Builder(conf).numDataNodes(1).format(true).build();
@@ -84,12 +93,14 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
         put("hive.mapred.mode", "nonstrict");
         put("mapred.input.dir.recursive", "true");
         put("hive.metastore.disallow.incompatible.col.type.changes", "false");
+        put("metastore.warehouse.tenant.colocation", "true");
         put("hive.in.repl.test", "true");
       }};
 
     acidEnableConf.putAll(overrides);
 
     primary = new WarehouseInstance(LOG, miniDFSCluster, acidEnableConf);
+    acidEnableConf.put(MetastoreConf.ConfVars.REPLDIR.getHiveName(), primary.repldDir);
     replica = new WarehouseInstance(LOG, miniDFSCluster, acidEnableConf);
     Map<String, String> overridesForHiveConf1 = new HashMap<String, String>() {{
           put("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
@@ -97,6 +108,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
           put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager");
           put("hive.metastore.client.capability.check", "false");
       }};
+    overridesForHiveConf1.put(MetastoreConf.ConfVars.REPLDIR.getHiveName(), primary.repldDir);
     replicaNonAcid = new WarehouseInstance(LOG, miniDFSCluster, overridesForHiveConf1);
   }
 
@@ -117,7 +129,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
   public void testAcidTablesBootstrap() throws Throwable {
     // Bootstrap
     WarehouseInstance.Tuple bootstrapDump = prepareDataAndDump(primaryDbName, null);
-    replica.load(replicatedDbName, bootstrapDump.dumpLocation);
+    replica.load(replicatedDbName, primaryDbName);
     verifyLoadExecution(replicatedDbName, bootstrapDump.lastReplicationId, true);
 
     // First incremental, after bootstrap
@@ -126,7 +138,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     LOG.info(testName.getMethodName() + ": first incremental dump and load.");
     WarehouseInstance.Tuple incDump = primary.run("use " + primaryDbName)
             .dump(primaryDbName);
-    replica.load(replicatedDbName, incDump.dumpLocation);
+    replica.load(replicatedDbName, primaryDbName);
     verifyIncLoad(replicatedDbName, incDump.lastReplicationId);
 
     // Second incremental, after bootstrap
@@ -135,14 +147,14 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     LOG.info(testName.getMethodName() + ": second incremental dump and load.");
     WarehouseInstance.Tuple inc2Dump = primary.run("use " + primaryDbName)
             .dump(primaryDbName);
-    replica.load(replicatedDbName, inc2Dump.dumpLocation);
+    replica.load(replicatedDbName, primaryDbName);
     verifyInc2Load(replicatedDbName, inc2Dump.lastReplicationId);
   }
 
   @Test
   public void testAcidTablesMoveOptimizationBootStrap() throws Throwable {
     WarehouseInstance.Tuple bootstrapDump = prepareDataAndDump(primaryDbName, null);
-    replica.load(replicatedDbName, bootstrapDump.dumpLocation,
+    replica.load(replicatedDbName, primaryDbName,
             Collections.singletonList("'hive.repl.enable.move.optimization'='true'"));
     verifyLoadExecution(replicatedDbName, bootstrapDump.lastReplicationId, true);
   }
@@ -150,10 +162,10 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
   @Test
   public void testAcidTablesMoveOptimizationIncremental() throws Throwable {
     WarehouseInstance.Tuple bootstrapDump = primary.dump(primaryDbName);
-    replica.load(replicatedDbName, bootstrapDump.dumpLocation,
+    replica.load(replicatedDbName, primaryDbName,
             Collections.singletonList("'hive.repl.enable.move.optimization'='true'"));
     WarehouseInstance.Tuple incrDump = prepareDataAndDump(primaryDbName, null);
-    replica.load(replicatedDbName, incrDump.dumpLocation,
+    replica.load(replicatedDbName, primaryDbName,
             Collections.singletonList("'hive.repl.enable.move.optimization'='true'"));
     verifyLoadExecution(replicatedDbName, incrDump.lastReplicationId, true);
   }
@@ -196,7 +208,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
 
     // Bootstrap load which should also replicate the aborted write ids on both tables.
     HiveConf replicaConf = replica.getConf();
-    replica.load(replicatedDbName, bootstrapDump.dumpLocation)
+    replica.load(replicatedDbName, primaryDbName)
             .run("use " + replicatedDbName)
             .run("show tables")
             .verifyResults(new String[] {"t1", "t2"})
@@ -280,7 +292,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     }
 
     // Bootstrap dump has taken snapshot before concurrent tread performed write. So, it won't see data "2".
-    replica.load(replicatedDbName, bootstrapDump.dumpLocation)
+    replica.load(replicatedDbName, primaryDbName)
             .run("use " + replicatedDbName)
             .run("repl status " + replicatedDbName)
             .verifyResult(bootstrapDump.lastReplicationId)
@@ -289,7 +301,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
 
     // Incremental should include the concurrent write of data "2" from another txn.
     WarehouseInstance.Tuple incrementalDump = primary.dump(primaryDbName);
-    replica.load(replicatedDbName, incrementalDump.dumpLocation)
+    replica.load(replicatedDbName, primaryDbName)
             .run("use " + replicatedDbName)
             .run("repl status " + replicatedDbName)
             .verifyResult(incrementalDump.lastReplicationId)
@@ -354,7 +366,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     }
 
     // Bootstrap dump has taken latest list of tables and hence won't see table t1 as it is dropped.
-    replica.load(replicatedDbName, bootstrapDump.dumpLocation)
+    replica.load(replicatedDbName, primaryDbName)
             .run("use " + replicatedDbName)
             .run("repl status " + replicatedDbName)
             .verifyResult(bootstrapDump.lastReplicationId)
@@ -368,7 +380,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             .run("insert into t1 values(100)")
             .dump(primaryDbName);
 
-    replica.load(replicatedDbName, incrementalDump.dumpLocation)
+    replica.load(replicatedDbName, primaryDbName)
             .run("use " + replicatedDbName)
             .run("repl status " + replicatedDbName)
             .verifyResult(incrementalDump.lastReplicationId)
@@ -380,7 +392,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
   public void testOpenTxnEvent() throws Throwable {
     String tableName = testName.getMethodName();
     WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName);
-    replica.load(replicatedDbName, bootStrapDump.dumpLocation)
+    replica.load(replicatedDbName, primaryDbName)
             .run("REPL STATUS " + replicatedDbName)
             .verifyResult(bootStrapDump.lastReplicationId);
 
@@ -401,12 +413,12 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     primary.testEventCounts(primaryDbName, lastReplId, null, null, 22);
 
     // Test load
-    replica.load(replicatedDbName, incrementalDump.dumpLocation)
+    replica.load(replicatedDbName, primaryDbName)
             .run("REPL STATUS " + replicatedDbName)
             .verifyResult(incrementalDump.lastReplicationId);
 
     // Test the idempotent behavior of Open and Commit Txn
-    replica.load(replicatedDbName, incrementalDump.dumpLocation)
+    replica.load(replicatedDbName, primaryDbName)
             .run("REPL STATUS " + replicatedDbName)
             .verifyResult(incrementalDump.lastReplicationId);
   }
@@ -415,7 +427,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
   public void testAbortTxnEvent() throws Throwable {
     String tableNameFail = testName.getMethodName() + "Fail";
     WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName);
-    replica.load(replicatedDbName, bootStrapDump.dumpLocation)
+    replica.load(replicatedDbName, primaryDbName)
             .run("REPL STATUS " + replicatedDbName)
             .verifyResult(bootStrapDump.lastReplicationId);
 
@@ -429,12 +441,12 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
 
     WarehouseInstance.Tuple incrementalDump =
             primary.dump(primaryDbName);
-    replica.load(replicatedDbName, incrementalDump.dumpLocation)
+    replica.load(replicatedDbName, primaryDbName)
             .run("REPL STATUS " + replicatedDbName)
             .verifyResult(incrementalDump.lastReplicationId);
 
     // Test the idempotent behavior of Abort Txn
-    replica.load(replicatedDbName, incrementalDump.dumpLocation)
+    replica.load(replicatedDbName, primaryDbName)
             .run("REPL STATUS " + replicatedDbName)
             .verifyResult(incrementalDump.lastReplicationId);
   }
@@ -443,7 +455,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
   public void testTxnEventNonAcid() throws Throwable {
     String tableName = testName.getMethodName();
     WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName);
-    replicaNonAcid.load(replicatedDbName, bootStrapDump.dumpLocation)
+    replicaNonAcid.load(replicatedDbName, primaryDbName)
             .run("REPL STATUS " + replicatedDbName)
             .verifyResult(bootStrapDump.lastReplicationId);
 
@@ -460,7 +472,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
 
     WarehouseInstance.Tuple incrementalDump =
             primary.dump(primaryDbName);
-    replicaNonAcid.runFailure("REPL LOAD " + replicatedDbName + " FROM '" + incrementalDump.dumpLocation + "'")
+    replicaNonAcid.runFailure("REPL LOAD " + primaryDbName + " INTO " + replicatedDbName + "'")
             .run("REPL STATUS " + replicatedDbName)
             .verifyResult(bootStrapDump.lastReplicationId);
   }
@@ -499,7 +511,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     InjectableBehaviourObjectStore.setCallerVerifier(callerVerifier);
 
     List<String> withConfigs = Arrays.asList("'hive.repl.approx.max.load.tasks'='1'");
-    replica.loadFailure(replicatedDbName, tuple.dumpLocation, withConfigs);
+    replica.loadFailure(replicatedDbName, primaryDbName, withConfigs);
     callerVerifier.assertInjectionsPerformed(true, false);
     InjectableBehaviourObjectStore.resetCallerVerifier(); // reset the behaviour
 
@@ -527,7 +539,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
 
     // Retry with same dump with which it was already loaded should resume the bootstrap load.
     // This time, it completes by adding just constraints for table t4.
-    replica.load(replicatedDbName, tuple.dumpLocation);
+    replica.load(replicatedDbName, primaryDbName);
     callerVerifier.assertInjectionsPerformed(true, false);
     InjectableBehaviourObjectStore.resetCallerVerifier(); // reset the behaviour
 
@@ -604,9 +616,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     String txnStrStart = "START TRANSACTION";
     String txnStrCommit = "COMMIT";
 
-    WarehouseInstance.Tuple incrementalDump;
     primary.run("alter database default set dbproperties ('repl.source.for' = '1, 2, 3')");
-    WarehouseInstance.Tuple bootStrapDump = primary.dump("`*`");
 
     primary.run("use " + primaryDbName)
           .run("create database " + dbName1 + " WITH DBPROPERTIES ( '" + SOURCE_OF_REPLICATION + "' = '1,2,3')")
@@ -638,7 +648,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
           .verifyResults(resultArray)
           .run(txnStrCommit);
 
-    incrementalDump = primary.dump("`*`");
+    primary.dump("`*`");
 
     // Due to the limitation that we can only have one instance of Persistence Manager Factory in a JVM
     // we are not able to create multiple embedded derby instances for two different MetaStore instances.
@@ -646,20 +656,313 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     primary.run("drop database " + dbName1 + " cascade");
     primary.run("drop database " + dbName2 + " cascade");
     //End of additional steps
+    try {
+      replica.loadWithoutExplain("", "`*`");
+    } catch (SemanticException e) {
+      assertEquals("REPL LOAD * is not supported", e.getMessage());
+    }
+  }
 
-    replica.loadWithoutExplain("", bootStrapDump.dumpLocation)
-            .run("REPL STATUS default")
-            .verifyResult(bootStrapDump.lastReplicationId);
+  @Test
+  public void testCheckPointingDataDumpFailure() throws Throwable {
+    //To force distcp copy
+    List<String> dumpClause = Arrays.asList(
+            "'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXSIZE.varname + "'='1'",
+            "'" + HiveConf.ConfVars.HIVE_IN_TEST.varname + "'='false'",
+            "'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXNUMFILES.varname + "'='0'",
+            "'" + HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname + "'='"
+                    + UserGroupInformation.getCurrentUser().getUserName() + "'");
 
-    replica.loadWithoutExplain("", incrementalDump.dumpLocation)
-          .run("REPL STATUS " + dbName1)
-          .run("select key from " + dbName1 + "." + tableName + " order by key")
-          .verifyResults(resultArray)
-          .run("select key from " + dbName2 + "." + tableName + " order by key")
-          .verifyResults(resultArray);
+    WarehouseInstance.Tuple bootstrapDump = primary.run("use " + primaryDbName)
+            .run("CREATE TABLE t1(a string) STORED AS TEXTFILE")
+            .run("CREATE TABLE t2(a string) STORED AS TEXTFILE")
+            .run("insert into t1 values (1)")
+            .run("insert into t1 values (2)")
+            .run("insert into t1 values (3)")
+            .run("insert into t2 values (11)")
+            .run("insert into t2 values (21)")
+            .dump(primaryDbName);
 
-    replica.run("drop database " + primaryDbName + " cascade");
-    replica.run("drop database " + dbName1 + " cascade");
-    replica.run("drop database " + dbName2 + " cascade");
+    FileSystem fs = new Path(bootstrapDump.dumpLocation).getFileSystem(conf);
+    Path dumpPath = new Path(bootstrapDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
+    Path metadataPath = new Path(dumpPath, EximUtil.METADATA_PATH_NAME);
+    long modifiedTimeMetadata = fs.getFileStatus(metadataPath).getModificationTime();
+    Path dataPath = new Path(dumpPath, EximUtil.DATA_PATH_NAME);
+    Path dbDataPath = new Path(dataPath, primaryDbName.toLowerCase());
+    Path tablet1Path = new Path(dbDataPath, "t1");
+    Path tablet2Path = new Path(dbDataPath, "t2");
+    //Delete dump ack and t2 data, metadata should be rewritten, data should be same for t1 but rewritten for t2
+    fs.delete(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString()), true);
+    assertFalse(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
+    FileStatus[] statuses = fs.listStatus(tablet2Path);
+    //Delete t2 data
+    fs.delete(statuses[0].getPath(), true);
+    long modifiedTimeTable1 = fs.getFileStatus(tablet1Path).getModificationTime();
+    long modifiedTimeTable1CopyFile = fs.listStatus(tablet1Path)[0].getModificationTime();
+    long modifiedTimeTable2 = fs.getFileStatus(tablet2Path).getModificationTime();
+    //Do another dump. It should only dump table t2. Modification time of table t1 should be same while t2 is greater
+    WarehouseInstance.Tuple nextDump = primary.dump(primaryDbName, dumpClause);
+    assertEquals(nextDump.dumpLocation, bootstrapDump.dumpLocation);
+    assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
+    assertEquals(modifiedTimeTable1, fs.getFileStatus(tablet1Path).getModificationTime());
+    assertEquals(modifiedTimeTable1CopyFile, fs.listStatus(tablet1Path)[0].getModificationTime());
+    assertTrue(modifiedTimeTable2 < fs.getFileStatus(tablet2Path).getModificationTime());
+    assertTrue(modifiedTimeMetadata < fs.getFileStatus(metadataPath).getModificationTime());
+    replica.load(replicatedDbName, primaryDbName)
+            .run("select * from " + replicatedDbName + ".t1")
+            .verifyResults(new String[] {"1", "2", "3"})
+            .run("select * from " + replicatedDbName + ".t2")
+            .verifyResults(new String[]{"11", "21"});
+  }
+
+  @Test
+  public void testCheckPointingDataDumpFailureRegularCopy() throws Throwable {
+    WarehouseInstance.Tuple bootstrapDump = primary.run("use " + primaryDbName)
+            .run("CREATE TABLE t1(a string) STORED AS TEXTFILE")
+            .run("CREATE TABLE t2(a string) STORED AS TEXTFILE")
+            .run("insert into t1 values (1)")
+            .run("insert into t1 values (2)")
+            .run("insert into t1 values (3)")
+            .run("insert into t2 values (11)")
+            .run("insert into t2 values (21)")
+            .dump(primaryDbName);
+    FileSystem fs = new Path(bootstrapDump.dumpLocation).getFileSystem(conf);
+    Path dumpPath = new Path(bootstrapDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
+    Path metadataPath = new Path(dumpPath, EximUtil.METADATA_PATH_NAME);
+    long modifiedTimeMetadata = fs.getFileStatus(metadataPath).getModificationTime();
+    Path dataPath = new Path(dumpPath, EximUtil.DATA_PATH_NAME);
+    Path dbPath = new Path(dataPath, primaryDbName.toLowerCase());
+    Path tablet1Path = new Path(dbPath, "t1");
+    Path tablet2Path = new Path(dbPath, "t2");
+    //Delete dump ack and t2 data, metadata should be rewritten, data should be same for t1 but rewritten for t2
+    fs.delete(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString()), true);
+    assertFalse(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
+    FileStatus[] statuses = fs.listStatus(tablet2Path);
+    //Delete t2 data
+    fs.delete(statuses[0].getPath(), true);
+    long modifiedTimeTable1 = fs.getFileStatus(tablet1Path).getModificationTime();
+    long modifiedTimeTable1CopyFile = fs.listStatus(tablet1Path)[0].getModificationTime();
+    long modifiedTimeTable2 = fs.getFileStatus(tablet2Path).getModificationTime();
+    //Do another dump. It should only dump table t2. Modification time of table t1 should be same while t2 is greater
+    WarehouseInstance.Tuple nextDump = primary.dump(primaryDbName);
+    assertEquals(nextDump.dumpLocation, bootstrapDump.dumpLocation);
+    assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
+    //File is copied again as we are using regular copy
+    assertTrue(modifiedTimeTable1 < fs.getFileStatus(tablet1Path).getModificationTime());
+    assertTrue(modifiedTimeTable1CopyFile < fs.listStatus(tablet1Path)[0].getModificationTime());
+    assertTrue(modifiedTimeTable2 < fs.getFileStatus(tablet2Path).getModificationTime());
+    assertTrue(modifiedTimeMetadata < fs.getFileStatus(metadataPath).getModificationTime());
+    replica.load(replicatedDbName, primaryDbName)
+            .run("select * from " + replicatedDbName + ".t1")
+            .verifyResults(new String[] {"1", "2", "3"})
+            .run("select * from " + replicatedDbName + ".t2")
+            .verifyResults(new String[]{"11", "21"});
+  }
+
+  @Test
+  public void testCheckPointingWithSourceTableDataInserted() throws Throwable {
+    //To force distcp copy
+    List<String> dumpClause = Arrays.asList(
+            "'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXSIZE.varname + "'='1'",
+            "'" + HiveConf.ConfVars.HIVE_IN_TEST.varname + "'='false'",
+            "'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXNUMFILES.varname + "'='0'",
+            "'" + HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname + "'='"
+                    + UserGroupInformation.getCurrentUser().getUserName() + "'");
+
+    WarehouseInstance.Tuple bootstrapDump = primary.run("use " + primaryDbName)
+            .run("CREATE TABLE t1(a string) STORED AS TEXTFILE")
+            .run("CREATE TABLE t2(a string) STORED AS TEXTFILE")
+            .run("insert into t1 values (1)")
+            .run("insert into t1 values (2)")
+            .run("insert into t1 values (3)")
+            .run("insert into t2 values (11)")
+            .run("insert into t2 values (21)")
+            .dump(primaryDbName);
+
+    FileSystem fs = new Path(bootstrapDump.dumpLocation).getFileSystem(conf);
+    Path dumpPath = new Path(bootstrapDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
+    Path dataPath = new Path(dumpPath, EximUtil.DATA_PATH_NAME);
+    Path dbPath = new Path(dataPath, primaryDbName.toLowerCase());
+    Path tablet1Path = new Path(dbPath, "t1");
+    Path tablet2Path = new Path(dbPath, "t2");
+    long modifiedTimeTable2 = fs.getFileStatus(tablet2Path).getModificationTime();
+    //Delete table 2 data
+    FileStatus[] statuses = fs.listStatus(tablet2Path);
+    //Delete t2 data
+    fs.delete(statuses[0].getPath(), true);
+    fs.delete(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString()), true);
+    long modifiedTimeTable1CopyFile = fs.listStatus(tablet1Path)[0].getModificationTime();
+
+    //Do another dump. It should only dump table t2. Also insert new data in existing tables.
+    // New data should be there in target
+    primary.run("use " + primaryDbName)
+            .run("insert into t2 values (13)")
+            .run("insert into t2 values (24)")
+            .run("insert into t1 values (4)")
+            .dump(primaryDbName, dumpClause);
+
+    replica.load(replicatedDbName, primaryDbName)
+            .run("use " + replicatedDbName)
+            .run("select * from t1")
+            .verifyResults(new String[]{"1", "2", "3", "4"})
+            .run("select * from t2")
+            .verifyResults(new String[]{"11", "21", "13", "24"});
+    assertEquals(modifiedTimeTable1CopyFile, fs.listStatus(tablet1Path)[0].getModificationTime());
+    assertTrue(modifiedTimeTable2 < fs.getFileStatus(tablet2Path).getModificationTime());
+  }
+
+  @Test
+  public void testCheckPointingWithNewTablesAdded() throws Throwable {
+    //To force distcp copy
+    List<String> dumpClause = Arrays.asList(
+            "'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXSIZE.varname + "'='1'",
+            "'" + HiveConf.ConfVars.HIVE_IN_TEST.varname + "'='false'",
+            "'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXNUMFILES.varname + "'='0'",
+            "'" + HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname + "'='"
+                    + UserGroupInformation.getCurrentUser().getUserName() + "'");
+
+    WarehouseInstance.Tuple bootstrapDump = primary.run("use " + primaryDbName)
+            .run("CREATE TABLE t1(a string) STORED AS TEXTFILE")
+            .run("CREATE TABLE t2(a string) STORED AS TEXTFILE")
+            .run("insert into t1 values (1)")
+            .run("insert into t1 values (2)")
+            .run("insert into t1 values (3)")
+            .run("insert into t2 values (11)")
+            .run("insert into t2 values (21)")
+            .dump(primaryDbName);
+
+    FileSystem fs = new Path(bootstrapDump.dumpLocation).getFileSystem(conf);
+    Path dumpPath = new Path(bootstrapDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
+    Path dataPath = new Path(dumpPath, EximUtil.DATA_PATH_NAME);
+    Path dbPath = new Path(dataPath, primaryDbName.toLowerCase());
+    Path tablet1Path = new Path(dbPath, "t1");
+    Path tablet2Path = new Path(dbPath, "t2");
+    long modifiedTimeTable1 = fs.getFileStatus(tablet1Path).getModificationTime();
+    long modifiedTimeTable2 = fs.getFileStatus(tablet2Path).getModificationTime();
+    //Delete table 2 data
+    FileStatus[] statuses = fs.listStatus(tablet2Path);
+    fs.delete(statuses[0].getPath(), true);
+    fs.delete(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString()), true);
+    long modifiedTimeTable1CopyFile = fs.listStatus(tablet1Path)[0].getModificationTime();
+
+    // Do another dump. It should only dump table t2 and next table.
+    // Also insert new tables. New tables will be there in target
+    primary.run("use " + primaryDbName)
+            .run("insert into t2 values (13)")
+            .run("insert into t2 values (24)")
+            .run("create table t3(a string) STORED AS TEXTFILE")
+            .run("insert into t3 values (1)")
+            .run("insert into t3 values (2)")
+            .run("insert into t3 values (3)")
+            .dump(primaryDbName, dumpClause);
+
+    replica.load(replicatedDbName, primaryDbName)
+            .run("use " + replicatedDbName)
+            .run("select * from t1")
+            .verifyResults(new String[]{"1", "2", "3"})
+            .run("select * from t2")
+            .verifyResults(new String[]{"11", "21", "13", "24"})
+            .run("show tables")
+            .verifyResults(new String[]{"t1", "t2", "t3"})
+            .run("select * from t3")
+            .verifyResults(new String[]{"1", "2", "3"});
+    assertEquals(modifiedTimeTable1, fs.getFileStatus(tablet1Path).getModificationTime());
+    assertEquals(modifiedTimeTable1CopyFile, fs.listStatus(tablet1Path)[0].getModificationTime());
+    assertTrue(modifiedTimeTable2 < fs.getFileStatus(tablet2Path).getModificationTime());
+  }
+
+  @Test
+  public void testCheckPointingWithSourceTableDeleted() throws Throwable {
+    //To force distcp copy
+    List<String> dumpClause = Arrays.asList(
+            "'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXSIZE.varname + "'='1'",
+            "'" + HiveConf.ConfVars.HIVE_IN_TEST.varname + "'='false'",
+            "'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXNUMFILES.varname + "'='0'",
+            "'" + HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname + "'='"
+                    + UserGroupInformation.getCurrentUser().getUserName() + "'");
+
+    WarehouseInstance.Tuple bootstrapDump = primary.run("use " + primaryDbName)
+            .run("CREATE TABLE t1(a string) STORED AS TEXTFILE")
+            .run("CREATE TABLE t2(a string) STORED AS TEXTFILE")
+            .run("insert into t1 values (1)")
+            .run("insert into t1 values (2)")
+            .run("insert into t1 values (3)")
+            .run("insert into t2 values (11)")
+            .run("insert into t2 values (21)")
+            .dump(primaryDbName);
+
+    FileSystem fs = new Path(bootstrapDump.dumpLocation).getFileSystem(conf);
+    Path dumpPath = new Path(bootstrapDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
+
+
+    //Delete dump ack and t2 data, Also drop table. New data will be there in target
+    fs.delete(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString()), true);
+    assertFalse(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
+    Path dataPath = new Path(dumpPath, EximUtil.DATA_PATH_NAME);
+    Path dbPath = new Path(dataPath, primaryDbName.toLowerCase());
+    Path tablet2Path = new Path(dbPath, "t2");
+    FileStatus[] statuses = fs.listStatus(tablet2Path);
+    //Delete t2 data.
+    fs.delete(statuses[0].getPath(), true);
+    //Drop table t1. Target shouldn't have t1 table as metadata dump is rewritten
+    primary.run("use " + primaryDbName)
+            .run("drop table t1")
+            .dump(primaryDbName, dumpClause);
+
+    replica.load(replicatedDbName, primaryDbName)
+            .run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[]{"t2"})
+            .run("select * from t2")
+            .verifyResults(new String[]{"11", "21"});
+  }
+
+  @Test
+  public void testCheckPointingMetadataDumpFailure() throws Throwable {
+    //To force distcp copy
+    List<String> dumpClause = Arrays.asList(
+            "'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXSIZE.varname + "'='1'",
+            "'" + HiveConf.ConfVars.HIVE_IN_TEST.varname + "'='false'",
+            "'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXNUMFILES.varname + "'='0'",
+            "'" + HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname + "'='"
+                    + UserGroupInformation.getCurrentUser().getUserName() + "'");
+
+    WarehouseInstance.Tuple bootstrapDump = primary.run("use " + primaryDbName)
+            .run("CREATE TABLE t1(a string) STORED AS TEXTFILE")
+            .run("CREATE TABLE t2(a string) STORED AS TEXTFILE")
+            .run("insert into t1 values (1)")
+            .run("insert into t1 values (2)")
+            .run("insert into t1 values (3)")
+            .run("insert into t2 values (11)")
+            .run("insert into t2 values (21)")
+            .dump(primaryDbName);
+    FileSystem fs = new Path(bootstrapDump.dumpLocation).getFileSystem(conf);
+    Path dumpPath = new Path(bootstrapDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
+
+    //Delete dump ack and metadata ack, everything should be rewritten in a new dump dir
+    fs.delete(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString()), true);
+    fs.delete(new Path(dumpPath, "_dumpmetadata"), true);
+    assertFalse(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
+    //Insert new data
+    primary.run("insert into "+ primaryDbName +".t1 values (12)");
+    primary.run("insert into "+ primaryDbName +".t1 values (13)");
+    //Do another dump. It should dump everything in a new dump dir
+    // checkpointing will not be used
+    WarehouseInstance.Tuple nextDump = primary.dump(primaryDbName, dumpClause);
+    replica.load(replicatedDbName, primaryDbName)
+            .run("use " + replicatedDbName)
+            .run("select * from t2")
+            .verifyResults(new String[]{"11", "21"})
+            .run("select * from t1")
+            .verifyResults(new String[]{"1", "2", "3", "12", "13"});
+    assertNotEquals(nextDump.dumpLocation, bootstrapDump.dumpLocation);
+    dumpPath = new Path(nextDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
   }
 }

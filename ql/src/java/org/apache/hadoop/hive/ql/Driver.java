@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -888,15 +889,12 @@ public class Driver implements IDriver {
     }
 
     int numRows = 0;
-    String row = null;
 
     while (numRows < maxRows) {
+      final String row;
+
       if (driverContext.getResStream() == null) {
-        if (numRows > 0) {
-          return true;
-        } else {
-          return false;
-        }
+        return (numRows > 0);
       }
 
       bos.reset();
@@ -904,16 +902,17 @@ public class Driver implements IDriver {
       try {
         ss = Utilities.readColumn(driverContext.getResStream(), bos);
         if (bos.getLength() > 0) {
-          row = new String(bos.getData(), 0, bos.getLength(), "UTF-8");
+          row = new String(bos.getData(), 0, bos.getLength(), StandardCharsets.UTF_8);
         } else if (ss == Utilities.StreamStatus.TERMINATED) {
-          row = new String();
+          row = "";
+        } else {
+          row = null;
         }
 
         if (row != null) {
           numRows++;
           res.add(row);
         }
-        row = null;
       } catch (IOException e) {
         CONSOLE.printError("FAILED: Unexpected IO exception : " + e.getMessage());
         return false;
