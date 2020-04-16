@@ -233,9 +233,9 @@ public class TestShortestJobFirstComparator {
 
   @Test(timeout = 60000)
   public void testWaitQueueComparatorParallelism() throws InterruptedException {
-    TaskWrapper r1 = createTaskWrapper(createSubmitWorkRequestProto(1, 10, 3, 10, 100, 1, "q1", false), false, 100000); // 7 pending
-    TaskWrapper r2 = createTaskWrapper(createSubmitWorkRequestProto(2, 10, 7, 10, 100, 1, "q2", false), false, 100000); // 3 pending
-    TaskWrapper r3 = createTaskWrapper(createSubmitWorkRequestProto(3, 10, 5, 10, 100, 1, "q3", false), false, 100000); // 5 pending
+    TaskWrapper r1 = createTaskWrapper(createSubmitWorkRequestProto(1, 10, 3, 10, 100, 1, "q1", false, 0), false, 100000); // 7 pending
+    TaskWrapper r2 = createTaskWrapper(createSubmitWorkRequestProto(2, 10, 7, 10, 100, 1, "q2", false, 0), false, 100000); // 3 pending
+    TaskWrapper r3 = createTaskWrapper(createSubmitWorkRequestProto(3, 10, 5, 10, 100, 1, "q3", false, 0), false, 100000); // 5 pending
 
     EvictingPriorityBlockingQueue<TaskWrapper> queue = new EvictingPriorityBlockingQueue<>(
         new ShortestJobFirstComparator(), 4);
@@ -312,6 +312,48 @@ public class TestShortestJobFirstComparator {
       assertTrue(curr.getRequestId().compareTo(prev.getRequestId()) > 0);
       prev = curr;
     }
+  }
+
+  @Test(timeout = 60000)
+  public void testWaitQueueAgingMutli() throws InterruptedException {
+    // Make sure we dont have evictions triggered (maxSize = taskSize)
+    EvictingPriorityBlockingQueue<TaskWrapper> queue =
+            new EvictingPriorityBlockingQueue<>(new ShortestJobFirstComparator(), 10);
+
+    // Single task DAG with same start and attempt time
+    TaskWrapper r1 = createTaskWrapper(createSubmitWorkRequestProto(1, 1, 1000, 1000, "q11"), true, 1000);
+    // Multi task DAG with same start-time as above but 11 out of 12 task completed!
+    TaskWrapper r2 = createTaskWrapper(createSubmitWorkRequestProto(2, 12, 1000, 1500, "q12", 11), true, 1000);
+    assertNull(queue.offer(r1, 0));
+    assertEquals(r1, queue.peek());
+    assertNull(queue.offer(r2, 0));
+    assertEquals(r2, queue.peek());
+
+    queue.remove(r1);
+    queue.remove(r2);
+    assertTrue(queue.isEmpty());
+
+    // Single task DAG with different start and attempt time (longer waitime first when tasks have same size)
+    r1 = createTaskWrapper(createSubmitWorkRequestProto(1, 1, 800, 1000, "q11"), true, 1000);
+    assertNull(queue.offer(r1, 0));
+    assertEquals(r1, queue.peek()); // Task1 ratio = 1/200 = 0.005
+    assertNull(queue.offer(r2, 0));
+    assertEquals(r2, queue.peek()); // Task2 ratio = 1/500 = 0.002
+
+    queue.remove(r1);
+    queue.remove(r2);
+    assertTrue(queue.isEmpty());
+
+    // Single task DAG with different start and attempt time
+    r1 = createTaskWrapper(createSubmitWorkRequestProto(1, 1, 800, 1000, "q11"), true, 1000);
+    // Multi-task DAG with 10 out of 12
+    r2 = createTaskWrapper(createSubmitWorkRequestProto(2, 12, 1000, 1500, "q12", 10), true, 1000);
+
+    // pending/wait-time -> r2 has again priority
+    assertNull(queue.offer(r1, 0));
+    assertEquals(r1, queue.peek()); // Task1 ratio = 1/200 = 0.005
+    assertNull(queue.offer(r2, 0));
+    assertEquals(r2, queue.peek()); // Task2 ratio = 2/500 = 0.004
   }
 
   @Test(timeout = 60000)

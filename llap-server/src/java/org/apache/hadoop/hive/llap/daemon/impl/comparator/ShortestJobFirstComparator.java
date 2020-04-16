@@ -44,12 +44,15 @@ public class ShortestJobFirstComparator extends LlapQueueComparatorBase {
     // it's parent hierarchy. selfAndUpstreamComplete indicates how many of these have completed.
     int knownPending1 = fri1.getNumSelfAndUpstreamTasks() - fri1.getNumSelfAndUpstreamCompletedTasks();
     int knownPending2 = fri2.getNumSelfAndUpstreamTasks() - fri2.getNumSelfAndUpstreamCompletedTasks();
-    // WaitTime: multi-task vertex attempt with longer wait-time wrt to its start time -> higher priority
-    // WaitTime: single-task vertex attempt with earlier start-time -> higher priority
-    long waitTime1 = fri1.getNumSelfAndUpstreamTasks() == 1 ?
-            -1 * fri1.getCurrentAttemptStartTime() : fri1.getCurrentAttemptStartTime() - fri1.getFirstAttemptStartTime();
-    long waitTime2 = fri2.getNumSelfAndUpstreamTasks() == 1 ?
-            -1 * fri2.getCurrentAttemptStartTime() : fri2.getCurrentAttemptStartTime() - fri2.getFirstAttemptStartTime();
+    // Multi-task vertex attempt: longer wait-time wrt to its start time -> higher priority
+    long waitTime1 = fri1.getCurrentAttemptStartTime() - fri1.getFirstAttemptStartTime();
+    long waitTime2 = fri2.getCurrentAttemptStartTime() - fri2.getFirstAttemptStartTime();
+
+    // Single-task vertex attempt: earlier start-time -> higher priority
+    if (fri1.getNumSelfAndUpstreamTasks() == fri2.getNumSelfAndUpstreamTasks() &&
+            fri1.getNumSelfAndUpstreamTasks() == 1) {
+      return (int) (fri1.getCurrentAttemptStartTime() - fri2.getCurrentAttemptStartTime());
+    }
 
     if (waitTime1 == 0 || waitTime2 == 0) {
       return knownPending1 - knownPending2;
