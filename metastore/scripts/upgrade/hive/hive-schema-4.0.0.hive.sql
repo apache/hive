@@ -1418,7 +1418,7 @@ SELECT DISTINCT
     HL.`HL_TABLE`,
     HL.`HL_PARTITION`,
     CASE WHEN HL.`HL_LOCK_STATE` = 'a' THEN 'acquired' WHEN HL.`HL_LOCK_STATE` = 'w' THEN 'waiting' END AS LOCK_STATE,
-    CASE WHEN HL.`HL_LOCK_TYPE` = 'e' THEN 'exclusive' WHEN HL.`HL_LOCK_TYPE` = 'r' THEN 'shared' WHEN HL.`HL_LOCK_TYPE` = 'w' THEN 'semi-shared' END AS LOCK_TYPE,
+    CASE WHEN HL.`HL_LOCK_TYPE` = 'e' THEN 'exclusive' WHEN HL.`HL_LOCK_TYPE` = 'x' THEN 'excl_write' WHEN HL.`HL_LOCK_TYPE` = 'r' THEN 'shared_read' WHEN HL.`HL_LOCK_TYPE` = 'w' THEN 'shared_write' END AS LOCK_TYPE,
     FROM_UNIXTIME(HL.`HL_LAST_HEARTBEAT`),
     FROM_UNIXTIME(HL.`HL_ACQUIRED_AT`),
     HL.`HL_USER`,

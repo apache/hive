@@ -439,7 +439,7 @@ public class TransactionBatch extends AbstractStreamingTransaction {
     LockComponentBuilder lockCompBuilder = new LockComponentBuilder()
         .setDbName(connection.getDatabase())
         .setTableName(connection.getTable().getTableName())
-        .setShared()
+        .setSharedRead()
         .setOperationType(DataOperationType.INSERT);
     if (connection.isDynamicPartitioning()) {
       lockCompBuilder.setIsDynamicPartitionWrite(true);

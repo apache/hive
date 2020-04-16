@@ -2926,7 +2926,7 @@ public class AcidUtils {
     boolean skipReadLock = !conf.getBoolVar(ConfVars.HIVE_TXN_READ_LOCKS);
     boolean skipNonAcidReadLock = !conf.getBoolVar(ConfVars.HIVE_TXN_NONACID_READ_LOCKS);
 
-    // For each source to read, get a shared lock
+    // For each source to read, get a shared_read lock
     for (ReadEntity input : inputs) {
       if (input.isDummy()
           || !input.needsLock()
@@ -2938,7 +2938,7 @@ public class AcidUtils {
         continue;
       }
       LockComponentBuilder compBuilder = new LockComponentBuilder();
-      compBuilder.setShared();
+      compBuilder.setSharedRead();
       compBuilder.setOperationType(DataOperationType.SELECT);
 
       Table t = null;
@@ -2980,7 +2980,7 @@ public class AcidUtils {
     // For each source to write to, get the appropriate lock type.  If it's
     // an OVERWRITE, we need to get an exclusive lock.  If it's an insert (no
     // overwrite) than we need a shared.  If it's update or delete then we
-    // need a SEMI-SHARED.
+    // need a SHARED_WRITE.
     for (WriteEntity output : outputs) {
       LOG.debug("output is null " + (output == null));
       if (output.getType() == Entity.Type.DFS_DIR || output.getType() == Entity.Type.LOCAL_DIR || !AcidUtils
@@ -3027,7 +3027,7 @@ public class AcidUtils {
           if (conf.getBoolVar(HiveConf.ConfVars.TXN_OVERWRITE_X_LOCK)) {
             compBuilder.setExclusive();
           } else {
-            compBuilder.setSemiShared();
+            compBuilder.setSharedWrite();
           }
           compBuilder.setOperationType(DataOperationType.UPDATE);
         } else {
@@ -3038,7 +3038,7 @@ public class AcidUtils {
       case INSERT:
         assert t != null;
         if (AcidUtils.isTransactionalTable(t)) {
-          compBuilder.setShared();
+          compBuilder.setSharedRead();
         } else if (MetaStoreUtils.isNonNativeTable(t.getTTable())) {
           final HiveStorageHandler storageHandler = Preconditions.checkNotNull(t.getStorageHandler(),
               "Thought all the non native tables have an instance of storage handler");
@@ -3053,13 +3053,13 @@ public class AcidUtils {
           if (conf.getBoolVar(HiveConf.ConfVars.HIVE_TXN_STRICT_LOCKING_MODE)) {
             compBuilder.setExclusive();
           } else {  // this is backward compatible for non-ACID resources, w/o ACID semantics
-            compBuilder.setShared();
+            compBuilder.setSharedRead();
           }
         }
         compBuilder.setOperationType(DataOperationType.INSERT);
         break;
       case DDL_SHARED:
-        compBuilder.setShared();
+        compBuilder.setSharedRead();
         if (!output.isTxnAnalyze()) {
           // Analyze needs txn components to be present, otherwise an aborted analyze write ID
           // might be rolled under the watermark by compactor while stats written by it are
@@ -3069,11 +3069,11 @@ public class AcidUtils {
         break;
 
       case UPDATE:
-        compBuilder.setSemiShared();
+        compBuilder.setSharedWrite();
         compBuilder.setOperationType(DataOperationType.UPDATE);
         break;
       case DELETE:
-        compBuilder.setSemiShared();
+        compBuilder.setSharedWrite();
         compBuilder.setOperationType(DataOperationType.DELETE);
         break;
 

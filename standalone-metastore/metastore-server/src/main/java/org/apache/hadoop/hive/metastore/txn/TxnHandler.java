@@ -33,6 +33,7 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -83,12 +84,14 @@ import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
+import org.apache.hadoop.hive.metastore.utils.LockTypeUtil;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.StringableMap;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import static org.apache.hadoop.hive.metastore.DatabaseProduct.MYSQL;
 import static org.apache.hadoop.hive.metastore.txn.TxnDbUtil.executeQueriesInBatch;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
@@ -174,11 +177,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   // Lock states
   static final protected char LOCK_ACQUIRED = 'a';
   static final protected char LOCK_WAITING = 'w';
-
-  // Lock types
-  static final protected char LOCK_EXCLUSIVE = 'e';
-  static final protected char LOCK_SHARED = 'r';
-  static final protected char LOCK_SEMI_SHARED = 'w';
 
   private static final int ALLOWED_REPEATED_DEADLOCKS = 10;
   private static final Logger LOG = LoggerFactory.getLogger(TxnHandler.class.getName());
@@ -2564,6 +2562,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
                   + lc + " agentInfo=" + rqst.getAgentInfo());
         }
         intLockId++;
+        String lockType = LockTypeUtil.getEncodingAsStr(lc.getType());
 
         pstmt.setLong(1, TEMP_HIVE_LOCK_ID);
         pstmt.setLong(2, intLockId);
@@ -2572,7 +2571,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         pstmt.setString(5, normalizeCase(lc.getTablename()));
         pstmt.setString(6, normalizeCase(lc.getPartitionname()));
         pstmt.setString(7, Character.toString(LOCK_WAITING));
-        pstmt.setString(8, Character.toString(getLockChar(lc.getType())));
+        pstmt.setString(8, lockType);
         pstmt.setString(9, rqst.getUser());
         pstmt.setString(10, rqst.getHostname());
         pstmt.setString(11, rqst.getAgentInfo());
@@ -2587,19 +2586,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         LOG.debug("Executing HIVE_LOCKS inserts in batch. Batch size: " + intLockId % batchSize);
         pstmt.executeBatch();
       }
-    }
-  }
-
-  private char getLockChar(LockType lockType) {
-    switch (lockType) {
-      case EXCLUSIVE:
-        return LOCK_EXCLUSIVE;
-      case SHARED_READ:
-        return LOCK_SHARED;
-      case SHARED_WRITE:
-        return LOCK_SEMI_SHARED;
-      default:
-        return 'z';
     }
   }
 
@@ -2845,12 +2831,12 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             case LOCK_WAITING: e.setState(LockState.WAITING); break;
             default: throw new MetaException("Unknown lock state " + rs.getString(6).charAt(0));
           }
-          switch (rs.getString(7).charAt(0)) {
-            case LOCK_SEMI_SHARED: e.setType(LockType.SHARED_WRITE); break;
-            case LOCK_EXCLUSIVE: e.setType(LockType.EXCLUSIVE); break;
-            case LOCK_SHARED: e.setType(LockType.SHARED_READ); break;
-            default: throw new MetaException("Unknown lock type " + rs.getString(6).charAt(0));
-          }
+
+          char lockChar = rs.getString(7).charAt(0);
+          LockType lockType = LockTypeUtil.getLockTypeFromEncoding(lockChar)
+                  .orElseThrow(() -> new MetaException("Unknown lock type: " + lockChar));
+          e.setType(lockType);
+
           e.setLastheartbeat(rs.getLong(8));
           long acquiredAt = rs.getLong(9);
           if (!rs.wasNull()) e.setAcquiredat(acquiredAt);
@@ -4036,13 +4022,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         default:
           throw new MetaException("Unknown lock state " + rs.getString("HL_LOCK_STATE").charAt(0));
       }
-      switch (rs.getString("HL_LOCK_TYPE").charAt(0)) {
-        case LOCK_EXCLUSIVE: type = LockType.EXCLUSIVE; break;
-        case LOCK_SHARED: type = LockType.SHARED_READ; break;
-        case LOCK_SEMI_SHARED: type = LockType.SHARED_WRITE; break;
-        default:
-          throw new MetaException("Unknown lock type " + rs.getString("HL_LOCK_TYPE").charAt(0));
-      }
+      char lockChar = rs.getString("HL_LOCK_TYPE").charAt(0);
+      type = LockTypeUtil.getLockTypeFromEncoding(lockChar)
+              .orElseThrow(() -> new MetaException("Unknown lock type: " + lockChar));
       txnId = rs.getLong("HL_TXNID");//returns 0 if value is NULL
     }
     LockInfo(ShowLocksResponseElement e) {
@@ -4130,37 +4112,32 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * be acquired once it sees S(DB).  So need to check stricter locks first.
    */
   private final static class LockTypeComparator implements Comparator<LockType> {
+    // the higher the integer value, the more restrictive the lock type is
+    private static final Map<LockType, Integer> orderOfRestrictiveness = new EnumMap<>(LockType.class);
+    static {
+        orderOfRestrictiveness.put(LockType.SHARED_READ, 1);
+        orderOfRestrictiveness.put(LockType.SHARED_WRITE, 2);
+        orderOfRestrictiveness.put(LockType.EXCL_WRITE, 3);
+        orderOfRestrictiveness.put(LockType.EXCLUSIVE, 4);
+    }
+    @Override
     public boolean equals(Object other) {
       return this == other;
     }
+    @Override
     public int compare(LockType t1, LockType t2) {
-      switch (t1) {
-        case EXCLUSIVE:
-          if(t2 == LockType.EXCLUSIVE) {
-            return 0;
-          }
-          return 1;
-        case SHARED_WRITE:
-          switch (t2) {
-            case EXCLUSIVE:
-              return -1;
-            case SHARED_WRITE:
-              return 0;
-            case SHARED_READ:
-              return 1;
-            default:
-              throw new RuntimeException("Unexpected LockType: " + t2);
-          }
-        case SHARED_READ:
-          if(t2 == LockType.SHARED_READ) {
-            return 0;
-          }
-          return -1;
-        default:
-          throw new RuntimeException("Unexpected LockType: " + t1);
+      Integer t1Restrictiveness = orderOfRestrictiveness.get(t1);
+      Integer t2Restrictiveness = orderOfRestrictiveness.get(t2);
+      if (t1Restrictiveness == null) {
+        throw new RuntimeException("Unexpected LockType: " + t1);
       }
+      if (t2Restrictiveness == null) {
+        throw new RuntimeException("Unexpected LockType: " + t2);
+      }
+      return Integer.compare(t1Restrictiveness, t2Restrictiveness);
     }
   }
+
   private enum LockAction {ACQUIRE, WAIT, KEEP_LOOKING}
 
   // A jump table to figure out whether to wait, acquire,

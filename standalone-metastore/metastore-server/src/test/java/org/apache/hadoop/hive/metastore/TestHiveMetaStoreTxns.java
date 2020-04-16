@@ -222,13 +222,13 @@ public class TestHiveMetaStoreTxns {
     rqstBuilder.addLockComponent(new LockComponentBuilder()
         .setDbName("mydb")
         .setTableName("yourtable")
-        .setSemiShared()
+        .setSharedWrite()
         .setOperationType(DataOperationType.NO_TXN)
         .build());
     rqstBuilder.addLockComponent(new LockComponentBuilder()
         .setDbName("yourdb")
         .setOperationType(DataOperationType.NO_TXN)
-        .setShared()
+        .setSharedRead()
         .build());
     rqstBuilder.setUser("fred");
 
@@ -255,18 +255,18 @@ public class TestHiveMetaStoreTxns {
         .setDbName("mydb")
         .setTableName("mytable")
         .setPartitionName("mypartition")
-        .setSemiShared()
+        .setSharedWrite()
         .setOperationType(DataOperationType.UPDATE)
         .build())
       .addLockComponent(new LockComponentBuilder()
         .setDbName("mydb")
         .setTableName("yourtable")
-        .setSemiShared()
+        .setSharedWrite()
         .setOperationType(DataOperationType.UPDATE)
         .build())
       .addLockComponent(new LockComponentBuilder()
         .setDbName("yourdb")
-        .setShared()
+        .setSharedRead()
         .setOperationType(DataOperationType.SELECT)
         .build())
       .setUser("fred");
