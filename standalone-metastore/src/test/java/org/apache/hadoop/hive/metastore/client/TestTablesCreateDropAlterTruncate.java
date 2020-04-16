@@ -342,7 +342,7 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
 
     client.createTable(table);
     Table createdTable = client.getTable(table.getDbName(), table.getTableName());
-    Assert.assertEquals("Storage descriptor location", metaStore.getExternalWarehouseRoot()
+    Assert.assertEquals("Storage descriptor location", metaStore.getWarehouseRoot()
         + "/" + table.getDbName() + ".db/" + table.getTableName(),
         createdTable.getSd().getLocation());
   }

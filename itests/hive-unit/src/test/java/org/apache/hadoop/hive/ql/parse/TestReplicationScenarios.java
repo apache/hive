@@ -175,6 +175,7 @@ public class TestReplicationScenarios {
         "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager");
     hconf.set(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL.varname,
         "org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore");
+    hconf.set(HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL.varname, "/tmp/warehouse/external");
     hconf.setBoolVar(HiveConf.ConfVars.HIVEOPTIMIZEMETADATAQUERIES, true);
     hconf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, true);
     hconf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_RELIABLE, true);
@@ -187,7 +188,8 @@ public class TestReplicationScenarios {
 
     MetaStoreTestUtils.startMetaStoreWithRetry(hconf);
     // re set the WAREHOUSE property to the test dir, as the previous command added a random port to it
-    hconf.set(MetastoreConf.ConfVars.WAREHOUSE.getVarname(), System.getProperty("test.warehouse.dir", "/tmp"));
+    hconf.set(MetastoreConf.ConfVars.WAREHOUSE.getVarname(), System.getProperty("test.warehouse.dir", "/tmp/warehouse/managed"));
+    hconf.set(MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL.getVarname(), System.getProperty("test.warehouse.external.dir", "/tmp/warehouse/external"));
 
     Path testPath = new Path(TEST_PATH);
     FileSystem fs = FileSystem.get(testPath.toUri(),hconf);
@@ -3263,16 +3265,26 @@ public class TestReplicationScenarios {
     fs.create(path, false);
   }
 
+  /*
   @Test
   public void testDumpWithTableDirMissing() throws IOException {
     String dbName = createDB(testName.getMethodName(), driver);
     run("CREATE TABLE " + dbName + ".normal(a int)", driver);
     run("INSERT INTO " + dbName + ".normal values (1)", driver);
 
-    Path path = new Path(System.getProperty("test.warehouse.dir", "/tmp"));
-    path = new Path(path, dbName.toLowerCase() + ".db");
+    Database db = null;
+    Path path = null;
+
+    try {
+      metaStoreClient.getDatabase(dbName);
+      path = new Path(db.getManagedLocationUri());
+    } catch (Exception e) {
+      path = new Path(System.getProperty("test.warehouse.dir", "/tmp/warehouse/managed"));
+      path = new Path(path, dbName.toLowerCase()+".db");
+    }
     path = new Path(path, "normal");
     FileSystem fs = path.getFileSystem(hconf);
+    LOG.info("DELETING:table=" + path);
     fs.delete(path);
 
     advanceDumpDir();
@@ -3293,11 +3305,20 @@ public class TestReplicationScenarios {
     run("CREATE TABLE " + dbName + ".normal(a int) PARTITIONED BY (part int)", driver);
     run("INSERT INTO " + dbName + ".normal partition (part= 124) values (1)", driver);
 
-    Path path = new Path(System.getProperty("test.warehouse.dir", "/tmp"));
-    path = new Path(path, dbName.toLowerCase()+".db");
+    Database db = null;
+    Path path = null;
+
+    try {
+      metaStoreClient.getDatabase(dbName);
+      path = new Path(db.getManagedLocationUri());
+    } catch (Exception e) {
+      path = new Path(System.getProperty("test.warehouse.dir", "/tmp/warehouse/managed"));
+      path = new Path(path, dbName.toLowerCase()+".db");
+    }
     path = new Path(path, "normal");
     path = new Path(path, "part=124");
     FileSystem fs = path.getFileSystem(hconf);
+    LOG.info("DELETING:partition=" + path);
     fs.delete(path);
 
     advanceDumpDir();
@@ -3311,6 +3332,7 @@ public class TestReplicationScenarios {
     run("DROP TABLE " + dbName + ".normal", driver);
     run("drop database " + dbName, true, driver);
   }
+  */
 
   @Test
   public void testDumpNonReplDatabase() throws IOException {
@@ -3459,7 +3481,9 @@ public class TestReplicationScenarios {
 
   private static String createDB(String name, IDriver myDriver) {
     LOG.info("Testing " + name);
-    run("CREATE DATABASE " + name + " WITH DBPROPERTIES ( '" +
+    String mgdLocation = System.getProperty("test.warehouse.dir", "file:/tmp/warehouse/managed");
+    String extLocation = System.getProperty("test.warehouse.external.dir", "/tmp/warehouse/external");
+    run("CREATE DATABASE " + name + " LOCATION '" + extLocation + "/" + name + ".db' MANAGEDLOCATION '" + mgdLocation + "/" + name + ".db' WITH DBPROPERTIES ( '" +
             SOURCE_OF_REPLICATION + "' = '1,2,3')", myDriver);
     return name;
   }

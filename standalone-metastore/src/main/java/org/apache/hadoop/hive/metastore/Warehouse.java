@@ -321,11 +321,7 @@ public class Warehouse {
         dbPath = getDefaultExternalDatabasePath(db.getName());
       }
     } else {
-      if (isTenantBasedStorage) {
-        dbPath = getDatabaseManagedPath(db);
-      } else {
-        dbPath = getDatabasePath(db);
-      }
+      dbPath = getDatabaseManagedPath(db);
     }
     return getDnsPath(
         new Path(dbPath, MetaStoreUtils.encodeTableName(tableName.toLowerCase())));

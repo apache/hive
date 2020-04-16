@@ -49,6 +49,7 @@ public class BaseReplicationAcrossInstances {
     conf = new HiveConf(clazz);
     conf.set("dfs.client.use.datanode.hostname", "true");
     conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
+    conf.set("hive.repl.cmrootdir", "/tmp/");
     MiniDFSCluster miniDFSCluster =
         new MiniDFSCluster.Builder(conf).numDataNodes(1).format(true).build();
     Map<String, String> localOverrides = new HashMap<String, String>() {{
@@ -70,7 +71,9 @@ public class BaseReplicationAcrossInstances {
   public void setup() throws Throwable {
     primaryDbName = testName.getMethodName() + "_" + +System.currentTimeMillis();
     replicatedDbName = "replicated_" + primaryDbName;
-    primary.run("create database " + primaryDbName + " WITH DBPROPERTIES ( '" +
+    String mgdLocation = "/tmp/warehouse/managed/" + primaryDbName;
+    String extLocation = "/tmp/warehouse/external/" + primaryDbName;
+    primary.run("create database " + primaryDbName + " LOCATION '" + extLocation + "' MANAGEDLOCATION '" + mgdLocation + "' WITH DBPROPERTIES ( '" +
         SOURCE_OF_REPLICATION + "' = '1,2,3')");
   }
 

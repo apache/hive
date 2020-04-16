@@ -170,11 +170,13 @@ public class TestMetastoreAuthorizationProvider extends TestCase {
     String dbName = getTestDbName();
     String tblName = getTestTableName();
     String userName = setupUser();
+    String loc = clientHiveConf.get(HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL.varname) + "/" + dbName;
+    String mLoc = clientHiveConf.get(HiveConf.ConfVars.METASTOREWAREHOUSE.varname) + "/" + dbName;
 
     allowCreateDatabase(userName);
-    driver.run("create database " + dbName);
+    driver.run("create database " + dbName + " location '" + loc + "' managedlocation '" + mLoc + "'");
     Database db = msc.getDatabase(dbName);
-    String dbLocn = db.getLocationUri();
+    String dbLocn = db.getManagedLocationUri();
     validateCreateDb(db, dbName);
     allowCreateInDb(dbName, userName, dbLocn);
     disallowCreateInDb(dbName, userName, dbLocn);
@@ -330,6 +332,8 @@ public class TestMetastoreAuthorizationProvider extends TestCase {
     InjectableDummyAuthenticator.injectMode(true);
     allowCreateDatabase(userName);
     driver.run("create database " + dbName);
+    db = msc.getDatabase(dbName);
+    dbLocn = db.getLocationUri();
     allowCreateInDb(dbName, userName, dbLocn);
     tbl.setTableType("EXTERNAL_TABLE");
     msc.createTable(tbl);

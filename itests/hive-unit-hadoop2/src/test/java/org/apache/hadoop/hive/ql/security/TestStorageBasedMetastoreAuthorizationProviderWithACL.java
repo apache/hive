@@ -47,6 +47,7 @@ public class TestStorageBasedMetastoreAuthorizationProviderWithACL
 
   protected static MiniDFSShim dfs = null;
   protected static Path warehouseDir = null;
+  protected static Path extWarehouseDir = null;
   protected UserGroupInformation userUgi = null;
   protected String testUserName = "test_user";
   protected String proxyUserName = null;
@@ -89,6 +90,9 @@ public class TestStorageBasedMetastoreAuthorizationProviderWithACL
     warehouseDir = new Path(new Path(fs.getUri()), "/warehouse");
     fs.mkdirs(warehouseDir);
     conf.setVar(HiveConf.ConfVars.METASTOREWAREHOUSE, warehouseDir.toString());
+    extWarehouseDir = new Path(new Path(fs.getUri()), "/external");
+    fs.mkdirs(extWarehouseDir);
+    conf.setVar(HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL, extWarehouseDir.toString());
 
     // Set up scratch directory
     Path scratchDir = new Path(new Path(fs.getUri()), "/scratchdir");
@@ -184,12 +188,14 @@ public class TestStorageBasedMetastoreAuthorizationProviderWithACL
   protected void allowCreateDatabase(String userName)
       throws Exception {
     allowWriteAccessViaAcl(userName, warehouseDir.toString());
+    allowWriteAccessViaAcl(userName, extWarehouseDir.toString());
   }
 
   @Override
   protected void disallowCreateDatabase(String userName)
       throws Exception {
     disallowWriteAccessViaAcl(userName, warehouseDir.toString());
+    disallowWriteAccessViaAcl(userName, extWarehouseDir.toString());
   }
 
   @Override

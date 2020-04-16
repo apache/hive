@@ -216,7 +216,7 @@ public class TestDDLWithRemoteMetastoreSecondNamenode extends TestCase {
   }
 
   private Table createTableAndCheck(Table baseTable, String tableName, String tableLocation) throws Exception {
-    executeQuery("CREATE TABLE " + tableName + (baseTable == null ?
+    executeQuery("CREATE EXTERNAL TABLE " + tableName + (baseTable == null ?
             " (col1 string, col2 string) PARTITIONED BY (p string) " :
             " LIKE " + baseTable.getTableName())
             + buildLocationClause(tableLocation));
