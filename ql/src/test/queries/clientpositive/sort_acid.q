@@ -12,20 +12,35 @@ explain cbo
 select a, 6 as c, b from acidtlb sort by a, c, b;
 select a, 6 as c, b from acidtlb sort by a, c, b;
 
+explain cbo
 update acidtlb set b=777;
+update acidtlb set b=777;
+
 select * from acidtlb;
 
 
+explain cbo
+update acidtlb set b=350
+where a in (select a from acidtlb where a = 30);
 update acidtlb set b=350
 where a in (select a from acidtlb where a = 30);
 
 select * from acidtlb;
 
+explain cbo
+update acidtlb set b=450
+where a in (select c from othertlb where c < 65);
 update acidtlb set b=450
 where a in (select c from othertlb where c < 65);
 
 select * from acidtlb;
 
+explain cbo
+delete from acidtlb
+where a in (
+    select a from acidtlb a
+             join othertlb o on a.a = o.c
+             where o.d = 21);
 delete from acidtlb
 where a in (
     select a from acidtlb a
