@@ -73,7 +73,7 @@ podTemplate(
   containers: [
   //cloudbees/jnlp-slave-with-java-build-tools
   //kgyrtkirk/hive-dev-box:executor
-    containerTemplate(name: 'maven', image: 'kgyrtkirk/tx1:x', ttyEnabled: true, command: 'cat',
+    containerTemplate(name: 'maven', image: 'kgyrtkirk/hive-dev-box:executor', ttyEnabled: true, command: 'cat',
         alwaysPullImage: true,
         resourceRequestCpu: '900m',
         resourceLimitCpu: '3000m',
