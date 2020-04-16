@@ -68,6 +68,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
+import org.apache.hadoop.hdfs.DFSUtilClient;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.StatsSetupConst.StatDB;
@@ -2565,11 +2566,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * @throws HiveException If an error occurs while identifying the correct staging location.
    */
   private Path getStagingDirectoryPathname(QB qb) throws HiveException {
-    Path stagingPath = null, tablePath;
+    Path stagingPath = null, tablePath = null;
 
-    // Looks for the most encrypted table location
-    // It may return null if there are not tables encrypted, or are not part of HDFS
-    tablePath = getStrongestEncryptedTablePath(qb);
+    if (DFSUtilClient.isHDFSEncryptionEnabled(conf)) {
+      // Looks for the most encrypted table location
+      // It may return null if there are not tables encrypted, or are not part of HDFS
+      tablePath = getStrongestEncryptedTablePath(qb);
+    }
     if (tablePath != null) {
       // At this point, tablePath is part of HDFS and it is encrypted
       if (isPathReadOnly(tablePath)) {
