@@ -293,7 +293,7 @@ public class TestShortestJobFirstComparator {
 
     for (int i = 0; i < 50; i++) {
       LlapDaemonProtocolProtos.SubmitWorkRequestProto proto =
-              createSubmitWorkRequestProto(i, 1, 100 + i, 100 + i, "q" + i);
+              createSubmitWorkRequestProto(i, 1, 100 + i, 100 + i, "q" + i, true);
       r[i] = createTaskWrapper(proto, true, 100000);
     }
 
@@ -315,26 +315,27 @@ public class TestShortestJobFirstComparator {
   }
 
   @Test(timeout = 60000)
-  public void testWaitQueueAgingMulti() {
+  public void testWaitQueueEdgeCases() {
     // Make sure we dont have evictions triggered (maxSize = taskSize)
     EvictingPriorityBlockingQueue<TaskWrapper> queue =
             new EvictingPriorityBlockingQueue<>(new ShortestJobFirstComparator(), 10);
 
+    // same number of pending tasks (longer waitTime has priority)
     // Single task DAG with same start and attempt time (wait-time zero)
-    TaskWrapper r1 = createTaskWrapper(createSubmitWorkRequestProto(1, 1, 1000, 1000, "q11"), true, 1000);
-    // Multi task DAG with 11 out of 12 task completed!
+    TaskWrapper r1 = createTaskWrapper(createSubmitWorkRequestProto(1, 1, 1000, 1000, "q11", true), true, 1000);
+    // Multi task DAG with 11 out of 12 task completed
     TaskWrapper r2 = createTaskWrapper(createSubmitWorkRequestProto(2, 12, 11, 1000, 1500,1, "q12", true), true, 1000);
     assertNull(queue.offer(r1, 0));
     assertEquals(r1, queue.peek());
     assertNull(queue.offer(r2, 0));
-    assertEquals(r2, queue.peek()); // same number of pending tasks
+    assertEquals(r2, queue.peek());
 
     queue.remove(r1);
     queue.remove(r2);
     assertTrue(queue.isEmpty());
 
     // Single task DAG with different start and attempt time
-    r1 = createTaskWrapper(createSubmitWorkRequestProto(1, 1, 800, 1000, "q11"), true, 1000);
+    r1 = createTaskWrapper(createSubmitWorkRequestProto(1, 1, 800, 1000, "q11", true), true, 1000);
     assertNull(queue.offer(r1, 0));
     assertEquals(r1, queue.peek()); // ratio = 1/200 = 0.005
     assertNull(queue.offer(r2, 0));
@@ -344,16 +345,33 @@ public class TestShortestJobFirstComparator {
     queue.remove(r2);
     assertTrue(queue.isEmpty());
 
+    // same waitTime -> lower number of pending has priority
     // Single task DAG with different start and attempt time
-    r1 = createTaskWrapper(createSubmitWorkRequestProto(1, 1, 800, 1000, "q11"), true, 1000);
+    r1 = createTaskWrapper(createSubmitWorkRequestProto(1, 1, 1000, 1000, "q11", true), true, 1000);
     // Multi-task DAG with 5 out of 12
-    r2 = createTaskWrapper(createSubmitWorkRequestProto(2, 12, 5, 1000, 1500, 1, "q12", true), true, 1000);
+    r2 = createTaskWrapper(createSubmitWorkRequestProto(2, 12, 5, 1000, 1000, 1, "q12", true), true, 1000);
 
     // pending/wait-time -> r2 has lower priority because it has more pending tasks
     assertNull(queue.offer(r1, 0));
-    assertEquals(r1, queue.peek()); // ratio = 1/200 = 0.005
+    assertEquals(r1, queue.peek());
     assertNull(queue.offer(r2, 0));
-    assertEquals(r1, queue.peek()); // ratio = 7/500 = 0.014
+    assertEquals(r1, queue.peek());
+
+    queue.remove(r1);
+    queue.remove(r2);
+    assertTrue(queue.isEmpty());
+
+    // waitTime1==waitTime2 AND pending1==pending2 -> earlier startTime gets priority
+    // Single task DAG with different start and attempt time
+    r1 = createTaskWrapper(createSubmitWorkRequestProto(1, 5, 800, 1000, "q11", true), true, 1000);
+    // Multi-task DAG with 5 out of 12
+    r2 = createTaskWrapper(createSubmitWorkRequestProto(2, 12, 7, 700, 900, 1, "q12", true), true, 1000);
+
+    // r2 started earlier it should thus receive priority
+    assertNull(queue.offer(r1, 0));
+    assertEquals(r1, queue.peek());
+    assertNull(queue.offer(r2, 0));
+    assertEquals(r2, queue.peek());
   }
 
   @Test(timeout = 60000)
@@ -363,11 +381,11 @@ public class TestShortestJobFirstComparator {
             new EvictingPriorityBlockingQueue<>(new ShortestJobFirstComparator(), 10);
 
     // Single-Task DAGs
-    TaskWrapper r1 = createTaskWrapper(createSubmitWorkRequestProto(1, 1, 200, 200, "q1"), true, 1000);
-    TaskWrapper r2 = createTaskWrapper(createSubmitWorkRequestProto(2, 1, 199, 199, "q2"), true, 1000);
-    TaskWrapper r3 = createTaskWrapper(createSubmitWorkRequestProto(3, 1, 300, 310, "q3"), true, 1000);
-    TaskWrapper r4 = createTaskWrapper(createSubmitWorkRequestProto(4, 1, 400, 420, "q4"), true, 1000);
-    TaskWrapper r5 = createTaskWrapper(createSubmitWorkRequestProto(5, 1, 500, 521, "q5"), true, 1000);
+    TaskWrapper r1 = createTaskWrapper(createSubmitWorkRequestProto(1, 1, 200, 200, "q1", true), true, 1000);
+    TaskWrapper r2 = createTaskWrapper(createSubmitWorkRequestProto(2, 1, 199, 199, "q2", true), true, 1000);
+    TaskWrapper r3 = createTaskWrapper(createSubmitWorkRequestProto(3, 1, 300, 310, "q3", true), true, 1000);
+    TaskWrapper r4 = createTaskWrapper(createSubmitWorkRequestProto(4, 1, 400, 420, "q4", true), true, 1000);
+    TaskWrapper r5 = createTaskWrapper(createSubmitWorkRequestProto(5, 1, 500, 521, "q5", true), true, 1000);
 
     assertNull(queue.offer(r1, 0));
     assertEquals(r1, queue.peek());
@@ -381,11 +399,11 @@ public class TestShortestJobFirstComparator {
     assertEquals(r5, queue.peek());
 
     // Multi-Task DAGs
-    TaskWrapper r6 = createTaskWrapper(createSubmitWorkRequestProto(6, 10, 100, 200, "q6"), true, 1000);
-    TaskWrapper r7 = createTaskWrapper(createSubmitWorkRequestProto(7, 10, 200, 400, "q7"), true, 1000);
-    TaskWrapper r8 = createTaskWrapper(createSubmitWorkRequestProto(8, 10, 300, 600, "q8"), true, 1000);
-    TaskWrapper r9 = createTaskWrapper(createSubmitWorkRequestProto(9, 10, 400, 800, "q9"), true, 1000);
-    TaskWrapper r10 = createTaskWrapper(createSubmitWorkRequestProto(10, 10, 500, 1000, "q10"), true, 1000);
+    TaskWrapper r6 = createTaskWrapper(createSubmitWorkRequestProto(6, 10, 100, 200, "q6", true), true, 1000);
+    TaskWrapper r7 = createTaskWrapper(createSubmitWorkRequestProto(7, 10, 200, 400, "q7", true), true, 1000);
+    TaskWrapper r8 = createTaskWrapper(createSubmitWorkRequestProto(8, 10, 300, 600, "q8", true), true, 1000);
+    TaskWrapper r9 = createTaskWrapper(createSubmitWorkRequestProto(9, 10, 400, 800, "q9", true), true, 1000);
+    TaskWrapper r10 = createTaskWrapper(createSubmitWorkRequestProto(10, 10, 500, 1000, "q10", true), true, 1000);
 
     assertNull(queue.offer(r6, 0));
     assertEquals(r5, queue.peek());

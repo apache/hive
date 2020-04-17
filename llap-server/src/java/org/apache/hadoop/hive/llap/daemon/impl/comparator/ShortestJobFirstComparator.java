@@ -73,6 +73,7 @@ public class ShortestJobFirstComparator extends LlapQueueComparatorBase {
       return 1;
     }
 
-    return 0;
+    // when ratio is the same, pick the one which has waited the longest
+    return Long.compare(fri1.getCurrentAttemptStartTime(), fri2.getCurrentAttemptStartTime());
   }
 }
