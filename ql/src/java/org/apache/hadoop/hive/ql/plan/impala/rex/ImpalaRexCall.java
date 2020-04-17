@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.plan.impala.rex;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlKind;
@@ -41,10 +40,9 @@ import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaFunctionSignature;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.DefaultFunctionSignature;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaTypeConverter;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ScalarFunctionDetails;
-import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ScalarFunctionUtil;
+import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaFunctionUtil;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.TimeIntervalOpFunctionSignature;
 import org.apache.impala.analysis.Analyzer;
-import org.apache.impala.analysis.ArithmeticExpr;
 import org.apache.impala.analysis.BinaryPredicate;
 import org.apache.impala.analysis.BoolLiteral;
 import org.apache.impala.analysis.CaseWhenClause;
@@ -77,7 +75,7 @@ public class ImpalaRexCall {
       throw new HiveException("Could not find function \"" + ifs + "\"");
     }
 
-    Function fn = ScalarFunctionUtil.create(details);
+    Function fn = ImpalaFunctionUtil.create(details);
     Preconditions.checkNotNull(fn);
 
     Type impalaRetType = ImpalaTypeConverter.getImpalaType(rexCall.getType());
@@ -171,7 +169,7 @@ public class ImpalaRexCall {
     List<SqlTypeName> typeNames = ImmutableList.of(SqlTypeName.BOOLEAN, SqlTypeName.BOOLEAN, SqlTypeName.BOOLEAN);
     ImpalaFunctionSignature conditionalFuncSig = new DefaultFunctionSignature("if", typeNames, SqlTypeName.BOOLEAN);
     ScalarFunctionDetails conditionalFuncDetails = ScalarFunctionDetails.get(conditionalFuncSig);
-    Function conditionalFunc = ScalarFunctionUtil.create(conditionalFuncDetails);
+    Function conditionalFunc = ImpalaFunctionUtil.create(conditionalFuncDetails);
     ImpalaFunctionCallExpr conditionalFuncExpr =
         new ImpalaFunctionCallExpr(analyzer, conditionalFunc, tmpArgs, rexCall, retType);
     return new ImpalaIsNullExpr(analyzer, fn, conditionalFuncExpr, isNotNull, retType);

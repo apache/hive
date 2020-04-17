@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.Expr;
 import org.apache.impala.analysis.FunctionCallExpr;
+import org.apache.impala.analysis.FunctionParams;
 import org.apache.impala.catalog.Function;
 import org.apache.impala.catalog.Type;
 import org.apache.impala.common.AnalysisException;
@@ -38,12 +39,26 @@ public class ImpalaFunctionCallExpr extends FunctionCallExpr {
 
   private final float addedCost;
 
+  // c'tor that takes an explicit FunctionParams argument
+  public ImpalaFunctionCallExpr(Analyzer analyzer, Function fn, FunctionParams funcParams,
+      RexCall rexCall, Type retType) throws HiveException {
+    super(fn.getFunctionName(), funcParams);
+    this.addedCost = getFunctionCallCost(rexCall);
+    init(analyzer, fn, rexCall, retType);
+  }
+
+  // c'tor that takes a list of Exprs that eventually get converted to FunctionParams
   public ImpalaFunctionCallExpr(Analyzer analyzer, Function fn, List<Expr> params,
       RexCall rexCall, Type retType) throws HiveException {
     super(fn.getFunctionName(), params);
+    this.addedCost = getFunctionCallCost(rexCall);
+    init(analyzer, fn, rexCall, retType);
+  }
+
+  private void init(Analyzer analyzer, Function fn, RexCall rexCall,
+      Type retType) throws HiveException {
     try {
       this.fn_ = fn;
-      this.addedCost = getFunctionCallCost(rexCall);
       this.type_ = retType;
       this.analyze(analyzer);
     } catch (AnalysisException e) {

@@ -34,7 +34,7 @@ import org.apache.hadoop.hive.ql.plan.impala.funcmapper.DefaultFunctionSignature
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaFunctionSignature;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaTypeConverter;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ScalarFunctionDetails;
-import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ScalarFunctionUtil;
+import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaFunctionUtil;
 import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.Expr;
 import org.apache.impala.analysis.NumericLiteral;
@@ -110,7 +110,7 @@ public class ImpalaRexLiteral {
     ImpalaFunctionSignature castFuncSig =
         new DefaultFunctionSignature("cast", typeNames, SqlTypeName.TIMESTAMP);
     ScalarFunctionDetails castFuncDetails = ScalarFunctionDetails.get(castFuncSig);
-    Function castFunc = ScalarFunctionUtil.create(castFuncDetails);
+    Function castFunc = ImpalaFunctionUtil.create(castFuncDetails);
     return new ImpalaFunctionCallExpr(analyzer, castFunc, argList, null, Type.TIMESTAMP);
   }
 }

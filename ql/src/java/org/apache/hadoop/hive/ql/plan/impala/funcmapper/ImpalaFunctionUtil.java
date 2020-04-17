@@ -18,13 +18,20 @@
 
 package org.apache.hadoop.hive.ql.plan.impala.funcmapper;
 
+import com.google.common.base.Preconditions;
 import org.apache.impala.analysis.FunctionName;
+import org.apache.impala.catalog.AggregateFunction;
+import org.apache.impala.catalog.BuiltinsDb;
 import org.apache.impala.catalog.ScalarFunction;
+import org.apache.impala.catalog.Type;
+import org.apache.impala.thrift.TPrimitiveType;
+
+import java.util.List;
 
 /**
- * Utility class to create an Impala ScalarFunction
+ * Utility class to create an Impala ScalarFunction and AggregateFunction
  */
-public class ScalarFunctionUtil {
+public class ImpalaFunctionUtil {
   public static ScalarFunction create(ScalarFunctionDetails sfd) {
     ScalarFunction retVal =
         new ScalarFunction(new FunctionName(sfd.dbName, sfd.impalaFnName),
@@ -36,6 +43,27 @@ public class ScalarFunctionUtil {
             sfd.closeFnSymbol);
     retVal.setBinaryType(sfd.binaryType);
     retVal.setHasVarArgs(sfd.hasVarArgs);
+    return retVal;
+  }
+
+  public static AggregateFunction create(AggFunctionDetails afd) {
+    FunctionName impalaFuncName = new FunctionName(BuiltinsDb.NAME, afd.fnName);
+    List<Type> impalaArgTypes = ImpalaTypeConverter.getImpalaTypesList(afd.argTypes);
+    Preconditions.checkNotNull(afd.retType);
+    Preconditions.checkNotNull(afd.intermediateType);
+    Type impalaRetType =
+        ImpalaTypeConverter.getImpalaType(afd.retType);
+    Type impalaIntermediateType =
+        (afd.intermediateType == TPrimitiveType.FIXED_UDA_INTERMEDIATE) ?
+            ImpalaTypeConverter.getImpalaType(afd.intermediateType, afd.intermediateTypeLength, 0)
+            : ImpalaTypeConverter.getImpalaType(afd.intermediateType);
+
+    AggregateFunction retVal =
+        new AggregateFunction(impalaFuncName, impalaArgTypes,
+            impalaRetType, impalaIntermediateType, null,
+            afd.updateFnSymbol, afd.initFnSymbol, afd.serializeFnSymbol,
+            afd.mergeFnSymbol, afd.getValueFnSymbol, afd.removeFnSymbol,
+            afd.finalizeFnSymbol);
     return retVal;
   }
 }

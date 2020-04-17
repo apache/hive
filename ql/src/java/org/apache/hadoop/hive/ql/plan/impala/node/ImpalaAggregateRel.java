@@ -18,9 +18,8 @@
 
 package org.apache.hadoop.hive.ql.plan.impala.node;
 
-import java.util.List;
-
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 import org.apache.calcite.linq4j.Ord;
 import org.apache.calcite.rel.RelWriter;
 import org.apache.calcite.rel.core.Aggregate;
@@ -36,7 +35,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaBasicAnalyzer;
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaPlannerContext;
-import org.apache.hadoop.hive.ql.plan.impala.ImpalaBasicAnalyzer;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaFunctionCallExpr;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.AggFunctionDetails;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaFunctionSignature;
@@ -47,19 +45,18 @@ import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.Expr;
 import org.apache.impala.analysis.ExprSubstitutionMap;
 import org.apache.impala.analysis.FunctionCallExpr;
-import org.apache.impala.analysis.FunctionName;
+import org.apache.impala.analysis.FunctionParams;
 import org.apache.impala.analysis.MultiAggregateInfo;
 import org.apache.impala.catalog.AggregateFunction;
 import org.apache.impala.catalog.BuiltinsDb;
 import org.apache.impala.catalog.Function;
 import org.apache.impala.catalog.Type;
+import org.apache.impala.common.AnalysisException;
 import org.apache.impala.common.ImpalaException;
 import org.apache.impala.planner.AggregationNode;
 import org.apache.impala.planner.PlanNode;
-import org.apache.impala.thrift.TPrimitiveType;
 
-import com.google.common.collect.Lists;
-import org.apache.impala.planner.PlanNodeId;
+import java.util.List;
 
 public class ImpalaAggregateRel extends ImpalaPlanRel {
   public final HiveAggregate aggregate;
@@ -112,7 +109,7 @@ public class ImpalaAggregateRel extends ImpalaPlanRel {
     aggNode = getTopLevelAggNode(input, multiAggInfo, ctx);
 
     AggregateInfo aggInfo = multiAggInfo.getAggClasses().get(0);
-    this.outputExprs = createOutputExprs(aggInfo.getOutputTupleDesc().getSlots());
+    this.outputExprs = createOutputExprs(aggInfo.getResultTupleDesc().getSlots());
     // This is the only way to shove in the "having" filter into the aggregate node.
     // In the init clause, the aggregate node calls into the analyzer to get all remaining
     // unassigned conjuncts.
@@ -172,13 +169,13 @@ public class ImpalaAggregateRel extends ImpalaPlanRel {
     // A transpose aggregation is needed for grouping sets
     // (e.g. select count(distinct c1), count(distincct c2) from tbl group by c1, c2).
     AggregationNode transposePhaseAgg = new ImpalaAggNode(ctx.getNextNodeId(), secondPhaseAgg, multiAggInfo,
-
         MultiAggregateInfo.AggPhase.TRANSPOSE, nodeInfo, ctx);
     // caller will call the "init" method
     return transposePhaseAgg;
   }
 
-  private List<FunctionCallExpr> getAggregateExprs(ImpalaPlannerContext ctx) throws HiveException {
+  private List<FunctionCallExpr> getAggregateExprs(ImpalaPlannerContext ctx) throws HiveException,
+      AnalysisException {
     List<FunctionCallExpr> exprs = Lists.newArrayList();
     ImpalaPlanRel input = getImpalaRelInput(0);
     for (AggregateCall aggCall : this.aggregate.getAggCallList()) {
@@ -189,15 +186,19 @@ public class ImpalaAggregateRel extends ImpalaPlanRel {
       if (indexes.size() == 1) {
         operands.add(input.getExpr(indexes.get(0)));
       }
-      Function fn = getFunction(aggCall);
+      Function fn = getFunction(aggCall, ctx.getRootAnalyzer());
 
       Type impalaRetType = ImpalaTypeConverter.getImpalaType(aggCall.getType());
-      exprs.add(new ImpalaFunctionCallExpr(ctx.getRootAnalyzer(), fn, operands, null, impalaRetType));
+      FunctionParams params = new FunctionParams(aggCall.isDistinct(), operands);
+      FunctionCallExpr e =
+          new ImpalaFunctionCallExpr(ctx.getRootAnalyzer(), fn, params, null, impalaRetType);
+      exprs.add(e);
     }
     return exprs;
   }
 
-  private Function getFunction(AggregateCall aggCall) throws HiveException {
+  private Function getFunction(AggregateCall aggCall, Analyzer analyzer)
+      throws HiveException, AnalysisException {
     RelDataType retType = aggCall.getType();
     SqlAggFunction aggFunction = aggCall.getAggregation();
     List<SqlTypeName> operandTypes = Lists.newArrayList();
