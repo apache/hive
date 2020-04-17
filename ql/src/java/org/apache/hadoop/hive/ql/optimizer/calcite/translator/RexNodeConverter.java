@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExtractDate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFloorDate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveToDateSqlOperator;
@@ -503,6 +504,75 @@ public class RexNodeConverter {
       newChildRexNodeLst.add(makeCast(SqlTypeName.TIMESTAMP, child, rexBuilder));
     }
     return newChildRexNodeLst;
+  }
+
+  /**
+   * The method tries to rewrite an the operands of an IN function call into
+   * the operands for an OR function call.
+   * For instance:
+   * <pre>
+   * (c) IN ( v1, v2, ...) =&gt; c=v1 || c=v2 || ...
+   * Input: (c, v1, v2, ...)
+   * Output: (c=v1, c=v2, ...)
+   * </pre>
+   * Or:
+   * <pre>
+   * (c,d) IN ( (v1,v2), (v3,v4), ...) =&gt; (c=v1 && d=v2) || (c=v3 && d=v4) || ...
+   * Input: ((c,d), (v1,v2), (v3,v4), ...)
+   * Output: (c=v1 && d=v2, c=v3 && d=v4, ...)
+   * </pre>
+   *
+   * Returns null if the transformation fails, e.g., when non-deterministic
+   * calls are found in the expressions.
+   */
+  public static List<RexNode> transformInToOrOperands(List<RexNode> operands, RexBuilder rexBuilder) {
+    final List<RexNode> disjuncts = new ArrayList<>(operands.size() - 2);
+    if (operands.get(0).getKind() != SqlKind.ROW) {
+      final RexNode columnExpression = operands.get(0);
+      if (!HiveCalciteUtil.isDeterministic(columnExpression)) {
+        // Bail out
+        return null;
+      }
+      for (int i = 1; i < operands.size(); i++) {
+        final RexNode valueExpression = operands.get(i);
+        if (!HiveCalciteUtil.isDeterministic(valueExpression)) {
+          // Bail out
+          return null;
+        }
+        disjuncts.add(rexBuilder.makeCall(
+            SqlStdOperatorTable.EQUALS,
+            columnExpression,
+            valueExpression));
+      }
+    } else {
+      final RexCall columnExpressions = (RexCall) operands.get(0);
+      if (!HiveCalciteUtil.isDeterministic(columnExpressions)) {
+        // Bail out
+        return null;
+      }
+      for (int i = 1; i < operands.size(); i++) {
+        List<RexNode> conjuncts = new ArrayList<>(columnExpressions.getOperands().size() - 1);
+        RexCall valueExpressions = (RexCall) operands.get(i);
+        if (!HiveCalciteUtil.isDeterministic(valueExpressions)) {
+          // Bail out
+          return null;
+        }
+        for (int j = 0; j < columnExpressions.getOperands().size(); j++) {
+          conjuncts.add(rexBuilder.makeCall(
+              SqlStdOperatorTable.EQUALS,
+              columnExpressions.getOperands().get(j),
+              valueExpressions.getOperands().get(j)));
+        }
+        if (conjuncts.size() > 1) {
+          disjuncts.add(rexBuilder.makeCall(
+              SqlStdOperatorTable.AND,
+              conjuncts));
+        } else {
+          disjuncts.add(conjuncts.get(0));
+        }
+      }
+    }
+    return disjuncts;
   }
 
   public static List<RexNode> rewriteInClauseChildren(SqlOperator op, List<RexNode> childRexNodeLst,

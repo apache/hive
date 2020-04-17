@@ -36,6 +36,7 @@ import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.translator.RexNodeConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -197,7 +198,7 @@ public abstract class JDBCExpandExpressionsRule extends RelOptRule {
         return expression;
       }
 
-      final List<RexNode> disjuncts = HiveCalciteUtil.transformIntoOrAndClause(
+      final List<RexNode> disjuncts = RexNodeConverter.transformInToOrOperands(
           expression.getOperands(), rexBuilder);
       if (disjuncts == null) {
         // We could not execute transformation, return expression

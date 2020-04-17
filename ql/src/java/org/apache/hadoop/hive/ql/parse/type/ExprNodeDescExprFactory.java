@@ -713,7 +713,7 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
    * {@inheritDoc}
    */
   @Override
-  protected boolean canConvertCASEIntoCOALESCEFuncCallExpr(GenericUDF genericUDF, List<ExprNodeDesc> inputs) {
+  protected boolean convertCASEIntoCOALESCEFuncCallExpr(GenericUDF genericUDF, List<ExprNodeDesc> inputs) {
     if (genericUDF instanceof GenericUDFWhen && inputs.size() == 3 &&
         inputs.get(1) instanceof ExprNodeConstantDesc &&
         inputs.get(2) instanceof ExprNodeConstantDesc) {

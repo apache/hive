@@ -21,7 +21,6 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.type.TypeCheckProcFactory.DefaultExprProcessor;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
@@ -79,7 +78,7 @@ public class TestTypeCheckProcFactory {
     testSubject = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor();
   }
 
-  public void testOneCase(Object constValue) throws SemanticException {
+  public void testOneCase(Object constValue) throws Exception {
     Mockito.when(nodeDesc.getValue()).thenReturn(constValue);
     Mockito.when(typeInfo.getPrimitiveTypeEntry()).thenReturn(constType);
 
@@ -89,7 +88,7 @@ public class TestTypeCheckProcFactory {
     Assert.assertEquals(expectedValue, result.getValue());
   }
 
-  public void testNullCase(Object constValue) throws SemanticException {
+  public void testNullCase(Object constValue) throws Exception {
     Mockito.when(nodeDesc.getValue()).thenReturn(constValue);
     Mockito.when(typeInfo.getPrimitiveTypeEntry()).thenReturn(constType);
 
@@ -99,43 +98,43 @@ public class TestTypeCheckProcFactory {
   }
 
   @Test
-  public void testWithSring() throws SemanticException {
+  public void testWithSring() throws Exception {
     testOneCase(maxValue.toString());
   }
 
   @Test
-  public void testWithLSuffix() throws SemanticException {
+  public void testWithLSuffix() throws Exception {
     if (intType) {
       testOneCase(maxValue.toString() + "L");
     }
   }
 
   @Test
-  public void testWithZeroFraction() throws SemanticException {
+  public void testWithZeroFraction() throws Exception {
     if (intType) {
       testOneCase(maxValue.toString() + ".0");
     }
   }
 
   @Test
-  public void testWithFSuffix() throws SemanticException {
+  public void testWithFSuffix() throws Exception {
     testOneCase(maxValue.toString() + "f");
   }
 
   @Test
-  public void testWithDSuffix() throws SemanticException {
+  public void testWithDSuffix() throws Exception {
     testOneCase(maxValue.toString() + "D");
   }
 
   @Test
-  public void testOverflow() throws SemanticException {
+  public void testOverflow() throws Exception {
     if (intType) {
       testNullCase(maxValue.add(BigDecimal.valueOf(1L)).toString());
     }
   }
 
   @Test
-  public void testWithNonZeroFraction() throws SemanticException {
+  public void testWithNonZeroFraction() throws Exception {
     if (intType) {
       testNullCase("100.1");
     }

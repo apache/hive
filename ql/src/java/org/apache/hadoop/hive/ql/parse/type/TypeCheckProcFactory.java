@@ -1005,17 +1005,27 @@ public class TypeCheckProcFactory<T> {
           }
         }
         if (genericUDF instanceof GenericUDFIn) {
+          // We will split the IN clause into different IN clauses, one for each
+          // different value type. The reason is that Hive and Calcite treat
+          // types in IN clauses differently and it is practically impossible
+          // to find some correct implementation unless this is done.
+          boolean hasNullValue = false;
           ListMultimap<TypeInfo, T> expressions = ArrayListMultimap.create();
           for (int i = 1; i < children.size(); i++) {
             T columnDesc = children.get(0);
-            T valueDesc = interpretNodeAsConstantStruct(columnDesc, children.get(i));
+            T valueDesc = interpretNode(columnDesc, children.get(i));
             if (valueDesc == null) {
+              if (hasNullValue) {
+                // Skip if null value has already been added
+                continue;
+              }
               TypeInfo targetType = exprFactory.getTypeInfo(columnDesc);
               if (!expressions.containsKey(targetType)) {
                 expressions.put(targetType, columnDesc);
               }
               T nullConst = exprFactory.createConstantExpr(targetType, null);
               expressions.put(targetType, nullConst);
+              hasNullValue = true;
             } else {
               TypeInfo targetType = exprFactory.getTypeInfo(valueDesc);
               if (!expressions.containsKey(targetType)) {
@@ -1071,7 +1081,7 @@ public class TypeCheckProcFactory<T> {
             }
           }
           expr = exprFactory.createFuncCallExpr(genericUDF, funcText, childrenList);
-        } else if (ctx.isFoldExpr() && exprFactory.canConvertCASEIntoCOALESCEFuncCallExpr(genericUDF, children)) {
+        } else if (ctx.isFoldExpr() && exprFactory.convertCASEIntoCOALESCEFuncCallExpr(genericUDF, children)) {
           // Rewrite CASE into COALESCE
           expr = exprFactory.createFuncCallExpr(new GenericUDFCoalesce(), "coalesce",
               Lists.newArrayList(children.get(0), exprFactory.createBooleanConstantExpr(Boolean.FALSE.toString())));
@@ -1114,9 +1124,10 @@ public class TypeCheckProcFactory<T> {
     }
 
     /**
-     * Interprets the given value as columnDesc if possible
+     * Interprets the given value as the input columnDesc if possible.
+     * Otherwise, returns input valueDesc as is.
      */
-    private T interpretNodeAsConstantStruct(T columnDesc, T valueDesc)
+    private T interpretNode(T columnDesc, T valueDesc)
         throws SemanticException {
       if (exprFactory.isColumnRefExpr(columnDesc)) {
         final PrimitiveTypeInfo typeInfo = TypeInfoFactory.getPrimitiveTypeInfo(
@@ -1160,7 +1171,7 @@ public class TypeCheckProcFactory<T> {
             List<T> newValueChilds = new ArrayList<>();
             List<TypeInfo> newStructFieldInfos = new ArrayList<>();
             for (int i = 0; i < columnChilds.size(); i++) {
-              T newValue = interpretNodeAsConstantStruct(columnChilds.get(i), valueChilds.get(i));
+              T newValue = interpretNode(columnChilds.get(i), valueChilds.get(i));
               newValueChilds.add(newValue);
               newStructFieldInfos.add(exprFactory.getTypeInfo(columnChilds.get(i)));
             }

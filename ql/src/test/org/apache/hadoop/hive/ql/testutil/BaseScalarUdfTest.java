@@ -28,7 +28,6 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.CollectDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
@@ -72,7 +71,7 @@ public abstract class BaseScalarUdfTest {
    * @return A list of expressions
    * @throws UDFArgumentException if the UDF has been formulated incorrectly
    */
-  public abstract List<ExprNodeDesc> getExpressionList() throws SemanticException;
+  public abstract List<ExprNodeDesc> getExpressionList() throws Exception;
 
   /**
    * This method drives the test. It takes the data from getBaseTable() and
@@ -82,7 +81,7 @@ public abstract class BaseScalarUdfTest {
    * @throws HiveException
    */
   @Test
-  public final void testUdf() throws HiveException {
+  public final void testUdf() throws Exception {
     InspectableObject [] data = getBaseTable();
     List<ExprNodeDesc> expressionList = getExpressionList();
     SelectDesc selectCtx = new SelectDesc(expressionList,

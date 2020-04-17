@@ -832,18 +832,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
    * {@inheritDoc}
    */
   @Override
-  protected boolean canConvertCASEIntoCOALESCEFuncCallExpr(GenericUDF genericUDF, List<RexNode> inputs) {
-    if (genericUDF instanceof GenericUDFWhen && inputs.size() == 3 &&
-        inputs.get(1) instanceof RexLiteral &&
-        inputs.get(2) instanceof RexLiteral) {
-      RexLiteral constThen = (RexLiteral) inputs.get(1);
-      RexLiteral constElse = (RexLiteral) inputs.get(2);
-      Object thenVal = constThen.getValue();
-      Object elseVal = constElse.getValue();
-      if (thenVal instanceof Boolean && elseVal instanceof Boolean) {
-        return true;
-      }
-    }
+  protected boolean convertCASEIntoCOALESCEFuncCallExpr(GenericUDF genericUDF, List<RexNode> inputs) {
     return false;
   }
 
@@ -870,7 +859,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
   @Override
   protected boolean isConstantStruct(RexNode expr) {
     return expr.getType().getSqlTypeName() == SqlTypeName.ROW &&
-        HiveCalciteUtil.isConstant(expr);
+        HiveCalciteUtil.isLiteral(expr);
   }
 
   /**

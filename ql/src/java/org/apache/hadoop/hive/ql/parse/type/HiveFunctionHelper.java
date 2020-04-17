@@ -271,7 +271,7 @@ public class HiveFunctionHelper implements FunctionHelper {
         }
         if(rewriteToOr) {
           // If there are non-deterministic functions, we cannot perform this rewriting
-          List<RexNode> newInputs = HiveCalciteUtil.transformIntoOrAndClause(inputs, rexBuilder);
+          List<RexNode> newInputs = RexNodeConverter.transformInToOrOperands(inputs, rexBuilder);
           if (newInputs != null) {
             inputs = newInputs;
             if (inputs.size() == 1) {

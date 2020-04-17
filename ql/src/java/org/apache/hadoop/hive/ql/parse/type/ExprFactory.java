@@ -20,13 +20,10 @@ package org.apache.hadoop.hive.ql.parse.type;
 import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.util.List;
-import org.apache.calcite.rex.RexNode;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
-import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.SubqueryType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
@@ -49,6 +46,11 @@ public abstract class ExprFactory<T> {
   /**
    * Generates an expression from the input column. This may not necessarily
    * be a column expression, e.g., if the column is a constant.
+   *
+   * For position based expression factories (e.g., Calcite), an offset that
+   * will be added to the input references position can be provided. For
+   * instance, this is useful to generate expressions for right side of a
+   * join output.
    */
   protected abstract T toExpr(ColumnInfo colInfo, RowResolver rowResolver, int offset)
       throws SemanticException;
@@ -61,6 +63,11 @@ public abstract class ExprFactory<T> {
 
   /**
    * Creates column expression.
+   *
+   * For position based expression factories (e.g., Calcite), an offset that
+   * will be added to the input references position can be provided. For
+   * instance, this is useful to generate expressions for right side of a
+   * join output.
    */
   protected abstract T createColumnRefExpr(ColumnInfo colInfo, RowResolver rowResolver, int offset)
       throws SemanticException;
@@ -323,7 +330,7 @@ public abstract class ExprFactory<T> {
   /**
    * Returns true if a CASE expression can be converted into a COALESCE function call.
    */
-  protected abstract boolean canConvertCASEIntoCOALESCEFuncCallExpr(GenericUDF genericUDF, List<T> inputs);
+  protected abstract boolean convertCASEIntoCOALESCEFuncCallExpr(GenericUDF genericUDF, List<T> inputs);
 
   /* SUBQUERIES */
   /**
