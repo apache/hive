@@ -269,6 +269,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   // (End user) Transaction timeout, in milliseconds.
   private long timeout;
 
+  private int maxBatchSize;
   private String identifierQuoteString; // quotes to use for quoting tables, where necessary
   private long retryInterval;
   private int retryLimit;
@@ -346,6 +347,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     retryLimit = MetastoreConf.getIntVar(conf, ConfVars.HMS_HANDLER_ATTEMPTS);
     deadlockRetryInterval = retryInterval / 10;
     maxOpenTxns = MetastoreConf.getIntVar(conf, ConfVars.MAX_OPEN_TXNS);
+    maxBatchSize = MetastoreConf.getIntVar(conf, ConfVars.JDBC_MAX_BATCH_SIZE);
 
     try {
       transactionalListeners = MetaStoreServerUtils.getMetaStoreListeners(
@@ -1221,7 +1223,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             String sql = String.format(COMPL_TXN_COMPONENTS_INSERT_QUERY, txnid, quoteChar(isUpdateDelete));
             try (PreparedStatement pstmt = dbConn.prepareStatement(sql)) {
               int insertCounter = 0;
-              int batchSize = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_VALUES_CLAUSE);
               for (WriteEventInfo writeEventInfo : rqst.getWriteEventInfos()) {
                 pstmt.setString(1, writeEventInfo.getDatabase());
                 pstmt.setString(2, writeEventInfo.getTable());
@@ -1230,13 +1231,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
                 pstmt.addBatch();
                 insertCounter++;
-                if (insertCounter % batchSize == 0) {
-                  LOG.debug("Executing a batch of <" + sql + "> queries. Batch size: " + batchSize);
+                if (insertCounter % maxBatchSize == 0) {
+                  LOG.debug("Executing a batch of <" + sql + "> queries. Batch size: " + maxBatchSize);
                   pstmt.executeBatch();
                 }
               }
-              if (insertCounter % batchSize != 0) {
-                LOG.debug("Executing a batch of <" + sql + "> queries. Batch size: " + insertCounter % batchSize);
+              if (insertCounter % maxBatchSize != 0) {
+                LOG.debug("Executing a batch of <" + sql + "> queries. Batch size: " + insertCounter % maxBatchSize);
                 pstmt.executeBatch();
               }
             }
@@ -1344,7 +1345,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     queryBatch.add("DELETE FROM \"MATERIALIZATION_REBUILD_LOCKS\" WHERE \"MRL_TXN_ID\" = " + txnid);
 
     // execute all in one batch
-    executeQueriesInBatch(stmt, queryBatch, conf);
+    executeQueriesInBatch(stmt, queryBatch, maxBatchSize);
   }
 
   private void updateKeyValueAssociatedWithTxn(CommitTxnRequest rqst, Statement stmt) throws SQLException {
@@ -2460,7 +2461,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         // For each component in this lock request,
         // add an entry to the txn_components table
         int insertCounter = 0;
-        int batchSize = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_VALUES_CLAUSE);
         for (LockComponent lc : rqst.getComponent()) {
           if (lc.isSetIsTransactional() && !lc.isIsTransactional()) {
             //we don't prevent using non-acid resources in a txn but we do lock them
@@ -2483,13 +2483,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
           pstmt.addBatch();
           insertCounter++;
-          if (insertCounter % batchSize == 0) {
-            LOG.debug("Executing a batch of <" + TXN_COMPONENTS_INSERT_QUERY + "> queries. Batch size: " + batchSize);
+          if (insertCounter % maxBatchSize == 0) {
+            LOG.debug("Executing a batch of <" + TXN_COMPONENTS_INSERT_QUERY + "> queries. Batch size: " + maxBatchSize);
             pstmt.executeBatch();
           }
         }
-        if (insertCounter % batchSize != 0) {
-          LOG.debug("Executing a batch of <" + TXN_COMPONENTS_INSERT_QUERY + "> queries. Batch size: " + insertCounter % batchSize);
+        if (insertCounter % maxBatchSize != 0) {
+          LOG.debug("Executing a batch of <" + TXN_COMPONENTS_INSERT_QUERY + "> queries. Batch size: " + insertCounter % maxBatchSize);
           pstmt.executeBatch();
         }
       }
@@ -2572,7 +2572,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
     String lastHB = isValidTxn(txnid) ? "0" : TxnDbUtil.getEpochFn(dbProduct);
     String insertLocksQuery = String.format(HIVE_LOCKS_INSERT_QRY, lastHB);
-    int batchSize = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_VALUES_CLAUSE);
     long intLockId = 0;
 
     try (PreparedStatement pstmt = dbConn.prepareStatement(insertLocksQuery)) {
@@ -2604,13 +2603,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         pstmt.setString(11, rqst.getAgentInfo());
 
         pstmt.addBatch();
-        if (intLockId % batchSize == 0) {
-          LOG.debug("Executing HIVE_LOCKS inserts in batch. Batch size: " + batchSize);
+        if (intLockId % maxBatchSize == 0) {
+          LOG.debug("Executing HIVE_LOCKS inserts in batch. Batch size: " + maxBatchSize);
           pstmt.executeBatch();
         }
       }
-      if (intLockId % batchSize != 0) {
-        LOG.debug("Executing HIVE_LOCKS inserts in batch. Batch size: " + intLockId % batchSize);
+      if (intLockId % maxBatchSize != 0) {
+        LOG.debug("Executing HIVE_LOCKS inserts in batch. Batch size: " + intLockId % maxBatchSize);
         pstmt.executeBatch();
       }
     }
@@ -3299,7 +3298,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         Long writeId = rqst.getWriteid();
         try (PreparedStatement pstmt = dbConn.prepareStatement(TXN_COMPONENTS_INSERT_QUERY)) {
           int insertCounter = 0;
-          int batchSize = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_VALUES_CLAUSE);
           for (String partName : rqst.getPartitionnames()) {
             pstmt.setLong(1, rqst.getTxnid());
             pstmt.setString(2, normalizeCase(rqst.getDbname()));
@@ -3310,13 +3308,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
             pstmt.addBatch();
             insertCounter++;
-            if (insertCounter % batchSize == 0) {
-              LOG.debug("Executing a batch of <" + TXN_COMPONENTS_INSERT_QUERY + "> queries. Batch size: " + batchSize);
+            if (insertCounter % maxBatchSize == 0) {
+              LOG.debug("Executing a batch of <" + TXN_COMPONENTS_INSERT_QUERY + "> queries. Batch size: " + maxBatchSize);
               pstmt.executeBatch();
             }
           }
-          if (insertCounter % batchSize != 0) {
-            LOG.debug("Executing a batch of <" + TXN_COMPONENTS_INSERT_QUERY + "> queries. Batch size: " + insertCounter % batchSize);
+          if (insertCounter % maxBatchSize != 0) {
+            LOG.debug("Executing a batch of <" + TXN_COMPONENTS_INSERT_QUERY + "> queries. Batch size: " + insertCounter % maxBatchSize);
             pstmt.executeBatch();
           }
         }
@@ -4246,7 +4244,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, txnids, "\"HL_TXNID\"", false, false);
 
       // execute all queries in the list in one batch
-      List<Integer> affectedRowsByQuery = executeQueriesInBatch(stmt, queries, conf);
+      List<Integer> affectedRowsByQuery = executeQueriesInBatch(stmt, queries, maxBatchSize);
       return getUpdateCount(numUpdateQueries, affectedRowsByQuery);
     } finally {
       closeStmt(stmt);
