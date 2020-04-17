@@ -242,13 +242,8 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     Assert.assertTrue(primary.miniDFSCluster.getFileSystem().exists(dumpPath));
 
     // Check if the DB dump path have any tables other than the ones listed in bootstrappedTables.
-    Path dbPath = new Path(dumpPath, primaryDbName);
-    FileStatus[] fileStatuses = primary.miniDFSCluster.getFileSystem().listStatus(dbPath, new PathFilter() {
-      @Override
-      public boolean accept(Path path) {
-        return !path.getName().equalsIgnoreCase(EximUtil.DATA_PATH_NAME);
-      }
-    });
+    Path dbPath = new Path(dumpPath, EximUtil.METADATA_PATH_NAME + File.separator + primaryDbName);
+    FileStatus[] fileStatuses = primary.miniDFSCluster.getFileSystem().listStatus(dbPath);
     Assert.assertEquals(fileStatuses.length, bootstrappedTables.length);
 
     // Eg: _bootstrap/<db_name>/t2, _bootstrap/<db_name>/t3 etc

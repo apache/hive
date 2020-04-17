@@ -236,7 +236,6 @@ public class ReplUtils {
       try {
         return fs.isDirectory(p) && !p.getName().equalsIgnoreCase(ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME)
                 && !p.getName().equalsIgnoreCase(ReplUtils.REPL_TABLE_LIST_DIR_NAME)
-                && !p.getName().equalsIgnoreCase(EximUtil.DATA_PATH_NAME)
                 && !p.getName().equalsIgnoreCase(EximUtil.METADATA_PATH_NAME);
       } catch (IOException e) {
         throw new RuntimeException(e);
@@ -248,7 +247,6 @@ public class ReplUtils {
     return p -> {
       try {
         return fs.isDirectory(p) && !p.getName().equalsIgnoreCase(ReplUtils.REPL_TABLE_LIST_DIR_NAME)
-                && !p.getName().equalsIgnoreCase(EximUtil.DATA_PATH_NAME)
                 && !p.getName().equalsIgnoreCase(EximUtil.METADATA_PATH_NAME);
       } catch (IOException e) {
         throw new RuntimeException(e);

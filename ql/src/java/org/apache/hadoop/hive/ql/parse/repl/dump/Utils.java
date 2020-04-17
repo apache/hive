@@ -64,10 +64,15 @@ public class Utils {
 
   public static void writeOutput(List<List<String>> listValues, Path outputFile, HiveConf hiveConf)
       throws SemanticException {
+    writeOutput(listValues, outputFile, hiveConf, false);
+  }
+
+  public static void writeOutput(List<List<String>> listValues, Path outputFile, HiveConf hiveConf, boolean update)
+          throws SemanticException {
     DataOutputStream outStream = null;
     try {
       FileSystem fs = outputFile.getFileSystem(hiveConf);
-      outStream = fs.create(outputFile);
+      outStream = fs.create(outputFile, update);
       for (List<String> values : listValues) {
         outStream.writeBytes((values.get(0) == null ? Utilities.nullStringOutput : values.get(0)));
         for (int i = 1; i < values.size(); i++) {
@@ -98,6 +103,20 @@ public class Utils {
     } catch (Exception e) {
       throw new SemanticException(e);
     }
+  }
+
+  public static boolean create(Path outputFile, HiveConf hiveConf, boolean replace)
+          throws SemanticException {
+    try {
+      FileSystem fs = outputFile.getFileSystem(hiveConf);
+      if (fs.exists(outputFile)) {
+        return true;
+      }
+      create(outputFile, hiveConf);
+    } catch (IOException e) {
+      throw new SemanticException(e);
+    }
+    return false;
   }
 
   public static Iterable<String> matchesDb(Hive db, String dbPattern) throws HiveException {
