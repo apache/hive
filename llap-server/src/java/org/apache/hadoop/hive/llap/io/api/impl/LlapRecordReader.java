@@ -169,6 +169,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
             queueLimitBase,
             queueLimitMin,
             rbCtx.getRowColumnTypeInfos(),
+            rbCtx.getDataColumnNums(),
             decimal64Support);
     LOG.info("Queue limit for LlapRecordReader is " + limit);
     this.queue = new ArrayBlockingQueue<>(limit);
@@ -223,15 +224,16 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
       int queueLimitMax,
       int queueLimitMin,
       TypeInfo[] typeInfos,
+      int[] projectedColumnNums,
       final boolean decimal64Support) {
     assert queueLimitMax >= queueLimitMin;
     // If the values are equal, the queue limit is fixed.
     if (queueLimitMax == queueLimitMin) return queueLimitMax;
     // If there are no columns (projection only join?) just assume no weight.
-    if (typeInfos == null || typeInfos.length == 0) return queueLimitMax;
+    if (projectedColumnNums == null || projectedColumnNums.length == 0) return queueLimitMax;
     // total weight as bytes
     double totalWeight = 0;
-    int numberOfProjectedColumns = typeInfos.length;
+    int numberOfProjectedColumns = projectedColumnNums.length;
     double scale = Math.max(Math.log(numberOfProjectedColumns), 1);
 
     // Assuming that an empty Column Vector is about 96 bytes the object
@@ -257,8 +259,8 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     //     88     8                                                    byte[] BytesColumnVector.smallBuffer
     long columnVectorBaseSize = (long) (96 * numberOfProjectedColumns * scale);
 
-    for (int i = 0; i < typeInfos.length; i++) {
-      TypeInfo ti = typeInfos[i];
+    for (int i = 0; i < projectedColumnNums.length; i++) {
+      TypeInfo ti = typeInfos[projectedColumnNums[i]];
       int colWeight;
       if (ti.getCategory() != Category.PRIMITIVE) {
         colWeight = COL_WEIGHT_COMPLEX;
