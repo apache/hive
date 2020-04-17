@@ -53,6 +53,7 @@ ls -l
 set -x
 . /etc/profile.d/confs.sh
 export USER="`whoami`"
+export MAVEN_OPTS="-Xmx=512m"
 export -n HIVE_CONF_DIR
 #export HIVE_HOME="$PWD"
 OPTS=" -s $SETTINGS -B -Dmaven.test.failure.ignore -Dtest.groups= "
