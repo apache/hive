@@ -18,12 +18,17 @@
 
 package org.apache.hadoop.hive.ql.ddl.view.materialized.alter.rewrite;
 
+import org.apache.calcite.rel.RelNode;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
+import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
+import org.apache.hadoop.hive.ql.parse.ParseUtils;
 
 /**
  * Operation process of enabling/disabling materialized view rewrite.
@@ -41,6 +46,32 @@ public class AlterMaterializedViewRewriteOperation extends DDLOperation<AlterMat
       return 0;
     }
     Table newMV = mv.copy(); // Do not mess with Table instance
+
+    if (desc.isRewriteEnable()) {
+      try {
+        final QueryState qs = new QueryState.Builder().withHiveConf(context.getConf()).build();
+        final CalcitePlanner planner = new CalcitePlanner(qs);
+        final Context ctx = new Context(context.getConf());
+        ctx.setIsLoadingMaterializedView(true);
+        planner.initCtx(ctx);
+        planner.init(false);
+
+        final RelNode plan = planner.genLogicalPlan(ParseUtils.parse(mv.getViewExpandedText()));
+        if (plan == null) {
+          String msg = "Cannot enable automatic rewriting for materialized view.";
+          if (ctx.getCboInfo() != null) {
+            msg += " " + ctx.getCboInfo();
+          }
+          throw new HiveException(msg);
+        }
+        if (!planner.isValidAutomaticRewritingMaterialization()) {
+          throw new HiveException("Cannot enable rewriting for materialized view. " +
+              planner.getInvalidAutomaticRewritingMaterializationReason());
+        }
+      } catch (Exception e) {
+        throw new HiveException(e);
+      }
+    }
 
     newMV.setRewriteEnabled(desc.isRewriteEnable());
     EnvironmentContext environmentContext = new EnvironmentContext();

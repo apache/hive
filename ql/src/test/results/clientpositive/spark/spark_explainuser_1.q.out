@@ -262,7 +262,7 @@ select src1.key as k1, src1.value as v1,
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-Plan not optimized by CBO.
+Plan optimized by CBO.
 
 Vertex dependency in Stage-1
 Reducer 2 <- Map 1 (GROUP)
@@ -2276,34 +2276,11 @@ Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-<<<<<<< HEAD
->>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
-      Reducer 4
-      File Output Operator [FS_22]
-        Select Operator [SEL_21] (rows=1 width=8)
-          Output:["_col0","_col1"]
-<<<<<<< HEAD
-          Join Operator [JOIN_20] (rows=1 width=8)
-=======
-          Join Operator [JOIN_20] (rows=3 width=8)
-=======
       Reducer 3
       File Output Operator [FS_21]
         Select Operator [SEL_20] (rows=1 width=8)
           Output:["_col0","_col1"]
           Join Operator [JOIN_19] (rows=1 width=8)
->>>>>>> 3b4c2fe0b34... HIVE-22238: PK/FK selectivity estimation underscales estimations (Zoltan Haindrich reviewed by Jesus Camacho Rodriguez)
-=======
-      Reducer 3
-      File Output Operator [FS_21]
-        Select Operator [SEL_20] (rows=3 width=8)
-          Output:["_col0","_col1"]
-          Join Operator [JOIN_19] (rows=3 width=8)
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
->>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
             Output:["_col0","_col3"],condition map:[{"":"{\"type\":\"Left Semi\",\"left\":0,\"right\":1}"}],keys:{"0":"_col1, _col4","1":"_col0, _col1"}
           <-Map 5 [PARTITION-LEVEL SORT]
             PARTITION-LEVEL SORT [RS_18]
@@ -2319,29 +2296,6 @@ Stage-0
           <-Reducer 2 [PARTITION-LEVEL SORT]
             PARTITION-LEVEL SORT [RS_17]
               PartitionCols:_col1, _col4
-<<<<<<< HEAD
-              Join Operator [JOIN_15] (rows=14 width=16)
-                Output:["_col0","_col1","_col3","_col4"],condition map:[{"":"{\"type\":\"Inner\",\"left\":0,\"right\":1}"}],keys:{"0":"_col0","1":"_col1"}
-              <-Map 5 [PARTITION-LEVEL SORT]
-                PARTITION-LEVEL SORT [RS_14]
-                  PartitionCols:_col1
-                  Select Operator [SEL_9] (rows=14 width=16)
-                    Output:["_col0","_col1","_col2","_col3"]
-                    Filter Operator [FIL_24] (rows=14 width=16)
-                      predicate:((l_linenumber = 1) and l_partkey is not null and l_orderkey is not null)
-                      TableScan [TS_7] (rows=100 width=16)
-                        default@lineitem,li,Tbl:COMPLETE,Col:COMPLETE,Output:["l_orderkey","l_partkey","l_suppkey","l_linenumber"]
-              <-Reducer 2 [PARTITION-LEVEL SORT]
-                PARTITION-LEVEL SORT [RS_13]
-                  PartitionCols:_col0
-                  Group By Operator [GBY_5] (rows=50 width=4)
-                    Output:["_col0"],keys:KEY._col0
-                  <-Map 1 [GROUP]
-                    GROUP [RS_4]
-                      PartitionCols:_col0
-                      Group By Operator [GBY_3] (rows=50 width=4)
-                        Output:["_col0"],keys:l_partkey
-=======
               Select Operator [SEL_11] (rows=14 width=20)
                 Output:["_col0","_col1","_col3","_col4"]
                 Join Operator [JOIN_10] (rows=14 width=16)
@@ -2352,7 +2306,7 @@ Stage-0
                     Select Operator [SEL_2] (rows=14 width=16)
                       Output:["_col0","_col1","_col2","_col3"]
                       Filter Operator [FIL_22] (rows=14 width=16)
-                        predicate:((l_linenumber = 1) and l_orderkey is not null and l_partkey is not null)
+                        predicate:((l_linenumber = 1) and l_partkey is not null and l_orderkey is not null)
                         TableScan [TS_0] (rows=100 width=16)
                           default@lineitem,li,Tbl:COMPLETE,Col:COMPLETE,Output:["l_orderkey","l_partkey","l_suppkey","l_linenumber"]
                 <-Map 4 [PARTITION-LEVEL SORT]
@@ -2362,7 +2316,6 @@ Stage-0
                       Output:["_col0"],keys:_col0
                       Select Operator [SEL_5] (rows=100 width=4)
                         Output:["_col0"]
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
                         Filter Operator [FIL_23] (rows=100 width=4)
                           predicate:l_partkey is not null
                           TableScan [TS_3] (rows=100 width=4)
@@ -2566,44 +2519,8 @@ Stage-0
           SORT [RS_25]
             Select Operator [SEL_24] (rows=631 width=178)
               Output:["_col0","_col1"]
-<<<<<<< HEAD
-              Filter Operator [FIL_22] (rows=631 width=194)
-                predicate:((_col5 is null or (_col2 = 0L)) and ((_col3 >= _col2) or (_col2 = 0L) or _col5 is not null or _col0 is null) and (_col0 is not null or (_col2 = 0L) or _col5 is not null))
-                Join Operator [JOIN_21] (rows=631 width=194)
-                  Output:["_col0","_col1","_col2","_col3","_col5"],condition map:[{"":"{\"type\":\"Left Outer\",\"left\":0,\"right\":1}"}],keys:{"0":"_col0","1":"_col0"}
-                <-Reducer 2 [PARTITION-LEVEL SORT]
-                  PARTITION-LEVEL SORT [RS_19]
-                    PartitionCols:_col0
-                    Join Operator [JOIN_18] (rows=500 width=194)
-                      Output:["_col0","_col1","_col2","_col3"],condition map:[{"":"{\"type\":\"Inner\",\"left\":0,\"right\":1}"}],keys:{}
-                    <-Map 1 [PARTITION-LEVEL SORT]
-                      PARTITION-LEVEL SORT [RS_16]
-                        Select Operator [SEL_1] (rows=500 width=178)
-                          Output:["_col0","_col1"]
-                          TableScan [TS_0] (rows=500 width=178)
-                            default@src_cbo,src_cbo,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
-                    <-Reducer 6 [PARTITION-LEVEL SORT]
-                      PARTITION-LEVEL SORT [RS_17]
-                        Group By Operator [GBY_7] (rows=1 width=16)
-                          Output:["_col0","_col1"],aggregations:["count(VALUE._col0)","count(VALUE._col1)"]
-                        <-Map 5 [GROUP]
-                          GROUP [RS_6]
-                            Group By Operator [GBY_5] (rows=1 width=16)
-                              Output:["_col0","_col1"],aggregations:["count()","count(key)"]
-                              Filter Operator [FIL_27] (rows=166 width=87)
-                                predicate:(key > '2')
-                                TableScan [TS_2] (rows=500 width=87)
-                                  default@src_cbo,s1,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
-                <-Reducer 8 [PARTITION-LEVEL SORT]
-                  PARTITION-LEVEL SORT [RS_20]
-                    PartitionCols:_col0
-                    Select Operator [SEL_15] (rows=83 width=91)
-                      Output:["_col0","_col1"]
-                      Group By Operator [GBY_14] (rows=83 width=87)
-                        Output:["_col0"],keys:KEY._col0
-=======
               Filter Operator [FIL_23] (rows=631 width=194)
-                predicate:((_col2 = 0L) or (_col5 is null and _col0 is not null and (_col3 >= _col2)))
+                predicate:((_col5 is null or (_col2 = 0L)) and ((_col3 >= _col2) or (_col2 = 0L) or _col5 is not null or _col0 is null) and (_col0 is not null or (_col2 = 0L) or _col5 is not null))
                 Select Operator [SEL_22] (rows=631 width=194)
                   Output:["_col0","_col1","_col2","_col3","_col5"]
                   Join Operator [JOIN_21] (rows=631 width=194)
@@ -2639,7 +2556,6 @@ Stage-0
                     PARTITION-LEVEL SORT [RS_20]
                       Group By Operator [GBY_14] (rows=1 width=16)
                         Output:["_col0","_col1"],aggregations:["count(VALUE._col0)","count(VALUE._col1)"]
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
                       <-Map 7 [GROUP]
                         GROUP [RS_13]
                           Group By Operator [GBY_12] (rows=1 width=16)
@@ -2770,102 +2686,56 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 4
-<<<<<<< HEAD
-      File Output Operator [FS_33]
-        Select Operator [SEL_32] (rows=27 width=125)
+      File Output Operator [FS_34]
+        Select Operator [SEL_33] (rows=27 width=125)
           Output:["_col0","_col1"]
         <-Reducer 3 [SORT]
-          SORT [RS_31]
-            Select Operator [SEL_30] (rows=27 width=125)
+          SORT [RS_32]
+            Select Operator [SEL_31] (rows=27 width=125)
               Output:["_col0","_col1"]
-              Filter Operator [FIL_29] (rows=27 width=141)
+              Filter Operator [FIL_30] (rows=27 width=141)
                 predicate:((_col5 is null or (_col2 = 0L)) and ((_col3 >= _col2) or (_col2 = 0L) or _col5 is not null or _col1 is null) and (_col1 is not null or (_col2 = 0L) or _col5 is not null))
-                Join Operator [JOIN_28] (rows=27 width=141)
-                  Output:["_col0","_col1","_col2","_col3","_col5"],condition map:[{"":"{\"type\":\"Left Outer\",\"left\":0,\"right\":1}"}],keys:{"0":"UDFToDouble(_col1)","1":"_col0"}
-                <-Reducer 2 [PARTITION-LEVEL SORT]
-                  PARTITION-LEVEL SORT [RS_26]
-                    PartitionCols:UDFToDouble(_col1)
-                    Join Operator [JOIN_25] (rows=26 width=141)
-                      Output:["_col0","_col1","_col2","_col3"],condition map:[{"":"{\"type\":\"Inner\",\"left\":0,\"right\":1}"}],keys:{}
-                    <-Map 1 [PARTITION-LEVEL SORT]
-                      PARTITION-LEVEL SORT [RS_23]
-                        Select Operator [SEL_1] (rows=26 width=125)
-                          Output:["_col0","_col1"]
-                          TableScan [TS_0] (rows=26 width=125)
-                            default@part,part,Tbl:COMPLETE,Col:COMPLETE,Output:["p_name","p_size"]
-                    <-Reducer 6 [PARTITION-LEVEL SORT]
-                      PARTITION-LEVEL SORT [RS_24]
-                        Group By Operator [GBY_12] (rows=1 width=16)
-                          Output:["_col0","_col1"],aggregations:["count()","count(_col0)"]
-                          Select Operator [SEL_8] (rows=1 width=16)
-                            Output:["_col0"]
-=======
-      File Output Operator [FS_32]
-        Select Operator [SEL_31] (rows=27 width=125)
-          Output:["_col0","_col1"]
-        <-Reducer 3 [SORT]
-          SORT [RS_30]
-            Select Operator [SEL_29] (rows=27 width=125)
-              Output:["_col0","_col1"]
-              Filter Operator [FIL_28] (rows=27 width=141)
-                predicate:((_col2 = 0L) or (_col5 is null and _col1 is not null and (_col3 >= _col2)))
-                Select Operator [SEL_27] (rows=27 width=141)
+                Select Operator [SEL_29] (rows=27 width=141)
                   Output:["_col0","_col1","_col2","_col3","_col5"]
-                  Join Operator [JOIN_26] (rows=27 width=141)
+                  Join Operator [JOIN_28] (rows=27 width=141)
                     Output:["_col0","_col1","_col3","_col4","_col5"],condition map:[{"":"{\"type\":\"Inner\",\"left\":0,\"right\":1}"}],keys:{}
                   <-Reducer 2 [PARTITION-LEVEL SORT]
-                    PARTITION-LEVEL SORT [RS_24]
-                      Join Operator [JOIN_23] (rows=27 width=125)
+                    PARTITION-LEVEL SORT [RS_26]
+                      Join Operator [JOIN_25] (rows=27 width=125)
                         Output:["_col0","_col1","_col3"],condition map:[{"":"{\"type\":\"Left Outer\",\"left\":0,\"right\":1}"}],keys:{"0":"UDFToDouble(_col1)","1":"_col0"}
                       <-Map 1 [PARTITION-LEVEL SORT]
-                        PARTITION-LEVEL SORT [RS_21]
+                        PARTITION-LEVEL SORT [RS_23]
                           PartitionCols:UDFToDouble(_col1)
                           Select Operator [SEL_1] (rows=26 width=125)
                             Output:["_col0","_col1"]
                             TableScan [TS_0] (rows=26 width=125)
                               default@part,part,Tbl:COMPLETE,Col:COMPLETE,Output:["p_name","p_size"]
                       <-Reducer 6 [PARTITION-LEVEL SORT]
-                        PARTITION-LEVEL SORT [RS_22]
+                        PARTITION-LEVEL SORT [RS_24]
                           PartitionCols:_col0
-                          Select Operator [SEL_8] (rows=1 width=12)
+                          Select Operator [SEL_10] (rows=1 width=12)
                             Output:["_col0","_col1"]
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
-                            Group By Operator [GBY_7] (rows=1 width=16)
-                              Output:["_col0","_col1"],aggregations:["sum(VALUE._col0)","count(VALUE._col1)"]
-                            <-Map 5 [GROUP]
-                              GROUP [RS_6]
-                                Group By Operator [GBY_5] (rows=1 width=16)
-                                  Output:["_col0","_col1"],aggregations:["sum(p_size)","count(p_size)"]
-<<<<<<< HEAD
-                                  Filter Operator [FIL_34] (rows=8 width=4)
-                                    predicate:(p_size < 10)
-                                    TableScan [TS_2] (rows=26 width=4)
-                                      default@part,part,Tbl:COMPLETE,Col:COMPLETE,Output:["p_size"]
-                <-Reducer 8 [PARTITION-LEVEL SORT]
-                  PARTITION-LEVEL SORT [RS_27]
-                    PartitionCols:_col0
-                    Select Operator [SEL_22] (rows=1 width=12)
-                      Output:["_col0","_col1"]
-                      Filter Operator [FIL_21] (rows=1 width=16)
-                        predicate:(_col1 is not null and UDFToDouble(_col0) is not null)
-                        Group By Operator [GBY_19] (rows=1 width=16)
-                          Output:["_col0","_col1"],aggregations:["sum(VALUE._col0)","count(VALUE._col1)"]
-                        <- Please refer to the previous Map 5 [GROUP]
-=======
-                                  Filter Operator [FIL_33] (rows=8 width=4)
-                                    predicate:(p_size < 10)
-                                    TableScan [TS_2] (rows=26 width=4)
-                                      default@part,part,Tbl:COMPLETE,Col:COMPLETE,Output:["p_size"]
+                            Filter Operator [FIL_9] (rows=1 width=16)
+                              predicate:(_col1 is not null and UDFToDouble(_col0) is not null)
+                              Group By Operator [GBY_7] (rows=1 width=16)
+                                Output:["_col0","_col1"],aggregations:["sum(VALUE._col0)","count(VALUE._col1)"]
+                              <-Map 5 [GROUP]
+                                GROUP [RS_6]
+                                  Group By Operator [GBY_5] (rows=1 width=16)
+                                    Output:["_col0","_col1"],aggregations:["sum(p_size)","count(p_size)"]
+                                    Filter Operator [FIL_35] (rows=8 width=4)
+                                      predicate:(p_size < 10)
+                                      TableScan [TS_2] (rows=26 width=4)
+                                        default@part,part,Tbl:COMPLETE,Col:COMPLETE,Output:["p_size"]
                   <-Reducer 8 [PARTITION-LEVEL SORT]
-                    PARTITION-LEVEL SORT [RS_25]
-                      Group By Operator [GBY_19] (rows=1 width=16)
+                    PARTITION-LEVEL SORT [RS_27]
+                      Group By Operator [GBY_21] (rows=1 width=16)
                         Output:["_col0","_col1"],aggregations:["count()","count(_col0)"]
-                        Select Operator [SEL_15] (rows=1 width=16)
+                        Select Operator [SEL_17] (rows=1 width=16)
                           Output:["_col0"]
-                          Group By Operator [GBY_14] (rows=1 width=16)
+                          Group By Operator [GBY_16] (rows=1 width=16)
                             Output:["_col0","_col1"],aggregations:["sum(VALUE._col0)","count(VALUE._col1)"]
                           <- Please refer to the previous Map 5 [GROUP]
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
 
 PREHOOK: query: explain select b.p_mfgr, min(p_retailprice)
 from part b
@@ -3753,7 +3623,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nzhang_CTAS1_n0
-Plan not optimized by CBO.
+Plan not optimized by CBO because the statement has sort by with limit
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (PARTITION-LEVEL SORT)
@@ -3808,7 +3678,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nzhang_ctas3_n0
-Plan not optimized by CBO.
+Plan not optimized by CBO because the statement has sort by with limit
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (PARTITION-LEVEL SORT)
@@ -3901,7 +3771,7 @@ select src1.key as k1, src1.value as v1,
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-Plan not optimized by CBO.
+Plan optimized by CBO.
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (PARTITION-LEVEL SORT), Map 4 (PARTITION-LEVEL SORT)
@@ -4740,7 +4610,7 @@ from noop(on part
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-Plan not optimized by CBO.
+Plan not optimized by CBO because the statement has PTF
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (PARTITION-LEVEL SORT)
@@ -4789,7 +4659,7 @@ sort by j.p_name)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-Plan not optimized by CBO.
+Plan not optimized by CBO because the statement has PTF
 
 Vertex dependency in Stage-1
 Reducer 2 <- Map 1 (PARTITION-LEVEL SORT)
@@ -4858,7 +4728,7 @@ from noop(on part
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-Plan not optimized by CBO.
+Plan not optimized by CBO because the statement has PTF
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (PARTITION-LEVEL SORT)
@@ -4913,7 +4783,7 @@ from noop(on part
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-Plan not optimized by CBO.
+Plan not optimized by CBO because the statement has PTF
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (PARTITION-LEVEL SORT)
@@ -4970,7 +4840,7 @@ group by p_mfgr, p_name, p_size
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-Plan not optimized by CBO.
+Plan not optimized by CBO because the statement has PTF
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (PARTITION-LEVEL SORT)
@@ -5027,7 +4897,7 @@ order by p_name
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-Plan not optimized by CBO.
+Plan not optimized by CBO because the statement has PTF
 
 Vertex dependency in Stage-1
 Reducer 2 <- Map 1 (PARTITION-LEVEL SORT)
@@ -5081,7 +4951,7 @@ order by p_name, p_size desc)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-Plan not optimized by CBO.
+Plan not optimized by CBO because the statement has PTF
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (PARTITION-LEVEL SORT)
@@ -5136,7 +5006,7 @@ from noopwithmap(on part
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-Plan not optimized by CBO.
+Plan not optimized by CBO because the statement has PTF
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (PARTITION-LEVEL SORT)
@@ -5191,7 +5061,7 @@ order by p_name)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-Plan not optimized by CBO.
+Plan not optimized by CBO because the statement has PTF
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (PARTITION-LEVEL SORT)
@@ -5246,7 +5116,7 @@ order by p_mfgr DESC, p_name
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-Plan not optimized by CBO.
+Plan not optimized by CBO because the statement has PTF
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (PARTITION-LEVEL SORT)
@@ -5317,7 +5187,7 @@ window w1 as (partition by p_mfgr order by p_name rows between 2 preceding and 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-Plan not optimized by CBO.
+Plan not optimized by CBO because the statement has PTF
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (PARTITION-LEVEL SORT)
@@ -5376,7 +5246,7 @@ order by p_name
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-Plan not optimized by CBO.
+Plan not optimized by CBO because the statement has PTF
 
 Vertex dependency in Stage-1
 Reducer 2 <- Map 1 (PARTITION-LEVEL SORT)
@@ -5527,7 +5397,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 POSTHOOK: Output: default@part_4_n0
 POSTHOOK: Output: default@part_5_n0
-Plan not optimized by CBO.
+Plan not optimized by CBO because the statement has PTF
 
 Vertex dependency in root stage
 Reducer 3 <- Reducer 6 (PARTITION-LEVEL SORT)
@@ -5634,7 +5504,7 @@ from noop(on
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-Plan not optimized by CBO.
+Plan not optimized by CBO because the statement has PTF
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (PARTITION-LEVEL SORT)
@@ -5713,7 +5583,7 @@ from noop(on
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-Plan not optimized by CBO.
+Plan not optimized by CBO because the statement has PTF
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (PARTITION-LEVEL SORT)
@@ -5794,7 +5664,7 @@ from noop(on
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-Plan not optimized by CBO.
+Plan not optimized by CBO because the statement has PTF
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (PARTITION-LEVEL SORT)

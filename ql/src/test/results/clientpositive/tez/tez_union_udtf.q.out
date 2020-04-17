@@ -22,7 +22,7 @@ POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@x
-Plan not optimized by CBO.
+Plan not optimized by CBO because the statement has lateral views
 
 Vertex dependency in root stage
 Map 1 <- Union 2 (CONTAINS)
