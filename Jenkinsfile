@@ -33,7 +33,7 @@ def testInParallel(parallelism, inclusionsFile, exclusionsFile, results, image, 
 	              run()
 		}
             } finally {
-		stage('Finish') {
+		stage('Archive') {
               junit '**/TEST-*.xml'
 		}
             }
