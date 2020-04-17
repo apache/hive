@@ -34,7 +34,6 @@ import org.apache.hadoop.hive.ql.exec.DummyStoreOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -48,7 +47,6 @@ import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.QB;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.TableAccessAnalyzer;
-import org.apache.hadoop.hive.ql.plan.DummyStoreDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
@@ -187,9 +185,7 @@ abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc impleme
         par.getChildOperators().add(index, smbJop);
       }
       else {
-        DummyStoreOperator dummyStoreOp =
-            (DummyStoreOperator) OperatorFactory.get(par.getCompilationOpContext(), new DummyStoreDesc());
-
+        DummyStoreOperator dummyStoreOp = new DummyStoreOperator(par.getCompilationOpContext());
         par.getChildOperators().add(index, dummyStoreOp);
 
         List<Operator<? extends OperatorDesc>> childrenOps =
