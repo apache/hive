@@ -20,25 +20,24 @@ def testInParallel(parallelism, inclusionsFile, exclusionsFile, results, image, 
   for (int i = 0; i < splits.size(); i++) {
     def num = i
     def split = splits[num]
-    branches["split${num}"] = {
-      stage("Test #${num + 1}") {
+    def splitName=String.format("split-%02d",num)
+    branches[splitName] = {
       executorNode {
-        //docker.image(image).inside {
-//          stage('Preparation') {
+	stage('Prepare') {
             prepare()
             writeFile file: (split.includes ? inclusionsFile : exclusionsFile), text: split.list.join("\n")
             writeFile file: (split.includes ? exclusionsFile : inclusionsFile), text: ''
-  //        }
-        //  stage('Main') {
-//            realtimeJUnit(results)
-            try {
-              run()
-            } finally {
-              junit '**/TEST-*.xml'
-            }
-//          }
         }
-      }
+            try {
+		stage('Test') {
+	              run()
+		}
+            } finally {
+		stage('Finish') {
+              junit '**/TEST-*.xml'
+		}
+            }
+        }
     }
   }
   parallel branches
