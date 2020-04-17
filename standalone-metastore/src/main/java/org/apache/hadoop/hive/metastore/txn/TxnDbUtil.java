@@ -636,14 +636,13 @@ public final class TxnDbUtil {
   /**
    * @param stmt Statement which will be used for batching and execution.
    * @param queries List of sql queries to execute in a Statement batch.
-   * @param conf Configuration for retrieving max batch size param
+   * @param batchSize maximum number of queries in a single batch
    * @return A list with the number of rows affected by each query in queries.
    * @throws SQLException Thrown if an execution error occurs.
    */
-  static List<Integer> executeQueriesInBatch(Statement stmt, List<String> queries, Configuration conf) throws SQLException {
+  static List<Integer> executeQueriesInBatch(Statement stmt, List<String> queries, int batchSize) throws SQLException {
     List<Integer> affectedRowsByQuery = new ArrayList<>();
     int queryCounter = 0;
-    int batchSize = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_VALUES_CLAUSE);
     for (String query : queries) {
       LOG.debug("Adding query to batch: <" + query + ">");
       queryCounter++;
