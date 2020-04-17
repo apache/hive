@@ -99,12 +99,12 @@ spec:
     type: slave
 ''') {
 
+properties([
     options {
         throttle(['hive-precommit'])
         quietPeriod(60)
         rateLimitBuilds(throttle: [count: 1, durationName: "hour", userBoost: true])
-    }
-properties([
+    },
     parameters([
         string(name: 'SPLIT', defaultValue: '29', description: 'Number of buckets to split tests into.'),
         string(name: 'OPTS', defaultValue: '-DskipSparkTests', description: 'additional maven opts'),
