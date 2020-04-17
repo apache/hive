@@ -21,7 +21,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -47,6 +46,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.hive.llap.daemon.FinishableStateUpdateHandler;
 import org.apache.hadoop.hive.llap.daemon.SchedulerFragmentCompletingListener;
 import org.apache.hadoop.hive.llap.daemon.impl.comparator.LlapQueueComparatorBase;
+import org.apache.hadoop.hive.llap.daemon.impl.comparator.PreemptionQueueComparator;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SignableVertexSpec;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
@@ -1112,37 +1112,6 @@ public class TaskExecutorService extends AbstractService
       }
     } catch (InterruptedException e) {
       executorService.shutdownNow();
-    }
-  }
-
-
-
-  @VisibleForTesting
-  public static class PreemptionQueueComparator implements Comparator<TaskWrapper> {
-
-    @Override
-    public int compare(TaskWrapper t1, TaskWrapper t2) {
-      TaskRunnerCallable o1 = t1.getTaskRunnerCallable();
-      TaskRunnerCallable o2 = t2.getTaskRunnerCallable();
-      FragmentRuntimeInfo fri1 = o1.getFragmentRuntimeInfo();
-      FragmentRuntimeInfo fri2 = o2.getFragmentRuntimeInfo();
-
-      // Regardless of other criteria, ducks are always more important than non-ducks.
-      boolean v1 = o1.isGuaranteed(), v2 = o2.isGuaranteed();
-      if (v1 != v2) return v1 ? 1 : -1;
-
-      // Then, non-finishable must always precede finishable.
-      v1 = o1.canFinishForPriority();
-      v2 = o2.canFinishForPriority();
-      if (v1 != v2) return v1 ? 1 : -1;
-
-      // Otherwise, heuristics.
-      if (fri1.getNumSelfAndUpstreamTasks() > fri2.getNumSelfAndUpstreamTasks()) {
-        return 1;
-      } else if (fri1.getNumSelfAndUpstreamTasks() < fri2.getNumSelfAndUpstreamTasks()) {
-        return -1;
-      }
-      return 0;
     }
   }
 

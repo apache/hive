@@ -25,6 +25,7 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import org.apache.hadoop.hive.llap.daemon.impl.comparator.PreemptionQueueComparator;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
 import org.apache.hadoop.yarn.util.SystemClock;
 
@@ -81,7 +82,7 @@ public class TestTaskExecutorService {
     TaskWrapper r6 = createTaskWrapper(
         createSubmitWorkRequestProto(6, 8, 400, 500, true), false, 1000000);
     BlockingQueue<TaskWrapper> queue = new PriorityBlockingQueue<>(6,
-        new TaskExecutorService.PreemptionQueueComparator());
+        new PreemptionQueueComparator());
 
     queue.offer(r6);
     queue.offer(r5);
@@ -98,6 +99,38 @@ public class TestTaskExecutorService {
     assertEquals(r4, queue.take());
     assertEquals(r5, queue.take());
     assertEquals(r6, queue.take());
+  }
+
+  @Test(timeout = 5000)
+  public void testPreemptionQueueEdgeCases() throws InterruptedException {
+    BlockingQueue<TaskWrapper> queue = new PriorityBlockingQueue<>(5,
+        new PreemptionQueueComparator());
+
+    TaskWrapper r1 = createTaskWrapper(
+        createSubmitWorkRequestProto(1, 4, 100, 200, false), false, 100000);
+    TaskWrapper r2 = createTaskWrapper(
+        createSubmitWorkRequestProto(2, 2, 100, 300, false), false, 100000);
+
+    // when both non-guaranteed and finishable,
+    // pick the one with the LEAST upstream tasks
+    queue.offer(r1);
+    queue.offer(r2);
+    assertEquals(r2, queue.peek());
+
+    queue.remove(r1);
+    queue.remove(r2);
+    assertTrue(queue.isEmpty());
+
+    r1 = createTaskWrapper(
+        createSubmitWorkRequestProto(1, 4, 100, 200, false), false, 100000);
+    r2 = createTaskWrapper(
+        createSubmitWorkRequestProto(2, 4, 100, 300, false), false, 100000);
+
+    // when both non-guaranteed and finishable, with the same upstream
+    // pick the one with the LEAST wait-time
+    queue.offer(r1);
+    queue.offer(r2);
+    assertEquals(r2, queue.peek());
   }
 
   org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(TestTaskExecutorService.class);
