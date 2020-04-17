@@ -53,7 +53,7 @@ ls -l
 set -x
 . /etc/profile.d/confs.sh
 export USER="`whoami`"
-export MAVEN_OPTS="-Xmx1g"
+export MAVEN_OPTS="-Xmx1333m"
 export -n HIVE_CONF_DIR
 #export HIVE_HOME="$PWD"
 OPTS=" -s $SETTINGS -B -Dmaven.test.failure.ignore -Dtest.groups= "
@@ -160,7 +160,7 @@ echo "@ENC"
 cat exclusions.txt
 echo "@END"
 '''
-      buildHive("install -q")
+      buildHive("test -q")
       withEnv(["SCRIPT=$params.SCRIPT"]) {
         sh '''$SCRIPT'''
       }
