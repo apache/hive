@@ -52,8 +52,14 @@ public class TestLlapWebServices {
     llapWS.start();
     HttpServletRequest a = null;
 
+    extracted("javax/servlet/http/HttpServletRequest.class");
+    extracted("javax/servlet/http/HttpServlet.class");
+  }
+
+  private static void extracted(String name) throws IOException {
     Enumeration<URL> rr =
-        TestLlapWebServices.class.getClassLoader().getResources("javax/servlet/http/HttpServletRequest.class");
+        TestLlapWebServices.class.getClassLoader().getResources(name);
+
     List<URL> aa = new ArrayList<>();
     while (rr.hasMoreElements()) {
       aa.add(rr.nextElement());
@@ -61,9 +67,6 @@ public class TestLlapWebServices {
     if (aa.size() != 1) {
       throw new RuntimeException(aa.toString());
     }
-
-
-    //    Thread.sleep(5000);
   }
 
   @Test
