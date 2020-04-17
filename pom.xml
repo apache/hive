@@ -97,7 +97,7 @@
 
     <!-- To add additional exclude patterns set this property -->
     <test.excludes.additional></test.excludes.additional>
-    <skip.spark.files>**/TestSparkStatistics*,**/TestSparkSessionTimeout*,**/TestJdbcWithMiniHS2ErasureCoding*</skip.spark.files>
+    <skip.spark.files>**/TestSparkStatistics*,**/TestSparkSessionTimeout*,**/TestJdbcWithMiniHS2ErasureCoding*,**/TestLocalHiveSparkClient*</skip.spark.files>
 
     <!-- Plugin and Plugin Dependency Versions -->
     <ant.contrib.version>1.0b3</ant.contrib.version>
