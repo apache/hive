@@ -33,7 +33,6 @@ import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.session.LineageState;
 import org.apache.hadoop.hive.ql.exec.Task;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 

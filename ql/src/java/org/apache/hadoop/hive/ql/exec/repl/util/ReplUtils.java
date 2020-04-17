@@ -94,6 +94,12 @@ public class ReplUtils {
   // Configuration to enable/disable dumping ACID tables. Used only for testing and shouldn't be
   // seen in production or in case of tests other than the ones where it's required.
   public static final String REPL_DUMP_INCLUDE_ACID_TABLES = "hive.repl.dump.include.acid.tables";
+
+  // HDFS Config to define the maximum number of items a directory may contain.
+  public static final String DFS_MAX_DIR_ITEMS_CONFIG = "dfs.namenode.fs-limits.max-directory-items";
+
+  // Reserved number of items to accommodate operational files in the dump root dir.
+  public static final int RESERVED_DIR_ITEMS_COUNT = 10;
   /**
    * Bootstrap REPL LOAD operation type on the examined object based on ckpt state.
    */

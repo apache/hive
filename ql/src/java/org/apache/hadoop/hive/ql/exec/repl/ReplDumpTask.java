@@ -84,6 +84,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
 import java.util.HashSet;
@@ -431,7 +432,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         = new EventUtils.MSClientNotificationFetcher(hiveDb);
 
 
-    int maxEventLimit  = work.maxEventLimit();
+    int maxEventLimit  = getMaxEventAllowed(work.maxEventLimit());
     EventUtils.NotificationEventIterator evIter = new EventUtils.NotificationEventIterator(
         evFetcher, work.eventFrom, maxEventLimit, evFilter);
 
@@ -541,6 +542,20 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return lastReplId;
   }
 
+  private int getMaxEventAllowed(int currentEventMaxLimit) {
+    int maxDirItems = Integer.parseInt(conf.get(ReplUtils.DFS_MAX_DIR_ITEMS_CONFIG, "0"));
+    if (maxDirItems > 0) {
+      maxDirItems = maxDirItems - ReplUtils.RESERVED_DIR_ITEMS_COUNT;
+      if (maxDirItems < currentEventMaxLimit) {
+        LOG.warn("Changing the maxEventLimit from {} to {} as the '" + ReplUtils.DFS_MAX_DIR_ITEMS_CONFIG
+                        + "' limit encountered. Set this config appropriately to increase the maxEventLimit",
+                currentEventMaxLimit, maxDirItems);
+        currentEventMaxLimit = maxDirItems;
+      }
+    }
+    return currentEventMaxLimit;
+  }
+
   private void cleanFailedEventDirIfExists(Path dumpDir, Long resumeFrom) throws IOException {
     Path nextEventRoot = new Path(dumpDir, String.valueOf(resumeFrom + 1));
     Retry<Void> retriable = new Retry<Void>(IOException.class) {
@@ -576,16 +591,16 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     BufferedReader br = null;
     try {
       FileSystem fs = ackFile.getFileSystem(conf);
-      br = new BufferedReader(new InputStreamReader(fs.open(ackFile)));
-      String line;
-      if ((line = br.readLine()) != null) {
+      br = new BufferedReader(new InputStreamReader(fs.open(ackFile), Charset.defaultCharset()));
+      String line = br.readLine();
+      if (line != null) {
         String[] lineContents = line.split("\t", 5);
         lastEventID = Long.parseLong(lineContents[1]);
       } else {
         LOG.warn("Unable to read lastEventID from ackFile:{}, defaulting to:{}", ackFile.toUri().toString(), defID);
       }
     } catch (IOException ioe) {
-      LOG.warn("Exception while obtaining last event id:", ioe.getMessage());
+      throw new SemanticException(ioe);
     } finally {
       if (br != null) {
         try {

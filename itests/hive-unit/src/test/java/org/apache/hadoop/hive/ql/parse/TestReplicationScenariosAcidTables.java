@@ -34,7 +34,6 @@ import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.exec.repl.ReplAck;
-import org.apache.hadoop.hive.ql.exec.repl.ReplDumpTask;
 import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
@@ -859,14 +858,12 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
 
   @Test
   public void testCheckPointingDataDumpFailureBootstrapDuringIncremental() throws Throwable {
-   List<String> dumpClause = Arrays.asList(
+    List<String> dumpClause = Arrays.asList(
             "'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXSIZE.varname + "'='1'",
             "'" + HiveConf.ConfVars.HIVE_IN_TEST.varname + "'='false'",
             "'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXNUMFILES.varname + "'='0'",
             "'" + HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname + "'='"
-                    + UserGroupInformation.getCurrentUser().getUserName() + "'",
-            "'" + ReplUtils.REPL_DUMP_INCLUDE_ACID_TABLES + "'='true'",
-            "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES + "'='true'");
+                    + UserGroupInformation.getCurrentUser().getUserName() + "'");
 
     WarehouseInstance.Tuple bootstrapDump = primary.run("use " + primaryDbName)
             .run("create table t1(a int) clustered by (a) into 2 buckets" +
@@ -877,6 +874,14 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     replica.load(replicatedDbName, primaryDbName)
             .run("select * from " + replicatedDbName + ".t1")
             .verifyResults(new String[] {"1", "2"});
+
+    dumpClause = Arrays.asList(
+            "'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXSIZE.varname + "'='1'",
+            "'" + HiveConf.ConfVars.HIVE_IN_TEST.varname + "'='false'",
+            "'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXNUMFILES.varname + "'='0'",
+            "'" + HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname + "'='"
+                    + UserGroupInformation.getCurrentUser().getUserName() + "'",
+            "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES + "'='true'");
 
     ReplDumpWork.testDeletePreviousDumpMetaPath(true);
     WarehouseInstance.Tuple incrementalDump1 = primary.run("use " + primaryDbName)
@@ -923,6 +928,61 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     replica.load(replicatedDbName, primaryDbName)
             .run("select * from " + replicatedDbName + ".t2")
             .verifyResults(new String[] {"3", "4", "5"});
+  }
+
+  @Test
+  public void testHdfsMaxDirItemsLimitDuringIncremental() throws Throwable {
+
+    WarehouseInstance.Tuple bootstrapDump = primary.run("use " + primaryDbName)
+            .run("create table t1(a int) clustered by (a) into 2 buckets" +
+                    " stored as orc TBLPROPERTIES ('transactional'='true')")
+            .run("insert into t1 values (1)")
+            .dump(primaryDbName);
+    replica.load(replicatedDbName, primaryDbName)
+            .run("select * from " + replicatedDbName + ".t1")
+            .verifyResults(new String[] {"1"});
+
+    List<String> dumpClause = Arrays.asList("'" + ReplUtils.DFS_MAX_DIR_ITEMS_CONFIG + "'='"
+            + (ReplUtils.RESERVED_DIR_ITEMS_COUNT + 5) +"'",
+            "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES + "'='true'");
+
+    WarehouseInstance.Tuple incrementalDump1 = primary.run("use " + primaryDbName)
+            .run("insert into t1 values (2)")
+            .run("insert into t1 values (3)")
+            .run("insert into t1 values (4)")
+            .run("insert into t1 values (5)")
+            .run("insert into t1 values (6)")
+            .run("insert into t1 values (7)")
+            .run("insert into t1 values (8)")
+            .run("insert into t1 values (9)")
+            .run("insert into t1 values (10)")
+            .run("create table t2(a int) clustered by (a) into 2 buckets" +
+                    " stored as orc TBLPROPERTIES ('transactional'='true')")
+            .run("insert into t2 values (100)")
+            .dump(primaryDbName, dumpClause);
+
+    int eventCount = Integer.parseInt(incrementalDump1.lastReplicationId)
+            - Integer.parseInt(bootstrapDump.lastReplicationId);
+    assertEquals(eventCount, 5);
+
+    replica.load(replicatedDbName, primaryDbName)
+            .run("select * from " + replicatedDbName + ".t1")
+            .verifyResults(new String[] {"1"})
+            .run("select * from " + replicatedDbName + ".t2")
+            .verifyResults(new String[] {"100"});
+
+    dumpClause = Arrays.asList("'" + ReplUtils.DFS_MAX_DIR_ITEMS_CONFIG + "'='1000'");
+
+    WarehouseInstance.Tuple incrementalDump2 = primary.run("use " + primaryDbName)
+            .dump(primaryDbName, dumpClause);
+
+    eventCount = Integer.parseInt(incrementalDump1.lastReplicationId)
+            - Integer.parseInt(bootstrapDump.lastReplicationId);
+    assertTrue(eventCount <= 5);
+
+    replica.load(replicatedDbName, primaryDbName)
+            .run("select * from " + replicatedDbName + ".t1")
+            .verifyResults(new String[] {"1", "2", "3", "4","5", "6","7", "8","9", "10"});
   }
 
   @Test
