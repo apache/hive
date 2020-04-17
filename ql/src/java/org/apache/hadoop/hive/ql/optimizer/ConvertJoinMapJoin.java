@@ -58,6 +58,7 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.CommonMergeJoinDesc;
+import org.apache.hadoop.hive.ql.plan.DummyStoreDesc;
 import org.apache.hadoop.hive.ql.plan.DynamicPruningEventDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -589,8 +590,8 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
         }
 
         // insert the dummy store operator here
-        DummyStoreOperator dummyStoreOp = new TezDummyStoreOperator(
-            mergeJoinOp.getCompilationOpContext());
+        DummyStoreOperator dummyStoreOp = new TezDummyStoreOperator(mergeJoinOp.getCompilationOpContext());
+        dummyStoreOp.setConf(new DummyStoreDesc());
         dummyStoreOp.setParentOperators(new ArrayList<Operator<? extends OperatorDesc>>());
         dummyStoreOp.setChildOperators(new ArrayList<Operator<? extends OperatorDesc>>());
         dummyStoreOp.getChildOperators().add(mergeJoinOp);
