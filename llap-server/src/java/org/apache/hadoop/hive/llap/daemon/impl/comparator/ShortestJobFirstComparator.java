@@ -44,18 +44,25 @@ public class ShortestJobFirstComparator extends LlapQueueComparatorBase {
     // it's parent hierarchy. selfAndUpstreamComplete indicates how many of these have completed.
     int knownPending1 = fri1.getNumSelfAndUpstreamTasks() - fri1.getNumSelfAndUpstreamCompletedTasks();
     int knownPending2 = fri2.getNumSelfAndUpstreamTasks() - fri2.getNumSelfAndUpstreamCompletedTasks();
-    // Multi-task vertex attempt: longer wait-time wrt to its start time -> higher priority
+    // longer the wait time for an attempt wrt to its start time, higher the priority it gets
     long waitTime1 = fri1.getCurrentAttemptStartTime() - fri1.getFirstAttemptStartTime();
     long waitTime2 = fri2.getCurrentAttemptStartTime() - fri2.getFirstAttemptStartTime();
 
-    // Single-task vertex attempt: earlier start-time -> higher priority
-    if (fri1.getNumSelfAndUpstreamTasks() == fri2.getNumSelfAndUpstreamTasks() &&
-            fri1.getNumSelfAndUpstreamTasks() == 1) {
-      return (int) (fri1.getCurrentAttemptStartTime() - fri2.getCurrentAttemptStartTime());
-    }
-
     if (waitTime1 == 0 || waitTime2 == 0) {
-      return knownPending1 - knownPending2;
+      // first attempt for one of those
+      if (knownPending1 == knownPending2) {
+        // exactly same number of pending tasks, avoid meddling with FIFO
+        if (waitTime1 == waitTime2) {
+          // first attempt for both
+          return Long.compare(fri1.getCurrentAttemptStartTime(), fri2.getCurrentAttemptStartTime());
+        }
+        // pick the one which has waited the longest, since it might have other bushy branches in
+        // the query to join with, because pending is only the parent part of this node from the DAG
+        return waitTime2 == 0 ? -1 : 1;
+      }
+      // invariant: different number of pending tasks (pending1 != pending2)
+      // if either of them is 1, then other one is greater and this comparison is enough
+      return Long.compare(knownPending1, knownPending2);
     }
 
     double ratio1 = (double) knownPending1 / (double) waitTime1;

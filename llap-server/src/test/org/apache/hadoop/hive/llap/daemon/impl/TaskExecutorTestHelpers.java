@@ -114,32 +114,25 @@ public class TaskExecutorTestHelpers {
   }
 
   public static SubmitWorkRequestProto createSubmitWorkRequestProto(
-          int fragmentNumber, int selfAndUpstreamParallelism, long firstAttemptStartTime,
-          long currentAttemptStartTime, String dagName, int numCompletedTasks) {
-    return createSubmitWorkRequestProto(fragmentNumber, selfAndUpstreamParallelism, 0, firstAttemptStartTime,
-            currentAttemptStartTime, 1, dagName, false, numCompletedTasks);
-  }
-
-  public static SubmitWorkRequestProto createSubmitWorkRequestProto(
       int fragmentNumber, int selfAndUpstreamParallelism, long firstAttemptStartTime,
       long currentAttemptStartTime, String dagName) {
     return createSubmitWorkRequestProto(fragmentNumber, selfAndUpstreamParallelism, 0, firstAttemptStartTime,
-        currentAttemptStartTime, 1, dagName, false, 0);
+        currentAttemptStartTime, 1, dagName, false);
   }
 
   public static SubmitWorkRequestProto createSubmitWorkRequestProto(
       int fragmentNumber, int selfAndUpstreamParallelism, long firstAttemptStartTime,
       long currentAttemptStartTime, String dagName, boolean isGuaranteed) {
     return createSubmitWorkRequestProto(fragmentNumber, selfAndUpstreamParallelism, 0, firstAttemptStartTime,
-        currentAttemptStartTime, 1, dagName, isGuaranteed, 0);
+        currentAttemptStartTime, 1, dagName, isGuaranteed);
   }
 
   public static SubmitWorkRequestProto createSubmitWorkRequestProto(
       int fragmentNumber, int selfAndUpstreamParallelism,
       int selfAndUpstreamComplete, long firstAttemptStartTime,
       long currentAttemptStartTime, int withinDagPriority) {
-    return createSubmitWorkRequestProto(fragmentNumber, selfAndUpstreamParallelism, 0, firstAttemptStartTime,
-        currentAttemptStartTime, withinDagPriority, "MockDag", false, 0);
+    return createSubmitWorkRequestProto(fragmentNumber, selfAndUpstreamParallelism, selfAndUpstreamComplete, firstAttemptStartTime,
+        currentAttemptStartTime, withinDagPriority, "MockDag", false);
   }
 
   public static SubmitWorkRequestProto createSubmitWorkRequestProto(
@@ -147,14 +140,14 @@ public class TaskExecutorTestHelpers {
       int selfAndUpstreamComplete, long firstAttemptStartTime,
       long currentAttemptStartTime, int withinDagPriority, boolean isGuaranteed) {
     return createSubmitWorkRequestProto(fragmentNumber, selfAndUpstreamParallelism, 0, firstAttemptStartTime,
-        currentAttemptStartTime, withinDagPriority, "MockDag", isGuaranteed, 0);
+        currentAttemptStartTime, withinDagPriority, "MockDag", isGuaranteed);
   }
 
   public static SubmitWorkRequestProto createSubmitWorkRequestProto(
       int fragmentNumber, int selfAndUpstreamParallelism,
       int selfAndUpstreamComplete, long firstAttemptStartTime,
       long currentAttemptStartTime, int withinDagPriority, String dagName,
-      boolean isGuaranteed, int numCompletedTasks) {
+      boolean isGuaranteed) {
     ApplicationId appId = ApplicationId.newInstance(9999, 72);
     TezDAGID dagId = TezDAGID.getInstance(appId, 1);
     TezVertexID vId = TezVertexID.getInstance(dagId, 35);
@@ -193,7 +186,6 @@ public class TaskExecutorTestHelpers {
             .setNumSelfAndUpstreamTasks(selfAndUpstreamParallelism)
             .setNumSelfAndUpstreamCompletedTasks(selfAndUpstreamComplete)
             .setWithinDagPriority(withinDagPriority)
-            .setNumSelfAndUpstreamCompletedTasks(numCompletedTasks)
             .build())
         .build();
   }
