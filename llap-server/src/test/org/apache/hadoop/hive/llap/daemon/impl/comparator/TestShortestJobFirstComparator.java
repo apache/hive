@@ -92,7 +92,7 @@ public class TestShortestJobFirstComparator {
     assertNull(queue.offer(r4, 0));
     // q4 can not finish thus q1 remains in top
     assertEquals(r1, queue.peek());
-    // offer accepted and r2 gets evicted (later start-time than q4)
+    // offer accepted and r4 gets evicted (later start-time than q4)
     assertEquals(r4, queue.offer(r5, 0));
     assertEquals(r1, queue.take());
     assertEquals(r3, queue.take());
