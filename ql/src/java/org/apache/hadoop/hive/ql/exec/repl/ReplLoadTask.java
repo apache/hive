@@ -22,13 +22,16 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.database.alter.poperties.AlterDatabaseSetPropertiesDesc;
+import org.apache.hadoop.hive.ql.ddl.view.create.CreateViewDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.BootstrapEvent;
@@ -36,7 +39,6 @@ import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.ConstraintEvent;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.DatabaseEvent;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.FunctionEvent;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.PartitionEvent;
-import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.TableEvent;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.filesystem.BootstrapEventsIterator;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.filesystem.ConstraintEventsIterator;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.filesystem.FSTableEvent;
@@ -54,12 +56,15 @@ import org.apache.hadoop.hive.ql.exec.repl.util.TaskTracker;
 import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
+import org.apache.hadoop.hive.ql.parse.HiveTableName;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
+import org.apache.hadoop.hive.ql.parse.repl.load.MetaData;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 
 import java.io.IOException;
@@ -74,6 +79,7 @@ import java.util.Map;
 import static org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.LoadDatabase.AlterDatabase;
 
 public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
+  private static final long serialVersionUID = 1L;
   private final static int ZERO_TASKS = 0;
 
   @Override
@@ -91,7 +97,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
    * by the driver. It does not track details across multiple runs of LoadTask.
    */
   private static class Scope {
-    boolean database = false, table = false, partition = false;
+    boolean database = false, table = false;
     List<Task<? extends Serializable>> rootTasks = new ArrayList<>();
   }
 
@@ -178,10 +184,16 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
               the dbTracker /  tableTracker are setup correctly always.
            */
           TableContext tableContext = new TableContext(dbTracker, work.dbNameToLoadIn);
-          TableEvent tableEvent = (TableEvent) next;
-          LoadTable loadTable = new LoadTable(tableEvent, loadContext, iterator.replLogger(),
-                                              tableContext, loadTaskTracker);
-          tableTracker = loadTable.tasks(work.isIncrementalLoad());
+          FSTableEvent tableEvent = (FSTableEvent) next;
+          if (TableType.VIRTUAL_VIEW.name().equals(tableEvent.getMetaData().getTable().getTableType())) {
+            tableTracker = new TaskTracker(1);
+            tableTracker.addTask(createViewTask(tableEvent.getMetaData(), work.dbNameToLoadIn, conf));
+          } else {
+            LoadTable loadTable = new LoadTable(tableEvent, loadContext, iterator.replLogger(), tableContext,
+                loadTaskTracker);
+            tableTracker = loadTable.tasks(work.isIncrementalLoad());
+          }
+
           setUpDependencies(dbTracker, tableTracker);
           if (!scope.database && tableTracker.hasTasks()) {
             scope.rootTasks.addAll(tableTracker.tasks());
@@ -192,23 +204,25 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
             scope.table = false;
           }
 
-          /*
-            for table replication if we reach the max number of tasks then for the next run we will
-            try to reload the same table again, this is mainly for ease of understanding the code
-            as then we can avoid handling == > loading partitions for the table given that
-            the creation of table lead to reaching max tasks vs,  loading next table since current
-            one does not have partitions.
-           */
+          if (!TableType.VIRTUAL_VIEW.name().equals(tableEvent.getMetaData().getTable().getTableType())) {
+            /*
+              for table replication if we reach the max number of tasks then for the next run we will
+              try to reload the same table again, this is mainly for ease of understanding the code
+              as then we can avoid handling == > loading partitions for the table given that
+              the creation of table lead to reaching max tasks vs,  loading next table since current
+              one does not have partitions.
+             */
 
-          // for a table we explicitly try to load partitions as there is no separate partitions events.
-          LoadPartitions loadPartitions =
-              new LoadPartitions(loadContext, iterator.replLogger(), loadTaskTracker, tableEvent,
-                      work.dbNameToLoadIn, tableContext);
-          TaskTracker partitionsTracker = loadPartitions.tasks();
-          partitionsPostProcessing(iterator, scope, loadTaskTracker, tableTracker,
-              partitionsTracker);
-          tableTracker.debugLog("table");
-          partitionsTracker.debugLog("partitions for table");
+            // for a table we explicitly try to load partitions as there is no separate partitions events.
+            LoadPartitions loadPartitions =
+                new LoadPartitions(loadContext, iterator.replLogger(), loadTaskTracker, tableEvent,
+                    work.dbNameToLoadIn, tableContext);
+            TaskTracker partitionsTracker = loadPartitions.tasks();
+            partitionsPostProcessing(iterator, scope, loadTaskTracker, tableTracker,
+                partitionsTracker);
+            tableTracker.debugLog("table");
+            partitionsTracker.debugLog("partitions for table");
+          }
           break;
         }
         case Partition: {
@@ -369,6 +383,32 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     }
   }
 
+  public static Task<?> createViewTask(MetaData metaData, String dbNameToLoadIn, HiveConf conf)
+      throws SemanticException {
+    Table table = new Table(metaData.getTable());
+    String dbName = dbNameToLoadIn == null ? table.getDbName() : dbNameToLoadIn;
+    TableName tableName = HiveTableName.ofNullable(table.getTableName(), dbName);
+    String dbDotView = tableName.getNotEmptyDbTable();
+    CreateViewDesc desc = new CreateViewDesc(dbDotView, table.getAllCols(), null, table.getParameters(),
+        table.getPartColNames(), false, false, false, table.getSd().getInputFormat(), table.getSd().getOutputFormat(),
+        table.getSd().getSerdeInfo().getSerializationLib());
+    String originalText = table.getViewOriginalText();
+    String expandedText = table.getViewExpandedText();
+
+    if (!dbName.equals(table.getDbName())) {
+      // TODO: If the DB name doesn't match with the metadata from dump, then need to rewrite the original and expanded
+      // texts using new DB name. Currently it refers to the source database name.
+    }
+
+    desc.setViewOriginalText(originalText);
+    desc.setViewExpandedText(expandedText);
+    desc.setPartCols(table.getPartCols());
+    desc.setReplicationSpec(metaData.getReplicationSpec());
+    desc.setOwnerName(table.getOwner());
+
+    return TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), desc), conf);
+  }
+
   /**
    * If replication policy is changed between previous and current load, then the excluded tables in
    * the new replication policy will be dropped.
@@ -451,7 +491,6 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     setUpDependencies(tableTracker, partitionsTracker);
     if (!scope.database && !scope.table) {
       scope.rootTasks.addAll(partitionsTracker.tasks());
-      scope.partition = true;
     }
     loadTaskTracker.update(tableTracker);
     loadTaskTracker.update(partitionsTracker);

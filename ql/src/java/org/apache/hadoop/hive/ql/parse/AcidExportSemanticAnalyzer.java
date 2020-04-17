@@ -123,6 +123,10 @@ public class AcidExportSemanticAnalyzer extends RewriteSemanticAnalyzer {
     assert tableTree != null && tableTree.getType() == HiveParser.TOK_TAB;
     ASTNode tokRefOrNameExportTable = (ASTNode) tableTree.getChild(0);
     Table exportTable = getTargetTable(tokRefOrNameExportTable);
+    
+    if (exportTable != null && (exportTable.isView() || exportTable.isMaterializedView())) {
+      throw new SemanticException("Views and Materialized Views can not be exported.");
+    }
     assert AcidUtils.isFullAcidTable(exportTable);
 
     //need to create the table "manually" rather than creating a task since it has to exist to

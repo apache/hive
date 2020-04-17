@@ -100,6 +100,10 @@ public class ExportSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
+    if (ts != null && (ts.tableHandle.isView() || ts.tableHandle.isMaterializedView())) {
+      throw new SemanticException("Views and Materialized Views can not be exported.");
+    }
+
     // initialize export path
     String tmpPath = stripQuotes(toTree.getText());
     // All parsing is done, we're now good to start the export process

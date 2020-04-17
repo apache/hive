@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.ql.parse.repl.dump.io.ReplicationSpecSerializer;
 import org.apache.hadoop.hive.ql.parse.repl.dump.io.TableSerializer;
 import org.apache.hadoop.hive.ql.parse.repl.load.MetaData;
 import org.apache.hadoop.hive.ql.parse.repl.load.MetadataJson;
+import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.thrift.TException;
 import org.json.JSONException;
 import org.slf4j.Logger;
@@ -302,6 +303,19 @@ public class EximUtil {
         new ReplicationSpecSerializer().writeTo(writer, replicationSpec);
       }
       new TableSerializer(tableHandle, partitions, hiveConf).writeTo(writer, replicationSpec);
+    }
+  }
+
+  public static MetaData getMetaDataFromLocation(String fromLocn, HiveConf conf)
+      throws SemanticException, IOException {
+    URI fromURI = getValidatedURI(conf, PlanUtils.stripQuotes(fromLocn));
+    Path fromPath = new Path(fromURI.getScheme(), fromURI.getAuthority(), fromURI.getPath());
+    FileSystem fs = FileSystem.get(fromURI, conf);
+
+    try {
+      return readMetaData(fs, new Path(fromPath, EximUtil.METADATA_NAME));
+    } catch (IOException e) {
+      throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(), e);
     }
   }
 
