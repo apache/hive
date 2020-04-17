@@ -26,6 +26,11 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -45,7 +50,20 @@ public class TestLlapWebServices {
     llapWS = new LlapWebServices(llapWSPort, null, null);
     llapWS.init(new HiveConf());
     llapWS.start();
-    Thread.sleep(5000);
+    HttpServletRequest a = null;
+
+    Enumeration<URL> rr =
+        TestLlapWebServices.class.getClassLoader().getResources("javax/servlet/http/HttpServletRequest.class");
+    List<URL> aa = new ArrayList<>();
+    while (rr.hasMoreElements()) {
+      aa.add(rr.nextElement());
+    }
+    if (aa.size() != 1) {
+      throw new RuntimeException(aa.toString());
+    }
+
+
+    //    Thread.sleep(5000);
   }
 
   @Test
