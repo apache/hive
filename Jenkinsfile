@@ -159,7 +159,7 @@ echo "@ENC"
 cat exclusions.txt
 echo "@END"
 '''
-      buildHive("test -q")
+      buildHive("install -q")
       withEnv(["SCRIPT=$params.SCRIPT"]) {
         sh '''$SCRIPT'''
       }
