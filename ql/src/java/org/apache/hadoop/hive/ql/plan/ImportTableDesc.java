@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.HiveTableName;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
@@ -48,102 +49,10 @@ public class ImportTableDesc {
   public ImportTableDesc(String dbName, Table table) throws Exception {
     if (table.getTableType() == TableType.VIRTUAL_VIEW || table.getTableType() == TableType.MATERIALIZED_VIEW) {
       throw new IllegalStateException("Trying to import view or materialized view: " + table.getTableName());
+    }
+
     this.dbName = dbName;
-    this.table = table;
     final TableName tableName = TableName.fromString(table.getTableName(), dbName);
-
-    switch (getDescType()) {
-    case TABLE:
-      this.createTblDesc = new CreateTableDesc(tableName,
-              false, // isExternal: set to false here, can be overwritten by the IMPORT stmt
-              false,
-              table.getSd().getCols(),
-              table.getPartitionKeys(),
-              table.getSd().getBucketCols(),
-              table.getSd().getSortCols(),
-              table.getSd().getNumBuckets(),
-              null, null, null, null, null, // these 5 delims passed as serde params
-              null, // comment passed as table params
-              table.getSd().getInputFormat(),
-              table.getSd().getOutputFormat(),
-              null, // location: set to null here, can be overwritten by the IMPORT stmt
-              table.getSd().getSerdeInfo().getSerializationLib(),
-              null, // storagehandler passed as table params
-              table.getSd().getSerdeInfo().getParameters(),
-              table.getParameters(), false,
-              (null == table.getSd().getSkewedInfo()) ? null : table.getSd().getSkewedInfo()
-                      .getSkewedColNames(),
-              (null == table.getSd().getSkewedInfo()) ? null : table.getSd().getSkewedInfo()
-                      .getSkewedColValues(),
-              null,
-              null,
-              null,
-              null,
-          null,
-          null,
-              table.getColStats(),
-              table.getTTable().getWriteId());
-      this.createTblDesc.setStoredAsSubDirectories(table.getSd().isStoredAsSubDirectories());
-      break;
-    case VIEW:
-      final String dbDotView = tableName.getNotEmptyDbTable();
-        if (table.isMaterializedView()) {
-          this.createViewDesc = new CreateViewDesc(dbDotView,
-                  table.getAllCols(),
-                  null, // comment passed as table params
-                  table.getParameters(),
-                  table.getPartColNames(),
-                  null, // sort columns passed as table params (if present)
-                  null, // distribute columns passed as table params (if present)
-                  false,false,false,false,
-                  table.getSd().getInputFormat(),
-                  table.getSd().getOutputFormat(),
-                  null, // location: set to null here, can be overwritten by the IMPORT stmt
-                  table.getSd().getSerdeInfo().getSerializationLib(),
-                  null, // storagehandler passed as table params
-                  table.getSd().getSerdeInfo().getParameters());
-          // TODO: If the DB name from the creation metadata for any of the tables has changed,
-          // we should update it. Currently it refers to the source database name.
-          this.createViewDesc.setTablesUsed(table.getCreationMetadata() != null ?
-              table.getCreationMetadata().getTablesUsed() : ImmutableSet.of());
-        } else {
-          this.createViewDesc = new CreateViewDesc(dbDotView,
-                  table.getAllCols(),
-                  null, // comment passed as table params
-                  table.getParameters(),
-                  table.getPartColNames(),
-                  false,false,false,
-                  table.getSd().getInputFormat(),
-                  table.getSd().getOutputFormat(),
-                  table.getSd().getSerdeInfo().getSerializationLib());
-        }
-
-        this.setViewAsReferenceText(dbName, table);
-        this.createViewDesc.setPartCols(table.getPartCols());
-        break;
-      default:
-        throw new HiveException("Invalid table type");
-    }
-  }
-
-  public TYPE getDescType() {
-    if (table.isView() || table.isMaterializedView()) {
-      return TYPE.VIEW;
-    }
-    return TYPE.TABLE;
-  }
-
-  public void setViewAsReferenceText(String dbName, Table table) {
-    String originalText = table.getViewOriginalText();
-    String expandedText = table.getViewExpandedText();
-
-    if (!dbName.equals(table.getDbName())) {
-      // TODO: If the DB name doesn't match with the metadata from dump, then need to rewrite the original and expanded
-      // texts using new DB name. Currently it refers to the source database name.
-    }
-
-    this.dbName = dbName;
-    TableName tableName = HiveTableName.ofNullable(table.getTableName(), dbName);
 
     this.createTblDesc = new CreateTableDesc(tableName,
         false, // isExternal: set to false here, can be overwritten by the IMPORT stmt

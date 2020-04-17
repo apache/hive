@@ -53,7 +53,6 @@ import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.parse.HiveTableName;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -301,7 +300,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       throws SemanticException {
     Table table = new Table(metaData.getTable());
     String dbName = dbNameToLoadIn == null ? table.getDbName() : dbNameToLoadIn;
-    TableName tableName = HiveTableName.ofNullable(table.getTableName(), dbName);
+    TableName tableName = TableName.fromString(table.getTableName(), dbName);
     String dbDotView = tableName.getNotEmptyDbTable();
     CreateViewDesc desc = new CreateViewDesc(dbDotView, table.getAllCols(), null, table.getParameters(),
         table.getPartColNames(), false, false, false, table.getSd().getInputFormat(), table.getSd().getOutputFormat(),
