@@ -199,7 +199,7 @@ STAGE PLANS:
                   Select Operator
                     Statistics: Num rows: 3 Data size: 1724 Basic stats: PARTIAL Column stats: COMPLETE
                     Reduce Output Operator
-                      bucketingVersion: 1
+                      bucketingVersion: 2
                       null sort order: 
                       numBuckets: -1
                       sort order: 
@@ -278,6 +278,7 @@ STAGE PLANS:
                       expressions: key (type: string)
                       outputColumnNames: _col0
                       Statistics: Num rows: 3 Data size: 552 Basic stats: PARTIAL Column stats: NONE
+                      Dummy Store
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -487,7 +488,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 2 Data size: 368 Basic stats: PARTIAL Column stats: NONE
                       Reduce Output Operator
-                        bucketingVersion: 1
+                        bucketingVersion: 2
                         key expressions: _col0 (type: string)
                         null sort order: z
                         numBuckets: -1
@@ -572,7 +573,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                   Reduce Output Operator
-                    bucketingVersion: 1
+                    bucketingVersion: 2
                     null sort order: 
                     numBuckets: -1
                     sort order: 
@@ -590,6 +591,7 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator
+                  bucketingVersion: 2
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
@@ -600,6 +602,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       properties:
+                        bucketing_version -1
                         columns _col0
                         columns.types bigint
                         escape.delim \
