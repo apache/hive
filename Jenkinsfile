@@ -1,4 +1,3 @@
-
 def executorNode(run) {
     node(POD_LABEL) {
       container('maven') {
@@ -100,6 +99,11 @@ spec:
     type: slave
 ''') {
 
+    options {
+        throttle(['hive-precommit'])
+        quietPeriod(60)
+        rateLimitBuilds(throttle: [count: 1, durationName: "hour", userBoost: true])
+    }
 properties([
     parameters([
         string(name: 'SPLIT', defaultValue: '29', description: 'Number of buckets to split tests into.'),
