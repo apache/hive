@@ -306,6 +306,7 @@ public class TezTask extends Task<TezWork> {
       updateNumRows();
     } catch (Exception e) {
       LOG.error("Failed to execute tez graph.", e);
+      setException(e);
       // rc will be 1 at this point indicating failure.
     } finally {
       Utilities.clearWork(conf);
