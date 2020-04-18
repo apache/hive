@@ -60,7 +60,7 @@ public class MiniDruidCluster extends AbstractService {
           "druid.storage.type",
           "hdfs",
           "druid.processing.buffer.sizeBytes",
-          "213870912",
+          "10485760",
           "druid.processing.numThreads",
           "2",
           "druid.worker.capacity",
