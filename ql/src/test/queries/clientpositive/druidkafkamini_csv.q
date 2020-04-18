@@ -20,6 +20,8 @@ CREATE EXTERNAL TABLE druid_kafka_test_csv(`__time` timestamp , `page` string, `
         "druid.parseSpec.columns" = "__time,page,language,user,unpatrolled,newpage,robot,anonymous,namespace,continent,country,region,city,added,deleted,delta"
         );
 
+!sleep 60;
+
 ALTER TABLE druid_kafka_test_csv SET TBLPROPERTIES('druid.kafka.ingestion' = 'START');
 
 !curl --noproxy * -ss http://localhost:8081/druid/indexer/v1/supervisor;
