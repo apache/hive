@@ -276,6 +276,7 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
     if (this.statement != null && (this.statement instanceof HiveStatement)) {
       HiveStatement s = (HiveStatement) this.statement;
       s.closeClientOperation();
+      s.closeOnResultSetCompletion();
     } else {
       // for those stmtHandle passed from HiveDatabaseMetaData instead of Statement
       closeOperationHandle(stmtHandle);
