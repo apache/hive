@@ -22,11 +22,9 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
-import org.apache.hadoop.hbase.mapred.TableInputFormat;
 import org.apache.hadoop.hbase.mapred.TableSnapshotInputFormat;
 import org.apache.hadoop.hbase.protobuf.ProtobufUtil;
 import org.apache.hadoop.hbase.protobuf.generated.ClientProtos;
-import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
@@ -36,7 +34,6 @@ import org.apache.hadoop.mapred.Reporter;
 
 import java.io.IOException;
 import java.util.Base64;
-import java.util.List;
 
 public class HiveHBaseTableSnapshotInputFormat
     implements InputFormat<ImmutableBytesWritable, ResultWritable> {
