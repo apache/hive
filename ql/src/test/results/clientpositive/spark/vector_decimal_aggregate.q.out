@@ -541,14 +541,14 @@ STAGE PLANS:
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 10
-                    dataColumns: KEY._col0:int, VALUE._col0:bigint, VALUE._col1:decimal(11,5), VALUE._col2:decimal(11,5), VALUE._col3:decimal(21,5), VALUE._col4:bigint, VALUE._col5:decimal(16,0), VALUE._col6:decimal(16,0), VALUE._col7:decimal(26,0), VALUE._col8:bigint
+                    dataColumns: KEY._col0:int, VALUE._col0:bigint, VALUE._col1:decimal(11,5)/DECIMAL_64, VALUE._col2:decimal(11,5)/DECIMAL_64, VALUE._col3:decimal(21,5), VALUE._col4:bigint, VALUE._col5:decimal(16,0)/DECIMAL_64, VALUE._col6:decimal(16,0)/DECIMAL_64, VALUE._col7:decimal(26,0), VALUE._col8:bigint
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0), max(VALUE._col1), min(VALUE._col2), sum(VALUE._col3), count(VALUE._col4), max(VALUE._col5), min(VALUE._col6), sum(VALUE._col7), count(VALUE._col8)
                 Group By Vectorization:
-                    aggregators: VectorUDAFCountMerge(col 1:bigint) -> bigint, VectorUDAFMaxDecimal(col 2:decimal(11,5)) -> decimal(11,5), VectorUDAFMinDecimal(col 3:decimal(11,5)) -> decimal(11,5), VectorUDAFSumDecimal(col 4:decimal(21,5)) -> decimal(21,5), VectorUDAFCountMerge(col 5:bigint) -> bigint, VectorUDAFMaxDecimal(col 6:decimal(16,0)) -> decimal(16,0), VectorUDAFMinDecimal(col 7:decimal(16,0)) -> decimal(16,0), VectorUDAFSumDecimal(col 8:decimal(26,0)) -> decimal(26,0), VectorUDAFCountMerge(col 9:bigint) -> bigint
+                    aggregators: VectorUDAFCountMerge(col 1:bigint) -> bigint, VectorUDAFMaxDecimal64(col 2:decimal(11,5)/DECIMAL_64) -> decimal(11,5)/DECIMAL_64, VectorUDAFMinDecimal64(col 3:decimal(11,5)/DECIMAL_64) -> decimal(11,5)/DECIMAL_64, VectorUDAFSumDecimal(col 4:decimal(21,5)) -> decimal(21,5), VectorUDAFCountMerge(col 5:bigint) -> bigint, VectorUDAFMaxDecimal64(col 6:decimal(16,0)/DECIMAL_64) -> decimal(16,0)/DECIMAL_64, VectorUDAFMinDecimal64(col 7:decimal(16,0)/DECIMAL_64) -> decimal(16,0)/DECIMAL_64, VectorUDAFSumDecimal(col 8:decimal(26,0)) -> decimal(26,0), VectorUDAFCountMerge(col 9:bigint) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
                     keyExpressions: col 0:int
@@ -744,14 +744,14 @@ STAGE PLANS:
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 14
-                    dataColumns: KEY._col0:int, VALUE._col0:bigint, VALUE._col1:decimal(11,5), VALUE._col2:decimal(11,5), VALUE._col3:decimal(21,5), VALUE._col4:double, VALUE._col5:double, VALUE._col6:bigint, VALUE._col7:decimal(16,0), VALUE._col8:decimal(16,0), VALUE._col9:decimal(26,0), VALUE._col10:double, VALUE._col11:double, VALUE._col12:bigint
+                    dataColumns: KEY._col0:int, VALUE._col0:bigint, VALUE._col1:decimal(11,5)/DECIMAL_64, VALUE._col2:decimal(11,5)/DECIMAL_64, VALUE._col3:decimal(21,5), VALUE._col4:double, VALUE._col5:double, VALUE._col6:bigint, VALUE._col7:decimal(16,0)/DECIMAL_64, VALUE._col8:decimal(16,0)/DECIMAL_64, VALUE._col9:decimal(26,0), VALUE._col10:double, VALUE._col11:double, VALUE._col12:bigint
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0), max(VALUE._col1), min(VALUE._col2), sum(VALUE._col3), sum(VALUE._col4), sum(VALUE._col5), count(VALUE._col6), max(VALUE._col7), min(VALUE._col8), sum(VALUE._col9), sum(VALUE._col10), sum(VALUE._col11), count(VALUE._col12)
                 Group By Vectorization:
-                    aggregators: VectorUDAFCountMerge(col 1:bigint) -> bigint, VectorUDAFMaxDecimal(col 2:decimal(11,5)) -> decimal(11,5), VectorUDAFMinDecimal(col 3:decimal(11,5)) -> decimal(11,5), VectorUDAFSumDecimal(col 4:decimal(21,5)) -> decimal(21,5), VectorUDAFSumDouble(col 5:double) -> double, VectorUDAFSumDouble(col 6:double) -> double, VectorUDAFCountMerge(col 7:bigint) -> bigint, VectorUDAFMaxDecimal(col 8:decimal(16,0)) -> decimal(16,0), VectorUDAFMinDecimal(col 9:decimal(16,0)) -> decimal(16,0), VectorUDAFSumDecimal(col 10:decimal(26,0)) -> decimal(26,0), VectorUDAFSumDouble(col 11:double) -> double, VectorUDAFSumDouble(col 12:double) -> double, VectorUDAFCountMerge(col 13:bigint) -> bigint
+                    aggregators: VectorUDAFCountMerge(col 1:bigint) -> bigint, VectorUDAFMaxDecimal64(col 2:decimal(11,5)/DECIMAL_64) -> decimal(11,5)/DECIMAL_64, VectorUDAFMinDecimal64(col 3:decimal(11,5)/DECIMAL_64) -> decimal(11,5)/DECIMAL_64, VectorUDAFSumDecimal(col 4:decimal(21,5)) -> decimal(21,5), VectorUDAFSumDouble(col 5:double) -> double, VectorUDAFSumDouble(col 6:double) -> double, VectorUDAFCountMerge(col 7:bigint) -> bigint, VectorUDAFMaxDecimal64(col 8:decimal(16,0)/DECIMAL_64) -> decimal(16,0)/DECIMAL_64, VectorUDAFMinDecimal64(col 9:decimal(16,0)/DECIMAL_64) -> decimal(16,0)/DECIMAL_64, VectorUDAFSumDecimal(col 10:decimal(26,0)) -> decimal(26,0), VectorUDAFSumDouble(col 11:double) -> double, VectorUDAFSumDouble(col 12:double) -> double, VectorUDAFCountMerge(col 13:bigint) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
                     keyExpressions: col 0:int

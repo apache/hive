@@ -2315,6 +2315,7 @@ public class Vectorizer implements PhysicalPlanResolver {
 
       ArrayList<String> reduceColumnNames = new ArrayList<String>();
       ArrayList<TypeInfo> reduceTypeInfos = new ArrayList<TypeInfo>();
+      ArrayList<DataTypePhysicalVariation> reduceDataTypePhysicalVariations = new ArrayList<DataTypePhysicalVariation>();
 
       if (reduceWork.getNeedsTagging()) {
         setNodeIssue("Tagging not supported");
@@ -2350,6 +2351,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         for (StructField field: keyFields) {
           reduceColumnNames.add(Utilities.ReduceField.KEY.toString() + "." + field.getFieldName());
           reduceTypeInfos.add(TypeInfoUtils.getTypeInfoFromTypeString(field.getFieldObjectInspector().getTypeName()));
+          reduceDataTypePhysicalVariations.add(DataTypePhysicalVariation.NONE);
         }
 
         columnSortOrder = keyTableProperties.getProperty(serdeConstants.SERIALIZATION_SORT_ORDER);
@@ -2370,7 +2372,16 @@ public class Vectorizer implements PhysicalPlanResolver {
 
           for (StructField field: valueFields) {
             reduceColumnNames.add(Utilities.ReduceField.VALUE.toString() + "." + field.getFieldName());
-            reduceTypeInfos.add(TypeInfoUtils.getTypeInfoFromTypeString(field.getFieldObjectInspector().getTypeName()));
+            TypeInfo reduceTypeInfo = TypeInfoUtils.getTypeInfoFromTypeString(
+                field.getFieldObjectInspector().getTypeName());
+            reduceTypeInfos.add(reduceTypeInfo);
+            if (reduceTypeInfo instanceof DecimalTypeInfo &&
+                HiveDecimalWritable.isPrecisionDecimal64(((DecimalTypeInfo)reduceTypeInfo).getPrecision())) {
+              reduceDataTypePhysicalVariations.add(DataTypePhysicalVariation.DECIMAL_64);
+            }
+            else {
+              reduceDataTypePhysicalVariations.add(DataTypePhysicalVariation.NONE);
+            }
           }
         }
       } catch (Exception e) {
@@ -2379,6 +2390,7 @@ public class Vectorizer implements PhysicalPlanResolver {
 
       vectorTaskColumnInfo.setAllColumnNames(reduceColumnNames);
       vectorTaskColumnInfo.setAllTypeInfos(reduceTypeInfos);
+      vectorTaskColumnInfo.setAlldataTypePhysicalVariations(reduceDataTypePhysicalVariations);
 
       vectorTaskColumnInfo.setReduceColumnSortOrder(columnSortOrder);
       vectorTaskColumnInfo.setReduceColumnNullOrder(columnNullOrder);
@@ -5070,6 +5082,10 @@ public class Vectorizer implements PhysicalPlanResolver {
 
         // Determine input vector expression using the VectorizationContext.
         inputVectorExpression = vContext.getVectorExpression(exprNodeDesc);
+
+        if (inputVectorExpression.getOutputColumnVectorType() == ColumnVector.Type.DECIMAL_64) {
+          inputVectorExpression = vContext.wrapWithDecimal64ToDecimalConversion(inputVectorExpression);
+        }
 
         TypeInfo typeInfo = exprNodeDesc.getTypeInfo();
         columnVectorType = VectorizationContext.getColumnVectorTypeFromTypeInfo(typeInfo);
