@@ -185,6 +185,7 @@
     <json.version>1.8</json.version>
     <junit.version>4.11</junit.version>
     <kryo.version>4.0.2</kryo.version>
+    <!-- FIXME KUDU-3044 needed -> 1.12 ASAP -->
     <kudu.version>1.10.0</kudu.version>
     <!-- Leaving libfb303 at 0.9.3 regardless of libthrift: As per THRIFT-4613 The Apache Thrift project does not publish items related to fb303 at this point -->
     <libfb303.version>0.9.3</libfb303.version>
