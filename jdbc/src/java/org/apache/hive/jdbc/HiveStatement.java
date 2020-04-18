@@ -69,6 +69,7 @@ public class HiveStatement implements java.sql.Statement {
   private int fetchSize = DEFAULT_FETCH_SIZE;
   private boolean isScrollableResultset = false;
   private boolean isOperationComplete = false;
+  private boolean closeOnResultSetCompletion = false;
   /**
    * We need to keep a reference to the result set to support the following:
    * <code>
@@ -230,6 +231,13 @@ public class HiveStatement implements java.sql.Statement {
     stmtHandle = null;
   }
 
+  void closeOnResultSetCompletion() throws SQLException {
+    if (closeOnResultSetCompletion) {
+      resultSet = null;
+      close();
+    }
+  }
+
   /*
    * (non-Javadoc)
    *
@@ -251,7 +259,7 @@ public class HiveStatement implements java.sql.Statement {
 
   // JDK 1.7
   public void closeOnCompletion() throws SQLException {
-    throw new SQLFeatureNotSupportedException("Method not supported");
+    closeOnResultSetCompletion = true;
   }
 
   /*
@@ -745,7 +753,7 @@ public class HiveStatement implements java.sql.Statement {
 
   // JDK 1.7
   public boolean isCloseOnCompletion() throws SQLException {
-    return false;
+    return closeOnResultSetCompletion;
   }
 
   /*

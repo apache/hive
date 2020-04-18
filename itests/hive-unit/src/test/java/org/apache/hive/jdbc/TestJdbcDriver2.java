@@ -3286,4 +3286,41 @@ public class TestJdbcDriver2 {
       stmt.close();
     }
   }
+
+  @Test
+  public void testStatementCloseOnCompletion() throws SQLException {
+    Statement stmt = con.createStatement();
+    stmt.closeOnCompletion();
+    ResultSet res = stmt.executeQuery("select under_col from " + tableName + " limit 1");
+    assertTrue(res.next());
+    assertFalse(stmt.isClosed());
+    assertFalse(res.next());
+    assertFalse(stmt.isClosed());
+    res.close();
+    assertTrue(stmt.isClosed());
+  }
+
+  @Test
+  public void testPreparedStatementCloseOnCompletion() throws SQLException {
+    PreparedStatement stmt = con.prepareStatement("select under_col from " + tableName + " limit 1");
+    stmt.closeOnCompletion();
+    ResultSet res = stmt.executeQuery();
+    assertTrue(res.next());
+    assertFalse(stmt.isClosed());
+    assertFalse(res.next());
+    assertFalse(stmt.isClosed());
+    res.close();
+    assertTrue(stmt.isClosed());
+  }
+
+  @Test
+  public void testCloseOnAlreadyOpenedResultSetCompletion() throws Exception {
+    PreparedStatement stmt = con.prepareStatement("select under_col from " + tableName + " limit 1");
+    ResultSet res = stmt.executeQuery();
+    assertTrue(res.next());
+    stmt.closeOnCompletion();
+    assertFalse(stmt.isClosed());
+    res.close();
+    assertTrue(stmt.isClosed());
+  }
 }
