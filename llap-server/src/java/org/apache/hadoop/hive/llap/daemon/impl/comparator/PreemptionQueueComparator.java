@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.hadoop.hive.llap.daemon.impl.comparator;
 
 import org.apache.hadoop.hive.llap.daemon.impl.TaskExecutorService;
@@ -7,8 +24,9 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import java.util.Comparator;
 
 // Non-guaranteed tasks always have higher-priority for preemption and then
-// tasks that can not Finish. If they are both non-guaranteed and canNotFinish
-// we first preempt tasks that have more pending tasks and then the ones that waited longer
+// tasks that can not Finish. If both tasks are non-guaranteed and canNotFinish
+// we first preempt the task that would loose less work (lower completed percentage)
+// and finally, if tasks have done the same ammount of progress pick the one that waited longer
 public class PreemptionQueueComparator implements Comparator<TaskExecutorService.TaskWrapper> {
 
   @Override
@@ -31,14 +49,19 @@ public class PreemptionQueueComparator implements Comparator<TaskExecutorService
       return v1 ? 1 : -1;
     }
 
-    // The task that has the LEAST upstream tasks will be preempted first
-    if (fri1.getNumSelfAndUpstreamTasks() > fri2.getNumSelfAndUpstreamTasks()) {
+    // The task that has the LEAST complete percentage will be preempted first (less lost work)
+    double completePercentTask1 = (double)  fri1.getNumSelfAndUpstreamCompletedTasks() /
+        (double) fri1.getNumSelfAndUpstreamTasks();
+    double completePercentTask2 = (double)  fri2.getNumSelfAndUpstreamCompletedTasks() /
+        (double) fri2.getNumSelfAndUpstreamTasks();
+
+    if (completePercentTask1 > completePercentTask2) {
       return 1;
-    } else if (fri1.getNumSelfAndUpstreamTasks() < fri2.getNumSelfAndUpstreamTasks()) {
+    } else if (completePercentTask1 < completePercentTask2) {
       return -1;
     }
 
-    // When upstream tasks are the same, preempt the task that waited LESS first
+    // When completion percentage is the same, preempt the task that waited LESS first
     long waitTime1 = fri1.getCurrentAttemptStartTime() - fri1.getFirstAttemptStartTime();
     long waitTime2 = fri2.getCurrentAttemptStartTime() - fri2.getFirstAttemptStartTime();
     // TODO: Should we check equality as well?

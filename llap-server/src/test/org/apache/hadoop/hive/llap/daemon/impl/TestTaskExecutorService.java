@@ -122,12 +122,27 @@ public class TestTaskExecutorService {
     assertTrue(queue.isEmpty());
 
     r1 = createTaskWrapper(
-        createSubmitWorkRequestProto(1, 4, 100, 200, false), false, 100000);
+        createSubmitWorkRequestProto(1, 10, 2, 100, 200, 1, "q1", false), false, 100000);
     r2 = createTaskWrapper(
-        createSubmitWorkRequestProto(2, 4, 100, 300, false), false, 100000);
+        createSubmitWorkRequestProto(2, 10, 4, 100, 300, 1, "q2", false), false, 100000);
 
-    // when both non-guaranteed and finishable, with the same upstream
+    // when both non-guaranteed and finishable, preempt the one the LEAST completed work
+    // E.g., Q1 is 20% complete while Q2 is 40% complete (Q2 would loose more work)
+    queue.offer(r1);
+    queue.offer(r2);
+    assertEquals(r1, queue.peek());
+
+    queue.remove(r1);
+    queue.remove(r2);
+    assertTrue(queue.isEmpty());
+
+    // when both non-guaranteed and finishable, with the same work completed
     // pick the one with the LEAST wait-time
+    r1 = createTaskWrapper(
+    createSubmitWorkRequestProto(1, 4, 100, 200, false), false, 100000);
+    r2 = createTaskWrapper(
+    createSubmitWorkRequestProto(2, 4, 100, 300, false), false, 100000);
+
     queue.offer(r1);
     queue.offer(r2);
     assertEquals(r2, queue.peek());
