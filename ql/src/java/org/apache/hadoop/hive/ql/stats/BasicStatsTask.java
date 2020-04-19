@@ -194,11 +194,12 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
 
     private String getAggregationPrefix0(Table table, Partition partition) throws MetaException {
 
-      // prefix is of the form dbName.tblName
-      String prefix = table.getDbName() + "." + MetaStoreUtils.encodeTableName(table.getTableName());
+      // prefix is of the form catalog.dbName.tblName
+      String prefix = TableName
+          .fromString(MetaStoreUtils.encodeTableName(table.getTableName()), table.getCatalogName(), table.getDbName())
+          .toString();
       // FIXME: this is a secret contract; reusein getAggrKey() creates a more closer relation to the StatsGatherer
       // prefix = work.getAggKey();
-      prefix = prefix.toLowerCase();
       if (partition != null) {
         return Utilities.join(prefix, Warehouse.makePartPath(partition.getSpec()));
       }
