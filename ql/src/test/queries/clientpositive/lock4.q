@@ -1,3 +1,5 @@
+set hive.support.concurrency=true;
+
 set hive.lock.mapred.only.operation=true;
 drop table tstsrcpart_n3;
 create table tstsrcpart_n3 like srcpart;
