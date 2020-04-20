@@ -1029,6 +1029,8 @@ public class HiveStrictManagedMigration {
       }
       return true;
     case EXTERNAL_TABLE:
+      // Might need to update storage_handler
+      hiveUpdater.updateTableProperties(tableObj, new HashMap<>());
       msg = createExternalConversionExcuse(tableObj,
           "Table is already an external table");
       LOG.debug(msg);
