@@ -24,6 +24,7 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Predicate;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -77,6 +78,11 @@ public class TestOrcMetadataCache {
 
     @Override
     public long purge() {
+      return 0;
+    }
+
+    @Override
+    public long evictEntity(Predicate<LlapCacheableBuffer> predicate) {
       return 0;
     }
 

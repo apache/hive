@@ -23,6 +23,7 @@ import java.util.LinkedList;
 
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Predicate;
 
 import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
@@ -69,6 +70,11 @@ public class LowLevelFifoCachePolicy implements LowLevelCachePolicy {
     long evicted = evictSomeBlocks(Long.MAX_VALUE);
     LlapIoImpl.LOG.info("PURGE: evicted {} from FIFO policy", LlapUtil.humanReadableByteCount(evicted));
     return evicted;
+  }
+
+  @Override
+  public long evictEntity(Predicate<LlapCacheableBuffer> predicate) {
+    return 0;
   }
 
   @Override

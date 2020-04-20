@@ -57,5 +57,13 @@ public interface LlapIo<T> {
    */
   OrcTail getOrcTailFromCache(Path path, Configuration conf, CacheTag tag, @Nullable Object fileKey) throws IOException;
 
+
+  /**
+   * Handles request to evict entities specified in the request object.
+   * @param protoRequest lists Hive entities (DB, table, etc..) whose LLAP buffers should be evicted.
+   * @return number of evicted bytes.
+   */
+  long evictEntity(LlapDaemonProtocolProtos.EvictEntityRequestProto protoRequest);
+
   void initCacheOnlyInputFormat(InputFormat<?, ?> inputFormat);
 }
