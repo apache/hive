@@ -1398,6 +1398,7 @@ STAGE PLANS:
                 Filter Operator
                   predicate: (_col1 > 1L) (type: boolean)
                   Statistics: Num rows: 83 Data size: 7885 Basic stats: COMPLETE Column stats: COMPLETE
+                  Dummy Store
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator

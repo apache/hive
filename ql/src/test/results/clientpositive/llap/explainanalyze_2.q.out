@@ -628,13 +628,14 @@ Stage-0
       Map 1 llap
       File Output Operator [FS_10]
         Merge Join Operator [MERGEJOIN_25] (rows=401/480 width=95)
-          Conds:SEL_2._col0=SEL_5._col0(Inner),Output:["_col0","_col1"]
-        <-Select Operator [SEL_5] (rows=242/242 width=4)
-            Output:["_col0"]
-            Filter Operator [FIL_14] (rows=242/242 width=4)
-              predicate:key is not null
-              TableScan [TS_3] (rows=242/242 width=4)
-                default@tab_n6,s3,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
+          Conds:SEL_2._col0=DUMMY_STORE_26._col0(Inner),Output:["_col0","_col1"]
+        <-Dummy Store [DUMMY_STORE_26]
+            Select Operator [SEL_5] (rows=242/242 width=4)
+              Output:["_col0"]
+              Filter Operator [FIL_14] (rows=242/242 width=4)
+                predicate:key is not null
+                TableScan [TS_3] (rows=242/242 width=4)
+                  default@tab_n6,s3,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
         <-Select Operator [SEL_2] (rows=242/242 width=95)
             Output:["_col0","_col1"]
             Filter Operator [FIL_13] (rows=242/242 width=95)
@@ -750,13 +751,14 @@ Stage-0
       Map 1 llap
       File Output Operator [FS_10]
         Merge Join Operator [MERGEJOIN_25] (rows=401/480 width=95)
-          Conds:SEL_2._col0=SEL_5._col0(Inner),Output:["_col0","_col1"]
-        <-Select Operator [SEL_5] (rows=242/242 width=4)
-            Output:["_col0"]
-            Filter Operator [FIL_14] (rows=242/242 width=4)
-              predicate:key is not null
-              TableScan [TS_3] (rows=242/242 width=4)
-                default@tab2_n3,s3,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
+          Conds:SEL_2._col0=DUMMY_STORE_26._col0(Inner),Output:["_col0","_col1"]
+        <-Dummy Store [DUMMY_STORE_26]
+            Select Operator [SEL_5] (rows=242/242 width=4)
+              Output:["_col0"]
+              Filter Operator [FIL_14] (rows=242/242 width=4)
+                predicate:key is not null
+                TableScan [TS_3] (rows=242/242 width=4)
+                  default@tab2_n3,s3,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
         <-Select Operator [SEL_2] (rows=242/242 width=95)
             Output:["_col0","_col1"]
             Filter Operator [FIL_13] (rows=242/242 width=95)
@@ -917,13 +919,14 @@ Stage-0
                 Reduce Output Operator [RS_70]
                   PartitionCols:_col0
                   Merge Join Operator [MERGEJOIN_67] (rows=401/480 width=4)
-                    Conds:SEL_65._col0=SEL_5._col0(Inner),Output:["_col0"]
-                  <-Select Operator [SEL_5] (rows=242/242 width=4)
-                      Output:["_col0"]
-                      Filter Operator [FIL_33] (rows=242/242 width=4)
-                        predicate:key is not null
-                        TableScan [TS_3] (rows=242/242 width=4)
-                          default@tab_n6,s3,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
+                    Conds:SEL_65._col0=DUMMY_STORE_59._col0(Inner),Output:["_col0"]
+                  <-Dummy Store [DUMMY_STORE_59]
+                      Select Operator [SEL_5] (rows=242/242 width=4)
+                        Output:["_col0"]
+                        Filter Operator [FIL_33] (rows=242/242 width=4)
+                          predicate:key is not null
+                          TableScan [TS_3] (rows=242/242 width=4)
+                            default@tab_n6,s3,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
                   <-Select Operator [SEL_65] (rows=242/242 width=4)
                       Output:["_col0"]
                       Filter Operator [FIL_63] (rows=242/242 width=4)

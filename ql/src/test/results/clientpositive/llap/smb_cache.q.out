@@ -228,6 +228,7 @@ STAGE PLANS:
                       expressions: userid (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
+                      Dummy Store
             Map Operator Tree:
                 TableScan
                   alias: fa
@@ -338,6 +339,7 @@ STAGE PLANS:
                       expressions: userid (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
+                      Dummy Store
             Map Operator Tree:
                 TableScan
                   alias: fa

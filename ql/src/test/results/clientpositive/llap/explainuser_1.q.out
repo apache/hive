@@ -2164,11 +2164,12 @@ Stage-0
           Filter Operator [FIL_16] (rows=250 width=179)
             predicate:_col2 is null
             Merge Join Operator [MERGEJOIN_31] (rows=333 width=179)
-              Conds:GBY_4._col0, _col1=SEL_12._col1, _col2(Left Outer),Output:["_col0","_col1","_col2"]
-            <-Select Operator [SEL_12] (rows=83 width=182)
-                Output:["_col0","_col1","_col2"]
-                Group By Operator [GBY_11] (rows=83 width=178)
-                  Output:["_col0","_col1"],keys:KEY._col0, KEY._col1
+              Conds:GBY_4._col0, _col1=DUMMY_STORE_32._col1, _col2(Left Outer),Output:["_col0","_col1","_col2"]
+            <-Dummy Store [DUMMY_STORE_32]
+                Select Operator [SEL_12] (rows=83 width=182)
+                  Output:["_col0","_col1","_col2"]
+                  Group By Operator [GBY_11] (rows=83 width=178)
+                    Output:["_col0","_col1"],keys:KEY._col0, KEY._col1
             <-Group By Operator [GBY_4] (rows=250 width=178)
                 Output:["_col0","_col1"],keys:KEY._col0, KEY._col1
               <-Map 1 [SIMPLE_EDGE] llap
@@ -4388,9 +4389,10 @@ Stage-0
         Select Operator [SEL_5] (rows=48 width=15)
           Output:["_col0","_col1","_col2","_col3"]
           Merge Join Operator [MERGEJOIN_7] (rows=48 width=15)
-            Conds:TS_0.key=TS_1.key(Inner),Output:["_col0","_col1","_col5","_col6"]
-          <-TableScan [TS_1] (rows=26 width=7)
-              default@smb_input1_n2,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
+            Conds:TS_0.key=DUMMY_STORE_8.key(Inner),Output:["_col0","_col1","_col5","_col6"]
+          <-Dummy Store [DUMMY_STORE_8]
+              TableScan [TS_1] (rows=26 width=7)
+                default@smb_input1_n2,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
           <-TableScan [TS_0] (rows=26 width=7)
               default@smb_input1_n2,a,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
 
@@ -4447,9 +4449,10 @@ Stage-0
         Select Operator [SEL_5] (rows=48 width=15)
           Output:["_col0","_col1","_col2","_col3"]
           Merge Join Operator [MERGEJOIN_7] (rows=48 width=15)
-            Conds:TS_0.key=TS_1.key(Right Outer),Output:["_col0","_col1","_col5","_col6"]
-          <-TableScan [TS_0] (rows=26 width=7)
-              default@smb_input1_n2,a,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
+            Conds:DUMMY_STORE_8.key=TS_1.key(Right Outer),Output:["_col0","_col1","_col5","_col6"]
+          <-Dummy Store [DUMMY_STORE_8]
+              TableScan [TS_0] (rows=26 width=7)
+                default@smb_input1_n2,a,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
           <-TableScan [TS_1] (rows=26 width=7)
               default@smb_input1_n2,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
 
@@ -4472,9 +4475,10 @@ Stage-0
         Select Operator [SEL_5] (rows=48 width=15)
           Output:["_col0","_col1","_col2","_col3"]
           Merge Join Operator [MERGEJOIN_7] (rows=48 width=15)
-            Conds:TS_0.key=TS_1.key(Inner),Output:["_col0","_col1","_col5","_col6"]
-          <-TableScan [TS_1] (rows=26 width=7)
-              default@smb_input1_n2,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
+            Conds:TS_0.key=DUMMY_STORE_8.key(Inner),Output:["_col0","_col1","_col5","_col6"]
+          <-Dummy Store [DUMMY_STORE_8]
+              TableScan [TS_1] (rows=26 width=7)
+                default@smb_input1_n2,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
           <-TableScan [TS_0] (rows=26 width=7)
               default@smb_input1_n2,a,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
 
@@ -4497,9 +4501,10 @@ Stage-0
         Select Operator [SEL_5] (rows=48 width=15)
           Output:["_col0","_col1","_col2","_col3"]
           Merge Join Operator [MERGEJOIN_7] (rows=48 width=15)
-            Conds:TS_0.key=TS_1.key(Left Outer),Output:["_col0","_col1","_col5","_col6"]
-          <-TableScan [TS_1] (rows=26 width=7)
-              default@smb_input1_n2,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
+            Conds:TS_0.key=DUMMY_STORE_8.key(Left Outer),Output:["_col0","_col1","_col5","_col6"]
+          <-Dummy Store [DUMMY_STORE_8]
+              TableScan [TS_1] (rows=26 width=7)
+                default@smb_input1_n2,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
           <-TableScan [TS_0] (rows=26 width=7)
               default@smb_input1_n2,a,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
 

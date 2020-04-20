@@ -265,6 +265,7 @@ STAGE PLANS:
                   Filter Operator
                     predicate: id is not null (type: boolean)
                     Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
+                    Dummy Store
             Map Operator Tree:
                 TableScan
                   alias: a
