@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
@@ -136,23 +137,52 @@ public class BucketVersionPopulator extends Transform {
       }
     }
 
-    public void analyzeBucketVersion() {
+    class OperatorBucketingVersionInfo {
+
+      private Operator<?> op;
+      private int bucketingVersion;
+
+      public OperatorBucketingVersionInfo(Operator<?> op, int bucketingVersion) {
+        this.op = op;
+        this.bucketingVersion = bucketingVersion;
+      }
+
+      @Override
+      public String toString() {
+        return String.format("[op: %s, bucketingVersion=%d]", op, bucketingVersion);
+      }
+    }
+
+    List<OperatorBucketingVersionInfo> getBucketingVersions() {
+      List<OperatorBucketingVersionInfo> ret = new ArrayList<>();
       for (Operator<?> operator : members) {
         if (operator instanceof TableScanOperator) {
           TableScanOperator tso = (TableScanOperator) operator;
-          setVersion(tso.getConf().getTableMetadata().getBucketingVersion());
+          int bucketingVersion = tso.getConf().getTableMetadata().getBucketingVersion();
+          ret.add(new OperatorBucketingVersionInfo(operator, bucketingVersion));
         }
         if (operator instanceof FileSinkOperator) {
           FileSinkOperator fso = (FileSinkOperator) operator;
           int bucketingVersion = fso.getConf().getTableInfo().getBucketingVersion();
-          setVersion(bucketingVersion);
+          ret.add(new OperatorBucketingVersionInfo(operator, bucketingVersion));
         }
+      }
+      return ret;
+    }
+
+    public void analyzeBucketVersion() {
+      List<OperatorBucketingVersionInfo> bucketingVersions = getBucketingVersions();
+      try {
+        for (OperatorBucketingVersionInfo info : bucketingVersions) {
+        setVersion(info.bucketingVersion);
+      }
+      } catch (Exception e) {
+        throw new RuntimeException("Error setting bucketingVersion for group: " + bucketingVersions, e);
       }
       if (version == -1) {
         // use version 2 if possible
         version = 2;
       }
-
     }
 
     private void setVersion(int newVersion) {
