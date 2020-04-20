@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.llap.io.api;
 
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.InputFormat;
@@ -33,5 +34,13 @@ public interface LlapIo<T> {
    * called when the system is idle.
    */
   long purge();
+
+  /**
+   * Handles request to evict entities specified in the request object.
+   * @param protoRequest lists Hive entities (DB, table, etc..) whose LLAP buffers should be evicted.
+   * @return number of evicted bytes.
+   */
+  long evictEntity(LlapDaemonProtocolProtos.EvictEntityRequestProto protoRequest);
+
   void initCacheOnlyInputFormat(InputFormat<?, ?> inputFormat);
 }
