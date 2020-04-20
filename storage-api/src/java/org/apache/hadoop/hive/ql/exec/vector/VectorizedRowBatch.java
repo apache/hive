@@ -360,6 +360,7 @@ public class VectorizedRowBatch implements Writable, MutableFilterContext {
     for(int i=0; i < cols.length; ++i) {
       cols[i].ensureSize(rows, false);
     }
+    updateSelected(rows);
   }
 
   @Override
