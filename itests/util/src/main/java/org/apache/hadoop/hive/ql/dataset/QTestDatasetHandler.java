@@ -115,6 +115,11 @@ public class QTestDatasetHandler implements QTestOptionHandler {
     storeSrcTables();
   }
 
+  private void removeSrcTable(String table) {
+    srcTables.remove(table);
+    storeSrcTables();
+  }
+
   public static Set<String> initSrcTables() {
     if (srcTables == null) {
       initSrcTablesFromSystemProperty();
@@ -149,7 +154,6 @@ public class QTestDatasetHandler implements QTestOptionHandler {
     String[] args = arguments.split(":");
     Set<String> tableNames = getTableNames(args[0]);
     synchronized (QTestUtil.class) {
-
       if (args.length > 1) {
         if (args.length > 2 || !args[1].equalsIgnoreCase("ONLY")) {
           throw new RuntimeException("unknown option: " + args[1]);
@@ -177,22 +181,23 @@ public class QTestDatasetHandler implements QTestOptionHandler {
 
   @Override
   public void beforeTest(QTestUtil qt) throws Exception {
-    if (!missingTables.isEmpty()) {
-      synchronized (QTestUtil.class) {
-        qt.newSession(true);
-        for (String table : missingTables) {
-          if (initDataset(table, qt.getCliDriver())) {
-            addSrcTable(table);
-          }
+    if (missingTables.isEmpty() && tablesToUnload.isEmpty()) {
+      return;
+    }
+    synchronized (QTestUtil.class) {
+      qt.newSession(true);
+      for (String table : missingTables) {
+        if (initDataset(table, qt.getCliDriver())) {
+          addSrcTable(table);
         }
-        missingTables.clear();
-        for (String table : tablesToUnload) {
-          unloadDataset(table, qt.getCliDriver());
-        }
-        missingTables.clear();
-        tablesToUnload.clear();
-        qt.newSession(true);
       }
+      for (String table : tablesToUnload) {
+        removeSrcTable(table);
+        unloadDataset(table, qt.getCliDriver());
+      }
+      missingTables.clear();
+      tablesToUnload.clear();
+      qt.newSession(true);
     }
   }
 
