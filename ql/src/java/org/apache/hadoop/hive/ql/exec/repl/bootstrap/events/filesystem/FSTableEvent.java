@@ -93,6 +93,10 @@ public class FSTableEvent implements TableEvent {
     return fromPathData;
   }
 
+  public MetaData getMetaData() {
+    return metadata;
+  }
+  
   /**
    * To determine if the tableDesc is for an external table,
    * use {@link ImportTableDesc#isExternal()}

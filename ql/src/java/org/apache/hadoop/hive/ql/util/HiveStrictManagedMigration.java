@@ -77,6 +77,7 @@ import com.google.common.collect.Lists;
 import static java.util.stream.Collectors.toList;
 import static org.apache.hadoop.hive.metastore.TableType.EXTERNAL_TABLE;
 import static org.apache.hadoop.hive.metastore.TableType.MANAGED_TABLE;
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
 
 public class HiveStrictManagedMigration {
 
@@ -1004,6 +1005,8 @@ public class HiveStrictManagedMigration {
   private static final Map<String, String> convertToExternalTableProps = new HashMap<>();
   private static final Map<String, String> convertToAcidTableProps = new HashMap<>();
   private static final Map<String, String> convertToMMTableProps = new HashMap<>();
+  private static final String KUDU_LEGACY_STORAGE_HANDLER = "com.cloudera.kudu.hive.KuduStorageHandler";
+  private static final String KUDU_STORAGE_HANDLER = "org.apache.hadoop.hive.kudu.KuduStorageHandler";
 
   static {
     convertToExternalTableProps.put("EXTERNAL", "TRUE");
@@ -1369,7 +1372,9 @@ public class HiveStrictManagedMigration {
       alterPartitionInternal(table, modifiedPart);
     }
 
-    void updateTableProperties(Table table, Map<String, String> props) throws HiveException {
+    void updateTableProperties(Table table, Map<String, String> propsToApply) throws HiveException {
+      Map<String, String> props = new HashMap<>(propsToApply);
+      migrateKuduStorageHandlerType(table, props);
       StringBuilder sb = new StringBuilder();
       boolean isTxn = TxnUtils.isTransactionalTable(table);
       org.apache.hadoop.hive.ql.metadata.Table modifiedTable = doFileRename ?
@@ -1633,6 +1638,22 @@ public class HiveStrictManagedMigration {
         return true;
       }
       return false;
+    }
+  }
+
+  /**
+   * While upgrading from earlier versions we need to amend storage_handler value for Kudu tables that might
+   * have the legacy value set.
+   * @param table
+   * @param props
+   */
+  private static void migrateKuduStorageHandlerType(Table table, Map<String, String> props) {
+    Map<String, String> tableProperties = table.getParameters();
+    if (tableProperties != null) {
+      String storageHandler = tableProperties.get(META_TABLE_STORAGE);
+      if (KUDU_LEGACY_STORAGE_HANDLER.equals(storageHandler)) {
+        props.put(META_TABLE_STORAGE, KUDU_STORAGE_HANDLER);
+      }
     }
   }
 

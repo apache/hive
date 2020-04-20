@@ -518,7 +518,7 @@ public class MetastoreConf {
     DELEGATION_KEY_UPDATE_INTERVAL("metastore.cluster.delegation.key.update-interval",
         "hive.cluster.delegation.key.update-interval", 1, TimeUnit.DAYS, ""),
     DELEGATION_TOKEN_GC_INTERVAL("metastore.cluster.delegation.token.gc-interval",
-        "hive.cluster.delegation.token.gc-interval", 1, TimeUnit.HOURS, ""),
+        "hive.cluster.delegation.token.gc-interval", 15, TimeUnit.MINUTES, ""),
     DELEGATION_TOKEN_MAX_LIFETIME("metastore.cluster.delegation.token.max-lifetime",
         "hive.cluster.delegation.token.max-lifetime", 7, TimeUnit.DAYS, ""),
     DELEGATION_TOKEN_RENEW_INTERVAL("metastore.cluster.delegation.token.renew-interval",
@@ -644,6 +644,12 @@ public class MetastoreConf {
             "However, it doesn't work correctly with integral values that are not normalized (e.g. have\n" +
             "leading zeroes, like 0012). If metastore direct SQL is enabled and works, this optimization\n" +
             "is also irrelevant."),
+    // Once exceeded, the queries should be broken into separate batches.
+    // Note: This value is not passed into the JDBC driver, therefore this batch size limit is not automatically enforced.
+    // Batch construction/splits should be done manually in code using this config value.
+    JDBC_MAX_BATCH_SIZE("metastore.jdbc.max.batch.size", "hive.metastore.jdbc.max.batch.size",
+            1000, new RangeValidator(1, null),
+            "Maximum number of update/delete/insert queries in a single JDBC batch statement (including Statement/PreparedStatement)."),
     KERBEROS_KEYTAB_FILE("metastore.kerberos.keytab.file",
         "hive.metastore.kerberos.keytab.file", "",
         "The path to the Kerberos Keytab file containing the metastore Thrift server's service principal."),

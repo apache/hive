@@ -70,7 +70,7 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@partition_date_1@dt=2013-08-08/region=10
 POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=10).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=10).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select distinct dt from partition_date_1
+PREHOOK: query: select distinct dt from partition_date_1 order by dt
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_date_1
 PREHOOK: Input: default@partition_date_1@dt=2000-01-01/region=1
@@ -79,7 +79,7 @@ PREHOOK: Input: default@partition_date_1@dt=2013-08-08/region=1
 PREHOOK: Input: default@partition_date_1@dt=2013-08-08/region=10
 PREHOOK: Input: default@partition_date_1@dt=2013-12-10/region=2020-20-20
 #### A masked pattern was here ####
-POSTHOOK: query: select distinct dt from partition_date_1
+POSTHOOK: query: select distinct dt from partition_date_1 order by dt
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_date_1
 POSTHOOK: Input: default@partition_date_1@dt=2000-01-01/region=1
