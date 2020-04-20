@@ -477,14 +477,14 @@ STAGE PLANS:
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 3
-                    dataColumns: VALUE._col0:decimal(10,1), VALUE._col1:decimal(10,1), VALUE._col2:binary
+                    dataColumns: VALUE._col0:decimal(10,1)/DECIMAL_64, VALUE._col1:decimal(10,1)/DECIMAL_64, VALUE._col2:binary
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
             Reduce Operator Tree:
               Group By Operator
                 aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=20)
                 Group By Vectorization:
-                    aggregators: VectorUDAFMinDecimal(col 0:decimal(10,1)) -> decimal(10,1), VectorUDAFMaxDecimal(col 1:decimal(10,1)) -> decimal(10,1), VectorUDAFBloomFilterMerge(col 2:binary) -> binary
+                    aggregators: VectorUDAFMinDecimal64(col 0:decimal(10,1)/DECIMAL_64) -> decimal(10,1)/DECIMAL_64, VectorUDAFMaxDecimal64(col 1:decimal(10,1)/DECIMAL_64) -> decimal(10,1)/DECIMAL_64, VectorUDAFBloomFilterMerge(col 2:binary) -> binary
                     className: VectorGroupByOperator
                     groupByMode: FINAL
                     native: false

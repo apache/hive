@@ -49,14 +49,13 @@
     <dependency>
       <groupId>org.antlr</groupId>
       <artifactId>antlr-runtime</artifactId>
-      <version>${antlr.version}</version>
     </dependency>
     <dependency>
       <groupId>org.antlr</groupId>
-      <artifactId>ST4</artifactId>
-      <version>${ST4.version}</version>
+      <artifactId>stringtemplate</artifactId>
+      <version>3.2.1</version>
+      <scope>test</scope>
     </dependency>
-    <!-- test inter-project -->
   </dependencies>
 
   <build>

@@ -36,7 +36,7 @@ INNER JOIN (SELECT `key`, CAST(MIN(`key`) AS DOUBLE) + 2 AS `k2`, CAST(MIN(`key`
 FROM `default`.`src`
 WHERE `key` IS NOT NULL
 GROUP BY `key`
-HAVING CAST(MIN(`key`) AS DOUBLE) + 1 < 5.0) AS `t4` ON `t0`.`key` = `t4`.`key`
+HAVING CAST(MIN(`key`) AS DOUBLE) + 1 < 5) AS `t4` ON `t0`.`key` = `t4`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -358,7 +358,7 @@ INNER JOIN (SELECT `key`, CAST(MIN(`key`) AS DOUBLE) + 2 AS `k2`, CAST(MIN(`key`
 FROM `default`.`src`
 WHERE `key` IS NOT NULL
 GROUP BY `key`
-HAVING CAST(MIN(`key`) AS DOUBLE) + 1 < 5.0) AS `t4` ON `t0`.`key` = `t4`.`key`
+HAVING CAST(MIN(`key`) AS DOUBLE) + 1 < 5) AS `t4` ON `t0`.`key` = `t4`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -680,7 +680,7 @@ INNER JOIN (SELECT `key`, CAST(MIN(`key`) AS DOUBLE) + 2 AS `k2`, CAST(MIN(`key`
 FROM `default`.`src`
 WHERE `key` IS NOT NULL
 GROUP BY `key`
-HAVING CAST(MIN(`key`) AS DOUBLE) + 1 < 5.0) AS `t4` ON `t0`.`key` = `t4`.`key`
+HAVING CAST(MIN(`key`) AS DOUBLE) + 1 < 5) AS `t4` ON `t0`.`key` = `t4`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1000,7 +1000,7 @@ INNER JOIN (SELECT `key`, CAST(MIN(`key`) AS DOUBLE) + 2 AS `k2`, CAST(MIN(`key`
 FROM `default`.`src`
 WHERE `key` IS NOT NULL
 GROUP BY `key`
-HAVING CAST(MIN(`key`) AS DOUBLE) + 1 < 5.0) AS `t4` ON `t0`.`key` = `t4`.`key`
+HAVING CAST(MIN(`key`) AS DOUBLE) + 1 < 5) AS `t4` ON `t0`.`key` = `t4`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

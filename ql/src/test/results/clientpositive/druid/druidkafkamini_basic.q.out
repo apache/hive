@@ -548,7 +548,7 @@ STAGE PLANS:
           properties:
             druid.fieldNames language,c
             druid.fieldTypes string,double
-            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_kafka_test","granularity":"all","dimensions":[{"type":"default","dimension":"language","outputName":"language","outputType":"STRING"}],"limitSpec":{"type":"default","columns":[{"dimension":"c","direction":"descending","dimensionOrder":"numeric"}]},"aggregations":[{"type":"longSum","name":"$f1","fieldName":"added"},{"type":"longSum","name":"$f2","fieldName":"deleted"},{"type":"count","name":"$f3"}],"postAggregations":[{"type":"expression","name":"c","expression":"(-1.0 * ((CAST((\"$f1\" - \"$f2\"), 'DOUBLE') / CAST((\"$f3\" * 3), 'DOUBLE')) + CAST(\"$f2\", 'DOUBLE')))"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_kafka_test","granularity":"all","dimensions":[{"type":"default","dimension":"language","outputName":"language","outputType":"STRING"}],"limitSpec":{"type":"default","columns":[{"dimension":"c","direction":"descending","dimensionOrder":"numeric"}]},"aggregations":[{"type":"longSum","name":"$f1","fieldName":"added"},{"type":"longSum","name":"$f2","fieldName":"deleted"},{"type":"count","name":"$f3"}],"postAggregations":[{"type":"expression","name":"c","expression":"(-1 * ((CAST((\"$f1\" - \"$f2\"), 'DOUBLE') / CAST((\"$f3\" * 3), 'DOUBLE')) + CAST(\"$f2\", 'DOUBLE')))"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
             druid.query.type groupBy
           Select Operator
             expressions: language (type: string), c (type: double)

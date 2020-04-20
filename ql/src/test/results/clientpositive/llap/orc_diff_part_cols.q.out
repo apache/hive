@@ -31,11 +31,11 @@ POSTHOOK: query: ALTER TABLE test_orc_n0 ADD COLUMNS (cnt INT)
 POSTHOOK: type: ALTERTABLE_ADDCOLS
 POSTHOOK: Input: default@test_orc_n0
 POSTHOOK: Output: default@test_orc_n0
-PREHOOK: query: INSERT OVERWRITE TABLE test_orc_n0 PARTITION (part = '2') SELECT key, count(*) FROM src GROUP BY key LIMIT 5
+PREHOOK: query: INSERT OVERWRITE TABLE test_orc_n0 PARTITION (part = '2') SELECT key, count(*) FROM src GROUP BY key ORDER BY key LIMIT 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@test_orc_n0@part=2
-POSTHOOK: query: INSERT OVERWRITE TABLE test_orc_n0 PARTITION (part = '2') SELECT key, count(*) FROM src GROUP BY key LIMIT 5
+POSTHOOK: query: INSERT OVERWRITE TABLE test_orc_n0 PARTITION (part = '2') SELECT key, count(*) FROM src GROUP BY key ORDER BY key LIMIT 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_orc_n0@part=2

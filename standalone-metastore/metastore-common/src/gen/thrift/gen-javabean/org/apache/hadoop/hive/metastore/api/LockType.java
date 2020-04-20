@@ -14,7 +14,8 @@ import org.apache.thrift.TEnum;
 public enum LockType implements org.apache.thrift.TEnum {
   SHARED_READ(1),
   SHARED_WRITE(2),
-  EXCLUSIVE(3);
+  EXCLUSIVE(3),
+  EXCL_WRITE(4);
 
   private final int value;
 
@@ -41,6 +42,8 @@ public enum LockType implements org.apache.thrift.TEnum {
         return SHARED_WRITE;
       case 3:
         return EXCLUSIVE;
+      case 4:
+        return EXCL_WRITE;
       default:
         return null;
     }

@@ -115,6 +115,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.util.Strings;
+import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooDefs.Ids;
@@ -133,10 +134,12 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  *
  */
 public class HiveServer2 extends CompositeService {
-  private static CountDownLatch deleteSignal;
   private static final Logger LOG = LoggerFactory.getLogger(HiveServer2.class);
   public static final String INSTANCE_URI_CONFIG = "hive.server2.instance.uri";
   private static final int SHUTDOWN_TIME = 60;
+  private static CountDownLatch zkDeleteSignal;
+  private static volatile KeeperException.Code zkDeleteResultCode;
+
   private CLIService cliService;
   private ThriftCLIService thriftCLIService;
   private CuratorFramework zKClientForPrivSync = null;
@@ -566,7 +569,7 @@ public class HiveServer2 extends CompositeService {
    * @return
    * @throws Exception
    */
-  private void setUpZooKeeperAuth(HiveConf hiveConf) throws Exception {
+  private static void setUpZooKeeperAuth(HiveConf hiveConf) throws Exception {
     if (ZookeeperUtils.isKerberosEnabled(hiveConf)) {
       String principal = hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL);
       if (principal.isEmpty()) {
@@ -1099,6 +1102,7 @@ public class HiveServer2 extends CompositeService {
    */
   static void deleteServerInstancesFromZooKeeper(String versionNumber) throws Exception {
     HiveConf hiveConf = new HiveConf();
+    setUpZooKeeperAuth(hiveConf);
     CuratorFramework zooKeeperClient = hiveConf.getZKConfig().getNewZookeeperClient();
     zooKeeperClient.start();
     String rootNamespace = hiveConf.getVar(HiveConf.ConfVars.HIVE_SERVER2_ZOOKEEPER_NAMESPACE);
@@ -1109,7 +1113,7 @@ public class HiveServer2 extends CompositeService {
     // Now for each path that is for the given versionNumber, delete the znode from ZooKeeper
     for (int i = 0; i < znodePaths.size(); i++) {
       String znodePath = znodePaths.get(i);
-      deleteSignal = new CountDownLatch(1);
+      zkDeleteSignal = new CountDownLatch(1);
       if (znodePath.contains("version=" + versionNumber + ";")) {
         String fullZnodePath =
             ZooKeeperHiveHelper.ZOOKEEPER_PATH_SEPARATOR + rootNamespace
@@ -1119,7 +1123,11 @@ public class HiveServer2 extends CompositeService {
         zooKeeperClient.delete().guaranteed().inBackground(new DeleteCallBack())
             .forPath(fullZnodePath);
         // Wait for the delete to complete
-        deleteSignal.await();
+        zkDeleteSignal.await();
+        final KeeperException.Code rc = HiveServer2.zkDeleteResultCode;
+        if (rc != KeeperException.Code.OK) {
+          throw KeeperException.create(rc);
+        }
         // Get the updated path list
         znodePathsUpdated =
             zooKeeperClient.getChildren().forPath(
@@ -1138,7 +1146,8 @@ public class HiveServer2 extends CompositeService {
     public void processResult(CuratorFramework zooKeeperClient, CuratorEvent event)
         throws Exception {
       if (event.getType() == CuratorEventType.DELETE) {
-        deleteSignal.countDown();
+        zkDeleteResultCode = KeeperException.Code.get(event.getResultCode());
+        zkDeleteSignal.countDown();
       }
     }
   }
