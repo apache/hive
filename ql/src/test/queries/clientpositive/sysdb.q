@@ -1,4 +1,4 @@
---! qt:dataset::ONLY
+--! qt:dataset:src,part,srcbucket:ONLY
 --! qt:sysdb
 
 set hive.strict.checks.cartesian.product=false;

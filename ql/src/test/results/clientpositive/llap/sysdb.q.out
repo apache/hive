@@ -76,6 +76,10 @@ default	moretypes			hive_test_user	USER	DELETE	true	-1	hive_test_user
 default	moretypes			hive_test_user	USER	INSERT	true	-1	hive_test_user
 default	moretypes			hive_test_user	USER	SELECT	true	-1	hive_test_user
 default	moretypes			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	part			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	part			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	part			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	part			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 default	scr_txn			hive_test_user	USER	DELETE	true	-1	hive_test_user
 default	scr_txn			hive_test_user	USER	INSERT	true	-1	hive_test_user
 default	scr_txn			hive_test_user	USER	SELECT	true	-1	hive_test_user
@@ -84,6 +88,10 @@ default	scr_txn_2			hive_test_user	USER	DELETE	true	-1	hive_test_user
 default	scr_txn_2			hive_test_user	USER	INSERT	true	-1	hive_test_user
 default	scr_txn_2			hive_test_user	USER	SELECT	true	-1	hive_test_user
 default	scr_txn_2			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	src			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	src			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	src			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	src			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 default	src_buck			hive_test_user	USER	DELETE	true	-1	hive_test_user
 default	src_buck			hive_test_user	USER	INSERT	true	-1	hive_test_user
 default	src_buck			hive_test_user	USER	SELECT	true	-1	hive_test_user
@@ -92,6 +100,10 @@ default	src_skew			hive_test_user	USER	DELETE	true	-1	hive_test_user
 default	src_skew			hive_test_user	USER	INSERT	true	-1	hive_test_user
 default	src_skew			hive_test_user	USER	SELECT	true	-1	hive_test_user
 default	src_skew			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	srcbucket			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	srcbucket			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	srcbucket			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	srcbucket			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 information_schema	column_privileges			hive_test_user	USER	DELETE	true	-1	hive_test_user
 information_schema	column_privileges			hive_test_user	USER	INSERT	true	-1	hive_test_user
 information_schema	column_privileges			hive_test_user	USER	SELECT	true	-1	hive_test_user
@@ -363,6 +375,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@bucketing_cols
 #### A masked pattern was here ####
 key	0
+key	0
 value	0
 PREHOOK: query: select t.tbl_name, c.column_name from tbls t join sds s on t.sd_id=s.sd_id join columns_v2 c on s.cd_id=c.cd_id order by t.tbl_name, c.column_name
 PREHOOK: type: QUERY
@@ -588,6 +601,15 @@ mv_creation_metadata	tbl_name
 mv_creation_metadata	txn_list
 mv_tables_used	mv_creation_metadata_id
 mv_tables_used	tbl_id
+part	p_brand
+part	p_comment
+part	p_container
+part	p_mfgr
+part	p_name
+part	p_partkey
+part	p_retailprice
+part	p_size
+part	p_type
 part_col_privs	authorizer
 part_col_privs	column_name
 part_col_privs	create_time
@@ -749,9 +771,13 @@ sort_cols	column_name
 sort_cols	integer_idx
 sort_cols	order
 sort_cols	sd_id
+src	key
+src	value
 src_buck	key
 src_buck	value
 src_skew	key
+srcbucket	key
+srcbucket	value
 tab_col_stats	avg_col_len
 tab_col_stats	big_decimal_high_value
 tab_col_stats	big_decimal_low_value
@@ -1149,7 +1175,7 @@ POSTHOOK: query: select count(*) from sds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@sds
 #### A masked pattern was here ####
-69
+72
 PREHOOK: query: select param_key, param_value from sd_params order by param_key, param_value limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@sd_params
@@ -1292,6 +1318,16 @@ POSTHOOK: query: select table_name, column_name, num_nulls, num_distincts from t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@tab_col_stats
 #### A masked pattern was here ####
+part	p_brand	0	16
+part	p_comment	0	25
+part	p_container	0	18
+part	p_mfgr	0	5
+part	p_name	0	25
+part	p_partkey	0	25
+part	p_retailprice	0	25
+part	p_size	0	21
+part	p_type	0	24
+src	key	0	316
 PREHOOK: query: select table_name, partition_name, column_name, num_nulls, num_distincts from part_col_stats order by table_name, partition_name, column_name limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@part_col_stats
@@ -1455,7 +1491,7 @@ POSTHOOK: query: select max(num_distincts) from sys.tab_col_stats
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@tab_col_stats
 #### A masked pattern was here ####
-NULL
+431
 PREHOOK: query: select * from compactions
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@compaction_queue
@@ -1506,10 +1542,13 @@ POSTHOOK: Input: sys@tbl_privs
 POSTHOOK: Input: sys@tbls
 #### A masked pattern was here ####
 default	default	moretypes	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	default	part	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	default	scr_txn	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	default	scr_txn_2	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	default	src	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	default	src_buck	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	default	src_skew	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	default	srcbucket	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	information_schema	column_privileges	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	information_schema	columns	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	information_schema	compactions	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
@@ -1592,12 +1631,12 @@ hive_test_user	hive_test_user	default	default	moretypes	DELETE	YES	NO
 hive_test_user	hive_test_user	default	default	moretypes	INSERT	YES	NO
 hive_test_user	hive_test_user	default	default	moretypes	SELECT	YES	NO
 hive_test_user	hive_test_user	default	default	moretypes	UPDATE	YES	NO
+hive_test_user	hive_test_user	default	default	part	DELETE	YES	NO
+hive_test_user	hive_test_user	default	default	part	INSERT	YES	NO
+hive_test_user	hive_test_user	default	default	part	SELECT	YES	NO
+hive_test_user	hive_test_user	default	default	part	UPDATE	YES	NO
 hive_test_user	hive_test_user	default	default	scr_txn	DELETE	YES	NO
 hive_test_user	hive_test_user	default	default	scr_txn	INSERT	YES	NO
-hive_test_user	hive_test_user	default	default	scr_txn	SELECT	YES	NO
-hive_test_user	hive_test_user	default	default	scr_txn	UPDATE	YES	NO
-hive_test_user	hive_test_user	default	default	scr_txn_2	DELETE	YES	NO
-hive_test_user	hive_test_user	default	default	scr_txn_2	INSERT	YES	NO
 PREHOOK: query: select table_catalog,table_schema,table_name,column_name,ordinal_position,column_default,is_nullable,data_type,character_maximum_length,character_octet_length,numeric_precision,numeric_precision_radix,numeric_scale,datetime_precision,interval_type,interval_precision,character_set_catalog,character_set_schema,character_set_name,collation_catalog,collation_schema,collation_name,udt_catalog,udt_schema,udt_name,scope_catalog,scope_schema,scope_name,maximum_cardinality,is_self_referencing,is_identity,identity_generation,identity_start,identity_increment,identity_maximum,identity_minimum,identity_cycle,is_generated,generation_expression,is_system_time_period_start,is_system_time_period_end,system_time_period_timestamp_generation,is_updatable,declared_data_type,declared_numeric_precision,declared_numeric_scale from COLUMNS where TABLE_NAME = 'alltypesorc' or TABLE_NAME = 'moretypes' order by TABLE_SCHEMA, TABLE_NAME, ORDINAL_POSITION
 PREHOOK: type: QUERY
 PREHOOK: Input: information_schema@columns
