@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.function.Predicate;
 
 import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
@@ -161,6 +162,10 @@ public class CacheContentsTracker implements LowLevelCachePolicy, EvictionListen
     return realPolicy.purge();
   }
 
+  @Override
+  public long evictEntity(Predicate<LlapCacheableBuffer> predicate) {
+    return realPolicy.evictEntity(predicate);
+  }
 
   @Override
   public long evictSomeBlocks(long memoryToReserve) {

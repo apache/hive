@@ -18,6 +18,9 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.drop;
 
+import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.llap.LlapHiveUtils;
+import org.apache.hadoop.hive.llap.ProactiveEviction;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
@@ -28,6 +31,7 @@ import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.HiveTableName;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 
 import com.google.common.collect.Iterables;
@@ -101,6 +105,14 @@ public class DropTableOperation extends DDLOperation<DropTableDesc> {
     // TODO: API w/catalog name
     context.getDb().dropTable(desc.getTableName(), desc.isPurge());
     DDLUtils.addIfAbsentByName(new WriteEntity(table, WriteEntity.WriteType.DDL_NO_LOCK), context);
+
+    if (LlapHiveUtils.isLlapMode(context.getConf())) {
+      TableName tableName = HiveTableName.of(table);
+      ProactiveEviction.Request.Builder llapEvictRequestBuilder =
+              ProactiveEviction.Request.Builder.create();
+      llapEvictRequestBuilder.addTable(tableName.getDb(), tableName.getTable());
+      ProactiveEviction.evict(context.getConf(), llapEvictRequestBuilder.build());
+    }
 
     return 0;
   }

@@ -23,6 +23,8 @@ import java.util.List;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.llap.LlapHiveUtils;
+import org.apache.hadoop.hive.llap.ProactiveEviction;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
@@ -117,10 +119,22 @@ public class AlterTableDropPartitionOperation extends DDLOperation<AlterTableDro
         PartitionDropOptions.instance().deleteData(true).ifExists(true).purgeData(desc.getIfPurge());
     List<Partition> droppedPartitions = context.getDb().dropPartitions(tablenName.getDb(), tablenName.getTable(),
         partitionExpressions, options);
+
+    ProactiveEviction.Request.Builder llapEvictRequestBuilder =
+        LlapHiveUtils.isLlapMode(context.getConf()) ?
+            ProactiveEviction.Request.Builder.create() : null;
+
     for (Partition partition : droppedPartitions) {
       context.getConsole().printInfo("Dropped the partition " + partition.getName());
       // We have already locked the table, don't lock the partitions.
       DDLUtils.addIfAbsentByName(new WriteEntity(partition, WriteEntity.WriteType.DDL_NO_LOCK), context);
+
+      if (llapEvictRequestBuilder != null) {
+        llapEvictRequestBuilder.addPartitionOfATable(tablenName.getDb(), tablenName.getTable(), partition.getSpec());
+      }
+    }
+    if (llapEvictRequestBuilder != null) {
+      ProactiveEviction.evict(context.getConf(), llapEvictRequestBuilder.build());
     }
   }
 }
