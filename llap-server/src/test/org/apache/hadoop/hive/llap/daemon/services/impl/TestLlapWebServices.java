@@ -30,8 +30,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
-
 import com.google.common.collect.ImmutableSet;
 
 import static java.net.HttpURLConnection.HTTP_FORBIDDEN;
@@ -50,22 +48,19 @@ public class TestLlapWebServices {
     llapWS = new LlapWebServices(llapWSPort, null, null);
     llapWS.init(new HiveConf());
     llapWS.start();
-    HttpServletRequest a = null;
-
-    extracted("javax/servlet/http/HttpServletRequest.class");
-    extracted("javax/servlet/http/HttpServlet.class");
+    Thread.sleep(5000);
+    ensureUniqueInClasspath("javax/servlet/http/HttpServletRequest.class");
+    ensureUniqueInClasspath("javax/servlet/http/HttpServlet.class");
   }
 
-  private static void extracted(String name) throws IOException {
-    Enumeration<URL> rr =
-        TestLlapWebServices.class.getClassLoader().getResources(name);
-
-    List<URL> aa = new ArrayList<>();
+  private static void ensureUniqueInClasspath(String name) throws IOException {
+    Enumeration<URL> rr = TestLlapWebServices.class.getClassLoader().getResources(name);
+    List<URL> found = new ArrayList<>();
     while (rr.hasMoreElements()) {
-      aa.add(rr.nextElement());
+      found.add(rr.nextElement());
     }
-    if (aa.size() != 1) {
-      throw new RuntimeException(aa.toString());
+    if (found.size() != 1) {
+      throw new RuntimeException(name + " unexpected number of occurences on the classpath:" + found.toString());
     }
   }
 
