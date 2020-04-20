@@ -375,6 +375,10 @@ public class CopyUtils {
       final Path finalDestination = destination;
       try {
         proxyUser.doAs((PrivilegedExceptionAction<Boolean>) () -> {
+          //Destination should be empty
+          destinationFs.delete(destination, true);
+          //Destination folder should be created
+          destinationFs.mkdirs(destination);
           FileUtil
               .copy(sourceFs, paths, destinationFs, finalDestination, false, true, hiveConf);
           return true;
@@ -383,6 +387,10 @@ public class CopyUtils {
         throw new IOException(e);
       }
     } else {
+      //Destination should be empty
+      destinationFs.delete(destination, true);
+      //Destination folder should be created
+      destinationFs.mkdirs(destination);
       FileUtil.copy(sourceFs, paths, destinationFs, destination, false, true, hiveConf);
     }
   }
