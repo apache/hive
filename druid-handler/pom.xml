@@ -92,6 +92,10 @@
       <version>${druid.version}</version>
       <exclusions>
         <exclusion>
+          <groupId>io.tesla.aether</groupId>
+          <artifactId>tesla-aether</artifactId>
+        </exclusion>
+        <exclusion>
           <groupId>com.fasterxml.jackson.core</groupId>
           <artifactId>jackson-core</artifactId>
         </exclusion>
@@ -119,6 +123,22 @@
       <artifactId>druid-processing</artifactId>
       <version>${druid.version}</version>
       <exclusions>
+        <exclusion>
+          <groupId>org.codehaus.plexus</groupId>
+          <artifactId>plexus-utils</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.ow2.asm</groupId>
+          <artifactId>asm-commons</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.ow2.asm</groupId>
+          <artifactId>asm</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.checkerframework</groupId>
+          <artifactId>checker-qual</artifactId>
+        </exclusion>
         <exclusion>
           <!--LGPL licenced library-->
           <groupId>com.google.code.findbugs</groupId>
