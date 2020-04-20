@@ -384,6 +384,9 @@ public class TestJdbcWithMiniLlapArrow extends BaseJdbcWithMiniLlap {
         tKillHolder.throwable = e;
       }
     }
+    if (count >= 10) {
+      throw new RuntimeException("test timed-out", stmtHolder.throwable);
+    }
 
     tExecute.join();
     try {
