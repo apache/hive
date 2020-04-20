@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.io.filter;
 
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -43,7 +44,7 @@ public class TestFilterContext {
 
   @Test
   public void testInitFilterContext(){
-    MutableFilterContext mutableFilterContext = new MutableFilterContext();
+    MutableFilterContext mutableFilterContext = new VectorizedRowBatch(0);
     int[] selected = makeValidSelected();
 
     mutableFilterContext.setFilterContext(true, selected, selected.length);
@@ -57,7 +58,7 @@ public class TestFilterContext {
 
   @Test
   public void testResetFilterContext(){
-    MutableFilterContext mutableFilterContext = new MutableFilterContext();
+    MutableFilterContext mutableFilterContext = new VectorizedRowBatch(0);
     int[] selected = makeValidSelected();
 
     mutableFilterContext.setFilterContext(true, selected, selected.length);
@@ -67,55 +68,32 @@ public class TestFilterContext {
     Assert.assertEquals(512, filterContext.getSelectedSize());
     Assert.assertEquals(512, filterContext.getSelected().length);
 
-    filterContext.resetFilterContext();
+    filterContext.reset();
 
     Assert.assertEquals(false, filterContext.isSelectedInUse());
     Assert.assertEquals(0, filterContext.getSelectedSize());
-    Assert.assertEquals(null, filterContext.getSelected());
   }
 
   @Test(expected=AssertionError.class)
   public void testInitInvalidFilterContext(){
-    MutableFilterContext mutableFilterContext = new MutableFilterContext();
+    MutableFilterContext mutableFilterContext = new VectorizedRowBatch(0);
     int[] selected = makeInvalidSelected();
 
     mutableFilterContext.setFilterContext(true, selected, selected.length);
   }
 
-
-  @Test
-  public void testCopyFilterContext(){
-    MutableFilterContext mutableFilterContext = new MutableFilterContext();
-    int[] selected = makeValidSelected();
-
-    mutableFilterContext.setFilterContext(true, selected, selected.length);
-
-    MutableFilterContext mutableFilterContextToCopy = new MutableFilterContext();
-    mutableFilterContextToCopy.setFilterContext(true, new int[] {100}, 1);
-
-    mutableFilterContext.copyFilterContextFrom(mutableFilterContextToCopy);
-    FilterContext filterContext = mutableFilterContext.immutable();
-
-    Assert.assertEquals(true, filterContext.isSelectedInUse());
-    Assert.assertEquals(1, filterContext.getSelectedSize());
-    Assert.assertEquals(100, filterContext.getSelected()[0]);
-    // make sure we kept the remaining array space
-    Assert.assertEquals(512, filterContext.getSelected().length);
-  }
-
-
   @Test
   public void testBorrowSelected(){
-    MutableFilterContext mutableFilterContext = new MutableFilterContext();
+    MutableFilterContext mutableFilterContext = new VectorizedRowBatch(0);
     mutableFilterContext.setFilterContext(true, new int[] {100, 200}, 2);
 
-    int[] borrowedSelected = mutableFilterContext.borrowSelected(1);
+    int[] borrowedSelected = mutableFilterContext.updateSelected(1);
     // make sure we borrowed the existing array
     Assert.assertEquals(2, borrowedSelected.length);
     Assert.assertEquals(100, borrowedSelected[0]);
     Assert.assertEquals(200, borrowedSelected[1]);
 
-    borrowedSelected = mutableFilterContext.borrowSelected(3);
+    borrowedSelected = mutableFilterContext.updateSelected(3);
     Assert.assertEquals(3, borrowedSelected.length);
     Assert.assertEquals(0, borrowedSelected[0]);
     Assert.assertEquals(0, borrowedSelected[1]);
