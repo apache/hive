@@ -127,12 +127,6 @@ public class DbCPDataSourceProvider implements DataSourceProvider {
   }
 
   @Override
-  public boolean mayReturnClosedConnection() {
-    // Only BoneCP should return true
-    return false;
-  }
-
-  @Override
   public String getPoolingType() {
     return DBCP;
   }
