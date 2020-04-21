@@ -1255,9 +1255,9 @@ CREATE TABLE IF NOT EXISTS `CDH_VERSION` (
   PRIMARY KEY (`VER_ID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
-INSERT INTO CDH_VERSION (VER_ID, SCHEMA_VERSION, VERSION_COMMENT) VALUES (1, '3.1.3000.7.1.1.0', 'Hive release version 3.1.3000 for CDH 7.1.1.0');
+INSERT INTO CDH_VERSION (VER_ID, SCHEMA_VERSION, VERSION_COMMENT) VALUES (1, '3.1.3000.7.1.1.0-Update1', 'Hive release version 3.1.3000 for CDH 7.1.1.0-Update1');
 
-SELECT 'Initialized metastore schema to 3.1.3000.7.1.1.0';
+SELECT 'Initialized metastore schema to 3.1.3000.7.1.1.0-Update1';
 
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

@@ -419,7 +419,7 @@ public class CDHMetaStoreSchemaInfo extends MetaStoreSchemaInfo {
       if (StringUtils.countMatches(version, ".") < 6) {
         throw new IllegalArgumentException("Invalid format of cdh version string " + version);
       }
-      String[] array = version.split("-")[0].split("\\.", 4);
+      String[] array = version.split("\\.", 4);
       return array[array.length - 1];
     }
 
@@ -465,6 +465,11 @@ public class CDHMetaStoreSchemaInfo extends MetaStoreSchemaInfo {
                         + Arrays.toString(bVersionParts) + " since follow different format");
       }
       for (int i = 0; i < aVersionParts.length; i++) {
+        // use string.compareTo on the last version part
+        if (i == aVersionParts.length - 1) {
+          return (aVersionParts[i].compareToIgnoreCase(bVersionParts[i]));
+        }
+
         Integer aVersionPart = Integer.valueOf(aVersionParts[i]);
         Integer bVersionPart = Integer.valueOf(bVersionParts[i]);
 
