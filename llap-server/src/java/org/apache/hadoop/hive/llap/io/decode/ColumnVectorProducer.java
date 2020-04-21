@@ -49,6 +49,12 @@ public interface ColumnVectorProducer {
     List<Integer> getPhysicalColumnIds();
     List<Integer> getReaderLogicalColumnIds();
     TypeDescription[] getBatchReaderTypes(TypeDescription fileSchema);
+    String getQueryId();
+    boolean isProbeDecodeEnabled();
+    byte getProbeMjSmallTablePos();
+    String getProbeCacheKey();
+    String getProbeColName();
+    int getProbeColIdx();
   }
 
   ReadPipeline createReadPipeline(Consumer<ColumnVectorBatch> consumer, FileSplit split,

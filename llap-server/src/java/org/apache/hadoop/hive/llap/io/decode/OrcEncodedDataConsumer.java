@@ -84,6 +84,10 @@ public class OrcEncodedDataConsumer
     this.includes = includes;
     // TODO: get rid of this
     this.skipCorrupt = skipCorrupt;
+    if (includes.isProbeDecodeEnabled()) {
+      LlapIoImpl.LOG.info("OrcEncodedDataConsumer probeDecode is enabled with cacheKey {} colIndex {} and colName {}",
+              this.includes.getProbeCacheKey(), this.includes.getProbeColIdx(), this.includes.getProbeColName());
+    }
   }
 
   public void setUseDecimal64ColumnVectors(final boolean useDecimal64ColumnVectors) {
