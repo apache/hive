@@ -1969,7 +1969,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           HiveExceptRewriteRule.INSTANCE);
 
       // ?
-      if (true/*FIXME*/) {
+      if (conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_REWRITE_COUNTDISTINCT_ENABLED)) {
         generatePartialProgram(program, true, HepMatchOrder.TOP_DOWN,
             new HiveRewriteCountDistinctToDataSketches(conf));
       }
