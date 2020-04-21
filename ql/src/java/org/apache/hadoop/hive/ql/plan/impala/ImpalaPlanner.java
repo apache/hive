@@ -123,6 +123,9 @@ public class ImpalaPlanner {
     // to Impala
 
     ctx_.getRootAnalyzer().computeValueTransferGraph();
+
+    Planner.checkForSmallQueryOptimization(planNodeRoot, ctx_);
+
     List<PlanFragment> fragments = createPlanFragments(planNodeRoot);
     Preconditions.checkArgument(fragments.size() > 0);
     PlanFragment planFragmentRoot = fragments.get(0);
@@ -213,6 +216,7 @@ public class ImpalaPlanner {
     // create the data sink
     rootFragment.setSink(new PlanRootSink(ctx_.getResultExprs()));
 
+    Planner.checkForDisableCodegen(rootFragment.getPlanRoot(), ctx_);
     // finalize exchanges: this ensures that for hash partitioned joins, the partitioning
     // keys on both sides of the join have compatible data types
     for (PlanFragment fragment: fragments) {
@@ -266,8 +270,6 @@ public class ImpalaPlanner {
         throw new HiveException("createDefaultQueryOptions", e);
     }
 
-    // TODO: Fill in session options
-    options.setNum_nodes(2);
     options.setParquet_dictionary_filtering(
             conf.getBoolVar(HiveConf.ConfVars.HIVE_IMPALA_PARQUET_DICTIONARY_FILTERING));
     return options;
