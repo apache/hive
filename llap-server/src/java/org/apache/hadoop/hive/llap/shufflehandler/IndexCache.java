@@ -44,10 +44,11 @@ class IndexCache {
   private final LinkedBlockingQueue<String> queue =
       new LinkedBlockingQueue<String>();
   private FileSystem fs;
+  public static final String INDEX_CACHE_MB = "llap.shuffle.indexcache.mb";
 
   public IndexCache(Configuration conf) {
     this.conf = conf;
-    totalMemoryAllowed = 10 * 1024 * 1024;
+    totalMemoryAllowed = conf.getInt(INDEX_CACHE_MB, 10) * 1024 * 1024;
     LOG.info("IndexCache created with max memory = " + totalMemoryAllowed);
     initLocalFs();
   }
