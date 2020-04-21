@@ -70,7 +70,7 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@partition_timestamp_1_temp@dt=2001-01-01 03%3A00%3A00/region=10
 POSTHOOK: Lineage: partition_timestamp_1_temp PARTITION(dt=2001-01-01 03:00:00,region=10).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_timestamp_1_temp PARTITION(dt=2001-01-01 03:00:00,region=10).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select distinct dt from partition_timestamp_1_temp
+PREHOOK: query: select distinct dt from partition_timestamp_1_temp order by dt
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_timestamp_1_temp
 PREHOOK: Input: default@partition_timestamp_1_temp@dt=2000-01-01 01%3A00%3A00/region=1
@@ -79,7 +79,7 @@ PREHOOK: Input: default@partition_timestamp_1_temp@dt=2001-01-01 01%3A00%3A00/re
 PREHOOK: Input: default@partition_timestamp_1_temp@dt=2001-01-01 02%3A00%3A00/region=1
 PREHOOK: Input: default@partition_timestamp_1_temp@dt=2001-01-01 03%3A00%3A00/region=10
 #### A masked pattern was here ####
-POSTHOOK: query: select distinct dt from partition_timestamp_1_temp
+POSTHOOK: query: select distinct dt from partition_timestamp_1_temp order by dt
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_timestamp_1_temp
 POSTHOOK: Input: default@partition_timestamp_1_temp@dt=2000-01-01 01%3A00%3A00/region=1

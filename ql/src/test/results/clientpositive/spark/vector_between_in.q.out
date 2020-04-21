@@ -264,7 +264,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_date_test
-                  filterExpr: (cdecimal1) IN (2365.8945945946, 881.0135135135, -3367.6517567568) (type: boolean)
+                  filterExpr: ((cdecimal1) IN (2365.8945945946, -3367.6517567568) or (cdecimal1) IN (881.0135135135)) (type: boolean)
                   Statistics: Num rows: 12289 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -272,8 +272,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterDecimalColumnInList(col 1:decimal(20,10), values [2365.8945945946, 881.0135135135, -3367.6517567568])
-                    predicate: (cdecimal1) IN (2365.8945945946, 881.0135135135, -3367.6517567568) (type: boolean)
+                        predicateExpression: FilterExprOrExpr(children: FilterDecimalColumnInList(col 1:decimal(20,10), values [2365.8945945946, -3367.6517567568]), FilterDecimalColumnInList(col 1:decimal(20,10), values [881.0135135135]))
+                    predicate: ((cdecimal1) IN (2365.8945945946, -3367.6517567568) or (cdecimal1) IN (881.0135135135)) (type: boolean)
                     Statistics: Num rows: 12289 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cdecimal1 (type: decimal(20,10))
@@ -1281,13 +1281,13 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                   Select Operator
-                    expressions: (cdecimal1) IN (2365.8945945946, 881.0135135135, -3367.6517567568) (type: boolean)
+                    expressions: ((cdecimal1) IN (2365.8945945946, -3367.6517567568) or (cdecimal1) IN (881.0135135135)) (type: boolean)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [5]
-                        selectExpressions: DecimalColumnInList(col 1:decimal(20,10), values [2365.8945945946, 881.0135135135, -3367.6517567568]) -> 5:boolean
+                        projectedOutputColumnNums: [7]
+                        selectExpressions: ColOrCol(col 5:boolean, col 6:boolean)(children: DecimalColumnInList(col 1:decimal(20,10), values [2365.8945945946, -3367.6517567568]) -> 5:boolean, DecimalColumnInList(col 1:decimal(20,10), values [881.0135135135]) -> 6:boolean) -> 7:boolean
                     Statistics: Num rows: 12289 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
@@ -1295,7 +1295,7 @@ STAGE PLANS:
                           aggregators: VectorUDAFCountStar(*) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          keyExpressions: col 5:boolean
+                          keyExpressions: col 7:boolean
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]

@@ -40,7 +40,7 @@ import org.junit.Test;
 
 public class TestDynamicPartitionPruner {
 
-  @Test(timeout = 5000)
+  @Test(timeout = 20000)
   public void testNoPruning() throws InterruptedException, IOException, HiveException,
       SerDeException {
     InputInitializerContext mockInitContext = mock(InputInitializerContext.class);
@@ -61,7 +61,7 @@ public class TestDynamicPartitionPruner {
     }
   }
 
-  @Test(timeout = 5000)
+  @Test(timeout = 20000)
   public void testSingleSourceOrdering1() throws InterruptedException, IOException, HiveException,
       SerDeException {
     InputInitializerContext mockInitContext = mock(InputInitializerContext.class);
@@ -93,7 +93,7 @@ public class TestDynamicPartitionPruner {
     }
   }
 
-  @Test(timeout = 5000)
+  @Test(timeout = 20000)
   public void testSingleSourceOrdering2() throws InterruptedException, IOException, HiveException,
       SerDeException {
     InputInitializerContext mockInitContext = mock(InputInitializerContext.class);
@@ -125,7 +125,7 @@ public class TestDynamicPartitionPruner {
     }
   }
 
-  @Test(timeout = 5000)
+  @Test(timeout = 20000)
   public void testSingleSourceMultipleFiltersOrdering1() throws InterruptedException, SerDeException {
     InputInitializerContext mockInitContext = mock(InputInitializerContext.class);
     doReturn(2).when(mockInitContext).getVertexNumTasks("v1");
@@ -158,7 +158,7 @@ public class TestDynamicPartitionPruner {
     }
   }
 
-  @Test(timeout = 5000)
+  @Test(timeout = 20000)
   public void testSingleSourceMultipleFiltersOrdering2() throws InterruptedException, SerDeException {
     InputInitializerContext mockInitContext = mock(InputInitializerContext.class);
     doReturn(2).when(mockInitContext).getVertexNumTasks("v1");
@@ -191,7 +191,7 @@ public class TestDynamicPartitionPruner {
     }
   }
 
-  @Test(timeout = 5000)
+  @Test(timeout = 20000)
   public void testMultipleSourcesOrdering1() throws InterruptedException, SerDeException {
     InputInitializerContext mockInitContext = mock(InputInitializerContext.class);
     doReturn(2).when(mockInitContext).getVertexNumTasks("v1");
@@ -235,7 +235,7 @@ public class TestDynamicPartitionPruner {
     }
   }
 
-  @Test(timeout = 5000)
+  @Test(timeout = 20000)
   public void testMultipleSourcesOrdering2() throws InterruptedException, SerDeException {
     InputInitializerContext mockInitContext = mock(InputInitializerContext.class);
     doReturn(2).when(mockInitContext).getVertexNumTasks("v1");
@@ -279,7 +279,7 @@ public class TestDynamicPartitionPruner {
     }
   }
 
-  @Test(timeout = 5000)
+  @Test(timeout = 20000)
   public void testMultipleSourcesOrdering3() throws InterruptedException, SerDeException {
     InputInitializerContext mockInitContext = mock(InputInitializerContext.class);
     doReturn(2).when(mockInitContext).getVertexNumTasks("v1");
@@ -322,7 +322,7 @@ public class TestDynamicPartitionPruner {
     }
   }
 
-  @Test(timeout = 5000, expected = IllegalStateException.class)
+  @Test(timeout = 20000, expected = IllegalStateException.class)
   public void testExtraEvents() throws InterruptedException, IOException, HiveException,
       SerDeException {
     InputInitializerContext mockInitContext = mock(InputInitializerContext.class);

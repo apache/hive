@@ -22,6 +22,7 @@ import static org.junit.Assert.*;
 import java.nio.ByteBuffer;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Predicate;
 
 import org.apache.hadoop.hive.common.io.DataCache;
 import org.apache.hadoop.hive.common.io.DiskRange;
@@ -63,6 +64,11 @@ public class TestOrcMetadataCache {
 
     @Override
     public long purge() {
+      return 0;
+    }
+
+    @Override
+    public long evictEntity(Predicate<LlapCacheableBuffer> predicate) {
       return 0;
     }
 

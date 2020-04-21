@@ -175,6 +175,7 @@ enum LockType {
     SHARED_READ = 1,
     SHARED_WRITE = 2,
     EXCLUSIVE = 3,
+    EXCL_WRITE = 4,
 }
 
 enum CompactionType {

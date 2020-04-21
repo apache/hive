@@ -536,7 +536,7 @@ STAGE PLANS:
                               isPivotResult: true
                   Statistics: Num rows: 383325119 Data size: 33817053293 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((_col0 > 0) and rank_window_1 is not null and (_col5 = 2000)) (type: boolean)
+                    predicate: (rank_window_1 is not null and (_col0 > 0) and (_col5 = 2000)) (type: boolean)
                     Statistics: Num rows: 63887519 Data size: 5636175475 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: rank_window_1 (type: int), _col0 (type: decimal(21,6)), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: int), _col7 (type: decimal(17,2))

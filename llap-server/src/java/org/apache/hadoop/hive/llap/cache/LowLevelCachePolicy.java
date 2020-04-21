@@ -18,6 +18,9 @@
 
 package org.apache.hadoop.hive.llap.cache;
 
+
+import java.util.function.Predicate;
+
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 
 /**
@@ -75,4 +78,11 @@ public interface LowLevelCachePolicy extends LlapIoDebugDump {
    * @return amount (bytes) of memory evicted.
    */
   long purge();
+
+  /**
+   * Evicts buffers that match true for the supplied predicate.
+   * @param predicate the predicate buffers will be matched against.
+   * @return evicted byte count
+   */
+  long evictEntity(Predicate<LlapCacheableBuffer> predicate);
 }

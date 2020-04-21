@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.junit.Assert;
-import junit.framework.TestCase;
 import org.apache.avro.Schema;
 import org.apache.avro.file.DataFileWriter;
 import org.apache.avro.generic.GenericData;
@@ -556,15 +555,15 @@ public class TestHBaseSerDe {
 
     byte [][][] columnQualifiersAndValues = new byte [][][] {
         {Bytes.toBytes(1), new byte [] {1}, Bytes.toBytes((short) 1),
-         Bytes.toBytes((long) 1), Bytes.toBytes((float) 1.0F), Bytes.toBytes(1.0),
+         Bytes.toBytes((long) 1), Bytes.toBytes(1.0F), Bytes.toBytes(1.0),
          Bytes.toBytes(true)},
         {Bytes.toBytes(Integer.MIN_VALUE), new byte [] {Byte.MIN_VALUE},
-         Bytes.toBytes((short) Short.MIN_VALUE), Bytes.toBytes((long) Long.MIN_VALUE),
-         Bytes.toBytes((float) Float.MIN_VALUE), Bytes.toBytes(Double.MIN_VALUE),
+         Bytes.toBytes(Short.MIN_VALUE), Bytes.toBytes(Long.MIN_VALUE),
+         Bytes.toBytes(Float.MIN_VALUE), Bytes.toBytes(Double.MIN_VALUE),
          Bytes.toBytes(false)},
         {Bytes.toBytes(Integer.MAX_VALUE), new byte [] {Byte.MAX_VALUE},
-         Bytes.toBytes((short) Short.MAX_VALUE), Bytes.toBytes((long) Long.MAX_VALUE),
-         Bytes.toBytes((float) Float.MAX_VALUE), Bytes.toBytes(Double.MAX_VALUE),
+         Bytes.toBytes(Short.MAX_VALUE), Bytes.toBytes(Long.MAX_VALUE),
+         Bytes.toBytes(Float.MAX_VALUE), Bytes.toBytes(Double.MAX_VALUE),
          Bytes.toBytes(true)}
     };
 

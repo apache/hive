@@ -1089,14 +1089,14 @@ STAGE PLANS:
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 3
-                    dataColumns: KEY._col0:int, VALUE._col0:decimal(17,2), VALUE._col1:decimal(17,2)
+                    dataColumns: KEY._col0:int, VALUE._col0:decimal(17,2)/DECIMAL_64, VALUE._col1:decimal(17,2)/DECIMAL_64
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0), sum(VALUE._col1)
                 Group By Vectorization:
-                    aggregators: VectorUDAFSumDecimal(col 1:decimal(17,2)) -> decimal(17,2), VectorUDAFSumDecimal(col 2:decimal(17,2)) -> decimal(17,2)
+                    aggregators: VectorUDAFSumDecimal64(col 1:decimal(17,2)/DECIMAL_64) -> decimal(17,2)/DECIMAL_64, VectorUDAFSumDecimal64(col 2:decimal(17,2)/DECIMAL_64) -> decimal(17,2)/DECIMAL_64
                     className: VectorGroupByOperator
                     groupByMode: PARTIAL2
                     keyExpressions: col 0:int
@@ -1110,7 +1110,7 @@ STAGE PLANS:
                 Group By Operator
                   aggregations: count(_col0), sum(_col1), sum(_col2)
                   Group By Vectorization:
-                      aggregators: VectorUDAFCount(col 0:int) -> bigint, VectorUDAFSumDecimal(col 1:decimal(17,2)) -> decimal(17,2), VectorUDAFSumDecimal(col 2:decimal(17,2)) -> decimal(17,2)
+                      aggregators: VectorUDAFCount(col 0:int) -> bigint, VectorUDAFSumDecimal64(col 1:decimal(17,2)/DECIMAL_64) -> decimal(17,2)/DECIMAL_64, VectorUDAFSumDecimal64(col 2:decimal(17,2)/DECIMAL_64) -> decimal(17,2)/DECIMAL_64
                       className: VectorGroupByOperator
                       groupByMode: PARTIAL2
                       native: false
@@ -1141,14 +1141,14 @@ STAGE PLANS:
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 3
-                    dataColumns: VALUE._col0:bigint, VALUE._col1:decimal(17,2), VALUE._col2:decimal(17,2)
+                    dataColumns: VALUE._col0:bigint, VALUE._col1:decimal(17,2)/DECIMAL_64, VALUE._col2:decimal(17,2)/DECIMAL_64
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0), sum(VALUE._col1), sum(VALUE._col2)
                 Group By Vectorization:
-                    aggregators: VectorUDAFCountMerge(col 0:bigint) -> bigint, VectorUDAFSumDecimal(col 1:decimal(17,2)) -> decimal(17,2), VectorUDAFSumDecimal(col 2:decimal(17,2)) -> decimal(17,2)
+                    aggregators: VectorUDAFCountMerge(col 0:bigint) -> bigint, VectorUDAFSumDecimal64(col 1:decimal(17,2)/DECIMAL_64) -> decimal(17,2)/DECIMAL_64, VectorUDAFSumDecimal64(col 2:decimal(17,2)/DECIMAL_64) -> decimal(17,2)/DECIMAL_64
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
                     native: false

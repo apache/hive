@@ -28,7 +28,6 @@ import org.apache.calcite.adapter.druid.DruidExpressions;
 import org.apache.calcite.adapter.druid.DruidQuery;
 import org.apache.calcite.adapter.druid.ExtractOperatorConversion;
 import org.apache.calcite.adapter.druid.FloorOperatorConversion;
-import org.apache.calcite.adapter.druid.UnarySuffixOperatorConversion;
 import org.apache.calcite.config.CalciteConnectionConfig;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexCall;
@@ -48,7 +47,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFloorDate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFromUnixTimeSqlOperator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveToDateSqlOperator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTruncSqlOperator;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnixTimestampSqlOperator;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveToUnixTimestampSqlOperator;
 import org.joda.time.Period;
 
 import javax.annotation.Nullable;
@@ -97,7 +96,7 @@ public class DruidSqlOperatorConverter {
       druidOperatorMap.put(HiveTruncSqlOperator.INSTANCE, new DruidDateTruncOperatorConversion());
       druidOperatorMap.put(HiveToDateSqlOperator.INSTANCE, new DruidToDateOperatorConversion());
       druidOperatorMap.put(HiveFromUnixTimeSqlOperator.INSTANCE, new DruidFormUnixTimeOperatorConversion());
-      druidOperatorMap.put(HiveUnixTimestampSqlOperator.INSTANCE, new DruidUnixTimestampOperatorConversion());
+      druidOperatorMap.put(HiveToUnixTimestampSqlOperator.INSTANCE, new DruidUnixTimestampOperatorConversion());
       druidOperatorMap.put(HiveDateAddSqlOperator.INSTANCE,
           new DruidDateArithmeticOperatorConversion(1, HiveDateAddSqlOperator.INSTANCE)
       );
@@ -251,7 +250,7 @@ public class DruidSqlOperatorConverter {
       implements org.apache.calcite.adapter.druid.DruidSqlOperatorConverter {
 
     @Override public SqlOperator calciteOperator() {
-      return HiveUnixTimestampSqlOperator.INSTANCE;
+      return HiveToUnixTimestampSqlOperator.INSTANCE;
     }
 
     @Nullable @Override public String toDruidExpression(RexNode rexNode, RelDataType rowType, DruidQuery query

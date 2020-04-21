@@ -78,63 +78,63 @@ public class TestTypeCheckProcFactory {
     testSubject = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor();
   }
 
-  public void testOneCase(Object constValue) {
+  public void testOneCase(Object constValue) throws Exception {
     Mockito.when(nodeDesc.getValue()).thenReturn(constValue);
     Mockito.when(typeInfo.getPrimitiveTypeEntry()).thenReturn(constType);
 
-    ExprNodeConstantDesc result = (ExprNodeConstantDesc) testSubject.interpretNodeAs(typeInfo, nodeDesc);
+    ExprNodeConstantDesc result = (ExprNodeConstantDesc) testSubject.interpretNodeAsConstant(typeInfo, nodeDesc);
 
     Assert.assertNotNull(result);
     Assert.assertEquals(expectedValue, result.getValue());
   }
 
-  public void testNullCase(Object constValue) {
+  public void testNullCase(Object constValue) throws Exception {
     Mockito.when(nodeDesc.getValue()).thenReturn(constValue);
     Mockito.when(typeInfo.getPrimitiveTypeEntry()).thenReturn(constType);
 
-    ExprNodeConstantDesc result = (ExprNodeConstantDesc) testSubject.interpretNodeAs(typeInfo, nodeDesc);
+    ExprNodeConstantDesc result = (ExprNodeConstantDesc) testSubject.interpretNodeAsConstant(typeInfo, nodeDesc);
 
     Assert.assertNull(result);
   }
 
   @Test
-  public void testWithSring() {
+  public void testWithSring() throws Exception {
     testOneCase(maxValue.toString());
   }
 
   @Test
-  public void testWithLSuffix() {
+  public void testWithLSuffix() throws Exception {
     if (intType) {
       testOneCase(maxValue.toString() + "L");
     }
   }
 
   @Test
-  public void testWithZeroFraction() {
+  public void testWithZeroFraction() throws Exception {
     if (intType) {
       testOneCase(maxValue.toString() + ".0");
     }
   }
 
   @Test
-  public void testWithFSuffix() {
+  public void testWithFSuffix() throws Exception {
     testOneCase(maxValue.toString() + "f");
   }
 
   @Test
-  public void testWithDSuffix() {
+  public void testWithDSuffix() throws Exception {
     testOneCase(maxValue.toString() + "D");
   }
 
   @Test
-  public void testOverflow() {
+  public void testOverflow() throws Exception {
     if (intType) {
       testNullCase(maxValue.add(BigDecimal.valueOf(1L)).toString());
     }
   }
 
   @Test
-  public void testWithNonZeroFraction() {
+  public void testWithNonZeroFraction() throws Exception {
     if (intType) {
       testNullCase("100.1");
     }

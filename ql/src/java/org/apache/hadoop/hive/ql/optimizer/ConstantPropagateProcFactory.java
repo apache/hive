@@ -235,7 +235,6 @@ public final class ConstantPropagateProcFactory {
   }
 
   public static ExprNodeDesc foldExpr(ExprNodeGenericFuncDesc funcDesc) {
-
     GenericUDF udf = funcDesc.getGenericUDF();
     if (!isConstantFoldableUdf(udf, funcDesc.getChildren())) {
       return funcDesc;

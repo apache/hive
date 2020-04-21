@@ -231,6 +231,26 @@ message SetCapacityRequestProto {
 message SetCapacityResponseProto {
 }
 
+// Used for proactive eviction request. Must contain one DB name, and optionally table information.
+message EvictEntityRequestProto {
+  required string db_name = 1;
+  repeated TableProto table = 2;
+}
+
+// Used in EvictEntityRequestProto, can be used for non-partitioned and partitioned tables too.
+// For the latter part_key contains only the keys, part_val has the values for all partitions on all keys:
+// e.g.: for partitions pk0=p00/pk1=p01/pk2=p02 and pk0=p10/pk1=p11/pk2=p12
+// part_key: [pk0, pk1, pk2], part_val: [p00, p01, p02, p10, p11, p12]
+message TableProto {
+  required string table_name = 1;
+  repeated string part_key = 2;
+  repeated string part_val = 3;
+}
+
+message EvictEntityResponseProto {
+  required int64 evicted_bytes = 1;
+}
+
 service LlapDaemonProtocol {
   rpc registerDag(RegisterDagRequestProto) returns (RegisterDagResponseProto);
   rpc submitWork(SubmitWorkRequestProto) returns (SubmitWorkResponseProto);
@@ -241,8 +261,9 @@ service LlapDaemonProtocol {
 }
 
 service LlapManagementProtocol {
-  rpc getDelegationToken(GetTokenRequestProto) returns (GetTokenResponseProto);
-  rpc purgeCache(PurgeCacheRequestProto) returns (PurgeCacheResponseProto);
-  rpc getDaemonMetrics(GetDaemonMetricsRequestProto) returns (GetDaemonMetricsResponseProto);
-  rpc setCapacity(SetCapacityRequestProto) returns (SetCapacityResponseProto);
+  rpc getDelegationToken (GetTokenRequestProto) returns (GetTokenResponseProto);
+  rpc purgeCache (PurgeCacheRequestProto) returns (PurgeCacheResponseProto);
+  rpc getDaemonMetrics (GetDaemonMetricsRequestProto) returns (GetDaemonMetricsResponseProto);
+  rpc setCapacity (SetCapacityRequestProto) returns (SetCapacityResponseProto);
+  rpc evictEntity (EvictEntityRequestProto) returns (EvictEntityResponseProto);
 }
