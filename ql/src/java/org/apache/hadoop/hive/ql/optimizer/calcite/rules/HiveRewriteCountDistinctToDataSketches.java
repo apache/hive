@@ -144,7 +144,7 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
 
     private void rewriteCountDistinct(AggregateCall aggCall) {
 
-      SqlAggFunction aggFunction = getDS_FN(aggCall.getAggregation());
+      SqlAggFunction aggFunction = (SqlAggFunction) getSqlOperator(DataSketchesFunctions.DATA_TO_SKETCH);
       boolean distinct = false;
       boolean approximate = true;
       boolean ignoreNulls = aggCall.ignoreNulls();
@@ -155,23 +155,11 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
       RelNode input = aggregate.getInput();
       RelDataType type = aggCall.getType(); // FIXME: this is not true!
       String name = aggFunction.getName();
-      //      AggregateCall ret = null;
+
       AggregateCall ret = AggregateCall.create(aggFunction, distinct, approximate, ignoreNulls, argList, filterArg,
           collation, groupCount, input, type, name);
-      //    aggCall
-      //    aggCall.copy(aggCall.getArgList(), aggCall.filterArg, aggCall.getCollation());
 
-      appendAggCall(ret, createSqlOperator());
-
-      //    projExpressions.add();
-    }
-
-    private SqlOperator createSqlOperator() {
-      return getSqlOperator(DataSketchesFunctions.SKETCH_TO_ESTIMATE);
-    }
-
-    private SqlAggFunction getDS_FN(SqlAggFunction oldAggFunction) {
-      return (SqlAggFunction) getSqlOperator(DataSketchesFunctions.DATA_TO_SKETCH);
+      appendAggCall(ret, getSqlOperator(DataSketchesFunctions.SKETCH_TO_ESTIMATE));
     }
 
     private SqlOperator getSqlOperator(String fnName) {
@@ -182,9 +170,5 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
       }
       return fn.getCalciteFunction().get();
     }
-
   }
-
 }
-
-// End AggregateExpandDistinctAggregatesRule.java
