@@ -17,6 +17,7 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
@@ -153,7 +154,7 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
       RelCollation collation = aggCall.getCollation();
       int groupCount = aggregate.getGroupCount();
       RelNode input = aggregate.getInput();
-      RelDataType type = aggCall.getType(); // FIXME: this is not true!
+      RelDataType type = rexBuilder.deriveReturnType(aggFunction, Collections.emptyList());
       String name = aggFunction.getName();
 
       AggregateCall ret = AggregateCall.create(aggFunction, distinct, approximate, ignoreNulls, argList, filterArg,

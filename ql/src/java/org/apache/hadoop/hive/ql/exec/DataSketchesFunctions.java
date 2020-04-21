@@ -31,7 +31,6 @@ import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.type.InferTypes;
 import org.apache.calcite.sql.type.OperandTypes;
 import org.apache.calcite.sql.type.ReturnTypes;
-import org.apache.calcite.sql.type.SqlOperandTypeInference;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveMergeableAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSqlFunction;
@@ -142,18 +141,23 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
           OperandTypes.family(),
           unionFn);
 
-          SqlOperandTypeInference xx=InferTypes.ANY_NULLABLE;
-      SqlFunction estimateFn=new HiveSqlFunction(estimateSFD.name, SqlKind.OTHER_FUNCTION,
-              ReturnTypes.explicit(SqlTypeName.DOUBLE),
-              xx, OperandTypes.family(),
-              SqlFunctionCategory.USER_DEFINED_FUNCTION, true, false);
 
       unionSFD.setCalciteFunction(unionFn);
       sketchSFD.setCalciteFunction(sketchFn);
-      estimateSFD.setCalciteFunction(estimateFn);
+      if (estimateSFD != null) {
+        SqlFunction estimateFn = new HiveSqlFunction(estimateSFD.name,
+            SqlKind.OTHER_FUNCTION,
+            ReturnTypes.explicit(SqlTypeName.DOUBLE),
+            InferTypes.ANY_NULLABLE,
+            OperandTypes.family(),
+            SqlFunctionCategory.USER_DEFINED_FUNCTION,
+            true,
+            false);
 
-    }  }
-
+        estimateSFD.setCalciteFunction(estimateFn);
+      }
+    }
+  }
 
   private void registerHiveFunctionsInternal(Registry system) {
     for (SketchDescriptor sketchDescriptor : sketchClasses.values()) {
