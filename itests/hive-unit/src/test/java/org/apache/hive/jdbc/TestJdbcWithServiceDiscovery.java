@@ -68,14 +68,14 @@ public class TestJdbcWithServiceDiscovery {
     MiniHS2.cleanupLocalDir();
     zkServer = new TestingServer();
 
-    // Create one MiniHS2 with Tez and one with Local FS only
-    HiveConf hiveConf1 = getTezConf();
+    // Create one MiniHS2 with miniMRCluster and one with Local FS only
+    HiveConf hiveConf1 = loadConf();
     HiveConf hiveConf2 = new HiveConf();
 
     setSDConfigs(hiveConf1);
     setSDConfigs(hiveConf2);
 
-    miniHS2server1 = new MiniHS2.Builder().withConf(hiveConf1).withMiniTez().build();
+    miniHS2server1 = new MiniHS2.Builder().withConf(hiveConf1).withMiniMR().build();
     miniHS2server2 = new MiniHS2.Builder().withConf(hiveConf2).cleanupLocalDirOnStartup(false).build();
 
     Class.forName(MiniHS2.getJdbcDriverName());
@@ -148,14 +148,11 @@ public class TestJdbcWithServiceDiscovery {
     MiniHS2.cleanupLocalDir();
   }
 
-  private static HiveConf getTezConf() throws Exception {
-    String confDir = "../../data/conf/tez/";
+  private static HiveConf loadConf() throws Exception {
+    String confDir = "../../data/conf/";
     HiveConf.setHiveSiteLocation(new URL("file://" + new File(confDir).toURI().getPath() + "/hive-site.xml"));
     System.out.println("Setting hive-site: " + HiveConf.getHiveSiteLocation());
     HiveConf defaultConf = new HiveConf();
-    defaultConf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
-    defaultConf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);
-    defaultConf.addResource(new URL("file://" + new File(confDir).toURI().getPath() + "/tez-site.xml"));
     return defaultConf;
   }
 
@@ -193,7 +190,7 @@ public class TestJdbcWithServiceDiscovery {
         LOG.info("Executing waiting query.");
         // The test table has 500 rows, so total query time should be ~ 500*500ms
         stmt.executeAsync(
-            "select sleepMsUDF(t1.int_col, 10), t1.int_col, t2.int_col " + "from " + TABLE_NAME + " t1 join "
+            "select sleepMsUDF(t1.int_col, 1), t1.int_col, t2.int_col " + "from " + TABLE_NAME + " t1 join "
                 + TABLE_NAME + " t2 on t1.int_col = t2.int_col");
         stmtQueryId.append(stmt.getQueryId());
         stmt.getUpdateCount();
@@ -208,7 +205,7 @@ public class TestJdbcWithServiceDiscovery {
     int count = 0;
     while (count < 10) {
       try {
-        Thread.sleep(2000);
+        Thread.sleep(500);
         String queryId;
         if (stmtQueryId.length() != 0) {
           queryId = stmtQueryId.toString();
