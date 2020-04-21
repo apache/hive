@@ -185,7 +185,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
   private static DataSource connPool;
   private static DataSource connPoolMutex;
-  private static boolean doRetryOnConnPool = false;
 
   // Query definitions
   private static final String HIVE_LOCKS_INSERT_QRY = "INSERT INTO \"HIVE_LOCKS\" ( " +
@@ -2304,9 +2303,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
   /**
    * As much as possible (i.e. in absence of retries) we want both operations to be done on the same
-   * connection (but separate transactions).  This avoid some flakiness in BONECP where if you
-   * perform an operation on 1 connection and immediately get another from the pool, the 2nd one
-   * doesn't see results of the first.
+   * connection (but separate transactions).
    *
    * Retry-by-caller note: If the call to lock is from a transaction, then in the worst case
    * there will be a duplicate set of locks but both sets will belong to the same txn so they
@@ -3772,21 +3769,17 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   Connection getDbConn(int isolationLevel) throws SQLException {
     return getDbConn(isolationLevel, connPool);
   }
+
   private Connection getDbConn(int isolationLevel, DataSource connPool) throws SQLException {
-    int rc = doRetryOnConnPool ? 10 : 1;
     Connection dbConn = null;
-    while (true) {
-      try {
-        dbConn = connPool.getConnection();
-        dbConn.setAutoCommit(false);
-        dbConn.setTransactionIsolation(isolationLevel);
-        return dbConn;
-      } catch (SQLException e){
-        closeDbConn(dbConn);
-        if ((--rc) <= 0) throw e;
-        LOG.error("There is a problem with a connection from the pool, retrying(rc=" + rc + "): " +
-          getMessage(e), e);
-      }
+    try {
+      dbConn = connPool.getConnection();
+      dbConn.setAutoCommit(false);
+      dbConn.setTransactionIsolation(isolationLevel);
+      return dbConn;
+    } catch (SQLException e) {
+      closeDbConn(dbConn);
+      throw e;
     }
   }
 
@@ -4943,7 +4936,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   private static synchronized DataSource setupJdbcConnectionPool(Configuration conf, int maxPoolSize, long getConnectionTimeoutMs) throws SQLException {
     DataSourceProvider dsp = DataSourceProviderFactory.tryGetDataSourceProviderOrNull(conf);
     if (dsp != null) {
-      doRetryOnConnPool = dsp.mayReturnClosedConnection();
       return dsp.create(conf);
     } else {
       String connectionPooler = MetastoreConf.getVar(conf, ConfVars.CONNECTION_POOLING_TYPE).toLowerCase();

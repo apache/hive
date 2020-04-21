@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.ddl.database.drop;
 
+import org.apache.hadoop.hive.llap.LlapHiveUtils;
+import org.apache.hadoop.hive.llap.ProactiveEviction;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -48,6 +50,13 @@ public class DropDatabaseOperation extends DDLOperation<DropDatabaseDesc> {
       }
 
       context.getDb().dropDatabase(dbName, true, desc.getIfExists(), desc.isCasdade());
+
+      if (LlapHiveUtils.isLlapMode(context.getConf())) {
+        ProactiveEviction.Request.Builder llapEvictRequestBuilder =
+            ProactiveEviction.Request.Builder.create();
+        llapEvictRequestBuilder.addDb(dbName);
+        ProactiveEviction.evict(context.getConf(), llapEvictRequestBuilder.build());
+      }
       // Unregister the functions as well
       if (desc.isCasdade()) {
         FunctionRegistry.unregisterPermanentFunctions(dbName);
