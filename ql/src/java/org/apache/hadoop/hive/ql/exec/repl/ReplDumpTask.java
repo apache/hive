@@ -142,16 +142,17 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
                 Base64.getEncoder().encodeToString(work.dbNameOrPattern.toLowerCase()
                         .getBytes(StandardCharsets.UTF_8.name())));
         Path previousValidHiveDumpPath = getPreviousValidDumpMetadataPath(dumpRoot);
+        boolean isBootstrap = (previousValidHiveDumpPath == null);
         //If no previous dump is present or previous dump is already loaded, proceed with the dump operation.
         if (shouldDump(previousValidHiveDumpPath)) {
-          Path currentDumpPath = getCurrentDumpPath(dumpRoot, previousValidHiveDumpPath);
+          Path currentDumpPath = getCurrentDumpPath(dumpRoot, isBootstrap);
           Path hiveDumpRoot = new Path(currentDumpPath, ReplUtils.REPL_HIVE_BASE_DIR);
           DumpMetaData dmd = new DumpMetaData(hiveDumpRoot, conf);
           // Initialize ReplChangeManager instance since we will require it to encode file URI.
           ReplChangeManager.getInstance(conf);
           Path cmRoot = new Path(conf.getVar(HiveConf.ConfVars.REPLCMDIR));
           Long lastReplId;
-          if (previousValidHiveDumpPath == null) {
+          if (isBootstrap) {
             lastReplId = bootStrapDump(hiveDumpRoot, dmd, cmRoot, hiveDb);
           } else {
             work.setEventFrom(getEventFromPreviousDumpMetadata(previousValidHiveDumpPath));
@@ -172,9 +173,9 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return 0;
   }
 
-  private Path getCurrentDumpPath(Path dumpRoot, Path previousValidHiveDumpPath) throws IOException {
+  private Path getCurrentDumpPath(Path dumpRoot, boolean isBootstrap) throws IOException {
     Path lastDumpPath = getLatestDumpPath(dumpRoot);
-    if (lastDumpPath != null && shouldResumePreviousDump(lastDumpPath, previousValidHiveDumpPath)) {
+    if (lastDumpPath != null && shouldResumePreviousDump(lastDumpPath, isBootstrap)) {
       //Resume previous dump
       LOG.info("Resuming the dump with existing dump directory {}", lastDumpPath);
       return lastDumpPath;
@@ -439,11 +440,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     lastReplId = work.eventTo;
 
     Path ackFile = new Path(dumpRoot, ReplAck.EVENTS_DUMP.toString());
-    Long resumeFrom = work.eventFrom;
-    boolean ackExisted = Utils.create(ackFile, conf, true);
-    if (ackExisted) {
-      resumeFrom = getResumeFrom(ackFile, work.eventFrom);
-    }
+    Long resumeFrom = Utils.fileExists(ackFile, conf) ? getResumeFrom(ackFile, work.eventFrom) : work.eventFrom;
 
     // Right now the only pattern allowed to be specified is *, which matches all the database
     // names. So passing dbname as is works since getDbNotificationEventsCount can exclude filter
@@ -827,17 +824,17 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     }
   }
 
-  private boolean shouldResumePreviousDump(Path lastDumpPath, Path previousValidHiveDumpPath) throws IOException {
+  private boolean shouldResumePreviousDump(Path lastDumpPath, boolean isBootStrap) throws IOException {
     if (validDump(lastDumpPath)) {
       return false;
     }
-    // In case of incremental _dumpmetadata may not be present, still we should resume.
-    if (previousValidHiveDumpPath != null) {
-      return true;
-    } else {
-      Path hiveDumpPath = new Path(lastDumpPath, ReplUtils.REPL_HIVE_BASE_DIR);
+    Path hiveDumpPath = new Path(lastDumpPath, ReplUtils.REPL_HIVE_BASE_DIR);
+    if (isBootStrap) {
       return shouldResumePreviousDump(new DumpMetaData(hiveDumpPath, conf));
     }
+    // In case of incremental we should resume if _events_dump file is present
+    Path lastEventFile = new Path(hiveDumpPath, ReplAck.EVENTS_DUMP.toString());
+    return FileSystem.get(lastEventFile.toUri(), conf).exists(lastEventFile);
   }
 
   long currentNotificationId(Hive hiveDb) throws TException {
@@ -958,10 +955,11 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       // make it easy to write .q unit tests, instead of unique id generation.
       // however, this does mean that in writing tests, we have to be aware that
       // repl dump will clash with prior dumps, and thus have to clean up properly.
-      if (ReplDumpWork.testInjectDumpDir == null) {
+      String nextDump = ReplDumpWork.getInjectNextDumpDirForTest();
+      if (nextDump == null) {
         return "next";
       } else {
-        return ReplDumpWork.testInjectDumpDir;
+        return nextDump;
       }
     } else {
       return UUID.randomUUID().toString();

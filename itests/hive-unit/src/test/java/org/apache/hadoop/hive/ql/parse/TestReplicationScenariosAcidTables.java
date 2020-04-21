@@ -701,15 +701,16 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
 
     fs.delete(ackFile, false);
 
-    Map<String, Long> eventModTimeMap = new HashMap<>();
     long firstIncEventID = Long.parseLong(bootstrapDump.lastReplicationId) + 1;
     long lastIncEventID = Long.parseLong(incrementalDump1.lastReplicationId);
     assertTrue(lastIncEventID > (firstIncEventID + 1));
-
+    Map<Path, Long> pathModTimeMap = new HashMap<>();
     for (long eventId=firstIncEventID; eventId<=lastIncEventID; eventId++) {
       Path eventRoot = new Path(hiveDumpDir, String.valueOf(eventId));
       if (fs.exists(eventRoot)) {
-        eventModTimeMap.put(String.valueOf(eventId), fs.getFileStatus(eventRoot).getModificationTime());
+        for (FileStatus fileStatus: fs.listStatus(eventRoot)) {
+          pathModTimeMap.put(fileStatus.getPath(), fileStatus.getModificationTime());
+        }
       }
     }
 
@@ -719,10 +720,8 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assertEquals(incrementalDump1.dumpLocation, incrementalDump2.dumpLocation);
     assertTrue(fs.exists(ackFile));
     //check events were not rewritten.
-    for(Map.Entry<String, Long> entry :eventModTimeMap.entrySet()) {
-      long oldModTime = entry.getValue();
-      long newModTime = fs.getFileStatus(new Path(hiveDumpDir, entry.getKey())).getModificationTime();
-      assertEquals(oldModTime, newModTime);
+    for(Map.Entry<Path, Long> entry :pathModTimeMap.entrySet()) {
+      assertEquals((long)entry.getValue(), fs.getFileStatus(new Path(hiveDumpDir, entry.getKey())).getModificationTime());
     }
 
     replica.load(replicatedDbName, primaryDbName)
@@ -757,6 +756,15 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assertTrue(fs.exists(secondLastEvtRoot));
     assertTrue(fs.exists(thirdLastEvtRoot));
 
+    pathModTimeMap = new HashMap<>();
+    for (long idx = Long.parseLong(incrementalDump2.lastReplicationId)+1; idx < (lastEventID - 2); idx ++) {
+      Path eventRoot  = new Path(hiveDumpDir, String.valueOf(idx));
+      if (fs.exists(eventRoot)) {
+        for (FileStatus fileStatus: fs.listStatus(eventRoot)) {
+          pathModTimeMap.put(fileStatus.getPath(), fileStatus.getModificationTime());
+        }
+      }
+    }
     long lastEvtModTimeOld = fs.getFileStatus(lastEvtRoot).getModificationTime();
     long secondLastEvtModTimeOld = fs.getFileStatus(secondLastEvtRoot).getModificationTime();
     long thirdLastEvtModTimeOld = fs.getFileStatus(thirdLastEvtRoot).getModificationTime();
@@ -788,11 +796,62 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assertTrue(fs.getFileStatus(secondLastEvtRoot).getModificationTime() > secondLastEvtModTimeOld);
     assertTrue(fs.getFileStatus(thirdLastEvtRoot).getModificationTime() > thirdLastEvtModTimeOld);
 
+    //Check other event dump files have not been modified.
+    for (Map.Entry<Path, Long> entry:pathModTimeMap.entrySet()) {
+      assertEquals((long)entry.getValue(), fs.getFileStatus(entry.getKey()).getModificationTime());
+    }
+
     replica.load(replicatedDbName, primaryDbName)
             .run("select * from " + replicatedDbName + ".t1")
             .verifyResults(new String[] {"1", "3"})
             .run("select * from " + replicatedDbName + ".t2")
             .verifyResults(new String[] {"2", "4"});
+  }
+
+  @Test
+  public void testIncrementalResumeDump() throws Throwable {
+    WarehouseInstance.Tuple bootstrapDump = primary.run("use " + primaryDbName)
+            .run("CREATE TABLE t1(a string) STORED AS TEXTFILE")
+            .dump(primaryDbName);
+
+    replica.load(replicatedDbName, primaryDbName)
+            .run("select * from " + replicatedDbName + ".t1")
+            .verifyResults(new String[] {});
+
+    ReplDumpWork.testDeletePreviousDumpMetaPath(true);
+
+    WarehouseInstance.Tuple incrementalDump1 = primary.run("use " + primaryDbName)
+            .run("insert into t1 values (1)")
+            .dump(primaryDbName);
+
+    Path hiveDumpDir = new Path(incrementalDump1.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    Path ackFile = new Path(hiveDumpDir, ReplAck.DUMP_ACKNOWLEDGEMENT.toString());
+    Path ackLastEventID = new Path(hiveDumpDir, ReplAck.EVENTS_DUMP.toString());
+    Path dumpMetaData = new Path(hiveDumpDir, "_dumpmetadata");
+
+    FileSystem fs = FileSystem.get(hiveDumpDir.toUri(), primary.hiveConf);
+    assertTrue(fs.exists(ackFile));
+    assertTrue(fs.exists(ackLastEventID));
+    assertTrue(fs.exists(dumpMetaData));
+
+    fs.delete(ackLastEventID, false);
+    fs.delete(ackFile, false);
+    //delete only last event root dir
+    Path lastEventRoot = new Path(hiveDumpDir, String.valueOf(incrementalDump1.lastReplicationId));
+    assertTrue(fs.exists(lastEventRoot));
+    fs.delete(lastEventRoot, true);
+
+    // It should create a fresh dump dir as _events_dump doesn't exist.
+    WarehouseInstance.Tuple incrementalDump2 = primary.run("use " + primaryDbName)
+            .dump(primaryDbName);
+    assertTrue(incrementalDump1.dumpLocation != incrementalDump2.dumpLocation);
+    assertTrue(incrementalDump1.lastReplicationId != incrementalDump2.lastReplicationId);
+    assertTrue(fs.getFileStatus(new Path(incrementalDump2.dumpLocation)).getModificationTime()
+            > fs.getFileStatus(new Path(incrementalDump1.dumpLocation)).getModificationTime());
+
+    replica.load(replicatedDbName, primaryDbName)
+            .run("select * from " + replicatedDbName + ".t1")
+            .verifyResults(new String[] {"1"});
   }
 
   @Test
@@ -819,7 +878,6 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
 
     FileSystem fs = FileSystem.get(hiveDumpDir.toUri(), primary.hiveConf);
     assertTrue(fs.exists(ackFile));
-    assertTrue(fs.exists(ackLastEventID));
     assertTrue(fs.exists(dumpMetaData));
 
     fs.delete(ackFile, false);
@@ -855,6 +913,79 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             .verifyResults(new String[] {"1"});
   }
 
+  @Test
+  public void testCheckpointingIncrWithTableDrop() throws Throwable {
+    WarehouseInstance.Tuple bootstrapDump = primary.run("use " + primaryDbName)
+            .run("CREATE TABLE t1(a string) STORED AS TEXTFILE")
+            .run("insert into t1 values (1)")
+            .run("CREATE TABLE t2(a string) STORED AS TEXTFILE")
+            .run("insert into t2 values (2)")
+            .dump(primaryDbName);
+
+    replica.load(replicatedDbName, primaryDbName)
+            .run("select * from " + replicatedDbName + ".t1")
+            .verifyResults(new String[] {"1"})
+            .run("select * from " + replicatedDbName + ".t2")
+            .verifyResults(new String[] {"2"})
+            .verifyResults(new String[] {});
+
+
+    ReplDumpWork.testDeletePreviousDumpMetaPath(true);
+
+    WarehouseInstance.Tuple incrementalDump1 = primary.run("use " + primaryDbName)
+            .run("CREATE TABLE t3(a string) STORED AS TEXTFILE")
+            .run("insert into t3 values (3)")
+            .run("insert into t1 values (4)")
+            .run("DROP TABLE t2")
+            .dump(primaryDbName);
+
+    Path hiveDumpDir = new Path(incrementalDump1.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    Path ackFile = new Path(hiveDumpDir, ReplAck.DUMP_ACKNOWLEDGEMENT.toString());
+    Path ackLastEventID = new Path(hiveDumpDir, ReplAck.EVENTS_DUMP.toString());
+    Path dumpMetaData = new Path(hiveDumpDir, "_dumpmetadata");
+
+    FileSystem fs = FileSystem.get(hiveDumpDir.toUri(), primary.hiveConf);
+    assertTrue(fs.exists(ackFile));
+    assertTrue(fs.exists(dumpMetaData));
+
+    fs.delete(ackFile, false);
+    fs.delete(dumpMetaData, false);
+    //delete last five events
+    long fifthLastIncEventID = Long.parseLong(incrementalDump1.lastReplicationId) - 4;
+    long lastIncEventID = Long.parseLong(incrementalDump1.lastReplicationId);
+    assertTrue(lastIncEventID > fifthLastIncEventID );
+
+    for (long eventId=fifthLastIncEventID + 1; eventId<=lastIncEventID; eventId++) {
+      Path eventRoot = new Path(hiveDumpDir, String.valueOf(eventId));
+      if (fs.exists(eventRoot)) {
+        fs.delete(eventRoot, true);
+      }
+    }
+
+    List<List<String>> listValues = new ArrayList<>();
+    listValues.add(
+            Arrays.asList(
+                    LAST_EVENT_ID_NAME,
+                    String.valueOf(fifthLastIncEventID)
+            )
+    );
+    org.apache.hadoop.hive.ql.parse.repl.dump.Utils.writeOutput(listValues, ackLastEventID, primary.hiveConf, true);
+
+    ReplDumpWork.testDeletePreviousDumpMetaPath(false);
+
+    WarehouseInstance.Tuple incrementalDump2 = primary.run("use " + primaryDbName)
+            .dump(primaryDbName);
+
+    assertEquals(incrementalDump1.dumpLocation, incrementalDump2.dumpLocation);
+    ackFile = new Path(hiveDumpDir, ReplAck.DUMP_ACKNOWLEDGEMENT.toString());
+    assertTrue(fs.exists(ackFile));
+    replica.load(replicatedDbName, primaryDbName)
+            .run("select * from " + replicatedDbName + ".t1")
+            .verifyResults(new String[] {"1", "4"})
+            .run("select * from " + replicatedDbName + ".t3")
+            .verifyResults(new String[] {"3"})
+            .runFailure("select * from " + replicatedDbName + ".t2");
+  }
 
   @Test
   public void testCheckPointingDataDumpFailureBootstrapDuringIncremental() throws Throwable {
@@ -976,13 +1107,13 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     WarehouseInstance.Tuple incrementalDump2 = primary.run("use " + primaryDbName)
             .dump(primaryDbName, dumpClause);
 
-    eventCount = Integer.parseInt(incrementalDump1.lastReplicationId)
-            - Integer.parseInt(bootstrapDump.lastReplicationId);
-    assertTrue(eventCount <= 5);
+    eventCount = Integer.parseInt(incrementalDump2.lastReplicationId)
+            - Integer.parseInt(incrementalDump1.lastReplicationId);
+    assertTrue(eventCount > 5);
 
     replica.load(replicatedDbName, primaryDbName)
             .run("select * from " + replicatedDbName + ".t1")
-            .verifyResults(new String[] {"1", "2", "3", "4","5", "6","7", "8","9", "10"});
+            .verifyResults(new String[] {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"});
   }
 
   @Test

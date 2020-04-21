@@ -69,22 +69,31 @@ public class Utils {
 
   public static void writeOutput(List<List<String>> listValues, Path outputFile, HiveConf hiveConf, boolean update)
           throws SemanticException {
-    DataOutputStream outStream = null;
-    try {
-      FileSystem fs = outputFile.getFileSystem(hiveConf);
-      outStream = fs.create(outputFile, update);
-      for (List<String> values : listValues) {
-        outStream.writeBytes((values.get(0) == null ? Utilities.nullStringOutput : values.get(0)));
-        for (int i = 1; i < values.size(); i++) {
-          outStream.write(Utilities.tabCode);
-          outStream.writeBytes((values.get(i) == null ? Utilities.nullStringOutput : values.get(i)));
+    Retry<Void> retriable = new Retry<Void>(IOException.class) {
+      @Override
+      public Void execute() throws IOException {
+        DataOutputStream outStream = null;
+        try {
+          FileSystem fs = outputFile.getFileSystem(hiveConf);
+          outStream = fs.create(outputFile, update);
+          for (List<String> values : listValues) {
+            outStream.writeBytes((values.get(0) == null ? Utilities.nullStringOutput : values.get(0)));
+            for (int i = 1; i < values.size(); i++) {
+              outStream.write(Utilities.tabCode);
+              outStream.writeBytes((values.get(i) == null ? Utilities.nullStringOutput : values.get(i)));
+            }
+            outStream.write(Utilities.newLineCode);
+          }
+        } finally {
+          IOUtils.closeStream(outStream);
         }
-        outStream.write(Utilities.newLineCode);
+        return null;
       }
-    } catch (IOException e) {
+    };
+    try {
+      retriable.run();
+    } catch (Exception e) {
       throw new SemanticException(e);
-    } finally {
-      IOUtils.closeStream(outStream);
     }
   }
 
@@ -105,16 +114,10 @@ public class Utils {
     }
   }
 
-  public static boolean create(Path outputFile, HiveConf hiveConf, boolean replace)
-          throws SemanticException {
-    try {
-      FileSystem fs = outputFile.getFileSystem(hiveConf);
-      if (fs.exists(outputFile)) {
-        return true;
-      }
-      create(outputFile, hiveConf);
-    } catch (IOException e) {
-      throw new SemanticException(e);
+  public static boolean fileExists(Path filePath, HiveConf hiveConf) throws IOException {
+    FileSystem fs = filePath.getFileSystem(hiveConf);
+    if (fs.exists(filePath)) {
+      return true;
     }
     return false;
   }
