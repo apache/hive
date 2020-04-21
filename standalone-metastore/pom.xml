@@ -68,7 +68,6 @@
 
     <!-- Dependency versions -->
     <antlr.version>3.5.2</antlr.version>
-    <bonecp.version>0.8.0.RELEASE</bonecp.version>
     <apache-directory-server.version>1.5.7</apache-directory-server.version>
     <commons-dbcp.version>1.4</commons-dbcp.version>
     <commons-lang3.version>3.9</commons-lang3.version>
@@ -140,11 +139,6 @@
         <groupId>com.google.protobuf</groupId>
         <artifactId>protobuf-java</artifactId>
         <version>${protobuf.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.jolbox</groupId>
-        <artifactId>bonecp</artifactId>
-        <version>${bonecp.version}</version>
       </dependency>
       <dependency>
         <groupId>com.zaxxer</groupId>
