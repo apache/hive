@@ -424,11 +424,7 @@ public class TestJdbcWithMiniLlapArrow extends BaseJdbcWithMiniLlap {
   public void testKillQueryByTagNegative() throws Exception {
     ExceptionHolder tExecuteHolder = new ExceptionHolder();
     ExceptionHolder tKillHolder = new ExceptionHolder();
-    try {
-      testKillQueryInternal("user1", "user2", true, tExecuteHolder, tKillHolder);
-    } catch (Exception e) {
-      // the asserts will do the checking
-    }
+    testKillQueryInternal("user1", "user2", true, tExecuteHolder, tKillHolder);
     assertNull("tExecute", tExecuteHolder.throwable);
     assertNotNull("tCancel", tKillHolder.throwable);
     assertTrue(tKillHolder.throwable.getMessage(), tKillHolder.throwable.getMessage().contains("No privilege"));
