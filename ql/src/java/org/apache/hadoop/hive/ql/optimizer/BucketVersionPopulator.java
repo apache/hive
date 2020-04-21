@@ -159,7 +159,12 @@ public class BucketVersionPopulator extends Transform {
         if (operator instanceof TableScanOperator) {
           TableScanOperator tso = (TableScanOperator) operator;
           int bucketingVersion = tso.getConf().getTableMetadata().getBucketingVersion();
-          ret.add(new OperatorBucketingVersionInfo(operator, bucketingVersion));
+          int numBuckets = tso.getConf().getNumBuckets();
+          if (numBuckets > 1) {
+            ret.add(new OperatorBucketingVersionInfo(operator, bucketingVersion));
+          } else {
+            LOG.info("not considering bucketingVersion for: %s because it has %d<2 buckets ", tso, numBuckets);
+          }
         }
         if (operator instanceof FileSinkOperator) {
           FileSinkOperator fso = (FileSinkOperator) operator;
