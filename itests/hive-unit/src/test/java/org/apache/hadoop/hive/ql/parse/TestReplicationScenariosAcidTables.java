@@ -926,8 +926,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             .run("select * from " + replicatedDbName + ".t1")
             .verifyResults(new String[] {"1"})
             .run("select * from " + replicatedDbName + ".t2")
-            .verifyResults(new String[] {"2"})
-            .verifyResults(new String[] {});
+            .verifyResults(new String[] {"2"});
 
 
     ReplDumpWork.testDeletePreviousDumpMetaPath(true);
