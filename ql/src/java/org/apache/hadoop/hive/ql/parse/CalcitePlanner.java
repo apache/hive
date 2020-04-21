@@ -1971,7 +1971,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // ?
       if (true/*FIXME*/) {
         generatePartialProgram(program, true, HepMatchOrder.TOP_DOWN,
-            HiveRewriteCountDistinctToDataSketches.INSTANCE);
+            new HiveRewriteCountDistinctToDataSketches(conf));
       }
 
 

@@ -32,6 +32,8 @@ import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlOperator;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.DataSketchesFunctions;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
@@ -46,13 +48,12 @@ import com.google.common.collect.ImmutableList;
  */
 public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
 
-  /** The default instance of the rule; operates only on logical expressions. */
-  public static final HiveRewriteCountDistinctToDataSketches INSTANCE = new HiveRewriteCountDistinctToDataSketches();
-
   protected static final Logger LOG = LoggerFactory.getLogger(HiveRewriteCountDistinctToDataSketches.class);
+  private String sketchClass;
 
-  public HiveRewriteCountDistinctToDataSketches() {
+  public HiveRewriteCountDistinctToDataSketches(HiveConf conf) {
     super(operand(HiveAggregate.class, any()));
+    sketchClass = conf.getVar(ConfVars.HIVE_OPTIMIZE_REWRITE_COUNT_DISTINCT_SKETCHCLASS);
   }
 
   @Override
@@ -92,7 +93,7 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
    * Helper class to help in building a new Aggregate and Project.
    */
   // NOTE: methods in this class are not re-entrant; drop-to-frame to constructor during debugging
-  static class VBuilder {
+  class VBuilder {
 
     private Aggregate aggregate;
     private List<AggregateCall> newAggCalls;
@@ -164,8 +165,7 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
     }
 
     private SqlOperator getSqlOperator(String fnName) {
-      String className = "hll";
-      UDFDescriptor fn = DataSketchesFunctions.INSTANCE.getSketchFunction(className, fnName);
+      UDFDescriptor fn = DataSketchesFunctions.INSTANCE.getSketchFunction(sketchClass, fnName);
       if (!fn.getCalciteFunction().isPresent()) {
         throw new RuntimeException(fn.toString() + " doesn't have a Calcite function associated with it");
       }

@@ -2465,6 +2465,12 @@ public class HiveConf extends Configuration {
         "If the number of references to a CTE clause exceeds this threshold, Hive will materialize it\n" +
         "before executing the main query block. -1 will disable this feature."),
 
+    HIVE_OPTIMIZE_REWRITE_COUNTDISTINCT_ENABLED("hive.optimize.sketches.rewrite.countdistintct.enabled", false,
+        "Enables to rewrite COUNT(DISTINCT(X)) queries to be rewritten to use sketch functions."),
+
+    HIVE_OPTIMIZE_REWRITE_COUNT_DISTINCT_SKETCHCLASS("hive.optimize.sketches.rewrite.countdistintct.sketchclass", "hll",
+        "When rewriting COUNT(DISTINCT(X)) expressions use the given sketch class."),
+
     // Statistics
     HIVE_STATS_ESTIMATE_STATS("hive.stats.estimate", true,
         "Estimate statistics in absence of statistics."),
