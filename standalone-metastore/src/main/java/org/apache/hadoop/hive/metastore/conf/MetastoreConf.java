@@ -468,7 +468,7 @@ public class MetastoreConf {
     DELEGATION_KEY_UPDATE_INTERVAL("metastore.cluster.delegation.key.update-interval",
         "hive.cluster.delegation.key.update-interval", 1, TimeUnit.DAYS, ""),
     DELEGATION_TOKEN_GC_INTERVAL("metastore.cluster.delegation.token.gc-interval",
-        "hive.cluster.delegation.token.gc-interval", 1, TimeUnit.HOURS, ""),
+        "hive.cluster.delegation.token.gc-interval", 15, TimeUnit.MINUTES, ""),
     DELEGATION_TOKEN_MAX_LIFETIME("metastore.cluster.delegation.token.max-lifetime",
         "hive.cluster.delegation.token.max-lifetime", 7, TimeUnit.DAYS, ""),
     DELEGATION_TOKEN_RENEW_INTERVAL("metastore.cluster.delegation.token.renew-interval",
