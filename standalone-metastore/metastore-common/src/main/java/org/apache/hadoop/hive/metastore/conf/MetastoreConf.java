@@ -458,7 +458,7 @@ public class MetastoreConf {
             "To use SSL to encrypt/authenticate the connection, provide database-specific SSL flag in the connection URL.\n" +
             "For example, jdbc:postgresql://myhost/db?ssl=true for postgres database."),
     CONNECTION_POOLING_TYPE("datanucleus.connectionPoolingType",
-        "datanucleus.connectionPoolingType", "HikariCP", new StringSetValidator("BONECP", "DBCP",
+        "datanucleus.connectionPoolingType", "HikariCP", new StringSetValidator("DBCP",
         "HikariCP", "NONE"),
         "Specify connection pool library for datanucleus"),
     CONNECTION_USER_NAME("javax.jdo.option.ConnectionUserName",

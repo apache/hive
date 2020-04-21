@@ -1005,7 +1005,7 @@ public class HiveConf extends Configuration {
      * @deprecated Use MetastoreConf.CONNECTION_POOLING_TYPE
      */
     @Deprecated
-    METASTORE_CONNECTION_POOLING_TYPE("datanucleus.connectionPoolingType", "HikariCP", new StringSet("BONECP", "DBCP",
+    METASTORE_CONNECTION_POOLING_TYPE("datanucleus.connectionPoolingType", "HikariCP", new StringSet("DBCP",
       "HikariCP", "NONE"),
         "Specify connection pool library for datanucleus"),
     /**
@@ -4831,7 +4831,6 @@ public class HiveConf extends Configuration {
             "hive.spark.client.rpc.server.address," +
             "hive.spark.client.rpc.server.port," +
             "hive.spark.client.rpc.sasl.mechanisms," +
-            "bonecp.," +
             "hive.druid.broker.address.default," +
             "hive.druid.coordinator.address.default," +
             "hikaricp.," +
