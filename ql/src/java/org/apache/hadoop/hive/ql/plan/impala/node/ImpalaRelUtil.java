@@ -19,8 +19,6 @@ package org.apache.hadoop.hive.ql.plan.impala.node;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import java.util.List;
-import java.util.stream.Collectors;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlAggFunction;
@@ -28,16 +26,16 @@ import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.AggFunctionDetails;
-import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaFunctionSignature;
-import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaFunctionSignatureFactory;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaTypeConverter;
 import org.apache.hadoop.hive.ql.plan.impala.rex.ImpalaRexVisitor.ImpalaInferMappingRexVisitor;
 import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.Expr;
 import org.apache.impala.catalog.AggregateFunction;
 import org.apache.impala.catalog.BuiltinsDb;
-import org.apache.impala.catalog.Function;
 import org.apache.impala.catalog.Type;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * This is a class to hold utility functions that assist with handling and
@@ -51,13 +49,12 @@ public class ImpalaRelUtil {
    */
   protected static AggregateFunction getAggregateFunction(SqlAggFunction aggFunction, RelDataType retType,
       List<SqlTypeName> operandTypes) throws HiveException {
-    ImpalaFunctionSignature ifs =
-        ImpalaFunctionSignatureFactory.create(aggFunction.getName().toLowerCase(), operandTypes,
-            retType.getSqlTypeName());
-    AggFunctionDetails funcDetails = AggFunctionDetails.get(ifs);
+
+    AggFunctionDetails funcDetails = AggFunctionDetails.get(aggFunction.getName(), operandTypes,
+        retType.getSqlTypeName());
 
     if (funcDetails == null) {
-      throw new SemanticException("Could not find function \"" + ifs + "\"");
+      throw new SemanticException("Could not find function \"" + aggFunction.getName() + "\"");
     }
 
     List<Type> argTypes = ImpalaTypeConverter.getImpalaTypesList(funcDetails.argTypes);

@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.plan.impala.rex;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlKind;
@@ -32,16 +33,13 @@ import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaCompoundExpr;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaFunctionCallExpr;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaInExpr;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaIsNullExpr;
-import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaFunctionSignatureFactory;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaNullLiteral;
-import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaTupleIsNullExpr;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaTimestampArithmeticExpr;
-import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaFunctionSignature;
-import org.apache.hadoop.hive.ql.plan.impala.funcmapper.DefaultFunctionSignature;
+import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaTupleIsNullExpr;
+import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaFunctionUtil;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaTypeConverter;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ScalarFunctionDetails;
-import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaFunctionUtil;
-import org.apache.hadoop.hive.ql.plan.impala.funcmapper.TimeIntervalOpFunctionSignature;
+import org.apache.hadoop.hive.ql.plan.impala.funcmapper.TimeIntervalOpFunctionResolver;
 import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.BinaryPredicate;
 import org.apache.impala.analysis.BoolLiteral;
@@ -66,19 +64,11 @@ public class ImpalaRexCall {
    */
   public static Expr getExpr(Analyzer analyzer, RexCall rexCall,
       List<Expr> params, List<TupleId> tupleIds) throws HiveException {
-    String funcName = rexCall.getOperator().getName().toLowerCase();
-    SqlTypeName retType = rexCall.getType().getSqlTypeName();
-    List<SqlTypeName> args = ImpalaTypeConverter.getSqlTypeNamesFromNodes(rexCall.getOperands());
-    ImpalaFunctionSignature ifs = ImpalaFunctionSignatureFactory.create(rexCall.getOperator(), args, retType);
-    ScalarFunctionDetails details = ScalarFunctionDetails.get(ifs);
-    if (details == null) {
-      throw new HiveException("Could not find function \"" + ifs + "\"");
-    }
-
-    Function fn = ImpalaFunctionUtil.create(details);
-    Preconditions.checkNotNull(fn);
 
     Type impalaRetType = ImpalaTypeConverter.getImpalaType(rexCall.getType());
+
+    Function fn = getFunction(rexCall);
+
     // TODO: CDPD-8625: replace isBinaryComparison with rexCall.isA(SqlKind.BINARY_COMPARISON) when
     // we upgrade to calcite 1.21
     if (isBinaryComparison(rexCall.getKind())) {
@@ -113,6 +103,7 @@ public class ImpalaRexCall {
       case EXTRACT:
         // for specific extract functions (e.g.year, month), we ignore the first redundant
         // "SYMBOL" parameter
+        String funcName = rexCall.getOperator().getName().toLowerCase();
         if (!funcName.equals("extract")) {
           return new ImpalaFunctionCallExpr(analyzer, fn, params.subList(1,2), rexCall, impalaRetType);
         }
@@ -120,7 +111,7 @@ public class ImpalaRexCall {
         break;
       case PLUS:
       case MINUS:
-        if (TimeIntervalOpFunctionSignature.isTimestampArithExpr(fn.getName())) {
+        if (TimeIntervalOpFunctionResolver.isTimestampArithExpr(fn.getName())) {
           return createTimestampArithExpr(analyzer, fn, params, rexCall, impalaRetType);
         }
         break;
@@ -167,8 +158,9 @@ public class ImpalaRexCall {
     tmpArgs.add(nullLiteral);
     tmpArgs.add(expr);
     List<SqlTypeName> typeNames = ImmutableList.of(SqlTypeName.BOOLEAN, SqlTypeName.BOOLEAN, SqlTypeName.BOOLEAN);
-    ImpalaFunctionSignature conditionalFuncSig = new DefaultFunctionSignature("if", typeNames, SqlTypeName.BOOLEAN);
-    ScalarFunctionDetails conditionalFuncDetails = ScalarFunctionDetails.get(conditionalFuncSig);
+    ScalarFunctionDetails conditionalFuncDetails =
+        ScalarFunctionDetails.get("if", typeNames, SqlTypeName.BOOLEAN);
+    Preconditions.checkNotNull(conditionalFuncDetails);
     Function conditionalFunc = ImpalaFunctionUtil.create(conditionalFuncDetails);
     ImpalaFunctionCallExpr conditionalFuncExpr =
         new ImpalaFunctionCallExpr(analyzer, conditionalFunc, tmpArgs, rexCall, retType);
@@ -243,7 +235,7 @@ public class ImpalaRexCall {
     int intervalArg = (params.get(0) instanceof NumericLiteral) ? 0 : 1;
     int timestampArg = (intervalArg + 1) % 2;
 
-    String timeUnitIdent = TimeIntervalOpFunctionSignature.getTimeUnitIdent(fn.getName());
+    String timeUnitIdent = TimeIntervalOpFunctionResolver.getTimeUnitIdent(fn.getName());
 
     return new ImpalaTimestampArithmeticExpr(analyzer, fn, params.get(timestampArg),
         params.get(intervalArg), timeUnitIdent, retType);
@@ -280,5 +272,23 @@ public class ImpalaRexCall {
       default:
         return false;
     }
+  }
+
+  private static Function getFunction(RexCall rexCall) throws HiveException {
+    SqlKind kind = rexCall.getOperator().getKind();
+    String funcName = rexCall.getOperator().getName().toLowerCase();
+    List<SqlTypeName> args = ImpalaTypeConverter.getSqlTypeNamesFromNodes(rexCall.getOperands());
+    return getFunction(kind, funcName, args, rexCall.getType());
+  }
+
+  private static Function getFunction(SqlKind kind, String name, List<SqlTypeName> args,
+      RelDataType retType) throws HiveException {
+    ScalarFunctionDetails details = ScalarFunctionDetails.get(name, args, retType.getSqlTypeName());
+    if (details == null) {
+      throw new HiveException("Could not find function \"" + name + "\" in Impala.");
+    }
+    Preconditions.checkNotNull(details);
+
+    return ImpalaFunctionUtil.create(details);
   }
 }

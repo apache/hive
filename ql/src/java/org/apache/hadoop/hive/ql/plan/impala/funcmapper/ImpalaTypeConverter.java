@@ -18,19 +18,19 @@
 
 package org.apache.hadoop.hive.ql.plan.impala.funcmapper;
 
-import java.util.List;
-
+import com.google.common.collect.Lists;
 import org.apache.calcite.rel.type.RelDataType;
-import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.parse.type.RexNodeExprFactory;
 import org.apache.impala.catalog.PrimitiveType;
 import org.apache.impala.catalog.ScalarType;
 import org.apache.impala.catalog.Type;
 import org.apache.impala.thrift.TPrimitiveType;
 
-import com.google.common.collect.Lists;
+import java.util.List;
 
 /**
  * class used to define the Impala ColumnType.
@@ -119,8 +119,7 @@ public class ImpalaTypeConverter {
   static public List<SqlTypeName> getSqlTypeNamesFromNodes(List<RexNode> rexNodes) {
     List<SqlTypeName> result = Lists.newArrayList();
     for (RexNode r : rexNodes) {
-      SqlTypeName sqlTypeName = r.getType().getSqlTypeName();
-      result.add(r.getType().getSqlTypeName());
+      result.add(getSqlType(r));
     }
     return result;
   }
@@ -136,7 +135,7 @@ public class ImpalaTypeConverter {
     return types;
   }
 
-  static public Type getImpalaType(TPrimitiveType argType, int precision, int scale) {
+  static public ScalarType getImpalaType(TPrimitiveType argType, int precision, int scale) {
     // Char, varchar, ldecimal, and fixed_uda_intermediate contain precisions and need to be
     // treated separately.
     switch (argType) {
@@ -153,7 +152,7 @@ public class ImpalaTypeConverter {
     }
   }
 
-  static public Type getImpalaType(TPrimitiveType argType) {
+  static public ScalarType getImpalaType(TPrimitiveType argType) {
     // Char and decimal contain precisions and need to be treated separately from
     // the rest. The precisions for this case are unknown though, as we are only given
     // a "primitivetype'.
@@ -171,14 +170,7 @@ public class ImpalaTypeConverter {
     return ScalarType.createType(PrimitiveType.fromThrift(argType));
   }
 
-  static public Type[] getImpalaTypes(TPrimitiveType[] argTypes) {
-    if (argTypes == null) {
-      return null;
-    }
-    return getImpalaTypesList(argTypes).toArray(new Type[1]);
-  }
-
-  static public Type getImpalaType(RelDataType relDataType) throws HiveException {
+  static public ScalarType getImpalaType(RelDataType relDataType) throws HiveException {
     if (relDataType.getSqlTypeName().equals(SqlTypeName.DECIMAL)) {
       return ScalarType.createDecimalType(relDataType.getPrecision(),
           relDataType.getScale());
@@ -188,5 +180,26 @@ public class ImpalaTypeConverter {
     return ScalarType.getDefaultScalarType(primitiveType);
   }
 
+  public static SqlTypeName getSqlType(RexNode input) {
+    if (!(input instanceof RexLiteral)) {
+      return input.getType().getSqlTypeName();
+    }
+    RexLiteral literal = (RexLiteral) input;
+    if ((literal.getType().getSqlTypeName() != SqlTypeName.CHAR) &&
+        (literal.getType().getSqlTypeName() != SqlTypeName.VARCHAR)) {
+      return input.getType().getSqlTypeName();
+    }
+    RexNodeExprFactory.HiveNlsString nlsString = (RexNodeExprFactory.HiveNlsString) literal.getValue();
+    switch (nlsString.interpretation) {
+      case CHAR:
+        return SqlTypeName.CHAR;
+      case VARCHAR:
+        return SqlTypeName.VARCHAR;
+      case STRING:
+        return SqlTypeName.VARCHAR;
+      default:
+        throw new RuntimeException("Unknown Interpretation");
+    }
+  }
 
 }

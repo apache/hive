@@ -26,6 +26,7 @@ import java.util.Map;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
+import org.apache.calcite.rex.RexExecutor;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
@@ -91,17 +92,37 @@ public class HiveFunctionHelper implements FunctionHelper {
 
   private static final Logger LOG = LoggerFactory.getLogger(HiveFunctionHelper.class);
 
+  private final RexNodeExprFactory rexNodeExprFactory;
   private final RexBuilder rexBuilder;
   private final int maxNodesForInToOrTransformation;
+  private final RexExecutor rexExecutor;
 
   public HiveFunctionHelper(RexBuilder rexBuilder) {
+    this.rexNodeExprFactory = new RexNodeExprFactory(rexBuilder, this);
     this.rexBuilder = rexBuilder;
+    this.rexExecutor = new HiveRexExecutorImpl();
     try {
       this.maxNodesForInToOrTransformation = HiveConf.getIntVar(
           Hive.get().getConf(), HiveConf.ConfVars.HIVEOPT_TRANSFORM_IN_MAXNODES);
     } catch (HiveException e) {
       throw new IllegalStateException(e);
     }
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public RexNodeExprFactory getRexNodeExprFactory() {
+    return rexNodeExprFactory;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public RexExecutor getRexExecutor() {
+    return rexExecutor;
   }
 
   /**
@@ -210,7 +231,7 @@ public class HiveFunctionHelper implements FunctionHelper {
 
   private RexNode convert(TypeInfo targetType, RexNode input) throws SemanticException {
     if (targetType.getCategory() == Category.PRIMITIVE) {
-      return RexNodeTypeCheck.getExprNodeDefaultExprProcessor(rexBuilder)
+      return RexNodeTypeCheck.getExprNodeDefaultExprProcessor(this)
           .createConversionCast(input, (PrimitiveTypeInfo) targetType);
     } else {
       StructTypeInfo structTypeInfo = (StructTypeInfo) targetType; // struct

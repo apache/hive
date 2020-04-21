@@ -103,6 +103,7 @@ import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rel.type.RelDataTypeImpl;
+import org.apache.calcite.rel.type.RelDataTypeSystem;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexExecutor;
@@ -194,6 +195,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptMaterializationVali
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRexExecutorImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
+import org.apache.hadoop.hive.ql.optimizer.calcite.ImpalaTypeSystemImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveAlgorithmsConf;
@@ -294,6 +296,7 @@ import org.apache.hadoop.hive.ql.parse.type.FunctionHelper;
 import org.apache.hadoop.hive.ql.parse.type.FunctionHelper.AggregateInfo;
 import org.apache.hadoop.hive.ql.parse.type.HiveFunctionHelper;
 import org.apache.hadoop.hive.ql.parse.type.JoinTypeCheckCtx;
+import org.apache.hadoop.hive.ql.parse.type.RexNodeExprFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.PlanModifierForReturnPath;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.SqlFunctionConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
@@ -316,6 +319,8 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaCompiledPlan;
+import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaFunctionHelper;
+import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaRexExecutorImpl;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFArray;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
@@ -559,7 +564,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
         disableJoinMerge = true;
         boolean reAnalyzeAST = false;
-        boolean isImpalaPlan = (impalaHelper != null);
+        boolean isImpalaPlan = isImpalaPlan(conf);
         final boolean materializedView = getQB().isMaterializedView();
 
         try {
@@ -1578,7 +1583,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
     try {
       optimizedOptiqPlan = Frameworks.withPlanner(calcitePlannerAction, Frameworks
-          .newConfigBuilder().typeSystem(new HiveTypeSystemImpl()).build());
+          .newConfigBuilder().typeSystem(createTypeSystem(conf)).build());
     } catch (Exception e) {
       rethrowCalciteException(e);
       throw new AssertionError("rethrowCalciteException didn't throw for " + e.getMessage());
@@ -1599,7 +1604,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         .withDatabaseMajorVersion(4) // TODO: should not be hardcoded
         .withDatabaseMinorVersion(0)
         .withIdentifierQuoteString("`")
-        .withDataTypeSystem(new HiveTypeSystemImpl())
+        .withDataTypeSystem(createTypeSystem(conf))
         .withNullCollation(nullCollation)) {
       @Override
       protected boolean allowsAs() {
@@ -1922,7 +1927,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       this.cluster = optCluster;
       this.relOptSchema = relOptSchema;
-      this.functionHelper = new HiveFunctionHelper(rexBuilder);
+      this.functionHelper = createFunctionHelper(rexBuilder);
 
       PerfLogger perfLogger = SessionState.getPerfLogger();
       // 1. Gen Calcite Plan
@@ -1941,7 +1946,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Plan generation");
 
       // Create executor
-      RexExecutor executorProvider = new HiveRexExecutorImpl();
+      RexExecutor executorProvider = functionHelper.getRexExecutor();
       calciteGenPlan.getCluster().getPlanner().setExecutor(executorProvider);
 
       // We need to get the ColumnAccessInfo and viewToTableSchema for views.
@@ -2106,7 +2111,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
       rules.add(HiveReduceExpressionsRule.PROJECT_INSTANCE);
       rules.add(HiveReduceExpressionsRule.FILTER_INSTANCE);
       rules.add(HiveReduceExpressionsRule.JOIN_INSTANCE);
-      rules.add(HiveAggregateReduceFunctionsRule.INSTANCE);
+      //TODO: CDPD-12348: Rule had to be disabled for impala because
+      // the reduceAvg method produced a "/" of decimal/bigint which
+      // is not compliant with Impala functions
+      if (!isImpalaPlan(conf)) {
+        rules.add(HiveAggregateReduceFunctionsRule.INSTANCE);
+      }
       rules.add(HiveAggregateReduceRule.INSTANCE);
       if (conf.getBoolVar(HiveConf.ConfVars.HIVEPOINTLOOKUPOPTIMIZER)) {
         rules.add(new HivePointLookupOptimizerRule.FilterCondition(minNumORClauses));
@@ -2871,7 +2881,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           genAllExprNodeDesc(joinCond, input, jCtx);
         }
         Map<ASTNode, RexNode> exprNodes = RexNodeTypeCheck.genExprNodeJoinCond(
-            joinCond, jCtx, cluster.getRexBuilder());
+            joinCond, jCtx, createFunctionHelper(cluster.getRexBuilder()));
         if (jCtx.getError() != null) {
           throw new SemanticException(SemanticAnalyzer.generateErrorMessage(jCtx.getErrorSrcNode(),
               jCtx.getError()));
@@ -4998,7 +5008,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
       Integer i = genColListRegex(colRegex, tabAlias, sel,
           colList, excludeCols, input, colSrcRR, pos, output, aliases, ensureUniqueCols);
       for (org.apache.commons.lang3.tuple.Pair<ColumnInfo, RowResolver> p : colList) {
-        exprList.add(RexNodeTypeCheck.toExprNode(p.getLeft(), p.getRight(), 0, cluster.getRexBuilder()));
+        exprList.add(RexNodeTypeCheck.toExprNode(p.getLeft(), p.getRight(), 0,
+            createFunctionHelper(cluster.getRexBuilder())));
       }
       return i;
     }
@@ -5503,6 +5514,18 @@ public class CalcitePlanner extends SemanticAnalyzer {
     return cached;
   }
 
+  public static RelDataTypeSystem createTypeSystem(HiveConf conf) {
+    return (isImpalaPlan(conf))
+      ? new ImpalaTypeSystemImpl()
+      : new HiveTypeSystemImpl();
+  }
+
+  private FunctionHelper createFunctionHelper(RexBuilder rexBuilder) {
+    return isImpalaPlan(conf)
+        ? new ImpalaFunctionHelper(rexBuilder)
+        : new HiveFunctionHelper(rexBuilder);
+  }
+
   /**
    * Find RexNode for the expression cached in the RowResolver. Returns null if not exists.
    */
@@ -5514,7 +5537,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       if (source != null) {
         unparseTranslator.addCopyTranslation(node, source);
       }
-      return RexNodeTypeCheck.toExprNode(colInfo, input, 0, tcCtx.getRexBuilder());
+      return RexNodeTypeCheck.toExprNode(colInfo, input, 0, createFunctionHelper(tcCtx.getRexBuilder()));
     }
     return null;
   }
@@ -5539,7 +5562,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     tcCtx.setUnparseTranslator(unparseTranslator);
 
     Map<ASTNode, RexNode> nodeOutputs =
-        RexNodeTypeCheck.genExprNode(expr, tcCtx);
+        RexNodeTypeCheck.genExprNode(expr, tcCtx, createFunctionHelper(tcCtx.getRexBuilder()));
     RexNode desc = nodeOutputs.get(expr);
     if (desc == null) {
       String tableOrCol = BaseSemanticAnalyzer.unescapeIdentifier(expr

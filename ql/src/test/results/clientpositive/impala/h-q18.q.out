@@ -288,7 +288,7 @@ Per-Host Resources: mem-estimate=128.03MB mem-reservation=34.00MB thread-reserva
   12:AGGREGATE [FINALIZE]
   |  output: _impala_builtins.sum:merge(default.impala_tpch_lineitem.l_quantity)
   |  group by: default.impala_tpch_lineitem.l_orderkey
-  |  having: _impala_builtins.sum(default.impala_tpch_lineitem.l_quantity) > CAST(300 AS DECIMAL(22,2))
+  |  having: _impala_builtins.sum(default.impala_tpch_lineitem.l_quantity) > CAST(300 AS DECIMAL(38,2))
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=4 row-size=24B cardinality=0
   |  in pipelines: 12(GETNEXT), 02(OPEN)

@@ -76,7 +76,7 @@ ImpalaSortRel(sort0=[$3], sort1=[$0], sort2=[$1], sort3=[$2], dir0=[DESC], dir1=
         ImpalaJoinRel(condition=[=($0, $6)], joinType=[inner])
           ImpalaJoinRel(condition=[true], joinType=[inner])
             ImpalaProjectPassthroughRel(p_partkey=[$0], p_brand=[$3], p_type=[$4], p_size=[$5])
-              ImpalaHdfsScanRel(table=[[default, impala_tpch_part]], condition=[AND(OR(=($5, 49), =($5, 14), =($5, 23), =($5, 45), =($5, 19), =($5, 3), =($5, 36), =($5, 9)), <>($3, _UTF-16LE'Brand#45'), IS NOT NULL($0), NOT(LIKE($4, _UTF-16LE'MEDIUM POLISHED%':VARCHAR(65535))))])
+              ImpalaHdfsScanRel(table=[[default, impala_tpch_part]], condition=[AND(<>($3, _UTF-16LE'Brand#45':VARCHAR(65535)), IN($5, 49, 14, 23, 45, 19, 3, 36, 9), IS NOT NULL($0), NOT(LIKE($4, _UTF-16LE'MEDIUM POLISHED%':VARCHAR(65535))))])
             ImpalaAggregateRel(group=[{}], c=[COUNT()], ck=[COUNT($0)])
               ImpalaHdfsScanRel(table=[[default, impala_tpch_supplier]], condition=[LIKE($6, _UTF-16LE'%Customer%Complaints%':VARCHAR(65535))])
           ImpalaJoinRel(condition=[=($1, $2)], joinType=[left])
@@ -265,11 +265,12 @@ Per-Host Resources: mem-estimate=129.98MB mem-reservation=35.94MB thread-reserva
   |
   01:SCAN HDFS [default.impala_tpch_part, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
-     predicates: default.impala_tpch_part.p_partkey IS NOT NULL, default.impala_tpch_part.p_brand != 'Brand#45', _impala_builtins.not(_impala_builtins.like(default.impala_tpch_part.p_type, 'MEDIUM POLISHED%')), default.impala_tpch_part.p_size = CAST(49 AS INT) OR default.impala_tpch_part.p_size = CAST(14 AS INT) OR default.impala_tpch_part.p_size = CAST(23 AS INT) OR default.impala_tpch_part.p_size = CAST(45 AS INT) OR default.impala_tpch_part.p_size = CAST(19 AS INT) OR default.impala_tpch_part.p_size = CAST(3 AS INT) OR default.impala_tpch_part.p_size = CAST(36 AS INT) OR default.impala_tpch_part.p_size = CAST(9 AS INT)
+     predicates: default.impala_tpch_part.p_partkey IS NOT NULL, default.impala_tpch_part.p_brand != 'Brand#45', default.impala_tpch_part.p_size IN (CAST(49 AS INT), CAST(14 AS INT), CAST(23 AS INT), CAST(45 AS INT), CAST(19 AS INT), CAST(3 AS INT), CAST(36 AS INT), CAST(9 AS INT)), _impala_builtins.not(_impala_builtins.like(default.impala_tpch_part.p_type, 'MEDIUM POLISHED%'))
      stored statistics:
        table: rows=0 size=0B
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
+     parquet statistics predicates: default.impala_tpch_part.p_size IN (CAST(49 AS INT), CAST(14 AS INT), CAST(23 AS INT), CAST(45 AS INT), CAST(19 AS INT), CAST(3 AS INT), CAST(36 AS INT), CAST(9 AS INT))
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=0 row-size=36B cardinality=0
      in pipelines: 01(GETNEXT)

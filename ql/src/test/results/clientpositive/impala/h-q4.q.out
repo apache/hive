@@ -53,7 +53,7 @@ ImpalaSortRel(sort0=[$0], dir0=[ASC])
   ImpalaAggregateRel(group=[{2}], agg#0=[count()])
     ImpalaJoinRel(condition=[=($3, $0)], joinType=[semi])
       ImpalaProjectPassthroughRel(o_orderkey=[$0], o_orderdate=[$4], o_orderpriority=[$5])
-        ImpalaHdfsScanRel(table=[[default, impala_tpch_orders]], condition=[AND(>=($4, _UTF-16LE'1993-07-01'), <($4, _UTF-16LE'1993-10-01'), IS NOT NULL($0))])
+        ImpalaHdfsScanRel(table=[[default, impala_tpch_orders]], condition=[AND(>=($4, _UTF-16LE'1993-07-01':VARCHAR(65535)), <($4, _UTF-16LE'1993-10-01':VARCHAR(65535)), IS NOT NULL($0))])
       ImpalaProjectPassthroughRel(l_orderkey0=[$0])
         ImpalaHdfsScanRel(table=[[default, impala_tpch_lineitem]], condition=[AND(<($11, $12), IS NOT NULL($0))])
 

@@ -32,7 +32,7 @@ import org.apache.calcite.sql.type.SqlTypeName;
  * branch. This code should be removed when we upgrade.
  */
 public class Calcite2302 {
-  public static RelDataType decimalOf(RelDataTypeFactory dtFactory, RelDataType type) {
+  static RelDataType decimalOf(RelDataTypeFactory dtFactory, RelDataType type) {
     SqlTypeName typeName = type.getSqlTypeName();
     assert typeName != null;
     switch (typeName) {

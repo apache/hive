@@ -63,11 +63,11 @@ ImpalaSortRel(sort0=[$1], sort1=[$2], sort2=[$0], dir0=[DESC], dir1=[ASC], dir2=
       ImpalaJoinRel(condition=[=($5, $0)], joinType=[inner])
         ImpalaJoinRel(condition=[=($4, $1)], joinType=[inner])
           ImpalaProjectPassthroughRel(o_orderkey=[$0], o_custkey=[$1], o_orderdate=[$4], o_shippriority=[$7])
-            ImpalaHdfsScanRel(table=[[default, impala_tpch_orders]], condition=[AND(<($4, _UTF-16LE'1995-03-15'), IS NOT NULL($1), IS NOT NULL($0))])
+            ImpalaHdfsScanRel(table=[[default, impala_tpch_orders]], condition=[AND(<($4, _UTF-16LE'1995-03-15':VARCHAR(65535)), IS NOT NULL($1), IS NOT NULL($0))])
           ImpalaProjectPassthroughRel(c_custkey=[$0])
-            ImpalaHdfsScanRel(table=[[default, impala_tpch_customer]], condition=[AND(=($6, _UTF-16LE'BUILDING'), IS NOT NULL($0))])
-        ImpalaProjectPassthroughRel(l_orderkey=[$0], $f1=[*($5, -(1:DECIMAL(10, 0), $6))])
-          ImpalaHdfsScanRel(table=[[default, impala_tpch_lineitem]], condition=[AND(>($10, _UTF-16LE'1995-03-15'), IS NOT NULL($0))])
+            ImpalaHdfsScanRel(table=[[default, impala_tpch_customer]], condition=[AND(=($6, _UTF-16LE'BUILDING':VARCHAR(65535)), IS NOT NULL($0))])
+        ImpalaProjectPassthroughRel(l_orderkey=[$0], *=[*($5, -(1:DECIMAL(10, 0), $6))])
+          ImpalaHdfsScanRel(table=[[default, impala_tpch_lineitem]], condition=[AND(>($10, _UTF-16LE'1995-03-15':VARCHAR(65535)), IS NOT NULL($0))])
 
 PREHOOK: query: explain select
   l_orderkey,

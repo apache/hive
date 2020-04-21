@@ -92,17 +92,17 @@ ImpalaSortRel(sort0=[$0], dir0=[ASC])
         ImpalaProjectPassthroughRel(s_suppkey=[$0], s_name=[$1], s_address=[$2], s_nationkey=[$3])
           ImpalaHdfsScanRel(table=[[default, impala_tpch_supplier]], condition=[AND(IS NOT NULL($3), IS NOT NULL($0))])
         ImpalaProjectPassthroughRel(n_nationkey=[$0])
-          ImpalaHdfsScanRel(table=[[default, impala_tpch_nation]], condition=[AND(=($1, _UTF-16LE'CANADA'), IS NOT NULL($0))])
+          ImpalaHdfsScanRel(table=[[default, impala_tpch_nation]], condition=[AND(=($1, _UTF-16LE'CANADA':VARCHAR(65535)), IS NOT NULL($0))])
       ImpalaProjectPassthroughRel(ps_suppkey=[$1])
         ImpalaJoinRel(condition=[AND(=($4, $0), =($5, $1), >($2, $6))], joinType=[inner])
           ImpalaJoinRel(condition=[=($0, $3)], joinType=[inner])
-            ImpalaProjectPassthroughRel(ps_partkey=[$0], ps_suppkey=[$1], ps_availqty=[CAST($2):DECIMAL(24, 3)])
-              ImpalaHdfsScanRel(table=[[default, impala_tpch_partsupp]], condition=[AND(IS NOT NULL($0), IS NOT NULL($1), IS NOT NULL(CAST($2):DECIMAL(24, 3)))])
+            ImpalaProjectPassthroughRel(ps_partkey=[$0], ps_suppkey=[$1], CAST=[CAST($2):DECIMAL(10, 0) NOT NULL])
+              ImpalaHdfsScanRel(table=[[default, impala_tpch_partsupp]], condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
             ImpalaAggregateRel(group=[{0}])
               ImpalaHdfsScanRel(table=[[default, impala_tpch_part]], condition=[AND(LIKE($1, _UTF-16LE'forest%':VARCHAR(65535)), IS NOT NULL($0))])
-          ImpalaProjectPassthroughRel(l_partkey=[$0], l_suppkey=[$1], $f2=[CAST(*(0.5:DECIMAL(1, 1), $2)):DECIMAL(24, 3)])
-            ImpalaAggregateRel(group=[{1, 2}], agg#0=[sum($4)], condition=[IS NOT NULL(CAST(*(0.5:DECIMAL(1, 1), $2)):DECIMAL(24, 3))])
-              ImpalaHdfsScanRel(table=[[default, impala_tpch_lineitem]], condition=[AND(>=($10, _UTF-16LE'1994-01-01'), <($10, _UTF-16LE'1995-01-01'), IS NOT NULL($1), IS NOT NULL($2))])
+          ImpalaProjectPassthroughRel(l_partkey=[$0], l_suppkey=[$1], *=[*(0.5:DECIMAL(1, 1), $2)])
+            ImpalaAggregateRel(group=[{1, 2}], agg#0=[sum($4)], condition=[IS NOT NULL($2)])
+              ImpalaHdfsScanRel(table=[[default, impala_tpch_lineitem]], condition=[AND(>=($10, _UTF-16LE'1994-01-01':VARCHAR(65535)), <($10, _UTF-16LE'1995-01-01':VARCHAR(65535)), IS NOT NULL($1), IS NOT NULL($2))])
 
 PREHOOK: query: explain select
   s_name,
@@ -282,7 +282,7 @@ Per-Host Resources: mem-estimate=3.93MB mem-reservation=3.88MB thread-reservatio
   10:HASH JOIN [INNER JOIN, BROADCAST]
   |  hash predicates: default.impala_tpch_partsupp.ps_partkey = default.impala_tpch_lineitem.l_partkey, default.impala_tpch_partsupp.ps_suppkey = default.impala_tpch_lineitem.l_suppkey
   |  fk/pk conjuncts: assumed fk/pk
-  |  other join predicates: _impala_builtins.casttodecimal(default.impala_tpch_partsupp.ps_availqty) > _impala_builtins.casttodecimal(_impala_builtins.multiply(CAST(0.5 AS DECIMAL(1,1)), _impala_builtins.sum(default.impala_tpch_lineitem.l_quantity)))
+  |  other join predicates: _impala_builtins.casttodecimal(default.impala_tpch_partsupp.ps_availqty) > _impala_builtins.multiply(CAST(0.5 AS DECIMAL(1,1)), _impala_builtins.sum(default.impala_tpch_lineitem.l_quantity))
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
   |  tuple-ids=4,8,11 row-size=60B cardinality=0
   |  in pipelines: 04(GETNEXT), 18(OPEN)
@@ -306,7 +306,7 @@ Per-Host Resources: mem-estimate=3.93MB mem-reservation=3.88MB thread-reservatio
   |
   04:SCAN HDFS [default.impala_tpch_partsupp, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
-     predicates: default.impala_tpch_partsupp.ps_partkey IS NOT NULL, default.impala_tpch_partsupp.ps_suppkey IS NOT NULL, _impala_builtins.casttodecimal(default.impala_tpch_partsupp.ps_availqty) IS NOT NULL
+     predicates: default.impala_tpch_partsupp.ps_partkey IS NOT NULL, default.impala_tpch_partsupp.ps_suppkey IS NOT NULL
      stored statistics:
        table: rows=0 size=0B
        columns: unavailable
@@ -358,7 +358,7 @@ Per-Host Resources: mem-estimate=128.04MB mem-reservation=34.00MB thread-reserva
   18:AGGREGATE [FINALIZE]
   |  output: _impala_builtins.sum:merge(default.impala_tpch_lineitem.l_quantity)
   |  group by: default.impala_tpch_lineitem.l_partkey, default.impala_tpch_lineitem.l_suppkey
-  |  having: _impala_builtins.casttodecimal(_impala_builtins.multiply(CAST(0.5 AS DECIMAL(1,1)), _impala_builtins.sum(default.impala_tpch_lineitem.l_quantity))) IS NOT NULL
+  |  having: _impala_builtins.sum(default.impala_tpch_lineitem.l_quantity) IS NOT NULL
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=11 row-size=32B cardinality=0
   |  in pipelines: 18(GETNEXT), 08(OPEN)

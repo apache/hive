@@ -478,7 +478,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     tabNameToTabObject = new HashMap<>();
     defaultJoinMerge = false == HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MERGE_NWAY_JOINS);
     disableJoinMerge = defaultJoinMerge;
-    impalaHelper = (conf.getExecutionEngine() == HiveConf.ExecutionEngine.IMPALA)
+    impalaHelper = isImpalaPlan(conf)
         ? new ImpalaHelper()
         : null;
   }
@@ -15804,5 +15804,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   protected void executeUnparseTranlations() {
     unparseTranslator.applyTranslations(ctx.getTokenRewriteStream());
   }
-  
+
+  public static boolean isImpalaPlan(HiveConf conf) {
+    return conf.getExecutionEngine() == HiveConf.ExecutionEngine.IMPALA;
+  }
 }

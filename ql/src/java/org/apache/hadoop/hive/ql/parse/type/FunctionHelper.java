@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.parse.type;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rex.RexExecutor;
 import org.apache.calcite.rex.RexNode;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -30,6 +31,16 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
  * Calcite {@link RexNode}.
  */
 public interface FunctionHelper {
+
+  /**
+   * Returns RexNodeExprFactory.
+   */
+  RexNodeExprFactory getRexNodeExprFactory();
+
+  /**
+   * Returns RexExecutor that is used for constant folding.
+   */
+  RexExecutor getRexExecutor();
 
   /**
    * Returns function information based on function text.

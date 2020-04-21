@@ -15,12 +15,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.hadoop.hive.ql.plan.impala.funcmapper;
 
+import org.apache.calcite.rex.RexBuilder;
+import org.apache.calcite.rex.RexExecutorImpl;
+import org.apache.calcite.rex.RexNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.List;
+
+
 /**
- * FunctionDetails interface allowing multiple types of FunctionDetails (i.e. Scalar, Agg)
+ * Executor for {@link RexNode} based on Impala semantics.
  */
-public interface FunctionDetails {
-  ImpalaFunctionSignature getSignature();
+public class ImpalaRexExecutorImpl extends RexExecutorImpl {
+
+  public ImpalaRexExecutorImpl() {
+    super(null);
+  }
+
+  //XXX: CDPD-11977, support constant folding of expressions
+  @Override
+  public void reduce(RexBuilder rexBuilder, List<RexNode> constExps, List<RexNode> reducedValues) {
+    reducedValues.addAll(constExps);
+  }
 }

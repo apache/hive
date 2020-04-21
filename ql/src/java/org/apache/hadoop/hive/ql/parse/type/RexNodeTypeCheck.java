@@ -31,19 +31,20 @@ public class RexNodeTypeCheck {
    * Given an AST expression and a context, it will produce a map from AST nodes
    * to Calcite RexNode.
    */
-  public static Map<ASTNode, RexNode> genExprNode(ASTNode expr, TypeCheckCtx tcCtx)
-      throws SemanticException {
+  public static Map<ASTNode, RexNode> genExprNode(ASTNode expr, TypeCheckCtx tcCtx,
+      FunctionHelper functionHelper) throws SemanticException {
     TypeCheckProcFactory<RexNode> factory =
-        new TypeCheckProcFactory<>(new RexNodeExprFactory(tcCtx.getRexBuilder()));
+        new TypeCheckProcFactory<>(functionHelper.getRexNodeExprFactory());
     return factory.genExprNode(expr, tcCtx);
   }
 
   /**
    * Returns the default processor to generate Calcite RexNode from AST nodes.
    */
-  public static TypeCheckProcFactory<RexNode>.DefaultExprProcessor getExprNodeDefaultExprProcessor(RexBuilder rexBuilder) {
+  public static TypeCheckProcFactory<RexNode>.DefaultExprProcessor getExprNodeDefaultExprProcessor(
+      FunctionHelper functionHelper) {
     TypeCheckProcFactory<RexNode> factory =
-        new TypeCheckProcFactory<>(new RexNodeExprFactory(rexBuilder));
+        new TypeCheckProcFactory<>(functionHelper.getRexNodeExprFactory());
     return factory.getDefaultExprProcessor();
   }
 
@@ -51,20 +52,19 @@ public class RexNodeTypeCheck {
    * Given an AST join expression and a context, it will produce a map from AST nodes
    * to Calcite RexNode.
    */
-  public static Map<ASTNode, RexNode> genExprNodeJoinCond(ASTNode expr, TypeCheckCtx tcCtx, RexBuilder rexBuilder)
-      throws SemanticException {
+  public static Map<ASTNode, RexNode> genExprNodeJoinCond(ASTNode expr, TypeCheckCtx tcCtx,
+      FunctionHelper functionHelper) throws SemanticException {
     JoinCondTypeCheckProcFactory<RexNode> typeCheckProcFactory =
-        new JoinCondTypeCheckProcFactory<>(new RexNodeExprFactory(rexBuilder));
+        new JoinCondTypeCheckProcFactory<>(functionHelper.getRexNodeExprFactory());
     return typeCheckProcFactory.genExprNode(expr, tcCtx);
   }
 
   /**
    * Transforms column information into the corresponding Calcite RexNode.
    */
-  public static RexNode toExprNode(ColumnInfo columnInfo, RowResolver rowResolver, int offset, RexBuilder rexBuilder)
-      throws SemanticException {
-    RexNodeExprFactory factory = new RexNodeExprFactory(rexBuilder);
-    return factory.toExpr(columnInfo, rowResolver, offset);
+  public static RexNode toExprNode(ColumnInfo columnInfo, RowResolver rowResolver, int offset,
+      FunctionHelper functionHelper) throws SemanticException {
+    return functionHelper.getRexNodeExprFactory().toExpr(columnInfo, rowResolver, offset);
   }
 
 }

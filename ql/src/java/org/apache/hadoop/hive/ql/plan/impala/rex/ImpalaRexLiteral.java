@@ -30,7 +30,6 @@ import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaDateLiteral;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaFunctionCallExpr;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaNullLiteral;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaStringLiteral;
-import org.apache.hadoop.hive.ql.plan.impala.funcmapper.DefaultFunctionSignature;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaFunctionSignature;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaTypeConverter;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ScalarFunctionDetails;
@@ -69,6 +68,7 @@ public class ImpalaRexLiteral {
           return new ImpalaNullLiteral(analyzer, type);
         case BOOLEAN:
           return new ImpalaBoolLiteral(analyzer, rexLiteral.getValueAs(Boolean.class));
+        case BIGINT:
         case DECIMAL:
         case DOUBLE:
           return new NumericLiteral(rexLiteral.getValueAs(BigDecimal.class),
@@ -107,9 +107,8 @@ public class ImpalaRexLiteral {
 
     String timestamp = rexLiteral.getValueAs(TimestampString.class).toString();
     List<Expr> argList = Lists.newArrayList(new ImpalaStringLiteral(analyzer, timestamp));
-    ImpalaFunctionSignature castFuncSig =
-        new DefaultFunctionSignature("cast", typeNames, SqlTypeName.TIMESTAMP);
-    ScalarFunctionDetails castFuncDetails = ScalarFunctionDetails.get(castFuncSig);
+    ScalarFunctionDetails castFuncDetails = ScalarFunctionDetails.get("cast", typeNames,
+        SqlTypeName.TIMESTAMP);
     Function castFunc = ImpalaFunctionUtil.create(castFuncDetails);
     return new ImpalaFunctionCallExpr(analyzer, castFunc, argList, null, Type.TIMESTAMP);
   }

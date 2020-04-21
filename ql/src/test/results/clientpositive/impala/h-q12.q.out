@@ -64,13 +64,12 @@ POSTHOOK: Input: default@impala_tpch_orders
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaSortRel(sort0=[$0], dir0=[ASC])
-  ImpalaAggregateRel(group=[{2}], agg#0=[sum($0)], agg#1=[sum($1)])
-    ImpalaProjectPassthroughRel(CAST=[CAST($1):BIGINT NOT NULL], CAST2=[CAST($2):BIGINT NOT NULL], l_shipmode=[$4])
-      ImpalaJoinRel(condition=[=($0, $3)], joinType=[inner])
-        ImpalaProjectPassthroughRel(o_orderkey=[$0], $f1=[CAST(CASE(OR(=($5, _UTF-16LE'1-URGENT'), =($5, _UTF-16LE'2-HIGH')), 1, 0)):INTEGER], $f2=[CAST(CASE(AND(<>($5, _UTF-16LE'1-URGENT'), <>($5, _UTF-16LE'2-HIGH')), 1, 0)):INTEGER])
-          ImpalaHdfsScanRel(table=[[default, impala_tpch_orders]], condition=[IS NOT NULL($0)])
-        ImpalaProjectPassthroughRel(l_orderkey=[$0], l_shipmode=[$14])
-          ImpalaHdfsScanRel(table=[[default, impala_tpch_lineitem]], condition=[AND(>=($12, _UTF-16LE'1994-01-01'), <($12, _UTF-16LE'1995-01-01'), OR(=($14, _UTF-16LE'MAIL'), =($14, _UTF-16LE'SHIP')), <($11, $12), <($10, $11), IS NOT NULL($0))])
+  ImpalaAggregateRel(group=[{4}], agg#0=[sum($1)], agg#1=[sum($2)])
+    ImpalaJoinRel(condition=[=($0, $3)], joinType=[inner])
+      ImpalaProjectPassthroughRel(o_orderkey=[$0], CAST=[CAST(CASE(OR(=($5, _UTF-16LE'1-URGENT':VARCHAR(65535)), =($5, _UTF-16LE'2-HIGH':VARCHAR(65535))), 1, 0)):BIGINT], CAST2=[CAST(CASE(AND(<>($5, _UTF-16LE'1-URGENT':VARCHAR(65535)), <>($5, _UTF-16LE'2-HIGH':VARCHAR(65535))), 1, 0)):BIGINT])
+        ImpalaHdfsScanRel(table=[[default, impala_tpch_orders]], condition=[IS NOT NULL($0)])
+      ImpalaProjectPassthroughRel(l_orderkey=[$0], l_shipmode=[$14])
+        ImpalaHdfsScanRel(table=[[default, impala_tpch_lineitem]], condition=[AND(>=($12, _UTF-16LE'1994-01-01':VARCHAR(65535)), <($12, _UTF-16LE'1995-01-01':VARCHAR(65535)), <($11, $12), <($10, $11), IN($14, _UTF-16LE'MAIL':VARCHAR(65535), _UTF-16LE'SHIP':VARCHAR(65535)), IS NOT NULL($0))])
 
 PREHOOK: query: explain select
   l_shipmode,
@@ -218,12 +217,12 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   01:SCAN HDFS [default.impala_tpch_lineitem, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
-     predicates: default.impala_tpch_lineitem.l_orderkey IS NOT NULL, default.impala_tpch_lineitem.l_commitdate < default.impala_tpch_lineitem.l_receiptdate, default.impala_tpch_lineitem.l_shipdate < default.impala_tpch_lineitem.l_commitdate, default.impala_tpch_lineitem.l_receiptdate < '1995-01-01', default.impala_tpch_lineitem.l_receiptdate >= '1994-01-01', default.impala_tpch_lineitem.l_shipmode = 'MAIL' OR default.impala_tpch_lineitem.l_shipmode = 'SHIP'
+     predicates: default.impala_tpch_lineitem.l_orderkey IS NOT NULL, default.impala_tpch_lineitem.l_shipmode IN ('MAIL', 'SHIP'), default.impala_tpch_lineitem.l_commitdate < default.impala_tpch_lineitem.l_receiptdate, default.impala_tpch_lineitem.l_shipdate < default.impala_tpch_lineitem.l_commitdate, default.impala_tpch_lineitem.l_receiptdate < '1995-01-01', default.impala_tpch_lineitem.l_receiptdate >= '1994-01-01'
      stored statistics:
        table: rows=0 size=0B
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
-     parquet statistics predicates: default.impala_tpch_lineitem.l_receiptdate < '1995-01-01', default.impala_tpch_lineitem.l_receiptdate >= '1994-01-01'
+     parquet statistics predicates: default.impala_tpch_lineitem.l_shipmode IN ('MAIL', 'SHIP'), default.impala_tpch_lineitem.l_receiptdate < '1995-01-01', default.impala_tpch_lineitem.l_receiptdate >= '1994-01-01'
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=2 row-size=56B cardinality=0
      in pipelines: 01(GETNEXT)

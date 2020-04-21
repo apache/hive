@@ -72,6 +72,7 @@ import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.type.RexNodeExprFactory.HiveNlsString.Interpretation;
 import org.apache.hadoop.hive.ql.plan.SubqueryType;
+import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaFunctionHelper;
 import org.apache.hadoop.hive.ql.udf.SettableUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFWhen;
@@ -102,9 +103,16 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
   private final RexBuilder rexBuilder;
   private final FunctionHelper functionHelper;
 
-  public RexNodeExprFactory(RexBuilder rexBuilder) {
+  public RexNodeExprFactory(RexBuilder rexBuilder, FunctionHelper functionHelper) {
     this.rexBuilder = rexBuilder;
-    this.functionHelper = new HiveFunctionHelper(rexBuilder);
+    this.functionHelper = functionHelper;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  public RexBuilder getRexBuilder() {
+    return rexBuilder;
   }
 
   /**
@@ -460,7 +468,9 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
    * {@inheritDoc}
    */
   @Override
-  protected RexLiteral createIntervalYearMonthConstantExpr(String value) {
+  public RexLiteral createIntervalYearMonthConstantExpr(String value) {
+    //TODO: CDPD-12449: move all these createInterval*ConstantExpr methods into their own class since
+    // the visibility changed from protected to public
     BigDecimal totalMonths = BigDecimal.valueOf(HiveIntervalYearMonth.valueOf(value).getTotalMonths());
     return rexBuilder.makeIntervalLiteral(totalMonths,
         new SqlIntervalQualifier(TimeUnit.YEAR, TimeUnit.MONTH, new SqlParserPos(1, 1)));
@@ -470,7 +480,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
    * {@inheritDoc}
    */
   @Override
-  protected RexLiteral createIntervalDayTimeConstantExpr(String value) {
+  public RexLiteral createIntervalDayTimeConstantExpr(String value) {
     HiveIntervalDayTime v = HiveIntervalDayTime.valueOf(value);
     BigDecimal secsValueBd = BigDecimal
         .valueOf(v.getTotalSeconds() * 1000);
@@ -484,7 +494,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
    * {@inheritDoc}
    */
   @Override
-  protected RexLiteral createIntervalYearConstantExpr(String value) {
+  public RexLiteral createIntervalYearConstantExpr(String value) {
     HiveIntervalYearMonth v = new HiveIntervalYearMonth(Integer.parseInt(value), 0);
     BigDecimal totalMonths = BigDecimal.valueOf(v.getTotalMonths());
     return rexBuilder.makeIntervalLiteral(totalMonths,
@@ -495,7 +505,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
    * {@inheritDoc}
    */
   @Override
-  protected RexLiteral createIntervalMonthConstantExpr(String value) {
+  public RexLiteral createIntervalMonthConstantExpr(String value) {
     BigDecimal totalMonths = BigDecimal.valueOf(Integer.parseInt(value));
     return rexBuilder.makeIntervalLiteral(totalMonths,
         new SqlIntervalQualifier(TimeUnit.YEAR, TimeUnit.MONTH, new SqlParserPos(1, 1)));
@@ -505,7 +515,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
    * {@inheritDoc}
    */
   @Override
-  protected RexLiteral createIntervalDayConstantExpr(String value) {
+  public RexLiteral createIntervalDayConstantExpr(String value) {
     HiveIntervalDayTime v = new HiveIntervalDayTime(Integer.parseInt(value), 0, 0, 0, 0);
     BigDecimal secsValueBd = BigDecimal
         .valueOf(v.getTotalSeconds() * 1000);
@@ -519,7 +529,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
    * {@inheritDoc}
    */
   @Override
-  protected RexLiteral createIntervalHourConstantExpr(String value) {
+  public RexLiteral createIntervalHourConstantExpr(String value) {
     HiveIntervalDayTime v = new HiveIntervalDayTime(0, Integer.parseInt(value), 0, 0, 0);
     BigDecimal secsValueBd = BigDecimal
         .valueOf(v.getTotalSeconds() * 1000);
@@ -533,7 +543,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
    * {@inheritDoc}
    */
   @Override
-  protected RexLiteral createIntervalMinuteConstantExpr(String value) {
+  public RexLiteral createIntervalMinuteConstantExpr(String value) {
     HiveIntervalDayTime v = new HiveIntervalDayTime(0, 0, Integer.parseInt(value), 0, 0);
     BigDecimal secsValueBd = BigDecimal
         .valueOf(v.getTotalSeconds() * 1000);
@@ -547,7 +557,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
    * {@inheritDoc}
    */
   @Override
-  protected RexLiteral createIntervalSecondConstantExpr(String value) {
+  public RexLiteral createIntervalSecondConstantExpr(String value) {
     BigDecimal bd = new BigDecimal(value);
     BigDecimal bdSeconds = new BigDecimal(bd.toBigInteger());
     BigDecimal bdNanos = bd.subtract(bdSeconds);

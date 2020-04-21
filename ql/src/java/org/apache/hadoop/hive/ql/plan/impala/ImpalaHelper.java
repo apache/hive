@@ -35,8 +35,6 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveImpalaRules;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.ImpalaAggCastRule;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.ImpalaRexCastRule;
 import org.apache.hadoop.hive.ql.plan.impala.node.ImpalaPlanRel;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.impala.catalog.BuiltinsDb;
@@ -69,10 +67,6 @@ public class ImpalaHelper {
   public HepProgram getHepProgram(Hive db) {
     HepProgramBuilder programBuilder = new HepProgramBuilder();
     programBuilder.addMatchOrder(HepMatchOrder.DEPTH_FIRST);
-    programBuilder.addRuleInstance(ImpalaAggCastRule.INSTANCE);
-    programBuilder.addRuleInstance(ImpalaRexCastRule.FILTER_INSTANCE);
-    programBuilder.addRuleInstance(ImpalaRexCastRule.JOIN_INSTANCE);
-    programBuilder.addRuleInstance(ImpalaRexCastRule.PROJECT_INSTANCE);
     programBuilder.addRuleInstance(
         new HiveImpalaRules.ImpalaFilterSortRule(HiveRelFactories.HIVE_BUILDER));
     programBuilder.addRuleInstance(
