@@ -47,9 +47,9 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
 
   private static final String DATASKETCHES_PREFIX = "ds";
 
-  private static final String DATA_TO_SKETCH = "sketch";
+  public static final String DATA_TO_SKETCH = "sketch";
+  public static final String SKETCH_TO_ESTIMATE = "estimate";
   private static final String SKETCH_TO_ESTIMATE_WITH_ERROR_BOUNDS = "estimate_bounds";
-  private static final String SKETCH_TO_ESTIMATE = "estimate";
   private static final String SKETCH_TO_STRING = "stringify";
   private static final String UNION_SKETCH = "union";
   private static final String UNION_SKETCH1 = "union_f";
@@ -93,6 +93,17 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
   @Override
   public Iterable<UDFDescriptor> getDescriptors() {
     return descriptors;
+  }
+
+  public SketchFunctionDescriptor getSketchFunction(String className, String function) {
+    if (!sketchClasses.containsKey(className)) {
+      throw new IllegalArgumentException(String.format("Sketch-class '%s' doesn't exists", className));
+    }
+    SketchDescriptor sc = sketchClasses.get(className);
+    if (!sc.fnMap.containsKey(function)) {
+      throw new IllegalArgumentException(String.format("The Sketch-class '%s' doesn't have a '%s' method", function));
+    }
+    return sketchClasses.get(className).fnMap.get(function);
   }
 
   private void buildDescritors() {
@@ -187,6 +198,11 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
 
     public void setCalciteFunction(SqlFunction calciteFunction) {
       this.calciteFunction = calciteFunction;
+    }
+
+    @Override
+    public String toString() {
+      return getClass().getCanonicalName() + "[" + name + "]";
     }
   }
 

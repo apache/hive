@@ -30,18 +30,11 @@ import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlAggFunction;
-import org.apache.calcite.sql.SqlFunctionCategory;
-import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
-import org.apache.calcite.sql.type.InferTypes;
-import org.apache.calcite.sql.type.OperandTypes;
-import org.apache.calcite.sql.type.ReturnTypes;
-import org.apache.calcite.sql.type.SqlOperandTypeInference;
-import org.apache.calcite.sql.type.SqlTypeName;
+import org.apache.hadoop.hive.ql.exec.DataSketchesFunctions;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
-import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveMergeableAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSqlFunction;
+import org.apache.hive.plugin.api.HiveUDFPlugin.UDFDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,7 +58,7 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
   public void onMatch(RelOptRuleCall call) {
     final Aggregate aggregate = call.rel(0);
 
-    if(aggregate.getGroupSets().size()!=1) {
+    if (aggregate.getGroupSets().size() != 1) {
       // not yet supported
       return;
     }
@@ -146,11 +139,10 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
 
     private boolean isSimpleCountDistinct(AggregateCall aggCall) {
       return aggCall.isDistinct() && aggCall.getArgList().size() == 1
-          && aggCall.getAggregation().getName().equalsIgnoreCase("count")
-          && !aggCall.hasFilter();
+          && aggCall.getAggregation().getName().equalsIgnoreCase("count") && !aggCall.hasFilter();
     }
 
-  private void rewriteCountDistinct(AggregateCall aggCall) {
+    private void rewriteCountDistinct(AggregateCall aggCall) {
 
       SqlAggFunction aggFunction = getDS_FN(aggCall.getAggregation());
       boolean distinct = false;
@@ -171,38 +163,27 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
 
       appendAggCall(ret, createSqlOperator());
 
-//    projExpressions.add();
-  }
+      //    projExpressions.add();
+    }
 
-  private SqlOperator createSqlOperator() {
-    SqlOperator ret;
-    String name="ds_hll_estimate";
-    SqlOperandTypeInference xx=InferTypes.ANY_NULLABLE;
-    ret=new HiveSqlFunction(name, SqlKind.OTHER_FUNCTION,
-        ReturnTypes.explicit(SqlTypeName.DOUBLE),
-        xx, OperandTypes.family(),
-        SqlFunctionCategory.USER_DEFINED_FUNCTION, true, false);
-    return ret;
-  }
+    private SqlOperator createSqlOperator() {
+      return getSqlOperator(DataSketchesFunctions.SKETCH_TO_ESTIMATE);
+    }
 
-  // FIXME move this to common place
-  private SqlAggFunction getDS_FN(SqlAggFunction oldAggFunction) {
-      HiveMergeableAggregate union = new HiveMergeableAggregate(
-    "ds_hll_union",
-    SqlKind.OTHER_FUNCTION,
-    oldAggFunction.getReturnTypeInference(),
-    oldAggFunction.getOperandTypeInference(),
-    oldAggFunction.getOperandTypeChecker()
-    );
-      return new HiveMergeableAggregate(
-        "ds_hll_sketch",
-        SqlKind.OTHER_FUNCTION,
-        oldAggFunction.getReturnTypeInference(),
-        oldAggFunction.getOperandTypeInference(),
-        oldAggFunction.getOperandTypeChecker(),union
-        );
+    private SqlAggFunction getDS_FN(SqlAggFunction oldAggFunction) {
+      return (SqlAggFunction) getSqlOperator(DataSketchesFunctions.DATA_TO_SKETCH);
+    }
+
+    private SqlOperator getSqlOperator(String fnName) {
+      String className = "hll";
+      UDFDescriptor fn = DataSketchesFunctions.INSTANCE.getSketchFunction(className, fnName);
+      if (!fn.getCalciteFunction().isPresent()) {
+        throw new RuntimeException(fn.toString() + " doesn't have a Calcite function associated with it");
+      }
+      return fn.getCalciteFunction().get();
+    }
+
   }
-}
 
 }
 
