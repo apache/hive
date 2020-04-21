@@ -5708,7 +5708,7 @@ public class HiveConf extends Configuration {
       // set the hardcoded value first, so anything in hiveserver2-site.xml can override it
       set(ConfVars.METASTORE_CLIENT_CAPABILITIES.varname, "EXTWRITE,EXTREAD,HIVEBUCKET2,HIVEFULLACIDREAD,"
           + "HIVEFULLACIDWRITE,HIVECACHEINVALIDATE,HIVEMANAGESTATS,HIVEMANAGEDINSERTWRITE,HIVEMANAGEDINSERTREAD,"
-          + "HIVESQL,HIVEMQT,HIVEONLYMQTWRITE");
+          + "HIVESQL,HIVEMQT,HIVEONLYMQTWRITE,ACCEPTS_UNMODIFIED_METADATA");
 
       if (hiveServer2SiteUrl != null) {
         addResource(hiveServer2SiteUrl);

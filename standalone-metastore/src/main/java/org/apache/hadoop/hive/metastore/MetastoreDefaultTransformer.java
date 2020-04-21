@@ -65,6 +65,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
   private static final String HIVESQL = "HIVESQL".intern();
   private static final String OBJCAPABILITIES = "OBJCAPABILITIES".intern();
   private static final String MANAGERAWMETADATA = "MANAGE_RAW_METADATA".intern();
+  private static final String ACCEPTSUNMODIFIEDMETADATA = "ACCEPTS_UNMODIFIED_METADATA".intern();
 
   private static final List<String> ACIDCOMMONWRITELIST = new ArrayList(Arrays.asList(
       HIVEMANAGESTATS,
@@ -137,10 +138,12 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
                 newTable.setAccessType(ACCESSTYPE_READONLY);
                 requiredWrites.add(HIVEBUCKET2);
                 StorageDescriptor newSd = new StorageDescriptor(table.getSd());
-                newSd.setNumBuckets(-1); // remove bucketing info
+                if (!processorCapabilities.contains(ACCEPTSUNMODIFIEDMETADATA)) {
+                  LOG.debug("Bucketed table without HIVEBUCKET2 capability, removed bucketing info from table");
+                  newSd.setNumBuckets(-1); // remove bucketing info
+                }
                 newTable.setSd(newSd);
                 newTable.setRequiredWriteCapabilities(requiredWrites);
-                LOG.info("Bucketed table without HIVEBUCKET2 capability, removed bucketing info from table");
               }
             } else { // Unbucketed
               if (processorCapabilities.contains(EXTWRITE) && processorCapabilities.contains(EXTREAD)) {
@@ -269,21 +272,21 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
           }
 
           Table newTable = new Table(table);
-          boolean removedBucketing = false;
 
           if (requiredCapabilities.contains(HIVEBUCKET2) && !processorCapabilities.contains(HIVEBUCKET2)) {
             StorageDescriptor newSd = new StorageDescriptor(table.getSd());
-            newSd.setNumBuckets(-1); // removing bucketing if HIVEBUCKET2 isnt specified
+            if (!processorCapabilities.contains(ACCEPTSUNMODIFIEDMETADATA)) {
+              newSd.setNumBuckets(-1); // removing bucketing if HIVEBUCKET2 isnt specified
+              LOG.debug("Bucketed table without HIVEBUCKET2 capability, removed bucketing info from table");
+            }
             newTable.setSd(newSd);
-            removedBucketing = true;
             newTable.setAccessType(ACCESSTYPE_READONLY);
             LOG.debug("Adding HIVEBUCKET2 to requiredWrites");
             requiredWrites.add(HIVEBUCKET2);
-            LOG.info("Removed bucketing information from table");
           }
 
           if (requiredCapabilities.contains(EXTWRITE) && processorCapabilities.contains(EXTWRITE)) {
-            if (!removedBucketing) {
+            if (!isBucketed) {
               LOG.info("EXTWRITE Matches, accessType=" + ACCESSTYPE_READWRITE);
               newTable.setAccessType(ACCESSTYPE_READWRITE);
               ret.put(newTable, requiredCapabilities);
@@ -468,7 +471,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
       String tCapabilities = params.get(OBJCAPABILITIES);
       if (partition.getSd() != null) {
         partBuckets = partition.getSd().getNumBuckets();
-        LOG.info("Number of original part buckets=" + partBuckets);
+        LOG.debug("Number of original part buckets=" + partBuckets);
       } else {
         partBuckets = 0;
       }
@@ -481,7 +484,8 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
           if (partBuckets > 0 && !processorCapabilities.contains(HIVEBUCKET2)) {
             Partition newPartition = new Partition(partition);
             StorageDescriptor newSd = new StorageDescriptor(partition.getSd());
-            newSd.setNumBuckets(-1); // remove bucketing info
+            if (!processorCapabilities.contains(ACCEPTSUNMODIFIEDMETADATA))
+              newSd.setNumBuckets(-1); // remove bucketing info
             newPartition.setSd(newSd);
             ret.add(newPartition);
           } else {
@@ -494,7 +498,8 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
             if (partBuckets > 0 && !processorCapabilities.contains(HIVEBUCKET2)) {
               Partition newPartition = new Partition(partition);
               StorageDescriptor newSd = new StorageDescriptor(partition.getSd());
-              newSd.setNumBuckets(-1); // remove bucketing info
+              if (!processorCapabilities.contains(ACCEPTSUNMODIFIEDMETADATA))
+                newSd.setNumBuckets(-1); // remove bucketing info
               newPartition.setSd(newSd);
               ret.add(newPartition);
               break;
@@ -520,7 +525,8 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
             if (requiredCapabilities.contains(HIVEBUCKET2) && !processorCapabilities.contains(HIVEBUCKET2)) {
               Partition newPartition = new Partition(partition);
               StorageDescriptor newSd = new StorageDescriptor(partition.getSd());
-              newSd.setNumBuckets(-1); // removing bucketing if HIVEBUCKET2 isnt specified
+              if (!processorCapabilities.contains(ACCEPTSUNMODIFIEDMETADATA))
+                newSd.setNumBuckets(-1); // removing bucketing if HIVEBUCKET2 isnt specified
               newPartition.setSd(newSd);
               LOG.info("Removed bucketing information from partition");
               ret.add(newPartition);
@@ -532,7 +538,8 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
               if (!processorCapabilities.contains(HIVEBUCKET2)) {
                 Partition newPartition = new Partition(partition);
                 StorageDescriptor newSd = new StorageDescriptor(partition.getSd());
-                newSd.setNumBuckets(-1); // remove bucketing info
+                if (!processorCapabilities.contains(ACCEPTSUNMODIFIEDMETADATA))
+                  newSd.setNumBuckets(-1); // remove bucketing info
                 newPartition.setSd(newSd);
                 ret.add(newPartition);
                 break;
