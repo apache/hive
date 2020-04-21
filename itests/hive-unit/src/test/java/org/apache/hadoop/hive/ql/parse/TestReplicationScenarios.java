@@ -315,7 +315,12 @@ public class TestReplicationScenarios {
     verifySetup("SELECT * from " + dbName + ".unptned_empty", empty, driver);
 
     String replicatedDbName = dbName + "_dupe";
-    bootstrapLoadAndVerify(dbName, replicatedDbName);
+    Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replicatedDbName);
+
+    FileSystem fs = new Path(bootstrapDump.dumpLocation).getFileSystem(hconf);
+    Path dumpPath = new Path(bootstrapDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    assertTrue(fs.exists(new Path(dumpPath, ReplUtils.DUMP_ACKNOWLEDGEMENT)));
+    assertTrue(fs.exists(new Path(dumpPath, ReplUtils.LOAD_ACKNOWLEDGEMENT)));
 
     verifyRun("SELECT * from " + replicatedDbName + ".unptned", unptn_data, driverMirror);
     verifyRun("SELECT a from " + replicatedDbName + ".ptned WHERE b=1", ptn_data_1, driverMirror);
@@ -398,6 +403,9 @@ public class TestReplicationScenarios {
     assertEquals(false, hasMoveTask(task));
     assertEquals(true, hasPartitionTask(task));
 
+    Path loadPath = new Path(dump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    //delete load ack to reload the same dump
+    loadPath.getFileSystem(hconf).delete(new Path(loadPath, ReplUtils.LOAD_ACKNOWLEDGEMENT), true);
     loadAndVerify(dbNameReplica, dbName, dump.lastReplId);
 
     run("insert into table " + dbName + ".t2 partition(country='india') values ('delhi')", driver);
@@ -409,6 +417,9 @@ public class TestReplicationScenarios {
     assertEquals(true, hasMoveTask(task));
     assertEquals(true, hasPartitionTask(task));
 
+    loadPath = new Path(dump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    //delete load ack to reload the same dump
+    loadPath.getFileSystem(hconf).delete(new Path(loadPath, ReplUtils.LOAD_ACKNOWLEDGEMENT), true);
     loadAndVerify(dbNameReplica, dbName, dump.lastReplId);
 
     run("insert into table " + dbName + ".t2 partition(country='us') values ('sf')", driver);
@@ -491,7 +502,6 @@ public class TestReplicationScenarios {
 
     // Load to an empty database
     Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, dbName + "_empty");
-    String replDumpLocn = bootstrapDump.dumpLocation;
     verifyRun("SELECT * from " + dbName + "_empty.unptned", unptn_data, driverMirror);
 
     String[] nullReplId = new String[]{ "NULL" };
@@ -499,8 +509,8 @@ public class TestReplicationScenarios {
     // Create a database with a table
     createDB(dbName + "_withtable", driverMirror);
     run("CREATE TABLE " + dbName + "_withtable.unptned(a string) STORED AS TEXTFILE", driverMirror);
-    // Load using same dump to a DB with table. It should fail as DB is not empty.
-    verifyFail("REPL LOAD " + dbName + " INTO " + dbName + "_withtable ", driverMirror);
+    // Load using same dump to a DB with table will not do anything. Just print a log saying its already loaded
+    run("REPL LOAD " + dbName + " INTO " + dbName + "_withtable ", driverMirror);
 
     // REPL STATUS should return NULL
     verifyRun("REPL STATUS " + dbName + "_withtable", nullReplId, driverMirror);
@@ -509,8 +519,8 @@ public class TestReplicationScenarios {
     createDB(dbName + "_withview", driverMirror);
     run("CREATE TABLE " + dbName + "_withview.unptned(a string) STORED AS TEXTFILE", driverMirror);
     run("CREATE VIEW " + dbName + "_withview.view AS SELECT * FROM " + dbName + "_withview.unptned", driverMirror);
-    // Load using same dump to a DB with view. It should fail as DB is not empty.
-    verifyFail("REPL LOAD " + dbName + " INTO " + dbName + "_withview", driverMirror);
+    // Load using same dump to a DB with table will not do anything. Just print a log saying its already loaded
+    run("REPL LOAD " + dbName + " INTO " + dbName + "_withview", driverMirror);
 
     // REPL STATUS should return NULL
     verifyRun("REPL STATUS " + dbName + "_withview", nullReplId, driverMirror);
@@ -841,7 +851,11 @@ public class TestReplicationScenarios {
     verifySetup("SELECT a from " + dbName + ".ptned_late WHERE b=2", ptn_data_2, driver);
 
     // Perform REPL-DUMP/LOAD
-    incrementalLoadAndVerify(dbName, replDbName);
+    Tuple incrementalDump = incrementalLoadAndVerify(dbName, replDbName);
+    FileSystem fs = new Path(bootstrapDump.dumpLocation).getFileSystem(hconf);
+    Path dumpPath = new Path(incrementalDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    assertTrue(fs.exists(new Path(dumpPath, ReplUtils.DUMP_ACKNOWLEDGEMENT)));
+    assertTrue(fs.exists(new Path(dumpPath, ReplUtils.LOAD_ACKNOWLEDGEMENT)));
 
     // VERIFY tables and partitions on destination for equivalence.
     verifyRun("SELECT * from " + replDbName + ".unptned_empty", empty, driverMirror);
@@ -1340,7 +1354,7 @@ public class TestReplicationScenarios {
   }
 
   @Test
-  public void testBootstrapWithDataInDumpDir() throws IOException {
+  public void testBootstrapWithDataInDumpDir() throws IOException, TException {
     String nameOfTest = "testBootstrapWithDataInDumpDir";
     String dbName = createDB(nameOfTest, driver);
     String replDbName = dbName + "_dupe";
@@ -1374,19 +1388,21 @@ public class TestReplicationScenarios {
     run("LOAD DATA LOCAL INPATH '" + ptnLocn2 + "' INTO TABLE " + dbName
             + ".ptned PARTITION(b=2)", driver);
     Tuple dump = replDumpDb(dbName);
-    Path path = new Path(System.getProperty("test.warehouse.dir", ""));
-    String tableRelativeSrcPath = dbName.toLowerCase()+".db" + File.separator + "unptned";
-    Path srcFileLocation = new Path(path, tableRelativeSrcPath + File.separator + unptnedFileName1);
+    Database db = metaStoreClient.getDatabase(dbName);
+    Path dbPath = new Path(db.getManagedLocationUri());
+    Path tableRelativeSrcPath = new Path(dbPath, "unptned");
+    Path srcFileLocation = new Path(tableRelativeSrcPath, unptnedFileName1);
     String tgtFileRelativePath = ReplUtils.REPL_HIVE_BASE_DIR + File.separator + dbName.toLowerCase() + File.separator
             + "unptned" + File.separator + EximUtil.DATA_PATH_NAME +File.separator + unptnedFileName1;
     Path tgtFileLocation = new Path(dump.dumpLocation, tgtFileRelativePath);
     //A file in table at src location should be copied to $dumplocation/hive/<db>/<table>/data/<unptned_fileName>
     verifyChecksum(srcFileLocation, tgtFileLocation, true);
-    srcFileLocation = new Path(path, tableRelativeSrcPath + File.separator + unptnedFileName2);
+    srcFileLocation = new Path(tableRelativeSrcPath, unptnedFileName2);
     verifyChecksum(srcFileLocation, tgtFileLocation, false);
 
-    String partitionRelativeSrcPath = dbName.toLowerCase()+".db" + File.separator + "ptned" + File.separator + "b=1";
-    srcFileLocation = new Path(path, partitionRelativeSrcPath + File.separator + ptnedFileName1);
+    tableRelativeSrcPath = new Path(dbPath, "ptned");
+    Path partitionRelativeSrcPath = new Path(tableRelativeSrcPath,  "b=1");
+    srcFileLocation = new Path(partitionRelativeSrcPath, ptnedFileName1);
     tgtFileRelativePath = ReplUtils.REPL_HIVE_BASE_DIR + File.separator + dbName.toLowerCase()
             + File.separator + "ptned" + File.separator + "b=1" + File.separator
             + EximUtil.DATA_PATH_NAME +File.separator + ptnedFileName1;
@@ -1394,8 +1410,8 @@ public class TestReplicationScenarios {
     //A partitioned file in table at src location should be copied to
     // $dumplocation/hive/<db>/<table>/<partition>/data/<unptned_fileName>
     verifyChecksum(srcFileLocation, tgtFileLocation, true);
-    partitionRelativeSrcPath = dbName.toLowerCase()+".db" + File.separator + "ptned" + File.separator + "b=2";
-    srcFileLocation = new Path(path, partitionRelativeSrcPath + File.separator + ptnedFileName2);
+    partitionRelativeSrcPath = new Path(tableRelativeSrcPath,  "b=2");
+    srcFileLocation = new Path(partitionRelativeSrcPath, ptnedFileName2);
     loadAndVerify(replDbName, dbName, dump.lastReplId);
     verifyChecksum(srcFileLocation, tgtFileLocation, false);
     verifySetup("SELECT * from " + replDbName + ".unptned", unptnAllData, driver);
@@ -2378,7 +2394,7 @@ public class TestReplicationScenarios {
 
     Tuple bootstrapDump = replDumpDb(dbName);
     String replDumpId = bootstrapDump.lastReplId;
-    String replDumpLocn = bootstrapDump.dumpLocation;
+    run("REPL LOAD " + dbName + " INTO " + replDbName, driverMirror);
 
     String[] empty = new String[] {};
     String[] unptn_data = new String[] { "eleven", "thirteen" };
@@ -2389,39 +2405,31 @@ public class TestReplicationScenarios {
     run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[0] + "')", driver);
     Tuple firstInsert = replDumpDb(dbName);
     Integer numOfEventsIns1 = Integer.valueOf(firstInsert.lastReplId) - Integer.valueOf(replDumpId);
+    // load only first insert (1 record)
+    loadAndVerify(replDbName, dbName, firstInsert.lastReplId);
+    verifyRun("SELECT a from " + dbName + "_dupe.unptned ORDER BY a", unptn_data_load1, driverMirror);
 
     // x events to insert, last repl ID: replDumpId+2x
     run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[1] + "')", driver);
     verifyRun("SELECT a from " + dbName + ".unptned ORDER BY a", unptn_data, driver);
     Tuple secondInsert = replDumpDb(dbName);
     Integer numOfEventsIns2 = Integer.valueOf(secondInsert.lastReplId) - Integer.valueOf(firstInsert.lastReplId);
+    // load only second insert (2 records)
+    loadAndVerify(replDbName, dbName, secondInsert.lastReplId);
+    verifyRun("SELECT a from " + replDbName + ".unptned ORDER BY a", unptn_data_load2, driverMirror);
 
     // y event to truncate, last repl ID: replDumpId+2x+y
     run("TRUNCATE TABLE " + dbName + ".unptned", driver);
     verifyRun("SELECT a from " + dbName + ".unptned ORDER BY a", empty, driver);
     Tuple thirdTrunc = replDumpDb(dbName);
     Integer numOfEventsTrunc3 = Integer.valueOf(thirdTrunc.lastReplId) - Integer.valueOf(secondInsert.lastReplId);
+    // load only truncate (0 records)
+    loadAndVerify(replDbName, dbName, thirdTrunc.lastReplId);
+    verifyRun("SELECT a from " + replDbName + ".unptned ORDER BY a", empty, driverMirror);
 
     // x events to insert, last repl ID: replDumpId+3x+y
     run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data_load1[0] + "')", driver);
     verifyRun("SELECT a from " + dbName + ".unptned ORDER BY a", unptn_data_load1, driver);
-
-    run("REPL LOAD " + dbName + " INTO " + replDbName, driverMirror);
-
-    // Dump and load only first insert (1 record)
-    loadAndVerify(replDbName, dbName, firstInsert.lastReplId);
-
-    verifyRun("SELECT a from " + dbName + "_dupe.unptned ORDER BY a", unptn_data_load1, driverMirror);
-
-    // Dump and load only second insert (2 records)
-
-
-    loadAndVerify(replDbName, dbName, secondInsert.lastReplId);
-    verifyRun("SELECT a from " + replDbName + ".unptned ORDER BY a", unptn_data_load2, driverMirror);
-
-    // Dump and load only truncate (0 records)
-    loadAndVerify(replDbName, dbName, thirdTrunc.lastReplId);
-    verifyRun("SELECT a from " + replDbName + ".unptned ORDER BY a", empty, driverMirror);
 
     // Dump and load insert after truncate (1 record)
     incrementalLoadAndVerify(dbName, replDbName);
@@ -2437,10 +2445,7 @@ public class TestReplicationScenarios {
 
     // Bootstrap dump/load
     String replDbName = dbName + "_dupe";
-    Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replDbName);
-
-    // List to maintain the incremental dumps for each operation
-    List<Tuple> incrementalDumpList = new ArrayList<Tuple>();
+    bootstrapLoadAndVerify(dbName, replDbName);
 
     String[] empty = new String[] {};
     String[] unptn_data = new String[] { "ten" };
@@ -2450,48 +2455,48 @@ public class TestReplicationScenarios {
     // INSERT EVENT to unpartitioned table
     run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[0] + "')", driver);
     Tuple replDump = replDumpDb(dbName);
-    incrementalDumpList.add(replDump);
     Thread.sleep(1000);
     // INSERT EVENT to partitioned table with dynamic ADD_PARTITION
     run("INSERT INTO TABLE " + dbName + ".ptned PARTITION(b=1) values('" + ptn_data_1[0] + "')", driver);
+    //Second dump without load will print a warning
+    run("REPL DUMP " + dbName, driverMirror);
+    //Load the previous dump first
+    loadAndVerify(replDbName, dbName, replDump.lastReplId);
+
     replDump = replDumpDb(dbName);
-    incrementalDumpList.add(replDump);
+    loadAndVerify(replDbName, dbName, replDump.lastReplId);
     Thread.sleep(1000);
     // ADD_PARTITION EVENT to partitioned table
     run("ALTER TABLE " + dbName + ".ptned ADD PARTITION (b=2)", driver);
     replDump = replDumpDb(dbName);
-    incrementalDumpList.add(replDump);
+    loadAndVerify(replDbName, dbName, replDump.lastReplId);
     Thread.sleep(1000);
     // INSERT EVENT to partitioned table on existing partition
     run("INSERT INTO TABLE " + dbName + ".ptned PARTITION(b=2) values('" + ptn_data_2[0] + "')", driver);
     replDump = replDumpDb(dbName);
-    incrementalDumpList.add(replDump);
+    loadAndVerify(replDbName, dbName, replDump.lastReplId);
     Thread.sleep(1000);
     // TRUNCATE_PARTITION EVENT on partitioned table
     run("TRUNCATE TABLE " + dbName + ".ptned PARTITION (b=1)", driver);
     replDump = replDumpDb(dbName);
-    incrementalDumpList.add(replDump);
+    loadAndVerify(replDbName, dbName, replDump.lastReplId);
     Thread.sleep(1000);
     // TRUNCATE_TABLE EVENT on unpartitioned table
     run("TRUNCATE TABLE " + dbName + ".unptned", driver);
     replDump = replDumpDb(dbName);
-    incrementalDumpList.add(replDump);
+    loadAndVerify(replDbName, dbName, replDump.lastReplId);
     Thread.sleep(1000);
     // CREATE_TABLE EVENT with multiple partitions
     run("CREATE TABLE " + dbName + ".unptned_tmp AS SELECT * FROM " + dbName + ".ptned", driver);
     replDump = replDumpDb(dbName);
-    incrementalDumpList.add(replDump);
+    loadAndVerify(replDbName, dbName, replDump.lastReplId);
     Thread.sleep(1000);
     // ADD_CONSTRAINT EVENT
     run("ALTER TABLE " + dbName + ".unptned_tmp ADD CONSTRAINT uk_unptned UNIQUE(a) disable", driver);
     replDump = replDumpDb(dbName);
-    incrementalDumpList.add(replDump);
+    loadAndVerify(replDbName, dbName, replDump.lastReplId);
     Thread.sleep(1000);
-    // Replicate all the events happened so far
-    for (Tuple currDump : incrementalDumpList) {
-      // Load the incremental dump and ensure it does nothing and lastReplID remains same
-      loadAndVerify(replDbName, dbName, currDump.lastReplId);
-    }
+
     Tuple incrDump = incrementalLoadAndVerify(dbName, replDbName);
 
     verifyRun("SELECT a from " + replDbName + ".unptned ORDER BY a", empty, driverMirror);
@@ -2521,10 +2526,7 @@ public class TestReplicationScenarios {
 
     // Bootstrap dump/load
     String replDbName = dbName + "_dupe";
-    Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replDbName);
-
-    // List to maintain the incremental dumps for each operation
-    List<Tuple> incrementalDumpList = new ArrayList<Tuple>();
+    bootstrapLoadAndVerify(dbName, replDbName);
 
     String[] unptn_data = new String[] { "ten" };
     String[] ptn_data_1 = new String[] { "fifteen" };
@@ -2533,78 +2535,74 @@ public class TestReplicationScenarios {
     // INSERT EVENT to unpartitioned table
     run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[0] + "')", driver);
     Tuple replDump = replDumpDb(dbName);
-    incrementalDumpList.add(replDump);
+    loadAndVerify(replDbName, dbName, replDump.lastReplId);
     Thread.sleep(1000);
     // INSERT EVENT to partitioned table with dynamic ADD_PARTITION
     run("INSERT INTO TABLE " + dbName + ".ptned partition(b=1) values('" + ptn_data_1[0] + "')", driver);
     replDump = replDumpDb(dbName);
-    incrementalDumpList.add(replDump);
+    loadAndVerify(replDbName, dbName, replDump.lastReplId);
     Thread.sleep(1000);
     // ADD_PARTITION EVENT to partitioned table
     run("ALTER TABLE " + dbName + ".ptned ADD PARTITION (b=2)", driver);
     replDump = replDumpDb(dbName);
-    incrementalDumpList.add(replDump);
+    loadAndVerify(replDbName, dbName, replDump.lastReplId);
     Thread.sleep(1000);
     // INSERT EVENT to partitioned table on existing partition
     run("INSERT INTO TABLE " + dbName + ".ptned partition(b=2) values('" + ptn_data_2[0] + "')", driver);
     replDump = replDumpDb(dbName);
-    incrementalDumpList.add(replDump);
+    loadAndVerify(replDbName, dbName, replDump.lastReplId);
     Thread.sleep(1000);
     // TRUNCATE_PARTITION EVENT on partitioned table
     run("TRUNCATE TABLE " + dbName + ".ptned PARTITION(b=1)", driver);
     replDump = replDumpDb(dbName);
-    incrementalDumpList.add(replDump);
+    loadAndVerify(replDbName, dbName, replDump.lastReplId);
     Thread.sleep(1000);
     // TRUNCATE_TABLE EVENT on unpartitioned table
     run("TRUNCATE TABLE " + dbName + ".unptned", driver);
     replDump = replDumpDb(dbName);
-    incrementalDumpList.add(replDump);
+    loadAndVerify(replDbName, dbName, replDump.lastReplId);
     Thread.sleep(1000);
     // CREATE_TABLE EVENT on partitioned table
     run("CREATE TABLE " + dbName + ".ptned_tmp (a string) PARTITIONED BY (b int) STORED AS TEXTFILE", driver);
     replDump = replDumpDb(dbName);
-    incrementalDumpList.add(replDump);
+    loadAndVerify(replDbName, dbName, replDump.lastReplId);
     Thread.sleep(1000);
     // INSERT EVENT to partitioned table with dynamic ADD_PARTITION
     run("INSERT INTO TABLE " + dbName + ".ptned_tmp partition(b=10) values('" + ptn_data_1[0] + "')", driver);
     replDump = replDumpDb(dbName);
-    incrementalDumpList.add(replDump);
+    loadAndVerify(replDbName, dbName, replDump.lastReplId);
     Thread.sleep(1000);
     // INSERT EVENT to partitioned table with dynamic ADD_PARTITION
     run("INSERT INTO TABLE " + dbName + ".ptned_tmp partition(b=20) values('" + ptn_data_2[0] + "')", driver);
     replDump = replDumpDb(dbName);
-    incrementalDumpList.add(replDump);
+    loadAndVerify(replDbName, dbName, replDump.lastReplId);
     Thread.sleep(1000);
     // DROP_PARTITION EVENT to partitioned table
     run("ALTER TABLE " + dbName + ".ptned DROP PARTITION (b=1)", driver);
     replDump = replDumpDb(dbName);
-    incrementalDumpList.add(replDump);
+    loadAndVerify(replDbName, dbName, replDump.lastReplId);
     Thread.sleep(1000);
     // RENAME_PARTITION EVENT to partitioned table
     run("ALTER TABLE " + dbName + ".ptned PARTITION (b=2) RENAME TO PARTITION (b=20)", driver);
     replDump = replDumpDb(dbName);
-    incrementalDumpList.add(replDump);
+    loadAndVerify(replDbName, dbName, replDump.lastReplId);
     Thread.sleep(1000);
     // RENAME_TABLE EVENT to unpartitioned table
     run("ALTER TABLE " + dbName + ".unptned RENAME TO " + dbName + ".unptned_new", driver);
     replDump = replDumpDb(dbName);
-    incrementalDumpList.add(replDump);
+    loadAndVerify(replDbName, dbName, replDump.lastReplId);
     Thread.sleep(1000);
     // ADD_CONSTRAINT EVENT
     run("ALTER TABLE " + dbName + ".ptned_tmp ADD CONSTRAINT uk_unptned UNIQUE(a) disable", driver);
     replDump = replDumpDb(dbName);
-    incrementalDumpList.add(replDump);
+    loadAndVerify(replDbName, dbName, replDump.lastReplId);
     Thread.sleep(1000);
     // DROP_TABLE EVENT to partitioned table
     run("DROP TABLE " + dbName + ".ptned_tmp", driver);
     replDump = replDumpDb(dbName);
-    incrementalDumpList.add(replDump);
+    loadAndVerify(replDbName, dbName, replDump.lastReplId);
     Thread.sleep(1000);
-    // Load each incremental dump from the list. Each dump have only one operation.
-    for (Tuple currDump : incrementalDumpList) {
-      // Load the current incremental dump and ensure it does nothing and lastReplID remains same
-      loadAndVerify(replDbName, dbName, currDump.lastReplId);
-    }
+
     // Replicate all the events happened so far
     Tuple incrDump = incrementalLoadAndVerify(dbName, replDbName);
 
@@ -3208,6 +3206,7 @@ public class TestReplicationScenarios {
     fs.delete(path);
     driverMirror.run("REPL LOAD " + dbName + " INTO " + dbName);
     run("drop database " + dbName, true, driver);
+    fs.create(path, false);
   }
 
   /*
@@ -3286,14 +3285,12 @@ public class TestReplicationScenarios {
     verifyFail("REPL DUMP " + dbName, driver);
     assertTrue(run("REPL DUMP " + dbName + " with ('hive.repl.dump.metadata.only' = 'true')",
             true, driver));
+    //Dump again before load will print a warning
     assertTrue(run("REPL DUMP " + dbName + " with ('hive.repl.dump.metadata.only' = 'true')",
             true, driver));
-    run("alter database " + dbName + " set dbproperties ('repl.source.for' = '1, 2, 3')", driver);
-    assertTrue(run("REPL DUMP " + dbName, true, driver));
-    assertTrue(run("REPL DUMP " + dbName, true, driver));
+
     dbName = createDBNonRepl(testName.getMethodName() + "_case", driver);
     run("alter database " + dbName + " set dbproperties ('repl.SOURCE.for' = '1, 2, 3')", driver);
-    assertTrue(run("REPL DUMP " + dbName, true, driver));
     assertTrue(run("REPL DUMP " + dbName, true, driver));
   }
 
@@ -3424,7 +3421,7 @@ public class TestReplicationScenarios {
 
   private static String createDB(String name, IDriver myDriver) {
     LOG.info("Testing " + name);
-    String mgdLocation = System.getProperty("test.warehouse.dir", "file:/tmp/warehouse/managed");
+    String mgdLocation = System.getProperty("test.warehouse.dir", "/tmp/warehouse/managed");
     String extLocation = System.getProperty("test.warehouse.external.dir", "/tmp/warehouse/external");
     run("CREATE DATABASE " + name + " LOCATION '" + extLocation + "/" + name + ".db' MANAGEDLOCATION '" + mgdLocation + "/" + name + ".db' WITH DBPROPERTIES ( '" +
             SOURCE_OF_REPLICATION + "' = '1,2,3')", myDriver);

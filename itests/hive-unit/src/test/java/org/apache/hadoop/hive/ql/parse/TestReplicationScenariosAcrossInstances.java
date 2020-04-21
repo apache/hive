@@ -685,18 +685,6 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .run("insert into table2 partition(country='india') values(1)")
             .dump(primaryDbName, Collections.emptyList());
 
-    // Second incremental dump
-    WarehouseInstance.Tuple secondIncremental = primary.run("use " + primaryDbName)
-            .run("drop table table1")
-            .run("drop table table2")
-            .run("create table table2 (id int) partitioned by (country string)")
-            .run("alter table table2 add partition(country='india')")
-            .run("alter table table2 drop partition(country='india')")
-            .run("insert into table2 partition(country='us') values(2)")
-            .run("create table table1 (i int)")
-            .run("insert into table1 values (2)")
-            .dump(primaryDbName, Collections.emptyList());
-
     // First incremental load
     replica.load(replicatedDbName, primaryDbName)
             .status(replicatedDbName)
@@ -708,6 +696,18 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .verifyResults(new String[] {"1"})
             .run("select id from table2 order by id")
             .verifyResults(new String[] {"1"});
+
+    // Second incremental dump
+    WarehouseInstance.Tuple secondIncremental = primary.run("use " + primaryDbName)
+            .run("drop table table1")
+            .run("drop table table2")
+            .run("create table table2 (id int) partitioned by (country string)")
+            .run("alter table table2 add partition(country='india')")
+            .run("alter table table2 drop partition(country='india')")
+            .run("insert into table2 partition(country='us') values(2)")
+            .run("create table table1 (i int)")
+            .run("insert into table1 values (2)")
+            .dump(primaryDbName, Collections.emptyList());
 
     // Second incremental load
     replica.load(replicatedDbName, primaryDbName)
@@ -742,6 +742,18 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
         .run("insert into table3 partition(country='india') values(3)")
         .dump(primaryDbName, Collections.emptyList());
 
+    // First incremental load
+    replica.load(replicatedDbName, primaryDbName)
+            .status(replicatedDbName)
+            .verifyResult(firstIncremental.lastReplicationId)
+            .run("use " + replicatedDbName)
+            .run("select id from table1")
+            .verifyResults(new String[] {"1"})
+            .run("select * from table2")
+            .verifyResults(new String[] {"2"})
+            .run("select id from table3")
+            .verifyResults(new String[] {"3"});
+
     // Second incremental dump
     WarehouseInstance.Tuple secondIncremental = primary.run("use " + primaryDbName)
         .run("drop table table1")
@@ -754,18 +766,6 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
         .run("create table table3 (id int) partitioned by (name string, rank int)")
         .run("insert into table3 partition(name='adam', rank=100) values(30)")
         .dump(primaryDbName, Collections.emptyList());
-
-    // First incremental load
-    replica.load(replicatedDbName, primaryDbName)
-        .status(replicatedDbName)
-        .verifyResult(firstIncremental.lastReplicationId)
-        .run("use " + replicatedDbName)
-        .run("select id from table1")
-        .verifyResults(new String[] { "1" })
-        .run("select * from table2")
-        .verifyResults(new String[] { "2" })
-        .run("select id from table3")
-        .verifyResults(new String[] { "3" });
 
     // Second incremental load
     replica.load(replicatedDbName, primaryDbName)
@@ -877,16 +877,6 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
       assertTrue(e.getErrorMessage().toLowerCase()
               .contains("semanticException no data to load in path".toLowerCase()));
     }
-
-    // Bootstrap load from an empty dump directory should return empty load directory error. Since we have repl status
-    //check on target
-    tuple = primary.dump("someJunkDB");
-    try {
-      replica.runCommand("REPL LOAD someJunkDB into someJunkDB ");
-    } catch (CommandProcessorException e) {
-      assertTrue(e.getErrorMessage().toLowerCase().contains("semanticException no data to load in path".toLowerCase()));
-    }
-
     primary.run(" drop database if exists " + testDbName + " cascade");
   }
 
@@ -931,7 +921,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     Path path = new Path(hiveDumpDir);
     FileSystem fs = path.getFileSystem(conf);
     FileStatus[] fileStatus = fs.listStatus(path);
-    int numEvents = fileStatus.length - 2; //one is metadata file and one data dir
+    int numEvents = fileStatus.length - 3; //one is metadata file and one data dir and one is _dump ack
 
     replica.load(replicatedDbName, primaryDbName,
         Collections.singletonList("'hive.repl.approx.max.load.tasks'='1'"))
@@ -1098,9 +1088,16 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     String hiveDumpLocation = tuple.dumpLocation + File.separator + ReplUtils.REPL_HIVE_BASE_DIR;
     replica.verifyIfCkptSet(replicatedDbName, hiveDumpLocation);
 
+    // To retry with same dump delete the load ack
+    new Path(tuple.dumpLocation).getFileSystem(conf).delete(new Path(
+            hiveDumpLocation, ReplUtils.LOAD_ACKNOWLEDGEMENT), true);
+
     // Retry with same dump with which it was already loaded also fails.
     replica.loadFailure(replicatedDbName, primaryDbName);
 
+    // To retry with same dump delete the load ack
+    new Path(tuple.dumpLocation).getFileSystem(conf).delete(new Path(
+            hiveDumpLocation, ReplUtils.LOAD_ACKNOWLEDGEMENT), true);
     // Retry from same dump when the database is empty is also not allowed.
     replica.run("drop table t1")
             .run("drop table t2")
@@ -1114,10 +1111,6 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .run("create table t1(a string, b string, primary key (a, b) disable novalidate rely)")
             .run("create table t2(a string, b string, foreign key (a, b) references t1(a, b) disable novalidate)")
             .run("create table t3(a string, b string not null disable, unique (a) disable)")
-            .dump(primaryDbName);
-
-    WarehouseInstance.Tuple tuple2 = primary
-            .run("use " + primaryDbName)
             .dump(primaryDbName);
 
     // Need to drop the primary DB as metastore is shared by both primary/replica. So, constraints
@@ -1331,7 +1324,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .dump(primaryDbName);
 
     testMoveOptimization(primaryDbName, replicatedDbName, replicatedDbName_CM, "t2",
-            "ADD_PARTITION");
+            "ADD_PARTITION", tuple);
   }
 
   @Test
@@ -1345,6 +1338,10 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .run("create table t1 (place string) partitioned by (country string)")
             .dump(primaryDbName);
     replica.load(replicatedDbName, primaryDbName, withConfigs);
+    //delete load ack to reuse the dump
+    new Path(tuple.dumpLocation).getFileSystem(conf).delete(new Path(tuple.dumpLocation
+            + Path.SEPARATOR + ReplUtils.REPL_HIVE_BASE_DIR + Path.SEPARATOR
+            + ReplUtils.LOAD_ACKNOWLEDGEMENT), true);
     replica.load(replicatedDbName_CM, primaryDbName, withConfigs);
     replica.run("alter database " + replicatedDbName + " set DBPROPERTIES ('" + SOURCE_OF_REPLICATION + "' = '1,2,3')")
         .run("alter database " + replicatedDbName_CM + " set DBPROPERTIES ('" + SOURCE_OF_REPLICATION + "' = '1,2,3')");
@@ -1353,7 +1350,8 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .run("insert overwrite table t1 select * from t2")
             .dump(primaryDbName, Collections.emptyList());
 
-    testMoveOptimization(primaryDbName, replicatedDbName, replicatedDbName_CM, "t1", "ADD_PARTITION");
+    testMoveOptimization(primaryDbName, replicatedDbName, replicatedDbName_CM, "t1", "ADD_PARTITION",
+            tuple);
   }
 
   @Test
@@ -1361,24 +1359,28 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     List<String> withConfigs =
         Collections.singletonList("'hive.repl.enable.move.optimization'='true'");
     String replicatedDbName_CM = replicatedDbName + "_CM";
-    primary.run("use " + primaryDbName)
+    WarehouseInstance.Tuple bootstrapDump = primary.run("use " + primaryDbName)
             .run("create table t2 (place string) partitioned by (country string)")
             .run("ALTER TABLE t2 ADD PARTITION (country='india')")
             .dump(primaryDbName);
     replica.load(replicatedDbName, primaryDbName, withConfigs);
+    //delete load ack to reuse the dump
+    new Path(bootstrapDump.dumpLocation).getFileSystem(conf).delete(new Path(bootstrapDump.dumpLocation
+            + Path.SEPARATOR + ReplUtils.REPL_HIVE_BASE_DIR + Path.SEPARATOR + ReplUtils.LOAD_ACKNOWLEDGEMENT),
+            true);
     replica.load(replicatedDbName_CM, primaryDbName, withConfigs);
     replica.run("alter database " + replicatedDbName + " set DBPROPERTIES ('" + SOURCE_OF_REPLICATION + "' = '1,2,3')")
         .run("alter database " + replicatedDbName_CM + " set DBPROPERTIES ('" + SOURCE_OF_REPLICATION + "' = '1,2,3')");
 
-    primary.run("use " + primaryDbName)
+    WarehouseInstance.Tuple tuple = primary.run("use " + primaryDbName)
             .run("insert into table t2 partition(country='india') values ('bangalore')")
             .dump(primaryDbName, Collections.emptyList());
 
-    testMoveOptimization(primaryDbName, replicatedDbName, replicatedDbName_CM, "t2", "INSERT");
+    testMoveOptimization(primaryDbName, replicatedDbName, replicatedDbName_CM, "t2", "INSERT", tuple);
   }
 
   private void testMoveOptimization(String primaryDb, String replicaDb, String replicatedDbName_CM,
-                                    String tbl,  String eventType) throws Throwable {
+                                    String tbl,  String eventType, WarehouseInstance.Tuple tuple) throws Throwable {
     List<String> withConfigs =
         Collections.singletonList("'hive.repl.enable.move.optimization'='true'");
 
@@ -1414,6 +1416,11 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
 
     primary.run("use " + primaryDb)
             .run("drop table " + tbl);
+
+    //delete load ack to reuse the dump
+    new Path(tuple.dumpLocation).getFileSystem(conf).delete(new Path(tuple.dumpLocation
+            + Path.SEPARATOR + ReplUtils.REPL_HIVE_BASE_DIR + Path.SEPARATOR
+            + ReplUtils.LOAD_ACKNOWLEDGEMENT), true);
 
     InjectableBehaviourObjectStore.setAddNotificationModifier(callerVerifier);
     try {

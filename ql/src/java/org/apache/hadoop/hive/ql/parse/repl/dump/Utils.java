@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.utils.Retry;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -79,6 +80,23 @@ public class Utils {
       throw new SemanticException(e);
     } finally {
       IOUtils.closeStream(outStream);
+    }
+  }
+
+  public static void create(Path outputFile, HiveConf hiveConf)
+          throws SemanticException {
+    Retry<Void> retriable = new Retry<Void>(IOException.class) {
+      @Override
+      public Void execute() throws IOException {
+        FileSystem fs = outputFile.getFileSystem(hiveConf);
+        fs.create(outputFile);
+        return null;
+      }
+    };
+    try {
+      retriable.run();
+    } catch (Exception e) {
+      throw new SemanticException(e);
     }
   }
 
