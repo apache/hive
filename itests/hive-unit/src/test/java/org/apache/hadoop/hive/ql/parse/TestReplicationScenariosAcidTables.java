@@ -902,8 +902,10 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     WarehouseInstance.Tuple incrementalDump2 = primary.run("use " + primaryDbName)
             .dump(primaryDbName);
 
-    assertEquals(incrementalDump1.dumpLocation, incrementalDump2.dumpLocation);
+    assertTrue(incrementalDump1.dumpLocation != incrementalDump2.dumpLocation);
+    hiveDumpDir = new Path(incrementalDump2.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
     ackFile = new Path(hiveDumpDir, ReplAck.DUMP_ACKNOWLEDGEMENT.toString());
+    firstIncEventRoot =  new Path(hiveDumpDir, String.valueOf(firstIncEventID));
     assertTrue(fs.exists(ackFile));
     long firstIncEventModTimeNew =  fs.getFileStatus(firstIncEventRoot).getModificationTime();
     assertTrue(firstIncEventModTimeNew > firstIncEventModTimeOld);
