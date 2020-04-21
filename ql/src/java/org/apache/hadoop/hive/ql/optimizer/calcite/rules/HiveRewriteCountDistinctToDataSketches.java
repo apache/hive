@@ -24,7 +24,6 @@ import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.AggregateCall;
-import org.apache.calcite.rel.core.RelFactories;
 import org.apache.calcite.rel.core.RelFactories.AggregateFactory;
 import org.apache.calcite.rel.core.RelFactories.ProjectFactory;
 import org.apache.calcite.rel.type.RelDataType;
@@ -49,41 +48,18 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.ImmutableList;
 
 /**
- * Planner rule that expands distinct aggregates
- * (such as {@code COUNT(DISTINCT x)}) from a
- * {@link org.apache.calcite.rel.core.Aggregate}.
- *
- * <p>How this is done depends upon the arguments to the function. If all
- * functions have the same argument
- * (e.g. {@code COUNT(DISTINCT x), SUM(DISTINCT x)} both have the argument
- * {@code x}) then one extra {@link org.apache.calcite.rel.core.Aggregate} is
- * sufficient.
- *
- * <p>If there are multiple arguments
- * (e.g. {@code COUNT(DISTINCT x), COUNT(DISTINCT y)})
- * the rule creates separate {@code Aggregate}s and combines using a
- * {@link org.apache.calcite.rel.core.Join}.
+ * This rule could rewrite {@code count(distinct(x))} calls to be calculated using sketch based functions.
  */
-
-// Stripped down version of org.apache.calcite.rel.rules.AggregateExpandDistinctAggregatesRule
-// This is adapted for Hive, but should eventually be deleted from Hive and make use of above.
-
 public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
-  //~ Static fields/initializers ---------------------------------------------
 
   /** The default instance of the rule; operates only on logical expressions. */
   public static final HiveRewriteCountDistinctToDataSketches INSTANCE = new HiveRewriteCountDistinctToDataSketches();
-
-  @Deprecated
-  private static RelFactories.ProjectFactory projFactory;
 
   protected static final Logger LOG = LoggerFactory.getLogger(HiveRewriteCountDistinctToDataSketches.class);
 
   public HiveRewriteCountDistinctToDataSketches() {
     super(operand(HiveAggregate.class, any()));
-    projFactory = HiveRelFactories.HIVE_PROJECT_FACTORY;
   }
-
 
   @Override
   public void onMatch(RelOptRuleCall call) {
@@ -100,18 +76,7 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
 
     VBuilder vb = new VBuilder(aggregate);
 
-    //    newAggCalls = aggregate.getAggCallList();
-
-    //aggregate.getCluster().getPlanner()
     ProjectFactory projectFactory = HiveRelFactories.HIVE_PROJECT_FACTORY;
-
-    //    RelBuilder relBuilder = HiveRelFactories.HIVE_BUILDER.create(aggregate.getCluster(), null);
-    //    relBuilder.push(aggregate.getInput());
-    //    relBuilder.aggregate(groupKey, aggCalls)
-    //
-    //    aggregate.getCluster().get
-    //    Hivere
-    //    projectFactory.createProject(input, childExprs, fieldNames)
 
     if (aggregate.getAggCallList().equals(vb.newAggCalls)) {
       // rule didn't made any changes
@@ -129,6 +94,9 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
     return;
   }
 
+  /**
+   * Helper class to help in building a new Aggregate and Project.
+   */
   // NOTE: methods in this class are not re-entrant; drop-to-frame to constructor during debugging
   static class VBuilder {
 
@@ -163,7 +131,6 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
         return;
       }
       appendAggCall(aggCall, null);
-
     }
 
     private void appendAggCall(AggregateCall aggCall, SqlOperator projectOperator) {
