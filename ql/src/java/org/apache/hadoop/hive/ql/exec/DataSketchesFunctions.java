@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.exec;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.apache.calcite.rel.type.RelDataTypeImpl;
@@ -73,12 +72,12 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
   private static final String SKETCH_TO_VARIANCES = "variances";
   private static final String SKETCH_TO_PERCENTILE = "percentile";
 
-  private final List<SketchDescriptor> sketchClasses;
+  private final Map<String, SketchDescriptor> sketchClasses;
   private final ArrayList<UDFDescriptor> descriptors;
 
   private DataSketchesFunctions() {
-    this.sketchClasses = new ArrayList<SketchDescriptor>();
-    this.descriptors = new ArrayList<HiveUDFPlugin.UDFDescriptor>();
+    this.sketchClasses = new HashMap<>();
+    this.descriptors = new ArrayList<>();
     registerHll();
     registerCpc();
     registerKll();
@@ -97,13 +96,13 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
   }
 
   private void buildDescritors() {
-    for (SketchDescriptor sketchDescriptor : sketchClasses) {
+    for (SketchDescriptor sketchDescriptor : sketchClasses.values()) {
       descriptors.addAll(sketchDescriptor.fnMap.values());
     }
   }
 
   private void buildCalciteFns() {
-    for (SketchDescriptor sd : sketchClasses) {
+    for (SketchDescriptor sd : sketchClasses.values()) {
       // Mergability is exposed to Calcite; which enables to use it during rollup.
       RelProtoDataType sketchType = RelDataTypeImpl.proto(SqlTypeName.BINARY, true);
 
@@ -135,7 +134,7 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
 
 
   private void registerHiveFunctionsInternal(Registry system) {
-    for (SketchDescriptor sketchDescriptor : sketchClasses) {
+    for (SketchDescriptor sketchDescriptor : sketchClasses.values()) {
       Collection<SketchFunctionDescriptor> functions = sketchDescriptor.fnMap.values();
       for (SketchFunctionDescriptor fn : functions) {
         if (UDF.class.isAssignableFrom(fn.udfClass)) {
@@ -214,7 +213,7 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
     sd.register(SKETCH_TO_STRING, org.apache.datasketches.hive.hll.SketchToStringUDF.class);
     sd.register(UNION_SKETCH1, org.apache.datasketches.hive.hll.UnionSketchUDF.class);
     sd.register(UNION_SKETCH, org.apache.datasketches.hive.hll.UnionSketchUDAF.class);
-    sketchClasses.add(sd);
+    sketchClasses.put("hll", sd);
   }
 
   private void registerCpc() {
@@ -228,7 +227,7 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
     sd.register(SKETCH_TO_STRING, org.apache.datasketches.hive.cpc.SketchToStringUDF.class);
     sd.register(UNION_SKETCH1, org.apache.datasketches.hive.cpc.UnionSketchUDF.class);
     sd.register(UNION_SKETCH, org.apache.datasketches.hive.cpc.UnionSketchUDAF.class);
-    sketchClasses.add(sd);
+    sketchClasses.put("cpc", sd);
   }
 
   private void registerKll() {
@@ -244,7 +243,7 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
     sd.register(GET_QUANTILES, org.apache.datasketches.hive.kll.GetQuantilesUDF.class);
     sd.register(GET_QUANTILE, org.apache.datasketches.hive.kll.GetQuantileUDF.class);
     sd.register(GET_RANK, org.apache.datasketches.hive.kll.GetRankUDF.class);
-    sketchClasses.add(sd);
+    sketchClasses.put("kll", sd);
   }
 
   private void registerTheta() {
@@ -258,7 +257,7 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
     sd.register(INTERSECT_SKETCH, org.apache.datasketches.hive.theta.IntersectSketchUDAF.class);
     sd.register(SKETCH_TO_ESTIMATE, org.apache.datasketches.hive.theta.EstimateSketchUDF.class);
     sd.register(EXCLUDE_SKETCH, org.apache.datasketches.hive.theta.ExcludeSketchUDF.class);
-    sketchClasses.add(sd);
+    sketchClasses.put("theta", sd);
 
   }
 
@@ -284,7 +283,7 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
         org.apache.datasketches.hive.tuple.ArrayOfDoublesSketchToQuantilesSketchUDF.class);
     sd.register(SKETCH_TO_VALUES, org.apache.datasketches.hive.tuple.ArrayOfDoublesSketchToValuesUDTF.class);
     sd.register(SKETCH_TO_VARIANCES, org.apache.datasketches.hive.tuple.ArrayOfDoublesSketchToVariancesUDF.class);
-    sketchClasses.add(sd);
+    sketchClasses.put("tuple_arrayofdouble", sd);
   }
 
   private void registerTupleDoubleSummary() {
@@ -294,7 +293,7 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
     sd.register(UNION_SKETCH, org.apache.datasketches.hive.tuple.UnionDoubleSummarySketchUDAF.class);
     sd.register(SKETCH_TO_ESTIMATE, org.apache.datasketches.hive.tuple.DoubleSummarySketchToEstimatesUDF.class);
     sd.register(SKETCH_TO_PERCENTILE, org.apache.datasketches.hive.tuple.DoubleSummarySketchToPercentileUDF.class);
-    sketchClasses.add(sd);
+    sketchClasses.put("tuple_doublesummary", sd);
   }
 
   private void registerQuantiles() {
@@ -312,7 +311,7 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
     sd.register(UNION_SKETCH, org.apache.datasketches.hive.frequencies.UnionStringsSketchUDAF.class);
     sd.register(GET_FREQUENT_ITEMS,
         org.apache.datasketches.hive.frequencies.GetFrequentItemsFromStringsSketchUDTF.class);
-    sketchClasses.add(sd);
+    sketchClasses.put("freq", sd);
   }
 
   private void registerQuantilesString() {
@@ -327,7 +326,7 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
     sd.register(GET_PMF, org.apache.datasketches.hive.quantiles.GetPmfFromStringsSketchUDF.class);
     sd.register(GET_QUANTILE, org.apache.datasketches.hive.quantiles.GetQuantileFromStringsSketchUDF.class);
     sd.register(GET_QUANTILES, org.apache.datasketches.hive.quantiles.GetQuantilesFromStringsSketchUDF.class);
-    sketchClasses.add(sd);
+    sketchClasses.put("quantile_strings", sd);
   }
 
   private void registerQuantilesDoubles() {
@@ -342,7 +341,7 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
     sd.register(GET_PMF, org.apache.datasketches.hive.quantiles.GetPmfFromDoublesSketchUDF.class);
     sd.register(GET_QUANTILE, org.apache.datasketches.hive.quantiles.GetQuantileFromDoublesSketchUDF.class);
     sd.register(GET_QUANTILES, org.apache.datasketches.hive.quantiles.GetQuantilesFromDoublesSketchUDF.class);
-    sketchClasses.add(sd);
+    sketchClasses.put("quantile_doubles", sd);
   }
 
 }
