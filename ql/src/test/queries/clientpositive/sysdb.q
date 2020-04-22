@@ -1,4 +1,4 @@
---! qt:dataset:alltypesorc,alltypesparquet,part,src,src1,srcbucket,srcbucket2,src_cbo,src_json,src_sequencefile,src_thrift,srcpart,cbo_t1,cbo_t2,cbo_t3,lineitem
+--! qt:dataset:src,part,srcbucket:ONLY
 --! qt:sysdb
 
 set hive.strict.checks.cartesian.product=false;
