@@ -39,7 +39,7 @@ insert into s values(2,2),(3,3);
 -- pretend that a timeout have happened
 alter scheduled query ingest execute;
 
-!sleep 10;
+!sleep 30;
 select state,error_message from sys.scheduled_executions;
 
 select * from t order by id;
