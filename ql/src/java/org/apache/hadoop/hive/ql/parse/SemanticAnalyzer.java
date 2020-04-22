@@ -11675,10 +11675,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // Theoretically the key prefix could be any unique string shared
     // between TableScanOperator (when publishing) and StatsTask (when aggregating).
     // Here we use
-    // db_name.table_name + partitionSec
+    // cat.db_name.table_name + partitionSec
     // as the prefix for easy of read during explain and debugging.
     // Currently, partition spec can only be static partition.
-    String k = org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.encodeTableName(tblName) + Path.SEPARATOR;
+    String k = TableName.fromString(org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.encodeTableName(tblName),
+        tab.getCatalogName(), tab.getDbName()).toString() + Path.SEPARATOR;
     tsDesc.setStatsAggPrefix(tab.getDbName()+"."+k);
 
     // set up WriteEntity for replication and txn stats

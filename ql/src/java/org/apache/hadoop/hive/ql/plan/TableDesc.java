@@ -53,6 +53,7 @@ public class TableDesc implements Serializable, Cloneable {
   private java.util.Properties properties;
   private Map<String, String> jobProperties;
   private Map<String, String> jobSecrets;
+  public static final String META_TABLE_CAT_NAME = "cat";
   public static final String SECRET_PREFIX = "TABLE_SECRET";
   public static final String SECRET_DELIMIT = "#";
 
@@ -169,6 +170,11 @@ public class TableDesc implements Serializable, Cloneable {
   @Explain(displayName = "name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getDbName() {
     return properties.getProperty(hive_metastoreConstants.META_TABLE_DB);
+  }
+
+  @Explain(displayName = "name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public String getCatName() {
+    return properties.getProperty(META_TABLE_CAT_NAME);
   }
 
   @Explain(displayName = "input format")

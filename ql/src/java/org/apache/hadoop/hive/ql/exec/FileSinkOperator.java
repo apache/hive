@@ -42,6 +42,7 @@ import org.apache.hadoop.fs.Path;
 
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -70,6 +71,7 @@ import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.SkewedColumnPositionPair;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.hive.serde2.*;
@@ -1581,7 +1583,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       // key = "database.table/SP/DP/"LB/
       // Hive store lowercase table name in metastore, and Counters is character case sensitive, so we
       // use lowercase table name as prefix here, as StatsTask get table name from metastore to fetch counter.
-      String prefix = conf.getTableInfo().getTableName().toLowerCase();
+      String prefix =
+          TableName.fromString(conf.getTableInfo().getTableName(), conf.getTableInfo().getDbName()).toString();
       prefix = Utilities.join(prefix, spSpec, dpSpec);
       prefix = prefix.endsWith(Path.SEPARATOR) ? prefix : prefix + Path.SEPARATOR;
       if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
