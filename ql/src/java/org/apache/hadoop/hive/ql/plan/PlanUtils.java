@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
@@ -371,8 +372,12 @@ public final class PlanUtils {
       }
 
       if (crtTblDesc.getTableName() != null && crtTblDesc.getDatabaseName() != null) {
+        // FIXME: This is now deprecated, should be handled more gracefully
         properties.setProperty(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_NAME,
             crtTblDesc.getTableName().getNotEmptyDbTable());
+        // currently there are cases when the category can be null in the TableName object
+        properties.setProperty(TableDesc.META_TABLE_CAT_NAME,
+            ObjectUtils.firstNonNull(crtTblDesc.getTableName().getCat(), SessionState.get().getCurrentCatalog()));
       }
 
       if (crtTblDesc.getTblProps() != null) {
