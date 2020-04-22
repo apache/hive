@@ -80,7 +80,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      name: default.cluster_mv_1
+                      name: hive.default.cluster_mv_1
                 Select Operator
                   expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double)
                   outputColumnNames: col1, col2, col3
@@ -130,7 +130,7 @@ STAGE PLANS:
       columns: value string, key string
       sort columns: key string
       expanded text: SELECT `value`, `key`, `partkey` FROM (SELECT `src_txn`.`value`, `src_txn`.`key`, `src_txn`.`key` + 100 as `partkey` FROM `default`.`src_txn` where `src_txn`.`key` > 200 and `src_txn`.`key` < 250) `cluster_mv_1`
-      name: default.cluster_mv_1
+      name: hive.default.cluster_mv_1
       original text: SELECT value, key, key + 100 as partkey FROM src_txn where key > 200 and key < 250
       rewrite enabled: true
 
@@ -144,7 +144,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.cluster_mv_1
+              name: hive.default.cluster_mv_1
 
   Stage: Stage-3
     Stats Work
@@ -156,7 +156,7 @@ STAGE PLANS:
 
   Stage: Stage-5
     Materialized View Update
-      name: default.cluster_mv_1
+      name: hive.default.cluster_mv_1
       retrieve and include: true
 
 PREHOOK: query: CREATE MATERIALIZED VIEW cluster_mv_1 PARTITIONED ON (partkey) CLUSTERED ON (key) AS

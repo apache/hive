@@ -118,7 +118,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      name: default.partition_mv_1
+                      name: hive.default.partition_mv_1
 
   Stage: Stage-2
     Dependency Collection
@@ -128,7 +128,7 @@ STAGE PLANS:
       partition columns: key string
       columns: value string
       expanded text: SELECT `value`, `key` FROM (SELECT `src_txn`.`value`, `src_txn`.`key` FROM `default`.`src_txn` where `src_txn`.`key` > 200 and `src_txn`.`key` < 250) `partition_mv_1`
-      name: default.partition_mv_1
+      name: hive.default.partition_mv_1
       original text: SELECT value, key FROM src_txn where key > 200 and key < 250
       rewrite enabled: true
 
@@ -142,7 +142,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.partition_mv_1
+              name: hive.default.partition_mv_1
 
   Stage: Stage-3
     Stats Work
@@ -154,7 +154,7 @@ STAGE PLANS:
 
   Stage: Stage-5
     Materialized View Update
-      name: default.partition_mv_1
+      name: hive.default.partition_mv_1
       retrieve and include: true
 
 PREHOOK: query: CREATE MATERIALIZED VIEW partition_mv_1 PARTITIONED ON (key) AS

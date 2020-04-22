@@ -79,7 +79,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.distribute_mv_1
+                      name: hive.default.distribute_mv_1
                 Select Operator
                   expressions: _col0 (type: string), _col1 (type: string)
                   outputColumnNames: col1, col2
@@ -120,7 +120,7 @@ STAGE PLANS:
       columns: value string, key string
       sort columns: value string
       expanded text: SELECT `src_txn`.`value`, `src_txn`.`key` FROM `default`.`src_txn` where `src_txn`.`key` > 200 and `src_txn`.`key` < 250
-      name: default.distribute_mv_1
+      name: hive.default.distribute_mv_1
       original text: SELECT value, key FROM src_txn where key > 200 and key < 250
       rewrite enabled: true
 
@@ -134,7 +134,7 @@ STAGE PLANS:
 
   Stage: Stage-5
     Materialized View Update
-      name: default.distribute_mv_1
+      name: hive.default.distribute_mv_1
       retrieve and include: true
 
   Stage: Stage-0
@@ -357,7 +357,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.distribute_mv_2
+                      name: hive.default.distribute_mv_2
                 Select Operator
                   expressions: _col0 (type: string), _col1 (type: string)
                   outputColumnNames: col1, col2
@@ -398,7 +398,7 @@ STAGE PLANS:
       columns: key string, value string
       sort columns: value string, key string
       expanded text: SELECT `src_txn`.`key`, `src_txn`.`value` FROM `default`.`src_txn` where `src_txn`.`key` > 200 and `src_txn`.`key` < 250
-      name: default.distribute_mv_2
+      name: hive.default.distribute_mv_2
       original text: SELECT key, value FROM src_txn where key > 200 and key < 250
       rewrite enabled: true
 
@@ -412,7 +412,7 @@ STAGE PLANS:
 
   Stage: Stage-5
     Materialized View Update
-      name: default.distribute_mv_2
+      name: hive.default.distribute_mv_2
       retrieve and include: true
 
   Stage: Stage-0
@@ -883,7 +883,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.distribute_mv_3
+                      name: hive.default.distribute_mv_3
                 Select Operator
                   expressions: _col0 (type: string), _col1 (type: string)
                   outputColumnNames: col1, col2
@@ -926,7 +926,7 @@ STAGE PLANS:
       expanded text: SELECT `src_txn`.`value`, `src_txn`.`key` FROM `default`.`src_txn`, `default`.`src_txn_2`
 WHERE `src_txn`.`key` = `src_txn_2`.`key`
   AND `src_txn`.`key` > 200 AND `src_txn`.`key` < 250
-      name: default.distribute_mv_3
+      name: hive.default.distribute_mv_3
       original text: SELECT src_txn.value, src_txn.key FROM src_txn, src_txn_2
 WHERE src_txn.key = src_txn_2.key
   AND src_txn.key > 200 AND src_txn.key < 250
@@ -942,7 +942,7 @@ WHERE src_txn.key = src_txn_2.key
 
   Stage: Stage-5
     Materialized View Update
-      name: default.distribute_mv_3
+      name: hive.default.distribute_mv_3
       retrieve and include: true
 
   Stage: Stage-0

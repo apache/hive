@@ -79,7 +79,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.cluster_mv_1
+                      name: hive.default.cluster_mv_1
                 Select Operator
                   expressions: _col0 (type: string), _col1 (type: string)
                   outputColumnNames: col1, col2
@@ -120,7 +120,7 @@ STAGE PLANS:
       columns: value string, key string
       sort columns: key string
       expanded text: SELECT `src_txn`.`value`, `src_txn`.`key` FROM `default`.`src_txn` where `src_txn`.`key` > 200 and `src_txn`.`key` < 250
-      name: default.cluster_mv_1
+      name: hive.default.cluster_mv_1
       original text: SELECT value, key FROM src_txn where key > 200 and key < 250
       rewrite enabled: true
 
@@ -134,7 +134,7 @@ STAGE PLANS:
 
   Stage: Stage-5
     Materialized View Update
-      name: default.cluster_mv_1
+      name: hive.default.cluster_mv_1
       retrieve and include: true
 
   Stage: Stage-0
