@@ -11680,7 +11680,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // Currently, partition spec can only be static partition.
     String k = TableName.fromString(org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.encodeTableName(tblName),
         tab.getCatalogName(), tab.getDbName()).toString() + Path.SEPARATOR;
-    tsDesc.setStatsAggPrefix(tab.getDbName()+"."+k);
+    tsDesc.setStatsAggPrefix(k);
 
     // set up WriteEntity for replication and txn stats
     WriteEntity we = new WriteEntity(tab, WriteEntity.WriteType.DDL_SHARED);

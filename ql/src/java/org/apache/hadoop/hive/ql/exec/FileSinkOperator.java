@@ -1584,7 +1584,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       // Hive store lowercase table name in metastore, and Counters is character case sensitive, so we
       // use lowercase table name as prefix here, as StatsTask get table name from metastore to fetch counter.
       String prefix =
-          TableName.fromString(conf.getTableInfo().getTableName(), conf.getTableInfo().getDbName()).toString();
+          TableName.fromString(conf.getTableInfo().getTableName(), conf.getTableInfo().getCatName(), conf.getTableInfo().getDbName()).toString();
       prefix = Utilities.join(prefix, spSpec, dpSpec);
       prefix = prefix.endsWith(Path.SEPARATOR) ? prefix : prefix + Path.SEPARATOR;
       if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
