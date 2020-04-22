@@ -894,7 +894,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assertTrue(fs.exists(lastEventRoot));
     fs.delete(lastEventRoot, true);
 
-    // It should create a fresh dump dir as _events_dump doesn't exist.
+    // It should create a fresh dump dir as _events_dump has some invalid content.
     WarehouseInstance.Tuple incrementalDump2 = primary.run("use " + primaryDbName)
             .dump(primaryDbName);
     assertTrue(incrementalDump1.dumpLocation != incrementalDump2.dumpLocation);
@@ -930,7 +930,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assertTrue(fs.exists(lastEventRoot));
     fs.delete(lastEventRoot, true);
 
-    // It should create a fresh dump dir as _events_dump doesn't exist.
+    // It should create a fresh dump dir as _events_dump is empty.
     WarehouseInstance.Tuple incrementalDump4 = primary.run("use " + primaryDbName)
             .dump(primaryDbName);
     assertTrue(incrementalDump3.dumpLocation != incrementalDump4.dumpLocation);
