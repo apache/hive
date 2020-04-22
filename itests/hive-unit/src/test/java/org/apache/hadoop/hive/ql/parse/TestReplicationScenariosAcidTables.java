@@ -52,7 +52,6 @@ import javax.annotation.Nullable;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -61,7 +60,6 @@ import java.util.Map;
 
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.DUMP_ACKNOWLEDGEMENT;
-import static org.apache.hadoop.hive.ql.parse.EximUtil.LAST_EVENT_ID_NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -774,14 +772,8 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     fs.delete(lastEvtRoot, true);
     fs.delete(secondLastEvtRoot, true);
     fs.delete(thirdLastEvtRoot, true);
-    List<List<String>> listValues = new ArrayList<>();
-    listValues.add(
-            Arrays.asList(
-                    LAST_EVENT_ID_NAME,
-                    String.valueOf(lastEventID - 3)
-            )
-    );
-    org.apache.hadoop.hive.ql.parse.repl.dump.Utils.writeOutput(listValues, ackLastEventID, primary.hiveConf, true);
+    org.apache.hadoop.hive.ql.parse.repl.dump.Utils.writeOutput(String.valueOf(lastEventID - 3), ackLastEventID,
+            primary.hiveConf);
     ReplDumpWork.testDeletePreviousDumpMetaPath(false);
 
     WarehouseInstance.Tuple incrementalDump4 = primary.run("use " + primaryDbName)
@@ -1051,14 +1043,8 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
       }
     }
 
-    List<List<String>> listValues = new ArrayList<>();
-    listValues.add(
-            Arrays.asList(
-                    LAST_EVENT_ID_NAME,
-                    String.valueOf(fifthLastIncEventID)
-            )
-    );
-    org.apache.hadoop.hive.ql.parse.repl.dump.Utils.writeOutput(listValues, ackLastEventID, primary.hiveConf, true);
+    org.apache.hadoop.hive.ql.parse.repl.dump.Utils.writeOutput(String.valueOf(fifthLastIncEventID), ackLastEventID,
+            primary.hiveConf);
 
     ReplDumpWork.testDeletePreviousDumpMetaPath(false);
 

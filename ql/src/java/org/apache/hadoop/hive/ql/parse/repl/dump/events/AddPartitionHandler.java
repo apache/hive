@@ -117,14 +117,6 @@ class AddPartitionHandler extends AbstractEventHandler {
     withinContext.createDmd(this).write();
   }
 
-  private BufferedWriter writer(Context withinContext, Partition qlPtn)
-      throws IOException {
-    Path ptnDataPath = new Path(withinContext.eventRoot, qlPtn.getName());
-    FileSystem fs = ptnDataPath.getFileSystem(withinContext.hiveConf);
-    Path filesPath = new Path(ptnDataPath, EximUtil.FILES_NAME);
-    return new BufferedWriter(new OutputStreamWriter(fs.create(filesPath)));
-  }
-
   @Override
   public DumpType dumpType() {
     return DumpType.EVENT_ADD_PARTITION;

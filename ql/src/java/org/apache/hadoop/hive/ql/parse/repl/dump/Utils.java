@@ -97,6 +97,30 @@ public class Utils {
     }
   }
 
+  public static void writeOutput(String content, Path outputFile, HiveConf hiveConf)
+          throws SemanticException {
+    Retry<Void> retriable = new Retry<Void>(IOException.class) {
+      @Override
+      public Void execute() throws IOException {
+        DataOutputStream outStream = null;
+        try {
+          FileSystem fs = outputFile.getFileSystem(hiveConf);
+          outStream = fs.create(outputFile);
+          outStream.writeBytes(content);
+          outStream.write(Utilities.newLineCode);
+        } finally {
+          IOUtils.closeStream(outStream);
+        }
+        return null;
+      }
+    };
+    try {
+      retriable.run();
+    } catch (Exception e) {
+      throw new SemanticException(e);
+    }
+  }
+
   public static void create(Path outputFile, HiveConf hiveConf)
           throws SemanticException {
     Retry<Void> retriable = new Retry<Void>(IOException.class) {

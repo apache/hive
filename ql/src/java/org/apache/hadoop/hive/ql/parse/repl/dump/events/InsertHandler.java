@@ -108,12 +108,6 @@ class InsertHandler extends AbstractEventHandler<InsertMessage> {
     return new org.apache.hadoop.hive.ql.metadata.Partition(qlMdTable, insertMsg.getPtnObj());
   }
 
-  private BufferedWriter writer(Context withinContext, Path dataPath) throws IOException {
-    Path filesPath = new Path(dataPath, EximUtil.FILES_NAME);
-    FileSystem fs = dataPath.getFileSystem(withinContext.hiveConf);
-    return new BufferedWriter(new OutputStreamWriter(fs.create(filesPath)));
-  }
-
   @Override
   public DumpType dumpType() {
     return DumpType.EVENT_INSERT;
