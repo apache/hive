@@ -108,6 +108,10 @@
             <scope>provided</scope>
             <exclusions>
               <exclusion>
+                <groupId>commons-beanutils</groupId>
+                <artifactId>commons-beanutils</artifactId>
+              </exclusion>
+              <exclusion>
                 <groupId>org.apache.zookeeper</groupId>
                 <artifactId>zookeeper</artifactId>
               </exclusion>
