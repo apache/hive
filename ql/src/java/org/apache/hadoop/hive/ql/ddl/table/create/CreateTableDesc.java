@@ -723,6 +723,8 @@ public class CreateTableDesc implements DDLDesc, Serializable {
 
     Table tbl = new Table(tableName.getDb(), tableName.getTable());
 
+    tbl.setCatName(tableName.getCat());
+
     if (getTblProps() != null) {
       tbl.getTTable().getParameters().putAll(getTblProps());
     }
