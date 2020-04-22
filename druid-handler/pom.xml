@@ -217,7 +217,11 @@
                   <groupId>com.google.guava</groupId>
                   <artifactId>guava</artifactId>
               </exclusion>
-              <exclusion>
+               <exclusion>
+                  <groupId>commons-beanutils</groupId>
+                  <artifactId>commons-beanutils</artifactId>
+              </exclusion>
+             <exclusion>
                   <groupId>commons-logging</groupId>
                   <artifactId>commons-logging</artifactId>
               </exclusion>
