@@ -161,6 +161,7 @@ public class Table implements Serializable {
 
   public Table(TableName tableName) {
     this(getEmptyTable(tableName.getDb(), tableName.getTable()));
+    this.setCatName(tableName.getCat());
   }
 
   /** This api is used by getMetaData which require deep copy of metastore.api.table
