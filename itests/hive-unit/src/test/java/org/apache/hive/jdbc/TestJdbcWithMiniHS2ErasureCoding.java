@@ -18,7 +18,6 @@
 
 package org.apache.hive.jdbc;
 
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
@@ -66,13 +65,16 @@ public class TestJdbcWithMiniHS2ErasureCoding {
   private Connection hs2Conn = null;
 
   private static HiveConf createHiveOnSparkConf() throws MalformedURLException {
-    String confDir = "../../data/conf/hive-site.xml";
+    String confDir = "../../data/conf/spark/standalone/hive-site.xml";
     HiveConf.setHiveSiteLocation(new File(confDir).toURI().toURL());
     HiveConf hiveConf = new HiveConf();
     // Tell dfs not to consider load when choosing a datanode as this can cause failure as
     // in a test we do not have spare datanode capacity.
     hiveConf.setBoolean("dfs.namenode.redundancy.considerLoad", false);
-    hiveConf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
+    hiveConf.set("hive.spark.client.connect.timeout", "30000ms");
+    hiveConf.set("spark.local.dir",
+        Paths.get(System.getProperty("test.tmp.dir"), "TestJdbcWithMiniHS2ErasureCoding-local-dir")
+            .toString());
     return hiveConf;
   }
 
