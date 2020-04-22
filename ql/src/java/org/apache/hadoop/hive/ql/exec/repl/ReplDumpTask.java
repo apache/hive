@@ -440,7 +440,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     lastReplId = work.eventTo;
 
     Path ackFile = new Path(dumpRoot, ReplAck.EVENTS_DUMP.toString());
-    Long resumeFrom = Utils.fileExists(ackFile, conf) ? getResumeFrom(ackFile, work.eventFrom) : work.eventFrom;
+    long resumeFrom = Utils.fileExists(ackFile, conf) ? getResumeFrom(ackFile) : work.eventFrom;
 
     // Right now the only pattern allowed to be specified is *, which matches all the database
     // names. So passing dbname as is works since getDbNotificationEventsCount can exclude filter
@@ -454,7 +454,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
             evFetcher.getDbNotificationEventsCount(work.eventFrom, dbName, work.eventTo, maxEventLimit),
             work.eventFrom, work.eventTo, maxEventLimit);
     replLogger.startLog();
-    Long dumpedCount = resumeFrom - work.eventFrom;
+    long dumpedCount = resumeFrom - work.eventFrom;
     if (dumpedCount > 0) {
       LOG.info("Event id {} to {} are already dumped, skipping {} events", work.eventFrom, resumeFrom, dumpedCount);
     }
@@ -553,7 +553,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return currentEventMaxLimit;
   }
 
-  private void cleanFailedEventDirIfExists(Path dumpDir, Long resumeFrom) throws IOException {
+  private void cleanFailedEventDirIfExists(Path dumpDir, long resumeFrom) throws IOException {
     Path nextEventRoot = new Path(dumpDir, String.valueOf(resumeFrom + 1));
     Retry<Void> retriable = new Retry<Void>(IOException.class) {
       @Override
@@ -572,7 +572,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     }
   }
 
-  public void updateLastEventDumped(Path ackFile, Long lastReplId) throws SemanticException {
+  public void updateLastEventDumped(Path ackFile, long lastReplId) throws SemanticException {
     List<List<String>> listValues = new ArrayList<>();
     listValues.add(
             Arrays.asList(
@@ -583,21 +583,16 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     Utils.writeOutput(listValues, ackFile, conf, true);
   }
 
-  private long getResumeFrom(Path ackFile, long defID) throws SemanticException {
-    long lastEventID = defID;
+  private long getResumeFrom(Path ackFile) throws SemanticException {
     BufferedReader br = null;
     try {
       FileSystem fs = ackFile.getFileSystem(conf);
       br = new BufferedReader(new InputStreamReader(fs.open(ackFile), Charset.defaultCharset()));
-      String line = br.readLine();
-      if (line != null) {
-        String[] lineContents = line.split("\t", 5);
-        lastEventID = Long.parseLong(lineContents[1]);
-      } else {
-        LOG.warn("Unable to read lastEventID from ackFile:{}, defaulting to:{}", ackFile.toUri().toString(), defID);
-      }
-    } catch (IOException ioe) {
-      throw new SemanticException(ioe);
+      String[] lineContents = br.readLine().split("\t", 5);;
+      long lastEventID = Long.parseLong(lineContents[1]);
+      return lastEventID;
+    } catch (Exception ex) {
+      throw new SemanticException(ex);
     } finally {
       if (br != null) {
         try {
@@ -607,7 +602,6 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         }
       }
     }
-    return lastEventID;
   }
 
   private boolean needBootstrapAcidTablesDuringIncrementalDump() {
@@ -832,9 +826,15 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     if (isBootStrap) {
       return shouldResumePreviousDump(new DumpMetaData(hiveDumpPath, conf));
     }
-    // In case of incremental we should resume if _events_dump file is present
+    // In case of incremental we should resume if _events_dump file is present and is valid
     Path lastEventFile = new Path(hiveDumpPath, ReplAck.EVENTS_DUMP.toString());
-    return FileSystem.get(lastEventFile.toUri(), conf).exists(lastEventFile);
+    long resumeFrom = 0;
+    try {
+      resumeFrom = getResumeFrom(lastEventFile);
+    } catch (SemanticException ex) {
+       LOG.info("Could not get last repl id from {}, because of:", lastEventFile, ex.getMessage());
+    }
+    return resumeFrom > 0L;
   }
 
   long currentNotificationId(Hive hiveDb) throws TException {

@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -721,7 +722,8 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assertTrue(fs.exists(ackFile));
     //check events were not rewritten.
     for(Map.Entry<Path, Long> entry :pathModTimeMap.entrySet()) {
-      assertEquals((long)entry.getValue(), fs.getFileStatus(new Path(hiveDumpDir, entry.getKey())).getModificationTime());
+      assertEquals((long)entry.getValue(),
+              fs.getFileStatus(new Path(hiveDumpDir, entry.getKey())).getModificationTime());
     }
 
     replica.load(replicatedDbName, primaryDbName)
@@ -757,7 +759,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assertTrue(fs.exists(thirdLastEvtRoot));
 
     pathModTimeMap = new HashMap<>();
-    for (long idx = Long.parseLong(incrementalDump2.lastReplicationId)+1; idx < (lastEventID - 2); idx ++) {
+    for (long idx = Long.parseLong(incrementalDump2.lastReplicationId)+1; idx < (lastEventID - 2); idx++) {
       Path eventRoot  = new Path(hiveDumpDir, String.valueOf(idx));
       if (fs.exists(eventRoot)) {
         for (FileStatus fileStatus: fs.listStatus(eventRoot)) {
@@ -852,6 +854,92 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     replica.load(replicatedDbName, primaryDbName)
             .run("select * from " + replicatedDbName + ".t1")
             .verifyResults(new String[] {"1"});
+  }
+
+  @Test
+  public void testIncrementalResumeDumpFromInvalidEventDumpFile() throws Throwable {
+    WarehouseInstance.Tuple bootstrapDump = primary.run("use " + primaryDbName)
+            .run("CREATE TABLE t1(a string) STORED AS TEXTFILE")
+            .dump(primaryDbName);
+
+    replica.load(replicatedDbName, primaryDbName)
+            .run("select * from " + replicatedDbName + ".t1")
+            .verifyResults(new String[] {});
+
+    ReplDumpWork.testDeletePreviousDumpMetaPath(true);
+
+    WarehouseInstance.Tuple incrementalDump1 = primary.run("use " + primaryDbName)
+            .run("insert into t1 values (1)")
+            .dump(primaryDbName);
+
+    Path hiveDumpDir = new Path(incrementalDump1.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    Path ackFile = new Path(hiveDumpDir, ReplAck.DUMP_ACKNOWLEDGEMENT.toString());
+    Path ackLastEventID = new Path(hiveDumpDir, ReplAck.EVENTS_DUMP.toString());
+    Path dumpMetaData = new Path(hiveDumpDir, "_dumpmetadata");
+
+    FileSystem fs = FileSystem.get(hiveDumpDir.toUri(), primary.hiveConf);
+    assertTrue(fs.exists(ackFile));
+    assertTrue(fs.exists(ackLastEventID));
+    assertTrue(fs.exists(dumpMetaData));
+
+    fs.delete(ackFile, false);
+    fs.delete(ackLastEventID, false);
+    //Case 1: File exists and it has some invalid content
+    FSDataOutputStream os = fs.create(ackLastEventID);
+    os.write("InvalidContent".getBytes());
+    os.close();
+    assertEquals("InvalidContent".length(), fs.getFileStatus(ackLastEventID).getLen());
+    //delete only last event root dir
+    Path lastEventRoot = new Path(hiveDumpDir, String.valueOf(incrementalDump1.lastReplicationId));
+    assertTrue(fs.exists(lastEventRoot));
+    fs.delete(lastEventRoot, true);
+
+    // It should create a fresh dump dir as _events_dump doesn't exist.
+    WarehouseInstance.Tuple incrementalDump2 = primary.run("use " + primaryDbName)
+            .dump(primaryDbName);
+    assertTrue(incrementalDump1.dumpLocation != incrementalDump2.dumpLocation);
+    assertTrue(fs.getFileStatus(new Path(incrementalDump2.dumpLocation)).getModificationTime()
+            > fs.getFileStatus(new Path(incrementalDump1.dumpLocation)).getModificationTime());
+
+    replica.load(replicatedDbName, primaryDbName)
+            .run("select * from " + replicatedDbName + ".t1")
+            .verifyResults(new String[] {"1"});
+
+    ReplDumpWork.testDeletePreviousDumpMetaPath(true);
+    //Case 2: File exists and it has no content
+    WarehouseInstance.Tuple incrementalDump3 = primary.run("use " + primaryDbName)
+            .run("insert into t1 values (2)")
+            .dump(primaryDbName);
+    hiveDumpDir = new Path(incrementalDump3.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    ackFile = new Path(hiveDumpDir, ReplAck.DUMP_ACKNOWLEDGEMENT.toString());
+    ackLastEventID = new Path(hiveDumpDir, ReplAck.EVENTS_DUMP.toString());
+    dumpMetaData = new Path(hiveDumpDir, "_dumpmetadata");
+
+    assertTrue(fs.exists(ackFile));
+    assertTrue(fs.exists(ackLastEventID));
+    assertTrue(fs.exists(dumpMetaData));
+
+    fs.delete(ackFile, false);
+    fs.delete(ackLastEventID, false);
+    os = fs.create(ackLastEventID);
+    os.write("".getBytes());
+    os.close();
+    assertEquals(0, fs.getFileStatus(ackLastEventID).getLen());
+    //delete only last event root dir
+    lastEventRoot = new Path(hiveDumpDir, String.valueOf(incrementalDump3.lastReplicationId));
+    assertTrue(fs.exists(lastEventRoot));
+    fs.delete(lastEventRoot, true);
+
+    // It should create a fresh dump dir as _events_dump doesn't exist.
+    WarehouseInstance.Tuple incrementalDump4 = primary.run("use " + primaryDbName)
+            .dump(primaryDbName);
+    assertTrue(incrementalDump3.dumpLocation != incrementalDump4.dumpLocation);
+    assertTrue(fs.getFileStatus(new Path(incrementalDump4.dumpLocation)).getModificationTime()
+            > fs.getFileStatus(new Path(incrementalDump3.dumpLocation)).getModificationTime());
+
+    replica.load(replicatedDbName, primaryDbName)
+            .run("select * from " + replicatedDbName + ".t1")
+            .verifyResults(new String[] {"1", "2"});
   }
 
   @Test
@@ -954,7 +1042,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     //delete last five events
     long fifthLastIncEventID = Long.parseLong(incrementalDump1.lastReplicationId) - 4;
     long lastIncEventID = Long.parseLong(incrementalDump1.lastReplicationId);
-    assertTrue(lastIncEventID > fifthLastIncEventID );
+    assertTrue(lastIncEventID > fifthLastIncEventID);
 
     for (long eventId=fifthLastIncEventID + 1; eventId<=lastIncEventID; eventId++) {
       Path eventRoot = new Path(hiveDumpDir, String.valueOf(eventId));
