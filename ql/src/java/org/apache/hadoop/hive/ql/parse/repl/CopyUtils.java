@@ -380,9 +380,7 @@ public class CopyUtils {
         proxyUser.doAs((PrivilegedExceptionAction<Boolean>) () -> {
           //Destination should be empty
           if (overWrite) {
-            destinationFs.delete(destination, true);
-            //Destination folder should be created
-            destinationFs.mkdirs(destination);
+            deleteSubDirs(destinationFs, destination);
           }
           FileUtil
               .copy(sourceFs, paths, destinationFs, finalDestination, false, true, hiveConf);
@@ -394,12 +392,18 @@ public class CopyUtils {
     } else {
       //Destination should be empty
       if (overWrite) {
-        destinationFs.delete(destination, true);
-        //Destination folder should be created
-        destinationFs.mkdirs(destination);
+        deleteSubDirs(destinationFs, destination);
       }
       FileUtil.copy(sourceFs, paths, destinationFs, destination, false, true, hiveConf);
     }
+  }
+
+  private void deleteSubDirs(FileSystem fs, Path path) throws IOException {
+    //Delete the root path instead of doing a listing
+    //This is more optimised
+    fs.delete(path, true);
+    //Recreate just the Root folder
+    fs.mkdirs(path);
   }
 
   public void doCopy(Path destination, List<Path> srcPaths) throws IOException, LoginException {
