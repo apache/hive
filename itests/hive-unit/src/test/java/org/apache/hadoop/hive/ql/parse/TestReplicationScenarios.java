@@ -3435,7 +3435,6 @@ public class TestReplicationScenarios {
     fs.create(path, false);
   }
 
-  /*
   @Test
   public void testDumpWithTableDirMissing() throws IOException {
     String dbName = createDB(testName.getMethodName(), driver);
@@ -3502,7 +3501,6 @@ public class TestReplicationScenarios {
     run("DROP TABLE " + dbName + ".normal", driver);
     run("drop database " + dbName, true, driver);
   }
-  */
 
   @Test
   public void testDumpNonReplDatabase() throws IOException {
@@ -3649,7 +3647,7 @@ public class TestReplicationScenarios {
     LOG.info("Testing " + name);
     String mgdLocation = System.getProperty("test.warehouse.dir", "/tmp/warehouse/managed");
     String extLocation = System.getProperty("test.warehouse.external.dir", "/tmp/warehouse/external");
-    run("CREATE DATABASE " + name + " LOCATION '" + extLocation + "/" + name + ".db' MANAGEDLOCATION '" + mgdLocation + "/" + name + ".db' WITH DBPROPERTIES ( '" +
+    run("CREATE DATABASE " + name + " LOCATION '" + extLocation + "/" + name.toLowerCase() + ".db' MANAGEDLOCATION '" + mgdLocation + "/" + name.toLowerCase() + ".db' WITH DBPROPERTIES ( '" +
             SOURCE_OF_REPLICATION + "' = '1,2,3')", myDriver);
     return name;
   }
