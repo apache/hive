@@ -58,6 +58,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
@@ -78,6 +79,7 @@ import java.util.zip.InflaterInputStream;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -789,7 +791,8 @@ public final class Utilities {
   public static TableDesc getTableDesc(Table tbl) {
     Properties props = tbl.getMetadata();
     props.put(serdeConstants.SERIALIZATION_LIB, tbl.getDeserializer().getClass().getName());
-    props.put(TableDesc.META_TABLE_CAT_NAME, SessionState.get().getCurrentCatalog());
+    props.put(TableDesc.META_TABLE_CAT_NAME, ObjectUtils.firstNonNull(tbl.getTTable().getCatName(),
+        SessionState.get() == null ? null : SessionState.get().getCurrentCatalog()));
     return (new TableDesc(tbl.getInputFormatClass(), tbl
         .getOutputFormatClass(), props));
   }
