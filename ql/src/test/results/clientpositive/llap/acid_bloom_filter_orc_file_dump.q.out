@@ -87,123 +87,6 @@ Stripe Statistics:
   Stripe 1:
     Column 0: count: 1 hasNull: false
     Column 1: count: 1 hasNull: false bytesOnDisk: 6 min: 0 max: 0 sum: 0
-    Column 2: count: 1 hasNull: false bytesOnDisk: 6 min: 2 max: 2 sum: 2
-    Column 3: count: 1 hasNull: false bytesOnDisk: 9 min: 536870912 max: 536870912 sum: 536870912
-    Column 4: count: 1 hasNull: false bytesOnDisk: 6 min: 0 max: 0 sum: 0
-    Column 5: count: 1 hasNull: false bytesOnDisk: 6 min: 2 max: 2 sum: 2
-    Column 6: count: 1 hasNull: false
-    Column 7: count: 1 hasNull: false bytesOnDisk: 13 min: 2345 max: 2345 sum: 4
-    Column 8: count: 1 hasNull: false bytesOnDisk: 13 min: 2345 max: 2345 sum: 4
-    Column 9: count: 1 hasNull: false bytesOnDisk: 7 min: 2345 max: 2345 sum: 2345
-    Column 10: count: 1 hasNull: false bytesOnDisk: 7 min: 2345 max: 2345 sum: 2345
-
-File Statistics:
-  Column 0: count: 1 hasNull: false
-  Column 1: count: 1 hasNull: false bytesOnDisk: 6 min: 0 max: 0 sum: 0
-  Column 2: count: 1 hasNull: false bytesOnDisk: 6 min: 2 max: 2 sum: 2
-  Column 3: count: 1 hasNull: false bytesOnDisk: 9 min: 536870912 max: 536870912 sum: 536870912
-  Column 4: count: 1 hasNull: false bytesOnDisk: 6 min: 0 max: 0 sum: 0
-  Column 5: count: 1 hasNull: false bytesOnDisk: 6 min: 2 max: 2 sum: 2
-  Column 6: count: 1 hasNull: false
-  Column 7: count: 1 hasNull: false bytesOnDisk: 13 min: 2345 max: 2345 sum: 4
-  Column 8: count: 1 hasNull: false bytesOnDisk: 13 min: 2345 max: 2345 sum: 4
-  Column 9: count: 1 hasNull: false bytesOnDisk: 7 min: 2345 max: 2345 sum: 2345
-  Column 10: count: 1 hasNull: false bytesOnDisk: 7 min: 2345 max: 2345 sum: 2345
-
-Stripes:
-  Stripe: offset: 3 data: 73 rows: 1 tail: 103 index: 595
-    Stream: column 0 section ROW_INDEX start: 3 length 11
-    Stream: column 1 section ROW_INDEX start: 14 length 24
-    Stream: column 2 section ROW_INDEX start: 38 length 24
-    Stream: column 3 section ROW_INDEX start: 62 length 29
-    Stream: column 4 section ROW_INDEX start: 91 length 24
-    Stream: column 5 section ROW_INDEX start: 115 length 24
-    Stream: column 6 section ROW_INDEX start: 139 length 11
-    Stream: column 7 section ROW_INDEX start: 150 length 30
-    Stream: column 7 section BLOOM_FILTER_UTF8 start: 180 length 112
-    Stream: column 8 section ROW_INDEX start: 292 length 30
-    Stream: column 8 section BLOOM_FILTER_UTF8 start: 322 length 112
-    Stream: column 9 section ROW_INDEX start: 434 length 27
-    Stream: column 10 section ROW_INDEX start: 461 length 27
-    Stream: column 10 section BLOOM_FILTER_UTF8 start: 488 length 110
-    Stream: column 1 section DATA start: 598 length 6
-    Stream: column 2 section DATA start: 604 length 6
-    Stream: column 3 section DATA start: 610 length 9
-    Stream: column 4 section DATA start: 619 length 6
-    Stream: column 5 section DATA start: 625 length 6
-    Stream: column 7 section DATA start: 631 length 7
-    Stream: column 7 section LENGTH start: 638 length 6
-    Stream: column 8 section DATA start: 644 length 7
-    Stream: column 8 section LENGTH start: 651 length 6
-    Stream: column 9 section DATA start: 657 length 7
-    Stream: column 10 section DATA start: 664 length 7
-    Encoding column 0: DIRECT
-    Encoding column 1: DIRECT_V2
-    Encoding column 2: DIRECT_V2
-    Encoding column 3: DIRECT_V2
-    Encoding column 4: DIRECT_V2
-    Encoding column 5: DIRECT_V2
-    Encoding column 6: DIRECT
-    Encoding column 7: DIRECT_V2
-    Encoding column 8: DIRECT_V2
-    Encoding column 9: DIRECT_V2
-    Encoding column 10: DIRECT_V2
-    Row group indices for column 0:
-      Entry 0: count: 1 hasNull: false positions: 
-    Row group indices for column 1:
-      Entry 0: count: 1 hasNull: false min: 0 max: 0 sum: 0 positions: 0,0,0
-    Row group indices for column 2:
-      Entry 0: count: 1 hasNull: false min: 2 max: 2 sum: 2 positions: 0,0,0
-    Row group indices for column 3:
-      Entry 0: count: 1 hasNull: false min: 536870912 max: 536870912 sum: 536870912 positions: 0,0,0
-    Row group indices for column 4:
-      Entry 0: count: 1 hasNull: false min: 0 max: 0 sum: 0 positions: 0,0,0
-    Row group indices for column 5:
-      Entry 0: count: 1 hasNull: false min: 2 max: 2 sum: 2 positions: 0,0,0
-    Row group indices for column 6:
-      Entry 0: count: 1 hasNull: false positions: 
-    Row group indices for column 7:
-      Entry 0: count: 1 hasNull: false min: 2345 max: 2345 sum: 4 positions: 0,0,0,0,0
-    Bloom filters for column 7:
-      Entry 0: numHashFunctions: 6 bitCount: 81472 popCount: 6 loadFactor: 0.0001 expectedFpp: 1.5953551E-25
-      Stripe level merge: numHashFunctions: 6 bitCount: 81472 popCount: 6 loadFactor: 0.0001 expectedFpp: 1.5953551E-25
-    Row group indices for column 8:
-      Entry 0: count: 1 hasNull: false min: 2345 max: 2345 sum: 4 positions: 0,0,0,0,0
-    Bloom filters for column 8:
-      Entry 0: numHashFunctions: 6 bitCount: 81472 popCount: 6 loadFactor: 0.0001 expectedFpp: 1.5953551E-25
-      Stripe level merge: numHashFunctions: 6 bitCount: 81472 popCount: 6 loadFactor: 0.0001 expectedFpp: 1.5953551E-25
-    Row group indices for column 9:
-      Entry 0: count: 1 hasNull: false min: 2345 max: 2345 sum: 2345 positions: 0,0,0
-    Row group indices for column 10:
-      Entry 0: count: 1 hasNull: false min: 2345 max: 2345 sum: 2345 positions: 0,0,0
-    Bloom filters for column 10:
-      Entry 0: numHashFunctions: 6 bitCount: 81472 popCount: 6 loadFactor: 0.0001 expectedFpp: 1.5953551E-25
-      Stripe level merge: numHashFunctions: 6 bitCount: 81472 popCount: 6 loadFactor: 0.0001 expectedFpp: 1.5953551E-25
-
-File length: 1205 bytes
-Padding length: 0 bytes
-Padding ratio: 0%
-
-User Metadata:
-  hive.acid.key.index=2,536870912,0;
-  hive.acid.stats=1,0,0
-  hive.acid.version=2
-________________________________________________________________________________________________________________________
-
--- END ORC FILE DUMP --
--- BEGIN ORC FILE DUMP --
-#### A masked pattern was here ####
-File Version: 0.12 with ORC_517
-Rows: 1
-Compression: ZLIB
-Compression size: 32768
-Calendar: Julian/Gregorian
-Type: struct<operation:int,originalTransaction:bigint,bucket:int,rowId:bigint,currentTransaction:bigint,row:struct<msisdn:string,imsi:varchar(20),imei:bigint,cell_id:bigint>>
-
-Stripe Statistics:
-  Stripe 1:
-    Column 0: count: 1 hasNull: false
-    Column 1: count: 1 hasNull: false bytesOnDisk: 6 min: 0 max: 0 sum: 0
     Column 2: count: 1 hasNull: false bytesOnDisk: 6 min: 1 max: 1 sum: 1
     Column 3: count: 1 hasNull: false bytesOnDisk: 9 min: 536870912 max: 536870912 sum: 536870912
     Column 4: count: 1 hasNull: false bytesOnDisk: 6 min: 0 max: 0 sum: 0
@@ -303,6 +186,123 @@ Padding ratio: 0%
 
 User Metadata:
   hive.acid.key.index=1,536870912,0;
+  hive.acid.stats=1,0,0
+  hive.acid.version=2
+________________________________________________________________________________________________________________________
+
+-- END ORC FILE DUMP --
+-- BEGIN ORC FILE DUMP --
+#### A masked pattern was here ####
+File Version: 0.12 with ORC_517
+Rows: 1
+Compression: ZLIB
+Compression size: 32768
+Calendar: Julian/Gregorian
+Type: struct<operation:int,originalTransaction:bigint,bucket:int,rowId:bigint,currentTransaction:bigint,row:struct<msisdn:string,imsi:varchar(20),imei:bigint,cell_id:bigint>>
+
+Stripe Statistics:
+  Stripe 1:
+    Column 0: count: 1 hasNull: false
+    Column 1: count: 1 hasNull: false bytesOnDisk: 6 min: 0 max: 0 sum: 0
+    Column 2: count: 1 hasNull: false bytesOnDisk: 6 min: 2 max: 2 sum: 2
+    Column 3: count: 1 hasNull: false bytesOnDisk: 9 min: 536870912 max: 536870912 sum: 536870912
+    Column 4: count: 1 hasNull: false bytesOnDisk: 6 min: 0 max: 0 sum: 0
+    Column 5: count: 1 hasNull: false bytesOnDisk: 6 min: 2 max: 2 sum: 2
+    Column 6: count: 1 hasNull: false
+    Column 7: count: 1 hasNull: false bytesOnDisk: 13 min: 2345 max: 2345 sum: 4
+    Column 8: count: 1 hasNull: false bytesOnDisk: 13 min: 2345 max: 2345 sum: 4
+    Column 9: count: 1 hasNull: false bytesOnDisk: 7 min: 2345 max: 2345 sum: 2345
+    Column 10: count: 1 hasNull: false bytesOnDisk: 7 min: 2345 max: 2345 sum: 2345
+
+File Statistics:
+  Column 0: count: 1 hasNull: false
+  Column 1: count: 1 hasNull: false bytesOnDisk: 6 min: 0 max: 0 sum: 0
+  Column 2: count: 1 hasNull: false bytesOnDisk: 6 min: 2 max: 2 sum: 2
+  Column 3: count: 1 hasNull: false bytesOnDisk: 9 min: 536870912 max: 536870912 sum: 536870912
+  Column 4: count: 1 hasNull: false bytesOnDisk: 6 min: 0 max: 0 sum: 0
+  Column 5: count: 1 hasNull: false bytesOnDisk: 6 min: 2 max: 2 sum: 2
+  Column 6: count: 1 hasNull: false
+  Column 7: count: 1 hasNull: false bytesOnDisk: 13 min: 2345 max: 2345 sum: 4
+  Column 8: count: 1 hasNull: false bytesOnDisk: 13 min: 2345 max: 2345 sum: 4
+  Column 9: count: 1 hasNull: false bytesOnDisk: 7 min: 2345 max: 2345 sum: 2345
+  Column 10: count: 1 hasNull: false bytesOnDisk: 7 min: 2345 max: 2345 sum: 2345
+
+Stripes:
+  Stripe: offset: 3 data: 73 rows: 1 tail: 103 index: 595
+    Stream: column 0 section ROW_INDEX start: 3 length 11
+    Stream: column 1 section ROW_INDEX start: 14 length 24
+    Stream: column 2 section ROW_INDEX start: 38 length 24
+    Stream: column 3 section ROW_INDEX start: 62 length 29
+    Stream: column 4 section ROW_INDEX start: 91 length 24
+    Stream: column 5 section ROW_INDEX start: 115 length 24
+    Stream: column 6 section ROW_INDEX start: 139 length 11
+    Stream: column 7 section ROW_INDEX start: 150 length 30
+    Stream: column 7 section BLOOM_FILTER_UTF8 start: 180 length 112
+    Stream: column 8 section ROW_INDEX start: 292 length 30
+    Stream: column 8 section BLOOM_FILTER_UTF8 start: 322 length 112
+    Stream: column 9 section ROW_INDEX start: 434 length 27
+    Stream: column 10 section ROW_INDEX start: 461 length 27
+    Stream: column 10 section BLOOM_FILTER_UTF8 start: 488 length 110
+    Stream: column 1 section DATA start: 598 length 6
+    Stream: column 2 section DATA start: 604 length 6
+    Stream: column 3 section DATA start: 610 length 9
+    Stream: column 4 section DATA start: 619 length 6
+    Stream: column 5 section DATA start: 625 length 6
+    Stream: column 7 section DATA start: 631 length 7
+    Stream: column 7 section LENGTH start: 638 length 6
+    Stream: column 8 section DATA start: 644 length 7
+    Stream: column 8 section LENGTH start: 651 length 6
+    Stream: column 9 section DATA start: 657 length 7
+    Stream: column 10 section DATA start: 664 length 7
+    Encoding column 0: DIRECT
+    Encoding column 1: DIRECT_V2
+    Encoding column 2: DIRECT_V2
+    Encoding column 3: DIRECT_V2
+    Encoding column 4: DIRECT_V2
+    Encoding column 5: DIRECT_V2
+    Encoding column 6: DIRECT
+    Encoding column 7: DIRECT_V2
+    Encoding column 8: DIRECT_V2
+    Encoding column 9: DIRECT_V2
+    Encoding column 10: DIRECT_V2
+    Row group indices for column 0:
+      Entry 0: count: 1 hasNull: false positions: 
+    Row group indices for column 1:
+      Entry 0: count: 1 hasNull: false min: 0 max: 0 sum: 0 positions: 0,0,0
+    Row group indices for column 2:
+      Entry 0: count: 1 hasNull: false min: 2 max: 2 sum: 2 positions: 0,0,0
+    Row group indices for column 3:
+      Entry 0: count: 1 hasNull: false min: 536870912 max: 536870912 sum: 536870912 positions: 0,0,0
+    Row group indices for column 4:
+      Entry 0: count: 1 hasNull: false min: 0 max: 0 sum: 0 positions: 0,0,0
+    Row group indices for column 5:
+      Entry 0: count: 1 hasNull: false min: 2 max: 2 sum: 2 positions: 0,0,0
+    Row group indices for column 6:
+      Entry 0: count: 1 hasNull: false positions: 
+    Row group indices for column 7:
+      Entry 0: count: 1 hasNull: false min: 2345 max: 2345 sum: 4 positions: 0,0,0,0,0
+    Bloom filters for column 7:
+      Entry 0: numHashFunctions: 6 bitCount: 81472 popCount: 6 loadFactor: 0.0001 expectedFpp: 1.5953551E-25
+      Stripe level merge: numHashFunctions: 6 bitCount: 81472 popCount: 6 loadFactor: 0.0001 expectedFpp: 1.5953551E-25
+    Row group indices for column 8:
+      Entry 0: count: 1 hasNull: false min: 2345 max: 2345 sum: 4 positions: 0,0,0,0,0
+    Bloom filters for column 8:
+      Entry 0: numHashFunctions: 6 bitCount: 81472 popCount: 6 loadFactor: 0.0001 expectedFpp: 1.5953551E-25
+      Stripe level merge: numHashFunctions: 6 bitCount: 81472 popCount: 6 loadFactor: 0.0001 expectedFpp: 1.5953551E-25
+    Row group indices for column 9:
+      Entry 0: count: 1 hasNull: false min: 2345 max: 2345 sum: 2345 positions: 0,0,0
+    Row group indices for column 10:
+      Entry 0: count: 1 hasNull: false min: 2345 max: 2345 sum: 2345 positions: 0,0,0
+    Bloom filters for column 10:
+      Entry 0: numHashFunctions: 6 bitCount: 81472 popCount: 6 loadFactor: 0.0001 expectedFpp: 1.5953551E-25
+      Stripe level merge: numHashFunctions: 6 bitCount: 81472 popCount: 6 loadFactor: 0.0001 expectedFpp: 1.5953551E-25
+
+File length: 1205 bytes
+Padding length: 0 bytes
+Padding ratio: 0%
+
+User Metadata:
+  hive.acid.key.index=2,536870912,0;
   hive.acid.stats=1,0,0
   hive.acid.version=2
 ________________________________________________________________________________________________________________________
