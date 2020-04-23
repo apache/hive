@@ -21,10 +21,10 @@ package org.apache.hadoop.hive.ql.hooks;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.logging.log4j.util.Strings;
 
 public class HookUtils {
 
@@ -47,7 +47,7 @@ public class HookUtils {
       throws InstantiationException, IllegalAccessException, ClassNotFoundException {
     String csHooks = conf.getVar(hookConfVar);
     List<T> hooks = new ArrayList<>();
-    if (Strings.isBlank(csHooks)) {
+    if (StringUtils.isBlank(csHooks)) {
       return hooks;
     }
     String[] hookClasses = csHooks.split(",");
