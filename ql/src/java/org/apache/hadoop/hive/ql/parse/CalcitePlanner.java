@@ -4270,8 +4270,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       if (bs != null) {
         SqlParserPos pos = new SqlParserPos(1, 1);
-        SqlNode amt = bs.getAmt() == 0 ? null : SqlLiteral.createExactNumeric(
-            String.valueOf(bs.getAmt()), new SqlParserPos(2, 2));
+        SqlNode amt = bs.getAmt() == 0 || bs.getAmt() == BoundarySpec.UNBOUNDED_AMOUNT
+            ? null
+            : SqlLiteral.createExactNumeric(String.valueOf(bs.getAmt()), new SqlParserPos(2, 2));
         RexNode amtLiteral = null;
         SqlCall sc = null;
 
@@ -4356,8 +4357,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
         WindowSpec wndSpec = ((WindowFunctionSpec) wExpSpec).getWindowSpec();
         List<RexNode> partitionKeys = getPartitionKeys(wndSpec.getPartition(), inputRR);
         List<RexFieldCollation> orderKeys = getOrderKeys(wndSpec.getOrder(), inputRR);
-        RexWindowBound upperBound = getBound(wndSpec.getWindowFrame().getStart());
-        RexWindowBound lowerBound = getBound(wndSpec.getWindowFrame().getEnd());
+        RexWindowBound lowerBound = getBound(wndSpec.getWindowFrame().getStart());
+        RexWindowBound upperBound = getBound(wndSpec.getWindowFrame().getEnd());
         boolean isRows = wndSpec.getWindowFrame().getWindowType() == WindowType.ROWS;
 
         w = cluster.getRexBuilder().makeOver(calciteAggFnRetType, calciteAggFn, calciteAggFnArgs,
