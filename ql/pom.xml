@@ -736,6 +736,10 @@
          <artifactId>commons-logging</artifactId>
        </exclusion>
        <exclusion>
+         <groupId>net.java.dev.jets3t</groupId>
+         <artifactId>jets3t</artifactId>
+       </exclusion>
+       <exclusion>
          <groupId>org.glassfish.jersey.containers</groupId>
          <artifactId>*</artifactId>
        </exclusion>
