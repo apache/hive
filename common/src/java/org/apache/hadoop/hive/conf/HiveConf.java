@@ -1636,7 +1636,7 @@ public class HiveConf extends Configuration {
         "Note that this check currently does not consider data size, only the query pattern."),
     HIVE_STRICT_CHECKS_TYPE_SAFETY("hive.strict.checks.type.safety", true,
         "Enabling strict type safety checks disallows the following:\n" +
-        "  Comparing bigints and strings.\n" +
+        "  Comparing bigints and strings/(var)chars.\n" +
         "  Comparing bigints and doubles."),
     HIVE_STRICT_CHECKS_CARTESIAN("hive.strict.checks.cartesian.product", false,
         "Enabling strict Cartesian join checks disallows the following:\n" +

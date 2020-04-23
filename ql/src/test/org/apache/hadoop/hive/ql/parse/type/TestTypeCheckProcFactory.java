@@ -21,11 +21,18 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collection;
 
+import com.google.common.collect.Lists;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.FunctionInfo;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.parse.type.TypeCheckProcFactory.DefaultExprProcessor;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -140,4 +147,37 @@ public class TestTypeCheckProcFactory {
     }
   }
 
+  @Test
+  public void testValidateUDFOnTypeCheck() throws Exception {
+    ExprNodeDesc strCol = new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, "_c0", null, false);
+    ExprNodeDesc varcharCol = new ExprNodeColumnDesc(TypeInfoFactory.varcharTypeInfo, "_c1", null, false);
+    ExprNodeDesc charCol = new ExprNodeColumnDesc(TypeInfoFactory.charTypeInfo, "_c2", null, false);
+    ExprNodeDesc cnst = new ExprNodeConstantDesc(TypeInfoFactory.longTypeInfo, 2882303761517473127L);
+    FunctionInfo functionInfo = FunctionRegistry.getFunctionInfo("=");
+    TypeCheckCtx ctx = new TypeCheckCtx(null);
+    String error = HiveConf.StrictChecks.checkTypeSafety(new HiveConf());
+    try {
+      testSubject.validateUDF(null, false, ctx, functionInfo,
+          Lists.newArrayList(strCol, cnst), functionInfo.getGenericUDF());
+      Assert.fail("Should throw exception as compares a bigint and a string");
+    } catch (Exception e) {
+      Assert.assertEquals(error, e.getMessage());
+    }
+
+    try {
+      testSubject.validateUDF(null, false, ctx, functionInfo,
+          Lists.newArrayList(cnst, varcharCol), functionInfo.getGenericUDF());
+      Assert.fail("Should throw exception as compares a bigint and a varchar");
+    } catch (Exception e) {
+      Assert.assertEquals(error, e.getMessage());
+    }
+
+    try {
+      testSubject.validateUDF(null, false, ctx, functionInfo,
+          Lists.newArrayList(cnst, charCol), functionInfo.getGenericUDF());
+      Assert.fail("Should throw exception as compares a bigint and a char");
+    } catch (Exception e) {
+      Assert.assertEquals(error, e.getMessage());
+    }
+  }
 }

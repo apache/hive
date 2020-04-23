@@ -28,8 +28,10 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 
+import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -789,12 +791,25 @@ public class TypeCheckProcFactory<T> {
 
         LogHelper console = new LogHelper(LOG);
 
+        Set<PrimitiveObjectInspector.PrimitiveCategory> unsafeConventionTyps = Sets.newHashSet(
+            PrimitiveObjectInspector.PrimitiveCategory.STRING,
+            PrimitiveObjectInspector.PrimitiveCategory.VARCHAR,
+            PrimitiveObjectInspector.PrimitiveCategory.CHAR);
         // For now, if a bigint is going to be cast to a double throw an error or warning
-        if ((oiTypeInfo0.equals(TypeInfoFactory.stringTypeInfo) && oiTypeInfo1.equals(TypeInfoFactory.longTypeInfo)) ||
-            (oiTypeInfo0.equals(TypeInfoFactory.longTypeInfo) && oiTypeInfo1.equals(TypeInfoFactory.stringTypeInfo))) {
+        if ((oiTypeInfo0 instanceof PrimitiveTypeInfo &&
+            unsafeConventionTyps.contains(((PrimitiveTypeInfo)oiTypeInfo0).getPrimitiveCategory()) &&
+            oiTypeInfo1.equals(TypeInfoFactory.longTypeInfo)) || (oiTypeInfo1 instanceof PrimitiveTypeInfo &&
+            unsafeConventionTyps.contains(((PrimitiveTypeInfo)oiTypeInfo1).getPrimitiveCategory()) &&
+            oiTypeInfo0.equals(TypeInfoFactory.longTypeInfo))) {
           String error = StrictChecks.checkTypeSafety(conf);
-          if (error != null) throw new UDFArgumentException(error);
-          console.printError("WARNING: Comparing a bigint and a string may result in a loss of precision.");
+          if (error != null) {
+            throw new UDFArgumentException(error);
+          }
+          String type = oiTypeInfo0.getTypeName();
+          if (oiTypeInfo0.equals(TypeInfoFactory.longTypeInfo)) {
+            type = oiTypeInfo1.getTypeName();
+          }
+          console.printError("WARNING: Comparing a bigint and a " + type + " may result in a loss of precision.");
         } else if ((oiTypeInfo0.equals(TypeInfoFactory.doubleTypeInfo) && oiTypeInfo1.equals(TypeInfoFactory.longTypeInfo)) ||
             (oiTypeInfo0.equals(TypeInfoFactory.longTypeInfo) && oiTypeInfo1.equals(TypeInfoFactory.doubleTypeInfo))) {
           console.printError("WARNING: Comparing a bigint and a double may result in a loss of precision.");

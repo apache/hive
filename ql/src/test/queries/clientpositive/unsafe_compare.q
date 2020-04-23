@@ -1,0 +1,10 @@
+
+CREATE TABLE test_a (appid1 varchar(256),  appid2 char(20));
+
+INSERT INTO  test_a VALUES ('2882303761517473127', '2882303761517473127'), ('2882303761517473276','2882303761517473276');
+
+SET hive.strict.checks.type.safety=false;
+
+SELECT appid1 FROM test_a WHERE appid1 = 2882303761517473127;
+
+SELECT appid2 FROM test_a WHERE appid2 = 2882303761517473127;

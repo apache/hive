@@ -1,0 +1,40 @@
+PREHOOK: query: CREATE TABLE test_a (appid1 varchar(256),  appid2 char(20))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_a
+POSTHOOK: query: CREATE TABLE test_a (appid1 varchar(256),  appid2 char(20))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_a
+PREHOOK: query: INSERT INTO  test_a VALUES ('2882303761517473127', '2882303761517473127'), ('2882303761517473276','2882303761517473276')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_a
+POSTHOOK: query: INSERT INTO  test_a VALUES ('2882303761517473127', '2882303761517473127'), ('2882303761517473276','2882303761517473276')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_a
+POSTHOOK: Lineage: test_a.appid1 SCRIPT []
+POSTHOOK: Lineage: test_a.appid2 SCRIPT []
+WARNING: Comparing a bigint and a varchar(256) may result in a loss of precision.
+PREHOOK: query: SELECT appid1 FROM test_a WHERE appid1 = 2882303761517473127
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_a
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT appid1 FROM test_a WHERE appid1 = 2882303761517473127
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_a
+#### A masked pattern was here ####
+2882303761517473127
+2882303761517473276
+WARNING: Comparing a bigint and a char(20) may result in a loss of precision.
+PREHOOK: query: SELECT appid2 FROM test_a WHERE appid2 = 2882303761517473127
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_a
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT appid2 FROM test_a WHERE appid2 = 2882303761517473127
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_a
+#### A masked pattern was here ####
+2882303761517473127 
+2882303761517473276 
