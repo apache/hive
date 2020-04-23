@@ -235,7 +235,7 @@ STAGE PLANS:
           TableScan
             alias: uservisits_web_text_none
             Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
-            Statistics Aggregation Key Prefix: default.uservisits_web_text_none/
+            Statistics Aggregation Key Prefix: hive.default.uservisits_web_text_none/
             GatherStats: true
             Select Operator
               expressions: sourceip (type: string), adrevenue (type: float), avgtimeonsite (type: int)
@@ -266,6 +266,7 @@ STAGE PLANS:
               EXTERNAL TRUE
               bucket_count -1
               bucketing_version 2
+              cat hive
               column.name.delimiter ,
               columns sourceip,desturl,visitdate,adrevenue,useragent,ccode,lcode,skeyword,avgtimeonsite
               columns.comments 
@@ -288,6 +289,7 @@ STAGE PLANS:
                 EXTERNAL TRUE
                 bucket_count -1
                 bucketing_version 2
+                cat hive
                 column.name.delimiter ,
                 columns sourceip,desturl,visitdate,adrevenue,useragent,ccode,lcode,skeyword,avgtimeonsite
                 columns.comments 
@@ -340,7 +342,7 @@ STAGE PLANS:
   Stage: Stage-1
     Stats Work
       Basic Stats Work:
-          Stats Aggregation Key Prefix: default.uservisits_web_text_none/
+          Stats Aggregation Key Prefix: hive.default.uservisits_web_text_none/
       Column Stats Desc:
           Columns: sourceIP, avgTimeOnSite, adRevenue
           Column Types: string, int, float

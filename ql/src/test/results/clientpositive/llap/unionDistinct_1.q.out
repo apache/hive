@@ -1014,19 +1014,19 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: CREATE TABLE DEST1_n96(key STRING, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEST1_n96
+PREHOOK: Output: default@dest1_n96
 POSTHOOK: query: CREATE TABLE DEST1_n96(key STRING, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST1_n96
+POSTHOOK: Output: default@dest1_n96
 PREHOOK: query: CREATE TABLE DEST2_n26(key STRING, val1 STRING, val2 STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEST2_n26
+PREHOOK: Output: default@dest2_n26
 POSTHOOK: query: CREATE TABLE DEST2_n26(key STRING, val1 STRING, val2 STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST2_n26
+POSTHOOK: Output: default@dest2_n26
 PREHOOK: query: explain 
 FROM (select 'tst1_n93' as key, cast(count(1) as string) as value from src s1
                          UNION DISTINCT  
@@ -1957,19 +1957,19 @@ tst1_n93	500	1
 PREHOOK: query: CREATE TABLE DEST118(key STRING, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEST118
+PREHOOK: Output: default@dest118
 POSTHOOK: query: CREATE TABLE DEST118(key STRING, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST118
+POSTHOOK: Output: default@dest118
 PREHOOK: query: CREATE TABLE DEST218(key STRING, val1 STRING, val2 STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEST218
+PREHOOK: Output: default@dest218
 POSTHOOK: query: CREATE TABLE DEST218(key STRING, val1 STRING, val2 STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST218
+POSTHOOK: Output: default@dest218
 PREHOOK: query: explain 
 FROM (select 'tst1_n93' as key, cast(count(1) as string) as value from src s1
                          UNION DISTINCT  
@@ -2871,15 +2871,15 @@ PREHOOK: Output: default@DEST119
 POSTHOOK: query: CREATE TABLE DEST119(key STRING, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST119
+POSTHOOK: Output: default@dest119
 PREHOOK: query: CREATE TABLE DEST219(key STRING, val1 STRING, val2 STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEST219
+PREHOOK: Output: default@dest219
 POSTHOOK: query: CREATE TABLE DEST219(key STRING, val1 STRING, val2 STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST219
+POSTHOOK: Output: default@dest219
 PREHOOK: query: explain 
 FROM (select 'tst1_n93' as key, cast(count(1) as string) as value from src s1
                          UNION DISTINCT  
@@ -3963,6 +3963,7 @@ STAGE PLANS:
                     properties:
                       bucket_count -1
                       bucketing_version 2
+                      cat hive
                       column.name.delimiter ,
                       columns k0,k1,k2,k3,k4,k5
                       columns.comments 
@@ -4069,6 +4070,7 @@ STAGE PLANS:
                     properties:
                       bucket_count -1
                       bucketing_version 2
+                      cat hive
                       column.name.delimiter ,
                       columns k1,k2,k3,k4
                       columns.comments 
@@ -4149,6 +4151,7 @@ STAGE PLANS:
                     properties:
                       bucket_count -1
                       bucketing_version 2
+                      cat hive
                       column.name.delimiter ,
                       columns k0,k1,k2,k3,k4,k5
                       columns.comments 
@@ -4190,6 +4193,7 @@ STAGE PLANS:
                       properties:
                         bucket_count -1
                         bucketing_version 2
+                        cat hive
                         column.name.delimiter ,
                         columns k1,k2,k3,k4
                         columns.comments 
@@ -4283,6 +4287,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 bucketing_version 2
+                cat hive
                 column.name.delimiter ,
                 columns k1,k2,k3,k4
                 columns.comments 
@@ -5277,6 +5282,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"count":"true","key":"true"}}
                     bucket_count -1
                     bucketing_version 2
+                    cat hive
                     column.name.delimiter ,
                     columns key,count
                     columns.comments 
@@ -5300,6 +5306,7 @@ STAGE PLANS:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"count":"true","key":"true"}}
                       bucket_count -1
                       bucketing_version 2
+                      cat hive
                       column.name.delimiter ,
                       columns key,count
                       columns.comments 
@@ -5360,6 +5367,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"count":"true","key":"true"}}
                     bucket_count -1
                     bucketing_version 2
+                    cat hive
                     column.name.delimiter ,
                     columns key,count
                     columns.comments 
@@ -5383,6 +5391,7 @@ STAGE PLANS:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"count":"true","key":"true"}}
                       bucket_count -1
                       bucketing_version 2
+                      cat hive
                       column.name.delimiter ,
                       columns key,count
                       columns.comments 
@@ -5445,6 +5454,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"count":"true","key":"true"}}
                     bucket_count -1
                     bucketing_version 2
+                    cat hive
                     column.name.delimiter ,
                     columns key,count
                     columns.comments 
@@ -5468,6 +5478,7 @@ STAGE PLANS:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"count":"true","key":"true"}}
                       bucket_count -1
                       bucketing_version 2
+                      cat hive
                       column.name.delimiter ,
                       columns key,count
                       columns.comments 
@@ -5530,6 +5541,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"count":"true","key":"true"}}
                     bucket_count -1
                     bucketing_version 2
+                    cat hive
                     column.name.delimiter ,
                     columns key,count
                     columns.comments 
@@ -5553,6 +5565,7 @@ STAGE PLANS:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"count":"true","key":"true"}}
                       bucket_count -1
                       bucketing_version 2
+                      cat hive
                       column.name.delimiter ,
                       columns key,count
                       columns.comments 
@@ -5830,6 +5843,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"count":"true","key":"true"}}
                     bucket_count -1
                     bucketing_version 2
+                    cat hive
                     column.name.delimiter ,
                     columns key,count
                     columns.comments 
@@ -5853,6 +5867,7 @@ STAGE PLANS:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"count":"true","key":"true"}}
                       bucket_count -1
                       bucketing_version 2
+                      cat hive
                       column.name.delimiter ,
                       columns key,count
                       columns.comments 
@@ -5915,6 +5930,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"count":"true","key":"true"}}
                     bucket_count -1
                     bucketing_version 2
+                    cat hive
                     column.name.delimiter ,
                     columns key,count
                     columns.comments 
@@ -5938,6 +5954,7 @@ STAGE PLANS:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"count":"true","key":"true"}}
                       bucket_count -1
                       bucketing_version 2
+                      cat hive
                       column.name.delimiter ,
                       columns key,count
                       columns.comments 
@@ -5994,6 +6011,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"count":"true","key":"true"}}
                     bucket_count -1
                     bucketing_version 2
+                    cat hive
                     column.name.delimiter ,
                     columns key,count
                     columns.comments 
@@ -6017,6 +6035,7 @@ STAGE PLANS:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"count":"true","key":"true"}}
                       bucket_count -1
                       bucketing_version 2
+                      cat hive
                       column.name.delimiter ,
                       columns key,count
                       columns.comments 
@@ -6095,6 +6114,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"count":"true","key":"true"}}
                     bucket_count -1
                     bucketing_version 2
+                    cat hive
                     column.name.delimiter ,
                     columns key,count
                     columns.comments 
@@ -6118,6 +6138,7 @@ STAGE PLANS:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"count":"true","key":"true"}}
                       bucket_count -1
                       bucketing_version 2
+                      cat hive
                       column.name.delimiter ,
                       columns key,count
                       columns.comments 
@@ -6342,6 +6363,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"count":"true","key":"true"}}
                     bucket_count -1
                     bucketing_version 2
+                    cat hive
                     column.name.delimiter ,
                     columns key,count
                     columns.comments 
@@ -6365,6 +6387,7 @@ STAGE PLANS:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"count":"true","key":"true"}}
                       bucket_count -1
                       bucketing_version 2
+                      cat hive
                       column.name.delimiter ,
                       columns key,count
                       columns.comments 
@@ -6427,6 +6450,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"count":"true","key":"true"}}
                     bucket_count -1
                     bucketing_version 2
+                    cat hive
                     column.name.delimiter ,
                     columns key,count
                     columns.comments 
@@ -6450,6 +6474,7 @@ STAGE PLANS:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"count":"true","key":"true"}}
                       bucket_count -1
                       bucketing_version 2
+                      cat hive
                       column.name.delimiter ,
                       columns key,count
                       columns.comments 
@@ -6526,6 +6551,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"count":"true","key":"true"}}
                     bucket_count -1
                     bucketing_version 2
+                    cat hive
                     column.name.delimiter ,
                     columns key,count
                     columns.comments 
@@ -6549,6 +6575,7 @@ STAGE PLANS:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"count":"true","key":"true"}}
                       bucket_count -1
                       bucketing_version 2
+                      cat hive
                       column.name.delimiter ,
                       columns key,count
                       columns.comments 
@@ -6605,6 +6632,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"count":"true","key":"true"}}
                     bucket_count -1
                     bucketing_version 2
+                    cat hive
                     column.name.delimiter ,
                     columns key,count
                     columns.comments 
@@ -6628,6 +6656,7 @@ STAGE PLANS:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"count":"true","key":"true"}}
                       bucket_count -1
                       bucketing_version 2
+                      cat hive
                       column.name.delimiter ,
                       columns key,count
                       columns.comments 
@@ -6955,7 +6984,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.tmp_unionall_n0
+                          name: hive.default.tmp_unionall_n0
                     Select Operator
                       expressions: _col0 (type: bigint), _col1 (type: string), _col2 (type: string)
                       outputColumnNames: col1, col2, col3

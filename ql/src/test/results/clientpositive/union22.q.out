@@ -143,6 +143,7 @@ STAGE PLANS:
                     properties:
                       bucket_count -1
                       bucketing_version 2
+                      cat hive
                       column.name.delimiter ,
                       columns k0,k1,k2,k3,k4,k5
                       columns.comments 
@@ -275,6 +276,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 bucketing_version 2
+                cat hive
                 column.name.delimiter ,
                 columns k1,k2,k3,k4
                 columns.comments 
@@ -323,6 +325,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 bucketing_version 2
+                cat hive
                 column.name.delimiter ,
                 columns k0,k1,k2,k3,k4,k5
                 columns.comments 
@@ -373,6 +376,7 @@ STAGE PLANS:
                         properties:
                           bucket_count -1
                           bucketing_version 2
+                          cat hive
                           column.name.delimiter ,
                           columns k1,k2,k3,k4
                           columns.comments 
@@ -428,6 +432,7 @@ STAGE PLANS:
                     properties:
                       bucket_count -1
                       bucketing_version 2
+                      cat hive
                       column.name.delimiter ,
                       columns k1,k2,k3,k4
                       columns.comments 
@@ -523,6 +528,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 bucketing_version 2
+                cat hive
                 column.name.delimiter ,
                 columns k0,k1,k2,k3,k4,k5
                 columns.comments 
@@ -589,6 +595,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 bucketing_version 2
+                cat hive
                 column.name.delimiter ,
                 columns k1,k2,k3,k4
                 columns.comments 
@@ -697,6 +704,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 bucketing_version 2
+                cat hive
                 column.name.delimiter ,
                 columns k1,k2,k3,k4
                 columns.comments 
@@ -745,6 +753,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 bucketing_version 2
+                cat hive
                 column.name.delimiter ,
                 columns k0,k1,k2,k3,k4,k5
                 columns.comments 

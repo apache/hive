@@ -82,7 +82,7 @@ STAGE PLANS:
                 TableScan
                   alias: s_n0
                   Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
-                  Statistics Aggregation Key Prefix: default.s_n0/
+                  Statistics Aggregation Key Prefix: hive.default.s_n0/
                   GatherStats: true
                   Select Operator
                     expressions: key (type: string), value (type: string)
@@ -115,6 +115,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
                     bucketing_version 2
+                    cat hive
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 'default','default'
@@ -137,6 +138,7 @@ STAGE PLANS:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                       bucket_count -1
                       bucketing_version 2
+                      cat hive
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
@@ -354,7 +356,7 @@ STAGE PLANS:
                 TableScan
                   alias: spart_n0
                   Statistics: Num rows: 2 Data size: 1076 Basic stats: COMPLETE Column stats: PARTIAL
-                  Statistics Aggregation Key Prefix: default.spart_n0/
+                  Statistics Aggregation Key Prefix: hive.default.spart_n0/
                   GatherStats: true
                   Select Operator
                     expressions: key (type: string), value (type: string), ds (type: string), hr (type: string)
@@ -411,6 +413,7 @@ STAGE PLANS:
                     properties:
                       bucket_count -1
                       bucketing_version 2
+                      cat hive
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
@@ -456,6 +459,7 @@ STAGE PLANS:
                     properties:
                       bucket_count -1
                       bucketing_version 2
+                      cat hive
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
@@ -768,7 +772,7 @@ STAGE PLANS:
                   alias: spart_n0
                   filterExpr: (hr = '11') (type: boolean)
                   Statistics: Num rows: 1 Data size: 354 Basic stats: COMPLETE Column stats: PARTIAL
-                  Statistics Aggregation Key Prefix: default.spart_n0/
+                  Statistics Aggregation Key Prefix: hive.default.spart_n0/
                   GatherStats: true
                   Select Operator
                     expressions: key (type: string), value (type: string), ds (type: string)
@@ -825,6 +829,7 @@ STAGE PLANS:
                     properties:
                       bucket_count -1
                       bucketing_version 2
+                      cat hive
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'

@@ -62,7 +62,7 @@ STAGE PLANS:
           TableScan
             alias: analyze_srcpart_n3
             Statistics: Num rows: 392 Data size: 235616 Basic stats: PARTIAL Column stats: NONE
-            Statistics Aggregation Key Prefix: default.analyze_srcpart_n3/
+            Statistics Aggregation Key Prefix: hive.default.analyze_srcpart_n3/
             GatherStats: true
       Path -> Alias:
 #### A masked pattern was here ####
@@ -98,6 +98,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 bucketing_version 2
+                cat hive
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 'default','default'
@@ -144,6 +145,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 bucketing_version 2
+                cat hive
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 'default','default'
@@ -166,7 +168,7 @@ STAGE PLANS:
   Stage: Stage-1
     Stats Work
       Basic Stats Work:
-          Stats Aggregation Key Prefix: default.analyze_srcpart_n3/
+          Stats Aggregation Key Prefix: hive.default.analyze_srcpart_n3/
 
 PREHOOK: query: analyze table analyze_srcpart_n3 PARTITION(ds='2008-04-08',hr) compute statistics
 PREHOOK: type: QUERY

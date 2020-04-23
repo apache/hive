@@ -41,6 +41,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"col1":"true"}}
                 bucket_count -1
                 bucketing_version 2
+                cat hive
                 column.name.delimiter ,
                 columns col1
                 columns.comments 

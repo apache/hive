@@ -1,11 +1,11 @@
 PREHOOK: query: CREATE TABLE acidTblDefault(a INT) CLUSTERED BY(a) INTO 16 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true', 'transactional_properties'='default')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@acidTblDefault
+PREHOOK: Output: default@acidtbldefault
 POSTHOOK: query: CREATE TABLE acidTblDefault(a INT) CLUSTERED BY(a) INTO 16 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true', 'transactional_properties'='default')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@acidTblDefault
+POSTHOOK: Output: default@acidtbldefault
 PREHOOK: query: INSERT INTO TABLE acidTblDefault SELECT cint FROM alltypesorc WHERE cint IS NOT NULL ORDER BY cint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
@@ -99,6 +99,7 @@ STAGE PLANS:
                     bucket_count 16
                     bucket_field_name a
                     bucketing_version 2
+                    cat hive
                     column.name.delimiter ,
                     columns a
                     columns.comments 
@@ -125,6 +126,7 @@ STAGE PLANS:
                       bucket_count 16
                       bucket_field_name a
                       bucketing_version 2
+                      cat hive
                       column.name.delimiter ,
                       columns a
                       columns.comments 

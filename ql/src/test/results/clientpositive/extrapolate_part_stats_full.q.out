@@ -154,6 +154,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 bucketing_version 2
+                cat hive
                 column.name.delimiter ,
                 columns state,locid,zip
                 columns.comments 
@@ -200,6 +201,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 bucketing_version 2
+                cat hive
                 column.name.delimiter ,
                 columns state,locid,zip
                 columns.comments 
@@ -279,6 +281,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 bucketing_version 2
+                cat hive
                 column.name.delimiter ,
                 columns state,locid,zip
                 columns.comments 
@@ -325,6 +328,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 bucketing_version 2
+                cat hive
                 column.name.delimiter ,
                 columns state,locid,zip
                 columns.comments 
@@ -498,6 +502,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 bucketing_version 2
+                cat hive
                 column.name.delimiter ,
                 columns state,locid
                 columns.comments 
@@ -545,6 +550,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 bucketing_version 2
+                cat hive
                 column.name.delimiter ,
                 columns state,locid
                 columns.comments 
@@ -592,6 +598,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 bucketing_version 2
+                cat hive
                 column.name.delimiter ,
                 columns state,locid
                 columns.comments 
@@ -639,6 +646,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 bucketing_version 2
+                cat hive
                 column.name.delimiter ,
                 columns state,locid
                 columns.comments 
@@ -723,6 +731,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 bucketing_version 2
+                cat hive
                 column.name.delimiter ,
                 columns state,locid
                 columns.comments 
@@ -770,6 +779,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 bucketing_version 2
+                cat hive
                 column.name.delimiter ,
                 columns state,locid
                 columns.comments 
@@ -817,6 +827,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 bucketing_version 2
+                cat hive
                 column.name.delimiter ,
                 columns state,locid
                 columns.comments 
@@ -864,6 +875,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 bucketing_version 2
+                cat hive
                 column.name.delimiter ,
                 columns state,locid
                 columns.comments 

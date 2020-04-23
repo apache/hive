@@ -242,6 +242,7 @@ STAGE PLANS:
                     EXTERNAL TRUE
                     bucket_count -1
                     bucketing_version 2
+                    cat hive
                     column.name.delimiter ,
                     columns __time,cstring1,cstring2,cdouble,cfloat,ctinyint,csmallint,cint,cbigint,cboolean1,cboolean2,cintstring,cfloatstring,cdoublestring
                     columns.comments 
@@ -274,6 +275,7 @@ STAGE PLANS:
                       EXTERNAL TRUE
                       bucket_count -1
                       bucketing_version 2
+                      cat hive
                       column.name.delimiter ,
                       columns __time,cstring1,cstring2,cdouble,cfloat,ctinyint,csmallint,cint,cbigint,cboolean1,cboolean2,cintstring,cfloatstring,cdoublestring
                       columns.comments 

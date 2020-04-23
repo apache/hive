@@ -182,6 +182,7 @@ STAGE PLANS:
                       bucket_count 2
                       bucket_field_name key
                       bucketing_version 1
+                      cat hive
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -230,6 +231,7 @@ STAGE PLANS:
                       bucket_count 2
                       bucket_field_name key
                       bucketing_version 1
+                      cat hive
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -344,6 +346,7 @@ STAGE PLANS:
                 bucket_count 4
                 bucket_field_name key
                 bucketing_version 1
+                cat hive
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -394,6 +397,7 @@ STAGE PLANS:
                 bucket_count 4
                 bucket_field_name key
                 bucketing_version 1
+                cat hive
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -559,6 +563,7 @@ STAGE PLANS:
                 bucket_count 4
                 bucket_field_name key
                 bucketing_version 1
+                cat hive
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -609,6 +614,7 @@ STAGE PLANS:
                 bucket_count 4
                 bucket_field_name key
                 bucketing_version 1
+                cat hive
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 

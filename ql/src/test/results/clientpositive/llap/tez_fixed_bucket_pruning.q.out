@@ -580,6 +580,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"business_dept_object_id":"true","business_partner_percentage":"true","charge_code_object_id":"true","date_key":"true","fy_month_key":"true","fy_quarter_key":"true","fy_year_key":"true","month_key":"true","plan_detail_object_id":"true","project_object_id":"true","quarter_key":"true","resource_object_id":"true","slice_date":"true","split_amount":"true","split_units":"true","supplier_object_id":"true","transclass_object_id":"true","week_key":"true","year_key":"true"}}
                     bucket_count -1
                     bucketing_version 2
+                    cat hive
                     column.name.delimiter ,
                     columns plan_detail_object_id,project_object_id,charge_code_object_id,transclass_object_id,resource_object_id,slice_date,split_amount,split_units,year_key,quarter_key,month_key,week_key,date_key,fy_year_key,fy_quarter_key,fy_month_key,supplier_object_id,business_dept_object_id,business_partner_percentage
                     columns.comments 
@@ -602,6 +603,7 @@ STAGE PLANS:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"business_dept_object_id":"true","business_partner_percentage":"true","charge_code_object_id":"true","date_key":"true","fy_month_key":"true","fy_quarter_key":"true","fy_year_key":"true","month_key":"true","plan_detail_object_id":"true","project_object_id":"true","quarter_key":"true","resource_object_id":"true","slice_date":"true","split_amount":"true","split_units":"true","supplier_object_id":"true","transclass_object_id":"true","week_key":"true","year_key":"true"}}
                       bucket_count -1
                       bucketing_version 2
+                      cat hive
                       column.name.delimiter ,
                       columns plan_detail_object_id,project_object_id,charge_code_object_id,transclass_object_id,resource_object_id,slice_date,split_amount,split_units,year_key,quarter_key,month_key,week_key,date_key,fy_year_key,fy_quarter_key,fy_month_key,supplier_object_id,business_dept_object_id,business_partner_percentage
                       columns.comments 
@@ -652,6 +654,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"l3_snapshot_number":"true"}}
                     bucket_count -1
                     bucketing_version 2
+                    cat hive
                     column.name.delimiter ,
                     columns l3_snapshot_number
                     columns.comments 
@@ -674,6 +677,7 @@ STAGE PLANS:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"l3_snapshot_number":"true"}}
                       bucket_count -1
                       bucketing_version 2
+                      cat hive
                       column.name.delimiter ,
                       columns l3_snapshot_number
                       columns.comments 
@@ -732,6 +736,7 @@ STAGE PLANS:
                     bucket_count 64
                     bucket_field_name idp_data_date
                     bucketing_version 2
+                    cat hive
                     column.name.delimiter ,
                     columns idp_warehouse_id,idp_audit_id,idp_data_date,l3_snapshot_number,plan_key,project_key,charge_code_key,transclass_key,resource_key,finplan_detail_object_id,project_object_id,txn_class_object_id,charge_code_object_id,resoruce_object_id,plan_name,plan_code,plan_type,period_type,plan_description,plan_status,period_start,period_end,plan_of_record,percentage,l3_created_date,bmo_cost_type,bmo_fiscal_year,clarity_updated_date,is_latest_snapshot,latest_fiscal_budget_plan,plan_category,last_updated_by
                     columns.comments 
@@ -755,6 +760,7 @@ STAGE PLANS:
                       bucket_count 64
                       bucket_field_name idp_data_date
                       bucketing_version 2
+                      cat hive
                       column.name.delimiter ,
                       columns idp_warehouse_id,idp_audit_id,idp_data_date,l3_snapshot_number,plan_key,project_key,charge_code_key,transclass_key,resource_key,finplan_detail_object_id,project_object_id,txn_class_object_id,charge_code_object_id,resoruce_object_id,plan_name,plan_code,plan_type,period_type,plan_description,plan_status,period_start,period_end,plan_of_record,percentage,l3_created_date,bmo_cost_type,bmo_fiscal_year,clarity_updated_date,is_latest_snapshot,latest_fiscal_budget_plan,plan_category,last_updated_by
                       columns.comments 
@@ -812,6 +818,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"idp_data_date":"true","l3_created_date":"true","l3_snapshot_number":"true","project_key":"true","project_object_id":"true"}}
                     bucket_count -1
                     bucketing_version 2
+                    cat hive
                     column.name.delimiter ,
                     columns project_key,l3_snapshot_number,l3_created_date,project_object_id,idp_data_date
                     columns.comments 
@@ -834,6 +841,7 @@ STAGE PLANS:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"idp_data_date":"true","l3_created_date":"true","l3_snapshot_number":"true","project_key":"true","project_object_id":"true"}}
                       bucket_count -1
                       bucketing_version 2
+                      cat hive
                       column.name.delimiter ,
                       columns project_key,l3_snapshot_number,l3_created_date,project_object_id,idp_data_date
                       columns.comments 
@@ -1095,6 +1103,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"business_dept_object_id":"true","business_partner_percentage":"true","charge_code_object_id":"true","date_key":"true","fy_month_key":"true","fy_quarter_key":"true","fy_year_key":"true","month_key":"true","plan_detail_object_id":"true","project_object_id":"true","quarter_key":"true","resource_object_id":"true","slice_date":"true","split_amount":"true","split_units":"true","supplier_object_id":"true","transclass_object_id":"true","week_key":"true","year_key":"true"}}
                     bucket_count -1
                     bucketing_version 2
+                    cat hive
                     column.name.delimiter ,
                     columns plan_detail_object_id,project_object_id,charge_code_object_id,transclass_object_id,resource_object_id,slice_date,split_amount,split_units,year_key,quarter_key,month_key,week_key,date_key,fy_year_key,fy_quarter_key,fy_month_key,supplier_object_id,business_dept_object_id,business_partner_percentage
                     columns.comments 
@@ -1117,6 +1126,7 @@ STAGE PLANS:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"business_dept_object_id":"true","business_partner_percentage":"true","charge_code_object_id":"true","date_key":"true","fy_month_key":"true","fy_quarter_key":"true","fy_year_key":"true","month_key":"true","plan_detail_object_id":"true","project_object_id":"true","quarter_key":"true","resource_object_id":"true","slice_date":"true","split_amount":"true","split_units":"true","supplier_object_id":"true","transclass_object_id":"true","week_key":"true","year_key":"true"}}
                       bucket_count -1
                       bucketing_version 2
+                      cat hive
                       column.name.delimiter ,
                       columns plan_detail_object_id,project_object_id,charge_code_object_id,transclass_object_id,resource_object_id,slice_date,split_amount,split_units,year_key,quarter_key,month_key,week_key,date_key,fy_year_key,fy_quarter_key,fy_month_key,supplier_object_id,business_dept_object_id,business_partner_percentage
                       columns.comments 
@@ -1167,6 +1177,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"l3_snapshot_number":"true"}}
                     bucket_count -1
                     bucketing_version 2
+                    cat hive
                     column.name.delimiter ,
                     columns l3_snapshot_number
                     columns.comments 
@@ -1189,6 +1200,7 @@ STAGE PLANS:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"l3_snapshot_number":"true"}}
                       bucket_count -1
                       bucketing_version 2
+                      cat hive
                       column.name.delimiter ,
                       columns l3_snapshot_number
                       columns.comments 
@@ -1247,6 +1259,7 @@ STAGE PLANS:
                     bucket_count 64
                     bucket_field_name idp_data_date
                     bucketing_version 2
+                    cat hive
                     column.name.delimiter ,
                     columns idp_warehouse_id,idp_audit_id,idp_data_date,l3_snapshot_number,plan_key,project_key,charge_code_key,transclass_key,resource_key,finplan_detail_object_id,project_object_id,txn_class_object_id,charge_code_object_id,resoruce_object_id,plan_name,plan_code,plan_type,period_type,plan_description,plan_status,period_start,period_end,plan_of_record,percentage,l3_created_date,bmo_cost_type,bmo_fiscal_year,clarity_updated_date,is_latest_snapshot,latest_fiscal_budget_plan,plan_category,last_updated_by
                     columns.comments 
@@ -1270,6 +1283,7 @@ STAGE PLANS:
                       bucket_count 64
                       bucket_field_name idp_data_date
                       bucketing_version 2
+                      cat hive
                       column.name.delimiter ,
                       columns idp_warehouse_id,idp_audit_id,idp_data_date,l3_snapshot_number,plan_key,project_key,charge_code_key,transclass_key,resource_key,finplan_detail_object_id,project_object_id,txn_class_object_id,charge_code_object_id,resoruce_object_id,plan_name,plan_code,plan_type,period_type,plan_description,plan_status,period_start,period_end,plan_of_record,percentage,l3_created_date,bmo_cost_type,bmo_fiscal_year,clarity_updated_date,is_latest_snapshot,latest_fiscal_budget_plan,plan_category,last_updated_by
                       columns.comments 
@@ -1327,6 +1341,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"idp_data_date":"true","l3_created_date":"true","l3_snapshot_number":"true","project_key":"true","project_object_id":"true"}}
                     bucket_count -1
                     bucketing_version 2
+                    cat hive
                     column.name.delimiter ,
                     columns project_key,l3_snapshot_number,l3_created_date,project_object_id,idp_data_date
                     columns.comments 
@@ -1349,6 +1364,7 @@ STAGE PLANS:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"idp_data_date":"true","l3_created_date":"true","l3_snapshot_number":"true","project_key":"true","project_object_id":"true"}}
                       bucket_count -1
                       bucketing_version 2
+                      cat hive
                       column.name.delimiter ,
                       columns project_key,l3_snapshot_number,l3_created_date,project_object_id,idp_data_date
                       columns.comments 
@@ -1549,6 +1565,7 @@ STAGE PLANS:
                     bucket_count 4
                     bucket_field_name col_1
                     bucketing_version 2
+                    cat hive
                     column.name.delimiter ,
                     columns col_1,col_2,col_3
                     columns.comments 
@@ -1572,6 +1589,7 @@ STAGE PLANS:
                       bucket_count 4
                       bucket_field_name col_1
                       bucketing_version 2
+                      cat hive
                       column.name.delimiter ,
                       columns col_1,col_2,col_3
                       columns.comments 
@@ -1703,6 +1721,7 @@ STAGE PLANS:
                     bucket_count 4
                     bucket_field_name col_1
                     bucketing_version 2
+                    cat hive
                     column.name.delimiter ,
                     columns col_1,col_2,col_3
                     columns.comments 
@@ -1726,6 +1745,7 @@ STAGE PLANS:
                       bucket_count 4
                       bucket_field_name col_1
                       bucketing_version 2
+                      cat hive
                       column.name.delimiter ,
                       columns col_1,col_2,col_3
                       columns.comments 

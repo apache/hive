@@ -69,6 +69,7 @@ STAGE PLANS:
             properties:
               bucket_count -1
               bucketing_version 2
+              cat hive
               column.name.delimiter ,
               columns claim_rec_id,claim_invoice_num,typ_c
               columns.comments 
@@ -90,6 +91,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 bucketing_version 2
+                cat hive
                 column.name.delimiter ,
                 columns claim_rec_id,claim_invoice_num,typ_c
                 columns.comments 
@@ -200,6 +202,7 @@ STAGE PLANS:
             properties:
               bucket_count -1
               bucketing_version 2
+              cat hive
               column.name.delimiter ,
               columns claim_rec_id,claim_invoice_num,typ_c
               columns.comments 
@@ -221,6 +224,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 bucketing_version 2
+                cat hive
                 column.name.delimiter ,
                 columns claim_rec_id,claim_invoice_num,typ_c
                 columns.comments 

@@ -5,19 +5,19 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table if not exists TLIMITOFFSET (name string, id int, flag string) STORED AS orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@TLIMITOFFSET
+PREHOOK: Output: default@tlimitoffset
 POSTHOOK: query: create table if not exists TLIMITOFFSET (name string, id int, flag string) STORED AS orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@TLIMITOFFSET
+POSTHOOK: Output: default@tlimitoffset
 PREHOOK: query: create table if not exists TLIMITOFFSETSTAGE (name string, id int, flag string) ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' LINES TERMINATED BY '\n' STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@TLIMITOFFSETSTAGE
+PREHOOK: Output: default@tlimitoffsetstage
 POSTHOOK: query: create table if not exists TLIMITOFFSETSTAGE (name string, id int, flag string) ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' LINES TERMINATED BY '\n' STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@TLIMITOFFSETSTAGE
+POSTHOOK: Output: default@tlimitoffsetstage
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/tjoin3.txt' OVERWRITE INTO TABLE TLIMITOFFSETSTAGE
 PREHOOK: type: LOAD
 #### A masked pattern was here ####

@@ -131,7 +131,7 @@ STAGE PLANS:
             alias: employee_part
             filterExpr: (employeesalary = 2000.0D) (type: boolean)
             Statistics: Num rows: 3 Data size: 1062 Basic stats: PARTIAL Column stats: NONE
-            Statistics Aggregation Key Prefix: default.employee_part/
+            Statistics Aggregation Key Prefix: hive.default.employee_part/
             GatherStats: true
             Select Operator
               expressions: employeeid (type: int)
@@ -189,6 +189,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 bucketing_version 2
+                cat hive
                 column.name.delimiter ,
                 columns employeeid,employeename
                 columns.comments 
@@ -245,7 +246,7 @@ STAGE PLANS:
   Stage: Stage-1
     Stats Work
       Basic Stats Work:
-          Stats Aggregation Key Prefix: default.employee_part/
+          Stats Aggregation Key Prefix: hive.default.employee_part/
       Column Stats Desc:
           Columns: employeeID
           Column Types: int
@@ -405,7 +406,7 @@ STAGE PLANS:
             alias: employee_part
             filterExpr: (employeesalary = 4000.0D) (type: boolean)
             Statistics: Num rows: 3 Data size: 1062 Basic stats: PARTIAL Column stats: NONE
-            Statistics Aggregation Key Prefix: default.employee_part/
+            Statistics Aggregation Key Prefix: hive.default.employee_part/
             GatherStats: true
             Select Operator
               expressions: employeeid (type: int)
@@ -463,6 +464,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 bucketing_version 2
+                cat hive
                 column.name.delimiter ,
                 columns employeeid,employeename
                 columns.comments 
@@ -519,7 +521,7 @@ STAGE PLANS:
   Stage: Stage-1
     Stats Work
       Basic Stats Work:
-          Stats Aggregation Key Prefix: default.employee_part/
+          Stats Aggregation Key Prefix: hive.default.employee_part/
       Column Stats Desc:
           Columns: employeeID
           Column Types: int

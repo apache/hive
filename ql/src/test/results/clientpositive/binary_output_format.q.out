@@ -102,6 +102,7 @@ STAGE PLANS:
                         COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"mydata":"true"}}
                         bucket_count -1
                         bucketing_version 2
+                        cat hive
                         column.name.delimiter ,
                         columns mydata
                         columns.comments 
@@ -151,6 +152,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
               bucketing_version 2
+              cat hive
               column.name.delimiter ,
               columns key,value
               columns.comments 'default','default'
@@ -173,6 +175,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                 bucket_count -1
                 bucketing_version 2
+                cat hive
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 'default','default'
@@ -243,6 +246,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"mydata":"true"}}
                 bucket_count -1
                 bucketing_version 2
+                cat hive
                 column.name.delimiter ,
                 columns mydata
                 columns.comments 
@@ -288,6 +292,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"mydata":"true"}}
                     bucket_count -1
                     bucketing_version 2
+                    cat hive
                     column.name.delimiter ,
                     columns mydata
                     columns.comments 
@@ -320,6 +325,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"mydata":"true"}}
               bucket_count -1
               bucketing_version 2
+              cat hive
               column.name.delimiter ,
               columns mydata
               columns.comments 
@@ -343,6 +349,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"mydata":"true"}}
                 bucket_count -1
                 bucketing_version 2
+                cat hive
                 column.name.delimiter ,
                 columns mydata
                 columns.comments 
@@ -381,6 +388,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"mydata":"true"}}
                     bucket_count -1
                     bucketing_version 2
+                    cat hive
                     column.name.delimiter ,
                     columns mydata
                     columns.comments 
@@ -413,6 +421,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"mydata":"true"}}
               bucket_count -1
               bucketing_version 2
+              cat hive
               column.name.delimiter ,
               columns mydata
               columns.comments 
@@ -436,6 +445,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"mydata":"true"}}
                 bucket_count -1
                 bucketing_version 2
+                cat hive
                 column.name.delimiter ,
                 columns mydata
                 columns.comments 

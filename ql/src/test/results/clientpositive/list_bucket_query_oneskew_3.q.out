@@ -241,6 +241,7 @@ STAGE PLANS:
                 EXTERNAL TRUE
                 bucket_count -1
                 bucketing_version 2
+                cat hive
                 column.name.delimiter ,
                 columns x,y,z
                 columns.comments 
@@ -287,6 +288,7 @@ STAGE PLANS:
                 EXTERNAL TRUE
                 bucket_count -1
                 bucketing_version 2
+                cat hive
                 column.name.delimiter ,
                 columns x,y,z
                 columns.comments 
@@ -333,6 +335,7 @@ STAGE PLANS:
                 EXTERNAL TRUE
                 bucket_count -1
                 bucketing_version 2
+                cat hive
                 column.name.delimiter ,
                 columns x,y,z
                 columns.comments 

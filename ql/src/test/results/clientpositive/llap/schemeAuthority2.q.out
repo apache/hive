@@ -1,11 +1,11 @@
 PREHOOK: query: create external table dynPart_n0 (key string) partitioned by (value string, value2 string) row format delimited fields terminated by '\\t' stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dynPart_n0
+PREHOOK: Output: default@dynpart_n0
 POSTHOOK: query: create external table dynPart_n0 (key string) partitioned by (value string, value2 string) row format delimited fields terminated by '\\t' stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dynPart_n0
+POSTHOOK: Output: default@dynpart_n0
 #### A masked pattern was here ####
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src

@@ -1,35 +1,7 @@
-PREHOOK: query: create table A_n8 as
-select * from src
-PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: default@src
-PREHOOK: Output: database:default
-PREHOOK: Output: default@a_n8
-POSTHOOK: query: create table A_n8 as
-select * from src
-POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: default@src
-POSTHOOK: Output: database:default
-POSTHOOK: Output: default@a_n8
-POSTHOOK: Lineage: a_n8.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: a_n8.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: create table B_n6 as
-select * from src
-limit 10
-PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: default@src
-PREHOOK: Output: database:default
-PREHOOK: Output: default@b_n6
-POSTHOOK: query: create table B_n6 as
-select * from src
-limit 10
-POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: default@src
-POSTHOOK: Output: database:default
-POSTHOOK: Output: default@b_n6
-POSTHOOK: Lineage: b_n6.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: b_n6.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-Warning: Shuffle Join JOIN[6][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
-PREHOOK: query: explain select * from A_n8 join B_n6
+Warning: Shuffle Join JOIN[11][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-2:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[8][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+PREHOOK: query: explain
+select src1.key from src src1 join src src2 join src src3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####

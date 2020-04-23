@@ -125,6 +125,7 @@ STAGE PLANS:
             properties:
               bucket_count -1
               bucketing_version 2
+              cat hive
               column.name.delimiter ,
               columns 
               columns.comments 
@@ -141,6 +142,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 bucketing_version 2
+                cat hive
                 column.name.delimiter ,
                 columns 
                 columns.comments 
@@ -175,6 +177,7 @@ STAGE PLANS:
                   bucket_count 2
                   bucket_field_name id
                   bucketing_version 2
+                  cat hive
                   column.name.delimiter ,
                   columns id
                   columns.comments 
@@ -208,6 +211,7 @@ STAGE PLANS:
                 bucket_count 2
                 bucket_field_name id
                 bucketing_version 2
+                cat hive
                 column.name.delimiter ,
                 columns id
                 columns.comments 
