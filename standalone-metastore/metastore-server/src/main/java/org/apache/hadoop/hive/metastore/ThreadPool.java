@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.slf4j.Logger;
@@ -24,6 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 
 /**
  * Utility singleton class to manage all the threads.
@@ -31,7 +33,7 @@ import java.util.concurrent.ScheduledExecutorService;
 public class ThreadPool {
 
   static final private Logger LOG = LoggerFactory.getLogger(ThreadPool.class);
-  private static ThreadPool self = null;
+  private static ThreadPool self;
   private static ScheduledExecutorService pool;
 
   public static synchronized ThreadPool initialize(Configuration conf) {
@@ -43,8 +45,10 @@ public class ThreadPool {
   }
 
   private ThreadPool(Configuration conf) {
+    ThreadFactory threadFactory = new ThreadFactoryBuilder().setDaemon(true)
+        .setNameFormat("Metastore Scheduled Worker %d").build();
     pool = Executors.newScheduledThreadPool(MetastoreConf.getIntVar(conf,
-        MetastoreConf.ConfVars.THREAD_POOL_SIZE));
+        MetastoreConf.ConfVars.THREAD_POOL_SIZE), threadFactory);
   }
 
   public static ScheduledExecutorService getPool() {
