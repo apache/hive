@@ -37,6 +37,7 @@ import org.apache.avro.io.BinaryEncoder;
 import org.apache.avro.io.DatumWriter;
 import org.apache.avro.io.EncoderFactory;
 import org.apache.avro.specific.SpecificDatumWriter;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.fs.FileSystem;
@@ -62,7 +63,6 @@ import org.apache.hive.druid.MiniDruidCluster;
 import org.apache.hive.kafka.SingleNodeKafkaCluster;
 import org.apache.hive.kafka.Wikipedia;
 import org.apache.hive.testutils.MiniZooKeeperCluster;
-import org.apache.logging.log4j.util.Strings;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
@@ -583,7 +583,7 @@ public class QTestMiniClusters {
     Path userInstallPath;
     if (isLocalFs) {
       String buildDir = QTestSystemProperties.getBuildDir();
-      Preconditions.checkState(Strings.isNotBlank(buildDir));
+      Preconditions.checkState(StringUtils.isNotBlank(buildDir));
       Path path = new Path(fsUriString, buildDir);
 
       // Create a fake fs root for local fs
