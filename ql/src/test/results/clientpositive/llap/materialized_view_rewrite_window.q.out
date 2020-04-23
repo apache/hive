@@ -91,7 +91,7 @@ HiveAggregate(group=[{2}], agg#0=[max($1)])
         HiveTableScan(table=[[arc_view, wealth]], table:alias=[t2])
     HiveProject(total_views=[$1], quartile=[$2], program=[$0])
       HiveFilter(condition=[IS NOT NULL($0)])
-        HiveProject(program=[$0], total_views=[$1], _o__col6=[sum(CAST(1.5:DECIMAL(2, 1)):DECIMAL(9, 4)) OVER (PARTITION BY 0 ORDER BY $1 NULLS LAST RANGE BETWEEN CURRENT ROW AND 2147483647 PRECEDING)])
+        HiveProject(program=[$0], total_views=[$1], _o__col6=[sum(CAST(1.5:DECIMAL(2, 1)):DECIMAL(9, 4)) OVER (PARTITION BY 0 ORDER BY $1 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)])
           HiveTableScan(table=[[arc_view, tv_view_data]], table:alias=[tv_view_data])
 
 PREHOOK: query: create materialized view mv_tv_view_data_av1 stored as orc TBLPROPERTIES ('transactional'='true') as
