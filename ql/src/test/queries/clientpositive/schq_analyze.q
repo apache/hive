@@ -21,7 +21,7 @@ create scheduled query t_analyze cron '0 */1 * * * ? *' as analyze table t compu
 
 alter scheduled query t_analyze execute;
 
-!sleep 10; 
+!sleep 30;
  
 select * from information_schema.scheduled_executions s where schedule_name='ex_analyze' order by scheduled_execution_id desc limit 3;
  

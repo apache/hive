@@ -94,6 +94,7 @@ import org.slf4j.LoggerFactory;
 
 import static org.apache.hadoop.hive.metastore.DatabaseProduct.MYSQL;
 import static org.apache.hadoop.hive.metastore.txn.TxnDbUtil.executeQueriesInBatch;
+import static org.apache.hadoop.hive.metastore.txn.TxnDbUtil.executeQueriesInBatchNoCount;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
@@ -1194,7 +1195,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
               dbConn.rollback(undoWriteSetForCurrentTxn);
               LOG.info(msg);
               //todo: should make abortTxns() write something into TXNS.TXN_META_INFO about this
-              if (abortTxns(dbConn, Collections.singletonList(txnid), true) != 1) {
+              if (abortTxns(dbConn, Collections.singletonList(txnid), false) != 1) {
                 throw new IllegalStateException(msg + " FAILED!");
               }
               dbConn.commit();
@@ -1344,7 +1345,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     queryBatch.add("DELETE FROM \"MATERIALIZATION_REBUILD_LOCKS\" WHERE \"MRL_TXN_ID\" = " + txnid);
 
     // execute all in one batch
-    executeQueriesInBatch(stmt, queryBatch, maxBatchSize);
+    executeQueriesInBatchNoCount(dbProduct, stmt, queryBatch, maxBatchSize);
   }
 
   private void updateKeyValueAssociatedWithTxn(CommitTxnRequest rqst, Statement stmt) throws SQLException {
@@ -1445,7 +1446,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           }
 
           // Abort all the allocated txns so that the mapped write ids are referred as aborted ones.
-          int numAborts = abortTxns(dbConn, txnIds, true);
+          int numAborts = abortTxns(dbConn, txnIds, false);
           assert(numAborts == numAbortedWrites);
         }
         handle = getMutexAPI().acquireLock(MUTEX_KEY.WriteIdAllocator.name());
@@ -4186,12 +4187,12 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
 
-  private int abortTxns(Connection dbConn, List<Long> txnids, boolean isStrict) throws SQLException, MetaException {
-    return abortTxns(dbConn, txnids, false, isStrict);
+  private int abortTxns(Connection dbConn, List<Long> txnids, boolean skipCount) throws SQLException, MetaException {
+    return abortTxns(dbConn, txnids, false, skipCount);
   }
   /**
    * TODO: expose this as an operation to client.  Useful for streaming API to abort all remaining
-   * trasnactions in a batch on IOExceptions.
+   * transactions in a batch on IOExceptions.
    * Caller must rollback the transaction if not all transactions were aborted since this will not
    * attempt to delete associated locks in this case.
    *
@@ -4199,14 +4200,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * @param txnids list of transactions to abort
    * @param checkHeartbeat value used by {@link #performTimeOuts()} to ensure this doesn't Abort txn which were
    *                      heartbeated after #performTimeOuts() select and this operation.
-   * @param isStrict true for strict mode, false for best-effort mode.
-   *                 In strict mode, if all txns are not successfully aborted, then the count of
-   *                 updated ones will be returned and the caller will roll back.
-   *                 In best-effort mode, we will ignore that fact and continue deleting the locks.
-   * @return Number of aborted transactions
+   * @param skipCount If true, the method always returns 0, otherwise returns the number of actually aborted txns
+   * @return 0 if skipCount is true, the number of aborted transactions otherwise
    * @throws SQLException
    */
-  private int abortTxns(Connection dbConn, List<Long> txnids, boolean checkHeartbeat, boolean isStrict)
+  private int abortTxns(Connection dbConn, List<Long> txnids, boolean checkHeartbeat, boolean skipCount)
       throws SQLException, MetaException {
     Statement stmt = null;
     if (txnids.isEmpty()) {
@@ -4237,8 +4235,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, txnids, "\"HL_TXNID\"", false, false);
 
       // execute all queries in the list in one batch
-      List<Integer> affectedRowsByQuery = executeQueriesInBatch(stmt, queries, maxBatchSize);
-      return getUpdateCount(numUpdateQueries, affectedRowsByQuery);
+      if (skipCount) {
+        executeQueriesInBatchNoCount(dbProduct, stmt, queries, maxBatchSize);
+        return 0;
+      } else {
+        List<Integer> affectedRowsByQuery = executeQueriesInBatch(stmt, queries, maxBatchSize);
+        return getUpdateCount(numUpdateQueries, affectedRowsByQuery);
+      }
     } finally {
       closeStmt(stmt);
     }
@@ -4340,7 +4343,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             " since a concurrent committed transaction [" + JavaUtils.txnIdToString(rs.getLong(4)) + "," + rs.getLong(5) +
             "] has already updated resource '" + resourceName + "'";
           LOG.info(msg);
-          if(abortTxns(dbConn, Collections.singletonList(writeSet.get(0).txnId), true) != 1) {
+          if (abortTxns(dbConn, Collections.singletonList(writeSet.get(0).txnId), false) != 1) {
             throw new IllegalStateException(msg + " FAILED!");
           }
           dbConn.commit();
@@ -4868,7 +4871,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         close(rs, stmt, null);
         int numTxnsAborted = 0;
         for(List<Long> batchToAbort : timedOutTxns) {
-          if(abortTxns(dbConn, batchToAbort, true, true) == batchToAbort.size()) {
+          if (abortTxns(dbConn, batchToAbort, true, false) == batchToAbort.size()) {
             dbConn.commit();
             numTxnsAborted += batchToAbort.size();
             //todo: add TXNS.COMMENT filed and set it to 'aborted by system due to timeout'

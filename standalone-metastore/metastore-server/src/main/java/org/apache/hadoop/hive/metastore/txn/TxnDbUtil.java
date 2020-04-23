@@ -51,7 +51,7 @@ import static org.apache.hadoop.hive.metastore.DatabaseProduct.*;
  */
 public final class TxnDbUtil {
 
-  private static final  Logger LOG = LoggerFactory.getLogger(TxnDbUtil.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(TxnDbUtil.class.getName());
   private static final String TXN_MANAGER = "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager";
 
   private static final EnumMap<DatabaseProduct, String> DB_EPOCH_FN =
@@ -621,6 +621,7 @@ public final class TxnDbUtil {
 
   /**
    * Get database specific function which returns the milliseconds value after the epoch.
+   * @param dbProduct The type of the db which is used
    * @throws MetaException For unknown database type.
    */
   static String getEpochFn(DatabaseProduct dbProduct) throws MetaException {
@@ -631,6 +632,46 @@ public final class TxnDbUtil {
       String msg = "Unknown database product: " + dbProduct.toString();
       LOG.error(msg);
       throw new MetaException(msg);
+    }
+  }
+
+  /**
+   * Calls queries in batch, but does not return affected row numbers. Same as executeQueriesInBatch,
+   * with the only difference when the db is Oracle. In this case it is called as an anonymous stored
+   * procedure instead of batching, since batching is not optimized. See:
+   * https://docs.oracle.com/cd/E11882_01/java.112/e16548/oraperf.htm#JJDBC28752
+   * @param dbProduct The type of the db which is used
+   * @param stmt Statement which will be used for batching and execution.
+   * @param queries List of sql queries to execute in a Statement batch.
+   * @param batchSize maximum number of queries in a single batch
+   * @throws SQLException Thrown if an execution error occurs.
+   */
+  static void executeQueriesInBatchNoCount(DatabaseProduct dbProduct, Statement stmt, List<String> queries, int batchSize) throws SQLException {
+    if (dbProduct == ORACLE) {
+      int queryCounter = 0;
+      StringBuilder sb = new StringBuilder();
+      sb.append("begin ");
+      for (String query : queries) {
+        LOG.debug("Adding query to batch: <" + query + ">");
+        queryCounter++;
+        sb.append(query).append(";");
+        if (queryCounter % batchSize == 0) {
+          sb.append("end;");
+          String batch = sb.toString();
+          LOG.debug("Going to execute queries in oracle anonymous statement. " + batch);
+          stmt.execute(batch);
+          sb.setLength(0);
+          sb.append("begin ");
+        }
+      }
+      if (queryCounter % batchSize != 0) {
+        sb.append("end;");
+        String batch = sb.toString();
+        LOG.debug("Going to execute queries in oracle anonymous statement. " + batch);
+        stmt.execute(batch);
+      }
+    } else {
+      executeQueriesInBatch(stmt, queries, batchSize);
     }
   }
 
