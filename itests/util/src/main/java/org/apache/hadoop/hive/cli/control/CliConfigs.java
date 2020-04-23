@@ -70,7 +70,6 @@ public class CliConfigs {
         excludeQuery("udaf_corr.q"); // disabled in HIVE-20741
         excludeQuery("udaf_histogram_numeric.q"); // disabled in HIVE-20715
         excludeQuery("vector_groupby_reduce.q"); // Disabled in HIVE-21396
-        excludeQuery("timestamptz_2.q"); // Disabled in HIVE-22722
         excludeQuery("constprog_cast.q"); // TODO: Enable when we move to Calcite 1.23
 
         setResultsDir("ql/src/test/results/clientpositive");
