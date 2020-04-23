@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.hooks;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Collections;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -100,6 +101,8 @@ public class PostExecOrcFileDump implements ExecuteWithHookContext {
   private void printFileStatus(SessionState.LogHelper console, FileSystem fs, Path dir) throws Exception {
     List<FileStatus> fileList = HdfsUtils.listLocatedStatus(fs, dir,
         hiddenFileFilter);
+
+    Collections.sort(fileList);
 
     for (FileStatus fileStatus : fileList) {
       if (fileStatus.isDirectory()) {
