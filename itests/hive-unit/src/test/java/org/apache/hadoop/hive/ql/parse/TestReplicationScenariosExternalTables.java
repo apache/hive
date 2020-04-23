@@ -458,15 +458,15 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     assertTrue(fs.exists(ackFile));
     assertTrue(fs.exists(ackLastEventID));
     Path bootstrapDir = new Path(hiveDumpDir, ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME);
-    Path metaDir = new Path(bootstrapDir, EximUtil.METADATA_PATH_NAME );
-    Path dataDir = new Path(bootstrapDir, EximUtil.DATA_PATH_NAME );
+    Path metaDir = new Path(bootstrapDir, EximUtil.METADATA_PATH_NAME);
+    Path dataDir = new Path(bootstrapDir, EximUtil.DATA_PATH_NAME);
     assertFalse(fs.exists(dataDir));
     long oldMetadirModTime = fs.getFileStatus(metaDir).getModificationTime();
     fs.delete(ackFile, false);
     fs.delete(ackLastEventID, false);
     //delete all the event folders except first event
     long startEvent = Long.valueOf(tuple.lastReplicationId) + 1;
-    Path startEventRoot = new Path (hiveDumpDir, String.valueOf(startEvent));
+    Path startEventRoot = new Path(hiveDumpDir, String.valueOf(startEvent));
     Map<Path, Long> firstEventModTimeMap = new HashMap<>();
     for (FileStatus fileStatus: fs.listStatus(startEventRoot)) {
       firstEventModTimeMap.put(fileStatus.getPath(), fileStatus.getModificationTime());
