@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
-import org.apache.hadoop.hive.metastore.api.LockType;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -42,6 +41,7 @@ public class LockRequestBuilder {
   public LockRequestBuilder() {
     this(null);
   }
+
   public LockRequestBuilder(String agentInfo) {
     req = new LockRequest();
     trie = new LockTrie();
@@ -116,7 +116,9 @@ public class LockRequestBuilder {
   // valid key in a LinkedHashMap.  So a database lock will map to (dbname, null,
   // null).
   private static class LockTrie {
-    Map<String, TableTrie> trie;
+
+    private LockTypeComparator lockTypeComparator = new LockTypeComparator();
+    private Map<String, TableTrie> trie;
 
     LockTrie() {
       trie = new LinkedHashMap<>();
@@ -161,14 +163,8 @@ public class LockRequestBuilder {
       if (existing == null) {
         // No existing lock for this partition.
         parts.put(comp.getPartitionname(), comp);
-      }  else if (existing.getType() != LockType.EXCLUSIVE  &&
-          (comp.getType() ==  LockType.EXCLUSIVE ||
-            comp.getType() ==  LockType.SHARED_WRITE)) {
-        // We only need to promote if comp.type is > existing.type.  For
-        // efficiency we check if existing is exclusive (in which case we
-        // need never promote) or if comp is exclusive or shared_write (in
-        // which case we can promote even though they may both be shared
-        // write).  If comp is shared_read there's never a need to promote.
+      }  else if (lockTypeComparator.compare(comp.getType(), existing.getType()) > 0) {
+        // We only need to promote if comp.type is > existing.type.
         parts.put(comp.getPartitionname(), comp);
       }
     }
@@ -178,8 +174,6 @@ public class LockRequestBuilder {
 
     private static class PartTrie extends LinkedHashMap<String, LockComponent> {
     }
-
-
 
   }
 }

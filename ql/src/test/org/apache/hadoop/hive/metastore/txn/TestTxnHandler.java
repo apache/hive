@@ -708,7 +708,7 @@ public class TestTxnHandler {
   }
 
   @Test
-  public void testLockSWSWSR() throws Exception {
+  public void testLockSWSWSW() throws Exception {
     // Test that write blocks write but read can still acquire
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
@@ -730,6 +730,42 @@ public class TestTxnHandler {
     req = new LockRequest(components, "me", "localhost");
     req.setTxnid(openTxn());
     res = txnHandler.lock(req);
+    assertTrue(res.getState() == LockState.ACQUIRED);
+
+    comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");
+    comp.setTablename("mytable");
+    comp.setPartitionname("mypartition");
+    comp.setOperationType(DataOperationType.INSERT);
+    components.clear();
+    components.add(comp);
+    req = new LockRequest(components, "me", "localhost");
+    res = txnHandler.lock(req);
+    assertTrue(res.getState() == LockState.ACQUIRED);
+  }
+
+  @Test
+  public void testLockEWEWSR() throws Exception {
+    // Test that write blocks write but read can still acquire
+    LockComponent comp = new LockComponent(LockType.EXCL_WRITE, LockLevel.DB, "mydb");
+    comp.setTablename("mytable");
+    comp.setPartitionname("mypartition");
+    comp.setOperationType(DataOperationType.UPDATE);
+    List<LockComponent> components = new ArrayList<LockComponent>(1);
+    components.add(comp);
+    LockRequest req = new LockRequest(components, "me", "localhost");
+    req.setTxnid(openTxn());
+    LockResponse res = txnHandler.lock(req);
+    assertTrue(res.getState() == LockState.ACQUIRED);
+
+    comp = new LockComponent(LockType.EXCL_WRITE, LockLevel.DB, "mydb");
+    comp.setTablename("mytable");
+    comp.setPartitionname("mypartition");
+    comp.setOperationType(DataOperationType.DELETE);
+    components.clear();
+    components.add(comp);
+    req = new LockRequest(components, "me", "localhost");
+    req.setTxnid(openTxn());
+    res = txnHandler.lock(req);
     assertTrue(res.getState() == LockState.WAITING);
 
     comp = new LockComponent(LockType.SHARED_READ, LockLevel.DB, "mydb");
@@ -742,6 +778,7 @@ public class TestTxnHandler {
     res = txnHandler.lock(req);
     assertTrue(res.getState() == LockState.ACQUIRED);
   }
+
   @Ignore("now that every op has a txn ctx, we don't produce the error expected here....")
   @Test
   public void testWrongLockForOperation() throws Exception {
@@ -755,17 +792,17 @@ public class TestTxnHandler {
     req.setTxnid(openTxn());
     Exception expectedError = null;
     try {
-      LockResponse res = txnHandler.lock(req);
-    }
-    catch(Exception e) {
+      txnHandler.lock(req);
+    } catch(Exception e) {
       expectedError = e;
     }
     Assert.assertTrue(expectedError != null && expectedError.getMessage().contains("Unexpected DataOperationType"));
   }
+
   @Test
-  public void testLockSWSWSW() throws Exception {
+  public void testLockEWEWEW() throws Exception {
     // Test that write blocks two writes
-    LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");
+    LockComponent comp = new LockComponent(LockType.EXCL_WRITE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setPartitionname("mypartition");
     comp.setOperationType(DataOperationType.DELETE);
@@ -776,7 +813,7 @@ public class TestTxnHandler {
     LockResponse res = txnHandler.lock(req);
     assertTrue(res.getState() == LockState.ACQUIRED);
 
-    comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");
+    comp = new LockComponent(LockType.EXCL_WRITE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setPartitionname("mypartition");
     comp.setOperationType(DataOperationType.DELETE);
@@ -787,7 +824,7 @@ public class TestTxnHandler {
     res = txnHandler.lock(req);
     assertTrue(res.getState() == LockState.WAITING);
 
-    comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");
+    comp = new LockComponent(LockType.EXCL_WRITE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setPartitionname("mypartition");
     comp.setOperationType(DataOperationType.DELETE);
@@ -870,10 +907,10 @@ public class TestTxnHandler {
 
   @Test
   public void testCheckLockAcquireAfterWaiting() throws Exception {
-    LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");
+    LockComponent comp = new LockComponent(LockType.EXCL_WRITE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setPartitionname("mypartition");
-    comp.setOperationType(DataOperationType.DELETE);
+    comp.setOperationType(DataOperationType.UPDATE);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -886,7 +923,7 @@ public class TestTxnHandler {
     comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setPartitionname("mypartition");
-    comp.setOperationType(DataOperationType.UPDATE);
+    comp.setOperationType(DataOperationType.INSERT);
     components.clear();
     components.add(comp);
     req = new LockRequest(components, "me", "localhost");
@@ -1566,6 +1603,7 @@ public class TestTxnHandler {
     }
     Assert.assertEquals("5 means both threads have completed", 5, stepTracker.get());
   }
+
   private final static class ErrorHandle implements Thread.UncaughtExceptionHandler {
     Throwable error = null;
     @Override
