@@ -823,7 +823,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     try {
       resumeFrom = getResumeFrom(lastEventFile);
     } catch (SemanticException ex) {
-       LOG.info("Could not get last repl id from {}, because of:", lastEventFile, ex.getMessage());
+      LOG.info("Could not get last repl id from {}, because of:", lastEventFile, ex.getMessage());
     }
     return resumeFrom > 0L;
   }
