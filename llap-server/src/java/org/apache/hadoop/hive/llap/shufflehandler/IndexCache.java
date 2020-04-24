@@ -48,7 +48,7 @@ class IndexCache {
 
   public IndexCache(Configuration conf) {
     this.conf = conf;
-    totalMemoryAllowed = conf.getInt(INDEX_CACHE_MB, 10) * 1024 * 1024;
+    totalMemoryAllowed = conf.getInt(INDEX_CACHE_MB, 64) * 1024 * 1024;
     LOG.info("IndexCache created with max memory = " + totalMemoryAllowed);
     initLocalFs();
   }
