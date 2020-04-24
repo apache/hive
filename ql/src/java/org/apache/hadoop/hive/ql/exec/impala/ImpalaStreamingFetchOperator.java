@@ -115,7 +115,7 @@ public class ImpalaStreamingFetchOperator extends FetchOperator {
                 rowSet = context.fetch();
             }
         } catch (Exception e) {
-            return null;
+            throw new IOException(e);
         }
 
         if (rowSet == null || rowSet.getRowsSize() <= 0) {

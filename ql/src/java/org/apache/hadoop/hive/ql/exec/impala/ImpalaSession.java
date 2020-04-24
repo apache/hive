@@ -81,6 +81,8 @@ public class ImpalaSession {
     private int rowFetchMaxRetries;
     /* Underlying configured TSocket timeout */
     private int connectionTimeout;
+    /* Fetch EOF status */
+    private boolean fetchEOF = false;
 
 
     public ImpalaSession(HiveConf conf) { init(conf); }
@@ -209,6 +211,10 @@ public class ImpalaSession {
 
     /* Given a valid TOperationHandle attempts to retrieve rows from Impala. */
     public TRowSet fetch(TOperationHandle opHandle, long fetchSize) throws HiveException {
+        if(fetchEOF) {
+            return null;
+        }
+
         Preconditions.checkNotNull(opHandle);
         Preconditions.checkNotNull(client);
         Preconditions.checkNotNull(sessionHandle);
@@ -234,6 +240,11 @@ public class ImpalaSession {
             // Loop while checkThriftStatus says we should retry and retryCount doesnt exceed requested maxRetry
         } while (checkThriftStatus(resp.getStatus()) &&
                 (rowFetchMaxRetries == -1 || retryCount++ < rowFetchMaxRetries));
+
+        if(!resp.isHasMoreRows()) {
+              fetchEOF = true;
+        }
+
         return resp.getResults();
     }
 
@@ -264,6 +275,7 @@ public class ImpalaSession {
         TExecuteStatementResp resp = RetryRPC("ExecutePlannedStatement",
                 (c) -> c.ExecutePlannedStatement(req2));
         checkThriftStatus(resp.getStatus());
+        fetchEOF = false;
         return resp.getOperationHandle();
     }
 
