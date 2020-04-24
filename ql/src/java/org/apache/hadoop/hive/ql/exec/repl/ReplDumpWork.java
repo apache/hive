@@ -54,6 +54,7 @@ public class ReplDumpWork implements Serializable {
   private transient Iterator<EximUtil.ManagedTableCopyPath> managedTableCopyPathIterator;
   private Path currentDumpPath;
   private List<String> resultValues;
+  private boolean shouldOverwrite;
 
   public static void injectNextDumpDirForTest(String dumpDir) {
     testInjectDumpDir = dumpDir;
@@ -162,11 +163,15 @@ public class ReplDumpWork implements Serializable {
       EximUtil.ManagedTableCopyPath managedTableCopyPath = managedTableCopyPathIterator.next();
       Task<?> copyTask = ReplCopyTask.getLoadCopyTask(
               managedTableCopyPath.getReplicationSpec(), managedTableCopyPath.getSrcPath(),
-              managedTableCopyPath.getTargetPath(), conf, false);
+              managedTableCopyPath.getTargetPath(), conf, false, shouldOverwrite);
       tasks.add(copyTask);
       tracker.addTask(copyTask);
       LOG.debug("added task for {}", managedTableCopyPath);
     }
     return tasks;
+  }
+
+  public void setShouldOverwrite(boolean shouldOverwrite) {
+    this.shouldOverwrite = shouldOverwrite;
   }
 }
