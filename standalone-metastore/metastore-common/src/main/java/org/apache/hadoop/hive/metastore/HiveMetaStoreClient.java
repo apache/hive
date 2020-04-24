@@ -1974,10 +1974,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
           "Metastore doesn't support listPartitionsByExpr: " + te.getMessage());
     }
 
-    //TODO: filtering if client side filtering isClientFilterEnabled on
-    r.setPartitionsSpec(r.getPartitionsSpec());
+    // do client side filtering
+    r.setPartitionsSpec(FilterUtils.filterPartitionSpecsIfEnabled(
+        isClientFilterEnabled, filterHook, r.getPartitionsSpec()));
+
     result.addAll(r.getPartitionsSpec());
-    return !r.isSetHasUnknownPartitions() || r.isHasUnknownPartitions(); // Assume the worst.
+    return !r.isSetHasUnknownPartitions() || r.isHasUnknownPartitions();
   }
 
   @Override

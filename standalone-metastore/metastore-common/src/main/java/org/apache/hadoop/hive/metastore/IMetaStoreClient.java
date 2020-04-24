@@ -1325,13 +1325,13 @@ public interface IMetaStoreClient {
       throws MetaException, NoSuchObjectException, TException;
 
   /**
-   * Get list of {@link PartitionSpec} matching specified serialized expression
-   * @param db_name the database name
-   * @param tbl_name the table name
+   * Get list of {@link PartitionSpec} matching specified serialized expression.
+   * @param dbName the database name
+   * @param tblName the table name
    * @param expr expression, serialized from ExprNodeDesc
-   * @param max_parts the maximum number of partitions to return,
+   * @param maxParts the maximum number of partitions to return,
    *    all partitions are returned if -1 is passed
-   * @param default_partition_name Default partition name from configuration. If blank, the
+   * @param defaultPartName Default partition name from configuration. If blank, the
    *    metastore server-side configuration is used.
    * @param result the resulting list of partitions
    * @return whether the resulting list contains partitions which may or may not match the expr
@@ -1342,7 +1342,7 @@ public interface IMetaStoreClient {
           throws TException;
 
   /**
-   * Get list of {@link PartitionSpec} matching specified serialized expression
+   * Get list of {@link PartitionSpec} matching specified serialized expression.
    * @param catName the catalog name
    * @param dbName the database name
    * @param tblName the table name

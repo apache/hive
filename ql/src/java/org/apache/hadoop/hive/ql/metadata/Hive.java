@@ -3837,7 +3837,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
     return results;
   }
 
-  private List<Partition> convertFromPartSpec(Iterator<PartitionSpec> iterator, Table tbl)
+  // This method converts PartitionSpec to Partiton.
+  // This is required because listPartitionsSpecByExpr return set of PartitionSpec but hive
+  // require Partition
+  private static List<Partition> convertFromPartSpec(Iterator<PartitionSpec> iterator, Table tbl)
       throws HiveException, TException {
     if(!iterator.hasNext()) {
       return Collections.emptyList();
@@ -3884,8 +3887,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
           part.setValues(partitionWithoutSD.getValues());
           part.setWriteId(partitionSpec.getWriteId());
           Partition hivePart = new Partition(tbl, part);
-          //assert(partitionWithoutSD.getRelativePath() != null);
-          //hivePart.setRelativePath(partitionWithoutSD.getRelativePath());
           results.add(hivePart);
         }
       }

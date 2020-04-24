@@ -1009,7 +1009,6 @@ public class MetaStoreServerUtils {
                                                                                 Collection<Partition> partitions) {
     final String tablePath = table.getSd().getLocation();
 
-
     ImmutableListMultimap<StorageDescriptorKey, Partition> partitionsWithinTableDirectory =
         Multimaps.index(partitions, input -> {
           // if sd is not in the list of projected fields, all the partitions

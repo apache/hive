@@ -1396,8 +1396,9 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
           "Metastore doesn't support listPartitionsByExpr: " + te.getMessage());
     }
 
-    //TODO: filtering if client side filtering isClientFilterEnabled on
-    r.setPartitionsSpec(r.getPartitionsSpec());
+    // do client side filtering
+    r.setPartitionsSpec(filterHook.filterPartitionSpecs(r.getPartitionsSpec()));
+
     result.addAll(r.getPartitionsSpec());
     return !r.isSetHasUnknownPartitions() || r.isHasUnknownPartitions(); // Assume the worst.
   }

@@ -1190,8 +1190,8 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
 
     result.addAll(
         MetaStoreServerUtils.getPartitionspecsGroupedByStorageDescriptor(table,
-          getPartitionsForMaxParts(tblName, getPartitionedTempTable(table).listPartitionsByFilter(
-        generateJDOFilter(table, expr, defaultPartitionName)), maxParts)));
+            getPartitionsForMaxParts(tblName, getPartitionedTempTable(table).listPartitionsByFilter(
+                generateJDOFilter(table, expr, defaultPartitionName)), maxParts)));
     return result.isEmpty();
   }
 
