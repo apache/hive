@@ -267,7 +267,7 @@ public class ImpalaPlanner {
         options = FeSupport.ParseQueryOptions(csvQueryOptions,
             new TQueryOptions());
     } catch (InternalException e) {
-        throw new HiveException("createDefaultQueryOptions", e);
+        throw new HiveException(e);
     }
 
     options.setParquet_dictionary_filtering(

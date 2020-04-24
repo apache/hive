@@ -72,17 +72,17 @@ public class ImpalaSessionManager {
   }
 
   private void initBackendConfig(HiveConf hiveConf) throws HiveException {
-    if (BackendConfig.INSTANCE == null) {
-      try {
+    try {
+      if (BackendConfig.INSTANCE == null) {
         ImpalaSession session = getSession(hiveConf);
 
         final TBackendGflags cfg = session.getBackendConfig();
         BackendConfig.create(cfg,
             false /* don't initialize SqlScanner or AuthToLocal */);
-        FeSupport.loadLibrary(true);
-      } catch(Exception e) {
-        throw new HiveException("initBackendConfig", e);
       }
+      FeSupport.loadLibrary(true);
+    } catch(Exception e) {
+      throw new HiveException(e);
     }
   }
 
