@@ -2472,10 +2472,12 @@ public class HiveConf extends Configuration {
         true,
         "Enables to rewrite COUNT(DISTINCT(X)) queries to be rewritten to use sketch functions."),
 
+    // FIXME rename tyo sketchType?
     HIVE_OPTIMIZE_BI_SKETCHES_REWRITE_COUNT_DISTINCT_SKETCHCLASS(
         "hive.optimize.bi.sketches.rewrite.countdistintct.sketchclass", "hll",
         new StringSet("hll", "cpc", "theta"),
-        "When rewriting COUNT(DISTINCT(X)) expressions use the given sketch class."),
+        "Defines which sketch class to use when rewriting COUNT(DISTINCT(X)) expressions. "
+            + "All the distinct counting sketches "),
 
     // Statistics
     HIVE_STATS_ESTIMATE_STATS("hive.stats.estimate", true,
