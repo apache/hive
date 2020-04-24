@@ -32,8 +32,6 @@ import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlOperator;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.DataSketchesFunctions;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
@@ -51,9 +49,9 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
   protected static final Logger LOG = LoggerFactory.getLogger(HiveRewriteCountDistinctToDataSketches.class);
   private String sketchClass;
 
-  public HiveRewriteCountDistinctToDataSketches(HiveConf conf) {
+  public HiveRewriteCountDistinctToDataSketches(String sketchClass) {
     super(operand(HiveAggregate.class, any()));
-    sketchClass = conf.getVar(ConfVars.HIVE_OPTIMIZE_REWRITE_COUNT_DISTINCT_SKETCHCLASS);
+    this.sketchClass = sketchClass;
   }
 
   @Override

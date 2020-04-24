@@ -1970,8 +1970,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       // ?
       if (conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_REWRITE_COUNTDISTINCT_ENABLED)) {
+        String sketchClass = conf.getVar(ConfVars.HIVE_OPTIMIZE_REWRITE_COUNT_DISTINCT_SKETCHCLASS);
         generatePartialProgram(program, true, HepMatchOrder.TOP_DOWN,
-            new HiveRewriteCountDistinctToDataSketches(conf));
+            new HiveRewriteCountDistinctToDataSketches(sketchClass));
       }
 
 
