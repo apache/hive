@@ -205,6 +205,9 @@ public class TestScheduledQueryStatements {
 
   @Test
   public void testExecuteImmediate() throws ParseException, Exception {
+    // use a different namespace because the schq executor might be able to
+    // catch the new schq execution immediately
+    env_setup.getTestCtx().hiveConf.setVar(ConfVars.HIVE_SCHEDULED_QUERIES_NAMESPACE, "immed");
     IDriver driver = createDriver();
 
     driver.run("set role admin");
@@ -213,7 +216,7 @@ public class TestScheduledQueryStatements {
     driver.run("alter scheduled query immed execute");
 
     try (CloseableObjectStore os = new CloseableObjectStore(env_setup.getTestCtx().hiveConf)) {
-      Optional<MScheduledQuery> sq = os.getMScheduledQuery(new ScheduledQueryKey("immed", "hive"));
+      Optional<MScheduledQuery> sq = os.getMScheduledQuery(new ScheduledQueryKey("immed", "immed"));
       assertTrue(sq.isPresent());
       assertThat(sq.get().getNextExecution(), Matchers.lessThanOrEqualTo((int) (System.currentTimeMillis() / 1000)));
       int cnt1 = ScheduledQueryExecutionService.getForcedScheduleCheckCount();

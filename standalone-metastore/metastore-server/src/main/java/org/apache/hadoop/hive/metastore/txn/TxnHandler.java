@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.metastore.txn;
 
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.Driver;
@@ -33,7 +34,6 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -69,6 +69,7 @@ import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.MetaStoreListenerNotifier;
 import org.apache.hadoop.hive.metastore.TransactionalMetaStoreEventListener;
+import org.apache.hadoop.hive.metastore.LockTypeComparator;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
@@ -94,6 +95,7 @@ import org.slf4j.LoggerFactory;
 
 import static org.apache.hadoop.hive.metastore.DatabaseProduct.MYSQL;
 import static org.apache.hadoop.hive.metastore.txn.TxnDbUtil.executeQueriesInBatch;
+import static org.apache.hadoop.hive.metastore.txn.TxnDbUtil.executeQueriesInBatchNoCount;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
@@ -1194,7 +1196,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
               dbConn.rollback(undoWriteSetForCurrentTxn);
               LOG.info(msg);
               //todo: should make abortTxns() write something into TXNS.TXN_META_INFO about this
-              if (abortTxns(dbConn, Collections.singletonList(txnid), true) != 1) {
+              if (abortTxns(dbConn, Collections.singletonList(txnid), false) != 1) {
                 throw new IllegalStateException(msg + " FAILED!");
               }
               dbConn.commit();
@@ -1344,7 +1346,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     queryBatch.add("DELETE FROM \"MATERIALIZATION_REBUILD_LOCKS\" WHERE \"MRL_TXN_ID\" = " + txnid);
 
     // execute all in one batch
-    executeQueriesInBatch(stmt, queryBatch, maxBatchSize);
+    executeQueriesInBatchNoCount(dbProduct, stmt, queryBatch, maxBatchSize);
   }
 
   private void updateKeyValueAssociatedWithTxn(CommitTxnRequest rqst, Statement stmt) throws SQLException {
@@ -1445,7 +1447,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           }
 
           // Abort all the allocated txns so that the mapped write ids are referred as aborted ones.
-          int numAborts = abortTxns(dbConn, txnIds, true);
+          int numAborts = abortTxns(dbConn, txnIds, false);
           assert(numAborts == numAbortedWrites);
         }
         handle = getMutexAPI().acquireLock(MUTEX_KEY.WriteIdAllocator.name());
@@ -4082,8 +4084,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
 
-  private static class LockInfoComparator implements Comparator<LockInfo> {
-    private static final LockTypeComparator lockTypeComparator = new LockTypeComparator();
+  private static class LockInfoComparator implements Comparator<LockInfo>, Serializable {
+    private LockTypeComparator lockTypeComparator = new LockTypeComparator();
+
     public boolean equals(Object other) {
       return this == other;
     }
@@ -4119,43 +4122,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
 
-  /**
-   * Sort more restrictive locks after less restrictive ones.  Why?
-   * Consider insert overwirte table DB.T1 select ... from T2:
-   * this takes X lock on DB.T1 and S lock on T2
-   * Also, create table DB.T3: takes S lock on DB.
-   * so the state of the lock manger is {X(T1), S(T2) S(DB)} all in acquired state.
-   * This is made possible by HIVE-10242.
-   * Now a select * from T1 will try to get S(T1) which according to the 'jumpTable' will
-   * be acquired once it sees S(DB).  So need to check stricter locks first.
-   */
-  private final static class LockTypeComparator implements Comparator<LockType> {
-    // the higher the integer value, the more restrictive the lock type is
-    private static final Map<LockType, Integer> orderOfRestrictiveness = new EnumMap<>(LockType.class);
-    static {
-        orderOfRestrictiveness.put(LockType.SHARED_READ, 1);
-        orderOfRestrictiveness.put(LockType.SHARED_WRITE, 2);
-        orderOfRestrictiveness.put(LockType.EXCL_WRITE, 3);
-        orderOfRestrictiveness.put(LockType.EXCLUSIVE, 4);
-    }
-    @Override
-    public boolean equals(Object other) {
-      return this == other;
-    }
-    @Override
-    public int compare(LockType t1, LockType t2) {
-      Integer t1Restrictiveness = orderOfRestrictiveness.get(t1);
-      Integer t2Restrictiveness = orderOfRestrictiveness.get(t2);
-      if (t1Restrictiveness == null) {
-        throw new RuntimeException("Unexpected LockType: " + t1);
-      }
-      if (t2Restrictiveness == null) {
-        throw new RuntimeException("Unexpected LockType: " + t2);
-      }
-      return Integer.compare(t1Restrictiveness, t2Restrictiveness);
-    }
-  }
-
   private enum LockAction {ACQUIRE, WAIT, KEEP_LOOKING}
 
   // A jump table to figure out whether to wait, acquire,
@@ -4186,12 +4152,12 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
 
-  private int abortTxns(Connection dbConn, List<Long> txnids, boolean isStrict) throws SQLException, MetaException {
-    return abortTxns(dbConn, txnids, false, isStrict);
+  private int abortTxns(Connection dbConn, List<Long> txnids, boolean skipCount) throws SQLException, MetaException {
+    return abortTxns(dbConn, txnids, false, skipCount);
   }
   /**
    * TODO: expose this as an operation to client.  Useful for streaming API to abort all remaining
-   * trasnactions in a batch on IOExceptions.
+   * transactions in a batch on IOExceptions.
    * Caller must rollback the transaction if not all transactions were aborted since this will not
    * attempt to delete associated locks in this case.
    *
@@ -4199,14 +4165,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * @param txnids list of transactions to abort
    * @param checkHeartbeat value used by {@link #performTimeOuts()} to ensure this doesn't Abort txn which were
    *                      heartbeated after #performTimeOuts() select and this operation.
-   * @param isStrict true for strict mode, false for best-effort mode.
-   *                 In strict mode, if all txns are not successfully aborted, then the count of
-   *                 updated ones will be returned and the caller will roll back.
-   *                 In best-effort mode, we will ignore that fact and continue deleting the locks.
-   * @return Number of aborted transactions
+   * @param skipCount If true, the method always returns 0, otherwise returns the number of actually aborted txns
+   * @return 0 if skipCount is true, the number of aborted transactions otherwise
    * @throws SQLException
    */
-  private int abortTxns(Connection dbConn, List<Long> txnids, boolean checkHeartbeat, boolean isStrict)
+  private int abortTxns(Connection dbConn, List<Long> txnids, boolean checkHeartbeat, boolean skipCount)
       throws SQLException, MetaException {
     Statement stmt = null;
     if (txnids.isEmpty()) {
@@ -4237,8 +4200,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, txnids, "\"HL_TXNID\"", false, false);
 
       // execute all queries in the list in one batch
-      List<Integer> affectedRowsByQuery = executeQueriesInBatch(stmt, queries, maxBatchSize);
-      return getUpdateCount(numUpdateQueries, affectedRowsByQuery);
+      if (skipCount) {
+        executeQueriesInBatchNoCount(dbProduct, stmt, queries, maxBatchSize);
+        return 0;
+      } else {
+        List<Integer> affectedRowsByQuery = executeQueriesInBatch(stmt, queries, maxBatchSize);
+        return getUpdateCount(numUpdateQueries, affectedRowsByQuery);
+      }
     } finally {
       closeStmt(stmt);
     }
@@ -4340,7 +4308,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             " since a concurrent committed transaction [" + JavaUtils.txnIdToString(rs.getLong(4)) + "," + rs.getLong(5) +
             "] has already updated resource '" + resourceName + "'";
           LOG.info(msg);
-          if(abortTxns(dbConn, Collections.singletonList(writeSet.get(0).txnId), true) != 1) {
+          if (abortTxns(dbConn, Collections.singletonList(writeSet.get(0).txnId), false) != 1) {
             throw new IllegalStateException(msg + " FAILED!");
           }
           dbConn.commit();
@@ -4376,13 +4344,18 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         EXCLUSIVE on an object may mean it's being dropped or overwritten.*/
       String[] whereStr = {
         // exclusive
-        " \"REQ\".\"HL_LOCK_TYPE\"='e'" +
-        " AND NOT (\"EX\".\"HL_TABLE\" IS NULL AND \"EX\".\"HL_LOCK_TYPE\"='r' AND \"REQ\".\"HL_TABLE\" IS NOT NULL)",
+        " \"REQ\".\"HL_LOCK_TYPE\"=" + LockTypeUtil.exclusive() +
+        " AND NOT (\"EX\".\"HL_TABLE\" IS NULL AND \"EX\".\"HL_LOCK_TYPE\"=" +
+          LockTypeUtil.sharedRead() + " AND \"REQ\".\"HL_TABLE\" IS NOT NULL)",
         // shared-write
-        " \"REQ\".\"HL_LOCK_TYPE\"='w' AND \"EX\".\"HL_LOCK_TYPE\" IN ('w','e')",
+        " \"REQ\".\"HL_LOCK_TYPE\"=" + LockTypeUtil.sharedWrite() + " AND \"EX\".\"HL_LOCK_TYPE\" IN (" +
+          LockTypeUtil.exclWrite() + "," + LockTypeUtil.exclusive() + ")",
+        // excl-write
+        " \"REQ\".\"HL_LOCK_TYPE\"=" + LockTypeUtil.exclWrite() + " AND \"EX\".\"HL_LOCK_TYPE\"!=" +
+          LockTypeUtil.sharedRead(),
         // shared-read
-        " \"REQ\".\"HL_LOCK_TYPE\"='r' AND \"EX\".\"HL_LOCK_TYPE\"='e'" +
-        " AND NOT (\"EX\".\"HL_TABLE\" IS NOT NULL AND \"REQ\".\"HL_TABLE\" IS NULL)",
+        " \"REQ\".\"HL_LOCK_TYPE\"=" + LockTypeUtil.sharedRead() + " AND \"EX\".\"HL_LOCK_TYPE\"=" +
+          LockTypeUtil.exclusive() + " AND NOT (\"EX\".\"HL_TABLE\" IS NOT NULL AND \"REQ\".\"HL_TABLE\" IS NULL)"
       };
 
       List<String> subQuery = new ArrayList<>();
@@ -4868,7 +4841,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         close(rs, stmt, null);
         int numTxnsAborted = 0;
         for(List<Long> batchToAbort : timedOutTxns) {
-          if(abortTxns(dbConn, batchToAbort, true, true) == batchToAbort.size()) {
+          if (abortTxns(dbConn, batchToAbort, true, false) == batchToAbort.size()) {
             dbConn.commit();
             numTxnsAborted += batchToAbort.size();
             //todo: add TXNS.COMMENT filed and set it to 'aborted by system due to timeout'
