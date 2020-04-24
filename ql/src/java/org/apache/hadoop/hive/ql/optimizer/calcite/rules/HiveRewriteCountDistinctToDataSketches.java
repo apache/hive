@@ -25,7 +25,6 @@ import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.AggregateCall;
-import org.apache.calcite.rel.core.RelFactories.AggregateFactory;
 import org.apache.calcite.rel.core.RelFactories.ProjectFactory;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexBuilder;
@@ -47,11 +46,13 @@ import com.google.common.collect.ImmutableList;
 public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
 
   protected static final Logger LOG = LoggerFactory.getLogger(HiveRewriteCountDistinctToDataSketches.class);
-  private String sketchClass;
+  private final String sketchClass;
+  private final ProjectFactory projectFactory;
 
   public HiveRewriteCountDistinctToDataSketches(String sketchClass) {
     super(operand(HiveAggregate.class, any()));
     this.sketchClass = sketchClass;
+    projectFactory = HiveRelFactories.HIVE_PROJECT_FACTORY;
   }
 
   @Override
@@ -65,11 +66,7 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
 
     List<AggregateCall> newAggCalls = new ArrayList<AggregateCall>();
 
-    AggregateFactory f = HiveRelFactories.HIVE_AGGREGATE_FACTORY;
-
     VBuilder vb = new VBuilder(aggregate);
-
-    ProjectFactory projectFactory = HiveRelFactories.HIVE_PROJECT_FACTORY;
 
     if (aggregate.getAggCallList().equals(vb.newAggCalls)) {
       // rule didn't made any changes
