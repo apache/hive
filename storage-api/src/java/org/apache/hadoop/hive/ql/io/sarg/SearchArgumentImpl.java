@@ -18,10 +18,10 @@
 
 package org.apache.hadoop.hive.ql.io.sarg;
 
-import java.sql.Timestamp;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,11 +32,17 @@ import java.util.Queue;
 import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.NoDynamicValuesException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The implementation of SearchArguments. Visible for testing only.
  */
 public final class SearchArgumentImpl implements SearchArgument {
+
+  private static final Logger LOG = LoggerFactory.getLogger(SearchArgumentImpl.class);
 
   public static final class PredicateLeafImpl implements PredicateLeaf {
     private final Operator operator;
@@ -110,11 +116,16 @@ public final class SearchArgumentImpl implements SearchArgument {
     public List<Object> getLiteralList() {
       if (literalList != null && literalList.size() > 0 && literalList.get(0) instanceof LiteralDelegate) {
         List<Object> newLiteraList = new ArrayList<Object>();
-        for (Object litertalObj : literalList) {
-          Object literal = ((LiteralDelegate) litertalObj).getLiteral();
-          if (literal != null) {
-            newLiteraList.add(literal);
+        try {
+          for (Object litertalObj : literalList) {
+            Object literal = ((LiteralDelegate) litertalObj).getLiteral();
+            if (literal != null) {
+              newLiteraList.add(literal);
+            }
           }
+        } catch (NoDynamicValuesException err) {
+          LOG.debug("Error while retrieving literalList, returning null", err);
+          return Collections.emptyList();
         }
         return newLiteraList;
       }

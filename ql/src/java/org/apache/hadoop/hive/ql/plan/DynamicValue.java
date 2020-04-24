@@ -19,14 +19,12 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.NoDynamicValuesException;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.DynamicValueRegistry;
 import org.apache.hadoop.hive.ql.exec.ObjectCache;
 import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.sarg.LiteralDelegate;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
@@ -99,16 +97,6 @@ public class DynamicValue implements LiteralDelegate, Serializable {
 
   public Object getWritableValue() {
     return objectInspector.getPrimitiveWritableObject(getValue());
-  }
-
-  /**
-   * An exception that indicates that the dynamic values are (intentionally)
-   * not available in this context.
-   */
-  public static class NoDynamicValuesException extends RuntimeException {
-    public NoDynamicValuesException(String message) {
-      super(message);
-    }
   }
 
   public Object getValue() {
