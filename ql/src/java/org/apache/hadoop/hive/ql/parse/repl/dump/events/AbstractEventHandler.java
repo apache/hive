@@ -108,7 +108,7 @@ abstract class AbstractEventHandler<T extends EventMessage> implements EventHand
       filePaths.add(fileInfo);
       FileSystem dstFs = dataPath.getFileSystem(hiveConf);
       CopyUtils copyUtils = new CopyUtils(distCpDoAsUser, hiveConf, dstFs);
-      copyUtils.copyAndVerify(dataPath, filePaths, srcDataPath);
+      copyUtils.copyAndVerify(dataPath, filePaths, srcDataPath, false);
       copyUtils.renameFileCopiedFromCmPath(dataPath, dstFs, filePaths);
     }
   }
