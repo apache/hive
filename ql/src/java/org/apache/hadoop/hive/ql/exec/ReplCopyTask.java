@@ -319,18 +319,21 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
     return "REPL_COPY";
   }
 
-  /*
-   * Invoked in the incremental path.
-   * Overwrite set to true
-   */
   public static Task<?> getLoadCopyTask(ReplicationSpec replicationSpec, Path srcPath, Path dstPath,
                                         HiveConf conf, boolean isAutoPurge, boolean needRecycle,
                                         boolean copyToMigratedTxnTable) {
     return getLoadCopyTask(replicationSpec, srcPath, dstPath, conf, isAutoPurge, needRecycle,
-                           copyToMigratedTxnTable, true, false);
+                           copyToMigratedTxnTable, true);
   }
 
   public static Task<?> getLoadCopyTask(ReplicationSpec replicationSpec, Path srcPath, Path dstPath,
+                                        HiveConf conf, boolean isAutoPurge, boolean needRecycle,
+                                        boolean copyToMigratedTxnTable, boolean readSourceAsFileList) {
+    return getLoadCopyTask(replicationSpec, srcPath, dstPath, conf, isAutoPurge, needRecycle,
+            copyToMigratedTxnTable, readSourceAsFileList, false);
+  }
+
+  private static Task<?> getLoadCopyTask(ReplicationSpec replicationSpec, Path srcPath, Path dstPath,
                                         HiveConf conf, boolean isAutoPurge, boolean needRecycle,
                                         boolean copyToMigratedTxnTable, boolean readSourceAsFileList,
                                         boolean overWrite) {
@@ -370,8 +373,8 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
    * Overwrite set to true
    */
   public static Task<?> getLoadCopyTask(ReplicationSpec replicationSpec, Path srcPath, Path dstPath,
-                                          HiveConf conf, boolean readSourceAsFileList) {
+                                          HiveConf conf, boolean readSourceAsFileList, boolean overWrite) {
     return getLoadCopyTask(replicationSpec, srcPath, dstPath, conf, false, false,
-            false, readSourceAsFileList, true);
+            false, readSourceAsFileList, overWrite);
   }
 }
