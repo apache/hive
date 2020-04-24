@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.metastore.txn;
 
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.Driver;
@@ -33,7 +34,6 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -69,6 +69,7 @@ import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.MetaStoreListenerNotifier;
 import org.apache.hadoop.hive.metastore.TransactionalMetaStoreEventListener;
+import org.apache.hadoop.hive.metastore.LockTypeComparator;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
@@ -4083,8 +4084,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
 
-  private static class LockInfoComparator implements Comparator<LockInfo> {
-    private static final LockTypeComparator lockTypeComparator = new LockTypeComparator();
+  private static class LockInfoComparator implements Comparator<LockInfo>, Serializable {
+    private LockTypeComparator lockTypeComparator = new LockTypeComparator();
+
     public boolean equals(Object other) {
       return this == other;
     }
@@ -4117,43 +4119,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           return 0;
         }
       }
-    }
-  }
-
-  /**
-   * Sort more restrictive locks after less restrictive ones.  Why?
-   * Consider insert overwirte table DB.T1 select ... from T2:
-   * this takes X lock on DB.T1 and S lock on T2
-   * Also, create table DB.T3: takes S lock on DB.
-   * so the state of the lock manger is {X(T1), S(T2) S(DB)} all in acquired state.
-   * This is made possible by HIVE-10242.
-   * Now a select * from T1 will try to get S(T1) which according to the 'jumpTable' will
-   * be acquired once it sees S(DB).  So need to check stricter locks first.
-   */
-  private final static class LockTypeComparator implements Comparator<LockType> {
-    // the higher the integer value, the more restrictive the lock type is
-    private static final Map<LockType, Integer> orderOfRestrictiveness = new EnumMap<>(LockType.class);
-    static {
-        orderOfRestrictiveness.put(LockType.SHARED_READ, 1);
-        orderOfRestrictiveness.put(LockType.SHARED_WRITE, 2);
-        orderOfRestrictiveness.put(LockType.EXCL_WRITE, 3);
-        orderOfRestrictiveness.put(LockType.EXCLUSIVE, 4);
-    }
-    @Override
-    public boolean equals(Object other) {
-      return this == other;
-    }
-    @Override
-    public int compare(LockType t1, LockType t2) {
-      Integer t1Restrictiveness = orderOfRestrictiveness.get(t1);
-      Integer t2Restrictiveness = orderOfRestrictiveness.get(t2);
-      if (t1Restrictiveness == null) {
-        throw new RuntimeException("Unexpected LockType: " + t1);
-      }
-      if (t2Restrictiveness == null) {
-        throw new RuntimeException("Unexpected LockType: " + t2);
-      }
-      return Integer.compare(t1Restrictiveness, t2Restrictiveness);
     }
   }
 
@@ -4379,13 +4344,18 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         EXCLUSIVE on an object may mean it's being dropped or overwritten.*/
       String[] whereStr = {
         // exclusive
-        " \"REQ\".\"HL_LOCK_TYPE\"='e'" +
-        " AND NOT (\"EX\".\"HL_TABLE\" IS NULL AND \"EX\".\"HL_LOCK_TYPE\"='r' AND \"REQ\".\"HL_TABLE\" IS NOT NULL)",
+        " \"REQ\".\"HL_LOCK_TYPE\"=" + LockTypeUtil.exclusive() +
+        " AND NOT (\"EX\".\"HL_TABLE\" IS NULL AND \"EX\".\"HL_LOCK_TYPE\"=" +
+          LockTypeUtil.sharedRead() + " AND \"REQ\".\"HL_TABLE\" IS NOT NULL)",
         // shared-write
-        " \"REQ\".\"HL_LOCK_TYPE\"='w' AND \"EX\".\"HL_LOCK_TYPE\" IN ('w','e')",
+        " \"REQ\".\"HL_LOCK_TYPE\"=" + LockTypeUtil.sharedWrite() + " AND \"EX\".\"HL_LOCK_TYPE\" IN (" +
+          LockTypeUtil.exclWrite() + "," + LockTypeUtil.exclusive() + ")",
+        // excl-write
+        " \"REQ\".\"HL_LOCK_TYPE\"=" + LockTypeUtil.exclWrite() + " AND \"EX\".\"HL_LOCK_TYPE\"!=" +
+          LockTypeUtil.sharedRead(),
         // shared-read
-        " \"REQ\".\"HL_LOCK_TYPE\"='r' AND \"EX\".\"HL_LOCK_TYPE\"='e'" +
-        " AND NOT (\"EX\".\"HL_TABLE\" IS NOT NULL AND \"REQ\".\"HL_TABLE\" IS NULL)",
+        " \"REQ\".\"HL_LOCK_TYPE\"=" + LockTypeUtil.sharedRead() + " AND \"EX\".\"HL_LOCK_TYPE\"=" +
+          LockTypeUtil.exclusive() + " AND NOT (\"EX\".\"HL_TABLE\" IS NOT NULL AND \"REQ\".\"HL_TABLE\" IS NULL)"
       };
 
       List<String> subQuery = new ArrayList<>();
