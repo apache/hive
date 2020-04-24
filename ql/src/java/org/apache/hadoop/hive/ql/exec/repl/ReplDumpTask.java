@@ -181,6 +181,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     if (lastDumpPath != null && shouldResumePreviousDump(lastDumpPath, isBootstrap)) {
       //Resume previous dump
       LOG.info("Resuming the dump with existing dump directory {}", lastDumpPath);
+      work.setShouldOverwrite(true);
       return lastDumpPath;
     } else {
       return new Path(dumpRoot, getNextDumpDir());
@@ -717,7 +718,6 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       //clear the metadata. We need to rewrite the metadata as the write id list will be changed
       //We can't reuse the previous write id as it might be invalid due to compaction
       metadataPath.getFileSystem(conf).delete(metadataPath, true);
-      work.setShouldOverwrite(true);
     }
     for (String dbName : Utils.matchesDb(hiveDb, work.dbNameOrPattern)) {
       LOG.debug("Dumping db: " + dbName);

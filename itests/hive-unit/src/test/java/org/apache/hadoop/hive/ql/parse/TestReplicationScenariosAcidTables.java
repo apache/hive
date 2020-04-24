@@ -1137,6 +1137,75 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
   }
 
   @Test
+  public void testCheckPointingBootstrapDuringIncrementalRegularCopy() throws Throwable {
+
+    WarehouseInstance.Tuple bootstrapDump = primary.run("use " + primaryDbName)
+            .run("create table t1(a int) stored as orc TBLPROPERTIES ('transactional'='true')")
+            .run("insert into t1 values (1)")
+            .run("insert into t1 values (2)")
+            .dump(primaryDbName);
+    replica.load(replicatedDbName, primaryDbName)
+            .run("select * from " + replicatedDbName + ".t1")
+            .verifyResults(new String[] {"1", "2"});
+
+    List<String> dumpClause = Arrays.asList(
+            "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES + "'='true'");
+
+    ReplDumpWork.testDeletePreviousDumpMetaPath(true);
+    WarehouseInstance.Tuple incrementalDump1 = primary.run("use " + primaryDbName)
+            .run("create table t2(a int) stored as orc TBLPROPERTIES ('transactional'='true')")
+            .run("insert into t2 values (3)")
+            .run("insert into t2 values (4)")
+            .run("insert into t2 values (5)")
+            .dump(primaryDbName, dumpClause);
+
+    Path hiveDumpDir = new Path(incrementalDump1.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    Path ackFile = new Path(hiveDumpDir, ReplAck.DUMP_ACKNOWLEDGEMENT.toString());
+    Path ackLastEventID = new Path(hiveDumpDir, ReplAck.EVENTS_DUMP.toString());
+    FileSystem fs = FileSystem.get(hiveDumpDir.toUri(), primary.hiveConf);
+    verifyPathExist(fs, ackFile);
+    verifyPathExist(fs, ackLastEventID);
+
+    Path bootstrapDir = new Path(hiveDumpDir, ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME);
+    Path metaDir = new Path(bootstrapDir, EximUtil.METADATA_PATH_NAME);
+    Path metaDBPath = new Path(metaDir, primaryDbName);
+    Path metaTablePath = new Path(metaDBPath, "t2");
+    Path metadata = new Path(metaTablePath, EximUtil.METADATA_NAME);
+    Path dataDir = new Path(bootstrapDir, EximUtil.DATA_PATH_NAME);
+    Path dataDBPath = new Path(dataDir, primaryDbName);
+    Path dataTablePath = new Path(dataDBPath, "t2");
+    Path deltaDir = fs.listStatus(dataTablePath)[0].getPath();
+    Path dataFilePath = fs.listStatus(deltaDir)[0].getPath();
+
+    Map<Path, Long> path2modTimeMapForT2 = new HashMap<>();
+    path2modTimeMapForT2.put(metaDir, fs.getFileStatus(metaDir).getModificationTime());
+    path2modTimeMapForT2.put(metaDBPath, fs.getFileStatus(metaDBPath).getModificationTime());
+    path2modTimeMapForT2.put(metaTablePath, fs.getFileStatus(metaTablePath).getModificationTime());
+    path2modTimeMapForT2.put(metadata, fs.getFileStatus(metadata).getModificationTime());
+    path2modTimeMapForT2.put(dataTablePath, fs.getFileStatus(dataTablePath).getModificationTime());
+    path2modTimeMapForT2.put(deltaDir, fs.getFileStatus(deltaDir).getModificationTime());
+    path2modTimeMapForT2.put(dataFilePath, fs.getFileStatus(dataFilePath).getModificationTime());
+
+    fs.delete(ackFile, false);
+
+    //Do another dump and test the rewrite happened for both meta and data for table t2.
+    ReplDumpWork.testDeletePreviousDumpMetaPath(false);
+    WarehouseInstance.Tuple incrementalDump2 = primary.run("use " + primaryDbName)
+            .dump(primaryDbName, dumpClause);
+    assertEquals(incrementalDump1.dumpLocation, incrementalDump2.dumpLocation);
+    verifyPathExist(fs, ackFile);
+    verifyPathExist(fs, ackLastEventID);
+    for (Map.Entry<Path, Long> entry:path2modTimeMapForT2.entrySet()) {
+      assertTrue(entry.getValue() < fs.getFileStatus(entry.getKey()).getModificationTime());
+    }
+    replica.load(replicatedDbName, primaryDbName)
+            .run("select * from " + replicatedDbName + ".t1")
+            .verifyResults(new String[] {"1", "2"})
+            .run("select * from " + replicatedDbName + ".t2")
+            .verifyResults(new String[] {"3", "4", "5"});
+  }
+
+  @Test
   public void testHdfsMaxDirItemsLimitDuringIncremental() throws Throwable {
 
     WarehouseInstance.Tuple bootstrapDump = primary.run("use " + primaryDbName)
