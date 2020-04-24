@@ -229,7 +229,7 @@ public class TestUtilities {
   private FileSinkDesc getFileSinkDesc(Path tempDirPath) {
     Table table = mock(Table.class);
     when(table.getNumBuckets()).thenReturn(NUM_BUCKETS);
-    TableDesc tInfo = new TableDesc();
+    TableDesc tInfo = Utilities.getTableDesc("s", "string");
     FileSinkDesc conf = new FileSinkDesc(tempDirPath, tInfo, false);
     conf.setTable(table);
     return conf;
