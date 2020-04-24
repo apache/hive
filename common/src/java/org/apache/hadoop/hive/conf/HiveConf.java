@@ -2713,6 +2713,16 @@ public class HiveConf extends Configuration {
         "Ensures commands with OVERWRITE (such as INSERT OVERWRITE) acquire Exclusive locks for\n" +
         "transactional tables. This ensures that inserts (w/o overwrite) running concurrently\n" +
         "are not hidden by the INSERT OVERWRITE."),
+    TXN_WRITE_X_LOCK("hive.txn.write.xlock", true,
+        "Manages concurrency levels for ACID resources. Provides better level of query parallelism by enabling " +
+        "shared writes and write-write conflict resolution at the commit step." +
+        "- If true - exclusive writes are used:\n" +
+        "  - INSERT OVERWRITE acquires EXCLUSIVE locks\n" +
+        "  - UPDATE/DELETE acquire EXCL_WRITE locks\n" +
+        "  - INSERT acquires SHARED_READ locks\n" +
+        "- If false - shared writes, transaction is aborted in case of conflicting changes:\n" +
+        "  - INSERT OVERWRITE acquires EXCL_WRITE locks\n" +
+        "  - INSERT/UPDATE/DELETE acquire SHARED_READ locks"),
     HIVE_TXN_STATS_ENABLED("hive.txn.stats.enabled", true,
         "Whether Hive supports transactional stats (accurate stats for transactional tables)"),
     HIVE_TXN_ACID_DIR_CACHE_DURATION("hive.txn.acid.dir.cache.duration",
