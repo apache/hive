@@ -318,6 +318,19 @@
       </dependencies>
     </profile>
     <profile>
+      <id>kudu-aarch64</id>
+      <activation>
+        <os>
+          <family>Unix</family>
+          <arch>aarch64</arch>
+        </os>
+      </activation>
+      <properties>
+        <!-- Kudu tests do not currently support aarch64 check KUDU-3007. -->
+        <exclude.tests>**/*.java</exclude.tests>
+      </properties>
+    </profile>
+    <profile>
       <id>kudu-mac</id>
       <activation>
         <os>
