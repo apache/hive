@@ -341,7 +341,9 @@ public abstract class HiveContextAwareRecordReader<K extends WritableComparable,
           part = null;
         }
         TableDesc table = (part == null) ? null : part.getTableDesc();
-        if (table != null && !TextInputFormat.class.isAssignableFrom(part.getInputFileFormatClass())) {
+        if (table != null) {
+          // TODO: Check split offsets, header only for first split = offset is 0
+          // TODO: Footer only for last split: offset + split length = file length
           headerCount = Utilities.getHeaderCount(table);
           footerCount = Utilities.getFooterCount(table, jobConf);
         }

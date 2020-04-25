@@ -381,6 +381,7 @@ public class FetchOperator implements Serializable {
     } else {
       currRecReader = reader;
     }
+    LOG.info("PANOS RecordReader Class {} ", currRecReader.getClass());
     key = currRecReader.createKey();
     value = currRecReader.createValue();
     headerCount = footerCount = 0;
@@ -566,6 +567,7 @@ public class FetchOperator implements Serializable {
    *
    **/
   public InspectableObject getNextRow() throws IOException {
+    LOG.info("PANOS NextRow called... {} ", currDesc);
     try {
       while (true) {
         boolean opNotEOF = true;
@@ -584,6 +586,7 @@ public class FetchOperator implements Serializable {
            * If file contains footer, used FooterBuffer to cache and remove footer
            * records at the end of the file.
            */
+          // Let the party started..
           headerCount = Utilities.getHeaderCount(currDesc.getTableDesc());
           footerCount = Utilities.getFooterCount(currDesc.getTableDesc(), job);
 
@@ -807,6 +810,7 @@ public class FetchOperator implements Serializable {
     }
 
     public RecordReader<WritableComparable, Writable> getRecordReader(JobConf job) throws IOException {
+      LOG.info("PANOS inputFormat {}", inputFormat);
       return inputFormat.getRecordReader(getInputSplit(), job, Reporter.NULL);
     }
   }

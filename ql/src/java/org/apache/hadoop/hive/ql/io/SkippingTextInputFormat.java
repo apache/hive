@@ -73,7 +73,7 @@ public class SkippingTextInputFormat extends TextInputFormat {
       cachedStart = getCachedStartIndex(file);
       cachedEnd = getCachedEndIndex(file);
     } catch (IOException e) {
-      LOG.warn("Could not detect header/footer", e);
+      LOG.warn("Could not detect TextInput Start/End", e);
       return new NullRowsInputFormat.DummyInputSplit(file);
     }
     if (cachedStart > start + length) {
@@ -97,92 +97,96 @@ public class SkippingTextInputFormat extends TextInputFormat {
   }
 
   private long getCachedStartIndex(Path path) throws IOException {
-    if (headerCount == 0) {
+//    if (headerCount == 0) {
       return 0;
-    }
-    Long startIndexForFile = startIndexMap.get(path);
-    if (startIndexForFile == null) {
-      FileSystem fileSystem;
-      FSDataInputStream fis = null;
-      fileSystem = path.getFileSystem(conf);
-      try {
-        fis = fileSystem.open(path);
-        for (int j = 0; j < headerCount; j++) {
-          if (fis.readLine() == null) {
-            startIndexMap.put(path, Long.MAX_VALUE);
-            return Long.MAX_VALUE;
-          }
-        }
-        // Readers skip the entire first row if the start index of the
-        // split is not zero. We are setting the start of the index as
-        // the last byte of the previous row so the last line of header
-        // is discarded instead of the first valid input row.
-        startIndexForFile = fis.getPos() - 1;
-      } finally {
-        if (fis != null) {
-          fis.close();
-        }
-      }
-      startIndexMap.put(path, startIndexForFile);
-    }
-    return startIndexForFile;
+//    Long startIndexForFile = startIndexMap.get(path);
+//    if (startIndexForFile == null) {
+//      FileSystem fileSystem;
+//      FSDataInputStream fis = null;
+//      fileSystem = path.getFileSystem(conf);
+//      try {
+//        fis = fileSystem.open(path);
+//        for (int j = 0; j < headerCount; j++) {
+//          if (fis.readLine() == null) {
+//            startIndexMap.put(path, Long.MAX_VALUE);
+//            return Long.MAX_VALUE;
+//          }
+//        }
+//        // Readers skip the entire first row if the start index of the
+//        // split is not zero. We are setting the start of the index as
+//        // the last byte of the previous row so the last line of header
+//        // is discarded instead of the first valid input row.
+//        startIndexForFile = fis.getPos() - 1;
+//      } finally {
+//        if (fis != null) {
+//          fis.close();
+//        }
+//      }
+//      startIndexMap.put(path, startIndexForFile);
+//    }
+//    return startIndexForFile;
   }
 
   private long getCachedEndIndex(Path path) throws IOException {
-    Long endIndexForFile = endIndexMap.get(path);
-    if (endIndexForFile == null) {
-      final long bufferSectionSize = 5 * 1024;
-      FileSystem fileSystem = path.getFileSystem(conf);
-      long endOfFile = fileSystem.getFileStatus(path).getLen();
-      if (footerCount == 0) {
-        endIndexForFile = endOfFile;
-      } else {
-        long bufferSectionEnd = endOfFile; // first byte that is not included in the section
-        long bufferSectionStart = Math.max(0, bufferSectionEnd - bufferSectionSize);
-
-        // we need 'footer count' lines and one space for EOF
-        LineBuffer buffer = new LineBuffer(footerCount + 1);
-        FSDataInputStream fis = null;
-        try {
-          fis = fileSystem.open(path);
-          while (bufferSectionEnd > bufferSectionStart) {
-            fis.seek(bufferSectionStart);
-            long pos = fis.getPos();
-            while (pos < bufferSectionEnd) {
-              if (fis.readLine() == null) {
-                // if there is not enough lines in this section, check the previous
-                // section. If this is the beginning section, there are simply not
-                // enough lines in the file.
-                break;
-              }
-              pos = fis.getPos();
-              buffer.consume(pos, bufferSectionEnd);
-            }
-            if (buffer.getRemainingLineCount() == 0) {
-              // if we consumed all the required line ends, that means the buffer now
-              // contains the index of the first byte of the footer.
-              break;
-            } else {
-              bufferSectionEnd = bufferSectionStart;
-              bufferSectionStart = Math.max(0, bufferSectionEnd - bufferSectionSize);
-            }
-          }
-          if (buffer.getRemainingLineCount() == 0) {
-            // buffer.getFirstLineStart() is the first byte of the footer. So the split
-            // must end before this.
-            endIndexForFile = buffer.getFirstLineStart() - 1;
-          } else {
-            // there were not enough lines in the file to consume all footer rows.
-            endIndexForFile = Long.MIN_VALUE;
-          }
-        } finally {
-          if (fis != null) {
-            fis.close();
-          }
-        }
-      }
-      endIndexMap.put(path, endIndexForFile);
-    }
+//    Long endIndexForFile = endIndexMap.get(path);
+//    if (endIndexForFile == null) {
+//      final long bufferSectionSize = 5 * 1024;
+//      FileSystem fileSystem = path.getFileSystem(conf);
+//      long endOfFile = fileSystem.getFileStatus(path).getLen();
+//      if (footerCount == 0) {
+//        endIndexForFile = endOfFile;
+//      } else {
+//        long bufferSectionEnd = endOfFile; // first byte that is not included in the section
+//        long bufferSectionStart = Math.max(0, bufferSectionEnd - bufferSectionSize);
+//
+//        // we need 'footer count' lines and one space for EOF
+//        LineBuffer buffer = new LineBuffer(footerCount + 1);
+//        FSDataInputStream fis = null;
+//        try {
+//          fis = fileSystem.open(path);
+//          while (bufferSectionEnd > bufferSectionStart) {
+//            fis.seek(bufferSectionStart);
+//            long pos = fis.getPos();
+//            while (pos < bufferSectionEnd) {
+//              if (fis.readLine() == null) {
+//                // if there is not enough lines in this section, check the previous
+//                // section. If this is the beginning section, there are simply not
+//                // enough lines in the file.
+//                break;
+//              }
+//              pos = fis.getPos();
+//              buffer.consume(pos, bufferSectionEnd);
+//            }
+//            if (buffer.getRemainingLineCount() == 0) {
+//              // if we consumed all the required line ends, that means the buffer now
+//              // contains the index of the first byte of the footer.
+//              break;
+//            } else {
+//              bufferSectionEnd = bufferSectionStart;
+//              bufferSectionStart = Math.max(0, bufferSectionEnd - bufferSectionSize);
+//            }
+//          }
+//          if (buffer.getRemainingLineCount() == 0) {
+//            // buffer.getFirstLineStart() is the first byte of the footer. So the split
+//            // must end before this.
+//            endIndexForFile = buffer.getFirstLineStart() - 1;
+//          } else {
+//            // there were not enough lines in the file to consume all footer rows.
+//            endIndexForFile = Long.MIN_VALUE;
+//          }
+//        } finally {
+//          if (fis != null) {
+//            fis.close();
+//          }
+//        }
+//      }
+//      endIndexMap.put(path, endIndexForFile);
+//    }
+    // New approach
+    FileSystem fileSystem = path.getFileSystem(conf);
+    long endOfFile = fileSystem.getFileStatus(path).getLen();
+    Long endIndexForFile = endOfFile;
+    endIndexMap.put(path, endIndexForFile);
     return endIndexForFile;
   }
 

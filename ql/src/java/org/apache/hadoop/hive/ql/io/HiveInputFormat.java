@@ -534,6 +534,8 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       headerCount = Utilities.getHeaderCount(table);
       footerCount = Utilities.getFooterCount(table, conf);
       if (headerCount != 0 || footerCount != 0) {
+        // Panos Here add
+        LOG.info("PANOS INPUT FILE: {}, class {} - {}", dirs, inputFormatClass, inputFormat);
         if (TextInputFormat.class.isAssignableFrom(inputFormatClass)) {
           SkippingTextInputFormat skippingTextInputFormat = new SkippingTextInputFormat();
           skippingTextInputFormat.configure(conf, headerCount, footerCount);

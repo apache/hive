@@ -23,7 +23,9 @@ import java.lang.reflect.Method;
 
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.io.encoded.SerDeEncodedDataReader.ReaderWithOffsets;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.LineRecordReader;
 
 final class LineRrOffsetReader extends PassThruOffsetReader {
@@ -43,24 +45,24 @@ final class LineRrOffsetReader extends PassThruOffsetReader {
     isCompressedMethod = isCompressedMethodTmp;
   }
 
-  static ReaderWithOffsets create(LineRecordReader sourceReader) {
-    if (isCompressedMethod == null) return new PassThruOffsetReader(sourceReader);
+  static ReaderWithOffsets create(LineRecordReader sourceReader, TableDesc currTD, JobConf jobConf) {
+    if (isCompressedMethod == null) return new PassThruOffsetReader(sourceReader, currTD, jobConf);
     Boolean isCompressed = null;
     try {
       isCompressed = (Boolean)isCompressedMethod.invoke(sourceReader);
     } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
       LlapIoImpl.LOG.error("Cannot check the reader for compression; offsets not supported", e);
-      return new PassThruOffsetReader(sourceReader);
+      return new PassThruOffsetReader(sourceReader, currTD, jobConf);
     }
     if (isCompressed) {
       LlapIoImpl.LOG.info("Reader is compressed; offsets not supported");
-      return new PassThruOffsetReader(sourceReader); // Cannot slice compressed files.
+      return new PassThruOffsetReader(sourceReader, currTD, jobConf); // Cannot slice compressed files.
     }
-    return new LineRrOffsetReader(sourceReader);
+    return new LineRrOffsetReader(sourceReader, currTD, jobConf);
   }
 
-  private LineRrOffsetReader(LineRecordReader sourceReader) {
-    super(sourceReader);
+  private LineRrOffsetReader(LineRecordReader sourceReader, TableDesc currTD, JobConf jobConf) {
+    super(sourceReader, currTD, jobConf);
     this.lrReader = sourceReader;
     this.posKey = (LongWritable)key;
   }

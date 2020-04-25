@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import net.minidev.json.JSONUtil;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -61,6 +62,7 @@ import org.apache.hadoop.hive.llap.io.encoded.VectorDeserializeOrcWriter.AsyncCa
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.HdfsUtils;
+import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile.WriterOptions;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
@@ -70,6 +72,7 @@ import org.apache.hadoop.hive.ql.io.orc.encoded.CacheChunk;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.OrcEncodedColumnBatch;
 import org.apache.hadoop.hive.ql.io.orc.encoded.StoppableAllocator;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -105,6 +108,7 @@ import org.apache.tez.common.counters.TezCounters;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
+import static org.apache.hadoop.hive.llap.LlapHiveUtils.LOG;
 import static org.apache.hadoop.hive.llap.LlapHiveUtils.throwIfCacheOnlyRead;
 
 public class SerDeEncodedDataReader extends CallableWithNdc<Void>
@@ -1423,9 +1427,13 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     boolean maySplitTheSplit = slice == null;
     ReaderWithOffsets offsetReader = null;
     @SuppressWarnings("rawtypes")
+    Path path = split.getPath().getFileSystem(daemonConf).makeQualified(split.getPath());
+    PartitionDesc partDesc = HiveFileFormatUtils.getFromPathRecursively(parts, path, null);
+    LOG.info("PANOS PartDec {} TS {}", partDesc, partDesc.getTableDesc());
     RecordReader sourceReader = sourceInputFormat.getRecordReader(split, jobConf, reporter);
+    // Start here...
     try {
-      offsetReader = createOffsetReader(sourceReader);
+      offsetReader = createOffsetReader(sourceReader, partDesc.getTableDesc());
       sourceReader = null;
     } finally {
       if (sourceReader != null) {
@@ -1633,16 +1641,18 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     }
   }
 
-  private ReaderWithOffsets createOffsetReader(RecordReader<?, ?> sourceReader) {
+  private ReaderWithOffsets createOffsetReader(RecordReader<?, ?> sourceReader, TableDesc currTD) {
     if (LlapIoImpl.LOG.isDebugEnabled()) {
       LlapIoImpl.LOG.debug("Using " + sourceReader.getClass().getSimpleName() + " to read data");
     }
     // Handle the special cases here. Perhaps we could have a more general structure, or even
     // a configurable set (like storage handlers), but for now we only have one.
     if (isLrrEnabled && sourceReader instanceof LineRecordReader) {
-      return LineRrOffsetReader.create((LineRecordReader)sourceReader);
+      return LineRrOffsetReader.create((LineRecordReader)sourceReader, currTD, jobConf);
     }
-    return new PassThruOffsetReader(sourceReader);
+    // TODO: Check split offsets, header only for first split = offset is 0
+    // TODO: Footer only for last split: offset + split length = file length
+    return new PassThruOffsetReader(sourceReader, currTD, jobConf);
   }
 
   private static String[] extractHosts(FileSplit split, boolean isInMemory) throws IOException {
