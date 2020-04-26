@@ -159,37 +159,61 @@ public class EximUtil {
   }
 
   /**
-   * Wrapper class for mapping replication source and target path for copying data.
+   * Wrapper class for mapping source and target path for copying managed table data.
    */
-  public static class ReplPathMapping {
+  public static class ManagedTableCopyPath {
+    private ReplicationSpec replicationSpec;
+    private static boolean nullSrcPathForTest = false;
     private Path srcPath;
     private Path tgtPath;
 
-    public ReplPathMapping(Path srcPath, Path tgtPath) {
+    public ManagedTableCopyPath(ReplicationSpec replicationSpec, Path srcPath, Path tgtPath) {
+      this.replicationSpec = replicationSpec;
       if (srcPath == null) {
-        throw new IllegalArgumentException("Source Path can not be null.");
+        throw new IllegalArgumentException("Source path can not be null.");
       }
       this.srcPath = srcPath;
       if (tgtPath == null) {
-        throw new IllegalArgumentException("Target Path can not be null.");
+        throw new IllegalArgumentException("Target path can not be null.");
       }
       this.tgtPath = tgtPath;
     }
 
     public Path getSrcPath() {
+      if (nullSrcPathForTest) {
+        return null;
+      }
       return srcPath;
-    }
-
-    public void setSrcPath(Path srcPath) {
-      this.srcPath = srcPath;
     }
 
     public Path getTargetPath() {
       return tgtPath;
     }
 
-    public void setTargetPath(Path targetPath) {
-      this.tgtPath = targetPath;
+    @Override
+    public String toString() {
+      return "ManagedTableCopyPath{"
+              + "fullyQualifiedSourcePath=" + srcPath
+              + ", fullyQualifiedTargetPath=" + tgtPath
+              + '}';
+    }
+
+    public ReplicationSpec getReplicationSpec() {
+      return replicationSpec;
+    }
+
+    public void setReplicationSpec(ReplicationSpec replicationSpec) {
+      this.replicationSpec = replicationSpec;
+    }
+
+    /**
+     * To be used only for testing purpose.
+     * It has been used to make repl dump operation fail.
+     */
+    public static void setNullSrcPath(HiveConf conf, boolean aNullSrcPath) {
+      if (conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST)) {
+        nullSrcPathForTest = aNullSrcPath;
+      }
     }
   }
 

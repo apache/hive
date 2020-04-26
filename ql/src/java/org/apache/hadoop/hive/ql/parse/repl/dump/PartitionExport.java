@@ -24,7 +24,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
-import org.apache.hadoop.hive.ql.parse.EximUtil.ReplPathMapping;
+import org.apache.hadoop.hive.ql.parse.EximUtil.ManagedTableCopyPath;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.repl.dump.io.FileOperations;
 import org.apache.hadoop.hive.ql.plan.ExportWork.MmContext;
@@ -75,10 +75,10 @@ class PartitionExport {
     this.callersSession = SessionState.get();
   }
 
-  List<ReplPathMapping> write(final ReplicationSpec forReplicationSpec, boolean isExportTask)
+  List<ManagedTableCopyPath> write(final ReplicationSpec forReplicationSpec, boolean isExportTask)
           throws InterruptedException, HiveException {
     List<Future<?>> futures = new LinkedList<>();
-    List<ReplPathMapping> replCopyPathMappings = new LinkedList<>(); //Collections.synchronizedList(new LinkedList<>());
+    List<ManagedTableCopyPath> managedTableCopyPaths = new LinkedList<>();
     ExecutorService producer = Executors.newFixedThreadPool(1,
         new ThreadFactoryBuilder().setNameFormat("partition-submitter-thread-%d").build());
     futures.add(producer.submit(() -> {
@@ -122,7 +122,8 @@ class PartitionExport {
           new FileOperations(dataPathList, rootDataDumpDir, distCpDoAsUser, hiveConf, mmCtx)
                   .export(isExportTask);
           LOG.debug("Thread: {}, finish partition dump {}", threadName, partitionName);
-          return new ReplPathMapping(partition.getDataLocation(), new Path(rootDataDumpDir, EximUtil.DATA_PATH_NAME));
+          return new ManagedTableCopyPath(forReplicationSpec, partition.getDataLocation(),
+                  new Path(rootDataDumpDir, EximUtil.DATA_PATH_NAME));
         } catch (Exception e) {
           throw new RuntimeException(e.getMessage(), e);
         }
@@ -133,8 +134,8 @@ class PartitionExport {
       try {
         Object retVal =  future.get();
         if (retVal != null) {
-          ReplPathMapping replPathMapping = (ReplPathMapping)retVal;
-          replCopyPathMappings.add(replPathMapping);
+          ManagedTableCopyPath managedTableCopyPath = (ManagedTableCopyPath) retVal;
+          managedTableCopyPaths.add(managedTableCopyPath);
         }
       } catch (Exception e) {
         LOG.error("failed", e.getCause());
@@ -143,6 +144,6 @@ class PartitionExport {
     }
     // may be drive this via configuration as well.
     consumer.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
-    return replCopyPathMappings;
+    return managedTableCopyPaths;
   }
 }

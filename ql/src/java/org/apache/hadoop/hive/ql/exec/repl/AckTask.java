@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.exec.repl;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
-import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
@@ -29,19 +28,19 @@ import org.apache.hadoop.hive.ql.plan.api.StageType;
 import java.io.Serializable;
 
 /**
- * ReplLoadCompleteAckTask.
+ * AckTask.
  *
- * Add the load complete acknoledgement.
+ * Add the repl dump/ repl load complete acknowledgement.
  **/
-public class ReplLoadCompleteAckTask extends Task<ReplLoadCompleteAckWork> implements Serializable {
+public class AckTask extends Task<AckWork> implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @Override
     public int execute() {
         try {
-            Path ackPath = new Path(work.getDumpPath(), ReplUtils.LOAD_ACKNOWLEDGEMENT);
-            Utils.create(ackPath, conf);
+          Path ackPath = work.getAckFilePath();
+          Utils.create(ackPath, conf);
         } catch (SemanticException e) {
             setException(e);
             return ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
@@ -51,19 +50,20 @@ public class ReplLoadCompleteAckTask extends Task<ReplLoadCompleteAckWork> imple
 
     @Override
     public StageType getType() {
-        return StageType.REPL_LOAD_COMPLETE_ACK;
+      return StageType.ACK;
     }
 
     @Override
     public String getName() {
-        return "REPL_LOAD_COMPLETE_ACK";
+      return "ACK_TASK";
     }
 
     @Override
     public boolean canExecuteInParallel() {
-        // REPL_LOAD_COMPLETE_ACK is executed only when all its parents are done with execution.
-        // So running it in parallel has no
-        // benefits.
-        return false;
+      // REPL_LOAD_COMPLETE_ACK is executed only when all its parents are done with execution.
+      // So running it in parallel has no
+      // benefits.
+      // ACK_TASK must be executed only when all its parents are done with execution.
+      return false;
     }
 }

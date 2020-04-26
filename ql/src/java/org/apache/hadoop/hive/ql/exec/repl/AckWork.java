@@ -18,27 +18,27 @@
 
 package org.apache.hadoop.hive.ql.exec.repl;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 import java.io.Serializable;
 
 /**
- * ReplLoadCompleteAckWork.
- * FS based Acknowledgement for repl load complete
+ * AckWork.
+ * FS based acknowledgement on repl dump and repl load completion.
  *
  */
-@Explain(displayName = "Repl Load Complete Ack", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class ReplLoadCompleteAckWork implements Serializable {
-    private static final long serialVersionUID = 1L;
-    private String dumpPath;
+@Explain(displayName = "Replication Ack", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class AckWork implements Serializable {
+  private static final long serialVersionUID = 1L;
+  private Path ackFilePath;
 
-    public String getDumpPath() {
-        return dumpPath;
-    }
+  public Path getAckFilePath() {
+    return ackFilePath;
+  }
 
-    public ReplLoadCompleteAckWork(String dumpPath) {
-        this.dumpPath = dumpPath;
-    }
-
+  public AckWork(Path ackFilePath) {
+    this.ackFilePath = ackFilePath;
+  }
 }
