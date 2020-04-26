@@ -32,23 +32,16 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaBasicAnalyzer;
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaPlannerContext;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaFunctionCallExpr;
-import org.apache.hadoop.hive.ql.plan.impala.funcmapper.AggFunctionDetails;
-import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaFunctionSignature;
-import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaFunctionSignatureFactory;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaTypeConverter;
 import org.apache.impala.analysis.AggregateInfo;
-import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.Expr;
 import org.apache.impala.analysis.ExprSubstitutionMap;
 import org.apache.impala.analysis.FunctionCallExpr;
 import org.apache.impala.analysis.FunctionParams;
 import org.apache.impala.analysis.MultiAggregateInfo;
-import org.apache.impala.catalog.AggregateFunction;
-import org.apache.impala.catalog.BuiltinsDb;
 import org.apache.impala.catalog.Function;
 import org.apache.impala.catalog.Type;
 import org.apache.impala.common.AnalysisException;
@@ -86,13 +79,16 @@ public class ImpalaAggregateRel extends ImpalaPlanRel {
   @Override
   public PlanNode getPlanNode(ImpalaPlannerContext ctx) throws ImpalaException, HiveException, MetaException {
     Preconditions.checkState(getInputs().size() == 1);
+    if (aggNode != null) {
+      return aggNode;
+    }
     ImpalaPlanRel relInput = getImpalaRelInput(0);
     PlanNode input = relInput.getPlanNode(ctx);
 
     ImpalaBasicAnalyzer analyzer = (ImpalaBasicAnalyzer) ctx.getRootAnalyzer();
 
     // MultiAggregateInfo class is the Impala class that holds all the analyzed aggregate
-    // information that needs to be passed into the planner. One exaple of a complexitiy it
+    // information that needs to be passed into the planner. One example of a complexity it
     // handles is the case where there are multiple distinct aggregate clauses.
     MultiAggregateInfo multiAggInfo =
         new MultiAggregateInfo(getGroupingExprs(), getAggregateExprs(ctx));
@@ -186,7 +182,7 @@ public class ImpalaAggregateRel extends ImpalaPlanRel {
       if (indexes.size() == 1) {
         operands.add(input.getExpr(indexes.get(0)));
       }
-      Function fn = getFunction(aggCall, ctx.getRootAnalyzer());
+      Function fn = getFunction(aggCall);
 
       Type impalaRetType = ImpalaTypeConverter.getImpalaType(aggCall.getType());
       FunctionParams params = new FunctionParams(aggCall.isDistinct(), operands);
@@ -197,8 +193,8 @@ public class ImpalaAggregateRel extends ImpalaPlanRel {
     return exprs;
   }
 
-  private Function getFunction(AggregateCall aggCall, Analyzer analyzer)
-      throws HiveException, AnalysisException {
+  private Function getFunction(AggregateCall aggCall)
+      throws HiveException {
     RelDataType retType = aggCall.getType();
     SqlAggFunction aggFunction = aggCall.getAggregation();
     List<SqlTypeName> operandTypes = Lists.newArrayList();
@@ -207,39 +203,7 @@ public class ImpalaAggregateRel extends ImpalaPlanRel {
       RelDataType relDataType = input.getRowType().getFieldList().get(i).getType();
       operandTypes.add(relDataType.getSqlTypeName());
     }
-
-    ImpalaFunctionSignature ifs =
-        ImpalaFunctionSignatureFactory.create(aggFunction.getName().toLowerCase(), operandTypes,
-             retType.getSqlTypeName());
-    AggFunctionDetails funcDetails = AggFunctionDetails.get(ifs);
-
-    if (funcDetails == null) {
-      throw new SemanticException("Could not find function \"" + ifs + "\"");
-    }
-
-    List<Type> argTypes = ImpalaTypeConverter.getImpalaTypesList(funcDetails.argTypes);
-    Type impalaRetType =
-        ImpalaTypeConverter.getImpalaType(funcDetails.retType, retType.getPrecision(), retType.getScale());
-    Integer intermediateTypePrecision = funcDetails.intermediateTypeLength != null
-         ? funcDetails.intermediateTypeLength
-         : retType.getPrecision();
-    Type intermediateType = ImpalaTypeConverter.getImpalaType(funcDetails.intermediateType,
-        intermediateTypePrecision, retType.getScale());
-
-    Preconditions.checkState(funcDetails.isAgg || funcDetails.isAnalyticFn);
-    if (!funcDetails.isAgg) {
-      return AggregateFunction.createAnalyticBuiltin(BuiltinsDb.getInstance(true), aggFunction.getName(),
-          argTypes, impalaRetType, intermediateType, funcDetails.initFnSymbol,
-          funcDetails.updateFnSymbol, funcDetails.removeFnSymbol, funcDetails.getValueFnSymbol,
-          funcDetails.finalizeFnSymbol);
-    }
-    // Some agg functions are used both in analytic functions and regular aggregations (e.g. count)
-    // We can treat them both as a regular builtin.
-    return AggregateFunction.createBuiltin(BuiltinsDb.getInstance(true), aggFunction.getName(),
-        argTypes, impalaRetType, intermediateType, funcDetails.initFnSymbol,
-        funcDetails.updateFnSymbol, funcDetails.mergeFnSymbol, funcDetails.serializeFnSymbol,
-        funcDetails.getValueFnSymbol, funcDetails.removeFnSymbol, funcDetails.finalizeFnSymbol,
-        funcDetails.ignoresDistinct, funcDetails.isAnalyticFn, funcDetails.returnsNonNullOnEmpty);
+    return ImpalaRelUtil.getAggregateFunction(aggFunction, retType, operandTypes);
   }
 
   @Override

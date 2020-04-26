@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.plan.impala.node;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import org.apache.calcite.rel.type.RelDataTypeField;
-import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.util.Pair;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -38,7 +37,6 @@ import org.apache.impala.analysis.TupleDescriptor;
 import org.apache.impala.common.ImpalaException;
 import org.apache.impala.planner.PlanNode;
 import org.apache.impala.planner.PlanNodeId;
-import org.apache.impala.planner.UnionNode;
 
 import java.util.List;
 
@@ -50,7 +48,6 @@ import java.util.List;
  */
 public class ImpalaProjectRel extends ImpalaProjectRelBase {
 
-  private UnionNode unionNode = null;
   private final HiveFilter filter;
 
   public ImpalaProjectRel(HiveProject project) {
@@ -64,14 +61,14 @@ public class ImpalaProjectRel extends ImpalaProjectRelBase {
 
   @Override
   public PlanNode getPlanNode(ImpalaPlannerContext ctx) throws ImpalaException, HiveException, MetaException {
-    if (unionNode != null) {
-      return unionNode;
+    if (planNode != null) {
+      return planNode;
     }
     PlanNodeId nodeId = ctx.getNextNodeId();
 
     ImpalaPlanRel unionInputRel = getImpalaRelInput(0);
+    planNode = unionInputRel.getPlanNode(ctx);
 
-    PlanNode unionInputNode = unionInputRel.getPlanNode(ctx);
     Preconditions.checkArgument(getInputs().size() == 1);
     Preconditions.checkArgument(getInput(0) instanceof ImpalaPlanRel);
     TupleDescriptor tupleDesc = createTupleDescriptor(ctx.getRootAnalyzer());
@@ -80,19 +77,18 @@ public class ImpalaProjectRel extends ImpalaProjectRelBase {
     // The project exprs are the Calcite RexNode exprs that are passed into the
     // Impala Union Node.
     List<Expr> projectExprs = createProjectExprs(ctx).values().asList();
-    Pair<PlanNode, List<Expr>> pair = Pair.of(unionInputNode, projectExprs);
-    unionNode = new ImpalaUnionNode(nodeId, tupleDesc.getId(), getOutputExprs(),
+    Pair<PlanNode, List<Expr>> pair = Pair.of(planNode, projectExprs);
+    planNode = new ImpalaUnionNode(nodeId, tupleDesc.getId(), getOutputExprs(),
         Lists.newArrayList(pair));
-    unionNode.init(ctx.getRootAnalyzer());
+    planNode.init(ctx.getRootAnalyzer());
 
     if (filter != null) {
       List<Expr> conjuncts = getConjuncts(filter, ctx.getRootAnalyzer(), this);
-      ImpalaSelectNode selectNode = new ImpalaSelectNode(ctx.getNextNodeId(), unionNode, conjuncts);
-      selectNode.init(ctx.getRootAnalyzer());
-      return selectNode;
+      planNode = new ImpalaSelectNode(ctx.getNextNodeId(), planNode, conjuncts);
+      planNode.init(ctx.getRootAnalyzer());
     }
 
-    return unionNode;
+    return planNode;
   }
 
   private TupleDescriptor createTupleDescriptor(Analyzer analyzer) throws HiveException {

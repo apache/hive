@@ -36,7 +36,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaBasicAnalyzer;
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaPlannerContext;
-import org.apache.hadoop.hive.ql.plan.impala.rex.ImpalaRexVisitor;
+import org.apache.hadoop.hive.ql.plan.impala.rex.ImpalaRexVisitor.ImpalaInferMappingRexVisitor;
 import org.apache.impala.analysis.AggregateInfo;
 import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.BaseTableRef;
@@ -84,7 +84,8 @@ public class ImpalaHdfsScanRel extends ImpalaPlanRel {
     if (filter == null) {
       return conjuncts;
     }
-    ImpalaRexVisitor visitor = new ImpalaRexVisitor(analyzer, ImmutableList.of(this));
+    ImpalaInferMappingRexVisitor visitor = new ImpalaInferMappingRexVisitor(
+        analyzer, ImmutableList.of(this));
     List<RexNode> andOperands = getAndOperands(filter.getCondition());
     for (RexNode andOperand : andOperands) {
       conjuncts.add(andOperand.accept(visitor));

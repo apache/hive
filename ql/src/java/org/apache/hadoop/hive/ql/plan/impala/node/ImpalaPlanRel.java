@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaPlannerContext;
 import org.apache.hadoop.hive.ql.plan.impala.rex.ImpalaRexVisitor;
+import org.apache.hadoop.hive.ql.plan.impala.rex.ImpalaRexVisitor.ImpalaInferMappingRexVisitor;
 import org.apache.hadoop.hive.ql.plan.impala.rex.ReferrableNode;
 import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.Expr;
@@ -190,7 +191,8 @@ public abstract class ImpalaPlanRel extends AbstractRelNode implements Referrabl
     if (filter == null) {
       return conjuncts;
     }
-    ImpalaRexVisitor visitor = new ImpalaRexVisitor(analyzer, ImmutableList.of(relNode), tupleIds);
+    ImpalaInferMappingRexVisitor visitor = new ImpalaInferMappingRexVisitor(
+        analyzer, ImmutableList.of(relNode), tupleIds);
     List<RexNode> andOperands = getAndOperands(filter.getCondition());
     for (RexNode andOperand : andOperands) {
       conjuncts.add(andOperand.accept(visitor));

@@ -35,7 +35,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaPlannerContext;
-import org.apache.hadoop.hive.ql.plan.impala.rex.ImpalaRexVisitor;
+import org.apache.hadoop.hive.ql.plan.impala.rex.ImpalaRexVisitor.ImpalaInferMappingRexVisitor;
 import org.apache.hadoop.hive.ql.plan.impala.rex.ReferrableNode;
 import org.apache.impala.analysis.BinaryPredicate;
 import org.apache.impala.analysis.Expr;
@@ -83,7 +83,8 @@ public class ImpalaJoinRel extends ImpalaPlanRel {
     List<BinaryPredicate> equiJoinConjuncts = new ArrayList<>();
     List<Expr> nonEquiJoinConjuncts = new ArrayList<>();
 
-    ImpalaRexVisitor rexVisitor = new ImpalaRexVisitor(ctx.getRootAnalyzer(), inputRels);
+    ImpalaInferMappingRexVisitor rexVisitor = new ImpalaInferMappingRexVisitor(
+        ctx.getRootAnalyzer(), inputRels);
 
     JoinOperator joinOp = getImpalaJoinOp(hiveJoin);
 

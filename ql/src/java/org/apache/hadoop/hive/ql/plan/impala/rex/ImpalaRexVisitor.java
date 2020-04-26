@@ -19,8 +19,9 @@
 package org.apache.hadoop.hive.ql.plan.impala.rex;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import java.util.List;
+import java.util.Map;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexCorrelVariable;
 import org.apache.calcite.rex.RexDynamicParam;
@@ -41,26 +42,24 @@ import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.Expr;
 import org.apache.impala.analysis.TupleId;
 
-import java.util.List;
 /**
- * Impala Rex Visitor providing Expr objects of the
- * ImpalaRexNodes.
+ * This visitor can generate Impala expressions for function calls and literals.
+ * It is used as a base class for other visitors, e.g.,
+ * {@link ImpalaInferMappingRexVisitor} and {@link ImpalaProvidedMappingRexVisitor}.
  */
 public class ImpalaRexVisitor extends RexVisitorImpl<Expr> {
 
   private final Analyzer analyzer;
-  private final ImmutableList<ReferrableNode> impalaPlanNodes;
   private final List<TupleId> tupleIds;
 
-  public ImpalaRexVisitor(Analyzer analyzer, List<ReferrableNode> impalaPlanNodes) {
-   this(analyzer, impalaPlanNodes, null);
+  protected ImpalaRexVisitor(Analyzer analyzer) {
+    this(analyzer, null);
   }
 
-  public ImpalaRexVisitor(Analyzer analyzer, List<ReferrableNode> impalaPlanNodes, List<TupleId> tupleIds) {
+  protected ImpalaRexVisitor(Analyzer analyzer, List<TupleId> tupleIds) {
     super(false);
+    Preconditions.checkArgument(analyzer != null);
     this.analyzer = analyzer;
-
-    this.impalaPlanNodes = ImmutableList.copyOf(impalaPlanNodes);
     this.tupleIds = tupleIds;
   }
 
@@ -85,27 +84,7 @@ public class ImpalaRexVisitor extends RexVisitorImpl<Expr> {
 
   @Override
   public Expr visitInputRef(RexInputRef rexInputRef) {
-    // first compute the index relative to the input
-    int inputNum = 0;
-    int numOutputExprs = 0;
-    // Suppose the rexInputRef's index is $4 and there are 2
-    // input relnodes r0 and r1 with their respective output exprs.
-    // We want to map the $4 (a total index) into a local index which
-    // is relative to either r0 or r1
-    // So, the local_index = total_index - current_total_output_exprs
-    // Note that the index ordinals are increasing but not necessarily consecutive.
-    for (; inputNum < impalaPlanNodes.size(); inputNum++) {
-      Pair<Integer, Integer> maxIndexInfo = impalaPlanNodes.get(inputNum).getMaxIndexInfo();
-      if (rexInputRef.getIndex() <= numOutputExprs + maxIndexInfo.left) {
-        break;
-      }
-      numOutputExprs += maxIndexInfo.right;
-    }
-
-    int localIndex = rexInputRef.getIndex() - numOutputExprs;
-    Preconditions.checkState(inputNum < impalaPlanNodes.size());
-    Expr e = impalaPlanNodes.get(inputNum).getExpr(localIndex);
-    return e;
+    throw new RuntimeException("Not supported");
   }
 
   @Override
@@ -160,5 +139,79 @@ public class ImpalaRexVisitor extends RexVisitorImpl<Expr> {
   @Override
   public Expr visitPatternFieldRef(RexPatternFieldRef fieldRef) {
     throw new RuntimeException("Not supported");
+  }
+
+  /**
+   * This visitor will generate an Impala expression generating the mappings
+   * for references from the input plan nodes and possibly relying on the input
+   * tuple ids to generate some of the function calls.
+   */
+  public static class ImpalaInferMappingRexVisitor extends ImpalaRexVisitor {
+
+    private final List<ReferrableNode> impalaPlanNodes;
+
+    public ImpalaInferMappingRexVisitor(Analyzer analyzer, List<ReferrableNode> impalaPlanNodes) {
+      this(analyzer, impalaPlanNodes, null);
+    }
+
+    public ImpalaInferMappingRexVisitor(Analyzer analyzer, List<ReferrableNode> impalaPlanNodes, List<TupleId> tupleIds) {
+      super(analyzer, tupleIds);
+      Preconditions.checkArgument(impalaPlanNodes != null);
+      this.impalaPlanNodes = impalaPlanNodes;
+    }
+
+    @Override
+    public Expr visitInputRef(RexInputRef rexInputRef) {
+      // first compute the index relative to the input
+      int inputNum = 0;
+      int numOutputExprs = 0;
+      // Suppose the rexInputRef's index is $4 and there are 2
+      // input relnodes r0 and r1 with their respective output exprs.
+      // We want to map the $4 (a total index) into a local index which
+      // is relative to either r0 or r1
+      // So, the local_index = total_index - current_total_output_exprs
+      // Note that the index ordinals are increasing but not necessarily consecutive.
+      for (; inputNum < impalaPlanNodes.size(); inputNum++) {
+        Pair<Integer, Integer> maxIndexInfo = impalaPlanNodes.get(inputNum).getMaxIndexInfo();
+        if (rexInputRef.getIndex() <= numOutputExprs + maxIndexInfo.left) {
+          break;
+        }
+        numOutputExprs += maxIndexInfo.right;
+      }
+
+      int localIndex = rexInputRef.getIndex() - numOutputExprs;
+      Preconditions.checkState(inputNum < impalaPlanNodes.size());
+      Expr e = impalaPlanNodes.get(inputNum).getExpr(localIndex);
+      return e;
+    }
+
+  }
+
+  /**
+   * This visitor will generate an Impala expression from the mappings
+   * that have already been created. This visitor can map analytic
+   * functions ({@link RexOver) nodes) in addition to functions, references,
+   * and literals.
+   */
+  public static class ImpalaProvidedMappingRexVisitor extends ImpalaRexVisitor {
+
+    private final Map<RexNode, Expr> exprsMap;
+
+    public ImpalaProvidedMappingRexVisitor(Analyzer analyzer, Map<RexNode, Expr> exprsMap) {
+      super(analyzer);
+      Preconditions.checkArgument(exprsMap != null);
+      this.exprsMap = exprsMap;
+    }
+
+    @Override
+    public Expr visitInputRef(RexInputRef rexInputRef) {
+      return exprsMap.get(rexInputRef);
+    }
+
+    @Override
+    public Expr visitOver(RexOver over) {
+      return exprsMap.get(over);
+    }
+
   }
 }

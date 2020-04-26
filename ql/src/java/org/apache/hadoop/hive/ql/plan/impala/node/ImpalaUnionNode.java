@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.plan.impala.node;
 
-import com.google.common.collect.Lists;
-
 import org.apache.calcite.util.Pair;
 import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.Expr;

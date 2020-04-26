@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import java.util.List;
 
+import java.util.Map;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
@@ -28,18 +29,19 @@ import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.rex.RexOver;
 import org.apache.calcite.rex.RexShuttle;
-import org.apache.calcite.sql.fun.SqlStdOperatorTable;
+import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.tools.RelBuilderFactory;
-import org.apache.calcite.util.Pair;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.Calcite2302;
+import org.apache.hadoop.hive.ql.plan.impala.funcmapper.FunctionDetails;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaBuiltins;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaFunctionMapper;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaFunctionSignatureFactory;
@@ -69,11 +71,11 @@ public abstract class ImpalaRexCastRule extends RelOptRule {
 
   public static final ImpalaJoinRexCastRule JOIN_INSTANCE =
       new ImpalaJoinRexCastRule();
-  public static final String UPCAST_NOT_ALLOWED = "Cannot yet support propagation of " +
-     "upcasting of return types for function ";
+
+
   public static class ImpalaProjectRexCastRule extends ImpalaRexCastRule {
 
-    private ImpalaProjectRexCastRule() {
+    protected ImpalaProjectRexCastRule() {
       super(operand(HiveProject.class, any()), HiveRelFactories.HIVE_BUILDER);
     }
 
@@ -165,38 +167,52 @@ public abstract class ImpalaRexCastRule extends RelOptRule {
 
     @Override
     public RexNode visitCall(RexCall rexCall) {
-      // the list of RelDataType operands for current call
-      List<RelDataType> currentOperandTypes =
-          getRelDataTypesFromNodes(rexCall.getOperands());
-      // the list of SqlTypeName operands for current call
-      List<SqlTypeName> currentSqlOperandTypes =
-          getSqlTypeNamesFromNodes(rexCall.getOperands());
-      // The return SqlTypeName for the current call.
-      SqlTypeName currentRetSqlType = rexCall.getType().getSqlTypeName();
-      // apply the rex casting to all of the operand first, then apply to this RexNode.
-      List<RexNode> newOperands = apply(rexCall.getOperands());
+      if (rexCall.getOperands().isEmpty()) {
+        // Nothing to do
+        return rexCall;
+      }
+      List<RexNode> newCastedOperands = getCastedOperands(rexCall.getType().getSqlTypeName(),
+          rexCall.getOperator(), rexCall.getOperands(), ImpalaBuiltins.SCALAR_BUILTINS_INSTANCE);
+      return cluster.getRexBuilder().makeCall(rexCall.getType(),
+           rexCall.getOperator(), newCastedOperands);
+    }
 
-      String opName = rexCall.getOperator().getName();
-      ImpalaFunctionSignature ifs = null;
+    @Override
+    public RexNode visitOver(RexOver over) {
+      if (over.getOperands().isEmpty()) {
+        // Nothing to do
+        return over;
+      }
+      List<RexNode> newCastedOperands = getCastedOperands(over.getType().getSqlTypeName(),
+          over.getAggOperator(), over.getOperands(), ImpalaBuiltins.AGG_BUILTINS_INSTANCE);
+      return cluster.getRexBuilder().makeOver(over.getType(), over.getAggOperator(),
+          newCastedOperands, over.getWindow().partitionKeys, over.getWindow().orderKeys,
+          over.getWindow().getLowerBound(), over.getWindow().getUpperBound(),
+          over.getWindow().isRows(), true, false, over.isDistinct());
+    }
+
+    /**
+     * Create the new RexNode operands. These new operands will either have a cast of the
+     * old operand or remain the same as the old operand.
+     */
+    private List<RexNode> getCastedOperands(SqlTypeName retSqlType, SqlOperator operator,
+        List<RexNode> operands, Map<ImpalaFunctionSignature, ? extends FunctionDetails> functionDetails) {
+      // apply the rex casting to all of the operand first, then apply to this RexNode.
+      List<RexNode> newOperands = apply(operands);
+
+      ImpalaFunctionSignature ifs;
       try {
-        ifs = ImpalaFunctionSignatureFactory.create(rexCall.getOperator(),
-           getSqlTypeNamesFromNodes(newOperands), currentRetSqlType);
+        ifs = ImpalaFunctionSignatureFactory.create(operator,
+            getSqlTypeNamesFromNodes(newOperands), retSqlType);
       } catch (HiveException e) {
         throw new RuntimeException(e);
       }
       ImpalaFunctionMapper ifm = new ImpalaFunctionMapper(ifs);
 
       // The main call to check if this RexCall maps to a known Impala function signature.
-      List<SqlTypeName> mappedOperandTypes =
-          ifm.mapOperands(ImpalaBuiltins.SCALAR_BUILTINS_INSTANCE);
+      List<SqlTypeName> mappedOperandTypes = ifm.mapOperands(functionDetails);
 
-      // create the new RexNode operands.  These new operands will either have a cast of the
-      // old operand or remain the same as the old operand.
-      List<RexNode> newCastedOperands =
-          createRexNodes(newOperands, currentOperandTypes, mappedOperandTypes);
-
-      return cluster.getRexBuilder().makeCall(rexCall.getType(),
-           rexCall.getOperator(), newCastedOperands);
+      return createRexNodes(newOperands, getRelDataTypesFromNodes(operands), mappedOperandTypes);
     }
 
     /**

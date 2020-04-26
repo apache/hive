@@ -18,21 +18,12 @@
 
 package org.apache.hadoop.hive.ql.plan.impala.node;
 
-import java.util.Map;
-
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Maps;
-
-import org.apache.calcite.rel.RelWriter;
-import org.apache.calcite.rel.type.RelDataType;
-import org.apache.calcite.rex.RexNode;
 
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaPlannerContext;
-import org.apache.hadoop.hive.ql.plan.impala.rex.ImpalaRexVisitor;
-import org.apache.impala.analysis.Expr;
 import org.apache.impala.common.ImpalaException;
 import org.apache.impala.planner.PlanNode;
 
@@ -49,8 +40,6 @@ import org.apache.impala.planner.PlanNode;
  */
 public class ImpalaProjectPassthroughRel extends ImpalaProjectRelBase {
 
-  private PlanNode planNode = null;
-
   public ImpalaProjectPassthroughRel(HiveProject project) {
     super(project);
   }
@@ -61,11 +50,13 @@ public class ImpalaProjectPassthroughRel extends ImpalaProjectRelBase {
       return planNode;
     }
     // bypass this node, just get from the input.
-    planNode = getImpalaRelInput(0).getPlanNode(ctx);
+    ImpalaPlanRel inputRel = getImpalaRelInput(0);
+    planNode = inputRel.getPlanNode(ctx);
 
     // get the output exprs for this node that are needed by the parent node.
     Preconditions.checkState(this.outputExprs == null);
     this.outputExprs = createProjectExprs(ctx);
     return planNode;
   }
+
 }

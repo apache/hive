@@ -121,6 +121,6 @@ public class AggFunctionDetails implements FunctionDetails {
    * containing the function name, return type, and operand types.
    */
   public static AggFunctionDetails get(ImpalaFunctionSignature sig) {
-    return (AggFunctionDetails) ImpalaBuiltins.AGG_BUILTINS_INSTANCE.get(sig);
+    return ImpalaBuiltins.AGG_BUILTINS_INSTANCE.get(sig);
   }
 }

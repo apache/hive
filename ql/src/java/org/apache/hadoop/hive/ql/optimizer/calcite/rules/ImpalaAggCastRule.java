@@ -32,10 +32,8 @@ import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.type.SqlTypeName;
-import org.apache.calcite.sql.type.SqlTypeUtil;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.ImmutableBitSet;
-import org.apache.calcite.util.Pair;
 import org.apache.calcite.util.mapping.Mapping;
 import org.apache.calcite.util.mapping.Mappings;
 import org.apache.calcite.util.mapping.MappingType;
@@ -63,7 +61,8 @@ import org.slf4j.LoggerFactory;
 public class ImpalaAggCastRule extends RelOptRule {
   protected static final Logger LOG = LoggerFactory.getLogger(ImpalaAggCastRule.class);
 
-  public static ImpalaAggCastRule INSTANCE = new ImpalaAggCastRule();
+  public static final ImpalaAggCastRule INSTANCE = new ImpalaAggCastRule();
+
   /**
    * When this rule is matched, a new Project will be created.
    * This class is a small structure containing each project and the position

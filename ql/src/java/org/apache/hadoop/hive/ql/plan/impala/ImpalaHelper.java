@@ -56,7 +56,6 @@ public class ImpalaHelper {
   }
 
   public HepProgram getHepProgram(Hive db) {
-    List<RelOptRule> impalaRules = Lists.newArrayList();
     HepProgramBuilder programBuilder = new HepProgramBuilder();
     programBuilder.addMatchOrder(HepMatchOrder.DEPTH_FIRST);
     programBuilder.addRuleInstance(ImpalaAggCastRule.INSTANCE);
