@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.filesystem.Constrain
 import org.apache.hadoop.hive.ql.exec.repl.incremental.IncrementalLoadEventsIterator;
 import org.apache.hadoop.hive.ql.exec.repl.incremental.IncrementalLoadTasksBuilder;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.session.LineageState;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -91,8 +92,10 @@ public class ReplLoadWork implements Serializable {
         this.constraintsIterator = null;
       }
     } else {
-      this.bootstrapIterator = new BootstrapEventsIterator(dumpDirectory, dbNameToLoadIn, true, hiveConf);
-      this.constraintsIterator = new ConstraintEventsIterator(dumpDirectory, hiveConf);
+      this.bootstrapIterator = new BootstrapEventsIterator(new Path(dumpDirectory, EximUtil.METADATA_PATH_NAME)
+              .toString(), dbNameToLoadIn, true, hiveConf);
+      this.constraintsIterator = new ConstraintEventsIterator(
+              new Path(dumpDirectory, EximUtil.METADATA_PATH_NAME).toString(), hiveConf);
       incrementalLoadTasksBuilder = null;
     }
   }
