@@ -1413,7 +1413,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       // Hadoop always call close() even if an Exception was thrown in map() or
       // reduce().
       for (FSPaths fsp : valToPaths.values()) {
-        fsp.abortWritersAndUpdaters(fs, abort, !autoDelete && isNativeTable() && !conf.isMmTable());
+        fsp.abortWritersAndUpdaters(fs, abort,
+            !autoDelete && isNativeTable() && !conf.isMmTable() && !conf.isDirectInsert());
       }
     }
     fsp = prevFsp = null;
