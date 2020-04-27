@@ -124,10 +124,15 @@ public class CoreBeeLineDriver extends CliAdapter {
     }
     return Boolean.parseBoolean(value);
   }
+  @Override
+  public void beforeClass() throws Exception {
+    // We use the beforeClassSpec, because we want to HMS to be ready before the miniHS2 start
+    // See CliAdapter.buildClassRule
+  }
 
   @Override
   @BeforeClass
-  public void beforeClass() throws Exception {
+  public void beforeClassSpec() throws Exception {
     overwrite = getBooleanPropertyValue("test.output.overwrite", Boolean.FALSE);
 
     useSharedDatabase = getBooleanPropertyValue("test.beeline.shared.database", Boolean.FALSE);
