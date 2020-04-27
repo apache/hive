@@ -1754,7 +1754,6 @@ public class TestTxnHandler {
 
   @Before
   public void setUp() throws Exception {
-    TxnDbUtil.prepDb(conf);
     txnHandler = TxnUtils.getTxnStore(conf);
   }
 

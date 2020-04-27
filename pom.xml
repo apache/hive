@@ -84,6 +84,8 @@
 
     <!-- Test Properties -->
     <test.extra.path></test.extra.path>
+    <itest.jdbc.jars>set-this-to-colon-separated-full-path-list-of-jars-to-run-integration-tests
+    </itest.jdbc.jars>
     <!--suppress UnresolvedMavenProperty -->
     <test.hive.hadoop.classpath>${maven.test.classpath}</test.hive.hadoop.classpath>
     <test.log4j.scheme>file://</test.log4j.scheme>
@@ -1354,6 +1356,7 @@
           <additionalClasspathElements>
             <additionalClasspathElement>${test.conf.dir}</additionalClasspathElement>
             <additionalClasspathElement>${basedir}/${hive.path.to.root}/conf</additionalClasspathElement>
+            <additionalClasspathElement>${itest.jdbc.jars}</additionalClasspathElement>
           </additionalClasspathElements>
           <environmentVariables>
             <TZ>US/Pacific</TZ>

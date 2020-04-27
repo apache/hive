@@ -305,7 +305,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * This is logically part of c'tor and must be called prior to any other method.
    * Not physically part of c'tor due to use of reflection
    */
-  public void setConf(Configuration conf) {
+  public void setConf(Configuration conf){
     this.conf = conf;
 
     checkQFileTestHack();
@@ -4139,7 +4139,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   // we are checking to the desired action.
   private static Map<LockType, Map<LockType, Map<LockState, LockAction>>> jumpTable;
 
-  private void checkQFileTestHack() {
+  private void checkQFileTestHack(){
     boolean hackOn = MetastoreConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST) ||
       MetastoreConf.getBoolVar(conf, ConfVars.HIVE_IN_TEZ_TEST);
     if (hackOn) {
@@ -4149,11 +4149,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       try {
         TxnDbUtil.prepDb(conf);
       } catch (Exception e) {
-        // We may have already created the tables and thus don't need to redo it.
-        if (e.getMessage() != null && !e.getMessage().contains("already exists")) {
-          throw new RuntimeException("Unable to set up transaction database for" +
-            " testing: " + e.getMessage(), e);
-        }
+        throw new RuntimeException("Unable to set up transaction database for" + " testing: " + e.getMessage(), e);
       }
     }
   }
