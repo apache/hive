@@ -16,6 +16,7 @@ package org.apache.hadoop.hive.llap.tezplugins;
 
 import com.google.common.io.ByteArrayDataOutput;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.llap.tezplugins.metrics.LlapMetricsCollector;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
@@ -1072,7 +1073,9 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     } finally {
       writeLock.unlock();
     }
-    updateGuaranteedInRegistry(tgVersionForZk, 0);
+    if (!StringUtils.isEmpty(conf.get(ConfVars.HIVE_SERVER2_TEZ_INTERACTIVE_QUEUE.varname, "").trim())) {
+      updateGuaranteedInRegistry(tgVersionForZk, 0);
+    }
     // TODO Cleanup pending tasks etc, so that the next dag is not affected.
   }
 
