@@ -65,11 +65,15 @@ public class CreateDatabaseEvent extends HiveMetaStoreAuthorizableEvent {
     PreCreateDatabaseEvent    event    = (PreCreateDatabaseEvent) preEventContext;
     Database                  database = event.getDatabase();
     String                    uri      = (database != null) ? database.getLocationUri(): "";
+    String                  managedUri = (database != null) ? database.getManagedLocationUri(): "";
 
     if (database != null) {
       ret.add(getHivePrivilegeObject(database));
       if (StringUtils.isNotEmpty(uri)) {
         ret.add(getHivePrivilegeObjectDfsUri(uri));
+        if (managedUri != null ) {
+          ret.add(getHivePrivilegeObjectDfsUri(managedUri));
+        }
       }
 
       COMMAND_STR = buildCommandString(COMMAND_STR, database);

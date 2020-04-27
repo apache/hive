@@ -1439,6 +1439,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         db.setManagedLocationUri(null);
       }else{
         db.setLocationUri(dbExtPath.toString());
+        if (dbMgdPath != null) {
+          db.setManagedLocationUri(dbMgdPath.toString());
+        }
       }
       if (db.getOwnerName() == null){
         try {
