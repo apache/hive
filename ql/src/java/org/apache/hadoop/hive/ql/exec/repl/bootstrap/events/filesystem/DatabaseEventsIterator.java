@@ -180,9 +180,6 @@ class DatabaseEventsIterator implements Iterator<BootstrapEvent> {
   }
 
   private Path getDbLevelDataPath() {
-    if (dbLevelPath.toString().contains(Path.SEPARATOR + ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME + Path.SEPARATOR)) {
-      return new Path(dbLevelPath, EximUtil.DATA_PATH_NAME);
-    }
     return new Path(new Path(dbLevelPath.getParent().getParent(), EximUtil.DATA_PATH_NAME), dbLevelPath.getName());
   }
 
