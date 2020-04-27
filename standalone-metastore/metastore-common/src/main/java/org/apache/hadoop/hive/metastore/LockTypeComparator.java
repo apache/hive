@@ -15,22 +15,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.exec.repl;
+package org.apache.hadoop.hive.metastore;
+
+import org.apache.hadoop.hive.metastore.api.LockType;
+
+import java.io.Serializable;
+import java.util.Comparator;
+import java.util.Arrays;
+import java.util.List;
+
 
 /**
- * ReplAck, used for repl acknowledgement constants.
+ * Sort more restrictive locks after less restrictive ones.
  */
-public enum ReplAck {
-    DUMP_ACKNOWLEDGEMENT("_finished_dump"),
-    EVENTS_DUMP("_events_dump"),
-    LOAD_ACKNOWLEDGEMENT("_finished_load");
-  private String ack;
-  ReplAck(String ack) {
-    this.ack = ack;
-  }
+public class LockTypeComparator implements Comparator<LockType>, Serializable {
+
+  // the higher the integer value, the more restrictive the lock type is
+  private List<LockType> orderOfRestrictiveness = Arrays.asList(
+      LockType.SHARED_READ, LockType.SHARED_WRITE, LockType.EXCL_WRITE, LockType.EXCLUSIVE);
 
   @Override
-  public String toString() {
-    return ack;
+  public int compare(LockType t1, LockType t2) {
+    return orderOfRestrictiveness.indexOf(t1) - orderOfRestrictiveness.indexOf(t2);
   }
 }

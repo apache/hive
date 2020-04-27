@@ -159,7 +159,11 @@
       <version>${hadoop.version}</version>
       <optional>true</optional>
       <exclusions>
-        <exclusion>
+         <exclusion>
+          <groupId>commons-beanutils</groupId>
+          <artifactId>commons-beanutils</artifactId>
+        </exclusion>
+       <exclusion>
           <groupId>commons-collections</groupId>
           <artifactId>commons-collections</artifactId>
         </exclusion>

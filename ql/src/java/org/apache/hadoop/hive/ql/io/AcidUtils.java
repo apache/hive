@@ -2925,6 +2925,7 @@ public class AcidUtils {
     List<LockComponent> lockComponents = new ArrayList<>();
     boolean skipReadLock = !conf.getBoolVar(ConfVars.HIVE_TXN_READ_LOCKS);
     boolean skipNonAcidReadLock = !conf.getBoolVar(ConfVars.HIVE_TXN_NONACID_READ_LOCKS);
+    boolean sharedWrite = !conf.getBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK);
 
     // For each source to read, get a shared_read lock
     for (ReadEntity input : inputs) {
@@ -3024,10 +3025,10 @@ public class AcidUtils {
       case INSERT_OVERWRITE:
         t = AcidUtils.getTable(output);
         if (AcidUtils.isTransactionalTable(t)) {
-          if (conf.getBoolVar(HiveConf.ConfVars.TXN_OVERWRITE_X_LOCK)) {
+          if (conf.getBoolVar(HiveConf.ConfVars.TXN_OVERWRITE_X_LOCK) && !sharedWrite) {
             compBuilder.setExclusive();
           } else {
-            compBuilder.setSharedWrite();
+            compBuilder.setExclWrite();
           }
           compBuilder.setOperationType(DataOperationType.UPDATE);
         } else {
@@ -3038,7 +3039,11 @@ public class AcidUtils {
       case INSERT:
         assert t != null;
         if (AcidUtils.isTransactionalTable(t)) {
-          compBuilder.setSharedRead();
+          if (sharedWrite) {
+            compBuilder.setSharedWrite();
+          } else {
+            compBuilder.setSharedRead();
+          }
         } else if (MetaStoreUtils.isNonNativeTable(t.getTTable())) {
           final HiveStorageHandler storageHandler = Preconditions.checkNotNull(t.getStorageHandler(),
               "Thought all the non native tables have an instance of storage handler");
@@ -3069,12 +3074,15 @@ public class AcidUtils {
         break;
 
       case UPDATE:
-        compBuilder.setSharedWrite();
-        compBuilder.setOperationType(DataOperationType.UPDATE);
-        break;
       case DELETE:
-        compBuilder.setSharedWrite();
-        compBuilder.setOperationType(DataOperationType.DELETE);
+        assert t != null;
+        if (AcidUtils.isTransactionalTable(t) && sharedWrite) {
+          compBuilder.setSharedWrite();
+        } else {
+          compBuilder.setExclWrite();
+        }
+        compBuilder.setOperationType(DataOperationType.valueOf(
+            output.getWriteType().name()));
         break;
 
       case DDL_NO_LOCK:

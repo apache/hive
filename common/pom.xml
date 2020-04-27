@@ -134,7 +134,11 @@
       <version>${hadoop.version}</version>
       <optional>true</optional>
       <exclusions>
-        <exclusion>
+         <exclusion>
+          <groupId>commons-beanutils</groupId>
+          <artifactId>commons-beanutils</artifactId>
+        </exclusion>
+       <exclusion>
           <groupId>commons-collections</groupId>
           <artifactId>commons-collections</artifactId>
         </exclusion>
@@ -244,7 +248,21 @@
       <groupId>com.github.joshelser</groupId>
       <artifactId>dropwizard-metrics-hadoop-metrics2-reporter</artifactId>
       <version>${dropwizard-metrics-hadoop-metrics2-reporter.version}</version>
-    </dependency>
+       <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+         <exclusion>
+          <groupId>commons-beanutils</groupId>
+          <artifactId>commons-beanutils</artifactId>
+        </exclusion>
+       <exclusion>
+          <groupId>commons-logging</groupId>
+          <artifactId>commons-logging</artifactId>
+        </exclusion>
+      </exclusions>
+   </dependency>
     <dependency>
       <groupId>javolution</groupId>
       <artifactId>javolution</artifactId>

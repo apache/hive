@@ -64,6 +64,8 @@ public class QTestMetaStoreHandler {
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CONNECTION_DRIVER, rule.getJdbcDriver());
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CONNECTION_USER_NAME, rule.getHiveUser());
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.PWD, rule.getHivePassword());
+    // In this case we can disable auto_create which is enabled by default for every test
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.AUTO_CREATE_ALL, false);
 
     LOG.info(String.format("set metastore connection to url: %s",
         MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CONNECT_URL_KEY)));
@@ -104,7 +106,6 @@ public class QTestMetaStoreHandler {
     // special qtest logic, which doesn't fit quite well into Derby.after()
     if (isDerby()) {
       TxnDbUtil.cleanDb(qt.getConf());
-      TxnDbUtil.prepDb(qt.getConf());
     }
   }
 
@@ -113,5 +114,6 @@ public class QTestMetaStoreHandler {
     System.setProperty(MetastoreConf.ConfVars.CONNECTION_DRIVER.getVarname(), rule.getJdbcDriver());
     System.setProperty(MetastoreConf.ConfVars.CONNECTION_USER_NAME.getVarname(), rule.getHiveUser());
     System.setProperty(MetastoreConf.ConfVars.PWD.getVarname(), rule.getHivePassword());
+    System.setProperty(MetastoreConf.ConfVars.AUTO_CREATE_ALL.getVarname(), "false");
   }
 }

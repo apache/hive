@@ -72,4 +72,19 @@ public enum DatabaseProduct {
   public static boolean hasJoinOperationOrderBug(DatabaseProduct dbType) {
     return dbType == DERBY || dbType == ORACLE || dbType == POSTGRES;
   }
+
+  public static String getHiveSchemaPostfix(DatabaseProduct dbType) {
+    switch (dbType) {
+    case SQLSERVER:
+      return "mssql";
+    case DERBY:
+    case MYSQL:
+    case POSTGRES:
+    case ORACLE:
+      return dbType.name().toLowerCase();
+    case OTHER:
+    default:
+      return null;
+    }
+  }
 }

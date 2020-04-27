@@ -234,7 +234,9 @@ CREATE TABLE "APP"."CTLGS" (
     "CREATE_TIME" INTEGER);
 
 -- Insert a default value.  The location is TBD.  Hive will fix this when it starts
-INSERT INTO "APP"."CTLGS" VALUES (1, 'hive', 'Default catalog for Hive', 'TBD', NULL);
+INSERT INTO "APP"."CTLGS"
+ ("CTLG_ID", "NAME", "DESC", "LOCATION_URI", "CREATE_TIME")
+ VALUES (1, 'hive', 'Default catalog for Hive', 'TBD', NULL);
 
 -- ----------------------------------------------
 -- DML Statements

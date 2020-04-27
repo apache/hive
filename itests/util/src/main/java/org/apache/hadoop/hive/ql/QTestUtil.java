@@ -243,11 +243,16 @@ public class QTestUtil {
     setMetastoreConfPropertyFromSystemProperty(MetastoreConf.ConfVars.CONNECTION_DRIVER);
     setMetastoreConfPropertyFromSystemProperty(MetastoreConf.ConfVars.CONNECTION_USER_NAME);
     setMetastoreConfPropertyFromSystemProperty(MetastoreConf.ConfVars.PWD);
+    setMetastoreConfPropertyFromSystemProperty(MetastoreConf.ConfVars.AUTO_CREATE_ALL);
   }
 
   private void setMetastoreConfPropertyFromSystemProperty(MetastoreConf.ConfVars var) {
     if (System.getProperty(var.getVarname()) != null) {
-      MetastoreConf.setVar(conf, var, System.getProperty(var.getVarname()));
+      if (var.getDefaultVal().getClass() == Boolean.class) {
+        MetastoreConf.setBoolVar(conf, var, Boolean.getBoolean(System.getProperty(var.getVarname())));
+      } else {
+        MetastoreConf.setVar(conf, var, System.getProperty(var.getVarname()));
+      }
     }
   }
 

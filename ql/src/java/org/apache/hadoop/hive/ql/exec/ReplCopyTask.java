@@ -221,7 +221,7 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
       }
       // Copy the files from different source file systems to one destination directory
       CopyUtils copyUtils = new CopyUtils(rwork.distCpDoAsUser(), conf, dstFs);
-      copyUtils.copyAndVerify(toPath, srcFiles, fromPath);
+      copyUtils.copyAndVerify(toPath, srcFiles, fromPath, work.isOverWrite());
 
       // If a file is copied from CM path, then need to rename them using original source file name
       // This is needed to avoid having duplicate files in target if same event is applied twice
@@ -329,10 +329,18 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
   public static Task<?> getLoadCopyTask(ReplicationSpec replicationSpec, Path srcPath, Path dstPath,
                                         HiveConf conf, boolean isAutoPurge, boolean needRecycle,
                                         boolean copyToMigratedTxnTable, boolean readSourceAsFileList) {
+    return getLoadCopyTask(replicationSpec, srcPath, dstPath, conf, isAutoPurge, needRecycle,
+            copyToMigratedTxnTable, readSourceAsFileList, false);
+  }
+
+  private static Task<?> getLoadCopyTask(ReplicationSpec replicationSpec, Path srcPath, Path dstPath,
+                                        HiveConf conf, boolean isAutoPurge, boolean needRecycle,
+                                        boolean copyToMigratedTxnTable, boolean readSourceAsFileList,
+                                        boolean overWrite) {
     Task<?> copyTask = null;
     LOG.debug("ReplCopyTask:getLoadCopyTask: {}=>{}", srcPath, dstPath);
     if ((replicationSpec != null) && replicationSpec.isInReplicationScope()){
-      ReplCopyWork rcwork = new ReplCopyWork(srcPath, dstPath, false);
+      ReplCopyWork rcwork = new ReplCopyWork(srcPath, dstPath, false, overWrite);
       rcwork.setReadSrcAsFilesList(readSourceAsFileList);
       if (replicationSpec.isReplace() && (conf.getBoolVar(REPL_ENABLE_MOVE_OPTIMIZATION) || copyToMigratedTxnTable)) {
         rcwork.setDeleteDestIfExist(true);
@@ -360,8 +368,13 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
     return getLoadCopyTask(replicationSpec, srcPath, dstPath, conf, false, false, false);
   }
 
+  /*
+   * Invoked in the bootstrap path.
+   * Overwrite set to true
+   */
   public static Task<?> getLoadCopyTask(ReplicationSpec replicationSpec, Path srcPath, Path dstPath,
-                                          HiveConf conf, boolean readSourceAsFileList) {
-    return getLoadCopyTask(replicationSpec, srcPath, dstPath, conf, false, false, false, readSourceAsFileList);
+                                          HiveConf conf, boolean readSourceAsFileList, boolean overWrite) {
+    return getLoadCopyTask(replicationSpec, srcPath, dstPath, conf, false, false,
+            false, readSourceAsFileList, overWrite);
   }
 }

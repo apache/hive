@@ -88,6 +88,10 @@
             <scope>provided</scope>
             <exclusions>
               <exclusion>
+                <groupId>org.codehaus.groovy</groupId>
+                <artifactId>groovy-all</artifactId>
+              </exclusion>
+              <exclusion>
                 <groupId>org.apache.zookeeper</groupId>
                 <artifactId>zookeeper</artifactId>
               </exclusion>
@@ -103,6 +107,10 @@
             <version>${hdp.hadoop.version}</version>
             <scope>provided</scope>
             <exclusions>
+              <exclusion>
+                <groupId>commons-beanutils</groupId>
+                <artifactId>commons-beanutils</artifactId>
+              </exclusion>
               <exclusion>
                 <groupId>org.apache.zookeeper</groupId>
                 <artifactId>zookeeper</artifactId>
