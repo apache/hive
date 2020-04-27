@@ -1970,6 +1970,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       //1. Distinct aggregate rewrite
       if (conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_BI_SKETCHES_REWRITE_ENABLED)) {
+        // Rewrite to datasketches if enabled
         if (conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_BI_SKETCHES_REWRITE_COUNTDISTINCT_ENABLED)) {
           String sketchClass = conf.getVar(ConfVars.HIVE_OPTIMIZE_BI_SKETCHES_REWRITE_COUNT_DISTINCT_SKETCHCLASS);
           generatePartialProgram(program, true, HepMatchOrder.TOP_DOWN,
