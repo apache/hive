@@ -114,7 +114,7 @@ class PartitionExport {
         String threadName = Thread.currentThread().getName();
         LOG.debug("Thread: {}, start partition dump {}", threadName, partitionName);
         try {
-          // this the data copy
+          // Data Copy in case of ExportTask
           List<Path> dataPathList = Utils.getDataPathList(partition.getDataLocation(),
                   forReplicationSpec, hiveConf);
           Path rootDataDumpDir = paths.partitionMetadataExportDir(partitionName);

@@ -196,6 +196,10 @@ public class DumpMetaData {
   }
 
   public void write() throws SemanticException {
+    write(false);
+  }
+
+  public void write(boolean replace) throws SemanticException {
     List<List<String>> listValues = new ArrayList<>();
     listValues.add(
         Arrays.asList(
@@ -208,7 +212,6 @@ public class DumpMetaData {
     if (replScope != null) {
       listValues.add(prepareReplScopeValues());
     }
-    Utils.writeOutput(listValues, dumpFile, hiveConf
-    );
+    Utils.writeOutput(listValues, dumpFile, hiveConf, replace);
   }
 }
