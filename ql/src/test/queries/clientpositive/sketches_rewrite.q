@@ -1,10 +1,4 @@
-
-set hive.support.concurrency=true;
-set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
-set hive.strict.checks.cartesian.product=false;
-set hive.stats.fetch.column.stats=true;
-set hive.materializedview.rewriting=true;
-set hive.fetch.task.conversion=none;
+--! qt:transactional
 
 set hive.optimize.bi.enabled=true;
 
