@@ -22,6 +22,7 @@ import java.sql.Timestamp;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -125,7 +126,7 @@ public final class SearchArgumentImpl implements SearchArgument {
           }
         } catch (NoDynamicValuesException err) {
           LOG.debug("Error while retrieving literalList, returning null", err);
-          return null;
+          return Collections.emptyList();
         }
         return newLiteraList;
       }
