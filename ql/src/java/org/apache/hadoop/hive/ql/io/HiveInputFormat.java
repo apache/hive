@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
+import org.apache.hadoop.io.compress.CompressionCodecFactory;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputFormat;
@@ -110,6 +111,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     = new ConcurrentHashMap<Class, InputFormat<WritableComparable, Writable>>();
 
   private JobConf job;
+  private CompressionCodecFactory compressionCodecs;
 
   // both classes access by subclasses
   protected Map<Path, PartitionDesc> pathToPartitionInfo;
@@ -239,6 +241,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
   @Override
   public void configure(JobConf job) {
     this.job = job;
+    this.compressionCodecs = new CompressionCodecFactory(job);
   }
 
   public static InputFormat<WritableComparable, Writable> wrapForLlap(
@@ -518,17 +521,18 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     conf.setInputFormat(inputFormat.getClass());
     int headerCount = 0;
     int footerCount = 0;
+    boolean isCompressedFormat = isCompressedInput(finalDirs);
     if (table != null) {
       headerCount = Utilities.getHeaderCount(table);
       footerCount = Utilities.getFooterCount(table, conf);
       if (headerCount != 0 || footerCount != 0) {
-        if (TextInputFormat.class.isAssignableFrom(inputFormatClass)) {
+        if (TextInputFormat.class.isAssignableFrom(inputFormatClass) && !isCompressedFormat) {
           SkippingTextInputFormat skippingTextInputFormat = new SkippingTextInputFormat();
           skippingTextInputFormat.configure(conf, headerCount, footerCount);
           inputFormat = skippingTextInputFormat;
         } else {
-          // if the input is not text and contains header/footer we have no way of
-          // splitting them.
+          // if the input is Compressed OR not text we have no way of splitting them!
+          // In that case RecordReader should take care of header/footer skipping!
           HiveConf.setLongVar(conf, ConfVars.MAPREDMINSPLITSIZE, Long.MAX_VALUE);
         }
       }
@@ -600,6 +604,17 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       }
     }
     return validWriteIdList;
+  }
+
+  public boolean isCompressedInput(List<Path> finalPaths) {
+    if (compressionCodecs != null) {
+      for (Path curr : finalPaths) {
+        if (this.compressionCodecs.getCodec(curr) != null) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   public static void processPathsForMmRead(List<Path> dirs, Configuration conf,

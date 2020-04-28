@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.io;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.compress.CompressionCodecFactory;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.TextInputFormat;
@@ -35,11 +36,14 @@ import java.util.concurrent.ConcurrentHashMap;
  * SkippingInputFormat is a header/footer aware input format. It truncates
  * splits identified by TextInputFormat. Header and footers are removed
  * from the splits.
+ *
+ * This InputFormat does NOT support Compressed Files!
  */
 public class SkippingTextInputFormat extends TextInputFormat {
 
-  private final Map<Path, Long> startIndexMap = new ConcurrentHashMap<Path, Long>();
-  private final Map<Path, Long> endIndexMap = new ConcurrentHashMap<Path, Long>();
+  private final Map<Path, Long> startIndexMap = new ConcurrentHashMap<>();
+  private final Map<Path, Long> endIndexMap = new ConcurrentHashMap<>();
+  CompressionCodecFactory compressionCodecs = null;
   private JobConf conf;
   private int headerCount;
   private int footerCount;
@@ -47,6 +51,7 @@ public class SkippingTextInputFormat extends TextInputFormat {
   @Override
   public void configure(JobConf conf) {
     this.conf = conf;
+    this.compressionCodecs = new CompressionCodecFactory(conf);
     super.configure(conf);
   }
 
@@ -67,6 +72,11 @@ public class SkippingTextInputFormat extends TextInputFormat {
   }
 
   private FileSplit makeSplitInternal(Path file, long start, long length, String[] hosts, String[] inMemoryHosts) {
+    // Do not currently support compressed files!
+    if (compressionCodecs.getCodec(file) != null) {
+      LOG.error("Compressed files are not currently supported!");
+      return new NullRowsInputFormat.DummyInputSplit(file);
+    }
     long cachedStart;
     long cachedEnd;
     try {
