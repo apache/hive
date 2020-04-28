@@ -248,7 +248,9 @@ public class TezCompiler extends TaskCompiler {
     markOperatorsWithUnstableRuntimeStats(procCtx);
     perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "markOperatorsWithUnstableRuntimeStats");
 
-    bucketingVersionSanityCheck(procCtx);
+    if (procCtx.conf.getBoolVar(ConfVars.HIVE_IN_TEST)) {
+      bucketingVersionSanityCheck(procCtx);
+    }
   }
 
   private void runCycleAnalysisForPartitionPruning(OptimizeTezProcContext procCtx,

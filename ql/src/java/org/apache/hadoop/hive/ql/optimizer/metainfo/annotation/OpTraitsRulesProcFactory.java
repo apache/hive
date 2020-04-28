@@ -162,7 +162,6 @@ public class OpTraitsRulesProcFactory {
       OpTraits opTraits = new OpTraits(listBucketCols, numBuckets,
           listBucketCols, numReduceSinks);
       rs.setOpTraits(opTraits);
-//      rs.getConf().setBucketingVersion(bucketingVersion);
       return null;
     }
   }
