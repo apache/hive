@@ -81,10 +81,9 @@ select skewed_col_name from skewed_col_names order by skewed_col_name limit 5;
 
 select count(*) from skewed_col_value_loc_map;
 
--- HIVE-23289: there are fallout in these tables from previous tests
-select * from skewed_string_list limit 0;
+select count(*) from skewed_string_list;
 
-select * from skewed_string_list_values limit 0;
+select count(*) from skewed_string_list_values;
 
 select count(*) from skewed_values;
 
