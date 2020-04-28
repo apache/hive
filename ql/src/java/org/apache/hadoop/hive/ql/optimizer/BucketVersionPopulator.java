@@ -46,6 +46,19 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Sets;
 
+/**
+ * This class analyzes and sets the bucketing versions.
+ *
+ * A set of data values can be distributed into N buckets differently depending on the used hashing algorithm.
+ * Hive right now supports multiple hashing algorithms - the actual algo is identified by "bucketingVersion".
+ *
+ * Bucketing version can be re-select after every Reduce Sink; because a full shuffle can re-distribute the data according to a new hash algo as well.
+ *
+ * Depending on the table Hive might need to write it's data in some specific bucketing version.
+ *
+ * In case a bucketed table is read from the table location; the data should be threated as described by the table's bucketing_version property.
+ *
+ */
 public class BucketVersionPopulator extends Transform {
 
   protected static final Logger LOG = LoggerFactory.getLogger(BucketVersionPopulator.class);
@@ -53,6 +66,7 @@ public class BucketVersionPopulator extends Transform {
   @Deprecated
 
   protected ParseContext pGraphContext;
+
 
   static class BucketingVersionResult {
     Integer bucketingVersion;
