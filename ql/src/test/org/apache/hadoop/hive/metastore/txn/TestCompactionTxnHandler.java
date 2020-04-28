@@ -583,7 +583,6 @@ public class TestCompactionTxnHandler {
 
   @Before
   public void setUp() throws Exception {
-    TxnDbUtil.prepDb(conf);
     txnHandler = TxnUtils.getTxnStore(conf);
   }
 

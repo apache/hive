@@ -318,6 +318,19 @@
       </dependencies>
     </profile>
     <profile>
+      <id>kudu-aarch64</id>
+      <activation>
+        <os>
+          <family>Unix</family>
+          <arch>aarch64</arch>
+        </os>
+      </activation>
+      <properties>
+        <!-- Kudu tests do not currently support aarch64 check KUDU-3007. -->
+        <exclude.tests>**/*.java</exclude.tests>
+      </properties>
+    </profile>
+    <profile>
       <id>kudu-mac</id>
       <activation>
         <os>
@@ -358,6 +371,30 @@
             <exclude>${exclude.tests}</exclude>
           </excludes>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>setup-metastore-scripts</id>
+            <phase>process-test-resources</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <mkdir dir="${test.tmp.dir}/scripts/metastore" />
+                <copy todir="${test.tmp.dir}/scripts/metastore">
+                  <fileset dir="${basedir}/${hive.path.to.root}/metastore/scripts/"/>
+                </copy>
+                <copy todir="${test.tmp.dir}/scripts/metastore/upgrade" overwrite="true">
+                  <fileset dir="${basedir}/${hive.path.to.root}/standalone-metastore/metastore-server/src/main/sql/"/>
+                </copy>
+              </target>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

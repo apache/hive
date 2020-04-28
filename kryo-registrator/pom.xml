@@ -37,12 +37,24 @@
       <artifactId>hive-exec</artifactId>
       <version>${project.version}</version>
       <optional>true</optional>
-    </dependency>
+             <exclusions>
+               <exclusion>
+            <groupId>commons-beanutils</groupId>
+            <artifactId>commons-beanutils-core</artifactId>
+          </exclusion>
+           </exclusions>
+   </dependency>
     <dependency>
       <groupId>org.apache.spark</groupId>
       <artifactId>spark-core_${scala.binary.version}</artifactId>
       <version>${spark.version}</version>
       <optional>true</optional>
+      <exclusions>
+        <exclusion>
+          <groupId>net.java.dev.jets3t</groupId>
+          <artifactId>jets3t</artifactId>
+        </exclusion>
+     </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>

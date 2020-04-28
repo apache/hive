@@ -54,7 +54,7 @@ public class Mysql extends DatabaseRule {
 
   @Override
   public String getJdbcUrl() {
-    return "jdbc:mysql://localhost:3306/" + HIVE_DB;
+    return "jdbc:mysql://localhost:3306/" + HIVE_DB + "?sessionVariables=sql_mode=ANSI_QUOTES";
   }
 
   @Override

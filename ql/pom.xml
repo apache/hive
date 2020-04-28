@@ -193,7 +193,11 @@
           <groupId>org.slf4j</groupId>
           <artifactId>slf4j-log4j12</artifactId>
         </exclusion>
-        <exclusion>
+         <exclusion>
+          <groupId>commons-beanutils</groupId>
+          <artifactId>commons-beanutils</artifactId>
+        </exclusion>
+       <exclusion>
           <groupId>commons-logging</groupId>
           <artifactId>commons-logging</artifactId>
         </exclusion>
@@ -730,6 +734,10 @@
          <artifactId>commons-logging</artifactId>
        </exclusion>
        <exclusion>
+         <groupId>net.java.dev.jets3t</groupId>
+         <artifactId>jets3t</artifactId>
+       </exclusion>
+       <exclusion>
          <groupId>org.glassfish.jersey.containers</groupId>
          <artifactId>*</artifactId>
        </exclusion>
@@ -911,6 +919,24 @@
             <goals>
               <goal>run</goal>
             </goals>
+          </execution>
+          <execution>
+            <id>setup-metastore-scripts</id>
+            <phase>process-test-resources</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <mkdir dir="${test.tmp.dir}/scripts/metastore" />
+                <copy todir="${test.tmp.dir}/scripts/metastore">
+                  <fileset dir="${basedir}/${hive.path.to.root}/metastore/scripts/"/>
+                </copy>
+                <copy todir="${test.tmp.dir}/scripts/metastore/upgrade" overwrite="true">
+                  <fileset dir="${basedir}/${hive.path.to.root}/standalone-metastore/metastore-server/src/main/sql/"/>
+                </copy>
+              </target>
+            </configuration>
           </execution>
         </executions>
       </plugin>

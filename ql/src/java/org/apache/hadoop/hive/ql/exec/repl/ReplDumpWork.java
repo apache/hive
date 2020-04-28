@@ -47,16 +47,33 @@ public class ReplDumpWork implements Serializable {
   final String dbNameOrPattern, astRepresentationForErrorMsg, resultTempPath;
   Long eventTo;
   Long eventFrom;
-  static String testInjectDumpDir = null;
+  private static String testInjectDumpDir = null;
+  private static boolean testInjectDumpDirAutoIncrement = false;
   static boolean testDeletePreviousDumpMetaPath = false;
   private Integer maxEventLimit;
   private transient Iterator<DirCopyWork> dirCopyIterator;
   private transient Iterator<EximUtil.ManagedTableCopyPath> managedTableCopyPathIterator;
   private Path currentDumpPath;
   private List<String> resultValues;
+  private boolean shouldOverwrite;
 
   public static void injectNextDumpDirForTest(String dumpDir) {
+    injectNextDumpDirForTest(dumpDir, false);
+  }
+  public static void injectNextDumpDirForTest(String dumpDir, boolean autoIncr) {
     testInjectDumpDir = dumpDir;
+    testInjectDumpDirAutoIncrement = autoIncr;
+  }
+
+  public static synchronized String getTestInjectDumpDir() {
+    return testInjectDumpDir;
+  }
+
+  public static synchronized String getInjectNextDumpDirForTest() {
+    if (testInjectDumpDirAutoIncrement) {
+      testInjectDumpDir = String.valueOf(Integer.parseInt(testInjectDumpDir) + 1);
+    }
+    return testInjectDumpDir;
   }
 
   public static void testDeletePreviousDumpMetaPath(boolean failDeleteDumpMeta) {
@@ -162,11 +179,15 @@ public class ReplDumpWork implements Serializable {
       EximUtil.ManagedTableCopyPath managedTableCopyPath = managedTableCopyPathIterator.next();
       Task<?> copyTask = ReplCopyTask.getLoadCopyTask(
               managedTableCopyPath.getReplicationSpec(), managedTableCopyPath.getSrcPath(),
-              managedTableCopyPath.getTargetPath(), conf, false);
+              managedTableCopyPath.getTargetPath(), conf, false, shouldOverwrite);
       tasks.add(copyTask);
       tracker.addTask(copyTask);
       LOG.debug("added task for {}", managedTableCopyPath);
     }
     return tasks;
+  }
+
+  public void setShouldOverwrite(boolean shouldOverwrite) {
+    this.shouldOverwrite = shouldOverwrite;
   }
 }
