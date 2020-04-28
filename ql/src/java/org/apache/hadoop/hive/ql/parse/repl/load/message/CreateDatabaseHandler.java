@@ -58,7 +58,7 @@ public class CreateDatabaseHandler extends AbstractMessageHandler {
         context.dbName == null ? db.getName() : context.dbName;
 
     CreateDatabaseDesc createDatabaseDesc =
-        new CreateDatabaseDesc(destinationDBName, db.getDescription(), null, true, db.getParameters());
+        new CreateDatabaseDesc(destinationDBName, db.getDescription(), null, null, true, db.getParameters());
     Task<DDLWork> createDBTask = TaskFactory.get(
         new DDLWork(new HashSet<>(), new HashSet<>(), createDatabaseDesc), context.hiveConf);
     if (!db.getParameters().isEmpty()) {
