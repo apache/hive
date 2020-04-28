@@ -5,7 +5,8 @@ set hive.strict.checks.cartesian.product=false;
 set hive.stats.fetch.column.stats=true;
 set hive.materializedview.rewriting=true;
 set hive.fetch.task.conversion=none;
-set hive.optimize.sketches.rewrite.countdistintct.enabled=true;
+
+set hive.optimize.bi.enabled=true;
 
 create table sketch_input (id int, category char(1))
 STORED AS ORC
