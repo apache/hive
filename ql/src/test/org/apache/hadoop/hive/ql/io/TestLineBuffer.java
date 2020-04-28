@@ -25,7 +25,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * LineEndBuffer simple unit test.
  */
-public class LineBufferTest {
+public class TestLineBuffer {
 
   @Test
   public void testLineEndBuffer() {
