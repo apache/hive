@@ -167,6 +167,7 @@ public class BucketVersionPopulator extends Transform {
     public void setBucketVersion() {
       for (Operator<?> operator : members) {
         operator.getConf().setBucketingVersion(version);
+        LOG.debug("Bucketing version for {} is set to {}", operator, version);
       }
     }
 
@@ -196,8 +197,8 @@ public class BucketVersionPopulator extends Transform {
       List<OperatorBucketingVersionInfo> bucketingVersions = getBucketingVersions();
       try {
         for (OperatorBucketingVersionInfo info : bucketingVersions) {
-        setVersion(info.bucketingVersion);
-      }
+          setVersion(info.bucketingVersion);
+        }
       } catch (Exception e) {
         throw new RuntimeException("Error setting bucketingVersion for group: " + bucketingVersions, e);
       }
