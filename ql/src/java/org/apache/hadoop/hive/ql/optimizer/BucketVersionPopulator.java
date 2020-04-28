@@ -62,52 +62,48 @@ public class BucketVersionPopulator extends Transform {
 
   protected static final Logger LOG = LoggerFactory.getLogger(BucketVersionPopulator.class);
 
-
-  @Deprecated
-  Set<OpGroup> groups = new HashSet<BucketVersionPopulator.OpGroup>();
-
-
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
-    findOpGroups(pctx);
-    assignGroupVersions();
+    Set<OpGroup> groups = findOpGroups(pctx);
+    assignGroupVersions(groups);
     return pctx;
   }
 
-  private void assignGroupVersions() {
-    Set<OpGroup> g = groups;
-    for (OpGroup opGroup : g) {
+  private void assignGroupVersions(Set<OpGroup> groups) {
+    for (OpGroup opGroup : groups) {
       opGroup.analyzeBucketVersion();
       opGroup.setBucketVersion();
     }
 
   }
 
-  private void findOpGroups(ParseContext pctx) throws SemanticException {
+  static class BucketVersionProcessorCtx implements NodeProcessorCtx {
+    Set<OpGroup> groups = new HashSet<OpGroup>();
+  }
 
-    NodeProcessorCtx ctx = new NodeProcessorCtx() {
-    };
+  private Set<OpGroup> findOpGroups(ParseContext pctx) throws SemanticException {
+
+    BucketVersionProcessorCtx ctx = new BucketVersionProcessorCtx();
 
     Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
 
-    SemanticDispatcher disp = new DefaultRuleDispatcher(new SetPreferredBucketingVersionRule(), opRules, ctx);
-    //    SemanticGraphWalker ogw = new PreOrderWalker(disp);
+    SemanticDispatcher disp = new DefaultRuleDispatcher(new IdentifyBucketGroups(), opRules, ctx);
     SemanticGraphWalker ogw = new DefaultGraphWalker(disp);
 
     ArrayList<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(pctx.getTopOps().values());
     ogw.startWalking(topNodes, null);
+    return ctx.groups;
   }
 
-  class OpGroup {
+  static class OpGroup {
     Set<Operator<?>> members = Sets.newIdentityHashSet();
     int version = -1;
 
     public OpGroup() {
-      groups.add(this);
     }
 
-    public void add(Operator o) {
+    public void add(Operator<?> o) {
       members.add(o);
     }
 
@@ -191,16 +187,16 @@ public class BucketVersionPopulator extends Transform {
   }
 
 
-  class SetPreferredBucketingVersionRule implements SemanticNodeProcessor {
+  static class IdentifyBucketGroups implements SemanticNodeProcessor {
 
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
         throws SemanticException {
-      Operator o = (Operator) nd;
+      Operator<?> o = (Operator<?>) nd;
       OpGroup g;
       if (nodeOutputs.length == 0) {
-        g = new OpGroup();
+        g = newGroup(procCtx);
       } else {
         g = (OpGroup) nodeOutputs[0];
       }
@@ -210,10 +206,17 @@ public class BucketVersionPopulator extends Transform {
       g.add(o);
       if (o instanceof ReduceSinkOperator) {
         // start a new group before the reduceSinkOperator
-        return new OpGroup();
+        return newGroup(procCtx);
       } else {
         return g;
       }
+    }
+
+    private OpGroup newGroup(NodeProcessorCtx procCtx) {
+      BucketVersionProcessorCtx ctx = (BucketVersionProcessorCtx) procCtx;
+      OpGroup g = new OpGroup();
+      ctx.groups.add(g);
+      return g;
     }
 
   }
