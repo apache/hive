@@ -795,13 +795,14 @@ public final class Utilities {
 
   // column names and column types are all delimited by comma
   public static TableDesc getTableDesc(String cols, String colTypes) {
+    Properties properties = new Properties();
+    properties.put(serdeConstants.SERIALIZATION_FORMAT, "" + Utilities.ctrlaCode);
+    properties.put(serdeConstants.LIST_COLUMNS, cols);
+    properties.put(serdeConstants.LIST_COLUMN_TYPES, colTypes);
+    properties.put(serdeConstants.SERIALIZATION_LIB, LazySimpleSerDe.class.getName());
+    properties.put(hive_metastoreConstants.TABLE_BUCKETING_VERSION, "-1");
     return (new TableDesc(SequenceFileInputFormat.class,
-        HiveSequenceFileOutputFormat.class, Utilities.makeProperties(
-        serdeConstants.SERIALIZATION_FORMAT, "" + Utilities.ctrlaCode,
-        serdeConstants.LIST_COLUMNS, cols,
-        serdeConstants.LIST_COLUMN_TYPES, colTypes,
-            hive_metastoreConstants.TABLE_BUCKETING_VERSION, "-1",
-        serdeConstants.SERIALIZATION_LIB,LazySimpleSerDe.class.getName())));
+        HiveSequenceFileOutputFormat.class, properties));
   }
 
   public static PartitionDesc getPartitionDesc(Partition part, TableDesc tableDesc) throws
