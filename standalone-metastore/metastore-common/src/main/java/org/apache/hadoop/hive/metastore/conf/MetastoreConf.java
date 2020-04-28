@@ -755,6 +755,7 @@ public class MetastoreConf {
                 "get_partitions, \n" +
                 "get_partitions_with_auth, \n" +
                 "get_partitions_by_filter, \n" +
+                "get_partitions_spec_by_filter, \n" +
                 "get_partitions_by_expr.\n" +
             "The default value \"-1\" means no limit."),
     LOG4J_FILE("metastore.log4j.file", "hive.log4j.file", "",
