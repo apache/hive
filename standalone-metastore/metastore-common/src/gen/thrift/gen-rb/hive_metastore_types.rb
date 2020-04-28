@@ -2247,6 +2247,26 @@ class PartitionsByExprResult
   ::Thrift::Struct.generate_accessors self
 end
 
+class PartitionsSpecByExprResult
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  PARTITIONSSPEC = 1
+  HASUNKNOWNPARTITIONS = 2
+
+  FIELDS = {
+    PARTITIONSSPEC => {:type => ::Thrift::Types::LIST, :name => 'partitionsSpec', :element => {:type => ::Thrift::Types::STRUCT, :class => ::PartitionSpec}},
+    HASUNKNOWNPARTITIONS => {:type => ::Thrift::Types::BOOL, :name => 'hasUnknownPartitions'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field partitionsSpec is unset!') unless @partitionsSpec
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field hasUnknownPartitions is unset!') if @hasUnknownPartitions.nil?
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class PartitionsByExprRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   DBNAME = 1
