@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.ddl.view.materialized.alter.rebuild;
 
-import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.LockState;
 import org.apache.hadoop.hive.ql.Context;

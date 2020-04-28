@@ -142,3 +142,107 @@ POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:db2
 table_db2
+PREHOOK: query: EXPLAIN
+CREATE DATABASE db3
+#### A masked pattern was here ####
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:db3
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+CREATE DATABASE db3
+#### A masked pattern was here ####
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:db3
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Create Database
+#### A masked pattern was here ####
+      name: db3
+
+PREHOOK: query: CREATE DATABASE db3
+#### A masked pattern was here ####
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:db3
+#### A masked pattern was here ####
+POSTHOOK: query: CREATE DATABASE db3
+#### A masked pattern was here ####
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:db3
+#### A masked pattern was here ####
+PREHOOK: query: DESCRIBE DATABASE db3
+PREHOOK: type: DESCDATABASE
+PREHOOK: Input: database:db3
+POSTHOOK: query: DESCRIBE DATABASE db3
+POSTHOOK: type: DESCDATABASE
+POSTHOOK: Input: database:db3
+#### A masked pattern was here ####
+PREHOOK: query: EXPLAIN
+#### A masked pattern was here ####
+PREHOOK: type: ALTERDATABASE_LOCATION
+PREHOOK: Output: database:db3
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERDATABASE_LOCATION
+POSTHOOK: Output: database:db3
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+#### A masked pattern was here ####
+      name: db3
+#### A masked pattern was here ####
+
+#### A masked pattern was here ####
+PREHOOK: type: ALTERDATABASE_LOCATION
+PREHOOK: Output: database:db3
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERDATABASE_LOCATION
+POSTHOOK: Output: database:db3
+#### A masked pattern was here ####
+PREHOOK: query: DESCRIBE DATABASE db3
+PREHOOK: type: DESCDATABASE
+PREHOOK: Input: database:db3
+POSTHOOK: query: DESCRIBE DATABASE db3
+POSTHOOK: type: DESCDATABASE
+POSTHOOK: Input: database:db3
+#### A masked pattern was here ####
+PREHOOK: query: EXPLAIN
+#### A masked pattern was here ####
+PREHOOK: type: ALTERDATABASE_LOCATION
+PREHOOK: Output: database:db3
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERDATABASE_LOCATION
+POSTHOOK: Output: database:db3
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+#### A masked pattern was here ####
+      name: db3
+#### A masked pattern was here ####
+
+#### A masked pattern was here ####
+PREHOOK: type: ALTERDATABASE_LOCATION
+PREHOOK: Output: database:db3
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERDATABASE_LOCATION
+POSTHOOK: Output: database:db3
+#### A masked pattern was here ####
+PREHOOK: query: DESCRIBE DATABASE db3
+PREHOOK: type: DESCDATABASE
+PREHOOK: Input: database:db3
+POSTHOOK: query: DESCRIBE DATABASE db3
+POSTHOOK: type: DESCDATABASE
+POSTHOOK: Input: database:db3
+#### A masked pattern was here ####

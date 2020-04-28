@@ -108,8 +108,7 @@ public class DropTableOperation extends DDLOperation<DropTableDesc> {
 
     if (LlapHiveUtils.isLlapMode(context.getConf())) {
       TableName tableName = HiveTableName.of(table);
-      ProactiveEviction.Request.Builder llapEvictRequestBuilder =
-              ProactiveEviction.Request.Builder.create();
+      ProactiveEviction.Request.Builder llapEvictRequestBuilder = ProactiveEviction.Request.Builder.create();
       llapEvictRequestBuilder.addTable(tableName.getDb(), tableName.getTable());
       ProactiveEviction.evict(context.getConf(), llapEvictRequestBuilder.build());
     }

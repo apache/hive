@@ -42,20 +42,19 @@ public class CreateDatabaseOperation extends DDLOperation<CreateDatabaseDesc> {
 
   @Override
   public int execute() throws HiveException {
-    Database database = new Database();
-    database.setName(desc.getName());
-    database.setDescription(desc.getComment());
-    database.setLocationUri(desc.getLocationUri());
-    database.setParameters(desc.getDatabaseProperties());
+    Database database = new Database(desc.getName(), desc.getComment(), desc.getLocationUri(),
+        desc.getDatabaseProperties());
     database.setOwnerName(SessionState.getUserFromAuthenticator());
     database.setOwnerType(PrincipalType.USER);
-    if (desc.getManagedLocationUri() != null)
+    if (desc.getManagedLocationUri() != null) {
       database.setManagedLocationUri(desc.getManagedLocationUri());
+    }
 
     try {
       makeLocationQualified(database);
-      if (database.getLocationUri().equalsIgnoreCase(database.getManagedLocationUri()))
+      if (database.getLocationUri().equalsIgnoreCase(database.getManagedLocationUri())) {
         throw new HiveException("Managed and external locations for database cannot be the same");
+      }
       context.getDb().createDatabase(database, desc.getIfNotExists());
     } catch (AlreadyExistsException ex) {
       //it would be better if AlreadyExistsException had an errorCode field....
@@ -73,8 +72,9 @@ public class CreateDatabaseOperation extends DDLOperation<CreateDatabaseDesc> {
       String rootDir = MetastoreConf.getVar(context.getConf(), MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL);
       if (rootDir == null || rootDir.trim().isEmpty()) {
         // Fallback plan
-        LOG.warn(MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL.getVarname() + " is not set, falling back to " +
-            MetastoreConf.ConfVars.WAREHOUSE.getVarname() + ". This could cause external tables to use to managed tablespace.");
+        LOG.warn(String.format(
+            "%s is not set, falling back to %s. This could cause external tables to use to managed tablespace.",
+            MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL.getVarname(), MetastoreConf.ConfVars.WAREHOUSE.getVarname()));
         rootDir = MetastoreConf.getVar(context.getConf(), MetastoreConf.ConfVars.WAREHOUSE);
       }
       Path path = new Path(rootDir, database.getName().toLowerCase() + DATABASE_PATH_SUFFIX);
@@ -84,7 +84,8 @@ public class CreateDatabaseOperation extends DDLOperation<CreateDatabaseDesc> {
 
     if (database.isSetManagedLocationUri()) {
       // TODO should we enforce a location check here?
-      database.setManagedLocationUri(Utilities.getQualifiedPath(context.getConf(), new Path(database.getManagedLocationUri())));
+      database.setManagedLocationUri(Utilities.getQualifiedPath(context.getConf(),
+          new Path(database.getManagedLocationUri())));
     }
   }
 }
