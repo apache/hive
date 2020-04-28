@@ -79,6 +79,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.math.DoubleMath;
 
 /**
@@ -809,32 +810,30 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
     // tables and version 2 for new tables. All the inputs to the SMB must be
     // from same version. This only applies to tables read directly and not
     // intermediate outputs of joins/groupbys
-    //    int bucketingVersion = -1;
-    //    for (Operator<? extends OperatorDesc> parentOp : joinOp.getParentOperators()) {
-    //      // Check if the parent is coming from a table scan, if so, what is the version of it.
-    //      assert parentOp.getParentOperators() != null && parentOp.getParentOperators().size() == 1;
-    //      Operator<?> op = parentOp;
-    //      while(op != null && !(op instanceof TableScanOperator
-    //              || op instanceof ReduceSinkOperator
-    //              || op instanceof CommonJoinOperator)) {
-    //        // If op has parents it is guaranteed to be 1.
-    //        List<Operator<?>> parents = op.getParentOperators();
-    //        Preconditions.checkState(parents.size() == 0 || parents.size() == 1);
-    //        op = parents.size() == 1 ? parents.get(0) : null;
-    //      }
-    //
-    //      if (op instanceof TableScanOperator) {
-    //        int localVersion = ((TableScanOperator)op).getConf().
-    //                getTableMetadata().getBucketingVersion();
-    //        if (bucketingVersion == -1) {
-    //          bucketingVersion = localVersion;
-    //        } else if (bucketingVersion != localVersion) {
-    //          // versions dont match, return false.
-    //          LOG.debug("SMB Join can't be performed due to bucketing version mismatch");
-    //          return false;
-    //        }
-    //      }
-    //    }
+    int bucketingVersion = -1;
+    for (Operator<? extends OperatorDesc> parentOp : joinOp.getParentOperators()) {
+      // Check if the parent is coming from a table scan, if so, what is the version of it.
+      assert parentOp.getParentOperators() != null && parentOp.getParentOperators().size() == 1;
+      Operator<?> op = parentOp;
+      while (op != null && !(op instanceof TableScanOperator || op instanceof ReduceSinkOperator
+          || op instanceof CommonJoinOperator)) {
+        // If op has parents it is guaranteed to be 1.
+        List<Operator<?>> parents = op.getParentOperators();
+        Preconditions.checkState(parents.size() == 0 || parents.size() == 1);
+        op = parents.size() == 1 ? parents.get(0) : null;
+      }
+
+      if (op instanceof TableScanOperator) {
+        int localVersion = ((TableScanOperator) op).getConf().getTableMetadata().getBucketingVersion();
+        if (bucketingVersion == -1) {
+          bucketingVersion = localVersion;
+        } else if (bucketingVersion != localVersion) {
+          // versions dont match, return false.
+          LOG.debug("SMB Join can't be performed due to bucketing version mismatch");
+          return false;
+        }
+      }
+    }
 
     LOG.info("We can convert the join to an SMB join.");
     return true;
