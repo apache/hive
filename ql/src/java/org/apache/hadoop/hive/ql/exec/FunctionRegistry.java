@@ -285,7 +285,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("quote", GenericUDFQuote.class);
     system.registerGenericUDF("nvl", GenericUDFCoalesce.class); //HIVE-20961
     system.registerGenericUDF("split", GenericUDFSplit.class);
-    system.registerGenericUDF("split_map_privs", UDFSplitMapPrivs.class);
+    system.registerGenericUDF("split_map_privs", GenericUDFStringToPrivilege.class);
     system.registerGenericUDF("str_to_map", GenericUDFStringToMap.class);
     system.registerGenericUDF("translate", GenericUDFTranslate.class);
     system.registerGenericUDF("validate_acid_sort_order", GenericUDFValidateAcidSortOrder.class);
