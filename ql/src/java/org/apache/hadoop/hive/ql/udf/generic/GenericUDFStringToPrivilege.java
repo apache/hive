@@ -32,6 +32,7 @@ import org.apache.hadoop.io.Text;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
@@ -44,7 +45,7 @@ import java.util.regex.Pattern;
     + "  [\"UPDATE\", \"CREATE\", \"ALTER\", \"INDEX\"]") class PrivilegeMap {
   private HashMap<Integer, String> privilegeMap = new HashMap<Integer, String>();
 
-  public HashMap<Integer, String> getPrivilegeMap() {
+   Map<Integer, String> getPrivilegeMap() {
 
     privilegeMap.put(0, "SELECT");
     privilegeMap.put(1, "UPDATE");
@@ -98,7 +99,7 @@ public class GenericUDFStringToPrivilege extends GenericUDF {
     Text s = (Text) converters[0].convert(arguments[0].get());
     ArrayList<Text> result = new ArrayList<Text>();
     int index = 0;
-    HashMap<Integer, String> privs = privsMap.getPrivilegeMap();
+    Map<Integer, String> privs = privsMap.getPrivilegeMap();
 
     if (constPattern == null) {
       Text regex = (Text) converters[1].convert(arguments[1].get());
