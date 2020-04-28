@@ -97,6 +97,41 @@ public class BucketVersionPopulator extends Transform {
   }
 
   /**
+   * This rule decomposes the operator tree into group which may have different bucketing versions.
+   */
+  private static class IdentifyBucketGroups implements SemanticNodeProcessor {
+
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
+        throws SemanticException {
+      Operator<?> o = (Operator<?>) nd;
+      OpGroup g;
+      if (nodeOutputs.length == 0) {
+        g = newGroup(procCtx);
+      } else {
+        g = (OpGroup) nodeOutputs[0];
+      }
+      for (int i = 1; i < nodeOutputs.length; i++) {
+        g.merge((OpGroup) nodeOutputs[i]);
+      }
+      g.add(o);
+      if (o instanceof ReduceSinkOperator) {
+        // start a new group before the reduceSinkOperator
+        return newGroup(procCtx);
+      } else {
+        return g;
+      }
+    }
+
+    private OpGroup newGroup(NodeProcessorCtx procCtx) {
+      BucketVersionProcessorCtx ctx = (BucketVersionProcessorCtx) procCtx;
+      OpGroup g = new OpGroup();
+      ctx.groups.add(g);
+      return g;
+    }
+  }
+
+  /**
    * This class represents the version required by an Operator.
    */
   private static class OperatorBucketingVersionInfo {
@@ -189,42 +224,5 @@ public class BucketVersionPopulator extends Transform {
       }
       opGroup.members.clear();
     }
-  }
-
-  /**
-   * This rule decomposes the operator tree into group which may have different bucketing versions.
-   */
-  private static class IdentifyBucketGroups implements SemanticNodeProcessor {
-
-
-    @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
-        throws SemanticException {
-      Operator<?> o = (Operator<?>) nd;
-      OpGroup g;
-      if (nodeOutputs.length == 0) {
-        g = newGroup(procCtx);
-      } else {
-        g = (OpGroup) nodeOutputs[0];
-      }
-      for (int i = 1; i < nodeOutputs.length; i++) {
-        g.merge((OpGroup) nodeOutputs[i]);
-      }
-      g.add(o);
-      if (o instanceof ReduceSinkOperator) {
-        // start a new group before the reduceSinkOperator
-        return newGroup(procCtx);
-      } else {
-        return g;
-      }
-    }
-
-    private OpGroup newGroup(NodeProcessorCtx procCtx) {
-      BucketVersionProcessorCtx ctx = (BucketVersionProcessorCtx) procCtx;
-      OpGroup g = new OpGroup();
-      ctx.groups.add(g);
-      return g;
-    }
-
   }
 }
