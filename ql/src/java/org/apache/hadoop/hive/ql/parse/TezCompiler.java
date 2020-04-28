@@ -2125,7 +2125,6 @@ public class TezCompiler extends TaskCompiler {
         }
         processedOperators.put(parent, bucketingVersion);
 
-        //parent.getConf().setBucketingVersion(bucketingVersion);
         break;
       }
     }
