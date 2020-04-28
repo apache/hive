@@ -18,11 +18,16 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
+import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeImpl;
 import org.apache.calcite.rel.type.RelProtoDataType;
 import org.apache.calcite.sql.SqlFunction;
@@ -32,6 +37,7 @@ import org.apache.calcite.sql.type.InferTypes;
 import org.apache.calcite.sql.type.OperandTypes;
 import org.apache.calcite.sql.type.ReturnTypes;
 import org.apache.calcite.sql.type.SqlTypeName;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveMergeableAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSqlFunction;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver2;
@@ -144,10 +150,11 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
 
       unionSFD.setCalciteFunction(unionFn);
       sketchSFD.setCalciteFunction(sketchFn);
-      if (estimateSFD != null) {
+      if (estimateSFD != null && estimateSFD.getReturnRelDataType().isPresent()) {
+
         SqlFunction estimateFn = new HiveSqlFunction(estimateSFD.name,
             SqlKind.OTHER_FUNCTION,
-            ReturnTypes.explicit(SqlTypeName.DOUBLE),
+            ReturnTypes.explicit(estimateSFD.getReturnRelDataType().get().getSqlTypeName()),
             InferTypes.ANY_NULLABLE,
             OperandTypes.family(),
             SqlFunctionCategory.USER_DEFINED_FUNCTION,
@@ -190,6 +197,7 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
     String name;
     Class<?> udfClass;
     private SqlFunction calciteFunction;
+    private Class<?> returnType;
 
     public SketchFunctionDescriptor(String name, Class<?> udfClass) {
       this.name = name;
@@ -204,6 +212,19 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
     @Override
     public String getFunctionName() {
       return name;
+    }
+
+    public Optional<RelDataType> getReturnRelDataType() {
+      if (returnType == null) {
+        return Optional.empty();
+      } else {
+        JavaTypeFactoryImpl typeFactory = new JavaTypeFactoryImpl(new HiveTypeSystemImpl());
+        return Optional.of(typeFactory.createType(returnType));
+      }
+    }
+
+    public void setReturnType(Class<?> returnType) {
+      this.returnType = returnType;
     }
 
     @Override
@@ -231,7 +252,28 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
     }
 
     private void register(String name, Class<?> clazz) {
-      fnMap.put(name, new SketchFunctionDescriptor(functionPrefix + name, clazz));
+      SketchFunctionDescriptor value = new SketchFunctionDescriptor(functionPrefix + name, clazz);
+      if (UDF.class.isAssignableFrom(clazz)) {
+        Optional<Method> evaluateMethod = getEvaluateMethod(clazz);
+        if (evaluateMethod.isPresent()) {
+          value.setReturnType(evaluateMethod.get().getReturnType());
+        }
+      }
+      fnMap.put(name, value);
+    }
+
+    private Optional<Method> getEvaluateMethod(Class<?> clazz) {
+      List<Method> evaluateMethods = new ArrayList<Method>();
+      for (Method method : clazz.getMethods()) {
+        if ("evaluate".equals(method.getName())) {
+          evaluateMethods.add(method);
+        }
+      }
+      if (evaluateMethods.size() == 1) {
+        return Optional.of(evaluateMethods.get(0));
+      } else {
+        return Optional.empty();
+      }
     }
   }
 
