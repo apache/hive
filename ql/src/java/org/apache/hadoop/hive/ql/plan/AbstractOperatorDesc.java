@@ -47,8 +47,6 @@ public abstract class AbstractOperatorDesc implements OperatorDesc {
    */
   protected Map<String, ExprNodeDesc> colExprMap;
 
-  private String myName = "N/A";
-
   @Override
   @Explain(skipHeader = true, displayName = "Statistics")
   public Statistics getStatistics() {
