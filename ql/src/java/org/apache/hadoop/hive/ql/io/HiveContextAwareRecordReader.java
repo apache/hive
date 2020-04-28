@@ -341,7 +341,7 @@ public abstract class HiveContextAwareRecordReader<K extends WritableComparable,
           part = null;
         }
         TableDesc table = (part == null) ? null : part.getTableDesc();
-        if (table != null && !TextInputFormat.class.isAssignableFrom(part.getInputFileFormatClass())) {
+        if (table != null) {
           headerCount = Utilities.getHeaderCount(table);
           footerCount = Utilities.getFooterCount(table, jobConf);
         }
