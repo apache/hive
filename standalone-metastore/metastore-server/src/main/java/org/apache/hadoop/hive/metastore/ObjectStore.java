@@ -4578,7 +4578,6 @@ public class ObjectStore implements RawStore, Configurable {
       //if no other SD references this CD, we can throw it out.
       if (count == 0) {
         // First remove any constraints that may be associated with this CD
-
         query = pm.newQuery(MConstraint.class, "parentColumn == inCD || childColumn == inCD");
         query.declareParameters("MColumnDescriptor inCD");
         List<MConstraint> mConstraintsList = (List<MConstraint>) query.execute(oldCD);
@@ -4613,9 +4612,6 @@ public class ObjectStore implements RawStore, Configurable {
     // to satisfy foreign key constraints.
     msd.setCD(null);
     removeUnusedColumnDescriptor(mcd);
-
-    //    pm.deletePersistentAll(msd.getSkewedColValues());
-//    pm.deletePersistentAll(msd.getSkewedColValueLocationMaps().keySet());
   }
 
   private static MFieldSchema getColumnFromTableColumns(List<MFieldSchema> cols, String col) {
