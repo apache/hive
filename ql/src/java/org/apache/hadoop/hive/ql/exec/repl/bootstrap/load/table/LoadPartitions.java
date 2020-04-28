@@ -244,7 +244,7 @@ public class LoadPartitions {
         event.replicationSpec(),
             new Path(event.dataPath() + Path.SEPARATOR + getPartitionName(sourceWarehousePartitionLocation)),
         stagingDir,
-        context.hiveConf, false
+        context.hiveConf, false, false
     );
 
     Task<?> movePartitionTask = null;

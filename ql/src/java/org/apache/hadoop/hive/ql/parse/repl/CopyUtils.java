@@ -71,7 +71,8 @@ public class CopyUtils {
   // Used by replication, copy files from source to destination. It is possible source file is
   // changed/removed during copy, so double check the checksum after copy,
   // if not match, copy again from cm
-  public void copyAndVerify(Path destRoot, List<ReplChangeManager.FileInfo> srcFiles, Path origSrcPtah)
+  public void copyAndVerify(Path destRoot, List<ReplChangeManager.FileInfo> srcFiles, Path origSrcPtah,
+                            boolean overwrite)
           throws IOException, LoginException, HiveFatalException {
     UserGroupInformation proxyUser = getProxyUser();
     FileSystem sourceFs = origSrcPtah.getFileSystem(hiveConf);
@@ -80,7 +81,7 @@ public class CopyUtils {
       if (!useRegularCopy) {
         srcFiles.clear();
         srcFiles.add(new ReplChangeManager.FileInfo(sourceFs, origSrcPtah, null));
-        doCopyRetry(sourceFs, srcFiles, destRoot, proxyUser, useRegularCopy);
+        doCopyRetry(sourceFs, srcFiles, destRoot, proxyUser, useRegularCopy, overwrite);
       } else {
         Map<FileSystem, Map< Path, List<ReplChangeManager.FileInfo>>> map = fsToFileMap(srcFiles, destRoot);
         for (Map.Entry<FileSystem, Map<Path, List<ReplChangeManager.FileInfo>>> entry : map.entrySet()) {
@@ -98,7 +99,7 @@ public class CopyUtils {
             }
 
             // Copy files with retry logic on failure or source file is dropped or changed.
-            doCopyRetry(sourceFs, fileInfoList, destination, proxyUser, true);
+            doCopyRetry(sourceFs, fileInfoList, destination, proxyUser, true, overwrite);
           }
         }
       }
@@ -111,7 +112,7 @@ public class CopyUtils {
 
   private void doCopyRetry(FileSystem sourceFs, List<ReplChangeManager.FileInfo> srcFileList,
                            Path destination, UserGroupInformation proxyUser,
-                           boolean useRegularCopy) throws IOException, LoginException, HiveFatalException {
+                           boolean useRegularCopy, boolean overwrite) throws IOException, LoginException, HiveFatalException {
     int repeat = 0;
     boolean isCopyError = false;
     List<Path> pathList = Lists.transform(srcFileList, ReplChangeManager.FileInfo::getEffectivePath);
@@ -130,7 +131,7 @@ public class CopyUtils {
 
         // if exception happens during doCopyOnce, then need to call getFilesToRetry with copy error as true in retry.
         isCopyError = true;
-        doCopyOnce(sourceFs, pathList, destination, useRegularCopy, proxyUser);
+        doCopyOnce(sourceFs, pathList, destination, useRegularCopy, proxyUser, overwrite);
 
         // if exception happens after doCopyOnce, then need to call getFilesToRetry with copy error as false in retry.
         isCopyError = false;
@@ -330,9 +331,10 @@ public class CopyUtils {
   // Copy without retry
   private void doCopyOnce(FileSystem sourceFs, List<Path> srcList,
                           Path destination,
-                          boolean useRegularCopy, UserGroupInformation proxyUser) throws IOException {
+                          boolean useRegularCopy, UserGroupInformation proxyUser,
+                          boolean overwrite) throws IOException {
     if (useRegularCopy) {
-      doRegularCopyOnce(sourceFs, srcList, destination, proxyUser);
+      doRegularCopyOnce(sourceFs, srcList, destination, proxyUser, overwrite);
     } else {
       doDistCpCopyOnce(sourceFs, srcList, destination, proxyUser);
     }
@@ -365,7 +367,7 @@ public class CopyUtils {
   }
 
   private void doRegularCopyOnce(FileSystem sourceFs, List<Path> srcList,
-      Path destination, UserGroupInformation proxyUser) throws IOException {
+      Path destination, UserGroupInformation proxyUser, boolean overWrite) throws IOException {
   /*
     even for regular copy we have to use the same user permissions that distCp will use since
     hive-server user might be different that the super user required to copy relevant files.
@@ -375,6 +377,10 @@ public class CopyUtils {
       final Path finalDestination = destination;
       try {
         proxyUser.doAs((PrivilegedExceptionAction<Boolean>) () -> {
+          //Destination should be empty
+          if (overWrite) {
+            deleteSubDirs(destinationFs, destination);
+          }
           FileUtil
               .copy(sourceFs, paths, destinationFs, finalDestination, false, true, hiveConf);
           return true;
@@ -383,8 +389,20 @@ public class CopyUtils {
         throw new IOException(e);
       }
     } else {
+      //Destination should be empty
+      if (overWrite) {
+        deleteSubDirs(destinationFs, destination);
+      }
       FileUtil.copy(sourceFs, paths, destinationFs, destination, false, true, hiveConf);
     }
+  }
+
+  private void deleteSubDirs(FileSystem fs, Path path) throws IOException {
+    //Delete the root path instead of doing a listing
+    //This is more optimised
+    fs.delete(path, true);
+    //Recreate just the Root folder
+    fs.mkdirs(path);
   }
 
   public void doCopy(Path destination, List<Path> srcPaths) throws IOException, LoginException {
@@ -398,7 +416,7 @@ public class CopyUtils {
            path -> new ReplChangeManager.FileInfo(sourceFs, path, null));
         doCopyOnce(sourceFs, entry.getValue(),
                 destination,
-                regularCopy(sourceFs, fileList), proxyUser);
+                regularCopy(sourceFs, fileList), proxyUser, false);
       }
     } finally {
       if (proxyUser != null) {
