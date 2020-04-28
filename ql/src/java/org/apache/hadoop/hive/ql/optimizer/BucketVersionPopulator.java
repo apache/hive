@@ -64,34 +64,7 @@ public class BucketVersionPopulator extends Transform {
   protected static final Logger LOG = LoggerFactory.getLogger(BucketVersionPopulator.class);
 
   @Deprecated
-
   protected ParseContext pGraphContext;
-
-
-  static class BucketingVersionResult {
-    Integer bucketingVersion;
-
-    public BucketingVersionResult(Integer version) {
-      bucketingVersion = version;
-    }
-
-    public BucketingVersionResult merge(BucketingVersionResult r) throws SemanticException {
-      if (bucketingVersion == r.bucketingVersion || r.bucketingVersion == -1) {
-        return new BucketingVersionResult(bucketingVersion);
-      }
-      if (bucketingVersion == -1) {
-        return new BucketingVersionResult(r.bucketingVersion);
-      }
-      throw new SemanticException("invalid state; can't set bucketingVersion correctly");
-    }
-
-    public BucketingVersionResult merge2(BucketingVersionResult r) {
-      if (bucketingVersion == r.bucketingVersion || r.bucketingVersion == -1) {
-        return new BucketingVersionResult(bucketingVersion);
-      }
-      return new BucketingVersionResult(2);
-    }
-  }
 
   @Deprecated
   Set<OpGroup> groups = new HashSet<BucketVersionPopulator.OpGroup>();
