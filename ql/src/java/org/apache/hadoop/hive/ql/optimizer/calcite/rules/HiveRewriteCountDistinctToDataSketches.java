@@ -42,6 +42,13 @@ import com.google.common.collect.ImmutableList;
 
 /**
  * This rule could rewrite {@code count(distinct(x))} calls to be calculated using sketch based functions.
+ *
+ * The transformation here works on Aggregate nodes; the operations done are:
+ *
+ * 1. Identify candidate {@code count(distinct)} aggregate calls
+ * 2. A new Aggregate is created in which the aggregation is done by the sketch function
+ * 3. A new Project is inserted on top of the Aggregate; which unwraps the resulting
+ *    count-distinct estimation from the sketch representation
  */
 public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
 
@@ -74,7 +81,6 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
     }
 
     newAggCalls = vb.newAggCalls;
-    // FIXME HiveAggregate?
     RelNode newAgg = aggregate.copy(aggregate.getTraitSet(), aggregate.getInput(), aggregate.getGroupSet(),
         aggregate.getGroupSets(), newAggCalls);
 
@@ -140,7 +146,6 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
     }
 
     private void rewriteCountDistinct(AggregateCall aggCall) {
-
       SqlAggFunction aggFunction = (SqlAggFunction) getSqlOperator(DataSketchesFunctions.DATA_TO_SKETCH);
       boolean distinct = false;
       boolean approximate = true;
