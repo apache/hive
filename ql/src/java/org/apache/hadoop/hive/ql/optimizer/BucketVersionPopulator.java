@@ -96,7 +96,29 @@ public class BucketVersionPopulator extends Transform {
     return ctx.groups;
   }
 
-  static class OpGroup {
+  /**
+   * This class represents the version required by an Operator.
+   */
+  private static class OperatorBucketingVersionInfo {
+
+    private Operator<?> op;
+    private int bucketingVersion;
+
+    public OperatorBucketingVersionInfo(Operator<?> op, int bucketingVersion) {
+      this.op = op;
+      this.bucketingVersion = bucketingVersion;
+    }
+
+    @Override
+    public String toString() {
+      return String.format("[op: %s, bucketingVersion=%d]", op, bucketingVersion);
+    }
+  }
+
+  /**
+   * A Group of operators which must have the same bucketing version.
+   */
+  private static class OpGroup {
     Set<Operator<?>> members = Sets.newIdentityHashSet();
     int version = -1;
 
@@ -110,22 +132,6 @@ public class BucketVersionPopulator extends Transform {
     public void setBucketVersion() {
       for (Operator<?> operator : members) {
         operator.getConf().setBucketingVersion(version);
-      }
-    }
-
-    class OperatorBucketingVersionInfo {
-
-      private Operator<?> op;
-      private int bucketingVersion;
-
-      public OperatorBucketingVersionInfo(Operator<?> op, int bucketingVersion) {
-        this.op = op;
-        this.bucketingVersion = bucketingVersion;
-      }
-
-      @Override
-      public String toString() {
-        return String.format("[op: %s, bucketingVersion=%d]", op, bucketingVersion);
       }
     }
 
@@ -183,11 +189,12 @@ public class BucketVersionPopulator extends Transform {
       }
       opGroup.members.clear();
     }
-
   }
 
-
-  static class IdentifyBucketGroups implements SemanticNodeProcessor {
+  /**
+   * This rule decomposes the operator tree into group which may have different bucketing versions.
+   */
+  private static class IdentifyBucketGroups implements SemanticNodeProcessor {
 
 
     @Override
