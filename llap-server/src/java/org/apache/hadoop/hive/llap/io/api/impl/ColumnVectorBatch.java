@@ -21,21 +21,23 @@ package org.apache.hadoop.hive.llap.io.api.impl;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 
+import java.util.Arrays;
+
 /**
  * Unlike VRB, doesn't have some fields, and doesn't have all columns
  * (non-selected, partition cols, cols for downstream ops, etc.)
  */
 public class ColumnVectorBatch {
+  public VectorizedRowBatch filterContext;
   public ColumnVector[] cols;
-  public int size;
 
   public ColumnVectorBatch(int columnCount) {
     this(columnCount, VectorizedRowBatch.DEFAULT_SIZE);
   }
 
   public ColumnVectorBatch(int columnCount, int batchSize) {
-    this.cols = new ColumnVector[columnCount];
-    this.size = batchSize;
+    this.filterContext = new VectorizedRowBatch(columnCount, batchSize);
+    this.cols = filterContext.cols;
   }
 
   public void swapColumnVector(int ix, ColumnVector[] other, int otherIx) {
@@ -47,10 +49,19 @@ public class ColumnVectorBatch {
   
   @Override
   public String toString() {
-    if (size == 0) {
+    if (filterContext.size == 0) {
       return "";
     }
     StringBuilder b = new StringBuilder();
+    b.append("FilterContext used: ");
+    b.append(filterContext.isSelectedInUse());
+    b.append(", size: ");
+    b.append(filterContext.getSelectedSize());
+    b.append('\n');
+    b.append("Selected: ");
+    b.append(filterContext.isSelectedInUse() ? Arrays.toString(filterContext.getSelected()) : "[]");
+    b.append('\n');
+
     b.append("Column vector types: ");
     for (int k = 0; k < cols.length; k++) {
       ColumnVector cv = cols[k];
@@ -61,7 +72,7 @@ public class ColumnVectorBatch {
     b.append('\n');
 
 
-    for (int i = 0; i < size; i++) {
+    for (int i = 0; i < filterContext.size; i++) {
       b.append('[');
       for (int k = 0; k < cols.length; k++) {
         ColumnVector cv = cols[k];
@@ -78,7 +89,7 @@ public class ColumnVectorBatch {
         }
       }
       b.append(']');
-      if (i < size - 1) {
+      if (i < filterContext.size - 1) {
         b.append('\n');
       }
     }

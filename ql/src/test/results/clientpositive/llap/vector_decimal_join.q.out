@@ -46,6 +46,7 @@ STAGE PLANS:
                 TableScan
                   alias: foo
                   filterExpr: x is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_29_container, bigKeyColName:x, smallTablePos:1, keyRatio:1.0
                   Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true

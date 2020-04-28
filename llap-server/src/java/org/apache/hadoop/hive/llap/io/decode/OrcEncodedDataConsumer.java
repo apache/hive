@@ -20,8 +20,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
 import org.apache.hadoop.hive.llap.counters.LlapIOCounters;
 import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
@@ -31,6 +36,10 @@ import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer.Includes;
 import org.apache.hadoop.hive.llap.io.metadata.ConsumerFileMetadata;
 import org.apache.hadoop.hive.llap.io.metadata.ConsumerStripeMetadata;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonIOMetrics;
+import org.apache.hadoop.hive.ql.exec.ObjectCache;
+import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
+import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
+import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainerSerDe;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DateColumnVector;
@@ -44,6 +53,10 @@ import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.UnionColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashTable;
+import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinTableContainer;
+import org.apache.hadoop.hive.ql.io.filter.MutableFilterContext;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.orc.CompressionCodec;
 import org.apache.orc.OrcProto.CalendarKind;
 import org.apache.orc.impl.PositionProvider;
@@ -76,6 +89,11 @@ public class OrcEncodedDataConsumer
   private final Includes includes;
   private TypeDescription[] batchSchemas;
   private boolean useDecimal64ColumnVectors;
+  // ProbeDecode extra variables
+  private static final VectorizedRowBatch NULL_FILTERCONTEXT = new VectorizedRowBatch(0);
+  private VectorMapJoinHashTable probeDecodeMapJoinTable = null;
+  private ObjectCache probeDecodeCache = null;
+  private int probeDecodeColIdx = -1;
 
   public OrcEncodedDataConsumer(
     Consumer<ColumnVectorBatch> consumer, Includes includes, boolean skipCorrupt,
@@ -84,9 +102,36 @@ public class OrcEncodedDataConsumer
     this.includes = includes;
     // TODO: get rid of this
     this.skipCorrupt = skipCorrupt;
-    if (includes.isProbeDecodeEnabled()) {
-      LlapIoImpl.LOG.info("OrcEncodedDataConsumer probeDecode is enabled with cacheKey {} colIndex {} and colName {}",
-              this.includes.getProbeCacheKey(), this.includes.getProbeColIdx(), this.includes.getProbeColName());
+  }
+
+  public OrcEncodedDataConsumer(
+    Consumer<ColumnVectorBatch> consumer, Includes includes, boolean skipCorrupt,
+    QueryFragmentCounters counters, LlapDaemonIOMetrics ioMetrics, Configuration conf) {
+    this(consumer, includes, skipCorrupt, counters, ioMetrics);
+
+    if (this.includes.isProbeDecodeEnabled()) {
+      this.probeDecodeCache = ObjectCacheFactory
+          .getCache(conf, HiveConf.getVar(includes.getJobConf(), HiveConf.ConfVars.HIVEQUERYID), false);
+      // Start periodic MapJoinTable lookup Thread
+      new Thread( () -> {
+        while (probeDecodeMapJoinTable == null && !isStopped) {
+          try {
+            // TODO: Check if we can get directly from operator
+            Pair<MapJoinTableContainer[], MapJoinTableContainerSerDe[]> smallTablePair = probeDecodeCache.retrieve(this.includes.getProbeCacheKey());
+            if (smallTablePair != null ) {
+              VectorMapJoinHashTable ht = ((VectorMapJoinTableContainer) smallTablePair.getLeft()[this.includes.getProbeMjSmallTablePos()]).vectorMapJoinHashTable();
+              this.probeDecodeMapJoinTable = ht;
+              LlapIoImpl.LOG.info("ProbeDecode finally got HashTable of size {}", ht.size());
+            } else {
+              Thread.sleep(50);
+            }
+          } catch (HiveException |  InterruptedException e) {
+            LlapIoImpl.LOG.error("ProbeDecode HT Lookup failed: {}", e);
+          }
+        }
+      }, "ProbeDecode-HT-Lookup").start();
+      LlapIoImpl.LOG.info("OrcEncodedDataConsumer probeDecode is enabled with cacheKey {} colName {} smallTablePos {}",
+              this.includes.getProbeCacheKey(), this.includes.getProbeColName(), this.includes.getProbeMjSmallTablePos());
     }
   }
 
@@ -124,6 +169,7 @@ public class OrcEncodedDataConsumer
       // Get non null row count from root column, to get max vector batches
       int rgIdx = batch.getBatchKey().rgIx;
       long nonNullRowCount;
+      long nonSkippedRowCount = 0;
       boolean noIndex = false;
       if (rgIdx == OrcEncodedColumnBatch.ALL_RGS) {
         nonNullRowCount = stripeMetadata.getRowCount();
@@ -142,12 +188,13 @@ public class OrcEncodedDataConsumer
       TypeDescription fileSchema = fileMetadata.getSchema();
 
       if (columnReaders == null || !sameStripe || noIndex) {
-        createColumnReaders(batch, stripeMetadata, fileSchema);
+        this.probeDecodeColIdx = createColumnReaders(batch, stripeMetadata, fileSchema);
       } else {
         repositionInStreams(this.columnReaders, batch, sameStripe, stripeMetadata);
       }
       previousStripeIndex = currentStripeIndex;
 
+      // For every row group
       for (int i = 0; i < maxBatchesRG; i++) {
         // for last batch in row group, adjust the batch size
         if (i == maxBatchesRG - 1) {
@@ -157,16 +204,22 @@ public class OrcEncodedDataConsumer
 
         ColumnVectorBatch cvb = cvbPool.take();
         // assert cvb.cols.length == batch.getColumnIxs().length; // Must be constant per split.
-        cvb.size = batchSize;
-        for (int idx = 0; idx < columnReaders.length; ++idx) {
-          TreeReader reader = columnReaders[idx];
-          if (cvb.cols[idx] == null) {
-            // Orc store rows inside a root struct (hive writes it this way).
-            // When we populate column vectors we skip over the root struct.
-            cvb.cols[idx] = createColumn(batchSchemas[idx], VectorizedRowBatch.DEFAULT_SIZE, useDecimal64ColumnVectors);
-          }
-          trace.logTreeReaderNextVector(idx);
+        cvb.filterContext.selectedInUse = false;
+        cvb.filterContext.size = batchSize;
 
+        // First: early expand filter columns(s) and populate FilterContext with selected rows
+        if (probeDecodeColIdx != -1) {
+          TreeReader reader = columnReaders[probeDecodeColIdx];
+          ColumnVector cv = prepareColumnVector(cvb, probeDecodeColIdx, batchSize);
+          reader.nextVector(cv, null, batchSize, NULL_FILTERCONTEXT);
+          if (this.probeDecodeMapJoinTable != null) {
+            HashTableRowFilterCallback(cvb, probeDecodeColIdx, batchSize);
+          }
+        }
+
+        // Then: read the remaining columns of the row group using the above Filter for row-level filtering
+        for (int idx = 0; idx < columnReaders.length; ++idx) {
+          if (idx == probeDecodeColIdx) continue;
           /*
            * Currently, ORC's TreeReaderFactory class does this:
            *
@@ -202,17 +255,20 @@ public class OrcEncodedDataConsumer
            *     it doesn't get confused.
            *
            */
-          ColumnVector cv = cvb.cols[idx];
-          cv.reset();
-          cv.ensureSize(batchSize, false);
-          reader.nextVector(cv, null, batchSize);
+          TreeReader reader = columnReaders[idx];
+          ColumnVector cv = prepareColumnVector(cvb, idx, batchSize);
+          reader.nextVector(cv, null, batchSize, cvb.filterContext.immutable());
         }
-
-        // we are done reading a batch, send it to consumer for processing
-        downstreamConsumer.consumeData(cvb);
-        counters.incrCounter(LlapIOCounters.ROWS_EMITTED, batchSize);
+        if (cvb.filterContext.size > 0) {
+          // we are done reading a batch, send it to consumer for processing
+          downstreamConsumer.consumeData(cvb);
+          counters.incrCounter(LlapIOCounters.ROWS_EMITTED, cvb.filterContext.size);
+        }
+        nonSkippedRowCount += cvb.filterContext.size;
       }
-      LlapIoImpl.ORC_LOGGER.debug("Done with decode");
+      LlapIoImpl.ORC_LOGGER.debug("Done with decode, skippedRows {} out of {} on {} Cols", nonNullRowCount - nonSkippedRowCount,
+          nonNullRowCount, columnReaders.length);
+      counters.incrCounter(LlapIOCounters.NUM_DECODED_ROWS, nonSkippedRowCount);
       counters.incrWallClockCounter(LlapIOCounters.DECODE_TIME_NS, startTime);
       counters.incrCounter(LlapIOCounters.NUM_VECTOR_BATCHES, maxBatchesRG);
       counters.incrCounter(LlapIOCounters.NUM_DECODED_BATCHES);
@@ -222,7 +278,70 @@ public class OrcEncodedDataConsumer
     }
   }
 
-  private void createColumnReaders(OrcEncodedColumnBatch batch,
+  private ColumnVector prepareColumnVector(ColumnVectorBatch cvb, int idx, int batchSize) {
+    if (cvb.cols[idx] == null) {
+      // Orc store rows inside a root struct (hive writes it this way).
+      // When we populate column vectors we skip over the root struct.
+      cvb.cols[idx] = createColumn(batchSchemas[idx], VectorizedRowBatch.DEFAULT_SIZE, useDecimal64ColumnVectors);
+    }
+    trace.logTreeReaderNextVector(idx);
+    ColumnVector cv = cvb.cols[idx];
+    cv.reset();
+    cv.ensureSize(batchSize, false);
+    return cv;
+  }
+
+  /**
+   *  Callback method to filter out CVB rows that are do match the propagated MJ HashTable.
+   *  For matching we check CVB[colIdx] values against the given HashTable.keys()
+   *  Filtering done as part of the selected array that is updated as part of CVB's filterContext
+   * @param cvb ColumnVectorBatch
+   * @param colIdx ColumnId to apply the filter on
+   * @param batchSize Original ColumnVectorBatch size
+   */
+  public void HashTableRowFilterCallback(ColumnVectorBatch cvb, int colIdx, int batchSize) {
+    if (!(cvb.cols[colIdx] instanceof LongColumnVector)) {
+      // Currently support only HashTable Long key lookups
+      return;
+    }
+    long startDecodeTime = counters.startTimeCounter();
+    MutableFilterContext cntx = cvb.filterContext;
+    int[] selected = null;
+    int newSize = 0;
+    boolean selectedInUse = false;
+    LongColumnVector probeCol = (LongColumnVector) cvb.cols[colIdx];
+    // Repeating values case
+    if (probeCol.isRepeating) {
+      // All must be selected otherwise size would be zero
+      // Repeating property will not change.
+      if (!(probeDecodeMapJoinTable.containsLongKey(probeCol.vector[0]))) {
+        // Entire batch is filtered out.
+        cvb.filterContext.size = 0;
+      } else {
+        selectedInUse = true;
+        selected = cntx.updateSelected(1);
+        selected[newSize++] = 0;
+      }
+    }
+    // Non-repeating values TODO: consider nulls explicitly?
+    else {
+      selected = cntx.updateSelected(batchSize);
+      for (int row = 0; row < batchSize; ++row) {
+        // Pass ony Valid keys
+        if (probeDecodeMapJoinTable.containsLongKey(probeCol.vector[row])) {
+          selected[newSize++] = row;
+        }
+      }
+      // Completely skip VectorBatch
+      if (newSize == 0) cvb.filterContext.size = 0;
+      selectedInUse = true;
+    }
+    cntx.setFilterContext(selectedInUse, selected, newSize);
+    LlapIoImpl.LOG.debug("ProbeDecode Matched: {} selectedInUse {} batchSize {}", newSize, selectedInUse, batchSize);
+    counters.incrWallClockCounter(LlapIOCounters.PROBE_DECODE_TIME_NS, startDecodeTime);
+  }
+
+  private int createColumnReaders(OrcEncodedColumnBatch batch,
       ConsumerStripeMetadata stripeMetadata, TypeDescription fileSchema) throws IOException {
     TreeReaderFactory.Context context = new TreeReaderFactory.ReaderContext()
             .setSchemaEvolution(evolution).skipCorrupt(skipCorrupt)
@@ -242,6 +361,19 @@ public class OrcEncodedDataConsumer
       }
     }
     positionInStreams(columnReaders, batch.getBatchKey(), stripeMetadata);
+    // Return the ReaderColId of the probeCol when ProbeDecode is enabled
+    int probeDecodeColIdx = -1;
+    if (includes.isProbeDecodeEnabled() && includes.getProbeColName() != null) {
+      String[] includedColNames = includes.getOriginalColumnNames(fileSchema);
+      for (int i = 0; i < includedColNames.length; i++) {
+        if (includedColNames[i].compareTo(includes.getProbeColName()) == 0) {
+          probeDecodeColIdx = i;
+        }
+      }
+      LlapIoImpl.LOG.info("ProbeDecode includedColNames: {}, filterColName {} FilterColReaderIndex {}",
+              includedColNames, includes.getProbeColName(), probeDecodeColIdx);
+    }
+    return probeDecodeColIdx;
   }
 
   private ColumnVector createColumn(TypeDescription type, int batchSize, final boolean useDecimal64ColumnVectors) {

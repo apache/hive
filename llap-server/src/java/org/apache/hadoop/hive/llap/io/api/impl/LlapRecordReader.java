@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.llap.io.api.impl;
 
 import java.util.ArrayList;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
@@ -203,7 +204,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
         isAcidScan && acidReader.includeAcidColumns());
 
     this.probeDecodeEnabled = HiveConf.getBoolVar(jobConf, ConfVars.HIVE_OPTIMIZE_SCAN_PROBEDECODE);
-    if (this.probeDecodeEnabled) {
+    if (this.probeDecodeEnabled && mapWork.getProbeDecodeContext() != null) {
       includes.setProbeDecodeContext(mapWork.getProbeDecodeContext());
       LOG.info("LlapRecordReader ProbeDecode is enabled");
     }
@@ -383,7 +384,6 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
       return false;
     }
     if (isAcidFormat) {
-      vrb.selectedInUse = true;//why?
       if (isVectorized) {
         // TODO: relying everywhere on the magical constants and columns being together means ACID
         //       columns are going to be super hard to change in a backward compat manner. I can
@@ -403,7 +403,11 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
           // TODO: should we create the batch from vrbctx, and reuse the vectors, like below? Future work.
           inputVrb.cols[ixInVrb] = cvb.cols[ixInReadSet];
         }
-        inputVrb.size = cvb.size;
+        inputVrb.size = cvb.filterContext.size;
+        inputVrb.selectedInUse = cvb.filterContext.isSelectedInUse();
+        if (cvb.filterContext.isSelectedInUse()) {
+          inputVrb.selected = cvb.filterContext.getSelected();
+        }
         acidReader.setBaseAndInnerReader(new AcidWrapper(inputVrb));
         acidReader.next(NullWritable.get(), vrb);
       } else {
@@ -422,8 +426,11 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
         int ixInVrb = includes.getPhysicalColumnIds().get(ixInReadSet);
         cvb.swapColumnVector(ixInReadSet, vrb.cols, ixInVrb);
       }
-      vrb.selectedInUse = false;//why?
-      vrb.size = cvb.size;
+      vrb.size = cvb.filterContext.size;
+      vrb.selectedInUse = cvb.filterContext.isSelectedInUse();
+      if (cvb.filterContext.isSelectedInUse()) {
+        vrb.selected = cvb.filterContext.getSelected();
+      }
     }
 
     if (wasFirst) {
@@ -637,6 +644,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
 
     // ProbeDecode Context for row-level filtering
     private TableScanOperator.ProbeDecodeContext probeDecodeContext = null;
+    private int probeDecodeColIdx = -1;
 
     public IncludesImpl(List<Integer> tableIncludedCols, boolean isAcidScan,
         VectorizedRowBatchCtx rbCtx, TypeDescription readerSchema, JobConf jobConf,
@@ -733,6 +741,12 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     }
 
     @Override
+    public String[] getOriginalColumnNames(TypeDescription fileSchema) {
+      return OrcInputFormat.genIncludedColNames(
+              fileSchema, filePhysicalColumnIds, acidStructColumnId);
+    }
+
+    @Override
     public String getQueryId() {
       return HiveConf.getVar(jobConf, HiveConf.ConfVars.HIVEQUERYID);
     }
@@ -748,14 +762,6 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     }
 
     @Override
-    public int getProbeColIdx() {
-      // TODO: is this the best way to get the ColId?
-      Pattern pattern = Pattern.compile("_col([0-9]+)");
-      Matcher matcher = pattern.matcher(this.probeDecodeContext.getMjBigTableKeyColName());
-      return matcher.find() ? Integer.parseInt(matcher.group(1)) : -1;
-    }
-
-    @Override
     public String getProbeColName() {
       return this.probeDecodeContext.getMjBigTableKeyColName();
     }
@@ -765,5 +771,9 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
       return this.probeDecodeContext.getMjSmallTableCacheKey();
     }
 
+    @Override
+    public JobConf getJobConf() {
+      return this.jobConf;
+    }
   }
 } 

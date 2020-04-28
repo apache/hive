@@ -41,7 +41,7 @@ import org.apache.tez.runtime.task.TaskRunner2Callable;
 
 public abstract class EncodedDataConsumer<BatchKey, BatchType extends EncodedColumnBatch<BatchKey>>
   implements Consumer<BatchType>, ReadPipeline {
-  private volatile boolean isStopped = false;
+  protected volatile boolean isStopped = false;
   private ConsumerFeedback<BatchType> upstreamFeedback;
   private final Consumer<ColumnVectorBatch> downstreamConsumer;
   private Callable<Void> readCallable;

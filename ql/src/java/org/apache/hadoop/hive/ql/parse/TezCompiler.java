@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
+import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.CommonMergeJoinOperator;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.DummyStoreOperator;
@@ -1468,19 +1469,22 @@ public class TezCompiler extends TaskCompiler {
           TableScanOperator.ProbeDecodeContext tsCntx = null;
           // Currently supporting: LowestRatio policy
           // TODO: Add more policies and make the selection a conf property
-          tsCntx = selectLowestRatioProbeDecodeMapJoin(probeTsMap.getKey(), probeTsMap.getValue());
-          LOG.debug("ProbeDecode MJ for TS {}  with CacheKey {} MJ Pos {} ColName {} with Ratio {}",
-              probeTsMap.getKey().getName(), tsCntx.getMjSmallTableCacheKey(), tsCntx.getMjSmallTablePos(),
-              tsCntx.getMjBigTableKeyColName(), tsCntx.getKeyRatio());
-          probeTsMap.getKey().setProbeDecodeContext(tsCntx);
-          probeTsMap.getKey().getConf().setProbeDecodeContext(tsCntx);
+          tsCntx = selectLowestRatioProbeDecodeMapJoin(probeTsMap.getKey(), probeTsMap.getValue(),
+                  procCtx.conf.getBoolVar(ConfVars.HIVE_IN_TEST));
+          if (tsCntx != null) {
+            LOG.debug("ProbeDecode MJ for TS {}  with CacheKey {} MJ Pos {} ColName {} with Ratio {}",
+                    probeTsMap.getKey().getName(), tsCntx.getMjSmallTableCacheKey(), tsCntx.getMjSmallTablePos(),
+                    tsCntx.getMjBigTableKeyColName(), tsCntx.getKeyRatio());
+            probeTsMap.getKey().setProbeDecodeContext(tsCntx);
+            probeTsMap.getKey().getConf().setProbeDecodeContext(tsCntx);
+          }
         }
       }
     }
   }
 
   private static TableScanOperator.ProbeDecodeContext selectLowestRatioProbeDecodeMapJoin(TableScanOperator tsOp,
-      List<MapJoinOperator> mjOps){
+      List<MapJoinOperator> mjOps, boolean inTestMode){
     MapJoinOperator selectedMJOp = null;
     double selectedMJOpRatio = 0;
     for (MapJoinOperator currMJOp : mjOps) {
@@ -1522,9 +1526,14 @@ public class TezCompiler extends TaskCompiler {
 
       List<ExprNodeDesc> keyDesc = selectedMJOp.getConf().getKeys().get(posBigTable);
       ExprNodeColumnDesc keyCol = (ExprNodeColumnDesc) keyDesc.get(0);
-
-      tsProbeDecodeCtx = new TableScanOperator.ProbeDecodeContext(mjCacheKey, mjSmallTablePos,
-          keyCol.getColumn(), selectedMJOpRatio);
+      String realTSColName = OperatorUtils.findTableColNameOf(selectedMJOp, keyCol.getColumn());
+      if (realTSColName != null) {
+        tsProbeDecodeCtx = new TableScanOperator.ProbeDecodeContext(mjCacheKey, mjSmallTablePos,
+                realTSColName, selectedMJOpRatio);
+      } else if (inTestMode){
+        throw new RuntimeException("ProbeDecode could not find TSColName for ColKey: " + keyCol + " with MJ Schema: " +
+                selectedMJOp.getSchema());
+      }
     }
     return tsProbeDecodeCtx;
   }

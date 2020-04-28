@@ -189,7 +189,8 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     // If the cacheKey is not defined in the conf, then we generate it.
     cacheKey = conf.getCacheKey() == null ?
         MapJoinDesc.generateCacheKey(this.getOperatorId()) :
-        conf.getCacheKey() + "_" + this.getClass().getName();
+        // TODO [PANOS] Fix properly
+        conf.getCacheKey();
     cache = ObjectCacheFactory.getCache(hconf, queryId, false);
     loader = getHashTableLoader(hconf);
 
