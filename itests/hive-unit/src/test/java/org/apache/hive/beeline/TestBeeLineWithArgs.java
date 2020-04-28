@@ -176,9 +176,9 @@ import org.junit.Test;
     }
     String[] args = argList.toArray(new String[argList.size()]);
     beeLine.begin(args, inputStream);
-    String output = os.toString("UTF8");
-
     beeLine.close();
+    beelineOutputStream.close();
+    String output = os.toString("UTF8");
     return output;
   }
 
