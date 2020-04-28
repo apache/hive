@@ -43,7 +43,7 @@ import com.google.common.collect.ImmutableList;
 /**
  * This rule could rewrite {@code count(distinct(x))} calls to be calculated using sketch based functions.
  *
- * The transformation here works on Aggregate nodes; the operations done are:
+ * The transformation here works on Aggregate nodes; the operations done are the following:
  *
  * 1. Identify candidate {@code count(distinct)} aggregate calls
  * 2. A new Aggregate is created in which the aggregation is done by the sketch function
