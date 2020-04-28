@@ -375,7 +375,6 @@
        <column name="STRING_LIST_ID"/>
      </datastore-identity>
      <field name="internalList" table="Skewed_STRING_LIST_VALUES">
-       <foreign-key name="MStringList_Values" delete-action="cascade"/>
        <collection element-type="java.lang.String"/>
        <join>
          <column name="STRING_LIST_ID"/>
@@ -448,7 +447,6 @@
         </value>
       </field>
       <field name="skewedColNames" table="SKEWED_COL_NAMES">
-        <foreign-key name="SD_X1" delete-action="cascade"/>
         <collection element-type="java.lang.String"/>
         <join>
           <column name="SD_ID"/>
@@ -456,12 +454,10 @@
         <element column="SKEWED_COL_NAME"/>
       </field>
       <field name="skewedColValues" table="SKEWED_VALUES">
-        <foreign-key name="SD_X2" delete-action="cascade"/>
         <collection element-type="MStringList"/>
         <join/>
       </field>
       <field name="skewedColValueLocationMaps" table="SKEWED_COL_VALUE_LOC_MAP">
-        <foreign-key name="SD_X3" delete-action="cascade"/>
         <map key-type="MStringList" value-type="java.lang.String"/>
         <join>
           <column name="SD_ID"/>
