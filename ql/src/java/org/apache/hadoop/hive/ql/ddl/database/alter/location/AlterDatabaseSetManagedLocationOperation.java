@@ -32,33 +32,34 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
- * Operation process of altering a database's location.
+ * Operation process of altering a database's managed location.
  */
-public class AlterDatabaseSetLocationOperation extends AbstractAlterDatabaseOperation<AlterDatabaseSetLocationDesc> {
-  public AlterDatabaseSetLocationOperation(DDLOperationContext context, AlterDatabaseSetLocationDesc desc) {
+public class AlterDatabaseSetManagedLocationOperation
+    extends AbstractAlterDatabaseOperation<AlterDatabaseSetManagedLocationDesc> {
+  public AlterDatabaseSetManagedLocationOperation(DDLOperationContext context,
+      AlterDatabaseSetManagedLocationDesc desc) {
     super(context, desc);
   }
 
   @Override
   protected void doAlteration(Database database, Map<String, String> params) throws HiveException {
     try {
-      String newLocation = Utilities.getQualifiedPath(context.getConf(), new Path(desc.getLocation()));
+      String newManagedLocation = Utilities.getQualifiedPath(context.getConf(), new Path(desc.getManagedLocation()));
 
-      if (newLocation.equalsIgnoreCase(database.getManagedLocationUri())) {
+      if (database.getLocationUri().equalsIgnoreCase(newManagedLocation)) {
         throw new HiveException("Managed and external locations for database cannot be the same");
       }
 
-      URI locationURI = new URI(newLocation);
+      URI locationURI = new URI(newManagedLocation);
       if (!locationURI.isAbsolute() || StringUtils.isBlank(locationURI.getScheme())) {
-        throw new HiveException(ErrorMsg.BAD_LOCATION_VALUE, newLocation);
+        throw new HiveException(ErrorMsg.BAD_LOCATION_VALUE, newManagedLocation);
       }
 
-      if (newLocation.equals(database.getLocationUri())) {
+      if (newManagedLocation.equals(database.getManagedLocationUri())) {
         LOG.info("AlterDatabase skipped. No change in location.");
       } else {
-        database.setLocationUri(newLocation);
+        database.setManagedLocationUri(newManagedLocation);
       }
-      return;
     } catch (URISyntaxException e) {
       throw new HiveException(e);
     }

@@ -23,21 +23,21 @@ import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
- * DDL task description for ALTER DATABASE ... SET LOCATION ... commands.
+ * DDL task description for ALTER DATABASE ... SET MANAGEDLOCATION ... commands.
  */
-@Explain(displayName = "Set Database Location", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class AlterDatabaseSetLocationDesc extends AbstractAlterDatabaseDesc {
+@Explain(displayName = "Set Database Managed Location", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class AlterDatabaseSetManagedLocationDesc extends AbstractAlterDatabaseDesc {
   private static final long serialVersionUID = 1L;
 
-  private final String location;
+  private final String managedLocation;
 
-  public AlterDatabaseSetLocationDesc(String databaseName, String location) {
+  public AlterDatabaseSetManagedLocationDesc(String databaseName, String managedLocation) {
     super(databaseName, null);
-    this.location = location;
+    this.managedLocation = managedLocation;
   }
 
-  @Explain(displayName="location")
-  public String getLocation() {
-    return location;
+  @Explain(displayName="managed location")
+  public String getManagedLocation() {
+    return managedLocation;
   }
 }

@@ -33,16 +33,17 @@ public class DescDatabaseDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
   public static final String DESC_DATABASE_SCHEMA =
-      "db_name,comment,location,managedLocation,owner_name,owner_type,parameters#string:string:string:string:string:string:string";
+      "db_name,comment,location,managedLocation,owner_name,owner_type,parameters#" +
+      "string:string:string:string:string:string:string";
 
   private final String resFile;
   private final String dbName;
   private final boolean isExt;
 
   public DescDatabaseDesc(Path resFile, String dbName, boolean isExt) {
-    this.isExt = isExt;
     this.resFile = resFile.toString();
     this.dbName = dbName;
+    this.isExt = isExt;
   }
 
   public boolean isExt() {

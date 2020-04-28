@@ -26,7 +26,7 @@ import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 /**
- * Analyzer for database set location commands.
+ * Analyzer for database set managed location commands.
  */
 @DDLType(types = HiveParser.TOK_ALTERDATABASE_MANAGEDLOCATION)
 public class AlterDatabaseSetManagedLocationAnalyzer extends AbstractAlterDatabaseAnalyzer {
@@ -41,7 +41,7 @@ public class AlterDatabaseSetManagedLocationAnalyzer extends AbstractAlterDataba
 
     outputs.add(toWriteEntity(newLocation));
 
-    AlterDatabaseSetLocationDesc desc = new AlterDatabaseSetLocationDesc(databaseName, null, newLocation);
+    AlterDatabaseSetManagedLocationDesc desc = new AlterDatabaseSetManagedLocationDesc(databaseName, newLocation);
     addAlterDatabaseDesc(desc);
   }
 }

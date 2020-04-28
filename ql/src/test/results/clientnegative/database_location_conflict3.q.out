@@ -1,0 +1,14 @@
+PREHOOK: query: CREATE DATABASE db
+#### A masked pattern was here ####
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:db
+#### A masked pattern was here ####
+POSTHOOK: query: CREATE DATABASE db
+#### A masked pattern was here ####
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:db
+#### A masked pattern was here ####
+PREHOOK: type: ALTERDATABASE_LOCATION
+PREHOOK: Output: database:db
+#### A masked pattern was here ####
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. Managed and external locations for database cannot be the same
