@@ -60,7 +60,7 @@ public class ReplChangeManager {
   private static boolean inited = false;
   private static boolean enabled = false;
   private static Map<String, String> encryptionZoneToCmrootMapping = new HashMap<>();
-  private static HadoopShims hadoopShims = ShimLoader.getHadoopShims();
+  private HadoopShims hadoopShims;
   private static Configuration conf;
   private String msUser;
   private String msGroup;
@@ -153,6 +153,7 @@ public class ReplChangeManager {
         if (MetastoreConf.getBoolVar(conf, ConfVars.REPLCMENABLED)) {
           ReplChangeManager.enabled = true;
           ReplChangeManager.conf = conf;
+          hadoopShims = ShimLoader.getHadoopShims();
           cmRootDir = MetastoreConf.getVar(conf, ConfVars.REPLCMDIR);
           encryptedCmRootDir = MetastoreConf.getVar(conf, ConfVars.REPLCMENCRYPTEDDIR);
           fallbackNonEncryptedCmRootDir = MetastoreConf.getVar(conf, ConfVars.REPLCMFALLBACKNONENCRYPTEDDIR);
@@ -403,7 +404,7 @@ public class ReplChangeManager {
    */
   // TODO: this needs to be enhanced once change management based filesystem is implemented
   // Currently using fileuri#checksum#cmrooturi#subdirs as the format
-  public static String encodeFileUri(String fileUriStr, String fileChecksum, String encodedSubDir)
+  public String encodeFileUri(String fileUriStr, String fileChecksum, String encodedSubDir)
           throws IOException {
     if (instance == null) {
       throw new IllegalStateException("Uninitialized ReplChangeManager instance.");
@@ -551,7 +552,7 @@ public class ReplChangeManager {
   }
 
   @VisibleForTesting
-  static Path getCmRoot(Path path) throws IOException {
+  Path getCmRoot(Path path) throws IOException {
     Path cmroot = null;
     //Default path if hive.repl.cm dir is encrypted
     String cmrootDir = fallbackNonEncryptedCmRootDir;
