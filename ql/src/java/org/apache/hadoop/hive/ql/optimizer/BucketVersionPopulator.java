@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,18 +62,14 @@ public class BucketVersionPopulator extends Transform {
 
   protected static final Logger LOG = LoggerFactory.getLogger(BucketVersionPopulator.class);
 
-  @Deprecated
-  protected ParseContext pGraphContext;
 
   @Deprecated
   Set<OpGroup> groups = new HashSet<BucketVersionPopulator.OpGroup>();
 
-  Map<Operator<?>, OpGroup> b = new IdentityHashMap<>();
 
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
-    pGraphContext = pctx;
-    findOpGroups();
+    findOpGroups(pctx);
     assignGroupVersions();
     return pctx;
   }
@@ -88,7 +83,7 @@ public class BucketVersionPopulator extends Transform {
 
   }
 
-  private ParseContext findOpGroups() throws SemanticException {
+  private void findOpGroups(ParseContext pctx) throws SemanticException {
 
     NodeProcessorCtx ctx = new NodeProcessorCtx() {
     };
@@ -100,9 +95,8 @@ public class BucketVersionPopulator extends Transform {
     SemanticGraphWalker ogw = new DefaultGraphWalker(disp);
 
     ArrayList<Node> topNodes = new ArrayList<Node>();
-    topNodes.addAll(pGraphContext.getTopOps().values());
+    topNodes.addAll(pctx.getTopOps().values());
     ogw.startWalking(topNodes, null);
-    return pGraphContext;
   }
 
   class OpGroup {
@@ -115,7 +109,6 @@ public class BucketVersionPopulator extends Transform {
 
     public void add(Operator o) {
       members.add(o);
-      b.put(o, this);
     }
 
     public void setBucketVersion() {
@@ -221,14 +214,6 @@ public class BucketVersionPopulator extends Transform {
       } else {
         return g;
       }
-    }
-
-    private OpGroup getGroupFor(Operator o) {
-      OpGroup g = b.get(o.getParentOperators().get(0));
-      for (int i = 1; i < o.getNumParent(); i++) {
-        g.merge(b.get(o.getParentOperators().get(i)));
-      }
-      return g;
     }
 
   }
