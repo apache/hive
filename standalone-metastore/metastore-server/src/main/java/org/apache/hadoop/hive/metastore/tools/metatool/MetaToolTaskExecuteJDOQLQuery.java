@@ -25,17 +25,21 @@ class MetaToolTaskExecuteJDOQLQuery extends MetaToolTask {
   @Override
   void execute() {
     String query = getCl().getJDOQLQuery();
-    try {
       if (query.toLowerCase().trim().startsWith("select")) {
+        try {
         executeJDOQLSelect(query);
+        } catch (Exception e) {
+          throw new RuntimeException(e);
+        }
       } else if (query.toLowerCase().trim().startsWith("update")) {
-        executeJDOQLUpdate(query);
+        try {
+          executeJDOQLUpdate(query);
+        } catch (Exception e) {
+          throw new RuntimeException(e);
+        }
       } else {
         throw new IllegalArgumentException("HiveMetaTool:Unsupported statement type, only select and update supported");
       }
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
   }
 
   private void executeJDOQLSelect(String query) throws Exception {

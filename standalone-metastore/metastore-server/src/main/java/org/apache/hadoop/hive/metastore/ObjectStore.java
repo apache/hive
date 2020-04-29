@@ -3421,6 +3421,8 @@ public class ObjectStore implements RawStore, Configurable {
         partitions.add(part);
       }
       success = commitTransaction();
+    } catch (InvalidObjectException | NoSuchObjectException | MetaException e) {
+      throw e;
     } catch (Exception e) {
       throw new MetaException(e.getMessage());
     } finally {
@@ -3442,6 +3444,8 @@ public class ObjectStore implements RawStore, Configurable {
           part_vals, max_parts, "partitionName");
       partitionNames.addAll(names);
       success = commitTransaction();
+    } catch (NoSuchObjectException | MetaException e) {
+      throw e;
     } catch (Exception e) {
       throw new MetaException(e.getMessage());
     } finally {
@@ -8987,7 +8991,7 @@ public class ObjectStore implements RawStore, Configurable {
       openTransaction();
 
       validateTableCols(table, colNames);
-      
+
       List<MTableColumnStatistics> result = Collections.emptyList();
       try (Query query = pm.newQuery(MTableColumnStatistics.class)) {
       result =
@@ -9437,12 +9441,12 @@ public class ObjectStore implements RawStore, Configurable {
         result = (List<MPartitionColumnStatistics>) query.executeWithArray(params);
         pm.retrieveAll(result);
         result = new ArrayList<>(result);
+      } catch (Exception ex) {
+        LOG.error("Error retrieving statistics via jdo", ex);
+        throw new MetaException(ex.getMessage());
       }
       committed = commitTransaction();
       return result;
-    } catch (Exception ex) {
-      LOG.error("Error retrieving statistics via jdo", ex);
-      throw new MetaException(ex.getMessage());
     } finally {
       if (!committed) {
         rollbackTransaction();
