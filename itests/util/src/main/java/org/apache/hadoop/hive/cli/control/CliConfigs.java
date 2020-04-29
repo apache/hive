@@ -71,9 +71,6 @@ public class CliConfigs {
         excludeQuery("udaf_histogram_numeric.q"); // disabled in HIVE-20715
         excludeQuery("vector_groupby_reduce.q"); // Disabled in HIVE-21396
         excludeQuery("constprog_cast.q"); // TODO: Enable when we move to Calcite 1.23
-        excludeQuery("temp_table_multi_insert_partitioned.q");
-        excludeQuery("schema_evol_par_vec_table_dictionary_encoding.q");
-        excludeQuery("schema_evol_par_vec_table_non_dictionary_encoding.q");
 
         setResultsDir("ql/src/test/results/clientpositive");
         setLogDir("itests/qtest/target/qfile-results/clientpositive");
@@ -260,9 +257,6 @@ public class CliConfigs {
         excludeQuery("schema_evol_orc_vec_part_llap_io.q"); // Disabled in HIVE-19509
         excludeQuery("load_dyn_part3.q"); // Disabled in HIVE-20662. Enable in HIVE-20663.
         excludeQuery("rfc5424_parser_file_pruning.q"); // Disabled in HIVE-21427
-        excludeQuery("temp_table_multi_insert_partitioned.q");
-        excludeQuery("schema_evol_par_vec_table_dictionary_encoding.q");
-        excludeQuery("schema_evol_par_vec_table_non_dictionary_encoding.q");
 
         setResultsDir("ql/src/test/results/clientpositive/llap");
         setLogDir("itests/qtest/target/qfile-results/clientpositive");
