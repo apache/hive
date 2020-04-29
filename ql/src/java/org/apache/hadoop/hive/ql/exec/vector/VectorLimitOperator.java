@@ -79,18 +79,20 @@ public class VectorLimitOperator extends LimitOperator implements VectorizationO
       }
       //skip skipSize rows of batch
       batch.size = Math.min(batch.size, offset + limit - currCount);
+      int newBatchSize = batch.size - skipSize;
       if (batch.selectedInUse == false) {
         batch.selectedInUse = true;
-        for (int i = 0; i < batch.size - skipSize; i++) {
+        for (int i = 0; i < newBatchSize; i++) {
           batch.selected[i] = skipSize + i;
         }
       } else {
-        for (int i = 0; i < batch.size - skipSize; i++) {
+        for (int i = 0; i < newBatchSize; i++) {
           batch.selected[i] = batch.selected[skipSize + i];
         }
       }
-      vectorForward(batch);
       currCount += batch.size;
+      batch.size = newBatchSize;
+      vectorForward(batch);
     }
   }
 
