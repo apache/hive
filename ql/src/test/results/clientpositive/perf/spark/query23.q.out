@@ -5,9 +5,6 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Stage-1:MAPRED' is a cross p
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> CDPD-8247/HIVE-21338/HIVE-22408: Remove order by and limit for aggregates (Vineet Garg, reviewed by Jesus Camacho Rodriguez)
 Warning: Map Join MAPJOIN[291][bigTable=?] in task 'Stage-1:MAPRED' is a cross product
 Warning: Map Join MAPJOIN[292][bigTable=?] in task 'Stage-1:MAPRED' is a cross product
 =======
@@ -18,15 +15,11 @@ Warning: Map Join MAPJOIN[276][bigTable=?] in task 'Stage-1:MAPRED' is a cross p
 Warning: Map Join MAPJOIN[274][bigTable=?] in task 'Stage-1:MAPRED' is a cross product
 Warning: Map Join MAPJOIN[275][bigTable=?] in task 'Stage-1:MAPRED' is a cross product
 >>>>>>> a074c7c2ed... HIVE-21338: Remove order by and limit for aggregates (Vineet Garg, reviewed by Jesus Camacho Rodriguez)
-<<<<<<< HEAD
 =======
 Warning: Map Join MAPJOIN[204][bigTable=?] in task 'Stage-1:MAPRED' is a cross product
 Warning: Map Join MAPJOIN[205][bigTable=?] in task 'Stage-1:MAPRED' is a cross product
 >>>>>>> 2111c01ca1... HIVE-21537: Scalar query rewrite could be improved to not generate an extra join if subquery is guaranteed to produce atmost one row (Vineet Garg, reviewed by Jesus Camacho Rodriguez)
 >>>>>>> 9acf179e0b... CDPD-8247/HIVE-21537: Scalar query rewrite could be improved to not generate an extra join if subquery is guaranteed to produce atmost one row (Vineet Garg, reviewed by Jesus Camacho Rodriguez)
-=======
->>>>>>> 07821b2d7f... CDPD-8247/HIVE-21338: Remove order by and limit for aggregates (Vineet Garg, reviewed by Jesus Camacho Rodriguez)
->>>>>>> CDPD-8247/HIVE-21338/HIVE-22408: Remove order by and limit for aggregates (Vineet Garg, reviewed by Jesus Camacho Rodriguez)
 PREHOOK: query: explain
 with frequent_ss_items as 
  (select substr(i_item_desc,1,30) itemdesc,i_item_sk item_sk,d_date solddate,count(*) cnt
@@ -1234,6 +1227,7 @@ STAGE PLANS:
                       null sort order: 
                       sort order: 
                       Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                      TopN Hash Memory Usage: 0.1
                       value expressions: _col0 (type: decimal(28,2))
         Reducer 3 
             Reduce Operator Tree:
@@ -1352,6 +1346,7 @@ STAGE PLANS:
                       null sort order: 
                       sort order: 
                       Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                      TopN Hash Memory Usage: 0.1
                       value expressions: _col0 (type: decimal(28,2))
         Reducer 5 
             Execution mode: vectorized
@@ -1361,10 +1356,9 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
+                Limit
+                  Number of rows: 100
                   Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
-<<<<<<< HEAD
 <<<<<<< HEAD
                   File Output Operator
                     compressed: false
@@ -1374,17 +1368,12 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 =======
-=======
->>>>>>> CDPD-8247/HIVE-21338/HIVE-22408: Remove order by and limit for aggregates (Vineet Garg, reviewed by Jesus Camacho Rodriguez)
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 <<<<<<< HEAD
-<<<<<<< HEAD
 >>>>>>> 9acf179e0b... CDPD-8247/HIVE-21537: Scalar query rewrite could be improved to not generate an extra join if subquery is guaranteed to produce atmost one row (Vineet Garg, reviewed by Jesus Camacho Rodriguez)
-=======
->>>>>>> CDPD-8247/HIVE-21338/HIVE-22408: Remove order by and limit for aggregates (Vineet Garg, reviewed by Jesus Camacho Rodriguez)
         Reducer 58 
             Execution mode: vectorized
             Local Work:
@@ -1439,7 +1428,7 @@ STAGE PLANS:
 
   Stage: Stage-0
     Fetch Operator
-      limit: -1
+      limit: 100
       Processor Tree:
         ListSink
 

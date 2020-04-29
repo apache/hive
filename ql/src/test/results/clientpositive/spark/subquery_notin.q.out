@@ -4521,21 +4521,18 @@ STAGE PLANS:
                       expressions: _col1 (type: bigint)
                       outputColumnNames: _col0
                       Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: bigint)
-                        null sort order: a
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: bigint)
+                      Group By Operator
+                        keys: _col0 (type: bigint)
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0
                         Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
-<<<<<<< HEAD
                         Reduce Output Operator
                           key expressions: _col0 (type: bigint)
                           null sort order: a
                           sort order: +
                           Map-reduce partition columns: _col0 (type: bigint)
                           Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
-=======
->>>>>>> 78a4dd7385... HIVE-22408: The fix for CALCITE-2991 creates wrong results on edge case (Vineet Garg, reviewed by Zoltan Haindrich)
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -4639,7 +4636,7 @@ STAGE PLANS:
             Reduce Operator Tree:
               Join Operator
                 condition map:
-                     Inner Join 0 to 1
+                     Left Semi Join 0 to 1
                 keys:
                   0 _col1 (type: bigint)
                   1 _col0 (type: bigint)
@@ -4892,21 +4889,18 @@ STAGE PLANS:
                       expressions: _col1 (type: bigint)
                       outputColumnNames: _col0
                       Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: bigint)
-                        null sort order: a
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: bigint)
+                      Group By Operator
+                        keys: _col0 (type: bigint)
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0
                         Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
-<<<<<<< HEAD
                         Reduce Output Operator
                           key expressions: _col0 (type: bigint)
                           null sort order: a
                           sort order: +
                           Map-reduce partition columns: _col0 (type: bigint)
                           Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
-=======
->>>>>>> 78a4dd7385... HIVE-22408: The fix for CALCITE-2991 creates wrong results on edge case (Vineet Garg, reviewed by Zoltan Haindrich)
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -4978,7 +4972,7 @@ STAGE PLANS:
             Reduce Operator Tree:
               Join Operator
                 condition map:
-                     Inner Join 0 to 1
+                     Left Semi Join 0 to 1
                 keys:
                   0 _col1 (type: bigint)
                   1 _col0 (type: bigint)
