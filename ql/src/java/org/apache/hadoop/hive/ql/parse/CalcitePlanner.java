@@ -3264,7 +3264,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
             ImmutableMap<String, Integer> outerNameToPosMap, RowResolver outerRR,
             boolean useCaching) throws SemanticException {
       RexNode filterExpression = genRexNode(filterNode, relToHiveRR.get(srcRel),
-              outerRR, null, useCaching, cluster.getRexBuilder());
+          outerRR, null, useCaching, cluster.getRexBuilder());
+
+      return genFilterRelNode(filterExpression, srcRel, outerNameToPosMap, outerRR);
+    }
+
+    private RelNode genFilterRelNode(RexNode filterExpression, RelNode srcRel,
+        ImmutableMap<String, Integer> outerNameToPosMap, RowResolver outerRR) throws SemanticException {
       if (RexUtil.isLiteral(filterExpression, false)
           && filterExpression.getType().getSqlTypeName() != SqlTypeName.BOOLEAN) {
         // queries like select * from t1 where 'foo';
@@ -3582,6 +3588,35 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
 
       return filterRel;
+    }
+
+    /**
+     * This method creates a HiveFilter containing a filter expression to enforce constraints.
+     * Constraints to check: not null, check
+     * The return value is the pair of Constraint HiveFilter and the corresponding RowResolver
+     * or null if the target has no constraint defined or all of them are disabled.
+     */
+    private Pair<RelNode, RowResolver> genConstraintFilterLogicalPlan(
+        QB qb, RelNode srcRel, ImmutableMap<String, Integer> outerNameToPosMap, RowResolver outerRR)
+        throws SemanticException {
+      if (qb.getIsQuery()) {
+        return null;
+      }
+
+      String dest = qb.getParseInfo().getClauseNames().iterator().next();
+      if (!updating(dest)) {
+        return null;
+      }
+
+      RowResolver inputRR = relToHiveRR.get(srcRel);
+      RexNode constraintUDF = RexNodeTypeCheck.genConstraintsExpr(
+          conf, cluster.getRexBuilder(), getTargetTable(qb, dest), updating(dest), inputRR);
+      if (constraintUDF == null) {
+        return null;
+      }
+
+      RelNode constraintRel = genFilterRelNode(constraintUDF, srcRel, outerNameToPosMap, outerRR);
+      return new Pair<>(constraintRel, inputRR);
     }
 
     private AggregateCall convertGBAgg(AggregateInfo agg, List<RexNode> gbChildProjLst,
@@ -5126,6 +5161,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
       Pair<RelNode, RowResolver> selPair = genSelectLogicalPlan(qb, srcRel, starSrcRel, outerNameToPosMap, outerRR, false);
       selectRel = selPair.getKey();
       srcRel = (selectRel == null) ? srcRel : selectRel;
+
+      // Build Rel for Constraint checks
+      Pair<RelNode, RowResolver> constraintPair =
+          genConstraintFilterLogicalPlan(qb, srcRel, outerNameToPosMap, outerRR);
+      if (constraintPair != null) {
+        selPair = constraintPair;
+      }
 
       // 6. Build Rel for OB Clause
       obRel = genOBLogicalPlan(qb, selPair, outerMostQB);

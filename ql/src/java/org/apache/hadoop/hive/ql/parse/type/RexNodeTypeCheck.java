@@ -20,7 +20,9 @@ package org.apache.hadoop.hive.ql.parse.type;
 import java.util.Map;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexNode;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -67,4 +69,10 @@ public class RexNodeTypeCheck {
     return factory.toExpr(columnInfo, rowResolver, offset);
   }
 
+  public static RexNode genConstraintsExpr(
+      HiveConf conf, RexBuilder rexBuilder, Table targetTable, boolean updateStatement, RowResolver inputRR)
+      throws SemanticException {
+    return new ConstraintExprGenerator<>(conf, new TypeCheckProcFactory<>(new RexNodeExprFactory(rexBuilder)))
+        .genConstraintsExpr(targetTable, updateStatement, inputRR);
+  }
 }
