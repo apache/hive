@@ -156,7 +156,7 @@ public class TestCodahaleMetrics {
     String  counterName = "count2";
     for (int i = 0; i < runs; i++) {
       MetricsFactory.getInstance().incrementCounter(counterName);
-      sleep(REPORT_INTERVAL_MS + REPORT_INTERVAL_MS / 2);
+      sleep(5 * REPORT_INTERVAL_MS);
       Assert.assertEquals(i + 1, getCounterValue(counterName));
     }
   }
