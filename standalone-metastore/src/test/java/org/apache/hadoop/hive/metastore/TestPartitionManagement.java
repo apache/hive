@@ -24,6 +24,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -40,6 +41,7 @@ import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
@@ -654,6 +656,44 @@ public class TestPartitionManagement {
     assertEquals(3, partitions.size());
   }
 
+  @Test
+  public void testPartitionExprFilter() throws TException, IOException {
+    String dbName = "db10";
+    String tableName = "tbl10";
+    Map<String, Column> colMap = buildAllColumns();
+    List<String> partKeys = Lists.newArrayList("state", "dt", "modts");
+    List<String> partKeyTypes = Lists.newArrayList("string", "date", "timestamp");
+
+    List<List<String>> partVals = Lists.newArrayList(
+        Lists.newArrayList("__HIVE_DEFAULT_PARTITION__", "1990-01-01", "__HIVE_DEFAULT_PARTITION__"),
+        Lists.newArrayList("CA", "1986-04-28", "2020-02-21 08:30:01"),
+        Lists.newArrayList("MN", "2018-11-31", "2020-02-21 08:19:01"));
+    createMetadata(DEFAULT_CATALOG_NAME, dbName, tableName, partKeys, partKeyTypes, partVals, colMap, false);
+    Table table = client.getTable(dbName, tableName);
+
+    table.getParameters().put(PartitionManagementTask.DISCOVER_PARTITIONS_TBLPROPERTY, "true");
+    table.getParameters().put("EXTERNAL", "true");
+    table.setTableType(TableType.EXTERNAL_TABLE.name());
+    client.alter_table(dbName, tableName, table);
+
+    List<Partition> partitions = client.listPartitions(dbName, tableName, (short) -1);
+    assertEquals(3, partitions.size());
+
+    String tableLocation = table.getSd().getLocation();
+    URI location = URI.create(tableLocation);
+    Path tablePath = new Path(location);
+    FileSystem fs = FileSystem.get(location, conf);
+    String partPath = partitions.get(1).getSd().getLocation();
+    Path newPart1 = new Path(tablePath, partPath);
+    fs.delete(newPart1);
+
+    conf.set(MetastoreConf.ConfVars.PARTITION_MANAGEMENT_DATABASE_PATTERN.getVarname(), "*db10*");
+    conf.set(ConfVars.PARTITION_MANAGEMENT_TABLE_TYPES.getVarname(), TableType.EXTERNAL_TABLE.name());
+    runPartitionManagementTask(conf);
+    partitions = client.listPartitions(dbName, tableName, (short) -1);
+    assertEquals(2, partitions.size());
+  }
+
   private void runPartitionManagementTask(Configuration conf) {
     PartitionManagementTask task = new PartitionManagementTask();
     task.setConf(conf);
@@ -669,4 +709,6 @@ public class TestPartitionManagement {
       this.colType = colType;
     }
   }
+
+
 }
