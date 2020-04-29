@@ -2328,7 +2328,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                 if (destTableDb == null) {
                   destTableDb = names[0];
                 }
-                location = wh.getDatabasePath(db.getDatabase(destTableDb));
+                boolean useExternal = (qb.getTableDesc() == null || qb.getTableDesc().isTemporary()
+                    || qb.getTableDesc().isExternal() || !makeAcid());
+                if (useExternal) {
+                  location = wh.getDatabaseExternalPath(db.getDatabase(destTableDb));
+                } else {
+                  location = wh.getDatabaseManagedPath(db.getDatabase(destTableDb));
+                }
               } catch (MetaException e) {
                 throw new SemanticException(e);
               }
