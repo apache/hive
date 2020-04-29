@@ -36,16 +36,16 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
- * UDFSplitMapPrivs
+ * UDFSplitMapPrivs.
  *
  */
 
 @Description(name = "split_map_privs", value = "_FUNC_(str, regex) - Splits binary str and maps to privilege type "
     + "regex", extended = "Example:\n" + "  > SELECT _FUNC_('0 1 1 0 1 1 0 0 0', ' ') FROM src LIMIT 1;\n"
     + "  [\"UPDATE\", \"CREATE\", \"ALTER\", \"INDEX\"]") class PrivilegeMap {
-  private HashMap<Integer, String> privilegeMap = new HashMap<Integer, String>();
+  private Map<Integer, String> privilegeMap = new HashMap<Integer, String>();
 
-   Map<Integer, String> getPrivilegeMap() {
+  Map<Integer, String> getPrivilegeMap() {
 
     privilegeMap.put(0, "SELECT");
     privilegeMap.put(1, "UPDATE");
@@ -62,6 +62,12 @@ import java.util.regex.Pattern;
   }
 }
 
+/**
+ * UDFSplitMapPrivs.
+ * "_FUNC_(str, regex) - Splits binary str and maps to privilege type "
+ *      "Example: > SELECT _FUNC_('0 1 1 0 1 1 0 0 0', ' ') FROM src LIMIT 1;"
+ *     output: "  ["UPDATE", "CREATE", "ALTER", "INDEX"]"
+ */
 public class GenericUDFStringToPrivilege extends GenericUDF {
   private transient ObjectInspectorConverters.Converter[] converters;
   private transient Pattern constPattern;
@@ -104,14 +110,14 @@ public class GenericUDFStringToPrivilege extends GenericUDF {
     if (constPattern == null) {
       Text regex = (Text) converters[1].convert(arguments[1].get());
       for (String str : s.toString().split(regex.toString(), -1)) {
-        if (str.equals("1")) {
+        if ("1".equals(str)) {
           result.add(new Text(privs.get(index)));
         }
         index++;
       }
     } else {
       for (String str : constPattern.split(s.toString(), -1)) {
-        if (str.equals("1")) {
+        if ("1".equals(str)) {
           result.add(new Text(privs.get(index)));
         }
         index++;
