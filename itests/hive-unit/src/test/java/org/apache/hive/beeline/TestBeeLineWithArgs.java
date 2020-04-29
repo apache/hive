@@ -94,7 +94,7 @@ import org.junit.Test;
         "org.apache.hadoop.hive.ql.lockmgr.EmbeddedLockManager");
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVEOPTIMIZEMETADATAQUERIES, false);
     hiveConf.set(ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL.varname, "verbose");
-    miniHS2 = new MiniHS2(hiveConf, MiniClusterType.LLAP);
+    miniHS2 = new MiniHS2(hiveConf, MiniClusterType.TEZ);
 
     Map<String, String> confOverlay = new HashMap<String, String>();
     miniHS2.start(confOverlay);
@@ -1161,9 +1161,10 @@ import org.junit.Test;
       + "insert into new_table values (1);\n";
     final String EXPECTED_PATTERN = "1 row affected";
     List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
-    testScriptFile(SCRIPT_TEXT, argList, OutStream.ERR, EXPECTED_PATTERN, true);
+    testScriptFile(SCRIPT_TEXT, argList, OutStream.ERR,
+        Collections.singletonList(new Tuple<>(EXPECTED_PATTERN, true)),
+        Arrays.asList(Modes.SCRIPT));
   }
-
   /**
    * Test 'describe extended' on tables that have special white space characters in the row format.
    */
