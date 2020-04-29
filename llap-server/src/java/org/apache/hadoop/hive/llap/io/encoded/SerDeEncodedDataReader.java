@@ -1643,7 +1643,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     int headerCount = Utilities.getHeaderCount(tableDesc);
     int footerCount = Utilities.getFooterCount(tableDesc, jobConf);
     if (LlapIoImpl.LOG.isDebugEnabled()) {
-      LlapIoImpl.LOG.debug("Using {} to read data with HeaderSkip {} and FooterSkip {}",
+      LlapIoImpl.LOG.debug("Using {} to read data with skip.header.line.count {} and skip.footer.line.count {}",
           sourceReader.getClass().getSimpleName(), headerCount, footerCount);
     }
     // Handle the special cases here. Perhaps we could have a more general structure, or even

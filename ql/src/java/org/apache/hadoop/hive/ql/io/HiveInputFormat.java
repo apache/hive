@@ -608,9 +608,11 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
   }
 
   public boolean isCompressedInput(List<Path> finalPaths) {
-    for (Path curr: finalPaths) {
-      if (this.compressionCodecs.getCodec(curr) != null) {
-        return true;
+    if (compressionCodecs != null) {
+      for (Path curr : finalPaths) {
+        if (this.compressionCodecs.getCodec(curr) != null) {
+          return true;
+        }
       }
     }
     return false;

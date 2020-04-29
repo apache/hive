@@ -23,11 +23,11 @@ POSTHOOK: Lineage: hf1.b SCRIPT []
 PREHOOK: query: SELECT * FROM hf1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hf1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT * FROM hf1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hf1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 a	b
 c	d
 PREHOOK: query: DROP TABLE IF EXISTS hf2
@@ -55,11 +55,11 @@ POSTHOOK: Lineage: hf2.b SCRIPT []
 PREHOOK: query: SELECT * FROM hf2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hf2
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT * FROM hf2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hf2
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 x	y
 PREHOOK: query: DROP TABLE IF EXISTS hf3
 PREHOOK: type: DROPTABLE
@@ -86,11 +86,11 @@ POSTHOOK: Lineage: hf3.b SCRIPT []
 PREHOOK: query: SELECT * FROM hf3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hf3
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT * FROM hf3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hf3
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: DROP TABLE IF EXISTS hf4
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE IF EXISTS hf4
@@ -116,8 +116,8 @@ POSTHOOK: Lineage: hf4.b SCRIPT []
 PREHOOK: query: SELECT * FROM hf4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hf4
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT * FROM hf4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hf4
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###

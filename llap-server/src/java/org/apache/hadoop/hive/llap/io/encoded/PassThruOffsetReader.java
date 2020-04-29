@@ -89,7 +89,6 @@ import org.apache.hadoop.mapred.RecordReader;
         return true;
       } else {
         // Done reading
-        close();
         return false;
       }
     } catch (Exception e) {
