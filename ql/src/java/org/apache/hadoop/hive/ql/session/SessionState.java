@@ -417,7 +417,6 @@ public class SessionState {
     resourceMaps = new ResourceMaps();
     // Must be deterministic order map for consistent q-test output across Java versions
     overriddenConfigurations = new LinkedHashMap<String, String>();
-    overriddenConfigurations.putAll(HiveConf.getConfSystemProperties());
     // if there isn't already a session name, go ahead and create it.
     if (StringUtils.isEmpty(conf.getVar(HiveConf.ConfVars.HIVESESSIONID))) {
       conf.setVar(HiveConf.ConfVars.HIVESESSIONID, makeSessionId());

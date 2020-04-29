@@ -373,4 +373,10 @@
   <value>hive_admin_user</value>
 </property>
 
+<property>
+  <name>hive.conf.restricted.list</name>
+  <value>hive.query.max.length</value>
+  <description>Using property defined in HiveConf.ConfVars to test System property overriding</description>
+</property>
+
 </configuration>

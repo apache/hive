@@ -513,6 +513,9 @@ public class QTestUtil {
       System.out.println("Setting hive-site: " + HiveConf.getHiveSiteLocation());
     }
 
+    // For testing configurations set by System.setProperties
+    System.setProperty("hive.query.max.length", "100Mb");
+
     queryState = new QueryState.Builder().withHiveConf(new HiveConf(IDriver.class)).build();
     conf = queryState.getConf();
     qMap = new TreeMap<String, String>();
