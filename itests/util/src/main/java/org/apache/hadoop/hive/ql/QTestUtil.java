@@ -204,6 +204,9 @@ public class QTestUtil {
       System.out.println("Setting hive-site: " + HiveConf.getHiveSiteLocation());
     }
 
+    // For testing configurations set by System.setProperties
+    System.setProperty("hive.query.max.length", "100Mb");
+
     conf = new HiveConf(IDriver.class);
     setMetaStoreProperties();
 
