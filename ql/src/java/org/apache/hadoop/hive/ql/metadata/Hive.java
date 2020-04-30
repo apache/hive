@@ -89,6 +89,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.permission.FsAction;
+import org.apache.hadoop.hdfs.DFSUtilClient;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
@@ -147,6 +148,8 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.MetadataPpdResult;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NotNullConstraintsRequest;
+import org.apache.hadoop.hive.metastore.api.PartitionSpec;
+import org.apache.hadoop.hive.metastore.api.PartitionWithoutSD;
 import org.apache.hadoop.hive.metastore.api.PrimaryKeysRequest;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
@@ -3835,6 +3838,63 @@ private void constructOneLBLocationMap(FileStatus fSta,
     return results;
   }
 
+  // This method converts PartitionSpec to Partiton.
+  // This is required because listPartitionsSpecByExpr return set of PartitionSpec but hive
+  // require Partition
+  private static List<Partition> convertFromPartSpec(Iterator<PartitionSpec> iterator, Table tbl)
+      throws HiveException, TException {
+    if(!iterator.hasNext()) {
+      return Collections.emptyList();
+    }
+    List<Partition> results = new ArrayList<>();
+
+    while (iterator.hasNext()) {
+      PartitionSpec partitionSpec = iterator.next();
+      if (partitionSpec.getPartitionList() != null) {
+        // partitions outside table location
+        Iterator<org.apache.hadoop.hive.metastore.api.Partition> externalPartItr =
+            partitionSpec.getPartitionList().getPartitions().iterator();
+        while(externalPartItr.hasNext()) {
+          org.apache.hadoop.hive.metastore.api.Partition msPart =
+              externalPartItr.next();
+          results.add(new Partition(tbl, msPart));
+        }
+      } else {
+        // partitions within table location
+        for(PartitionWithoutSD partitionWithoutSD:partitionSpec.getSharedSDPartitionSpec().getPartitions()) {
+          org.apache.hadoop.hive.metastore.api.Partition part = new org.apache.hadoop.hive.metastore.api.Partition();
+          part.setTableName(partitionSpec.getTableName());
+          part.setDbName(partitionSpec.getDbName());
+          part.setCatName(partitionSpec.getCatName());
+          part.setCreateTime(partitionWithoutSD.getCreateTime());
+          part.setLastAccessTime(partitionWithoutSD.getLastAccessTime());
+          part.setParameters(partitionWithoutSD.getParameters());
+          part.setPrivileges(partitionWithoutSD.getPrivileges());
+          part.setSd(partitionSpec.getSharedSDPartitionSpec().getSd().deepCopy());
+          String partitionLocation = null;
+          if(partitionWithoutSD.getRelativePath() == null
+              || partitionWithoutSD.getRelativePath().isEmpty()) {
+            if (tbl.getDataLocation() != null) {
+              Path partPath = new Path(tbl.getDataLocation(),
+                  Warehouse.makePartName(tbl.getPartCols(),
+                      partitionWithoutSD.getValues()));
+              partitionLocation = partPath.toString();
+            }
+          } else {
+            partitionLocation = tbl.getSd().getLocation();
+            partitionLocation += partitionWithoutSD.getRelativePath();
+          }
+          part.getSd().setLocation(partitionLocation);
+          part.setValues(partitionWithoutSD.getValues());
+          part.setWriteId(partitionSpec.getWriteId());
+          Partition hivePart = new Partition(tbl, part);
+          results.add(hivePart);
+        }
+      }
+    }
+    return results;
+  }
+
   /**
    * Get a list of Partitions by expr.
    * @param tbl The table containing the partitions.
@@ -3848,11 +3908,11 @@ private void constructOneLBLocationMap(FileStatus fSta,
     assert result != null;
     byte[] exprBytes = SerializationUtilities.serializeExpressionToKryo(expr);
     String defaultPartitionName = HiveConf.getVar(conf, ConfVars.DEFAULTPARTITIONNAME);
-    List<org.apache.hadoop.hive.metastore.api.Partition> msParts =
-        new ArrayList<org.apache.hadoop.hive.metastore.api.Partition>();
-    boolean hasUnknownParts = getMSC().listPartitionsByExpr(tbl.getDbName(),
+    List<org.apache.hadoop.hive.metastore.api.PartitionSpec> msParts =
+        new ArrayList<>();
+    boolean hasUnknownParts = getMSC().listPartitionsSpecByExpr(tbl.getDbName(),
         tbl.getTableName(), exprBytes, defaultPartitionName, (short)-1, msParts);
-    result.addAll(convertFromMetastore(tbl, msParts));
+    result.addAll(convertFromPartSpec(msParts.iterator(), tbl));
     return hasUnknownParts;
   }
 
@@ -4062,7 +4122,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       Arrays.sort(files);
       for (final FileStatus srcFile : files) {
         final Path srcP = srcFile.getPath();
-        final boolean needToCopy = needToCopy(srcP, destf, srcFs, destFs, configuredOwner, isManaged);
+        final boolean needToCopy = needToCopy(conf, srcP, destf, srcFs, destFs, configuredOwner, isManaged);
 
         final boolean isRenameAllowed = !needToCopy && !isSrcLocal;
 
@@ -4377,7 +4437,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         destFs.copyFromLocalFile(srcf, destf);
         return true;
       } else {
-        if (needToCopy(srcf, destf, srcFs, destFs, configuredOwner, isManaged)) {
+        if (needToCopy(conf, srcf, destf, srcFs, destFs, configuredOwner, isManaged)) {
           //copy if across file system or encryption zones.
           LOG.debug("Copying source " + srcf + " to " + destf + " because HDFS encryption zones are different.");
           return FileUtils.copy(srcf.getFileSystem(conf), srcf, destf.getFileSystem(conf), destf,
@@ -4502,7 +4562,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * TODO- consider if need to do this for different file authority.
    * @throws HiveException
    */
-  static private boolean needToCopy(Path srcf, Path destf, FileSystem srcFs,
+  static private boolean needToCopy(final HiveConf conf, Path srcf, Path destf, FileSystem srcFs,
                                       FileSystem destFs, String configuredOwner, boolean isManaged) throws HiveException {
     //Check if different FileSystems
     if (!FileUtils.equalsFileSystem(srcFs, destFs)) {
@@ -4543,6 +4603,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
     }
 
+    // if Encryption not enabled, no copy needed
+    if (!DFSUtilClient.isHDFSEncryptionEnabled(conf)) {
+      return false;
+    }
     //Check if different encryption zones
     HadoopShims.HdfsEncryptionShim srcHdfsEncryptionShim = SessionState.get().getHdfsEncryptionShim(srcFs);
     HadoopShims.HdfsEncryptionShim destHdfsEncryptionShim = SessionState.get().getHdfsEncryptionShim(destFs);

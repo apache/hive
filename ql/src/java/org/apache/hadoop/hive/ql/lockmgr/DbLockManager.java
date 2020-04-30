@@ -112,6 +112,8 @@ public final class DbLockManager implements HiveLockManager{
       long startRetry = System.currentTimeMillis();
       while (res.getState() == LockState.WAITING && numRetries++ < maxNumWaits) {
         backoff();
+        LOG.debug("Starting retry attempt:#{} to acquire locks for lockId={}. QueryId={}",
+                numRetries, res.getLockid(), queryId);
         res = txnManager.getMS().checkLock(res.getLockid());
       }
       long retryDuration = System.currentTimeMillis() - startRetry;
@@ -138,7 +140,9 @@ public final class DbLockManager implements HiveLockManager{
       }
       locks.add(hl);
       if (res.getState() != LockState.ACQUIRED) {
-        if(res.getState() == LockState.WAITING) {
+        LOG.error("Unable to acquire locks for lockId={} after {} retries (retries took {} ms). QueryId={}\n{}",
+                res.getLockid(), numRetries, retryDuration, queryId, res);
+        if (res.getState() == LockState.WAITING) {
           /**
            * the {@link #unlock(HiveLock)} here is more about future proofing when support for
            * multi-statement txns is added.  In that case it's reasonable for the client

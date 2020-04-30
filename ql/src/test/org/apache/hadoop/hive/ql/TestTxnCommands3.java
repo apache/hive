@@ -479,11 +479,15 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     runStatementOnDriver("alter table " + TestTxnCommands2.Table.ACIDTBL + " compact 'MAJOR'");
 
     runWorker(hiveConf);
-    assertTableIsEmpty("TXNS");
+    // Clean committed after TXN_OPENTXN_TIMEOUT, one transaction should always remain
+    hiveConf.set("metastore.txn.opentxn.timeout", "1");
+    runInitiator(hiveConf);
+    hiveConf.set("metastore.txn.opentxn.timeout", "1000");
+    assertOneTxn();
     assertTableIsEmpty("TXN_COMPONENTS");
 
     runCleaner(hiveConf);
-    assertTableIsEmpty("TXNS");
+    assertOneTxn();
     assertTableIsEmpty("TXN_COMPONENTS");
   }
 
@@ -500,16 +504,23 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     runStatementOnDriver("alter table " + TestTxnCommands2.Table.ACIDTBL + " compact 'MAJOR'");
 
     runWorker(hiveConf);
-    assertTableIsEmpty("TXNS");
+    // Clean committed after TXN_OPENTXN_TIMEOUT, one transaction should always remain
+    hiveConf.set("metastore.txn.opentxn.timeout", "1");
+    runInitiator(hiveConf);
+    hiveConf.set("metastore.txn.opentxn.timeout", "1000");
     assertTableIsEmpty("TXN_COMPONENTS");
 
     runCleaner(hiveConf);
-    assertTableIsEmpty("TXNS");
+    assertOneTxn();
     assertTableIsEmpty("TXN_COMPONENTS");
   }
 
   private void assertTableIsEmpty(String table) throws Exception {
     Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from " + table), 0,
         TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from " + table));
+  }
+  private void assertOneTxn() throws Exception {
+    Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from TXNS"), 1,
+        TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXNS"));
   }
 }

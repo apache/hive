@@ -85,6 +85,11 @@ public class LockRequestBuilder {
     return this;
   }
 
+  public LockRequestBuilder setZeroWaitReadEnabled(boolean zeroWaitRead) {
+    req.setZeroWaitReadEnabled(zeroWaitRead);
+    return this;
+  }
+
   /**
    * Add a lock component to the lock request
    * @param component to add

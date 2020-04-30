@@ -58,8 +58,6 @@ import org.antlr.runtime.TokenRewriteStream;
 import org.antlr.runtime.tree.Tree;
 import org.antlr.runtime.tree.TreeVisitor;
 import org.antlr.runtime.tree.TreeVisitorAction;
-import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -162,14 +160,12 @@ import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
-import org.apache.hadoop.hive.ql.metadata.CheckConstraint;
 import org.apache.hadoop.hive.ql.metadata.DefaultConstraint;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
-import org.apache.hadoop.hive.ql.metadata.NotNullConstraint;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.SessionHiveMetaStoreClient;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -7113,109 +7109,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     this.rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTblDesc)));
   }
 
-
-  private void replaceColumnReference(ASTNode checkExpr, Map<String, String> col2Col,
-                                      RowResolver inputRR){
-    if(checkExpr.getType() == HiveParser.TOK_TABLE_OR_COL) {
-      ASTNode oldColChild = (ASTNode)(checkExpr.getChild(0));
-      String oldColRef = oldColChild.getText().toLowerCase();
-      assert(col2Col.containsKey(oldColRef));
-      String internalColRef = col2Col.get(oldColRef);
-      String fullQualColRef[] = inputRR.reverseLookup(internalColRef);
-      String newColRef = fullQualColRef[1];
-      checkExpr.deleteChild(0);
-      checkExpr.addChild(ASTBuilder.createAST(oldColChild.getType(), newColRef));
-    }
-    else {
-      for(int i=0; i< checkExpr.getChildCount(); i++) {
-        replaceColumnReference((ASTNode)(checkExpr.getChild(i)), col2Col, inputRR);
-      }
-    }
-  }
-
-  private ExprNodeDesc getCheckConstraintExpr(Table tbl, Operator input, RowResolver inputRR, String dest)
-      throws SemanticException{
-
-    CheckConstraint cc = null;
-    try {
-      cc = Hive.get().getEnabledCheckConstraints(tbl.getDbName(), tbl.getTableName());
-    }
-    catch(HiveException e) {
-      throw new SemanticException(e);
-    }
-    if(cc == null || cc.getCheckConstraints().isEmpty()) {
-      return null;
-    }
-
-    // build a map which tracks the name of column in input's signature to corresponding table column name
-    // this will be used to replace column references in CHECK expression AST with corresponding column name
-    // in input
-    Map<String, String> col2Cols = new HashMap<>();
-    List<ColumnInfo> colInfos =  input.getSchema().getSignature();
-    int colIdx = 0;
-    if(updating(dest)) {
-      // if this is an update we need to skip the first col since it is row id
-      colIdx = 1;
-    }
-    for(FieldSchema fs: tbl.getCols()) {
-      // since SQL is case insenstive just to make sure that the comparison b/w column names
-      // and check expression's column reference work convert the key to lower case
-      col2Cols.put(fs.getName().toLowerCase(), colInfos.get(colIdx).getInternalName());
-      colIdx++;
-    }
-
-    List<String> checkExprStrs = cc.getCheckExpressionList();
-    TypeCheckCtx typeCheckCtx = new TypeCheckCtx(inputRR);
-    ExprNodeDesc checkAndExprs = null;
-    for(String checkExprStr:checkExprStrs) {
-      try {
-        ParseDriver parseDriver = new ParseDriver();
-        ASTNode checkExprAST = parseDriver.parseExpression(checkExprStr);
-        //replace column references in checkExprAST with corresponding columns in input
-        replaceColumnReference(checkExprAST, col2Cols, inputRR);
-        Map<ASTNode, ExprNodeDesc> genExprs = ExprNodeTypeCheck
-            .genExprNode(checkExprAST, typeCheckCtx);
-        ExprNodeDesc checkExpr = genExprs.get(checkExprAST);
-        // Check constraint fails only if it evaluates to false, NULL/UNKNOWN should evaluate to TRUE
-        ExprNodeDesc notFalseCheckExpr = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor().
-            getFuncExprNodeDesc("isnotfalse", checkExpr);
-        if(checkAndExprs == null) {
-          checkAndExprs = notFalseCheckExpr;
-        }
-        else {
-          checkAndExprs = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor().
-              getFuncExprNodeDesc("and", checkAndExprs, notFalseCheckExpr);
-        }
-      } catch(Exception e) {
-        throw new SemanticException(e);
-      }
-    }
-    return checkAndExprs;
-  }
-
-  private ImmutableBitSet getEnabledNotNullConstraints(Table tbl) throws HiveException{
-    final NotNullConstraint nnc = Hive.get().getEnabledNotNullConstraints(
-        tbl.getDbName(), tbl.getTableName());
-    ImmutableBitSet bitSet = null;
-    if(nnc == null || nnc.getNotNullConstraints().isEmpty()) {
-      return bitSet;
-    }
-    // Build the bitset with not null columns
-    ImmutableBitSet.Builder builder = ImmutableBitSet.builder();
-    for (String nnCol : nnc.getNotNullConstraints().values()) {
-      int nnPos = -1;
-      for (int i = 0; i < tbl.getCols().size(); i++) {
-        if (tbl.getCols().get(i).getName().equals(nnCol)) {
-          nnPos = i;
-          builder.set(nnPos);
-          break;
-        }
-      }
-    }
-    bitSet = builder.build();
-    return bitSet;
-  }
-
   private boolean mergeCardinalityViolationBranch(final Operator input) {
     if(input instanceof SelectOperator) {
       SelectOperator selectOp = (SelectOperator)input;
@@ -7231,104 +7124,43 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private Operator genConstraintsPlan(String dest, QB qb, Operator input) throws SemanticException {
-    if(deleting(dest)) {
+    if (deleting(dest)) {
       // for DELETE statements NOT NULL constraint need not be checked
       return input;
     }
 
     //MERGE statements could have inserted a cardinality violation branch, we need to avoid that
-    if(mergeCardinalityViolationBranch(input)){
+    if (mergeCardinalityViolationBranch(input)) {
       return input;
     }
 
     // if this is an insert into statement we might need to add constraint check
-    Table targetTable = null;
-    Integer dest_type = qb.getMetaData().getDestTypeForAlias(dest);
-    if(dest_type == QBMetaData.DEST_TABLE) {
-      targetTable= qb.getMetaData().getDestTableForAlias(dest);
-
-    }
-    else if(dest_type == QBMetaData.DEST_PARTITION){
-      Partition dest_part = qb.getMetaData().getDestPartitionForAlias(dest);
-      targetTable = dest_part.getTable();
-
-    }
-    else {
-      throw new SemanticException("Generating constraint check plan: Invalid target type: " + dest);
-    }
-
+    assert (input.getParentOperators().size() == 1);
     RowResolver inputRR = opParseCtx.get(input).getRowResolver();
-    ExprNodeDesc nullConstraintExpr = getNotNullConstraintExpr(targetTable, input, dest);
-    ExprNodeDesc checkConstraintExpr = getCheckConstraintExpr(targetTable, input, inputRR, dest);
-
-    ExprNodeDesc combinedConstraintExpr = null;
-    if(nullConstraintExpr != null && checkConstraintExpr != null) {
-      assert (input.getParentOperators().size() == 1);
-      combinedConstraintExpr = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
-          .getFuncExprNodeDesc("and", nullConstraintExpr, checkConstraintExpr);
-
-    }
-    else if(nullConstraintExpr != null) {
-      combinedConstraintExpr = nullConstraintExpr;
-    }
-    else if(checkConstraintExpr != null) {
-      combinedConstraintExpr = checkConstraintExpr;
-    }
+    Table targetTable = getTargetTable(qb, dest);
+    ExprNodeDesc combinedConstraintExpr =
+        ExprNodeTypeCheck.genConstraintsExpr(conf, targetTable, updating(dest), inputRR);
 
     if (combinedConstraintExpr != null) {
-      ExprNodeDesc constraintUDF = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
-          .getFuncExprNodeDesc("enforce_constraint", combinedConstraintExpr);
       return putOpInsertMap(OperatorFactory.getAndMakeChild(
-          new FilterDesc(constraintUDF, false), new RowSchema(
+          new FilterDesc(combinedConstraintExpr, false), new RowSchema(
               inputRR.getColumnInfos()), input), inputRR);
     }
     return input;
   }
 
-  private ExprNodeDesc getNotNullConstraintExpr(Table targetTable, Operator input, String dest) throws SemanticException {
-    boolean forceNotNullConstraint = conf.getBoolVar(ConfVars.HIVE_ENFORCE_NOT_NULL_CONSTRAINT);
-    if(!forceNotNullConstraint) {
-      return null;
-    }
+  protected Table getTargetTable(QB qb, String dest) throws SemanticException {
+    Integer dest_type = qb.getMetaData().getDestTypeForAlias(dest);
+    if (dest_type == QBMetaData.DEST_TABLE) {
+      return qb.getMetaData().getDestTableForAlias(dest);
 
-    ImmutableBitSet nullConstraintBitSet = null;
-    try {
-      nullConstraintBitSet = getEnabledNotNullConstraints(targetTable);
-    } catch (Exception e) {
-      if (e instanceof SemanticException) {
-        throw (SemanticException) e;
-      } else {
-        throw (new RuntimeException(e));
-      }
-    }
+    } else if (dest_type == QBMetaData.DEST_PARTITION) {
+      Partition dest_part = qb.getMetaData().getDestPartitionForAlias(dest);
+      return dest_part.getTable();
 
-    if(nullConstraintBitSet ==  null) {
-      return null;
+    } else {
+      throw new SemanticException("Generating constraint check plan: Invalid target type: " + dest);
     }
-    List<ColumnInfo> colInfos = input.getSchema().getSignature();
-
-    ExprNodeDesc currUDF = null;
-    // Add NOT NULL constraints
-    int constraintIdx = 0;
-    for(int colExprIdx=0; colExprIdx < colInfos.size(); colExprIdx++) {
-      if(updating(dest) && colExprIdx == 0) {
-        // for updates first column is _rowid
-        continue;
-      }
-      if (nullConstraintBitSet.indexOf(constraintIdx) != -1) {
-        ExprNodeDesc currExpr = ExprNodeTypeCheck.toExprNode(colInfos.get(colExprIdx), null);
-        ExprNodeDesc isNotNullUDF = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
-            .getFuncExprNodeDesc("isnotnull", currExpr);
-        if (currUDF != null) {
-          currUDF = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
-              .getFuncExprNodeDesc("and", currUDF, isNotNullUDF);
-        } else {
-          currUDF = isNotNullUDF;
-        }
-      }
-      constraintIdx++;
-    }
-    return currUDF;
   }
 
   private Path getDestinationFilePath(final String destinationFile, boolean isMmTable) {
@@ -15051,7 +14883,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private boolean updating(String destination) {
+  protected boolean updating(String destination) {
     return destination.startsWith(Context.DestClausePrefix.UPDATE.toString());
   }
 

@@ -44,7 +44,7 @@ public interface TxnStore extends Configurable {
   /**
    * Prefix for key when committing with a key/value.
    */
-  public static final String TXN_KEY_START = "_meta";
+  String TXN_KEY_START = "_meta";
 
   enum MUTEX_KEY {
     Initiator, Cleaner, HouseKeeper, CompactionHistory, CheckLock,
@@ -380,18 +380,19 @@ public interface TxnStore extends Configurable {
 
   /**
    * Clean up entries from TXN_TO_WRITE_ID table less than min_uncommited_txnid as found by
-   * min(NEXT_TXN_ID.ntxn_next, min(MIN_HISTORY_LEVEL.mhl_min_open_txnid), min(Aborted TXNS.txn_id)).
+   * min(max(TXNS.txn_id), min(WRITE_SET.WS_COMMIT_ID), min(Aborted TXNS.txn_id)).
    */
   @RetrySemantics.SafeToRetry
   void cleanTxnToWriteIdTable() throws MetaException;
 
   /**
-   * Clean up aborted transactions from txns that have no components in txn_components.  The reson such
-   * txns exist can be that now work was done in this txn (e.g. Streaming opened TransactionBatch and
-   * abandoned it w/o doing any work) or due to {@link #markCleaned(CompactionInfo)} being called.
+   * Clean up aborted or committed transactions from txns that have no components in txn_components.  The reason such
+   * txns exist can be that no work was done in this txn (e.g. Streaming opened TransactionBatch and
+   * abandoned it w/o doing any work) or due to {@link #markCleaned(CompactionInfo)} being called,
+   * or the delete from the txns was delayed because of TXN_OPENTXN_TIMEOUT window.
    */
   @RetrySemantics.SafeToRetry
-  void cleanEmptyAbortedTxns() throws MetaException;
+  void cleanEmptyAbortedAndCommittedTxns() throws MetaException;
 
   /**
    * This will take all entries assigned to workers
@@ -442,7 +443,7 @@ public interface TxnStore extends Configurable {
    * transaction metadata once it becomes unnecessary.  
    */
   @RetrySemantics.SafeToRetry
-  void performWriteSetGC();
+  void performWriteSetGC() throws MetaException;
 
   /**
    * Determine if there are enough consecutive failures compacting a table or partition that no
@@ -461,6 +462,12 @@ public interface TxnStore extends Configurable {
   @VisibleForTesting
   long setTimeout(long milliseconds);
 
+  @VisibleForTesting
+  long getOpenTxnTimeOutMillis();
+
+  @VisibleForTesting
+  void setOpenTxnTimeOutMillis(long openTxnTimeOutMillis);
+
   @RetrySemantics.Idempotent
   MutexAPI getMutexAPI();
 
@@ -473,7 +480,7 @@ public interface TxnStore extends Configurable {
    */
   interface MutexAPI {
     /**
-     * The {@code key} is name of the lock. Will acquire and exclusive lock or block.  It retuns
+     * The {@code key} is name of the lock. Will acquire an exclusive lock or block.  It returns
      * a handle which must be used to release the lock.  Each invocation returns a new handle.
      */
     LockHandle acquireLock(String key) throws MetaException;

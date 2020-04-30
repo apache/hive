@@ -223,7 +223,7 @@ class CompactionTxnHandler extends TxnHandler {
         stmt = dbConn.createStatement();
         String s = "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_STATE\" = '" + READY_FOR_CLEANING + "', "
             + "\"CQ_WORKER_ID\" = NULL, \"CQ_NEXT_TXN_ID\" = "
-            + "(SELECT \"NTXN_NEXT\" FROM \"NEXT_TXN_ID\")"
+            + "(SELECT MAX(\"TXN_ID\") + 1 FROM \"TXNS\")"
             + " WHERE \"CQ_ID\" = " + info.id;
         LOG.debug("Going to execute update <" + s + ">");
         int updCnt = stmt.executeUpdate(s);
@@ -474,7 +474,7 @@ class CompactionTxnHandler extends TxnHandler {
   }
   /**
    * Clean up entries from TXN_TO_WRITE_ID table less than min_uncommited_txnid as found by
-   * min(NEXT_TXN_ID.ntxn_next, min(WRITE_SET.WS_COMMIT_ID), min(Aborted TXNS.txn_id)).
+   * min(max(TXNS.txn_id), min(WRITE_SET.WS_COMMIT_ID), min(Aborted TXNS.txn_id)).
    */
   @Override
   @RetrySemantics.SafeToRetry
@@ -492,9 +492,9 @@ class CompactionTxnHandler extends TxnHandler {
 
         // First need to find the min_uncommitted_txnid which is currently seen by any open transactions.
         // If there are no txns which are currently open or aborted in the system, then current value of
-        // NEXT_TXN_ID.ntxn_next could be min_uncommitted_txnid.
+        // max(TXNS.txn_id) could be min_uncommitted_txnid.
         String s = "SELECT MIN(\"RES\".\"ID\") AS \"ID\" FROM (" +
-            "SELECT MIN(\"NTXN_NEXT\") AS \"ID\" FROM \"NEXT_TXN_ID\" " +
+            "SELECT MAX(\"TXN_ID\") + 1 AS \"ID\" FROM \"TXNS\" " +
             "UNION " +
             "SELECT MIN(\"WS_COMMIT_ID\") AS \"ID\" FROM \"WRITE_SET\" " +
             "UNION " +
@@ -504,7 +504,7 @@ class CompactionTxnHandler extends TxnHandler {
         LOG.debug("Going to execute query <" + s + ">");
         rs = stmt.executeQuery(s);
         if (!rs.next()) {
-          throw new MetaException("Transaction tables not properly initialized, no record found in NEXT_TXN_ID");
+          throw new MetaException("Transaction tables not properly initialized, no record found in TXNS");
         }
         long minUncommitedTxnid = rs.getLong(1);
 
@@ -533,25 +533,36 @@ class CompactionTxnHandler extends TxnHandler {
   }
 
   /**
-   * Clean up aborted transactions from txns that have no components in txn_components. The reason such
-   * txns exist can be that now work was done in this txn (e.g. Streaming opened TransactionBatch and
-   * abandoned it w/o doing any work) or due to {@link #markCleaned(CompactionInfo)} being called.
+   * Clean up aborted / committed transactions from txns that have no components in txn_components.
+   * The committed txns are left there for TXN_OPENTXN_TIMEOUT window period intentionally.
+   * The reason such aborted txns exist can be that now work was done in this txn
+   * (e.g. Streaming opened TransactionBatch and abandoned it w/o doing any work)
+   * or due to {@link #markCleaned(CompactionInfo)} being called.
    */
   @Override
   @RetrySemantics.SafeToRetry
-  public void cleanEmptyAbortedTxns() throws MetaException {
+  public void cleanEmptyAbortedAndCommittedTxns() throws MetaException {
+    LOG.info("Start to clean empty aborted or committed TXNS");
     try {
       Connection dbConn = null;
       Statement stmt = null;
       ResultSet rs = null;
       try {
-        //Aborted is a terminal state, so nothing about the txn can change
+        //Aborted and committed are terminal states, so nothing about the txn can change
         //after that, so READ COMMITTED is sufficient.
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
+        /**
+         * Only delete aborted / committed transaction in a way that guarantees two things:
+         * 1. never deletes anything that is inside the TXN_OPENTXN_TIMEOUT window
+         * 2. never deletes the maximum txnId even if it is before the TXN_OPENTXN_TIMEOUT window
+          */
+        long lowWaterMark = getOpenTxnTimeoutLowBoundaryTxnId(dbConn);
+
         String s = "SELECT \"TXN_ID\" FROM \"TXNS\" WHERE " +
             "\"TXN_ID\" NOT IN (SELECT \"TC_TXNID\" FROM \"TXN_COMPONENTS\") AND " +
-            "\"TXN_STATE\" = '" + TXN_ABORTED + "'";
+            " (\"TXN_STATE\" = '" + TXN_ABORTED + "' OR \"TXN_STATE\" = '" + TXN_COMMITTED + "')  AND "
+            + " \"TXN_ID\" < " + lowWaterMark;
         LOG.debug("Going to execute query <" + s + ">");
         rs = stmt.executeQuery(s);
         List<Long> txnids = new ArrayList<>();
@@ -568,16 +579,15 @@ class CompactionTxnHandler extends TxnHandler {
 
         // Delete from TXNS.
         prefix.append("DELETE FROM \"TXNS\" WHERE ");
-        suffix.append("");
 
         TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, txnids, "\"TXN_ID\"", false, false);
 
         for (String query : queries) {
           LOG.debug("Going to execute update <" + query + ">");
           int rc = stmt.executeUpdate(query);
-          LOG.info("Removed " + rc + "  empty Aborted transactions from TXNS");
+          LOG.debug("Removed " + rc + "  empty Aborted and Committed transactions from TXNS");
         }
-        LOG.info("Aborted transactions removed from TXNS: " + txnids);
+        LOG.info("Aborted and committed transactions removed from TXNS: " + txnids);
         LOG.debug("Going to commit");
         dbConn.commit();
       } catch (SQLException e) {
@@ -591,7 +601,7 @@ class CompactionTxnHandler extends TxnHandler {
         close(rs, stmt, dbConn);
       }
     } catch (RetryException e) {
-      cleanEmptyAbortedTxns();
+      cleanEmptyAbortedAndCommittedTxns();
     }
   }
 
@@ -1147,12 +1157,12 @@ class CompactionTxnHandler extends TxnHandler {
               + quoteChar(READY_FOR_CLEANING) +
               ") \"RES\"";
         } else {
-          query = "SELECT \"NTXN_NEXT\" FROM \"NEXT_TXN_ID\"";
+          query = "SELECT MAX(\"TXN_ID\") + 1 FROM \"TXNS\"";
         }
         LOG.debug("Going to execute query <" + query + ">");
         rs = stmt.executeQuery(query);
         if (!rs.next()) {
-          throw new MetaException("Transaction tables not properly initialized, no record found in NEXT_TXN_ID");
+          throw new MetaException("Transaction tables not properly initialized, no record found in TXNS");
         }
         return rs.getLong(1);
       } catch (SQLException e) {

@@ -2245,6 +2245,9 @@ public final class Utilities {
   }
 
   public static List<String> getColumnNamesFromSortCols(List<Order> sortCols) {
+    if(sortCols == null) {
+      return Collections.emptyList();
+    }
     List<String> names = new ArrayList<String>();
     for (Order o : sortCols) {
       names.add(o.getCol());
