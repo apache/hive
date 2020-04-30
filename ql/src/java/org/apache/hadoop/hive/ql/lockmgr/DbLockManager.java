@@ -140,9 +140,9 @@ public final class DbLockManager implements HiveLockManager{
       }
       locks.add(hl);
       if (res.getState() != LockState.ACQUIRED) {
-        if(res.getState() == LockState.WAITING) {
-          LOG.error("Unable to acquire locks for lockId={} after {} retries (retries took {} ms). QueryId={}",
-                  res.getLockid(), numRetries, retryDuration, queryId);
+        LOG.error("Unable to acquire locks for lockId={} after {} retries (retries took {} ms). QueryId={}\n{}",
+                res.getLockid(), numRetries, retryDuration, queryId, res);
+        if (res.getState() == LockState.WAITING) {
           /**
            * the {@link #unlock(HiveLock)} here is more about future proofing when support for
            * multi-statement txns is added.  In that case it's reasonable for the client

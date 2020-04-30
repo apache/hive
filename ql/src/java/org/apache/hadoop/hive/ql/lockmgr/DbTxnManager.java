@@ -412,6 +412,8 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     rqstBuilder.setTransactionId(txnId)
         .setUser(username);
 
+    rqstBuilder.setZeroWaitReadEnabled(!conf.getBoolVar(HiveConf.ConfVars.TXN_OVERWRITE_X_LOCK) ||
+        !conf.getBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK));
 
     // Make sure we need locks.  It's possible there's nothing to lock in
     // this operation.
@@ -420,11 +422,10 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       return null;
     }
     List<LockComponent> lockComponents = AcidUtils.makeLockComponents(plan.getOutputs(), plan.getInputs(), conf);
-
     lockComponents.addAll(getGlobalLocks(ctx.getConf()));
 
     //It's possible there's nothing to lock even if we have w/r entities.
-    if(lockComponents.isEmpty()) {
+    if (lockComponents.isEmpty()) {
       LOG.debug("No locks needed for queryId=" + queryId);
       return null;
     }
