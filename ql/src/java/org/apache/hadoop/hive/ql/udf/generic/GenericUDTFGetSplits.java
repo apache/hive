@@ -134,6 +134,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
   protected transient IntObjectInspector intOI;
   protected transient JobConf jc;
   private boolean orderByQuery;
+  private boolean limitQuery;
   private boolean forceSingleSplit;
   protected ByteArrayOutputStream bos = new ByteArrayOutputStream(1024);
   protected DataOutput dos = new DataOutputStream(bos);
@@ -318,6 +319,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
 
       QueryPlan plan = driver.getPlan();
       orderByQuery = plan.getQueryProperties().hasOrderBy() || plan.getQueryProperties().hasOuterOrderBy();
+      limitQuery = plan.getQueryProperties().getOuterQueryLimit() != -1;
       forceSingleSplit = orderByQuery &&
         HiveConf.getBoolVar(conf, ConfVars.LLAP_EXTERNAL_SPLITS_ORDER_BY_FORCE_SINGLE_SPLIT);
       List<Task<?>> roots = plan.getRootTasks();
@@ -334,9 +336,10 @@ public class GenericUDTFGetSplits extends GenericUDTF {
       } else {
         tezWork = ((TezTask) roots.get(0)).getWork();
       }
-
-      if (tezWork == null || tezWork.getAllWork().size() != 1) {
-
+      // A simple limit query (select * from table limit n) generates only mapper work (no reduce phase).
+      // This can create multiple splits ignoring limit constraint, and multiple llap daemons working on those splits
+      // return more than "n" rows. Therefore, a limit query needs to be materialized.
+      if (tezWork == null || tezWork.getAllWork().size() != 1 || limitQuery) {
         String tableName = "table_"+UUID.randomUUID().toString().replaceAll("[^A-Za-z0-9 ]", "");
 
         String storageFormatString = getTempTableStorageFormatString(conf);
