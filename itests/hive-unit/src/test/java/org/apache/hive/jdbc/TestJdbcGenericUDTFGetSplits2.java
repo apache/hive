@@ -27,7 +27,12 @@ public class TestJdbcGenericUDTFGetSplits2 extends AbstractTestJdbcGenericUDTFGe
   @Ignore("CDPD-9304 Ignore TestJdbcGenericUDTFGetSplits2.testGenericUDTFOrderBySplitCount1 as it is flaky")
   @Test(timeout = 200000)
   public void testGenericUDTFOrderBySplitCount1() throws Exception {
-    super.testGenericUDTFOrderBySplitCount1("get_llap_splits", new int[]{12, 3, 1, 3, 12});
+    super.testGenericUDTFOrderBySplitCount1("get_llap_splits", new int[]{12, 3, 1, 4, 4, 4, 3, 12});
+  }
+
+  @Test(timeout = 200000)
+  public void testGenericUDTFOrderBySplitCount1OnPartitionedTable() throws Exception {
+    super.testGenericUDTFOrderBySplitCount1OnPartitionedTable("get_llap_splits", new int[]{12, 3, 4, 4, 4});
   }
 
 }
