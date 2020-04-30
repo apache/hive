@@ -151,7 +151,7 @@ public class Initiator extends MetaStoreCompactorThread {
           recoverFailedCompactions(true);
 
           // Clean anything from the txns table that has no components left in txn_components.
-          txnHandler.cleanEmptyAbortedTxns();
+          txnHandler.cleanEmptyAbortedAndCommittedTxns();
 
           // Clean TXN_TO_WRITE_ID table for entries under min_uncommitted_txn referred by any open txns.
           txnHandler.cleanTxnToWriteIdTable();

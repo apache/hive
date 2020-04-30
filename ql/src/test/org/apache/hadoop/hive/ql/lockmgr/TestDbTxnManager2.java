@@ -32,22 +32,14 @@ import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.AcidWriteSetService;
-import org.apache.hadoop.hive.metastore.txn.TxnStore;
-import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.TestTxnCommands2;
-import org.junit.After;
 import org.junit.Assert;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
-import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.ErrorMsg;
-import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.ComparisonFailure;
 import org.junit.Rule;
 import org.junit.Test;
@@ -82,47 +74,7 @@ import java.util.Map;
  * using {@link #swapTxnManager(HiveTxnManager)} since in the SessionState the TM is associated with
  * each thread.
  */
-public class TestDbTxnManager2 {
-  protected static HiveConf conf = new HiveConf(Driver.class);
-
-  private HiveTxnManager txnMgr;
-  private Context ctx;
-  private Driver driver;
-  private TxnStore txnHandler;
-
-  public TestDbTxnManager2() {
-    conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
-        "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
-    TxnDbUtil.setConfValues(conf);
-  }
-
-  @BeforeClass
-  public static void setUpDB() throws Exception{
-    TxnDbUtil.prepDb(conf);
-  }
-
-  @Before
-  public void setUp() throws Exception {
-    conf.setBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK, false);
-    SessionState.start(conf);
-    ctx = new Context(conf);
-    driver = new Driver(new QueryState.Builder().withHiveConf(conf).nonIsolated().build());
-    TxnDbUtil.cleanDb(conf);
-    SessionState ss = SessionState.get();
-    ss.initTxnMgr(conf);
-    txnMgr = ss.getTxnMgr();
-    Assert.assertTrue(txnMgr instanceof DbTxnManager);
-    txnHandler = TxnUtils.getTxnStore(conf);
-  }
-
-  @After
-  public void tearDown() throws Exception {
-    driver.close();
-    if (txnMgr != null) {
-      txnMgr.closeTxnManager();
-    }
-  }
+public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
 
   /**
    * HIVE-16688
@@ -1237,6 +1189,13 @@ public class TestDbTxnManager2 {
 
     locks = getLocks(txnMgr);
     Assert.assertEquals("Unexpected lock count", 0, locks.size());
+    /**
+     * The last transaction will always remain in the transaction table, so we will open an other one,
+     * wait for the timeout period to exceed, then start the initiator that will clean
+     */
+    txnMgr.openTxn(ctx, "Long Running");
+    Thread.sleep(txnHandler.getOpenTxnTimeOutMillis());
+    // Now we can clean the write_set
     houseKeeper.run();
     Assert.assertEquals(0, TxnDbUtil.countQueryAgent(conf, "select count(*) from \"WRITE_SET\""));
   }
@@ -1311,6 +1270,13 @@ public class TestDbTxnManager2 {
     Assert.assertEquals("Unexpected lock count", 1, locks.size());
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "TAB2", null, locks);
     txnMgr.commitTxn();
+    /*
+     * The last transaction will always remain in the transaction table, so we will open an other one,
+     * wait for the timeout period to exceed, then start the initiator that will clean
+     */
+    txnMgr.openTxn(ctx, "Long Running");
+    Thread.sleep(txnHandler.getOpenTxnTimeOutMillis());
+    // Now we can clean the write_set
     MetastoreTaskThread writeSetService = new AcidWriteSetService();
     writeSetService.setConf(conf);
     writeSetService.run();
