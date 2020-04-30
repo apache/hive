@@ -363,4 +363,10 @@
   <name>hive.scheduled.queries.executor.enabled</name>
   <value>false</value>
 </property>
+
+<property>
+  <name>hive.server2.materializedviews.registry.impl</name>
+  <value>DUMMY</value>
+</property>
+
 </configuration>
