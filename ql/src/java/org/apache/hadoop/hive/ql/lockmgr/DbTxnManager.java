@@ -99,8 +99,8 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
 
   private volatile DbLockManager lockMgr = null;
   /**
-   * The Metastore NEXT_TXN_ID.NTXN_NEXT is initialized to 1; it contains the next available
-   * transaction id.  Thus is 1 is first transaction id.
+   * The Metastore TXNS sequence is initialized to 1.
+   * Thus is 1 is first transaction id.
    */
   private volatile long txnId = 0;
 

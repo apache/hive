@@ -218,18 +218,19 @@ public class TestInitiator extends CompactorTest {
     req.setTxnid(txnid);
     LockResponse res = txnHandler.lock(req);
     txnHandler.abortTxn(new AbortTxnRequest(txnid));
-
+    txnHandler.setOpenTxnTimeOutMillis(30000);
     conf.setIntVar(HiveConf.ConfVars.HIVE_TXN_MAX_OPEN_BATCH, TxnStore.TIMED_OUT_TXN_ABORT_BATCH_SIZE + 50);
     OpenTxnsResponse resp = txnHandler.openTxns(new OpenTxnRequest(
       TxnStore.TIMED_OUT_TXN_ABORT_BATCH_SIZE + 50, "user", "hostname"));
     txnHandler.abortTxns(new AbortTxnsRequest(resp.getTxn_ids()));
     GetOpenTxnsResponse openTxns = txnHandler.getOpenTxns();
     Assert.assertEquals(TxnStore.TIMED_OUT_TXN_ABORT_BATCH_SIZE + 50 + 1, openTxns.getOpen_txnsSize());
-
+    txnHandler.setOpenTxnTimeOutMillis(1);
     startInitiator();
 
     openTxns = txnHandler.getOpenTxns();
-    Assert.assertEquals(1, openTxns.getOpen_txnsSize());
+    // txnid:1 has txn_components, txnid:TIMED_OUT_TXN_ABORT_BATCH_SIZE + 50 + 1 is the last
+    Assert.assertEquals(2, openTxns.getOpen_txnsSize());
   }
 
   @Test
