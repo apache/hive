@@ -2474,9 +2474,9 @@ public class HiveConf extends Configuration {
 
     HIVE_OPTIMIZE_BI_REWRITE_COUNT_DISTINCT_SKETCH(
         "hive.optimize.bi.rewrite.countdistinct.sketch", "hll",
-        new StringSet("hll", "cpc", "theta"),
+        new StringSet("hll"),
         "Defines which sketch type to use when rewriting COUNT(DISTINCT(X)) expressions. "
-            + "Distinct counting can be done with: hll,cpc or theta"),
+            + "Distinct counting can be done with: hll"),
 
     // Statistics
     HIVE_STATS_ESTIMATE_STATS("hive.stats.estimate", true,
