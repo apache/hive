@@ -20,7 +20,7 @@ def testInParallel(parallelism, inclusionsFile, exclusionsFile, results, image, 
   for (int i = 0; i < splits.size(); i++) {
     def num = i
     def split = splits[num]
-    def splitName=String.format("split-%02d",num)
+    def splitName=String.format("split-%02d",num+1)
     branches[splitName] = {
       executorNode {
 	stage('Prepare') {
