@@ -269,7 +269,7 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
           evaluateMethods.add(method);
         }
       }
-      if (evaluateMethods.size() == 1) {
+      if (evaluateMethods.size() > 0) {
         return Optional.of(evaluateMethods.get(0));
       } else {
         return Optional.empty();

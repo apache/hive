@@ -19,11 +19,21 @@ create materialized view mv_1 as
 
 explain
 select 'rewrite; mv matching', category, count(distinct id) from sketch_input group by category;
+select 'rewrite; mv matching', category, count(distinct id) from sketch_input group by category;
 
--- switch to a different count distinct sketch implementation
+-- switch to theta count distinct sketch
+set hive.optimize.bi.rewrite.countdistinct.sketch=theta;
+
+explain
+select 'rewrite; no mv matching', category, count(distinct id) from sketch_input group by category;
+select 'rewrite; no mv matching', category, count(distinct id) from sketch_input group by category;
+
+
+-- switch to theta count distinct sketch
 set hive.optimize.bi.rewrite.countdistinct.sketch=cpc;
 
 explain
+select 'rewrite; no mv matching', category, count(distinct id) from sketch_input group by category;
 select 'rewrite; no mv matching', category, count(distinct id) from sketch_input group by category;
 
 drop materialized view mv_1;
