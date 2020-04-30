@@ -20750,6 +20750,10 @@ class LockRequest {
    * @var string
    */
   public $agentInfo = "Unknown";
+  /**
+   * @var bool
+   */
+  public $zeroWaitReadEnabled = false;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -20779,6 +20783,10 @@ class LockRequest {
           'var' => 'agentInfo',
           'type' => TType::STRING,
           ),
+        6 => array(
+          'var' => 'zeroWaitReadEnabled',
+          'type' => TType::BOOL,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -20796,6 +20804,9 @@ class LockRequest {
       }
       if (isset($vals['agentInfo'])) {
         $this->agentInfo = $vals['agentInfo'];
+      }
+      if (isset($vals['zeroWaitReadEnabled'])) {
+        $this->zeroWaitReadEnabled = $vals['zeroWaitReadEnabled'];
       }
     }
   }
@@ -20865,6 +20876,13 @@ class LockRequest {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 6:
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->zeroWaitReadEnabled);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -20915,6 +20933,11 @@ class LockRequest {
       $xfer += $output->writeString($this->agentInfo);
       $xfer += $output->writeFieldEnd();
     }
+    if ($this->zeroWaitReadEnabled !== null) {
+      $xfer += $output->writeFieldBegin('zeroWaitReadEnabled', TType::BOOL, 6);
+      $xfer += $output->writeBool($this->zeroWaitReadEnabled);
+      $xfer += $output->writeFieldEnd();
+    }
     $xfer += $output->writeFieldStop();
     $xfer += $output->writeStructEnd();
     return $xfer;
@@ -20933,6 +20956,10 @@ class LockResponse {
    * @var int
    */
   public $state = null;
+  /**
+   * @var string
+   */
+  public $errorMessage = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -20945,6 +20972,10 @@ class LockResponse {
           'var' => 'state',
           'type' => TType::I32,
           ),
+        3 => array(
+          'var' => 'errorMessage',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -20953,6 +20984,9 @@ class LockResponse {
       }
       if (isset($vals['state'])) {
         $this->state = $vals['state'];
+      }
+      if (isset($vals['errorMessage'])) {
+        $this->errorMessage = $vals['errorMessage'];
       }
     }
   }
@@ -20990,6 +21024,13 @@ class LockResponse {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 3:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->errorMessage);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -21011,6 +21052,11 @@ class LockResponse {
     if ($this->state !== null) {
       $xfer += $output->writeFieldBegin('state', TType::I32, 2);
       $xfer += $output->writeI32($this->state);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->errorMessage !== null) {
+      $xfer += $output->writeFieldBegin('errorMessage', TType::STRING, 3);
+      $xfer += $output->writeString($this->errorMessage);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
