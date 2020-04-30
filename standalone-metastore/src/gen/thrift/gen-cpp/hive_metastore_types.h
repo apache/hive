@@ -8449,9 +8449,10 @@ inline std::ostream& operator<<(std::ostream& out, const LockComponent& obj)
 }
 
 typedef struct _LockRequest__isset {
-  _LockRequest__isset() : txnid(false), agentInfo(true) {}
+  _LockRequest__isset() : txnid(false), agentInfo(true), zeroWaitReadEnabled(true) {}
   bool txnid :1;
   bool agentInfo :1;
+  bool zeroWaitReadEnabled :1;
 } _LockRequest__isset;
 
 class LockRequest {
@@ -8459,7 +8460,7 @@ class LockRequest {
 
   LockRequest(const LockRequest&);
   LockRequest& operator=(const LockRequest&);
-  LockRequest() : txnid(0), user(), hostname(), agentInfo("Unknown") {
+  LockRequest() : txnid(0), user(), hostname(), agentInfo("Unknown"), zeroWaitReadEnabled(false) {
   }
 
   virtual ~LockRequest() throw();
@@ -8468,6 +8469,7 @@ class LockRequest {
   std::string user;
   std::string hostname;
   std::string agentInfo;
+  bool zeroWaitReadEnabled;
 
   _LockRequest__isset __isset;
 
@@ -8480,6 +8482,8 @@ class LockRequest {
   void __set_hostname(const std::string& val);
 
   void __set_agentInfo(const std::string& val);
+
+  void __set_zeroWaitReadEnabled(const bool val);
 
   bool operator == (const LockRequest & rhs) const
   {
@@ -8496,6 +8500,10 @@ class LockRequest {
     if (__isset.agentInfo != rhs.__isset.agentInfo)
       return false;
     else if (__isset.agentInfo && !(agentInfo == rhs.agentInfo))
+      return false;
+    if (__isset.zeroWaitReadEnabled != rhs.__isset.zeroWaitReadEnabled)
+      return false;
+    else if (__isset.zeroWaitReadEnabled && !(zeroWaitReadEnabled == rhs.zeroWaitReadEnabled))
       return false;
     return true;
   }
@@ -8519,28 +8527,41 @@ inline std::ostream& operator<<(std::ostream& out, const LockRequest& obj)
   return out;
 }
 
+typedef struct _LockResponse__isset {
+  _LockResponse__isset() : errorMessage(false) {}
+  bool errorMessage :1;
+} _LockResponse__isset;
 
 class LockResponse {
  public:
 
   LockResponse(const LockResponse&);
   LockResponse& operator=(const LockResponse&);
-  LockResponse() : lockid(0), state((LockState::type)0) {
+  LockResponse() : lockid(0), state((LockState::type)0), errorMessage() {
   }
 
   virtual ~LockResponse() throw();
   int64_t lockid;
   LockState::type state;
+  std::string errorMessage;
+
+  _LockResponse__isset __isset;
 
   void __set_lockid(const int64_t val);
 
   void __set_state(const LockState::type val);
+
+  void __set_errorMessage(const std::string& val);
 
   bool operator == (const LockResponse & rhs) const
   {
     if (!(lockid == rhs.lockid))
       return false;
     if (!(state == rhs.state))
+      return false;
+    if (__isset.errorMessage != rhs.__isset.errorMessage)
+      return false;
+    else if (__isset.errorMessage && !(errorMessage == rhs.errorMessage))
       return false;
     return true;
   }
@@ -9156,7 +9177,7 @@ inline std::ostream& operator<<(std::ostream& out, const CompactionRequest& obj)
 }
 
 typedef struct _CompactionInfoStruct__isset {
-  _CompactionInfoStruct__isset() : partitionname(false), runas(false), properties(false), toomanyaborts(false), state(false), workerId(false), start(false), highestWriteId(false), errorMessage(false) {}
+  _CompactionInfoStruct__isset() : partitionname(false), runas(false), properties(false), toomanyaborts(false), state(false), workerId(false), start(false), highestWriteId(false), errorMessage(false), hasoldabort(false) {}
   bool partitionname :1;
   bool runas :1;
   bool properties :1;
@@ -9166,6 +9187,7 @@ typedef struct _CompactionInfoStruct__isset {
   bool start :1;
   bool highestWriteId :1;
   bool errorMessage :1;
+  bool hasoldabort :1;
 } _CompactionInfoStruct__isset;
 
 class CompactionInfoStruct {
@@ -9173,7 +9195,7 @@ class CompactionInfoStruct {
 
   CompactionInfoStruct(const CompactionInfoStruct&);
   CompactionInfoStruct& operator=(const CompactionInfoStruct&);
-  CompactionInfoStruct() : id(0), dbname(), tablename(), partitionname(), type((CompactionType::type)0), runas(), properties(), toomanyaborts(0), state(), workerId(), start(0), highestWriteId(0), errorMessage() {
+  CompactionInfoStruct() : id(0), dbname(), tablename(), partitionname(), type((CompactionType::type)0), runas(), properties(), toomanyaborts(0), state(), workerId(), start(0), highestWriteId(0), errorMessage(), hasoldabort(0) {
   }
 
   virtual ~CompactionInfoStruct() throw();
@@ -9190,6 +9212,7 @@ class CompactionInfoStruct {
   int64_t start;
   int64_t highestWriteId;
   std::string errorMessage;
+  bool hasoldabort;
 
   _CompactionInfoStruct__isset __isset;
 
@@ -9218,6 +9241,8 @@ class CompactionInfoStruct {
   void __set_highestWriteId(const int64_t val);
 
   void __set_errorMessage(const std::string& val);
+
+  void __set_hasoldabort(const bool val);
 
   bool operator == (const CompactionInfoStruct & rhs) const
   {
@@ -9264,6 +9289,10 @@ class CompactionInfoStruct {
     if (__isset.errorMessage != rhs.__isset.errorMessage)
       return false;
     else if (__isset.errorMessage && !(errorMessage == rhs.errorMessage))
+      return false;
+    if (__isset.hasoldabort != rhs.__isset.hasoldabort)
+      return false;
+    else if (__isset.hasoldabort && !(hasoldabort == rhs.hasoldabort))
       return false;
     return true;
   }

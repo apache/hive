@@ -14010,6 +14010,7 @@ class LockRequest:
    - user
    - hostname
    - agentInfo
+   - zeroWaitReadEnabled
   """
 
   thrift_spec = (
@@ -14019,14 +14020,16 @@ class LockRequest:
     (3, TType.STRING, 'user', None, None, ), # 3
     (4, TType.STRING, 'hostname', None, None, ), # 4
     (5, TType.STRING, 'agentInfo', None, "Unknown", ), # 5
+    (6, TType.BOOL, 'zeroWaitReadEnabled', None, False, ), # 6
   )
 
-  def __init__(self, component=None, txnid=None, user=None, hostname=None, agentInfo=thrift_spec[5][4],):
+  def __init__(self, component=None, txnid=None, user=None, hostname=None, agentInfo=thrift_spec[5][4], zeroWaitReadEnabled=thrift_spec[6][4],):
     self.component = component
     self.txnid = txnid
     self.user = user
     self.hostname = hostname
     self.agentInfo = agentInfo
+    self.zeroWaitReadEnabled = zeroWaitReadEnabled
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -14068,6 +14071,11 @@ class LockRequest:
           self.agentInfo = iprot.readString()
         else:
           iprot.skip(ftype)
+      elif fid == 6:
+        if ftype == TType.BOOL:
+          self.zeroWaitReadEnabled = iprot.readBool()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -14101,6 +14109,10 @@ class LockRequest:
       oprot.writeFieldBegin('agentInfo', TType.STRING, 5)
       oprot.writeString(self.agentInfo)
       oprot.writeFieldEnd()
+    if self.zeroWaitReadEnabled is not None:
+      oprot.writeFieldBegin('zeroWaitReadEnabled', TType.BOOL, 6)
+      oprot.writeBool(self.zeroWaitReadEnabled)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -14121,6 +14133,7 @@ class LockRequest:
     value = (value * 31) ^ hash(self.user)
     value = (value * 31) ^ hash(self.hostname)
     value = (value * 31) ^ hash(self.agentInfo)
+    value = (value * 31) ^ hash(self.zeroWaitReadEnabled)
     return value
 
   def __repr__(self):
@@ -14139,17 +14152,20 @@ class LockResponse:
   Attributes:
    - lockid
    - state
+   - errorMessage
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.I64, 'lockid', None, None, ), # 1
     (2, TType.I32, 'state', None, None, ), # 2
+    (3, TType.STRING, 'errorMessage', None, None, ), # 3
   )
 
-  def __init__(self, lockid=None, state=None,):
+  def __init__(self, lockid=None, state=None, errorMessage=None,):
     self.lockid = lockid
     self.state = state
+    self.errorMessage = errorMessage
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -14170,6 +14186,11 @@ class LockResponse:
           self.state = iprot.readI32()
         else:
           iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.STRING:
+          self.errorMessage = iprot.readString()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -14188,6 +14209,10 @@ class LockResponse:
       oprot.writeFieldBegin('state', TType.I32, 2)
       oprot.writeI32(self.state)
       oprot.writeFieldEnd()
+    if self.errorMessage is not None:
+      oprot.writeFieldBegin('errorMessage', TType.STRING, 3)
+      oprot.writeString(self.errorMessage)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -14203,6 +14228,7 @@ class LockResponse:
     value = 17
     value = (value * 31) ^ hash(self.lockid)
     value = (value * 31) ^ hash(self.state)
+    value = (value * 31) ^ hash(self.errorMessage)
     return value
 
   def __repr__(self):
@@ -15359,6 +15385,11 @@ class CompactionInfoStruct:
           self.errorMessage = iprot.readString()
         else:
           iprot.skip(ftype)
+      elif fid == 14:
+        if ftype == TType.BOOL:
+          self.hasoldabort = iprot.readBool()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -15808,11 +15839,6 @@ class ShowCompactResponseElement:
       elif fid == 14:
         if ftype == TType.STRING:
           self.errorMessage = iprot.readString()
-        else:
-          iprot.skip(ftype)
-      elif fid == 14:
-        if ftype == TType.BOOL:
-          self.hasoldabort = iprot.readBool()
         else:
           iprot.skip(ftype)
       else:

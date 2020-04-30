@@ -2262,7 +2262,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   public LockResponse lock(LockRequest rqst) throws NoSuchTxnException, TxnAbortedException, MetaException {
     ConnectionLockIdPair connAndLockId = enqueueLockWithRetry(rqst);
     try {
-      return checkLockWithRetry(connAndLockId.dbConn, connAndLockId.extLockId, rqst.getTxnid());
+      return checkLockWithRetry(connAndLockId.dbConn, connAndLockId.extLockId, rqst.getTxnid(),
+          rqst.isZeroWaitReadEnabled());
     }
     catch(NoSuchLockException e) {
       // This should never happen, as we just added the lock id
@@ -2570,7 +2571,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     return s == null ? null : s.toLowerCase();
   }
 
-  private LockResponse checkLockWithRetry(Connection dbConn, long extLockId, long txnId)
+  private LockResponse checkLockWithRetry(Connection dbConn, long extLockId, long txnId, boolean zeroWaitReadEnabled)
     throws NoSuchLockException, TxnAbortedException, MetaException {
     try {
       try {
@@ -2579,7 +2580,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           //should only get here if retrying this op
           dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         }
-        return checkLock(dbConn, extLockId, txnId);
+        return checkLock(dbConn, extLockId, txnId, zeroWaitReadEnabled);
       } catch (SQLException e) {
         LOG.error("checkLock failed for extLockId={}/txnId={}. Exception msg: {}", extLockId, txnId, getMessage(e));
         rollbackDBConn(dbConn);
@@ -2594,7 +2595,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     catch(RetryException e) {
       LOG.debug("Going to retry checkLock for extLockId={}/txnId={} after catching RetryException with message: {}",
               extLockId, txnId, e.getMessage());
-      return checkLockWithRetry(dbConn, extLockId, txnId);
+      return checkLockWithRetry(dbConn, extLockId, txnId, zeroWaitReadEnabled);
     }
   }
   /**
@@ -2639,7 +2640,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         //todo: strictly speaking there is a bug here.  heartbeat*() commits but both heartbeat and
         //checkLock() are in the same retry block, so if checkLock() throws, heartbeat is also retired
         //extra heartbeat is logically harmless, but ...
-        return checkLock(dbConn, extLockId, lockInfo.txnId);
+        return checkLock(dbConn, extLockId, lockInfo.txnId, false);
       } catch (SQLException e) {
         LOG.error("checkLock failed for request={}. Exception msg: {}", rqst, getMessage(e));
         rollbackDBConn(dbConn);
@@ -4201,7 +4202,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * checkLock() will in the worst case keep locks in Waiting state a little longer.
    */
   @RetrySemantics.SafeToRetry("See @SafeToRetry")
-  private LockResponse checkLock(Connection dbConn, long extLockId, long txnId)
+  private LockResponse checkLock(Connection dbConn, long extLockId, long txnId, boolean zeroWaitReadEnabled)
       throws NoSuchLockException, TxnAbortedException, MetaException, SQLException {
     Statement stmt = null;
     ResultSet rs = null;
@@ -4283,7 +4284,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       }
 
       String queryStr =
-        " \"EX\".*, \"REQ\".\"HL_LOCK_INT_ID\" AS \"REQ_LOCK_INT_ID\" FROM (" +
+        " \"EX\".*, \"REQ\".\"HL_LOCK_INT_ID\" \"LOCK_INT_ID\", \"REQ\".\"HL_LOCK_TYPE\" \"LOCK_TYPE\" FROM (" +
             " SELECT \"HL_LOCK_EXT_ID\", \"HL_LOCK_INT_ID\", \"HL_TXNID\", \"HL_DB\", \"HL_TABLE\", \"HL_PARTITION\"," +
                 " \"HL_LOCK_STATE\", \"HL_LOCK_TYPE\" FROM \"HIVE_LOCKS\"" +
             " WHERE \"HL_LOCK_EXT_ID\" < " + extLockId + ") \"EX\"" +
@@ -4308,6 +4309,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         is performed on that db (e.g. show tables, created table, etc).
         EXCLUSIVE on an object may mean it's being dropped or overwritten.*/
       String[] whereStr = {
+        // shared-read
+        " \"REQ\".\"HL_LOCK_TYPE\"=" + LockTypeUtil.sharedRead() + " AND \"EX\".\"HL_LOCK_TYPE\"=" +
+          LockTypeUtil.exclusive() + " AND NOT (\"EX\".\"HL_TABLE\" IS NOT NULL AND \"REQ\".\"HL_TABLE\" IS NULL)",
         // exclusive
         " \"REQ\".\"HL_LOCK_TYPE\"=" + LockTypeUtil.exclusive() +
         " AND NOT (\"EX\".\"HL_TABLE\" IS NULL AND \"EX\".\"HL_LOCK_TYPE\"=" +
@@ -4317,10 +4321,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           LockTypeUtil.exclWrite() + "," + LockTypeUtil.exclusive() + ")",
         // excl-write
         " \"REQ\".\"HL_LOCK_TYPE\"=" + LockTypeUtil.exclWrite() + " AND \"EX\".\"HL_LOCK_TYPE\"!=" +
-          LockTypeUtil.sharedRead(),
-        // shared-read
-        " \"REQ\".\"HL_LOCK_TYPE\"=" + LockTypeUtil.sharedRead() + " AND \"EX\".\"HL_LOCK_TYPE\"=" +
-          LockTypeUtil.exclusive() + " AND NOT (\"EX\".\"HL_TABLE\" IS NOT NULL AND \"REQ\".\"HL_TABLE\" IS NULL)"
+          LockTypeUtil.sharedRead()
       };
 
       List<String> subQuery = new ArrayList<>();
@@ -4336,21 +4337,40 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       if (rs.next()) {
         // We acquire all locks for a given query atomically; if 1 blocks, all remain in Waiting state.
         LockInfo blockedBy = new LockInfo(rs);
-        long intLockId = rs.getLong("REQ_LOCK_INT_ID");
-        LOG.debug("Failure to acquire lock({} intLockId:{} {}), blocked by ({}})", JavaUtils.lockIdToString(extLockId),
-                intLockId, JavaUtils.txnIdToString(txnId), blockedBy);
+        long intLockId = rs.getLong("LOCK_INT_ID");
+        char lockChar = rs.getString("LOCK_TYPE").charAt(0);
 
+        LOG.debug("Failure to acquire lock({} intLockId:{} {}), blocked by ({})", JavaUtils.lockIdToString(extLockId),
+            intLockId, JavaUtils.txnIdToString(txnId), blockedBy);
+
+        if (zeroWaitReadEnabled && isValidTxn(txnId)) {
+          LockType lockType = LockTypeUtil.getLockTypeFromEncoding(lockChar)
+              .orElseThrow(() -> new MetaException("Unknown lock type: " + lockChar));
+
+          if (lockType == LockType.SHARED_READ) {
+            String cleanupQuery = "DELETE FROM \"HIVE_LOCKS\" WHERE \"HL_LOCK_EXT_ID\" = " + extLockId;
+
+            LOG.debug("Going to execute query: <" + cleanupQuery + ">");
+            stmt.executeUpdate(cleanupQuery);
+            dbConn.commit();
+
+            response.setErrorMessage(String.format(
+                "Unable to acquire read lock due to an exclusive lock {%s}", blockedBy));
+            response.setState(LockState.NOT_ACQUIRED);
+            return response;
+          }
+        }
         String updateBlockedByQuery = "UPDATE \"HIVE_LOCKS\"" +
-                " SET \"HL_BLOCKEDBY_EXT_ID\" = " + blockedBy.extLockId +
-                ", \"HL_BLOCKEDBY_INT_ID\" = " + blockedBy.intLockId +
-                " WHERE \"HL_LOCK_EXT_ID\" = " + extLockId + " AND \"HL_LOCK_INT_ID\" = " + intLockId;
+            " SET \"HL_BLOCKEDBY_EXT_ID\" = " + blockedBy.extLockId +
+            ", \"HL_BLOCKEDBY_INT_ID\" = " + blockedBy.intLockId +
+            " WHERE \"HL_LOCK_EXT_ID\" = " + extLockId + " AND \"HL_LOCK_INT_ID\" = " + intLockId;
 
         LOG.debug("Going to execute query: <" + updateBlockedByQuery + ">");
         int updCnt = stmt.executeUpdate(updateBlockedByQuery);
 
         if (updCnt != 1) {
-          LOG.error("Failure to update blocked lock (extLockId={}, intLockId={}) with the blocking lock's IDs (extLockId={}, intLockId={})",
-                  extLockId, intLockId, blockedBy.extLockId, blockedBy.intLockId);
+          LOG.error("Failure to update lock (extLockId={}, intLockId={}) with the blocking lock's IDs " +
+              "(extLockId={}, intLockId={})", extLockId, intLockId, blockedBy.extLockId, blockedBy.intLockId);
           shouldNeverHappen(txnId, extLockId, intLockId);
         }
         dbConn.commit();

@@ -1050,11 +1050,13 @@ struct LockRequest {
     3: required string user,     // used in 'show locks' to help admins find who has open locks
     4: required string hostname, // used in 'show locks' to help admins find who has open locks
     5: optional string agentInfo = "Unknown",
+    6: optional bool zeroWaitReadEnabled = false
 }
 
 struct LockResponse {
     1: required i64 lockid,
     2: required LockState state,
+    3: optional string errorMessage
 }
 
 struct CheckLockRequest {

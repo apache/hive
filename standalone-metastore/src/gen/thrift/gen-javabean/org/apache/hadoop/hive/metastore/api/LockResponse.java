@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 
   private static final org.apache.thrift.protocol.TField LOCKID_FIELD_DESC = new org.apache.thrift.protocol.TField("lockid", org.apache.thrift.protocol.TType.I64, (short)1);
   private static final org.apache.thrift.protocol.TField STATE_FIELD_DESC = new org.apache.thrift.protocol.TField("state", org.apache.thrift.protocol.TType.I32, (short)2);
+  private static final org.apache.thrift.protocol.TField ERROR_MESSAGE_FIELD_DESC = new org.apache.thrift.protocol.TField("errorMessage", org.apache.thrift.protocol.TType.STRING, (short)3);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -49,6 +50,7 @@ import org.slf4j.LoggerFactory;
 
   private long lockid; // required
   private LockState state; // required
+  private String errorMessage; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -57,7 +59,8 @@ import org.slf4j.LoggerFactory;
      * 
      * @see LockState
      */
-    STATE((short)2, "state");
+    STATE((short)2, "state"),
+    ERROR_MESSAGE((short)3, "errorMessage");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -76,6 +79,8 @@ import org.slf4j.LoggerFactory;
           return LOCKID;
         case 2: // STATE
           return STATE;
+        case 3: // ERROR_MESSAGE
+          return ERROR_MESSAGE;
         default:
           return null;
       }
@@ -118,6 +123,7 @@ import org.slf4j.LoggerFactory;
   // isset id assignments
   private static final int __LOCKID_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
+  private static final _Fields optionals[] = {_Fields.ERROR_MESSAGE};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -125,6 +131,8 @@ import org.slf4j.LoggerFactory;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     tmpMap.put(_Fields.STATE, new org.apache.thrift.meta_data.FieldMetaData("state", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, LockState.class)));
+    tmpMap.put(_Fields.ERROR_MESSAGE, new org.apache.thrift.meta_data.FieldMetaData("errorMessage", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(LockResponse.class, metaDataMap);
   }
@@ -151,6 +159,9 @@ import org.slf4j.LoggerFactory;
     if (other.isSetState()) {
       this.state = other.state;
     }
+    if (other.isSetErrorMessage()) {
+      this.errorMessage = other.errorMessage;
+    }
   }
 
   public LockResponse deepCopy() {
@@ -162,6 +173,7 @@ import org.slf4j.LoggerFactory;
     setLockidIsSet(false);
     this.lockid = 0;
     this.state = null;
+    this.errorMessage = null;
   }
 
   public long getLockid() {
@@ -217,6 +229,29 @@ import org.slf4j.LoggerFactory;
     }
   }
 
+  public String getErrorMessage() {
+    return this.errorMessage;
+  }
+
+  public void setErrorMessage(String errorMessage) {
+    this.errorMessage = errorMessage;
+  }
+
+  public void unsetErrorMessage() {
+    this.errorMessage = null;
+  }
+
+  /** Returns true if field errorMessage is set (has been assigned a value) and false otherwise */
+  public boolean isSetErrorMessage() {
+    return this.errorMessage != null;
+  }
+
+  public void setErrorMessageIsSet(boolean value) {
+    if (!value) {
+      this.errorMessage = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case LOCKID:
@@ -235,6 +270,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case ERROR_MESSAGE:
+      if (value == null) {
+        unsetErrorMessage();
+      } else {
+        setErrorMessage((String)value);
+      }
+      break;
+
     }
   }
 
@@ -245,6 +288,9 @@ import org.slf4j.LoggerFactory;
 
     case STATE:
       return getState();
+
+    case ERROR_MESSAGE:
+      return getErrorMessage();
 
     }
     throw new IllegalStateException();
@@ -261,6 +307,8 @@ import org.slf4j.LoggerFactory;
       return isSetLockid();
     case STATE:
       return isSetState();
+    case ERROR_MESSAGE:
+      return isSetErrorMessage();
     }
     throw new IllegalStateException();
   }
@@ -296,6 +344,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_errorMessage = true && this.isSetErrorMessage();
+    boolean that_present_errorMessage = true && that.isSetErrorMessage();
+    if (this_present_errorMessage || that_present_errorMessage) {
+      if (!(this_present_errorMessage && that_present_errorMessage))
+        return false;
+      if (!this.errorMessage.equals(that.errorMessage))
+        return false;
+    }
+
     return true;
   }
 
@@ -312,6 +369,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_state);
     if (present_state)
       list.add(state.getValue());
+
+    boolean present_errorMessage = true && (isSetErrorMessage());
+    list.add(present_errorMessage);
+    if (present_errorMessage)
+      list.add(errorMessage);
 
     return list.hashCode();
   }
@@ -340,6 +402,16 @@ import org.slf4j.LoggerFactory;
     }
     if (isSetState()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.state, other.state);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetErrorMessage()).compareTo(other.isSetErrorMessage());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetErrorMessage()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.errorMessage, other.errorMessage);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -375,6 +447,16 @@ import org.slf4j.LoggerFactory;
       sb.append(this.state);
     }
     first = false;
+    if (isSetErrorMessage()) {
+      if (!first) sb.append(", ");
+      sb.append("errorMessage:");
+      if (this.errorMessage == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.errorMessage);
+      }
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -444,6 +526,14 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 3: // ERROR_MESSAGE
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.errorMessage = iprot.readString();
+              struct.setErrorMessageIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -465,6 +555,13 @@ import org.slf4j.LoggerFactory;
         oprot.writeI32(struct.state.getValue());
         oprot.writeFieldEnd();
       }
+      if (struct.errorMessage != null) {
+        if (struct.isSetErrorMessage()) {
+          oprot.writeFieldBegin(ERROR_MESSAGE_FIELD_DESC);
+          oprot.writeString(struct.errorMessage);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -484,6 +581,14 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       oprot.writeI64(struct.lockid);
       oprot.writeI32(struct.state.getValue());
+      BitSet optionals = new BitSet();
+      if (struct.isSetErrorMessage()) {
+        optionals.set(0);
+      }
+      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetErrorMessage()) {
+        oprot.writeString(struct.errorMessage);
+      }
     }
 
     @Override
@@ -493,6 +598,11 @@ import org.slf4j.LoggerFactory;
       struct.setLockidIsSet(true);
       struct.state = org.apache.hadoop.hive.metastore.api.LockState.findByValue(iprot.readI32());
       struct.setStateIsSet(true);
+      BitSet incoming = iprot.readBitSet(1);
+      if (incoming.get(0)) {
+        struct.errorMessage = iprot.readString();
+        struct.setErrorMessageIsSet(true);
+      }
     }
   }
 

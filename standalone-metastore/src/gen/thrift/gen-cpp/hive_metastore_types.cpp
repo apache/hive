@@ -20287,6 +20287,11 @@ void LockRequest::__set_agentInfo(const std::string& val) {
 __isset.agentInfo = true;
 }
 
+void LockRequest::__set_zeroWaitReadEnabled(const bool val) {
+  this->zeroWaitReadEnabled = val;
+__isset.zeroWaitReadEnabled = true;
+}
+
 uint32_t LockRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
@@ -20363,6 +20368,14 @@ uint32_t LockRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 6:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->zeroWaitReadEnabled);
+          this->__isset.zeroWaitReadEnabled = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -20416,6 +20429,11 @@ uint32_t LockRequest::write(::apache::thrift::protocol::TProtocol* oprot) const 
     xfer += oprot->writeString(this->agentInfo);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.zeroWaitReadEnabled) {
+    xfer += oprot->writeFieldBegin("zeroWaitReadEnabled", ::apache::thrift::protocol::T_BOOL, 6);
+    xfer += oprot->writeBool(this->zeroWaitReadEnabled);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -20428,6 +20446,7 @@ void swap(LockRequest &a, LockRequest &b) {
   swap(a.user, b.user);
   swap(a.hostname, b.hostname);
   swap(a.agentInfo, b.agentInfo);
+  swap(a.zeroWaitReadEnabled, b.zeroWaitReadEnabled);
   swap(a.__isset, b.__isset);
 }
 
@@ -20437,6 +20456,7 @@ LockRequest::LockRequest(const LockRequest& other814) {
   user = other814.user;
   hostname = other814.hostname;
   agentInfo = other814.agentInfo;
+  zeroWaitReadEnabled = other814.zeroWaitReadEnabled;
   __isset = other814.__isset;
 }
 LockRequest& LockRequest::operator=(const LockRequest& other815) {
@@ -20445,6 +20465,7 @@ LockRequest& LockRequest::operator=(const LockRequest& other815) {
   user = other815.user;
   hostname = other815.hostname;
   agentInfo = other815.agentInfo;
+  zeroWaitReadEnabled = other815.zeroWaitReadEnabled;
   __isset = other815.__isset;
   return *this;
 }
@@ -20456,6 +20477,7 @@ void LockRequest::printTo(std::ostream& out) const {
   out << ", " << "user=" << to_string(user);
   out << ", " << "hostname=" << to_string(hostname);
   out << ", " << "agentInfo="; (__isset.agentInfo ? (out << to_string(agentInfo)) : (out << "<null>"));
+  out << ", " << "zeroWaitReadEnabled="; (__isset.zeroWaitReadEnabled ? (out << to_string(zeroWaitReadEnabled)) : (out << "<null>"));
   out << ")";
 }
 
@@ -20470,6 +20492,11 @@ void LockResponse::__set_lockid(const int64_t val) {
 
 void LockResponse::__set_state(const LockState::type val) {
   this->state = val;
+}
+
+void LockResponse::__set_errorMessage(const std::string& val) {
+  this->errorMessage = val;
+__isset.errorMessage = true;
 }
 
 uint32_t LockResponse::read(::apache::thrift::protocol::TProtocol* iprot) {
@@ -20513,6 +20540,14 @@ uint32_t LockResponse::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->errorMessage);
+          this->__isset.errorMessage = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -20542,6 +20577,11 @@ uint32_t LockResponse::write(::apache::thrift::protocol::TProtocol* oprot) const
   xfer += oprot->writeI32((int32_t)this->state);
   xfer += oprot->writeFieldEnd();
 
+  if (this->__isset.errorMessage) {
+    xfer += oprot->writeFieldBegin("errorMessage", ::apache::thrift::protocol::T_STRING, 3);
+    xfer += oprot->writeString(this->errorMessage);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -20551,15 +20591,21 @@ void swap(LockResponse &a, LockResponse &b) {
   using ::std::swap;
   swap(a.lockid, b.lockid);
   swap(a.state, b.state);
+  swap(a.errorMessage, b.errorMessage);
+  swap(a.__isset, b.__isset);
 }
 
 LockResponse::LockResponse(const LockResponse& other817) {
   lockid = other817.lockid;
   state = other817.state;
+  errorMessage = other817.errorMessage;
+  __isset = other817.__isset;
 }
 LockResponse& LockResponse::operator=(const LockResponse& other818) {
   lockid = other818.lockid;
   state = other818.state;
+  errorMessage = other818.errorMessage;
+  __isset = other818.__isset;
   return *this;
 }
 void LockResponse::printTo(std::ostream& out) const {
@@ -20567,6 +20613,7 @@ void LockResponse::printTo(std::ostream& out) const {
   out << "LockResponse(";
   out << "lockid=" << to_string(lockid);
   out << ", " << "state=" << to_string(state);
+  out << ", " << "errorMessage="; (__isset.errorMessage ? (out << to_string(errorMessage)) : (out << "<null>"));
   out << ")";
 }
 
@@ -22141,6 +22188,11 @@ void CompactionInfoStruct::__set_errorMessage(const std::string& val) {
 __isset.errorMessage = true;
 }
 
+void CompactionInfoStruct::__set_hasoldabort(const bool val) {
+  this->hasoldabort = val;
+__isset.hasoldabort = true;
+}
+
 uint32_t CompactionInfoStruct::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
@@ -22272,6 +22324,14 @@ uint32_t CompactionInfoStruct::read(::apache::thrift::protocol::TProtocol* iprot
           xfer += iprot->skip(ftype);
         }
         break;
+      case 14:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->hasoldabort);
+          this->__isset.hasoldabort = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -22358,6 +22418,11 @@ uint32_t CompactionInfoStruct::write(::apache::thrift::protocol::TProtocol* opro
     xfer += oprot->writeString(this->errorMessage);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.hasoldabort) {
+    xfer += oprot->writeFieldBegin("hasoldabort", ::apache::thrift::protocol::T_BOOL, 14);
+    xfer += oprot->writeBool(this->hasoldabort);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -22378,6 +22443,7 @@ void swap(CompactionInfoStruct &a, CompactionInfoStruct &b) {
   swap(a.start, b.start);
   swap(a.highestWriteId, b.highestWriteId);
   swap(a.errorMessage, b.errorMessage);
+  swap(a.hasoldabort, b.hasoldabort);
   swap(a.__isset, b.__isset);
 }
 
@@ -22395,6 +22461,7 @@ CompactionInfoStruct::CompactionInfoStruct(const CompactionInfoStruct& other869)
   start = other869.start;
   highestWriteId = other869.highestWriteId;
   errorMessage = other869.errorMessage;
+  hasoldabort = other869.hasoldabort;
   __isset = other869.__isset;
 }
 CompactionInfoStruct& CompactionInfoStruct::operator=(const CompactionInfoStruct& other870) {
@@ -22411,6 +22478,7 @@ CompactionInfoStruct& CompactionInfoStruct::operator=(const CompactionInfoStruct
   start = other870.start;
   highestWriteId = other870.highestWriteId;
   errorMessage = other870.errorMessage;
+  hasoldabort = other870.hasoldabort;
   __isset = other870.__isset;
   return *this;
 }
@@ -22430,6 +22498,7 @@ void CompactionInfoStruct::printTo(std::ostream& out) const {
   out << ", " << "start="; (__isset.start ? (out << to_string(start)) : (out << "<null>"));
   out << ", " << "highestWriteId="; (__isset.highestWriteId ? (out << to_string(highestWriteId)) : (out << "<null>"));
   out << ", " << "errorMessage="; (__isset.errorMessage ? (out << to_string(errorMessage)) : (out << "<null>"));
+  out << ", " << "hasoldabort="; (__isset.hasoldabort ? (out << to_string(hasoldabort)) : (out << "<null>"));
   out << ")";
 }
 

@@ -431,7 +431,6 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     // Make sure we've built the lock manager
     getLockManager();
     verifyState(plan);
-    boolean atLeastOneLock = false;
     queryId = plan.getQueryId();
     switch (plan.getOperation()) {
       case SET_AUTOCOMMIT:
@@ -446,7 +445,10 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     rqstBuilder.setTransactionId(txnId)
         .setUser(username);
 
-    if(plan.getInputs().isEmpty() && plan.getOutputs().isEmpty()) {
+    rqstBuilder.setZeroWaitReadEnabled(!conf.getBoolVar(HiveConf.ConfVars.TXN_OVERWRITE_X_LOCK) ||
+        !conf.getBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK));
+
+    if (plan.getInputs().isEmpty() && plan.getOutputs().isEmpty()) {
       LOG.debug("No locks needed for queryId=" + queryId);
       return null;
     }
@@ -455,7 +457,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     lockComponents.addAll(getGlobalLocks(ctx.getConf()));
 
     //It's possible there's nothing to lock even if we have w/r entities.
-    if(lockComponents.isEmpty()) {
+    if (lockComponents.isEmpty()) {
       LOG.debug("No locks needed for queryId=" + queryId);
       return null;
     }
@@ -466,13 +468,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     ctx.setHiveLocks(locks);
     return lockState;
   }
-  private static Table getTable(WriteEntity we) {
-    Table t = we.getTable();
-    if(t == null) {
-      throw new IllegalStateException("No table info for " + we);
-    }
-    return t;
-  }
+
   private Collection<LockComponent> getGlobalLocks(Configuration conf) {
     String lockNames = conf.get(Constants.HIVE_QUERY_EXCLUSIVE_LOCK);
     if (StringUtils.isEmpty(lockNames)) {
