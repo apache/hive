@@ -42,6 +42,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * AbstractTestJdbcGenericUDTFGetSplits.
@@ -50,6 +51,7 @@ public abstract class AbstractTestJdbcGenericUDTFGetSplits {
   protected static MiniHS2 miniHS2 = null;
   protected static String dataFileDir;
   protected static String tableName = "testtab1";
+  protected static String partitionedTableName = "partitionedtesttab1";
   protected static HiveConf conf = null;
   static Path kvDataFilePath;
   protected Connection hs2Conn = null;
@@ -165,14 +167,78 @@ public abstract class AbstractTestJdbcGenericUDTFGetSplits {
     query = "select " + udtfName + "(" + "'select value from " + tableName + " order by under_col limit 0', 5)";
     runQuery(query, getConfigs(), expectedCounts[2]);
 
+    query = "select " + udtfName + "(" + "'select value from " + tableName + " limit 2', 5)";
+    runQuery(query, getConfigs(), expectedCounts[3]);
+
+    query = "select " + udtfName + "(" + "'select value from " + tableName + " group by value limit 2', 5)";
+    runQuery(query, getConfigs(), expectedCounts[4]);
+
+    query = "select " + udtfName + "(" + "'select value from " + tableName + " where value is not null limit 2', 5)";
+    runQuery(query, getConfigs(), expectedCounts[5]);
+
     query = "select " + udtfName + "(" +
         "'select `value` from (select value from " + tableName + " where value is not null order by value) as t', 5)";
-    runQuery(query, getConfigs(), expectedCounts[3]);
+    runQuery(query, getConfigs(), expectedCounts[6]);
 
     List<String> setCmds = getConfigs();
     setCmds.add("set hive.llap.external.splits.order.by.force.single.split=false");
     query = "select " + udtfName + "(" +
         "'select `value` from (select value from " + tableName + " where value is not null order by value) as t', 5)";
-    runQuery(query, setCmds, expectedCounts[4]);
+    runQuery(query, setCmds, expectedCounts[7]);
+  }
+
+  protected void testGenericUDTFOrderBySplitCount1OnPartitionedTable(String udtfName, int[] expectedCounts)
+          throws Exception {
+    createPartitionedTestTable(null, partitionedTableName);
+
+    String query = "select " + udtfName + "(" + "'select id from " + partitionedTableName + "', 5)";
+    runQuery(query, getConfigs(), expectedCounts[0]);
+
+    query = "select " + udtfName + "(" + "'select id from " + partitionedTableName + " order by id', 5)";
+    runQuery(query, getConfigs(), expectedCounts[1]);
+
+    query = "select " + udtfName + "(" + "'select id from " + partitionedTableName + " limit 2', 5)";
+    runQuery(query, getConfigs(), expectedCounts[1]);
+
+    query = "select " + udtfName + "(" + "'select id from " + partitionedTableName + " where id != 0 limit 2', 5)";
+    runQuery(query, getConfigs(), expectedCounts[1]);
+
+    query = "select " + udtfName + "(" + "'select id from " + partitionedTableName + " group by id limit 2', 5)";
+    runQuery(query, getConfigs(), expectedCounts[1]);
+
+  }
+
+  private void createPartitionedTestTable(String database, String tableName) throws Exception {
+    Statement stmt = hs2Conn.createStatement();
+
+    if (database != null) {
+      stmt.execute("CREATE DATABASE IF NOT EXISTS " + database);
+      stmt.execute("USE " + database);
+    }
+
+    // create table
+    stmt.execute("DROP TABLE IF EXISTS " + tableName);
+    stmt.execute("CREATE TABLE " + tableName
+            + " (id INT) partitioned by (p1 int)");
+
+    // load data
+    for (int i=1; i<=5; i++) {
+      String values = "";
+      for (int j=1; j<=10; j++) {
+        if (j != 10) {
+          values+= "(" + j +"),";
+        } else {
+          values+= "(" + j +")";
+        }
+      }
+      stmt.execute("insert into " + tableName + " partition (p1=" + i +") " + " values " + values);
+    }
+
+
+    ResultSet res = stmt.executeQuery("SELECT count(*) FROM " + tableName);
+    assertTrue(res.next());
+    assertEquals(50, res.getInt(1));
+    res.close();
+    stmt.close();
   }
 }
