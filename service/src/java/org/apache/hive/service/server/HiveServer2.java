@@ -1106,8 +1106,6 @@ public class HiveServer2 extends CompositeService {
 
         if (hiveConf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
           SparkSessionManagerImpl.getInstance().setup(hiveConf);
-        } else if (hiveConf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("impala")) {
-          ImpalaSessionManager.getInstance().setup(hiveConf);
         }
         break;
       } catch (Throwable throwable) {
