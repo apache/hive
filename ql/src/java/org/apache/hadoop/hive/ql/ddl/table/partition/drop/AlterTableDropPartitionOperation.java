@@ -120,9 +120,8 @@ public class AlterTableDropPartitionOperation extends DDLOperation<AlterTableDro
     List<Partition> droppedPartitions = context.getDb().dropPartitions(tablenName.getDb(), tablenName.getTable(),
         partitionExpressions, options);
 
-    ProactiveEviction.Request.Builder llapEvictRequestBuilder =
-        LlapHiveUtils.isLlapMode(context.getConf()) ?
-            ProactiveEviction.Request.Builder.create() : null;
+    ProactiveEviction.Request.Builder llapEvictRequestBuilder = LlapHiveUtils.isLlapMode(context.getConf()) ?
+        ProactiveEviction.Request.Builder.create() : null;
 
     for (Partition partition : droppedPartitions) {
       context.getConsole().printInfo("Dropped the partition " + partition.getName());
@@ -133,6 +132,7 @@ public class AlterTableDropPartitionOperation extends DDLOperation<AlterTableDro
         llapEvictRequestBuilder.addPartitionOfATable(tablenName.getDb(), tablenName.getTable(), partition.getSpec());
       }
     }
+
     if (llapEvictRequestBuilder != null) {
       ProactiveEviction.evict(context.getConf(), llapEvictRequestBuilder.build());
     }

@@ -54,12 +54,10 @@ public class ShowCreateTableAnalyzer extends BaseSemanticAnalyzer {
     // If no DB was specified in statement, do not include it in the final output
     ShowCreateTableDesc desc = new ShowCreateTableDesc(table.getDbName(), table.getTableName(),
         ctx.getResFile().toString(), StringUtils.isBlank(tableIdentifier.getKey()));
-
     Task<DDLWork> task = TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc));
-    task.setFetchSource(true);
-
     rootTasks.add(task);
 
+    task.setFetchSource(true);
     setFetchTask(createFetchTask(ShowCreateTableDesc.SCHEMA));
   }
 }

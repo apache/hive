@@ -813,8 +813,8 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       Futures.addCallback(schedulerFuture, new LoggingFutureCallback("SchedulerThread", LOG));
 
       registry.start();
-      registry.registerStateChangeListener(new NodeStateChangeListener());
       activeInstances = registry.getInstances();
+      registry.registerStateChangeListener(new NodeStateChangeListener());
       for (LlapServiceInstance inst : activeInstances.getAll()) {
         registerAndAddNode(new NodeInfo(inst, nodeBlacklistConf, clock,
             numSchedulableTasksPerNode, metrics), inst);

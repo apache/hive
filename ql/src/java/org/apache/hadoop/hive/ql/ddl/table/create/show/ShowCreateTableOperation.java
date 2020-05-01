@@ -103,7 +103,7 @@ public class ShowCreateTableOperation extends DDLOperation<ShowCreateTableDesc> 
   }
 
   private static final String CREATE_VIEW_TEMPLATE =
-      "CREATE VIEW <if(" + DATABASE_NAME + ")>`<" + DATABASE_NAME + ">`.<endif>" + "`<" + TABLE_NAME + ">`" + " AS <SQL>";
+      "CREATE VIEW <if(" + DATABASE_NAME + ")>`<" + DATABASE_NAME + ">`.<endif>`<" + TABLE_NAME + ">` AS <SQL>";
 
   private String getCreateViewCommand(Table table, boolean isRelative) {
     ST command = new ST(CREATE_VIEW_TEMPLATE);
