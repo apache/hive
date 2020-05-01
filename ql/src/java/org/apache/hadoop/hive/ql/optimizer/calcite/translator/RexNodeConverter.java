@@ -277,21 +277,12 @@ public class RexNodeConverter {
         childRexNodeLst = rewriteToDateChildren(childRexNodeLst, rexBuilder);
       } else if (calciteOp.getKind() == SqlKind.BETWEEN) {
         assert childRexNodeLst.get(0).isAlwaysTrue() || childRexNodeLst.get(0).isAlwaysFalse();
-        boolean invert = childRexNodeLst.get(0).isAlwaysTrue();
-        SqlBinaryOperator cmpOp;
-        if (invert) {
+        childRexNodeLst = rewriteBetweenChildren(childRexNodeLst, rexBuilder);
+        if (childRexNodeLst.get(0).isAlwaysTrue()) {
           calciteOp = SqlStdOperatorTable.OR;
-          cmpOp = SqlStdOperatorTable.GREATER_THAN;
         } else {
           calciteOp = SqlStdOperatorTable.AND;
-          cmpOp = SqlStdOperatorTable.LESS_THAN_OR_EQUAL;
         }
-        RexNode op = childRexNodeLst.get(1);
-        RexNode rangeL = childRexNodeLst.get(2);
-        RexNode rangeH = childRexNodeLst.get(3);
-        childRexNodeLst.clear();
-        childRexNodeLst.add(rexBuilder.makeCall(cmpOp, rangeL, op));
-        childRexNodeLst.add(rexBuilder.makeCall(cmpOp, op, rangeH));
       }
       expr = rexBuilder.makeCall(retType, calciteOp, childRexNodeLst);
     } else {
@@ -603,6 +594,23 @@ public class RexNodeConverter {
     }
     // Add the last child as the ELSE element
     convertedChildList.add(childRexNodeLst.get(i));
+    return convertedChildList;
+  }
+
+  public static List<RexNode> rewriteBetweenChildren(List<RexNode> childRexNodeLst,
+      RexBuilder rexBuilder) {
+    final List<RexNode> convertedChildList = Lists.newArrayList();
+    SqlBinaryOperator cmpOp;
+    if (childRexNodeLst.get(0).isAlwaysTrue()) {
+      cmpOp = SqlStdOperatorTable.GREATER_THAN;
+    } else {
+      cmpOp = SqlStdOperatorTable.LESS_THAN_OR_EQUAL;
+    }
+    RexNode op = childRexNodeLst.get(1);
+    RexNode rangeL = childRexNodeLst.get(2);
+    RexNode rangeH = childRexNodeLst.get(3);
+    convertedChildList.add(rexBuilder.makeCall(cmpOp, rangeL, op));
+    convertedChildList.add(rexBuilder.makeCall(cmpOp, op, rangeH));
     return convertedChildList;
   }
 
