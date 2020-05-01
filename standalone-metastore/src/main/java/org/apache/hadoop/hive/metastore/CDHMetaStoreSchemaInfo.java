@@ -246,13 +246,9 @@ public class CDHMetaStoreSchemaInfo extends MetaStoreSchemaInfo {
                 + " Skipping file " + cdhSchemaVersions[i]);
         continue;
       }
-      if (toVersionFromUpgradePath.compareTo(currentCdhVersion) <= 0) {
-        String scriptFile = generateUpgradeFileName(cdhSchemaVersions[i]);
-        minorUpgradeList.add(scriptFile);
-      } else {
-        LOG.info("Upgrade script version is newer than current hive version, skipping file "
-                + cdhSchemaVersions[i]);
-      }
+      String scriptFile = generateUpgradeFileName(cdhSchemaVersions[i]);
+      minorUpgradeList.add(scriptFile);
+      LOG.info("Adding " + scriptFile + " to the list of upgrades to be applied");
     }
     return minorUpgradeList;
   }
