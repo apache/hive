@@ -2782,7 +2782,21 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public List<Partition> getPartitions(String catName, String dbName, String tableName,
                                        int maxParts) throws MetaException, NoSuchObjectException {
-    return getPartitionsInternal(catName, dbName, tableName, maxParts, true, true);
+    List<Partition> results = Collections.emptyList();
+    boolean success = false;
+
+    LOG.debug("Executing getPartitions");
+
+    try {
+      openTransaction();
+      results = getPartitionsInternal(catName, dbName, tableName, maxParts, true, true);
+      success = commitTransaction();
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+    return results;
   }
 
   @Override
@@ -2831,9 +2845,9 @@ public class ObjectStore implements RawStore, Configurable {
     return partLocations;
   }
 
-  protected List<Partition> getPartitionsInternal(String catName, String dbName, String tblName,
-                                                  final int maxParts, boolean allowSql, boolean allowJdo)
-          throws MetaException, NoSuchObjectException {
+  protected List<Partition> getPartitionsInternal(String catName, String dbName, String tblName, final int maxParts,
+      boolean allowSql, boolean allowJdo) throws MetaException, NoSuchObjectException {
+    Preconditions.checkState(this.currentTransaction.isActive());
     return new GetListHelper<Partition>(catName, dbName, tblName, allowSql, allowJdo) {
       @Override
       protected List<Partition> getSqlResult(GetHelper<List<Partition>> ctx) throws MetaException {
@@ -7107,26 +7121,32 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public List<HiveObjectPrivilege> listPrincipalDBGrantsAll(String principalName, PrincipalType principalType) {
+    List<HiveObjectPrivilege> results = Collections.emptyList();
     try {
       openTransaction();
-      return convertDB(listPrincipalAllDBGrant(principalName, principalType));
+      results = convertDB(listPrincipalAllDBGrant(principalName, principalType));
+      commitTransaction();
     } catch (Exception e) {
       throw new RuntimeException(e);
     } finally {
       rollbackAndCleanup(true, null);
     }
+    return results;
   }
 
   @Override
   public List<HiveObjectPrivilege> listDBGrantsAll(String catName, String dbName) {
+    List<HiveObjectPrivilege> results = Collections.emptyList();
     try {
       openTransaction();
-      return listDBGrantsAll(catName, dbName, null);
+      results = listDBGrantsAll(catName, dbName, null);
+      commitTransaction();
     } catch (Exception e) {
       throw new RuntimeException(e);
     } finally {
       rollbackAndCleanup(true, null);
     }
+    return results;
   }
 
   private List<HiveObjectPrivilege> listDBGrantsAll(String catName, String dbName, String authorizer) throws Exception {
@@ -8266,19 +8286,19 @@ public class ObjectStore implements RawStore, Configurable {
       openTransaction();
       try (Query query = pm.newQuery(queryStr)) {
         result = ((Collection<?>) query.execute());
-        committed = commitTransaction();
+        pm.retrieveAll(result);
+      }
+      committed = commitTransaction();
 
-        if (committed) {
-          return result;
-        } else {
-          return null;
-        }
+      if (committed) {
+        result = Collections.unmodifiableCollection(new ArrayList<>(result));
       }
     } finally {
       if (!committed) {
         rollbackTransaction();
       }
     }
+    return result;
   }
 
   /** The following API
@@ -8290,21 +8310,20 @@ public class ObjectStore implements RawStore, Configurable {
   */
   public long executeJDOQLUpdate(String queryStr) throws Exception {
     boolean committed = false;
-    long numUpdated = 0;
+    long numUpdated = 0L;
     try {
       openTransaction();
       try (Query query = pm.newQuery(queryStr)) {
         numUpdated = (Long) query.execute();
-        committed = commitTransaction();
-        if (committed) {
-          return numUpdated;
-        } else {
-          return -1;
-        }
+      }
+      committed = commitTransaction();
+      if (committed) {
+        return numUpdated;
       }
     } finally {
       rollbackAndCleanup(committed, null);
     }
+    return -1L;
   }
 
   /** The following API
@@ -8834,9 +8853,6 @@ public class ObjectStore implements RawStore, Configurable {
 
       Map<String, MTableColumnStatistics> oldStats = getPartitionColStats(table, colNames, colStats.getEngine());
 
-      LOG.error("###### {}", colNames);
-      LOG.error("###### {}", oldStats);
-
       for (ColumnStatisticsObj statsObj:statsObjs) {
         // We have to get mtable again because DataNucleus.
         MTableColumnStatistics mStatsObj = StatObjectConverter.convertToMTableColumnStatistics(
@@ -8907,8 +8923,6 @@ public class ObjectStore implements RawStore, Configurable {
           throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
     boolean committed = false;
 
-    LOG.error("DID IT");
-
     try {
       openTransaction();
       List<ColumnStatisticsObj> statsObjs = colStats.getStatsObj();
@@ -8925,9 +8939,6 @@ public class ObjectStore implements RawStore, Configurable {
 
       Map<String, MPartitionColumnStatistics> oldStats = getPartitionColStats(table, statsDesc
           .getPartName(), colNames, colStats.getEngine());
-
-      LOG.error("New stats: {}", statsObjs);
-      LOG.error("Old stats: {}", oldStats);
 
       MPartition mPartition = getMPartition(
           catName, statsDesc.getDbName(), statsDesc.getTableName(), partVals);
@@ -8966,7 +8977,6 @@ public class ObjectStore implements RawStore, Configurable {
       }
 
       mPartition.setParameters(newParams);
-      LOG.error("MPartition: {}", mPartition.getParameters());
       committed = commitTransaction();
       // TODO: what is the "return committed;" about? would it ever return false without throwing?
       return committed ? newParams : null;
