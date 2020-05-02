@@ -739,20 +739,21 @@ public class GroupByOperator extends Operator<GroupByDesc> implements IConfigure
       // if hash aggregation is not behaving properly, disable it
       if (numRowsInput == numRowsCompareHashAggr) {
         numRowsCompareHashAggr += groupbyMapAggrInterval;
+        long numRowsProcessed = groupingSetsPresent ? numRowsInput * groupingSets.size() : numRowsInput;
         // map-side aggregation should reduce the entries by at-least half
-        if (numRowsHashTbl > numRowsInput * minReductionHashAggr) {
+        if (numRowsHashTbl > numRowsProcessed * minReductionHashAggr) {
           LOG.warn("Disable Hash Aggr: #hash table = " + numRowsHashTbl
-              + " #total = " + numRowsInput + " reduction = " + 1.0
-              * (numRowsHashTbl / numRowsInput) + " minReduction = "
-              + minReductionHashAggr);
+              + " #numRowsInput = " + numRowsInput + " reduction = " + 1.0 * (numRowsHashTbl / numRowsProcessed)
+              + " minReduction = " + minReductionHashAggr + " groupingSetsPresent = " + groupingSetsPresent
+              + " numRowsProcessed = " + numRowsProcessed);
           flushHashTable(true);
           hashAggr = false;
         } else {
           if (LOG.isTraceEnabled()) {
-            LOG.trace("Hash Aggr Enabled: #hash table = " + numRowsHashTbl
-                + " #total = " + numRowsInput + " reduction = " + 1.0
-                * (numRowsHashTbl / numRowsInput) + " minReduction = "
-                + minReductionHashAggr);
+            LOG.trace("Hash Aggr Enabled: #hash table = " + numRowsHashTbl + " #numRowsInput = " + numRowsInput
+                + " reduction = " + 1.0 * (numRowsHashTbl / numRowsProcessed) + " minReduction = "
+                + minReductionHashAggr + " groupingSetsPresent = " + groupingSetsPresent + " numRowsProcessed = "
+                + numRowsProcessed);
           }
         }
       }
