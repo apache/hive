@@ -40,7 +40,6 @@ import java.io.PrintStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
-import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -80,7 +79,6 @@ import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileChecksum;
@@ -3220,7 +3218,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
-  public List<org.apache.hadoop.hive.metastore.api.Partition> addPartition(
+  public List<org.apache.hadoop.hive.metastore.api.Partition> addPartitions(
       List<org.apache.hadoop.hive.metastore.api.Partition> partitions, boolean ifNotExists, boolean needResults)
           throws HiveException {
     try {
