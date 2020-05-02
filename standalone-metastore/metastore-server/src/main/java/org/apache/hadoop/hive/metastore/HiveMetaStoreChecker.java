@@ -533,6 +533,42 @@ public class HiveMetaStoreChecker {
     }
   }
 
+  /**
+   * Get the normalized partition path. By converting partition column
+   * names in the partition path to lower case.
+   *
+   * @param tablePath
+   *          Path of the table.
+   * @param partitionPath
+   *          Path of the partition.
+   * @return normalized partition path, for example tablePath/PartitionDate=2008-01-01
+   * gets converted to tablePath/partitiondate=2008-01-01
+   */
+  private Path getNormalizedPartitionPath(Path tablePath, Path partPath) {
+    String result = null;
+    Path currPath = partPath;
+    LOG.debug("tablePath:" + tablePath);
+
+    while (currPath != null && !tablePath.equals(currPath)) {
+      String[] parts = currPath.getName().split("=");
+      if (parts.length > 0) {
+        if (parts.length != 2) {
+          LOG.warn(currPath.getName() + " is not a valid partition name");
+          return partPath;
+        }
+
+        if (result == null) {
+          result = parts[0].toLowerCase() + "=" + parts[1];
+        } else {
+          result = parts[0].toLowerCase() + "=" + parts[1] + Path.SEPARATOR + result;
+        }
+      }
+      currPath = currPath.getParent();
+      LOG.debug("currPath=" + currPath);
+    }
+    return new Path(tablePath + Path.SEPARATOR + result);
+  }
+
   @VisibleForTesting
   void checkPartitionDirs(final ExecutorService executor,
       final Path basePath, final Set<Path> result,
@@ -558,7 +594,7 @@ public class HiveMetaStoreChecker {
         while(!futures.isEmpty()) {
           Path p = futures.poll().get();
           if (p != null) {
-            result.add(p);
+            result.add(getNormalizedPartitionPath(basePath, p));
           }
         }
         //update the nextlevel with newly discovered sub-directories from the above
