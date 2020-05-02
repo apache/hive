@@ -19,45 +19,69 @@ create table over10k_n14(
 
 load data local inpath '../../data/files/over10k' into table over10k_n14;
 
+ EXPLAIN
+  SELECT fv
+    FROM (SELECT distinct first_value(t) OVER ( PARTITION BY si ORDER BY i ) AS fv
+            FROM over10k_n14) sq
+ORDER BY fv
+   LIMIT 10;
+
+  SELECT fv
+    FROM (SELECT distinct first_value(t) OVER ( PARTITION BY si ORDER BY i ) AS fv
+            FROM over10k_n14) sq
+ORDER BY fv 
+   LIMIT 10;
+
+ EXPLAIN
+  SELECT lv
+    FROM (SELECT distinct last_value(i) OVER ( PARTITION BY si ORDER BY i ) AS lv
+            FROM over10k_n14) sq
+ORDER BY lv
+   LIMIT 10;
+
+  SELECT lv
+    FROM (SELECT distinct last_value(i) OVER ( PARTITION BY si ORDER BY i ) AS lv
+            FROM over10k_n14) sq
+ORDER BY lv
+   LIMIT 10;
+
+ EXPLAIN
+  SELECT lv, fv
+    FROM (SELECT distinct last_value(i) OVER ( PARTITION BY si ORDER BY i ) AS lv,
+                          first_value(t) OVER ( PARTITION BY si ORDER BY i ) AS fv
+            FROM over10k_n14) sq
+ORDER BY lv, fv
+   LIMIT 50;
+
+  SELECT lv, fv 
+    FROM (SELECT distinct last_value(i) OVER ( PARTITION BY si ORDER BY i ) AS lv,
+                          first_value(t) OVER ( PARTITION BY si ORDER BY i ) AS fv
+            FROM over10k_n14) sq
+ORDER BY lv, fv
+   LIMIT 50;
+
 explain
-select distinct first_value(t) over ( partition by si order by i ) from over10k_n14 limit 10;
-
-select distinct first_value(t) over ( partition by si order by i ) from over10k_n14 limit 10;
-
-explain
-select distinct last_value(i) over ( partition by si order by i )
-from over10k_n14 limit 10;
-
-select distinct last_value(i) over ( partition by si order by i )
-from over10k_n14 limit 10;
-
-explain
-select distinct last_value(i) over ( partition by si order by i ),
-                first_value(t)  over ( partition by si order by i )
-from over10k_n14 limit 50;
-
-select distinct last_value(i) over ( partition by si order by i ),
-                first_value(t)  over ( partition by si order by i )
-from over10k_n14 limit 50;
-
-explain
-select si, max(f) mf, rank() over ( partition by si order by mf )
+select si, max(f) mf, rank() over ( partition by si order by mf ) r
 FROM over10k_n14
 GROUP BY si
 HAVING max(f) > 0
+ORDER BY si, r
 limit 50;
 
-select si, max(f) mf, rank() over ( partition by si order by mf )
+select si, max(f) mf, rank() over ( partition by si order by mf ) r
 FROM over10k_n14
 GROUP BY si
 HAVING max(f) > 0
+ORDER BY si, r
 limit 50;
 
 explain
-select distinct si, rank() over ( partition by si order by i )
+select distinct si, rank() over ( partition by si order by i ) r
 FROM over10k_n14
+ORDER BY si, r
 limit 50;
 
-select distinct si, rank() over ( partition by si order by i )
+select distinct si, rank() over ( partition by si order by i ) r
 FROM over10k_n14
+ORDER BY si, r
 limit 50;
