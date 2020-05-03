@@ -66,7 +66,7 @@ import org.mockito.stubbing.Answer;
 
 public class TestLlapTaskCommunicator {
 
-  @Test (timeout = 5000)
+  @Test (timeout = 30000)
   public void testEntityTracker1() {
     LlapTaskCommunicator.EntityTracker entityTracker = new LlapTaskCommunicator.EntityTracker();
 
@@ -121,7 +121,7 @@ public class TestLlapTaskCommunicator {
   }
 
 
-  @Test(timeout = 5000)
+  @Test(timeout = 30000)
   public void testFinishableStateUpdateFailure() throws Exception {
 
     LlapTaskCommunicatorWrapperForTest wrapper = null;
