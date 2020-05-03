@@ -218,55 +218,99 @@ public final class TxnDbUtil {
 
   public static void cleanDb(Configuration conf) throws Exception {
     LOG.info("Cleaning transactional tables");
-    int retryCount = 0;
-    while(++retryCount <= 3) {
-      boolean success = true;
-      Connection conn = null;
-      Statement stmt = null;
-      try {
-        conn = getConnection(conf);
-        stmt = conn.createStatement();
 
-        // We want to try these, whether they succeed or fail.
-        success &= truncateTable(conn, stmt, "TXN_COMPONENTS");
-        success &= truncateTable(conn, stmt, "COMPLETED_TXN_COMPONENTS");
-        success &= truncateTable(conn, stmt, "TXNS");
-        success &= truncateTable(conn, stmt, "NEXT_TXN_ID");
-        success &= truncateTable(conn, stmt, "TXN_TO_WRITE_ID");
-        success &= truncateTable(conn, stmt, "NEXT_WRITE_ID");
-        success &= truncateTable(conn, stmt, "HIVE_LOCKS");
-        success &= truncateTable(conn, stmt, "NEXT_LOCK_ID");
-        success &= truncateTable(conn, stmt, "COMPACTION_QUEUE");
-        success &= truncateTable(conn, stmt, "NEXT_COMPACTION_QUEUE_ID");
-        success &= truncateTable(conn, stmt, "COMPLETED_COMPACTIONS");
-        success &= truncateTable(conn, stmt, "AUX_TABLE");
-        success &= truncateTable(conn, stmt, "WRITE_SET");
-        success &= truncateTable(conn, stmt, "REPL_TXN_MAP");
-        success &= truncateTable(conn, stmt, "MATERIALIZATION_REBUILD_LOCKS");
-        try {
-          stmt.executeUpdate("INSERT INTO \"NEXT_TXN_ID\" VALUES(1)");
-          stmt.executeUpdate("INSERT INTO \"NEXT_LOCK_ID\" VALUES(1)");
-          stmt.executeUpdate("INSERT INTO \"NEXT_COMPACTION_QUEUE_ID\" VALUES(1)");
-        } catch (SQLException e) {
-          if (!getTableNotExistsErrorCodes().contains(e.getSQLState())) {
-            LOG.error("Error initializing NEXT_TXN_ID");
-            success = false;
-          }
-        }
-        /*
-         * Don't drop NOTIFICATION_LOG, SEQUENCE_TABLE and NOTIFICATION_SEQUENCE as its used by other
-         * table which are not txn related to generate primary key. So if these tables are dropped
-         *  and other tables are not dropped, then it will create key duplicate error while inserting
-         *  to other table.
-         */
-      } finally {
-        closeResources(conn, stmt, null);
-      }
-      if(success) {
+    boolean success = true;
+    Connection conn = null;
+    Statement stmt = null;
+    try {
+      conn = getConnection(conf);
+      stmt = conn.createStatement();
+      if (!checkDbPrepared(stmt)){
+        // Nothing to clean
         return;
       }
+
+      // We want to try these, whether they succeed or fail.
+      success &= truncateTable(conn, stmt, "TXN_COMPONENTS");
+      success &= truncateTable(conn, stmt, "COMPLETED_TXN_COMPONENTS");
+      success &= truncateTable(conn, stmt, "TXNS");
+      success &= truncateTable(conn, stmt, "TXN_TO_WRITE_ID");
+      success &= truncateTable(conn, stmt, "NEXT_WRITE_ID");
+      success &= truncateTable(conn, stmt, "HIVE_LOCKS");
+      success &= truncateTable(conn, stmt, "NEXT_LOCK_ID");
+      success &= truncateTable(conn, stmt, "COMPACTION_QUEUE");
+      success &= truncateTable(conn, stmt, "NEXT_COMPACTION_QUEUE_ID");
+      success &= truncateTable(conn, stmt, "COMPLETED_COMPACTIONS");
+      success &= truncateTable(conn, stmt, "AUX_TABLE");
+      success &= truncateTable(conn, stmt, "WRITE_SET");
+      success &= truncateTable(conn, stmt, "REPL_TXN_MAP");
+      success &= truncateTable(conn, stmt, "MATERIALIZATION_REBUILD_LOCKS");
+      try {
+        resetTxnSequence(conn, stmt);
+        stmt.executeUpdate("INSERT INTO \"NEXT_LOCK_ID\" VALUES(1)");
+        stmt.executeUpdate("INSERT INTO \"NEXT_COMPACTION_QUEUE_ID\" VALUES(1)");
+      } catch (SQLException e) {
+        if (!getTableNotExistsErrorCodes().contains(e.getSQLState())) {
+          LOG.error("Error initializing sequence values", e);
+          success = false;
+        }
+      }
+      /*
+       * Don't drop NOTIFICATION_LOG, SEQUENCE_TABLE and NOTIFICATION_SEQUENCE as its used by other
+       * table which are not txn related to generate primary key. So if these tables are dropped
+       *  and other tables are not dropped, then it will create key duplicate error while inserting
+       *  to other table.
+       */
+    } finally {
+      closeResources(conn, stmt, null);
+    }
+    if(success) {
+      return;
     }
     throw new RuntimeException("Failed to clean up txn tables");
+  }
+
+  private static void resetTxnSequence(Connection conn, Statement stmt) throws SQLException, MetaException{
+    String dbProduct = conn.getMetaData().getDatabaseProductName();
+    DatabaseProduct databaseProduct = determineDatabaseProduct(dbProduct);
+    switch (databaseProduct) {
+
+    case DERBY:
+      stmt.execute("ALTER TABLE \"TXNS\" ALTER \"TXN_ID\" RESTART WITH 1");
+      stmt.execute("INSERT INTO \"TXNS\" (\"TXN_ID\", \"TXN_STATE\", \"TXN_STARTED\","
+          + " \"TXN_LAST_HEARTBEAT\", \"TXN_USER\", \"TXN_HOST\")"
+          + "  VALUES(0, 'c', 0, 0, '', '')");
+      break;
+    case MYSQL:
+      stmt.execute("ALTER TABLE \"TXNS\" AUTO_INCREMENT=1");
+      stmt.execute("SET SQL_MODE='NO_AUTO_VALUE_ON_ZERO,ANSI_QUOTES'");
+      stmt.execute("INSERT INTO \"TXNS\" (\"TXN_ID\", \"TXN_STATE\", \"TXN_STARTED\","
+          + " \"TXN_LAST_HEARTBEAT\", \"TXN_USER\", \"TXN_HOST\")"
+          + "  VALUES(0, 'c', 0, 0, '', '')");
+      break;
+    case POSTGRES:
+      stmt.execute("INSERT INTO \"TXNS\" (\"TXN_ID\", \"TXN_STATE\", \"TXN_STARTED\","
+          + " \"TXN_LAST_HEARTBEAT\", \"TXN_USER\", \"TXN_HOST\")"
+          + "  VALUES(0, 'c', 0, 0, '', '')");
+      stmt.execute("ALTER SEQUENCE \"TXNS_TXN_ID_seq\" RESTART");
+      break;
+    case ORACLE:
+      stmt.execute("ALTER TABLE \"TXNS\" MODIFY \"TXN_ID\" GENERATED BY DEFAULT AS IDENTITY (START WITH 1)");
+      stmt.execute("INSERT INTO \"TXNS\" (\"TXN_ID\", \"TXN_STATE\", \"TXN_STARTED\","
+          + " \"TXN_LAST_HEARTBEAT\", \"TXN_USER\", \"TXN_HOST\")"
+          + "  VALUES(0, 'c', 0, 0, '_', '_')");
+      break;
+    case SQLSERVER:
+      stmt.execute("DBCC CHECKIDENT ('txns', RESEED, 0)");
+      stmt.execute("SET IDENTITY_INSERT TXNS ON");
+      stmt.execute("INSERT INTO \"TXNS\" (\"TXN_ID\", \"TXN_STATE\", \"TXN_STARTED\","
+          + " \"TXN_LAST_HEARTBEAT\", \"TXN_USER\", \"TXN_HOST\")"
+          + "  VALUES(0, 'c', 0, 0, '', '')");
+      break;
+    case OTHER:
+    default:
+      break;
+    }
   }
 
   private static boolean truncateTable(Connection conn, Statement stmt, String name) {
@@ -274,7 +318,7 @@ public final class TxnDbUtil {
       // We can not use actual truncate due to some foreign keys, but we don't expect much data during tests
       String dbProduct = conn.getMetaData().getDatabaseProductName();
       DatabaseProduct databaseProduct = determineDatabaseProduct(dbProduct);
-      if (databaseProduct == POSTGRES) {
+      if (databaseProduct == POSTGRES || databaseProduct == MYSQL) {
         stmt.execute("DELETE FROM \"" + name + "\"");
       } else {
         stmt.execute("DELETE FROM " + name);
@@ -502,5 +546,29 @@ public final class TxnDbUtil {
       Arrays.stream(affectedRecordsByQuery).forEach(affectedRowsByQuery::add);
     }
     return affectedRowsByQuery;
+  }
+
+  /**
+   +   * Checks if the dbms supports the getGeneratedKeys for multiline insert statements.
+   +   * @param dbProduct DBMS type
+   +   * @return true if supports
+   +   * @throws MetaException
+   +   */
+  public static boolean supportsGetGeneratedKeys(DatabaseProduct dbProduct) throws MetaException {
+    switch (dbProduct) {
+    case DERBY:
+    case SQLSERVER:
+      // The getGeneratedKeys is not supported for multi line insert
+      return false;
+    case ORACLE:
+    case MYSQL:
+    case POSTGRES:
+      return true;
+    case OTHER:
+    default:
+      String msg = "Unknown database product: " + dbProduct.toString();
+      LOG.error(msg);
+      throw new MetaException(msg);
+    }
   }
 }

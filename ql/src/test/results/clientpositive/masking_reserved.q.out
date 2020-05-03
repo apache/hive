@@ -22,6 +22,16 @@ POSTHOOK: query: create table masking_test_n_masking_reserved (id int, value str
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@masking_test_n_masking_reserved
+PREHOOK: query: create temporary table masking_test_n_masking_temp stored as orc as select * from masking_test_n_masking_reserved
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@masking_test_n_masking_reserved
+PREHOOK: Output: database:default
+PREHOOK: Output: default@masking_test_n_masking_temp
+POSTHOOK: query: create temporary table masking_test_n_masking_temp stored as orc as select * from masking_test_n_masking_reserved
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@masking_test_n_masking_reserved
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@masking_test_n_masking_temp
 PREHOOK: query: explain select a.`etad`, b.value from keyword_test_off a join masking_test_n_masking_reserved b on b.id = a.id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@keyword_test_off

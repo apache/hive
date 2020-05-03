@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PartitionSpec;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -181,7 +182,18 @@ public class TestMetastoreExpr {
     client.listPartitionsByExpr(dbName, tblName,
         SerializationUtilities.serializeExpressionToKryo(expr), null, (short)-1, parts);
     assertEquals("Partition check failed: " + expr.getExprString(), numParts, parts.size());
+
+    // check with partition spec as well
+    List<PartitionSpec> partSpec = new ArrayList<>();
+    client.listPartitionsSpecByExpr(dbName, tblName,
+        SerializationUtilities.serializeExpressionToKryo(expr), null, (short)-1, partSpec);
+    int partSpecSize = 0;
+    if(!partSpec.isEmpty()) {
+      partSpecSize = partSpec.iterator().next().getSharedSDPartitionSpec().getPartitionsSize();
+    }
+    assertEquals("Partition Spec check failed: " + expr.getExprString(), numParts, partSpecSize);
   }
+
 
   /**
    * Helper class for building an expression.

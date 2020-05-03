@@ -62,8 +62,7 @@ public class ITestDbTxnManager extends TestDbTxnManager2 {
         MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CONNECT_URL_KEY));
     // Start the docker container and create the hive user
     rule.before();
-    rule.createUser();
-    // We do not run the install script, it will be called anyway before every test in prepDb
+    rule.install();
   }
 
   @AfterClass

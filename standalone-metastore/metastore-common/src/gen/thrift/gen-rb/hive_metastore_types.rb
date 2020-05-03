@@ -2247,6 +2247,26 @@ class PartitionsByExprResult
   ::Thrift::Struct.generate_accessors self
 end
 
+class PartitionsSpecByExprResult
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  PARTITIONSSPEC = 1
+  HASUNKNOWNPARTITIONS = 2
+
+  FIELDS = {
+    PARTITIONSSPEC => {:type => ::Thrift::Types::LIST, :name => 'partitionsSpec', :element => {:type => ::Thrift::Types::STRUCT, :class => ::PartitionSpec}},
+    HASUNKNOWNPARTITIONS => {:type => ::Thrift::Types::BOOL, :name => 'hasUnknownPartitions'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field partitionsSpec is unset!') unless @partitionsSpec
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field hasUnknownPartitions is unset!') if @hasUnknownPartitions.nil?
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class PartitionsByExprRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   DBNAME = 1
@@ -3187,13 +3207,15 @@ class LockRequest
   USER = 3
   HOSTNAME = 4
   AGENTINFO = 5
+  ZEROWAITREADENABLED = 6
 
   FIELDS = {
     COMPONENT => {:type => ::Thrift::Types::LIST, :name => 'component', :element => {:type => ::Thrift::Types::STRUCT, :class => ::LockComponent}},
     TXNID => {:type => ::Thrift::Types::I64, :name => 'txnid', :optional => true},
     USER => {:type => ::Thrift::Types::STRING, :name => 'user'},
     HOSTNAME => {:type => ::Thrift::Types::STRING, :name => 'hostname'},
-    AGENTINFO => {:type => ::Thrift::Types::STRING, :name => 'agentInfo', :default => %q"Unknown", :optional => true}
+    AGENTINFO => {:type => ::Thrift::Types::STRING, :name => 'agentInfo', :default => %q"Unknown", :optional => true},
+    ZEROWAITREADENABLED => {:type => ::Thrift::Types::BOOL, :name => 'zeroWaitReadEnabled', :default => false, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -3211,10 +3233,12 @@ class LockResponse
   include ::Thrift::Struct, ::Thrift::Struct_Union
   LOCKID = 1
   STATE = 2
+  ERRORMESSAGE = 3
 
   FIELDS = {
     LOCKID => {:type => ::Thrift::Types::I64, :name => 'lockid'},
-    STATE => {:type => ::Thrift::Types::I32, :name => 'state', :enum_class => ::LockState}
+    STATE => {:type => ::Thrift::Types::I32, :name => 'state', :enum_class => ::LockState},
+    ERRORMESSAGE => {:type => ::Thrift::Types::STRING, :name => 'errorMessage', :optional => true}
   }
 
   def struct_fields; FIELDS; end

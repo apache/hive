@@ -19,7 +19,10 @@
 package org.apache.hadoop.hive.ql.parse.type;
 
 import java.util.Map;
+
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -75,4 +78,10 @@ public class ExprNodeTypeCheck {
     return factory.toExpr(columnInfo, rowResolver, 0);
   }
 
+  public static ExprNodeDesc genConstraintsExpr(
+      HiveConf conf, Table targetTable, boolean updateStatement, RowResolver inputRR)
+      throws SemanticException {
+    return new ConstraintExprGenerator<>(conf, new TypeCheckProcFactory<>(new ExprNodeDescExprFactory()))
+        .genConstraintsExpr(targetTable, updateStatement, inputRR);
+  }
 }

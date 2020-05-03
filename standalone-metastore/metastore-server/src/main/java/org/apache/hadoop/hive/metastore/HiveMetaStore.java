@@ -884,7 +884,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         ms.getDatabase(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME);
       } catch (NoSuchObjectException e) {
         Database db = new Database(DEFAULT_DATABASE_NAME, DEFAULT_DATABASE_COMMENT,
-            wh.getDefaultDatabasePath(DEFAULT_DATABASE_NAME).toString(), null);
+            wh.getDefaultDatabasePath(DEFAULT_DATABASE_NAME, true).toString(), null);
         db.setOwnerName(PUBLIC);
         db.setOwnerType(PrincipalType.ROLE);
         db.setCatalogName(DEFAULT_CATALOG_NAME);
@@ -6710,6 +6710,33 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       finally {
         endFunction("get_partitions_by_filter_pspec", partitionSpecs != null && !partitionSpecs.isEmpty(), null, tblName);
       }
+    }
+
+    @Override
+    public PartitionsSpecByExprResult get_partitions_spec_by_expr(
+        PartitionsByExprRequest req) throws TException {
+      String dbName = req.getDbName(), tblName = req.getTblName();
+      String catName = req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf);
+      startTableFunction("get_partitions_spec_by_expr", catName, dbName, tblName);
+      fireReadTablePreEvent(catName, dbName, tblName);
+      PartitionsSpecByExprResult ret = null;
+      Exception ex = null;
+      try {
+        checkLimitNumberOfPartitionsByExpr(catName, dbName, tblName, req.getExpr(), UNLIMITED_MAX_PARTITIONS);
+        List<Partition> partitions = new LinkedList<>();
+        boolean hasUnknownPartitions = getMS().getPartitionsByExpr(catName, dbName, tblName,
+            req.getExpr(), req.getDefaultPartitionName(), req.getMaxParts(), partitions);
+        Table table = get_table_core(catName, dbName, tblName);
+        List<PartitionSpec> partitionSpecs =
+            MetaStoreServerUtils.getPartitionspecsGroupedByStorageDescriptor(table, partitions);
+        ret = new PartitionsSpecByExprResult(partitionSpecs, hasUnknownPartitions);
+      } catch (Exception e) {
+        ex = e;
+        rethrowException(e);
+      } finally {
+        endFunction("get_partitions_spec_by_expr", ret != null, ex, tblName);
+      }
+      return ret;
     }
 
     @Override

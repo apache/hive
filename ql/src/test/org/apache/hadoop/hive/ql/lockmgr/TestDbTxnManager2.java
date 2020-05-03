@@ -32,22 +32,14 @@ import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.AcidWriteSetService;
-import org.apache.hadoop.hive.metastore.txn.TxnStore;
-import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.TestTxnCommands2;
-import org.junit.After;
 import org.junit.Assert;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
-import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.ErrorMsg;
-import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.ComparisonFailure;
 import org.junit.Rule;
 import org.junit.Test;
@@ -82,47 +74,7 @@ import java.util.Map;
  * using {@link #swapTxnManager(HiveTxnManager)} since in the SessionState the TM is associated with
  * each thread.
  */
-public class TestDbTxnManager2 {
-  protected static HiveConf conf = new HiveConf(Driver.class);
-
-  private HiveTxnManager txnMgr;
-  private Context ctx;
-  private Driver driver;
-  private TxnStore txnHandler;
-
-  public TestDbTxnManager2() {
-    conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
-        "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
-    TxnDbUtil.setConfValues(conf);
-  }
-
-  @BeforeClass
-  public static void setUpDB() throws Exception{
-    TxnDbUtil.prepDb(conf);
-  }
-
-  @Before
-  public void setUp() throws Exception {
-    conf.setBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK, false);
-    SessionState.start(conf);
-    ctx = new Context(conf);
-    driver = new Driver(new QueryState.Builder().withHiveConf(conf).nonIsolated().build());
-    TxnDbUtil.cleanDb(conf);
-    SessionState ss = SessionState.get();
-    ss.initTxnMgr(conf);
-    txnMgr = ss.getTxnMgr();
-    Assert.assertTrue(txnMgr instanceof DbTxnManager);
-    txnHandler = TxnUtils.getTxnStore(conf);
-  }
-
-  @After
-  public void tearDown() throws Exception {
-    driver.close();
-    if (txnMgr != null) {
-      txnMgr.closeTxnManager();
-    }
-  }
+public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
 
   /**
    * HIVE-16688
@@ -1237,6 +1189,13 @@ public class TestDbTxnManager2 {
 
     locks = getLocks(txnMgr);
     Assert.assertEquals("Unexpected lock count", 0, locks.size());
+    /**
+     * The last transaction will always remain in the transaction table, so we will open an other one,
+     * wait for the timeout period to exceed, then start the initiator that will clean
+     */
+    txnMgr.openTxn(ctx, "Long Running");
+    Thread.sleep(txnHandler.getOpenTxnTimeOutMillis());
+    // Now we can clean the write_set
     houseKeeper.run();
     Assert.assertEquals(0, TxnDbUtil.countQueryAgent(conf, "select count(*) from \"WRITE_SET\""));
   }
@@ -1311,6 +1270,13 @@ public class TestDbTxnManager2 {
     Assert.assertEquals("Unexpected lock count", 1, locks.size());
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "TAB2", null, locks);
     txnMgr.commitTxn();
+    /*
+     * The last transaction will always remain in the transaction table, so we will open an other one,
+     * wait for the timeout period to exceed, then start the initiator that will clean
+     */
+    txnMgr.openTxn(ctx, "Long Running");
+    Thread.sleep(txnHandler.getOpenTxnTimeOutMillis());
+    // Now we can clean the write_set
     MetastoreTaskThread writeSetService = new AcidWriteSetService();
     writeSetService.setConf(conf);
     writeSetService.run();
@@ -2529,7 +2495,17 @@ public class TestDbTxnManager2 {
 
   @Test
   public void testFairness() throws Exception {
-    dropTable(new String[] {"T6"});
+    testFairness(false);
+  }
+
+  @Test
+  public void testFairnessZeroWaitRead() throws Exception {
+    testFairness(true);
+  }
+
+  private void testFairness(boolean zeroWaitRead) throws Exception {
+    dropTable(new String[]{"T6"});
+    conf.setBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK, !zeroWaitRead);
     driver.run("create table if not exists T6(a int)");
     driver.compileAndRespond("select a from T6", true);
     txnMgr.acquireLocks(driver.getPlan(), ctx, "Fifer"); //gets S lock on T6
@@ -2541,18 +2517,30 @@ public class TestDbTxnManager2 {
     List<ShowLocksResponseElement> locks = getLocks();
     Assert.assertEquals("Unexpected lock count", 2, locks.size());
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T6", null, locks);
-    checkLock(LockType.EXCLUSIVE, LockState.WAITING, "default", "T6", null, locks);
+    long extLockId = checkLock(LockType.EXCLUSIVE, LockState.WAITING, "default", "T6", null, locks).getLockid();
 
     HiveTxnManager txnMgr3 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
     swapTxnManager(txnMgr3);
     //this should block behind the X lock on  T6
     //this is a contrived example, in practice this query would of course fail after drop table
     driver.compileAndRespond("select a from T6", true);
-    ((DbTxnManager)txnMgr3).acquireLocks(driver.getPlan(), ctx, "Fifer", false); //gets S lock on T6
+    try {
+      ((DbTxnManager) txnMgr3).acquireLocks(driver.getPlan(), ctx, "Fifer", false); //gets S lock on T6
+    } catch (LockException ex) {
+      Assert.assertTrue(zeroWaitRead);
+      Assert.assertEquals("Exception msg didn't match",
+        ErrorMsg.LOCK_CANNOT_BE_ACQUIRED.getMsg() + " LockResponse(lockid:" + (extLockId + 1) +
+          ", state:NOT_ACQUIRED, errorMessage:Unable to acquire read lock due to an exclusive lock" +
+          " {lockid:" + extLockId + " intLockId:1 txnid:" + txnMgr2.getCurrentTxnId() +
+          " db:default table:t6 partition:null state:WAITING type:EXCLUSIVE})",
+        ex.getMessage());
+    }
     locks = getLocks();
-    Assert.assertEquals("Unexpected lock count", 3, locks.size());
+    Assert.assertEquals("Unexpected lock count", (zeroWaitRead ? 2 : 3), locks.size());
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T6", null, locks);
-    checkLock(LockType.SHARED_READ, LockState.WAITING, "default", "T6", null, locks);
+    if (!zeroWaitRead) {
+      checkLock(LockType.SHARED_READ, LockState.WAITING, "default", "T6", null, locks);
+    }
     checkLock(LockType.EXCLUSIVE, LockState.WAITING, "default", "T6", null, locks);
   }
 
@@ -2568,7 +2556,17 @@ public class TestDbTxnManager2 {
    */
   @Test
   public void testFairness2() throws Exception {
+    testFairness2(false);
+  }
+
+  @Test
+  public void testFairness2ZeroWaitRead() throws Exception {
+    testFairness2(true);
+  }
+
+  private void testFairness2(boolean zeroWaitRead) throws Exception {
     dropTable(new String[]{"T7"});
+    conf.setBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK, !zeroWaitRead);
     driver.run("create table if not exists T7 (a int) " +
         "partitioned by (p int) stored as orc TBLPROPERTIES ('transactional'='true')");
     driver.run("insert into T7 partition(p) values(1,1),(1,2)"); //create 2 partitions
@@ -2584,42 +2582,56 @@ public class TestDbTxnManager2 {
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T7", null, locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T7", "p=1", locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T7", "p=2", locks);
-    checkLock(LockType.EXCLUSIVE, LockState.WAITING, "default", "T7", "p=1", locks);
+    long extLockId = checkLock(LockType.EXCLUSIVE, LockState.WAITING, "default", "T7", "p=1", locks).getLockid();
 
     HiveTxnManager txnMgr3 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
     swapTxnManager(txnMgr3);
     //this should block behind the X lock on  T7.p=1
     driver.compileAndRespond("select a from T7", true);
     //tries to get S lock on T7, S on T7.p=1 and S on T7.p=2
-    ((DbTxnManager)txnMgr3).acquireLocks(driver.getPlan(), ctx, "Fifer", false);
+    try {
+      ((DbTxnManager) txnMgr3).acquireLocks(driver.getPlan(), ctx, "Fifer", false);
+    } catch (LockException ex) {
+      Assert.assertTrue(zeroWaitRead);
+      Assert.assertEquals("Exception msg didn't match",
+        ErrorMsg.LOCK_CANNOT_BE_ACQUIRED.getMsg() + " LockResponse(lockid:" + (extLockId + 1) +
+          ", state:NOT_ACQUIRED, errorMessage:Unable to acquire read lock due to an exclusive lock" +
+          " {lockid:" + extLockId + " intLockId:1 txnid:" + txnMgr2.getCurrentTxnId() +
+          " db:default table:t7 partition:p=1 state:WAITING type:EXCLUSIVE})",
+        ex.getMessage());
+    }
     locks = getLocks();
-    Assert.assertEquals("Unexpected lock count", 7, locks.size());
+    Assert.assertEquals("Unexpected lock count", (zeroWaitRead ? 4 : 7), locks.size());
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T7", null, locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T7", "p=1", locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T7", "p=2", locks);
-    checkLock(LockType.SHARED_READ, LockState.WAITING, "default", "T7", null, locks);
-    checkLock(LockType.SHARED_READ, LockState.WAITING, "default", "T7", "p=1", locks);
-    checkLock(LockType.SHARED_READ, LockState.WAITING, "default", "T7", "p=2", locks);
+    if (!zeroWaitRead) {
+      checkLock(LockType.SHARED_READ, LockState.WAITING, "default", "T7", null, locks);
+      checkLock(LockType.SHARED_READ, LockState.WAITING, "default", "T7", "p=1", locks);
+      checkLock(LockType.SHARED_READ, LockState.WAITING, "default", "T7", "p=2", locks);
+    }
     checkLock(LockType.EXCLUSIVE, LockState.WAITING, "default", "T7", "p=1", locks);
 
     txnMgr.commitTxn(); //release locks from "select a from T7" - to unblock hte drop partition
     //retest the the "drop partiton" X lock
-    ((DbLockManager)txnMgr2.getLockManager()).checkLock(locks.get(6).getLockid());
+    ((DbLockManager)txnMgr2.getLockManager()).checkLock(locks.get(zeroWaitRead ? 3 : 6).getLockid());
     locks = getLocks();
-    Assert.assertEquals("Unexpected lock count", 4, locks.size());
+    Assert.assertEquals("Unexpected lock count", (zeroWaitRead ? 1 : 4), locks.size());
     checkLock(LockType.EXCLUSIVE, LockState.ACQUIRED, "default", "T7", "p=1", locks);
-    checkLock(LockType.SHARED_READ, LockState.WAITING, "default", "T7", null, locks);
-    checkLock(LockType.SHARED_READ, LockState.WAITING, "default", "T7", "p=1", locks);
-    checkLock(LockType.SHARED_READ, LockState.WAITING, "default", "T7", "p=2", locks);
+    if (!zeroWaitRead) {
+      checkLock(LockType.SHARED_READ, LockState.WAITING, "default", "T7", null, locks);
+      checkLock(LockType.SHARED_READ, LockState.WAITING, "default", "T7", "p=1", locks);
+      checkLock(LockType.SHARED_READ, LockState.WAITING, "default", "T7", "p=2", locks);
 
-    txnMgr2.rollbackTxn(); //release the X lock on T7.p=1
-    //re-test the locks
-    ((DbLockManager)txnMgr2.getLockManager()).checkLock(locks.get(1).getLockid()); //S lock on T7
-    locks = getLocks();
-    Assert.assertEquals("Unexpected lock count", 3, locks.size());
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T7", null, locks);
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T7", "p=1", locks);
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T7", "p=2", locks);
+      txnMgr2.rollbackTxn(); //release the X lock on T7.p=1
+      //re-test the locks
+      ((DbLockManager) txnMgr2.getLockManager()).checkLock(locks.get(1).getLockid()); //S lock on T7
+      locks = getLocks();
+      Assert.assertEquals("Unexpected lock count", 3, locks.size());
+      checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T7", null, locks);
+      checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T7", "p=1", locks);
+      checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T7", "p=2", locks);
+    }
   }
 
   @Test

@@ -1,0 +1,474 @@
+PREHOOK: query: create table timestamp1 (t timestamp) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@timestamp1
+POSTHOOK: query: create table timestamp1 (t timestamp) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@timestamp1
+PREHOOK: query: insert into timestamp1 values
+("2020-02-03"),
+("1969-12-31 23:59:59.999999999")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@timestamp1
+POSTHOOK: query: insert into timestamp1 values
+("2020-02-03"),
+("1969-12-31 23:59:59.999999999")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@timestamp1
+POSTHOOK: Lineage: timestamp1.t SCRIPT []
+PREHOOK: query: from timestamp1 select cast (t as string      format "yyyy hh24...PM ff")
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamp1
+#### A masked pattern was here ####
+POSTHOOK: query: from timestamp1 select cast (t as string      format "yyyy hh24...PM ff")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamp1
+#### A masked pattern was here ####
+2020 00...AM 0
+1969 23...PM 999999999
+PREHOOK: query: from timestamp1 select cast (t as char(11)    format "yyyy hh24...PM ff")
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamp1
+#### A masked pattern was here ####
+POSTHOOK: query: from timestamp1 select cast (t as char(11)    format "yyyy hh24...PM ff")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamp1
+#### A masked pattern was here ####
+2020 00...A
+1969 23...P
+PREHOOK: query: -- will be truncated
+from timestamp1 select cast (t as varchar(11) format "yyyy hh24...PM ff")
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamp1
+#### A masked pattern was here ####
+POSTHOOK: query: -- will be truncated
+from timestamp1 select cast (t as varchar(11) format "yyyy hh24...PM ff")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamp1
+#### A masked pattern was here ####
+2020 00...A
+1969 23...P
+PREHOOK: query: -- will be truncated
+
+create table dates (d date) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dates
+POSTHOOK: query: -- will be truncated
+
+create table dates (d date) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dates
+PREHOOK: query: insert into dates values
+("2020-02-03"),
+("1969-12-31")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@dates
+POSTHOOK: query: insert into dates values
+("2020-02-03"),
+("1969-12-31")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@dates
+POSTHOOK: Lineage: dates.d SCRIPT []
+PREHOOK: query: from dates select cast (d as string      format "yyyy mm dd , hh24 mi ss ff9")
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dates
+#### A masked pattern was here ####
+POSTHOOK: query: from dates select cast (d as string      format "yyyy mm dd , hh24 mi ss ff9")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dates
+#### A masked pattern was here ####
+2020 02 03 , 00 00 00 000000000
+1969 12 31 , 00 00 00 000000000
+PREHOOK: query: from dates select cast (d as char(10)    format "yyyy mm dd , hh24 mi ss ff9")
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dates
+#### A masked pattern was here ####
+POSTHOOK: query: from dates select cast (d as char(10)    format "yyyy mm dd , hh24 mi ss ff9")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dates
+#### A masked pattern was here ####
+2020 02 03
+1969 12 31
+PREHOOK: query: -- will be truncated
+from dates select cast (d as varchar(10) format "yyyy mm dd , hh24 mi ss ff9")
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dates
+#### A masked pattern was here ####
+POSTHOOK: query: -- will be truncated
+from dates select cast (d as varchar(10) format "yyyy mm dd , hh24 mi ss ff9")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dates
+#### A masked pattern was here ####
+2020 02 03
+1969 12 31
+PREHOOK: query: -- will be truncated
+
+create table strings  (s string)      stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@strings
+POSTHOOK: query: -- will be truncated
+
+create table strings  (s string)      stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@strings
+PREHOOK: query: create table varchars (s varchar(11)) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@varchars
+POSTHOOK: query: create table varchars (s varchar(11)) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@varchars
+PREHOOK: query: create table chars    (s char(11))    stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@chars
+POSTHOOK: query: create table chars    (s char(11))    stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@chars
+PREHOOK: query: insert into strings values
+("20 / 2 / 3"),
+("1969 12 31")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@strings
+POSTHOOK: query: insert into strings values
+("20 / 2 / 3"),
+("1969 12 31")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@strings
+POSTHOOK: Lineage: strings.s SCRIPT []
+PREHOOK: query: insert into varchars select * from strings
+PREHOOK: type: QUERY
+PREHOOK: Input: default@strings
+PREHOOK: Output: default@varchars
+POSTHOOK: query: insert into varchars select * from strings
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@strings
+POSTHOOK: Output: default@varchars
+POSTHOOK: Lineage: varchars.s EXPRESSION [(strings)strings.FieldSchema(name:s, type:string, comment:null), ]
+PREHOOK: query: insert into chars select * from strings
+PREHOOK: type: QUERY
+PREHOOK: Input: default@strings
+PREHOOK: Output: default@chars
+POSTHOOK: query: insert into chars select * from strings
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@strings
+POSTHOOK: Output: default@chars
+POSTHOOK: Lineage: chars.s EXPRESSION [(strings)strings.FieldSchema(name:s, type:string, comment:null), ]
+PREHOOK: query: from strings    select cast (s as timestamp format "yyyy.mm.dd")
+PREHOOK: type: QUERY
+PREHOOK: Input: default@strings
+#### A masked pattern was here ####
+POSTHOOK: query: from strings    select cast (s as timestamp format "yyyy.mm.dd")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@strings
+#### A masked pattern was here ####
+2020-02-03 00:00:00
+1969-12-31 00:00:00
+PREHOOK: query: from strings    select cast (s as date      format "yyyy.mm.dd")
+PREHOOK: type: QUERY
+PREHOOK: Input: default@strings
+#### A masked pattern was here ####
+POSTHOOK: query: from strings    select cast (s as date      format "yyyy.mm.dd")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@strings
+#### A masked pattern was here ####
+2020-02-03
+1969-12-31
+PREHOOK: query: from varchars   select cast (s as timestamp format "yyyy.mm.dd")
+PREHOOK: type: QUERY
+PREHOOK: Input: default@varchars
+#### A masked pattern was here ####
+POSTHOOK: query: from varchars   select cast (s as timestamp format "yyyy.mm.dd")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@varchars
+#### A masked pattern was here ####
+2020-02-03 00:00:00
+1969-12-31 00:00:00
+PREHOOK: query: from varchars   select cast (s as date      format "yyyy.mm.dd")
+PREHOOK: type: QUERY
+PREHOOK: Input: default@varchars
+#### A masked pattern was here ####
+POSTHOOK: query: from varchars   select cast (s as date      format "yyyy.mm.dd")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@varchars
+#### A masked pattern was here ####
+2020-02-03
+1969-12-31
+PREHOOK: query: from chars      select cast (s as timestamp format "yyyy.mm.dd")
+PREHOOK: type: QUERY
+PREHOOK: Input: default@chars
+#### A masked pattern was here ####
+POSTHOOK: query: from chars      select cast (s as timestamp format "yyyy.mm.dd")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@chars
+#### A masked pattern was here ####
+2020-02-03 00:00:00
+1969-12-31 00:00:00
+PREHOOK: query: from chars      select cast (s as date      format "yyyy.mm.dd")
+PREHOOK: type: QUERY
+PREHOOK: Input: default@chars
+#### A masked pattern was here ####
+POSTHOOK: query: from chars      select cast (s as date      format "yyyy.mm.dd")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@chars
+#### A masked pattern was here ####
+2020-02-03
+1969-12-31
+PREHOOK: query: select cast ("2015-05-15 12::00" as timestamp format "yyyy-mm-dd hh:mi:ss")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select cast ("2015-05-15 12::00" as timestamp format "yyyy-mm-dd hh:mi:ss")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: select cast ("2015-05-15 12::00" as date format "yyyy-mm-dd hh:mi:ss")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select cast ("2015-05-15 12::00" as date format "yyyy-mm-dd hh:mi:ss")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: explain from strings    select cast (s as timestamp   format "yyy.mm.dd")
+PREHOOK: type: QUERY
+PREHOOK: Input: default@strings
+#### A masked pattern was here ####
+POSTHOOK: query: explain from strings    select cast (s as timestamp   format "yyy.mm.dd")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@strings
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: strings
+          Select Operator
+            expressions: CAST( s AS timestamp FORMAT 'yyy.mm.dd' ) (type: timestamp)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: explain from strings    select cast (s as date        format "yyy.mm.dd")
+PREHOOK: type: QUERY
+PREHOOK: Input: default@strings
+#### A masked pattern was here ####
+POSTHOOK: query: explain from strings    select cast (s as date        format "yyy.mm.dd")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@strings
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: strings
+          Select Operator
+            expressions: CAST( s AS date FORMAT 'yyy.mm.dd' ) (type: date)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: explain from timestamp1 select cast (t as string      format "yyyy")
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamp1
+#### A masked pattern was here ####
+POSTHOOK: query: explain from timestamp1 select cast (t as string      format "yyyy")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamp1
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: timestamp1
+          Select Operator
+            expressions: CAST( t AS string FORMAT 'yyyy' ) (type: string)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: explain from timestamp1 select cast (t as varchar(12) format "yyyy")
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamp1
+#### A masked pattern was here ####
+POSTHOOK: query: explain from timestamp1 select cast (t as varchar(12) format "yyyy")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamp1
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: timestamp1
+          Select Operator
+            expressions: CAST( t AS varchar(12) FORMAT 'yyyy' ) (type: varchar(12))
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: select
+cast ("2019\' \' '' 01-01" as timestamp format "yyyy\'' \'' mm-dd"),
+cast ("2019\"01-01" as timestamp format "yyyy\"\\\"\"mm-dd"),
+cast ('2019\' " \' 01-01' as timestamp format 'yyyy\' "\\" \'" mm-dd')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select
+cast ("2019\' \' '' 01-01" as timestamp format "yyyy\'' \'' mm-dd"),
+cast ("2019\"01-01" as timestamp format "yyyy\"\\\"\"mm-dd"),
+cast ('2019\' " \' 01-01' as timestamp format 'yyyy\' "\\" \'" mm-dd')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+2019-01-01 00:00:00	2019-01-01 00:00:00	2019-01-01 00:00:00
+PREHOOK: query: from timestamp1 select cast (t as string      format "yyyy")
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamp1
+#### A masked pattern was here ####
+POSTHOOK: query: from timestamp1 select cast (t as string      format "yyyy")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamp1
+#### A masked pattern was here ####
+2020
+1969
+PREHOOK: query: from dates      select cast (d as string      format "yyyy")
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dates
+#### A masked pattern was here ####
+POSTHOOK: query: from dates      select cast (d as string      format "yyyy")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dates
+#### A masked pattern was here ####
+2020
+1969
+PREHOOK: query: from timestamp1 select cast (t as varchar(11) format "yyyy")
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamp1
+#### A masked pattern was here ####
+POSTHOOK: query: from timestamp1 select cast (t as varchar(11) format "yyyy")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamp1
+#### A masked pattern was here ####
+2020
+1969
+PREHOOK: query: from dates      select cast (d as varchar(11) format "yyyy")
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dates
+#### A masked pattern was here ####
+POSTHOOK: query: from dates      select cast (d as varchar(11) format "yyyy")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dates
+#### A masked pattern was here ####
+2020
+1969
+PREHOOK: query: from timestamp1 select cast (t as char(11)    format "yyyy")
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamp1
+#### A masked pattern was here ####
+POSTHOOK: query: from timestamp1 select cast (t as char(11)    format "yyyy")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamp1
+#### A masked pattern was here ####
+2020       
+1969       
+PREHOOK: query: from dates      select cast (d as char(11)    format "yyyy")
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dates
+#### A masked pattern was here ####
+POSTHOOK: query: from dates      select cast (d as char(11)    format "yyyy")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dates
+#### A masked pattern was here ####
+2020       
+1969       
+PREHOOK: query: from strings    select cast (s as timestamp   format "yyyy.mm.dd")
+PREHOOK: type: QUERY
+PREHOOK: Input: default@strings
+#### A masked pattern was here ####
+POSTHOOK: query: from strings    select cast (s as timestamp   format "yyyy.mm.dd")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@strings
+#### A masked pattern was here ####
+2020-02-03 00:00:00
+1969-12-31 00:00:00
+PREHOOK: query: from varchars   select cast (s as timestamp   format "yyyy.mm.dd")
+PREHOOK: type: QUERY
+PREHOOK: Input: default@varchars
+#### A masked pattern was here ####
+POSTHOOK: query: from varchars   select cast (s as timestamp   format "yyyy.mm.dd")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@varchars
+#### A masked pattern was here ####
+2020-02-03 00:00:00
+1969-12-31 00:00:00
+PREHOOK: query: from chars      select cast (s as timestamp   format "yyyy.mm.dd")
+PREHOOK: type: QUERY
+PREHOOK: Input: default@chars
+#### A masked pattern was here ####
+POSTHOOK: query: from chars      select cast (s as timestamp   format "yyyy.mm.dd")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@chars
+#### A masked pattern was here ####
+2020-02-03 00:00:00
+1969-12-31 00:00:00
+PREHOOK: query: from strings    select cast (s as date        format "yyyy.mm.dd")
+PREHOOK: type: QUERY
+PREHOOK: Input: default@strings
+#### A masked pattern was here ####
+POSTHOOK: query: from strings    select cast (s as date        format "yyyy.mm.dd")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@strings
+#### A masked pattern was here ####
+2020-02-03
+1969-12-31
+PREHOOK: query: from varchars   select cast (s as date        format "yyyy.mm.dd")
+PREHOOK: type: QUERY
+PREHOOK: Input: default@varchars
+#### A masked pattern was here ####
+POSTHOOK: query: from varchars   select cast (s as date        format "yyyy.mm.dd")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@varchars
+#### A masked pattern was here ####
+2020-02-03
+1969-12-31
+PREHOOK: query: from chars      select cast (s as date        format "yyyy.mm.dd")
+PREHOOK: type: QUERY
+PREHOOK: Input: default@chars
+#### A masked pattern was here ####
+POSTHOOK: query: from chars      select cast (s as date        format "yyyy.mm.dd")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@chars
+#### A masked pattern was here ####
+2020-02-03
+1969-12-31

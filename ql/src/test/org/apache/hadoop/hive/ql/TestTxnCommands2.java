@@ -89,6 +89,7 @@ public class TestTxnCommands2 {
 
   protected HiveConf hiveConf;
   protected Driver d;
+  private TxnStore txnHandler;
   protected enum Table {
     ACIDTBL("acidTbl"),
     ACIDTBLPART("acidTblPart", "p"),
@@ -151,6 +152,7 @@ public class TestTxnCommands2 {
 
     TxnDbUtil.setConfValues(hiveConf);
     TxnDbUtil.prepDb(hiveConf);
+    txnHandler = TxnUtils.getTxnStore(hiveConf);
     File f = new File(TEST_WAREHOUSE_DIR);
     if (f.exists()) {
       FileUtil.fullyDelete(f);
@@ -322,7 +324,6 @@ public class TestTxnCommands2 {
     // 3. Perform a major compaction.
     runStatementOnDriver("alter table "+ Table.NONACIDORCTBL + " compact 'MAJOR'");
     runWorker(hiveConf);
-    TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
     ShowCompactResponse resp = txnHandler.showCompact(new ShowCompactRequest());
     Assert.assertEquals("Unexpected number of compactions in history", 1, resp.getCompactsSize());
     Assert.assertEquals("Unexpected 0 compaction state", TxnStore.CLEANING_RESPONSE, resp.getCompacts().get(0).getState());
@@ -930,7 +931,6 @@ public class TestTxnCommands2 {
     int[][] tableData = {{1,2},{3,4},{5,6}};
     runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p=1) (a,b) " + makeValuesClause(tableData));
     runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p=2) (a,b) " + makeValuesClause(tableData));
-    TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
     txnHandler.compact(new CompactionRequest("default", Table.ACIDTBLPART.name(), CompactionType.MAJOR));
     runWorker(hiveConf);
     runCleaner(hiveConf);
@@ -953,7 +953,6 @@ public class TestTxnCommands2 {
     runStatementOnDriver("update t1" + " set b = -2 where a = 1");
     runStatementOnDriver("alter table t1 " + " compact 'MAJOR'");
     runWorker(hiveConf);
-    TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
     ShowCompactResponse resp = txnHandler.showCompact(new ShowCompactRequest());
     Assert.assertEquals("Unexpected number of compactions in history", 1, resp.getCompactsSize());
     Assert.assertEquals("Unexpected 0 compaction state", TxnStore.CLEANING_RESPONSE, resp.getCompacts().get(0).getState());
@@ -1029,7 +1028,6 @@ public class TestTxnCommands2 {
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION, true);
 
     int numFailedCompactions = hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_INITIATOR_FAILED_THRESHOLD);
-    TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
     AtomicBoolean stop = new AtomicBoolean(true);
     //create failed compactions
     for(int i = 0; i < numFailedCompactions; i++) {
@@ -1217,7 +1215,6 @@ public class TestTxnCommands2 {
     runStatementOnDriver("update " + tblName + " set b = 'blah' where a = 3");
 
     //run Worker to execute compaction
-    TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
     txnHandler.compact(new CompactionRequest("default", tblName, CompactionType.MINOR));
     runWorker(hiveConf);
 
@@ -1277,7 +1274,6 @@ public class TestTxnCommands2 {
   public void testOpenTxnsCounter() throws Exception {
     hiveConf.setIntVar(HiveConf.ConfVars.HIVE_MAX_OPEN_TXNS, 3);
     hiveConf.setTimeVar(HiveConf.ConfVars.HIVE_COUNT_OPEN_TXNS_INTERVAL, 10, TimeUnit.MILLISECONDS);
-    TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
     OpenTxnsResponse openTxnsResponse = txnHandler.openTxns(new OpenTxnRequest(3, "me", "localhost"));
 
     AcidOpenTxnsCounterService openTxnsCounterService = new AcidOpenTxnsCounterService();
@@ -1319,7 +1315,6 @@ public class TestTxnCommands2 {
     runStatementOnDriver("update " + Table.ACIDTBL + " set b = -2 where b = 2");
     runStatementOnDriver("alter table "+ Table.ACIDTBL + " compact 'MINOR'");
     runWorker(hiveConf);
-    TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
     ShowCompactResponse resp = txnHandler.showCompact(new ShowCompactRequest());
     Assert.assertEquals("Unexpected number of compactions in history", 2, resp.getCompactsSize());
     Assert.assertEquals("Unexpected 0 compaction state", TxnStore.CLEANING_RESPONSE, resp.getCompacts().get(0).getState());
@@ -1380,6 +1375,8 @@ public class TestTxnCommands2 {
     // now compact and see if compaction still preserves the data correctness
     runStatementOnDriver("alter table "+ tblName + " compact 'MAJOR'");
     runWorker(hiveConf);
+    // create a low water mark aborted transaction and clean the older ones
+    createAbortLowWaterMark();
     runCleaner(hiveConf); // Cleaner would remove the obsolete files.
 
     // Verify that there is now only 1 new directory: base_xxxxxxx and the rest have have been cleaned.
@@ -1401,6 +1398,14 @@ public class TestTxnCommands2 {
 
     rs = runStatementOnDriver("select * from " + tblName + " order by a");
     Assert.assertEquals(Arrays.asList(expectedResult), rs);
+  }
+
+  protected void createAbortLowWaterMark() throws Exception{
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, true);
+    runStatementOnDriver("select * from " + Table.ACIDTBL);
+    // wait for metastore.txn.opentxn.timeout
+    Thread.sleep(1000);
+    runInitiator(hiveConf);
   }
 
   @Test
@@ -2007,7 +2012,6 @@ public class TestTxnCommands2 {
     Assert.assertEquals("2\t2000\taa", res.get(1));
 
     // Compact
-    TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
     CompactionRequest compactionRequest =
         new CompactionRequest("default", tblName, CompactionType.MAJOR);
     compactionRequest.setPartitionname("part=aa");
@@ -2054,7 +2058,6 @@ public class TestTxnCommands2 {
     Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from TXN_TO_WRITE_ID" + acidTblPartWhereClause),
             2, TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_TO_WRITE_ID" + acidTblPartWhereClause));
 
-    TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
     txnHandler.compact(new CompactionRequest("default", Table.ACIDTBL.name().toLowerCase(), CompactionType.MAJOR));
     runWorker(hiveConf);
     runCleaner(hiveConf);
@@ -2096,7 +2099,7 @@ public class TestTxnCommands2 {
     // The entry relevant to aborted txns shouldn't be removed from TXN_TO_WRITE_ID as
     // aborted txn would be removed from TXNS only after the compaction. Also, committed txn > open txn is retained.
     // As open txn doesn't allocate writeid, the 2 entries for aborted and committed should be retained.
-    txnHandler.cleanEmptyAbortedTxns();
+    txnHandler.cleanEmptyAbortedAndCommittedTxns();
     txnHandler.cleanTxnToWriteIdTable();
     Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from TXN_TO_WRITE_ID" + acidTblWhereClause),
             3, TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_TO_WRITE_ID" + acidTblWhereClause));
@@ -2109,7 +2112,7 @@ public class TestTxnCommands2 {
     txnHandler.compact(new CompactionRequest("default", Table.ACIDTBL.name().toLowerCase(), CompactionType.MAJOR));
     runWorker(hiveConf);
     runCleaner(hiveConf);
-    txnHandler.cleanEmptyAbortedTxns();
+    txnHandler.cleanEmptyAbortedAndCommittedTxns();
     txnHandler.cleanTxnToWriteIdTable();
     Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from TXN_TO_WRITE_ID"),
             2, TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_TO_WRITE_ID"));
@@ -2234,7 +2237,6 @@ public class TestTxnCommands2 {
     runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) " + makeValuesClause(tableData2));
     runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) " + makeValuesClause(tableData3));
 
-    TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
     txnHandler.compact(new CompactionRequest("default", Table.ACIDTBL.name().toLowerCase(), CompactionType.MINOR));
     runWorker(hiveConf);
     runCleaner(hiveConf);
