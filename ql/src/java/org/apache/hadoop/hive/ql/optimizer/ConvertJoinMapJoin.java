@@ -767,7 +767,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
     for (Operator<? extends OperatorDesc> parentOp : joinOp.getParentOperators()) {
       if (!(parentOp instanceof ReduceSinkOperator)) {
         // could be mux/demux operators. Currently not supported
-        LOG.info("Found correlation optimizer operators. Cannot convert to SMB at this time.");
+        LOG.debug("Found correlation optimizer operators. Cannot convert to SMB at this time.");
         return false;
       }
       ReduceSinkOperator rsOp = (ReduceSinkOperator) parentOp;
@@ -788,14 +788,20 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
           return false;
         }
       }
+      // check Parent's traits are same as rs
+      OpTraits parentTraits = rsOp.getParentOperators().get(0).getOpTraits();
+      if (null == parentTraits) {
+        // programming error - shouldn't be null
+        return false;
+      }
 
-      if (!checkColEquality(rsOp.getParentOperators().get(0).getOpTraits().getSortCols(), rsOp
+      if (!checkColEquality(parentTraits.getSortCols(), rsOp
           .getOpTraits().getSortCols(), rsOp.getColumnExprMap(), false)) {
         LOG.info("We cannot convert to SMB because the sort column names do not match.");
         return false;
       }
 
-      if (!checkColEquality(rsOp.getParentOperators().get(0).getOpTraits().getBucketColNames(), rsOp
+      if (!checkColEquality(parentTraits.getBucketColNames(), rsOp
           .getOpTraits().getBucketColNames(), rsOp.getColumnExprMap(), true)) {
         LOG.info("We cannot convert to SMB because bucket column names do not match.");
         return false;
