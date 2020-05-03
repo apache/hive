@@ -12231,8 +12231,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           ast.getTokenStartIndex(), ast.getTokenStopIndex());
       ASTNode rewrittenTree;
       try {
-        rewrittenTree = ParseUtils.parse(rewrittenQuery);
-      } catch (ParseException e) {
+        // We pass a new empty context with our HiveConf so the lexer can
+        // detect if allowQuotedId is enabled.
+        rewrittenTree = ParseUtils.parse(rewrittenQuery, new Context(conf));
+      } catch (ParseException | IOException e) {
         throw new SemanticException(e);
       }
       return rewrittenTree;
