@@ -28,33 +28,7 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-1
-<<<<<<< HEAD:ql/src/test/results/clientpositive/bucket1.q.out
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            alias: src
-            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-            GatherStats: false
-            Select Operator
-              expressions: UDFToInteger(key) (type: int), value (type: string)
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
-              Reduce Output Operator
-                bucketingVersion: 2
-                key expressions: _col0 (type: int)
-                null sort order: a
-                numBuckets: -1
-                sort order: +
-                Map-reduce partition columns: _col0 (type: int)
-                Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
-                tag: -1
-                value expressions: _col1 (type: string)
-                auto parallelism: false
-      Execution mode: vectorized
-      Path -> Alias:
-=======
     Tez
->>>>>>> apache/master:ql/src/test/results/clientpositive/llap/bucket1.q.out
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
@@ -72,8 +46,10 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
+                      bucketingVersion: 2
                       key expressions: _col0 (type: int)
                       null sort order: a
+                      numBuckets: -1
                       sort order: +
                       Map-reduce partition columns: _col0 (type: int)
                       Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -108,23 +84,6 @@ STAGE PLANS:
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 5812
 #### A masked pattern was here ####
-<<<<<<< HEAD:ql/src/test/results/clientpositive/bucket1.q.out
-              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.src
-            name: default.src
-      Truncated Path -> Alias:
-        /src [src]
-      Needs Tagging: false
-      Reduce Operator Tree:
-        Select Operator
-          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: string)
-          outputColumnNames: _col0, _col1
-          Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
-          File Output Operator
-            bucketingVersion: 2
-            compressed: false
-            GlobalTableId: 1
-=======
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
@@ -137,7 +96,6 @@ STAGE PLANS:
                       columns key,value
                       columns.comments 'default','default'
                       columns.types string:string
->>>>>>> apache/master:ql/src/test/results/clientpositive/llap/bucket1.q.out
 #### A masked pattern was here ####
                       name default.src
                       numFiles 1
@@ -162,33 +120,13 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
+                  bucketingVersion: 2
                   compressed: false
                   GlobalTableId: 1
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
                   Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
-<<<<<<< HEAD:ql/src/test/results/clientpositive/bucket1.q.out
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: default.bucket1_1
-            TotalFiles: 1
-            GatherStats: true
-            MultiFileSpray: false
-          Select Operator
-            expressions: _col0 (type: int), _col1 (type: string)
-            outputColumnNames: key, value
-            Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
-            Group By Operator
-              aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
-              minReductionHashAggr: 0.99
-              mode: hash
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: COMPLETE
-              File Output Operator
-                bucketingVersion: 1
-                compressed: false
-                GlobalTableId: 0
-=======
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -201,7 +139,6 @@ STAGE PLANS:
                         columns key,value
                         columns.comments 
                         columns.types int:string
->>>>>>> apache/master:ql/src/test/results/clientpositive/llap/bucket1.q.out
 #### A masked pattern was here ####
                         name default.bucket1_1
                         numFiles 0
@@ -228,7 +165,9 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
+                      bucketingVersion: 2
                       null sort order: 
+                      numBuckets: -1
                       sort order: 
                       Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: COMPLETE
                       tag: -1
@@ -244,6 +183,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
+                  bucketingVersion: 2
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
@@ -254,6 +194,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       properties:
+                        bucketing_version -1
                         columns _col0,_col1
                         columns.types struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>:struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>
                         escape.delim \
@@ -309,83 +250,6 @@ STAGE PLANS:
           Table: default.bucket1_1
           Is Table Level Stats: true
 
-<<<<<<< HEAD:ql/src/test/results/clientpositive/bucket1.q.out
-  Stage: Stage-3
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            GatherStats: false
-            Reduce Output Operator
-              bucketingVersion: 2
-              null sort order: 
-              numBuckets: -1
-              sort order: 
-              Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: COMPLETE
-              tag: -1
-              value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
-              auto parallelism: false
-      Execution mode: vectorized
-      Path -> Alias:
-#### A masked pattern was here ####
-      Path -> Partition:
-#### A masked pattern was here ####
-          Partition
-            base file name: -mr-10002
-            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-            properties:
-              column.name.delimiter ,
-              columns _col0,_col1
-              columns.types struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>,struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>
-              escape.delim \
-              serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-            serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-          
-              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-              properties:
-                column.name.delimiter ,
-                columns _col0,_col1
-                columns.types struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>,struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>
-                escape.delim \
-                serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-              serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-      Truncated Path -> Alias:
-#### A masked pattern was here ####
-      Needs Tagging: false
-      Reduce Operator Tree:
-        Group By Operator
-          aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
-          mode: mergepartial
-          outputColumnNames: _col0, _col1
-          Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
-          File Output Operator
-            bucketingVersion: 2
-            compressed: false
-            GlobalTableId: 0
-#### A masked pattern was here ####
-            NumFilesPerFileSink: 1
-            Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
-#### A masked pattern was here ####
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                properties:
-                  bucketing_version -1
-                  columns _col0,_col1
-                  columns.types struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>:struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>
-                  escape.delim \
-                  hive.serialization.extend.additional.nesting.levels true
-                  serialization.escape.crlf true
-                  serialization.format 1
-                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            TotalFiles: 1
-            GatherStats: false
-            MultiFileSpray: false
-
-=======
->>>>>>> apache/master:ql/src/test/results/clientpositive/llap/bucket1.q.out
 PREHOOK: query: insert overwrite table bucket1_1
 select * from src
 PREHOOK: type: QUERY
