@@ -2847,7 +2847,6 @@ public class ObjectStore implements RawStore, Configurable {
 
   protected List<Partition> getPartitionsInternal(String catName, String dbName, String tblName, final int maxParts,
       boolean allowSql, boolean allowJdo) throws MetaException, NoSuchObjectException {
-    Preconditions.checkState(this.currentTransaction.isActive());
     return new GetListHelper<Partition>(catName, dbName, tblName, allowSql, allowJdo) {
       @Override
       protected List<Partition> getSqlResult(GetHelper<List<Partition>> ctx) throws MetaException {
