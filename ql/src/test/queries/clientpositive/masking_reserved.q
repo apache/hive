@@ -4,6 +4,7 @@ set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.autho
 create table keyword_test_off (id int, `etad` string, key int);
 create table keyword_test_on (id int, `date` string, key int);
 create table masking_test_n_masking_reserved (id int, value string, key int);
+create temporary table masking_test_n_masking_temp stored as orc as select * from masking_test_n_masking_reserved;
 
 explain select a.`etad`, b.value from keyword_test_off a join masking_test_n_masking_reserved b on b.id = a.id;
 select a.`etad`, b.value from keyword_test_off a join masking_test_n_masking_reserved b on b.id = a.id;
