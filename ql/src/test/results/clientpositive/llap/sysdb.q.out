@@ -4024,24 +4024,22 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@skewed_col_value_loc_map
 #### A masked pattern was here ####
 0
-PREHOOK: query: select count(*) from skewed_string_list
+PREHOOK: query: select * from skewed_string_list limit 0
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@skewed_string_list
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from skewed_string_list
+POSTHOOK: query: select * from skewed_string_list limit 0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@skewed_string_list
 #### A masked pattern was here ####
-6
-PREHOOK: query: select count(*) from skewed_string_list_values
+PREHOOK: query: select * from skewed_string_list_values limit 0
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@skewed_string_list_values
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from skewed_string_list_values
+POSTHOOK: query: select * from skewed_string_list_values limit 0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@skewed_string_list_values
 #### A masked pattern was here ####
-6
 PREHOOK: query: select count(*) from skewed_values
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@skewed_values
@@ -4229,7 +4227,7 @@ avg_col_len         	double              	from deserializer
 max_col_len         	bigint              	from deserializer   
 num_trues           	bigint              	from deserializer   
 num_falses          	bigint              	from deserializer   
-last_analyzed       	bigint              	from deserializer   
+last_analyzed       	bigint              	from deserializer
 PREHOOK: query: explain select max(num_distincts) from sys.tab_col_stats
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@tab_col_stats
