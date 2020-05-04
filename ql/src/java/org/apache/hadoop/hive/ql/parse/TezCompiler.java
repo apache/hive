@@ -25,6 +25,7 @@ import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -81,6 +82,7 @@ import org.apache.hadoop.hive.ql.lib.SemanticRule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.optimizer.BucketVersionPopulator;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagate;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcCtx.ConstantPropagateOption;
 import org.apache.hadoop.hive.ql.optimizer.ConvertJoinMapJoin;
@@ -216,6 +218,9 @@ public class TezCompiler extends TaskCompiler {
     runStatsDependentOptimizations(procCtx, inputs, outputs);
     perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Run the optimizations that use stats for optimization");
 
+    // repopulate bucket versions; join conversion may have created some new reducesinks
+    new BucketVersionPopulator().transform(pCtx);
+
     perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
     if(procCtx.conf.getBoolVar(ConfVars.HIVEOPTJOINREDUCEDEDUPLICATION)) {
       new ReduceSinkJoinDeDuplication().transform(procCtx.parseContext);
@@ -243,15 +248,9 @@ public class TezCompiler extends TaskCompiler {
     markOperatorsWithUnstableRuntimeStats(procCtx);
     perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "markOperatorsWithUnstableRuntimeStats");
 
-    // ATTENTION : DO NOT, I REPEAT, DO NOT WRITE ANYTHING AFTER updateBucketingVersionForUpgrade()
-    // ANYTHING WHICH NEEDS TO BE ADDED MUST BE ADDED ABOVE
-    // This call updates the bucketing version of final ReduceSinkOp based on
-    // the bucketing version of FileSinkOp. This operation must happen at the
-    // end to ensure there is no further rewrite of plan which may end up
-    // removing/updating the ReduceSinkOp as was the case with SortedDynPartitionOptimizer
-    // Update bucketing version of ReduceSinkOp if needed
-    updateBucketingVersionForUpgrade(procCtx);
-
+    if (procCtx.conf.getBoolVar(ConfVars.HIVE_IN_TEST)) {
+      bucketingVersionSanityCheck(procCtx);
+    }
   }
 
   private void runCycleAnalysisForPartitionPruning(OptimizeTezProcContext procCtx,
@@ -2089,7 +2088,7 @@ public class TezCompiler extends TaskCompiler {
     }
   }
 
-  private void updateBucketingVersionForUpgrade(OptimizeTezProcContext procCtx) {
+  private void bucketingVersionSanityCheck(OptimizeTezProcContext procCtx) throws SemanticException {
     // Fetch all the FileSinkOperators.
     Set<FileSinkOperator> fsOpsAll = new HashSet<>();
     for (TableScanOperator ts : procCtx.parseContext.getTopOps().values()) {
@@ -2098,7 +2097,7 @@ public class TezCompiler extends TaskCompiler {
       fsOpsAll.addAll(fsOps);
     }
 
-
+    Map<Operator<?>, Integer> processedOperators = new IdentityHashMap<>();
     for (FileSinkOperator fsOp : fsOpsAll) {
       // Look for direct parent ReduceSinkOp
       // If there are more than 1 parent, bail out.
@@ -2111,8 +2110,21 @@ public class TezCompiler extends TaskCompiler {
           continue;
         }
 
-        // Found the target RSOp
-        parent.setBucketingVersion(fsOp.getConf().getTableInfo().getBucketingVersion());
+        // Found the target RSOp 0
+        int bucketingVersion = fsOp.getConf().getTableInfo().getBucketingVersion();
+        if (fsOp.getConf().getTableInfo().getBucketingVersion() == -1) {
+          break;
+        }
+        if (fsOp.getConf().getTableInfo().getBucketingVersion() != fsOp.getConf().getBucketingVersion()) {
+          throw new RuntimeException("FsOp bucketingVersions is inconsistent with its tableinfo");
+        }
+        if (processedOperators.containsKey(parent) && processedOperators.get(parent) != bucketingVersion) {
+          throw new SemanticException(String.format(
+              "Operator (%s) is already processed and is using bucketingVersion(%d); so it can't be changed to %d ",
+              parent, processedOperators.get(parent), bucketingVersion));
+        }
+        processedOperators.put(parent, bucketingVersion);
+
         break;
       }
     }

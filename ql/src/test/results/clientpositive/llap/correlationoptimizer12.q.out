@@ -96,6 +96,7 @@ STAGE PLANS:
                     expressions: _col0 (type: string), count_window_0 (type: bigint)
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 25 Data size: 2350 Basic stats: COMPLETE Column stats: COMPLETE
+                    Dummy Store
             Execution mode: llap
             Reduce Operator Tree:
               Select Operator

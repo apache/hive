@@ -286,6 +286,7 @@ public final class PlanUtils {
       outputFormat = IgnoreKeyTextOutputFormat.class;
     }
     properties.setProperty(serdeConstants.SERIALIZATION_LIB, serdeClass.getName());
+    properties.setProperty(hive_metastoreConstants.TABLE_BUCKETING_VERSION, "-1");
     return new TableDesc(inputFormat, outputFormat, properties);
   }
 

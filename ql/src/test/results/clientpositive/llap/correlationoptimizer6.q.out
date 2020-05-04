@@ -3023,6 +3023,7 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 12 Data size: 1128 Basic stats: COMPLETE Column stats: COMPLETE
+                Dummy Store
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
@@ -3275,6 +3276,7 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 12 Data size: 1128 Basic stats: COMPLETE Column stats: COMPLETE
+                Dummy Store
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator

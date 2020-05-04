@@ -152,6 +152,7 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
     if (tblMetadata != null) {
       dbName = tblMetadata.getDbName();
       tableName = tblMetadata.getTableName();
+      numBuckets = tblMetadata.getNumBuckets();
     }
     isTranscationalTable = AcidUtils.isTransactionalTable(this.tableMetadata);
     if (isTranscationalTable) {

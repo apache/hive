@@ -437,12 +437,18 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     this.outputName = outputName;
   }
 
+  @Explain(displayName = "numBuckets", explainLevels = { Level.EXTENDED })
   public int getNumBuckets() {
     return numBuckets;
   }
 
   public void setNumBuckets(int numBuckets) {
     this.numBuckets = numBuckets;
+  }
+
+  @Explain(displayName = "bucketingVersion", explainLevels = { Level.EXTENDED })
+  public int getBucketingVersionForExplain() {
+    return getBucketingVersion();
   }
 
   public List<ExprNodeDesc> getBucketCols() {
