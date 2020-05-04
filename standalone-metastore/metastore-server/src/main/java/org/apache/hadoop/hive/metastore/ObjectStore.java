@@ -8285,7 +8285,6 @@ public class ObjectStore implements RawStore, Configurable {
       openTransaction();
       try (Query query = pm.newQuery(queryStr)) {
         result = ((Collection<?>) query.execute());
-        pm.retrieveAll(result);
       }
       committed = commitTransaction();
 
