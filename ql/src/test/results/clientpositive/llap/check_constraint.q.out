@@ -2496,15 +2496,18 @@ STAGE PLANS:
                 Filter Operator
                   predicate: enforce_constraint((_col2 is not null and ((_col1 > 0) and ((_col1 < 100) or (_col1 = 5))) is not false)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
-                  File Output Operator
-                    compressed: false
-                    Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
-                    table:
-                        input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
-                        serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                        name: default.tmerge
-                    Write Type: UPDATE
+                  Select Operator
+                    expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), _col1 (type: int), '1' (type: string), _col3 (type: string)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                          serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                          name: default.tmerge
+                      Write Type: UPDATE
 
   Stage: Stage-4
     Dependency Collection
@@ -2746,15 +2749,18 @@ STAGE PLANS:
                 Filter Operator
                   predicate: enforce_constraint((_col2 is not null and ((_col1 > 0) and ((_col1 < 100) or (_col1 = 5))) is not false)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
-                  File Output Operator
-                    compressed: false
-                    Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
-                    table:
-                        input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
-                        serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                        name: default.tmerge
-                    Write Type: UPDATE
+                  Select Operator
+                    expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), _col1 (type: int), '1' (type: string), _col3 (type: string)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                          serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                          name: default.tmerge
+                      Write Type: UPDATE
         Reducer 6 
             Execution mode: llap
             Reduce Operator Tree:
