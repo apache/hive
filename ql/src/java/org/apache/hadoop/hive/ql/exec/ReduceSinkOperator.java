@@ -233,7 +233,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       // incase of ACID updates/deletes.
       boolean acidOp = conf.getWriteType() == AcidUtils.Operation.UPDATE ||
           conf.getWriteType() == AcidUtils.Operation.DELETE;
-      hashFunc = bucketingVersion == 2 && !acidOp ?
+      hashFunc = getConf().getBucketingVersion() == 2 && !acidOp ?
           ObjectInspectorUtils::getBucketHashCode :
           ObjectInspectorUtils::getBucketHashCodeOld;
     } catch (Exception e) {
@@ -430,7 +430,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
    * For Acid Update/Delete case, we expect a single partitionEval of the form
    * UDFToInteger(ROW__ID) and buckNum == -1 so that the result of this method
    * is to return the bucketId extracted from ROW__ID unless it optimized by
-   * {@link org.apache.hadoop.hive.ql.optimizer.SortedDynPartitionOptimizer} 
+   * {@link org.apache.hadoop.hive.ql.optimizer.SortedDynPartitionOptimizer}
    */
   private int computeHashCode(Object row, int buckNum) throws HiveException {
     // Evaluate the HashCode
