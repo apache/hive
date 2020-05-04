@@ -1,0 +1,382 @@
+PREHOOK: query: explain cbo select
+  p_brand,
+  p_type,
+  p_size,
+  count(distinct ps_suppkey) as supplier_cnt
+from
+  impala_tpch_partsupp,
+  impala_tpch_part
+where
+  p_partkey = ps_partkey
+  and p_brand <> 'Brand#45'
+  and p_type not like 'MEDIUM POLISHED%'
+  and p_size in (49, 14, 23, 45, 19, 3, 36, 9)
+  and ps_suppkey not in (
+    select
+      s_suppkey
+    from
+      impala_tpch_supplier
+    where
+      s_comment like '%Customer%Complaints%'
+  )
+group by
+  p_brand,
+  p_type,
+  p_size
+order by
+  supplier_cnt desc,
+  p_brand,
+  p_type,
+  p_size
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpch_part
+PREHOOK: Input: default@impala_tpch_partsupp
+PREHOOK: Input: default@impala_tpch_supplier
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo select
+  p_brand,
+  p_type,
+  p_size,
+  count(distinct ps_suppkey) as supplier_cnt
+from
+  impala_tpch_partsupp,
+  impala_tpch_part
+where
+  p_partkey = ps_partkey
+  and p_brand <> 'Brand#45'
+  and p_type not like 'MEDIUM POLISHED%'
+  and p_size in (49, 14, 23, 45, 19, 3, 36, 9)
+  and ps_suppkey not in (
+    select
+      s_suppkey
+    from
+      impala_tpch_supplier
+    where
+      s_comment like '%Customer%Complaints%'
+  )
+group by
+  p_brand,
+  p_type,
+  p_size
+order by
+  supplier_cnt desc,
+  p_brand,
+  p_type,
+  p_size
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpch_part
+POSTHOOK: Input: default@impala_tpch_partsupp
+POSTHOOK: Input: default@impala_tpch_supplier
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+ImpalaSortRel(sort0=[$3], sort1=[$0], sort2=[$1], sort3=[$2], dir0=[DESC], dir1=[ASC], dir2=[ASC], dir3=[ASC])
+  ImpalaAggregateRel(group=[{1, 2, 3}], agg#0=[count($0)])
+    ImpalaAggregateRel(group=[{1, 3, 4, 5}])
+      ImpalaProjectRel(ps_partkey=[$6], ps_suppkey=[$7], p_partkey=[$0], p_brand=[$1], p_type=[$2], p_size=[$3], c=[$4], ck=[$5], s_suppkey=[$8], literalTrue=[$9])
+        ImpalaJoinRel(condition=[=($0, $6)], joinType=[inner])
+          ImpalaJoinRel(condition=[true], joinType=[inner])
+            ImpalaProjectPassthroughRel(p_partkey=[$0], p_brand=[$3], p_type=[$4], p_size=[$5])
+              ImpalaHdfsScanRel(table=[[default, impala_tpch_part]], condition=[AND(OR(=($5, 49), =($5, 14), =($5, 23), =($5, 45), =($5, 19), =($5, 3), =($5, 36), =($5, 9)), <>($3, _UTF-16LE'Brand#45'), IS NOT NULL($0), NOT(LIKE($4, _UTF-16LE'MEDIUM POLISHED%':VARCHAR(65535))))])
+            ImpalaAggregateRel(group=[{}], c=[COUNT()], ck=[COUNT($0)])
+              ImpalaHdfsScanRel(table=[[default, impala_tpch_supplier]], condition=[LIKE($6, _UTF-16LE'%Customer%Complaints%':VARCHAR(65535))])
+          ImpalaJoinRel(condition=[=($1, $2)], joinType=[left])
+            ImpalaProjectPassthroughRel(ps_partkey=[$0], ps_suppkey=[$1])
+              ImpalaHdfsScanRel(table=[[default, impala_tpch_partsupp]], condition=[IS NOT NULL($0)])
+            ImpalaProjectPassthroughRel(s_suppkey=[$0], literalTrue=[true])
+              ImpalaAggregateRel(group=[{0}])
+                ImpalaHdfsScanRel(table=[[default, impala_tpch_supplier]], condition=[AND(LIKE($6, _UTF-16LE'%Customer%Complaints%':VARCHAR(65535)), IS NOT NULL($0))])
+
+PREHOOK: query: explain select
+  p_brand,
+  p_type,
+  p_size,
+  count(distinct ps_suppkey) as supplier_cnt
+from
+  impala_tpch_partsupp,
+  impala_tpch_part
+where
+  p_partkey = ps_partkey
+  and p_brand <> 'Brand#45'
+  and p_type not like 'MEDIUM POLISHED%'
+  and p_size in (49, 14, 23, 45, 19, 3, 36, 9)
+  and ps_suppkey not in (
+    select
+      s_suppkey
+    from
+      impala_tpch_supplier
+    where
+      s_comment like '%Customer%Complaints%'
+  )
+group by
+  p_brand,
+  p_type,
+  p_size
+order by
+  supplier_cnt desc,
+  p_brand,
+  p_type,
+  p_size
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpch_part
+PREHOOK: Input: default@impala_tpch_partsupp
+PREHOOK: Input: default@impala_tpch_supplier
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select
+  p_brand,
+  p_type,
+  p_size,
+  count(distinct ps_suppkey) as supplier_cnt
+from
+  impala_tpch_partsupp,
+  impala_tpch_part
+where
+  p_partkey = ps_partkey
+  and p_brand <> 'Brand#45'
+  and p_type not like 'MEDIUM POLISHED%'
+  and p_size in (49, 14, 23, 45, 19, 3, 36, 9)
+  and ps_suppkey not in (
+    select
+      s_suppkey
+    from
+      impala_tpch_supplier
+    where
+      s_comment like '%Customer%Complaints%'
+  )
+group by
+  p_brand,
+  p_type,
+  p_size
+order by
+  supplier_cnt desc,
+  p_brand,
+  p_type,
+  p_size
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpch_part
+POSTHOOK: Input: default@impala_tpch_partsupp
+POSTHOOK: Input: default@impala_tpch_supplier
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F09:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=40.00KB mem-reservation=0B thread-reservation=1
+  PLAN-ROOT SINK
+  |  output exprs: p_brand, p_type, p_size, _impala_builtins.count(ps_suppkey)
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |
+  25:MERGING-EXCHANGE [UNPARTITIONED]
+     order by: _impala_builtins.count(ps_suppkey) DESC NULLS FIRST, p_brand ASC NULLS LAST, p_type ASC NULLS LAST, p_size ASC NULLS LAST
+     mem-estimate=40.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=13 row-size=36B cardinality=0
+     in pipelines: 13(GETNEXT)
+
+F08:PLAN FRAGMENT [HASH(p_brand,p_type,p_size)] hosts=1 instances=1
+Per-Host Resources: mem-estimate=140.00MB mem-reservation=46.00MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F09, EXCHANGE=25, UNPARTITIONED]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  13:SORT
+  |  order by: _impala_builtins.count(ps_suppkey) DESC NULLS FIRST, p_brand ASC NULLS LAST, p_type ASC NULLS LAST, p_size ASC NULLS LAST
+  |  mem-estimate=12.00MB mem-reservation=12.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=13 row-size=36B cardinality=0
+  |  in pipelines: 13(GETNEXT), 24(OPEN)
+  |
+  24:AGGREGATE [FINALIZE]
+  |  output: _impala_builtins.count:merge(ps_suppkey)
+  |  group by: p_brand, p_type, p_size
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=12 row-size=36B cardinality=0
+  |  in pipelines: 24(GETNEXT), 22(OPEN)
+  |
+  23:EXCHANGE [HASH(p_brand,p_type,p_size)]
+     mem-estimate=40.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=12 row-size=36B cardinality=0
+     in pipelines: 22(GETNEXT)
+
+F07:PLAN FRAGMENT [HASH(ps_suppkey,p_brand,p_type,p_size)] hosts=1 instances=1
+Per-Host Resources: mem-estimate=256.04MB mem-reservation=68.00MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F08, EXCHANGE=23, HASH(p_brand,p_type,p_size)]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  12:AGGREGATE [STREAMING]
+  |  output: count(ps_suppkey)
+  |  group by: p_brand, p_type, p_size
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=12 row-size=36B cardinality=0
+  |  in pipelines: 22(GETNEXT)
+  |
+  22:AGGREGATE [FINALIZE]
+  |  group by: ps_suppkey, p_brand, p_type, p_size
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=11 row-size=36B cardinality=0
+  |  in pipelines: 22(GETNEXT), 01(OPEN)
+  |
+  21:EXCHANGE [HASH(ps_suppkey,p_brand,p_type,p_size)]
+     mem-estimate=40.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=11 row-size=36B cardinality=0
+     in pipelines: 01(GETNEXT)
+
+F06:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=129.98MB mem-reservation=35.94MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F07, EXCHANGE=21, HASH(ps_suppkey,p_brand,p_type,p_size)]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  11:AGGREGATE [STREAMING]
+  |  group by: ps_suppkey, p_brand, p_type, p_size
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=11 row-size=36B cardinality=0
+  |  in pipelines: 01(GETNEXT)
+  |
+  10:SELECT
+  |  predicates: literalTrue IS NULL OR c = CAST(0 AS BIGINT), ps_suppkey IS NOT NULL OR c = CAST(0 AS BIGINT) OR literalTrue IS NOT NULL, ck >= c OR c = CAST(0 AS BIGINT) OR literalTrue IS NOT NULL OR ps_suppkey IS NULL
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |  tuple-ids=10 row-size=77B cardinality=0
+  |  in pipelines: 01(GETNEXT)
+  |
+  00:UNION
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |  tuple-ids=10 row-size=77B cardinality=0
+  |  in pipelines: 01(GETNEXT)
+  |
+  09:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpch_part.p_partkey = default.impala_tpch_partsupp.ps_partkey
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,4,5,9N row-size=76B cardinality=0
+  |  in pipelines: 01(GETNEXT), 05(OPEN)
+  |
+  |--20:EXCHANGE [BROADCAST]
+  |     mem-estimate=32.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=5,9N row-size=24B cardinality=0
+  |     in pipelines: 05(GETNEXT)
+  |
+  04:NESTED LOOP JOIN [CROSS JOIN, BROADCAST]
+  |  mem-estimate=16B mem-reservation=0B thread-reservation=0
+  |  tuple-ids=0,4 row-size=52B cardinality=0
+  |  in pipelines: 01(GETNEXT), 15(OPEN)
+  |
+  |--16:EXCHANGE [BROADCAST]
+  |     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=4 row-size=16B cardinality=1
+  |     in pipelines: 15(GETNEXT)
+  |
+  01:SCAN HDFS [default.impala_tpch_part, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpch_part.p_partkey IS NOT NULL, default.impala_tpch_part.p_brand != 'Brand#45', _impala_builtins.not(_impala_builtins.like(default.impala_tpch_part.p_type, 'MEDIUM POLISHED%')), default.impala_tpch_part.p_size = CAST(49 AS INT) OR default.impala_tpch_part.p_size = CAST(14 AS INT) OR default.impala_tpch_part.p_size = CAST(23 AS INT) OR default.impala_tpch_part.p_size = CAST(45 AS INT) OR default.impala_tpch_part.p_size = CAST(19 AS INT) OR default.impala_tpch_part.p_size = CAST(3 AS INT) OR default.impala_tpch_part.p_size = CAST(36 AS INT) OR default.impala_tpch_part.p_size = CAST(9 AS INT)
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=36B cardinality=0
+     in pipelines: 01(GETNEXT)
+
+F02:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F06, EXCHANGE=16, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  15:AGGREGATE [FINALIZE]
+  |  output: _impala_builtins.count:merge(), _impala_builtins.count:merge(default.impala_tpch_supplier.s_suppkey)
+  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=4 row-size=16B cardinality=1
+  |  in pipelines: 15(GETNEXT), 03(OPEN)
+  |
+  14:EXCHANGE [UNPARTITIONED]
+     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=4 row-size=16B cardinality=1
+     in pipelines: 03(GETNEXT)
+
+F01:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=10.00MB mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F02, EXCHANGE=14, UNPARTITIONED]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  03:AGGREGATE
+  |  output: count(), count(default.impala_tpch_supplier.s_suppkey)
+  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=4 row-size=16B cardinality=1
+  |  in pipelines: 03(GETNEXT), 02(OPEN)
+  |
+  02:SCAN HDFS [default.impala_tpch_supplier, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: _impala_builtins.like(default.impala_tpch_supplier.s_comment, '%Customer%Complaints%')
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=2 row-size=20B cardinality=0
+     in pipelines: 02(GETNEXT)
+
+F03:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=1.95MB mem-reservation=1.94MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F06, EXCHANGE=20, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  08:HASH JOIN [LEFT OUTER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpch_partsupp.ps_suppkey = default.impala_tpch_supplier_0.s_suppkey
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=5,9N row-size=24B cardinality=0
+  |  in pipelines: 05(GETNEXT), 18(OPEN)
+  |
+  |--19:EXCHANGE [BROADCAST]
+  |     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=9 row-size=8B cardinality=0
+  |     in pipelines: 18(GETNEXT)
+  |
+  05:SCAN HDFS [default.impala_tpch_partsupp, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpch_partsupp.ps_partkey IS NOT NULL
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=5 row-size=16B cardinality=0
+     in pipelines: 05(GETNEXT)
+
+F05:PLAN FRAGMENT [HASH(default.impala_tpch_supplier_0.s_suppkey)] hosts=1 instances=1
+Per-Host Resources: mem-estimate=128.02MB mem-reservation=34.00MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F03, EXCHANGE=19, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  18:AGGREGATE [FINALIZE]
+  |  group by: default.impala_tpch_supplier_0.s_suppkey
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=9 row-size=8B cardinality=0
+  |  in pipelines: 18(GETNEXT), 06(OPEN)
+  |
+  17:EXCHANGE [HASH(default.impala_tpch_supplier_0.s_suppkey)]
+     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=9 row-size=8B cardinality=0
+     in pipelines: 06(GETNEXT)
+
+F04:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=128.00MB mem-reservation=34.00MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F05, EXCHANGE=17, HASH(default.impala_tpch_supplier_0.s_suppkey)]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  07:AGGREGATE [STREAMING]
+  |  group by: default.impala_tpch_supplier_0.s_suppkey
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=9 row-size=8B cardinality=0
+  |  in pipelines: 06(GETNEXT)
+  |
+  06:SCAN HDFS [default.impala_tpch_supplier, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpch_supplier_0.s_suppkey IS NOT NULL, _impala_builtins.like(default.impala_tpch_supplier_0.s_comment, '%Customer%Complaints%')
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=7 row-size=20B cardinality=0
+     in pipelines: 06(GETNEXT)
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

@@ -184,27 +184,22 @@ public class ImpalaJoinRel extends ImpalaPlanRel {
   }
 
   private JoinOperator getImpalaJoinOp(Join join) throws HiveException {
-    if (join instanceof HiveJoin) {
-      switch (join.getJoinType()) {
-      case INNER:
-        return JoinOperator.INNER_JOIN;
-      case FULL:
-        return JoinOperator.FULL_OUTER_JOIN;
-      case LEFT:
-        return JoinOperator.LEFT_OUTER_JOIN;
-      case RIGHT:
-        return JoinOperator.RIGHT_OUTER_JOIN;
-      }
-    } else if (join instanceof HiveSemiJoin) {
-      switch (join.getJoinType()) {
-      case INNER:
-        // Hive semi joins have a join type of inner join. Mapping
-        // it to a Left Semi Join in Impala seems to make sense since
-        // it is unclear when we would need a Right Semi Join
-        return JoinOperator.LEFT_SEMI_JOIN;
-      }
+    switch (join.getJoinType()) {
+    case INNER:
+      return JoinOperator.INNER_JOIN;
+    case FULL:
+      return JoinOperator.FULL_OUTER_JOIN;
+    case LEFT:
+      return JoinOperator.LEFT_OUTER_JOIN;
+    case RIGHT:
+      return JoinOperator.RIGHT_OUTER_JOIN;
+    case SEMI:
+      // Mapping it to a Left Semi Join in Impala seems to make
+      // sense since it is unclear when we would need a
+      // Right Semi Join
+      return JoinOperator.LEFT_SEMI_JOIN;
     }
-    throw new HiveException("Unsupported join type.");
+    throw new HiveException("Unsupported join type: " + join.getJoinType());
   }
 
   @Override

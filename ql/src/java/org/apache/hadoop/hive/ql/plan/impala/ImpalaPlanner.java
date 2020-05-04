@@ -22,22 +22,18 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.exec.impala.ImpalaSession;
-import org.apache.hadoop.hive.ql.exec.impala.ImpalaSessionManager;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.impala.analysis.Expr;
 import org.apache.impala.analysis.StmtMetadataLoader;
 import org.apache.impala.authorization.AuthorizationFactory;
 import org.apache.impala.authorization.NoopAuthorizationFactory;
 import org.apache.impala.common.ImpalaException;
-import org.apache.impala.common.InternalException;
 import org.apache.impala.planner.DistributedPlanner;
 import org.apache.impala.planner.PlanFragment;
 import org.apache.impala.planner.PlanNode;
 import org.apache.impala.planner.PlanRootSink;
 import org.apache.impala.planner.Planner;
 import org.apache.impala.planner.RuntimeFilterGenerator;
-import org.apache.impala.service.FeSupport;
 import org.apache.impala.service.Frontend;
 import org.apache.impala.thrift.TClientRequest;
 import org.apache.impala.thrift.TColumn;
@@ -49,7 +45,6 @@ import org.apache.impala.thrift.TPlanFragment;
 import org.apache.impala.thrift.TQueryCtx;
 import org.apache.impala.thrift.TQueryExecRequest;
 import org.apache.impala.thrift.TQueryOptions;
-import org.apache.impala.thrift.TReservedWordsVersion;
 import org.apache.impala.thrift.TResultSetMetadata;
 import org.apache.impala.thrift.TRuntimeFilterMode;
 import org.apache.impala.thrift.TSessionState;
@@ -58,9 +53,6 @@ import org.apache.impala.thrift.TStmtType;
 import org.apache.impala.thrift.TUniqueId;
 import org.apache.impala.util.EventSequence;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -68,7 +60,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
-import java.util.stream.Collectors;
 
 /**
  * The ImpalaPlanner encapsulates selected functionality from Impala's Frontend and
@@ -79,17 +70,10 @@ import java.util.stream.Collectors;
  */
 public class ImpalaPlanner {
 
-  private static final Logger LOG = LoggerFactory.getLogger(ImpalaPlanner.class);
-
   private ImpalaPlannerContext ctx_;
   private List<TNetworkAddress> hostLocations = new ArrayList<>();
 
-  public ImpalaPlanner(String dbname, String username) throws HiveException {
-
-    HiveConf conf = SessionState.get().getConf();
-
-    TQueryOptions options = createDefaultQueryOptions(conf);
-
+  public ImpalaPlanner(String dbname, String username, TQueryOptions options) throws HiveException {
     // TODO: replace hostname and port with configured parameter settings
     hostLocations.add(new TNetworkAddress("127.0.0.1", 22000));
 
@@ -159,7 +143,7 @@ public class ImpalaPlanner {
     // create EXPLAIN output after setting everything else
     queryExecRequest.setQuery_ctx(ctx_.getQueryCtx()); // needed by getExplainString()
     List<PlanFragment> allFragments = planFragmentRoot.getNodesPreOrder();
-    String explainStr = getExplainString(allFragments, TExplainLevel.VERBOSE);
+    String explainStr = getExplainString(allFragments, ctx_.getQueryOptions().getExplain_level());
     queryExecRequest.setQuery_plan(explainStr);
 
     ctx_.getQueryCtx().setDesc_tbl_serialized(ctx_.getRootAnalyzer().getDescTbl().toSerializedThrift());
@@ -246,33 +230,6 @@ public class ImpalaPlanner {
   private TStmtType getStmtType() {
     // TODO: retrieve the statement type from Hive
     return TStmtType.QUERY;
-  }
-
-  private TQueryOptions createDefaultQueryOptions(HiveConf conf) throws HiveException {
-
-
-    ImpalaSession session = ImpalaSessionManager.getInstance().getSession(conf);
-
-    // Collect the option settings that are returned in the HS2 session
-    // config and generate a comma separated string apply using FeSupport
-    // http_addr is added by HS2 and will cause an error if not removed
-    String csvQueryOptions = session.getSessionConfig().entrySet().stream()
-       .filter(e -> !e.getKey().equals("http_addr"))
-       .map(e -> e.getKey() + "=" + e.getValue())
-       .collect(Collectors.joining(","));
-
-    // Overlay defaults from Impala backend option settings
-    TQueryOptions options;
-    try {
-        options = FeSupport.ParseQueryOptions(csvQueryOptions,
-            new TQueryOptions());
-    } catch (InternalException e) {
-        throw new HiveException(e);
-    }
-
-    options.setParquet_dictionary_filtering(
-            conf.getBoolVar(HiveConf.ConfVars.HIVE_IMPALA_PARQUET_DICTIONARY_FILTERING));
-    return options;
   }
 
   private TExecRequest createExecRequest(TQueryCtx queryCtx, PlanFragment planFragmentRoot,

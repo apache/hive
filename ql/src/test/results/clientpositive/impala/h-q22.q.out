@@ -1,0 +1,336 @@
+PREHOOK: query: explain cbo select
+  cntrycode,
+  count(*) as numcust,
+  sum(c_acctbal) as totacctbal
+from (
+  select
+    substr(c_phone, 1, 2) as cntrycode,
+    c_acctbal
+  from
+    impala_tpch_customer
+  where
+    substr(c_phone, 1, 2) in ('13', '31', '23', '29', '30', '18', '17')
+    and c_acctbal > (
+      select 
+        avg(c_acctbal)
+      from
+        impala_tpch_customer
+      where
+        c_acctbal > 0.00
+        and substr(c_phone, 1, 2) in ('13', '31', '23', '29', '30', '18', '17')
+      )
+    and not exists (
+      select
+        *
+      from
+        impala_tpch_orders
+      where
+        o_custkey = c_custkey
+    ) 
+  ) as custsale
+group by
+  cntrycode
+order by
+  cntrycode
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpch_customer
+PREHOOK: Input: default@impala_tpch_orders
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo select
+  cntrycode,
+  count(*) as numcust,
+  sum(c_acctbal) as totacctbal
+from (
+  select
+    substr(c_phone, 1, 2) as cntrycode,
+    c_acctbal
+  from
+    impala_tpch_customer
+  where
+    substr(c_phone, 1, 2) in ('13', '31', '23', '29', '30', '18', '17')
+    and c_acctbal > (
+      select 
+        avg(c_acctbal)
+      from
+        impala_tpch_customer
+      where
+        c_acctbal > 0.00
+        and substr(c_phone, 1, 2) in ('13', '31', '23', '29', '30', '18', '17')
+      )
+    and not exists (
+      select
+        *
+      from
+        impala_tpch_orders
+      where
+        o_custkey = c_custkey
+    ) 
+  ) as custsale
+group by
+  cntrycode
+order by
+  cntrycode
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpch_customer
+POSTHOOK: Input: default@impala_tpch_orders
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+ImpalaSortRel(sort0=[$0], dir0=[ASC])
+  ImpalaAggregateRel(group=[{0}], agg#0=[count()], agg#1=[sum($1)])
+    ImpalaProjectPassthroughRel($f0=[substr($1, 1:BIGINT, 2:BIGINT)], c_acctbal=[$2])
+      ImpalaJoinRel(condition=[=($5, $0)], joinType=[left])
+        ImpalaJoinRel(condition=[>($2, $3)], joinType=[inner])
+          ImpalaProjectPassthroughRel(c_custkey=[$0], c_phone=[$4], c_acctbal=[$5])
+            ImpalaHdfsScanRel(table=[[default, impala_tpch_customer]], condition=[AND(OR(=(substr($4, 1:BIGINT, 2:BIGINT), _UTF-16LE'13'), =(substr($4, 1:BIGINT, 2:BIGINT), _UTF-16LE'31'), =(substr($4, 1:BIGINT, 2:BIGINT), _UTF-16LE'23'), =(substr($4, 1:BIGINT, 2:BIGINT), _UTF-16LE'29'), =(substr($4, 1:BIGINT, 2:BIGINT), _UTF-16LE'30'), =(substr($4, 1:BIGINT, 2:BIGINT), _UTF-16LE'18'), =(substr($4, 1:BIGINT, 2:BIGINT), _UTF-16LE'17')), IS NOT NULL($5))])
+          ImpalaProjectPassthroughRel($f0=[CAST(/($0, CAST($1):DECIMAL(38, 0) NOT NULL)):DECIMAL(16, 6)])
+            ImpalaAggregateRel(group=[{}], agg#0=[sum($5)], agg#1=[count($5)], condition=[IS NOT NULL(CAST(/($0, CAST($1):DECIMAL(38, 0) NOT NULL)):DECIMAL(16, 6))])
+              ImpalaHdfsScanRel(table=[[default, impala_tpch_customer]], condition=[AND(>($5, 0), OR(=(substr($4, 1:BIGINT, 2:BIGINT), _UTF-16LE'13'), =(substr($4, 1:BIGINT, 2:BIGINT), _UTF-16LE'31'), =(substr($4, 1:BIGINT, 2:BIGINT), _UTF-16LE'23'), =(substr($4, 1:BIGINT, 2:BIGINT), _UTF-16LE'29'), =(substr($4, 1:BIGINT, 2:BIGINT), _UTF-16LE'30'), =(substr($4, 1:BIGINT, 2:BIGINT), _UTF-16LE'18'), =(substr($4, 1:BIGINT, 2:BIGINT), _UTF-16LE'17')))])
+        ImpalaProjectPassthroughRel(literalTrue=[true], o_custkey0=[$0])
+          ImpalaAggregateRel(group=[{1}])
+            ImpalaHdfsScanRel(table=[[default, impala_tpch_orders]], condition=[IS NOT NULL($1)])
+
+PREHOOK: query: explain select
+  cntrycode,
+  count(*) as numcust,
+  sum(c_acctbal) as totacctbal
+from (
+  select
+    substr(c_phone, 1, 2) as cntrycode,
+    c_acctbal
+  from
+    impala_tpch_customer
+  where
+    substr(c_phone, 1, 2) in ('13', '31', '23', '29', '30', '18', '17')
+    and c_acctbal > (
+      select 
+        avg(c_acctbal)
+      from
+        impala_tpch_customer
+      where
+        c_acctbal > 0.00
+        and substr(c_phone, 1, 2) in ('13', '31', '23', '29', '30', '18', '17')
+      )
+    and not exists (
+      select
+        *
+      from
+        impala_tpch_orders
+      where
+        o_custkey = c_custkey
+    ) 
+  ) as custsale
+group by
+  cntrycode
+order by
+  cntrycode
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpch_customer
+PREHOOK: Input: default@impala_tpch_orders
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select
+  cntrycode,
+  count(*) as numcust,
+  sum(c_acctbal) as totacctbal
+from (
+  select
+    substr(c_phone, 1, 2) as cntrycode,
+    c_acctbal
+  from
+    impala_tpch_customer
+  where
+    substr(c_phone, 1, 2) in ('13', '31', '23', '29', '30', '18', '17')
+    and c_acctbal > (
+      select 
+        avg(c_acctbal)
+      from
+        impala_tpch_customer
+      where
+        c_acctbal > 0.00
+        and substr(c_phone, 1, 2) in ('13', '31', '23', '29', '30', '18', '17')
+      )
+    and not exists (
+      select
+        *
+      from
+        impala_tpch_orders
+      where
+        o_custkey = c_custkey
+    ) 
+  ) as custsale
+group by
+  cntrycode
+order by
+  cntrycode
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpch_customer
+POSTHOOK: Input: default@impala_tpch_orders
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F06:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=40.00KB mem-reservation=0B thread-reservation=1
+  PLAN-ROOT SINK
+  |  output exprs: _impala_builtins.substr(default.impala_tpch_customer.c_phone, 1, 2), _impala_builtins.count(), _impala_builtins.sum(default.impala_tpch_customer.c_acctbal)
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |
+  17:MERGING-EXCHANGE [UNPARTITIONED]
+     order by: _impala_builtins.substr(default.impala_tpch_customer.c_phone, 1, 2) ASC NULLS LAST
+     mem-estimate=40.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=9 row-size=36B cardinality=0
+     in pipelines: 08(GETNEXT)
+
+F05:PLAN FRAGMENT [HASH(_impala_builtins.substr(default.impala_tpch_customer.c_phone, 1, 2))] hosts=1 instances=1
+Per-Host Resources: mem-estimate=140.00MB mem-reservation=46.00MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F06, EXCHANGE=17, UNPARTITIONED]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  08:SORT
+  |  order by: _impala_builtins.substr(default.impala_tpch_customer.c_phone, 1, 2) ASC NULLS LAST
+  |  mem-estimate=12.00MB mem-reservation=12.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=9 row-size=36B cardinality=0
+  |  in pipelines: 08(GETNEXT), 16(OPEN)
+  |
+  16:AGGREGATE [FINALIZE]
+  |  output: _impala_builtins.count:merge(), _impala_builtins.sum:merge(default.impala_tpch_customer.c_acctbal)
+  |  group by: _impala_builtins.substr(default.impala_tpch_customer.c_phone, 1, 2)
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=8 row-size=36B cardinality=0
+  |  in pipelines: 16(GETNEXT), 00(OPEN)
+  |
+  15:EXCHANGE [HASH(_impala_builtins.substr(default.impala_tpch_customer.c_phone, 1, 2))]
+     mem-estimate=40.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=8 row-size=36B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=129.97MB mem-reservation=35.94MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F05, EXCHANGE=15, HASH(_impala_builtins.substr(default.impala_tpch_customer.c_phone, 1, 2))]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  07:AGGREGATE [STREAMING]
+  |  output: count(), sum(default.impala_tpch_customer.c_acctbal)
+  |  group by: _impala_builtins.substr(default.impala_tpch_customer.c_phone, CAST(1 AS BIGINT), CAST(2 AS BIGINT))
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=8 row-size=36B cardinality=0
+  |  in pipelines: 00(GETNEXT)
+  |
+  06:HASH JOIN [LEFT OUTER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpch_customer.c_custkey = default.impala_tpch_orders.o_custkey
+  |  fk/pk conjuncts: assumed fk/pk
+  |  other predicates: _impala_builtins.if(TupleIsNull(7), NULL, TRUE) IS NULL
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,4,7N row-size=60B cardinality=0
+  |  in pipelines: 00(GETNEXT), 13(OPEN)
+  |
+  |--14:EXCHANGE [BROADCAST]
+  |     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=7 row-size=8B cardinality=0
+  |     in pipelines: 13(GETNEXT)
+  |
+  03:NESTED LOOP JOIN [INNER JOIN, BROADCAST]
+  |  join predicates: default.impala_tpch_customer.c_acctbal > _impala_builtins.casttodecimal(_impala_builtins.divide(_impala_builtins.sum(default.impala_tpch_customer_0.c_acctbal), _impala_builtins.casttodecimal(_impala_builtins.count(default.impala_tpch_customer_0.c_acctbal))))
+  |  mem-estimate=24B mem-reservation=0B thread-reservation=0
+  |  tuple-ids=0,4 row-size=52B cardinality=0
+  |  in pipelines: 00(GETNEXT), 10(OPEN)
+  |
+  |--11:EXCHANGE [BROADCAST]
+  |     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=4 row-size=24B cardinality=1
+  |     in pipelines: 10(GETNEXT)
+  |
+  00:SCAN HDFS [default.impala_tpch_customer, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpch_customer.c_acctbal IS NOT NULL, _impala_builtins.substr(default.impala_tpch_customer.c_phone, CAST(1 AS BIGINT), CAST(2 AS BIGINT)) = '13' OR _impala_builtins.substr(default.impala_tpch_customer.c_phone, CAST(1 AS BIGINT), CAST(2 AS BIGINT)) = '31' OR _impala_builtins.substr(default.impala_tpch_customer.c_phone, CAST(1 AS BIGINT), CAST(2 AS BIGINT)) = '23' OR _impala_builtins.substr(default.impala_tpch_customer.c_phone, CAST(1 AS BIGINT), CAST(2 AS BIGINT)) = '29' OR _impala_builtins.substr(default.impala_tpch_customer.c_phone, CAST(1 AS BIGINT), CAST(2 AS BIGINT)) = '30' OR _impala_builtins.substr(default.impala_tpch_customer.c_phone, CAST(1 AS BIGINT), CAST(2 AS BIGINT)) = '18' OR _impala_builtins.substr(default.impala_tpch_customer.c_phone, CAST(1 AS BIGINT), CAST(2 AS BIGINT)) = '17'
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=28B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+F02:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=11, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  10:AGGREGATE [FINALIZE]
+  |  output: _impala_builtins.sum:merge(default.impala_tpch_customer_0.c_acctbal), _impala_builtins.count:merge(default.impala_tpch_customer_0.c_acctbal)
+  |  having: _impala_builtins.casttodecimal(_impala_builtins.divide(_impala_builtins.sum(default.impala_tpch_customer_0.c_acctbal), _impala_builtins.casttodecimal(_impala_builtins.count(default.impala_tpch_customer_0.c_acctbal)))) IS NOT NULL
+  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=4 row-size=24B cardinality=1
+  |  in pipelines: 10(GETNEXT), 02(OPEN)
+  |
+  09:EXCHANGE [UNPARTITIONED]
+     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=4 row-size=24B cardinality=1
+     in pipelines: 02(GETNEXT)
+
+F01:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=10.00MB mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F02, EXCHANGE=09, UNPARTITIONED]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  02:AGGREGATE
+  |  output: sum(default.impala_tpch_customer_0.c_acctbal), count(default.impala_tpch_customer_0.c_acctbal)
+  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=4 row-size=24B cardinality=1
+  |  in pipelines: 02(GETNEXT), 01(OPEN)
+  |
+  01:SCAN HDFS [default.impala_tpch_customer, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpch_customer_0.c_acctbal > CAST(0 AS DECIMAL(12,2)), _impala_builtins.substr(default.impala_tpch_customer_0.c_phone, CAST(1 AS BIGINT), CAST(2 AS BIGINT)) = '13' OR _impala_builtins.substr(default.impala_tpch_customer_0.c_phone, CAST(1 AS BIGINT), CAST(2 AS BIGINT)) = '31' OR _impala_builtins.substr(default.impala_tpch_customer_0.c_phone, CAST(1 AS BIGINT), CAST(2 AS BIGINT)) = '23' OR _impala_builtins.substr(default.impala_tpch_customer_0.c_phone, CAST(1 AS BIGINT), CAST(2 AS BIGINT)) = '29' OR _impala_builtins.substr(default.impala_tpch_customer_0.c_phone, CAST(1 AS BIGINT), CAST(2 AS BIGINT)) = '30' OR _impala_builtins.substr(default.impala_tpch_customer_0.c_phone, CAST(1 AS BIGINT), CAST(2 AS BIGINT)) = '18' OR _impala_builtins.substr(default.impala_tpch_customer_0.c_phone, CAST(1 AS BIGINT), CAST(2 AS BIGINT)) = '17'
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     parquet statistics predicates: default.impala_tpch_customer_0.c_acctbal > CAST(0 AS DECIMAL(12,2))
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=2 row-size=20B cardinality=0
+     in pipelines: 01(GETNEXT)
+
+F04:PLAN FRAGMENT [HASH(default.impala_tpch_orders.o_custkey)] hosts=1 instances=1
+Per-Host Resources: mem-estimate=128.02MB mem-reservation=34.00MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=14, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  13:AGGREGATE [FINALIZE]
+  |  group by: default.impala_tpch_orders.o_custkey
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=7 row-size=8B cardinality=0
+  |  in pipelines: 13(GETNEXT), 04(OPEN)
+  |
+  12:EXCHANGE [HASH(default.impala_tpch_orders.o_custkey)]
+     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=7 row-size=8B cardinality=0
+     in pipelines: 04(GETNEXT)
+
+F03:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=128.00MB mem-reservation=34.00MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F04, EXCHANGE=12, HASH(default.impala_tpch_orders.o_custkey)]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  05:AGGREGATE [STREAMING]
+  |  group by: default.impala_tpch_orders.o_custkey
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=7 row-size=8B cardinality=0
+  |  in pipelines: 04(GETNEXT)
+  |
+  04:SCAN HDFS [default.impala_tpch_orders, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpch_orders.o_custkey IS NOT NULL
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=5 row-size=8B cardinality=0
+     in pipelines: 04(GETNEXT)
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

@@ -43,7 +43,7 @@ import com.google.common.base.Strings;
 public class CoreCliDriver extends CliAdapter {
 
   private static final Logger LOG = LoggerFactory.getLogger(CoreCliDriver.class);
-  private static QTestUtil qt;
+  protected static QTestUtil qt;
 
   public CoreCliDriver(AbstractCliConfig testCliConfig) {
     super(testCliConfig);

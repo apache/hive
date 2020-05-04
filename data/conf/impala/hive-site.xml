@@ -1,0 +1,712 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<!--
+   Licensed to the Apache Software Foundation (ASF) under one or more
+   contributor license agreements.  See the NOTICE file distributed with
+   this work for additional information regarding copyright ownership.
+   The ASF licenses this file to You under the Apache License, Version 2.0
+   (the "License"); you may not use this file except in compliance with
+   the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+
+<configuration>
+
+<property>
+  <name>hive.in.test</name>
+  <value>true</value>
+  <description>Internal marker for test. Used for masking env-dependent values</description>
+</property>
+
+<!-- Hive Configuration can either be stored in this file or in the hadoop configuration files  -->
+<!-- that are implied by Hadoop setup variables.                                                -->
+<!-- Aside from Hadoop setup variables - this file is provided as a convenience so that Hive    -->
+<!-- users do not have to edit hadoop configuration files (that may be managed as a centralized -->
+<!-- resource).                                                                                 -->
+
+<!-- Hive Execution Parameters -->
+<property>
+  <name>hadoop.tmp.dir</name>
+  <value>${test.tmp.dir}/hadoop-tmp</value>
+  <description>A base for other temporary directories.</description>
+</property>
+
+<property>
+  <name>hive.tez.container.size</name>
+  <value>128</value>
+  <description></description>
+</property>
+
+<property>
+  <name>hive.stats.fetch.column.stats</name>
+  <value>true</value>
+  <description>Use column stats to annotate stats for physical optimization phase</description>
+</property>
+
+<property>
+  <name>hive.merge.tezfiles</name>
+  <value>false</value>
+  <description>Merge small files at the end of a Tez DAG</description>
+</property>
+
+<property>
+  <name>hive.optimize.point.lookup</name>
+  <!--Needed to be false because Impala can't handle 'between'-->
+  <value>false</value>
+</property>
+
+<property>
+  <name>hive.tez.input.format</name>
+  <value>org.apache.hadoop.hive.ql.io.HiveInputFormat</value>
+  <description>The default input format for tez. Tez groups splits in the AM.</description>
+</property>
+
+<property>
+  <name>hive.exec.scratchdir</name>
+  <value>${test.tmp.dir}/scratchdir</value>
+  <description>Scratch space for Hive jobs</description>
+</property>
+
+<property>
+  <name>hive.exec.local.scratchdir</name>
+  <value>${test.tmp.dir}/localscratchdir/</value>
+  <description>Local scratch space for Hive jobs</description>
+</property>
+
+<property>
+  <name>datanucleus.schema.autoCreateAll</name>
+  <value>true</value>
+</property>
+
+<property>
+  <name>hive.metastore.schema.verification</name>
+  <value>false</value>
+</property>
+
+<property>
+  <name>javax.jdo.option.ConnectionURL</name>
+  <value>jdbc:derby:;databaseName=${test.tmp.dir}/junit_metastore_db;create=true</value>
+</property>
+
+<property>
+  <name>javax.jdo.option.ConnectionDriverName</name>
+  <value>org.apache.derby.jdbc.EmbeddedDriver</value>
+</property>
+
+<property>
+  <name>javax.jdo.option.ConnectionUserName</name>
+  <value>APP</value>
+</property>
+
+<property>
+  <name>javax.jdo.option.ConnectionPassword</name>
+  <value>mine</value>
+</property>
+
+<property>
+  <!--  this should eventually be deprecated since the metastore should supply this -->
+  <name>hive.metastore.warehouse.dir</name>
+  <value>${test.warehouse.dir}</value>
+  <description></description>
+</property>
+
+<property>
+  <name>hive.metastore.metadb.dir</name>
+  <value>file://${test.tmp.dir}/metadb/</value>
+  <description>
+  Required by metastore server or if the uris argument below is not supplied
+  </description>
+</property>
+
+<property>
+  <name>test.log.dir</name>
+  <value>${test.tmp.dir}/log/</value>
+  <description></description>
+</property>
+
+<property>
+  <name>test.data.files</name>
+  <value>${hive.root}/data/files</value>
+  <description></description>
+</property>
+
+<property>
+  <name>test.data.scripts</name>
+  <value>${hive.root}/data/scripts</value>
+  <description></description>
+</property>
+
+<property>
+  <name>hive.jar.path</name>
+  <value>${maven.local.repository}/org/apache/hive/hive-exec/${hive.version}/hive-exec-${hive.version}.jar</value>
+  <description></description>
+</property>
+
+<property>
+  <name>hive.metastore.rawstore.impl</name>
+  <value>org.apache.hadoop.hive.metastore.ObjectStore</value>
+  <description>Name of the class that implements org.apache.hadoop.hive.metastore.rawstore interface. This class is used to store and retrieval of raw metadata objects such as table, database</description>
+</property>
+
+<property>
+  <name>hive.querylog.location</name>
+  <value>${test.tmp.dir}/tmp</value>
+  <description>Location of the structured hive logs</description>
+</property>
+
+<property>
+  <name>hive.exec.pre.hooks</name>
+  <value>org.apache.hadoop.hive.ql.hooks.PreExecutePrinter, org.apache.hadoop.hive.ql.hooks.EnforceReadOnlyTables</value>
+  <description>Pre Execute Hook for Tests</description>
+</property>
+
+<property>
+  <name>hive.exec.post.hooks</name>
+  <value>org.apache.hadoop.hive.ql.hooks.PostExecutePrinter, org.apache.hadoop.hive.ql.hooks.RuntimeStatsPersistenceCheckerHook, org.apache.hadoop.hive.ql.hooks.NoOperatorReuseCheckerHook</value>
+  <description>Post Execute Hook for Tests</description>
+</property>
+
+<property>
+  <name>hive.support.concurrency</name>
+  <value>false</value>
+  <description>Whether hive supports concurrency or not. A zookeeper instance must be up and running for the default hive lock manager to support read-write locks.</description>
+</property>
+
+<property>
+  <name>fs.pfile.impl</name>
+  <value>org.apache.hadoop.fs.ProxyLocalFileSystem</value>
+  <description>A proxy for local file system used for cross file system testing</description>
+</property>
+
+<property>
+  <name>hive.exec.mode.local.auto</name>
+  <value>false</value>
+  <description>
+    Let hive determine whether to run in local mode automatically
+    Disabling this for tests so that minimr is not affected
+  </description>
+</property>
+
+<property>
+  <name>hive.auto.convert.join</name>
+  <value>false</value>
+  <description>Whether Hive enable the optimization about converting common join into mapjoin based on the input file size</description>
+</property>
+
+<property>
+  <name>hive.ignore.mapjoin.hint</name>
+  <value>true</value>
+  <description>Whether Hive ignores the mapjoin hint</description>
+</property>
+
+<property>
+  <name>io.sort.mb</name>
+  <value>10</value>
+</property>
+
+<property>
+  <name>hive.input.format</name>
+  <value>org.apache.hadoop.hive.ql.io.CombineHiveInputFormat</value>
+  <description>The default input format, if it is not specified, the system assigns it. It is set to HiveInputFormat for hadoop versions 17, 18 and 19, whereas it is set to CombineHiveInputFormat for hadoop 20. The user can always overwrite it - if there is a bug in CombineHiveInputFormat, it can always be manually set to HiveInputFormat. </description>
+</property>
+
+<property>
+  <name>hive.default.rcfile.serde</name>
+  <value>org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe</value>
+  <description>The default SerDe hive will use for the rcfile format</description>
+</property>
+
+<property>
+  <name>hive.stats.dbclass</name>
+  <value>fs</value>
+  <description>The default storatge that stores temporary hive statistics. Currently, fs type is supported</description>
+</property>
+
+<property>
+  <name>hive.execution.engine</name>
+  <value>impala</value>
+  <description>Impala engine</description>
+</property>
+
+  <property>
+    <name>hive.metastore.client.capability.check</name>
+    <value>true</value>
+    <description>Whether to check client capabilities for potentially breaking API usage.</description>
+  </property>
+  <property>
+    <name>hive.metastore.client.capabilities</name>
+    <value>HIVEBUCKET2</value>
+    <description>Capabilities possessed by HiveServer</description>
+  </property>
+<property>
+  <name>tez.am.node-blacklisting.enabled</name>
+  <value>false</value>
+</property>
+
+<property>
+  <name>hive.prewarm.enabled</name>
+  <value>false</value>
+  <description>
+    Enables container prewarm for tez (hadoop 2 only)
+  </description>
+</property>
+<property>
+  <name>hive.in.tez.test</name>
+  <value>true</value>
+  <description>
+    Indicates that we are in tez testing mode.
+  </description>
+</property>
+
+<property>
+  <name>hive.execution.mode</name>
+  <value>llap</value>
+</property>
+
+<!--property>
+     This is determined by the cluster type, and is set in code - HadoopShims, etc.
+  <name>hive.llap.execution.mode</name>
+  <value>all</value>
+</property-->
+
+<property>
+  <name>hive.tez.java.opts</name>
+  <value> -Dlog4j.configurationFile=tez-container-log4j2.properties -Dtez.container.log.level=INFO -Dtez.container.root.logger=CLA </value>
+</property>
+
+<property>
+  <name>tez.am.launch.cmd-opts</name>
+  <value> -Dlog4j.configurationFile=tez-container-log4j2.properties -Dtez.container.log.level=INFO -Dtez.container.root.logger=CLA </value>
+</property>
+
+<property>
+  <name>hive.llap.cache.allow.synthetic.fileid</name>
+  <value>true</value>
+</property>
+
+<property>
+  <name>hive.llap.io.allocator.direct</name>
+  <value>false</value>
+</property>
+
+<property>
+  <name>hive.explain.user</name>
+  <value>false</value>
+</property>
+
+<property>
+  <name>hive.join.inner.residual</name>
+  <value>true</value>
+</property>
+
+<!-- llap properties -->
+
+<property>
+  <name>hive.llap.daemon.service.hosts</name>
+  <value>localhost</value>
+</property>
+
+<property>
+  <name>hive.llap.daemon.service.port</name>
+  <value>0</value>
+</property>
+
+<property>
+  <name>hive.llap.daemon.num.executors</name>
+  <value>4</value>
+</property>
+
+<property>
+  <name>hive.llap.daemon.task.scheduler.wait.queue.size</name>
+  <value>4</value>
+</property>
+
+<property>
+  <name>hive.llap.cache.allow.synthetic.fileid</name>
+  <value>true</value>
+</property>
+
+<!-- hadoop IPC options -->
+<property>
+  <name>ipc.client.low-latency</name>
+  <value>true</value>
+  <description> </description>
+</property>
+<property>
+  <name>ipc.client.tcpnodelay</name>
+  <value>true</value>
+  <description> </description>
+</property>
+<property>
+  <name>ipc.clients-per-factory</name>
+  <value>4</value>
+  <description> </description>
+</property>
+<property>
+  <name>hive.stats.fetch.bitvector</name>
+  <value>true</value>
+</property>
+
+<property>
+  <name>hive.tez.cartesian-product.enabled</name>
+  <value>true</value>
+</property>
+
+<property>
+  <name>yarn.nodemanager.disk-health-checker.max-disk-utilization-per-disk-percentage</name>
+  <value>99</value>
+</property>
+
+<property>
+  <name>hive.query.results.cache.enabled</name>
+  <value>false</value>
+</property>
+
+<property>
+  <name>tez.counters.max</name>
+  <value>1024</value>
+</property>
+
+<property>
+  <name>hive.query.reexecution.stats.persist.scope</name>
+  <value>query</value>
+</property>
+
+<property>
+  <name>hive.semantic.analyzer.hook</name>
+  <value>org.apache.hadoop.hive.ql.hooks.ScheduledQueryCreationRegistryHook</value>
+</property>
+
+<property>
+  <name>metastore.metadata.transformer.class</name>
+  <value>org.apache.hadoop.hive.metastore.MetastoreDefaultTransformer</value>
+  <description>
+    Fully qualified class name for the metastore metadata transformer class
+    which is used by HMS Server to fetch the extended tables/partitions information
+    based on the data processor capabilities
+     This class should implement the IMetaStoreMetadataTransformer interface
+  </description>
+</property>
+
+<property>
+  <name>impala.sentry_config</name>
+  <value></value>
+</property>
+
+<property>
+  <name>impala.load_auth_to_local_rules</name>
+  <value>false</value>
+</property>
+
+<property>
+  <name>impala.non_impala_java_vlog</name>
+  <value>3</value>
+</property>
+
+<property>
+  <name>impala.impala_log_lvl</name>
+  <value>2</value>
+</property>
+
+<property>
+  <name>impala.inc_stats_size_limit_bytes</name>
+  <value>209715200</value>
+</property>
+
+<property>
+  <name>impala.lineage_event_log_dir</name>
+  <value></value>
+</property>
+
+<property>
+  <name>impala.load_catalog_in_background</name>
+  <value>false</value>
+</property>
+
+<property>
+  <name>impala.num_metadata_loading_threads</name>
+  <value>16</value>
+</property>
+
+<property>
+  <name>impala.principal</name>
+  <value></value>
+</property>
+
+<property>
+  <name>impala.server_name</name>
+  <value></value>
+</property>
+
+<property>
+  <name>impala.authorization_policy_provider_class</name>
+  <value>org.apache.sentry.provider.common.HadoopGroupResourceAuthorizationProvider</value>
+</property>
+
+<property>
+  <name>impala.kudu_master_hosts</name>
+  <value>localhost</value>
+</property>
+
+<property>
+  <name>impala.local_library_path</name>
+  <value>/tmp</value>
+</property>
+
+<property>
+  <name>impala.read_size</name>
+  <value>8388608</value>
+</property>
+
+<property>
+  <name>impala.kudu_operation_timeout_ms</name>
+  <value>180000</value>
+</property>
+
+<property>
+  <name>impala.initial_hms_cnxn_timeout_s</name>
+  <value>120</value>
+</property>
+
+<property>
+  <name>impala.enable_stats_extrapolation</name>
+  <value>false</value>
+</property>
+
+<property>
+  <name>impala.sentry_catalog_polling_frequency_s</name>
+  <value>60</value>
+</property>
+
+<property>
+  <name>impala.max_hdfs_partitions_parallel_load</name>
+  <value>5</value>
+</property>
+
+<property>
+  <name>impala.max_nonhdfs_partitions_parallel_load</name>
+  <value>20</value>
+</property>
+
+<property>
+  <name>impala.reserved_words_version</name>
+  <value>impala_3_0</value>
+</property>
+
+<property>
+  <name>impala.max_filter_error_rate</name>
+  <value>0.75</value>
+</property>
+
+<property>
+  <name>impala.min_buffer_size</name>
+  <value>8192</value>
+</property>
+
+<property>
+  <name>impala.enable_orc_scanner</name>
+  <value>true</value>
+</property>
+
+<property>
+  <name>impala.authorized_proxy_group_config</name>
+  <value></value>
+</property>
+
+<property>
+  <name>impala.use_local_catalog</name>
+  <value>false</value>
+</property>
+
+<property>
+  <name>impala.disable_catalog_data_ops_debug_only</name>
+  <value>false</value>
+</property>
+
+<property>
+  <name>impala.local_catalog_cache_mb</name>
+  <value>-1</value>
+</property>
+
+<property>
+  <name>impala.local_catalog_cache_expiration_s</name>
+  <value>3600</value>
+</property>
+
+<property>
+  <name>impala.catalog_topic_mode</name>
+  <value>full</value>
+</property>
+
+<property>
+  <name>impala.invalidate_tables_timeout_s</name>
+  <value>0</value>
+</property>
+
+<property>
+  <name>impala.invalidate_tables_on_memory_pressure</name>
+  <value>false</value>
+</property>
+
+<property>
+  <name>impala.invalidate_tables_gc_old_gen_full_threshold</name>
+  <value>0.6</value>
+</property>
+
+<property>
+  <name>impala.invalidate_tables_fraction_on_memory_pressure</name>
+  <value>0.1</value>
+</property>
+
+<property>
+  <name>impala.local_catalog_max_fetch_retries</name>
+  <value>40</value>
+</property>
+
+<property>
+  <name>impala.kudu_scanner_thread_estimated_bytes_per_column</name>
+  <value>393216</value>
+</property>
+
+<property>
+  <name>impala.kudu_scanner_thread_max_estimated_bytes</name>
+  <value>33554432</value>
+</property>
+
+<property>
+  <name>impala.catalog_max_parallel_partial_fetch_rpc</name>
+  <value>32</value>
+</property>
+
+<property>
+  <name>impala.catalog_partial_fetch_rpc_queue_timeout_s</name>
+  <value>9223372036854775807</value>
+</property>
+
+<property>
+  <name>impala.exchg_node_buffer_size_bytes</name>
+  <value>10485760</value>
+</property>
+
+<property>
+  <name>impala.kudu_mutation_buffer_size</name>
+  <value>10485760</value>
+</property>
+
+<property>
+  <name>impala.kudu_error_buffer_size</name>
+  <value>10485760</value>
+</property>
+
+<property>
+  <name>impala.hms_event_polling_interval_s</name>
+  <value>0</value>
+</property>
+
+<property>
+  <name>impala.impala_build_version</name>
+  <value>3.4.0-SNAPSHOT</value>
+</property>
+
+<property>
+  <name>impala.authorization_factory_class</name>
+  <value></value>
+</property>
+
+<property>
+  <name>impala.unlock_mt_dop</name>
+  <value>false</value>
+</property>
+
+<property>
+  <name>impala.ranger_service_type</name>
+  <value>hive</value>
+</property>
+
+<property>
+  <name>impala.ranger_app_id</name>
+  <value></value>
+</property>
+
+<property>
+  <name>impala.authorization_provider</name>
+  <value>ranger</value>
+</property>
+
+<property>
+  <name>impala.recursively_list_partitions</name>
+  <value>true</value>
+</property>
+
+<property>
+  <name>impala.query_event_hook_classes</name>
+  <value></value>
+</property>
+
+<property>
+  <name>impala.query_event_hook_nthreads</name>
+  <value>1</value>
+</property>
+
+<property>
+  <name>impala.is_executor</name>
+  <value>true</value>
+</property>
+
+<property>
+  <name>impala.use_dedicated_coordinator_estimates</name>
+  <value>true</value>
+</property>
+
+<property>
+  <name>impala.blacklisted_dbs</name>
+  <value>sys,information_schema</value>
+</property>
+
+<property>
+  <name>impala.blacklisted_tables</name>
+  <value></value>
+</property>
+
+<property>
+  <name>impala.unlock_zorder_sort</name>
+  <value>false</value>
+</property>
+
+<property>
+  <name>impala.min_privilege_set_for_show_stmts</name>
+  <value></value>
+</property>
+
+<property>
+  <name>impala.mt_dop_auto_fallback</name>
+  <value>false</value>
+</property>
+
+<property>
+  <name>impala.num_nodes</name>
+  <value>2</value>
+</property>
+
+<property>
+  <name>impala.parquet_dictionary_filtering</name>
+  <value>false</value>
+</property>
+
+<property>
+  <name>impala.runtime_filter_mode</name>
+  <value>off</value>
+</property>
+
+<property>
+  <name>impala.explain_level</name>
+  <value>VERBOSE</value>
+</property>
+</configuration>

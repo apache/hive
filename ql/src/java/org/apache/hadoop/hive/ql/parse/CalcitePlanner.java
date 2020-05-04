@@ -1676,7 +1676,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
       Preconditions.checkNotNull(this.impalaHelper);
       final String dbname = SessionState.get().getCurrentDatabase();
       final String username = StringUtils.defaultString(SessionState.get().getUserName());
-      ImpalaCompiledPlan compiledPlan = this.impalaHelper.compilePlan(impalaRel, dbname, username);
+      ImpalaCompiledPlan compiledPlan = this.impalaHelper.compilePlan(
+          conf, impalaRel, dbname, username);
 
       // CDPD-8391: Refactor and get rid of this at some point, the DummyScanOperator
       // isn't really needed.

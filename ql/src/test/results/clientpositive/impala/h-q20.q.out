@@ -1,0 +1,400 @@
+PREHOOK: query: explain cbo select
+  s_name,
+  s_address
+from
+  impala_tpch_supplier, impala_tpch_nation
+where
+  s_suppkey in (
+    select
+      ps_suppkey
+    from
+      impala_tpch_partsupp
+    where 
+      ps_partkey in (
+        select
+          p_partkey
+        from
+          impala_tpch_part
+        where
+          p_name like 'forest%'
+        ) 
+      and ps_availqty > (
+        select
+          0.5 * sum(l_quantity) 
+        from
+          impala_tpch_lineitem
+        where
+          l_partkey = ps_partkey
+          and l_suppkey = ps_suppkey
+          and l_shipdate >= '1994-01-01'
+          and l_shipdate < '1995-01-01'
+        ) 
+    ) 
+  and s_nationkey = n_nationkey
+  and n_name = 'CANADA'
+order by
+  s_name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpch_lineitem
+PREHOOK: Input: default@impala_tpch_nation
+PREHOOK: Input: default@impala_tpch_part
+PREHOOK: Input: default@impala_tpch_partsupp
+PREHOOK: Input: default@impala_tpch_supplier
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo select
+  s_name,
+  s_address
+from
+  impala_tpch_supplier, impala_tpch_nation
+where
+  s_suppkey in (
+    select
+      ps_suppkey
+    from
+      impala_tpch_partsupp
+    where 
+      ps_partkey in (
+        select
+          p_partkey
+        from
+          impala_tpch_part
+        where
+          p_name like 'forest%'
+        ) 
+      and ps_availqty > (
+        select
+          0.5 * sum(l_quantity) 
+        from
+          impala_tpch_lineitem
+        where
+          l_partkey = ps_partkey
+          and l_suppkey = ps_suppkey
+          and l_shipdate >= '1994-01-01'
+          and l_shipdate < '1995-01-01'
+        ) 
+    ) 
+  and s_nationkey = n_nationkey
+  and n_name = 'CANADA'
+order by
+  s_name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpch_lineitem
+POSTHOOK: Input: default@impala_tpch_nation
+POSTHOOK: Input: default@impala_tpch_part
+POSTHOOK: Input: default@impala_tpch_partsupp
+POSTHOOK: Input: default@impala_tpch_supplier
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+ImpalaSortRel(sort0=[$0], dir0=[ASC])
+  ImpalaProjectRel(s_name=[$1], s_address=[$2])
+    ImpalaJoinRel(condition=[=($0, $5)], joinType=[semi])
+      ImpalaJoinRel(condition=[=($3, $4)], joinType=[inner])
+        ImpalaProjectPassthroughRel(s_suppkey=[$0], s_name=[$1], s_address=[$2], s_nationkey=[$3])
+          ImpalaHdfsScanRel(table=[[default, impala_tpch_supplier]], condition=[AND(IS NOT NULL($3), IS NOT NULL($0))])
+        ImpalaProjectPassthroughRel(n_nationkey=[$0])
+          ImpalaHdfsScanRel(table=[[default, impala_tpch_nation]], condition=[AND(=($1, _UTF-16LE'CANADA'), IS NOT NULL($0))])
+      ImpalaProjectPassthroughRel(ps_suppkey=[$1])
+        ImpalaJoinRel(condition=[AND(=($4, $0), =($5, $1), >($2, $6))], joinType=[inner])
+          ImpalaJoinRel(condition=[=($0, $3)], joinType=[inner])
+            ImpalaProjectPassthroughRel(ps_partkey=[$0], ps_suppkey=[$1], ps_availqty=[CAST($2):DECIMAL(24, 3)])
+              ImpalaHdfsScanRel(table=[[default, impala_tpch_partsupp]], condition=[AND(IS NOT NULL($0), IS NOT NULL($1), IS NOT NULL(CAST($2):DECIMAL(24, 3)))])
+            ImpalaAggregateRel(group=[{0}])
+              ImpalaHdfsScanRel(table=[[default, impala_tpch_part]], condition=[AND(LIKE($1, _UTF-16LE'forest%':VARCHAR(65535)), IS NOT NULL($0))])
+          ImpalaProjectPassthroughRel(l_partkey=[$0], l_suppkey=[$1], $f2=[CAST(*(0.5:DECIMAL(1, 1), $2)):DECIMAL(24, 3)])
+            ImpalaAggregateRel(group=[{1, 2}], agg#0=[sum($4)], condition=[IS NOT NULL(CAST(*(0.5:DECIMAL(1, 1), $2)):DECIMAL(24, 3))])
+              ImpalaHdfsScanRel(table=[[default, impala_tpch_lineitem]], condition=[AND(>=($10, _UTF-16LE'1994-01-01'), <($10, _UTF-16LE'1995-01-01'), IS NOT NULL($1), IS NOT NULL($2))])
+
+PREHOOK: query: explain select
+  s_name,
+  s_address
+from
+  impala_tpch_supplier, impala_tpch_nation
+where
+  s_suppkey in (
+    select
+      ps_suppkey
+    from
+      impala_tpch_partsupp
+    where 
+      ps_partkey in (
+        select
+          p_partkey
+        from
+          impala_tpch_part
+        where
+          p_name like 'forest%'
+        ) 
+      and ps_availqty > (
+        select
+          0.5 * sum(l_quantity) 
+        from
+          impala_tpch_lineitem
+        where
+          l_partkey = ps_partkey
+          and l_suppkey = ps_suppkey
+          and l_shipdate >= '1994-01-01'
+          and l_shipdate < '1995-01-01'
+        ) 
+    ) 
+  and s_nationkey = n_nationkey
+  and n_name = 'CANADA'
+order by
+  s_name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpch_lineitem
+PREHOOK: Input: default@impala_tpch_nation
+PREHOOK: Input: default@impala_tpch_part
+PREHOOK: Input: default@impala_tpch_partsupp
+PREHOOK: Input: default@impala_tpch_supplier
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select
+  s_name,
+  s_address
+from
+  impala_tpch_supplier, impala_tpch_nation
+where
+  s_suppkey in (
+    select
+      ps_suppkey
+    from
+      impala_tpch_partsupp
+    where 
+      ps_partkey in (
+        select
+          p_partkey
+        from
+          impala_tpch_part
+        where
+          p_name like 'forest%'
+        ) 
+      and ps_availqty > (
+        select
+          0.5 * sum(l_quantity) 
+        from
+          impala_tpch_lineitem
+        where
+          l_partkey = ps_partkey
+          and l_suppkey = ps_suppkey
+          and l_shipdate >= '1994-01-01'
+          and l_shipdate < '1995-01-01'
+        ) 
+    ) 
+  and s_nationkey = n_nationkey
+  and n_name = 'CANADA'
+order by
+  s_name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpch_lineitem
+POSTHOOK: Input: default@impala_tpch_nation
+POSTHOOK: Input: default@impala_tpch_part
+POSTHOOK: Input: default@impala_tpch_partsupp
+POSTHOOK: Input: default@impala_tpch_supplier
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F08:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=28.00KB mem-reservation=0B thread-reservation=1
+  PLAN-ROOT SINK
+  |  output exprs: s_name, s_address
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |
+  21:MERGING-EXCHANGE [UNPARTITIONED]
+     order by: s_name ASC NULLS LAST
+     mem-estimate=28.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=13 row-size=24B cardinality=0
+     in pipelines: 12(GETNEXT)
+
+F07:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=15.96MB mem-reservation=15.88MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F08, EXCHANGE=21, UNPARTITIONED]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  12:SORT
+  |  order by: s_name ASC NULLS LAST
+  |  mem-estimate=12.00MB mem-reservation=12.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=13 row-size=24B cardinality=0
+  |  in pipelines: 12(GETNEXT), 01(OPEN)
+  |
+  00:UNION
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |  tuple-ids=12 row-size=24B cardinality=0
+  |  in pipelines: 01(GETNEXT)
+  |
+  11:HASH JOIN [LEFT SEMI JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpch_supplier.s_suppkey = default.impala_tpch_partsupp.ps_suppkey
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,2 row-size=48B cardinality=0
+  |  in pipelines: 01(GETNEXT), 04(OPEN)
+  |
+  |--20:EXCHANGE [BROADCAST]
+  |     mem-estimate=72.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=4,8,11 row-size=60B cardinality=0
+  |     in pipelines: 04(GETNEXT)
+  |
+  03:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpch_supplier.s_nationkey = default.impala_tpch_nation.n_nationkey
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,2 row-size=48B cardinality=0
+  |  in pipelines: 01(GETNEXT), 02(OPEN)
+  |
+  |--13:EXCHANGE [BROADCAST]
+  |     mem-estimate=18.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=2 row-size=14B cardinality=0
+  |     in pipelines: 02(GETNEXT)
+  |
+  01:SCAN HDFS [default.impala_tpch_supplier, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpch_supplier.s_nationkey IS NOT NULL, default.impala_tpch_supplier.s_suppkey IS NOT NULL
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=34B cardinality=0
+     in pipelines: 01(GETNEXT)
+
+F01:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F07, EXCHANGE=13, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  02:SCAN HDFS [default.impala_tpch_nation, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpch_nation.n_nationkey IS NOT NULL, default.impala_tpch_nation.n_name = 'CANADA'
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     parquet statistics predicates: default.impala_tpch_nation.n_name = 'CANADA'
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=2 row-size=14B cardinality=0
+     in pipelines: 02(GETNEXT)
+
+F02:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=3.93MB mem-reservation=3.88MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F07, EXCHANGE=20, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  10:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpch_partsupp.ps_partkey = default.impala_tpch_lineitem.l_partkey, default.impala_tpch_partsupp.ps_suppkey = default.impala_tpch_lineitem.l_suppkey
+  |  fk/pk conjuncts: assumed fk/pk
+  |  other join predicates: _impala_builtins.casttodecimal(default.impala_tpch_partsupp.ps_availqty) > _impala_builtins.casttodecimal(_impala_builtins.multiply(CAST(0.5 AS DECIMAL(1,1)), _impala_builtins.sum(default.impala_tpch_lineitem.l_quantity)))
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=4,8,11 row-size=60B cardinality=0
+  |  in pipelines: 04(GETNEXT), 18(OPEN)
+  |
+  |--19:EXCHANGE [BROADCAST]
+  |     mem-estimate=36.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=11 row-size=32B cardinality=0
+  |     in pipelines: 18(GETNEXT)
+  |
+  07:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpch_partsupp.ps_partkey = default.impala_tpch_part.p_partkey
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=4,8 row-size=28B cardinality=0
+  |  in pipelines: 04(GETNEXT), 15(OPEN)
+  |
+  |--16:EXCHANGE [BROADCAST]
+  |     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=8 row-size=8B cardinality=0
+  |     in pipelines: 15(GETNEXT)
+  |
+  04:SCAN HDFS [default.impala_tpch_partsupp, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpch_partsupp.ps_partkey IS NOT NULL, default.impala_tpch_partsupp.ps_suppkey IS NOT NULL, _impala_builtins.casttodecimal(default.impala_tpch_partsupp.ps_availqty) IS NOT NULL
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=4 row-size=20B cardinality=0
+     in pipelines: 04(GETNEXT)
+
+F04:PLAN FRAGMENT [HASH(default.impala_tpch_part.p_partkey)] hosts=1 instances=1
+Per-Host Resources: mem-estimate=128.02MB mem-reservation=34.00MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F02, EXCHANGE=16, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  15:AGGREGATE [FINALIZE]
+  |  group by: default.impala_tpch_part.p_partkey
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=8 row-size=8B cardinality=0
+  |  in pipelines: 15(GETNEXT), 05(OPEN)
+  |
+  14:EXCHANGE [HASH(default.impala_tpch_part.p_partkey)]
+     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=8 row-size=8B cardinality=0
+     in pipelines: 05(GETNEXT)
+
+F03:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=128.00MB mem-reservation=34.00MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F04, EXCHANGE=14, HASH(default.impala_tpch_part.p_partkey)]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  06:AGGREGATE [STREAMING]
+  |  group by: default.impala_tpch_part.p_partkey
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=8 row-size=8B cardinality=0
+  |  in pipelines: 05(GETNEXT)
+  |
+  05:SCAN HDFS [default.impala_tpch_part, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpch_part.p_partkey IS NOT NULL, _impala_builtins.like(default.impala_tpch_part.p_name, 'forest%')
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=6 row-size=20B cardinality=0
+     in pipelines: 05(GETNEXT)
+
+F06:PLAN FRAGMENT [HASH(default.impala_tpch_lineitem.l_partkey,default.impala_tpch_lineitem.l_suppkey)] hosts=1 instances=1
+Per-Host Resources: mem-estimate=128.04MB mem-reservation=34.00MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F02, EXCHANGE=19, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  18:AGGREGATE [FINALIZE]
+  |  output: _impala_builtins.sum:merge(default.impala_tpch_lineitem.l_quantity)
+  |  group by: default.impala_tpch_lineitem.l_partkey, default.impala_tpch_lineitem.l_suppkey
+  |  having: _impala_builtins.casttodecimal(_impala_builtins.multiply(CAST(0.5 AS DECIMAL(1,1)), _impala_builtins.sum(default.impala_tpch_lineitem.l_quantity))) IS NOT NULL
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=11 row-size=32B cardinality=0
+  |  in pipelines: 18(GETNEXT), 08(OPEN)
+  |
+  17:EXCHANGE [HASH(default.impala_tpch_lineitem.l_partkey,default.impala_tpch_lineitem.l_suppkey)]
+     mem-estimate=36.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=11 row-size=32B cardinality=0
+     in pipelines: 08(GETNEXT)
+
+F05:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=128.00MB mem-reservation=34.00MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F06, EXCHANGE=17, HASH(default.impala_tpch_lineitem.l_partkey,default.impala_tpch_lineitem.l_suppkey)]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  09:AGGREGATE [STREAMING]
+  |  output: sum(default.impala_tpch_lineitem.l_quantity)
+  |  group by: default.impala_tpch_lineitem.l_partkey, default.impala_tpch_lineitem.l_suppkey
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=11 row-size=32B cardinality=0
+  |  in pipelines: 08(GETNEXT)
+  |
+  08:SCAN HDFS [default.impala_tpch_lineitem, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpch_lineitem.l_partkey IS NOT NULL, default.impala_tpch_lineitem.l_suppkey IS NOT NULL, default.impala_tpch_lineitem.l_shipdate < '1995-01-01', default.impala_tpch_lineitem.l_shipdate >= '1994-01-01'
+     stored statistics:
+       table: rows=0 size=0B
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     parquet statistics predicates: default.impala_tpch_lineitem.l_shipdate < '1995-01-01', default.impala_tpch_lineitem.l_shipdate >= '1994-01-01'
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=9 row-size=36B cardinality=0
+     in pipelines: 08(GETNEXT)
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
