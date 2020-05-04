@@ -36,7 +36,7 @@ public class TestMiniLlapLocalCliDriver {
 
   static CliAdapter adapter = new CliConfigs.MiniLlapLocalCliConfig().getCliAdapter();
 
-  private static int N_SPLITS = 18;
+  private static int N_SPLITS = 32;
 
   @Parameters(name = "{0}")
   public static List<Object[]> getParameters() throws Exception {
