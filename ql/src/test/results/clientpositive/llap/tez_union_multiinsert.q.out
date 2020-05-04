@@ -4084,7 +4084,7 @@ STAGE PLANS:
                   keys: _col0 (type: string), _col1 (type: string)
                   mode: complete
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 250 Data size: 114750 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 250 Data size: 70000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), CAST( _col2 AS STRING) (type: string)
                     outputColumnNames: _col0, _col1, _col2

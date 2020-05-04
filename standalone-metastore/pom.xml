@@ -345,14 +345,6 @@
         <scope>test</scope>
       </dependency>
       <dependency>
-        <!-- Note, this is LGPL.  But we're only using it in a test and not changing it, so I
-        believe we are fine. -->
-        <groupId>org.mariadb.jdbc</groupId>
-        <artifactId>mariadb-java-client</artifactId>
-        <version>2.2.0</version>
-        <scope>test</scope>
-      </dependency>
-      <dependency>
         <groupId>org.postgresql</groupId>
         <artifactId>postgresql</artifactId>
         <version>9.3-1102-jdbc41</version>

@@ -293,13 +293,6 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <!-- Note, this is LGPL.  But we're only using it in a test and not changing it, so I
-      believe we are fine. -->
-      <groupId>org.mariadb.jdbc</groupId>
-      <artifactId>mariadb-java-client</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
       <scope>test</scope>
@@ -441,7 +434,24 @@
       </plugins>
     </pluginManagement>
     <plugins>
-      <!-- plugins are always listed in sorted order by groupId, artifectId -->
+      <!-- plugins are always listed in sorted order by groupId, artifactId -->
+      <plugin>
+        <groupId>com.googlecode.maven-download-plugin</groupId>
+        <artifactId>download-maven-plugin</artifactId>
+        <version>1.3.0</version>
+        <executions>
+          <execution>
+            <phase>verify</phase>
+            <goals>
+              <goal>wget</goal>
+            </goals>
+            <configuration>
+              <url>http://downloads.mariadb.com/Connectors/java/connector-java-2.2.0/mariadb-java-client-2.2.0.jar</url>
+              <outputFileName>mariadb-java-client-2.2.0.jar</outputFileName>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-antrun-plugin</artifactId>
@@ -587,6 +597,7 @@
           <additionalClasspathElements>
             <additionalClasspathElement>${log4j.conf.dir}</additionalClasspathElement>
             <additionalClasspathElement>${itest.jdbc.jars}</additionalClasspathElement>
+            <additionalClasspathElement>${project.build.directory}/mariadb-java-client-2.2.0.jar</additionalClasspathElement>
           </additionalClasspathElements>
           <skipITs>${skipITests}</skipITs> <!-- set this to false to run these tests -->
         </configuration>

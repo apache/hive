@@ -3065,15 +3065,18 @@ STAGE PLANS:
                 Filter Operator
                   predicate: enforce_constraint(_col1 is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 256 Basic stats: COMPLETE Column stats: COMPLETE
-                  File Output Operator
-                    compressed: false
-                    Statistics: Num rows: 1 Data size: 256 Basic stats: COMPLETE Column stats: COMPLETE
-                    table:
-                        input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
-                        serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                        name: default.acidtable
-                    Write Type: UPDATE
+                  Select Operator
+                    expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), _col1 (type: int), 'a1' (type: string), _col3 (type: string)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 1 Data size: 256 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                          serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                          name: default.acidtable
+                      Write Type: UPDATE
         Reducer 7 
             Execution mode: llap
             Reduce Operator Tree:
