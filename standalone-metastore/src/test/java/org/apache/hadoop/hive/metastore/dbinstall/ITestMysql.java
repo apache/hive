@@ -52,7 +52,7 @@ public class ITestMysql extends DbInstallBase {
 
   @Override
   protected String getJdbcDriver() {
-    return org.mariadb.jdbc.Driver.class.getName();
+    return "org.mariadb.jdbc.Driver";
   }
 
   @Override
