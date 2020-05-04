@@ -44,52 +44,51 @@ public class TestUDFSplitMapPrivs extends TestCase {
   private final Object p8 = new Text("WRITE");
   private final Object p9 = new Text("All");
 
-  private final DeferredObject splitDilimiter = new DeferredJavaObject(new Text(" "));
 
   @Test public void testBinaryStringSplitMapToPrivs() throws HiveException {
 
     ObjectInspector valueOI0 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
-    ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
-    ObjectInspector[] initArgs = {valueOI0, valueOI1};
+    ObjectInspector[] initArgs = {valueOI0};
 
     udf.initialize(initArgs);
+
     DeferredObject args;
     DeferredObject[] evalArgs;
 
     args = new DeferredJavaObject(new Text("1 0 0 0 0 0 0 0 0 0"));
-    evalArgs = new DeferredObject[] {args, splitDilimiter};
+    evalArgs = new DeferredObject[] {args};
     runAndVerify(asList(p0), evalArgs);
 
     args = new DeferredJavaObject(new Text("1 1 0 0 0 0 0 0 0 0"));
-    evalArgs = new DeferredObject[] {args, splitDilimiter};
+    evalArgs = new DeferredObject[] {args};
     runAndVerify(asList(p0, p1), evalArgs);
 
     args = new DeferredJavaObject(new Text("1 1 1 0 0 0 0 0 0 0"));
-    evalArgs = new DeferredObject[] {args, splitDilimiter};
+    evalArgs = new DeferredObject[] {args};
     runAndVerify(asList(p0, p1, p2), evalArgs);
 
     args = new DeferredJavaObject(new Text("1 1 1 1 0 0 0 0 0 0"));
-    evalArgs = new DeferredObject[] {args, splitDilimiter};
+    evalArgs = new DeferredObject[] {args};
     runAndVerify(asList(p0, p1, p2, p3), evalArgs);
 
     args = new DeferredJavaObject(new Text("1 1 1 1 1 0 0 0 0 0"));
-    evalArgs = new DeferredObject[] {args, splitDilimiter};
+    evalArgs = new DeferredObject[] {args};
     runAndVerify(asList(p0, p1, p2, p3, p4), evalArgs);
 
     args = new DeferredJavaObject(new Text("1 1 1 1 1 1 0 0 0 0"));
-    evalArgs = new DeferredObject[] {args, splitDilimiter};
+    evalArgs = new DeferredObject[] {args};
     runAndVerify(asList(p0, p1, p2, p3, p4, p5), evalArgs);
 
     args = new DeferredJavaObject(new Text("1 1 1 1 1 1 1 0 0 0"));
-    evalArgs = new DeferredObject[] {args, splitDilimiter};
+    evalArgs = new DeferredObject[] {args};
     runAndVerify(asList(p0, p1, p2, p3, p4, p5, p6), evalArgs);
 
     args = new DeferredJavaObject(new Text("1 1 1 1 1 1 1 1 0 0"));
-    evalArgs = new DeferredObject[] {args, splitDilimiter};
+    evalArgs = new DeferredObject[] {args};
     runAndVerify(asList(p0, p1, p2, p3, p4, p5, p6, p7), evalArgs);
 
     args = new DeferredJavaObject(new Text("1 0 1 1 1 1 1 1 1 0"));
-    evalArgs = new DeferredObject[] {args, splitDilimiter};
+    evalArgs = new DeferredObject[] {args};
     runAndVerify(asList(p0, p2, p3, p4, p5, p6, p7, p8), evalArgs);
 
   }
@@ -97,19 +96,18 @@ public class TestUDFSplitMapPrivs extends TestCase {
   @Test public void BinaryStringMapingShouldFail() throws HiveException {
 
     ObjectInspector valueOI0 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
-    ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
-    ObjectInspector[] initArgs = {valueOI0, valueOI1};
+    ObjectInspector[] initArgs = {valueOI0};
 
     udf.initialize(initArgs);
     DeferredObject args;
     DeferredObject[] evalArgs;
 
     args = new DeferredJavaObject(new Text("1 0 0 0 0 0 0 0 0 0"));
-    evalArgs = new DeferredObject[] {args, splitDilimiter};
+    evalArgs = new DeferredObject[] {args};
     runAndVerifyNotTrue(asList(p1), evalArgs);
 
     args = new DeferredJavaObject(new Text("1 1 0 0 0 0 0 0 0 0"));
-    evalArgs = new DeferredObject[] {args, splitDilimiter};
+    evalArgs = new DeferredObject[] {args};
     runAndVerifyNotTrue(asList(p0, p5), evalArgs);
 
   }

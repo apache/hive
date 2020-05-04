@@ -21,9 +21,7 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
-import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -33,7 +31,6 @@ import org.apache.hadoop.io.Text;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 /**
  * UDFSplitMapPrivs.
@@ -69,36 +66,25 @@ import java.util.regex.Pattern;
  *     output: "  ["UPDATE", "CREATE", "ALTER", "INDEX"]"
  */
 public class GenericUDFStringToPrivilege extends GenericUDF {
-  private transient ObjectInspectorConverters.Converter[] converters;
-  private transient Pattern constPattern;
+  private transient ObjectInspectorConverters.Converter[] converters = new ObjectInspectorConverters.Converter[1];
 
   private PrivilegeMap privsMap = new PrivilegeMap();
 
   @Override public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
-    if (arguments.length != 2) {
-      throw new UDFArgumentLengthException("The function split_map_privs(s, ' ') takes exactly 2 arguments.");
-    }
+    checkArgsSize(arguments, 1, 1);
+    checkArgPrimitive(arguments, 0);
 
-    converters = new ObjectInspectorConverters.Converter[arguments.length];
-    for (int i = 0; i < arguments.length; i++) {
-      converters[i] = ObjectInspectorConverters
-          .getConverter(arguments[i], PrimitiveObjectInspectorFactory.writableStringObjectInspector);
-    }
-
-    ObjectInspector rightArg = arguments[1];
-    if (rightArg instanceof ConstantObjectInspector) {
-      constPattern = Pattern.compile(((ConstantObjectInspector) rightArg).
-          getWritableConstantValue().toString());
-    }
+    converters[0] = ObjectInspectorConverters
+        .getConverter(arguments[0], PrimitiveObjectInspectorFactory.writableStringObjectInspector);
 
     return ObjectInspectorFactory
         .getStandardListObjectInspector(PrimitiveObjectInspectorFactory.writableStringObjectInspector);
   }
 
   @Override public Object evaluate(DeferredObject[] arguments) throws HiveException {
-    assert (arguments.length == 2);
+    assert (arguments.length == 1);
 
-    if (arguments[0].get() == null || arguments[1].get() == null) {
+    if (arguments[0].get() == null) {
       return null;
     }
 
@@ -107,27 +93,22 @@ public class GenericUDFStringToPrivilege extends GenericUDF {
     int index = 0;
     Map<Integer, String> privs = privsMap.getPrivilegeMap();
 
-    if (constPattern == null) {
-      Text regex = (Text) converters[1].convert(arguments[1].get());
-      for (String str : s.toString().split(regex.toString(), -1)) {
-        if ("1".equals(str)) {
-          result.add(new Text(privs.get(index)));
-        }
-        index++;
+    for (String str : s.toString().split(" ", -1)) {
+      if ("1".equals(str)) {
+        result.add(new Text(privs.get(index)));
       }
-    } else {
-      for (String str : constPattern.split(s.toString(), -1)) {
-        if ("1".equals(str)) {
-          result.add(new Text(privs.get(index)));
-        }
-        index++;
-      }
+      index++;
     }
+
     return result;
   }
 
+  @Override protected String getFuncName() {
+    return "split_map_privs";
+  }
+
   @Override public String getDisplayString(String[] children) {
-    assert (children.length == 2);
+    assert (children.length == 1);
     return getStandardDisplayString("split_map_privs", children);
   }
 
