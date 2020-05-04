@@ -36,6 +36,7 @@ public abstract class DbInstallBase {
     Assert.assertEquals(0, getRule().createUser());
     Assert.assertEquals(0, getRule().installAVersion(FIRST_VERSION));
     Assert.assertEquals(0, getRule().upgradeToLatest());
+    Assert.assertEquals(0, getRule().validateSchema());
   }
 
   protected abstract DatabaseRule getRule();

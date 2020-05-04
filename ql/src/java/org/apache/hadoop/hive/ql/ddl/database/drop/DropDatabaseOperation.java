@@ -52,8 +52,7 @@ public class DropDatabaseOperation extends DDLOperation<DropDatabaseDesc> {
       context.getDb().dropDatabase(dbName, true, desc.getIfExists(), desc.isCasdade());
 
       if (LlapHiveUtils.isLlapMode(context.getConf())) {
-        ProactiveEviction.Request.Builder llapEvictRequestBuilder =
-            ProactiveEviction.Request.Builder.create();
+        ProactiveEviction.Request.Builder llapEvictRequestBuilder = ProactiveEviction.Request.Builder.create();
         llapEvictRequestBuilder.addDb(dbName);
         ProactiveEviction.evict(context.getConf(), llapEvictRequestBuilder.build());
       }

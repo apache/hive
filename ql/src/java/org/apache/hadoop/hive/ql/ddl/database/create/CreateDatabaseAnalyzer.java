@@ -46,7 +46,8 @@ public class CreateDatabaseAnalyzer extends BaseSemanticAnalyzer {
 
     boolean ifNotExists = false;
     String comment = null;
-    String locationUri = null, managedLocationUri = null;
+    String locationUri = null;
+    String managedLocationUri = null;
     Map<String, String> props = null;
 
     for (int i = 1; i < root.getChildCount(); i++) {
@@ -74,12 +75,14 @@ public class CreateDatabaseAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    CreateDatabaseDesc desc = new CreateDatabaseDesc(databaseName, comment, locationUri, ifNotExists, props, managedLocationUri);
+    CreateDatabaseDesc desc = new CreateDatabaseDesc(databaseName, comment, locationUri, managedLocationUri,
+        ifNotExists, props);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
 
     Database database = new Database(databaseName, comment, locationUri, props);
-    if (managedLocationUri != null)
+    if (managedLocationUri != null) {
       database.setManagedLocationUri(managedLocationUri);
+    }
     outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_NO_LOCK));
   }
 }

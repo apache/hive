@@ -236,6 +236,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRelDecorrelator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRelFieldTrimmer;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRemoveGBYSemiJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRemoveSqCountCheck;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRewriteCountDistinctToDataSketches;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRulesRegistry;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSemiJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSortJoinReduceRule;
@@ -1968,6 +1969,14 @@ public class CalcitePlanner extends SemanticAnalyzer {
           HiveExceptRewriteRule.INSTANCE);
 
       //1. Distinct aggregate rewrite
+      if (conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_BI_ENABLED)) {
+        // Rewrite to datasketches if enabled
+        if (conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_COUNTDISTINCT_ENABLED)) {
+          String sketchClass = conf.getVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_COUNT_DISTINCT_SKETCH);
+          generatePartialProgram(program, true, HepMatchOrder.TOP_DOWN,
+              new HiveRewriteCountDistinctToDataSketches(sketchClass));
+        }
+      }
       // Run this optimization early, since it is expanding the operator pipeline.
       if (!conf.getVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("mr") &&
           conf.getBoolVar(HiveConf.ConfVars.HIVEOPTIMIZEDISTINCTREWRITE)) {
@@ -2278,7 +2287,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.DEFAULT);
         RelMetadataQuery mq = RelMetadataQuery.instance();
         RelOptCost costOriginalPlan = mq.getCumulativeCost(calcitePreMVRewritingPlan);
-        final double factorSelectivity = (double) HiveConf.getFloatVar(
+        final double factorSelectivity = HiveConf.getFloatVar(
             conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REBUILD_INCREMENTAL_FACTOR);
         RelOptCost costRebuildPlan = mq.getCumulativeCost(basePlan).multiplyBy(factorSelectivity);
         if (costOriginalPlan.isLe(costRebuildPlan)) {
@@ -3264,7 +3273,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
             ImmutableMap<String, Integer> outerNameToPosMap, RowResolver outerRR,
             boolean useCaching) throws SemanticException {
       RexNode filterExpression = genRexNode(filterNode, relToHiveRR.get(srcRel),
-              outerRR, null, useCaching, cluster.getRexBuilder());
+          outerRR, null, useCaching, cluster.getRexBuilder());
+
+      return genFilterRelNode(filterExpression, srcRel, outerNameToPosMap, outerRR);
+    }
+
+    private RelNode genFilterRelNode(RexNode filterExpression, RelNode srcRel,
+        ImmutableMap<String, Integer> outerNameToPosMap, RowResolver outerRR) throws SemanticException {
       if (RexUtil.isLiteral(filterExpression, false)
           && filterExpression.getType().getSqlTypeName() != SqlTypeName.BOOLEAN) {
         // queries like select * from t1 where 'foo';
@@ -3582,6 +3597,35 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
 
       return filterRel;
+    }
+
+    /**
+     * This method creates a HiveFilter containing a filter expression to enforce constraints.
+     * Constraints to check: not null, check
+     * The return value is the pair of Constraint HiveFilter and the corresponding RowResolver
+     * or null if the target has no constraint defined or all of them are disabled.
+     */
+    private Pair<RelNode, RowResolver> genConstraintFilterLogicalPlan(
+        QB qb, RelNode srcRel, ImmutableMap<String, Integer> outerNameToPosMap, RowResolver outerRR)
+        throws SemanticException {
+      if (qb.getIsQuery()) {
+        return null;
+      }
+
+      String dest = qb.getParseInfo().getClauseNames().iterator().next();
+      if (!updating(dest)) {
+        return null;
+      }
+
+      RowResolver inputRR = relToHiveRR.get(srcRel);
+      RexNode constraintUDF = RexNodeTypeCheck.genConstraintsExpr(
+          conf, cluster.getRexBuilder(), getTargetTable(qb, dest), updating(dest), inputRR);
+      if (constraintUDF == null) {
+        return null;
+      }
+
+      RelNode constraintRel = genFilterRelNode(constraintUDF, srcRel, outerNameToPosMap, outerRR);
+      return new Pair<>(constraintRel, inputRR);
     }
 
     private AggregateCall convertGBAgg(AggregateInfo agg, List<RexNode> gbChildProjLst,
@@ -5126,6 +5170,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
       Pair<RelNode, RowResolver> selPair = genSelectLogicalPlan(qb, srcRel, starSrcRel, outerNameToPosMap, outerRR, false);
       selectRel = selPair.getKey();
       srcRel = (selectRel == null) ? srcRel : selectRel;
+
+      // Build Rel for Constraint checks
+      Pair<RelNode, RowResolver> constraintPair =
+          genConstraintFilterLogicalPlan(qb, srcRel, outerNameToPosMap, outerRR);
+      if (constraintPair != null) {
+        selPair = constraintPair;
+      }
 
       // 6. Build Rel for OB Clause
       obRel = genOBLogicalPlan(qb, selPair, outerMostQB);

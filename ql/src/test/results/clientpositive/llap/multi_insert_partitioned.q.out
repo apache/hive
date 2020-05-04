@@ -87,8 +87,6 @@ POSTHOOK: Input: default@multi_partitioned@p=2
 #### A masked pattern was here ####
 0	456	2
 10	456	2
-97	455	2
-98	455	2
 100	457	2
 103	457	2
 455	97	1
@@ -97,6 +95,8 @@ POSTHOOK: Input: default@multi_partitioned@p=2
 456	10	1
 457	100	1
 457	103	1
+97	455	2
+98	455	2
 PREHOOK: query: desc formatted multi_partitioned
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@multi_partitioned
@@ -175,8 +175,6 @@ POSTHOOK: Input: default@multi_partitioned@p=2
 #### A masked pattern was here ####
 0	456	1
 10	456	1
-97	455	1
-98	455	1
 100	457	1
 103	457	1
 455	97	2
@@ -185,6 +183,8 @@ POSTHOOK: Input: default@multi_partitioned@p=2
 456	10	2
 457	100	2
 457	103	2
+97	455	1
+98	455	1
 PREHOOK: query: desc formatted multi_partitioned
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@multi_partitioned
@@ -263,8 +263,6 @@ POSTHOOK: Input: default@multi_partitioned@p=2
 #### A masked pattern was here ####
 0	456	1
 10	456	1
-97	455	1
-98	455	1
 100	457	1
 103	457	1
 455	97	2
@@ -279,6 +277,8 @@ POSTHOOK: Input: default@multi_partitioned@p=2
 457	100	2
 457	103	2
 457	103	2
+97	455	1
+98	455	1
 PREHOOK: query: desc formatted multi_partitioned
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@multi_partitioned
@@ -371,10 +371,6 @@ POSTHOOK: Input: default@multi_partitioned@p=457
 0	456	1
 10	456	1
 10	456	1
-97	455	1
-97	455	1
-98	455	1
-98	455	1
 100	457	1
 100	457	1
 103	457	1
@@ -397,6 +393,10 @@ POSTHOOK: Input: default@multi_partitioned@p=457
 457	103	2
 457	103	2
 457	103	457
+97	455	1
+97	455	1
+98	455	1
+98	455	1
 PREHOOK: query: desc formatted multi_partitioned
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@multi_partitioned
@@ -484,12 +484,6 @@ POSTHOOK: Input: default@multi_partitioned@p=457
 10	456	1
 10	456	1
 10	456	1
-97	455	1
-97	455	1
-97	455	1
-98	455	1
-98	455	1
-98	455	1
 100	457	1
 100	457	1
 100	457	1
@@ -520,6 +514,12 @@ POSTHOOK: Input: default@multi_partitioned@p=457
 457	103	2
 457	103	2
 457	103	457
+97	455	1
+97	455	1
+97	455	1
+98	455	1
+98	455	1
+98	455	1
 PREHOOK: query: desc formatted multi_partitioned
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@multi_partitioned

@@ -512,9 +512,14 @@ public class TestCompactionTxnHandler {
     // Check that we are cleaning up the empty aborted transactions
     GetOpenTxnsResponse txnList = txnHandler.getOpenTxns();
     assertEquals(3, txnList.getOpen_txnsSize());
-    txnHandler.cleanEmptyAbortedTxns();
+    // Create one aborted for low water mark
+    txnid = openTxn();
+    txnHandler.abortTxn(new AbortTxnRequest(txnid));
+    txnHandler.setOpenTxnTimeOutMillis(1);
+    txnHandler.cleanEmptyAbortedAndCommittedTxns();
     txnList = txnHandler.getOpenTxns();
-    assertEquals(2, txnList.getOpen_txnsSize());
+    assertEquals(3, txnList.getOpen_txnsSize());
+    txnHandler.setOpenTxnTimeOutMillis(1000);
 
     rqst = new CompactionRequest("mydb", "foo", CompactionType.MAJOR);
     rqst.setPartitionname("bar");
@@ -529,9 +534,13 @@ public class TestCompactionTxnHandler {
     txnHandler.markCleaned(ci);
 
     txnHandler.openTxns(new OpenTxnRequest(1, "me", "localhost"));
-    txnHandler.cleanEmptyAbortedTxns();
+    // The open txn will became the low water mark
+    Thread.sleep(txnHandler.getOpenTxnTimeOutMillis());
+    txnHandler.setOpenTxnTimeOutMillis(1);
+    txnHandler.cleanEmptyAbortedAndCommittedTxns();
     txnList = txnHandler.getOpenTxns();
     assertEquals(3, txnList.getOpen_txnsSize());
+    txnHandler.setOpenTxnTimeOutMillis(1000);
   }
 
   @Test

@@ -2,8 +2,10 @@ hive.skewjoin.key=100000
 hive.skewjoin.mapjoin.min.split=33554432
 hive.skewjoin.key=300000
 hive.skewjoin.mapjoin.min.split=256000000
+hive.query.max.length=100Mb
 hive.skewjoin.key=100000
 hive.skewjoin.mapjoin.min.split=33554432
+hive.query.max.length=100Mb
 PREHOOK: query: select 'After setting hive.skewjoin.key and hive.skewjoin.mapjoin.min.split'
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -36,3 +38,4 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 After resetting both to default
 hive.skewjoin.key=100000
 hive.skewjoin.mapjoin.min.split=33554432
+hive.query.max.length=100Mb

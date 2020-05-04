@@ -476,11 +476,6 @@
   <profiles>
     <profile>
       <id>spark-test</id>
-      <activation>
-        <property>
-          <name>!skipSparkTests</name>
-        </property>
-      </activation>
       <modules>
         <module>qtest-spark</module>
       </modules>

@@ -133,9 +133,9 @@ POSTHOOK: Input: default@partition_test_partitioned_n6
 POSTHOOK: Input: default@partition_test_partitioned_n6@dt=1
 POSTHOOK: Input: default@partition_test_partitioned_n6@dt=2
 #### A masked pattern was here ####
-476	val_238	NULL	1
-476	val_238	NULL	1
 172	val_86	val_86	2
+476	val_238	NULL	1
+476	val_238	NULL	1
 PREHOOK: query: select * from partition_test_partitioned_n6 where dt is not null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_partitioned_n6
