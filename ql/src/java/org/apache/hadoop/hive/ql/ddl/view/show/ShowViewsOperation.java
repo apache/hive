@@ -19,9 +19,12 @@
 package org.apache.hadoop.hive.ql.ddl.view.show;
 
 import java.io.DataOutputStream;
+import java.util.Collections;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -30,6 +33,7 @@ import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.udf.UDFLike;
 
 /**
  * Operation process showing the views.
@@ -41,22 +45,24 @@ public class ShowViewsOperation extends DDLOperation<ShowViewsDesc> {
 
   @Override
   public int execute() throws HiveException {
-    String dbName = desc.getDbName();
-    String pattern = desc.getPattern(); // if null, all tables/views are returned
-    String resultsFile = desc.getResFile();
-
-    if (!context.getDb().databaseExists(dbName)) {
-      throw new HiveException(ErrorMsg.DATABASE_NOT_EXISTS, dbName);
+    if (!context.getDb().databaseExists(desc.getDbName())) {
+      throw new HiveException(ErrorMsg.DATABASE_NOT_EXISTS, desc.getDbName());
     }
 
-    List<String> tableNames = context.getDb().getTablesByType(dbName, pattern, TableType.VIRTUAL_VIEW);
-    LOG.debug("Found {} view(s) matching the SHOW VIEWS statement.", tableNames.size());
+    List<String> viewNames = context.getDb().getTablesByType(desc.getDbName(), null, TableType.VIRTUAL_VIEW);
+    if (desc.getPattern() != null) {
+      Pattern pattern = Pattern.compile(UDFLike.likePatternToRegExp(desc.getPattern()), Pattern.CASE_INSENSITIVE);
+      viewNames = viewNames.stream()
+          .filter(name -> pattern.matcher(name).matches())
+          .collect(Collectors.toList());
+    }
+    Collections.sort(viewNames);
+    LOG.debug("Found {} view(s) matching the SHOW VIEWS statement.", viewNames.size());
 
-    try (DataOutputStream os = DDLUtils.getOutputStream(new Path(resultsFile), context)) {
-      SortedSet<String> sortedSet = new TreeSet<String>(tableNames);
-      context.getFormatter().showTables(os, sortedSet);
+    try (DataOutputStream os = DDLUtils.getOutputStream(new Path(desc.getResFile()), context)) {
+      context.getFormatter().showTables(os, viewNames);
     } catch (Exception e) {
-      throw new HiveException(e, ErrorMsg.GENERIC_ERROR, "in database" + dbName);
+      throw new HiveException(e, ErrorMsg.GENERIC_ERROR, "in database" + desc.getDbName());
     }
 
     return 0;

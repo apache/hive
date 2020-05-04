@@ -100,10 +100,10 @@ POSTHOOK: query: DROP TABLE alter5_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@alter5_n1
 POSTHOOK: Output: default@alter5_n1
-PREHOOK: query: SHOW TABLES LIKE "alter*"
+PREHOOK: query: SHOW TABLES LIKE "alter%"
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:default
-POSTHOOK: query: SHOW TABLES LIKE "alter*"
+POSTHOOK: query: SHOW TABLES LIKE "alter%"
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
 PREHOOK: query: CREATE DATABASE alter5_db
