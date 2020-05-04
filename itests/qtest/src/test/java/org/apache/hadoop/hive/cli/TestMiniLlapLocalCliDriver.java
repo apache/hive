@@ -22,7 +22,6 @@ import java.util.List;
 
 import org.apache.hadoop.hive.cli.control.CliAdapter;
 import org.apache.hadoop.hive.cli.control.CliConfigs;
-import org.apache.hadoop.hive.cli.control.SplitSupport;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -36,11 +35,9 @@ public class TestMiniLlapLocalCliDriver {
 
   static CliAdapter adapter = new CliConfigs.MiniLlapLocalCliConfig().getCliAdapter();
 
-  private static int N_SPLITS = 18;
-
   @Parameters(name = "{0}")
   public static List<Object[]> getParameters() throws Exception {
-    return SplitSupport.process(adapter.getParameters(), TestMiniLlapLocalCliDriver.class, N_SPLITS);
+    return adapter.getParameters();
   }
 
   @ClassRule

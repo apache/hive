@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+ 
 package org.apache.hadoop.hive.cli;
 
 import java.io.File;
@@ -23,7 +23,6 @@ import java.util.List;
 
 import org.apache.hadoop.hive.cli.control.CliAdapter;
 import org.apache.hadoop.hive.cli.control.CliConfigs;
-import org.apache.hadoop.hive.cli.control.SplitSupport;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -35,13 +34,11 @@ import org.junit.runners.Parameterized.Parameters;
 @RunWith(Parameterized.class)
 public class TestSparkCliDriver {
 
-  private static final int N_SPLITS = 11;
-
   static CliAdapter adapter = new CliConfigs.SparkCliConfig().getCliAdapter();
 
   @Parameters(name = "{0}")
   public static List<Object[]> getParameters() throws Exception {
-    return SplitSupport.process(adapter.getParameters(), TestSparkCliDriver.class, N_SPLITS);
+    return adapter.getParameters();
   }
 
   @ClassRule
