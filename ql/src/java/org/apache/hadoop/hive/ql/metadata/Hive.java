@@ -2879,7 +2879,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
     // calculate full path spec for each valid partition path
     validPartitions.forEach(partPath -> {
       Map<String, String> fullPartSpec = Maps.newLinkedHashMap(partSpec);
-      if (!Warehouse.makeSpecFromName(fullPartSpec, partPath, new HashSet<>(partSpec.keySet()))) {
+      String staticParts =  Warehouse.makeDynamicPartName(partSpec);
+      Path computedPath = partPath;
+      if (!staticParts.isEmpty() ) {
+        computedPath = new Path(new Path(partPath.getParent(), staticParts), partPath.getName());
+      }
+      if (!Warehouse.makeSpecFromName(fullPartSpec, computedPath, new HashSet<>(partSpec.keySet()))) {
         Utilities.FILE_OP_LOGGER.warn("Ignoring invalid DP directory " + partPath);
       } else {
         PartitionDetails details = new PartitionDetails();
