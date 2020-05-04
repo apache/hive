@@ -32,14 +32,6 @@ import com.google.common.collect.Sets;
 public class TestSplitSupport {
 
   @Test
-  public void testSplitParams() {
-
-    List<Object[]> input=new ArrayList<>();
-    Set<Object[]> output=Sets.newIdentityHashSet();
-
-  }
-
-  @Test
   public void testIsSplitClass1() {
     Class<?> mainClass = org.apache.hadoop.hive.cli.control.splitsupport.SplitSupportDummy.class;
     Class<?> split0Class =
