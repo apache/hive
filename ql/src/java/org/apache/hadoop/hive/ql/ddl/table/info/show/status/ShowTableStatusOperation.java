@@ -23,11 +23,11 @@ import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 
 import java.io.DataOutputStream;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.udf.UDFLike;
 import org.apache.hadoop.io.IOUtils;
 
 /**
@@ -47,35 +48,37 @@ public class ShowTableStatusOperation extends DDLOperation<ShowTableStatusDesc> 
 
   @Override
   public int execute() throws HiveException {
-    // get the tables for the desired pattern - populate the output stream
-    List<Table> tbls = new ArrayList<Table>();
-    Map<String, String> part = desc.getPartSpec();
-    Partition par = null;
-    if (part != null) {
-      Table tbl = context.getDb().getTable(desc.getDbName(), desc.getPattern());
-      par = context.getDb().getPartition(tbl, part, false);
-      if (par == null) {
-        throw new HiveException("Partition " + part + " for table " + desc.getPattern() + " does not exist.");
+    List<Table> tables = new ArrayList<Table>();
+    Map<String, String> partitionSpec = desc.getPartSpec();
+    Partition partition = null;
+    if (partitionSpec != null) {
+      Table table = context.getDb().getTable(desc.getDbName(), desc.getPattern());
+      partition = context.getDb().getPartition(table, partitionSpec, false);
+      if (partition == null) {
+        throw new HiveException("Partition " + partitionSpec + " for table " + desc.getPattern() + " does not exist.");
       }
-      tbls.add(tbl);
+      tables.add(table);
     } else {
       LOG.debug("pattern: {}", desc.getPattern());
-      List<String> tblStr = context.getDb().getTablesForDb(desc.getDbName(), desc.getPattern());
-      SortedSet<String> sortedTbls = new TreeSet<String>(tblStr);
-      Iterator<String> iterTbls = sortedTbls.iterator();
-      while (iterTbls.hasNext()) {
-        // create a row per table name
-        String tblName = iterTbls.next();
-        Table tbl = context.getDb().getTable(desc.getDbName(), tblName);
-        tbls.add(tbl);
+      List<String> tableNames = context.getDb().getTablesForDb(desc.getDbName(), null);
+      if (desc.getPattern() != null) {
+        Pattern pattern = Pattern.compile(UDFLike.likePatternToRegExp(desc.getPattern()), Pattern.CASE_INSENSITIVE);
+        tableNames = tableNames.stream()
+            .filter(name -> pattern.matcher(name).matches())
+            .collect(Collectors.toList());
       }
-      LOG.info("Found {} table(s) matching the SHOW TABLE EXTENDED statement.", tblStr.size());
+      Collections.sort(tableNames);
+      for (String tableName : tableNames) {
+        Table table = context.getDb().getTable(desc.getDbName(), tableName);
+        tables.add(table);
+      }
+      LOG.info("Found {} table(s) matching the SHOW TABLE EXTENDED statement.", tableNames.size());
     }
 
-    // write the results in the file
     DataOutputStream outStream = DDLUtils.getOutputStream(new Path(desc.getResFile()), context);
     try {
-      context.getFormatter().showTableStatus(outStream, context.getDb(), context.getConf(), tbls, part, par);
+      context.getFormatter().showTableStatus(outStream, context.getDb(), context.getConf(), tables, partitionSpec,
+          partition);
     } catch (Exception e) {
       throw new HiveException(e, ErrorMsg.GENERIC_ERROR, "show table status");
     } finally {

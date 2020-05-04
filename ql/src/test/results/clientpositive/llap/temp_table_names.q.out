@@ -6,10 +6,10 @@ POSTHOOK: query: create temporary table Default.Temp_Table_Names (C1 string, c2 
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: Default@Temp_Table_Names
 POSTHOOK: Output: database:default
-PREHOOK: query: show tables 'Temp_Table*'
+PREHOOK: query: show tables 'Temp_Table%'
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:default
-POSTHOOK: query: show tables 'Temp_Table*'
+POSTHOOK: query: show tables 'Temp_Table%'
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
 temp_table_names

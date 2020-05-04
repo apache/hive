@@ -45,7 +45,7 @@ public class ShowDatabasesOperation extends DDLOperation<ShowDatabasesDesc> {
     List<String> databases = context.getDb().getAllDatabases();
     if (desc.getPattern() != null) {
       LOG.debug("pattern: {}", desc.getPattern());
-      Pattern pattern = Pattern.compile(UDFLike.likePatternToRegExp(desc.getPattern()));
+      Pattern pattern = Pattern.compile(UDFLike.likePatternToRegExp(desc.getPattern()), Pattern.CASE_INSENSITIVE);
       databases = databases.stream().filter(name -> pattern.matcher(name).matches()).collect(Collectors.toList());
     }
 

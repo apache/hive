@@ -1489,18 +1489,6 @@ public class Hive {
   }
 
   /**
-   * Get tables for the specified database that match the provided regex pattern and table type.
-   * @param dbName
-   * @param pattern
-   * @param tableType
-   * @return List of table objects
-   * @throws HiveException
-   */
-  public List<Table> getTableObjectsByType(String dbName, String pattern, TableType tableType) throws HiveException {
-    return getTableObjects(dbName, pattern, tableType);
-  }
-
-  /**
    * Get all materialized view names for the specified database.
    * @param dbName
    * @return List of materialized view table names
@@ -1531,7 +1519,7 @@ public class Hive {
     return getTableObjects(dbName, pattern, TableType.MATERIALIZED_VIEW);
   }
 
-  private List<Table> getTableObjects(String dbName, String pattern, TableType tableType) throws HiveException {
+  public List<Table> getTableObjects(String dbName, String pattern, TableType tableType) throws HiveException {
     try {
       return Lists.transform(getMSC().getTableObjectsByName(dbName, getTablesByType(dbName, pattern, tableType)),
         new com.google.common.base.Function<org.apache.hadoop.hive.metastore.api.Table, Table>() {

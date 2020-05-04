@@ -22,7 +22,6 @@ import java.io.DataOutputStream;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
@@ -59,7 +58,7 @@ public interface MetaDataFormatter {
   /**
    * Show a list of tables.
    */
-  void showTables(DataOutputStream out, Set<String> tables)
+  void showTables(DataOutputStream out, List<String> tables)
       throws HiveException;
 
   /**
