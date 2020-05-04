@@ -21,8 +21,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.persistence.RowContainer;
 import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -215,7 +217,7 @@ public class JoinUtil {
 
     // Compute the values
     int reserve = hasFilter ? valueFields.size() + 1 : valueFields.size();
-    List<Object> nr = new ArrayList<Object>(reserve);   
+    List<Object> nr = new ArrayList<Object>(reserve);
     for (int i = 0; i < valueFields.size(); i++) {
       nr.add(ObjectInspectorUtils.copyToStandardObject(valueFields.get(i)
           .evaluate(row), valueFieldsOI.get(i),
@@ -343,16 +345,16 @@ public class JoinUtil {
       // remove the last ','
       colNames.setLength(colNames.length() - 1);
       colTypes.setLength(colTypes.length() - 1);
+      Properties props = new Properties();
+      props.put(org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT, "" + Utilities.ctrlaCode);
+      props.put(org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMNS, colNames.toString());
+      props.put(org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMN_TYPES, colTypes.toString());
+      props.put(serdeConstants.SERIALIZATION_LIB, LazyBinarySerDe.class.getName());
+      props.put(hive_metastoreConstants.TABLE_BUCKETING_VERSION, "-1");
       TableDesc tblDesc = new TableDesc(
-          SequenceFileInputFormat.class, HiveSequenceFileOutputFormat.class,
-          Utilities.makeProperties(
-          org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT, ""
-          + Utilities.ctrlaCode,
-          org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMNS, colNames
-          .toString(),
-          org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMN_TYPES,
-          colTypes.toString(),
-          serdeConstants.SERIALIZATION_LIB,LazyBinarySerDe.class.getName()));
+          SequenceFileInputFormat.class,
+          HiveSequenceFileOutputFormat.class,
+          props);
       spillTableDesc[tag] = tblDesc;
     }
     return spillTableDesc;

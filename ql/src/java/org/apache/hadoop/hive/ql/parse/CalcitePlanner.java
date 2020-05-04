@@ -212,6 +212,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterProjectTransp
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterSetOpTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterSortPredicates;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterSortTransposeRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveInBetweenExpandRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveInsertExchange4JoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveIntersectMergeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveIntersectRewriteRule;
@@ -2151,7 +2152,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
                   // There is a Project on top (due to nullability)
                   final Project pq = (Project) viewScan;
                   newViewScan = HiveProject.create(optCluster, copyNodeScan(pq.getInput()),
-                      pq.getChildExps(), pq.getRowType(), Collections.<RelCollation> emptyList());
+                      pq.getChildExps(), pq.getRowType(), Collections.emptyList());
                 } else {
                   newViewScan = copyNodeScan(viewScan);
                 }
@@ -2192,10 +2193,19 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
 
+      // We need to expand IN/BETWEEN expressions when materialized view rewriting
+      // is triggered since otherwise this may prevent some rewritings from happening
+      HepProgramBuilder program = new HepProgramBuilder();
+      generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
+          HiveInBetweenExpandRule.FILTER_INSTANCE,
+          HiveInBetweenExpandRule.JOIN_INSTANCE,
+          HiveInBetweenExpandRule.PROJECT_INSTANCE);
+      basePlan = executeProgram(basePlan, program.build(), mdProvider, executorProvider);
+
       if (mvRebuild) {
         // If it is a materialized view rebuild, we use the HepPlanner, since we only have
         // one MV and we would like to use it to create incremental maintenance plans
-        final HepProgramBuilder program = new HepProgramBuilder();
+        program = new HepProgramBuilder();
         generatePartialProgram(program, true, HepMatchOrder.TOP_DOWN,
             HiveMaterializedViewRule.MATERIALIZED_VIEW_REWRITING_RULES);
         // Add materialization for rebuild to planner
@@ -2253,7 +2263,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           visitor.go(basePlan);
           if (visitor.isRewritingAllowed()) {
             // Trigger rewriting to remove UNION branch with MV
-            final HepProgramBuilder program = new HepProgramBuilder();
+            program = new HepProgramBuilder();
             if (visitor.isContainsAggregate()) {
               generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
                   HiveAggregateIncrementalRewritingRule.INSTANCE);
@@ -2461,6 +2471,15 @@ public class CalcitePlanner extends SemanticAnalyzer {
       } else {
         generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
                 HiveProjectSortExchangeTransposeRule.INSTANCE, HiveProjectMergeRule.INSTANCE);
+      }
+
+      // 10. We need to expand IN/BETWEEN expressions when loading a materialized view
+      // since otherwise this may prevent some rewritings from happening
+      if (ctx.isLoadingMaterializedView()) {
+        generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
+            HiveInBetweenExpandRule.FILTER_INSTANCE,
+            HiveInBetweenExpandRule.JOIN_INSTANCE,
+            HiveInBetweenExpandRule.PROJECT_INSTANCE);
       }
 
       // Trigger program

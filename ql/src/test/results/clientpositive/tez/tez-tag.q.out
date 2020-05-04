@@ -310,9 +310,10 @@ Stage-0
                 SHUFFLE [RS_21]
                   PartitionCols:_col1
                   Merge Join Operator [MERGEJOIN_39] (rows=121 width=184)
-                    Conds:FIL_35._col0=GBY_13._col0(Inner),Output:["_col1"]
-                  <-Group By Operator [GBY_13] (rows=121 width=4)
-                      Output:["_col0"],keys:KEY._col0
+                    Conds:FIL_35._col0=DUMMY_STORE_40._col0(Inner),Output:["_col1"]
+                  <-Dummy Store [DUMMY_STORE_40]
+                      Group By Operator [GBY_13] (rows=121 width=4)
+                        Output:["_col0"],keys:KEY._col0
                   <-Filter Operator [FIL_35] (rows=121 width=188)
                       predicate:_col1 is not null
                       Group By Operator [GBY_5] (rows=121 width=188)

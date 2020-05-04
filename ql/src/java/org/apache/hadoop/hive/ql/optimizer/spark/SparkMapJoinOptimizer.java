@@ -121,7 +121,7 @@ public class SparkMapJoinOptimizer implements SemanticNodeProcessor {
 
     // we can set the traits for this join operator
     OpTraits opTraits = new OpTraits(bucketColNames, numBuckets, null,
-            joinOp.getOpTraits().getNumReduceSinks(), joinOp.getOpTraits().getBucketingVersion());
+        joinOp.getOpTraits().getNumReduceSinks());
     mapJoinOp.setOpTraits(opTraits);
     mapJoinOp.setStatistics(joinOp.getStatistics());
     setNumberOfBucketsOnChildren(mapJoinOp);
