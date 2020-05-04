@@ -99,6 +99,7 @@ import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.Writer;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
+import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.RANGER_AUTHORIZER;
 
 public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   private static final long serialVersionUID = 1L;
@@ -144,6 +145,11 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         if (shouldDump(previousValidHiveDumpPath)) {
           Path currentDumpPath = getCurrentDumpPath(dumpRoot, isBootstrap);
           Path hiveDumpRoot = new Path(currentDumpPath, ReplUtils.REPL_HIVE_BASE_DIR);
+          work.setCurrentDumpPath(currentDumpPath);
+          if (shouldDumpAuthorizationMetadata()) {
+            LOG.info("Dumping authorization data");
+            initiateAuthorizationDumpTask(currentDumpPath);
+          }
           DumpMetaData dmd = new DumpMetaData(hiveDumpRoot, conf);
           // Initialize ReplChangeManager instance since we will require it to encode file URI.
           ReplChangeManager.getInstance(conf);
@@ -156,7 +162,6 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
             lastReplId = incrementalDump(hiveDumpRoot, dmd, cmRoot, getHive());
           }
           work.setResultValues(Arrays.asList(currentDumpPath.toUri().toString(), String.valueOf(lastReplId)));
-          work.setCurrentDumpPath(currentDumpPath);
           initiateDataCopyTasks();
         } else {
           LOG.info("Previous Dump is not yet loaded");
@@ -168,6 +173,31 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       return ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
     }
     return 0;
+  }
+
+  private void initiateAuthorizationDumpTask(Path currentDumpPath) throws SemanticException, IOException {
+    if (RANGER_AUTHORIZER.equalsIgnoreCase(conf.getVar(HiveConf.ConfVars.REPL_AUTHORIZATION_PROVIDER_SERVICE))) {
+      Path rangerDumpRoot = new Path(currentDumpPath, ReplUtils.REPL_RANGER_BASE_DIR);
+      FileSystem fs = rangerDumpRoot.getFileSystem(conf);
+      if (fs.exists(new Path(rangerDumpRoot, ReplAck.RANGER_DUMP_ACKNOWLEDGEMENT.toString()))) {
+        LOG.info("Ranger Authorization Metadata is already exported at {} ", rangerDumpRoot);
+      } else {
+        LOG.info("Exporting Authorization Metadata at {} ", rangerDumpRoot);
+        RangerDumpWork rangerDumpWork = new RangerDumpWork(rangerDumpRoot, work.dbNameOrPattern);
+        Task<RangerDumpWork> rangerDumpTask = TaskFactory.get(rangerDumpWork, conf);
+        if (childTasks == null) {
+          childTasks = new ArrayList<>();
+        }
+        childTasks.add(rangerDumpTask);
+      }
+    } else {
+      throw new SemanticException("Authorizer " + conf.getVar(HiveConf.ConfVars.REPL_AUTHORIZATION_PROVIDER_SERVICE)
+              + " not supported for replication ");
+    }
+  }
+
+  private boolean shouldDumpAuthorizationMetadata() {
+    return conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_AUTHORIZATION_METADATA);
   }
 
   private Path getEncodedDumpRootPath() throws UnsupportedEncodingException {
@@ -198,7 +228,12 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       finishRemainingTasks();
     } else {
       DAGTraversal.traverse(childTasks, new AddDependencyToLeaves(TaskFactory.get(work, conf)));
-      this.childTasks = childTasks;
+      if (this.childTasks.isEmpty()) {
+        this.childTasks = childTasks;
+      } else {
+        this.childTasks.addAll(childTasks);
+      }
+
     }
   }
 

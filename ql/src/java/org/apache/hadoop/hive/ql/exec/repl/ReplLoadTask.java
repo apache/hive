@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.exec.repl;
 
 import com.google.common.collect.Collections2;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.repl.ReplScope;
@@ -48,6 +49,7 @@ import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.table.TableContext;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.util.Context;
 import org.apache.hadoop.hive.ql.exec.repl.incremental.IncrementalLoadTasksBuilder;
 import org.apache.hadoop.hive.ql.exec.repl.util.AddDependencyToLeaves;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.TaskTracker;
 import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -61,6 +63,7 @@ import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 import org.apache.hadoop.hive.ql.parse.repl.load.MetaData;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -71,6 +74,7 @@ import java.util.Map;
 
 import static org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.LoadDatabase.AlterDatabase;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
+import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.RANGER_AUTHORIZER;
 
 public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
   private static final long serialVersionUID = 1L;
@@ -103,10 +107,45 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     }
     work.setRootTask(this);
     this.parentTasks = null;
+    if (shouldLoadAuthorizationMetadata()) {
+      LOG.info("Loading authorization data");
+      try {
+        initiateAuthorizationLoadTask(work.dumpDirectory);
+      } catch (Exception e) {
+        LOG.error("failed", e);
+        setException(e);
+        return ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
+      }
+    }
     if (work.isIncrementalLoad()) {
       return executeIncrementalLoad();
     } else {
       return executeBootStrapLoad();
+    }
+  }
+
+  private boolean shouldLoadAuthorizationMetadata() {
+    return conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_AUTHORIZATION_METADATA);
+  }
+
+  private void initiateAuthorizationLoadTask(String hiveDumpDirectory) throws IOException, SemanticException {
+    if (RANGER_AUTHORIZER.equalsIgnoreCase(conf.getVar(HiveConf.ConfVars.REPL_AUTHORIZATION_PROVIDER_SERVICE))) {
+      Path rangerLoadRoot = new Path(new Path(hiveDumpDirectory).getParent(), ReplUtils.REPL_RANGER_BASE_DIR);
+      FileSystem fs = rangerLoadRoot.getFileSystem(conf);
+      if (fs.exists(new Path(rangerLoadRoot, ReplAck.RANGER_LOAD_ACKNOWLEDGEMENT.toString()))) {
+        LOG.info("Ranger Authorization Metadata is already imported from {} ", rangerLoadRoot);
+      } else {
+        LOG.info("Importing Authorization Metadata from {} ", rangerLoadRoot);
+        RangerLoadWork rangerLoadWork = new RangerLoadWork(rangerLoadRoot, work.getSourceDbName(), work.dbNameToLoadIn);
+        Task<RangerLoadWork> rangerLoadTask = TaskFactory.get(rangerLoadWork, conf);
+        if (childTasks == null) {
+          childTasks = new ArrayList<>();
+        }
+        childTasks.add(rangerLoadTask);
+      }
+    } else {
+      throw new SemanticException("Authorizer " + conf.getVar(HiveConf.ConfVars.REPL_AUTHORIZATION_PROVIDER_SERVICE)
+              + " not supported for replication ");
     }
   }
 
@@ -274,7 +313,10 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
         loadTaskTracker.update(updateDatabaseLastReplID(maxTasks, loadContext, scope));
         work.updateDbEventState(null);
       }
-      this.childTasks = scope.rootTasks;
+      if (childTasks == null) {
+        childTasks = new ArrayList<>();
+      }
+      childTasks.addAll(scope.rootTasks);
       /*
       Since there can be multiple rounds of this run all of which will be tied to the same
       query id -- generated in compile phase , adding a additional UUID to the end to print each run
@@ -517,7 +559,10 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       if (builder.hasMoreWork() || work.hasBootstrapLoadTasks()) {
         DAGTraversal.traverse(childTasks, new AddDependencyToLeaves(TaskFactory.get(work, conf)));
       }
-      this.childTasks = childTasks;
+      if (this.childTasks == null) {
+        this.childTasks = new ArrayList<>();
+      }
+      this.childTasks.addAll(childTasks);
       createReplLoadCompleteAckTask();
       return 0;
     } catch (Exception e) {

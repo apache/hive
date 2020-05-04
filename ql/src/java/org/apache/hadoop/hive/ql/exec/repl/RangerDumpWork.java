@@ -17,22 +17,32 @@
  */
 package org.apache.hadoop.hive.ql.exec.repl;
 
-/**
- * ReplAck, used for repl acknowledgement constants.
- */
-public enum ReplAck {
-    DUMP_ACKNOWLEDGEMENT("_finished_dump"),
-    EVENTS_DUMP("_events_dump"),
-    LOAD_ACKNOWLEDGEMENT("_finished_load"),
-    RANGER_DUMP_ACKNOWLEDGEMENT("_finished_ranger_dump"),
-    RANGER_LOAD_ACKNOWLEDGEMENT("_finished_ranger_load");
-  private String ack;
-  ReplAck(String ack) {
-    this.ack = ack;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.plan.Explain;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.Serializable;
+
+@Explain(displayName = "Ranger Dump Operator", explainLevels = { Explain.Level.USER,
+    Explain.Level.DEFAULT,
+    Explain.Level.EXTENDED })
+public class RangerDumpWork implements Serializable {
+  private static final long serialVersionUID = 1L;
+  private static final Logger LOG = LoggerFactory.getLogger(RangerDumpWork.class);
+  private Path currentDumpPath;
+  private String dbName;
+
+  public RangerDumpWork(Path currentDumpPath, String dbName) {
+    this.currentDumpPath = currentDumpPath;
+    this.dbName = dbName;
   }
 
-  @Override
-  public String toString() {
-    return ack;
+  public Path getCurrentDumpPath() {
+    return currentDumpPath;
+  }
+
+  public String getDbName() {
+    return dbName;
   }
 }

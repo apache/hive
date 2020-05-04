@@ -26,7 +26,9 @@ public enum StageType implements org.apache.thrift.TEnum {
   REPL_TXN(15),
   REPL_INCREMENTAL_LOAD(16),
   SCHEDULED_QUERY_MAINT(17),
-  ACK(18);
+  ACK(18),
+  RANGER_DUMP(19),
+  RANGER_LOAD(20);
 
   private final int value;
 
