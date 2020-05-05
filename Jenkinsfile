@@ -1,5 +1,22 @@
 
+def setPrLabel(String prLabel) {
+   def mapping=[
+    "SUCCESS":"tests passed",
+    "UNSTABLE":"tests unstable",
+    "FAILURE":"tests failed",
+    "PENDING":"tests pending",
+   ]
+   def newLabels = []
+   for( String l : pullRequest.labels )
+     newLabels.add(l)
+   for( String l : mapping.keySet() )
+     newLabels.remove(mapping[l])
+   newLabels.add(mapping[prLabel])
+   echo ('' +newLabels)
+   pullRequest.labels=newLabels
+}
 
+setPrLabel("PENDING");
 
 def executorNode(run) {
     node(POD_LABEL) {
@@ -24,21 +41,21 @@ def testInParallel(parallelism, inclusionsFile, exclusionsFile, results, image, 
     def splitName=String.format("split-%02d",num+1)
     branches[splitName] = {
       executorNode {
-	stage('Prepare') {
+      	stage('Prepare') {
             prepare()
             writeFile file: (split.includes ? inclusionsFile : exclusionsFile), text: split.list.join("\n")
             writeFile file: (split.includes ? exclusionsFile : inclusionsFile), text: ''
         }
-            try {
-		stage('Test') {
-	              run()
-		}
-            } finally {
-		stage('Archive') {
-              junit '**/TEST-*.xml'
-		}
-            }
+        try {
+      		stage('Test') {
+            run()
+      		}
+        } finally {
+      		stage('Archive') {
+            junit '**/TEST-*.xml'
+      		}
         }
+      }
     }
   }
   parallel branches
@@ -71,6 +88,18 @@ du -h --max-depth=1
   }
 }
 
+
+def jobWrappers(closure) {
+  // allocate 1 precommit token for the execution
+  try{
+    lock(label:'hive-precommit',quantity:1)  {
+      closure()
+  } finally {
+    setPrLabel(currentBuild.currentResult)
+  }
+}
+
+jobWrappers {
 podTemplate(
   //workspaceVolume: dynamicPVC(requestsSize: "16Gi"),
   containers: [
@@ -103,6 +132,10 @@ spec:
 ''') {
 
 properties([
+    // max 5 build/branch/day
+    rateLimitBuilds(throttle: [count: 5, durationName: 'day', userBoost: true]),
+    // do not run multiple testruns on the same branch
+    disableConcurrentBuilds(),
     parameters([
         string(name: 'SPLIT', defaultValue: '25', description: 'Number of buckets to split tests into.'),
         string(name: 'OPTS', defaultValue: '', description: 'additional maven opts'),
@@ -113,9 +146,8 @@ properties([
 // launch the main pod
 node(POD_LABEL) {
   container('maven') {
-stage('Prepare') {
+    stage('Prepare') {
     // FIXME can this be moved outside?
-
     checkout scm
     sh '''printf 'env.S="%s"' "`hostname -i`" >> /home/jenkins/agent/load.props'''
     sh '''cat /home/jenkins/agent/load.props'''
@@ -136,7 +168,7 @@ cat rsyncd.conf
 # make parallel-test-execution plugins source scanner happy ~ better results for 1st run
 find . -name '*.java'|grep /Test|grep -v src/test/java|grep org/apache|while read f;do t="`echo $f|sed 's|.*org/apache|happy/src/test/java/org/apache|'`";mkdir -p  "${t%/*}";touch "$t";done
 '''
-}
+  }
   stage('Compile') {
     buildHive("install -Dtest=noMatches")
     sh '''#!/bin/bash -e
@@ -171,6 +203,7 @@ echo "@END"
 
 
 //jenkins/jnlp-slave:3.27-1
+}
 }
 
 
