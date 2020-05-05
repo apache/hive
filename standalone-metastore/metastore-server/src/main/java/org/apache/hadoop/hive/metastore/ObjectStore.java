@@ -8284,15 +8284,12 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
       try (Query query = pm.newQuery(queryStr)) {
-        result = ((Collection<?>) query.execute());
+        result = Collections.unmodifiableCollection(new ArrayList<>(((Collection<?>) query.execute())));
       }
       committed = commitTransaction();
-
-      if (committed) {
-        result = Collections.unmodifiableCollection(new ArrayList<>(result));
-      }
     } finally {
       if (!committed) {
+        result = null;
         rollbackTransaction();
       }
     }
