@@ -126,6 +126,8 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.math.LongMath;
+import com.google.common.primitives.Doubles;
+import com.google.common.primitives.Longs;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 public class StatsUtils {
@@ -1640,21 +1642,17 @@ public class StatsUtils {
     if (encd.getValue() != null) {
       String constant = encd.getValue().toString();
       PrimitiveCategory category = GenericUDAFSum.getReturnType(encd.getTypeInfo());
-      try {
-        switch (category) {
-        case INT:
-        case BYTE:
-        case SHORT:
-        case LONG:
-          return Optional.of(Long.parseLong(constant));
-        case FLOAT:
-        case DOUBLE:
-        case DECIMAL:
-          return Optional.of(Double.parseDouble(constant));
-        default:
-        }
-      } catch (Exception e) {
-        LOG.debug("Interpreting constant (" + constant + ")  resulted in exception", e);
+      switch (category) {
+      case INT:
+      case BYTE:
+      case SHORT:
+      case LONG:
+        return Optional.of(Longs.tryParse(constant));
+      case FLOAT:
+      case DOUBLE:
+      case DECIMAL:
+        return Optional.of(Doubles.tryParse(constant));
+      default:
       }
     }
     return Optional.empty();
