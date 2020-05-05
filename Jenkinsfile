@@ -94,6 +94,7 @@ def jobWrappers(closure) {
   try{
     lock(label:'hive-precommit',quantity:1)  {
       closure()
+    }
   } finally {
     setPrLabel(currentBuild.currentResult)
   }
