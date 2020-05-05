@@ -2872,6 +2872,11 @@ public class HiveConf extends Configuration {
         "Number of aborted transactions involving a given table or partition that will trigger\n" +
         "a major compaction."),
 
+    HIVE_COMPACTOR_ABORTEDTXN_TIME_THRESHOLD("hive.compactor.aborted.txn.time.threshold", "12h",
+        new TimeValidator(TimeUnit.HOURS),
+        "Age of table/partition's oldest aborted transaction when compaction will be triggered. " +
+        "Default time unit is: hours. Set to a negative number to disable."),
+
     HIVE_COMPACTOR_WAIT_TIMEOUT("hive.compactor.wait.timeout", 300000L, "Time out in "
         + "milliseconds for blocking compaction. It's value has to be higher than 2000 milliseconds. "),
     /**
