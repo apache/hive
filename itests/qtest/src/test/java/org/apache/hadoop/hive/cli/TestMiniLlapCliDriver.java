@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.apache.hadoop.hive.cli.control.CliAdapter;
 import org.apache.hadoop.hive.cli.control.CliConfigs;
+import org.apache.hadoop.hive.cli.control.SplitSupport;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -33,11 +34,13 @@ import org.junit.runners.Parameterized.Parameters;
 @RunWith(Parameterized.class)
 public class TestMiniLlapCliDriver {
 
+  private static final int N_SPLITS = 3;
+
   static CliAdapter adapter = new CliConfigs.MiniLlapCliConfig().getCliAdapter();
 
   @Parameters(name = "{0}")
   public static List<Object[]> getParameters() throws Exception {
-    return adapter.getParameters();
+    return SplitSupport.process(adapter.getParameters(), TestMiniLlapCliDriver.class, N_SPLITS);
   }
 
   @ClassRule

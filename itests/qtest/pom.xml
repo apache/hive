@@ -386,9 +386,55 @@
         <test.warehouse.scheme></test.warehouse.scheme>
       </properties>
     </profile>
+    <profile>
+      <id>qsplits</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>generate-split-tests</id>
+                <phase>generate-sources</phase>
+                <configuration>
+                  <target>
+                    <exec executable="bash" failonerror="true">
+                      <arg value="${basedir}/../bin/generate-cli-splits.sh"/>
+                      <arg value="src/test/java"/>
+                      <arg value="target/generated-test-sources"/>
+                    </exec>
+                  </target>
+                </configuration>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>add-test-source</id>
+                <phase>generate-sources</phase>
+                <goals>
+                  <goal>add-test-source</goal>
+                </goals>
+                <configuration>
+                  <sources>
+                    <source>target/generated-test-sources</source>
+                  </sources>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
   </profiles>
-
- <build>
+  <build>
     <plugins>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -468,5 +514,4 @@
       </plugin>
     </plugins>
   </build>
-
 </project>
