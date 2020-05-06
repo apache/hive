@@ -106,7 +106,7 @@ public class ReplUtils {
 
   public static final String RANGER_AUTHORIZER = "ranger";
 
-  public static final String HIVE_RANGER_POLICIES_FILE_NAME = "ranger_policies";
+  public static final String HIVE_RANGER_POLICIES_FILE_NAME = "ranger_policies.json";
   /**
    * Bootstrap REPL LOAD operation type on the examined object based on ckpt state.
    */

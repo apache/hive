@@ -28,44 +28,45 @@ import javax.xml.bind.annotation.XmlRootElement;
 import java.util.ArrayList;
 import java.util.List;
 
-/** RangerPolicyList class to contain List of RangerPolicy objects.
-*
-*/
-@JsonAutoDetect(getterVisibility=Visibility.NONE, setterVisibility=Visibility.NONE, fieldVisibility=Visibility.ANY)
+/**
+ * RangerPolicyList class to contain List of RangerPolicy objects.
+ */
+@JsonAutoDetect(getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE,
+    fieldVisibility = Visibility.ANY)
 @JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
 public class RangerPolicyList {
-    private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-    private List<RangerPolicy> policies = new ArrayList<RangerPolicy>();
+  private List<RangerPolicy> policies = new ArrayList<RangerPolicy>();
 
-    public RangerPolicyList() {
-        super();
+  public RangerPolicyList() {
+    super();
+  }
+
+  public RangerPolicyList(List<RangerPolicy> objList) {
+    this.policies = objList;
+  }
+
+  public List<RangerPolicy> getPolicies() {
+    return policies;
+  }
+
+  public void setPolicies(List<RangerPolicy> policies) {
+    this.policies = policies;
+  }
+
+  public int getListSize() {
+    if (policies != null) {
+      return policies.size();
     }
-
-    public RangerPolicyList(List<RangerPolicy> objList) {
-        this.policies = objList;
-    }
-
-    public List<RangerPolicy> getPolicies() {
-        return policies;
-    }
-
-    public void setPolicies(List<RangerPolicy> policies) {
-        this.policies = policies;
-    }
-
-    public int getListSize() {
-        if (policies != null) {
-            return policies.size();
-        }
-        return 0;
-    }
+    return 0;
+  }
 
 
-    public List<?> getList() {
-        return policies;
-    }
+  public List<?> getList() {
+    return policies;
+  }
 
 }

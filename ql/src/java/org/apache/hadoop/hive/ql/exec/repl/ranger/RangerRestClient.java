@@ -19,23 +19,32 @@
 package org.apache.hadoop.hive.ql.exec.repl.ranger;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 import java.util.List;
 
+/**
+ * RangerRestClient to connect to Ranger service and export policies.
+ */
 public interface RangerRestClient {
-    RangerExportPolicyList exportRangerPolicies(String sourceRangerEndpoint,
-                                                String dbName, String rangerHiveServiceName) throws Exception;
-    RangerExportPolicyList importRangerPolicies(RangerExportPolicyList rangerExportPolicyList, String dbName,
-                                                String baseUrl,
-                                                String rangerHiveServiceName) throws Exception;
+  RangerExportPolicyList exportRangerPolicies(String sourceRangerEndpoint,
+                                              String dbName, String rangerHiveServiceName) throws Exception;
 
-    List<RangerPolicy> removeMultiResourcePolicies(List<RangerPolicy> rangerPolicies);
+  RangerExportPolicyList importRangerPolicies(RangerExportPolicyList rangerExportPolicyList, String dbName,
+                                              String baseUrl,
+                                              String rangerHiveServiceName) throws Exception;
 
-    List<RangerPolicy> changeDataSet(List<RangerPolicy> rangerPolicies, String sourceDbName,
-                                     String targetDbName);
+  List<RangerPolicy> removeMultiResourcePolicies(List<RangerPolicy> rangerPolicies);
 
-    Path saveRangerPoliciesToFile(RangerExportPolicyList rangerExportPolicyList, Path currentDumpPath,
-                                  String fileName) throws Exception;
+  List<RangerPolicy> changeDataSet(List<RangerPolicy> rangerPolicies, String sourceDbName,
+                                   String targetDbName);
 
-    RangerExportPolicyList readRangerPoliciesFromJsonFile(Path filePath) throws Exception;
+  Path saveRangerPoliciesToFile(RangerExportPolicyList rangerExportPolicyList, Path stagingDirPath,
+                                String fileName, HiveConf conf) throws Exception;
+
+  RangerExportPolicyList readRangerPoliciesFromJsonFile(Path filePath,
+                                                        HiveConf conf) throws SemanticException;
+
+  boolean checkConnection(String url) throws Exception;
 }

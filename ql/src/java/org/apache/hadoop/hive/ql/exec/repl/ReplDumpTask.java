@@ -147,7 +147,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           Path hiveDumpRoot = new Path(currentDumpPath, ReplUtils.REPL_HIVE_BASE_DIR);
           work.setCurrentDumpPath(currentDumpPath);
           if (shouldDumpAuthorizationMetadata()) {
-            LOG.info("Dumping authorization data");
+            LOG.info("Initiate authorization metadata dump provided by {} ", RANGER_AUTHORIZER);
             initiateAuthorizationDumpTask(currentDumpPath);
           }
           DumpMetaData dmd = new DumpMetaData(hiveDumpRoot, conf);
@@ -175,21 +175,16 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return 0;
   }
 
-  private void initiateAuthorizationDumpTask(Path currentDumpPath) throws SemanticException, IOException {
+  private void initiateAuthorizationDumpTask(Path currentDumpPath) throws SemanticException {
     if (RANGER_AUTHORIZER.equalsIgnoreCase(conf.getVar(HiveConf.ConfVars.REPL_AUTHORIZATION_PROVIDER_SERVICE))) {
       Path rangerDumpRoot = new Path(currentDumpPath, ReplUtils.REPL_RANGER_BASE_DIR);
-      FileSystem fs = rangerDumpRoot.getFileSystem(conf);
-      if (fs.exists(new Path(rangerDumpRoot, ReplAck.RANGER_DUMP_ACKNOWLEDGEMENT.toString()))) {
-        LOG.info("Ranger Authorization Metadata is already exported at {} ", rangerDumpRoot);
-      } else {
-        LOG.info("Exporting Authorization Metadata at {} ", rangerDumpRoot);
-        RangerDumpWork rangerDumpWork = new RangerDumpWork(rangerDumpRoot, work.dbNameOrPattern);
-        Task<RangerDumpWork> rangerDumpTask = TaskFactory.get(rangerDumpWork, conf);
-        if (childTasks == null) {
-          childTasks = new ArrayList<>();
-        }
-        childTasks.add(rangerDumpTask);
+      LOG.info("Exporting Authorization Metadata at {} ", rangerDumpRoot);
+      RangerDumpWork rangerDumpWork = new RangerDumpWork(rangerDumpRoot, work.dbNameOrPattern);
+      Task<RangerDumpWork> rangerDumpTask = TaskFactory.get(rangerDumpWork, conf);
+      if (childTasks == null) {
+        childTasks = new ArrayList<>();
       }
+      childTasks.add(rangerDumpTask);
     } else {
       throw new SemanticException("Authorizer " + conf.getVar(HiveConf.ConfVars.REPL_AUTHORIZATION_PROVIDER_SERVICE)
               + " not supported for replication ");
@@ -220,7 +215,9 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
 
   private void initiateDataCopyTasks() throws SemanticException {
     TaskTracker taskTracker = new TaskTracker(conf.getIntVar(HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS));
-    List<Task<?>> childTasks = new ArrayList<>();
+    if (childTasks == null) {
+      childTasks = new ArrayList<>();
+    }
     childTasks.addAll(work.externalTableCopyTasks(taskTracker, conf));
     childTasks.addAll(work.managedTableCopyTasks(taskTracker, conf));
     if (childTasks.isEmpty()) {
@@ -228,12 +225,6 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       finishRemainingTasks();
     } else {
       DAGTraversal.traverse(childTasks, new AddDependencyToLeaves(TaskFactory.get(work, conf)));
-      if (this.childTasks.isEmpty()) {
-        this.childTasks = childTasks;
-      } else {
-        this.childTasks.addAll(childTasks);
-      }
-
     }
   }
 

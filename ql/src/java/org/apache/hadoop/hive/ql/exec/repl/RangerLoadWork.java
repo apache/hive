@@ -24,6 +24,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 
+/**
+ * RangerLoadWork.
+ *
+ * Work to import Ranger authorization policies.
+ **/
 @Explain(displayName = "Ranger Load Operator", explainLevels = { Explain.Level.USER,
     Explain.Level.DEFAULT,
     Explain.Level.EXTENDED })

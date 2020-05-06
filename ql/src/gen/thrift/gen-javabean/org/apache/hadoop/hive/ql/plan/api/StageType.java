@@ -85,6 +85,12 @@ public enum StageType implements org.apache.thrift.TEnum {
         return REPL_INCREMENTAL_LOAD;
       case 17:
         return SCHEDULED_QUERY_MAINT;
+      case 18:
+        return ACK;
+      case 19:
+        return RANGER_DUMP;
+      case 20:
+        return RANGER_LOAD;
       default:
         return null;
     }

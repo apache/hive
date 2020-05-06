@@ -28,24 +28,25 @@ import javax.xml.bind.annotation.XmlRootElement;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/** RangerExportPolicyList class to extends RangerPolicyList class.
-*
-*/
-@JsonAutoDetect(getterVisibility=Visibility.NONE, setterVisibility=Visibility.NONE, fieldVisibility=Visibility.ANY)
+/**
+ * RangerExportPolicyList class to extends RangerPolicyList class.
+ */
+@JsonAutoDetect(getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE,
+    fieldVisibility = Visibility.ANY)
 @JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
 public class RangerExportPolicyList extends RangerPolicyList implements java.io.Serializable {
-    private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-    private Map<String, Object> metaDataInfo = new LinkedHashMap<String, Object>();
+  private Map<String, Object> metaDataInfo = new LinkedHashMap<String, Object>();
 
-    public Map<String, Object> getMetaDataInfo() {
-        return metaDataInfo;
-    }
+  public Map<String, Object> getMetaDataInfo() {
+    return metaDataInfo;
+  }
 
-    public void setMetaDataInfo(Map<String, Object> metaDataInfo) {
-        this.metaDataInfo = metaDataInfo;
-    }
+  public void setMetaDataInfo(Map<String, Object> metaDataInfo) {
+    this.metaDataInfo = metaDataInfo;
+  }
 
 }

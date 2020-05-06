@@ -424,7 +424,8 @@ public class TestReplicationScenarios {
     return validator.hasTask(rootTask);
   }
 
-  private Task getReplLoadRootTask(String sourceDb, String replicadb, boolean isIncrementalDump, Tuple tuple) throws Throwable {
+  private Task getReplLoadRootTask(String sourceDb, String replicadb, boolean isIncrementalDump,
+                                   Tuple tuple) throws Throwable {
     HiveConf confTemp = new HiveConf();
     confTemp.set("hive.repl.enable.move.optimization", "true");
     Path loadPath = new Path(tuple.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);

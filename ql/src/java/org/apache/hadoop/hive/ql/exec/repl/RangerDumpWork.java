@@ -19,17 +19,19 @@ package org.apache.hadoop.hive.ql.exec.repl;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.plan.Explain;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 
+/**
+ * RangerDumpWork.
+ *
+ * Export Ranger authorization policies.
+ **/
 @Explain(displayName = "Ranger Dump Operator", explainLevels = { Explain.Level.USER,
     Explain.Level.DEFAULT,
     Explain.Level.EXTENDED })
 public class RangerDumpWork implements Serializable {
   private static final long serialVersionUID = 1L;
-  private static final Logger LOG = LoggerFactory.getLogger(RangerDumpWork.class);
   private Path currentDumpPath;
   private String dbName;
 
