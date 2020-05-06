@@ -208,36 +208,34 @@ public abstract class AbstractTestJdbcGenericUDTFGetSplits {
   }
 
   private void createPartitionedTestTable(String database, String tableName) throws Exception {
-    Statement stmt = hs2Conn.createStatement();
+    try (Statement stmt = hs2Conn.createStatement()) {
 
-    if (database != null) {
-      stmt.execute("CREATE DATABASE IF NOT EXISTS " + database);
-      stmt.execute("USE " + database);
-    }
-
-    // create table
-    stmt.execute("DROP TABLE IF EXISTS " + tableName);
-    stmt.execute("CREATE TABLE " + tableName
-            + " (id INT) partitioned by (p1 int)");
-
-    // load data
-    for (int i=1; i<=5; i++) {
-      String values = "";
-      for (int j=1; j<=10; j++) {
-        if (j != 10) {
-          values+= "(" + j +"),";
-        } else {
-          values+= "(" + j +")";
-        }
+      if (database != null) {
+        stmt.execute("CREATE DATABASE IF NOT EXISTS " + database);
+        stmt.execute("USE " + database);
       }
-      stmt.execute("insert into " + tableName + " partition (p1=" + i +") " + " values " + values);
+
+      // create table
+      stmt.execute("DROP TABLE IF EXISTS " + tableName);
+      stmt.execute("CREATE TABLE " + tableName + " (id INT) partitioned by (p1 int)");
+
+      // load data
+      for (int i = 1; i <= 5; i++) {
+        String values = "";
+        for (int j = 1; j <= 10; j++) {
+          if (j != 10) {
+            values += "(" + j + "),";
+          } else {
+            values += "(" + j + ")";
+          }
+        }
+        stmt.execute("insert into " + tableName + " partition (p1=" + i + ") " + " values " + values);
+      }
+
+      try (ResultSet res = stmt.executeQuery("SELECT count(*) FROM " + tableName)) {
+        assertTrue(res.next());
+        assertEquals(50, res.getInt(1));
+      }
     }
-
-
-    ResultSet res = stmt.executeQuery("SELECT count(*) FROM " + tableName);
-    assertTrue(res.next());
-    assertEquals(50, res.getInt(1));
-    res.close();
-    stmt.close();
   }
 }
