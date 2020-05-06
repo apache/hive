@@ -41,9 +41,11 @@ STAGE PLANS:
         TableScan
           alias: src
           Row Limit Per Split: 1
+          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: split_map_privs('1 0 0 0 0 0 0 0 0 0') (type: array<string>), split_map_privs('1 0 0 1 0 0 0 0 0 0') (type: array<string>)
             outputColumnNames: _col0, _col1
+            Statistics: Num rows: 500 Data size: 316000 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: SELECT
