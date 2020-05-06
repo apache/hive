@@ -70,7 +70,7 @@ public class TransactionalKafkaWriterTest {
       .range(0, RECORD_NUMBER)
       .mapToObj(number -> {
         final byte[] value = ("VALUE-" + Integer.toString(number)).getBytes(Charset.forName("UTF-8"));
-        return new KafkaWritable(0, (long) number, value, KEY_BYTES);
+        return new KafkaWritable(0, number, value, KEY_BYTES);
       })
       .collect(Collectors.toList());
 
@@ -118,8 +118,6 @@ public class TransactionalKafkaWriterTest {
     Path tableLocation = new Path(temporaryFolder.newFolder().toURI());
     queryWorkingPath = new Path(tableLocation, queryId);
     configuration.set(HiveConf.ConfVars.HIVEQUERYID.varname, queryId);
-    String taskId = "attempt_m_0001_0";
-    configuration.set("mapred.task.id", taskId);
     configuration.set(KafkaTableProperties.HIVE_KAFKA_BOOTSTRAP_SERVERS.getName(), KafkaBrokerResource.BROKER_IP_PORT);
     Arrays.stream(KafkaTableProperties.values())
         .filter(kafkaTableProperties -> !kafkaTableProperties.isMandatory())
@@ -152,7 +150,7 @@ public class TransactionalKafkaWriterTest {
   @Test public void writeAndCommit() throws IOException, MetaException {
     TransactionalKafkaWriter
         zombieWriter =
-        new TransactionalKafkaWriter(TOPIC, properties, queryWorkingPath, fs, false);
+        new TransactionalKafkaWriter(TOPIC, getProperties(0), queryWorkingPath, fs, false);
     RECORDS_WRITABLES.forEach(kafkaRecordWritable -> {
       try {
         zombieWriter.write(kafkaRecordWritable);
@@ -164,7 +162,7 @@ public class TransactionalKafkaWriterTest {
 
     TransactionalKafkaWriter
         writer =
-        new TransactionalKafkaWriter(TOPIC, properties, queryWorkingPath, fs, false);
+        new TransactionalKafkaWriter(TOPIC, getProperties(1), queryWorkingPath, fs, false);
 
     RECORDS_WRITABLES.forEach(kafkaRecordWritable -> {
       try {
@@ -188,7 +186,7 @@ public class TransactionalKafkaWriterTest {
   @Test(expected = java.lang.AssertionError.class) public void writeAndNoCommit() throws IOException {
     TransactionalKafkaWriter
         writer =
-        new TransactionalKafkaWriter(TOPIC, properties, queryWorkingPath, fs, false);
+        new TransactionalKafkaWriter(TOPIC, getProperties(0), queryWorkingPath, fs, false);
     RECORDS_WRITABLES.forEach(kafkaRecordWritable -> {
       try {
         writer.write(kafkaRecordWritable);
@@ -205,12 +203,12 @@ public class TransactionalKafkaWriterTest {
   @Test(expected = IOException.class) public void writerFencedOut() throws IOException {
     TransactionalKafkaWriter
         writer =
-        new TransactionalKafkaWriter(TOPIC, properties, queryWorkingPath, fs, false);
+        new TransactionalKafkaWriter(TOPIC, getProperties(0), queryWorkingPath, fs, false);
 
     //noinspection unused this is actually used, the contstructor start the TX that is what we need
     TransactionalKafkaWriter
         newWriter =
-        new TransactionalKafkaWriter(TOPIC, properties, queryWorkingPath, fs, false);
+        new TransactionalKafkaWriter(TOPIC, getProperties(1), queryWorkingPath, fs, false);
 
     try {
       for (KafkaWritable record : RECORDS_WRITABLES) {
@@ -242,5 +240,12 @@ public class TransactionalKafkaWriterTest {
       numRecords += records.count();
     }
     Assert.assertEquals(RECORD_NUMBER, numRecords);
+  }
+
+  public Properties getProperties(int idx) {
+    Properties props = new Properties(properties);
+    String taskId = "attempt_m_0001_0" + idx;
+    props.setProperty("mapred.task.id", taskId);
+    return props;
   }
 }
