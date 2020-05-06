@@ -103,14 +103,10 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     }
     work.setRootTask(this);
     this.parentTasks = null;
-    try {
-      if (work.isIncrementalLoad()) {
-        return executeIncrementalLoad();
-      } else {
-        return executeBootStrapLoad();
-      }
-    } finally {
-      ReplDumpWork.notifyLoaded(conf);
+    if (work.isIncrementalLoad()) {
+      return executeIncrementalLoad();
+    } else {
+      return executeBootStrapLoad();
     }
   }
 

@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.exec.repl;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.primitives.Ints;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.repl.ReplScope;
@@ -191,23 +190,4 @@ public class ReplDumpWork implements Serializable {
   public void setShouldOverwrite(boolean shouldOverwrite) {
     this.shouldOverwrite = shouldOverwrite;
   }
-
-  static Object waitHandle = new Object();
-
-  @VisibleForTesting
-  public static void notifyLoaded(HiveConf conf) {
-    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST)) {
-      synchronized (waitHandle) {
-        waitHandle.notify();
-      }
-    }
-  }
-
-  @VisibleForTesting
-  public static void waitLoad(long timeout) throws InterruptedException {
-    synchronized (waitHandle) {
-      waitHandle.wait(timeout);
-    }
-  }
-
 }
