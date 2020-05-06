@@ -34,11 +34,10 @@ import org.junit.After;
 import org.junit.Test;
 import org.junit.BeforeClass;
 
+import java.util.Map;
 import java.io.File;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import java.util.Map;
 import java.util.HashMap;
 
 
@@ -113,17 +112,11 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
                  ScheduledQueryExecutionService.startScheduledQueryExecutorService(primary.hiveConf)) {
       int next = -1;
       ReplDumpWork.injectNextDumpDirForTest(String.valueOf(next), true);
-      next = Integer.parseInt(ReplDumpWork.getTestInjectDumpDir()) + 1;
       primary.run("create scheduled query s1_t1 every 5 seconds as repl dump " + primaryDbName);
-      replica.run("create scheduled query s2_t1 every 5 seconds as repl load " + primaryDbName + " INTO "
+      replica.run(
+          "create scheduled query s2_t1 every 5 seconds offset by '0:00:02' as repl load " + primaryDbName + " INTO "
               + replicatedDbName);
-      Path dumpRoot = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPLDIR),
-              Base64.getEncoder().encodeToString(primaryDbName.toLowerCase().getBytes(StandardCharsets.UTF_8.name())));
-      FileSystem fs = FileSystem.get(dumpRoot.toUri(), primary.hiveConf);
-
-      Path ackPath = new Path(dumpRoot, String.valueOf(next) + File.separator + ReplUtils.REPL_HIVE_BASE_DIR
-              + File.separator + ReplAck.LOAD_ACKNOWLEDGEMENT.toString());
-      waitForAck(fs, ackPath, DEFAULT_PROBE_TIMEOUT);
+      waitForLoaded();
       replica.run("use " + replicatedDbName)
               .run("show tables like 't1'")
               .verifyResult("t1")
@@ -131,13 +124,10 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
               .verifyResults(new String[]{"1", "2"});
 
       // First incremental, after bootstrap
-      next = Integer.parseInt(ReplDumpWork.getTestInjectDumpDir()) + 1;
       primary.run("use " + primaryDbName)
               .run("insert into t1 values(3)")
               .run("insert into t1 values(4)");
-      ackPath = new Path(dumpRoot, String.valueOf(next) + File.separator + ReplUtils.REPL_HIVE_BASE_DIR
-              + File.separator + ReplAck.LOAD_ACKNOWLEDGEMENT.toString());
-      waitForAck(fs, ackPath, DEFAULT_PROBE_TIMEOUT);
+      waitForLoaded();
       replica.run("use " + replicatedDbName)
               .run("show tables like 't1'")
               .verifyResult("t1")
@@ -145,13 +135,10 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
               .verifyResults(new String[]{"1", "2", "3", "4"});
 
       // Second incremental
-      next = Integer.parseInt(ReplDumpWork.getTestInjectDumpDir()) + 1;
       primary.run("use " + primaryDbName)
               .run("insert into t1 values(5)")
               .run("insert into t1 values(6)");
-      ackPath = new Path(dumpRoot, String.valueOf(next) + File.separator + ReplUtils.REPL_HIVE_BASE_DIR
-              + File.separator + ReplAck.LOAD_ACKNOWLEDGEMENT.toString());
-      waitForAck(fs, ackPath, DEFAULT_PROBE_TIMEOUT);
+      waitForLoaded();
       replica.run("use " + replicatedDbName)
               .run("show tables like 't1'")
               .verifyResult("t1")
@@ -179,16 +166,11 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
                  ScheduledQueryExecutionService.startScheduledQueryExecutorService(primary.hiveConf)) {
       int next = -1;
       ReplDumpWork.injectNextDumpDirForTest(String.valueOf(next), true);
-      next = Integer.parseInt(ReplDumpWork.getTestInjectDumpDir()) + 1;
       primary.run("create scheduled query s1_t2 every 5 seconds as repl dump " + primaryDbName + withClause);
-      replica.run("create scheduled query s2_t2 every 5 seconds as repl load " + primaryDbName + " INTO "
+      replica.run("create scheduled query s2_t2 every 5 seconds offset by '0:00:02'  as repl load " + primaryDbName
+          + " INTO "
               + replicatedDbName);
-      Path dumpRoot = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPLDIR),
-              Base64.getEncoder().encodeToString(primaryDbName.toLowerCase().getBytes(StandardCharsets.UTF_8.name())));
-      FileSystem fs = FileSystem.get(dumpRoot.toUri(), primary.hiveConf);
-      Path ackPath = new Path(dumpRoot, String.valueOf(next) + File.separator + ReplUtils.REPL_HIVE_BASE_DIR
-              + File.separator + ReplAck.LOAD_ACKNOWLEDGEMENT.toString());
-      waitForAck(fs, ackPath, DEFAULT_PROBE_TIMEOUT);
+      waitForLoaded();
       replica.run("use " + replicatedDbName)
               .run("show tables like 't2'")
               .verifyResult("t2")
@@ -196,13 +178,10 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
               .verifyResults(new String[]{"1", "2"});
 
       // First incremental, after bootstrap
-      next = Integer.parseInt(ReplDumpWork.getTestInjectDumpDir()) + 1;
       primary.run("use " + primaryDbName)
               .run("insert into t2 values(3)")
               .run("insert into t2 values(4)");
-      ackPath = new Path(dumpRoot, String.valueOf(next) + File.separator + ReplUtils.REPL_HIVE_BASE_DIR
-              + File.separator + ReplAck.LOAD_ACKNOWLEDGEMENT.toString());
-      waitForAck(fs, ackPath, DEFAULT_PROBE_TIMEOUT);
+      waitForLoaded();
       replica.run("use " + replicatedDbName)
               .run("show tables like 't2'")
               .verifyResult("t2")
@@ -213,23 +192,34 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
       replica.run("drop scheduled query s2_t2");
     }
   }
-  private void waitForAck(FileSystem fs, Path ackFile, long timeout) throws IOException {
-    long oldTime = System.currentTimeMillis();
-    long sleepInterval = 2;
 
-    while(true) {
-      if (fs.exists(ackFile)) {
+  private void waitForLoaded() throws Exception {
+    long DT = 10000L;
+    String lastDir = null;
+    long endTime = 0;
+    long deadline = System.currentTimeMillis() + DEFAULT_PROBE_TIMEOUT;
+    Path dumpRoot = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPLDIR),
+        Base64.getEncoder().encodeToString(primaryDbName.toLowerCase().getBytes(StandardCharsets.UTF_8.name())));
+    FileSystem fs = FileSystem.get(dumpRoot.toUri(), primary.hiveConf);
+    while (true) {
+      long now = System.currentTimeMillis();
+      String currentDir = ReplDumpWork.getTestInjectDumpDir();
+
+      Path ackPath = new Path(dumpRoot, dumpRoot + File.separator + ReplUtils.REPL_HIVE_BASE_DIR
+          + File.separator + ReplAck.LOAD_ACKNOWLEDGEMENT.toString());
+
+      if (lastDir == null || !lastDir.equals(currentDir) || !fs.exists(ackPath)) {
+        endTime = now + DT;
+        lastDir = currentDir;
+      }
+      if (now > endTime) {
         return;
       }
-      try {
-        Thread.sleep(sleepInterval);
-      } catch (InterruptedException e) {
-        //no-op
+      if (now > deadline) {
+        throw new RuntimeException("timed out");
       }
-      if (System.currentTimeMillis() - oldTime > timeout) {
-        break;
-      }
+      Thread.sleep(100);
     }
-    throw new IOException("Timed out waiting for the ack file: " +  ackFile.toString());
   }
+
 }
