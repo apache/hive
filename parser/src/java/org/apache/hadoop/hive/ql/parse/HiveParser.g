@@ -1,9 +1,9 @@
 /**
-   Licensed to the Apache Software Foundation (ASF) under one or more 
-   contributor license agreements.  See the NOTICE file distributed with 
+   Licensed to the Apache Software Foundation (ASF) under one or more
+   contributor license agreements.  See the NOTICE file distributed with
    this work for additional information regarding copyright ownership.
    The ASF licenses this file to You under the Apache License, Version 2.0
-   (the "License"); you may not use this file except in compliance with 
+   (the "License"); you may not use this file except in compliance with
    the License.  You may obtain a copy of the License at
 
        http://www.apache.org/licenses/LICENSE-2.0
@@ -18,7 +18,7 @@ parser grammar HiveParser;
 
 options
 {
-tokenVocab=HiveLexer;
+tokenVocab=HiveLexerParent;
 output=AST;
 ASTLabelType=ASTNode;
 backtrack=false;
@@ -724,7 +724,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 
     return header;
   }
-  
+
   @Override
   public String getErrorMessage(RecognitionException e, String[] tokenNames) {
     String msg = null;
@@ -761,7 +761,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
     }
     return msg;
   }
-  
+
   public void pushMsg(String msg, RecognizerSharedState state) {
     // ANTLR generated code does not wrap the @init code wit this backtracking check,
     //  even if the matching @after has it. If we have parser rules with that are doing
@@ -1491,7 +1491,7 @@ alterTblPartitionStatementSuffixSkewedLocation
   : KW_SET KW_SKEWED KW_LOCATION skewedLocations
   -> ^(TOK_ALTERTABLE_SKEWED_LOCATION skewedLocations)
   ;
-  
+
 skewedLocations
 @init { pushMsg("skewed locations", state); }
 @after { popMsg(state); }
@@ -1521,7 +1521,7 @@ alterStatementSuffixLocation[boolean partition]
   ->              ^(TOK_ALTERTABLE_LOCATION $newLoc)
   ;
 
-	
+
 alterStatementSuffixSkewedby
 @init {pushMsg("alter skewed by statement", state);}
 @after{popMsg(state);}
@@ -1613,10 +1613,10 @@ tabTypeExpr
    (identifier (DOT^
    (
    (KW_ELEM_TYPE) => KW_ELEM_TYPE
-   | 
+   |
    (KW_KEY_TYPE) => KW_KEY_TYPE
-   | 
-   (KW_VALUE_TYPE) => KW_VALUE_TYPE 
+   |
+   (KW_VALUE_TYPE) => KW_VALUE_TYPE
    | identifier
    ))*
    )?
@@ -1674,7 +1674,7 @@ showStatement
     | KW_SHOW KW_COLUMNS (KW_FROM|KW_IN) tableName ((KW_FROM|KW_IN) db_name=identifier)? (KW_LIKE showStmtIdentifier|showStmtIdentifier)?
     -> ^(TOK_SHOWCOLUMNS tableName (TOK_FROM $db_name)? showStmtIdentifier?)
     | KW_SHOW KW_FUNCTIONS (KW_LIKE showFunctionIdentifier)?  -> ^(TOK_SHOWFUNCTIONS KW_LIKE? showFunctionIdentifier?)
-    | KW_SHOW KW_PARTITIONS tabName=tableName partitionSpec? -> ^(TOK_SHOWPARTITIONS $tabName partitionSpec?) 
+    | KW_SHOW KW_PARTITIONS tabName=tableName partitionSpec? -> ^(TOK_SHOWPARTITIONS $tabName partitionSpec?)
     | KW_SHOW KW_CREATE (
         (KW_DATABASE|KW_SCHEMA) => (KW_DATABASE|KW_SCHEMA) db_name=identifier -> ^(TOK_SHOW_CREATEDATABASE $db_name)
         |
@@ -1683,7 +1683,7 @@ showStatement
     | KW_SHOW KW_TABLE KW_EXTENDED ((KW_FROM|KW_IN) db_name=identifier)? KW_LIKE showStmtIdentifier partitionSpec?
     -> ^(TOK_SHOW_TABLESTATUS showStmtIdentifier $db_name? partitionSpec?)
     | KW_SHOW KW_TBLPROPERTIES tableName (LPAREN prptyName=StringLiteral RPAREN)? -> ^(TOK_SHOW_TBLPROPERTIES tableName $prptyName?)
-    | KW_SHOW KW_LOCKS 
+    | KW_SHOW KW_LOCKS
       (
       (KW_DATABASE|KW_SCHEMA) => (KW_DATABASE|KW_SCHEMA) (dbName=identifier) (isExtended=KW_EXTENDED)? -> ^(TOK_SHOWDBLOCKS $dbName $isExtended?)
       |
@@ -1808,7 +1808,7 @@ showCurrentRole
 setRole
 @init {pushMsg("set role", state);}
 @after {popMsg(state);}
-    : KW_SET KW_ROLE 
+    : KW_SET KW_ROLE
     (
     (KW_ALL) => (all=KW_ALL) -> ^(TOK_SET_ROLE Identifier[$all.text])
     |
@@ -2116,7 +2116,7 @@ createScheduledQueryStatement
             definedAsSpec
         )
     ;
-    
+
 dropScheduledQueryStatement
 @init { pushMsg("drop scheduled query statement", state); }
 @after { popMsg(state); }
@@ -2126,7 +2126,7 @@ dropScheduledQueryStatement
         )
     ;
 
-    
+
 alterScheduledQueryStatement
 @init { pushMsg("alter scheduled query statement", state); }
 @after { popMsg(state); }
@@ -2137,7 +2137,7 @@ alterScheduledQueryStatement
             $mod
         )
     ;
-    
+
 alterScheduledQueryChange
 @init { pushMsg("alter scheduled query change", state); }
 @after { popMsg(state); }
@@ -2153,7 +2153,7 @@ scheduleSpec
 @after { popMsg(state); }
         : KW_CRON cronString=StringLiteral -> ^(TOK_CRON $cronString)
         | KW_EVERY value=Number? qualifier=intervalQualifiers
-        ((KW_AT|KW_OFFSET KW_BY) offsetTs=StringLiteral)? -> ^(TOK_SCHEDULE ^(TOK_EVERY $value?) $qualifier $offsetTs?) 
+        ((KW_AT|KW_OFFSET KW_BY) offsetTs=StringLiteral)? -> ^(TOK_SCHEDULE ^(TOK_EVERY $value?) $qualifier $offsetTs?)
         ;
 
 executedAsSpec
@@ -2509,7 +2509,7 @@ alterForeignKeyWithName
 skewedValueElement
 @init { pushMsg("skewed value element", state); }
 @after { popMsg(state); }
-    : 
+    :
       skewedColumnValues
      | skewedColumnValuePairList
     ;
@@ -2523,8 +2523,8 @@ skewedColumnValuePairList
 skewedColumnValuePair
 @init { pushMsg("column value pair", state); }
 @after { popMsg(state); }
-    : 
-      LPAREN colValues=skewedColumnValues RPAREN 
+    :
+      LPAREN colValues=skewedColumnValues RPAREN
       -> ^(TOK_TABCOLVALUES $colValues)
     ;
 
@@ -2544,7 +2544,7 @@ skewedColumnValue
 skewedValueLocationElement
 @init { pushMsg("skewed value location element", state); }
 @after { popMsg(state); }
-    : 
+    :
       skewedColumnValue
      | skewedColumnValuePair
     ;
@@ -2865,7 +2865,7 @@ fromStatement
 	            {adaptor.create(Identifier, generateUnionAlias())}
 	           )
 	        )
-	       ^(TOK_INSERT 
+            ^(TOK_INSERT
 	          ^(TOK_DESTINATION ^(TOK_DIR TOK_TMP_FILE))
 	          ^(TOK_SELECT ^(TOK_SELEXPR TOK_SETCOLREF))
 	        )
@@ -3095,8 +3095,8 @@ setColumnsClause
    KW_SET columnAssignmentClause (COMMA columnAssignmentClause)* -> ^(TOK_SET_COLUMNS_CLAUSE columnAssignmentClause* )
    ;
 
-/* 
-  UPDATE <table> 
+/*
+  UPDATE <table>
   SET col1 = val1, col2 = val2... WHERE ...
 */
 updateStatement

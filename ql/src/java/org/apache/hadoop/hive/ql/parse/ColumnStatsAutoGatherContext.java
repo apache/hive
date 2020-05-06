@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import static org.apache.hadoop.hive.ql.metadata.HiveUtils.unparseIdentifier;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -103,9 +105,9 @@ public class ColumnStatsAutoGatherContext {
    * However, we do not need to specify the partition-spec because (1) the data is going to be inserted to that specific partition
    * (2) we can compose the static/dynamic partition using a select operator in replaceSelectOperatorProcess.
    */
-  public void insertAnalyzePipeline() throws SemanticException{
-    String analyzeCommand = "analyze table `" + tbl.getDbName() + "`.`" + tbl.getTableName() + "`"
-        + " compute statistics for columns ";
+  public void insertAnalyzePipeline() throws SemanticException {
+    String analyzeCommand = "analyze table " + unparseIdentifier(tbl.getDbName(), conf)
+        + "." + unparseIdentifier(tbl.getTableName(), conf) + " compute statistics for columns ";
     insertAnalyzePipeline(analyzeCommand, false);
   }
 
