@@ -31,8 +31,15 @@ package org.apache.hadoop.hive.ql.optimizer.calcite;
 public final class Bug {
 
   /**
+   * Whether <a href="https://issues.apache.org/jira/browse/CALCITE-3982">issue
+   * CALCITE-3982</a> is fixed.
+   */
+  public static final boolean CALCITE_3982_FIXED = false;
+
+  /**
    * Whether <a href="https://issues.apache.org/jira/browse/CALCITE-4166">issue
    * CALCITE-4166</a> is fixed.
    */
   public static final boolean CALCITE_4166_FIXED = false;
+
 }
