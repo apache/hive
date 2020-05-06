@@ -1647,11 +1647,11 @@ public class StatsUtils {
       case BYTE:
       case SHORT:
       case LONG:
-        return Optional.of(Longs.tryParse(constant));
+        return Optional.ofNullable(Longs.tryParse(constant));
       case FLOAT:
       case DOUBLE:
       case DECIMAL:
-        return Optional.of(Doubles.tryParse(constant));
+        return Optional.ofNullable(Doubles.tryParse(constant));
       default:
       }
     }
