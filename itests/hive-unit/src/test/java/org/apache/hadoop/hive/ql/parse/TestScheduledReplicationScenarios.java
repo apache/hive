@@ -35,7 +35,6 @@ import org.junit.Test;
 import org.junit.BeforeClass;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Map;
@@ -213,23 +212,27 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
       replica.run("drop scheduled query s2_t2");
     }
   }
-  private void waitForAck(FileSystem fs, Path ackFile, long timeout) throws IOException {
-    long oldTime = System.currentTimeMillis();
-    long sleepInterval = 2;
 
-    while(true) {
-      if (fs.exists(ackFile)) {
-        return;
-      }
-      try {
-        Thread.sleep(sleepInterval);
-      } catch (InterruptedException e) {
-        //no-op
-      }
-      if (System.currentTimeMillis() - oldTime > timeout) {
-        break;
-      }
-    }
-    throw new IOException("Timed out waiting for the ack file: " +  ackFile.toString());
+  private void waitForAck(FileSystem fs, Path ackFile, long timeout) throws Exception {
+
+    ReplDumpWork.waitLoad(timeout);
+    Thread.sleep(10000);
+    //    long oldTime = System.currentTimeMillis();
+    //    long sleepInterval = 2;
+    //
+    //    while(true) {
+    //      if (fs.exists(ackFile)) {
+    //        return;
+    //      }
+    //      try {
+    //        Thread.sleep(sleepInterval);
+    //      } catch (InterruptedException e) {
+    //        //no-op
+    //      }
+    //      if (System.currentTimeMillis() - oldTime > timeout) {
+    //        break;
+    //      }
+    //    }
+    //    throw new IOException("Timed out waiting for the ack file: " +  ackFile.toString());
   }
 }
