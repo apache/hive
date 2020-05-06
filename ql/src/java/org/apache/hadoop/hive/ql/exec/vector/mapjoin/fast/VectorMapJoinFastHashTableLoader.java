@@ -23,7 +23,10 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.llap.LlapDaemonInfo;
 import org.apache.hadoop.hive.ql.exec.MemoryMonitorInfo;
+import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionError;
+import org.apache.tez.common.counters.TezCounter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -54,6 +57,7 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
   protected MapJoinDesc desc;
   private TezContext tezContext;
   private String cacheKey;
+  private TezCounter htLoadCounter;
 
   @Override
   public void init(ExecMapperContext context, MapredContext mrContext,
@@ -62,6 +66,10 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
     this.hconf = hconf;
     this.desc = joinOp.getConf();
     this.cacheKey = joinOp.getCacheKey();
+    String counterGroup = HiveConf.getVar(hconf, HiveConf.ConfVars.HIVECOUNTERGROUP);
+    String vertexName = hconf.get(Operator.CONTEXT_NAME_KEY, "");
+    String counterName = Utilities.getVertexCounterName(HashTableLoaderCounters.HASHTABLE_LOAD_TIME_MS.name(), vertexName);
+    this.htLoadCounter = tezContext.getTezProcessorContext().getCounters().findCounter(counterGroup, counterName);
   }
 
   @Override
@@ -126,6 +134,7 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
           cacheKey, vectorMapJoinFastTableContainer.getClass().getSimpleName(), pos);
 
         vectorMapJoinFastTableContainer.setSerde(null, null); // No SerDes here.
+        long startTime = System.currentTimeMillis();
         while (kvReader.next()) {
           vectorMapJoinFastTableContainer.putRow((BytesWritable)kvReader.getCurrentKey(),
               (BytesWritable)kvReader.getCurrentValue());
@@ -147,6 +156,8 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
               }
           }
         }
+        long delta = System.currentTimeMillis() - startTime;
+        htLoadCounter.increment(delta);
 
         vectorMapJoinFastTableContainer.seal();
         mapJoinTables[pos] = vectorMapJoinFastTableContainer;
