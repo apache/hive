@@ -1590,7 +1590,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     queryBatch.add("DELETE FROM \"HIVE_LOCKS\" WHERE \"HL_TXNID\" = " + txnid);
     // DO NOT remove the transaction from the TXN table, the cleaner will remove it when appropriate
     queryBatch.add("UPDATE \"TXNS\" SET \"TXN_STATE\" = " + quoteChar(TXN_COMMITTED) + " WHERE \"TXN_ID\" = " + txnid);
-    queryBatch.add("DELETE FROM \"MATERIALIZATION_REBUILD_LOCKS\" WHERE \"MRL_TXN_ID\" = " + txnid);
+    if (txnType == TxnType.MATER_VIEW_REBUILD) {
+      queryBatch.add("DELETE FROM \"MATERIALIZATION_REBUILD_LOCKS\" WHERE \"MRL_TXN_ID\" = " + txnid);
+    }
 
     // execute all in one batch
     executeQueriesInBatchNoCount(dbProduct, stmt, queryBatch, maxBatchSize);

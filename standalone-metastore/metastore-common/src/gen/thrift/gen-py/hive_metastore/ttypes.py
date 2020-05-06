@@ -341,12 +341,14 @@ class TxnType:
   REPL_CREATED = 1
   READ_ONLY = 2
   COMPACTION = 3
+  MATER_VIEW_REBUILD = 4
 
   _VALUES_TO_NAMES = {
     0: "DEFAULT",
     1: "REPL_CREATED",
     2: "READ_ONLY",
     3: "COMPACTION",
+    4: "MATER_VIEW_REBUILD",
   }
 
   _NAMES_TO_VALUES = {
@@ -354,6 +356,7 @@ class TxnType:
     "REPL_CREATED": 1,
     "READ_ONLY": 2,
     "COMPACTION": 3,
+    "MATER_VIEW_REBUILD": 4,
   }
 
 class GetTablesExtRequestFields:
