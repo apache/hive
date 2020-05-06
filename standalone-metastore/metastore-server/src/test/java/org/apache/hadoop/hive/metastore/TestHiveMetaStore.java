@@ -1856,7 +1856,7 @@ public abstract class TestHiveMetaStore {
   @Test
   public void testAlterTable() throws Exception {
     String dbName = "alterdb";
-    String invTblName = "alter-tbl";
+    String invTblName = "alter§tbl";
     String tblName = "altertbl";
 
     try {

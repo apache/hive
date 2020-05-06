@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.lockmgr;
 
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
@@ -405,9 +406,9 @@ class DummyTxnManager extends HiveTxnManagerImpl {
         try {
           locks.add(new HiveLockObj(
                       new HiveLockObject(new DummyPartition(p.getTable(), p.getTable().getDbName()
-                                                            + "/" + org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.encodeTableName(p.getTable().getTableName())
-                                                            + "/" + partialName,
-                                                              partialSpec), lockData), mode));
+                          + "/" + FileUtils.escapePathName(p.getTable().getTableName()).toLowerCase()
+                          + "/" + partialName,
+                          partialSpec), lockData), mode));
           partialName += "/";
         } catch (HiveException e) {
           throw new LockException(e.getMessage());

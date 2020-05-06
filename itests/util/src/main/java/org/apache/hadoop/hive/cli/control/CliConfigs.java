@@ -250,7 +250,6 @@ public class CliConfigs {
         includesFrom(testConfigProps, "minillaplocal.query.files");
         includesFrom(testConfigProps, "minillaplocal.shared.query.files");
         excludeQuery("bucket_map_join_tez1.q"); // Disabled in HIVE-19509
-        excludeQuery("special_character_in_tabnames_1.q"); // Disabled in HIVE-19509
         excludeQuery("tez_smb_1.q"); // Disabled in HIVE-19509
         excludeQuery("union_fast_stats.q"); // Disabled in HIVE-19509
         excludeQuery("schema_evol_orc_acidvec_part.q"); // Disabled in HIVE-19509
