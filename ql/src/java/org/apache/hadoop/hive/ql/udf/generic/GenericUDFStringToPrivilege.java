@@ -70,7 +70,8 @@ public class GenericUDFStringToPrivilege extends GenericUDF {
 
   private PrivilegeMap privsMap = new PrivilegeMap();
 
-  @Override public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
+  @Override
+  public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
     checkArgsSize(arguments, 1, 1);
     checkArgPrimitive(arguments, 0);
 
