@@ -91,6 +91,7 @@ public abstract class AbstractTestJdbcGenericUDTFGetSplits {
 
   @AfterClass
   public static void afterTest() throws Exception {
+    System.out.println("@@@ AfterClass stuff");
     if (miniHS2.isStarted()) {
       miniHS2.stop();
     }
@@ -103,6 +104,7 @@ public abstract class AbstractTestJdbcGenericUDTFGetSplits {
 
   @After
   public void tearDown() throws Exception {
+    System.out.println("@@@ teardown stuff");
     LlapBaseInputFormat.closeAll();
     hs2Conn.close();
   }
