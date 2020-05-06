@@ -131,10 +131,10 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
               .verifyResults(new String[]{"1", "2"});
 
       // First incremental, after bootstrap
-      next = Integer.parseInt(ReplDumpWork.getTestInjectDumpDir()) + 1;
       primary.run("use " + primaryDbName)
               .run("insert into t1 values(3)")
               .run("insert into t1 values(4)");
+      next = Integer.parseInt(ReplDumpWork.getTestInjectDumpDir()) + 1;
       ackPath = new Path(dumpRoot, String.valueOf(next) + File.separator + ReplUtils.REPL_HIVE_BASE_DIR
               + File.separator + ReplAck.LOAD_ACKNOWLEDGEMENT.toString());
       waitForAck(fs, ackPath, DEFAULT_PROBE_TIMEOUT);
@@ -145,10 +145,10 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
               .verifyResults(new String[]{"1", "2", "3", "4"});
 
       // Second incremental
-      next = Integer.parseInt(ReplDumpWork.getTestInjectDumpDir()) + 1;
       primary.run("use " + primaryDbName)
               .run("insert into t1 values(5)")
               .run("insert into t1 values(6)");
+      next = Integer.parseInt(ReplDumpWork.getTestInjectDumpDir()) + 1;
       ackPath = new Path(dumpRoot, String.valueOf(next) + File.separator + ReplUtils.REPL_HIVE_BASE_DIR
               + File.separator + ReplAck.LOAD_ACKNOWLEDGEMENT.toString());
       waitForAck(fs, ackPath, DEFAULT_PROBE_TIMEOUT);
@@ -196,10 +196,10 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
               .verifyResults(new String[]{"1", "2"});
 
       // First incremental, after bootstrap
-      next = Integer.parseInt(ReplDumpWork.getTestInjectDumpDir()) + 1;
       primary.run("use " + primaryDbName)
               .run("insert into t2 values(3)")
               .run("insert into t2 values(4)");
+      next = Integer.parseInt(ReplDumpWork.getTestInjectDumpDir()) + 1;
       ackPath = new Path(dumpRoot, String.valueOf(next) + File.separator + ReplUtils.REPL_HIVE_BASE_DIR
               + File.separator + ReplAck.LOAD_ACKNOWLEDGEMENT.toString());
       waitForAck(fs, ackPath, DEFAULT_PROBE_TIMEOUT);
