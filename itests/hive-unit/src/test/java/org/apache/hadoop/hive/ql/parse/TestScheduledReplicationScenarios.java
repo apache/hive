@@ -213,19 +213,18 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
       replica.run("drop scheduled query s2_t2");
     }
   }
-  private void waitForAck(FileSystem fs, Path ackFile, long timeout) throws IOException {
+
+  private void waitForAck(FileSystem fs, Path ackFile, long timeout) throws Exception {
     long oldTime = System.currentTimeMillis();
     long sleepInterval = 2;
 
     while(true) {
       if (fs.exists(ackFile)) {
+        // in case even if the file exists - for acid tables the changes may not yet been visible
+        Thread.sleep(5000);
         return;
       }
-      try {
-        Thread.sleep(sleepInterval);
-      } catch (InterruptedException e) {
-        //no-op
-      }
+      Thread.sleep(sleepInterval);
       if (System.currentTimeMillis() - oldTime > timeout) {
         break;
       }
