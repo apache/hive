@@ -228,11 +228,13 @@ final class TxnType {
   const REPL_CREATED = 1;
   const READ_ONLY = 2;
   const COMPACTION = 3;
+  const MATER_VIEW_REBUILD = 4;
   static public $__names = array(
     0 => 'DEFAULT',
     1 => 'REPL_CREATED',
     2 => 'READ_ONLY',
     3 => 'COMPACTION',
+    4 => 'MATER_VIEW_REBUILD',
   );
 }
 

@@ -241,15 +241,17 @@ int _kTxnTypeValues[] = {
   TxnType::DEFAULT,
   TxnType::REPL_CREATED,
   TxnType::READ_ONLY,
-  TxnType::COMPACTION
+  TxnType::COMPACTION,
+  TxnType::MATER_VIEW_REBUILD
 };
 const char* _kTxnTypeNames[] = {
   "DEFAULT",
   "REPL_CREATED",
   "READ_ONLY",
-  "COMPACTION"
+  "COMPACTION",
+  "MATER_VIEW_REBUILD"
 };
-const std::map<int, const char*> _TxnType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(4, _kTxnTypeValues, _kTxnTypeNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
+const std::map<int, const char*> _TxnType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(5, _kTxnTypeValues, _kTxnTypeNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
 
 int _kGetTablesExtRequestFieldsValues[] = {
   GetTablesExtRequestFields::ACCESS_TYPE,

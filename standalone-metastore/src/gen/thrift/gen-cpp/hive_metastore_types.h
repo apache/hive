@@ -209,7 +209,8 @@ struct TxnType {
     DEFAULT = 0,
     REPL_CREATED = 1,
     READ_ONLY = 2,
-    COMPACTION = 3
+    COMPACTION = 3,
+    MATER_VIEW_REBUILD = 4
   };
 };
 
