@@ -117,10 +117,9 @@ public abstract class AbstractTestJdbcGenericUDTFGetSplits {
 
     final ByteArrayOutputStream baos = new ByteArrayOutputStream();
     System.setErr(new PrintStream(baos)); // capture stderr
-    final Statement selStmt = con.createStatement();
     Throwable throwable = null;
     int rowCount = 0;
-    try {
+    try (final Statement selStmt = con.createStatement()) {
       try {
         if (setCmds != null) {
           for (String setCmd : setCmds) {
@@ -134,7 +133,6 @@ public abstract class AbstractTestJdbcGenericUDTFGetSplits {
       } catch (SQLException e) {
         throwable = e;
       }
-      selStmt.close();
       assertNull(throwable);
       System.out.println("Expected " + numRows + " rows for query '" + query + "'. Got: " + rowCount);
       assertEquals("Expected rows: " + numRows + " got: " + rowCount, numRows, rowCount);
