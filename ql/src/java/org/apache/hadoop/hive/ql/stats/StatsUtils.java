@@ -1660,7 +1660,7 @@ public class StatsUtils {
     default:
       return Optional.empty();
     }
-    }
+  }
 
   private static boolean isWideningCast(ExprNodeGenericFuncDesc engfd) {
     GenericUDF udf = engfd.getGenericUDF();
