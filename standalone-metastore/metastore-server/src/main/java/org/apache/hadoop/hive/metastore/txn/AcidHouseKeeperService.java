@@ -17,27 +17,34 @@
  */
 package org.apache.hadoop.hive.metastore.txn;
 
+import org.apache.commons.lang3.Functions;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.commons.lang3.Functions.FailableRunnable;
+
 /**
  * Performs background tasks for Transaction management in Hive.
  * Runs inside Hive Metastore Service.
  */
 public class AcidHouseKeeperService implements MetastoreTaskThread {
+
   private static final Logger LOG = LoggerFactory.getLogger(AcidHouseKeeperService.class);
 
   private Configuration conf;
+  private boolean isCompactorEnabled;
   private TxnStore txnHandler;
 
   @Override
   public void setConf(Configuration configuration) {
-    this.conf = configuration;
+    conf = configuration;
+    isCompactorEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON);
     txnHandler = TxnUtils.getTxnStore(conf);
   }
 
@@ -48,7 +55,7 @@ public class AcidHouseKeeperService implements MetastoreTaskThread {
 
   @Override
   public long runFrequency(TimeUnit unit) {
-    return MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.TIMEDOUT_TXN_REAPER_INTERVAL, unit);
+    return MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.ACID_HOUSEKEEPER_SERVICE_INTERVAL, unit);
   }
 
   @Override
@@ -56,16 +63,35 @@ public class AcidHouseKeeperService implements MetastoreTaskThread {
     TxnStore.MutexAPI.LockHandle handle = null;
     try {
       handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.HouseKeeper.name());
-      long startTime = System.currentTimeMillis();
-      txnHandler.performTimeOuts();
-      LOG.debug("timeout reaper ran for " + (System.currentTimeMillis() - startTime)/1000 +
-          "seconds.");
-    } catch(Throwable t) {
-      LOG.error("Serious error in {}", Thread.currentThread().getName(), ": {}" + t.getMessage(), t);
+      LOG.info("Starting to run AcidHouseKeeperService.");
+      long start = System.currentTimeMillis();
+      cleanTheHouse();
+      LOG.debug("Total time AcidHouseKeeperService took: {} seconds.", elapsedSince(start));
+    } catch (Throwable t) {
+      LOG.error("Unexpected error in thread: {}, message: {}", Thread.currentThread().getName(), t.getMessage(), t);
     } finally {
-      if(handle != null) {
+      if (handle != null) {
         handle.releaseLocks();
       }
     }
+  }
+
+  private void cleanTheHouse() {
+    performTask(txnHandler::performTimeOuts, "Cleaning timed out txns and locks");
+    performTask(txnHandler::performWriteSetGC, "Cleaning obsolete write set entries");
+    performTask(txnHandler::cleanTxnToWriteIdTable, "Cleaning obsolete TXN_TO_WRITE_ID entries");
+    if (isCompactorEnabled) {
+      performTask(txnHandler::purgeCompactionHistory, "Cleaning obsolete compaction history entries");
+    }
+  }
+
+  private void performTask(FailableRunnable<MetaException> task, String description) {
+    long start = System.currentTimeMillis();
+    Functions.run(task);
+    LOG.debug("{} took {} seconds.", description, elapsedSince(start));
+  }
+
+  private long elapsedSince(long start) {
+    return (System.currentTimeMillis() - start) / 1000;
   }
 }
