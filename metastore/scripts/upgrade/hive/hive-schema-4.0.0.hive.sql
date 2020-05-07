@@ -1672,6 +1672,7 @@ FROM
                        JOIN `sys`.`TBLS` T ON (S.`SD_ID` = T.`SD_ID`)
                        JOIN `sys`.`DBS` D ON (T.`DB_ID` = D.`DB_ID`)
                        LEFT JOIN `sys`.`TBL_COL_PRIVS` P ON (T.`TBL_ID` = P.`TBL_ID`)
+                       LEFT JOIN (SELECT * FROM `sys`.`TBL_COL_PRIVS` lateral view explode(split_map_privs(`TBL_COL_PRIVS`,' ')) `TBL_COL_PRIVS` AS `TBL_COL_PRIVS`) P
 WHERE
   NOT restrict_information_schema() OR P.`TBL_ID` IS NOT NULL
   AND C.`COLUMN_NAME` = P.`COLUMN_NAME`
@@ -1700,7 +1701,8 @@ SELECT DISTINCT
   P.`TBL_COL_PRIV`,
   IF (P.`GRANT_OPTION` == 0, 'NO', 'YES')
 FROM
-  `sys`.`TBL_COL_PRIVS` P JOIN `sys`.`TBLS` T ON (P.`TBL_ID` = T.`TBL_ID`)
+  (SELECT * FROM `sys`.`TBL_COL_PRIVS` lateral view explode(split_map_privs(`TBL_COL_PRIV`,' ')) `TBL_COL_PRIV`) AS P
+                          JOIN `sys`.`TBLS` T ON (P.`TBL_ID` = T.`TBL_ID`)
                           JOIN `sys`.`DBS` D ON (T.`DB_ID` = D.`DB_ID`)
                           JOIN `sys`.`SDS` S ON (S.`SD_ID` = T.`SD_ID`)
                           LEFT JOIN `sys`.`TBL_PRIVS` P2 ON (P.`TBL_ID` = P2.`TBL_ID`)
