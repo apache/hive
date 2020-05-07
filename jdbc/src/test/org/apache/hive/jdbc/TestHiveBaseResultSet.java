@@ -20,9 +20,11 @@ package org.apache.hive.jdbc;
 
 import static org.mockito.Mockito.when;
 
+import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -30,6 +32,7 @@ import org.apache.hive.service.cli.TableSchema;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.mockito.internal.util.reflection.FieldSetter;
 
 /**
  * Test suite for {@link HiveBaseResultSet} class.
@@ -235,6 +238,96 @@ public class TestHiveBaseResultSet {
 
     Assert.assertEquals(true, resultSet.getBoolean(1));
     Assert.assertFalse(resultSet.wasNull());
+  }
+
+  @Test
+  public void testFindColumnUnqualified() throws Exception {
+    FieldSchema fieldSchema1 = new FieldSchema();
+    fieldSchema1.setType("int");
+
+    FieldSchema fieldSchema2 = new FieldSchema();
+    fieldSchema2.setType("int");
+
+    FieldSchema fieldSchema3 = new FieldSchema();
+    fieldSchema3.setType("int");
+
+    List<FieldSchema> fieldSchemas = Arrays.asList(fieldSchema1, fieldSchema2, fieldSchema3);
+    TableSchema schema = new TableSchema(fieldSchemas);
+
+    HiveBaseResultSet resultSet = Mockito.mock(HiveBaseResultSet.class);
+    resultSet.row = new Object[] { new Integer(1), new Integer(2), new Integer(3) };
+    resultSet.normalizedColumnNames = Arrays.asList("one", "two", "three");
+
+    Field executorField = HiveBaseResultSet.class.getDeclaredField("columnNameIndexCache");
+    FieldSetter.setField(resultSet, executorField, new HashMap<>());
+
+    when(resultSet.getSchema()).thenReturn(schema);
+    when(resultSet.findColumn("one")).thenCallRealMethod();
+    when(resultSet.findColumn("Two")).thenCallRealMethod();
+    when(resultSet.findColumn("THREE")).thenCallRealMethod();
+
+    Assert.assertEquals(1, resultSet.findColumn("one"));
+    Assert.assertEquals(2, resultSet.findColumn("Two"));
+    Assert.assertEquals(3, resultSet.findColumn("THREE"));
+  }
+
+  @Test
+  public void testFindColumnQualified() throws Exception {
+    FieldSchema fieldSchema1 = new FieldSchema();
+    fieldSchema1.setType("int");
+
+    FieldSchema fieldSchema2 = new FieldSchema();
+    fieldSchema2.setType("int");
+
+    FieldSchema fieldSchema3 = new FieldSchema();
+    fieldSchema3.setType("int");
+
+    List<FieldSchema> fieldSchemas = Arrays.asList(fieldSchema1, fieldSchema2, fieldSchema3);
+    TableSchema schema = new TableSchema(fieldSchemas);
+
+    HiveBaseResultSet resultSet = Mockito.mock(HiveBaseResultSet.class);
+    resultSet.row = new Object[] { new Integer(1), new Integer(2), new Integer(3) };
+    resultSet.normalizedColumnNames = Arrays.asList("table.one", "table.two", "table.three");
+
+    Field executorField = HiveBaseResultSet.class.getDeclaredField("columnNameIndexCache");
+    FieldSetter.setField(resultSet, executorField, new HashMap<>());
+
+    when(resultSet.getSchema()).thenReturn(schema);
+    when(resultSet.findColumn("one")).thenCallRealMethod();
+    when(resultSet.findColumn("Two")).thenCallRealMethod();
+    when(resultSet.findColumn("THREE")).thenCallRealMethod();
+
+    Assert.assertEquals(1, resultSet.findColumn("one"));
+    Assert.assertEquals(2, resultSet.findColumn("Two"));
+    Assert.assertEquals(3, resultSet.findColumn("THREE"));
+  }
+
+  @Test(expected = SQLException.class)
+  public void testFindColumnNull() throws Exception {
+    HiveBaseResultSet resultSet = Mockito.mock(HiveBaseResultSet.class);
+    when(resultSet.findColumn(null)).thenCallRealMethod();
+    Assert.assertEquals(0, resultSet.findColumn(null));
+  }
+
+  @Test(expected = SQLException.class)
+  public void testFindColumnUnknownColumn() throws Exception {
+    FieldSchema fieldSchema1 = new FieldSchema();
+    fieldSchema1.setType("int");
+
+    List<FieldSchema> fieldSchemas = Arrays.asList(fieldSchema1);
+    TableSchema schema = new TableSchema(fieldSchemas);
+
+    HiveBaseResultSet resultSet = Mockito.mock(HiveBaseResultSet.class);
+    resultSet.row = new Object[] { new Integer(1) };
+    resultSet.normalizedColumnNames = Arrays.asList("table.one");
+
+    Field executorField = HiveBaseResultSet.class.getDeclaredField("columnNameIndexCache");
+    FieldSetter.setField(resultSet, executorField, new HashMap<>());
+
+    when(resultSet.getSchema()).thenReturn(schema);
+    when(resultSet.findColumn("zero")).thenCallRealMethod();
+
+    Assert.assertEquals(1, resultSet.findColumn("zero"));
   }
 
 }

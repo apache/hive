@@ -42,6 +42,7 @@ import java.sql.Statement;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -65,6 +66,7 @@ public abstract class HiveBaseResultSet implements ResultSet {
   protected List<String> normalizedColumnNames;
   protected List<String> columnTypes;
   protected List<JdbcColumnAttributes> columnAttributes;
+  private final Map<String, Integer> columnNameIndexCache = new HashMap<>();
 
   private TableSchema schema;
 
@@ -95,19 +97,26 @@ public abstract class HiveBaseResultSet implements ResultSet {
 
   @Override
   public int findColumn(final String columnName) throws SQLException {
-    int columnIndex = 0;
-    if (columnName != null) {
-      final String lcColumnName = columnName.toLowerCase();
+    if (columnName == null) {
+      throw new SQLException("null column name not supported");
+    }
+    final String lcColumnName = columnName.toLowerCase();
+    final Integer result = this.columnNameIndexCache.computeIfAbsent(lcColumnName, cn -> {
+      int columnIndex = 0;
       for (final String normalizedColumnName : normalizedColumnNames) {
         ++columnIndex;
         final int idx = normalizedColumnName.lastIndexOf('.');
         final String name = (idx == -1) ? normalizedColumnName : normalizedColumnName.substring(1 + idx);
-        if (name.equals(lcColumnName) || normalizedColumnName.equals(lcColumnName)) {
+        if (name.equals(cn) || normalizedColumnName.equals(cn)) {
           return columnIndex;
         }
       }
+      return null;
+    });
+    if (result == null) {
+      throw new SQLException("Could not find " + columnName + " in " + normalizedColumnNames);
     }
-    throw new SQLException("Could not find " + columnName + " in " + normalizedColumnNames);
+    return result.intValue();
   }
 
   @Override
