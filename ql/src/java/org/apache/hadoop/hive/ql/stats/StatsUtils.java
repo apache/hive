@@ -1639,24 +1639,28 @@ public class StatsUtils {
   }
 
   private static Optional<Number> getConstValue(ExprNodeConstantDesc encd) {
-    if (encd.getValue() != null) {
-      String constant = encd.getValue().toString();
-      PrimitiveCategory category = GenericUDAFSum.getReturnType(encd.getTypeInfo());
-      switch (category) {
-      case INT:
-      case BYTE:
-      case SHORT:
-      case LONG:
-        return Optional.ofNullable(Longs.tryParse(constant));
-      case FLOAT:
-      case DOUBLE:
-      case DECIMAL:
-        return Optional.ofNullable(Doubles.tryParse(constant));
-      default:
-      }
+    if (encd.getValue() == null) {
+      return Optional.empty();
     }
-    return Optional.empty();
-  }
+    String constant = encd.getValue().toString();
+    PrimitiveCategory category = GenericUDAFSum.getReturnType(encd.getTypeInfo());
+    if (category == null) {
+      return Optional.empty();
+    }
+    switch (category) {
+    case INT:
+    case BYTE:
+    case SHORT:
+    case LONG:
+      return Optional.ofNullable(Longs.tryParse(constant));
+    case FLOAT:
+    case DOUBLE:
+    case DECIMAL:
+      return Optional.ofNullable(Doubles.tryParse(constant));
+    default:
+      return Optional.empty();
+    }
+    }
 
   private static boolean isWideningCast(ExprNodeGenericFuncDesc engfd) {
     GenericUDF udf = engfd.getGenericUDF();
