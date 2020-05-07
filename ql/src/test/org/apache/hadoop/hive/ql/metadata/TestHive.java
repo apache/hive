@@ -38,7 +38,9 @@ import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMNullableResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
@@ -57,7 +59,6 @@ import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.util.StringUtils;
-import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -66,7 +67,12 @@ import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.junit.Assert;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
+
+
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertNotNull;
@@ -74,7 +80,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 import org.junit.Before;
-import org.junit.ClassRule;
 import org.junit.After;
 import org.junit.Test;
 
@@ -83,16 +88,13 @@ import org.junit.Test;
  *
  */
 public class TestHive {
-  @ClassRule
-  public static HiveTestEnvSetup env_setup = new HiveTestEnvSetup();
-
   protected Hive hm;
   protected HiveConf hiveConf;
 
   @Before
   public void setUp() throws Exception {
 
-    hiveConf = env_setup.getTestCtx().hiveConf;
+    hiveConf = new HiveConf(this.getClass());
     hm = setUpImpl(hiveConf);
   }
 
