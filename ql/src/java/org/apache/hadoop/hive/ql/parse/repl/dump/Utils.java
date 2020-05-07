@@ -89,7 +89,7 @@ public class Utils {
       @Override
       public Void execute() throws IOException {
         FileSystem fs = outputFile.getFileSystem(hiveConf);
-        fs.create(outputFile);
+        fs.create(outputFile).close();
         return null;
       }
     };

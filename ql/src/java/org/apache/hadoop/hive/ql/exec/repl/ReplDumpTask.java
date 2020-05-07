@@ -192,11 +192,11 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   }
 
   private void finishRemainingTasks() throws SemanticException, IOException {
-    prepareReturnValues(work.getResultValues());
     Path dumpAckFile = new Path(work.getCurrentDumpPath(),
             ReplUtils.REPL_HIVE_BASE_DIR + File.separator
                     + ReplAck.DUMP_ACKNOWLEDGEMENT.toString());
     Utils.create(dumpAckFile, conf);
+    prepareReturnValues(work.getResultValues());
     deleteAllPreviousDumpMeta(work.getCurrentDumpPath());
   }
 
