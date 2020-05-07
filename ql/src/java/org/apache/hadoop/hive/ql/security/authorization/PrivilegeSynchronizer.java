@@ -93,16 +93,14 @@ public class PrivilegeSynchronizer implements Runnable {
           case DATABASE:
             privBag.addToPrivileges(
                 new HiveObjectPrivilege(new HiveObjectRef(HiveObjectType.DATABASE, dbName, null, null, null), principal,
-                    principalType,
-                    new PrivilegeGrantInfo(acl.getKey().toString(),
+                    principalType, new PrivilegeGrantInfo(acl.getKey().toString(),
                         (int) (System.currentTimeMillis() / 1000), GRANTOR, PrincipalType.USER, false), authorizer));
             break;
           case TABLE:
             privBag.addToPrivileges(
                 new HiveObjectPrivilege(new HiveObjectRef(HiveObjectType.TABLE, dbName, tblName, null, null), principal,
-                    principalType,
-                    new PrivilegeGrantInfo(acl.getKey().toString(), (int) (System.currentTimeMillis() / 1000), GRANTOR,
-                        PrincipalType.USER, false), authorizer));
+                    principalType, new PrivilegeGrantInfo(acl.getKey().toString(),
+                    (int) (System.currentTimeMillis() / 1000), GRANTOR, PrincipalType.USER, false), authorizer));
             break;
           case COLUMN:
 
@@ -128,7 +126,6 @@ public class PrivilegeSynchronizer implements Runnable {
         columnUpdateFlag = 0;
       }
     }
-
   }
 
   private HiveObjectRef getObjToRefresh(HiveObjectType type, String dbName, String tblName) throws Exception {
@@ -156,8 +153,8 @@ public class PrivilegeSynchronizer implements Runnable {
 
     switch (type) {
     case DATABASE:
-      objectAcls = policyProvider.
-          getResourceACLs(new HivePrivilegeObject(HivePrivilegeObjectType.DATABASE, dbName, null));
+      objectAcls = policyProvider
+          .getResourceACLs(new HivePrivilegeObject(HivePrivilegeObjectType.DATABASE, dbName, null));
       break;
 
     case TABLE:
@@ -222,11 +219,11 @@ public class PrivilegeSynchronizer implements Runnable {
                 tbl = hiveClient.getTable(dbName, tblName);
                 for (FieldSchema fs : tbl.getPartitionKeys()) {
                   addGrantPrivilegesToBag(policyProvider, grantColumnBag, HiveObjectType.COLUMN,
-                      dbName, tblName, fs.getName(), authorizer);
+                        dbName, tblName, fs.getName(), authorizer);
                 }
                 for (FieldSchema fs : tbl.getSd().getCols()) {
                   addGrantPrivilegesToBag(policyProvider, grantColumnBag, HiveObjectType.COLUMN,
-                      dbName, tblName, fs.getName(), authorizer);
+                        dbName, tblName, fs.getName(), authorizer);
                 }
                 hiveClient.refresh_privileges(tableOfColumnsToRefresh, authorizer, grantColumnBag);
               } catch (MetaException e) {
@@ -235,7 +232,7 @@ public class PrivilegeSynchronizer implements Runnable {
             }
           }
           LOG.info("Success synchronize privilege " + policyProvider.getClass().getName() + ":" + numDb + " databases, "
-              + numTbl + " tables");
+                + numTbl + " tables");
         }
       } catch (Exception e) {
         LOG.error("Error initializing PrivilegeSynchronizer: " + e.getMessage(), e);
