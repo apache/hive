@@ -1970,7 +1970,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
           HiveExceptRewriteRule.INSTANCE);
 
       //1. Distinct aggregate rewrite
-      if (conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_BI_ENABLED)) {
+
+      if (!ctx.isLoadingMaterializedView() && getQB().isMaterializedView()
+          && conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_BI_ENABLED)) {
         // Rewrite to datasketches if enabled
         if (conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_COUNTDISTINCT_ENABLED)) {
           String sketchClass = conf.getVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_COUNT_DISTINCT_SKETCH);
