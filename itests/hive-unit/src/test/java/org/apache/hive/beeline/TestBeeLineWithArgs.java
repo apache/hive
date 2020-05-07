@@ -1156,6 +1156,7 @@ import org.junit.Test;
   }
 
   @Test
+  @Ignore("HIVE-23398")
   public void testRowsAffected() throws Throwable {
     final String SCRIPT_TEXT = "drop table if exists new_table;\n create table new_table(foo int);\n "
       + "insert into new_table values (1);\n";
