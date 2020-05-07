@@ -2927,25 +2927,25 @@ public class HiveConf extends Configuration {
       new RangeValidator(0, 100), "Determines how many attempted compaction records will be " +
       "retained in compaction history for a given table/partition."),
     /**
-     * @deprecated Use MetastoreConf.COMPACTOR_HISTORY_REAPER_INTERVAL
+     * @deprecated Use MetastoreConf.ACID_HOUSEKEEPER_SERVICE_INTERVAL
      */
     @Deprecated
     COMPACTOR_HISTORY_REAPER_INTERVAL("hive.compactor.history.reaper.interval", "2m",
       new TimeValidator(TimeUnit.MILLISECONDS), "Determines how often compaction history reaper runs"),
     /**
-     * @deprecated Use MetastoreConf.TIMEDOUT_TXN_REAPER_START
+     * @deprecated Use MetastoreConf.ACID_HOUSEKEEPER_SERVICE_START
      */
     @Deprecated
     HIVE_TIMEDOUT_TXN_REAPER_START("hive.timedout.txn.reaper.start", "100s",
       new TimeValidator(TimeUnit.MILLISECONDS), "Time delay of 1st reaper run after metastore start"),
     /**
-     * @deprecated Use MetastoreConf.TIMEDOUT_TXN_REAPER_INTERVAL
+     * @deprecated Use MetastoreConf.ACID_HOUSEKEEPER_SERVICE_INTERVAL
      */
     @Deprecated
     HIVE_TIMEDOUT_TXN_REAPER_INTERVAL("hive.timedout.txn.reaper.interval", "180s",
       new TimeValidator(TimeUnit.MILLISECONDS), "Time interval describing how often the reaper runs"),
     /**
-     * @deprecated Use MetastoreConf.WRITE_SET_REAPER_INTERVAL
+     * @deprecated Use MetastoreConf.ACID_HOUSEKEEPER_SERVICE_INTERVAL
      */
     @Deprecated
     WRITE_SET_REAPER_INTERVAL("hive.writeset.reaper.interval", "60s",
