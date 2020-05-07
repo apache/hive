@@ -231,57 +231,64 @@ STAGE PLANS:
                     outputColumnNames: id, category
                     Statistics: Num rows: 44 Data size: 3916 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: ds_hll_sketch(id)
-                      keys: category (type: char(1))
-                      minReductionHashAggr: 0.95454544
+                      keys: category (type: char(1)), id (type: int)
+                      minReductionHashAggr: 0.52272725
                       mode: hash
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 2 Data size: 946 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 22 Data size: 1958 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: _col0 (type: char(1))
-                        null sort order: z
-                        sort order: +
+                        key expressions: _col0 (type: char(1)), _col1 (type: int)
+                        null sort order: zz
+                        sort order: ++
                         Map-reduce partition columns: _col0 (type: char(1))
-                        Statistics: Num rows: 2 Data size: 946 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col1 (type: struct<lgk:int,type:string,sketch:binary>)
-            Execution mode: llap
+                        Statistics: Num rows: 22 Data size: 1958 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: ds_hll_sketch(VALUE._col0)
-                keys: KEY._col0 (type: char(1))
+                keys: KEY._col0 (type: char(1)), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 2 Data size: 458 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 22 Data size: 1958 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: 'no-rewrite-may-happen' (type: string), _col0 (type: char(1)), UDFToLong(ds_hll_estimate(_col1)) (type: bigint)
-                  outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 2 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
-                  File Output Operator
-                    compressed: false
-                    Statistics: Num rows: 2 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
-                    table:
-                        input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
-                        serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                        name: default.mv_1
-                  Select Operator
-                    expressions: _col0 (type: string), _col1 (type: char(1)), _col2 (type: bigint)
-                    outputColumnNames: _c0, category, _c2
-                    Statistics: Num rows: 2 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      aggregations: compute_stats(_c0, 'hll'), compute_stats(category, 'hll'), compute_stats(_c2, 'hll')
-                      minReductionHashAggr: 0.5
-                      mode: hash
+                  expressions: _col1 (type: int), _col0 (type: char(1))
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 22 Data size: 1958 Basic stats: COMPLETE Column stats: COMPLETE
+                  Group By Operator
+                    aggregations: count(_col0)
+                    keys: _col1 (type: char(1))
+                    mode: complete
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 2 Data size: 186 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: 'no-rewrite-may-happen' (type: string), _col0 (type: char(1)), _col1 (type: bigint)
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 1 Data size: 1304 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        null sort order: 
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 1304 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
+                      Statistics: Num rows: 2 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 2 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                            name: default.mv_1
+                      Select Operator
+                        expressions: _col0 (type: string), _col1 (type: char(1)), _col2 (type: bigint)
+                        outputColumnNames: _c0, category, _c2
+                        Statistics: Num rows: 2 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
+                        Group By Operator
+                          aggregations: compute_stats(_c0, 'hll'), compute_stats(category, 'hll'), compute_stats(_c2, 'hll')
+                          minReductionHashAggr: 0.5
+                          mode: hash
+                          outputColumnNames: _col0, _col1, _col2
+                          Statistics: Num rows: 1 Data size: 1304 Basic stats: COMPLETE Column stats: COMPLETE
+                          Reduce Output Operator
+                            null sort order: 
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 1304 Basic stats: COMPLETE Column stats: COMPLETE
+                            value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:

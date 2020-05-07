@@ -1971,8 +1971,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       //1. Distinct aggregate rewrite
 
-      if (!ctx.isLoadingMaterializedView() && !getQB().isMaterializedView()
-          && conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_BI_ENABLED)) {
+      if (!isMaterializedViewMaintenance() && conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_BI_ENABLED)) {
         // Rewrite to datasketches if enabled
         if (conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_COUNTDISTINCT_ENABLED)) {
           String sketchClass = conf.getVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_COUNT_DISTINCT_SKETCH);
@@ -2106,6 +2105,15 @@ public class CalcitePlanner extends SemanticAnalyzer {
           "Calcite: Prejoin ordering transformation");
 
       return basePlan;
+    }
+
+    /**
+     * Returns true if MV is being loaded, constructed or being rebuilt.
+     */
+    private boolean isMaterializedViewMaintenance() {
+      return mvRebuildMode != MaterializationRebuildMode.NONE
+          || ctx.isLoadingMaterializedView()
+          || getQB().isMaterializedView();
     }
 
     private RelNode applyMaterializedViewRewriting(RelOptPlanner planner, RelNode basePlan,
