@@ -3594,14 +3594,15 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * Retry-by-caller note: this is only idempotent assuming it's only called by dropTable/Db/etc
    * operations.
    *
-   * HIVE_LOCKS and WS_SET are cleaned up by {@link AcidHouseKeeperService}, if turned on
+   * HIVE_LOCKS is (presumably) expected to be removed by AcidHouseKeeperServices
+   * WS_SET is (presumably) expected to be removed by AcidWriteSetService
    */
   @Override
   @RetrySemantics.Idempotent
   public void cleanupRecords(HiveObjectType type, Database db, Table table,
                              Iterator<Partition> partitionIterator) throws MetaException {
 
-    // cleanup should be done only for objects belonging to default catalog
+    // cleanup should be done only for objecdts belonging to default catalog
     final String defaultCatalog = getDefaultCatalog(conf);
 
     try {

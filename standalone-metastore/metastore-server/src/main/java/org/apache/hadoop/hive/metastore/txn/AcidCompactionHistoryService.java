@@ -26,11 +26,10 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Performs background tasks for Transaction management in Hive.
- * Runs inside Hive Metastore Service.
+ * Purges obsolete items from compaction history data
  */
-public class AcidHouseKeeperService implements MetastoreTaskThread {
-  private static final Logger LOG = LoggerFactory.getLogger(AcidHouseKeeperService.class);
+public class AcidCompactionHistoryService implements MetastoreTaskThread {
+  private static final Logger LOG = LoggerFactory.getLogger(AcidCompactionHistoryService.class);
 
   private Configuration conf;
   private TxnStore txnHandler;
@@ -48,17 +47,18 @@ public class AcidHouseKeeperService implements MetastoreTaskThread {
 
   @Override
   public long runFrequency(TimeUnit unit) {
-    return MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.TIMEDOUT_TXN_REAPER_INTERVAL, unit);
+    return MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.COMPACTOR_HISTORY_REAPER_INTERVAL,
+        unit);
   }
 
   @Override
   public void run() {
     TxnStore.MutexAPI.LockHandle handle = null;
     try {
-      handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.HouseKeeper.name());
+      handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.CompactionHistory.name());
       long startTime = System.currentTimeMillis();
-      txnHandler.performTimeOuts();
-      LOG.debug("timeout reaper ran for " + (System.currentTimeMillis() - startTime)/1000 +
+      txnHandler.purgeCompactionHistory();
+      LOG.debug("History reaper reaper ran for " + (System.currentTimeMillis() - startTime)/1000 +
           "seconds.");
     } catch(Throwable t) {
       LOG.error("Serious error in {}", Thread.currentThread().getName(), ": {}" + t.getMessage(), t);

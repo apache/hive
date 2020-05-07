@@ -29,9 +29,7 @@ import java.util.concurrent.TimeUnit;
  * Runs inside Hive Metastore Service.
  */
 public class AcidOpenTxnsCounterService implements MetastoreTaskThread {
-
   private static final Logger LOG = LoggerFactory.getLogger(AcidOpenTxnsCounterService.class);
-  private static final int LOG_INTERVAL_MS = 60 * 1000;
 
   private Configuration conf;
   private int isAliveCounter = 0;
@@ -46,17 +44,18 @@ public class AcidOpenTxnsCounterService implements MetastoreTaskThread {
   @Override
   public void run() {
     try {
-      long start = System.currentTimeMillis();
+      long startTime = System.currentTimeMillis();
       isAliveCounter++;
       txnHandler.countOpenTxns();
-      long now = System.currentTimeMillis();
-      if (now - lastLogTime > LOG_INTERVAL_MS) {
-        LOG.info("Open txn counter ran for {} seconds. isAliveCounter: {}", (now - start) / 1000, isAliveCounter);
-        lastLogTime = now;
+      if (System.currentTimeMillis() - lastLogTime > 60 * 1000) {
+        LOG.info("AcidOpenTxnsCounterService ran for " +
+            ((System.currentTimeMillis() - startTime) / 1000) +
+            " seconds.  isAliveCounter = " + isAliveCounter);
+        lastLogTime = System.currentTimeMillis();
       }
     }
-    catch (Throwable t) {
-      LOG.error("Unexpected error in thread: {}, message: {}", Thread.currentThread().getName(), t.getMessage(), t);
+    catch(Throwable t) {
+      LOG.error("Serious error in {}", Thread.currentThread().getName(), ": {}" + t.getMessage(), t);
     }
   }
 

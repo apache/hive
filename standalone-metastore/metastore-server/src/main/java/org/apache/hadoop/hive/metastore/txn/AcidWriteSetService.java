@@ -26,19 +26,17 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Periodically cleans out empty aborted and committed txns from the TXNS table.
- * Runs inside Hive Metastore Service.
+ * Periodically cleans WriteSet tracking information used in Transaction management
  */
-public class AcidTxnCleanerService implements MetastoreTaskThread {
-
-  private static final Logger LOG = LoggerFactory.getLogger(AcidTxnCleanerService.class);
+public class AcidWriteSetService implements MetastoreTaskThread {
+  private static final Logger LOG = LoggerFactory.getLogger(AcidWriteSetService.class);
 
   private Configuration conf;
   private TxnStore txnHandler;
 
   @Override
   public void setConf(Configuration configuration) {
-    conf = configuration;
+    this.conf = configuration;
     txnHandler = TxnUtils.getTxnStore(conf);
   }
 
@@ -49,27 +47,23 @@ public class AcidTxnCleanerService implements MetastoreTaskThread {
 
   @Override
   public long runFrequency(TimeUnit unit) {
-    return MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.ACID_TXN_CLEANER_INTERVAL, unit);
+    return MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.WRITE_SET_REAPER_INTERVAL, unit);
   }
 
   @Override
   public void run() {
     TxnStore.MutexAPI.LockHandle handle = null;
     try {
-      handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.TxnCleaner.name());
-      long start = System.currentTimeMillis();
-      txnHandler.cleanEmptyAbortedAndCommittedTxns();
-      LOG.debug("Txn cleaner service took: {} seconds.", elapsedSince(start));
-    } catch (Throwable t) {
-      LOG.error("Unexpected error in thread: {}, message: {}", Thread.currentThread().getName(), t.getMessage(), t);
+      handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.WriteSetCleaner.name());
+      long startTime = System.currentTimeMillis();
+      txnHandler.performWriteSetGC();
+      LOG.debug("cleaner ran for " + (System.currentTimeMillis() - startTime)/1000 + "seconds.");
+    } catch(Throwable t) {
+      LOG.error("Serious error in {}", Thread.currentThread().getName(), ": {}" + t.getMessage(), t);
     } finally {
-      if (handle != null) {
+      if(handle != null) {
         handle.releaseLocks();
       }
     }
-  }
-
-  private long elapsedSince(long start) {
-    return (System.currentTimeMillis() - start) / 1000;
   }
 }
