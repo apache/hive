@@ -258,6 +258,7 @@ public class HiveTestEnvSetup extends ExternalResource {
   public static final String DATA_DIR = HIVE_ROOT + "/data/";
   List<IHiveTestRule> parts = new ArrayList<>();
 
+
   public HiveTestEnvSetup() {
     parts.add(new TmpDirSetup());
     parts.add(new SetTestEnvs());
