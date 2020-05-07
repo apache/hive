@@ -33,6 +33,7 @@ import org.junit.Before;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 
 import java.io.File;
 import java.io.IOException;
@@ -102,6 +103,7 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
   }
 
   @Test
+  @Ignore("HIVE-23395")
   public void testAcidTablesReplLoadBootstrapIncr() throws Throwable {
     // Bootstrap
     primary.run("use " + primaryDbName)
