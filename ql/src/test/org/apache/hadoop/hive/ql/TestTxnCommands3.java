@@ -21,7 +21,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
@@ -425,10 +424,6 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     Assert.assertTrue(openResp.toString(), BitSet.valueOf(openResp.getAbortedBits()).get(0));
 
     runCleaner(hiveConf);
-    runInitiator(hiveConf);//to make sure any (which is not in this case)
-    // 'empty aborted' TXNS metadata is removed
-    openResp =  txnHandler.getOpenTxns();
-    Assert.assertEquals(openResp.toString(), 1, openResp.getOpen_txnsSize());
     //we still have 1 aborted (compactor) txn
     Assert.assertTrue(openResp.toString(), BitSet.valueOf(openResp.getAbortedBits()).get(0));
     Assert.assertEquals(1, TxnDbUtil.countQueryAgent(hiveConf,
@@ -459,10 +454,6 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
 
     //delete metadata about aborted txn from txn_components and files (if any)
     runCleaner(hiveConf);
-    runInitiator(hiveConf);//to clean 'empty aborted'
-    openResp =  txnHandler.getOpenTxns();
-    //now the aborted compactor txn is gone
-    Assert.assertEquals(openResp.toString(), 0, openResp.getOpen_txnsSize());
   }
 
   /**

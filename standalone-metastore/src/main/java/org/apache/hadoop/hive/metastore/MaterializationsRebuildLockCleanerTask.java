@@ -70,10 +70,10 @@ public class MaterializationsRebuildLockCleanerTask implements MetastoreTaskThre
           LOG.debug("Number of materialization locks deleted: " + removedCnt);
         }
       }
-    } catch(Throwable t) {
-      LOG.error("Serious error in {}", Thread.currentThread().getName(), ": {}" + t.getMessage(), t);
+    } catch (Throwable t) {
+      LOG.error("Unexpected error in thread: {}, message: {}", Thread.currentThread().getName(), t.getMessage(), t);
     } finally {
-      if(handle != null) {
+      if (handle != null) {
         handle.releaseLocks();
       }
     }
