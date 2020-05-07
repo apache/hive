@@ -114,7 +114,9 @@ public class Initiator extends MetaStoreCompactorThread {
 
           Set<CompactionInfo> potentials = txnHandler.findPotentialCompactions(abortedThreshold,
               abortedTimeThreshold, compactionInterval)
-              .stream().filter(ci -> checkCompactionElig(ci, currentCompactions)).collect(Collectors.toSet());
+              .stream()
+              .filter(ci -> isEligibleForCompaction(ci, currentCompactions))
+              .collect(Collectors.toSet());
           LOG.debug("Found " + potentials.size() + " potential compactions, " +
               "checking to see if we should compact any of them");
 
@@ -153,12 +155,6 @@ public class Initiator extends MetaStoreCompactorThread {
 
           // Check for timed out remote workers.
           recoverFailedCompactions(true);
-
-          // Clean anything from the txns table that has no components left in txn_components.
-          txnHandler.cleanEmptyAbortedAndCommittedTxns();
-
-          // Clean TXN_TO_WRITE_ID table for entries under min_uncommitted_txn referred by any open txns.
-          txnHandler.cleanTxnToWriteIdTable();
         } catch (Throwable t) {
           LOG.error("Initiator loop caught unexpected exception this time through the loop: " +
               StringUtils.stringifyException(t));
@@ -437,7 +433,7 @@ public class Initiator extends MetaStoreCompactorThread {
     return false;
   }
 
-  private boolean checkCompactionElig(CompactionInfo ci, ShowCompactResponse currentCompactions) {
+  private boolean isEligibleForCompaction(CompactionInfo ci, ShowCompactResponse currentCompactions) {
     LOG.info("Checking to see if we should compact " + ci.getFullPartitionName());
 
     // Check if we already have initiated or are working on a compaction for this partition

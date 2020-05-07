@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.txn.AcidWriteSetService;
+import org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService;
 import org.apache.hadoop.hive.ql.TestTxnCommands2;
 import org.junit.Assert;
 import org.apache.hadoop.hive.common.FileUtils;
@@ -1167,7 +1167,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     Assert.assertEquals("WRITE_SET mismatch: " + TxnDbUtil.queryToString(conf, "select * from \"WRITE_SET\""),
         1, TxnDbUtil.countQueryAgent(conf, "select count(*) from \"WRITE_SET\""));
 
-    AcidWriteSetService houseKeeper = new AcidWriteSetService();
+    MetastoreTaskThread houseKeeper = new AcidHouseKeeperService();
     houseKeeper.setConf(conf);
     houseKeeper.run();
     //since T3 overlaps with Long Running (still open) GC does nothing
@@ -1277,7 +1277,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     txnMgr.openTxn(ctx, "Long Running");
     Thread.sleep(txnHandler.getOpenTxnTimeOutMillis());
     // Now we can clean the write_set
-    MetastoreTaskThread writeSetService = new AcidWriteSetService();
+    MetastoreTaskThread writeSetService = new AcidHouseKeeperService();
     writeSetService.setConf(conf);
     writeSetService.run();
     Assert.assertEquals(0, TxnDbUtil.countQueryAgent(conf, "select count(*) from \"WRITE_SET\""));
