@@ -31,6 +31,11 @@ import static java.util.Arrays.asList;
 import static org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredObject;
 import static org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredJavaObject;
 
+/**
+*
+* This test a test for udf GenericUDFStringToPrivilege
+*
+*/
 public class TestUDFSplitMapPrivs extends TestCase {
   private final GenericUDFStringToPrivilege udf = new GenericUDFStringToPrivilege();
   private final Object p0 = new Text("SELECT");
@@ -93,7 +98,7 @@ public class TestUDFSplitMapPrivs extends TestCase {
 
   }
 
-  @Test public void BinaryStringMapingShouldFail() throws HiveException {
+  @Test public void binaryStringMapingShouldFail() throws HiveException {
 
     ObjectInspector valueOI0 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
     ObjectInspector[] initArgs = {valueOI0};
