@@ -33,7 +33,7 @@ import static org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredJavaObjec
 
 /**
 *
-* This test a test for udf GenericUDFStringToPrivilege
+* This test a test for udf GenericUDFStringToPrivilege.
 *
 */
 public class TestUDFSplitMapPrivs extends TestCase {
