@@ -3126,6 +3126,20 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
   }
 
   @Test
+  public void testAddColumnLocks() throws Exception {
+    dropTable(new String[] {"T"});
+    driver.run("create table T (a int, b int) "
+        + "stored as orc "
+        + "tblproperties('transactional'='true')");
+    driver.run("insert into T values(0,0),(0,1)");
+    driver.compileAndRespond("alter table t add columns(c int)");
+    txnMgr.acquireLocks(driver.getPlan(), ctx, "username");
+    List<ShowLocksResponseElement> locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", 1, locks.size());
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T", null, locks);
+  }
+
+  @Test
   public void testLoadData() throws Exception {
     testLoadData(false);
   }
