@@ -59,6 +59,7 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.api.*;
+import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Client;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.hooks.URIResolverHook;
@@ -3740,5 +3741,17 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   @Override
   public void seedTxnId(long seedTxnId) throws TException {
     throw new NotImplementedException("");
+  }
+
+  @Override
+  public ThriftHiveMetastore.Client getThriftClient() throws MetaException {
+    if (client == null) {
+      throw new MetaException("Client is not initialized");
+    }
+    if (!(client instanceof ThriftHiveMetastore.Client)) {
+      throw new MetaException("getThriftClient is only supported in remote metastore "
+          + "mode.");
+    }
+    return (Client) client;
   }
 }

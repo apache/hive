@@ -4002,4 +4002,10 @@ public interface IMetaStoreClient {
    */
   GetPartitionsResponse getPartitionsWithSpecs(GetPartitionsRequest request) throws TException;
 
+  /**
+   * Returns the thrift client to the remote HMS server.
+   * @throws MetaException if this is not initialized or connected to a remote HMS
+   * server.
+   */
+  ThriftHiveMetastore.Client getThriftClient() throws MetaException;
 }
