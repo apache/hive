@@ -65,57 +65,64 @@ STAGE PLANS:
                     outputColumnNames: id, category
                     Statistics: Num rows: 22 Data size: 1958 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: ds_hll_sketch(id)
-                      keys: category (type: char(1))
-                      minReductionHashAggr: 0.9090909
+                      keys: category (type: char(1)), id (type: int)
+                      minReductionHashAggr: 0.3181818
                       mode: hash
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 2 Data size: 946 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 11 Data size: 979 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: _col0 (type: char(1))
-                        null sort order: z
-                        sort order: +
+                        key expressions: _col0 (type: char(1)), _col1 (type: int)
+                        null sort order: zz
+                        sort order: ++
                         Map-reduce partition columns: _col0 (type: char(1))
-                        Statistics: Num rows: 2 Data size: 946 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col1 (type: struct<lgk:int,type:string,sketch:binary>)
-            Execution mode: llap
+                        Statistics: Num rows: 11 Data size: 979 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: ds_hll_sketch(VALUE._col0)
-                keys: KEY._col0 (type: char(1))
+                keys: KEY._col0 (type: char(1)), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 2 Data size: 458 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 11 Data size: 979 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: 'no-rewrite-may-happen' (type: string), _col0 (type: char(1)), UDFToLong(ds_hll_estimate(_col1)) (type: bigint)
-                  outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 2 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
-                  File Output Operator
-                    compressed: false
-                    Statistics: Num rows: 2 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
-                    table:
-                        input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
-                        serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                        name: default.mv_1
-                  Select Operator
-                    expressions: _col0 (type: string), _col1 (type: char(1)), _col2 (type: bigint)
-                    outputColumnNames: col1, col2, col3
-                    Statistics: Num rows: 2 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      aggregations: compute_stats(col1, 'hll'), compute_stats(col2, 'hll'), compute_stats(col3, 'hll')
-                      minReductionHashAggr: 0.5
-                      mode: hash
+                  expressions: _col1 (type: int), _col0 (type: char(1))
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 11 Data size: 979 Basic stats: COMPLETE Column stats: COMPLETE
+                  Group By Operator
+                    aggregations: count(_col0)
+                    keys: _col1 (type: char(1))
+                    mode: complete
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 2 Data size: 186 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: 'no-rewrite-may-happen' (type: string), _col0 (type: char(1)), _col1 (type: bigint)
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 1 Data size: 1304 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        null sort order: 
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 1304 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
+                      Statistics: Num rows: 2 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 2 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                            name: default.mv_1
+                      Select Operator
+                        expressions: _col0 (type: string), _col1 (type: char(1)), _col2 (type: bigint)
+                        outputColumnNames: col1, col2, col3
+                        Statistics: Num rows: 2 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
+                        Group By Operator
+                          aggregations: compute_stats(col1, 'hll'), compute_stats(col2, 'hll'), compute_stats(col3, 'hll')
+                          minReductionHashAggr: 0.5
+                          mode: hash
+                          outputColumnNames: _col0, _col1, _col2
+                          Statistics: Num rows: 1 Data size: 1304 Basic stats: COMPLETE Column stats: COMPLETE
+                          Reduce Output Operator
+                            null sort order: 
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 1304 Basic stats: COMPLETE Column stats: COMPLETE
+                            value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
@@ -329,15 +336,13 @@ POSTHOOK: Lineage: mv_1._c0 SIMPLE []
 POSTHOOK: Lineage: mv_1._c2 EXPRESSION [(sketch_input)sketch_input.FieldSchema(name:id, type:int, comment:null), ]
 POSTHOOK: Lineage: mv_1.category SIMPLE [(sketch_input)sketch_input.FieldSchema(name:category, type:char(1), comment:null), ]
 PREHOOK: query: explain
-select category, count(distinct id) from sketch_input group by category
+select 'rewritten;mv not used',category, count(distinct id) from sketch_input group by category
 PREHOOK: type: QUERY
-PREHOOK: Input: default@mv_1
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 POSTHOOK: query: explain
-select category, count(distinct id) from sketch_input group by category
+select 'rewritten;mv not used',category, count(distinct id) from sketch_input group by category
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@mv_1
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -348,25 +353,55 @@ STAGE PLANS:
   Stage: Stage-1
     Tez
 #### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: default.mv_1
-                  Statistics: Num rows: 2 Data size: 186 Basic stats: COMPLETE Column stats: COMPLETE
+                  alias: sketch_input
+                  Statistics: Num rows: 44 Data size: 3916 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: category (type: char(1)), _c2 (type: bigint)
-                    outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 2 Data size: 186 Basic stats: COMPLETE Column stats: COMPLETE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 2 Data size: 186 Basic stats: COMPLETE Column stats: COMPLETE
-                      table:
-                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: vectorized, llap
-            LLAP IO: all inputs
+                    expressions: id (type: int), category (type: char(1))
+                    outputColumnNames: id, category
+                    Statistics: Num rows: 44 Data size: 3916 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: ds_hll_sketch(id)
+                      keys: category (type: char(1))
+                      minReductionHashAggr: 0.95454544
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 2 Data size: 946 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: char(1))
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: char(1))
+                        Statistics: Num rows: 2 Data size: 946 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: struct<lgk:int,type:string,sketch:binary>)
+            Execution mode: llap
+            LLAP IO: may be used (ACID table)
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: ds_hll_sketch(VALUE._col0)
+                keys: KEY._col0 (type: char(1))
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 2 Data size: 458 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'rewritten;mv not used' (type: string), _col0 (type: char(1)), UDFToLong(ds_hll_estimate(_col1)) (type: bigint)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 2 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 2 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -374,15 +409,104 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select category, count(distinct id) from sketch_input group by category
+PREHOOK: query: select 'rewritten;mv not used',category, count(distinct id) from sketch_input group by category
 PREHOOK: type: QUERY
-PREHOOK: Input: default@mv_1
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
-POSTHOOK: query: select category, count(distinct id) from sketch_input group by category
+POSTHOOK: query: select 'rewritten;mv not used',category, count(distinct id) from sketch_input group by category
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@mv_1
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
-a	10
-b	10
+rewritten;mv not used	a	10
+rewritten;mv not used	b	10
+PREHOOK: query: explain
+select 'mv used',category, count(distinct id) from sketch_input group by category
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sketch_input
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select 'mv used',category, count(distinct id) from sketch_input group by category
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sketch_input
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: sketch_input
+                  Statistics: Num rows: 44 Data size: 3916 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: id (type: int), category (type: char(1))
+                    outputColumnNames: id, category
+                    Statistics: Num rows: 44 Data size: 3916 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: category (type: char(1)), id (type: int)
+                      minReductionHashAggr: 0.52272725
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 22 Data size: 1958 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: char(1)), _col1 (type: int)
+                        null sort order: zz
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: char(1))
+                        Statistics: Num rows: 22 Data size: 1958 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: char(1)), KEY._col1 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 22 Data size: 1958 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col1 (type: int), _col0 (type: char(1))
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 22 Data size: 1958 Basic stats: COMPLETE Column stats: COMPLETE
+                  Group By Operator
+                    aggregations: count(_col0)
+                    keys: _col1 (type: char(1))
+                    mode: complete
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 2 Data size: 186 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: 'mv used' (type: string), _col0 (type: char(1)), _col1 (type: bigint)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select 'mv used',category, count(distinct id) from sketch_input group by category
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sketch_input
+#### A masked pattern was here ####
+POSTHOOK: query: select 'mv used',category, count(distinct id) from sketch_input group by category
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sketch_input
+#### A masked pattern was here ####
+mv used	a	10
+mv used	b	10

@@ -1971,7 +1971,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       //1. Distinct aggregate rewrite
 
-      if (!ctx.isLoadingMaterializedView() && getQB().isMaterializedView()
+      if (!ctx.isLoadingMaterializedView() && !getQB().isMaterializedView()
           && conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_BI_ENABLED)) {
         // Rewrite to datasketches if enabled
         if (conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_COUNTDISTINCT_ENABLED)) {

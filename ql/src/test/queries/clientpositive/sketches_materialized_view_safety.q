@@ -28,5 +28,11 @@ alter materialized view mv_1 rebuild;
 
 -- see if we use the mv
 explain
-select category, count(distinct id) from sketch_input group by category;
-select category, count(distinct id) from sketch_input group by category;
+select 'rewritten;mv not used',category, count(distinct id) from sketch_input group by category;
+select 'rewritten;mv not used',category, count(distinct id) from sketch_input group by category;
+
+set hive.optimize.bi.enabled=false;
+
+explain
+select 'mv used',category, count(distinct id) from sketch_input group by category;
+select 'mv used',category, count(distinct id) from sketch_input group by category;
