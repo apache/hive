@@ -89,7 +89,6 @@ public class TestHive {
 
     hiveConf = new HiveConf(TestHive.class);
     hm = setUpImpl(hiveConf);
-    throw new RuntimeException("asd");
   }
 
   private static Hive setUpImpl(HiveConf hiveConf) throws Exception {
