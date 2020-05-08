@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.plan.impala.funcmapper;
 
+import org.apache.impala.thrift.TFunctionBinaryType;
 import org.apache.impala.thrift.TPrimitiveType;
 
 /**
@@ -45,6 +46,7 @@ public class AggFunctionDetails implements FunctionDetails {
   public boolean ignoresDistinct;
   public boolean returnsNonNullOnEmpty;
   public boolean isAgg;
+  public TFunctionBinaryType binaryType;
   public ImpalaFunctionSignature ifs;
 
   public void setFnName(String fnName) {
@@ -108,7 +110,11 @@ public class AggFunctionDetails implements FunctionDetails {
   }
 
   public void setIsAgg(boolean isAgg) {
-    this.isAgg= isAgg;
+    this.isAgg = isAgg;
+  }
+
+  public void setBinaryType(TFunctionBinaryType binaryType) {
+    this.binaryType = binaryType;
   }
 
   @Override

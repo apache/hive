@@ -64,6 +64,7 @@ public class ImpalaFunctionUtil {
             afd.updateFnSymbol, afd.initFnSymbol, afd.serializeFnSymbol,
             afd.mergeFnSymbol, afd.getValueFnSymbol, afd.removeFnSymbol,
             afd.finalizeFnSymbol);
+    retVal.setBinaryType(afd.binaryType);
     return retVal;
   }
 }
