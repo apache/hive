@@ -21,8 +21,6 @@ package org.apache.hadoop.hive.ql.ddl.view.show;
 import java.io.DataOutputStream;
 import java.util.Collections;
 import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
