@@ -573,7 +573,6 @@ public class TezTask extends Task<TezWork> {
         dagClient = sessionState.getSession().submitDAG(dag);
       } catch (SessionNotRunning nr) {
         console.printInfo("Tez session was closed. Reopening...");
-        sessionStateRef.value = null;
         sessionStateRef.value = sessionState = getNewTezSessionOnError(sessionState);
         console.printInfo("Session re-established.");
         dagClient = sessionState.getSession().submitDAG(dag);
@@ -583,13 +582,18 @@ public class TezTask extends Task<TezWork> {
       try {
         console.printInfo("Dag submit failed due to " + e.getMessage() + " stack trace: "
             + Arrays.toString(e.getStackTrace()) + " retrying...");
-        sessionStateRef.value = null;
         sessionStateRef.value = sessionState = getNewTezSessionOnError(sessionState);
         dagClient = sessionState.getSession().submitDAG(dag);
       } catch (Exception retryException) {
-        // we failed to submit after retrying. Destroy session and bail.
+        // we failed to submit after retrying.
+        // If this is a non-pool session, destroy it.
+        // Otherwise move it to sessionPool, reopen will retry.
         sessionStateRef.value = null;
-        sessionState.destroy();
+        if (sessionState.isDefault() && sessionState instanceof TezSessionPoolSession) {
+          sessionState.returnToSessionManager();
+        } else {
+          sessionState.destroy();
+        }
         throw retryException;
       }
     }
