@@ -224,6 +224,53 @@ public class TestTezTask {
   }
 
   @Test
+  public void testSubmitOnNonPoolSession() throws Exception {
+    DAG dag = DAG.create("test");
+
+    // Destroy session incase of non-pool tez session
+    TezSessionState tezSessionState = mock(TezSessionState.class);
+    TezClient tezClient = mock(TezClient.class);
+    when(tezSessionState.reopen()).thenThrow(new HiveException("Dag cannot be submitted"));
+    when(tezSessionState.getTezClient()).thenReturn(tezClient);
+    when(tezClient.submitDAG(any(DAG.class))).thenThrow(new SessionNotRunning(""));
+    doNothing().when(tezSessionState).destroy();
+    boolean isException = false;
+    try {
+      task.submit(dag, Ref.from(tezSessionState));
+    } catch (Exception e) {
+      isException = true;
+      verify(tezClient, times(1)).submitDAG(any(DAG.class));
+      verify(tezSessionState, times(2)).reopen();
+      verify(tezSessionState, times(1)).destroy();
+      verify(tezSessionState, times(0)).returnToSessionManager();
+    }
+    assertTrue(isException);
+  }
+
+  public void testSubmitOnPoolSession() throws Exception {
+    DAG dag = DAG.create("test");
+    // Move session to TezSessionPool, reopen will handle it
+    SampleTezSessionState tezSessionPoolSession = mock(SampleTezSessionState.class);
+    TezClient tezClient = mock(TezClient.class);
+    when(tezSessionPoolSession.reopen()).thenThrow(new HiveException("Dag cannot be submitted"));
+    doNothing().when(tezSessionPoolSession).returnToSessionManager();
+    when(tezSessionPoolSession.getTezClient()).thenReturn(tezClient);
+    when(tezSessionPoolSession.isDefault()).thenReturn(true);
+    when(tezClient.submitDAG(any(DAG.class))).thenThrow(new SessionNotRunning(""));
+    boolean isException = false;
+    try {
+      task.submit(dag, Ref.from(tezSessionPoolSession));
+    } catch (Exception e) {
+      isException = true;
+      verify(tezClient, times(1)).submitDAG(any(DAG.class));
+      verify(tezSessionPoolSession, times(2)).reopen();
+      verify(tezSessionPoolSession, times(0)).destroy();
+      verify(tezSessionPoolSession, times(1)).returnToSessionManager();
+    }
+    assertTrue(isException);
+  }
+
+  @Test
   public void testClose() throws HiveException {
     task.close(work, 0, null);
     verify(op, times(4)).jobClose(any(Configuration.class), eq(true));
