@@ -386,7 +386,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
    * @param inputFormat
    * @return
    */
-  private static boolean isRandomAccessInputFormat(InputFormat inputFormat) {
+  public static boolean isRandomAccessInputFormat(InputFormat inputFormat) {
     if (inputFormat instanceof OrcInputFormat ||
         inputFormat instanceof VectorizedParquetInputFormat) {
       return true;
@@ -449,7 +449,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
 
     FileSystem splitFileSystem = splitPath.getFileSystem(job);
     if (isS3a(splitFileSystem) && isRandomAccessInputFormat(inputFormat)) {
-      LOG.debug("Changing S3A input policy to RANDOM for split {}", splitPath);
+      LOG.debug("Changing S3A input policy to RANDOM");
       ((S3AFileSystem) splitFileSystem).setInputPolicy(S3AInputPolicy.Random);
     }
 
