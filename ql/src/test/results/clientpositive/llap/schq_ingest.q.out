@@ -76,13 +76,13 @@ POSTHOOK: Lineage: t.cnt SIMPLE [(s)s.FieldSchema(name:cnt, type:int, comment:nu
 POSTHOOK: Lineage: t.id SIMPLE [(s)s.FieldSchema(name:id, type:int, comment:null), ]
 POSTHOOK: Lineage: t_offset.offset EXPRESSION [(s)s.FieldSchema(name:id, type:int, comment:null), ]
 Warning: Shuffle Join MERGEJOIN[34][tables = [s, t_offset]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: create scheduled query ingest every 10 minutes defined as
+PREHOOK: query: create scheduled query ingest cron '0 0 0 1 * ? 2030' defined as
 from (select id==offset as first,* from s
 join t_offset on id>=offset) s1
 insert into t select id,cnt where not first
 insert overwrite table t_offset select max(s1.id)
 PREHOOK: type: CREATE SCHEDULED QUERY
-POSTHOOK: query: create scheduled query ingest every 10 minutes defined as
+POSTHOOK: query: create scheduled query ingest cron '0 0 0 1 * ? 2030' defined as
 from (select id==offset as first,* from s
 join t_offset on id>=offset) s1
 insert into t select id,cnt where not first
