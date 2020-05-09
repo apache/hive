@@ -3152,14 +3152,22 @@ public class AcidUtils {
   public static TxnType getTxnType(Configuration conf, ASTNode tree) {
     final ASTSearcher astSearcher = new ASTSearcher();
 
-    return (HiveConf.getBoolVar(conf, ConfVars.HIVE_TXN_READONLY_ENABLED) &&
-      tree.getToken().getType() == HiveParser.TOK_QUERY &&
-      Stream.of(
-        new int[]{HiveParser.TOK_INSERT_INTO},
-        new int[]{HiveParser.TOK_INSERT, HiveParser.TOK_TAB})
-        .noneMatch(pattern ->
-            astSearcher.simpleBreadthFirstSearch(tree, pattern) != null)) ?
-      TxnType.READ_ONLY : TxnType.DEFAULT;
+    // check if read-only txn
+    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_TXN_READONLY_ENABLED) &&
+        tree.getToken().getType() == HiveParser.TOK_QUERY &&
+        Stream.of(
+          new int[]{HiveParser.TOK_INSERT_INTO},
+          new int[]{HiveParser.TOK_INSERT, HiveParser.TOK_TAB})
+          .noneMatch(pattern -> astSearcher.simpleBreadthFirstSearch(tree, pattern) != null)) {
+      return TxnType.READ_ONLY;
+    }
+
+    // check if txn has a materialized view rebuild
+    if (tree.getToken().getType() == HiveParser.TOK_ALTER_MATERIALIZED_VIEW_REBUILD) {
+      return TxnType.MATER_VIEW_REBUILD;
+    }
+
+    return TxnType.DEFAULT;
   }
 
   public static List<HdfsFileStatusWithId> findBaseFiles(

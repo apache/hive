@@ -41,8 +41,8 @@ CREATE VIEW view0(valoo) AS SELECT upper(value) FROM src WHERE key=86;
 EXPLAIN
 SELECT * from view2 where key=18;
 
-SHOW TABLES 'view.*';
-SHOW VIEWS 'view.*';
+SHOW TABLES 'view%';
+SHOW VIEWS 'view%';
 DESCRIBE view1;
 DESCRIBE EXTENDED view1;
 DESCRIBE FORMATTED view1;

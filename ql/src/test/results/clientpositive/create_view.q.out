@@ -226,18 +226,18 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SHOW TABLES 'view.*'
+PREHOOK: query: SHOW TABLES 'view%'
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:default
-POSTHOOK: query: SHOW TABLES 'view.*'
+POSTHOOK: query: SHOW TABLES 'view%'
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
 view1
 view2
 view3
-PREHOOK: query: SHOW VIEWS 'view.*'
+PREHOOK: query: SHOW VIEWS 'view%'
 PREHOOK: type: SHOWVIEWS
-POSTHOOK: query: SHOW VIEWS 'view.*'
+POSTHOOK: query: SHOW VIEWS 'view%'
 POSTHOOK: type: SHOWVIEWS
 view1
 view2

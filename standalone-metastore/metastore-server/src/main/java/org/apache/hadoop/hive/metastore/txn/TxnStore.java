@@ -45,8 +45,8 @@ public interface TxnStore extends Configurable {
   String TXN_KEY_START = "_meta";
 
   enum MUTEX_KEY {
-    Initiator, Cleaner, HouseKeeper, CompactionHistory, CheckLock,
-    WriteSetCleaner, CompactionScheduler, WriteIdAllocator, MaterializationRebuild
+    Initiator, Cleaner, HouseKeeper, CheckLock, TxnCleaner,
+    CompactionScheduler, WriteIdAllocator, MaterializationRebuild
   }
   // Compactor states (Should really be enum)
   String INITIATED_RESPONSE = "initiated";

@@ -1590,7 +1590,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     queryBatch.add("DELETE FROM \"HIVE_LOCKS\" WHERE \"HL_TXNID\" = " + txnid);
     // DO NOT remove the transaction from the TXN table, the cleaner will remove it when appropriate
     queryBatch.add("UPDATE \"TXNS\" SET \"TXN_STATE\" = " + quoteChar(TXN_COMMITTED) + " WHERE \"TXN_ID\" = " + txnid);
-    queryBatch.add("DELETE FROM \"MATERIALIZATION_REBUILD_LOCKS\" WHERE \"MRL_TXN_ID\" = " + txnid);
+    if (txnType == TxnType.MATER_VIEW_REBUILD) {
+      queryBatch.add("DELETE FROM \"MATERIALIZATION_REBUILD_LOCKS\" WHERE \"MRL_TXN_ID\" = " + txnid);
+    }
 
     // execute all in one batch
     executeQueriesInBatchNoCount(dbProduct, stmt, queryBatch, maxBatchSize);
@@ -3592,15 +3594,14 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * Retry-by-caller note: this is only idempotent assuming it's only called by dropTable/Db/etc
    * operations.
    *
-   * HIVE_LOCKS is (presumably) expected to be removed by AcidHouseKeeperServices
-   * WS_SET is (presumably) expected to be removed by AcidWriteSetService
+   * HIVE_LOCKS and WS_SET are cleaned up by {@link AcidHouseKeeperService}, if turned on
    */
   @Override
   @RetrySemantics.Idempotent
   public void cleanupRecords(HiveObjectType type, Database db, Table table,
                              Iterator<Partition> partitionIterator) throws MetaException {
 
-    // cleanup should be done only for objecdts belonging to default catalog
+    // cleanup should be done only for objects belonging to default catalog
     final String defaultCatalog = getDefaultCatalog(conf);
 
     try {

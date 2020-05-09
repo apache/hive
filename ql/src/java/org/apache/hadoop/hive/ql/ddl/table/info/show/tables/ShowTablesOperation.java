@@ -26,15 +26,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.udf.UDFLike;
 
 /**
  * Operation process showing the tables.
@@ -46,43 +46,52 @@ public class ShowTablesOperation extends DDLOperation<ShowTablesDesc> {
 
   @Override
   public int execute() throws HiveException {
-    String dbName        = desc.getDbName();
-    String pattern       = desc.getPattern(); // if null, all tables/views are returned
-    TableType typeFilter = desc.getTypeFilter();
-    String resultsFile   = desc.getResFile();
-    boolean isExtended   = desc.isExtended();
-
-    if (!context.getDb().databaseExists(dbName)) {
-      throw new HiveException(ErrorMsg.DATABASE_NOT_EXISTS, dbName);
+    if (!context.getDb().databaseExists(desc.getDbName())) {
+      throw new HiveException(ErrorMsg.DATABASE_NOT_EXISTS, desc.getDbName());
     }
 
-    List<String> tableNames  = null;
-    List<Table> tableObjects = null;
-    if (isExtended) {
-      tableObjects = new ArrayList<>();
-      tableObjects.addAll(context.getDb().getTableObjectsByType(dbName, pattern, typeFilter));
-      LOG.debug("Found {} table(s) matching the SHOW EXTENDED TABLES statement.", tableObjects.size());
+    if (!desc.isExtended()) {
+      showTables();
     } else {
-      tableNames = context.getDb().getTablesByType(dbName, pattern, typeFilter);
-      LOG.debug("Found {} table(s) matching the SHOW TABLES statement.", tableNames.size());
-    }
-
-    try (DataOutputStream os = DDLUtils.getOutputStream(new Path(resultsFile), context)) {
-      if (tableNames != null) {
-        SortedSet<String> sortedSet = new TreeSet<String>(tableNames);
-        context.getFormatter().showTables(os, sortedSet);
-      } else {
-        Collections.sort(tableObjects, Comparator.comparing(Table::getTableName));
-        if (isExtended) {
-          context.getFormatter().showTablesExtended(os, tableObjects);
-        } else {
-          context.getFormatter().showMaterializedViews(os, tableObjects);
-        }
-      }
-    } catch (Exception e) {
-      throw new HiveException(e, ErrorMsg.GENERIC_ERROR, "in database" + dbName);
+      showTablesExtended();
     }
 
     return 0;
+  }
+
+  private void showTables() throws HiveException {
+    List<String> tableNames = new ArrayList<>(
+        context.getDb().getTablesByType(desc.getDbName(), null, desc.getTypeFilter()));
+    if (desc.getPattern() != null) {
+      Pattern pattern = Pattern.compile(UDFLike.likePatternToRegExp(desc.getPattern()), Pattern.CASE_INSENSITIVE);
+      tableNames = tableNames.stream().filter(name -> pattern.matcher(name).matches()).collect(Collectors.toList());
+    }
+    Collections.sort(tableNames);
+    LOG.debug("Found {} table(s) matching the SHOW TABLES statement.", tableNames.size());
+
+    try (DataOutputStream os = DDLUtils.getOutputStream(new Path(desc.getResFile()), context)) {
+      context.getFormatter().showTables(os, tableNames);
+    } catch (Exception e) {
+      throw new HiveException(e, ErrorMsg.GENERIC_ERROR, "in database" + desc.getDbName());
+    }
+  }
+
+  private void showTablesExtended() throws HiveException {
+    List<Table> tableObjects = new ArrayList<>();
+    tableObjects.addAll(context.getDb().getTableObjects(desc.getDbName(), null, desc.getTypeFilter()));
+    if (desc.getPattern() != null) {
+      Pattern pattern = Pattern.compile(UDFLike.likePatternToRegExp(desc.getPattern()), Pattern.CASE_INSENSITIVE);
+      tableObjects = tableObjects.stream()
+          .filter(object -> pattern.matcher(object.getTableName()).matches())
+          .collect(Collectors.toList());
+    }
+    Collections.sort(tableObjects, Comparator.comparing(Table::getTableName));
+    LOG.debug("Found {} table(s) matching the SHOW EXTENDED TABLES statement.", tableObjects.size());
+
+    try (DataOutputStream os = DDLUtils.getOutputStream(new Path(desc.getResFile()), context)) {
+      context.getFormatter().showTablesExtended(os, tableObjects);
+    } catch (Exception e) {
+      throw new HiveException(e, ErrorMsg.GENERIC_ERROR, "in database" + desc.getDbName());
+    }
   }
 }

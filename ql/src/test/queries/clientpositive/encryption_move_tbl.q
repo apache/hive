@@ -20,7 +20,7 @@ CRYPTO CREATE_KEY --keyName key_128_2 --bitLength 128;
 CRYPTO CREATE_ZONE --keyName key_128_2 --path ${hiveconf:hive.metastore.warehouse.dir}/encrypted_db.db;
 
 INSERT OVERWRITE TABLE encrypted_table_n1 SELECT * FROM src;
-SHOW TABLES LIKE "encrypted_*";
+SHOW TABLES LIKE "encrypted_%";
 ANALYZE TABLE encrypted_table_n1 COMPUTE STATISTICS FOR COLUMNS;
 DESCRIBE FORMATTED encrypted_table_n1 key;
 DESCRIBE FORMATTED encrypted_table_n1 value;

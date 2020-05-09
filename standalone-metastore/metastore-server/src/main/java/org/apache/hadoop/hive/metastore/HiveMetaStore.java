@@ -1398,7 +1398,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     // Assumes that the catalog has already been set.
     private void create_database_core(RawStore ms, final Database db)
         throws AlreadyExistsException, InvalidObjectException, MetaException {
-      if (!MetaStoreUtils.validateName(db.getName(), null)) {
+      if (!MetaStoreUtils.validateName(db.getName(), conf)) {
         throw new InvalidObjectException(db.getName() + " is not a valid database name");
       }
 
@@ -10293,8 +10293,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_WORKER_THREADS));
     HMSHandler.LOG
         .info("hive.metastore.runworker.in = {}", MetastoreConf.getVar(conf, ConfVars.HIVE_METASTORE_RUNWORKER_IN));
-    HMSHandler.LOG.info("metastore.compactor.history.reaper.interval = {}",
-        MetastoreConf.getTimeVar(conf, ConfVars.COMPACTOR_HISTORY_REAPER_INTERVAL, TimeUnit.MINUTES));
     HMSHandler.LOG.info("metastore.compactor.history.retention.attempted = {}",
         MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_HISTORY_RETENTION_ATTEMPTED));
     HMSHandler.LOG.info("metastore.compactor.history.retention.failed = {}",

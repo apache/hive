@@ -107,8 +107,14 @@ public class MetaStoreUtils {
   // NOTE:
   // If the following array is updated, please also be sure to update the
   // configuration parameter documentation
-  // HIVE_SUPPORT_SPECICAL_CHARACTERS_IN_TABLE_NAMES in HiveConf as well.
-  private static final char[] specialCharactersInTableNames = new char[] { '/' };
+  // HIVE_SUPPORT_SPECICAL_CHARACTERS_IN_TABLE_NAMES in MetastoreConf as well.
+  private static final char[] SPECIAL_CHARACTERS_IN_TABLE_NAMES = new char[] {
+      // standard
+      ' ', '"', '%', '&', '\'', '(', ')', '*', '+', ',', '-', '.', '/', ':', ';', '<', '=', '>', '?', '[', ']',
+      '_', '|', '{', '}', '$', '^',
+      // non-standard
+      '!', '~', '#', '@', '`'
+  };
 
   /**
    * Catches exceptions that can't be handled and bundles them to MetaException
@@ -188,15 +194,15 @@ public class MetaStoreUtils {
    */
   public static boolean validateName(String name, Configuration conf) {
     Pattern tpat;
-    String allowedCharacters = "\\w_";
+    String allowedSpecialCharacters = "";
     if (conf != null
         && MetastoreConf.getBoolVar(conf,
         MetastoreConf.ConfVars.SUPPORT_SPECICAL_CHARACTERS_IN_TABLE_NAMES)) {
-      for (Character c : specialCharactersInTableNames) {
-        allowedCharacters += c;
+      for (Character c : SPECIAL_CHARACTERS_IN_TABLE_NAMES) {
+        allowedSpecialCharacters += c;
       }
     }
-    tpat = Pattern.compile("[" + allowedCharacters + "]+");
+    tpat = Pattern.compile("[\\w" + Pattern.quote(allowedSpecialCharacters) + "]+");
     Matcher m = tpat.matcher(name);
     return m.matches();
   }

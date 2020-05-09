@@ -2927,25 +2927,25 @@ public class HiveConf extends Configuration {
       new RangeValidator(0, 100), "Determines how many attempted compaction records will be " +
       "retained in compaction history for a given table/partition."),
     /**
-     * @deprecated Use MetastoreConf.COMPACTOR_HISTORY_REAPER_INTERVAL
+     * @deprecated Use MetastoreConf.ACID_HOUSEKEEPER_SERVICE_INTERVAL
      */
     @Deprecated
     COMPACTOR_HISTORY_REAPER_INTERVAL("hive.compactor.history.reaper.interval", "2m",
       new TimeValidator(TimeUnit.MILLISECONDS), "Determines how often compaction history reaper runs"),
     /**
-     * @deprecated Use MetastoreConf.TIMEDOUT_TXN_REAPER_START
+     * @deprecated Use MetastoreConf.ACID_HOUSEKEEPER_SERVICE_START
      */
     @Deprecated
     HIVE_TIMEDOUT_TXN_REAPER_START("hive.timedout.txn.reaper.start", "100s",
       new TimeValidator(TimeUnit.MILLISECONDS), "Time delay of 1st reaper run after metastore start"),
     /**
-     * @deprecated Use MetastoreConf.TIMEDOUT_TXN_REAPER_INTERVAL
+     * @deprecated Use MetastoreConf.ACID_HOUSEKEEPER_SERVICE_INTERVAL
      */
     @Deprecated
     HIVE_TIMEDOUT_TXN_REAPER_INTERVAL("hive.timedout.txn.reaper.interval", "180s",
       new TimeValidator(TimeUnit.MILLISECONDS), "Time interval describing how often the reaper runs"),
     /**
-     * @deprecated Use MetastoreConf.WRITE_SET_REAPER_INTERVAL
+     * @deprecated Use MetastoreConf.ACID_HOUSEKEEPER_SERVICE_INTERVAL
      */
     @Deprecated
     WRITE_SET_REAPER_INTERVAL("hive.writeset.reaper.interval", "60s",
@@ -4057,10 +4057,16 @@ public class HiveConf extends Configuration {
         "The name of counter group for internal Hive variables (CREATED_FILE, FATAL_ERROR, etc.)"),
 
     HIVE_QUOTEDID_SUPPORT("hive.support.quoted.identifiers", "column",
-        new StringSet("none", "column"),
-        "Whether to use quoted identifier. 'none' or 'column' can be used. \n" +
-        "  none: default(past) behavior. Implies only alphaNumeric and underscore are valid characters in identifiers.\n" +
-        "  column: implies column names can contain any character."
+        new StringSet("none", "column", "standard"),
+        "Whether to use quoted identifier. 'none', 'column', and 'standard' can be used. \n" +
+        "  none: Quotation of identifiers and special characters in identifiers are not allowed but regular " +
+        "expressions in backticks are supported for column names.\n" +
+        "  column: Use the backtick character to quote identifiers having special characters. `col1` " +
+        "Use single quotes to quote string literals. 'value' " +
+        "Double quotes are also accepted but not recommended." +
+        "  standard: SQL standard way to quote identifiers. " +
+        "Use double quotes to quote identifiers having special characters \"col1\" " +
+        "and single quotes for string literals. 'value'"
     ),
     /**
      * @deprecated Use MetastoreConf.SUPPORT_SPECIAL_CHARACTERS_IN_TABLE_NAMES
@@ -4069,8 +4075,8 @@ public class HiveConf extends Configuration {
     HIVE_SUPPORT_SPECICAL_CHARACTERS_IN_TABLE_NAMES("hive.support.special.characters.tablename", true,
         "This flag should be set to true to enable support for special characters in table names.\n"
         + "When it is set to false, only [a-zA-Z_0-9]+ are supported.\n"
-        + "The only supported special character right now is '/'. This flag applies only to quoted table names.\n"
-        + "The default value is true."),
+        + "The supported special characters are %&'()*+,-./:;<=>?[]_|{}$^!~#@ and space. This flag applies only to"
+        + " quoted table names.\nThe default value is true."),
     HIVE_CREATE_TABLES_AS_INSERT_ONLY("hive.create.as.insert.only", false,
         "Whether the eligible tables should be created as ACID insert-only by default. Does \n" +
         "not apply to external tables, the ones using storage handlers, etc."),

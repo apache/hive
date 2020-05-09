@@ -378,71 +378,71 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: create table t4(`x+1``` string, `y&y` string)
+PREHOOK: query: create table `t4```(`x+1``` string, `y&y` string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t4
-POSTHOOK: query: create table t4(`x+1``` string, `y&y` string)
+PREHOOK: Output: default@t4`
+POSTHOOK: query: create table `t4```(`x+1``` string, `y&y` string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t4
-PREHOOK: query: describe t4
+POSTHOOK: Output: default@t4`
+PREHOOK: query: describe `t4```
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@t4
-POSTHOOK: query: describe t4
+PREHOOK: Input: default@t4`
+POSTHOOK: query: describe `t4```
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@t4
+POSTHOOK: Input: default@t4`
 x+1`                	string              	                    
 y&y                 	string              	                    
-PREHOOK: query: insert into table t4 select * from src
+PREHOOK: query: insert into table `t4``` select * from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@t4
-POSTHOOK: query: insert into table t4 select * from src
+PREHOOK: Output: default@t4`
+POSTHOOK: query: insert into table `t4``` select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@t4
-POSTHOOK: Lineage: t4.x+1` SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: t4.y&y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@t4`
+POSTHOOK: Lineage: t4`.x+1` SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t4`.y&y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select `x+1```, `y&y`, rank() over(partition by `x+1``` order by  `y&y`)  
-from t4 where `x+1``` = '10' group by `x+1```, `y&y` having `x+1``` = '10'
+from `t4``` where `x+1``` = '10' group by `x+1```, `y&y` having `x+1``` = '10'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t4
+PREHOOK: Input: default@t4`
 #### A masked pattern was here ####
 POSTHOOK: query: select `x+1```, `y&y`, rank() over(partition by `x+1``` order by  `y&y`)  
-from t4 where `x+1``` = '10' group by `x+1```, `y&y` having `x+1``` = '10'
+from `t4``` where `x+1``` = '10' group by `x+1```, `y&y` having `x+1``` = '10'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t4
+POSTHOOK: Input: default@t4`
 #### A masked pattern was here ####
 10	val_10	1
 PREHOOK: query: create view v1 as 
 select `x+1```, `y&y`
-from t4 where `x+1``` < '200'
+from `t4``` where `x+1``` < '200'
 PREHOOK: type: CREATEVIEW
-PREHOOK: Input: default@t4
+PREHOOK: Input: default@t4`
 PREHOOK: Output: database:default
 PREHOOK: Output: default@v1
 POSTHOOK: query: create view v1 as 
 select `x+1```, `y&y`
-from t4 where `x+1``` < '200'
+from `t4``` where `x+1``` < '200'
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Input: default@t4
+POSTHOOK: Input: default@t4`
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v1
-POSTHOOK: Lineage: v1.x+1` SIMPLE [(t4)t4.FieldSchema(name:x+1`, type:string, comment:null), ]
-POSTHOOK: Lineage: v1.y&y SIMPLE [(t4)t4.FieldSchema(name:y&y, type:string, comment:null), ]
+POSTHOOK: Lineage: v1.x+1` SIMPLE [(t4`)t4`.FieldSchema(name:x+1`, type:string, comment:null), ]
+POSTHOOK: Lineage: v1.y&y SIMPLE [(t4`)t4`.FieldSchema(name:y&y, type:string, comment:null), ]
 PREHOOK: query: select `x+1```, `y&y`, rank() over(partition by `x+1``` order by  `y&y`)
 from v1
 group by `x+1```, `y&y`
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t4
+PREHOOK: Input: default@t4`
 PREHOOK: Input: default@v1
 #### A masked pattern was here ####
 POSTHOOK: query: select `x+1```, `y&y`, rank() over(partition by `x+1``` order by  `y&y`)
 from v1
 group by `x+1```, `y&y`
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t4
+POSTHOOK: Input: default@t4`
 POSTHOOK: Input: default@v1
 #### A masked pattern was here ####
 0	val_0	1
