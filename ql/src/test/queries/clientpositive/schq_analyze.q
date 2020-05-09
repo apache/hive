@@ -16,8 +16,8 @@ insert into t values (1),(2),(3);
 -- basic stats show that the table has "0" rows
 desc formatted t;
 
--- create a schedule to compute stats
-create scheduled query t_analyze cron '0 */1 * * * ? *' as analyze table t compute statistics for columns;
+-- create a schedule to compute stats in the far future
+create scheduled query t_analyze cron '0 0 0 1 * ? 2030' as analyze table t compute statistics for columns;
 
 alter scheduled query t_analyze execute;
 
