@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -714,7 +715,7 @@ public class Table implements Serializable {
     } catch (Exception e) {
       LOG.error("Unable to get field from serde: " + serializationLib, e);
     }
-    return new ArrayList<FieldSchema>();
+    return Collections.emptyList();
   }
 
   /**

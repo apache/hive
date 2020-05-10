@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.common;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
@@ -66,7 +67,7 @@ public class HiveStatsUtils {
         // does not exist. But getFileStatus() throw IOException. To mimic the
         // similar behavior we will return empty array on exception. For external
         // tables, the path of the table will not exists during table creation
-        return new ArrayList<>(0);
+        return Collections.emptyList();
       }
       return result;
     }
