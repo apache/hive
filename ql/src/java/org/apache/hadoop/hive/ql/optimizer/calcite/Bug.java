@@ -17,10 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite;
 
-import org.apache.calcite.util.Util;
-
 /**
- * Holder for a list of constants describing which bugs which have not been
+ * Holder for a list of constants describing which bugs have not been
  * fixed.
  *
  * <p>The usage of the constant is a convenient way to identify the impact of

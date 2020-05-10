@@ -16,17 +16,8 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
-import java.util.List;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
-import org.apache.calcite.rel.core.Filter;
-import org.apache.calcite.rex.RexBuilder;
-import org.apache.calcite.rex.RexLocalRef;
-import org.apache.calcite.rex.RexNode;
-import org.apache.calcite.rex.RexProgram;
-import org.apache.calcite.rex.RexProgramBuilder;
-import org.apache.calcite.rex.RexShuttle;
-import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.hadoop.hive.ql.optimizer.calcite.Bug;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
@@ -34,7 +25,8 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 
 /**
  * Mostly a copy of {@link org.apache.calcite.rel.rules.FilterMergeRule}.
- * However, it flattens the predicate before creating the new filter.
+ * However, it relies in relBuilder to create the new condition and thus
+ * simplifies/flattens the predicate before creating the new filter.
  */
 public class HiveFilterMergeRule extends RelOptRule {
 
@@ -58,60 +50,10 @@ public class HiveFilterMergeRule extends RelOptRule {
     final HiveFilter topFilter = call.rel(0);
     final HiveFilter bottomFilter = call.rel(1);
 
-    RexBuilder rexBuilder = topFilter.getCluster().getRexBuilder();
-    RexProgram bottomProgram = createProgram(bottomFilter);
-    RexProgram topProgram = createProgram(topFilter);
-
-    RexProgram mergedProgram =
-        RexProgramBuilder.mergePrograms(
-            topProgram,
-            bottomProgram,
-            rexBuilder);
-
-    RexNode newCondition = expandLocalRef(rexBuilder,
-        mergedProgram.getCondition(), mergedProgram.getExprList());
-
     final RelBuilder relBuilder = call.builder();
     relBuilder.push(bottomFilter.getInput())
-        .filter(newCondition);
+        .filter(bottomFilter.getCondition(), topFilter.getCondition());
 
     call.transformTo(relBuilder.build());
-  }
-
-  /**
-   * Creates a RexProgram corresponding to a LogicalFilter
-   *
-   * @param filterRel the LogicalFilter
-   * @return created RexProgram
-   */
-  private RexProgram createProgram(Filter filterRel) {
-    RexProgramBuilder programBuilder =
-        new RexProgramBuilder(
-            filterRel.getRowType(),
-            filterRel.getCluster().getRexBuilder());
-    programBuilder.addIdentity();
-    programBuilder.addCondition(filterRel.getCondition());
-    return programBuilder.getProgram();
-  }
-
-  private RexNode expandLocalRef(RexBuilder rexBuilder,
-      RexLocalRef ref, List<RexNode> exprs) {
-    return ref.accept(new ExpansionShuttle(rexBuilder, exprs));
-  }
-
-  private static class ExpansionShuttle extends RexShuttle {
-    private final RexBuilder rexBuilder;
-    private final List<RexNode> exprs;
-
-    ExpansionShuttle(RexBuilder rexBuilder, List<RexNode> exprs) {
-      this.rexBuilder = rexBuilder;
-      this.exprs = exprs;
-    }
-
-    @Override
-    public RexNode visitLocalRef(RexLocalRef localRef) {
-      RexNode tree = this.exprs.get(localRef.getIndex());
-      return RexUtil.flatten(rexBuilder, tree.accept(this));
-    }
   }
 }
