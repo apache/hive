@@ -23,6 +23,7 @@ import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -481,7 +482,7 @@ public final class HiveFileFormatUtils {
    **/
   public static List<String> doGetAliasesFromPath(Map<Path, List<String>> pathToAliases, Path dir) {
     if (pathToAliases == null) {
-      return new ArrayList<String>();
+      return Collections.emptyList();
     }
     Path path = getMatchingPath(pathToAliases, dir);
     return pathToAliases.get(path);

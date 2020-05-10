@@ -1625,8 +1625,7 @@ public class Hive {
     List<RelOptMaterialization> materializedViews =
         HiveMaterializedViewsRegistry.get().getRewritingMaterializedViews();
     if (materializedViews.isEmpty()) {
-      // Bail out: empty list
-      return new ArrayList<>();
+      return Collections.emptyList();
     }
     // Add to final result
     return filterAugmentMaterializedViews(materializedViews, tablesUsed, txnMgr);
@@ -1772,8 +1771,7 @@ public class Hive {
     List<Table> materializedViewTables =
         getAllMaterializedViewObjectsForRewriting();
     if (materializedViewTables.isEmpty()) {
-      // Bail out: empty list
-      return new ArrayList<>();
+      return Collections.emptyList();
     }
     // Return final result
     return getValidMaterializedViews(materializedViewTables, tablesUsed, false, txnMgr);
@@ -3819,7 +3817,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   private static List<Partition> convertFromMetastore(Table tbl,
       List<org.apache.hadoop.hive.metastore.api.Partition> partitions) throws HiveException {
     if (partitions == null) {
-      return new ArrayList<Partition>();
+      return Collections.emptyList();
     }
 
     List<Partition> results = new ArrayList<Partition>(partitions.size());

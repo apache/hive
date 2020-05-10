@@ -1059,8 +1059,8 @@ public class StatsUtils {
   }
 
   private static List<ColStatistics> convertColStats(List<ColumnStatisticsObj> colStats, String tabName) {
-    if (colStats==null) {
-      return new ArrayList<ColStatistics>();
+    if (colStats == null) {
+      return Collections.emptyList();
     }
     List<ColStatistics> stats = new ArrayList<ColStatistics>(colStats.size());
     for (ColumnStatisticsObj statObj : colStats) {
