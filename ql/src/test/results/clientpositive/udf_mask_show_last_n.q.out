@@ -52,6 +52,9 @@ STAGE PLANS:
 PREHOOK: query: select mask_show_last_n('TestString-123', 4, 'X', 'x', '0', ':'),
        mask_show_last_n(cast('TestString-123' as varchar(24)), 4, 'X', 'x', '0', ':'),
        mask_show_last_n(cast('TestString-123' as char(24)), 4, 'X', 'x', '0', ':'),
+       mask_show_last_n(0),
+       mask_show_last_n(0, 0),
+       mask_show_last_n(0, 0, -1, -1, -1, -1, '5'),
        mask_show_last_n(cast(123 as tinyint), 4, -1, -1, -1, -1, '5'),
        mask_show_last_n(cast(12345 as smallint), 4, -1, -1, -1, -1, '5'),
        mask_show_last_n(cast(12345 as int), 4, -1, -1, -1, -1, '5'),
@@ -63,6 +66,9 @@ PREHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: query: select mask_show_last_n('TestString-123', 4, 'X', 'x', '0', ':'),
        mask_show_last_n(cast('TestString-123' as varchar(24)), 4, 'X', 'x', '0', ':'),
        mask_show_last_n(cast('TestString-123' as char(24)), 4, 'X', 'x', '0', ':'),
+       mask_show_last_n(0),
+       mask_show_last_n(0, 0),
+       mask_show_last_n(0, 0, -1, -1, -1, -1, '5'),
        mask_show_last_n(cast(123 as tinyint), 4, -1, -1, -1, -1, '5'),
        mask_show_last_n(cast(12345 as smallint), 4, -1, -1, -1, -1, '5'),
        mask_show_last_n(cast(12345 as int), 4, -1, -1, -1, -1, '5'),
@@ -71,4 +77,4 @@ POSTHOOK: query: select mask_show_last_n('TestString-123', 4, 'X', 'x', '0', ':'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-XxxxXxxxxx-123	XxxxXxxxxx-123	XxxxXxxxxx:000::::::                                                                                                                                                                                                                                           	123	-13191	52345	52345	0001-01-01
+XxxxXxxxxx-123	XxxxXxxxxx-123	XxxxXxxxxx:000::::::                                                                                                                                                                                                                                           	0	1	5	123	-13191	52345	52345	0001-01-01
