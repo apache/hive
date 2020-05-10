@@ -1222,7 +1222,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     if (partition == null) {
       throw new NoSuchObjectException("Partition with partition values " +
               (pvals != null ? Arrays.toString(pvals.toArray()) : "null") +
-              " for table " + tableName + " in database " + dbName + "and for user " +
+              " for table " + tableName + " in database " + dbName + " and for user " +
               userName + " and group names " + (groupNames != null ? Arrays.toString(groupNames.toArray()) : "null") +
               " is not found.");
     }
