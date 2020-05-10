@@ -19,6 +19,9 @@
 
 package org.apache.hadoop.hive.llap.io.api.impl;
 
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.s3a.S3AFileSystem;
+import org.apache.hadoop.fs.s3a.S3AInputPolicy;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedSupport;
 import org.apache.hadoop.hive.ql.io.BatchToRowInputFormat;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -62,6 +65,9 @@ import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hive.common.util.HiveStringUtils;
 
+import static org.apache.hadoop.hive.common.FileUtils.isS3a;
+import static org.apache.hadoop.hive.ql.io.HiveInputFormat.isRandomAccessInputFormat;
+
 public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowBatch>,
     VectorizedInputFormatInterface, SelfDescribingInputFormatInterface,
     AvoidSplitCombination {
@@ -100,6 +106,11 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
 
     FileSplit fileSplit = (FileSplit) split;
     reporter.setStatus(fileSplit.toString());
+    FileSystem splitFileSystem = fileSplit.getPath().getFileSystem(job);
+    if (isS3a(splitFileSystem) && isRandomAccessInputFormat(sourceInputFormat)) {
+      LlapIoImpl.LOG.debug("Changing S3A input policy to RANDOM");
+      ((S3AFileSystem) splitFileSystem).setInputPolicy(S3AInputPolicy.Random);
+    }
     try {
       // At this entry point, we are going to assume that these are logical table columns.
       // Perhaps we should go thru the code and clean this up to be more explicit; for now, we

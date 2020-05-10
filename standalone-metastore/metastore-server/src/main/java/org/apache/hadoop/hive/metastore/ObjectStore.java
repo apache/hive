@@ -5943,7 +5943,7 @@ public class ObjectStore implements RawStore, Configurable {
         return grantInfos;
       }
     }
-    return new ArrayList<>(0);
+    return Collections.emptyList();
   }
 
 
@@ -6178,7 +6178,7 @@ public class ObjectStore implements RawStore, Configurable {
         return grantInfos;
       }
     }
-    return new ArrayList<>(0);
+    return Collections.emptyList();
   }
 
   private List<PrivilegeGrantInfo> getColumnPrivilege(String catName, String dbName,
@@ -6221,7 +6221,7 @@ public class ObjectStore implements RawStore, Configurable {
         return grantInfos;
       }
     }
-    return new ArrayList<>(0);
+    return Collections.emptyList();
   }
 
   @Override

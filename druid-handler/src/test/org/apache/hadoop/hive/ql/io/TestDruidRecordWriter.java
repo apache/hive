@@ -150,29 +150,14 @@ import java.util.stream.Collectors;
     RealtimeTuningConfig
         tuningConfig =
         new RealtimeTuningConfig(null,
-            null,
-            null,
-            null,
-            temporaryFolder.newFolder(),
-            null,
-            null,
-            null,
-            null,
-            indexSpec,
-            null,
-            0,
-            0,
-            null,
-            null,
-            0L,
-            null,
-                null);
+            null, null, null, temporaryFolder.newFolder(), null, null, null, null, indexSpec, null, null, 0, 0, null,
+            null, 0L, null, null);
     LocalFileSystem localFileSystem = FileSystem.getLocal(config);
     DataSegmentPusher dataSegmentPusher = new LocalDataSegmentPusher(new LocalDataSegmentPusherConfig() {
       @Override public File getStorageDirectory() {
         return segmentOutputDir;
       }
-    }, objectMapper);
+    });
 
     Path
         segmentDescriptorPath =

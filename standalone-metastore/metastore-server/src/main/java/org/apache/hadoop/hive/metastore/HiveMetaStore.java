@@ -6226,12 +6226,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public List<String> partition_name_to_vals(String part_name) throws TException {
       if (part_name.length() == 0) {
-        return new ArrayList<>();
+        return Collections.emptyList();
       }
       LinkedHashMap<String, String> map = Warehouse.makeSpecFromName(part_name);
-      List<String> part_vals = new ArrayList<>();
-      part_vals.addAll(map.values());
-      return part_vals;
+      return new ArrayList<>(map.values());
     }
 
     @Override

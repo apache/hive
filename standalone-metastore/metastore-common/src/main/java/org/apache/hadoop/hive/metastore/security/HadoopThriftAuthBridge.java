@@ -97,10 +97,12 @@ public abstract class HadoopThriftAuthBridge {
       throw new IllegalStateException("Unable to get current login user: " + e, e);
     }
     if (loginUserHasCurrentAuthMethod(ugi, authMethod)) {
-      LOG.debug("Not setting UGI conf as passed-in authMethod of " + authMethod + " = current.");
+      LOG.debug("Not setting UGI conf as passed-in authMethod of {} = current",
+          authMethod);
       return new Client();
     } else {
-      LOG.debug("Setting UGI conf as passed-in authMethod of " + authMethod + " != current.");
+      LOG.debug("Setting UGI conf as passed-in authMethod of {} != current",
+          authMethod);
       Configuration conf = new Configuration();
       conf.set(HADOOP_SECURITY_AUTHENTICATION, authMethod);
       UserGroupInformation.setConfiguration(conf);
@@ -150,10 +152,12 @@ public abstract class HadoopThriftAuthBridge {
       throw new IllegalStateException("Unable to get current user: " + e, e);
     }
     if (loginUserHasCurrentAuthMethod(ugi, authMethod)) {
-      LOG.debug("Not setting UGI conf as passed-in authMethod of " + authMethod + " = current.");
+      LOG.debug("Not setting UGI conf as passed-in authMethod of {} = current",
+          authMethod);
       return ugi;
     } else {
-      LOG.debug("Setting UGI conf as passed-in authMethod of " + authMethod + " != current.");
+      LOG.debug("Setting UGI conf as passed-in authMethod of {} != current",
+          authMethod);
       Configuration conf = new Configuration();
       conf.set(HADOOP_SECURITY_AUTHENTICATION, authMethod);
       UserGroupInformation.setConfiguration(conf);
@@ -177,7 +181,7 @@ public abstract class HadoopThriftAuthBridge {
       throw new IllegalArgumentException("Invalid attribute value for " +
           HADOOP_SECURITY_AUTHENTICATION + " of " + sAuthMethod, iae);
     }
-    LOG.debug("Current authMethod = " + ugi.getAuthenticationMethod());
+    LOG.debug("Current authMethod = {}", ugi.getAuthenticationMethod());
     return ugi.getAuthenticationMethod().equals(authMethod);
   }
 
@@ -283,22 +287,16 @@ public abstract class HadoopThriftAuthBridge {
           }
         }
         if (nc != null) {
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("SASL client callback: setting username: " + userName);
-          }
+          LOG.debug("SASL client callback: setting username: {}", userName);
           nc.setName(userName);
         }
         if (pc != null) {
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("SASL client callback: setting userPassword");
-          }
+          LOG.debug("SASL client callback: setting userPassword");
           pc.setPassword(userPassword);
         }
         if (rc != null) {
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("SASL client callback: setting realm: "
-                + rc.getDefaultText());
-          }
+          LOG.debug("SASL client callback: setting realm: {}",
+              rc.getDefaultText());
           rc.setText(rc.getDefaultText());
         }
       }
@@ -343,14 +341,15 @@ public abstract class HadoopThriftAuthBridge {
       }
       if (clientConf == null || clientConf.isEmpty()) {
         // Don't bust existing setups.
-        LOG.warn("Client-facing principal not set. Using server-side setting: " + principalConf);
+        LOG.warn("Client-facing principal not set. Using server-side setting: "
+            + principalConf);
         clientConf = principalConf;
       }
 
       // Login from the keytab
       String kerberosName;
       try {
-        LOG.info("Logging in via CLIENT based principal ");
+        LOG.info("Logging in via CLIENT based principal");
         kerberosName =
             SecurityUtil.getServerPrincipal(clientConf, "0.0.0.0");
         UserGroupInformation.loginUserFromKeytab(
@@ -358,7 +357,7 @@ public abstract class HadoopThriftAuthBridge {
         clientValidationUGI = UserGroupInformation.getLoginUser();
         assert clientValidationUGI.isFromKeytab();
 
-        LOG.info("Logging in via SERVER based principal ");
+        LOG.info("Logging in via SERVER based principal");
         kerberosName =
             SecurityUtil.getServerPrincipal(principalConf, "0.0.0.0");
         UserGroupInformation.loginUserFromKeytab(
@@ -548,10 +547,8 @@ public abstract class HadoopThriftAuthBridge {
               getIdentifier(nc.getDefaultName(), secretManager);
           char[] password = getPassword(tokenIdentifier);
 
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("SASL server DIGEST-MD5 callback: setting password "
-                + "for client: " + tokenIdentifier.getUser());
-          }
+          LOG.debug("SASL server DIGEST-MD5 callback: setting password "
+              + "for client:{}", tokenIdentifier.getUser());
           pc.setPassword(password);
         }
         if (ac != null) {
@@ -603,7 +600,7 @@ public abstract class HadoopThriftAuthBridge {
         TSaslServerTransport saslTrans = (TSaslServerTransport)trans;
         SaslServer saslServer = saslTrans.getSaslServer();
         String authId = saslServer.getAuthorizationID();
-        LOG.debug("AUTH ID ======>" + authId);
+        LOG.debug("Sasl Server AUTH ID: {}", authId);
         String endUser = authId;
 
         Socket socket = ((TSocket)(saslTrans.getUnderlyingTransport())).getSocket();
@@ -634,7 +631,7 @@ public abstract class HadoopThriftAuthBridge {
             clientUgi = UserGroupInformation.createProxyUser(
                 endUser, UserGroupInformation.getLoginUser());
             remoteUser.set(clientUgi.getShortUserName());
-            LOG.debug("Set remoteUser :" + remoteUser.get());
+            LOG.debug("Set remoteUser: {}", remoteUser.get());
             return clientUgi.doAs(new PrivilegedExceptionAction<Boolean>() {
 
               @Override
@@ -650,7 +647,8 @@ public abstract class HadoopThriftAuthBridge {
             // use the short user name for the request
             UserGroupInformation endUserUgi = UserGroupInformation.createRemoteUser(endUser);
             remoteUser.set(endUserUgi.getShortUserName());
-            LOG.debug("Set remoteUser :" + remoteUser.get() + ", from endUser :" + endUser);
+            LOG.debug("Set remoteUser: {}, from endUser: {}", remoteUser.get(),
+                endUser);
             return wrapped.process(inProt, outProt);
           }
         } catch (RuntimeException rte) {
@@ -662,12 +660,13 @@ public abstract class HadoopThriftAuthBridge {
           throw new RuntimeException(ie); // unexpected!
         } catch (IOException ioe) {
           throw new RuntimeException(ioe); // unexpected!
-        }
-        finally {
+        } finally {
           if (clientUgi != null) {
-            try { FileSystem.closeAllForUGI(clientUgi); }
-            catch(IOException exception) {
-              LOG.error("Could not clean up file-system handles for UGI: " + clientUgi, exception);
+            try {
+              FileSystem.closeAllForUGI(clientUgi);
+            } catch (IOException exception) {
+              LOG.error("Could not clean up file-system handles for UGI: "
+                  + clientUgi, exception);
             }
           }
         }

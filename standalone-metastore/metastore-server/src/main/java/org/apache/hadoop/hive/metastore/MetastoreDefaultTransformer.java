@@ -26,6 +26,7 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.EXTERNAL_TAB
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -706,17 +707,17 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
       return list1;
 
     if (list1 == null || list1.size() == 0)
-      return new ArrayList<String>();
+      return Collections.emptyList();
 
     if (list2.containsAll(list1))
-      return new ArrayList<String>();
+      return Collections.emptyList();
 
     diffList.addAll(list2);
     LOG.debug("diffList=" + Arrays.toString(diffList.toArray()) + ",master list=" + Arrays.toString(list1.toArray()));
     if (diffList.retainAll(list1)) {
       LOG.debug("diffList=" + Arrays.toString(diffList.toArray()));
       if (diffList.size() == list1.size()) { // lists match
-        return new ArrayList<String>(); // return empty list indicating no missing elements
+        return Collections.emptyList(); // return empty list indicating no missing elements
       } else {
         list1.removeAll(diffList);
         LOG.debug("list1.size():" + list1.size());
