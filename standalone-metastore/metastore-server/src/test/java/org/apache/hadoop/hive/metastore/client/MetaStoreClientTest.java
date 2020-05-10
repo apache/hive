@@ -78,9 +78,7 @@ public abstract class MetaStoreClientTest {
       try {
         metaStoreService.start(msConf, extraConf);
       } catch(Exception e) {
-        // Catch the exceptions, so every other metastore could be stopped as well
-        // Log it, so at least there is a slight possibility we find out about this :)
-        LOG.error("Error starting MetaStoreService", e);
+        throw new RuntimeException("Error starting MetaStoreService", e);
       }
     }
   }
@@ -91,9 +89,7 @@ public abstract class MetaStoreClientTest {
       try {
         metaStoreService.stop();
       } catch(Exception e) {
-        // Catch the exceptions, so every other metastore could be stopped as well
-        // Log it, so at least there is a slight possibility we find out about this :)
-        LOG.error("Error stopping MetaStoreService", e);
+        throw new RuntimeException("Error stopping MetaStoreService", e);
       }
     }
   }
