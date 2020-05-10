@@ -565,6 +565,8 @@ public class DagUtils {
         UnorderedPartitionedKVEdgeConfig.newBuilder(keyClass, valClass,
           ValueHashPartitioner.class.getName())
             .setFromConfiguration(conf)
+            .setKeySerializationClass(TezBytesWritableSerialization.class.getName(), null)
+            .setValueSerializationClass(TezBytesWritableSerialization.class.getName(), null)
             .build();
       return cpEdgeConf.createDefaultCustomEdgeProperty(edgeManagerDescriptor);
     case SIMPLE_EDGE:
