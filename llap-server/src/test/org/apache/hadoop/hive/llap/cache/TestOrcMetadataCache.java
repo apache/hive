@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.llap.io.metadata.MetadataCache.LlapBufferOrBuffers
 import org.apache.hadoop.hive.llap.io.metadata.MetadataCache.LlapMetadataBuffer;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 import org.apache.hadoop.hive.ql.io.orc.encoded.IncompleteCb;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class TestOrcMetadataCache {
@@ -101,6 +102,30 @@ public class TestOrcMetadataCache {
     @Override
     public void updateMaxSize(long maxSize) {
     }
+  }
+
+  @Test
+  public void testCaseSomePartialBuffersAreEvicted() {
+    final DummyMemoryManager mm = new DummyMemoryManager();
+    final DummyCachePolicy cp = new DummyCachePolicy();
+    final int MAX_ALLOC = 64;
+    final LlapDaemonCacheMetrics metrics = LlapDaemonCacheMetrics.create("", "");
+    final BuddyAllocator alloc = new BuddyAllocator(false, false, 8, MAX_ALLOC, 1, 4096, 0, null, mm, metrics, null, true);
+    final MetadataCache cache = new MetadataCache(alloc, mm, cp, true, metrics);
+    final Object fileKey1 = new Object();
+    final Random rdm = new Random();
+    final ByteBuffer smallBuffer = ByteBuffer.allocate(2 * MAX_ALLOC);
+    rdm.nextBytes(smallBuffer.array());
+    //put some metadata in the cache that needs multiple buffers (2 * MAX_ALLOC)
+    final LlapBufferOrBuffers result = cache.putFileMetadata(fileKey1, smallBuffer, null, null);
+    // assert that we have our 2 buffers
+    Assert.assertEquals(2, result.getMultipleLlapBuffers().length);
+    final LlapAllocatorBuffer[] buffers = result.getMultipleLlapBuffers();
+    //test setup where one buffer is evicted and therefore can not be locked
+    buffers[1].decRef();
+    buffers[1].invalidateAndRelease();
+    //Try to get the buffer should lead to cleaning the cache since some part was evicted.
+    Assert.assertNull(cache.getFileMetadata(fileKey1));
   }
 
   @Test
