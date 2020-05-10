@@ -23,6 +23,7 @@ import java.util.List;
 import org.apache.hadoop.hive.cli.control.CliAdapter;
 import org.apache.hadoop.hive.cli.control.CliConfigs;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -33,6 +34,7 @@ import org.junit.runners.Parameterized.Parameters;
 /**
  * CliDriver that runs the Kudu Qtests.
  */
+@Ignore("HIVE-23314")
 @RunWith(Parameterized.class)
 public class TestKuduCliDriver {
 
