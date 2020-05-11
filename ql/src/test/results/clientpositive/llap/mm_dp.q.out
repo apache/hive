@@ -1761,7 +1761,7 @@ PREHOOK: Input: default@dp_mm@val=val_95
 PREHOOK: Input: default@dp_mm@val=val_96
 PREHOOK: Input: default@dp_mm@val=val_97
 PREHOOK: Input: default@dp_mm@val=val_98
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select * from dp_mm order by key, p, r, val
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dp_mm
@@ -2074,7 +2074,7 @@ POSTHOOK: Input: default@dp_mm@val=val_95
 POSTHOOK: Input: default@dp_mm@val=val_96
 POSTHOOK: Input: default@dp_mm@val=val_97
 POSTHOOK: Input: default@dp_mm@val=val_98
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 0	455	3	val_0
 0	455	10	val_0
 0	455	23	val_0

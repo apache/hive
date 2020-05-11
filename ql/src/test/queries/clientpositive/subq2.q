@@ -1,4 +1,6 @@
 --! qt:dataset:src
+-- SORT_QUERY_RESULTS
+
 set hive.mapred.mode=nonstrict;
 EXPLAIN
 SELECT a.k, a.c

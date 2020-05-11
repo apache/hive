@@ -99,11 +99,11 @@ POSTHOOK: Output: default@parquet_types_staging_n1
 PREHOOK: query: SELECT * FROM parquet_types_staging_n1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_types_staging_n1
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM parquet_types_staging_n1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_types_staging_n1
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 100	1	1	1.0	0.0	abc	2011-01-01 01:01:01.111111111	a    	a  	B4F3CAFDBEDD	{"k1":"v1"}	[101,200]	{"c1":10,"c2":"a"}	2011-01-01
 101	2	2	1.1	0.3	def	2012-02-02 02:02:02.222222222	ab   	ab 	68692CCAC0BDE7	{"k2":"v2"}	[102,200]	{"c1":10,"c2":"d"}	2012-02-02
 102	3	3	1.2	0.6	ghi	2013-03-03 03:03:03.333333333	abc  	abc	B4F3CAFDBEDD	{"k3":"v3"}	[103,200]	{"c1":10,"c2":"g"}	2013-03-03
@@ -163,7 +163,7 @@ GROUP BY ctinyint
 ORDER BY ctinyint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_types_n0
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT ctinyint,
   MAX(cint),
   MIN(csmallint),
@@ -175,7 +175,7 @@ GROUP BY ctinyint
 ORDER BY ctinyint
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_types_n0
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -265,7 +265,7 @@ GROUP BY ctinyint
 ORDER BY ctinyint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_types_n0
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT ctinyint,
   MAX(cint),
   MIN(csmallint),
@@ -277,18 +277,18 @@ GROUP BY ctinyint
 ORDER BY ctinyint
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_types_n0
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1	121	1	8	1.175	2.06216
 2	119	1	7	1.21429	1.8
 3	120	1	7	1.17143	1.8
 PREHOOK: query: EXPLAIN SELECT cfloat, count(*) FROM parquet_types_n0 GROUP BY cfloat ORDER BY cfloat
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_types_n0
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT cfloat, count(*) FROM parquet_types_n0 GROUP BY cfloat ORDER BY cfloat
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_types_n0
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -366,11 +366,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT cfloat, count(*) FROM parquet_types_n0 GROUP BY cfloat ORDER BY cfloat
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_types_n0
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT cfloat, count(*) FROM parquet_types_n0 GROUP BY cfloat ORDER BY cfloat
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_types_n0
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1.0	5
 1.1	5
 1.2	4
@@ -379,11 +379,11 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: EXPLAIN SELECT cchar, count(*) FROM parquet_types_n0 GROUP BY cchar ORDER BY cchar
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_types_n0
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT cchar, count(*) FROM parquet_types_n0 GROUP BY cchar ORDER BY cchar
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_types_n0
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -461,11 +461,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT cchar, count(*) FROM parquet_types_n0 GROUP BY cchar ORDER BY cchar
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_types_n0
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT cchar, count(*) FROM parquet_types_n0 GROUP BY cchar ORDER BY cchar
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_types_n0
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 a    	1
 ab   	1
 abc  	1
@@ -487,11 +487,11 @@ wxyza	1
 PREHOOK: query: EXPLAIN SELECT cvarchar, count(*) FROM parquet_types_n0 GROUP BY cvarchar ORDER BY cvarchar
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_types_n0
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT cvarchar, count(*) FROM parquet_types_n0 GROUP BY cvarchar ORDER BY cvarchar
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_types_n0
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -569,11 +569,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT cvarchar, count(*) FROM parquet_types_n0 GROUP BY cvarchar ORDER BY cvarchar
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_types_n0
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT cvarchar, count(*) FROM parquet_types_n0 GROUP BY cvarchar ORDER BY cvarchar
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_types_n0
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 B4F3CAFDBE	1
 a  	1
 ab 	1
@@ -591,11 +591,11 @@ b	1
 PREHOOK: query: EXPLAIN SELECT cstring1, count(*) FROM parquet_types_n0 GROUP BY cstring1 ORDER BY cstring1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_types_n0
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT cstring1, count(*) FROM parquet_types_n0 GROUP BY cstring1 ORDER BY cstring1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_types_n0
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -673,11 +673,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT cstring1, count(*) FROM parquet_types_n0 GROUP BY cstring1 ORDER BY cstring1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_types_n0
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT cstring1, count(*) FROM parquet_types_n0 GROUP BY cstring1 ORDER BY cstring1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_types_n0
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 abc	1
 bcd	1
 cde	1
@@ -702,11 +702,11 @@ zab	1
 PREHOOK: query: EXPLAIN SELECT t, count(*) FROM parquet_types_n0 GROUP BY t ORDER BY t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_types_n0
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT t, count(*) FROM parquet_types_n0 GROUP BY t ORDER BY t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_types_n0
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -784,11 +784,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT t, count(*) FROM parquet_types_n0 GROUP BY t ORDER BY t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_types_n0
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT t, count(*) FROM parquet_types_n0 GROUP BY t ORDER BY t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_types_n0
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 2011-01-01 01:01:01.111111111	1
 2012-02-02 02:02:02.222222222	1
 2013-03-03 03:03:03.333333333	1
@@ -814,11 +814,11 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: EXPLAIN SELECT hex(cbinary), count(*) FROM parquet_types_n0 GROUP BY cbinary
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_types_n0
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT hex(cbinary), count(*) FROM parquet_types_n0 GROUP BY cbinary
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_types_n0
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -886,11 +886,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT hex(cbinary), count(*) FROM parquet_types_n0 GROUP BY cbinary
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_types_n0
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT hex(cbinary), count(*) FROM parquet_types_n0 GROUP BY cbinary
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_types_n0
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 	1
 68656C6C6F	1
 68692CCAC0BDE7	10

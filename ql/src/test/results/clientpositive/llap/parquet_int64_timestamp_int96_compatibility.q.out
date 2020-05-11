@@ -1,0 +1,198 @@
+PREHOOK: query: create table parquet_timestamp_staging_2 (i int, s string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_timestamp_staging_2
+POSTHOOK: query: create table parquet_timestamp_staging_2 (i int, s string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_timestamp_staging_2
+PREHOOK: query: insert into parquet_timestamp_staging_2
+values
+(0, '0001-01-01'),
+(1, '1677-09-21 00:12:43.145224192'),
+(2, '1969-12-31 23:59:59.99999999999999999'),
+(3, '1970-01-01 00:00:00'),
+(4, '2013-09-27 01:36:18.000000001'),
+(5, '2018-01-02 13:14:15.678999'),
+(6, '2262-04-11 23:47:16.854775807'),
+(7, '9999-12-31 23:59:59.999999999999')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@parquet_timestamp_staging_2
+POSTHOOK: query: insert into parquet_timestamp_staging_2
+values
+(0, '0001-01-01'),
+(1, '1677-09-21 00:12:43.145224192'),
+(2, '1969-12-31 23:59:59.99999999999999999'),
+(3, '1970-01-01 00:00:00'),
+(4, '2013-09-27 01:36:18.000000001'),
+(5, '2018-01-02 13:14:15.678999'),
+(6, '2262-04-11 23:47:16.854775807'),
+(7, '9999-12-31 23:59:59.999999999999')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@parquet_timestamp_staging_2
+POSTHOOK: Lineage: parquet_timestamp_staging_2.i SCRIPT []
+POSTHOOK: Lineage: parquet_timestamp_staging_2.s SCRIPT []
+PREHOOK: query: create table parquet_int64 (i int, ts timestamp) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_int64
+POSTHOOK: query: create table parquet_int64 (i int, ts timestamp) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_int64
+PREHOOK: query: insert into parquet_int64 select i, cast (s as timestamp) from parquet_timestamp_staging_2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_timestamp_staging_2
+PREHOOK: Output: default@parquet_int64
+POSTHOOK: query: insert into parquet_int64 select i, cast (s as timestamp) from parquet_timestamp_staging_2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_timestamp_staging_2
+POSTHOOK: Output: default@parquet_int64
+POSTHOOK: Lineage: parquet_int64.i SIMPLE [(parquet_timestamp_staging_2)parquet_timestamp_staging_2.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: parquet_int64.ts EXPRESSION [(parquet_timestamp_staging_2)parquet_timestamp_staging_2.FieldSchema(name:s, type:string, comment:null), ]
+PREHOOK: query: create table parquet_int96 (i int, ts timestamp) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_int96
+POSTHOOK: query: create table parquet_int96 (i int, ts timestamp) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_int96
+PREHOOK: query: insert into parquet_int96 select i + 10, cast (s as timestamp) from parquet_timestamp_staging_2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_timestamp_staging_2
+PREHOOK: Output: default@parquet_int96
+POSTHOOK: query: insert into parquet_int96 select i + 10, cast (s as timestamp) from parquet_timestamp_staging_2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_timestamp_staging_2
+POSTHOOK: Output: default@parquet_int96
+POSTHOOK: Lineage: parquet_int96.i EXPRESSION [(parquet_timestamp_staging_2)parquet_timestamp_staging_2.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: parquet_int96.ts EXPRESSION [(parquet_timestamp_staging_2)parquet_timestamp_staging_2.FieldSchema(name:s, type:string, comment:null), ]
+PREHOOK: query: select parquet_int64.i, parquet_int64.ts, parquet_int96.ts
+    from parquet_int64
+    join parquet_int96
+    on parquet_int64.ts = parquet_int96.ts
+    order by parquet_int64.i
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_int64
+PREHOOK: Input: default@parquet_int96
+#### A masked pattern was here ####
+POSTHOOK: query: select parquet_int64.i, parquet_int64.ts, parquet_int96.ts
+    from parquet_int64
+    join parquet_int96
+    on parquet_int64.ts = parquet_int96.ts
+    order by parquet_int64.i
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_int64
+POSTHOOK: Input: default@parquet_int96
+#### A masked pattern was here ####
+0	0001-01-01 00:00:00	0001-01-01 00:00:00
+3	1970-01-01 00:00:00	1970-01-01 00:00:00
+5	2018-01-02 13:14:15.678999	2018-01-02 13:14:15.678999
+PREHOOK: query: create table parquet_mixed_timestamp as select * from parquet_int64
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@parquet_int64
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_mixed_timestamp
+POSTHOOK: query: create table parquet_mixed_timestamp as select * from parquet_int64
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@parquet_int64
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_mixed_timestamp
+POSTHOOK: Lineage: parquet_mixed_timestamp.i SIMPLE [(parquet_int64)parquet_int64.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: parquet_mixed_timestamp.ts SIMPLE [(parquet_int64)parquet_int64.FieldSchema(name:ts, type:timestamp, comment:null), ]
+PREHOOK: query: insert into parquet_mixed_timestamp select i + 10, cast (s as timestamp) from parquet_timestamp_staging_2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_timestamp_staging_2
+PREHOOK: Output: default@parquet_mixed_timestamp
+POSTHOOK: query: insert into parquet_mixed_timestamp select i + 10, cast (s as timestamp) from parquet_timestamp_staging_2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_timestamp_staging_2
+POSTHOOK: Output: default@parquet_mixed_timestamp
+POSTHOOK: Lineage: parquet_mixed_timestamp.i EXPRESSION [(parquet_timestamp_staging_2)parquet_timestamp_staging_2.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: parquet_mixed_timestamp.ts EXPRESSION [(parquet_timestamp_staging_2)parquet_timestamp_staging_2.FieldSchema(name:s, type:string, comment:null), ]
+PREHOOK: query: select * from parquet_mixed_timestamp order by i
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_mixed_timestamp
+#### A masked pattern was here ####
+POSTHOOK: query: select * from parquet_mixed_timestamp order by i
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_mixed_timestamp
+#### A masked pattern was here ####
+0	0001-01-01 00:00:00
+1	1677-09-21 00:12:43.145224
+2	1969-12-31 23:59:59.999999
+3	1970-01-01 00:00:00
+4	2013-09-27 01:36:18
+5	2018-01-02 13:14:15.678999
+6	2262-04-11 23:47:16.854775
+7	9999-12-31 23:59:59.999999
+10	0001-01-01 00:00:00
+11	1677-09-21 00:12:43.145224192
+12	1969-12-31 23:59:59.999999999
+13	1970-01-01 00:00:00
+14	2013-09-27 01:36:18.000000001
+15	2018-01-02 13:14:15.678999
+16	2262-04-11 23:47:16.854775807
+17	9999-12-31 23:59:59.999999999
+PREHOOK: query: select * from parquet_mixed_timestamp where ts > cast ('2200-01-01 00:00:00.00' as timestamp) order by i
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_mixed_timestamp
+#### A masked pattern was here ####
+POSTHOOK: query: select * from parquet_mixed_timestamp where ts > cast ('2200-01-01 00:00:00.00' as timestamp) order by i
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_mixed_timestamp
+#### A masked pattern was here ####
+6	2262-04-11 23:47:16.854775
+7	9999-12-31 23:59:59.999999
+16	2262-04-11 23:47:16.854775807
+17	9999-12-31 23:59:59.999999999
+PREHOOK: query: select * from parquet_mixed_timestamp where ts < cast ('1900-12-31 23:59:59.9999999999' as timestamp) order by i
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_mixed_timestamp
+#### A masked pattern was here ####
+POSTHOOK: query: select * from parquet_mixed_timestamp where ts < cast ('1900-12-31 23:59:59.9999999999' as timestamp) order by i
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_mixed_timestamp
+#### A masked pattern was here ####
+0	0001-01-03 00:00:00
+1	1677-09-21 00:12:43.145224
+10	0001-01-03 00:00:00
+11	1677-09-21 00:12:43.145224192
+PREHOOK: query: select count(*) from parquet_mixed_timestamp where ts = cast ('1970-01-01 00:00:00.00' as timestamp)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_mixed_timestamp
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from parquet_mixed_timestamp where ts = cast ('1970-01-01 00:00:00.00' as timestamp)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_mixed_timestamp
+#### A masked pattern was here ####
+2
+PREHOOK: query: select *
+    from parquet_mixed_timestamp
+    join parquet_int64
+    on parquet_mixed_timestamp.ts = parquet_int64.ts
+    order by parquet_mixed_timestamp.i
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_int64
+PREHOOK: Input: default@parquet_mixed_timestamp
+#### A masked pattern was here ####
+POSTHOOK: query: select *
+    from parquet_mixed_timestamp
+    join parquet_int64
+    on parquet_mixed_timestamp.ts = parquet_int64.ts
+    order by parquet_mixed_timestamp.i
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_int64
+POSTHOOK: Input: default@parquet_mixed_timestamp
+#### A masked pattern was here ####
+1	1677-09-21 00:12:43.145224	1	1677-09-21 00:12:43.145224
+3	1970-01-01 00:00:00	3	1970-01-01 00:00:00
+4	2013-09-27 01:36:18	4	2013-09-27 01:36:18
+5	2018-01-02 13:14:15.678999	5	2018-01-02 13:14:15.678999
+6	2262-04-11 23:47:16.854775	6	2262-04-11 23:47:16.854775
+7	9999-12-31 23:59:59.999999	7	9999-12-31 23:59:59.999999
+13	1970-01-01 00:00:00	3	1970-01-01 00:00:00
+15	2018-01-02 13:14:15.678999	5	2018-01-02 13:14:15.678999

@@ -1,47 +1,67 @@
 --! qt:dataset:srcpart
 --! qt:dataset:src
+-- SORT_QUERY_RESULTS
+
 set hive.mapred.mode=nonstrict;
-select key from(
-select '1' as key from srcpart where ds="2008-04-09"
-UNION all
-SELECT key from srcpart where ds="2008-04-09" and hr="11"
-) tab group by key;
 
-select key from(
-SELECT '1' as key from src
-UNION all
-SELECT key as key from src
-) tab group by key;
+  SELECT key
+    FROM (SELECT '1' AS key FROM srcpart WHERE ds="2008-04-09"
+          UNION ALL
+          SELECT key FROM srcpart WHERE ds="2008-04-09" AND hr="11") tab
+GROUP BY key;
 
-select max(key) from(
-SELECT '1' as key from src
-UNION all
-SELECT key as key from src
-) tab group by key;
+  SELECT key
+    FROM (SELECT '1' AS key fROM src
+          UNION ALL
+          SELECT key AS key FROM src) tab
+GROUP BY key;
 
-select key from(
-SELECT '1' as key from src
-UNION all
-SELECT '2' as key from src
-) tab group by key;
+  SELECT max(key)
+    FROM (SELECT '1' AS key FROM src
+          UNION ALL
+          SELECT key AS key FROM src) tab
+GROUP BY key;
+
+  SELECT key
+    FROM (SELECT '1' AS key FROM src
+          UNION ALL
+          SELECT '2' AS key FROM src) tab
+GROUP BY key;
 
 
-select key from(
-SELECT '1' as key from src
-UNION all
-SELECT key as key from src
-UNION all
-SELECT '2' as key from src
-UNION all
-SELECT key as key from src
-) tab group by key;
+  SELECT key
+    FROM (SELECT '1' AS key FROM src
+          UNION ALL
+          SELECT key AS key FROM src
+          UNION ALL
+          SELECT '2' AS key FROM src
+          UNION ALL
+          SELECT key AS key FROM src) tab
+GROUP BY key;
 
-select k from (select * from (SELECT '1' as k from src limit 0)a union all select key as k from src limit 1)tab;
+SELECT k
+  FROM (SELECT *
+          FROM (SELECT '1' AS k
+                  FROM src 
+                 LIMIT 0) a
+        UNION ALL
+        SELECT key AS k
+          FROM src
+      ORDER BY k
+         LIMIT 1) tab;
 
-select k from (select * from (SELECT '1' as k from src limit 1)a union all select key as k from src limit 0)tab;
+SELECT k
+  FROM (SELECT *
+          FROM (SELECT '1' AS k
+                  FROM src
+                 LIMIT 1) a
+        UNION ALL
+        SELECT key AS k
+          FROM src
+         LIMIT 0) tab;
 
-select max(ds) from srcpart;
+SELECT max(ds) FROM srcpart;
 
-select count(ds) from srcpart;
+SELECT count(ds) FROM srcpart;
 
 

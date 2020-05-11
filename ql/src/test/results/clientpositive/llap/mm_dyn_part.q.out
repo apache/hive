@@ -83,14 +83,14 @@ PREHOOK: Input: default@part_table
 PREHOOK: Input: default@part_table@year=2019/month=03/day=12
 PREHOOK: Input: default@part_table@year=2020/month=02/day=11
 PREHOOK: Input: default@part_table@year=2020/month=03/day=13
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM part_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_table
 POSTHOOK: Input: default@part_table@year=2019/month=03/day=12
 POSTHOOK: Input: default@part_table@year=2020/month=02/day=11
 POSTHOOK: Input: default@part_table@year=2020/month=03/day=13
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1	one	2020	02	11
 2	two	2019	03	12
 3	three	2020	03	13

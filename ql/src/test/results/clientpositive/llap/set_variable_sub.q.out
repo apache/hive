@@ -1,0 +1,82 @@
+PREHOOK: query: EXPLAIN SELECT * FROM src where key="value1"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT * FROM src where key="value1"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: src
+          filterExpr: (key = 'value1') (type: boolean)
+          Filter Operator
+            predicate: (key = 'value1') (type: boolean)
+            Select Operator
+              expressions: 'value1' (type: string), value (type: string)
+              outputColumnNames: _col0, _col1
+              ListSink
+
+PREHOOK: query: EXPLAIN SELECT * FROM src where key="value1"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT * FROM src where key="value1"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: src
+          filterExpr: (key = 'value1') (type: boolean)
+          Filter Operator
+            predicate: (key = 'value1') (type: boolean)
+            Select Operator
+              expressions: 'value1' (type: string), value (type: string)
+              outputColumnNames: _col0, _col1
+              ListSink
+
+PREHOOK: query: EXPLAIN SELECT * FROM src where key="1"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT * FROM src where key="1"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: src
+          filterExpr: (key = '1') (type: boolean)
+          Filter Operator
+            predicate: (key = '1') (type: boolean)
+            Select Operator
+              expressions: '1' (type: string), value (type: string)
+              outputColumnNames: _col0, _col1
+              ListSink
+
+hivevar:a=1
+hivevar:b=a
+hivevar:c=1
+hivevar:key1=value1
