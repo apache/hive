@@ -108,6 +108,7 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
       this.aggregate = aggregate;
       newAggCalls = new ArrayList<AggregateCall>();
       newProjects = new ArrayList<RexNode>();
+      newProjectsBelow = new ArrayList<RexNode>();
       rexBuilder = aggregate.getCluster().getRexBuilder();
 
       // add non-aggregated fields - as identity projections
