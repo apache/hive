@@ -31,6 +31,8 @@ import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlOperator;
+import org.apache.calcite.util.ImmutableBitSet;
+import org.apache.calcite.util.ImmutableBitSet.Builder;
 import org.apache.hadoop.hive.ql.exec.DataSketchesFunctions;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
@@ -100,6 +102,7 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
     private List<AggregateCall> newAggCalls;
     private List<RexNode> newProjects;
     private final RexBuilder rexBuilder;
+    private List<RexNode> newProjectsBelow;
 
     public VBuilder(Aggregate aggregate) {
       this.aggregate = aggregate;
@@ -117,7 +120,20 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
 
     private void addGroupFields() {
       for (int i = 0; i < aggregate.getGroupCount(); i++) {
-        newProjects.add(rexBuilder.makeInputRef(aggregate, 0));
+        newProjects.add(rexBuilder.makeInputRef(aggregate.getInput(), i));
+      }
+      Builder b = ImmutableBitSet.builder();
+      b.addAll(aggregate.getGroupSet());
+      for (AggregateCall aggCall: aggregate.getAggCallList()) {
+        b.addAll(aggCall.getArgList());
+      }
+      ImmutableBitSet inputs = b.build();
+      for (int i = 0; i < inputs.cardinality(); i++) {
+        if (!inputs.get(i)) {
+          // lets see if this fires or not...
+          throw new RuntimeException("unexpected");
+        }
+        newProjectsBelow.add(rexBuilder.makeInputRef(aggregate.getInput(), i));
       }
     }
 
