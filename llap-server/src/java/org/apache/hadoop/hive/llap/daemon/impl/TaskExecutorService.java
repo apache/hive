@@ -873,7 +873,6 @@ public class TaskExecutorService extends AbstractService
           + "in preemption queue {}", taskWrapper.getRequestId(), taskWrapper.isGuaranteed(),
           newFinishableState, taskWrapper.isInWaitQueue(), taskWrapper.isInPreemptionQueue());
       // Do the removal before we change the element, to avoid invalid queue ordering.
-      // Both for Guaranteed and Speculative Tasks
       if (newFinishableState && taskWrapper.isInPreemptionQueue() && taskWrapper.isGuaranteed()) {
         removeFromPreemptionQueue(taskWrapper);
       }
