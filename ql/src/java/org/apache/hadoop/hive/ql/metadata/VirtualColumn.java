@@ -101,15 +101,28 @@ public enum VirtualColumn {
     return l;
   }
 
-  public static List<VirtualColumn> getRegistry(Configuration conf) {
-    ArrayList<VirtualColumn> l = new ArrayList<VirtualColumn>();
-    l.add(BLOCKOFFSET);
-    l.add(FILENAME);
-    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEROWOFFSET)) {
-      l.add(ROWOFFSET);
+  public static List<VirtualColumn> getRegistry(HiveConf conf) {
+    // Virtual columns are dependent on the engine too
+    ArrayList<VirtualColumn> l = new ArrayList<>();
+    switch (conf.getExecutionEngine()) {
+    case TEZ:
+    case SPARK:
+    case MR:
+      l.add(BLOCKOFFSET);
+      l.add(FILENAME);
+      if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEROWOFFSET)) {
+        l.add(ROWOFFSET);
+      }
+      l.add(ROWID);
+      break;
+    case IMPALA:
+      // TODO: CDPD-11988: Add ROW_ID to virtual columns for Impala engine
+      //       once IMPALA-9515 has been fixed
+      break;
+    default:
+      // Nothing to do
+      break;
     }
-    l.add(ROWID);
-
     return l;
   }
 
