@@ -241,16 +241,16 @@ public class TestTaskExecutorService {
   public void testPreemptionReorderOnTaskChanges() throws InterruptedException {
 
     MockRequest r1 = createMockRequest(1, 1, 100, 200, true, 4000l, true);
-    MockRequest r2 = createMockRequest(2, 1, 100, 200, false, 3000l, false);
-    MockRequest r3 = createMockRequest(3, 1, 100, 200, false, 2000l, false);
-    MockRequest r4 = createMockRequest(3, 1, 100, 200, false, 5000l, true);
+    MockRequest r2 = createMockRequest(2, 1, 100, 200, true, 3000l, false);
+    MockRequest r3 = createMockRequest(3, 1, 100, 200, true, 2000l, false);
+    MockRequest r4 = createMockRequest(4, 1, 100, 200, true, 5000l, true);
 
     TaskExecutorServiceForTest taskExecutorService =
             new TaskExecutorServiceForTest(1, 1, ShortestJobFirstComparator.class.getName(), true, mockMetrics);
     taskExecutorService.init(new Configuration());
     taskExecutorService.start();
 
-    // Make sure that tasks in preemptionQueue that canFinish are in the top! (make sure they are reordered).
+    // Make sure that tasks in preemptionQueue are reorder when there is a stateUpdate
     try {
       String fragmentId1 = r1.getRequestId();
       Scheduler.SubmissionState submissionState = taskExecutorService.schedule(r1);
@@ -279,17 +279,17 @@ public class TestTaskExecutorService {
 
       String fragmentId4 = r4.getRequestId();
       TaskWrapper taskWrapper4 = new TaskWrapper(r4, taskExecutorService);
-      taskWrapper3.setIsInPreemptableQueue(true);
+      taskWrapper4.setIsInPreemptableQueue(true);
       taskWrapper = taskExecutorService.preemptionQueue.peek();
       taskExecutorService.preemptionQueue.offer(taskWrapper4);
       // r2 is still at the top
       assertTrue(taskExecutorService.preemptionQueue.size() == 3);
       assertTrue(taskWrapper.getRequestId().equals(fragmentId2));
 
-      // Now r3 is finishable
+      // Now r3 is now non-finishable
       r3.setCanUpdateFinishable();
-      r3.updateCanFinishForPriority(true);
-      taskWrapper3.finishableStateUpdated(true);
+      r3.updateCanFinishForPriority(false);
+      taskWrapper3.finishableStateUpdated(false);
       taskWrapper = taskExecutorService.preemptionQueue.peek();
       assertNotNull(taskWrapper);
       assertTrue(taskWrapper.getRequestId().equals(fragmentId3));
