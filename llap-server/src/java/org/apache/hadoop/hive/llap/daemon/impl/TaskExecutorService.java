@@ -873,7 +873,8 @@ public class TaskExecutorService extends AbstractService
           + "in preemption queue {}", taskWrapper.getRequestId(), taskWrapper.isGuaranteed(),
           newFinishableState, taskWrapper.isInWaitQueue(), taskWrapper.isInPreemptionQueue());
       // Do the removal before we change the element, to avoid invalid queue ordering.
-      if (newFinishableState && taskWrapper.isInPreemptionQueue() && taskWrapper.isGuaranteed()) {
+      // Both for Guaranteed and Speculative Tasks
+      if (newFinishableState && taskWrapper.isInPreemptionQueue()) {
         removeFromPreemptionQueue(taskWrapper);
       }
       if (taskWrapper.isInWaitQueue()) {
@@ -885,9 +886,16 @@ public class TaskExecutorService extends AbstractService
         forceReinsertIntoQueue(taskWrapper, isRemoved);
       } else {
         taskWrapper.updateCanFinishForPriority(newFinishableState);
-        if (!newFinishableState && !taskWrapper.isInPreemptionQueue()) {
-          // No need to check guaranteed here; if it was false we would already be in the queue.
+        // if Speculative task, any finishable state change should re-order the queue as speculative tasks are always
+        // not-guaranteed (re-order helps put non-finishable's ahead of finishable)\
+        if (!taskWrapper.isGuaranteed()) {
           addToPreemptionQueue(taskWrapper);
+        } else {
+          // if guaranteed task, if the finishable state changed to non-finishable and if the task doesn't exist
+          // pre-emption queue, then add it so that it becomes candidate to kill
+          if (!newFinishableState && !taskWrapper.isInPreemptionQueue()) {
+            addToPreemptionQueue(taskWrapper);
+          }
         }
       }
 
