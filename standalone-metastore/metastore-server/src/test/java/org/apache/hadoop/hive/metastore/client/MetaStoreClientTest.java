@@ -33,7 +33,6 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -47,7 +46,7 @@ public abstract class MetaStoreClientTest {
   // Needed until there is no junit release with @BeforeParam, @AfterParam (junit 4.13)
   // https://github.com/junit-team/junit4/commit/1bf8438b65858565dbb64736bfe13aae9cfc1b5a
   // Then we should remove our own copy
-  private static Set<AbstractMetaStoreService> metaStoreServices = null;
+  private static List<AbstractMetaStoreService> metaStoreServices = null;
 
   @Rule
   public TestRule ignoreRule;
@@ -57,7 +56,7 @@ public abstract class MetaStoreClientTest {
     List<Object[]> result = MetaStoreFactoryForTests.getMetaStores();
     metaStoreServices = result.stream()
         .map(test -> (AbstractMetaStoreService)test[1])
-        .collect(Collectors.toSet());
+        .collect(Collectors.toList());
     return result;
   }
 
