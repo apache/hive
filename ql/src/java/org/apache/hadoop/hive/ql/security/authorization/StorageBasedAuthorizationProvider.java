@@ -26,6 +26,7 @@ import java.util.List;
 
 import javax.security.auth.login.LoginException;
 
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
@@ -132,6 +133,11 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
     try {
       initWh();
       root = wh.getWhRoot();
+      // when we have custom location in CREATEDATABASE query (create database db1 location 'some_location')
+      // we should check for access on that location
+      if (getConf().get(Constants.WRITE_ENTITY_PATH) != null) {
+        root = new Path(getConf().get(Constants.WRITE_ENTITY_PATH));
+      }
       authorize(root, readRequiredPriv, writeRequiredPriv);
     } catch (MetaException ex) {
       throw hiveException(ex);

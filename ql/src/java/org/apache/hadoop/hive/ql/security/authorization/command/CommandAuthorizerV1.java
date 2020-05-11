@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.hooks.Entity;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -61,15 +62,26 @@ final class CommandAuthorizerV1 {
     Hive db = sem.getDb();
     HiveAuthorizationProvider authorizer = ss.getAuthorizer();
 
-    authorizeOperation(op, sem, db, authorizer);
+    authorizeOperation(op, sem, outputs, db, authorizer);
     authorizeOutputs(op, outputs, db, authorizer);
     authorizeInputs(op, sem, inputs, authorizer);
   }
 
-  private static void authorizeOperation(HiveOperation op, BaseSemanticAnalyzer sem, Hive db,
+  private static void authorizeOperation(HiveOperation op, BaseSemanticAnalyzer sem, Set<WriteEntity> outputs, Hive db,
       HiveAuthorizationProvider authorizer) throws HiveException {
     if (op.equals(HiveOperation.CREATEDATABASE)) {
+      // if PATH_WRITE is present for CREATEDATABASE, this means we have location present in the query.
+      // e.g. create database db1 location 'some_location'
+      // SBA should check for access on this custom location
+      for (WriteEntity writeEntity : outputs) {
+        if (WriteEntity.WriteType.PATH_WRITE.equals(writeEntity.getWriteType())) {
+          // writeEntity.getName() gives fully qualified location
+          SessionState.get().getConf().set(Constants.WRITE_ENTITY_PATH, writeEntity.getName());
+          break;
+        }
+      }
       authorizer.authorize(op.getInputRequiredPrivileges(), op.getOutputRequiredPrivileges());
+      SessionState.get().getConf().unset(Constants.WRITE_ENTITY_PATH);
     } else if (op.equals(HiveOperation.CREATETABLE_AS_SELECT) || op.equals(HiveOperation.CREATETABLE)) {
       authorizer.authorize(db.getDatabase(SessionState.get().getCurrentDatabase()), null,
           HiveOperation.CREATETABLE_AS_SELECT.getOutputRequiredPrivileges());
