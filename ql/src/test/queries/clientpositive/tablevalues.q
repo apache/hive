@@ -1,11 +1,12 @@
 --! qt:dataset:src
 -- VALUES -> array(struct(),struct())
 -- TABLE -> LATERAL VIEW INLINE
+-- SORT_QUERY_RESULTS
 
 CREATE TABLE mytbl_n1 AS
 SELECT key, value
 FROM src
-ORDER BY key
+ORDER BY key, value
 LIMIT 5;
 
 EXPLAIN

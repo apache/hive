@@ -1,5 +1,6 @@
 --! qt:dataset:src1
 --! qt:dataset:src
+-- SORT_QUERY_RESULTS
 
 set hive.vectorized.execution.enabled=false;
 SET hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;

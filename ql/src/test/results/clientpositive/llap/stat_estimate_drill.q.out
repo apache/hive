@@ -1,0 +1,355 @@
+PREHOOK: query: drop table if exists t1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists t1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table if exists t8
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists t8
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table t1 (a integer)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: create table t1 (a integer)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+PREHOOK: query: create table t3 (a integer,b integer,c integer)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t3
+POSTHOOK: query: create table t3 (a integer,b integer,c integer)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t3
+PREHOOK: query: insert into t1 values (1),(2),(3),(4),(5),(6),(7),(8),(9),(0)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1
+POSTHOOK: query: insert into t1 values (1),(2),(3),(4),(5),(6),(7),(8),(9),(0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t1.a SCRIPT []
+Warning: Shuffle Join MERGEJOIN[21][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[22][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+PREHOOK: query: insert into t3
+	select x1.a as a,x2.a as b,x3.a as c from
+		t1 x1
+		join t1 x2
+		join t1 x3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Output: default@t3
+POSTHOOK: query: insert into t3
+	select x1.a as a,x2.a as b,x3.a as c from
+		t1 x1
+		join t1 x2
+		join t1 x3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: default@t3
+POSTHOOK: Lineage: t3.a SIMPLE [(t1)x1.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: t3.b SIMPLE [(t1)x2.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: t3.c SIMPLE [(t1)x3.FieldSchema(name:a, type:int, comment:null), ]
+PREHOOK: query: analyze table t3 compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@t3
+PREHOOK: Output: default@t3
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table t3 compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@t3
+POSTHOOK: Output: default@t3
+#### A masked pattern was here ####
+PREHOOK: query: select sum(a) from t3 where b in (2,3) group by b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(a) from t3 where b in (2,3) group by b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+#### A masked pattern was here ####
+PREHOOK: query: explain analyze select sum(a) from t3 where b in (2,3) group by b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+#### A masked pattern was here ####
+POSTHOOK: query: explain analyze select sum(a) from t3 where b in (2,3) group by b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+#### A masked pattern was here ####
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 2 vectorized, llap
+      File Output Operator [FS_14]
+        Select Operator [SEL_13] (rows=2/2 width=8)
+          Output:["_col0"]
+          Group By Operator [GBY_12] (rows=2/2 width=12)
+            Output:["_col0","_col1"],aggregations:["sum(VALUE._col0)"],keys:KEY._col0
+          <-Map 1 [SIMPLE_EDGE] vectorized, llap
+            SHUFFLE [RS_11]
+              PartitionCols:_col0
+              Group By Operator [GBY_10] (rows=2/2 width=12)
+                Output:["_col0","_col1"],aggregations:["sum(a)"],keys:b
+                Filter Operator [FIL_9] (rows=200/200 width=8)
+                  predicate:(b) IN (2, 3)
+                  TableScan [TS_0] (rows=1000/1000 width=8)
+                    default@t3,t3,Tbl:COMPLETE,Col:COMPLETE,Output:["a","b"]
+
+PREHOOK: query: select sum(a) from t3 where a=1 or a=2 group by b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(a) from t3 where a=1 or a=2 group by b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+#### A masked pattern was here ####
+PREHOOK: query: explain analyze select sum(a) from t3 where a=1 or a=2 group by b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+#### A masked pattern was here ####
+POSTHOOK: query: explain analyze select sum(a) from t3 where a=1 or a=2 group by b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+#### A masked pattern was here ####
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 2 vectorized, llap
+      File Output Operator [FS_14]
+        Select Operator [SEL_13] (rows=10/10 width=8)
+          Output:["_col0"]
+          Group By Operator [GBY_12] (rows=10/10 width=12)
+            Output:["_col0","_col1"],aggregations:["sum(VALUE._col0)"],keys:KEY._col0
+          <-Map 1 [SIMPLE_EDGE] vectorized, llap
+            SHUFFLE [RS_11]
+              PartitionCols:_col0
+              Group By Operator [GBY_10] (rows=10/10 width=12)
+                Output:["_col0","_col1"],aggregations:["sum(a)"],keys:b
+                Filter Operator [FIL_9] (rows=200/200 width=8)
+                  predicate:(a) IN (1, 2)
+                  TableScan [TS_0] (rows=1000/1000 width=8)
+                    default@t3,t3,Tbl:COMPLETE,Col:COMPLETE,Output:["a","b"]
+
+PREHOOK: query: select sum(a) from t3 where a=1 or (a=2  and b=3) group by b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(a) from t3 where a=1 or (a=2  and b=3) group by b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+#### A masked pattern was here ####
+PREHOOK: query: explain analyze select sum(a) from t3 where a=1 or (a=2  and b=3) group by b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+#### A masked pattern was here ####
+POSTHOOK: query: explain analyze select sum(a) from t3 where a=1 or (a=2  and b=3) group by b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+#### A masked pattern was here ####
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 2 vectorized, llap
+      File Output Operator [FS_14]
+        Select Operator [SEL_13] (rows=10/10 width=8)
+          Output:["_col0"]
+          Group By Operator [GBY_12] (rows=10/10 width=12)
+            Output:["_col0","_col1"],aggregations:["sum(VALUE._col0)"],keys:KEY._col0
+          <-Map 1 [SIMPLE_EDGE] vectorized, llap
+            SHUFFLE [RS_11]
+              PartitionCols:_col0
+              Group By Operator [GBY_10] (rows=10/10 width=12)
+                Output:["_col0","_col1"],aggregations:["sum(a)"],keys:b
+                Filter Operator [FIL_9] (rows=110/110 width=8)
+                  predicate:((a = 1) or ((a = 2) and (b = 3)))
+                  TableScan [TS_0] (rows=1000/1000 width=8)
+                    default@t3,t3,Tbl:COMPLETE,Col:COMPLETE,Output:["a","b"]
+
+PREHOOK: query: select sum(a) from t3 where a=1 group by b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(a) from t3 where a=1 group by b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+#### A masked pattern was here ####
+PREHOOK: query: explain analyze select sum(a) from t3 where a=1 group by b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+#### A masked pattern was here ####
+POSTHOOK: query: explain analyze select sum(a) from t3 where a=1 group by b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+#### A masked pattern was here ####
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 2 vectorized, llap
+      File Output Operator [FS_16]
+        Select Operator [SEL_15] (rows=10/10 width=8)
+          Output:["_col0"]
+          Group By Operator [GBY_14] (rows=10/10 width=12)
+            Output:["_col0","_col1"],aggregations:["sum(VALUE._col0)"],keys:KEY._col0
+          <-Map 1 [SIMPLE_EDGE] vectorized, llap
+            SHUFFLE [RS_13]
+              PartitionCols:_col0
+              Group By Operator [GBY_12] (rows=10/10 width=12)
+                Output:["_col0","_col1"],aggregations:["sum(1)"],keys:_col0
+                Select Operator [SEL_11] (rows=100/100 width=8)
+                  Output:["_col0"]
+                  Filter Operator [FIL_10] (rows=100/100 width=8)
+                    predicate:(a = 1)
+                    TableScan [TS_0] (rows=1000/1000 width=8)
+                      default@t3,t3,Tbl:COMPLETE,Col:COMPLETE,Output:["a","b"]
+
+PREHOOK: query: select sum(a) from t3 where a=1 and b=2 group by b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(a) from t3 where a=1 and b=2 group by b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+#### A masked pattern was here ####
+PREHOOK: query: explain analyze select sum(a) from t3 where a=1 and b=2 group by b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+#### A masked pattern was here ####
+POSTHOOK: query: explain analyze select sum(a) from t3 where a=1 and b=2 group by b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+#### A masked pattern was here ####
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 2 vectorized, llap
+      File Output Operator [FS_16]
+        Select Operator [SEL_15] (rows=1/1 width=8)
+          Output:["_col0"]
+          Group By Operator [GBY_14] (rows=1/1 width=12)
+            Output:["_col0","_col1"],aggregations:["sum(VALUE._col0)"],keys:KEY._col0
+          <-Map 1 [SIMPLE_EDGE] vectorized, llap
+            SHUFFLE [RS_13]
+              PartitionCols:_col0
+              Group By Operator [GBY_12] (rows=1/1 width=12)
+                Output:["_col0","_col1"],aggregations:["sum(1)"],keys:true
+                Select Operator [SEL_11] (rows=10/10 width=8)
+                  Filter Operator [FIL_10] (rows=10/10 width=8)
+                    predicate:((a = 1) and (b = 2))
+                    TableScan [TS_0] (rows=1000/1000 width=8)
+                      default@t3,t3,Tbl:COMPLETE,Col:COMPLETE,Output:["a","b"]
+
+PREHOOK: query: select sum(a) from t3 where a=1 and b=2 and c=3 group by b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(a) from t3 where a=1 and b=2 and c=3 group by b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+#### A masked pattern was here ####
+PREHOOK: query: explain analyze select sum(a) from t3 where a=1 and b=2 and c=3 group by b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+#### A masked pattern was here ####
+POSTHOOK: query: explain analyze select sum(a) from t3 where a=1 and b=2 and c=3 group by b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+#### A masked pattern was here ####
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 2 vectorized, llap
+      File Output Operator [FS_16]
+        Select Operator [SEL_15] (rows=1/1 width=8)
+          Output:["_col0"]
+          Group By Operator [GBY_14] (rows=1/1 width=12)
+            Output:["_col0","_col1"],aggregations:["sum(VALUE._col0)"],keys:KEY._col0
+          <-Map 1 [SIMPLE_EDGE] vectorized, llap
+            SHUFFLE [RS_13]
+              PartitionCols:_col0
+              Group By Operator [GBY_12] (rows=1/1 width=12)
+                Output:["_col0","_col1"],aggregations:["sum(1)"],keys:true
+                Select Operator [SEL_11] (rows=1/1 width=12)
+                  Filter Operator [FIL_10] (rows=1/1 width=12)
+                    predicate:((a = 1) and (b = 2) and (c = 3))
+                    TableScan [TS_0] (rows=1000/1000 width=12)
+                      default@t3,t3,Tbl:COMPLETE,Col:COMPLETE,Output:["a","b","c"]
+
+PREHOOK: query: select sum(a) from t3 where (a=1 and b=2) or (a=2 and b=3) or (a=3 and b=4) group by b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(a) from t3 where (a=1 and b=2) or (a=2 and b=3) or (a=3 and b=4) group by b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+#### A masked pattern was here ####
+PREHOOK: query: explain analyze select sum(a) from t3 where (a=1 and b=2) or (a=2 and b=3) or (a=3 and b=4) group by b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+#### A masked pattern was here ####
+POSTHOOK: query: explain analyze select sum(a) from t3 where (a=1 and b=2) or (a=2 and b=3) or (a=3 and b=4) group by b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+#### A masked pattern was here ####
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 2 vectorized, llap
+      File Output Operator [FS_14]
+        Select Operator [SEL_13] (rows=10/3 width=8)
+          Output:["_col0"]
+          Group By Operator [GBY_12] (rows=10/3 width=12)
+            Output:["_col0","_col1"],aggregations:["sum(VALUE._col0)"],keys:KEY._col0
+          <-Map 1 [SIMPLE_EDGE] vectorized, llap
+            SHUFFLE [RS_11]
+              PartitionCols:_col0
+              Group By Operator [GBY_10] (rows=10/3 width=12)
+                Output:["_col0","_col1"],aggregations:["sum(a)"],keys:b
+                Filter Operator [FIL_9] (rows=30/30 width=8)
+                  predicate:(struct(a,b)) IN (const struct(1,2), const struct(2,3), const struct(3,4))
+                  TableScan [TS_0] (rows=1000/1000 width=8)
+                    default@t3,t3,Tbl:COMPLETE,Col:COMPLETE,Output:["a","b"]
+
