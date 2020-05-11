@@ -424,6 +424,9 @@ public class TezTask extends Task<TezWork> {
         .put("description", ctx.getCmd());
     String dagInfo = json.toString();
 
+    String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID);
+    dag.setConf(HiveConf.ConfVars.HIVEQUERYID.varname, queryId);
+
     if (LOG.isDebugEnabled()) {
       LOG.debug("DagInfo: " + dagInfo);
     }
