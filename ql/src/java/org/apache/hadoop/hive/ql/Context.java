@@ -178,6 +178,10 @@ public class Context {
     this.operation = operation;
   }
 
+  public Operation getOperation() {
+    return operation;
+  }
+
   public WmContext getWmContext() {
     return wmContext;
   }

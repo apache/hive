@@ -59,6 +59,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
       throw new RuntimeException("Asked to parse token " + tree.getName() + " in " +
           "MergeSemanticAnalyzer");
     }
+    ctx.setOperation(Context.Operation.MERGE);
     analyzeMerge(tree);
   }
 
