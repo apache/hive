@@ -5135,7 +5135,7 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 13 Data size: 156 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (sq_count_check(_col1) <= 1) (type: boolean)
+                    predicate: (sq_count_check(_col1) <= 1L) (type: boolean)
                     Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: _col0 (type: int)
@@ -5382,7 +5382,7 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 13 Data size: 156 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (sq_count_check(_col1) <= 1) (type: boolean)
+                    predicate: (sq_count_check(_col1) <= 1L) (type: boolean)
                     Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: _col0 (type: int)
@@ -5560,7 +5560,7 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 13 Data size: 156 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (sq_count_check(_col1) <= 1) (type: boolean)
+                    predicate: (sq_count_check(_col1) <= 1L) (type: boolean)
                     Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: _col0 (type: int)

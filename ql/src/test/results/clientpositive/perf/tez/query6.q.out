@@ -121,7 +121,7 @@ Stage-0
                                       BROADCAST [RS_205]
                                         Select Operator [SEL_204] (rows=1 width=8)
                                           Filter Operator [FIL_203] (rows=1 width=8)
-                                            predicate:(sq_count_check(_col0) <= 1)
+                                            predicate:(sq_count_check(_col0) <= 1L)
                                             Group By Operator [GBY_202] (rows=1 width=8)
                                               Output:["_col0"],aggregations:["count(VALUE._col0)"]
                                             <-Reducer 4 [CUSTOM_SIMPLE_EDGE] vectorized

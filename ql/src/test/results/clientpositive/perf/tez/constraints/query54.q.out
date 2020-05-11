@@ -372,7 +372,7 @@ Stage-0
                                             PARTITION_ONLY_SHUFFLE [RS_340]
                                               Select Operator [SEL_339] (rows=1 width=8)
                                                 Filter Operator [FIL_338] (rows=1 width=8)
-                                                  predicate:(sq_count_check(_col0) <= 1)
+                                                  predicate:(sq_count_check(_col0) <= 1L)
                                                   Group By Operator [GBY_337] (rows=1 width=8)
                                                     Output:["_col0"],aggregations:["count(VALUE._col0)"]
                                                   <-Reducer 12 [CUSTOM_SIMPLE_EDGE] vectorized
@@ -408,7 +408,7 @@ Stage-0
                                                 PARTITION_ONLY_SHUFFLE [RS_332]
                                                   Select Operator [SEL_331] (rows=1 width=8)
                                                     Filter Operator [FIL_330] (rows=1 width=8)
-                                                      predicate:(sq_count_check(_col0) <= 1)
+                                                      predicate:(sq_count_check(_col0) <= 1L)
                                                       Group By Operator [GBY_329] (rows=1 width=8)
                                                         Output:["_col0"],aggregations:["count(VALUE._col0)"]
                                                       <-Reducer 10 [CUSTOM_SIMPLE_EDGE] vectorized

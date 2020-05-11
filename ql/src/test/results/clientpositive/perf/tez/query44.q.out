@@ -150,7 +150,7 @@ Stage-0
                                               PARTITION_ONLY_SHUFFLE [RS_188]
                                                 Select Operator [SEL_187] (rows=1 width=8)
                                                   Filter Operator [FIL_186] (rows=1 width=8)
-                                                    predicate:(sq_count_check(_col0) <= 1)
+                                                    predicate:(sq_count_check(_col0) <= 1L)
                                                     Group By Operator [GBY_185] (rows=1 width=8)
                                                       Output:["_col0"],aggregations:["count(VALUE._col0)"]
                                                     <-Reducer 11 [CUSTOM_SIMPLE_EDGE] vectorized

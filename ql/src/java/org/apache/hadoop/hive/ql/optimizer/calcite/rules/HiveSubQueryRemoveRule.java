@@ -27,6 +27,7 @@ import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rex.LogicVisitor;
+import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
@@ -183,8 +184,11 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
 
       //we create FILTER (sq_count_check(count()) <= 1) instead of PROJECT because RelFieldTrimmer
       // ends up getting rid of Project since it is not used further up the tree
+      RexNode field = builder.field("cnt");
+      RexBuilder rexBuilder = e.rel.getCluster().getRexBuilder();
+      RexNode literalOne = rexBuilder.makeExactLiteral(BigDecimal.valueOf(1), field.getType());
       builder.filter(builder.call(SqlStdOperatorTable.LESS_THAN_OR_EQUAL,
-          builder.call(countCheck, builder.field("cnt")), builder.literal(1)));
+          builder.call(countCheck, field), literalOne));
       if (!variablesSet.isEmpty()) {
         builder.join(JoinRelType.LEFT, builder.literal(true), variablesSet);
       } else {
@@ -499,7 +503,10 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
     switch (logic) {
     case TRUE_FALSE_UNKNOWN:
     case UNKNOWN_AS_TRUE:
-      operands.add(builder.equals(builder.field("ct", "c"), builder.literal(0)),
+      RexNode field = builder.field("ct", "c");
+      RexBuilder rexBuilder = e.rel.getCluster().getRexBuilder();
+      RexNode literalZero = rexBuilder.makeExactLiteral(BigDecimal.valueOf(0), field.getType());
+      operands.add(builder.equals(field, literalZero),
           builder.literal(false));
       //now that we are using LEFT OUTER JOIN to join inner count, count(*)
       // with outer table, we wouldn't be able to tell if count is zero
