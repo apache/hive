@@ -64,6 +64,7 @@ import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -2921,11 +2922,13 @@ public class AcidUtils {
    * @return list with lock components
    */
   public static List<LockComponent> makeLockComponents(Set<WriteEntity> outputs, Set<ReadEntity> inputs,
-      HiveConf conf) {
+      Context.Operation operation, HiveConf conf) {
+
     List<LockComponent> lockComponents = new ArrayList<>();
     boolean skipReadLock = !conf.getBoolVar(ConfVars.HIVE_TXN_READ_LOCKS);
     boolean skipNonAcidReadLock = !conf.getBoolVar(ConfVars.HIVE_TXN_NONACID_READ_LOCKS);
     boolean sharedWrite = !conf.getBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK);
+    boolean isMerge = operation == Context.Operation.MERGE;
 
     // For each source to read, get a shared_read lock
     for (ReadEntity input : inputs) {
@@ -3040,9 +3043,17 @@ public class AcidUtils {
         assert t != null;
         if (AcidUtils.isTransactionalTable(t)) {
           if (sharedWrite) {
-            compBuilder.setSharedWrite();
+            if (!isMerge) {
+              compBuilder.setSharedWrite();
+            } else {
+              compBuilder.setExclWrite();
+            }
           } else {
-            compBuilder.setSharedRead();
+            if (!isMerge) {
+              compBuilder.setSharedRead();
+            } else {
+              compBuilder.setExclusive();
+            }
           }
         } else if (MetaStoreUtils.isNonNativeTable(t.getTTable())) {
           final HiveStorageHandler storageHandler = Preconditions.checkNotNull(t.getStorageHandler(),
