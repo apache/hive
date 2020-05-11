@@ -147,8 +147,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           Path hiveDumpRoot = new Path(currentDumpPath, ReplUtils.REPL_HIVE_BASE_DIR);
           work.setCurrentDumpPath(currentDumpPath);
           if (shouldDumpAuthorizationMetadata()) {
-            LOG.info("Initiate authorization metadata dump provided by {} ", RANGER_AUTHORIZER);
-            initiateAuthorizationDumpTask(currentDumpPath);
+            initiateAuthorizationDumpTask();
           }
           DumpMetaData dmd = new DumpMetaData(hiveDumpRoot, conf);
           // Initialize ReplChangeManager instance since we will require it to encode file URI.
@@ -175,10 +174,10 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return 0;
   }
 
-  private void initiateAuthorizationDumpTask(Path currentDumpPath) throws SemanticException {
+  private void initiateAuthorizationDumpTask() throws SemanticException {
     if (RANGER_AUTHORIZER.equalsIgnoreCase(conf.getVar(HiveConf.ConfVars.REPL_AUTHORIZATION_PROVIDER_SERVICE))) {
-      Path rangerDumpRoot = new Path(currentDumpPath, ReplUtils.REPL_RANGER_BASE_DIR);
-      LOG.info("Exporting Authorization Metadata at {} ", rangerDumpRoot);
+      Path rangerDumpRoot = new Path(work.getCurrentDumpPath(), ReplUtils.REPL_RANGER_BASE_DIR);
+      LOG.info("Exporting Authorization Metadata from {} at {} ", RANGER_AUTHORIZER, rangerDumpRoot);
       RangerDumpWork rangerDumpWork = new RangerDumpWork(rangerDumpRoot, work.dbNameOrPattern);
       Task<RangerDumpWork> rangerDumpTask = TaskFactory.get(rangerDumpWork, conf);
       if (childTasks == null) {

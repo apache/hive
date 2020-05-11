@@ -108,8 +108,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       work.setRootTask(this);
       this.parentTasks = null;
       if (shouldLoadAuthorizationMetadata()) {
-        LOG.info("Loading authorization data provided by service {} ", RANGER_AUTHORIZER);
-        initiateAuthorizationLoadTask(work.dumpDirectory);
+        initiateAuthorizationLoadTask();
       }
       if (work.isIncrementalLoad()) {
         return executeIncrementalLoad();
@@ -130,9 +129,9 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     return conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_AUTHORIZATION_METADATA);
   }
 
-  private void initiateAuthorizationLoadTask(String hiveDumpDirectory) throws SemanticException {
+  private void initiateAuthorizationLoadTask() throws SemanticException {
     if (RANGER_AUTHORIZER.equalsIgnoreCase(conf.getVar(HiveConf.ConfVars.REPL_AUTHORIZATION_PROVIDER_SERVICE))) {
-      Path rangerLoadRoot = new Path(new Path(hiveDumpDirectory).getParent(), ReplUtils.REPL_RANGER_BASE_DIR);
+      Path rangerLoadRoot = new Path(new Path(work.dumpDirectory).getParent(), ReplUtils.REPL_RANGER_BASE_DIR);
       LOG.info("Adding Import Ranger Metadata Task from {} ", rangerLoadRoot);
       RangerLoadWork rangerLoadWork = new RangerLoadWork(rangerLoadRoot, work.getSourceDbName(), work.dbNameToLoadIn);
       Task<RangerLoadWork> rangerLoadTask = TaskFactory.get(rangerLoadWork, conf);
@@ -407,10 +406,9 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
           new Path(work.dumpDirectory, LOAD_ACKNOWLEDGEMENT.toString()));
       Task<AckWork> loadAckWorkTask = TaskFactory.get(replLoadAckWork, conf);
       if (childTasks.isEmpty()) {
-        this.childTasks.add(loadAckWorkTask);
+        childTasks.add(loadAckWorkTask);
       } else {
-        DAGTraversal.traverse(this.childTasks,
-            new AddDependencyToLeaves(Collections.singletonList(loadAckWorkTask)));
+        DAGTraversal.traverse(childTasks, new AddDependencyToLeaves(Collections.singletonList(loadAckWorkTask)));
       }
     }
   }
@@ -431,15 +429,13 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     if (scope.rootTasks.isEmpty()) {
       scope.rootTasks.add(replLogTask);
     } else {
-      DAGTraversal.traverse(scope.rootTasks,
-          new AddDependencyToLeaves(Collections.singletonList(replLogTask)));
+      DAGTraversal.traverse(scope.rootTasks, new AddDependencyToLeaves(Collections.singletonList(replLogTask)));
     }
   }
 
   /**
    * There was a database update done before and we want to make sure we update the last repl
    * id on this database as we are now going to switch to processing a new database.
-   * <p>
    * This has to be last task in the graph since if there are intermediate tasks and the last.repl.id
    * is a root level task then in the execution phase the root level tasks will get executed first,
    * however if any of the child tasks of the bootstrap load failed then even though the bootstrap has failed

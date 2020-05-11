@@ -539,7 +539,7 @@ public class HiveConf extends Configuration {
             "",
             "This configuration will define the authorization service endpoint"),
     REPL_RANGER_SERVICE_NAME("hive.repl.ranger.service.name",
-            "cm_hive",
+            "hive",
             "This configuration will define the service name for which the ranger authorization"
                     + " policies needs to be replicated"),
     LOCALSCRATCHDIR("hive.exec.local.scratchdir",

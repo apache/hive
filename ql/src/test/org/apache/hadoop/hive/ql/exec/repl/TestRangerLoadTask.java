@@ -80,7 +80,7 @@ public class TestRangerLoadTask {
 
   @Test
   public void testSuccessNonEmptyRangerPolicies() throws Exception {
-    String rangerResponse = "{\"metaDataInfo\":{\"Host name\":\"org.apache.ranger.com\","
+    String rangerResponse = "{\"metaDataInfo\":{\"Host name\":\"ranger.apache.org\","
         + "\"Exported by\":\"hive\",\"Export time\":\"May 5, 2020, 8:55:03 AM\",\"Ranger apache version\""
         + ":\"2.0.0.7.2.0.0-61\"},\"policies\":[{\"service\":\"cm_hive\",\"name\":\"db-level\",\"policyType\":0,"
         + "\"description\":\"\",\"isAuditEnabled\":true,\"resources\":{\"database\":{\"values\":[\"aa\"],"
