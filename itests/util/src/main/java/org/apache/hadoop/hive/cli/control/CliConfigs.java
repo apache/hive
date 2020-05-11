@@ -147,7 +147,6 @@ public class CliConfigs {
 
         setHiveConfDir("data/conf/tez");
         setClusterType(MiniClusterType.TEZ);
-        setFsType(QTestMiniClusters.FsType.HDFS);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }
@@ -196,7 +195,6 @@ public class CliConfigs {
         setCleanupScript("q_test_cleanup_druid.sql");
         setHiveConfDir("data/conf/llap");
         setClusterType(MiniClusterType.DRUID);
-        setFsType(QTestMiniClusters.FsType.HDFS);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }
@@ -216,7 +214,6 @@ public class CliConfigs {
         setCleanupScript("q_test_cleanup_druid.sql");
         setHiveConfDir("data/conf/llap");
         setClusterType(MiniClusterType.DRUID_KAFKA);
-        setFsType(QTestMiniClusters.FsType.HDFS);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }
@@ -233,7 +230,6 @@ public class CliConfigs {
         setLogDir("itests/qtest/target/tmp/log");
         setHiveConfDir("data/conf/llap");
         setClusterType(MiniClusterType.KAFKA);
-        setFsType(QTestMiniClusters.FsType.HDFS);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }
@@ -265,7 +261,6 @@ public class CliConfigs {
 
         setHiveConfDir("data/conf/llap");
         setClusterType(MiniClusterType.LLAP_LOCAL);
-        setFsType(QTestMiniClusters.FsType.LOCAL);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }
@@ -288,7 +283,7 @@ public class CliConfigs {
 
 
         setClusterType(MiniClusterType.MR);
-        setFsType(QTestMiniClusters.FsType.ENCRYPTED_HDFS);
+        setFsType(QTestMiniClusters.FsType.ENCRYPTED_HDFS); // override default FsType.HDFS
         if (getClusterType() == MiniClusterType.TEZ) {
           setHiveConfDir("data/conf/tez");
         } else {
@@ -723,7 +718,7 @@ public class CliConfigs {
         setCleanupScript("q_test_cleanup_src.sql");
 
         setClusterType(MiniClusterType.MR);
-        setFsType(QTestMiniClusters.FsType.ERASURE_CODED_HDFS);
+        setFsType(QTestMiniClusters.FsType.ERASURE_CODED_HDFS); // override default FsType.HDFS
         setHiveConfDir(getClusterType());
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
@@ -766,7 +761,6 @@ public class CliConfigs {
         setCleanupScript("q_test_cleanup_druid.sql");
         setHiveConfDir("data/conf/llap");
         setClusterType(MiniClusterType.DRUID_LOCAL);
-        setFsType(QTestMiniClusters.FsType.LOCAL);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }
@@ -790,7 +784,6 @@ public class CliConfigs {
 
         setHiveConfDir("data/conf/llap");
         setClusterType(MiniClusterType.TEZ_LOCAL);
-        setFsType(QTestMiniClusters.FsType.LOCAL);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }
@@ -811,7 +804,6 @@ public class CliConfigs {
 
         setHiveConfDir("data/conf/llap");
         setClusterType(MiniClusterType.TEZ_LOCAL);
-        setFsType(QTestMiniClusters.FsType.LOCAL);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }

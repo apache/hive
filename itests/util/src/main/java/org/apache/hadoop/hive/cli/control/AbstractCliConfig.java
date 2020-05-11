@@ -368,6 +368,7 @@ public abstract class AbstractCliConfig {
     if (clusterType == null) {
       throw new RuntimeException("clustertype cant be null");
     }
+    this.setFsType(clusterType.getDefaultFsType());
   }
 
   protected FsType getFsType() {
