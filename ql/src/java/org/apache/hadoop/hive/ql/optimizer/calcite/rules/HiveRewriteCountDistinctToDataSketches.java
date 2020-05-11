@@ -91,7 +91,7 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
   }
 
   /**
-   * Helper class to aid rewriting in transforming an Aggregate to Project -> Aggregate -> Project.
+   * Helper class to help in building a new Aggregate and Project.
    */
   // NOTE: methods in this class are not re-entrant; drop-to-frame to constructor during debugging
   class VBuilder {
@@ -99,7 +99,6 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
     private Aggregate aggregate;
     private List<AggregateCall> newAggCalls;
     private List<RexNode> newProjects;
-
     private final RexBuilder rexBuilder;
 
     public VBuilder(Aggregate aggregate) {
@@ -118,7 +117,7 @@ public final class HiveRewriteCountDistinctToDataSketches extends RelOptRule {
 
     private void addGroupFields() {
       for (int i = 0; i < aggregate.getGroupCount(); i++) {
-        newProjects.add(rexBuilder.makeInputRef(aggregate, i));
+        newProjects.add(rexBuilder.makeInputRef(aggregate, 0));
       }
     }
 
