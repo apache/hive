@@ -70,7 +70,7 @@ ls -l
 set -x
 . /etc/profile.d/confs.sh
 export USER="`whoami`"
-export MAVEN_OPTS="-Xmx1333m"
+#export MAVEN_OPTS="-Xmx1333m"
 export -n HIVE_CONF_DIR
 #export HIVE_HOME="$PWD"
 OPTS=" -s $SETTINGS -B -Dmaven.test.failure.ignore -Dtest.groups= "
@@ -111,7 +111,7 @@ podTemplate(
         resourceRequestCpu: '1300m',
         resourceLimitCpu: '3000m',
         resourceRequestMemory: '6750Mi',
-        resourceLimitMemory: '10000Mi'
+        resourceLimitMemory: '12000Mi'
     ),
 //    containerTemplate(name: 'maven', image: 'maven:3.3.9-jdk-8-alpine', ttyEnabled: true, command: 'cat'),
 //    containerTemplate(name: 'golang', image: 'golang:1.8.0', ttyEnabled: true, command: 'cat')
